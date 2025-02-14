@@ -17,7 +17,7 @@ import core, {
   type Blob,
   type MeasureContext,
   type Ref,
-  type WorkspaceDataId,
+  type WorkspaceIds,
   systemAccountUuid,
   withContext
 } from '@hcengineering/core'
@@ -64,17 +64,17 @@ export class DatalakeService implements StorageAdapter {
     this.client = createDatalakeClient(opt, token)
   }
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceDataId): Promise<void> {}
+  async initialize (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
 
   async close (): Promise<void> {}
 
-  async exists (ctx: MeasureContext, workspaceId: WorkspaceDataId): Promise<boolean> {
+  async exists (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<boolean> {
     // workspace/buckets not supported, assume that always exist
     return true
   }
 
   @withContext('make')
-  async make (ctx: MeasureContext, workspaceId: WorkspaceDataId): Promise<void> {
+  async make (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {
     // workspace/buckets not supported, assume that always exist
   }
 
@@ -83,21 +83,21 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('remove')
-  async remove (ctx: MeasureContext, workspaceId: WorkspaceDataId, objectNames: string[]): Promise<void> {
+  async remove (ctx: MeasureContext, wsIds: WorkspaceIds, objectNames: string[]): Promise<void> {
     await Promise.all(
       objectNames.map(async (objectName) => {
-        await this.client.deleteObject(ctx, workspaceId, objectName)
+        await this.client.deleteObject(ctx, wsIds.uuid, objectName)
       })
     )
   }
 
   @withContext('delete')
-  async delete (ctx: MeasureContext, workspaceId: WorkspaceDataId): Promise<void> {
+  async delete (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {
     // not supported, just do nothing and pretend we deleted the workspace
   }
 
   @withContext('listStream')
-  async listStream (ctx: MeasureContext, workspaceId: WorkspaceDataId): Promise<BlobStorageIterator> {
+  async listStream (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<BlobStorageIterator> {
     let hasMore = true
     const buffer: ListBlobResult[] = []
     let cursor: string | undefined
@@ -106,7 +106,7 @@ export class DatalakeService implements StorageAdapter {
       next: async () => {
         try {
           while (hasMore && buffer.length < 50) {
-            const res = await this.client.listObjects(ctx, workspaceId, cursor)
+            const res = await this.client.listObjects(ctx, wsIds.uuid, cursor)
             hasMore = res.cursor !== undefined
             cursor = res.cursor
 
@@ -124,7 +124,7 @@ export class DatalakeService implements StorageAdapter {
             }
           }
         } catch (err: any) {
-          ctx.error('Failed to get list', { error: err, workspaceId })
+          ctx.error('Failed to get list', { error: err, workspace: wsIds.uuid })
         }
         return buffer.splice(0, 50)
       },
@@ -133,9 +133,9 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('stat')
-  async stat (ctx: MeasureContext, workspaceId: WorkspaceDataId, objectName: string): Promise<Blob | undefined> {
+  async stat (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Blob | undefined> {
     try {
-      const result = await this.client.statObject(ctx, workspaceId, objectName)
+      const result = await this.client.statObject(ctx, wsIds.uuid, objectName)
       if (result !== undefined) {
         return {
           provider: '',
@@ -151,19 +151,19 @@ export class DatalakeService implements StorageAdapter {
         }
       }
     } catch (err) {
-      ctx.error('failed to stat object', { error: err, objectName, workspaceId })
+      ctx.error('failed to stat object', { error: err, objectName, workspace: wsIds.uuid })
     }
   }
 
   @withContext('get')
-  async get (ctx: MeasureContext, workspaceId: WorkspaceDataId, objectName: string): Promise<Readable> {
-    return await this.client.getObject(ctx, workspaceId, objectName)
+  async get (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Readable> {
+    return await this.client.getObject(ctx, wsIds.uuid, objectName)
   }
 
   @withContext('put')
   async put (
     ctx: MeasureContext,
-    workspaceId: WorkspaceDataId,
+    wsIds: WorkspaceIds,
     objectName: string,
     stream: Readable | Buffer | string,
     contentType: string,
@@ -176,7 +176,7 @@ export class DatalakeService implements StorageAdapter {
     }
 
     const { etag } = await ctx.with('put', {}, (ctx) =>
-      withRetry(ctx, 5, () => this.client.putObject(ctx, workspaceId, objectName, stream, params))
+      withRetry(ctx, 5, () => this.client.putObject(ctx, wsIds.uuid, objectName, stream, params))
     )
 
     return {
@@ -186,8 +186,8 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('read')
-  async read (ctx: MeasureContext, workspaceId: WorkspaceDataId, objectName: string): Promise<Buffer[]> {
-    const data = await this.client.getObject(ctx, workspaceId, objectName)
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
+    const data = await this.client.getObject(ctx, wsIds.uuid, objectName)
     const chunks: Buffer[] = []
 
     for await (const chunk of data) {
@@ -200,16 +200,16 @@ export class DatalakeService implements StorageAdapter {
   @withContext('partial')
   async partial (
     ctx: MeasureContext,
-    workspaceId: WorkspaceDataId,
+    wsIds: WorkspaceIds,
     objectName: string,
     offset: number,
     length?: number
   ): Promise<Readable> {
-    return await this.client.getPartialObject(ctx, workspaceId, objectName, offset, length)
+    return await this.client.getPartialObject(ctx, wsIds.uuid, objectName, offset, length)
   }
 
-  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceDataId, objectName: string): Promise<string> {
-    return this.client.getObjectUrl(ctx, workspaceId, objectName)
+  async getUrl (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<string> {
+    return this.client.getObjectUrl(ctx, wsIds.uuid, objectName)
   }
 }
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc, WorkspaceDataId } from '@hcengineering/core'
+import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
 import core, { makeCollabId, makeCollabYdocId } from '@hcengineering/core'
 import { type TriggerControl } from '@hcengineering/server-core'
 
@@ -49,8 +49,7 @@ export async function OnDelete (
       const toRemove: string[] = toDelete.map(makeCollabYdocId)
       if (toRemove.length > 0) {
         await ctx.with('remove', {}, async () => {
-          const dataId = workspace.dataId ?? (workspace.uuid as unknown as WorkspaceDataId)
-          await storageAdapter.remove(ctx, dataId, toRemove)
+          await storageAdapter.remove(ctx, workspace, toRemove)
         })
       }
     }

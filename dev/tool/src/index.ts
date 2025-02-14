@@ -47,6 +47,7 @@ import {
   MeasureMetricsContext,
   metricsToString,
   type PersonId,
+  type WorkspaceUuid,
   type Data,
   type Tx,
   type Version,
@@ -1136,13 +1137,9 @@ export function devTool (
     .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
       const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
       const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
       try {
-        const storage = await createStorageBackupStorage(
-          toolCtx,
-          storageAdapter,
-          bucketName as WorkspaceDataId,
-          dirName
-        )
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, backupIds, dirName)
         await backupDownload(storage, storeIn)
       } catch (err: any) {
         toolCtx.error('failed to size backup', { err })

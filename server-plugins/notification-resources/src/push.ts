@@ -25,8 +25,7 @@ import {
   Ref,
   Tx,
   TxCreateDoc,
-  TxProcessor,
-  type WorkspaceDataId
+  TxProcessor
 } from '@hcengineering/core'
 import notification, {
   ActivityInboxNotification,
@@ -179,8 +178,7 @@ export async function createPushNotification (
     const provider = getAvatarProviderId(senderAvatar.avatarType)
     if (provider === contact.avatarProvider.Image) {
       if (senderAvatar.avatar != null) {
-        const dataId = control.workspace.dataId ?? (control.workspace.uuid as unknown as WorkspaceDataId)
-        const url = await control.storageAdapter.getUrl(control.ctx, dataId, senderAvatar.avatar)
+        const url = await control.storageAdapter.getUrl(control.ctx, control.workspace, senderAvatar.avatar)
         data.icon = url.includes('://') ? url : concatLink(front, url)
       }
     } else if (provider === contact.avatarProvider.Gravatar && senderAvatar.avatarProps?.url !== undefined) {

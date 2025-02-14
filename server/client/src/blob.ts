@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type WorkspaceDataId, type WorkspaceIds, type MeasureContext } from '@hcengineering/core'
+import { type WorkspaceIds, type MeasureContext } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Buffer } from 'node:buffer'
 
@@ -38,13 +38,9 @@ export class BlobClient {
     this.transactorAPIUrl = url.replaceAll('wss://', 'https://').replace('ws://', 'http://') + '/api/v1/blob'
   }
 
-  get workspaceDataId (): WorkspaceDataId {
-    return this.workspace.dataId ?? (this.workspace.uuid as unknown as WorkspaceDataId)
-  }
-
   async checkFile (ctx: MeasureContext, name: string): Promise<boolean> {
     if (this.opt?.storageAdapter !== undefined) {
-      const obj = await this.opt?.storageAdapter.stat(ctx, this.workspaceDataId, name)
+      const obj = await this.opt?.storageAdapter.stat(ctx, this.workspace, name)
       if (obj !== undefined) {
         return true
       }
@@ -96,7 +92,7 @@ export class BlobClient {
 
           if (this.opt?.storageAdapter !== undefined) {
             const chunks: Buffer[] = []
-            const readable = await this.opt.storageAdapter.partial(ctx, this.workspaceDataId, name, written, chunkSize)
+            const readable = await this.opt.storageAdapter.partial(ctx, this.workspace, name, written, chunkSize)
             await new Promise<void>((resolve) => {
               readable.on('data', (chunk) => {
                 chunks.push(chunk)
@@ -123,12 +119,12 @@ export class BlobClient {
             if (response.status === 403) {
               i = 5
               // No file, so make it empty
-              throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspaceDataId}/${name}`)
+              throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspace.uuid}/${name}`)
             }
             if (response.status === 404) {
               i = 5
               // No file, so make it empty
-              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspaceDataId}/${name}`)
+              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.uuid}/${name}`)
             }
             if (response.status === 416) {
               if (size === -1) {
@@ -137,7 +133,7 @@ export class BlobClient {
               }
 
               // No file, so make it empty
-              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspaceDataId}/${name}`)
+              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.uuid}/${name}`)
             }
             chunk = Buffer.from(await response.arrayBuffer())
 
@@ -205,7 +201,7 @@ export class BlobClient {
 
   async upload (ctx: MeasureContext, name: string, size: number, contentType: string, buffer: Buffer): Promise<void> {
     if (this.opt?.storageAdapter !== undefined) {
-      await this.opt.storageAdapter.put(ctx, this.workspaceDataId, name, buffer, contentType, size)
+      await this.opt.storageAdapter.put(ctx, this.workspace, name, buffer, contentType, size)
     } else {
       // TODO: We need to improve this logig, to allow restore of huge blobs
       for (let i = 0; i < 5; i++) {
