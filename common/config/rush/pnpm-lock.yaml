@@ -478,6 +478,9 @@ importers:
       '@rush-temp/model-server-calendar':
         specifier: file:./projects/model-server-calendar.tgz
         version: file:projects/model-server-calendar.tgz
+      '@rush-temp/model-server-card':
+        specifier: file:./projects/model-server-card.tgz
+        version: file:projects/model-server-card.tgz
       '@rush-temp/model-server-chunter':
         specifier: file:./projects/model-server-chunter.tgz
         version: file:projects/model-server-chunter.tgz
@@ -823,6 +826,12 @@ importers:
       '@rush-temp/server-calendar-resources':
         specifier: file:./projects/server-calendar-resources.tgz
         version: file:projects/server-calendar-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/server-card':
+        specifier: file:./projects/server-card.tgz
+        version: file:projects/server-card.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/server-card-resources':
+        specifier: file:./projects/server-card-resources.tgz
+        version: file:projects/server-card-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/server-chunter':
         specifier: file:./projects/server-chunter.tgz
         version: file:projects/server-chunter.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -4038,7 +4047,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/card@file:projects/card.tgz':
-    resolution: {integrity: sha512-rEy3T9z44ZC/94K3q01+0gbaZ0sJBlwB7KvmQuAbiZMU31t+pzS+yoIYkry7YHm/Ca7kd7H4uvcROiAr7yb91w==, tarball: file:projects/card.tgz}
+    resolution: {integrity: sha512-/vbzO3L239DHkxNpG5cw/ngDrvuvXrRcoq46Y7uJzNwSNAOMpiiRSMdpj4dr2bmPXEhkFGPeA0mKLJwXLseEhw==, tarball: file:projects/card.tgz}
     version: 0.0.0
 
   '@rush-temp/chunter-assets@file:projects/chunter-assets.tgz':
@@ -4326,7 +4335,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-all@file:projects/model-all.tgz':
-    resolution: {integrity: sha512-gkINR6HbfTB1ZSXTI2WHg9B+zIZtcSmb+Bb9fVxbGtq6e+RnxSlOlvjEBoru3ElfIO8x6SYd/KoQhRossQQKnQ==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-aDRtqYlITENsW02SJbs+KjoynFL+/QYQmYQVN6++EqsnAT+jHGPl/UpnmSr3ZMcALGcwTx61LKQ1nnxNen8tyA==, tarball: file:projects/model-all.tgz}
     version: 0.0.0
 
   '@rush-temp/model-analytics-collector@file:projects/model-analytics-collector.tgz':
@@ -4350,7 +4359,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-card@file:projects/model-card.tgz':
-    resolution: {integrity: sha512-7yhnpluYR/Gypgi3kKPtEVe1NpcG8YfE7S3ACF56GIqXideFnlXYWJ8PjUDQ9Ub5BHUulGYTXKsFUqcHRxQDZA==, tarball: file:projects/model-card.tgz}
+    resolution: {integrity: sha512-diGAGkQiQNXD27/ln6i6al/sr7X2dOUdiTx6114JOahvZngprIhzdJLdXuW44BnQHTugr4j0Sp1zOwQXKcTBVA==, tarball: file:projects/model-card.tgz}
     version: 0.0.0
 
   '@rush-temp/model-chunter@file:projects/model-chunter.tgz':
@@ -4459,6 +4468,10 @@ packages:
 
   '@rush-temp/model-server-calendar@file:projects/model-server-calendar.tgz':
     resolution: {integrity: sha512-tZOPOELF87VVVRzz1CpJN2JWcTMcpO5l+9pbFEB0YHiGZnBd0oujKLMRiSaI4xXiGo0vhA9BjuHpMvcw7zzw0A==, tarball: file:projects/model-server-calendar.tgz}
+    version: 0.0.0
+
+  '@rush-temp/model-server-card@file:projects/model-server-card.tgz':
+    resolution: {integrity: sha512-yMw0GV5uufsqDDev756PLadZksaAwUcL1eq52hijUSI4yYC1cr5wvJLW97/g/znWX6kZuHC7lAGvrBcgHf2axw==, tarball: file:projects/model-server-card.tgz}
     version: 0.0.0
 
   '@rush-temp/model-server-chunter@file:projects/model-server-chunter.tgz':
@@ -4790,7 +4803,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-m903gPliLrwApgEDgmJCrV74n9agm3V0SYbi3pYOmiVhcY6MPCRk8FprcHnYIW/VAqbzL/Bn8BYnLF8O9IQBLQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-VeRmwZegE4UJxGZfbKFP55egCMYIBuW6fCawXf1NHcXc93vnE6m9sax3s/O++FU3bMIhusbA0d74ZRRCCozxTw==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -4919,6 +4932,14 @@ packages:
 
   '@rush-temp/server-calendar@file:projects/server-calendar.tgz':
     resolution: {integrity: sha512-FQkSKyOpAPE2lnQ6wDRR1ar17olXsmHTWD1vW+ajxSNMuayv4mEVFftAFVfj6b1WvqyuJMiWR8TDv3CRWW5bug==, tarball: file:projects/server-calendar.tgz}
+    version: 0.0.0
+
+  '@rush-temp/server-card-resources@file:projects/server-card-resources.tgz':
+    resolution: {integrity: sha512-sJdtOVlhTFawBXtSTzcx+Vs8NALsiqBfwAz9cqUBj45vobiSF97D987LPBgjhCARk2+qx8lZyUPPTUJkJdaLOQ==, tarball: file:projects/server-card-resources.tgz}
+    version: 0.0.0
+
+  '@rush-temp/server-card@file:projects/server-card.tgz':
+    resolution: {integrity: sha512-ATIgXsB+SGQDQHyZqzQ8ooD/yAjqyimZzjMVZLMFJvRQenPLZEwdW0D+ikWila7ixB115IvKtGhrM8y7mvnMog==, tarball: file:projects/server-card.tgz}
     version: 0.0.0
 
   '@rush-temp/server-chunter-resources@file:projects/server-chunter-resources.tgz':
@@ -5058,7 +5079,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-pipeline@file:projects/server-pipeline.tgz':
-    resolution: {integrity: sha512-AEDx9sHjL/Dh1KCJ0DiICkS4JZ24HrqPlz4Wp09xmI9d3q35DpCS2oP8+qUjSF1qX5kZSIu0GrDshztCFYQScQ==, tarball: file:projects/server-pipeline.tgz}
+    resolution: {integrity: sha512-fmLSX42maXiVGBW3TM2hB1y5UG+weaJSBpInOVUMf/5Y59N3s0rACYuHR+wuzcmIdIRiXKMN7ypET7mz4sxT2g==, tarball: file:projects/server-pipeline.tgz}
     version: 0.0.0
 
   '@rush-temp/server-preference@file:projects/server-preference.tgz':
@@ -5174,7 +5195,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/setting-resources@file:projects/setting-resources.tgz':
-    resolution: {integrity: sha512-f1+pi6AyYD3Vr5UbZfqt4sOwCRC3ZL5x3EQBDUqD+XKx/XbVfCMF3fp7E1Jw+tA3v/Rp+b7w+DBUQnxa4nVRDQ==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-Zo+LyWbC/Inw72MfcPx+PBUsFa2bPxSktMYBuSrU6FC11wduoFx+Q7Sf8hGF3rfPvZ8bnpcVbNO77Mh3Ncin6w==, tarball: file:projects/setting-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/setting@file:projects/setting.tgz':
@@ -5322,7 +5343,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-dMjmwZoox3cdyn4o7EY2NL8Kst4si0xI+HT9YSnaQd7A4cBwapn/oXi163xq2f9mOhf2oekXpt2iT1hK8JoQQQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-1/Aodec9LySBThOZAeA3XJfP83lSVTVRFdlb8uNTORq1sHJxCADx9BliCh2dTzdhydW46wcAxMPeArhopkcN1Q==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -19666,6 +19687,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@rush-temp/model-server-card@file:projects/model-server-card.tgz':
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - supports-color
+
   '@rush-temp/model-server-chunter@file:projects/model-server-chunter.tgz':
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
@@ -22711,6 +22746,56 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/server-card-resources@file:projects/server-card-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/server-card@file:projects/server-card.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      typescript: 5.7.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
