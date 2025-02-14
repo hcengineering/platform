@@ -536,7 +536,7 @@ export async function selectWorkspace (
   if (accountUuid === systemAccountUuid) {
     return {
       account: accountUuid,
-      token: generateToken(accountUuid, workspace.uuid),
+      token: generateToken(accountUuid, workspace.uuid, extra),
       endpoint: getEndpoint(ctx, workspace.uuid, workspace.region, getKind(workspace.region)),
       workspace: workspace.uuid,
       workspaceUrl: workspace.url,
@@ -563,7 +563,7 @@ export async function selectWorkspace (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, workspace.uuid),
+    token: generateToken(accountUuid, workspace.uuid, extra),
     endpoint: getEndpoint(ctx, workspace.uuid, workspace.region, getKind(workspace.region)),
     workspace: workspace.uuid,
     workspaceUrl: workspace.url,
