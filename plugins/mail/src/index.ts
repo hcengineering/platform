@@ -23,6 +23,7 @@ export interface MailThread extends ChunterSpace {
   mailThreadId: string
   from: string
   to: string
+  preview: string
 }
 
 /**
@@ -42,6 +43,7 @@ export default plugin(mailId, {
   string: {
     MailThread: '' as IntlString,
     MailThreadId: '' as IntlString,
+    MailPreview: '' as IntlString,
     Subject: '' as IntlString,
     To: '' as IntlString,
     From: '' as IntlString,

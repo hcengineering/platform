@@ -53,7 +53,8 @@
       description: '',
       private: true,
       members: [account.primarySocialId],
-      archived: false
+      archived: false,
+      preview: getMessagePreview(message)
     }
 
     const mailThreadId = await client.createDoc(mail.class.MailThread, core.space.Space, data)
@@ -73,6 +74,10 @@
     )
 
     dispatch('close', messageId)
+  }
+
+  function getMessagePreview (message: string): string {
+    return message.length > 300 ? message.substring(0, 300) + '...' : message
   }
 
   function getSpace (doc: Doc): Ref<Space> {

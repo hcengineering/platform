@@ -44,6 +44,9 @@ export class TMailThread extends TChunterSpace implements MailThread {
   @Prop(TypeString(), mail.string.To)
   @Index(IndexKind.FullText)
     to!: string
+
+  @Prop(TypeString(), mail.string.MailPreview)
+    preview!: string
 }
 
 export function createModel (builder: Builder): void {

@@ -27,6 +27,12 @@
   export let accent: boolean = false
   export let noUnderline: boolean = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
+
+  const delimiter = ' — '
+
+  function isNotEmpty (str: string): boolean {
+    return str !== undefined && str !== null && str.trim().length > 0
+  }
 </script>
 
 {#if value}
@@ -36,9 +42,21 @@
     <DocNavLink object={value} {disabled} {accent} {noUnderline} {onClick}>
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.subject) }}>
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
-          {value.subject}
+          {value.subject ?? value.preview}
         </span>
+        {#if isNotEmpty(value.subject) && isNotEmpty(value.preview)}
+          <span class="delimiter">{delimiter}</span>
+          <span class="secondary-textColor overflow-label">
+            {value.preview}
+          </span>
+        {/if}
       </div>
     </DocNavLink>
   {/if}
 {/if}
+
+<style lang="scss">
+  .delimiter {
+    white-space: pre
+  }
+</style>
