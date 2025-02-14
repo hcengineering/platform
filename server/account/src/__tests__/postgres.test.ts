@@ -510,6 +510,7 @@ describe('PostgresAccountDB', () => {
     describe('getPendingWorkspace', () => {
       const version: Data<Version> = { major: 1, minor: 0, patch: 0 }
       const processingTimeoutMs = 5000
+      const wsLivenessMs = 300000 // 5 minutes
       const NOW = 1234567890000 // Fixed timestamp
 
       beforeEach(() => {
@@ -520,10 +521,243 @@ describe('PostgresAccountDB', () => {
         jest.restoreAllMocks()
       })
 
-      it('should get pending creation workspace', async () => {
-        await accountDb.getPendingWorkspace('', version, 'create', processingTimeoutMs)
+      it('should get workspace pending upgrade', async () => {
+        await accountDb.getPendingWorkspace('', version, 'upgrade', processingTimeoutMs, wsLivenessMs)
 
-        expect(mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ')).toEqual(
+        expect(
+          mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
+        ).toEqual(
+          `SELECT 
+              w.uuid,
+              w.name,
+              w.url,
+              w.branding,
+              w.location,
+              w.region,
+              w.created_by,
+              w.created_on,
+              w.billing_account, 
+              json_build_object(
+                'mode', s.mode,
+                'processing_progress', s.processing_progress,
+                'version_major', s.version_major,
+                'version_minor', s.version_minor,
+                'version_patch', s.version_patch,
+                'last_processing_time', s.last_processing_time,
+                'last_visit', s.last_visit,
+                'is_disabled', s.is_disabled,
+                'processing_attempts', s.processing_attempts,
+                'processing_message', s.processing_message,
+                'backup_info', s.backup_info
+              ) status
+               FROM global_account.workspace as w
+               INNER JOIN global_account.workspace_status as s ON s.workspace_uuid = w.uuid
+               WHERE (
+                  (
+                      (s.is_disabled = FALSE OR s.is_disabled IS NULL)
+                      AND (s.mode = 'active' OR s.mode IS NULL)
+                      AND (
+                          s.version_major < $1
+                          OR (s.version_major = $1 AND s.version_minor < $2)
+                          OR (s.version_major = $1 AND s.version_minor = $2 AND s.version_patch < $3)
+                      )
+                      AND s.last_visit > $4
+                  )
+                  OR
+                  (
+                      (s.is_disabled = FALSE OR s.is_disabled IS NULL)
+                      AND s.mode = 'upgrading'
+                  )
+               )
+               AND s.mode <> 'manual-creation'
+               AND (s.processing_attempts IS NULL OR s.processing_attempts <= 3)
+               AND (s.last_processing_time IS NULL OR s.last_processing_time < $5)
+               AND (w.region IS NULL OR w.region = '')
+               ORDER BY s.last_visit DESC
+               LIMIT 1
+               FOR UPDATE SKIP LOCKED`
+            .replace(/\s+/g, ' ')
+            .replace(/\(\s/g, '(')
+            .replace(/\s\)/g, ')')
+        )
+        expect(mockClient.unsafe.mock.calls[0][1]).toEqual([
+          version.major,
+          version.minor,
+          version.patch,
+          NOW - wsLivenessMs,
+          NOW - processingTimeoutMs
+        ])
+      })
+
+      it('should get workspace for all operations', async () => {
+        await accountDb.getPendingWorkspace('', version, 'all', processingTimeoutMs, wsLivenessMs)
+
+        expect(
+          mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
+        ).toEqual(
+          `SELECT 
+              w.uuid,
+              w.name,
+              w.url,
+              w.branding,
+              w.location,
+              w.region,
+              w.created_by,
+              w.created_on,
+              w.billing_account, 
+              json_build_object(
+                'mode', s.mode,
+                'processing_progress', s.processing_progress,
+                'version_major', s.version_major,
+                'version_minor', s.version_minor,
+                'version_patch', s.version_patch,
+                'last_processing_time', s.last_processing_time,
+                'last_visit', s.last_visit,
+                'is_disabled', s.is_disabled,
+                'processing_attempts', s.processing_attempts,
+                'processing_message', s.processing_message,
+                'backup_info', s.backup_info
+              ) status
+               FROM global_account.workspace as w
+               INNER JOIN global_account.workspace_status as s ON s.workspace_uuid = w.uuid
+               WHERE (
+                  s.mode IN ('pending-creation', 'creating')
+                  OR
+                  (
+                    (
+                      (s.is_disabled = FALSE OR s.is_disabled IS NULL)
+                      AND (s.mode = 'active' OR s.mode IS NULL)
+                      AND (
+                        s.version_major < $1
+                        OR (s.version_major = $1 AND s.version_minor < $2)
+                        OR (s.version_major = $1 AND s.version_minor = $2 AND s.version_patch < $3)
+                      )
+                      AND s.last_visit > $4
+                    )
+                    OR
+                    (
+                      (s.is_disabled = FALSE OR s.is_disabled IS NULL)
+                      AND s.mode = 'upgrading'
+                    )
+                  )
+               )
+               AND s.mode <> 'manual-creation'
+               AND (s.processing_attempts IS NULL OR s.processing_attempts <= 3)
+               AND (s.last_processing_time IS NULL OR s.last_processing_time < $5)
+               AND (w.region IS NULL OR w.region = '')
+               ORDER BY s.last_visit DESC
+               LIMIT 1
+               FOR UPDATE SKIP LOCKED`
+            .replace(/\s+/g, ' ')
+            .replace(/\(\s/g, '(')
+            .replace(/\s\)/g, ')')
+        )
+        expect(mockClient.unsafe.mock.calls[0][1]).toEqual([
+          version.major,
+          version.minor,
+          version.patch,
+          NOW - wsLivenessMs,
+          NOW - processingTimeoutMs
+        ])
+      })
+
+      it('should get workspace for all+backup operations', async () => {
+        await accountDb.getPendingWorkspace('', version, 'all+backup', processingTimeoutMs, wsLivenessMs)
+
+        expect(
+          mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
+        ).toEqual(
+          `SELECT 
+              w.uuid,
+              w.name,
+              w.url,
+              w.branding,
+              w.location,
+              w.region,
+              w.created_by,
+              w.created_on,
+              w.billing_account, 
+              json_build_object(
+                'mode', s.mode,
+                'processing_progress', s.processing_progress,
+                'version_major', s.version_major,
+                'version_minor', s.version_minor,
+                'version_patch', s.version_patch,
+                'last_processing_time', s.last_processing_time,
+                'last_visit', s.last_visit,
+                'is_disabled', s.is_disabled,
+                'processing_attempts', s.processing_attempts,
+                'processing_message', s.processing_message,
+                'backup_info', s.backup_info
+              ) status
+               FROM global_account.workspace as w
+               INNER JOIN global_account.workspace_status as s ON s.workspace_uuid = w.uuid
+               WHERE (
+                 s.mode IN ('pending-creation', 'creating')
+                 OR
+                  (
+                    (
+                      (s.is_disabled = FALSE OR s.is_disabled IS NULL)
+                      AND (s.mode = 'active' OR s.mode IS NULL)
+                      AND (
+                        s.version_major < $1
+                        OR (s.version_major = $1 AND s.version_minor < $2)
+                        OR (s.version_major = $1 AND s.version_minor = $2 AND s.version_patch < $3)
+                      )
+                      AND s.last_visit > $4
+                    )
+                    OR
+                    (
+                      (s.is_disabled = FALSE OR s.is_disabled IS NULL)
+                      AND s.mode = 'upgrading'
+                    )
+                  )
+                 OR
+                 s.mode IN (
+                   'migration-backup',
+                   'migration-pending-backup',
+                   'migration-clean',
+                   'migration-pending-clean'
+                 )
+                 OR
+                 s.mode IN (
+                   'archiving-pending-backup',
+                   'archiving-backup',
+                   'archiving-pending-clean',
+                   'archiving-clean'
+                 )
+                 OR
+                 s.mode IN ('pending-restore', 'restoring')
+                 OR
+                 s.mode IN ('pending-deletion', 'deleting')
+               )
+               AND s.mode <> 'manual-creation'
+               AND (s.processing_attempts IS NULL OR s.processing_attempts <= 3)
+               AND (s.last_processing_time IS NULL OR s.last_processing_time < $5)
+               AND (w.region IS NULL OR w.region = '')
+               ORDER BY s.last_visit DESC
+               LIMIT 1
+               FOR UPDATE SKIP LOCKED`
+            .replace(/\s+/g, ' ')
+            .replace(/\(\s/g, '(')
+            .replace(/\s\)/g, ')')
+        )
+        expect(mockClient.unsafe.mock.calls[0][1]).toEqual([
+          version.major,
+          version.minor,
+          version.patch,
+          NOW - wsLivenessMs,
+          NOW - processingTimeoutMs
+        ])
+      })
+
+      it('should filter by region when specified', async () => {
+        const region = 'us-east-1'
+        await accountDb.getPendingWorkspace(region, version, 'create', processingTimeoutMs)
+
+        expect(
+          mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
+        ).toEqual(
           `SELECT 
               w.uuid,
               w.name,
@@ -553,28 +787,43 @@ describe('PostgresAccountDB', () => {
                AND s.mode <> 'manual-creation'
                AND (s.processing_attempts IS NULL OR s.processing_attempts <= 3)
                AND (s.last_processing_time IS NULL OR s.last_processing_time < $1)
-               AND (w.region IS NULL OR w.region = '')
+               AND region = $2
                ORDER BY s.last_visit DESC
                LIMIT 1
-               FOR UPDATE SKIP LOCKED`.replace(/\s+/g, ' ')
+               FOR UPDATE SKIP LOCKED`
+            .replace(/\s+/g, ' ')
+            .replace(/\(\s/g, '(')
+            .replace(/\s\)/g, ')')
         )
-        expect(mockClient.unsafe.mock.calls[0][1]).toEqual([NOW - processingTimeoutMs])
+        expect(mockClient.unsafe.mock.calls[0][1]).toEqual([NOW - processingTimeoutMs, region])
       })
 
       // Should also verify update after fetch
       it('should update processing attempts and time after fetch', async () => {
         const wsUuid = 'ws1'
-        mockClient.unsafe.mockResolvedValueOnce([{ uuid: wsUuid }]) // Mock the fetch result
+        mockClient.unsafe.mockResolvedValueOnce([{ uuid: wsUuid }])
 
         await accountDb.getPendingWorkspace('', version, 'create', processingTimeoutMs)
 
-        // Verify the update was called
-        expect(mockClient.unsafe.mock.calls[1][0].replace(/\s+/g, ' ')).toEqual(
+        expect(
+          mockClient.unsafe.mock.calls[1][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
+        ).toEqual(
           `UPDATE global_account.workspace_status 
            SET processing_attempts = processing_attempts + 1, "last_processing_time" = $1 
-           WHERE workspace_uuid = $2`.replace(/\s+/g, ' ')
+           WHERE workspace_uuid = $2`
+            .replace(/\s+/g, ' ')
+            .replace(/\(\s/g, '(')
+            .replace(/\s\)/g, ')')
         )
         expect(mockClient.unsafe.mock.calls[1][1]).toEqual([NOW, wsUuid])
+      })
+
+      it('should handle null result', async () => {
+        mockClient.unsafe.mockResolvedValueOnce([])
+
+        const result = await accountDb.getPendingWorkspace('', version, 'create', processingTimeoutMs)
+
+        expect(result).toBeUndefined()
       })
     })
   })
