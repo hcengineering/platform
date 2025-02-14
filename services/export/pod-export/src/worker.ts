@@ -1,8 +1,7 @@
-import core, { generateId, MeasureContext, Ref, TxOperations, TxResult } from '@hcengineering/core'
-import drive, { Drive } from '@hcengineering/drive'
-import exportPlugin, { ExportTask, ExportTaskStatus } from '@hcengineering/export'
+import core, { Blob, MeasureContext, Ref, TxOperations, WorkspaceId } from '@hcengineering/core'
+import drive, { createFile, Drive } from '@hcengineering/drive'
+import { ExportTask } from '@hcengineering/export'
 import { ExportType, WorkspaceExporter } from '@hcengineering/importer'
-import { withRetryConnUntilTimeout } from '@hcengineering/server-client'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { decodeToken } from '@hcengineering/server-token'
 import { createReadStream, createWriteStream } from 'fs'
@@ -10,17 +9,21 @@ import fs from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { pipeline } from 'stream'
+import { v4 as uuid } from 'uuid'
 import { createGzip } from 'zlib'
+import { ExportTaskQueue } from './queue'
 import { createPlatformClient } from './server'
+
 export class ExportWorker {
   runningTasks: number = 0
   resolveBusy: (() => void) | null = null
 
   constructor (
     private readonly context: MeasureContext,
+    private readonly client: TxOperations,
     private readonly storage: StorageAdapter,
+    private readonly queue: ExportTaskQueue,
     private readonly limit: number,
-    private readonly client: TxOperations
   ) {}
 
   hasAvailableThread (): boolean {
@@ -40,8 +43,8 @@ export class ExportWorker {
     while (!isCanceled()) {
       await this.waitForAvailableThread()
 
-      const task = await this.getPendingTask()
-
+      const task = await this.queue.dequeue()
+      
       if (task === undefined) {
         await this.sleep()
       } else {
@@ -49,7 +52,7 @@ export class ExportWorker {
           await this.processExportTask(
             this.context.newChild('exportTask', {
               taskId: task._id,
-              class: task.class
+              class: task.class // todo: exportPlugin.class.ExportTask ?
             }),
             task
           ).catch((err) => {
@@ -73,46 +76,16 @@ export class ExportWorker {
     })
   }
 
-  private async getPendingTask (): Promise<ExportTask | undefined> {
-    const tasks = await this.client.findAll(exportPlugin.class.ExportTask, {
-      status: ExportTaskStatus.SCHEDULED,
-      attempts: { $lt: 3 },
-      $or: [
-        { lastProcessingTime: { $exists: false } },
-        { lastProcessingTime: { $lt: Date.now() - 5 * 60 * 1000 } }
-      ]
-    }, { limit: 1 })
-
-    if (tasks.length === 0) return undefined
-
-    const task = tasks[0] as ExportTask
-    await this.client.updateDoc(exportPlugin.class.ExportTask, core.space.Space, task._id, {
-      attempts: task.attempts + 1,
-      status: ExportTaskStatus.PROCESSING,
-      lastProcessingTime: Date.now()
-    })
-
-    return task
-  }
-
-  private async sleep (): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 5000))
-  }
-
-  // todo: update from server.ts
-  // todo: add notifications
   private async processExportTask (ctx: MeasureContext, task: ExportTask): Promise<void> {
-    const notifyProgress = (progress: number): Promise<TxResult> => {
-      return withRetryConnUntilTimeout(
-        () => this.client.update(task, { progress }),
-        5000
-      )()
+    const notifyProgress = (progress: number): Promise<void> => {
+      return this.queue.updateProgress(task._id, progress)
     }
 
-    const notifyInt = setInterval(() => {
+    const notifyInt = setInterval(() => { // todo: do this manually or remove
       void notifyProgress(task.progress)
     }, 5000)
 
+    const tempDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
     try {
       const client = await createPlatformClient(task.token)
       const { workspace } = decodeToken(task.token)
@@ -127,51 +100,76 @@ export class ExportWorker {
         workspace
       )
 
-      const tempDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
-      try {
-        // todo: move export code here
+          // todo: move export code here
         await exporter.exportDocuments(task.class, task.type as unknown as ExportType, tempDir)
-
-        // Копируем логику из server.ts для архивации и сохранения
-        const hierarchy = client.getHierarchy()
-        const className = hierarchy.getClass(task.class).label
-        const archiveName = `export-${workspace.name}-${className}-${task.type}-${Date.now()}.gz`
-        const archivePath = join(tempDir, archiveName)
 
         const files = await fs.readdir(tempDir)
         if (files.length === 0) {
           throw new Error('No files were exported')
         }
 
-        await this.saveToArchive(join(tempDir, files[0]), archivePath)
-        const exportDrive = await this.ensureExportDrive(this.client)
+        const hierarchy = client.getHierarchy()
+        const className = hierarchy.getClass(task.class).label
+        const archiveName = `export-${workspace.name}-${className}-${task.type}-${Date.now()}.gz`
+        const archivePath = join(tempDir, archiveName)
 
-        await this.client.update(task, {
-          status: ExportTaskStatus.COMPLETED,
-          progress: 100,
-          outputPath: archivePath,
-          lastProcessingTime: Date.now()
-        })
-      } finally {
+        await this.saveToArchive(join(tempDir, files[0]), archivePath)
+        await this.saveToDrive(ctx, workspace, archivePath, archiveName)
+        
+        await this.queue.complete(task._id, archivePath)
+    } catch (err) {
+      if (err instanceof Error) {
+        await this.queue.fail(task._id, err.message)
+      } else {
+        // todo: how to get better message?
+        await this.queue.fail(task._id, 'Unknown error')
+      }
+      
+      throw err
+     } finally { // 
         clearInterval(notifyInt)
         await fs.rm(tempDir, { recursive: true, force: true })
       }
-    } catch (err) {
-      if (err instanceof Error) {
-        await this.client.update(task, {
-          status: ExportTaskStatus.FAILED,
-          error: err.message,
-          lastProcessingTime: Date.now()
-        })
-      } else {
-        // todo: add error handling
-      }
-      throw err
-    }
+
+  }
+
+  async saveToArchive (inputDir: string, outputPath: string): Promise<void> {
+    const gzip = createGzip()
+    const source = createReadStream(inputDir)
+    const destination = createWriteStream(outputPath)
+  
+    await pipeline(source, gzip, destination)
+  }
+
+  async saveToDrive (ctx: MeasureContext, workspace: WorkspaceId, archivePath: string, archiveName: string): Promise<void> {
+    const exportDrive = await this.ensureExportDrive(this.client)
+
+    const fileContent = await fs.readFile(archivePath)
+
+    const blobId = uuid() as Ref<Blob>
+    await this.storage.put(
+        ctx,
+        workspace,
+        blobId,
+        fileContent,
+        'application/gzip',
+        fileContent.length
+    )
+
+    await createFile(this.client, exportDrive, drive.ids.Root, {
+        title: archiveName,
+        file: blobId,
+        size: fileContent.length,
+        type: 'application/gzip',
+        lastModified: Date.now()
+    })
+  }
+
+  private async sleep (): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, 5000))
   }
 
   async ensureExportDrive (client: TxOperations): Promise<Ref<Drive>> {
-    // Проверяем существование папки Export
     const exportDrive = await client.findOne(drive.class.Drive, {
       name: 'Export'
     })
@@ -180,9 +178,7 @@ export class ExportWorker {
       return exportDrive._id
     }
   
-    // Создаем drive если не существует
-    const driveId = generateId<Drive>()
-    await client.createDoc(
+    const driveId = await client.createDoc(
       drive.class.Drive,
       core.space.Space,
       {
@@ -193,18 +189,8 @@ export class ExportWorker {
         members: [],
         type: drive.spaceType.DefaultDrive,
         autoJoin: true
-      },
-      driveId
+      }
     )
-  
     return driveId
-  }
-  
-  async saveToArchive (inputDir: string, outputPath: string): Promise<void> {
-    const gzip = createGzip()
-    const source = createReadStream(inputDir)
-    const destination = createWriteStream(outputPath)
-  
-    await pipeline(source, gzip, destination)
   }
 }
