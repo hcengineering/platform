@@ -24,7 +24,7 @@
   export let height: number
   export let responsive: boolean = false
 
-  let blobSrc: BlobSrc | undefined
+  let blobSrc: { src: string, srcset: string } | undefined
 
   $: void getBlobRef(blob, alt, width, height).then((val) => {
     blobSrc = val
