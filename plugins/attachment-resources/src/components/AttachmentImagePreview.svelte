@@ -100,7 +100,7 @@
   let loading = false
   let error = false
 
-  $: if (value !== undefined) {
+  function handleLoadStart (): void {
     loading = true
   }
 
@@ -135,6 +135,7 @@
     height={dimensions.height}
     on:load={handleLoad}
     on:error={handleError}
+    on:loadstart={handleLoadStart}
   />
 </div>
 
