@@ -28,9 +28,11 @@ import {
   type Branding,
   type Person,
   type PersonUuid,
+  type PersonInfo,
   type WorkspaceMemberInfo,
   type WorkspaceMode,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type PersonId
 } from '@hcengineering/core'
 import platform, {
   getMetadata,
@@ -86,13 +88,13 @@ import {
   setPassword,
   signUpByEmail,
   verifyPassword,
-  wrap
+  wrap,
+  verifyAllowedServices
 } from './utils'
+import { isAdminEmail } from './admin'
 
 // Move to config?
 const processingTimeoutMs = 30 * 1000
-
-const ADMIN_EMAILS = new Set(process.env.ADMIN_EMAILS?.split(',') ?? [])
 
 /* =================================== */
 /* ============OPERATIONS============= */
@@ -129,12 +131,12 @@ export async function login (
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
-    const isAdmin: Record<string, string> = ADMIN_EMAILS.has(email.trim()) ? { admin: 'true' } : {}
-    ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...isAdmin })
+    const extraToken: Record<string, string> = isAdminEmail(email) ? { admin: 'true' } : {}
+    ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
 
     return {
       account: existingAccount.uuid,
-      token: isConfirmed ? generateToken(existingAccount.uuid, undefined, isAdmin) : undefined
+      token: isConfirmed ? generateToken(existingAccount.uuid, undefined, extraToken) : undefined
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -1052,6 +1054,31 @@ export async function getPerson (
   return person
 }
 
+export async function getPersonInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  account: PersonUuid
+): Promise<PersonInfo> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['workspace', 'tool'], extra)
+
+  const person = await db.person.findOne({ uuid: account })
+
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
+  }
+
+  const verifiedSocialIds = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
+
+  return {
+    personUuid: account,
+    name: `${person?.firstName} ${person?.lastName}`, // Should we control the order by config?
+    socialIds: verifiedSocialIds.map((it) => it.key)
+  }
+}
+
 export async function findPerson (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1061,7 +1088,7 @@ export async function findPerson (
 ): Promise<PersonUuid | undefined> {
   decodeTokenVerbose(ctx, token)
 
-  const socialId = await db.socialId.findOne({ key: socialString })
+  const socialId = await db.socialId.findOne({ key: socialString as PersonId })
 
   if (socialId == null) {
     return
@@ -1105,7 +1132,7 @@ export async function updateWorkspaceRoleBySocialId (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  const socialId = await getSocialIdByKey(db, socialKey.toLowerCase())
+  const socialId = await getSocialIdByKey(db, socialKey.toLowerCase() as PersonId)
   if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
@@ -1452,6 +1479,7 @@ export type AccountMethods =
   | 'updateBackupInfo'
   | 'assignWorkspace'
   | 'getPerson'
+  | 'getPersonInfo'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
   | 'findPerson'
@@ -1493,6 +1521,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getLoginInfoByToken: wrap(getLoginInfoByToken),
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),
+    getPersonInfo: wrap(getPersonInfo),
     findPerson: wrap(findPerson),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
 

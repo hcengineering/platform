@@ -46,8 +46,7 @@ import core, {
   toIdMap,
   type TypedSpace,
   TxProcessor,
-  type SocialKey,
-  type WorkspaceDataId
+  type SocialKey
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -233,14 +232,7 @@ async function processMigrateContentFor (
           if (value != null && value.startsWith('{')) {
             try {
               const buffer = Buffer.from(value)
-              await storageAdapter.put(
-                ctx,
-                client.wsIds.dataId ?? (client.wsIds.uuid as unknown as WorkspaceDataId),
-                blobId,
-                buffer,
-                'application/json',
-                buffer.length
-              )
+              await storageAdapter.put(ctx, client.wsIds, blobId, buffer, 'application/json', buffer.length)
             } catch (err) {
               ctx.error('failed to process document', { _class: doc._class, _id: doc._id, err })
             }
@@ -591,11 +583,10 @@ async function processMigrateJsonForDoc (
       : attribute.name
 
     const collabId = makeDocCollabId(doc, attribute.name)
-    const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
     if (value.startsWith('{')) {
       // For some reason we have documents that are already markups
       const jsonId = await retry(5, async () => {
-        return await saveCollabJson(ctx, storageAdapter, dataId, collabId, value)
+        return await saveCollabJson(ctx, storageAdapter, wsIds, collabId, value)
       })
 
       update[attributeName] = jsonId
@@ -617,17 +608,17 @@ async function processMigrateJsonForDoc (
       const ydocId = makeCollabYdocId(collabId)
       if (ydocId !== currentYdocId) {
         await retry(5, async () => {
-          const stat = await storageAdapter.stat(ctx, dataId, currentYdocId)
+          const stat = await storageAdapter.stat(ctx, wsIds, currentYdocId)
           if (stat !== undefined) {
-            const data = await storageAdapter.read(ctx, dataId, currentYdocId)
+            const data = await storageAdapter.read(ctx, wsIds, currentYdocId)
             const buffer = Buffer.concat(data as any)
-            await storageAdapter.put(ctx, dataId, ydocId, buffer, 'application/ydoc', buffer.length)
+            await storageAdapter.put(ctx, wsIds, ydocId, buffer, 'application/ydoc', buffer.length)
           }
         })
       }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err)
-      ctx.warn('failed to process collaborative doc', { dataId, collabId, currentYdocId, error })
+      ctx.warn('failed to process collaborative doc', { workspace: wsIds.uuid, collabId, currentYdocId, error })
     }
 
     const unset = update.$unset ?? {}

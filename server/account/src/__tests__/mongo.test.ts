@@ -14,7 +14,15 @@
 //
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Collection, Db } from 'mongodb'
-import { type WorkspaceMode, type WorkspaceUuid, type PersonUuid, SocialIdType, AccountRole } from '@hcengineering/core'
+import {
+  type WorkspaceMode,
+  type WorkspaceUuid,
+  type PersonUuid,
+  SocialIdType,
+  AccountRole,
+  type Version,
+  type Data
+} from '@hcengineering/core'
 import {
   MongoDbCollection,
   AccountMongoDbCollection,
@@ -683,7 +691,10 @@ describe('MongoAccountDB', () => {
       updateOne: jest.fn(),
       insertOne: jest.fn(),
       find: jest.fn(),
-      ensureIndices: jest.fn()
+      ensureIndices: jest.fn(),
+      collection: {
+        findOneAndUpdate: jest.fn()
+      }
     }
 
     mockWorkspaceMembers = {
@@ -853,6 +864,260 @@ describe('MongoAccountDB', () => {
         expect(accountDb.workspace.find).toHaveBeenCalledWith({
           uuid: { $in: ['ws1', 'ws2'] }
         })
+      })
+    })
+
+    describe('getPendingWorkspace', () => {
+      const version: Data<Version> = { major: 1, minor: 0, patch: 0 }
+      const processingTimeoutMs = 5000
+      const wsLivenessMs = 300000 // 5 minutes
+      const NOW = 1234567890000 // Fixed timestamp
+
+      beforeEach(() => {
+        jest.spyOn(Date, 'now').mockReturnValue(NOW)
+      })
+
+      afterEach(() => {
+        jest.restoreAllMocks()
+      })
+
+      it('should get pending creation workspace', async () => {
+        await accountDb.getPendingWorkspace('', version, 'create', processingTimeoutMs)
+
+        expect(accountDb.workspace.collection.findOneAndUpdate).toHaveBeenCalledWith(
+          {
+            $and: [
+              { 'status.mode': { $ne: 'manual-creation' } },
+              { $or: [{ 'status.mode': { $in: ['pending-creation', 'creating'] } }] },
+              {
+                $or: [{ 'status.processingAttempts': { $exists: false } }, { 'status.processingAttempts': { $lte: 3 } }]
+              },
+              { $or: [{ region: { $exists: false } }, { region: '' }] },
+              {
+                $or: [
+                  { 'status.lastProcessingTime': { $exists: false } },
+                  { 'status.lastProcessingTime': { $lt: NOW - processingTimeoutMs } }
+                ]
+              }
+            ]
+          },
+          {
+            $inc: {
+              'status.processingAttempts': 1
+            },
+            $set: {
+              'status.lastProcessingTime': NOW
+            }
+          },
+          {
+            returnDocument: 'after',
+            sort: {
+              'status.lastVisit': -1
+            }
+          }
+        )
+      })
+
+      it('should get workspace pending upgrade', async () => {
+        await accountDb.getPendingWorkspace('', version, 'upgrade', processingTimeoutMs, wsLivenessMs)
+
+        expect(accountDb.workspace.collection.findOneAndUpdate).toHaveBeenCalledWith(
+          {
+            $and: [
+              { 'status.mode': { $ne: 'manual-creation' } },
+              {
+                $or: [
+                  {
+                    $and: [
+                      {
+                        $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }]
+                      },
+                      {
+                        $or: [{ 'status.mode': 'active' }, { 'status.mode': { $exists: false } }]
+                      },
+                      {
+                        $or: [
+                          { 'status.versionMajor': { $lt: version.major } },
+                          { 'status.versionMajor': version.major, 'status.versionMinor': { $lt: version.minor } },
+                          {
+                            'status.versionMajor': version.major,
+                            'status.versionMinor': version.minor,
+                            'status.versionPatch': { $lt: version.patch }
+                          }
+                        ]
+                      },
+                      {
+                        'status.lastVisit': { $gt: NOW - wsLivenessMs }
+                      }
+                    ]
+                  },
+                  {
+                    $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }],
+                    'status.mode': 'upgrading'
+                  }
+                ]
+              },
+              {
+                $or: [{ 'status.processingAttempts': { $exists: false } }, { 'status.processingAttempts': { $lte: 3 } }]
+              },
+              { $or: [{ region: { $exists: false } }, { region: '' }] },
+              {
+                $or: [
+                  { 'status.lastProcessingTime': { $exists: false } },
+                  { 'status.lastProcessingTime': { $lt: NOW - processingTimeoutMs } }
+                ]
+              }
+            ]
+          },
+          {
+            $inc: {
+              'status.processingAttempts': 1
+            },
+            $set: {
+              'status.lastProcessingTime': NOW
+            }
+          },
+          {
+            returnDocument: 'after',
+            sort: {
+              'status.lastVisit': -1
+            }
+          }
+        )
+      })
+
+      it('should get workspace for all+backup operations', async () => {
+        await accountDb.getPendingWorkspace('', version, 'all+backup', processingTimeoutMs)
+
+        expect(accountDb.workspace.collection.findOneAndUpdate).toHaveBeenCalledWith(
+          {
+            $and: [
+              { 'status.mode': { $ne: 'manual-creation' } },
+              {
+                $or: [
+                  { 'status.mode': { $in: ['pending-creation', 'creating'] } },
+                  {
+                    $and: [
+                      {
+                        $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }]
+                      },
+                      {
+                        $or: [{ 'status.mode': 'active' }, { 'status.mode': { $exists: false } }]
+                      },
+                      {
+                        $or: [
+                          { 'status.versionMajor': { $lt: version.major } },
+                          { 'status.versionMajor': version.major, 'status.versionMinor': { $lt: version.minor } },
+                          {
+                            'status.versionMajor': version.major,
+                            'status.versionMinor': version.minor,
+                            'status.versionPatch': { $lt: version.patch }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    $or: [{ 'status.isDisabled': false }, { 'status.isDisabled': { $exists: false } }],
+                    'status.mode': 'upgrading'
+                  },
+                  {
+                    'status.mode': {
+                      $in: [
+                        'migration-backup',
+                        'migration-pending-backup',
+                        'migration-clean',
+                        'migration-pending-clean'
+                      ]
+                    }
+                  },
+                  {
+                    'status.mode': {
+                      $in: [
+                        'archiving-pending-backup',
+                        'archiving-backup',
+                        'archiving-pending-clean',
+                        'archiving-clean'
+                      ]
+                    }
+                  },
+                  { 'status.mode': { $in: ['pending-restore', 'restoring'] } },
+                  { 'status.mode': { $in: ['pending-deletion', 'deleting'] } }
+                ]
+              },
+              {
+                $or: [{ 'status.processingAttempts': { $exists: false } }, { 'status.processingAttempts': { $lte: 3 } }]
+              },
+              { $or: [{ region: { $exists: false } }, { region: '' }] },
+              {
+                $or: [
+                  { 'status.lastProcessingTime': { $exists: false } },
+                  { 'status.lastProcessingTime': { $lt: NOW - processingTimeoutMs } }
+                ]
+              }
+            ]
+          },
+          {
+            $inc: {
+              'status.processingAttempts': 1
+            },
+            $set: {
+              'status.lastProcessingTime': NOW
+            }
+          },
+          {
+            returnDocument: 'after',
+            sort: {
+              'status.lastVisit': -1
+            }
+          }
+        )
+      })
+
+      it('should filter by region when specified', async () => {
+        const region = 'us-east-1'
+        await accountDb.getPendingWorkspace(region, version, 'create', processingTimeoutMs)
+
+        expect(accountDb.workspace.collection.findOneAndUpdate).toHaveBeenCalledWith(
+          {
+            $and: [
+              { 'status.mode': { $ne: 'manual-creation' } },
+              { $or: [{ 'status.mode': { $in: ['pending-creation', 'creating'] } }] },
+              {
+                $or: [{ 'status.processingAttempts': { $exists: false } }, { 'status.processingAttempts': { $lte: 3 } }]
+              },
+              { region },
+              {
+                $or: [
+                  { 'status.lastProcessingTime': { $exists: false } },
+                  { 'status.lastProcessingTime': { $lt: NOW - processingTimeoutMs } }
+                ]
+              }
+            ]
+          },
+          {
+            $inc: {
+              'status.processingAttempts': 1
+            },
+            $set: {
+              'status.lastProcessingTime': NOW
+            }
+          },
+          {
+            returnDocument: 'after',
+            sort: {
+              'status.lastVisit': -1
+            }
+          }
+        )
+      })
+
+      it('should handle undefined result', async () => {
+        ;(accountDb.workspace.collection.findOneAndUpdate as jest.Mock).mockResolvedValue(null)
+
+        const result = await accountDb.getPendingWorkspace('', version, 'create', processingTimeoutMs)
+
+        expect(result).toBeUndefined()
       })
     })
 

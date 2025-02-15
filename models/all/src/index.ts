@@ -37,6 +37,7 @@ import { requestId, createModel as requestModel } from '@hcengineering/model-req
 import { aiBotId, createModel as aiBotModel } from '@hcengineering/model-ai-bot'
 import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
+import { serverCardId, createModel as serverCardModel } from '@hcengineering/model-server-card'
 import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
 import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
 import {
@@ -151,7 +152,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     view.class.Action,
     contact.class.ChannelProvider,
     setting.class.IntegrationType,
-    setting.class.WorkspaceSettingCategory
+    setting.class.WorkspaceSettingCategory,
+    setting.class.SettingsCategory
   ]
 
   const builders: BuilderConfig[] = [
@@ -371,7 +373,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: card.string.Cards,
         description: card.string.ConfigDescription,
-        enabled: false,
+        enabled: true,
         beta: true,
         icon: card.icon.Card,
         classFilter: defaultFilter
@@ -457,6 +459,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTagsModel, serverTagsId],
     [serverTaskModel, serverTaskId],
     [serverTrackerModel, serverTrackerId],
+    [serverCardModel, serverCardId],
     [serverCalendarModel, serverCalendarId],
     [serverRecruitModel, serverRecruitId],
     [serverGmailModel, serverGmailId],

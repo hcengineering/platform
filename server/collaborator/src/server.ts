@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, type WorkspaceDataId, generateId, metricsAggregate } from '@hcengineering/core'
+import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { Hocuspocus } from '@hocuspocus/server'
@@ -105,12 +105,11 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   const rpcCtx = ctx.newChild('rpc', {})
 
   const getContext = async (rawToken: string, token: Token): Promise<Context> => {
-    const ids = await getWorkspaceIds(rawToken)
+    const wsIds = await getWorkspaceIds(rawToken)
 
     return {
       connectionId: generateId(),
-      workspaceId: ids.uuid,
-      workspaceDataId: ids.dataId ?? (ids.uuid as unknown as WorkspaceDataId),
+      wsIds,
       clientFactory: simpleClientFactory(token)
     }
   }

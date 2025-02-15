@@ -1,22 +1,28 @@
 <script lang="ts">
   import core, { Association, Class, Data, Doc, Ref } from '@hcengineering/core'
+  import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import {
-    Button,
-    Header,
     Breadcrumb,
-    Separator,
+    Button,
     defineSeparators,
-    twoPanelsSeparators,
+    Header,
     IconDelete,
-    showPopup
+    Separator,
+    showPopup,
+    twoPanelsSeparators
   } from '@hcengineering/ui'
-  import settings from '../plugin'
   import view from '@hcengineering/view-resources/src/plugin'
+  import settings from '../plugin'
+  import card from '@hcengineering/card'
   import AssociationEditor from './AssociationEditor.svelte'
+
+  export let _classes: Ref<Class<Doc>>[] = [core.class.Doc]
+  export let exclude: Ref<Class<Doc>>[] = [card.class.Card]
 
   const query = createQuery()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let selected: Association | Data<Association> | undefined
 
@@ -25,6 +31,37 @@
   query.query(core.class.Association, {}, (res) => {
     associations = res
   })
+
+  $: filtered = filterAssociations(associations, _classes, exclude)
+
+  function filterAssociations (
+    associations: Association[],
+    _classes: Ref<Class<Doc>>[],
+    exclude: Ref<Class<Doc>>[]
+  ): Association[] {
+    _classes = _classes ?? [core.class.Doc]
+    exclude = exclude ?? [card.class.Card]
+    const res: Association[] = []
+    const descendants = new Set(_classes.map((p) => hierarchy.getDescendants(p)).reduce((a, b) => a.concat(b)))
+    const excluded = new Set()
+    for (const _class of exclude) {
+      const desc = hierarchy.getDescendants(_class)
+      for (const _id of desc) {
+        excluded.add(_id)
+      }
+    }
+    for (const association of associations) {
+      if (
+        descendants.has(association.classA) &&
+        descendants.has(association.classB) &&
+        !excluded.has(association.classA) &&
+        !excluded.has(association.classB)
+      ) {
+        res.push(association)
+      }
+    }
+    return res
+  }
 
   function createRelation (): void {
     selected = {
@@ -38,6 +75,19 @@
 
   function isAssociation (data: Data<Association> | Association | undefined): data is Association {
     return (data as Association)?._id !== undefined
+  }
+
+  function getClassLabel (_class: Ref<Class<Doc>>): IntlString | undefined {
+    const _classLabel = client.getModel().findObject(_class)
+    return _classLabel?.label
+  }
+
+  async function getLabel (association: Association): Promise<string> {
+    const aLabel = getClassLabel(association.classA)
+    const bLabel = getClassLabel(association.classB)
+    const aClass = aLabel !== undefined ? await translate(aLabel, {}) : undefined
+    const bClass = bLabel !== undefined ? await translate(bLabel, {}) : undefined
+    return `${association.nameA} ${aClass !== undefined ? '(' + aClass + ')' : ''} - ${association.nameB} ${bClass !== undefined ? '(' + bClass + ')' : ''}`
   }
 
   defineSeparators('workspaceSettings', twoPanelsSeparators)
@@ -82,7 +132,7 @@
       </div>
 
       <div class="flex-col overflow-y-auto">
-        {#each associations as association (association._id)}
+        {#each filtered as association (association._id)}
           <button
             class="list-item"
             class:selected={selected === association}
@@ -90,7 +140,9 @@
               selected = association
             }}
           >
-            <span class="font-regular-14 overflow-label">{association.nameA} - {association.nameB}</span>
+            {#await getLabel(association) then label}
+              <span class="font-regular-14 overflow-label">{label}</span>
+            {/await}
           </button>
         {/each}
       </div>
@@ -98,6 +150,8 @@
     <Separator name={'workspaceSettings'} index={0} color={'var(--theme-divider-color)'} />
     {#if selected !== undefined}
       <AssociationEditor
+        {exclude}
+        {_classes}
         association={selected}
         on:close={() => {
           selected = undefined

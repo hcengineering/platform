@@ -16,11 +16,13 @@
 import { type Attachment } from '@hcengineering/attachment'
 import contact, { Employee, type Person } from '@hcengineering/contact'
 import {
+  buildSocialIdString,
   type Class,
   type Doc,
   generateId,
   PersonId,
   type Ref,
+  SocialIdType,
   type Space,
   type TxOperations
 } from '@hcengineering/core'
@@ -330,24 +332,26 @@ interface AttachmentMetadata {
 }
 
 export class UnifiedFormatImporter {
+  private readonly importerEmailPlaceholder = 'newuser@huly.io'
+  private readonly importerNamePlaceholder = 'New User'
   private readonly pathById = new Map<Ref<Doc>, string>()
   private readonly refMetaByPath = new Map<string, ReferenceMetadata>()
   private readonly fileMetaByPath = new Map<string, AttachmentMetadata>()
   private readonly ctrlDocTemplateIdByPath = new Map<string, Ref<ControlledDocument>>()
 
   private personsByName = new Map<string, Ref<Person>>()
-  // private accountsByEmail = new Map<string, Ref<PersonAccount>>()
-  // private employeesByName = new Map<string, Ref<Employee>>()
+  private employeesByName = new Map<string, Ref<Employee>>()
 
   constructor (
     private readonly client: TxOperations,
     private readonly fileUploader: FileUploader,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly importerSocialId?: PersonId,
+    private readonly importerPerson?: Ref<Person>
   ) {}
 
   private async initCaches (): Promise<void> {
     await this.cachePersonsByNames()
-    await this.cacheAccountsByEmails()
     await this.cacheEmployeesByName()
   }
 
@@ -588,6 +592,10 @@ export class UnifiedFormatImporter {
     if (name === undefined) {
       return undefined
     }
+
+    if (name === this.importerNamePlaceholder && this.importerPerson != null) {
+      return this.importerPerson
+    }
     const person = this.personsByName.get(name)
     if (person === undefined) {
       throw new Error(`Person not found: ${name}`)
@@ -595,24 +603,20 @@ export class UnifiedFormatImporter {
     return person
   }
 
-  private findAccountByEmail (email: string): PersonId {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const account = this.accountsByEmail.get(email)
-    // if (account === undefined) {
-    //   throw new Error(`Account not found: ${email}`)
-    // }
-    // return account
+  private getSocialIdByEmail (email: string): PersonId {
+    if (email === this.importerEmailPlaceholder && this.importerSocialId != null) {
+      return this.importerSocialId
+    }
+
+    return buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
   }
 
   private findEmployeeByName (name: string): Ref<Employee> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const employee = this.employeesByName.get(name)
-    // if (employee === undefined) {
-    //   throw new Error(`Employee not found: ${name}`)
-    // }
-    // return employee
+    const employee = this.employeesByName.get(name)
+    if (employee === undefined) {
+      throw new Error(`Employee not found: ${name}`)
+    }
+    return employee
   }
 
   private async processDocumentsRecursively (
@@ -752,7 +756,7 @@ export class UnifiedFormatImporter {
         }
         return {
           text: comment.text,
-          author: this.findAccountByEmail(comment.author),
+          author: this.getSocialIdByEmail(comment.author),
           attachments
         }
       })
@@ -789,9 +793,9 @@ export class UnifiedFormatImporter {
       defaultIssueStatus:
         projectHeader.defaultIssueStatus !== undefined ? { name: projectHeader.defaultIssueStatus } : undefined,
       owners:
-        projectHeader.owners !== undefined ? projectHeader.owners.map((email) => this.findAccountByEmail(email)) : [],
+        projectHeader.owners !== undefined ? projectHeader.owners.map((email) => this.getSocialIdByEmail(email)) : [],
       members:
-        projectHeader.members !== undefined ? projectHeader.members.map((email) => this.findAccountByEmail(email)) : [],
+        projectHeader.members !== undefined ? projectHeader.members.map((email) => this.getSocialIdByEmail(email)) : [],
       docs: []
     }
   }
@@ -805,9 +809,9 @@ export class UnifiedFormatImporter {
       archived: spaceHeader.archived ?? false,
       description: spaceHeader.description,
       emoji: spaceHeader.emoji,
-      owners: spaceHeader.owners !== undefined ? spaceHeader.owners.map((email) => this.findAccountByEmail(email)) : [],
+      owners: spaceHeader.owners !== undefined ? spaceHeader.owners.map((email) => this.getSocialIdByEmail(email)) : [],
       members:
-        spaceHeader.members !== undefined ? spaceHeader.members.map((email) => this.findAccountByEmail(email)) : [],
+        spaceHeader.members !== undefined ? spaceHeader.members.map((email) => this.getSocialIdByEmail(email)) : [],
       docs: []
     }
   }
@@ -819,11 +823,11 @@ export class UnifiedFormatImporter {
       private: spaceHeader.private ?? false,
       archived: spaceHeader.archived ?? false,
       description: spaceHeader.description,
-      owners: spaceHeader.owners?.map((email) => this.findAccountByEmail(email)) ?? [],
-      members: spaceHeader.members?.map((email) => this.findAccountByEmail(email)) ?? [],
-      qualified: spaceHeader.qualified !== undefined ? this.findAccountByEmail(spaceHeader.qualified) : undefined,
-      manager: spaceHeader.manager !== undefined ? this.findAccountByEmail(spaceHeader.manager) : undefined,
-      qara: spaceHeader.qara !== undefined ? this.findAccountByEmail(spaceHeader.qara) : undefined,
+      owners: spaceHeader.owners?.map((email) => this.getSocialIdByEmail(email)) ?? [],
+      members: spaceHeader.members?.map((email) => this.getSocialIdByEmail(email)) ?? [],
+      qualified: spaceHeader.qualified !== undefined ? this.getSocialIdByEmail(spaceHeader.qualified) : undefined,
+      manager: spaceHeader.manager !== undefined ? this.getSocialIdByEmail(spaceHeader.manager) : undefined,
+      qara: spaceHeader.qara !== undefined ? this.getSocialIdByEmail(spaceHeader.qara) : undefined,
       docs: []
     }
   }
@@ -950,30 +954,18 @@ export class UnifiedFormatImporter {
       }, new Map())
   }
 
-  private async cacheAccountsByEmails (): Promise<void> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const accounts = await this.client.findAll(contact.class.PersonAccount, {})
-    // this.accountsByEmail = accounts.reduce((map, account) => {
-    //   map.set(account.email, account._id)
-    //   return map
-    // }, new Map())
-  }
-
   private async cacheEmployeesByName (): Promise<void> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // this.employeesByName = (await this.client.findAll(contact.mixin.Employee, {}))
-    //   .map((employee) => {
-    //     return {
-    //       _id: employee._id,
-    //       name: employee.name.split(',').reverse().join(' ')
-    //     }
-    //   })
-    //   .reduce((refByName, employee) => {
-    //     refByName.set(employee.name, employee._id)
-    //     return refByName
-    //   }, new Map())
+    this.employeesByName = (await this.client.findAll(contact.mixin.Employee, {}))
+      .map((employee) => {
+        return {
+          _id: employee._id,
+          name: employee.name.split(',').reverse().join(' ')
+        }
+      })
+      .reduce((refByName, employee) => {
+        refByName.set(employee.name, employee._id)
+        return refByName
+      }, new Map())
   }
 
   private async collectFileMetadata (folderPath: string): Promise<void> {

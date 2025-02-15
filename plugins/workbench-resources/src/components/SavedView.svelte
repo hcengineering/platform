@@ -32,13 +32,12 @@
     setViewOptions,
     viewOptionStore
   } from '@hcengineering/view-resources'
-  import { Application } from '@hcengineering/workbench'
   import copy from 'fast-copy'
   import { createEventDispatcher } from 'svelte'
   import TodoCheck from './icons/TodoCheck.svelte'
   import TodoUncheck from './icons/TodoUncheck.svelte'
 
-  export let currentApplication: Application | undefined
+  export let alias: string | undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -47,23 +46,19 @@
   const filteredViewsQuery = createQuery()
   let availableFilteredViews: FilteredView[] = []
   let myFilteredViews: FilteredView[] = []
-  $: if (currentApplication?.alias !== undefined) {
-    filteredViewsQuery.query<FilteredView>(
-      view.class.FilteredView,
-      { attachedTo: currentApplication?.alias },
-      (result) => {
-        myFilteredViews = result.filter((p) => includesAny(p.users, myAcc.socialIds))
-        availableFilteredViews = result.filter((p) => p.sharable && !includesAny(p.users, myAcc.socialIds))
+  $: if (alias !== undefined) {
+    filteredViewsQuery.query<FilteredView>(view.class.FilteredView, { attachedTo: alias }, (result) => {
+      myFilteredViews = result.filter((p) => includesAny(p.users, myAcc.socialIds))
+      availableFilteredViews = result.filter((p) => p.sharable && !includesAny(p.users, myAcc.socialIds))
 
-        const location = getLocation()
-        if (location.query?.filterViewId) {
-          const targetView = result.find((view) => view._id === location.query?.filterViewId)
-          if (targetView) {
-            load(targetView)
-          }
+      const location = getLocation()
+      if (location.query?.filterViewId) {
+        const targetView = result.find((view) => view._id === location.query?.filterViewId)
+        if (targetView) {
+          load(targetView)
         }
       }
-    )
+    })
   } else {
     filteredViewsQuery.unsubscribe()
     myFilteredViews = []

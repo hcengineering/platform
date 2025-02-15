@@ -317,7 +317,6 @@ void currentEmployeePromise.then((employee) => {
  * [Ref<Employee> => Employee] mapping
  */
 export const employeeByIdStore = writable<IdMap<WithLookup<Employee>>>(new Map())
-export const employeesStore = writable<Array<WithLookup<Employee>>>([])
 export const myEmployeeStore = derived(
   [currentEmployeeRefStore, employeeByIdStore],
   ([currentEmployeeRef, employeeById]) => {
@@ -326,9 +325,10 @@ export const myEmployeeStore = derived(
 )
 /**
  * [Ref<Person> => Person] mapping
+ * Does not contain ALL persons.
+ * Only employees for now. Later need to be extended to possibly include guests and GitHub persons.
  */
 export const personByIdStore = writable<IdMap<WithLookup<Person>>>(new Map())
-export const personsStore = writable<Array<WithLookup<Person>>>([])
 export const socialIdsStore = writable<Array<WithLookup<SocialIdentity>>>([])
 
 // NOTE
@@ -345,11 +345,16 @@ export const mySocialStringsStore = derived(mySocialIdsStore, (mySocialIds) => {
 /**
  * [Ref<Person> => SocialIdentity[]] mapping
  */
-export const socialIdsByPersonRefStore = derived([personByIdStore, socialIdsStore], ([personById, socialIds]) => {
-  const mapped = Array.from(personById.entries()).map(
-    ([_id, person]) => [_id, socialIds.filter((si) => si.attachedTo === person._id)] as const
-  )
-  return new Map(mapped)
+export const socialIdsByPersonRefStore = derived([socialIdsStore], ([socialIds]) => {
+  const sidsByPersonRef: Record<Ref<Person>, SocialIdentity[]> = socialIds.reduce<
+  Record<Ref<Person>, SocialIdentity[]>
+  >((acc, si) => {
+    acc[si.attachedTo] = acc[si.attachedTo] ?? []
+    acc[si.attachedTo].push(si)
+    return acc
+  }, {})
+
+  return new Map(Object.entries(sidsByPersonRef))
 })
 /**
  * [Ref<Person> => PersonId (primary)] mapping
@@ -412,7 +417,6 @@ export const channelProviders = writable<ChannelProvider[]>([])
 export const statusByUserStore = writable<Map<PersonUuid, UserStatus>>(new Map())
 
 const providerQuery = createQuery(true)
-const personsQuery = createQuery(true)
 const employeesQuery = createQuery(true)
 const siQuery = createQuery(true)
 
@@ -421,14 +425,11 @@ onClient(() => {
     channelProviders.set(res)
   })
 
-  personsQuery.query(contact.class.Person, {}, (res) => {
-    personsStore.set(res)
-    personByIdStore.set(toIdMap(res))
-  })
-
   employeesQuery.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
-    employeesStore.set(res)
     employeeByIdStore.set(toIdMap(res))
+
+    // We may need to extend this later with guests and github users
+    personByIdStore.set(toIdMap(res))
   })
 
   siQuery.query(contact.class.SocialIdentity, {}, (res) => {

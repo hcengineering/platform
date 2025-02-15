@@ -15,6 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
+  Association,
   BulkUpdateEvent,
   Class,
   Client,
@@ -30,6 +31,7 @@ import core, {
   Mixin,
   ModelDb,
   Ref,
+  Relation,
   ReverseLookups,
   SearchOptions,
   SearchQuery,
@@ -659,6 +661,7 @@ export class LiveQuery implements WithTx, Client {
           }
         }
         await this.handleDocUpdateLookup(q, tx)
+        await this.handleDocUpdateRelation(q, tx)
       }
     }
     return {}
@@ -724,6 +727,50 @@ export class LiveQuery implements WithTx, Client {
       return
     }
     await this.handleDocUpdateLookup(q, tx)
+    await this.handleDocUpdateRelation(q, tx)
+  }
+
+  private isPossibleAssociationTx (tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>, association: Association): boolean {
+    const h = this.getHierarchy()
+    const byClass =
+      h.isDerived(tx.objectClass, association.classA) ||
+      h.isDerived(tx.objectClass, association.classB) ||
+      h.isDerived(association.classA, tx.objectClass) ||
+      h.isDerived(association.classB, tx.objectClass)
+    if (byClass) {
+      return true
+    }
+    if (tx._class === core.class.TxMixin) {
+      const mixinTx = tx as TxMixin<Doc, Doc>
+      return h.isDerived(mixinTx.mixin, association.classA) || h.isDerived(mixinTx.mixin, association.classB)
+    }
+    return false
+  }
+
+  private async handleDocUpdateRelation (q: Query, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): Promise<void> {
+    if (q.options?.associations === undefined) return
+    for (const assoc of q.options.associations) {
+      const association = this.getModel().findObject(assoc[0])
+      if (association === undefined) continue
+      if (this.isPossibleAssociationTx(tx, association)) {
+        if (q.result instanceof Promise) {
+          q.result = await q.result
+        }
+        const docs = q.result.getDocs()
+        for (const doc of docs) {
+          const docToUpdate = doc.$associations?.[association._id].find((it) => it._id === tx.objectId)
+          if (docToUpdate !== undefined) {
+            if (tx._class === core.class.TxMixin) {
+              TxProcessor.updateMixin4Doc(docToUpdate, tx as TxMixin<Doc, Doc>)
+            } else {
+              TxProcessor.updateDoc2Doc(docToUpdate, tx as TxUpdateDoc<Doc>)
+            }
+            q.result.updateDoc(doc, false)
+            this.queriesToUpdate.set(q.id, q)
+          }
+        }
+      }
+    }
   }
 
   private async handleDocUpdateLookup (q: Query, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): Promise<void> {
@@ -971,6 +1018,7 @@ export class LiveQuery implements WithTx, Client {
         }
 
         await this.handleDocAddLookup(q, doc)
+        await this.handleDocAddRelation(q, doc)
       }
     }
     return {}
@@ -1036,6 +1084,35 @@ export class LiveQuery implements WithTx, Client {
       for (const [id, callback] of q.callbacks.entries()) {
         callback(toFindResult(result.getResult(id), q.total))
       }
+    }
+  }
+
+  private async handleDocAddRelation (q: Query, doc: Doc): Promise<void> {
+    if (q.options?.associations === undefined) return
+    if (doc._class !== core.class.Relation) return
+    const relation = doc as Relation
+    const assoc = q.options.associations.find((p) => p[0] === relation.association)
+    if (assoc !== undefined) {
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
+      const direct = assoc[1] === 1
+      const res = q.result.findDoc(direct ? relation.docA : relation.docB)
+      if (res === undefined) return
+      const association = this.getModel().findObject(assoc[0])
+      if (association === undefined) return
+      const docToPush = await this.findOne(!direct ? association.classB : association.classA, {
+        _id: direct ? relation.docB : relation.docA
+      })
+      if (docToPush === undefined) return
+      const arr = res?.$associations?.[relation.association] ?? []
+      arr.push(docToPush)
+      if (res?.$associations === undefined) {
+        res.$associations = {}
+      }
+      res.$associations[relation.association] = arr
+      q.result.updateDoc(res, false)
+      this.queriesToUpdate.set(q.id, q)
     }
   }
 
@@ -1120,16 +1197,16 @@ export class LiveQuery implements WithTx, Client {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
-    if (
-      q.options?.limit !== undefined &&
-      q.options.limit === q.result.length &&
-      h.isDerived(q._class, tx.objectClass)
-    ) {
-      await this.refresh(q)
-      return
-    }
     const index = q.result.getDocs().find((p) => p._id === tx.objectId && h.isDerived(p._class, tx.objectClass))
     if (index !== undefined) {
+      if (
+        q.options?.limit !== undefined &&
+        q.options.limit === q.result.length &&
+        h.isDerived(q._class, tx.objectClass)
+      ) {
+        await this.refresh(q)
+        return
+      }
       q.result.delete(index._id)
       this.refs.updateDocuments(q, [index], true)
 
@@ -1139,6 +1216,13 @@ export class LiveQuery implements WithTx, Client {
       await this.callback(q, true)
     }
     await this.handleDocRemoveLookup(q, tx)
+    await this.handleDocRemoveRelation(q, tx)
+  }
+
+  private async handleDocRemoveRelation (q: Query, tx: TxRemoveDoc<Doc>): Promise<void> {
+    if (q.options?.associations === undefined) return
+    if (tx.objectClass !== core.class.Relation) return
+    await this.refresh(q)
   }
 
   private async handleDocRemoveLookup (q: Query, tx: TxRemoveDoc<Doc>): Promise<void> {

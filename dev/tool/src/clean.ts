@@ -54,6 +54,7 @@ import core, {
   type TxUpdateDoc,
   type WorkspaceUuid,
   type WorkspaceDataId,
+  type WorkspaceIds,
   generateId,
   getObjectValue,
   toIdMap,
@@ -172,12 +173,12 @@ export async function cleanWorkspace (
 
 export async function fixMinioBW (
   ctx: MeasureContext,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   storageService: StorageAdapter
 ): Promise<void> {
-  console.log('try clean bw miniature for ', workspaceId)
+  console.log('try clean bw miniature for ', wsIds)
   const from = new Date(new Date().setDate(new Date().getDate() - 7)).getTime()
-  const list = await storageService.listStream(ctx, workspaceId)
+  const list = await storageService.listStream(ctx, wsIds)
   let removed = 0
   while (true) {
     const objs = await list.next()
@@ -187,7 +188,7 @@ export async function fixMinioBW (
     for (const obj of objs) {
       if (obj.modifiedOn < from) continue
       if ((obj._id as string).includes('%preview%')) {
-        await storageService.remove(ctx, workspaceId, [obj._id])
+        await storageService.remove(ctx, wsIds, [obj._id])
         removed++
         if (removed % 100 === 0) {
           console.log('removed: ', removed)

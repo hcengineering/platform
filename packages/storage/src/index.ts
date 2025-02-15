@@ -13,7 +13,13 @@
 // limitations under the License.
 //
 
-import { type Blob, type MeasureContext, type StorageIterator, type WorkspaceDataId } from '@hcengineering/core'
+import {
+  type WorkspaceIds,
+  type Blob,
+  type MeasureContext,
+  type StorageIterator,
+  type WorkspaceDataId
+} from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { type Readable } from 'stream'
 
@@ -35,37 +41,37 @@ export interface BucketInfo {
 }
 
 export interface StorageAdapter {
-  initialize: (ctx: MeasureContext, dataId: WorkspaceDataId) => Promise<void>
+  initialize: (ctx: MeasureContext, wsIds: WorkspaceIds) => Promise<void>
 
   close: () => Promise<void>
 
-  exists: (ctx: MeasureContext, dataId: WorkspaceDataId) => Promise<boolean>
-  make: (ctx: MeasureContext, dataId: WorkspaceDataId) => Promise<void>
-  delete: (ctx: MeasureContext, dataId: WorkspaceDataId) => Promise<void>
+  exists: (ctx: MeasureContext, wsIds: WorkspaceIds) => Promise<boolean>
+  make: (ctx: MeasureContext, wsIds: WorkspaceIds) => Promise<void>
+  delete: (ctx: MeasureContext, wsIds: WorkspaceIds) => Promise<void>
 
   listBuckets: (ctx: MeasureContext) => Promise<BucketInfo[]>
-  remove: (ctx: MeasureContext, dataId: WorkspaceDataId, objectNames: string[]) => Promise<void>
-  listStream: (ctx: MeasureContext, dataId: WorkspaceDataId) => Promise<BlobStorageIterator>
-  stat: (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string) => Promise<Blob | undefined>
-  get: (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string) => Promise<Readable>
+  remove: (ctx: MeasureContext, wsIds: WorkspaceIds, objectNames: string[]) => Promise<void>
+  listStream: (ctx: MeasureContext, wsIds: WorkspaceIds) => Promise<BlobStorageIterator>
+  stat: (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string) => Promise<Blob | undefined>
+  get: (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string) => Promise<Readable>
   put: (
     ctx: MeasureContext,
-    dataId: WorkspaceDataId,
+    wsIds: WorkspaceIds,
     objectName: string,
     stream: Readable | Buffer | string,
     contentType: string,
     size?: number
   ) => Promise<UploadedObjectInfo>
-  read: (ctx: MeasureContext, dataId: WorkspaceDataId, name: string) => Promise<Buffer[]>
+  read: (ctx: MeasureContext, wsIds: WorkspaceIds, name: string) => Promise<Buffer[]>
   partial: (
     ctx: MeasureContext,
-    dataId: WorkspaceDataId,
+    wsIds: WorkspaceIds,
     objectName: string,
     offset: number,
     length?: number
   ) => Promise<Readable>
 
-  getUrl: (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string) => Promise<string>
+  getUrl: (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string) => Promise<string>
 }
 
 export interface NamedStorageAdapter {
@@ -76,7 +82,7 @@ export interface NamedStorageAdapter {
 export interface StorageAdapterEx extends StorageAdapter {
   adapters?: NamedStorageAdapter[]
 
-  find: (ctx: MeasureContext, dataId: WorkspaceDataId) => StorageIterator
+  find: (ctx: MeasureContext, wsIds: WorkspaceIds) => StorageIterator
 }
 
 /**
@@ -84,19 +90,19 @@ export interface StorageAdapterEx extends StorageAdapter {
  */
 export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
   defaultAdapter: string = ''
-  async syncBlobFromStorage (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<Blob> {
+  async syncBlobFromStorage (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Blob> {
     throw new PlatformError(unknownError('Method not implemented'))
   }
 
-  async initialize (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {}
+  async initialize (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
 
   async close (): Promise<void> {}
 
-  async exists (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<boolean> {
+  async exists (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<boolean> {
     return false
   }
 
-  find (ctx: MeasureContext, dataId: WorkspaceDataId): StorageIterator {
+  find (ctx: MeasureContext, wsIds: WorkspaceIds): StorageIterator {
     return {
       next: async (ctx) => [],
       close: async (ctx) => {}
@@ -107,17 +113,17 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     return []
   }
 
-  async make (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {}
+  async make (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
 
-  async delete (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<void> {}
+  async delete (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<void> {}
 
-  async remove (ctx: MeasureContext, dataId: WorkspaceDataId, objectNames: string[]): Promise<void> {}
+  async remove (ctx: MeasureContext, wsIds: WorkspaceIds, objectNames: string[]): Promise<void> {}
 
-  async list (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<ListBlobResult[]> {
+  async list (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<ListBlobResult[]> {
     return []
   }
 
-  async listStream (ctx: MeasureContext, dataId: WorkspaceDataId): Promise<BlobStorageIterator> {
+  async listStream (ctx: MeasureContext, wsIds: WorkspaceIds): Promise<BlobStorageIterator> {
     return {
       next: async (): Promise<ListBlobResult[]> => {
         return []
@@ -126,17 +132,17 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     }
   }
 
-  async stat (ctx: MeasureContext, dataId: WorkspaceDataId, name: string): Promise<Blob | undefined> {
+  async stat (ctx: MeasureContext, wsIds: WorkspaceIds, name: string): Promise<Blob | undefined> {
     return undefined
   }
 
-  async get (ctx: MeasureContext, dataId: WorkspaceDataId, name: string): Promise<Readable> {
+  async get (ctx: MeasureContext, wsIds: WorkspaceIds, name: string): Promise<Readable> {
     throw new Error('not implemented')
   }
 
   async partial (
     ctx: MeasureContext,
-    dataId: WorkspaceDataId,
+    wsIds: WorkspaceIds,
     objectName: string,
     offset: number,
     length?: number | undefined
@@ -144,13 +150,13 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     throw new Error('not implemented')
   }
 
-  async read (ctx: MeasureContext, dataId: WorkspaceDataId, name: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, name: string): Promise<Buffer[]> {
     throw new Error('not implemented')
   }
 
   async put (
     ctx: MeasureContext,
-    dataId: WorkspaceDataId,
+    wsIds: WorkspaceIds,
     objectName: string,
     stream: string | Readable | Buffer,
     contentType: string,
@@ -159,7 +165,7 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     throw new Error('not implemented')
   }
 
-  async getUrl (ctx: MeasureContext, dataId: WorkspaceDataId, objectName: string): Promise<string> {
+  async getUrl (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<string> {
     throw new Error('not implemented')
   }
 }
@@ -171,11 +177,11 @@ export function createDummyStorageAdapter (): StorageAdapter {
 export async function removeAllObjects (
   ctx: MeasureContext,
   storage: StorageAdapter,
-  dataId: WorkspaceDataId
+  wsIds: WorkspaceIds
 ): Promise<void> {
-  ctx.warn('removing all objects from workspace', { dataId })
+  ctx.warn('removing all objects from workspace', wsIds)
   // We need to list all files and delete them
-  const iterator = await storage.listStream(ctx, dataId)
+  const iterator = await storage.listStream(ctx, wsIds)
   let bulk: string[] = []
   while (true) {
     const objs = await iterator.next()
@@ -185,13 +191,13 @@ export async function removeAllObjects (
     for (const obj of objs) {
       bulk.push(obj._id)
       if (bulk.length > 50) {
-        await storage.remove(ctx, dataId, bulk)
+        await storage.remove(ctx, wsIds, bulk)
         bulk = []
       }
     }
   }
   if (bulk.length > 0) {
-    await storage.remove(ctx, dataId, bulk)
+    await storage.remove(ctx, wsIds, bulk)
     bulk = []
   }
   await iterator.close()
@@ -200,10 +206,10 @@ export async function removeAllObjects (
 export async function objectsToArray (
   ctx: MeasureContext,
   storage: StorageAdapter,
-  dataId: WorkspaceDataId
+  wsIds: WorkspaceIds
 ): Promise<ListBlobResult[]> {
   // We need to list all files and delete them
-  const iterator = await storage.listStream(ctx, dataId)
+  const iterator = await storage.listStream(ctx, wsIds)
   const bulk: ListBlobResult[] = []
   while (true) {
     const obj = await iterator.next()
@@ -214,4 +220,8 @@ export async function objectsToArray (
   }
   await iterator.close()
   return bulk
+}
+
+export function getDataId (wsIds: WorkspaceIds): WorkspaceDataId {
+  return wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
 }

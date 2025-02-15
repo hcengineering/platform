@@ -26,6 +26,14 @@ import {
   queryCard,
   deleteMasterTag
 } from './utils'
+import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
+import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
+import ManageMasterTags from './components/settings/ManageMasterTags.svelte'
+import GeneralSection from './components/settings/GeneralSection.svelte'
+import ProperitiesSection from './components/settings/ProperitiesSection.svelte'
+import TagsSection from './components/settings/TagsSection.svelte'
+import RelationsSection from './components/settings/RelationsSection.svelte'
+import ChildsSection from './components/settings/ChildsSection.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -33,7 +41,15 @@ export default async (): Promise<Resources> => ({
     CreateTag,
     CardPresenter,
     EditCard,
-    Main
+    Main,
+    ManageMasterTags,
+    ManageMasterTagsContent,
+    ManageMasterTagsTools,
+    GeneralSection,
+    ProperitiesSection,
+    TagsSection,
+    RelationsSection,
+    ChildsSection
   },
   completion: {
     CardQuery: queryCard

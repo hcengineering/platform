@@ -227,7 +227,9 @@ class TSessionManager implements SessionManager {
             this.ctx.warn('session hang, closing...', { wsId, user: s[1].session.getUser() })
 
             // Force close workspace if only one client and it hang.
-            void this.close(this.ctx, s[1].socket, wsId)
+            void this.close(this.ctx, s[1].socket, wsId).catch((err) => {
+              this.ctx.error('failed to close', err)
+            })
             continue
           }
           if (
@@ -617,7 +619,9 @@ class TSessionManager implements SessionManager {
     function send (): void {
       for (const session of sessions) {
         try {
-          void sendResponse(ctx, session.session, session.socket, { result: tx })
+          void sendResponse(ctx, session.session, session.socket, { result: tx }).catch((err) => {
+            ctx.error('failed to send', err)
+          })
         } catch (err: any) {
           Analytics.handleError(err)
           ctx.error('error during send', { error: err })
@@ -800,26 +804,28 @@ class TSessionManager implements SessionManager {
         workspace.sessions.delete(sessionRef.session.sessionId)
         const pipeline = workspace.pipeline instanceof Promise ? await workspace.pipeline : workspace.pipeline
 
-        workspace.tickHandlers.set(sessionRef.session.sessionId, {
-          ticks: this.timeouts.reconnectTimeout * ticksPerSecond,
-          operation: () => {
-            this.reconnectIds.delete(sessionRef.session.sessionId)
+        if (this.doHandleTick) {
+          workspace.tickHandlers.set(sessionRef.session.sessionId, {
+            ticks: this.timeouts.reconnectTimeout * ticksPerSecond,
+            operation: () => {
+              this.reconnectIds.delete(sessionRef.session.sessionId)
 
-            const user = sessionRef.session.getUser()
-            if (workspace !== undefined) {
-              const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
-              if (another === -1 && !workspace.upgrade) {
-                void this.trySetStatus(
-                  workspace.context,
-                  pipeline,
-                  sessionRef.session,
-                  false,
-                  workspace.workspaceUuid
-                ).catch(() => {})
+              const user = sessionRef.session.getUser()
+              if (workspace !== undefined) {
+                const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
+                if (another === -1 && !workspace.upgrade) {
+                  void this.trySetStatus(
+                    workspace.context,
+                    pipeline,
+                    sessionRef.session,
+                    false,
+                    workspace.workspaceUuid
+                  ).catch(() => {})
+                }
               }
             }
-          }
-        })
+          })
+        }
         this.reconnectIds.add(sessionRef.session.sessionId)
       }
       try {
@@ -1240,7 +1246,9 @@ export function startSessionManager (
     shutdown: opt.serverFactory(
       sessions,
       (rctx, service, ws, msg, workspace) => {
-        void sessions.handleRequest(rctx, service, ws, msg, workspace)
+        void sessions.handleRequest(rctx, service, ws, msg, workspace).catch((err) => {
+          ctx.error('failed to handle request', err)
+        })
       },
       ctx,
       opt.pipelineFactory,

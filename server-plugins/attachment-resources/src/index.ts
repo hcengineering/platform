@@ -15,7 +15,7 @@
 //
 
 import attachment, { type Attachment } from '@hcengineering/attachment'
-import type { Tx, TxRemoveDoc, WorkspaceDataId } from '@hcengineering/core'
+import type { Tx, TxRemoveDoc } from '@hcengineering/core'
 import type { TriggerControl } from '@hcengineering/server-core'
 
 /**
@@ -45,8 +45,7 @@ export async function OnAttachmentDelete (
     }
   }
   if (toDelete.length > 0) {
-    const dataId = workspace.dataId ?? (workspace.uuid as unknown as WorkspaceDataId)
-    await storageAdapter.remove(ctx, dataId, toDelete)
+    await storageAdapter.remove(ctx, workspace, toDelete)
   }
 
   return result

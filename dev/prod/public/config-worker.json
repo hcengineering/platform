@@ -31,7 +31,7 @@
   
   "MODEL_VERSION": "",
   
-  "PREVIEW_CONFIG": "https://dl.hc.engineering/image/fit=scale-down,width=:size/:workspace/:blobId",
+  "PREVIEW_CONFIG": "image|https://dl.hc.engineering/image/fit=scale-down,width=:width,height=:height,dpr=:dpr/:workspace/:blobId;video|https://dl.hc.engineering/video/:workspace/:blobId/meta",
   
   "PRINT_URL": "https://print.hc.engineering",
     

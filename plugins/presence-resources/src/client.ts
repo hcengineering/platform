@@ -34,7 +34,11 @@ export class PresenceClient implements Disposable {
   private ws: WebSocket | null = null
   private closed = false
   private reconnectTimeout: number | undefined
-  private readonly reconnectInterval = 1000
+  private pingTimeout: number | undefined
+  private pingInterval: number | undefined
+  private readonly RECONNECT_INTERVAL = 1000
+  private readonly PING_INTERVAL = 30 * 1000
+  private readonly PING_TIMEOUT = 5 * 60 * 1000
 
   private presence: RoomPresence[]
   private readonly myPresenceUnsub: Unsubscriber
@@ -51,6 +55,7 @@ export class PresenceClient implements Disposable {
   close (): void {
     this.closed = true
     clearTimeout(this.reconnectTimeout)
+    this.stopPing()
 
     this.myPresenceUnsub()
 
@@ -102,18 +107,45 @@ export class PresenceClient implements Disposable {
     }
   }
 
+  private startPing (): void {
+    clearInterval(this.pingInterval)
+    this.pingInterval = window.setInterval(() => {
+      if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send('ping')
+      }
+      clearTimeout(this.pingTimeout)
+      this.pingTimeout = window.setTimeout(() => {
+        if (this.ws !== null) {
+          console.log('no response from server')
+          clearInterval(this.pingInterval)
+          this.ws.close(1000)
+        }
+      }, this.PING_TIMEOUT)
+    }, this.PING_INTERVAL)
+  }
+
+  private stopPing (): void {
+    clearInterval(this.pingInterval)
+    this.pingInterval = undefined
+
+    clearTimeout(this.pingTimeout)
+    this.pingTimeout = undefined
+  }
+
   private reconnect (): void {
     clearTimeout(this.reconnectTimeout)
+    this.stopPing()
 
     if (!this.closed) {
       this.reconnectTimeout = window.setTimeout(() => {
         this.connect()
-      }, this.reconnectInterval)
+      }, this.RECONNECT_INTERVAL)
     }
   }
 
   private handleConnect (): void {
     this.sendPresence(getCurrentEmployee(), this.presence)
+    this.startPing()
   }
 
   private handleMessage (data: string): void {

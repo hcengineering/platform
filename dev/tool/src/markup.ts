@@ -28,9 +28,9 @@ import core, {
   type Ref,
   type TxCreateDoc,
   type TxUpdateDoc,
-  type WorkspaceDataId,
   DOMAIN_TX,
   SortingOrder,
+  type WorkspaceIds,
   makeCollabId,
   makeCollabYdocId,
   makeDocCollabId
@@ -49,7 +49,7 @@ export interface RestoreWikiContentParams {
 export async function restoreWikiContentMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams
 ): Promise<void> {
@@ -74,17 +74,17 @@ export async function restoreWikiContentMongo (
 
       const correctCollabId = { objectClass: doc._class, objectId: doc._id, objectAttr: 'content' }
 
-      const wrongYdocId = await findWikiDocYdocName(ctx, db, workspaceId, doc._id)
+      const wrongYdocId = await findWikiDocYdocName(ctx, db, doc._id)
       if (wrongYdocId === undefined) {
         console.log('current ydoc not found', doc._id)
         continue
       }
 
-      const stat = storageAdapter.stat(ctx, workspaceId, wrongYdocId)
+      const stat = storageAdapter.stat(ctx, wsIds, wrongYdocId)
       if (stat === undefined) continue
 
-      const ydoc1 = await loadCollabYdoc(ctx, storageAdapter, workspaceId, correctCollabId)
-      const ydoc2 = await loadCollabYdoc(ctx, storageAdapter, workspaceId, wrongYdocId)
+      const ydoc1 = await loadCollabYdoc(ctx, storageAdapter, wsIds, correctCollabId)
+      const ydoc2 = await loadCollabYdoc(ctx, storageAdapter, wsIds, wrongYdocId)
 
       if (ydoc1 !== undefined && ydoc1.share.has('content')) {
         // There already is content, we should skip the document
@@ -103,7 +103,7 @@ export async function restoreWikiContentMongo (
             yDocCopyXmlField(ydoc2, 'description', 'content')
           }
 
-          await saveCollabYdoc(ctx, storageAdapter, workspaceId, correctCollabId, ydoc2)
+          await saveCollabYdoc(ctx, storageAdapter, wsIds, correctCollabId, ydoc2)
         }
         restoredCnt++
       } catch (err: any) {
@@ -119,7 +119,6 @@ export async function restoreWikiContentMongo (
 export async function findWikiDocYdocName (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceDataId,
   doc: Ref<Document>
 ): Promise<Ref<Blob> | undefined> {
   const updateContentTx = await db.collection<TxUpdateDoc<Document & { content: string }>>(DOMAIN_TX).findOne(
@@ -198,7 +197,7 @@ export interface RestoreControlledDocContentParams {
 export async function restoreControlledDocContentMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams
 ): Promise<void> {
@@ -220,15 +219,7 @@ export async function restoreControlledDocContentMongo (
       const doc = await iterator.next()
       if (doc === null) break
 
-      const restored = await restoreControlledDocContentForDoc(
-        ctx,
-        db,
-        workspaceId,
-        storageAdapter,
-        params,
-        doc,
-        'content'
-      )
+      const restored = await restoreControlledDocContentForDoc(ctx, db, wsIds, storageAdapter, params, doc, 'content')
       if (restored) {
         restoredCnt++
       }
@@ -247,7 +238,7 @@ export async function restoreControlledDocContentMongo (
 export async function restoreControlledDocContentForDoc (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   storageAdapter: StorageAdapter,
   params: RestoreWikiContentParams,
   doc: Doc,
@@ -272,7 +263,7 @@ export async function restoreControlledDocContentForDoc (
   const ydocId = makeCollabYdocId(makeDocCollabId(doc, attribute))
 
   // Ensure that we don't have new content in storage
-  const stat = await storageAdapter.stat(ctx, workspaceId, ydocId)
+  const stat = await storageAdapter.stat(ctx, wsIds, ydocId)
   if (stat !== undefined) {
     console.log('content already restored', doc._class, doc._id, ydocId)
     return false
@@ -281,15 +272,15 @@ export async function restoreControlledDocContentForDoc (
   console.log('restoring content', doc._id, currentYdocId, '-->', ydocId)
   if (!params.dryRun) {
     try {
-      const stat = await storageAdapter.stat(ctx, workspaceId, currentYdocId)
+      const stat = await storageAdapter.stat(ctx, wsIds, currentYdocId)
       if (stat === undefined) {
         console.log('no content to restore', doc._class, doc._id, ydocId)
         return false
       }
 
-      const data = await storageAdapter.read(ctx, workspaceId, currentYdocId)
+      const data = await storageAdapter.read(ctx, wsIds, currentYdocId)
       const buffer = Buffer.concat(data as any)
-      await storageAdapter.put(ctx, workspaceId, ydocId, buffer, 'application/ydoc', buffer.length)
+      await storageAdapter.put(ctx, wsIds, ydocId, buffer, 'application/ydoc', buffer.length)
     } catch (err: any) {
       console.error('failed to restore content for', doc._class, doc._id, err)
       return false
@@ -302,7 +293,7 @@ export async function restoreControlledDocContentForDoc (
 export async function restoreMarkupRefsMongo (
   ctx: MeasureContext,
   db: Db,
-  workspaceId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   hierarchy: Hierarchy,
   storageAdapter: StorageAdapter
 ): Promise<void> {
@@ -347,10 +338,10 @@ export async function restoreMarkupRefsMongo (
           const ydocId = makeCollabYdocId(collabId)
 
           try {
-            const buffer = await storageAdapter.read(ctx, workspaceId, ydocId)
+            const buffer = await storageAdapter.read(ctx, wsIds, ydocId)
             const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
 
-            const jsonId = await saveCollabJson(ctx, storageAdapter, workspaceId, collabId, ydoc)
+            const jsonId = await saveCollabJson(ctx, storageAdapter, wsIds, collabId, ydoc)
             await collection.updateOne({ _id: doc._id }, { $set: { [attributeName]: jsonId } })
           } catch {}
         }

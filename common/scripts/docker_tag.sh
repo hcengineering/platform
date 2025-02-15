@@ -26,7 +26,7 @@ then
 else
   echo "Tagging release $1 with version ${version}"  
   docker tag "$1:$rev_version" "$1:$version"
-  docker tag "$1:$rev_version" "$1:latest"
+  # docker tag "$1:$rev_version" "$1:latest"
   for n in {1..25}; do
     docker push "$1:$version" && break
 
@@ -39,16 +39,16 @@ else
       exit 1
     fi
   done
-  for n in {1..25}; do
-    docker push "$1:latest" && break
+  # for n in {1..25}; do
+  #   docker push "$1:latest" && break
 
-    if (( $n < 25 ))
-    then
-      echo 'Docker failed to push, wait 5 second'
-      sleep 5
-    else
-      echo '25 push attempts failed, exiting with failure'
-      exit 1
-    fi
-  done
+  #   if (( $n < 25 ))
+  #   then
+  #     echo 'Docker failed to push, wait 5 second'
+  #     sleep 5
+  #   else
+  #     echo '25 push attempts failed, exiting with failure'
+  #     exit 1
+  #   fi
+  # done
 fi

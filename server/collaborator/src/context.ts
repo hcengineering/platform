@@ -13,15 +13,14 @@
 // limitations under the License.
 //
 
-import { Blob, Ref, generateId, WorkspaceUuid, WorkspaceDataId } from '@hcengineering/core'
+import { Blob, Ref, generateId, type WorkspaceIds } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { onAuthenticatePayload } from '@hocuspocus/server'
 import { ClientFactory, simpleClientFactory } from './platform'
 
 export interface Context {
   connectionId: string
-  workspaceId: WorkspaceUuid
-  workspaceDataId: WorkspaceDataId
+  wsIds: WorkspaceIds
   clientFactory: ClientFactory
 
   content?: Ref<Blob>
@@ -35,7 +34,7 @@ export type withContext<T extends WithContext> = Omit<T, 'context'> & {
   context: Context
 }
 
-export function buildContext (data: onAuthenticatePayload, wsDataId?: WorkspaceDataId): Context {
+export function buildContext (data: onAuthenticatePayload, wsIds: WorkspaceIds): Context {
   const context = data.context as Partial<Context>
 
   const connectionId = context.connectionId ?? generateId()
@@ -45,8 +44,7 @@ export function buildContext (data: onAuthenticatePayload, wsDataId?: WorkspaceD
 
   return {
     connectionId,
-    workspaceId: decodedToken.workspace,
-    workspaceDataId: wsDataId ?? (decodedToken.workspace as unknown as WorkspaceDataId),
+    wsIds,
     clientFactory: simpleClientFactory(decodedToken),
     content
   }

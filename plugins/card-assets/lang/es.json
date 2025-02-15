@@ -5,10 +5,10 @@
     "Cards": "Tarjetas",
     "Content": "Contenido",
     "CreateCard": "Crear Tarjeta",
-    "CreateMasterTag": "Crear Etiqueta Maestra",
+    "CreateMasterTag": "Crear Tipo",
     "CreateTag": "Crear Etiqueta",
-    "MasterTag": "Etiqueta Maestra",
-    "MasterTags": "Etiquetas Maestras",
+    "MasterTag": "Tipo",
+    "MasterTags": "Tipos",
     "Parent": "Padre",
     "Tags": "Etiquetas",
     "Tag": "Etiqueta",
@@ -16,8 +16,9 @@
     "MinimizeAll": "Minimizar Todo",
     "ExpandAll": "Expandir Todo",
     "DeleteTag": "Eliminar Etiqueta",
-    "DeleteTagConfirm": "¿Está seguro de que desea eliminar esta etiqueta? Todas las propiedades relacion",
-    "DeleteMasterTag": "Eliminar Etiqueta Maestra",
-    "DeleteMasterTagConfirm": "¿Está seguro de que desea eliminar esta etiqueta maestra? Todos los objetos relacionados con esta etiqueta maestra serán eliminados"
+    "TagRelations": "Relaciones de Etiquetas",
+    "DeleteTagConfirm": "¿Estás seguro de que quieres eliminar esta etiqueta? Todas las propiedades relacionadas serán eliminadas",
+    "DeleteMasterTag": "Eliminar Tipo",
+    "DeleteMasterTagConfirm": "¿Estás seguro de que quieres eliminar este tipo? Todos los objetos relacionados con este tipo serán eliminados"
   }
 }

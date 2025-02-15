@@ -30,7 +30,8 @@ import core, {
   type Tx,
   type WorkspaceIds,
   type WorkspaceInfoWithStatus,
-  WorkspaceDataId
+  WorkspaceDataId,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import {
   wrapPipeline,
@@ -264,13 +265,13 @@ class BackupWorker {
     const ctx = rootCtx.newChild(ws.uuid, { workspace: ws.uuid, url: ws.url })
     const dataId = ws.dataId ?? (ws.uuid as unknown as WorkspaceDataId)
     let pipeline: Pipeline | undefined
+    const backupIds = {
+      uuid: this.config.BucketName as WorkspaceUuid,
+      dataId: this.config.BucketName as WorkspaceDataId,
+      url: ''
+    }
     try {
-      const storage = await createStorageBackupStorage(
-        ctx,
-        this.storageAdapter,
-        this.config.BucketName as WorkspaceDataId,
-        dataId
-      )
+      const storage = await createStorageBackupStorage(ctx, this.storageAdapter, backupIds, dataId)
       const wsIds: WorkspaceIds = {
         uuid: ws.uuid,
         dataId: ws.dataId,
@@ -442,7 +443,8 @@ export async function doRestoreWorkspace (
   const ctx = rootCtx.newChild(wsIds.uuid, { workspace: wsIds.uuid })
   let pipeline: Pipeline | undefined
   try {
-    const storage = await createStorageBackupStorage(ctx, backupAdapter, bucketName as WorkspaceDataId, wsIds.uuid)
+    const restoreIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
+    const storage = await createStorageBackupStorage(ctx, backupAdapter, restoreIds, wsIds.uuid)
     const result: boolean = await ctx.with('restore', { workspace: wsIds.uuid }, (ctx) =>
       restore(ctx, '', wsIds, storage, {
         date: -1,

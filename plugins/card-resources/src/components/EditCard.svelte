@@ -17,6 +17,7 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import attachment, { Attachment } from '@hcengineering/attachment'
+  import { Card, CardEvents } from '@hcengineering/card'
   import { Doc, Mixin, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -24,10 +25,9 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
-  import { Button, EditBox, FocusHandler, IconMixin, IconMoreH, createFocusManager, navigate } from '@hcengineering/ui'
+  import { Button, EditBox, FocusHandler, IconMoreH, createFocusManager, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
-    DocAttributeBar,
     ParentsNavigator,
     RelationsEditor,
     getDocMixins,
@@ -35,12 +35,11 @@
     showMenu
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { Card, CardEvents } from '@hcengineering/card'
   import card from '../plugin'
+  import CardAttributeEditor from './CardAttributeEditor.svelte'
   import CardPresenter from './CardPresenter.svelte'
   import ContentEditor from './ContentEditor.svelte'
   import TagsEditor from './TagsEditor.svelte'
-  import CardAttributeEditor from './CardAttributeEditor.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false

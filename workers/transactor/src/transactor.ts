@@ -46,11 +46,13 @@ import {
 } from '@hcengineering/postgres'
 import {
   createServerPipeline,
+  isAdapterSecurity,
   registerAdapterFactory,
   registerDestroyFactory,
   registerServerPlugins,
   registerStringLoaders,
-  registerTxAdapterFactory
+  registerTxAdapterFactory,
+  setAdapterSecurity
 } from '@hcengineering/server-pipeline'
 import { CloudFlareLogger } from './logger'
 import model from './model.json'
@@ -89,6 +91,11 @@ export class Transactor extends DurableObject<Env> {
       }
     })
 
+    console.log({ message: 'wakeup', connections: ctx.getWebSockets().length })
+
+    // this.ctx.setHibernatableWebSocketEventTimeout(60 * 1000)
+    this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair(pingConst, pongConst))
+
     // configureAnalytics(env.SENTRY_DSN, {})
     // Analytics.setTag('application', 'transactor')
 
@@ -104,6 +111,7 @@ export class Transactor extends DurableObject<Env> {
     registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
     registerAdapterFactory('postgresql', createPostgresAdapter, true)
     registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+    setAdapterSecurity('postgresql', true)
 
     if (env.USE_GREEN === 'true') {
       registerGreenUrl(env.GREEN_URL)
@@ -113,8 +121,6 @@ export class Transactor extends DurableObject<Env> {
     registerStringLoaders()
     registerServerPlugins()
     this.accountsUrl = env.ACCOUNTS_URL ?? 'http://127.0.0.1:3000'
-
-    this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair(pingConst, pongConst))
 
     this.measureCtx = new NoMetricsContext(new CloudFlareLogger())
     // initStatisticsContext('ctr-' + ctx.id.toString(), {
@@ -137,7 +143,7 @@ export class Transactor extends DurableObject<Env> {
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
       const pipeline = createServerPipeline(this.measureCtx, dbUrl, model, {
         externalStorage: storage,
-        adapterSecurity: false,
+        adapterSecurity: isAdapterSecurity(dbUrl),
         disableTriggers: false,
         fulltextUrl: env.FULLTEXT_URL,
         extraLogging: true,
@@ -218,29 +224,36 @@ export class Transactor extends DurableObject<Env> {
           const request = cs.readRequest(buff, s.session.binaryMode)
           const st = Date.now()
           const r = this.sessionManager.handleRequest(this.measureCtx, s.session, cs, request, this.workspace)
-          void r.finally(() => {
-            const time = Date.now() - st
-            console.log({
-              message: 'handle-request: ' + time,
-              method: request.method,
-              params: request.params,
-              workspace: s.workspaceId,
-              user: s.session.getUser(),
-              time
+          this.ctx.waitUntil(
+            r.finally(() => {
+              const time = Date.now() - st
+              console.log({
+                message: `handle-request: ${request.method} time: ${time}`,
+                method: request.method,
+                params: request.params,
+                workspace: s.workspaceId,
+                user: s.session.getUser(),
+                time
+              })
             })
-          })
-          this.ctx.waitUntil(r)
+          )
         },
         typeof message === 'string' ? Buffer.from(message) : Buffer.from(message)
       )
     } catch (err: any) {
-      console.error({ message: 'Failed to handle message:', err })
+      console.error({ message: 'Failed to handle message:', errMsg: err.message, err, stack: err.stack })
     }
   }
 
   async webSocketError (ws: WebSocket, error: unknown): Promise<void> {
-    console.error({ message: 'WebSocket error:', error })
+    const session = this.sessions.get(ws)
+    console.error({ message: 'error:', error, account: session?.payload?.account })
     await this.handleClose(ws, 1011, 'error')
+  }
+
+  async webSocketClose (ws: WebSocket, code: number, reason: string, wasClean: boolean): Promise<void> {
+    const session = this.sessions.get(ws)
+    console.warn({ message: 'closed', reason, code, wasClean, account: session?.payload?.account })
   }
 
   async alarm (): Promise<void> {
@@ -297,9 +310,8 @@ export class Transactor extends DurableObject<Env> {
 
       if ('error' in session) {
         console.error({ message: 'Failed to establish session:', error: session.error })
-        ws.close(4003, 'Session establishment failed')
         if (session.terminate === true) {
-          ws.close()
+          ws.close(4003, 'Session establishment failed')
         }
         throw session.error
       }
@@ -310,7 +322,7 @@ export class Transactor extends DurableObject<Env> {
           false,
           false
         )
-        cs.close()
+        ws.close(4003, 'Session establishment failed')
         return true
       }
 
@@ -347,11 +359,11 @@ export class Transactor extends DurableObject<Env> {
       isClosed: false,
       close: () => {
         cs.isClosed = true
+        console.warn({ message: 'close socket', id: cs.id })
         ws.close()
       },
       checkState: () => {
         if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
-          ws.close()
           return false
         }
         return true
@@ -377,13 +389,21 @@ export class Transactor extends DurableObject<Env> {
           smsg = compress(smsg)
         }
 
-        ws.send(smsg)
+        try {
+          ws.send(smsg)
+        } catch (err: any) {
+          console.error({ message: 'failed to send', err })
+        }
       },
       sendPong: () => {
         if (ws.readyState !== WebSocket.OPEN || cs.isClosed) {
           return
         }
-        ws.send(pongConst)
+        try {
+          ws.send(pongConst)
+        } catch (err: any) {
+          console.error({ message: 'failed to send', err })
+        }
       }
     }
     return cs

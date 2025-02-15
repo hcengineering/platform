@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { generateId, WorkspaceDataId } from '@hcengineering/core'
+import { generateId, type WorkspaceIds } from '@hcengineering/core'
 import { initStatisticsContext, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { getClient as getAccountClientRaw, AccountClient, WorkspaceLoginInfo } from '@hcengineering/account-client'
@@ -35,7 +35,7 @@ function getAccountClient (token: string): AccountClient {
 type AsyncRequestHandler = (
   req: Request,
   res: Response,
-  wsDataId: WorkspaceDataId,
+  wsIds: WorkspaceIds,
   branding: Branding | null,
   next: NextFunction
 ) => Promise<void>
@@ -49,14 +49,17 @@ const handleRequest = async (
 ): Promise<void> => {
   try {
     const { rawToken } = extractToken(req.headers, req.query)
-    const loginInfo = await getAccountClient(rawToken).getLoginInfoByToken()
-    const workspace = (loginInfo as WorkspaceLoginInfo)?.workspace
-    if (workspace === undefined) {
+    const wsLoginInfo = (await getAccountClient(rawToken).getLoginInfoByToken()) as WorkspaceLoginInfo
+    if (wsLoginInfo?.workspace === undefined) {
       throw new ApiError(401, "Couldn't find workspace with the provided token")
     }
-    const wsDataId = (loginInfo as WorkspaceLoginInfo)?.workspaceDataId
+    const wsIds = {
+      uuid: wsLoginInfo.workspace,
+      dataId: wsLoginInfo.workspaceDataId,
+      url: wsLoginInfo.workspaceUrl
+    }
     const branding = extractBranding(brandings, req.headers)
-    await fn(req, res, wsDataId ?? (workspace as unknown as WorkspaceDataId), branding, next)
+    await fn(req, res, wsIds, branding, next)
   } catch (err: unknown) {
     next(err)
   }
@@ -78,14 +81,14 @@ export function createServer (storageConfig: StorageConfiguration, brandings: Br
 
   app.post(
     '/sign',
-    wrapRequest(brandings, async (req, res, wsDataId, branding) => {
+    wrapRequest(brandings, async (req, res, wsIds, branding) => {
       const fileId = req.body.fileId as string
 
       if (fileId === undefined) {
         throw new ApiError(400, 'Missing fileId')
       }
 
-      const originalFile = await storageAdapter.read(measureCtx, wsDataId, fileId)
+      const originalFile = await storageAdapter.read(measureCtx, wsIds, fileId)
       const ctx = {
         title: branding?.title ?? 'Huly'
       }
@@ -97,7 +100,7 @@ export function createServer (storageConfig: StorageConfiguration, brandings: Br
 
       const signedId = `signed-${fileId}-${generateId()}`
 
-      await storageAdapter.put(measureCtx, wsDataId, signedId, signRes, 'application/pdf', signRes.length)
+      await storageAdapter.put(measureCtx, wsIds, signedId, signRes, 'application/pdf', signRes.length)
 
       res.contentType('application/json')
       res.send({ id: signedId })
