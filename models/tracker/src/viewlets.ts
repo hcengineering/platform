@@ -105,13 +105,13 @@ export function issueConfig (
       props: { kind: 'list', size: 'small', justify: 'center' },
       displayProps: { key: key + 'status' }
     },
-    // {
-    //   key: 'kind',
-    //   label: task.string.TaskType,
-    //   presenter: task.component.TaskTypePresenter,
-    //   props: { kind: 'list', size: 'small', justify: 'center' },
-    //   displayProps: { key: key + 'kind' }
-    // },
+    {
+      key: 'kind',
+      label: task.string.TaskType,
+      presenter: task.component.TaskTypeListPresenter,
+      props: { kind: 'list', size: 'small', justify: 'center' },
+      displayProps: { key: key + 'kind' }
+    },
     {
       key: '',
       label: tracker.string.Title,

@@ -57,6 +57,7 @@ export default mergeIds(taskId, task, {
     TypesView: '' as AnyComponent,
     StateIconPresenter: '' as AnyComponent,
     TaskTypePresenter: '' as AnyComponent,
+    TaskTypeListPresenter: '' as AnyComponent,
     ProjectTypePresenter: '' as AnyComponent,
     TaskTypeClassPresenter: '' as AnyComponent,
     ProjectTypeClassPresenter: '' as AnyComponent

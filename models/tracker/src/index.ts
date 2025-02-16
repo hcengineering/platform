@@ -741,7 +741,8 @@ function defineSpaceType (builder: Builder): void {
       description: tracker.string.Issue,
       icon: tracker.icon.Issue,
       name: tracker.string.Issue,
-      statusCategoriesFunc: tracker.function.GetIssueStatusCategories
+      statusCategoriesFunc: tracker.function.GetIssueStatusCategories,
+      openTasks: tracker.function.OpenIssuesOfTaskType
     },
     tracker.descriptors.Issue
   )

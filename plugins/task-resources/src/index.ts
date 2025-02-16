@@ -67,11 +67,11 @@ import ProjectTypeClassPresenter from './components/taskTypes/ProjectTypeClassPr
 import TaskKindSelector from './components/taskTypes/TaskKindSelector.svelte'
 import TaskTypeClassPresenter from './components/taskTypes/TaskTypeClassPresenter.svelte'
 import TaskTypePresenter from './components/taskTypes/TaskTypePresenter.svelte'
+import TaskTypeListPresenter from './components/taskTypes/TaskTypeListPresenter.svelte'
 
 import { employeeByIdStore, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
 import CreateProjectType from './components/projectTypes/CreateProjectType.svelte'
 import ProjectTypeAutomationsSectionEditor from './components/projectTypes/ProjectTypeAutomationsSectionEditor.svelte'
-import ProjectTypeCollectionsSectionEditor from './components/projectTypes/ProjectTypeCollectionsSectionEditor.svelte'
 import ProjectTypeGeneralSectionEditor from './components/projectTypes/ProjectTypeGeneralSectionEditor.svelte'
 import ProjectTypeSelector from './components/projectTypes/ProjectTypeSelector.svelte'
 import ProjectTypeTasksTypeSectionEditor from './components/projectTypes/ProjectTypeTasksTypeSectionEditor.svelte'
@@ -198,6 +198,7 @@ export default async (): Promise<Resources> => ({
     StateIconPresenter,
     StatusFilter,
     TaskTypePresenter,
+    TaskTypeListPresenter,
     TaskTypeClassPresenter,
     ProjectTypeClassPresenter,
     ProjectTypePresenter,
@@ -206,7 +207,6 @@ export default async (): Promise<Resources> => ({
     ProjectTypeGeneralSectionEditor,
     ProjectTypeTasksTypeSectionEditor,
     ProjectTypeAutomationsSectionEditor,
-    ProjectTypeCollectionsSectionEditor,
     TaskTypeEditor
   },
   actionImpl: {

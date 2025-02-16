@@ -14,28 +14,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
-  import task, { ProjectType, TaskType, calculateStatuses, findStatusAttr } from '@hcengineering/task'
   import { Ref, SortingOrder, Status } from '@hcengineering/core'
-  import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
-  import {
-    Label,
-    showPopup,
-    ButtonIcon,
-    ModernButton,
-    IconSquareExpand,
-    IconAdd,
-    Icon,
-    Scroller
-  } from '@hcengineering/ui'
-  import { IconPicker, statusStore } from '@hcengineering/view-resources'
+  import { Asset, getEmbeddedLabel, getResource } from '@hcengineering/platform'
+  import { AttributeEditor, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import { ClassAttributes, settingsStore } from '@hcengineering/setting-resources'
+  import task, { ProjectType, TaskType, calculateStatuses, findStatusAttr } from '@hcengineering/task'
+  import {
+    ButtonIcon,
+    Icon,
+    IconAdd,
+    IconDelete,
+    IconSquareExpand,
+    Label,
+    ModernButton,
+    Scroller,
+    getCurrentLocation,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
+  import { IconPicker, deleteObjects, statusStore } from '@hcengineering/view-resources'
   import { taskTypeStore } from '../..'
+  import plugin from '../../plugin'
   import StatesProjectEditor from '../state/StatesProjectEditor.svelte'
   import TaskTypeKindEditor from '../taskTypes/TaskTypeKindEditor.svelte'
   import TaskTypeRefEditor from '../taskTypes/TaskTypeRefEditor.svelte'
   import TaskTypeIcon from './TaskTypeIcon.svelte'
-  import plugin from '../../plugin'
 
   export let spaceType: ProjectType
   export let objectId: Ref<TaskType>
@@ -65,13 +68,15 @@
   $: states = (taskType?.statuses.map((p) => $statusStore.byId.get(p)).filter((p) => p !== undefined) as Status[]) ?? []
 
   let tasksCounter: number = 0
+  let loading: boolean = true
   const tasksCounterQuery = createQuery()
   $: if (taskType !== undefined) {
-    tasksCounterQuery.query(
+    loading = tasksCounterQuery.query(
       task.class.Task,
       { kind: taskType._id },
       (res) => {
         tasksCounter = res.total
+        loading = false
       },
       {
         total: true,
@@ -87,6 +92,7 @@
     if (readonly) {
       return
     }
+    // TODO: Be aware icon equal to descriptor one will not be shown in lists.
     const icons: Asset[] = [descriptor[0].icon]
 
     showPopup(
@@ -125,6 +131,41 @@
       }
     }
   }
+
+  $: canDelete = !loading && tasksCounter === 0
+
+  async function handleDelete (): Promise<void> {
+    if (!canDelete || readonly || taskType == null) {
+      return
+    }
+
+    showPopup(MessageBox, {
+      label: plugin.string.Delete,
+      message: plugin.string.Delete,
+      action: async () => {
+        if (taskType == null) {
+          return
+        }
+
+        await deleteObjects(client, [taskType])
+
+        const loc = getCurrentLocation()
+        loc.path.length -= 2
+        navigate(loc)
+      }
+    })
+  }
+  async function showIssuesOfTaskType (): Promise<void> {
+    if (taskType == null) return
+    const descriptor = client
+      .getModel()
+      .findAllSync(task.class.TaskTypeDescriptor, { _id: taskType?.descriptor })
+      .shift()
+    if (descriptor?.openTasks !== undefined) {
+      const f = await getResource(descriptor.openTasks)
+      await f?.(taskType)
+    }
+  }
 </script>
 
 {#if taskType !== undefined}
@@ -157,15 +198,29 @@
                   />
                 {/if}
               </div>
-              <ModernButton
-                icon={IconSquareExpand}
-                label={plugin.string.CountTasks}
-                labelParams={{ count: tasksCounter }}
-                disabled={tasksCounter === 0}
-                kind={'tertiary'}
-                size={'medium'}
-                hasMenu
-              />
+              <div class="flex-row">
+                <ModernButton
+                  icon={IconSquareExpand}
+                  label={plugin.string.CountTasks}
+                  labelParams={{ count: tasksCounter }}
+                  disabled={tasksCounter === 0}
+                  kind={'tertiary'}
+                  size={'medium'}
+                  hasMenu
+                  on:click={() => {
+                    showIssuesOfTaskType()
+                  }}
+                />
+                {#if canDelete}
+                  <ButtonIcon
+                    icon={IconDelete}
+                    size="small"
+                    kind="secondary"
+                    disabled={readonly}
+                    on:click={handleDelete}
+                  />
+                {/if}
+              </div>
             </div>
 
             <div class="name" class:editable={!readonly}>
