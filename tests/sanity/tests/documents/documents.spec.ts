@@ -194,7 +194,7 @@ test.describe('Documents tests', () => {
     await documentContentPage.checkLinkInTheText(contentLink, 'http://test/link/123456')
   })
 
-  test('Check Link to Reference conversion', async () => {
+  test('Check Link to Reference conversion and sync', async () => {
     const sourceDocument: NewDocument = {
       title: `Reference Document Title-${generateId()}`,
       space: 'Default'
@@ -204,23 +204,43 @@ test.describe('Documents tests', () => {
       space: 'Default'
     }
 
-    await leftSideMenuPage.clickDocuments()
+    await test.step('Create two documents and reference one from the other', async () => {
+      await leftSideMenuPage.clickDocuments()
 
-    await documentsPage.clickOnButtonCreateDocument()
-    await documentsPage.createDocument(targetDocument)
-    await documentsPage.openDocument(targetDocument.title)
-    await documentContentPage.checkDocumentTitle(targetDocument.title)
-    const targetDocumentUrl = documentsPage.page.url()
+      await documentsPage.clickOnButtonCreateDocument()
+      await documentsPage.createDocument(targetDocument)
+      await documentsPage.openDocument(targetDocument.title)
+      await documentContentPage.checkDocumentTitle(targetDocument.title)
+      const targetDocumentUrl = documentsPage.page.url()
 
-    await documentsPage.clickOnButtonCreateDocument()
-    await documentsPage.createDocument(sourceDocument)
-    await documentsPage.openDocument(sourceDocument.title)
-    await documentContentPage.checkDocumentTitle(sourceDocument.title)
+      await documentsPage.clickOnButtonCreateDocument()
+      await documentsPage.createDocument(sourceDocument)
+      await documentsPage.openDocument(sourceDocument.title)
+      await documentContentPage.checkDocumentTitle(sourceDocument.title)
 
-    await documentContentPage.addRandomLines(5)
-    await documentContentPage.addContentToTheNewLine(targetDocumentUrl)
-    await documentContentPage.addRandomLines(5)
-    await documentContentPage.checkReferenceInTheText(targetDocument.title)
+      await documentContentPage.addRandomLines(5)
+      await documentContentPage.addContentToTheNewLine(targetDocumentUrl)
+      await documentContentPage.addRandomLines(5)
+      await documentContentPage.checkReferenceInTheText(targetDocument.title)
+
+      await leftSideMenuPage.clickDocuments()
+    })
+
+    await test.step('Rename the document and check sync', async () => {
+      await leftSideMenuPage.clickDocuments()
+
+      const targetDocumentSecondTitle = `Updated Reference Document Title-${generateId()}`
+
+      await documentsPage.openDocument(targetDocument.title)
+      await documentContentPage.checkDocumentTitle(targetDocument.title)
+      await documentContentPage.updateDocumentTitle(targetDocumentSecondTitle)
+      await documentContentPage.checkDocumentTitle(targetDocumentSecondTitle)
+
+      await documentsPage.openDocument(sourceDocument.title)
+      await documentContentPage.checkDocumentTitle(sourceDocument.title)
+
+      await documentContentPage.checkReferenceInTheText(targetDocumentSecondTitle)
+    })
   })
 
   test('Locked document and checking URL', async ({ page, context }) => {

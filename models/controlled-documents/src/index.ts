@@ -13,60 +13,60 @@
 // limitations under the License.
 //
 
-import documentsPlugin, {
-  documentsId,
-  type Document,
-  type DocumentSpace,
-  DocumentState
-} from '@hcengineering/controlled-documents'
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
+import documentsPlugin, {
+  documentsId,
+  DocumentState,
+  type Document,
+  type DocumentSpace
+} from '@hcengineering/controlled-documents'
 import { type Builder } from '@hcengineering/model'
 import chunter from '@hcengineering/model-chunter'
 import core from '@hcengineering/model-core'
+import { generateClassNotificationTypes } from '@hcengineering/model-notification'
+import presentation from '@hcengineering/model-presentation'
+import print from '@hcengineering/model-print'
 import request from '@hcengineering/model-request'
 import tracker from '@hcengineering/model-tracker'
-import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
-import presentation from '@hcengineering/model-presentation'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
-import print from '@hcengineering/model-print'
 import textEditor from '@hcengineering/text-editor'
 
-import documents from './plugin'
+import { type Class, type Doc, type Ref } from '@hcengineering/core'
+import { type Action } from '@hcengineering/view'
 import { definePermissions } from './permissions'
+import documents from './plugin'
+import { defineSpaceType } from './spaceType'
 import {
+  TChangeControl,
+  TControlledDocument,
+  TControlledDocumentSnapshot,
+  TDocument,
+  TDocumentApprovalRequest,
+  TDocumentCategory,
+  TDocumentComment,
+  TDocumentMeta,
+  TDocumentRequest,
+  TDocumentReviewRequest,
+  TDocumentSnapshot,
   TDocumentSpace,
   TDocumentSpaceType,
   TDocumentSpaceTypeDescriptor,
-  TExternalSpace,
-  TOrgSpace,
-  TDocumentMeta,
-  TProjectDocument,
-  TProjectMeta,
-  TProject,
-  TDocument,
-  TDocumentSnapshot,
-  TControlledDocumentSnapshot,
-  THierarchyDocument,
   TDocumentTemplate,
   TDocumentTraining,
-  TDocumentCategory,
-  TControlledDocument,
-  TChangeControl,
-  TDocumentRequest,
-  TDocumentReviewRequest,
-  TDocumentApprovalRequest,
-  TTypeDocumentState,
+  TExternalSpace,
+  THierarchyDocument,
+  TOrgSpace,
+  TProject,
+  TProjectDocument,
+  TProjectMeta,
   TTypeControlledDocumentState,
-  TDocumentComment
+  TTypeDocumentState
 } from './types'
-import { defineSpaceType } from './spaceType'
-import { type Class, type Doc, type Ref } from '@hcengineering/core'
-import { type Action } from '@hcengineering/view'
 
 export { documentsId } from '@hcengineering/controlled-documents/src/index'
 export * from './types'
@@ -102,6 +102,10 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(documents.class.ControlledDocument, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: documents.function.ControlledDocumentTitleProvider
+  })
+
+  builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: documents.function.ControlledDocumentTitleProvider
   })
 

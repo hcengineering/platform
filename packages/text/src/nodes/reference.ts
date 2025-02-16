@@ -15,10 +15,18 @@
 
 import { Node, mergeAttributes } from '@tiptap/core'
 import { getDataAttribute } from './utils'
+import { Class, Doc, Ref } from '@hcengineering/core'
+
+export interface ReferenceNodeProps {
+  id: Ref<Doc>
+  objectclass: Ref<Class<Doc>>
+  label: string
+}
 
 export interface ReferenceOptions {
-  renderLabel: (props: { options: ReferenceOptions, node: any }) => string
-  suggestion: { char: string }
+  renderLabel: (props: { options: ReferenceOptions, props: ReferenceNodeProps }) => string
+  suggestion: { char?: string }
+  HTMLAttributes: Record<string, any>
 }
 
 /**
@@ -28,23 +36,26 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
   name: 'reference',
   group: 'inline',
   inline: true,
+  selectable: true,
+  atom: true,
+  draggable: true,
 
   addAttributes () {
     return {
       id: getDataAttribute('id'),
       objectclass: getDataAttribute('objectclass'),
-      label: getDataAttribute('label'),
-      class: { default: null }
+      label: getDataAttribute('label')
     }
   },
 
   addOptions () {
     return {
-      renderLabel ({ options, node }) {
+      renderLabel ({ options, props }) {
         // eslint-disable-next-line
-        return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`
+        return `${options.suggestion.char}${props.label ?? props.id}`
       },
-      suggestion: { char: '@' }
+      suggestion: { char: '@' },
+      HTMLAttributes: {}
     }
   },
 
@@ -72,21 +83,25 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
   },
 
   renderHTML ({ node, HTMLAttributes }) {
-    const options = this.options
     return [
       'span',
       mergeAttributes(
         {
-          'data-type': this.name
+          'data-type': this.name,
+          class: 'antiMention'
         },
+        this.options.HTMLAttributes,
         HTMLAttributes
       ),
-      this.options.renderLabel({ options, node })
+      this.options.renderLabel({
+        options: this.options,
+        props: node.attrs as ReferenceNodeProps
+      })
     ]
   },
 
   renderText ({ node }) {
     const options = this.options
-    return options.renderLabel({ options, node })
+    return options.renderLabel({ options, props: node.attrs as ReferenceNodeProps })
   }
 })
