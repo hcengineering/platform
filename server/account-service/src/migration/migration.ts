@@ -23,17 +23,40 @@ import {
 import { type AccountDB, createAccount } from '@hcengineering/account'
 import { getMongoAccountDB } from './utils'
 import { type Account as OldAccount, type Workspace as OldWorkspace } from './types'
+import { type MongoAccountDB } from './collections/mongo'
+
+async function shouldMigrate (oldAccountDb: MongoAccountDB, migrationKey: string): Promise<boolean> {
+  while (true) {
+    const migration = await oldAccountDb.migration.findOne({ key: migrationKey })
+    if (migration?.completed === true) {
+      return false
+    }
+
+    if (migration?.lastProcessedTime === undefined || Date.now() - migration.lastProcessedTime > 1000 * 15) {
+      return true
+    }
+
+    console.log('Migration of accounts database from old accounts is still in progress, waiting...')
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+  }
+}
 
 export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: AccountDB): Promise<void> {
   const migrationKey = 'migrate-from-old-accounts'
   // Check if old accounts exist
   const [oldAccountDb, closeOldDb] = await getMongoAccountDB(oldAccsUrl)
+  let processingHandle
 
   try {
-    const migration = await oldAccountDb.migration.findOne({ key: migrationKey })
-    if (migration?.completed === true) {
+    if (!(await shouldMigrate(oldAccountDb, migrationKey))) {
       return
     }
+
+    await oldAccountDb.migration.insertOne({ key: migrationKey, completed: false, lastProcessedTime: Date.now() })
+
+    processingHandle = setInterval(() => {
+      void oldAccountDb.migration.updateOne({ key: migrationKey }, { lastProcessedTime: Date.now() })
+    }, 1000 * 5)
 
     // Mapping between <ObjectId, UUID>
     const accountsIdToUuid: Record<string, PersonUuid> = {}
@@ -131,9 +154,12 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
     }
 
     console.log('Total invites processed:', invitesProcessed)
-    await oldAccountDb.migration.insertOne({ key: migrationKey, completed: true })
+    await oldAccountDb.migration.updateOne({ key: migrationKey }, { completed: true })
     console.log('Migration of accounts database from old accounts COMPLETED')
   } finally {
+    if (processingHandle !== undefined) {
+      clearTimeout(processingHandle)
+    }
     closeOldDb()
   }
 }
