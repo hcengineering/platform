@@ -13,13 +13,14 @@
     type WorkspaceInfoWithStatus
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { isAdminUser, MessageBox } from '@hcengineering/presentation'
+  import { copyTextToClipboard, isAdminUser, MessageBox } from '@hcengineering/presentation'
   import {
     Button,
     ButtonMenu,
     CheckBox,
     Expandable,
     IconArrowRight,
+    IconCopy,
     IconDownOutline,
     IconOpen,
     IconStart,
@@ -392,7 +393,18 @@
                     <div class="label overflow-label p-1 flex flex-row-center" style:width={'15rem'}>
                       {wsName}
                       <div class="ml-1 flex flex-row-center">
-                        <Button icon={IconOpen} size={'small'} on:click={() => select(workspace.url)} />
+                        <Button
+                          icon={IconOpen}
+                          size={'small'}
+                          on:click={() => select(workspace.url)}
+                          showTooltip={{ label: getEmbeddedLabel('Open Workspace URL') }}
+                        />
+                        <Button
+                          icon={IconCopy}
+                          size={'small'}
+                          on:click={() => copyTextToClipboard(workspace.uuid)}
+                          showTooltip={{ label: getEmbeddedLabel('Copy UUID') }}
+                        />
                       </div>
                     </div>
                     <div class="label overflow-label p-1 flex flex-row-center" style:width={'5rem'}>
