@@ -98,6 +98,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   const migrations = accountsDb.then(async ([db]) => {
     if (oldAccsUrl !== undefined) {
       await migrateFromOldAccounts(oldAccsUrl, db)
+      console.log('Migrations verified/done')
     }
   })
 
