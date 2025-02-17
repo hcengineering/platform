@@ -1025,7 +1025,23 @@ export async function getLoginInfoByToken (
     }
   }
 
-  const person = await db.person.findOne({ uuid: accountUuid })
+  let person: Person | null
+  if (isDocGuest) {
+    person = {
+      uuid: accountUuid,
+      firstName: 'Guest',
+      lastName: 'User'
+    }
+  } else if (isSystem) {
+    person = {
+      uuid: accountUuid,
+      firstName: 'System',
+      lastName: 'User'
+    }
+  } else {
+    person = await db.person.findOne({ uuid: accountUuid })
+  }
+
   if (person == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
