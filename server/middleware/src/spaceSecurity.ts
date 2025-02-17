@@ -539,14 +539,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const account = ctx.contextData.account
     const isSpace = this.context.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
-    const showArchived: boolean = shouldShowArchived(query, options)
+    const showArchived: boolean = shouldShowArchived(newQuery, options)
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
     if (!isSystem(account, ctx) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
       if (!isOwner(account, ctx) || !isSpace || !showArchived) {
-        if (query[field] !== undefined) {
-          const res = await this.mergeQuery(ctx, account, query[field], domain, isSpace, showArchived)
+        if (newQuery[field] !== undefined) {
+          const res = await this.mergeQuery(ctx, account, newQuery[field], domain, isSpace, showArchived)
           if (res === undefined) {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete newQuery[field]
@@ -575,7 +575,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
               options = { allowedSpaces: Array.from(spaces.result) }
             }
           } else {
-            // Check if spaces > 85% of all domain spaces, in this case return all and filter on client.
+            // Check if spaces are greater than 85% of all domain spaces. In this case, return all and filter on the client.
             if (spaces.result.size / spaces.domainSpaces.size > 0.85 && options?.limit === undefined) {
               clientFilterSpaces = spaces.result
               delete newQuery.space
