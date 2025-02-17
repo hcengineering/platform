@@ -174,6 +174,7 @@ export interface UpgradeStatistic {
 export interface Migration {
   key: string
   completed: boolean
+  lastProcessedTime: number
 }
 
 interface Operator<T, P extends keyof T> {

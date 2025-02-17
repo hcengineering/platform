@@ -209,6 +209,12 @@
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/card-assets": "^0.6.0",
     "@hcengineering/card-resources": "^0.6.0",
+    "@hcengineering/my-space": "^0.6.0",
+    "@hcengineering/my-space-assets": "^0.6.0",
+    "@hcengineering/my-space-resources": "^0.6.0",
+    "@hcengineering/mail": "^0.6.0",
+    "@hcengineering/mail-assets": "^0.6.0",
+    "@hcengineering/mail-resources": "^0.6.0",
     "@sentry/svelte": "^8.52.1",
     "posthog-js": "~1.122.0"
   }

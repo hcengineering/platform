@@ -29,15 +29,15 @@
   import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,
+    canDisplayLinkPreview,
     createQuery,
     deleteFile,
     draftsStore,
+    fetchLinkPreviewDetails,
     getClient,
     getFileMetadata,
-    uploadFile,
-    fetchLinkPreviewDetails,
-    canDisplayLinkPreview,
-    isLinkPreviewEnabled
+    isLinkPreviewEnabled,
+    uploadFile
   } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
@@ -46,7 +46,6 @@
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
-  import { rmSync } from 'fs'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>

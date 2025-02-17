@@ -16,7 +16,7 @@
 
 import { Class, Doc, DocumentQuery, FindOptions, Mixin, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
-import { AnyComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui'
+import { AnyComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui/src/types'
 import {
   Action,
   ActionCategory,

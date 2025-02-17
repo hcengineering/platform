@@ -19,7 +19,7 @@ import { driveId } from '@hcengineering/drive'
 import drive from '@hcengineering/drive-resources/src/plugin'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent, type Location } from '@hcengineering/ui'
+import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 import {
   type Action,
   type ActionCategory,

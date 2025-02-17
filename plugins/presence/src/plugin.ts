@@ -15,7 +15,7 @@
 
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
+import { AnyComponent } from '@hcengineering/ui/src/types'
 
 /** @public */
 export const presenceId = 'presence' as Plugin

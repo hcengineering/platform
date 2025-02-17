@@ -124,7 +124,7 @@
    * LTS schedule: https://nodejs.org/en/about/releases/
    * LTS versions: https://nodejs.org/en/download/releases/
    */
-  "nodeSupportedVersionRange": ">=12.13.0 <13.0.0 || >=14.15.0 <15.0.0 || >=16.0.0",
+  "nodeSupportedVersionRange": ">=20.0.0 <23.0.0",
 
   /**
    * Odd-numbered major versions of Node.js are experimental.  Even-numbered releases
@@ -2279,6 +2279,46 @@
     {
       "packageName": "@hcengineering/model-server-card",
       "projectFolder": "models/server-card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail",
+      "projectFolder": "plugins/mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-mail",
+      "projectFolder": "models/mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail-assets",
+      "projectFolder": "plugins/mail-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail-resources",
+      "projectFolder": "plugins/mail-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/my-space",
+      "projectFolder": "plugins/my-space",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/my-space-assets",
+      "projectFolder": "plugins/my-space-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/my-space-resources",
+      "projectFolder": "plugins/my-space-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-my-space",
+      "projectFolder": "models/my-space",
       "shouldPublish": false
     }
   ]

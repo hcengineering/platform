@@ -14,7 +14,7 @@
 //
 
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import uploader, { uploaderId } from '@hcengineering/uploader'
 
 export default mergeIds(uploaderId, uploader, {

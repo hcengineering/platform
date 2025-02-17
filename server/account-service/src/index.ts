@@ -64,6 +64,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   })
 
   const ses = process.env.SES_URL
+  const sesAuthToken = process.env.SES_AUTH_TOKEN
+
   const frontURL = process.env.FRONT_URL
   const productName = process.env.PRODUCT_NAME
   const lang = process.env.LANGUAGE ?? 'en'
@@ -85,6 +87,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(account.metadata.OtpTimeToLiveSec, parseInt(process.env.OTP_TIME_TO_LIVE ?? '60'))
   setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
   setMetadata(account.metadata.SES_URL, ses)
+  setMetadata(account.metadata.SES_AUTH_TOKEN, sesAuthToken)
+
   setMetadata(account.metadata.FrontURL, frontURL)
   setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
@@ -98,6 +102,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   const migrations = accountsDb.then(async ([db]) => {
     if (oldAccsUrl !== undefined) {
       await migrateFromOldAccounts(oldAccsUrl, db)
+      console.log('Migrations verified/done')
     }
   })
 

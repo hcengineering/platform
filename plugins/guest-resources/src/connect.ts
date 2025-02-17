@@ -9,7 +9,6 @@ import core, {
   type Client,
   type Version,
   type Ref,
-  type WorkspaceDataId,
   type PersonId
 } from '@hcengineering/core'
 import { setCurrentEmployee, type Employee } from '@hcengineering/contact'
@@ -65,10 +64,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
 
-  setPresentationCookie(
-    token,
-    workspaceLoginInfo.workspaceDataId ?? (workspaceLoginInfo.workspace as unknown as WorkspaceDataId)
-  )
+  setPresentationCookie(token, workspaceLoginInfo.workspace)
 
   setMetadata(presentation.metadata.Token, token)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
@@ -246,16 +242,14 @@ export async function connect (title: string): Promise<Client | undefined> {
 }
 
 function clearMetadata (ws: string): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
   if (tokens !== null) {
     const loc = getCurrentLocation()
     // eslint-disable-next-line
     delete tokens[loc.path[1]]
-    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
   }
-  const currentWorkspace =
-    getMetadata(presentation.metadata.WorkspaceDataId) ??
-    (getMetadata(presentation.metadata.WorkspaceUuid) as unknown as WorkspaceDataId)
+  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
   if (currentWorkspace !== undefined) {
     setPresentationCookie('', currentWorkspace)
   }

@@ -16,10 +16,10 @@
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
+import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation/src/types'
 import recruit, { recruitId } from '@hcengineering/recruit'
 import { type TagCategory } from '@hcengineering/tags'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type FilterFunction, type FilterMode, type Viewlet } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {

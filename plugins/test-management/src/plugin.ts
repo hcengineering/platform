@@ -26,7 +26,7 @@ import {
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 
 import { plugin } from '@hcengineering/platform'
-import { type AnyComponent, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { type AnyComponent, type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
 
 import { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 import {

@@ -12,6 +12,7 @@ export const accountPlugin = plugin(accountId, {
   metadata: {
     FrontURL: '' as Metadata<string>,
     SES_URL: '' as Metadata<string>,
+    SES_AUTH_TOKEN: '' as Metadata<string>,
     ProductName: '' as Metadata<string>,
     Transactors: '' as Metadata<string>,
     OtpTimeToLiveSec: '' as Metadata<number>,

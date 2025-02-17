@@ -28,7 +28,9 @@ import {
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   isActiveMode,
   type PersonUuid,
-  type PersonId
+  type PersonId,
+  type Person,
+  buildSocialIdString
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -56,7 +58,7 @@ import {
   AccountEventType
 } from './types'
 import { Analytics } from '@hcengineering/analytics'
-import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
+import { TokenError, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
 
@@ -127,7 +129,7 @@ export function wrap (
             ? err.status
             : new Status(Severity.ERROR, platform.status.InternalServerError, {})
 
-        if (((err.message as string) ?? '') === 'Signature verification failed') {
+        if (err instanceof TokenError) {
           // Let's send un authorized
           return {
             error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
@@ -378,6 +380,7 @@ export async function sendOtpEmail (
     ctx.error('Please provide email service url to enable email otp')
     return
   }
+  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
 
   const lang = branding?.language
   const app = branding?.title ?? getMetadata(accountPlugin.metadata.ProductName)
@@ -390,7 +393,8 @@ export async function sendOtpEmail (
   await fetch(concatLink(sesURL, '/send'), {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -559,6 +563,11 @@ export async function selectWorkspace (
 
       throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
     }
+  }
+
+  const person = await db.person.findOne({ uuid: accountUuid })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
   return {
@@ -735,6 +744,8 @@ export async function sendEmailConfirmation (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
+  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
+
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
     ctx.error('Please provide front url via branding configuration or FRONT_URL variable')
@@ -756,7 +767,8 @@ export async function sendEmailConfirmation (
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -863,14 +875,15 @@ export async function getEmailSocialId (db: AccountDB, email: string): Promise<S
   return await db.socialId.findOne({ type: SocialIdType.EMAIL, value: email })
 }
 
-export function getSesUrl (): string {
+export function getSesUrl (): { sesURL: string, sesAuth: string | undefined } {
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
 
   if (sesURL === undefined || sesURL === '') {
     throw new Error('Please provide email service url')
   }
+  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
 
-  return sesURL
+  return { sesURL, sesAuth }
 }
 
 export function getFrontUrl (branding: Branding | null): string {
@@ -964,6 +977,12 @@ export async function loginOrSignUpWithProvider (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
+  const person = await db.person.findOne({ uuid: personUuid })
+
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
   const account = await db.account.findOne({ uuid: personUuid })
 
   if (account == null) {
@@ -1005,6 +1024,8 @@ export async function loginOrSignUpWithProvider (
 
   return {
     account: personUuid,
+    socialId: buildSocialIdString(socialId),
+    name: getPersonName(person),
     token: generateToken(personUuid)
   }
 }
@@ -1112,4 +1133,9 @@ export function verifyAllowedServices (services: string[], extra: any): void {
   if (!services.includes(extra?.service) && extra?.admin !== 'true') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
+}
+
+export function getPersonName (person: Person): string {
+  // Should we control the order by config?
+  return `${person.firstName} ${person.lastName}`
 }

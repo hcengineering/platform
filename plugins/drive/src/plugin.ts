@@ -16,7 +16,7 @@
 import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource as PlatformResource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { Location, ResolvedLocation } from '@hcengineering/ui'
+import type { Location, ResolvedLocation } from '@hcengineering/ui/src/types'
 import { Drive, File, FileVersion, Folder, Resource } from './types'
 
 export * from './types'

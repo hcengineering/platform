@@ -24,7 +24,8 @@ import {
   type WorkspaceInfoWithStatus,
   type WorkspaceMemberInfo,
   WorkspaceMode,
-  concatLink
+  concatLink,
+  type WorkspaceUserOperation
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, RegionInfo, WorkspaceOperation } from './types'
@@ -99,7 +100,7 @@ export interface AccountClient {
   listWorkspaces: (region?: string | null, mode?: WorkspaceMode | null) => Promise<WorkspaceInfoWithStatus[]>
   performWorkspaceOperation: (
     workspaceId: string | string[],
-    event: 'archive' | 'migrate-to' | 'unarchive' | 'delete',
+    event: WorkspaceUserOperation,
     ...params: any
   ) => Promise<boolean>
   assignWorkspace: (email: string, workspaceUuid: string, role: AccountRole) => Promise<void>
@@ -517,7 +518,7 @@ class AccountClientImpl implements AccountClient {
 
   async performWorkspaceOperation (
     workspaceId: string | string[],
-    event: 'archive' | 'migrate-to' | 'unarchive' | 'delete',
+    event: WorkspaceUserOperation,
     ...params: any
   ): Promise<boolean> {
     const request = {

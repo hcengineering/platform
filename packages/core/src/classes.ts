@@ -737,6 +737,8 @@ export type WorkspaceMode =
   | 'pending-restore' // -> 'restoring'
   | 'restoring' // -> 'active'
 
+export type WorkspaceUserOperation = 'archive' | 'migrate-to' | 'unarchive' | 'delete' | 'reset-attempts'
+
 export function isActiveMode (mode?: WorkspaceMode): boolean {
   return mode === 'active'
 }

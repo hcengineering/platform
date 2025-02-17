@@ -101,6 +101,8 @@ import testManagement, {
   testManagementId,
   createModel as testManagementModel
 } from '@hcengineering/model-test-management'
+import mySpace, { mySpaceId, createModel as mySpaceModel } from '@hcengineering/model-my-space'
+import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
 
 import {
   serverDocumentsId,
@@ -430,6 +432,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     ],
     [surveyModel, surveyId],
     [presenceModel, presenceId],
+    [
+      mySpaceModel,
+      mySpaceId,
+      {
+        label: mySpace.string.ConfigLabel,
+        description: mySpace.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
+    [mailModel, mailId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],

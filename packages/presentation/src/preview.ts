@@ -2,7 +2,7 @@ import type { Blob, Ref } from '@hcengineering/core'
 import { concatLink } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 
-import { getFileUrl, getCurrentWorkspaceId } from './file'
+import { getFileUrl, getCurrentWorkspaceUuid } from './file'
 import presentation from './plugin'
 
 export interface PreviewConfig {
@@ -16,7 +16,7 @@ export interface VideoMeta {
   hls: string
 }
 
-const defaultImagePreview = (): string => `/files/${getCurrentWorkspaceId()}?file=:blobId&size=:size`
+const defaultImagePreview = (): string => `/files/${getCurrentWorkspaceUuid()}?file=:blobId&size=:size`
 
 /**
  *
@@ -93,7 +93,7 @@ function blobToSrcSet (
     return ''
   }
 
-  let url = cfg.image.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+  let url = cfg.image.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
   const downloadUrl = getFileUrl(blob)
 
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
@@ -139,7 +139,7 @@ export async function getVideoMeta (file: string, filename?: string): Promise<Vi
   const cfg = getPreviewConfig()
 
   let url = cfg.video
-    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
     .replaceAll(':blobId', encodeURIComponent(file))
 
   if (url === '') {

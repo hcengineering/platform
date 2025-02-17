@@ -227,6 +227,8 @@ export type WorkspaceEvent =
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 export interface LoginInfo {
   account: PersonUuid
+  name?: string
+  socialId?: PersonId
   token?: string
 }
 
