@@ -40,6 +40,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/mail": "^0.6.0",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/theme": "^0.6.5",
     "@hcengineering/ui": "^0.6.15",

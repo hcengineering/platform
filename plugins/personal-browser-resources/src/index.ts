@@ -14,9 +14,13 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
+import { resolveLocation } from './navigation'
 
 export { default as plugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
-  component: {}
+  component: {},
+  resolver: {
+    Location: resolveLocation
+  }
 })

@@ -14,7 +14,8 @@
 //
 
 import { type Doc, type Ref, type SpaceTypeDescriptor } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
+import { type Location, type ResolvedLocation } from '@hcengineering/ui'
 
 import { plugin } from '@hcengineering/platform'
 
@@ -39,6 +40,9 @@ export const personalBrowserPlugin = plugin(personalBrowserId, {
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     Mail: '' as IntlString
+  },
+  resolver: {
+    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   }
 })
 

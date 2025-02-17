@@ -37,6 +37,7 @@ export function createModel (builder: Builder): void {
       alias: personalBrowserId,
       accessLevel: AccountRole.User,
       hidden: false,
+      locationResolver: personalBrowser.resolver.Location,
       navigatorModel: {
         spaces: [],
         specials: [
