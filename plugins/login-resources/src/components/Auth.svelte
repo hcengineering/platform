@@ -17,7 +17,6 @@
       }
 
       setMetadata(presentation.metadata.Token, result.token)
-      setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setMetadataLocalStorage(login.metadata.LoginAccount, result.account)
       await afterConfirm(true)
     } else {

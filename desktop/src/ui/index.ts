@@ -6,8 +6,6 @@ import {
   closePanel,
   closePopup,
   createApp,
-  fetchMetadataLocalStorage,
-  getCurrentLocation,
   getCurrentResolvedLocation,
   navigate,
   parseLocation,
@@ -58,15 +56,7 @@ window.addEventListener('DOMContentLoaded', () => {
   })
 
   ipcMain.on('logout', () => {
-    const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
-    if (tokens !== null) {
-      const loc = getCurrentLocation()
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete tokens[loc.path[1]]
-      setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
-    }
     setMetadata(presentation.metadata.Token, null)
-    setMetadataLocalStorage(login.metadata.LastToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginAccount, null)
     void closeClient().then(() => {

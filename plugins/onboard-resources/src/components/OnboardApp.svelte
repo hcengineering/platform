@@ -65,20 +65,19 @@
       return
     }
     if (getMetadata(presentation.metadata.Token) == null) {
-      const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
-      if (lastToken != null) {
-        try {
-          const info = await getAccount(false)
-          if (info !== undefined) {
-            setMetadata(presentation.metadata.Token, info.token)
-            setMetadataLocalStorage(login.metadata.LastToken, info.token)
-            setMetadataLocalStorage(login.metadata.LoginEndpoint, info.endpoint)
-            setMetadataLocalStorage(login.metadata.LoginEmail, info.email)
-            updatePageLoc(getCurrentLocation())
-          }
-        } catch (err: any) {
-          setMetadataLocalStorage(login.metadata.LastToken, null)
+      // TODO ensure it works
+      // const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
+      // if (lastToken != null) {
+      try {
+        const info = await getAccount(false)
+        if (info !== undefined) {
+          setMetadata(presentation.metadata.Token, info.token)
+          setMetadataLocalStorage(login.metadata.LoginEndpoint, info.endpoint)
+          setMetadataLocalStorage(login.metadata.LoginEmail, info.email)
+          updatePageLoc(getCurrentLocation())
         }
+      } catch (err: any) {
+        // do nothing
       }
     }
   }

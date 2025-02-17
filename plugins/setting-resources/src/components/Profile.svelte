@@ -69,7 +69,6 @@
 
         if (loginInfo?.token != null) {
           setMetadata(presentation.metadata.Token, loginInfo.token)
-          setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
           setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
 
           navigate({ path: [loginId, 'selectWorkspace'] })

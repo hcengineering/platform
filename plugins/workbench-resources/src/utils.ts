@@ -30,7 +30,6 @@ import { getResource, setMetadata } from '@hcengineering/platform'
 import presentation, { closeClient, getClient } from '@hcengineering/presentation'
 import {
   closePanel,
-  fetchMetadataLocalStorage,
   getCurrentLocation,
   type Location,
   location,
@@ -207,16 +206,7 @@ export async function buildNavModel (
 }
 
 export function signOut (): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
-  if (tokens !== null) {
-    const loc = getCurrentLocation()
-    const l = loc.path[1]
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete tokens[l]
-    setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
-  }
   setMetadata(presentation.metadata.Token, null)
-  setMetadataLocalStorage(login.metadata.LastToken, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginAccount, null)
   void closeClient()

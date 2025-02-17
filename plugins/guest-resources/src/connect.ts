@@ -22,13 +22,7 @@ import presentation, {
   setPresentationCookie,
   upgradeDownloadProgress
 } from '@hcengineering/presentation'
-import {
-  desktopPlatform,
-  fetchMetadataLocalStorage,
-  getCurrentLocation,
-  navigate,
-  setMetadataLocalStorage
-} from '@hcengineering/ui'
+import { desktopPlatform, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 import { writable, get } from 'svelte/store'
 
 export const versionError = writable<string | undefined>(undefined)
@@ -57,7 +51,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
     )
     // something went wrong with selecting workspace with the selected token
-    clearMetadata(wsUrl)
+    clearMetadata()
     navigate({
       path: [loginId]
     })
@@ -126,7 +120,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       location.reload()
     },
     onUnauthorized: () => {
-      clearMetadata(wsUrl)
+      clearMetadata()
       navigate({
         path: [loginId],
         query: {}
@@ -241,21 +235,13 @@ export async function connect (title: string): Promise<Client | undefined> {
   return _client
 }
 
-function clearMetadata (ws: string): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
-  if (tokens !== null) {
-    const loc = getCurrentLocation()
-    // eslint-disable-next-line
-    delete tokens[loc.path[1]]
-    setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
-  }
+function clearMetadata (): void {
   const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
   if (currentWorkspace !== undefined) {
     setPresentationCookie('', currentWorkspace)
   }
 
   setMetadata(presentation.metadata.Token, null)
-  setMetadataLocalStorage(login.metadata.LastToken, null)
   setMetadataLocalStorage(login.metadata.LoginAccount, null)
   void closeClient()
 }
