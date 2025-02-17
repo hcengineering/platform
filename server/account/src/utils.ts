@@ -56,7 +56,7 @@ import {
   AccountEventType
 } from './types'
 import { Analytics } from '@hcengineering/analytics'
-import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
+import { TokenError, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
 
@@ -127,7 +127,7 @@ export function wrap (
             ? err.status
             : new Status(Severity.ERROR, platform.status.InternalServerError, {})
 
-        if (((err.message as string) ?? '') === 'Signature verification failed') {
+        if (err instanceof TokenError) {
           // Let's send un authorized
           return {
             error: new Status(Severity.ERROR, platform.status.Unauthorized, {})

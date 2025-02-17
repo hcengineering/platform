@@ -23,7 +23,7 @@ import {
   metricsAggregate,
   type Ref
 } from '@hcengineering/core'
-import { decodeToken } from '@hcengineering/server-token'
+import { TokenError, decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
 import cors from 'cors'
@@ -376,10 +376,13 @@ export function start (
       })
       res.end(json)
     } catch (err: any) {
+      if (err instanceof TokenError) {
+        res.status(401).send()
+        return
+      }
       ctx.error('statistics error', { err })
       Analytics.handleError(err)
-      res.writeHead(404, {})
-      res.end()
+      res.status(404).send()
     }
   })
 
