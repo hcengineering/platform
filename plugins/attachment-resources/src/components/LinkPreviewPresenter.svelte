@@ -26,7 +26,7 @@
 
   let useDefaultIcon = false
   let retryCount = 0
-  let viewModel: LinkPreviewDetails
+  let viewModel: LinkPreviewDetails | undefined
   let previewImageSrc: string | undefined
 
   function refreshPreviewImage (): void {
@@ -53,12 +53,13 @@
     )
   }
   onMount(() => {
-    void getJsonOrEmpty(attachment.file, attachment.name)
+    void getJsonOrEmpty<LinkPreviewDetails>(attachment.file, attachment.name)
       .then((res) => {
-        viewModel = res as LinkPreviewDetails
+        viewModel = res
         refreshPreviewImage()
       })
       .catch((err) => {
+        viewModel = undefined
         console.error(err)
       })
   })
