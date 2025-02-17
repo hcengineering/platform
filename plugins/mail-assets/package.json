@@ -33,6 +33,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.11"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/mail": "^0.6.0"
   }
 }

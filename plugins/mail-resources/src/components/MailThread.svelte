@@ -23,9 +23,11 @@
   import { type Class, type Ref } from '@hcengineering/core'
   import mail, { MailThread } from '@hcengineering/mail'
   import { Panel } from '@hcengineering/panel'
-  import { type AnySvelteComponent, Button, Component, Loading } from '@hcengineering/ui'
+  import { type AnySvelteComponent, Button, Component, Loading, showPopup } from '@hcengineering/ui'
   import chunter, { type ChatMessage } from '@hcengineering/chunter'
   import view, { type ObjectPresenter } from '@hcengineering/view'
+
+  import { getReplySubject } from '../messageUtils'
 
   export let _id: Ref<MailThread>
   export let _class: Ref<Class<MailThread>>
@@ -80,7 +82,15 @@
   }
 
   async function reply (): Promise<void> {
-
+    showPopup(
+      mail.component.CreateMail,
+      {
+        to: object?.from,
+        from: object?.to,
+        subject: getReplySubject(object?.subject ?? ''),
+        mailThreadId: object?.mailThreadId
+      }
+    )
   }
 
   onMount(() => dispatch('open', { ignoreKeys: [] }))

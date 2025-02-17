@@ -30,9 +30,11 @@
   const client = getClient()
   const account = getCurrentAccount()
 
-  let to = ''
-  let from = getEmail()
-  let subject = ''
+  export let mailThreadId: Ref<MailThread> | undefined = undefined
+
+  export let to = ''
+  export let from = getEmail()
+  export let subject = ''
   let message = ''
 
   export function canClose (): boolean {
@@ -45,6 +47,30 @@
   }
 
   async function createMail (): Promise<void> {
+    const mailThread = await getOrCreateMailThread()
+    if (mailThread === undefined) {
+      throw new Error('Failed to create mail thread')
+    }
+
+    const messageId: Ref<ChatMessage> = await client.addCollection<Doc, ChatMessage>(
+      chunter.class.ChatMessage,
+      getSpace(mailThread),
+      mailThread._id,
+      mail.class.MailThread,
+      'messages',
+      { message: message ?? '' }
+    )
+
+    dispatch('close', messageId)
+  }
+
+  async function getOrCreateMailThread (): Promise<MailThread | undefined> {
+    if (mailThreadId !== undefined) {
+      const mailThread = await client.findOne(mail.class.MailThread, { mailThreadId: mailThreadId as any })
+      if (mailThread !== undefined) {
+        return mailThread
+      }
+    }
     const data: Data<MailThread> = {
       mailThreadId: generateId(),
       from,
@@ -58,27 +84,13 @@
       preview: getMessagePreview(message)
     }
 
-    const mailThreadId = await client.createDoc(mail.class.MailThread, core.space.Space, data)
-    const mailThread = await client.findOne(mail.class.MailThread, { _id: mailThreadId as any })
-
-    if (mailThread === undefined) {
-      throw new Error('Failed to create mail thread')
-    }
-
-    const messageId: Ref<ChatMessage> = await client.addCollection<Doc, ChatMessage>(
-      chunter.class.ChatMessage,
-      getSpace(mailThread),
-      mailThreadId,
-      mail.class.MailThread,
-      'messages',
-      { message: message ?? '' }
-    )
-
-    dispatch('close', messageId)
+    const threadId = await client.createDoc(mail.class.MailThread, core.space.Space, data)
+    return await client.findOne(mail.class.MailThread, { _id: threadId as any })
   }
 
   function getMessagePreview (message: string): string {
-    return message.length > 300 ? message.substring(0, 300) + '...' : message
+    const maxLength = 80
+    return message.length > maxLength ? message.substring(0, maxLength) + '...' : message
   }
 
   function getSpace (doc: Doc): Ref<Space> {

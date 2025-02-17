@@ -12,3 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+import { loadMetadata } from '@hcengineering/platform'
+import mail from '@hcengineering/mail'
+
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+loadMetadata(mail.icon, {
+  NewMail: `${icons}#new-mail`,
+  Inbox: `${icons}#inbox`,
+  Done: `${icons}#done`,
+  Sent: `${icons}#sent`
+})

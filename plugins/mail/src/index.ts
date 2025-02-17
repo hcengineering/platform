@@ -14,7 +14,7 @@
 //
 
 import type { Class, Ref } from '@hcengineering/core'
-import { IntlString, type Plugin, plugin } from '@hcengineering/platform'
+import { Asset, IntlString, type Plugin, plugin } from '@hcengineering/platform'
 import type { ChunterSpace } from '@hcengineering/chunter'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -48,6 +48,13 @@ export default plugin(mailId, {
     To: '' as IntlString,
     From: '' as IntlString,
     CreateMail: '' as IntlString,
-    Reply: '' as IntlString
+    Reply: '' as IntlString,
+    Date: '' as IntlString
+  },
+  icon: {
+    NewMail: '' as Asset,
+    Inbox: '' as Asset,
+    Done: '' as Asset,
+    Sent: '' as Asset
   }
 })
