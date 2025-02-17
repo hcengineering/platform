@@ -289,11 +289,11 @@ async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: str
   }
 }
 
-export async function getJsonOrEmpty<T> (file: string, name: string): Promise<T | undefined> {
+export async function getJsonOrEmpty<T = any> (file: string, name: string): Promise<T | undefined> {
   try {
     const fileUrl = getFileUrl(file, name)
     const resp = await fetch(fileUrl)
-    return await resp.json() as T
+    return (await resp.json()) as T
   } catch {
     return undefined
   }
