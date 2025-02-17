@@ -854,7 +854,7 @@ export async function performWorkspaceOperation (
   branding: Branding | null,
   token: string,
   workspaceId: WorkspaceUuid | WorkspaceUuid[],
-  event: 'archive' | 'migrate-to' | 'unarchive' | 'delete',
+  event: 'archive' | 'migrate-to' | 'unarchive' | 'delete' | 'reset-attempts',
   ...params: any
 ): Promise<boolean> {
   const { extra } = decodeTokenVerbose(ctx, token)
@@ -874,6 +874,10 @@ export async function performWorkspaceOperation (
   for (const workspace of workspaces) {
     const update: Partial<WorkspaceStatus> = {}
     switch (event) {
+      case 'reset-attempts':
+        update.processingAttempts = 0
+        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
+        break
       case 'delete':
         if (workspace.status.mode !== 'active') {
           throw new PlatformError(unknownError('Delete allowed only for active workspaces'))

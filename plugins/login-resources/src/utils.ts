@@ -20,7 +20,8 @@ import {
   type Person,
   type Doc,
   type Ref,
-  type WorkspaceInfoWithStatus
+  type WorkspaceInfoWithStatus,
+  type WorkspaceUserOperation
 } from '@hcengineering/core'
 import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, AccountClient, RegionInfo } from '@hcengineering/account-client'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
@@ -217,7 +218,7 @@ export async function getWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
 
 export async function performWorkspaceOperation (
   workspace: string | string[],
-  operation: 'archive' | 'migrate-to' | 'unarchive' | 'delete',
+  operation: WorkspaceUserOperation,
   ...params: any[]
 ): Promise<boolean> {
   // TODO: this method requires a special admin token
