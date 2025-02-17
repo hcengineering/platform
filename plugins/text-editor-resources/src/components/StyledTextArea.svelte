@@ -2,14 +2,13 @@
   import { Markup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { EmptyMarkup } from '@hcengineering/text'
+  import textEditor from '@hcengineering/text-editor'
   import { ButtonSize, Label } from '@hcengineering/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
-  import textEditor from '@hcengineering/text-editor'
 
+  import { referenceConfig, ReferenceExtension } from './extension/reference'
   import StyledTextEditor from './StyledTextEditor.svelte'
-  import { Completion } from '../Completion'
-  import { completionConfig } from './extensions'
 
   export let label: IntlString | undefined = undefined
   export let content: Markup | undefined
@@ -53,8 +52,8 @@
   }
 
   function configureExtensions (): AnyExtension[] {
-    const completionPlugin = Completion.configure({
-      ...completionConfig,
+    const completionPlugin = ReferenceExtension.configure({
+      ...referenceConfig,
       showDoc (event: MouseEvent, _id: string, _class: string) {
         dispatch('open-document', { event, _id, _class })
       }

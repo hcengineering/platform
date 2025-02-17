@@ -90,7 +90,7 @@
       const employeeRef = (existingPerson?._id as Ref<Employee>) ?? id
 
       await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
-        active: true
+        active: false
       })
 
       await client.addCollection(
@@ -148,7 +148,7 @@
   function changeEmail (): void {
     const index = channels.findIndex((p) => p.provider === contact.channelProvider.Email)
     if (index !== -1) {
-      channels[index].value = email.trim()
+      channels[index].value = email.trim().toLowerCase()
     } else {
       channels.push({
         provider: contact.channelProvider.Email,

@@ -16,28 +16,27 @@
   import { Markup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
   import {
     AnySvelteComponent,
     Button,
     ButtonKind,
-    handler,
-    registerFocus,
-    deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching,
-    IconClose
+    deviceOptionsStore as deviceInfo,
+    handler,
+    IconClose,
+    registerFocus
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import { FocusPosition } from '@tiptap/core'
   import { EditorView } from '@tiptap/pm/view'
-  import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
+  import { createEventDispatcher } from 'svelte'
 
-  import { Completion } from '../Completion'
+  import view from '@hcengineering/view'
   import TextEditor from './TextEditor.svelte'
   import { defaultRefActions, getModelRefActions } from './editor/actions'
-  import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
-  import view from '@hcengineering/view'
+  import { referenceConfig, ReferenceExtension } from './extension/reference'
   import Send from './icons/Send.svelte'
 
   export let content: Markup = EmptyMarkup
@@ -141,8 +140,8 @@
       focusManager?.setFocus(idx)
     }
   }
-  const completionPlugin = Completion.configure({
-    ...completionConfig,
+  const completionPlugin = ReferenceExtension.configure({
+    ...referenceConfig,
     showDoc (event: MouseEvent, _id: string, _class: string) {
       dispatch('open-document', { event, _id, _class })
     }

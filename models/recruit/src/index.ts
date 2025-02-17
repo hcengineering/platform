@@ -595,6 +595,13 @@ export function createModel (builder: Builder): void {
           props: { kind: 'list', size: 'small', shouldShowName: false }
         },
         {
+          key: 'kind',
+          label: task.string.TaskType,
+          presenter: task.component.TaskTypeListPresenter,
+          props: { kind: 'list', size: 'small', justify: 'center' },
+          displayProps: { key: 'applicant_kind' }
+        },
+        {
           key: '$lookup.attachedTo',
           presenter: contact.component.PersonPresenter,
           label: recruit.string.Talent,

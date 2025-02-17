@@ -66,7 +66,6 @@
     TextEditorHandler
   } from '@hcengineering/text-editor'
   import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
-  import { Completion } from '../Completion'
   import { deleteAttachment } from '../command/deleteAttachment'
   import { textEditorCommandHandler } from '../commands'
   import { Provider } from '../provider/types'
@@ -84,8 +83,9 @@
   import { InlineCommentCollaborationExtension } from './extension/inlineComment'
   import { LeftMenuExtension } from './extension/leftMenu'
   import { mermaidOptions } from './extension/mermaid'
+  import { ReferenceExtension, referenceConfig } from './extension/reference'
   import { type FileAttachFunction } from './extension/types'
-  import { completionConfig, inlineCommandsConfig } from './extensions'
+  import { inlineCommandsConfig } from './extensions'
 
   export let object: Doc
   export let attribute: KeyedAttribute
@@ -495,8 +495,8 @@
           render: renderCursor,
           selectionRender: noSelectionRender
         }),
-        Completion.configure({
-          ...completionConfig,
+        ReferenceExtension.configure({
+          ...referenceConfig,
           showDoc (event: MouseEvent, _id: string, _class: string) {
             dispatch('open-document', { event, _id, _class })
           }

@@ -16,7 +16,7 @@ import { type StatusCategory, type Client, type Doc, type Ref, type Space } from
 import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/presentation'
-import { type ProjectType } from '@hcengineering/task'
+import { type ProjectType, type TaskType } from '@hcengineering/task'
 import tracker, { trackerId, type IssueDraft, type Issue } from '@hcengineering/tracker'
 import { type AnyComponent, type Location } from '@hcengineering/ui'
 import {
@@ -398,7 +398,8 @@ export default mergeIds(trackerId, tracker, {
     IsProjectJoined: '' as Resource<(space: Space) => Promise<boolean>>,
     IssueChatTitleProvider: '' as Resource<(object: Doc) => string>,
     GetIssueStatusCategories: '' as Resource<(project: ProjectType) => Array<Ref<StatusCategory>>>,
-    GetIssueIdByIdentifier: '' as Resource<(id: string) => Promise<Ref<Issue> | undefined>>
+    GetIssueIdByIdentifier: '' as Resource<(id: string) => Promise<Ref<Issue> | undefined>>,
+    OpenIssuesOfTaskType: '' as Resource<(taskType: TaskType) => Promise<void>>
   },
   aggregation: {
     CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,

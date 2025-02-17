@@ -39,6 +39,8 @@
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let shouldUpdateUndefined: boolean = true
   export let minW0 = true
+  export let focusIndex: number = -1
+  export let dataId: string | undefined = undefined
 
   let container: HTMLElement
   let opened: boolean = false
@@ -78,6 +80,8 @@
 
 <div bind:this={container} class:min-w-0={minW0}>
   <Button
+    {focusIndex}
+    {dataId}
     {icon}
     {iconProps}
     width={width ?? 'min-content'}
