@@ -12,6 +12,16 @@ export interface Token {
   extra?: Record<string, any>
 }
 
+/**
+ * @public
+ */
+export class TokenError extends Error {
+  constructor (message: string) {
+    super(message)
+    this.name = 'TokenError'
+  }
+}
+
 const getSecret = (): string => {
   return getMetadata(serverPlugin.metadata.Secret) ?? 'secret'
 }
@@ -50,6 +60,6 @@ export function decodeTokenVerbose (ctx: MeasureContext, token: string): Token {
     } catch (err2: any) {
       // Nothing to do
     }
-    throw err
+    throw new TokenError(err.message)
   }
 }
