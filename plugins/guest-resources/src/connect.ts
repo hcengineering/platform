@@ -242,12 +242,12 @@ export async function connect (title: string): Promise<Client | undefined> {
 }
 
 function clearMetadata (ws: string): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
   if (tokens !== null) {
     const loc = getCurrentLocation()
     // eslint-disable-next-line
     delete tokens[loc.path[1]]
-    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
   }
   const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
   if (currentWorkspace !== undefined) {
