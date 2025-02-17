@@ -31,7 +31,14 @@ import {
 import { type Resources, type Status, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Component, type Issue, type Milestone, type Project } from '@hcengineering/tracker'
-import { closePanel, getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
+import {
+  closePanel,
+  getCurrentLocation,
+  getCurrentResolvedLocation,
+  navigate,
+  showPopup,
+  themeStore
+} from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
@@ -117,7 +124,13 @@ import ComponentSelector from './components/components/ComponentSelector.svelte'
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
-import { AggregationManager, deleteObject, deleteObjects } from '@hcengineering/view-resources'
+import {
+  AggregationManager,
+  buildFilterKey,
+  deleteObject,
+  deleteObjects,
+  setFilters
+} from '@hcengineering/view-resources'
 import MoveAndDeleteMilestonePopup from './components/milestones/MoveAndDeleteMilestonePopup.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
@@ -160,6 +173,8 @@ import { settingId } from '@hcengineering/setting'
 import { getAllStates } from '@hcengineering/task-resources'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
+import type { TaskType } from '@hcengineering/task'
+import view, { type Filter } from '@hcengineering/view'
 
 export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
@@ -346,6 +361,33 @@ function setStore (manager: DocManager<Component>): void {
   componentStore.set(manager)
 }
 
+async function openIssuesOfTaskType (taskType: TaskType): Promise<void> {
+  function setFilterTag (taskType: TaskType): void {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const attribute = hierarchy.getAttribute(tracker.class.Issue, 'kind')
+    const key = buildFilterKey(hierarchy, tracker.class.Issue, 'kind', attribute)
+    const filter = {
+      key,
+      value: [taskType._id],
+      props: { level: 0 },
+      modes: [view.filter.FilterObjectIn, view.filter.FilterObjectNin],
+      mode: view.filter.FilterObjectIn,
+      index: 1
+    } as unknown as Filter
+    setFilters([filter])
+  }
+  if (taskType === undefined) return
+  const loc = getCurrentResolvedLocation()
+  loc.path[2] = 'tracker'
+  loc.path[3] = 'all-issues'
+  loc.path.length = 4
+  navigate(loc)
+  setTimeout(() => {
+    setFilterTag(taskType)
+  }, 200)
+}
+
 export default async (): Promise<Resources> => ({
   activity: {
     PriorityIcon,
@@ -467,7 +509,8 @@ export default async (): Promise<Resources> => ({
     IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount()._id),
     GetIssueStatusCategories: getIssueStatusCategories,
     SetComponentStore: setStore,
-    ComponentFilterFunction: filterComponents
+    ComponentFilterFunction: filterComponents,
+    OpenIssuesOfTaskType: openIssuesOfTaskType
   },
   actionImpl: {
     Move: move,

@@ -94,6 +94,8 @@ export interface TaskTypeDescriptor extends Doc {
   // If specified, will allow to be created by users, system type overwise
   allowCreate: boolean
   statusCategoriesFunc?: Resource<(project: ProjectType) => Ref<StatusCategory>[]>
+
+  openTasks?: Resource<(value: TaskType) => Promise<void>>
 }
 
 /**

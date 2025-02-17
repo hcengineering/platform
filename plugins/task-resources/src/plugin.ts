@@ -104,7 +104,6 @@ export default mergeIds(taskId, task, {
     ProjectTypeGeneralSectionEditor: '' as AnyComponent,
     ProjectTypeTasksTypeSectionEditor: '' as AnyComponent,
     ProjectTypeAutomationsSectionEditor: '' as AnyComponent,
-    ProjectTypeCollectionsSectionEditor: '' as AnyComponent,
     TaskTypeEditor: '' as AnyComponent
   },
   function: {

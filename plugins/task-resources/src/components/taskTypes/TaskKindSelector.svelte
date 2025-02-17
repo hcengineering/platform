@@ -1,10 +1,13 @@
 <script lang="ts">
   import { Class, Doc, Ref, toIdMap } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType } from '@hcengineering/task'
-  import { ButtonKind, ButtonSize, DropdownLabels } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize, DropdownLabelsIntl, type DropdownIntlItem } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { selectedTaskTypeStore, taskTypeStore } from '../..'
+  import TaskTypeListPresenter from './TaskTypeListPresenter.svelte'
+  import TaskTypeIcon from './TaskTypeIcon.svelte'
 
   export let value: Ref<TaskType> | undefined
   export let projectType: Ref<ProjectType> | undefined
@@ -28,13 +31,18 @@
         (taskTypeDescriptors.get(it.descriptor)?.allowCreate ?? false) &&
         (baseClass === undefined || client.getHierarchy().isDerived(it.targetClass, baseClass))
     )
-    .map((it) => ({ id: it._id, label: it.name }))
+    .map((it) => ({
+      id: it._id,
+      label: getEmbeddedLabel(it.name),
+      icon: TaskTypeIcon,
+      iconProps: { value: it }
+    })) as DropdownIntlItem[]
 
   $: if (
     (value === undefined && items.length > 0) ||
     (items.length > 0 && items.find((it) => it.id === value) === undefined)
   ) {
-    value = items[0].id
+    value = items[0].id as Ref<TaskType>
     change()
   }
 
@@ -50,16 +58,17 @@
 </script>
 
 {#if projectType !== undefined && (items.length > 1 || showAlways)}
-  <DropdownLabels
+  <DropdownLabelsIntl
     {focusIndex}
     {kind}
     {size}
     {items}
     {justify}
     {width}
+    icon={TaskTypeIcon}
+    iconProps={value !== undefined ? { value: $taskTypeStore.get(value) } : {}}
     dataId={'btnSelectTaskType'}
     bind:selected={value}
-    enableSearch={false}
     on:selected={change}
   />
 {/if}
