@@ -28,7 +28,7 @@
     TextArea,
     Toggle
   } from '@hcengineering/ui'
-  import { deleteObjects } from '@hcengineering/view-resources'
+  import { deleteObjects, iconsLibrary } from '@hcengineering/view-resources'
 
   import settingRes from '../../../plugin'
 
@@ -117,10 +117,11 @@
 </script>
 
 {#if descriptor !== undefined}
+  {@const dIcon = descriptor.icon === '' ? settingRes.icon.Setting : descriptor.icon}
   <div class="hulyComponent-content__column-group">
     <div class="hulyComponent-content__header">
       <div class="flex gap-1">
-        <ButtonIcon icon={descriptor.icon} size={'large'} kind={'secondary'} dataId={'btnSelectIcon'} />
+        <ButtonIcon icon={dIcon} size={'large'} kind={'secondary'} dataId={'btnSelectIcon'} />
         <ModernEditbox
           kind="ghost"
           size="large"
