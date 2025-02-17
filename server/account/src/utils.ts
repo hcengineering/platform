@@ -378,6 +378,7 @@ export async function sendOtpEmail (
     ctx.error('Please provide email service url to enable email otp')
     return
   }
+  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
 
   const lang = branding?.language
   const app = branding?.title ?? getMetadata(accountPlugin.metadata.ProductName)
@@ -390,7 +391,8 @@ export async function sendOtpEmail (
   await fetch(concatLink(sesURL, '/send'), {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -735,6 +737,8 @@ export async function sendEmailConfirmation (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
+  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
+
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
     ctx.error('Please provide front url via branding configuration or FRONT_URL variable')
@@ -756,7 +760,8 @@ export async function sendEmailConfirmation (
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -863,14 +868,15 @@ export async function getEmailSocialId (db: AccountDB, email: string): Promise<S
   return await db.socialId.findOne({ type: SocialIdType.EMAIL, value: email })
 }
 
-export function getSesUrl (): string {
+export function getSesUrl (): { sesURL: string, sesAuth: string | undefined } {
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
 
   if (sesURL === undefined || sesURL === '') {
     throw new Error('Please provide email service url')
   }
+  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
 
-  return sesURL
+  return { sesURL, sesAuth }
 }
 
 export function getFrontUrl (branding: Branding | null): string {
