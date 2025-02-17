@@ -28,7 +28,9 @@ import {
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   isActiveMode,
   type PersonUuid,
-  type PersonId
+  type PersonId,
+  type Person,
+  buildSocialIdString
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -563,6 +565,11 @@ export async function selectWorkspace (
     }
   }
 
+  const person = await db.person.findOne({ uuid: accountUuid })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
   return {
     account: accountUuid,
     token: generateToken(accountUuid, workspace.uuid, extra),
@@ -970,6 +977,12 @@ export async function loginOrSignUpWithProvider (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
+  const person = await db.person.findOne({ uuid: personUuid })
+
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
   const account = await db.account.findOne({ uuid: personUuid })
 
   if (account == null) {
@@ -1011,6 +1024,8 @@ export async function loginOrSignUpWithProvider (
 
   return {
     account: personUuid,
+    socialId: buildSocialIdString(socialId),
+    name: getPersonName(person),
     token: generateToken(personUuid)
   }
 }
@@ -1118,4 +1133,9 @@ export function verifyAllowedServices (services: string[], extra: any): void {
   if (!services.includes(extra?.service) && extra?.admin !== 'true') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
+}
+
+export function getPersonName (person: Person): string {
+  // Should we control the order by config?
+  return `${person.firstName} ${person.lastName}`
 }
