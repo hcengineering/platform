@@ -40,7 +40,6 @@ import platform, {
 } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import {
-  fetchMetadataLocalStorage,
   getCurrentLocation,
   locationStorageKeyId,
   locationToUrl,
@@ -280,7 +279,7 @@ export async function getAllWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
 }
 
 export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo | null> {
-  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
+  const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
     if (doNavigate) {
       const loc = getCurrentLocation()
@@ -308,7 +307,7 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
 }
 
 export async function getRegionInfo (doNavigate: boolean = true): Promise<RegionInfo[] | null> {
-  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
+  const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
     if (doNavigate) {
       const loc = getCurrentLocation()
@@ -338,11 +337,7 @@ export async function selectWorkspace (
   workspaceUrl: string,
   token?: string | null | undefined
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
-  const actualToken =
-    token ??
-    getMetadata(presentation.metadata.Token) ??
-    fetchMetadataLocalStorage(login.metadata.LastToken) ??
-    undefined
+  const actualToken = token ?? getMetadata(presentation.metadata.Token) ?? undefined
 
   if (actualToken == null) {
     const loc = getCurrentLocation()
@@ -421,12 +416,7 @@ export async function getPerson (): Promise<[Status, Person | null]> {
 }
 
 export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
-  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
-  tokens[loginInfo.workspaceUrl] = loginInfo.token
-
   setMetadata(presentation.metadata.Token, loginInfo.token)
-  setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
-  setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, loginInfo.endpoint)
   setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
 }
@@ -466,11 +456,12 @@ export function navigateToWorkspace (
 }
 
 export async function checkJoined (inviteId: string): Promise<[Status, WorkspaceLoginInfo | null]> {
-  let token = getMetadata(presentation.metadata.Token)
+  const token = getMetadata(presentation.metadata.Token)
 
   if (token == null) {
-    const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
-    token = Object.values(tokens)[0]
+    // TODO
+    // const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+    // token = Object.values(tokens)[0]
     if (token == null) {
       return [unknownStatus('Please login'), null]
     }
@@ -747,7 +738,6 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
       setMetadata(presentation.metadata.WorkspaceUuid, result.workspace)
       setMetadata(presentation.metadata.WorkspaceDataId, result.workspaceDataId)
 
-      setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setLoginInfo(result)
 
       navigateToWorkspace(joinedWS[0].uuid, result, undefined, clearQuery)
@@ -839,7 +829,6 @@ export async function doLoginNavigate (
 ): Promise<void> {
   if (result != null) {
     setMetadata(presentation.metadata.Token, result.token)
-    setMetadataLocalStorage(login.metadata.LastToken, result.token)
     setMetadataLocalStorage(login.metadata.LoginAccount, result.account)
 
     if (navigateUrl !== undefined) {

@@ -30,7 +30,6 @@ import presentation, {
 } from '@hcengineering/presentation'
 import {
   desktopPlatform,
-  fetchMetadataLocalStorage,
   getCurrentLocation,
   locationStorageKeyId,
   navigate,
@@ -77,8 +76,6 @@ export async function connect (title: string): Promise<Client | undefined> {
       return
     }
   }
-  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
-  let token = tokens[wsUrl]
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
   const workspaceLoginInfo = await ctx.with(
@@ -92,16 +89,15 @@ export async function connect (title: string): Promise<Client | undefined> {
       `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
     )
     // something went wrong with selecting workspace with the selected token
-    clearMetadata(wsUrl)
+    clearMetadata()
     navigate({
       path: [loginId]
     })
     return
   }
 
-  tokens[wsUrl] = workspaceLoginInfo.token
-  token = workspaceLoginInfo.token
-  setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
+  const token = workspaceLoginInfo.token
+
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
   setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
@@ -230,7 +226,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           location.reload()
         },
         onUnauthorized: () => {
-          clearMetadata(wsUrl)
+          clearMetadata()
           navigate({
             path: [loginId],
             query: {}
@@ -433,23 +429,14 @@ async function getGlobalPerson (): Promise<GlobalPerson | undefined> {
   return globalPerson
 }
 
-export function clearMetadata (ws: string): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
-  if (tokens !== null) {
-    const loc = getCurrentLocation()
-    // eslint-disable-next-line
-    delete tokens[loc.path[1]]
-    setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
-  }
+export function clearMetadata (): void {
   const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
   if (currentWorkspace !== undefined) {
     setPresentationCookie('', currentWorkspace)
   }
 
-  setMetadata(presentation.metadata.Token, null)
   setMetadata(presentation.metadata.WorkspaceUuid, null)
   setMetadata(presentation.metadata.WorkspaceDataId, null)
-  setMetadataLocalStorage(login.metadata.LastToken, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginAccount, null)
   void closeClient()
