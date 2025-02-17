@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { concatLink, type WorkspaceDataId, type Blob as PlatformBlob, type Ref } from '@hcengineering/core'
+import { concatLink, type Blob as PlatformBlob, type Ref, type WorkspaceUuid } from '@hcengineering/core'
 import { PlatformError, Severity, Status, getMetadata } from '@hcengineering/platform'
 import { v4 as uuid } from 'uuid'
 
@@ -99,9 +99,9 @@ function getFilesUrl (): string {
   return filesUrl.includes('://') ? filesUrl : concatLink(frontUrl, filesUrl)
 }
 
-export function getCurrentWorkspaceUuid (): WorkspaceDataId {
+export function getCurrentWorkspaceUuid (): WorkspaceUuid {
   const workspaceUuid = getMetadata(plugin.metadata.WorkspaceUuid) ?? ''
-  return workspaceUuid as WorkspaceDataId
+  return workspaceUuid as WorkspaceUuid
 }
 
 /**

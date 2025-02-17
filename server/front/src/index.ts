@@ -15,14 +15,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import {
-  MeasureContext,
-  Blob as PlatformBlob,
-  WorkspaceDataId,
-  WorkspaceIds,
-  metricsAggregate,
-  type Ref
-} from '@hcengineering/core'
+import { MeasureContext, Blob as PlatformBlob, WorkspaceIds, metricsAggregate, type Ref } from '@hcengineering/core'
 import { TokenError, decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
@@ -429,16 +422,16 @@ export function start (
       dataId: workspaceInfo.dataId,
       url: workspaceInfo.url
     }
-    const actualDataId = workspaceInfo.dataId ?? (workspaceInfo.uuid as unknown as WorkspaceDataId)
     if (path === undefined) {
       return wsIds
     }
 
-    const expectedDataId = path.split('/')[2]
-    if (expectedDataId !== undefined && actualDataId !== expectedDataId) {
-      ctx.error('Cannot validate dataId', {
-        expectedDataId,
-        actualDataId,
+    const actualUuid = workspaceInfo.uuid
+    const expectedUuid = path.split('/')[2]
+    if (expectedUuid !== undefined && actualUuid !== expectedUuid) {
+      ctx.error('Cannot validate uuid', {
+        expectedUuid,
+        actualUuid,
         path,
         workspaceUuid: workspaceInfo.uuid,
         workspaceDataId: workspaceInfo.dataId
