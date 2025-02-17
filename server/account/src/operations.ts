@@ -371,7 +371,7 @@ export async function sendInvite (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
-  const sesURL = getSesUrl()
+  const { sesURL, sesAuth } = getSesUrl()
   const front = getFrontUrl(branding)
   const expHours = 48
   const exp = expHours * 60 * 60 * 1000
@@ -389,7 +389,8 @@ export async function sendInvite (
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -599,7 +600,7 @@ export async function requestPasswordReset (
     )
   }
 
-  const sesURL = getSesUrl()
+  const { sesURL, sesAuth } = getSesUrl()
   const front = getFrontUrl(branding)
 
   const token = generateToken(account.uuid, undefined, {
@@ -615,7 +616,8 @@ export async function requestPasswordReset (
   await fetch(concatLink(sesURL, '/send'), {
     method: 'post',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
     },
     body: JSON.stringify({
       text,

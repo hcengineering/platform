@@ -868,14 +868,15 @@ export async function getEmailSocialId (db: AccountDB, email: string): Promise<S
   return await db.socialId.findOne({ type: SocialIdType.EMAIL, value: email })
 }
 
-export function getSesUrl (): string {
+export function getSesUrl (): { sesURL: string, sesAuth: string | undefined } {
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
 
   if (sesURL === undefined || sesURL === '') {
     throw new Error('Please provide email service url')
   }
+  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
 
-  return sesURL
+  return { sesURL, sesAuth }
 }
 
 export function getFrontUrl (branding: Branding | null): string {
