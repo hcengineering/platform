@@ -76,8 +76,8 @@ import {
   type TaskTypeDescriptor,
   type TaskTypeKind
 } from '@hcengineering/task'
-import type { AnyComponent } from '@hcengineering/ui'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 
 import task from './plugin'
 

@@ -74,7 +74,6 @@
   import recruit from '../plugin'
   import { getCandidateIdentifier } from '../utils'
   import YesNo from './YesNo.svelte'
-  import IconSwitch from './icons/Switch.svelte'
   import IconShuffle from './icons/Shuffle.svelte'
 
   export let shouldSaveDraft: boolean = true

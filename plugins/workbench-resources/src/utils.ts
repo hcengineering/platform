@@ -19,16 +19,15 @@ import core, { hasAccountRole } from '@hcengineering/core'
 import type { Workspace } from '@hcengineering/login'
 import login, { loginId } from '@hcengineering/login'
 import { getResource, setMetadata } from '@hcengineering/platform'
-import { closeClient, getClient } from '@hcengineering/presentation'
-import presentation from '@hcengineering/presentation/src/plugin'
+import presentation, { closeClient, getClient } from '@hcengineering/presentation'
 import {
   closePanel,
   fetchMetadataLocalStorage,
   getCurrentLocation,
   type Location,
+  location,
   navigate,
-  setMetadataLocalStorage,
-  location
+  setMetadataLocalStorage
 } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import workbench, { type Application, type NavigatorModel } from '@hcengineering/workbench'

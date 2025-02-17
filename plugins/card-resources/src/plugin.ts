@@ -16,7 +16,7 @@
 import card, { cardId } from '@hcengineering/card'
 import { type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Viewlet } from '@hcengineering/view'
 
 export default mergeIds(cardId, card, {

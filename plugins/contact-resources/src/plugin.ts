@@ -17,7 +17,7 @@
 import contact, { contactId } from '@hcengineering/contact'
 import { type Client, type Doc } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
-import { type LabelAndProps, type Location } from '@hcengineering/ui'
+import { type LabelAndProps, type Location } from '@hcengineering/ui/src/types'
 import {
   type CreateAggregationManagerFunc,
   type GrouppingManagerResource,

@@ -58,7 +58,7 @@ import type { IntlString, Resource } from '@hcengineering/platform'
 import type { DocNotifyContext } from '@hcengineering/notification'
 
 import chunter from './plugin'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 
