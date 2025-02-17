@@ -13,16 +13,15 @@
 // limitations under the License.
 //
 
-import view from '@hcengineering/view'
-import { type Editor, type Range } from '@tiptap/core'
 import textEditor from '@hcengineering/text-editor'
 import { IconScribble } from '@hcengineering/ui'
+import view from '@hcengineering/view'
+import { type Editor, type Range } from '@tiptap/core'
 
-import { type CompletionOptions } from '../Completion'
-import MentionList from './MentionList.svelte'
-import { SvelteRenderer } from './node-view'
+import { type InlineCommandsOptions } from './extension/inlineCommands'
 import type { SuggestionKeyDownProps, SuggestionProps } from './extension/suggestion'
 import InlineCommandsList from './InlineCommandsList.svelte'
+import { SvelteRenderer } from './node-view'
 
 export const mInsertTable = [
   {
@@ -87,49 +86,6 @@ export const mInsertTable = [
   }
 ]
 
-/**
- * @public
- */
-export const completionConfig: Partial<CompletionOptions> = {
-  HTMLAttributes: {
-    class: 'reference'
-  },
-  suggestion: {
-    items: async () => {
-      return []
-    },
-    render: () => {
-      let component: any
-
-      return {
-        onStart: (props: SuggestionProps) => {
-          component = new SvelteRenderer(MentionList, {
-            element: document.body,
-            props: {
-              ...props,
-              close: () => {
-                component?.destroy()
-              }
-            }
-          })
-        },
-        onUpdate (props: SuggestionProps) {
-          component?.updateProps(props)
-        },
-        onKeyDown (props: SuggestionKeyDownProps) {
-          if (props.event.key === 'Escape') {
-            props.event.stopPropagation()
-          }
-          return component?.onKeyDown(props)
-        },
-        onExit () {
-          component?.destroy()
-        }
-      }
-    }
-  }
-}
-
 const inlineCommandsIds = [
   'image',
   'table',
@@ -147,7 +103,7 @@ export type InlineCommandId = (typeof inlineCommandsIds)[number]
 export function inlineCommandsConfig (
   handleSelect: (id: string, pos: number, targetItem?: MouseEvent | HTMLElement) => Promise<void>,
   excludedCommands: InlineCommandId[] = []
-): Partial<CompletionOptions> {
+): Partial<InlineCommandsOptions> {
   return {
     suggestion: {
       items: () => {

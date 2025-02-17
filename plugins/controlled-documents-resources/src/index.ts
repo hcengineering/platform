@@ -109,6 +109,7 @@ import {
   getAllDocumentStates,
   getControlledDocumentTitle,
   getDocumentMetaLinkFragment,
+  getDocumentMetaTitle,
   getVisibleFilters,
   isFolder,
   renameFolder,
@@ -457,6 +458,7 @@ export default async (): Promise<Resources> => ({
     CanPrintDocument: canPrintDocument,
     DocumentIdentifierProvider: documentIdentifierProvider,
     ControlledDocumentTitleProvider: getControlledDocumentTitle,
+    DocumentMetaTitleProvider: getDocumentMetaTitle,
     Comment: comment,
     IsCommentVisible: isCommentVisible
   },

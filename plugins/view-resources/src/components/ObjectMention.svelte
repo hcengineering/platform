@@ -19,7 +19,7 @@
   import { AnyComponent, LabelAndProps, themeStore, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
-  import { getDocIdentifier } from '../utils'
+  import { getReferenceLabel } from '@hcengineering/text-editor-resources/src/components/extension/reference'
   import DocNavLink from './DocNavLink.svelte'
 
   export let _id: Ref<Doc> | undefined = undefined
@@ -91,7 +91,7 @@
   }
 
   async function updateDocTitle (doc: Doc | undefined): Promise<void> {
-    docTitle = doc ? await getDocIdentifier(client, doc._id, doc._class, doc) : undefined
+    docTitle = doc ? await getReferenceLabel(doc._class, doc._id, doc) : undefined
   }
 
   async function updateDocTooltip (doc?: Doc): Promise<void> {

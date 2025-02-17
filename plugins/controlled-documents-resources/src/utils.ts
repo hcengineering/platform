@@ -727,6 +727,18 @@ export async function getControlledDocumentTitle (
   return object.title
 }
 
+export async function getDocumentMetaTitle (
+  client: Client,
+  ref: Ref<DocumentMeta>,
+  doc?: DocumentMeta
+): Promise<string> {
+  const object = doc ?? (await client.findOne(documents.class.DocumentMeta, { _id: ref }))
+
+  if (object === undefined) return ''
+
+  return object.title
+}
+
 export const getCurrentEmployee = (): Ref<Employee> | undefined => {
   const currentAccount = getCurrentAccount()
   const person = (currentAccount as PersonAccount)?.person
