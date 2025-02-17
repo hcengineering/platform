@@ -13,6 +13,7 @@
     "esModuleInterop": true,
     "incremental": true,
     "types" : [],
-    "isolatedModules": true
+    "isolatedModules": true,
+    
   }
 }

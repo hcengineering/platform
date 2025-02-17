@@ -13,7 +13,7 @@
 
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import tags, { tagsId } from '@hcengineering/tags'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type FilterFunction } from '@hcengineering/view'
 
 export default mergeIds(tagsId, tags, {

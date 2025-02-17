@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.148.0",
+  "rushVersion": "5.149.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -124,7 +124,7 @@
    * LTS schedule: https://nodejs.org/en/about/releases/
    * LTS versions: https://nodejs.org/en/download/releases/
    */
-  "nodeSupportedVersionRange": ">=12.13.0 <13.0.0 || >=14.15.0 <15.0.0 || >=16.0.0",
+  "nodeSupportedVersionRange": ">=20.0.0 <23.0.0",
 
   /**
    * Odd-numbered major versions of Node.js are experimental.  Even-numbered releases

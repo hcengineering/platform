@@ -16,7 +16,7 @@
 import { type Doc, type Ref } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { type ViewAction, type Action } from '@hcengineering/view'
-import { type FilePreviewExtension } from '@hcengineering/presentation'
+import { type FilePreviewExtension } from '@hcengineering/presentation/src/types'
 import { printId } from '@hcengineering/print'
 // This import is needed because of similar import in print plugin
 // Otherwise, TS complains about missing types for resulting merge

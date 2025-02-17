@@ -15,6 +15,7 @@
     "rootDir": "./src",
     "outDir": "./lib",
     "incremental": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    
   }
 }
