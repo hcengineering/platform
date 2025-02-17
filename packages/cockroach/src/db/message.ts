@@ -6,8 +6,12 @@ import {
     SortOrder,
     type SocialID,
     type RichText,
-    Direction, type Reaction, type Attachment, type BlobID
+    Direction,
+    type BlobID,
+    type MessagesGroup,
+    type FindMessagesGroupsParams
 } from '@hcengineering/communication-types'
+import {generateMessageId} from "@hcengineering/communication-core";
 
 import {BaseDb} from './base.ts'
 import {
@@ -16,31 +20,48 @@ import {
     type AttachmentDb,
     type ReactionDb,
     type PatchDb,
-    type MessagesGroupDb
-} from './types.ts'
+    type MessagesGroupDb,
+    toMessage,
+    toMessagesGroup
+} from './schema.ts'
+import {getCondition} from './utils.ts';
+
 
 export class MessagesDb extends BaseDb {
     //Message
-    async createMessage(workspace: string, card: CardID, content: RichText, creator: SocialID, created: Date): Promise<MessageID> {
+    async createMessage(card: CardID, content: RichText, creator: SocialID, created: Date): Promise<MessageID> {
         const dbData: MessageDb = {
-            workspace_id: workspace,
+            id: generateMessageId(),
+            workspace_id: this.workspace,
             card_id: card,
             content: content,
             creator: creator,
             created: created,
         }
 
-        const id = await this.insertWithReturn(TableName.Message, dbData, 'id')
+        await this.insert(TableName.Message, dbData)
 
-        return id as MessageID
+        return dbData.id as MessageID
     }
 
-    async removeMessage(message: MessageID): Promise<void> {
-        await this.remove(TableName.Message, {id: message})
+    async removeMessage(card: CardID, message: MessageID): Promise<MessageID | undefined> {
+        const result = await this.removeWithReturn(TableName.Message, {id: message, workspace_id: this.workspace, card_id: card}, "id")
+        return result[0] as MessageID | undefined
     }
 
-    async createPatch(message: MessageID, content: RichText, creator: SocialID, created: Date): Promise<void> {
+    async removeMessages(card: CardID, ids: MessageID[]): Promise<MessageID[]> {
+        const result = await this.removeWithReturn(TableName.Message, {
+            workspace_id: this.workspace,
+            card_id: card,
+            id: ids
+        }, "id")
+        return result.map((it: any) => it.id)
+    }
+
+    async createPatch(card: CardID, message: MessageID, content: RichText, creator: SocialID, created: Date): Promise<void> {
         const dbData: PatchDb = {
+            workspace_id: this.workspace,
+            card_id: card,
             message_id: message,
             content: content,
             creator: creator,
@@ -50,14 +71,16 @@ export class MessagesDb extends BaseDb {
         await this.insert(TableName.Patch, dbData)
     }
 
-
-    async createMessagesGroup(workspace: string,card: CardID, startAt: Date, endAt: Date, blobId: BlobID, count: number): Promise<void> {
+    //MessagesGroup
+    async createMessagesGroup(card: CardID, blobId: BlobID, from_id: MessageID, to_id: MessageID, from_date: Date, to_date: Date, count: number): Promise<void> {
         const dbData: MessagesGroupDb = {
-            workspace_id: workspace,
+            workspace_id: this.workspace,
             card_id: card,
-            start_at: startAt,
-            end_at: endAt,
             blob_id: blobId,
+            from_id,
+            to_id,
+            from_date,
+            to_date,
             count
         }
         await this.insert(TableName.MessagesGroup, dbData)
@@ -82,8 +105,10 @@ export class MessagesDb extends BaseDb {
     }
 
     //Reaction
-    async createReaction(message: MessageID, reaction: string, creator: SocialID, created: Date): Promise<void> {
+    async createReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID, created: Date): Promise<void> {
         const dbData: ReactionDb = {
+            workspace_id: this.workspace,
+            card_id: card,
             message_id: message,
             reaction: reaction,
             creator: creator,
@@ -92,8 +117,10 @@ export class MessagesDb extends BaseDb {
         await this.insert(TableName.Reaction, dbData)
     }
 
-    async removeReaction(message: MessageID, reaction: string, creator: SocialID): Promise<void> {
+    async removeReaction( card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
         await this.remove(TableName.Reaction, {
+            workspace_id: this.workspace,
+            card_id: card,
             message_id: message,
             reaction: reaction,
             creator: creator
@@ -101,7 +128,7 @@ export class MessagesDb extends BaseDb {
     }
 
     //Find messages
-    async find(workspace: string, params: FindMessagesParams): Promise<Message[]> {
+    async find(params: FindMessagesParams): Promise<Message[]> {
         //TODO: experiment with select to improve performance
         const select = `SELECT m.id,
                                m.card_id,
@@ -113,19 +140,19 @@ export class MessagesDb extends BaseDb {
                                ${this.subSelectReactions()}
                         FROM ${TableName.Message} m`
 
-        const {where, values} = this.buildMessageWhere(workspace, params)
+        const {where, values} = this.buildMessageWhere( params)
         const orderBy = params.sort ? `ORDER BY m.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}` : ''
         const limit = params.limit ? ` LIMIT ${params.limit}` : ''
         const sql = [select, where, orderBy, limit].join(' ')
 
         const result = await this.client.unsafe(sql, values)
 
-        return result.map(it => this.toMessage(it)) as Message[]
+        return result.map((it: any) => toMessage(it))
     }
 
-    buildMessageWhere(workspace: string, params: FindMessagesParams): { where: string, values: any[] } {
+    buildMessageWhere(params: FindMessagesParams): { where: string, values: any[] } {
         const where: string[] = ['m.workspace_id = $1']
-        const values: any[] = [workspace]
+        const values: any[] = [this.workspace]
 
         let index = 2
 
@@ -166,7 +193,7 @@ export class MessagesDb extends BaseDb {
                                   'created', p.created
                           )
                    FROM ${TableName.Patch} p
-                   WHERE p.message_id = m.id
+                   WHERE p.message_id = m.id AND p.workspace_id = m.workspace_id AND p.card_id = m.card_id
                    ) AS patches`
     }
 
@@ -192,41 +219,84 @@ export class MessagesDb extends BaseDb {
                                   'created', r.created
                           )
                    FROM ${TableName.Reaction} r
-                   WHERE r.message_id = m.id
+                   WHERE r.message_id = m.id AND r.workspace_id = m.workspace_id AND r.card_id = m.card_id
                ) AS reactions`
     }
 
-    toMessage(row: any): Message {
-        const lastPatch = row.patches?.[0]
 
-        return {
-            id: row.id,
-            card: row.card_id,
-            content: lastPatch?.content ?? row.content,
-            creator: row.creator,
-            created: new Date(row.created),
-            edited: new Date(lastPatch?.created ?? row.created),
-            reactions: (row.reactions ?? []).map(this.toReaction),
-            attachments: (row.attachments ?? []).map(this.toAttachment)
+    //Find messages groups
+    async findGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+        const select = `SELECT mg.card_id,
+                               mg.blob_id,
+                               mg.from_id,
+                               mg.to_id,
+                               mg.count
+                        FROM ${TableName.MessagesGroup} mg`
+
+        const {where, values, index} = this.buildMessagesGroupWhere(this.workspace, params)
+        const orderBy =  params.sortBy ? `ORDER BY ${index} ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}` : ''
+        if(params.sortBy) {
+            values.push(params.sortBy)
         }
+        const limit = params.limit ? ` LIMIT ${params.limit}` : ''
+        const sql = [select, where, orderBy, limit].join(' ')
+
+        const result = await this.client.unsafe(sql, values)
+
+        return result.map((it: any) => toMessagesGroup(it))
     }
 
-    toReaction(row: any): Reaction {
-        return {
-            message: row.message_id,
-            reaction: row.reaction,
-            creator: row.creator,
-            created: new Date(row.created)
-        }
-    }
+    buildMessagesGroupWhere(workspace: string, params: FindMessagesGroupsParams): {
+        where: string,
+        values: any[],
+        index: number
+    } {
+        const where: string[] = ['mg.workspace_id = $1']
+        const values: any[] = [workspace]
 
-    toAttachment(row: any): Attachment {
-        return {
-            message: row.message_id,
-            card: row.card_id,
-            creator: row.creator,
-            created: new Date(row.created)
+        let index = 2
+
+        if (params.card != null) {
+            where.push(`mg.card_id = $${index++}`)
+            values.push(params.card)
         }
+
+        if (params.blobId != null) {
+            where.push(`mg.blob_id = $${index++}`)
+            values.push(params.blobId)
+        }
+
+        const fromIdCondition = getCondition("mg", "from_id", index, params.fromId);
+        if (fromIdCondition != null) {
+            where.push(fromIdCondition.where);
+            values.push(fromIdCondition.value);
+            index++;
+        }
+
+        const toIdCondition = getCondition("mg", "to_id", index, params.toId);
+
+        if (toIdCondition != null) {
+            where.push(toIdCondition.where);
+            values.push(toIdCondition.value);
+            index++;
+        }
+
+        const fromDateCondition = getCondition("mg", "from_date", index, params.fromDate);
+        if (fromDateCondition != null) {
+            where.push(fromDateCondition.where);
+            values.push(fromDateCondition.value);
+            index++;
+        }
+
+        const toDateCondition = getCondition("mg", "to_date", index, params.toDate);
+        if (toDateCondition != null) {
+            where.push(toDateCondition.where);
+            values.push(toDateCondition.value);
+            index++;
+        }
+
+
+        return {where: `WHERE ${where.join(' AND ')}`, values, index}
     }
 }
 

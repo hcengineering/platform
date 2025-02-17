@@ -1,6 +1,6 @@
 import {
     type FindMessagesParams,
-    type ID,
+    type MessageID,
     type Message,
     type Patch,
     SortOrder
@@ -10,8 +10,8 @@ import {
     type MessageCreatedEvent,
     type PatchCreatedEvent,
     type ReactionCreatedEvent,
-    EventType,
-    type BroadcastEvent,
+    type ResponseEvent,
+     ResponseEventType,
     type AttachmentRemovedEvent,
     type MessageRemovedEvent,
     type ReactionRemovedEvent
@@ -24,7 +24,7 @@ export class MessagesQuery extends BaseQuery<Message, FindMessagesParams> {
         return this.client.findMessages(params, this.id)
     }
 
-    override getObjectId(object: Message): ID {
+    override getObjectId(object: Message): MessageID {
         return object.id
     }
 
@@ -32,21 +32,21 @@ export class MessagesQuery extends BaseQuery<Message, FindMessagesParams> {
         return object.created
     }
 
-    override async onEvent(event: BroadcastEvent): Promise<void> {
+    override async onEvent(event: ResponseEvent): Promise<void> {
         switch (event.type) {
-            case EventType.MessageCreated:
+            case ResponseEventType.MessageCreated:
                 return await this.onCreateMessageEvent(event)
-            case EventType.MessageRemoved:
+            case ResponseEventType.MessageRemoved:
                 return await this.onRemoveMessageEvent(event)
-            case EventType.PatchCreated:
+            case ResponseEventType.PatchCreated:
                 return await this.onCreatePatchEvent(event)
-            case EventType.ReactionCreated:
+            case ResponseEventType.ReactionCreated:
                 return await this.onCreateReactionEvent(event)
-            case EventType.ReactionRemoved:
+            case ResponseEventType.ReactionRemoved:
                 return await this.onRemoveReactionEvent(event)
-            case EventType.AttachmentCreated:
+            case ResponseEventType.AttachmentCreated:
                 return await this.onCreateAttachmentEvent(event)
-            case EventType.AttachmentRemoved:
+            case ResponseEventType.AttachmentRemoved:
                 return await this.onRemoveAttachmentEvent(event)
         }
     }
@@ -58,8 +58,8 @@ export class MessagesQuery extends BaseQuery<Message, FindMessagesParams> {
 
         const message = {
             ...event.message,
-            edited: new Date(event.message.edited),
-            created: new Date(event.message.created)
+            edited: event.message.edited,
+            created: event.message.created
         }
         const exists = this.result.get(message.id)
 
@@ -93,7 +93,7 @@ export class MessagesQuery extends BaseQuery<Message, FindMessagesParams> {
 
         const patch = {
             ...event.patch,
-            created: new Date(event.patch.created)
+            created: event.patch.created
         }
 
         const message = this.result.get(patch.message)
@@ -125,7 +125,7 @@ export class MessagesQuery extends BaseQuery<Message, FindMessagesParams> {
 
         const reaction = {
             ...event.reaction,
-            created: new Date(event.reaction.created)
+            created: event.reaction.created
         }
         const message = this.result.get(reaction.message)
         if (message === undefined) return
@@ -161,7 +161,7 @@ export class MessagesQuery extends BaseQuery<Message, FindMessagesParams> {
 
         const attachment = {
             ...event.attachment,
-            created: new Date(event.attachment.created)
+            created: event.attachment.created
         }
         const message = this.result.get(attachment.message)
         if (message === undefined) return

@@ -1,4 +1,4 @@
-import { type BroadcastEvent } from '@hcengineering/communication-sdk-types'
+import { type ResponseEvent } from '@hcengineering/communication-sdk-types'
 import { Direction, SortOrder, type Window } from '@hcengineering/communication-types'
 
 import { QueryResult } from './result.ts'
@@ -20,7 +20,7 @@ export interface Query<R = any, P = FindParams> {
   readonly id: QueryId
   readonly params: P
 
-  onEvent(event: BroadcastEvent): Promise<void>
+  onEvent(event: ResponseEvent): Promise<void>
 
   loadForward(): Promise<void>
   loadBackward(): Promise<void>

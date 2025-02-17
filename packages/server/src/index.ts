@@ -1,7 +1,19 @@
 import type { MeasureContext } from '@hcengineering/core'
-import type { FindMessagesParams, Message } from '@hcengineering/communication-types'
+import type {
+  FindMessagesGroupsParams,
+  FindMessagesParams,
+  Message,
+  MessagesGroup,
+  WorkspaceID
+} from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
-import type { ConnectionInfo, DbAdapter, Event, EventResult, ServerApi } from '@hcengineering/communication-sdk-types'
+import type {
+  ConnectionInfo,
+  DbAdapter,
+  EventResult,
+  RequestEvent,
+  ServerApi
+} from '@hcengineering/communication-sdk-types'
 
 import { Manager, type BroadcastSessionsFunc } from './manager.ts'
 
@@ -10,20 +22,20 @@ export class Api implements ServerApi {
 
   private constructor(
     private readonly ctx: MeasureContext,
-    private readonly workspace: string,
-    db: DbAdapter,
-    broadcast: BroadcastSessionsFunc
+    private readonly workspace: WorkspaceID,
+    private readonly db: DbAdapter,
+    private readonly broadcast: BroadcastSessionsFunc
   ) {
     this.manager = new Manager(this.ctx, db, this.workspace, broadcast)
   }
 
   static async create(
     ctx: MeasureContext,
-    workspace: string,
+    workspace: WorkspaceID,
     dbUrl: string,
     broadcast: BroadcastSessionsFunc
   ): Promise<Api> {
-    const db = await createDbAdapter(dbUrl)
+    const db = await createDbAdapter(dbUrl, workspace)
     return new Api(ctx, workspace, db, broadcast)
   }
 
@@ -31,11 +43,15 @@ export class Api implements ServerApi {
     return await this.manager.findMessages(info, params, queryId)
   }
 
+  async findMessagesGroups(info: ConnectionInfo, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+    return await this.manager.findMessagesGroups(info, params)
+  }
+
   async unsubscribeQuery(info: ConnectionInfo, id: number): Promise<void> {
     this.manager.unsubscribeQuery(info, id)
   }
 
-  async event(info: ConnectionInfo, event: Event): Promise<EventResult> {
+  async event(info: ConnectionInfo, event: RequestEvent): Promise<EventResult> {
     return await this.manager.event(info, event)
   }
 

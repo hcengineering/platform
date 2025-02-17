@@ -2,12 +2,12 @@ import {
     type FindNotificationsParams,
     SortOrder,
     type Notification,
-    type ID,
+    type MessageID,
 } from '@hcengineering/communication-types'
 import {
     type NotificationCreatedEvent,
-    EventType,
-    type BroadcastEvent,
+    ResponseEventType,
+    type ResponseEvent,
     type NotificationContextRemovedEvent,
     type NotificationRemovedEvent,
     type NotificationContextUpdatedEvent,
@@ -20,7 +20,7 @@ export class NotificationQuery extends BaseQuery<Notification, FindNotifications
         return this.client.findNotifications(params, this.id)
     }
 
-    override getObjectId(object: Notification): ID {
+    override getObjectId(object: Notification): MessageID {
         return object.message.id
     }
 
@@ -28,15 +28,15 @@ export class NotificationQuery extends BaseQuery<Notification, FindNotifications
         return object.message.created
     }
 
-    override async onEvent(event: BroadcastEvent): Promise<void> {
+    override async onEvent(event: ResponseEvent): Promise<void> {
         switch (event.type) {
-            case EventType.NotificationCreated:
+            case ResponseEventType.NotificationCreated:
                 return await this.onCreateNotificationEvent(event)
-            case EventType.NotificationRemoved:
+            case ResponseEventType.NotificationRemoved:
                 return await this.onRemoveNotificationEvent(event)
-            case EventType.NotificationContextUpdated:
+            case ResponseEventType.NotificationContextUpdated:
                 return await this.onUpdateNotificationContextEvent(event)
-            case EventType.NotificationContextRemoved:
+            case ResponseEventType.NotificationContextRemoved:
                 return await this.onRemoveNotificationContextEvent(event)
         }
     }

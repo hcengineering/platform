@@ -30,7 +30,8 @@ export class MessagesDb extends BaseDb {
             created: created,
         }
         await this.insert(TableName.Message, dbData)
-        return dbData.id as MessageID
+        //TODO: FIX ME
+        return dbData.id as any as MessageID
     }
 
     async removeMessage(message: MessageID): Promise<void> {

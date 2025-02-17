@@ -13,7 +13,7 @@ import type {
 } from '@hcengineering/communication-types'
 import type { FindMessagesParams } from '@hcengineering/communication-types'
 
-import type { BroadcastEvent } from './event.ts'
+import type { ResponseEvent } from './responseEvent.ts'
 
 export interface Client {
   createMessage(card: CardID, content: RichText, creator: SocialID): Promise<MessageID>
@@ -33,7 +33,7 @@ export interface Client {
   removeNotificationContext(context: ContextID): Promise<void>
   updateNotificationContext(context: ContextID, update: NotificationContextUpdate): Promise<void>
 
-  onEvent(event: BroadcastEvent): void
+  onEvent(event: ResponseEvent): void
 
   findMessages(params: FindMessagesParams, queryId?: number): Promise<Message[]>
   findNotificationContexts(params: FindNotificationContextParams, queryId?: number): Promise<NotificationContext[]>

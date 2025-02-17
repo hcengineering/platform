@@ -1,11 +1,18 @@
-import { type Message, type SocialID, SortOrder, type CardID, type Window } from '@hcengineering/communication-types'
+import {
+  type Message,
+  type SocialID,
+  SortOrder,
+  type CardID,
+  type Window,
+  type WorkspaceID
+} from '@hcengineering/communication-types'
 import { getWebsocketClient } from '@hcengineering/communication-client-ws'
 import { getSqliteClient } from '@hcengineering/communication-client-sqlite'
 import { createMessagesQuery, initLiveQueries } from '@hcengineering/communication-client-query'
 
 const card = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6' as CardID
-const workspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6'
-const personalWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f5'
+const workspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6' as WorkspaceID
+const personalWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f5' as WorkspaceID
 const creator1 = 'email:vasya@huly.com' as SocialID
 
 async function getClient(type: 'ws' | 'sqlite') {

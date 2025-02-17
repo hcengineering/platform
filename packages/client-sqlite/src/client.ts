@@ -12,32 +12,33 @@ import {
   type FindNotificationsParams,
   type Notification,
   type Attachment,
-  type Reaction
+  type Reaction,
+  type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
   type Client,
   type MessageCreatedEvent,
   type DbAdapter,
-  EventType,
-  type BroadcastEvent
+  type ResponseEvent,
+  ResponseEventType
 } from '@hcengineering/communication-sdk-types'
 import { createDbAdapter as createSqliteDbAdapter } from '@hcengineering/communication-sqlite-wasm'
 
 class DbClient implements Client {
-  onEvent: (event: BroadcastEvent) => void = () => {}
+  onEvent: (event: ResponseEvent) => void = () => {}
 
   constructor(
     private readonly db: DbAdapter,
-    private readonly workspace: string,
-    private readonly personalWorkspace: string
+    private readonly workspace: WorkspaceID,
+    private readonly personalWorkspace: WorkspaceID
   ) {}
 
   async createMessage(card: CardID, content: RichText, creator: SocialID): Promise<MessageID> {
     const created = new Date()
-    const id = await this.db.createMessage(this.workspace, card, content, creator, created)
+    const id = await this.db.createMessage(card, content, creator, created)
 
     const event: MessageCreatedEvent = {
-      type: EventType.MessageCreated,
+      type: ResponseEventType.MessageCreated,
       message: {
         id,
         card,
@@ -56,32 +57,32 @@ class DbClient implements Client {
   }
 
   async removeMessage(card: CardID, message: MessageID) {
-    await this.db.removeMessage(message)
-    this.onEvent({ type: EventType.MessageRemoved, message, card })
+    await this.db.removeMessage(card, message)
+    this.onEvent({ type: ResponseEventType.MessageRemoved, message, card })
   }
 
   async createPatch(card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
     const created = new Date()
-    await this.db.createPatch(message, content, creator, created)
-    this.onEvent({ type: EventType.PatchCreated, card, patch: { message, content, creator, created } })
+    await this.db.createPatch(card, message, content, creator, created)
+    this.onEvent({ type: ResponseEventType.PatchCreated, card, patch: { message, content, creator, created } })
   }
 
   async createReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     const created = new Date()
-    await this.db.createReaction(message, reaction, creator, created)
-    this.onEvent({ type: EventType.ReactionCreated, card, reaction: { message, reaction, creator, created } })
+    await this.db.createReaction(card, message, reaction, creator, created)
+    this.onEvent({ type: ResponseEventType.ReactionCreated, card, reaction: { message, reaction, creator, created } })
   }
 
   async removeReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
-    await this.db.removeReaction(message, reaction, creator)
-    this.onEvent({ type: EventType.ReactionRemoved, card, message, reaction, creator })
+    await this.db.removeReaction(card, message, reaction, creator)
+    this.onEvent({ type: ResponseEventType.ReactionRemoved, card, message, reaction, creator })
   }
 
   async createAttachment(card: CardID, message: MessageID, attachment: CardID, creator: SocialID): Promise<void> {
     const created = new Date()
     await this.db.createAttachment(message, card, creator, created)
     this.onEvent({
-      type: EventType.AttachmentCreated,
+      type: ResponseEventType.AttachmentCreated,
       card,
       attachment: { message, card: attachment, creator, created }
     })
@@ -89,11 +90,11 @@ class DbClient implements Client {
 
   async removeAttachment(card: CardID, message: MessageID, attachment: CardID): Promise<void> {
     await this.db.removeAttachment(message, card)
-    this.onEvent({ type: EventType.AttachmentRemoved, message, card, attachment })
+    this.onEvent({ type: ResponseEventType.AttachmentRemoved, message, card, attachment })
   }
 
   async findMessages(params: FindMessagesParams): Promise<Message[]> {
-    const rawMessages = await this.db.findMessages(this.workspace, params)
+    const rawMessages = await this.db.findMessages(params)
     return rawMessages.map((it) => this.toMessage(it))
   }
 
@@ -131,6 +132,7 @@ class DbClient implements Client {
       created: new Date(raw.created)
     }
   }
+
   async createNotification(message: MessageID, context: ContextID): Promise<void> {
     await this.db.createNotification(message, context)
   }
@@ -140,7 +142,7 @@ class DbClient implements Client {
   }
 
   async createNotificationContext(card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
-    return await this.db.createContext(this.personalWorkspace, this.workspace, card, lastView, lastUpdate)
+    return await this.db.createContext(this.personalWorkspace, card, lastView, lastUpdate)
   }
 
   async updateNotificationContext(context: ContextID, update: NotificationContextUpdate): Promise<void> {
@@ -171,8 +173,8 @@ class DbClient implements Client {
 }
 
 export async function getSqliteClient(
-  workspace: string,
-  personalWorkspace: string,
+  workspace: WorkspaceID,
+  personalWorkspace: WorkspaceID,
   dbUrl = 'file:communication.sqlite3?vfs=opfs'
 ): Promise<Client> {
   const db = await createSqliteDbAdapter(dbUrl)

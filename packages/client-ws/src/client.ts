@@ -15,7 +15,7 @@ import {
   type SocialID
 } from '@hcengineering/communication-types'
 import {
-  type BroadcastEvent,
+  RequestEventType,
   type Client,
   type CreateAttachmentEvent,
   type CreateMessageEvent,
@@ -25,14 +25,14 @@ import {
   type CreateNotificationEvent,
   type CreatePatchEvent,
   type CreateReactionEvent,
-  type Event,
   type EventResult,
-  EventType,
   type RemoveAttachmentEvent,
   type RemoveMessageEvent,
   type RemoveNotificationContextEvent,
   type RemoveNotificationEvent,
   type RemoveReactionEvent,
+  type RequestEvent,
+  type ResponseEvent,
   type UpdateNotificationContextEvent
 } from '@hcengineering/communication-sdk-types'
 
@@ -41,7 +41,7 @@ import { WebSocketConnection } from './connection'
 class WsClient implements Client {
   private readonly ws: WebSocketConnection
 
-  onEvent: (event: BroadcastEvent) => void = () => {}
+  onEvent: (event: ResponseEvent) => void = () => {}
 
   constructor(
     private readonly url: string,
@@ -57,7 +57,7 @@ class WsClient implements Client {
 
   async createMessage(card: CardID, content: RichText, creator: SocialID): Promise<MessageID> {
     const event: CreateMessageEvent = {
-      type: EventType.CreateMessage,
+      type: RequestEventType.CreateMessage,
       card,
       content,
       creator
@@ -68,7 +68,7 @@ class WsClient implements Client {
 
   async removeMessage(card: CardID, message: MessageID): Promise<void> {
     const event: RemoveMessageEvent = {
-      type: EventType.RemoveMessage,
+      type: RequestEventType.RemoveMessage,
       card,
       message
     }
@@ -77,7 +77,7 @@ class WsClient implements Client {
 
   async createPatch(card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
     const event: CreatePatchEvent = {
-      type: EventType.CreatePatch,
+      type: RequestEventType.CreatePatch,
       card,
       message,
       content,
@@ -88,7 +88,7 @@ class WsClient implements Client {
 
   async createReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     const event: CreateReactionEvent = {
-      type: EventType.CreateReaction,
+      type: RequestEventType.CreateReaction,
       card,
       message,
       reaction,
@@ -99,7 +99,7 @@ class WsClient implements Client {
 
   async removeReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
     const event: RemoveReactionEvent = {
-      type: EventType.RemoveReaction,
+      type: RequestEventType.RemoveReaction,
       card,
       message,
       reaction,
@@ -110,7 +110,7 @@ class WsClient implements Client {
 
   async createAttachment(card: CardID, message: MessageID, attachment: CardID, creator: SocialID): Promise<void> {
     const event: CreateAttachmentEvent = {
-      type: EventType.CreateAttachment,
+      type: RequestEventType.CreateAttachment,
       card,
       message,
       attachment,
@@ -121,7 +121,7 @@ class WsClient implements Client {
 
   async removeAttachment(card: CardID, message: MessageID, attachment: CardID): Promise<void> {
     const event: RemoveAttachmentEvent = {
-      type: EventType.RemoveAttachment,
+      type: RequestEventType.RemoveAttachment,
       card,
       message,
       attachment
@@ -167,7 +167,7 @@ class WsClient implements Client {
 
   async createNotification(message: MessageID, context: ContextID): Promise<void> {
     const event: CreateNotificationEvent = {
-      type: EventType.CreateNotification,
+      type: RequestEventType.CreateNotification,
       message,
       context
     }
@@ -176,7 +176,7 @@ class WsClient implements Client {
 
   async removeNotification(message: MessageID, context: ContextID): Promise<void> {
     const event: RemoveNotificationEvent = {
-      type: EventType.RemoveNotification,
+      type: RequestEventType.RemoveNotification,
       message,
       context
     }
@@ -185,7 +185,7 @@ class WsClient implements Client {
 
   async createNotificationContext(card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
     const event: CreateNotificationContextEvent = {
-      type: EventType.CreateNotificationContext,
+      type: RequestEventType.CreateNotificationContext,
       card,
       lastView,
       lastUpdate
@@ -196,7 +196,7 @@ class WsClient implements Client {
 
   async removeNotificationContext(context: ContextID): Promise<void> {
     const event: RemoveNotificationContextEvent = {
-      type: EventType.RemoveNotificationContext,
+      type: RequestEventType.RemoveNotificationContext,
       context
     }
     await this.sendEvent(event)
@@ -204,7 +204,7 @@ class WsClient implements Client {
 
   async updateNotificationContext(context: ContextID, update: NotificationContextUpdate): Promise<void> {
     const event: UpdateNotificationContextEvent = {
-      type: EventType.UpdateNotificationContext,
+      type: RequestEventType.UpdateNotificationContext,
       context,
       update
     }
@@ -226,7 +226,7 @@ class WsClient implements Client {
     await this.ws.send('unsubscribeQuery', [id])
   }
 
-  private async sendEvent(event: Event): Promise<EventResult> {
+  private async sendEvent(event: RequestEvent): Promise<EventResult> {
     return await this.ws.send('event', [event])
   }
 

@@ -3,7 +3,7 @@ import { deepEqual } from 'fast-equals'
 import type {
   MessagesQueryCallback,
   NotificationsQueryCallback,
-  BroadcastEvent,
+  ResponseEvent,
   QueryClient
 } from '@hcengineering/communication-sdk-types'
 
@@ -27,7 +27,7 @@ export class LiveQueries {
     this.client = client
   }
 
-  async onEvent(event: BroadcastEvent): Promise<void> {
+  async onEvent(event: ResponseEvent): Promise<void> {
     for (const q of this.queries.values()) {
       await q.onEvent(event)
     }

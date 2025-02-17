@@ -1,13 +1,14 @@
-import type { Ref, Blob } from '@hcengineering/core'
+import type { Ref, Blob, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import type { Card } from '@hcengineering/card'
 
 export type BlobID = Ref<Blob>
 export type CardID = Ref<Card>
-export type SocialID = string
+export type SocialID = PersonId
+export type WorkspaceID = WorkspaceUuid
 export type RichText = string
 
-export type ID = string
-export type MessageID = ID & { message: true }
+export type ID = string | number
+export type MessageID = number & { message: true }
 
 interface Object {
   creator: SocialID
@@ -18,16 +19,18 @@ export interface Message extends Object {
   id: MessageID
   card: CardID
   content: RichText
-  edited: Date
+  edited?: Date
   reactions: Reaction[]
   attachments: Attachment[]
 }
 
 export interface MessagesGroup {
   card: CardID
-  startAt: Date
-  endAt: Date
   blobId: BlobID
+  fromId: MessageID
+  toId: MessageID
+  fromDate: Date
+  toDate: Date
   count: number
 }
 

@@ -1,6 +1,6 @@
 {
-  "name": "@hcengineering/communication-server-core",
-  "version": "0.1.7",
+  "name": "@hcengineering/communication-core",
+  "version": "0.1.8",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
@@ -10,19 +10,13 @@
     "types/**/*.d.ts"
   ],
   "devDependencies": {
-    "@types/bun": "^1.1.14",
-    "@types/express": "^5.0.0",
-    "@types/cors": "^2.8.17",
-    "@types/ws": "^8.5.13"
-  },
-  "dependencies": {
-    "@hcengineering/core": "0.6.429",
-    "@hcengineering/communication-cockroach": "workspace:*",
-    "@hcengineering/communication-sdk-types": "workspace:*",
-    "@hcengineering/communication-types": "workspace:*"
+    "@types/bun": "^1.1.14"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@hcengineering/communication-types": "workspace:*"
   },
   "repository": {
     "type": "git",

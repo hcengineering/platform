@@ -1,4 +1,4 @@
-import type { CardID, MessageID } from './message'
+import type { BlobID, CardID, MessageID } from './message'
 import type { ContextID } from './notification'
 
 export enum SortOrder {
@@ -44,4 +44,22 @@ export interface FindNotificationsParams extends FindParams {
 export interface FindNotificationContextParams extends FindParams {
   id?: ContextID
   card?: CardID
+}
+
+export type ComparisonOperator = 'less' | 'lessOrEqual' | 'greater' | 'greaterOrEqual' | 'notEqual'
+
+type Exclusive<T> = {
+  [K in keyof T]: Record<K, T[K]> & Partial<Record<Exclude<keyof T, K>, never>>
+}[keyof T]
+
+export interface FindMessagesGroupsParams {
+  card?: CardID
+  blobId?: BlobID
+  fromId?: Exclusive<Record<ComparisonOperator, MessageID>> | MessageID
+  toId?: Exclusive<Record<ComparisonOperator, MessageID>> | MessageID
+  fromDate?: Exclusive<Record<ComparisonOperator, Date>> | Date
+  toDate?: Exclusive<Record<ComparisonOperator, Date>> | Date
+  limit?: number
+  sortBy?: 'fromId' | 'toId' | 'fromDate' | 'toDate'
+  sort?: SortOrder
 }

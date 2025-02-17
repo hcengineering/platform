@@ -5,11 +5,12 @@ import {
     type NotificationContext,
     type FindNotificationContextParams, SortOrder,
     type FindNotificationsParams, type Notification,
-    type NotificationContextUpdate
+    type NotificationContextUpdate,
+    type WorkspaceID
 } from '@hcengineering/communication-types'
 
 import {BaseDb} from './base.ts'
-import {TableName, type ContextDb, type NotificationDb} from './types.ts'
+import {TableName, type ContextDb, type NotificationDb} from './schema.ts'
 
 export class NotificationsDb extends BaseDb {
     async createNotification(message: MessageID, context: ContextID): Promise<void> {
@@ -27,9 +28,9 @@ export class NotificationsDb extends BaseDb {
         })
     }
 
-    async createContext(workspace: string, card: CardID, personalWorkspace: string, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
+    async createContext(personalWorkspace: WorkspaceID,card: CardID,  lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
         const dbData: ContextDb = {
-            workspace_id: workspace,
+            workspace_id: this.workspace,
             card_id: card,
             personal_workspace: personalWorkspace,
             last_view: lastView,
@@ -71,7 +72,7 @@ export class NotificationsDb extends BaseDb {
         await this.client.unsafe(sql, [values, context])
     }
 
-    async findContexts(params: FindNotificationContextParams, personalWorkspaces: string[], workspace?: string,): Promise<NotificationContext[]> {
+    async findContexts(params: FindNotificationContextParams, personalWorkspaces: WorkspaceID[], workspace?: WorkspaceID,): Promise<NotificationContext[]> {
         const select = `
             SELECT nc.id, nc.card_id, nc.archived_from, nc.last_view, nc.last_update
             FROM ${TableName.NotificationContext} nc`;
@@ -86,7 +87,7 @@ export class NotificationsDb extends BaseDb {
     }
 
 
-    async findNotifications(params: FindNotificationsParams, personalWorkspace: string, workspace?: string): Promise<Notification[]> {
+    async findNotifications(params: FindNotificationsParams, personalWorkspace: WorkspaceID, workspace?: WorkspaceID): Promise<Notification[]> {
         //TODO: experiment with select to improve performance, should join with attachments and reactions?
         const select = `
             SELECT n.message_id,
@@ -123,7 +124,7 @@ export class NotificationsDb extends BaseDb {
         return result.map(this.toNotification);
     }
 
-    buildContextWhere(params: FindNotificationContextParams, personalWorkspaces: string[], workspace?: string,): {
+    buildContextWhere(params: FindNotificationContextParams, personalWorkspaces: WorkspaceID[], workspace?: WorkspaceID): {
         where: string,
         values: any[]
     } {
@@ -149,7 +150,7 @@ export class NotificationsDb extends BaseDb {
         return {where: `WHERE ${where.join(' AND ')}`, values}
     }
 
-    buildNotificationWhere(params: FindNotificationsParams, personalWorkspace: string, workspace?: string): {
+    buildNotificationWhere(params: FindNotificationsParams, personalWorkspace: WorkspaceID, workspace?: WorkspaceID): {
         where: string,
         values: any[]
     } {

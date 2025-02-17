@@ -1,5 +1,5 @@
 import { Direction, type ID, SortOrder } from '@hcengineering/communication-types'
-import { type BroadcastEvent, type QueryCallback, type QueryClient } from '@hcengineering/communication-sdk-types'
+import { type ResponseEvent, type QueryCallback, type QueryClient } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from './result'
 import { defaultQueryParams, type FindParams, type Query, type QueryId } from './types'
@@ -72,7 +72,7 @@ export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async onEvent(event: BroadcastEvent): Promise<void> {
+  async onEvent(event: ResponseEvent): Promise<void> {
     /*Implement in subclass*/
   }
 
