@@ -2,7 +2,7 @@ import { type Class, type IndexingConfiguration, type Doc, type Domain, type Ref
 import { type PublicLink, type Restrictions } from '@hcengineering/guest'
 import { type Builder, Model } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
-import { type Location } from '@hcengineering/ui'
+import { type Location } from '@hcengineering/ui/src/types'
 import guest from './plugin'
 
 export const GUEST_DOMAIN = 'guest' as Domain

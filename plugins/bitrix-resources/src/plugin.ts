@@ -18,7 +18,7 @@ import { type IntlString, mergeIds } from '@hcengineering/platform'
 import bitrix, { bitrixId } from '@hcengineering/bitrix'
 import { type Ref } from '@hcengineering/core'
 import { type Handler, type IntegrationType } from '@hcengineering/setting'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export default mergeIds(bitrixId, bitrix, {
   string: {

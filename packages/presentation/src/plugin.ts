@@ -34,7 +34,7 @@ import {
 } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { type ComponentExtensionId } from '@hcengineering/ui'
+import { type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import { type PresentationMiddlewareFactory } from './pipeline'
 import type { PreviewConfig } from './preview'
 import {

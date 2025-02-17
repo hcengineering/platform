@@ -15,8 +15,8 @@
 //
 
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
-import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type PresentationMiddlewareCreator } from '@hcengineering/presentation/src/pipeline'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import view, { viewId } from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {

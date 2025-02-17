@@ -33,7 +33,7 @@ import type {
   SidebarEvent,
   WorkbenchTab
 } from '@hcengineering/workbench'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import core, { TClass, TDoc, TTx } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 

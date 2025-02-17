@@ -14,7 +14,7 @@ import {
   type DocCreateAnalyticsPropsFunction
 } from '@hcengineering/model-presentation'
 import { type NotificationGroup } from '@hcengineering/notification'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type ActionCategory, type Viewlet } from '@hcengineering/view'
 
 export default mergeIds(githubId, github, {

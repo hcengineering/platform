@@ -16,7 +16,7 @@
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type NotificationType, type NotificationGroup } from '@hcengineering/notification'
 import { type Resource, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { loveId } from '@hcengineering/love'
 import love from '@hcengineering/love-resources/src/plugin'

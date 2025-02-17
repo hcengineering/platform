@@ -1318,6 +1318,7 @@ export async function updateWorkspaceInfo (
     case 'restore-done':
       update.mode = 'active'
       update.processingProgress = 100
+      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
       break
     case 'archiving-backup-started':
       update.mode = 'archiving-backup'

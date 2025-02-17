@@ -47,7 +47,7 @@
       (it) => !hierarchy.isMixin(it)
     )
     if (classes.length > 0) {
-      query.query(
+      query.query<Space>(
         classes.length === 1 ? classes[0] : core.class.Space,
         !adminUser
           ? {
