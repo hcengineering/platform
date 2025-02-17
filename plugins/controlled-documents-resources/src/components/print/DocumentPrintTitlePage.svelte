@@ -54,7 +54,7 @@
     $controlledDocument != null &&
     (isOrgSpace
       ? $controlledDocument.state !== DocumentState.Effective
-      : ![DocumentState.Effective, DocumentState.Obsolete, DocumentState.Archived].includes($controlledDocument.state))
+      : ![DocumentState.Effective, DocumentState.Archived].includes($controlledDocument.state))
 </script>
 
 {#if $controlledDocument !== null}
