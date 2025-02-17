@@ -77,7 +77,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       return
     }
   }
-  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
   let token = tokens[wsUrl]
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
@@ -101,7 +101,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   tokens[wsUrl] = workspaceLoginInfo.token
   token = workspaceLoginInfo.token
-  setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+  setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
   setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
@@ -434,12 +434,12 @@ async function getGlobalPerson (): Promise<GlobalPerson | undefined> {
 }
 
 export function clearMetadata (ws: string): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
   if (tokens !== null) {
     const loc = getCurrentLocation()
     // eslint-disable-next-line
     delete tokens[loc.path[1]]
-    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
   }
   const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
   if (currentWorkspace !== undefined) {

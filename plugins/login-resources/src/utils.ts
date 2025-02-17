@@ -425,12 +425,12 @@ export async function getPerson (): Promise<[Status, Person | null]> {
 }
 
 export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
-  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
   tokens[loginInfo.workspaceUrl] = loginInfo.token
 
   setMetadata(presentation.metadata.Token, loginInfo.token)
   setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
-  setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+  setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, loginInfo.endpoint)
   setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
 }
@@ -473,7 +473,7 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
   let token = getMetadata(presentation.metadata.Token)
 
   if (token == null) {
-    const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+    const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
     token = Object.values(tokens)[0]
     if (token == null) {
       return [unknownStatus('Please login'), null]
