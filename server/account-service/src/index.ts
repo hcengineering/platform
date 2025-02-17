@@ -26,6 +26,8 @@ import Router from 'koa-router'
 import os from 'os'
 import { migrateFromOldAccounts } from './migration/migration'
 
+const COOKIE = 'account-metadata-Token'
+
 /**
  * @public
  */
@@ -142,12 +144,26 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     )
   })
 
-  const extractToken = (header: IncomingHttpHeaders): string | undefined => {
+  const extractCookieToken = (headers: IncomingHttpHeaders): string | undefined => {
+    if (headers.cookie != null) {
+      const cookies = headers.cookie.split(';')
+      const tokenCookie = cookies.find((cookie) => cookie.includes(COOKIE))
+      return tokenCookie?.split('=')[1]
+    }
+
+    return undefined
+  }
+
+  const extractAuthorizationToken = (headers: IncomingHttpHeaders): string | undefined => {
     try {
-      return header.authorization?.slice(7) ?? undefined
+      return headers.authorization?.slice(7) ?? undefined
     } catch {
       return undefined
     }
+  }
+
+  const extractToken = (headers: IncomingHttpHeaders): string | undefined => {
+    return extractAuthorizationToken(headers) ?? extractCookieToken(headers)
   }
 
   router.get('/api/v1/statistics', (req, res) => {

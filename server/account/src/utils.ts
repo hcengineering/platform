@@ -111,7 +111,8 @@ export function getRolePower (role: AccountRole): number {
 }
 
 export function wrap (
-  accountMethod: (ctx: MeasureContext, db: AccountDB, branding: Branding | null, ...args: any[]) => Promise<any>
+  accountMethod: (ctx: MeasureContext, db: AccountDB, branding: Branding | null, ...args: any[]) => Promise<any>,
+  params?: { setCookie?: boolean }
 ): AccountMethodHandler {
   return async function (
     ctx: MeasureContext,

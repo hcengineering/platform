@@ -17,8 +17,7 @@
   import { WorkspaceInfoWithStatus, isArchivingMode } from '@hcengineering/core'
   import { LoginInfo } from '@hcengineering/login'
   import { OK, Severity, Status } from '@hcengineering/platform'
-  import presentation, { NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
-  import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
+  import presentation, { MessageBox, NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
   import {
     ticker,
     Button,
@@ -113,8 +112,6 @@
       await updateWorkspaces()
       flagToUpdateWorkspaces = true
     } catch (err: any) {
-      setMetadataLocalStorage(login.metadata.LastToken, null)
-      setMetadataLocalStorage(presentation.metadata.Token, null)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
       setMetadataLocalStorage(login.metadata.LoginAccount, null)
       goTo('login')
@@ -234,8 +231,7 @@
         <NavLink
           href={getHref('login')}
           onClick={() => {
-            setMetadataLocalStorage(login.metadata.LastToken, null)
-            setMetadataLocalStorage(presentation.metadata.Token, null)
+            setMetadata(presentation.metadata.Token, null)
             setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
             setMetadataLocalStorage(login.metadata.LoginAccount, null)
             goTo('login')

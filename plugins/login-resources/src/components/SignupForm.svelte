@@ -16,7 +16,6 @@
 <script lang="ts">
   import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { setMetadataLocalStorage } from '@hcengineering/ui'
   import BottomActionComponent from './BottomAction.svelte'
   import login from '../plugin'
   import { getPasswordValidationRules } from '../validations'
@@ -80,7 +79,6 @@
 
         if (result != null) {
           setMetadata(presentation.metadata.Token, result.token)
-          setMetadataLocalStorage(login.metadata.LastToken, result.token)
           goTo('confirmationSend')
         }
       } else {
