@@ -2302,23 +2302,23 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/personal-browser",
-      "projectFolder": "plugins/personal-browser",
+      "packageName": "@hcengineering/my-space",
+      "projectFolder": "plugins/my-space",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/personal-browser-assets",
-      "projectFolder": "plugins/personal-browser-assets",
+      "packageName": "@hcengineering/my-space-assets",
+      "projectFolder": "plugins/my-space-assets",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/personal-browser-resources",
-      "projectFolder": "plugins/personal-browser-resources",
+      "packageName": "@hcengineering/my-space-resources",
+      "projectFolder": "plugins/my-space-resources",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/model-personal-browser",
-      "projectFolder": "models/personal-browser",
+      "packageName": "@hcengineering/model-my-space",
+      "projectFolder": "models/my-space",
       "shouldPublish": false
     }
   ]

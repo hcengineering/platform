@@ -13,10 +13,13 @@
 // limitations under the License.
 //
 
+import type { Ref } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
-import { personalBrowserId } from '@hcengineering/personal-browser'
-import personalBrowser from '@hcengineering/personal-browser-resources/src/plugin'
+import mySpace, { mySpaceId } from '@hcengineering/my-space'
+import type { Viewlet } from '@hcengineering/view'
 
-export default mergeIds(personalBrowserId, personalBrowser, {
-  component: {}
+export default mergeIds(mySpaceId, mySpace, {
+  viewlet: {
+    TableMail: '' as Ref<Viewlet>
+  }
 })

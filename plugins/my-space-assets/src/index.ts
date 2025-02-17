@@ -13,8 +13,11 @@
 // limitations under the License.
 //
 
-import { personalBrowserId, personalBrowserPlugin } from './plugin'
+import { loadMetadata } from '@hcengineering/platform'
+import mySpace from '@hcengineering/my-space'
 
-export { personalBrowserId }
-
-export default personalBrowserPlugin
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+loadMetadata(mySpace.icon, {
+  MySpace: `${icons}#browser`,
+  Mail: `${icons}#email`
+})

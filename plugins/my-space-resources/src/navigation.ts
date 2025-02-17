@@ -20,10 +20,10 @@ import view, { type ObjectPanel } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import contact, { type Employee, getCurrentEmployee } from '@hcengineering/contact'
 import mail, { type MailThread } from '@hcengineering/mail'
-import { personalBrowserId } from '@hcengineering/personal-browser'
+import { mySpaceId } from '@hcengineering/my-space'
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
-  if (loc.path[2] !== personalBrowserId) {
+  if (loc.path[2] !== mySpaceId) {
     return undefined
   }
 
@@ -68,11 +68,11 @@ async function generateMailLocation (loc: Location, id: Ref<MailThread>): Promis
   const fragment = doc !== undefined ? getPanelFragment(doc) : loc.fragment
   return {
     loc: {
-      path: [appComponent, workspace, personalBrowserId, personSpace, 'mail'],
+      path: [appComponent, workspace, mySpaceId, personSpace, 'mail'],
       fragment
     },
     defaultLocation: {
-      path: [appComponent, workspace, personalBrowserId, personSpace, 'mail'],
+      path: [appComponent, workspace, mySpaceId, personSpace, 'mail'],
       fragment
     }
   }

@@ -20,15 +20,15 @@ import { type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { plugin } from '@hcengineering/platform'
 
 /** @public */
-export const personalBrowserId = 'personalBrowser' as Plugin
+export const mySpaceId = 'mySpace' as Plugin
 
 /** @public */
-export const personalBrowserPlugin = plugin(personalBrowserId, {
+export const mySpacePlugin = plugin(mySpaceId, {
   app: {
-    PersonalBrowser: '' as Ref<Doc>
+    MySpace: '' as Ref<Doc>
   },
   icon: {
-    PersonalBrowser: '' as Asset,
+    MySpace: '' as Asset,
     Mail: '' as Asset
   },
   class: {},
@@ -36,7 +36,7 @@ export const personalBrowserPlugin = plugin(personalBrowserId, {
     ProjectType: '' as Ref<SpaceTypeDescriptor>
   },
   string: {
-    PersonalBrowser: '' as IntlString,
+    MySpace: '' as IntlString,
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     Mail: '' as IntlString
@@ -49,4 +49,4 @@ export const personalBrowserPlugin = plugin(personalBrowserId, {
 /**
  * @public
  */
-export default personalBrowserPlugin
+export default mySpacePlugin

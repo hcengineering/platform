@@ -74,7 +74,7 @@ async function createMailThread (client: TxOperations & Client, messageData: Mes
   const employee = getCurrentEmployee()
   const space = await client.findOne(contact.class.PersonSpace, { person: employee }, { projection: { _id: 1 } })
   if (space === undefined) {
-    throw new Error('No personal space found')
+    throw new Error('No space found')
   }
 
   const data: Data<MailThread> = {

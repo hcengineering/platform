@@ -19,37 +19,37 @@ import core from '@hcengineering/model-core'
 import view, { type Viewlet } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import mail from '@hcengineering/mail'
-import { personalBrowserId } from '@hcengineering/personal-browser'
+import { mySpaceId } from '@hcengineering/my-space'
 
-import personalBrowser from './plugin'
+import mySpace from './plugin'
 
-export { personalBrowserId } from '@hcengineering/personal-browser'
+export { mySpaceId } from '@hcengineering/my-space'
 
-export { personalBrowser as default }
+export { mySpace as default }
 
 export function createModel (builder: Builder): void {
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
     {
-      label: personalBrowser.string.PersonalBrowser,
-      icon: personalBrowser.icon.PersonalBrowser,
-      alias: personalBrowserId,
+      label: mySpace.string.MySpace,
+      icon: mySpace.icon.MySpace,
+      alias: mySpaceId,
       accessLevel: AccountRole.User,
       hidden: false,
-      locationResolver: personalBrowser.resolver.Location,
+      locationResolver: mySpace.resolver.Location,
       navigatorModel: {
         spaces: [],
         specials: [
           {
             id: 'mail',
-            label: personalBrowser.string.Mail,
-            icon: personalBrowser.icon.Mail,
+            label: mySpace.string.Mail,
+            icon: mySpace.icon.Mail,
             component: workbench.component.SpecialView,
             componentProps: {
               _class: mail.class.MailThread,
-              icon: personalBrowser.icon.Mail,
-              label: personalBrowser.string.Mail,
+              icon: mySpace.icon.Mail,
+              label: mySpace.string.Mail,
               createLabel: mail.string.CreateMail,
               createComponent: mail.component.CreateMail
             }
@@ -57,7 +57,7 @@ export function createModel (builder: Builder): void {
         ]
       }
     },
-    personalBrowser.app.PersonalBrowser
+    mySpace.app.MySpace
   )
 
   builder.createDoc<Viewlet>(
@@ -76,6 +76,6 @@ export function createModel (builder: Builder): void {
         sortable: true
       }
     },
-    personalBrowser.viewlet.TableMail
+    mySpace.viewlet.TableMail
   )
 }

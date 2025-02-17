@@ -454,9 +454,9 @@ importers:
       '@rush-temp/model-notification':
         specifier: file:./projects/model-notification.tgz
         version: file:projects/model-notification.tgz
-      '@rush-temp/model-personal-browser':
-        specifier: file:./projects/model-personal-browser.tgz
-        version: file:projects/model-personal-browser.tgz
+      '@rush-temp/model-my-space':
+        specifier: file:./projects/model-my-space.tgz
+        version: file:projects/model-my-space.tgz
       '@rush-temp/model-preference':
         specifier: file:./projects/model-preference.tgz
         version: file:projects/model-preference.tgz
@@ -649,15 +649,15 @@ importers:
       '@rush-temp/panel':
         specifier: file:./projects/panel.tgz
         version: file:projects/panel.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      '@rush-temp/personal-browser':
-        specifier: file:./projects/personal-browser.tgz
-        version: file:projects/personal-browser.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      '@rush-temp/personal-browser-assets':
-        specifier: file:./projects/personal-browser-assets.tgz
-        version: file:projects/personal-browser-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      '@rush-temp/personal-browser-resources':
-        specifier: file:./projects/personal-browser-resources.tgz
-        version: file:projects/personal-browser-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/my-space':
+        specifier: file:./projects/my-space.tgz
+        version: file:projects/my-space.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/my-space-assets':
+        specifier: file:./projects/my-space-assets.tgz
+        version: file:projects/my-space-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/my-space-resources':
+        specifier: file:./projects/my-space-resources.tgz
+        version: file:projects/my-space-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/platform':
         specifier: file:./projects/platform.tgz
         version: file:projects/platform.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -4462,8 +4462,8 @@ packages:
     resolution: {integrity: sha512-k7valecajKQwOhAeROASPm+RO2/D3xZSkan8Z09kmy+9dNLYBxQT/mr7k+HBdlzU4JD3fDQRP6EStyJBkLFZsQ==, tarball: file:projects/model-notification.tgz}
     version: 0.0.0
 
-  '@rush-temp/model-personal-browser@file:projects/model-personal-browser.tgz':
-    resolution: {integrity: sha512-OxBDKFosN/3hsy9Ot0fDJTpzqFJvNLWxgJXtmculo1ksyKacMGZc4+9Ouxj49NFQ4JPl1UpBLZjaWPQ7xuyo3w==, tarball: file:projects/model-personal-browser.tgz}
+  '@rush-temp/model-my-space@file:projects/model-my-space.tgz':
+    resolution: {integrity: sha512-OxBDKFosN/3hsy9Ot0fDJTpzqFJvNLWxgJXtmculo1ksyKacMGZc4+9Ouxj49NFQ4JPl1UpBLZjaWPQ7xuyo3w==, tarball: file:projects/model-my-space.tgz}
     version: 0.0.0
 
   '@rush-temp/model-preference@file:projects/model-preference.tgz':
@@ -4726,16 +4726,16 @@ packages:
     resolution: {integrity: sha512-cjwk9I0RxeNJQTgtbbcQlwiurbp+/T5MbiRnYTLWvxsMBVWnnxD5nToECUt1QdW/CjSSbPsaYP8hoMgt/AufCw==, tarball: file:projects/panel.tgz}
     version: 0.0.0
 
-  '@rush-temp/personal-browser-assets@file:projects/personal-browser-assets.tgz':
-    resolution: {integrity: sha512-yGiP0aFiYA6RZiY4Ufqhk2egfhWvjEi3GOjcmLZ3eAl3samu/g4b3BcAKzo6SimMwKM2GQF+9oKHn1F/5LmSjA==, tarball: file:projects/personal-browser-assets.tgz}
+  '@rush-temp/my-space-assets@file:projects/my-space-assets.tgz':
+    resolution: {integrity: sha512-yGiP0aFiYA6RZiY4Ufqhk2egfhWvjEi3GOjcmLZ3eAl3samu/g4b3BcAKzo6SimMwKM2GQF+9oKHn1F/5LmSjA==, tarball: file:projects/my-space-assets.tgz}
     version: 0.0.0
 
-  '@rush-temp/personal-browser-resources@file:projects/personal-browser-resources.tgz':
-    resolution: {integrity: sha512-dE2Jeu1rsu0l18l6oKj0Z+D99sS8fkuAcqoqh9alzavqquUvgGSXtTUB24l6Y6A0tbpshtAMLhmFSFgwPtSGHw==, tarball: file:projects/personal-browser-resources.tgz}
+  '@rush-temp/my-space-resources@file:projects/my-space-resources.tgz':
+    resolution: {integrity: sha512-dE2Jeu1rsu0l18l6oKj0Z+D99sS8fkuAcqoqh9alzavqquUvgGSXtTUB24l6Y6A0tbpshtAMLhmFSFgwPtSGHw==, tarball: file:projects/my-space-resources.tgz}
     version: 0.0.0
 
-  '@rush-temp/personal-browser@file:projects/personal-browser.tgz':
-    resolution: {integrity: sha512-dBx6We9vl3uuETflughn1Q1jmxjzQdxZ0rf+OiZZ6lRM0u304BhlM7459AMcaZ76oxkqZ6ulRYVVxr8k7ZGHaA==, tarball: file:projects/personal-browser.tgz}
+  '@rush-temp/my-space@file:projects/my-space.tgz':
+    resolution: {integrity: sha512-dBx6We9vl3uuETflughn1Q1jmxjzQdxZ0rf+OiZZ6lRM0u304BhlM7459AMcaZ76oxkqZ6ulRYVVxr8k7ZGHaA==, tarball: file:projects/my-space.tgz}
     version: 0.0.0
 
   '@rush-temp/platform-rig@file:projects/platform-rig.tgz':
@@ -19662,7 +19662,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@rush-temp/model-personal-browser@file:projects/model-personal-browser.tgz':
+  '@rush-temp/model-my-space@file:projects/model-my-space.tgz':
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
@@ -20795,7 +20795,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/personal-browser-assets@file:projects/personal-browser-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+  '@rush-temp/my-space-assets@file:projects/my-space-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
@@ -20820,7 +20820,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/personal-browser-resources@file:projects/personal-browser-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+  '@rush-temp/my-space-resources@file:projects/my-space-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
@@ -20861,7 +20861,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/personal-browser@file:projects/personal-browser.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+  '@rush-temp/my-space@file:projects/my-space.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)

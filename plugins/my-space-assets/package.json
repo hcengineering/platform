@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/personal-browser-assets",
+  "name": "@hcengineering/my-space-assets",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Hardcore Engineering Inc",
@@ -34,6 +34,6 @@
   "dependencies": {
     "@hcengineering/questions": "^0.1.0",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/personal-browser": "^0.6.0"
+    "@hcengineering/my-space": "^0.6.0"
   }
 }

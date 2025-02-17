@@ -101,10 +101,10 @@ import testManagement, {
   testManagementId,
   createModel as testManagementModel
 } from '@hcengineering/model-test-management'
-import personalBrowser, {
-  personalBrowserId,
-  createModel as personalBrowserModel
-} from '@hcengineering/model-personal-browser'
+import mySpace, {
+  mySpaceId,
+  createModel as mySpaceModel
+} from '@hcengineering/model-my-space'
 import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
 
 import {
@@ -436,11 +436,11 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [surveyModel, surveyId],
     [presenceModel, presenceId],
     [
-      personalBrowserModel,
-      personalBrowserId,
+      mySpaceModel,
+      mySpaceId,
       {
-        label: personalBrowser.string.ConfigLabel,
-        description: personalBrowser.string.ConfigDescription,
+        label: mySpace.string.ConfigLabel,
+        description: mySpace.string.ConfigDescription,
         enabled: true,
         beta: true,
         classFilter: defaultFilter

@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/personal-browser-resources",
+  "name": "@hcengineering/my-space-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Hardcore Engineering Inc.",
@@ -48,7 +48,7 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/contact-resources": "^0.6.0",
-    "@hcengineering/personal-browser": "^0.6.0",
+    "@hcengineering/my-space": "^0.6.0",
     "svelte": "^4.2.19",
     "fast-equals": "^5.2.2"
   }

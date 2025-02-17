@@ -57,7 +57,7 @@ import { documentsId } from '@hcengineering/controlled-documents'
 import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 import { testManagementId } from '@hcengineering/test-management'
 import { surveyId } from '@hcengineering/survey'
-import { personalBrowserId } from '@hcengineering/personal-browser'
+import { mySpaceId } from '@hcengineering/my-space'
 import { mailId } from '@hcengineering/mail'
 
 import '@hcengineering/activity-assets'
@@ -198,7 +198,7 @@ function configureI18n (): void {
   addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
   addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
-  addStringsLoader(personalBrowserId, async (lang: string) => await import(`@hcengineering/personal-browser-assets/lang/${lang}.json`))
+  addStringsLoader(mySpaceId, async (lang: string) => await import(`@hcengineering/my-space-assets/lang/${lang}.json`))
   addStringsLoader(mailId, async (lang: string) => await import(`@hcengineering/mail-assets/lang/${lang}.json`))
 }
 
@@ -327,7 +327,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
   addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
-  addLocation(personalBrowserId, () => import(/* webpackChunkName: "card" */ '@hcengineering/personal-browser-resources'))
+  addLocation(mySpaceId, () => import(/* webpackChunkName: "card" */ '@hcengineering/my-space-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
