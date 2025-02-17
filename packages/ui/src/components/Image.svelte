@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  export let src: string
+  export let src: string | undefined
   export let srcset: string | undefined = undefined
   export let alt: string = ''
   export let width: number | string
@@ -26,13 +26,18 @@
 
   let retry: number = 0
 
-  $: if (src !== undefined) {
-    retry = 0
-  }
-
   function handleLoad (): void {
     retry = 0
     dispatch('load')
+  }
+
+  function handleLoadStart (): void {
+    dispatch('loadstart')
+  }
+
+  $: if (src !== undefined) {
+    retry = 0
+    handleLoadStart()
   }
 
   function handleError (event: any): void {
@@ -47,7 +52,17 @@
   }
 </script>
 
-<img {src} {srcset} {alt} {width} {height} style:object-fit={fit} on:error={handleError} on:load={handleLoad} />
+<img
+  {src}
+  {srcset}
+  {alt}
+  {width}
+  {height}
+  style:object-fit={fit}
+  on:error={handleError}
+  on:loadstart={handleLoadStart}
+  on:load={handleLoad}
+/>
 
 <style lang="scss">
   img {
