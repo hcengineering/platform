@@ -82,15 +82,12 @@
   }
 
   async function reply (): Promise<void> {
-    showPopup(
-      mail.component.CreateMail,
-      {
-        to: object?.from,
-        from: object?.to,
-        subject: getReplySubject(object?.subject ?? ''),
-        mailThreadId: object?.mailThreadId
-      }
-    )
+    showPopup(mail.component.CreateMail, {
+      to: object?.from,
+      from: object?.to,
+      subject: getReplySubject(object?.subject ?? ''),
+      mailThreadId: object?.mailThreadId
+    })
   }
 
   onMount(() => dispatch('open', { ignoreKeys: [] }))
@@ -110,12 +107,7 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="utils">
-      <Button
-        disabled={isLoading}
-        label={mail.string.Reply}
-        kind={'primary'}
-        on:click={reply}
-      />
+      <Button disabled={isLoading} label={mail.string.Reply} kind={'primary'} on:click={reply} />
     </svelte:fragment>
     {#if isLoading}
       <Loading />

@@ -12,7 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Client, type Data, type Doc, type Ref, type Space, type TxOperations, generateId, getCurrentAccount } from '@hcengineering/core'
+import {
+  type Client,
+  type Data,
+  type Doc,
+  type Ref,
+  type Space,
+  type TxOperations,
+  generateId,
+  getCurrentAccount
+} from '@hcengineering/core'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import contact, { getCurrentEmployee } from '@hcengineering/contact'
 import { isSpace } from '@hcengineering/presentation'
@@ -28,7 +37,11 @@ interface MessageData {
   text: string
 }
 
-export async function createMailMessage (client: TxOperations & Client, mailThreadId: Ref<MailThread> | undefined, data: MessageData): Promise<Ref<ChatMessage>> {
+export async function createMailMessage (
+  client: TxOperations & Client,
+  mailThreadId: Ref<MailThread> | undefined,
+  data: MessageData
+): Promise<Ref<ChatMessage>> {
   const mailThread = await getOrCreateMailThread(client, mailThreadId, data)
 
   if (mailThread === undefined) {
@@ -46,8 +59,12 @@ export async function createMailMessage (client: TxOperations & Client, mailThre
   )
 }
 
-async function getOrCreateMailThread (client: TxOperations & Client, mailThreadId: Ref<MailThread> | undefined, data: MessageData): Promise<MailThread | undefined> {
-  const threadId = mailThreadId ?? await createMailThread(client, data)
+async function getOrCreateMailThread (
+  client: TxOperations & Client,
+  mailThreadId: Ref<MailThread> | undefined,
+  data: MessageData
+): Promise<MailThread | undefined> {
+  const threadId = mailThreadId ?? (await createMailThread(client, data))
 
   return await client.findOne(mail.class.MailThread, { _id: threadId })
 }

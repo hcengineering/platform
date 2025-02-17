@@ -57,6 +57,6 @@
 
 <style lang="scss">
   .delimiter {
-    white-space: pre
+    white-space: pre;
   }
 </style>
