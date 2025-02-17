@@ -43,6 +43,7 @@ export interface Client extends Storage, FulltextStorage {
     options?: FindOptions<T>
   ) => Promise<WithLookup<T> | undefined>
   close: () => Promise<void>
+  getConnection?: () => ClientConnection
 }
 
 /**
@@ -69,6 +70,9 @@ export enum ClientConnectEvent {
   Refresh, // In case we detect query refresh is required
   Maintenance // In case workspace are in maintenance mode
 }
+
+export type Handler = (...result: any[]) => void
+
 /**
  * @public
  */
@@ -82,6 +86,7 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
 
   getLastHash?: (ctx: MeasureContext) => Promise<string | undefined>
+  pushHandler: (handler: Handler) => void
 }
 
 class ClientImpl implements Client, BackupClient {
@@ -90,6 +95,10 @@ class ClientImpl implements Client, BackupClient {
   model!: ModelDb
   private readonly appliedModelTransactions = new Set<Ref<Tx>>()
   constructor (private readonly conn: ClientConnection) {}
+
+  getConnection (): ClientConnection {
+    return this.conn
+  }
 
   setModel (hierarchy: Hierarchy, model: ModelDb): void {
     this.hierarchy = hierarchy

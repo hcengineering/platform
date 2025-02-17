@@ -50,6 +50,8 @@ import {
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import { handleSend } from './utils'
+import { FindMessagesParams } from '@hcengineering/communication-types'
+import { Event as CommunicationEvent, ConnectionInfo as CommunicationCtx } from '@hcengineering/communication-sdk-types'
 
 const useReserveContext = (process.env.USE_RESERVE_CTX ?? 'true') === 'true'
 
@@ -308,5 +310,27 @@ export class ClientSession implements Session {
       return
     }
     await ctx.sendResponse(ctx.requestId, {})
+  }
+
+  async event (ctx: ClientSessionCtx, event: CommunicationEvent): Promise<void> {
+    this.lastRequest = Date.now()
+    const data: CommunicationCtx = {
+      socialId: this.account.primarySocialId,
+      sessionId: this.sessionId,
+      personalWorkspace: '' // TODO: add personal workspace
+    }
+    const result = await ctx.communicationApi.event(data, event)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findMessages (ctx: ClientSessionCtx, params: FindMessagesParams, queryId?: number): Promise<void> {
+    this.lastRequest = Date.now()
+    const data: CommunicationCtx = {
+      socialId: this.account.primarySocialId,
+      sessionId: this.sessionId,
+      personalWorkspace: '' // TODO: add personal workspace
+    }
+    const result = await ctx.communicationApi.findMessages(data, params, queryId)
+    await ctx.sendResponse(ctx.requestId, result)
   }
 }
