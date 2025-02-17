@@ -99,12 +99,9 @@ function getFilesUrl (): string {
   return filesUrl.includes('://') ? filesUrl : concatLink(frontUrl, filesUrl)
 }
 
-export function getCurrentWorkspaceId (): WorkspaceDataId {
-  return (
-    getMetadata(plugin.metadata.WorkspaceDataId) ??
-    (getMetadata(plugin.metadata.WorkspaceUuid) as unknown as WorkspaceDataId) ??
-    ('' as WorkspaceDataId)
-  )
+export function getCurrentWorkspaceUuid (): WorkspaceDataId {
+  const workspaceUuid = getMetadata(plugin.metadata.WorkspaceUuid) ?? ''
+  return workspaceUuid as WorkspaceDataId
 }
 
 /**
@@ -120,7 +117,7 @@ export function generateFileId (): string {
 export function getUploadUrl (): string {
   const template = getMetadata(plugin.metadata.UploadURL) ?? defaultUploadUrl
 
-  return template.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+  return template.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
 }
 
 function getUploadConfig (): UploadConfig {
@@ -142,7 +139,7 @@ function getFileUploadMethod (blob: Blob): { method: FileUploadMethod, url: stri
  * @public
  */
 export function getFileUploadParams (blobId: string, blob: Blob): FileUploadParams {
-  const workspaceId = encodeURIComponent(getCurrentWorkspaceId())
+  const workspaceId = encodeURIComponent(getCurrentWorkspaceUuid())
   const fileId = encodeURIComponent(blobId)
 
   const { method, url: urlTemplate } = getFileUploadMethod(blob)
@@ -170,7 +167,7 @@ export function getFileUrl (file: string, filename?: string): string {
   const template = getFilesUrl()
   return template
     .replaceAll(':filename', encodeURIComponent(filename ?? file))
-    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
     .replaceAll(':blobId', encodeURIComponent(file))
 }
 

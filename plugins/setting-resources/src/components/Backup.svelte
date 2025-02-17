@@ -16,13 +16,12 @@
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { Breadcrumb, Button, Expandable, Header, Label, Link, Loading } from '@hcengineering/ui'
+  import { Breadcrumb, Button, Expandable, Header, Label, Loading } from '@hcengineering/ui'
   import Scroller from '@hcengineering/ui/src/components/Scroller.svelte'
   import view from '@hcengineering/view'
   import { onMount } from 'svelte'
   import setting from '../plugin'
   import { BackupInfo, BackupSnapshot } from '../types'
-  import Expand from '@hcengineering/ui/src/components/icons/Expand.svelte'
 
   let loading = true
 
