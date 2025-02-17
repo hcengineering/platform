@@ -101,10 +101,7 @@ import testManagement, {
   testManagementId,
   createModel as testManagementModel
 } from '@hcengineering/model-test-management'
-import mySpace, {
-  mySpaceId,
-  createModel as mySpaceModel
-} from '@hcengineering/model-my-space'
+import mySpace, { mySpaceId, createModel as mySpaceModel } from '@hcengineering/model-my-space'
 import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
 
 import {
