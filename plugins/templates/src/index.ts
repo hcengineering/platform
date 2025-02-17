@@ -14,7 +14,7 @@
 //
 
 import type { Class, Doc, Markup, Ref, Space } from '@hcengineering/core'
-import type { IntlString, Plugin, Resource, type Asset } from '@hcengineering/platform'
+import type { IntlString, Plugin, Resource, Asset } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
