@@ -10,6 +10,7 @@ export class SignUpPage extends CommonPage {
     this.page = page
   }
 
+  signUpPasswordBtn = (): Locator => this.page.locator('a', { hasText: 'Sign up with password' })
   inputFirstName = (): Locator => this.page.locator('input[name="given-name"]')
   inputLastName = (): Locator => this.page.locator('input[name="family-name"]')
   inputEmail = (): Locator => this.page.locator('input[name="email"]')
@@ -42,7 +43,11 @@ export class SignUpPage extends CommonPage {
     await this.buttonSignUp().click()
   }
 
-  async signUp (data: SignUpData, mode: 'join' | 'signup' = 'signup'): Promise<void> {
+  async signUpPwd (data: SignUpData, mode: 'join' | 'signup' = 'signup'): Promise<void> {
+    const isOtp = await this.signUpPasswordBtn().isVisible()
+    if (isOtp) {
+      await this.signUpPasswordBtn().click()
+    }
     await this.enterFirstName(data.firstName)
     await this.enterLastName(data.lastName)
     await this.enterEmail(data.email)
