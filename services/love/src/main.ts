@@ -18,7 +18,7 @@ import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
-import { getClient as getAccountClientRaw, WorkspaceLoginInfo, type AccountClient } from '@hcengineering/account-client'
+import { getClient as getAccountClientRaw, isWorkspaceLoginInfo, type AccountClient } from '@hcengineering/account-client'
 import { RoomMetadata, TranscriptionStatus, MeetingMinutes } from '@hcengineering/love'
 import cors from 'cors'
 import express from 'express'
@@ -144,8 +144,8 @@ export const main = async (): Promise<void> => {
     const meetingMinutes = req.body.meetingMinutes
 
     try {
-      const wsLoginInfo = (await getAccountClient(token).getLoginInfoByToken()) as WorkspaceLoginInfo
-      if (wsLoginInfo?.workspace == null) {
+      const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+      if (!isWorkspaceLoginInfo(wsLoginInfo)) {
         console.error('No workspace found for the token')
         res.status(401).send()
         return

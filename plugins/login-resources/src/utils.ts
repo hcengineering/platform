@@ -222,8 +222,6 @@ export async function performWorkspaceOperation (
   operation: WorkspaceUserOperation,
   ...params: any[]
 ): Promise<boolean> {
-  // TODO: this method requires a special admin token
-  // consider how to obtain it
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
@@ -247,8 +245,6 @@ export async function performWorkspaceOperation (
 }
 
 export async function getAllWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
-  // TODO: this method requires a special admin token
-  // consider how to obtain it
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
