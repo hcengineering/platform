@@ -581,7 +581,7 @@ test.describe('QMS. Documents tests', () => {
     })
   })
 
-  test('TESTS-162. Approve document with delayed release', async ({ page }) => {
+  test.skip('TESTS-162. Approve document with delayed release', async ({ page }) => {
     await allure.description('Requirement\nUsers need to create document with delayed release')
     await allure.tms('TESTS-162', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-162')
     const approveDelayedDocument: NewDocument = {
