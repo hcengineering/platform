@@ -659,9 +659,12 @@ function defineTrainingAttempt (builder: Builder): void {
     sortingKey: 'state',
     displayProps: { align: 'center' }
   }
-  const columnOwner: BuildModelKey = {
-    ...columns.owner,
-    key: 'owner'
+  const columnSubmittedBy: BuildModelKey = {
+    key: 'submittedBy',
+    label: training.string.TrainingAttemptSubmittedBy,
+    presenter: contacts.component.EmployeePresenter,
+    props: { shouldShowName: true },
+    displayProps: { align: 'center' }
   }
 
   defineTableBrowserViewletDescriptor(
@@ -693,7 +696,7 @@ function defineTrainingAttempt (builder: Builder): void {
       columnScore,
       'createdOn',
       'submittedOn',
-      columnOwner
+      columnSubmittedBy
     ],
     configOptions: {
       strict: true,
@@ -720,7 +723,7 @@ function defineTrainingAttempt (builder: Builder): void {
   })
 
   builder.mixin(training.class.TrainingAttempt, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['state', 'owner', 'submittedOn'] as Array<keyof TrainingAttempt>,
+    filters: ['state', 'submittedBy', 'submittedOn'] as Array<keyof TrainingAttempt>,
     strict: true
   })
 
