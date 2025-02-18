@@ -58,18 +58,18 @@
 
   const client = getClient()
 
-  async function changePlannedEffectiveDate (plannedEffectiveDate: Timestamp) {
-    if (!$controlledDocument) {
-      return
-    }
+  // async function changePlannedEffectiveDate (plannedEffectiveDate: Timestamp) {
+  //   if (!$controlledDocument) {
+  //     return
+  //   }
 
-    await client.update($controlledDocument, { plannedEffectiveDate })
-  }
+  //   await client.update($controlledDocument, { plannedEffectiveDate })
+  // }
 
-  let selectedDate: Timestamp =
-    $controlledDocument?.plannedEffectiveDate != null && $controlledDocument?.plannedEffectiveDate > 0
-      ? $controlledDocument.plannedEffectiveDate
-      : Date.now()
+  // let selectedDate: Timestamp =
+  //   $controlledDocument?.plannedEffectiveDate != null && $controlledDocument?.plannedEffectiveDate > 0
+  //     ? $controlledDocument.plannedEffectiveDate
+  //     : Date.now()
 
   let selected: IntlString | undefined = undefined
   if ($controlledDocument?.plannedEffectiveDate === 0) {
@@ -78,13 +78,13 @@
     selected = documentsRes.string.EffectiveOn
   }
 
-  async function changeSelectedDate (ev: CustomEvent) {
-    if (ev.detail !== undefined) {
-      selectedDate = ev.detail
-      await changePlannedEffectiveDate(ev.detail)
-      selected = documentsRes.string.EffectiveOn
-    }
-  }
+  // async function changeSelectedDate (ev: CustomEvent) {
+  //   if (ev.detail !== undefined) {
+  //     selectedDate = ev.detail
+  //     await changePlannedEffectiveDate(ev.detail)
+  //     selected = documentsRes.string.EffectiveOn
+  //   }
+  // }
 
   const reviewIntervals: DropdownTextItem[] = []
   for (const interval of periodicReviewIntervals) {
@@ -94,22 +94,22 @@
     })
   }
 
-  let selectedReviewInterval = $controlledDocument?.reviewInterval
-    ? $controlledDocument.reviewInterval.toString()
-    : DEFAULT_PERIODIC_REVIEW_INTERVAL.toString()
-  async function changePeriodicReviewInterval (interval?: string) {
-    if ($controlledDocument == null || interval == null) {
-      return
-    }
+  // let selectedReviewInterval = $controlledDocument?.reviewInterval
+  //   ? $controlledDocument.reviewInterval.toString()
+  //   : DEFAULT_PERIODIC_REVIEW_INTERVAL.toString()
+  // async function changePeriodicReviewInterval (interval?: string) {
+  //   if ($controlledDocument == null || interval == null) {
+  //     return
+  //   }
 
-    const reviewInterval = Number(+interval)
-    if (!Number.isSafeInteger(reviewInterval)) {
-      return
-    }
+  //   const reviewInterval = Number(+interval)
+  //   if (!Number.isSafeInteger(reviewInterval)) {
+  //     return
+  //   }
 
-    await client.update($controlledDocument, { reviewInterval })
-    selectedReviewInterval = interval.toString()
-  }
+  //   await client.update($controlledDocument, { reviewInterval })
+  //   selectedReviewInterval = interval.toString()
+  // }
 
   $: canEdit =
     $isDocumentOwner &&
@@ -254,7 +254,7 @@
           gap="none"
         />
       </div>
-      <header class="fs-title text-lg my-4">
+      <!-- <header class="fs-title text-lg my-4">
         <Label label={documentsRes.string.EffectiveDocumentLifecycle} />
       </header>
       <span class="fs-title text-normal">
@@ -318,90 +318,91 @@
           <Label label={documentsRes.string.MonthsAfterEffectiveDate} />
         </span>
       </div>
-    </section>
+    </section> -->
 
-    <section class="section pb-16">
-      <header class="flex-row-center mb-4 flex-gap-4">
-        <span class="fs-title text-lg">
-          <Label label={documentTrainingClass.label} />
-        </span>
-
-        <Toggle
-          disabled={!canEdit}
-          on={$documentTraining?.enabled}
-          on:change={(event) => toggleTraining(event.detail)}
-        />
-      </header>
-
-      {#if $documentTraining !== null && $documentTraining.enabled}
-        {@const trainingAttribute = hierarchy.getAttribute(documentTrainingClass._id, 'training')}
-        <span class="fs-title text-normal">
-          <Label label={trainingAttribute.label} />
-        </span>
-        <TrainingRefEditor
-          kind="regular"
-          width="min-content"
-          size="medium"
-          readonly={!canEdit}
-          value={$documentTraining.training}
-          onChange={(trainingRef) => {
-            void updateTraining({ training: trainingRef ?? null })
-          }}
-        />
-
-        {@const rolesAttribute = hierarchy.getAttribute(documentTrainingClass._id, 'roles')}
-        <span class="fs-title text-normal">
-          <Label label={rolesAttribute.label} />
-        </span>
-        <TrainingRequestRolesEditor
-          kind="regular"
-          width="max-content"
-          value={$documentTraining.roles}
-          onChange={(roles) => {
-            void updateTraining({ roles })
-          }}
-        />
-
-        {@const traineesAttribute = hierarchy.getAttribute(documentTrainingClass._id, 'trainees')}
-        <span class="fs-title text-normal">
-          <Label label={traineesAttribute.label} />
-        </span>
-        <UserBoxItems
-          items={$documentTraining.trainees}
-          label={traineesAttribute.label}
-          readonly={!canEdit}
-          size="card"
-          on:update={(event) => {
-            void updateTraining({ trainees: event.detail })
-          }}
-        />
-
-        <div class="flex-row-center flex-gap-2">
-          <span class="whitespace-nowrap fs-title text-normal">
-            <Label label={documentsRes.string.ToBePassedWithin} />
+      <section class="section pb-16">
+        <header class="flex-row-center my-4 flex-gap-4">
+          <span class="fs-title text-lg">
+            <Label label={documentTrainingClass.label} />
           </span>
-          <NullablePositiveNumberEditor
+
+          <Toggle
+            disabled={!canEdit}
+            on={$documentTraining?.enabled}
+            on:change={(event) => toggleTraining(event.detail)}
+          />
+        </header>
+
+        {#if $documentTraining !== null && $documentTraining.enabled}
+          {@const trainingAttribute = hierarchy.getAttribute(documentTrainingClass._id, 'training')}
+          <span class="fs-title text-normal">
+            <Label label={trainingAttribute.label} />
+          </span>
+          <TrainingRefEditor
             kind="regular"
             width="min-content"
-            value={$documentTraining.maxAttempts}
+            size="medium"
             readonly={!canEdit}
-            onChange={(maxAttempts) => {
-              void updateTraining({ maxAttempts })
+            value={$documentTraining.training}
+            onChange={(trainingRef) => {
+              void updateTraining({ training: trainingRef ?? null })
             }}
           />
-          <Label label={documentsRes.string.AttemptsAnd} />
-          <NullablePositiveNumberEditor
+
+          {@const rolesAttribute = hierarchy.getAttribute(documentTrainingClass._id, 'roles')}
+          <span class="fs-title text-normal">
+            <Label label={rolesAttribute.label} />
+          </span>
+          <TrainingRequestRolesEditor
             kind="regular"
-            width="min-content"
-            value={$documentTraining.dueDays}
-            readonly={!canEdit}
-            onChange={(dueDays) => {
-              void updateTraining({ dueDays })
+            width="max-content"
+            value={$documentTraining.roles}
+            onChange={(roles) => {
+              void updateTraining({ roles })
             }}
           />
-          <Label label={documentsRes.string.DaysAfterEffectiveDate} />
-        </div>
-      {/if}
+
+          {@const traineesAttribute = hierarchy.getAttribute(documentTrainingClass._id, 'trainees')}
+          <span class="fs-title text-normal">
+            <Label label={traineesAttribute.label} />
+          </span>
+          <UserBoxItems
+            items={$documentTraining.trainees}
+            label={traineesAttribute.label}
+            readonly={!canEdit}
+            size="card"
+            on:update={(event) => {
+              void updateTraining({ trainees: event.detail })
+            }}
+          />
+
+          <div class="flex-row-center flex-gap-2">
+            <span class="whitespace-nowrap fs-title text-normal">
+              <Label label={documentsRes.string.ToBePassedWithin} />
+            </span>
+            <NullablePositiveNumberEditor
+              kind="regular"
+              width="min-content"
+              value={$documentTraining.maxAttempts}
+              readonly={!canEdit}
+              onChange={(maxAttempts) => {
+                void updateTraining({ maxAttempts })
+              }}
+            />
+            <Label label={documentsRes.string.AttemptsAnd} />
+            <NullablePositiveNumberEditor
+              kind="regular"
+              width="min-content"
+              value={$documentTraining.dueDays}
+              readonly={!canEdit}
+              onChange={(dueDays) => {
+                void updateTraining({ dueDays })
+              }}
+            />
+            <Label label={documentsRes.string.DaysAfterEffectiveDate} />
+          </div>
+        {/if}
+      </section>
     </section>
   </div>
 </Scroller>
