@@ -22,7 +22,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import mail from '../plugin'
-  import { getEmailSocialId, isValidEmail } from '../messageUtils'
+  import { getEmailSocialId, isNotEmpty, isValidEmail } from '../messageUtils'
 
   const manager = createFocusManager()
   const dispatch = createEventDispatcher()
@@ -37,6 +37,8 @@
   export let from = getEmailSocialId(account)
   export let subject = ''
   let message = ''
+
+  $: canSave = isNotEmpty(to) && isValidEmail(to) && (isNotEmpty(subject) || isNotEmpty(message))
 
   export function canClose (): boolean {
     return to === '' && from === '' && subject === ''
@@ -104,7 +106,7 @@
 <Card
   label={mail.string.CreateMail}
   okAction={createMail}
-  canSave={to.trim().length > 0 && isValidEmail(to)}
+  {canSave}
   on:close={() => {
     dispatch('close')
   }}

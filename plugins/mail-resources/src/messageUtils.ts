@@ -107,6 +107,10 @@ export function isValidEmail (email: string): boolean {
   return emailRegex.test(email)
 }
 
+export function isNotEmpty (str: string | undefined): boolean {
+  return str !== undefined && str.trim().length > 0
+}
+
 export function getReplySubject (subject: string): string {
   return subject.startsWith('Re:') ? subject : `Re: ${subject}`
 }
