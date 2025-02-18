@@ -267,7 +267,7 @@ async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
       const objs = Array.isArray(issue) ? issue : [issue]
 
       const target = await getTargetObjectFromUrl(getCurrentLocation())
-      const deletingFromTargetIssuePage = objs.some(obj => obj._id === target?._id)
+      const deletingFromTargetIssuePage = objs.some((obj) => obj._id === target?._id)
 
       try {
         await deleteObjects(getClient(), objs as unknown as Doc[])
