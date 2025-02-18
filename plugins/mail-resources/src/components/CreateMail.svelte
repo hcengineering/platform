@@ -15,7 +15,7 @@
 //
 -->
 <script lang="ts">
-  import core, { Data, Doc, generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { Data, Doc, generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import chunter, { type ChatMessage } from '@hcengineering/chunter'
   import { Card, getClient, isSpace } from '@hcengineering/presentation'
   import { MailThread } from '@hcengineering/mail'
@@ -30,6 +30,7 @@
   const client = getClient()
   const account = getCurrentAccount()
 
+  export let space: Ref<Space>
   export let mailThreadId: Ref<MailThread> | undefined = undefined
 
   export let to = ''
@@ -84,7 +85,7 @@
       preview: getMessagePreview(message)
     }
 
-    const threadId = await client.createDoc(mail.class.MailThread, core.space.Space, data)
+    const threadId = await client.createDoc(mail.class.MailThread, space, data)
     return await client.findOne(mail.class.MailThread, { _id: threadId as any })
   }
 

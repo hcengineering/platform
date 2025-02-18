@@ -2284,7 +2284,7 @@
     {
       "packageName": "@hcengineering/mail",
       "projectFolder": "plugins/mail",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/model-mail",
