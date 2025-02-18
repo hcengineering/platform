@@ -222,8 +222,6 @@ export async function performWorkspaceOperation (
   operation: WorkspaceUserOperation,
   ...params: any[]
 ): Promise<boolean> {
-  // TODO: this method requires a special admin token
-  // consider how to obtain it
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
@@ -247,8 +245,6 @@ export async function performWorkspaceOperation (
 }
 
 export async function getAllWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
-  // TODO: this method requires a special admin token
-  // consider how to obtain it
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
@@ -629,7 +625,7 @@ export async function leaveWorkspace (account: string): Promise<LoginInfo | null
   return await getAccountClient().leaveWorkspace(account)
 }
 
-export async function sendInvite (email: string, role?: AccountRole): Promise<void> {
+export async function sendInvite (email: string, role: AccountRole): Promise<void> {
   try {
     await getAccountClient().sendInvite(email, role)
   } catch (e) {
@@ -638,32 +634,13 @@ export async function sendInvite (email: string, role?: AccountRole): Promise<vo
   }
 }
 
-export async function resendInvite (email: string): Promise<void> {
-  // TODO: FIXME
-  throw new Error('Not implemented')
-  // const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-
-  // if (accountsUrl === undefined) {
-  //   throw new Error('accounts url not specified')
-  // }
-
-  // const token = getMetadata(presentation.metadata.Token) as string
-
-  // const params = [email]
-
-  // const request = {
-  //   method: 'resendInvite',
-  //   params
-  // }
-
-  // await fetch(accountsUrl, {
-  //   method: 'POST',
-  //   headers: {
-  //     Authorization: 'Bearer ' + token,
-  //     'Content-Type': 'application/json'
-  //   },
-  //   body: JSON.stringify(request)
-  // })
+export async function resendInvite (email: string, role: AccountRole): Promise<void> {
+  try {
+    await getAccountClient().resendInvite(email, role)
+  } catch (e) {
+    console.log('Failed to resend invite', email, role)
+    console.error(e)
+  }
 }
 
 export async function requestPassword (email: string): Promise<Status> {

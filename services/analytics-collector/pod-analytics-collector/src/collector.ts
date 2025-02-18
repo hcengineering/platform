@@ -16,7 +16,7 @@ import { generateToken, Token } from '@hcengineering/server-token'
 import { AnalyticEvent } from '@hcengineering/analytics-collector'
 import { AccountRole, MeasureContext, isWorkspaceCreating, WorkspaceUuid, PersonUuid } from '@hcengineering/core'
 import { Person } from '@hcengineering/contact'
-import { getClient as getAccountClient, WorkspaceLoginInfo } from '@hcengineering/account-client'
+import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { Db, Collection } from 'mongodb'
 
 import { WorkspaceClient } from './workspaceClient'
@@ -159,7 +159,12 @@ export class Collector {
     const token = generateToken(account, workspace, { service: 'analytics-collector' })
     const wsLoginInfo = await getAccountClient(config.AccountsUrl, token).getLoginInfoByToken()
 
-    if ((wsLoginInfo as WorkspaceLoginInfo).role !== AccountRole.Owner) {
+    if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+      this.ctx.error('Cannot find workspace login info by token', { wsLoginInfo })
+      return
+    }
+
+    if (wsLoginInfo.role !== AccountRole.Owner) {
       return
     }
 

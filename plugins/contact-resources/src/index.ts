@@ -23,6 +23,8 @@ import {
   type Person
 } from '@hcengineering/contact'
 import {
+  AccountRole,
+  SocialIdType,
   type Class,
   type Client,
   type Data,
@@ -263,18 +265,22 @@ async function doContactQuery<T extends Contact> (
 }
 
 async function resendInvite (doc: Person): Promise<void> {
-  // const client = getClient()
+  const client = getClient()
+  const emailSocialId = await client.findOne(contact.class.SocialIdentity, {
+    attachedTo: doc._id,
+    type: SocialIdType.EMAIL
+  })
+  if (emailSocialId == null) {
+    console.error('Cannot find email social id for person', doc._id)
+    return
+  }
 
   showPopup(MessageBox, {
     label: contact.string.ResendInvite,
     message: contact.string.ResendInviteDescr,
     action: async () => {
-      // TODO: FIXME
-      throw new Error('Not implemented')
-      // const _resendInvite = await getResource(login.function.ResendInvite)
-      // for (const i of accounts) {
-      //   await _resendInvite(i.email)
-      // }
+      const _resendInvite = await getResource(login.function.ResendInvite)
+      await _resendInvite(emailSocialId?.value, AccountRole.User)
     }
   })
 }

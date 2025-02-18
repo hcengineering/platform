@@ -48,7 +48,8 @@ export interface AccountClient {
   restorePassword: (password: string) => Promise<LoginInfo>
   confirm: () => Promise<LoginInfo>
   requestPasswordReset: (email: string) => Promise<void>
-  sendInvite: (email: string, role?: AccountRole) => Promise<void>
+  sendInvite: (email: string, role: AccountRole) => Promise<void>
+  resendInvite: (email: string, role: AccountRole) => Promise<void>
   leaveWorkspace: (account: string) => Promise<LoginInfo | null>
   changeUsername: (first: string, last: string) => Promise<void>
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>
@@ -255,9 +256,18 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async sendInvite (email: string, role?: AccountRole): Promise<void> {
+  async sendInvite (email: string, role: AccountRole): Promise<void> {
     const request = {
       method: 'sendInvite' as const,
+      params: [email, role]
+    }
+
+    await this.rpc(request)
+  }
+
+  async resendInvite (email: string, role: AccountRole): Promise<void> {
+    const request = {
+      method: 'resendInvite' as const,
       params: [email, role]
     }
 

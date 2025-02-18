@@ -1139,3 +1139,61 @@ export function getPersonName (person: Person): string {
   // Should we control the order by config?
   return `${person.firstName} ${person.lastName}`
 }
+
+interface EmailInfo {
+  text: string
+  html: string
+  subject: string
+  to: string
+}
+
+export async function sendEmail (info: EmailInfo): Promise<void> {
+  const { text, html, subject, to } = info
+  const { sesURL, sesAuth } = getSesUrl()
+  await fetch(concatLink(sesURL, '/send'), {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to
+    })
+  })
+}
+
+export async function getInviteEmail (
+  branding: Branding | null,
+  email: string,
+  inviteId: string,
+  workspace: Workspace,
+  expHours: number,
+  resend = false
+): Promise<EmailInfo> {
+  const front = getFrontUrl(branding)
+  const link = concatLink(front, `/login/join?inviteId=${inviteId}`)
+  const ws = workspace.name !== '' ? workspace.name : workspace.url
+  const lang = branding?.language
+
+  return {
+    text: await translate(
+      resend ? accountPlugin.string.ResendInviteText : accountPlugin.string.InviteText,
+      { link, ws, expHours },
+      lang
+    ),
+    html: await translate(
+      resend ? accountPlugin.string.ResendInviteHTML : accountPlugin.string.InviteHTML,
+      { link, ws, expHours },
+      lang
+    ),
+    subject: await translate(
+      resend ? accountPlugin.string.ResendInviteSubject : accountPlugin.string.InviteSubject,
+      { ws },
+      lang
+    ),
+    to: email
+  }
+}
