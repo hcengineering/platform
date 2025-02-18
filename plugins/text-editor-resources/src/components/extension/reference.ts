@@ -22,9 +22,12 @@ import { ReferenceNode, type ReferenceNodeProps, type ReferenceOptions } from '@
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionOptions, type SuggestionProps } from './suggestion'
 
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
-import { createQuery, getClient, getTargetObjectFromUrl } from '@hcengineering/presentation'
+import { getMetadata, getResource } from '@hcengineering/platform'
+import presentation, { createQuery, getClient } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
+
+import { parseLocation, type Location } from '@hcengineering/ui'
+import workbench, { type Application } from '@hcengineering/workbench'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
   suggestion: Omit<SuggestionOptions, 'editor'>
@@ -117,7 +120,7 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
 
       const renderLabel = (props: ReferenceNodeProps): void => {
         span.setAttribute('data-label', props.label)
-        span.innerText = options.renderLabel({ options, props: props ?? node.attrs })
+        span.innerText = options.renderLabel({ options, props: props ?? (node.attrs as ReferenceNodeProps) })
       }
 
       const id = node.attrs.id
@@ -352,5 +355,53 @@ export async function getReferenceFromUrl (urlString: string): Promise<Reference
     id: target._id,
     objectclass: target._class,
     label
+  }
+}
+
+export async function getTargetObjectFromUrl (
+  urlOrLocation: string | Location
+): Promise<{ _id: Ref<Doc>, _class: Ref<Class<Doc>> } | undefined> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let location: Location
+  if (typeof urlOrLocation === 'string') {
+    const url = new URL(urlOrLocation)
+
+    const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+    if (url.origin !== frontUrl) return
+
+    location = parseLocation(url)
+  } else {
+    location = urlOrLocation
+  }
+
+  const appAlias = (location.path[2] ?? '').trim()
+  if (!(appAlias.length > 0)) return
+
+  const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
+  const apps: Application[] = client
+    .getModel()
+    .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
+
+  const app = apps.find((p) => p.alias === appAlias)
+
+  if (app?.locationResolver === undefined) return
+  const locationResolverFn = await getResource(app.locationResolver)
+  const resolvedLocation = await locationResolverFn(location)
+
+  const locationParts = decodeURIComponent(resolvedLocation?.loc?.fragment ?? '').split('|')
+  const id = locationParts[1] as Ref<Doc>
+  const objectclass = locationParts[2] as Ref<Class<Doc>>
+  if (id === undefined || objectclass === undefined) return
+
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+  const linkProvider = linkProviders.find(({ _id }) => hierarchy.isDerived(objectclass, _id))
+  const _id: Ref<Doc> | undefined =
+    linkProvider !== undefined ? (await (await getResource(linkProvider.decode))(id)) ?? id : id
+
+  return {
+    _id,
+    _class: objectclass
   }
 }

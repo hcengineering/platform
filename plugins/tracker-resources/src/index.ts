@@ -29,7 +29,7 @@ import {
   type TxOperations
 } from '@hcengineering/core'
 import { type Resources, type Status, translate } from '@hcengineering/platform'
-import { getClient, getTargetObjectFromUrl, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
+import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Component, type Issue, type Milestone, type Project } from '@hcengineering/tracker'
 import {
   closePanel,
@@ -175,6 +175,7 @@ import { getAllStates } from '@hcengineering/task-resources'
 import view, { type Filter } from '@hcengineering/view'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
+import { getTargetObjectFromUrl } from '@hcengineering/text-editor-resources/src/components/extension/reference'
 
 export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
