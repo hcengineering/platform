@@ -34,21 +34,23 @@ const sql: Sql = postgres(dbUrl, {
   fetch_types: true
 })
 
-async function toResponse (compression: string, data: any, response: http.ServerResponse): Promise<void> {
+async function toResponse (compression: string, data: any, response: http.ServerResponse, qtime: number): Promise<void> {
   if (compression === 'snappy') {
     response
       .writeHead(200, {
         'content-type': 'application/json',
         compression: 'snappy',
         'content-encoding': 'snappy',
-        'keep-alive': 'timeout=5'
+        'keep-alive': 'timeout=5',
+        querytime: `${qtime}`
       })
       .end(await compress(JSON.stringify(data)))
   } else {
     response
       .writeHead(200, {
         'content-type': 'application/json',
-        'keep-alive': 'timeout=5'
+        'keep-alive': 'timeout=5',
+        querytime: `${qtime}`
       })
       .end(JSON.stringify(data))
   }
@@ -96,8 +98,9 @@ async function handleSQLFind (
       query: json.query
     })
     const result = await query
-    console.log('query', json.query, Date.now() - st, result.length)
-    await toResponse(compression, result, response)
+    const qtime = Date.now() - st
+    console.log('query', json.query, qtime, result.length)
+    await toResponse(compression, result, response, qtime)
   } catch (err: any) {
     console.error('failed to execute sql', json.query, json.params, err.message, err)
     if (!response.writableEnded) {
@@ -122,7 +125,9 @@ const reqHandler = (req: http.IncomingMessage, resp: http.ServerResponse): void 
     return
   }
   if (req.method === 'POST' && url.startsWith('/api/v1/sql')) {
-    void handleSQLFind(compression, req, resp)
+    void handleSQLFind(compression, req, resp).catch((err) => {
+      console.error('failed to execute query: ', err)
+    })
   } else {
     resp.writeHead(404).end('Not found')
   }
