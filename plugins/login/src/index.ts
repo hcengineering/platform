@@ -65,7 +65,7 @@ export default plugin(loginId, {
   },
   function: {
     SendInvite: '' as Resource<(email: string, role?: AccountRole) => Promise<void>>,
-    ResendInvite: '' as Resource<(inviteId: string) => Promise<void>>,
+    ResendInvite: '' as Resource<(inviteId: string, role: AccountRole) => Promise<void>>,
     GetInviteLink: '' as Resource<
     (
       expHours: number,
