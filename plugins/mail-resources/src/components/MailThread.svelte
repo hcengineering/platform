@@ -21,10 +21,10 @@
   import { getResource } from '@hcengineering/platform'
   import { ActionContext, getClient } from '@hcengineering/presentation'
   import { type Class, type Ref } from '@hcengineering/core'
-  import mail, { MailThread } from '@hcengineering/mail'
+  import mail, { MailThread, MailMessage } from '@hcengineering/mail'
   import { Panel } from '@hcengineering/panel'
   import { type AnySvelteComponent, Button, Component, Loading, showPopup } from '@hcengineering/ui'
-  import chunter, { type ChatMessage } from '@hcengineering/chunter'
+  import chunter from '@hcengineering/chunter'
   import view, { type ObjectPresenter } from '@hcengineering/view'
 
   import { getReplySubject } from '../messageUtils'
@@ -32,8 +32,8 @@
   export let _id: Ref<MailThread>
   export let _class: Ref<Class<MailThread>>
 
-  const messageClass = chunter.class.ChatMessage
-  let messages: ChatMessage[] = []
+  const messageClass = mail.class.MailMessage
+  let messages: MailMessage[] = []
   let isLoading = true
 
   let object: MailThread | undefined
@@ -62,7 +62,7 @@
   async function findMessagePresenter (): Promise<void> {
     const presenterMixin: ObjectPresenter | undefined = getClient()
       .getHierarchy()
-      .classHierarchyMixin(messageClass, view.mixin.ObjectPresenter) as any
+      .classHierarchyMixin(chunter.class.ChatMessage, view.mixin.ObjectPresenter) as any
     if (presenterMixin?.presenter !== undefined) {
       messagePresenter = await getResource(presenterMixin.presenter)
     }

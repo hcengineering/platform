@@ -18,10 +18,10 @@ import core, { IndexKind } from '@hcengineering/core'
 import { type Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
 import view from '@hcengineering/model-view'
-import { TChunterSpace } from '@hcengineering/model-chunter'
+import { TChunterSpace, TChatMessage } from '@hcengineering/model-chunter'
 
 import chunter from '@hcengineering/chunter'
-import mail, { type MailThread } from '@hcengineering/mail'
+import mail, { type MailThread, type MailMessage } from '@hcengineering/mail'
 
 export { mailId } from '@hcengineering/mail'
 export { default } from './plugin'
@@ -49,8 +49,16 @@ export class TMailThread extends TChunterSpace implements MailThread {
     preview!: string
 }
 
+@Model(mail.class.MailMessage, chunter.class.ChatMessage)
+@UX(mail.string.MailMessage, undefined, undefined, undefined, undefined, mail.string.MailMessages)
+export class TMailMessage extends TChatMessage implements MailMessage {
+  @Prop(TypeString(), mail.string.MailId)
+  @Index(IndexKind.Indexed)
+    mailId!: string
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TMailThread)
+  builder.createModel(TMailThread, TMailMessage)
 
   builder.mixin(mail.class.MailThread, core.class.Class, activity.mixin.ActivityDoc, {})
 

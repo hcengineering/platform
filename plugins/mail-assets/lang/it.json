@@ -6,6 +6,8 @@
     "CreateMail": "Nuovo messaggio",
     "MailThread": "Messaggio",
     "Reply": "Rispondi",
-    "Date": "Data"
+    "Date": "Data",
+    "MailMessage": "Messaggio",
+    "MailMessages": "Messaggi"
   }
 }
