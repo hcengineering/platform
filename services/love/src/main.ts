@@ -18,7 +18,11 @@ import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
-import { getClient as getAccountClientRaw, isWorkspaceLoginInfo, type AccountClient } from '@hcengineering/account-client'
+import {
+  getClient as getAccountClientRaw,
+  isWorkspaceLoginInfo,
+  type AccountClient
+} from '@hcengineering/account-client'
 import { RoomMetadata, TranscriptionStatus, MeetingMinutes } from '@hcengineering/love'
 import cors from 'cors'
 import express from 'express'
