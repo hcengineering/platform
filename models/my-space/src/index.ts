@@ -52,6 +52,9 @@ export function createModel (builder: Builder): void {
               label: mySpace.string.Mail,
               createLabel: mail.string.CreateMail,
               createComponent: mail.component.CreateMail
+            },
+            queryOptions: {
+              filterBySpace: true
             }
           }
         ]
