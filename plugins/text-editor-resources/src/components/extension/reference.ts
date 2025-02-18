@@ -1,3 +1,18 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { mergeAttributes, type Editor } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import MentionList from '../MentionList.svelte'
@@ -7,11 +22,9 @@ import { ReferenceNode, type ReferenceNodeProps, type ReferenceOptions } from '@
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionOptions, type SuggestionProps } from './suggestion'
 
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
-import { getMetadata, getResource } from '@hcengineering/platform'
-import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-import { parseLocation } from '@hcengineering/ui'
+import { getResource } from '@hcengineering/platform'
+import { createQuery, getClient, getTargetObjectFromUrl } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
-import workbench, { type Application } from '@hcengineering/workbench'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
   suggestion: Omit<SuggestionOptions, 'editor'>
@@ -328,47 +341,16 @@ export async function getReferenceLabel<T extends Doc> (
   return label
 }
 
-export async function getReferenceFromUrl (text: string): Promise<ReferenceNodeProps | undefined> {
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+export async function getReferenceFromUrl (urlString: string): Promise<ReferenceNodeProps | undefined> {
+  const target = await getTargetObjectFromUrl(urlString)
+  if (target === undefined) return
 
-  const url = new URL(text)
-
-  const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-  if (url.origin !== frontUrl) return
-
-  const location = parseLocation(url)
-
-  const appAlias = (location.path[2] ?? '').trim()
-  if (!(appAlias.length > 0)) return
-
-  const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
-  const apps: Application[] = client
-    .getModel()
-    .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
-
-  const app = apps.find((p) => p.alias === appAlias)
-
-  if (app?.locationResolver === undefined) return
-  const locationResolverFn = await getResource(app.locationResolver)
-  const resolvedLocation = await locationResolverFn(location)
-
-  const locationParts = decodeURIComponent(resolvedLocation?.loc?.fragment ?? '').split('|')
-  const id = locationParts[1] as Ref<Doc>
-  const objectclass = locationParts[2] as Ref<Class<Doc>>
-  if (id === undefined || objectclass === undefined) return
-
-  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
-  const linkProvider = linkProviders.find(({ _id }) => hierarchy.isDerived(objectclass, _id))
-  const _id: Ref<Doc> | undefined =
-    linkProvider !== undefined ? (await (await getResource(linkProvider.decode))(id)) ?? id : id
-
-  const label = await getReferenceLabel(objectclass, _id)
+  const label = await getReferenceLabel(target._class, target._id)
   if (label === '') return
 
   return {
-    id: _id,
-    objectclass,
+    id: target._id,
+    objectclass: target._class,
     label
   }
 }
