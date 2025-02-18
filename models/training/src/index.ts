@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import notification, { type NotificationType } from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
-import type { BuildModelKey, Viewlet, ViewletDescriptor } from '@hcengineering/view'
+import type { BuildModelKey, KeyFilterPreset, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import questions from '@hcengineering/model-questions'
 import contact from '@hcengineering/contact'
 import tracker from '@hcengineering/model-tracker'
@@ -659,12 +659,19 @@ function defineTrainingAttempt (builder: Builder): void {
     sortingKey: 'state',
     displayProps: { align: 'center' }
   }
-  const columnSubmittedBy: BuildModelKey = {
-    key: 'submittedBy',
-    label: training.string.TrainingAttemptSubmittedBy,
+  const columnTrainee: BuildModelKey = {
+    key: 'owner',
+    label: training.string.TrainingRequestTrainee,
     presenter: contacts.component.EmployeePresenter,
     props: { shouldShowName: true },
     displayProps: { align: 'center' }
+  }
+
+  const columnTraineeFilter: KeyFilterPreset = {
+    _class: training.class.TrainingAttempt,
+    component: contacts.component.EmployeeFilter,
+    key: 'owner',
+    label: training.string.TrainingRequestTrainee
   }
 
   defineTableBrowserViewletDescriptor(
@@ -696,7 +703,7 @@ function defineTrainingAttempt (builder: Builder): void {
       columnScore,
       'createdOn',
       'submittedOn',
-      columnSubmittedBy
+      columnTrainee
     ],
     configOptions: {
       strict: true,
@@ -723,7 +730,7 @@ function defineTrainingAttempt (builder: Builder): void {
   })
 
   builder.mixin(training.class.TrainingAttempt, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['state', 'submittedBy', 'submittedOn'] as Array<keyof TrainingAttempt>,
+    filters: ['state', 'submittedOn', columnTraineeFilter] as Array<keyof TrainingAttempt>,
     strict: true
   })
 
