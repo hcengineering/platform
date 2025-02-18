@@ -35,7 +35,10 @@ class GreenClient implements DBClient {
     readonly url: string,
     private readonly token: string,
     private readonly connection: postgres.Sql,
-    private readonly decoder: ((data: any) => Promise<any>) | undefined
+    private readonly compression?: {
+      decoder: (data: any) => Promise<any>
+      compression: string
+    }
   ) {
     this.endpoint = concatLink(url, '/api/v1/sql')
   }
@@ -47,12 +50,14 @@ class GreenClient implements DBClient {
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
+        const st = Date.now()
         const response = await fetch(this.endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: 'Bearer ' + this.token,
-            Connection: 'keep-alive'
+            Connection: 'keep-alive',
+            ...(this.compression?.compression !== undefined ? { compression: this.compression.compression } : {})
           },
           body: JSON.stringify({
             query,
@@ -62,15 +67,43 @@ class GreenClient implements DBClient {
         if (!response.ok) {
           throw new Error(`Failed to execute sql: ${response.status} ${response.statusText}`)
         }
-        if (this.decoder !== undefined && response.headers.get('compression') !== undefined) {
-          return JSON.parse(await this.decoder(Buffer.from(await response.arrayBuffer())))
-        }
+        let size = 0
+        let encodedSize = 0
+        try {
+          if (
+            this.compression?.decoder !== undefined &&
+            response.headers.get('compression') === this.compression.compression
+          ) {
+            const buffer = Buffer.from(await response.arrayBuffer())
+            encodedSize = buffer.length
+            const decoded = await this.compression.decoder(buffer)
+            size = decoded.length
+            return JSON.parse(decoded)
+          }
 
-        return await response.json()
+          return await response.json()
+        } finally {
+          const qtime = response.headers.get('querytime')
+          const time = Date.now() - st
+          console.info({
+            message: `green query: ${time} ${qtime ?? 0}`,
+            query,
+            time,
+            parameters,
+            qtime: response.headers.get('querytime'),
+            size,
+            encodedSize
+          })
+        }
       } catch (err: any) {
         lastError = err
         if (attempt === maxRetries - 1) {
-          console.warn('green failed after retries', query)
+          console.warn({
+            message: 'green failed after retries',
+            query,
+            errMessage: err.message,
+            endpoint: this.endpoint
+          })
           return await this.connection.unsafe(query, params, getPrepare())
         }
         await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100))
@@ -95,7 +128,10 @@ export function createGreenDBClient (
   url: string,
   token: string,
   connection: postgres.Sql,
-  decoder?: (data: any) => Promise<any>
+  compression?: {
+    decoder: (data: any) => Promise<any>
+    compression: string
+  }
 ): DBClient {
-  return new GreenClient(url, token, connection, decoder)
+  return new GreenClient(url, token, connection, compression)
 }

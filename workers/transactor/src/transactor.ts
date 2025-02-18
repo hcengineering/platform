@@ -1,17 +1,17 @@
 // Copyright © 2024 Huly Labs.
 
 import {
-  type Account,
   generateId,
   NoMetricsContext,
+  WorkspaceUuid,
+  type Account,
   type Class,
   type Doc,
   type DocumentQuery,
   type FindOptions,
   type MeasureContext,
   type Ref,
-  type Tx,
-  WorkspaceUuid
+  type Tx
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { RPCHandler } from '@hcengineering/rpc'
@@ -39,7 +39,6 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
-  getDBClient,
   registerGreenDecoder,
   registerGreenUrl,
   setDBExtraOptions
@@ -86,12 +85,11 @@ export class Transactor extends DurableObject<Env> {
 
     setDBExtraOptions({
       ssl: false,
+      max: env.USE_GREEN === 'true' ? 2 : 5, // Cloud flare limit an concurrent connection to be 6 total
       connection: {
         application_name: 'cloud-transactor'
       }
     })
-
-    console.log({ message: 'wakeup', connections: ctx.getWebSockets().length })
 
     // this.ctx.setHibernatableWebSocketEventTimeout(60 * 1000)
     this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair(pingConst, pongConst))
@@ -115,7 +113,7 @@ export class Transactor extends DurableObject<Env> {
 
     if (env.USE_GREEN === 'true') {
       registerGreenUrl(env.GREEN_URL)
-      registerGreenDecoder('snappy', uncompress)
+      registerGreenDecoder('snappy', async (data) => uncompress(data))
     }
 
     registerStringLoaders()
@@ -149,19 +147,15 @@ export class Transactor extends DurableObject<Env> {
         extraLogging: true,
         pipelineContextVars: this.contextVars
       })
-      const result = await pipeline(ctx, ws, upgrade, broadcast, branding)
-
-      const client = getDBClient(this.contextVars, dbUrl)
-      const connection = await client.getClient()
-      const t1 = Date.now()
-      await connection`select now()`
-      console.log('DB query time', Date.now() - t1)
-      client.close()
-      return result
+      return await pipeline(ctx, ws, upgrade, broadcast, branding)
     }
 
     void this.ctx
       .blockConcurrencyWhile(async () => {
+        const wakeUps = ((await ctx.storage.get('wakeUps')) as number) ?? 0
+        console.log({ message: `wakeup ${wakeUps}`, connections: ctx.getWebSockets().length })
+        await ctx.storage.put('wakeUps', wakeUps + 1)
+
         this.sessionManager = createSessionManager(
           this.measureCtx,
           (token: Token, workspace: Workspace, account: Account) => new ClientSession(token, workspace, account, false),
