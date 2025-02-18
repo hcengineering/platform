@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -20,15 +20,24 @@ import presence from '@hcengineering/presence'
 import presentation from '@hcengineering/presentation'
 import { type Unsubscriber, get } from 'svelte/store'
 
-import { myPresence, onPersonUpdate, onPersonLeave } from './store'
-import { type RoomPresence } from './types'
+import { myPresence, myData, isAnybodyInMyRoom, onPersonUpdate, onPersonLeave, onPersonData } from './store'
+import type { RoomPresence, MyDataItem } from './types'
 
-interface Message {
+interface PresenceMessage {
   id: Ref<Person>
   type: 'update' | 'remove'
   presence?: RoomPresence[]
   lastUpdate?: number
 }
+
+interface DataMessage {
+  type: 'data'
+  sender: Ref<Person>
+  topic: string
+  data: any
+}
+
+type IncomingMessage = PresenceMessage | DataMessage
 
 export class PresenceClient implements Disposable {
   private ws: WebSocket | null = null
@@ -39,14 +48,20 @@ export class PresenceClient implements Disposable {
   private readonly RECONNECT_INTERVAL = 1000
   private readonly PING_INTERVAL = 30 * 1000
   private readonly PING_TIMEOUT = 5 * 60 * 1000
+  private readonly myDataThrottleInterval = 100
 
   private presence: RoomPresence[]
+  private readonly myDataTimestamps = new Map<string, number>()
   private readonly myPresenceUnsub: Unsubscriber
+  private readonly myDataUnsub: Unsubscriber
 
   constructor (private readonly url: string | URL) {
     this.presence = get(myPresence)
     this.myPresenceUnsub = myPresence.subscribe((presence) => {
       this.handlePresenceChanged(presence)
+    })
+    this.myDataUnsub = myData.subscribe((data) => {
+      this.handleMyDataChanged(data, false)
     })
 
     this.connect()
@@ -58,6 +73,7 @@ export class PresenceClient implements Disposable {
     this.stopPing()
 
     this.myPresenceUnsub()
+    this.myDataUnsub()
 
     if (this.ws !== null) {
       this.ws.close()
@@ -146,15 +162,18 @@ export class PresenceClient implements Disposable {
   private handleConnect (): void {
     this.sendPresence(getCurrentEmployee(), this.presence)
     this.startPing()
+    this.handleMyDataChanged(get(myData), true)
   }
 
   private handleMessage (data: string): void {
     try {
-      const message = JSON.parse(data) as Message
+      const message = JSON.parse(data) as IncomingMessage
       if (message.type === 'update' && message.presence !== undefined) {
         onPersonUpdate(message.id, message.presence ?? [])
       } else if (message.type === 'remove') {
         onPersonLeave(message.id)
+      } else if (message.type === 'data') {
+        onPersonData(message.sender, message.topic, message.data)
       } else {
         console.warn('Unknown message type', message)
       }
@@ -166,12 +185,34 @@ export class PresenceClient implements Disposable {
   private handlePresenceChanged (presence: RoomPresence[]): void {
     this.presence = presence
     this.sendPresence(getCurrentEmployee(), this.presence)
+    this.handleMyDataChanged(get(myData), true)
   }
 
   private sendPresence (person: Ref<Person>, presence: RoomPresence[]): void {
     if (!this.closed && this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
-      const message: Message = { id: person, type: 'update', presence }
+      const message: PresenceMessage = { id: person, type: 'update', presence }
       this.ws.send(JSON.stringify(message))
+    }
+  }
+
+  private handleMyDataChanged (data: Map<string, MyDataItem>, forceSend: boolean): void {
+    if (!isAnybodyInMyRoom()) {
+      return
+    }
+    if (!this.closed && this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
+      for (const [topic, value] of data) {
+        const lastSend = this.myDataTimestamps.get(topic) ?? 0
+        if (value.lastUpdated >= lastSend + this.myDataThrottleInterval || forceSend) {
+          this.myDataTimestamps.set(topic, value.lastUpdated)
+          const message: DataMessage = {
+            sender: getCurrentEmployee(),
+            type: 'data',
+            topic,
+            data: value.data
+          }
+          this.ws.send(JSON.stringify(message))
+        }
+      }
     }
   }
 
