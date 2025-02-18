@@ -67,6 +67,8 @@ export default mergeIds(loginId, login, {
     SentTo: '' as IntlString,
     CanFindCode: '' as IntlString,
     LoginWithCode: '' as IntlString,
-    LoginWithPassword: '' as IntlString
+    LoginWithPassword: '' as IntlString,
+    SignUpWithCode: '' as IntlString,
+    SignUpWithPassword: '' as IntlString
   }
 })
