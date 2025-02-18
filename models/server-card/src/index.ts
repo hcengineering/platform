@@ -32,6 +32,15 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnMasterTagRemove,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: card.class.MasterTag
+    }
+  })
+
   builder.mixin(card.class.Card, core.class.Class, serverCore.mixin.SearchPresenter, {
     searchIcon: card.icon.Card,
     title: [['title']]

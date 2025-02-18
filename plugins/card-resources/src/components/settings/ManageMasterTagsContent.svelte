@@ -15,7 +15,7 @@
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     BreadcrumbItem,
     Breadcrumbs,
@@ -45,12 +45,10 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: masterTag = getMasterTag(selectedTagId)
-
-  function getMasterTag (_id: Ref<MasterTag> | undefined): MasterTag | undefined {
-    if (_id === undefined) return undefined
-    return client.getModel().findObject(_id)
-  }
+  const query = createQuery()
+  $: query.query(card.class.MasterTag, { _id: selectedTagId }, (res) => {
+    masterTag = res[0]
+  })
 
   function getBreadcrumbs (tag: Ref<MasterTag> | undefined): BreadcrumbItem[] {
     if (tag === undefined) return []

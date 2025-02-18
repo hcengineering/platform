@@ -16,7 +16,15 @@
   import { MasterTag } from '@hcengineering/card'
   import { getEmbeddedLabel, translateCB } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { ButtonIcon, IconDelete, ModernEditbox, showPopup, themeStore } from '@hcengineering/ui'
+  import {
+    ButtonIcon,
+    getCurrentLocation,
+    IconDelete,
+    ModernEditbox,
+    navigate,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import { IconPicker } from '@hcengineering/view-resources'
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
@@ -40,7 +48,15 @@
   }
 
   async function handleDelete (): Promise<void> {
-    await deleteMasterTag(masterTag)
+    await deleteMasterTag(masterTag, () => {
+      const loc = getCurrentLocation()
+      if (masterTag.extends !== card.class.MasterTag && masterTag.extends !== undefined) {
+        loc.path[4] = masterTag.extends
+      } else {
+        loc.path.length = 3
+      }
+      navigate(loc)
+    })
   }
 
   function setIcon (): void {
