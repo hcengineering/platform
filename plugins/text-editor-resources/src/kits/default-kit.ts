@@ -62,7 +62,7 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
       }),
       Typography.configure({}),
       Link.extend({ inclusive: false }).configure({
-        openOnClick: true,
+        openOnClick: false,
         HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
       }),
       CodeBlockHighlighExtension.configure(codeBlockHighlightOptions)
