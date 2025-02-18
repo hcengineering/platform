@@ -1,12 +1,12 @@
 import type {ContextID, MessageID, RichText, SocialID, CardID, BlobID, Message, Reaction, Attachment, MessagesGroup, WorkspaceID } from "@hcengineering/communication-types"
 
 export enum TableName {
-    Message = 'communication.message',
-    MessagesGroup = 'communication.messages_group',
+    Message = 'communication.messages',
+    MessagesGroup = 'communication.messages_groups',
     Patch = 'communication.patch',
-    Attachment = 'communication.attachment',
-    Reaction = 'communication.reaction',
-    Notification = 'communication.notification',
+    Attachment = 'communication.attachments',
+    Reaction = 'communication.reactions',
+    Notification = 'communication.notifications',
     NotificationContext = 'communication.notification_context'
 }
 

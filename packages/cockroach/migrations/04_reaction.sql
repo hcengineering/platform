@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS communication.reaction
+CREATE TABLE IF NOT EXISTS communication.reactions
 (
     workspace_id UUID         NOT NULL,
     card_id      VARCHAR(255) NOT NULL,
@@ -10,4 +10,4 @@ CREATE TABLE IF NOT EXISTS communication.reaction
     PRIMARY KEY (workspace_id, card_id, message_id, creator, reaction)
 );
 
-CREATE INDEX IF NOT EXISTS reaction_message_idx ON communication.reaction (message_id);
+CREATE INDEX IF NOT EXISTS reaction_message_idx ON communication.reactions (message_id);

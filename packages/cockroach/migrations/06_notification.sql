@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS communication.notification
+CREATE TABLE IF NOT EXISTS communication.notifications
 (
     message_id UUID NOT NULL,
     context    UUID NOT NULL,
@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS communication.notification
     FOREIGN KEY (context) REFERENCES communication.notification_context (id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS notification_context_idx ON communication.notification (context);
+CREATE INDEX IF NOT EXISTS notification_context_idx ON communication.notifications (context);

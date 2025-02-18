@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS communication.attachment
+CREATE TABLE IF NOT EXISTS communication.attachments
 (
     message_id INT8         NOT NULL,
     card_id    VARCHAR(255) NOT NULL,
@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS communication.attachment
     PRIMARY KEY (message_id, card_id)
 );
 
-CREATE INDEX IF NOT EXISTS attachment_message_idx ON communication.attachment (message_id);
+CREATE INDEX IF NOT EXISTS attachment_message_idx ON communication.attachments (message_id);

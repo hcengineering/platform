@@ -1,18 +1,18 @@
-CREATE TABLE IF NOT EXISTS communication.message
+CREATE TABLE IF NOT EXISTS communication.messages
 (
-    id           INT8         NOT NULL,
     workspace_id UUID         NOT NULL,
     card_id      VARCHAR(255) NOT NULL,
+    id           INT8         NOT NULL,
 
     content      TEXT         NOT NULL,
     creator      VARCHAR(255) NOT NULL,
     created      TIMESTAMPTZ  NOT NULL,
 
-    PRIMARY KEY (id, workspace_id, card_id)
+    PRIMARY KEY (id, card_id, workspace_id)
 );
 
 
-CREATE TABLE IF NOT EXISTS communication.messages_group
+CREATE TABLE IF NOT EXISTS communication.messages_groups
 (
     workspace_id UUID         NOT NULL,
     card_id      VARCHAR(255) NOT NULL,
