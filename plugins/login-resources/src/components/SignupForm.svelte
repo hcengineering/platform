@@ -31,6 +31,7 @@
 
   let method: LoginMethods = LoginMethods.Otp
   let fields: Array<Field>
+  let form: Form
 
   $: {
     fields = [
@@ -98,11 +99,15 @@
   $: changeMethodAction = {
     i18n: method === LoginMethods.Password ? login.string.SignUpWithCode : login.string.SignUpWithPassword,
     func: () => {
-      status = OK
       method = method === LoginMethods.Password ? LoginMethods.Otp : LoginMethods.Password
       if (method === LoginMethods.Password) {
         step = OtpLoginSteps.Email
       }
+      setTimeout(() => {
+        if (form != null) {
+          form.invalidate()
+        }
+      }, 0)
     }
   }
 
@@ -112,7 +117,7 @@
 </script>
 
 {#if step === OtpLoginSteps.Email}
-  <Form caption={login.string.SignUp} {status} {fields} {object} {action} withProviders />
+  <Form bind:this={form} caption={login.string.SignUp} {status} {fields} {object} {action} withProviders />
 {/if}
 
 {#if step === OtpLoginSteps.Otp && object.username !== ''}

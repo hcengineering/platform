@@ -96,6 +96,7 @@ test.describe('Workspace tests', () => {
     await loginPage.goto()
     await loginPage.clickSignUp()
 
+    await signUpPage.signUpPasswordBtn().click()
     await signUpPage.checkInfo(page, 'Required field First name')
     await signUpPage.enterFirstName(newUser.firstName)
     await signUpPage.checkInfo(page, 'Required field Last name')
