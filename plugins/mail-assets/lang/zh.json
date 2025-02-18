@@ -6,6 +6,8 @@
     "CreateMail": "新邮件",
     "MailThread": "邮件",
     "Reply": "回复",
-    "Date": "日期"
+    "Date": "日期",
+    "MailMessage": "邮件",
+    "MailMessages": "邮件"
   }
 }

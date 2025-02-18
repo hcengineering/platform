@@ -13,14 +13,17 @@
 // limitations under the License.
 //
 import {
+  type Account,
   type Client,
   type Data,
   type Doc,
   type Ref,
+  SocialIdType,
   type Space,
   type TxOperations,
   generateId,
-  getCurrentAccount
+  getCurrentAccount,
+  parseSocialIdString
 } from '@hcengineering/core'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import contact, { getCurrentEmployee } from '@hcengineering/contact'
@@ -106,4 +109,10 @@ export function isValidEmail (email: string): boolean {
 
 export function getReplySubject (subject: string): string {
   return subject.startsWith('Re:') ? subject : `Re: ${subject}`
+}
+
+export function getEmailSocialId (account: Account): string {
+  return (
+    account.socialIds.map((id) => parseSocialIdString(id)).find((it) => it.type === SocialIdType.EMAIL)?.value ?? ''
+  )
 }
