@@ -51,6 +51,8 @@
     "CanFindCode": "Can't find your code? Check your spam folder.",
     "LoginWithPassword": "Login with password",
     "LoginWithCode": "Login with code",
+    "SignUpWithPassword": "Sign up with password",
+    "SignUpWithCode": "Sign up with code",
     "FillInProfile": "Fill in your profile",
     "SetUpPassword": "Set up your password",
     "Next": "Next",

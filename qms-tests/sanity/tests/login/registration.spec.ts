@@ -32,7 +32,7 @@ test.describe('Registration tests', () => {
       await loginPage.buttonSignUp.click()
 
       const signupPage = new SignupPage(page)
-      await signupPage.signup(signUpUserData)
+      await signupPage.signupPwd(signUpUserData)
 
       await attachScreenshot('TESTS-143_registration.png', page)
 
@@ -69,7 +69,7 @@ test.describe('Registration tests', () => {
       await loginPage.buttonSignUp.click()
 
       const signupPage = new SignupPage(page)
-      await signupPage.signup(signUpUserData)
+      await signupPage.signupPwd(signUpUserData)
       await signupPage.buttonSignUp.click()
 
       await expect(signupPage.textError).toHaveText('Account already exists')

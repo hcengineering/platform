@@ -86,6 +86,10 @@
     return true
   })
 
+  export function invalidate (): void {
+    void validate($themeStore.language)
+  }
+
   $: if ($themeStore.language != null && $themeStore.language !== '') {
     void validate($themeStore.language)
   }

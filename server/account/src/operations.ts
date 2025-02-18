@@ -239,6 +239,8 @@ export async function signUpOtp (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
     }
 
+    await db.person.updateOne({ uuid: emailSocialId.personUuid }, { firstName, lastName })
+
     personUuid = emailSocialId.personUuid
   } else {
     // There's no person linked to this email, so we need to create a new one
@@ -1522,7 +1524,7 @@ export type AccountMethods =
   | 'login'
   | 'loginOtp'
   | 'signUp'
-  | 'signUpOTP'
+  | 'signUpOtp'
   | 'validateOtp'
   | 'createWorkspace'
   | 'createInviteLink'
@@ -1567,7 +1569,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     login: wrap(login),
     loginOtp: wrap(loginOtp),
     ...(hasSignUp ? { signUp: wrap(signUp) } : {}),
-    ...(hasSignUp ? { signUpOTP: wrap(signUpOtp) } : {}),
+    ...(hasSignUp ? { signUpOtp: wrap(signUpOtp) } : {}),
     validateOtp: wrap(validateOtp),
     createWorkspace: wrap(createWorkspace),
     createInviteLink: wrap(createInviteLink),

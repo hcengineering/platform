@@ -52,6 +52,8 @@
     "CanFindCode": "Nemůžete najít svůj kód? Zkontrolujte složku nevyžádané pošty.",
     "LoginWithPassword": "Přihlásit se pomocí hesla",
     "LoginWithCode": "Přihlásit se pomocí kódu",
+    "SignUpWithPassword": "Registrace pomocí hesla",
+    "SignUpWithCode": "Registrace pomocí kódu",
     "FillInProfile": "Vyplňte svůj profil",
     "SetUpPassword": "Nastavte si heslo",
     "Next": "Další",

@@ -38,7 +38,7 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
     await loginPage.clickSignUp()
-    await signUpPage.signUp(newUser)
+    await signUpPage.signUpPwd(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await leftSideMenuPage.clickTracker()
   })
@@ -67,7 +67,7 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `New Issue Name - ${generateId(2)}`
     await loginPage.goto()
     await loginPage.clickSignUp()
-    await signUpPage.signUp(newUser)
+    await signUpPage.signUpPwd(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
     await trackerNavigationMenuPage.openIssuesForProject('Default')
@@ -91,6 +91,7 @@ test.describe('Workspace tests', () => {
     await loginPage.goto()
     await loginPage.clickSignUp()
 
+    await signUpPage.signUpPasswordBtn().click()
     await signUpPage.checkInfo(page, 'Required field First name')
     await signUpPage.enterFirstName(newUser.firstName)
     await signUpPage.checkInfo(page, 'Required field Last name')
@@ -118,7 +119,7 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
     await loginPage.goto()
     await loginPage.clickSignUp()
-    await signUpPage.signUp(newUser)
+    await signUpPage.signUpPwd(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await leftSideMenuPage.clickTracker()
 
@@ -141,7 +142,7 @@ test.describe('Workspace tests', () => {
 
       await page2.getByRole('link', { name: 'Sign Up' }).click()
       const signUpPage2 = new SignUpPage(page2)
-      await signUpPage2.signUp(newUser2, 'join')
+      await signUpPage2.signUpPwd(newUser2, 'join')
 
       const leftSideMenuPage2 = new LeftSideMenuPage(page2)
       await leftSideMenuPage2.clickTracker()
@@ -160,7 +161,7 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
     await loginPage.goto()
     await loginPage.clickSignUp()
-    await signUpPage.signUp(newUser)
+    await signUpPage.signUpPwd(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await leftSideMenuPage.clickTracker()
 
@@ -184,7 +185,7 @@ test.describe('Workspace tests', () => {
       }
 
       const signUpPage2 = new SignUpPage(page2)
-      await signUpPage2.signUp(newUser2)
+      await signUpPage2.signUpPwd(newUser2)
 
       // Ok we signed in, and no workspace present.
       await page2.goto(linkText ?? '')

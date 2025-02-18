@@ -143,7 +143,7 @@
             {#if page === 'login'}
               <LoginForm {navigateUrl} {signUpDisabled} />
             {:else if page === 'signup'}
-              <SignupForm {signUpDisabled} />
+              <SignupForm {navigateUrl} {signUpDisabled} />
             {:else if page === 'createWorkspace'}
               <CreateWorkspaceForm />
             {:else if page === 'password'}

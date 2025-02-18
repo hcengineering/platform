@@ -52,6 +52,8 @@
     "CanFindCode": "Code nicht gefunden? Überprüfen Sie Ihren Spam-Ordner.",
     "LoginWithPassword": "Mit Passwort anmelden",
     "LoginWithCode": "Mit Code anmelden",
+    "SignUpWithPassword": "Mit Passwort registrieren",
+    "SignUpWithCode": "Mit Code registrieren",
     "FillInProfile": "Profil ausfüllen",
     "SetUpPassword": "Passwort einrichten",
     "Next": "Weiter",
