@@ -63,7 +63,7 @@ const serverChanged = oldFront !== FRONT_URL
 
 function readServerUrl (): string {
   if (isDev) {
-    return process.env.FRONT_URL ?? 'http://localhost:8087'
+    return process.env.FRONT_URL ?? 'http://huly.local:8087'
   }
 
   return ((settings as any).get('server', process.env.FRONT_URL) as string) ?? 'https://huly.app'
