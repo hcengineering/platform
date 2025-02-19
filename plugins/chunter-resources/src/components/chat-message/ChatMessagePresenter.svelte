@@ -55,6 +55,7 @@
   export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
+  export let isMarkdown = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -70,9 +71,9 @@
   ;[viewlet] =
     value !== undefined
       ? client.getModel().findAllSync(chunter.class.ChatMessageViewlet, {
-        objectClass: value.attachedToClass,
-        messageClass: value._class
-      })
+          objectClass: value.attachedToClass,
+          messageClass: value._class
+        })
       : []
 
   $: personId = value?.createdBy
@@ -126,7 +127,7 @@
     stale = false
   }
 
-  async function getParentMessage (
+  async function getParentMessage(
     _class: Ref<Class<Doc>>,
     _id: Ref<Doc>,
     space: Ref<Space>
@@ -136,7 +137,7 @@
     }
   }
 
-  async function handleEditAction (): Promise<void> {
+  async function handleEditAction(): Promise<void> {
     isEditing = true
   }
 
@@ -165,7 +166,7 @@
   let inlineActions: MessageInlineAction[] = []
 
   $: updateInlineActions($translatingMessagesStore, $shownTranslatedMessagesStore)
-  function updateInlineActions (
+  function updateInlineActions(
     translatingMessages: Set<Ref<ChatMessage>>,
     shownTranslated: Set<Ref<ChatMessage>>
   ): void {
@@ -258,7 +259,7 @@
         {#if withShowMore}
           <ShowMore limit={compact ? 80 : undefined}>
             <div class="clear-mins">
-              <MessageViewer message={displayText} />
+              <MessageViewer message={displayText} {isMarkdown} />
               {#if (value.attachments ?? 0) > 0}
                 <div class="mt-2" />
               {/if}
@@ -267,7 +268,7 @@
           </ShowMore>
         {:else}
           <div class="clear-mins">
-            <MessageViewer message={displayText} />
+            <MessageViewer message={displayText} {isMarkdown} />
             {#if (value.attachments ?? 0) > 0}
               <div class="mt-2" />
             {/if}

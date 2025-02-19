@@ -15,10 +15,13 @@
 -->
 <script lang="ts">
   import { isEmptyMarkup, markupToJSON } from '@hcengineering/text'
+  import { Html } from '@hcengineering/ui'
+  import { marked } from 'marked'
   import Node from './markup/Node.svelte'
 
   export let message: string
   export let preview = false
+  export let isMarkdown = false
 
   $: node = markupToJSON(message)
   $: empty = isEmptyMarkup(message)
@@ -28,6 +31,12 @@
   }
 </script>
 
-<div class="text-markup-view">
-  <Node {node} {preview} />
-</div>
+{#if !isMarkdown}
+  <div class="text-markup-view">
+    <Node {node} {preview} />
+  </div>
+{:else}
+  <div class="markdown-view">
+    <Html value={marked(message)} />
+  </div>
+{/if}

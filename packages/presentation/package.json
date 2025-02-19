@@ -54,6 +54,7 @@
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/collaborator-client": "^0.6.4",
     "fast-equals": "^5.2.2",
+    "marked": "15.0.7",
     "png-chunks-extract": "^1.0.0",
     "uuid": "^8.3.2"
   },

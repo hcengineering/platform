@@ -113,7 +113,7 @@
       <Loading />
     {:else if messagePresenter !== undefined}
       {#each messages as message}
-        <Component is={messagePresenter} props={{ value: message, readonly: true }} />
+        <Component is={messagePresenter} props={{ value: message, readonly: true, isMarkdown: true }} />
       {/each}
     {/if}
   </Panel>
