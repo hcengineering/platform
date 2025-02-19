@@ -17,8 +17,8 @@
   import { ChannelsEditor, EditableAvatar, personByIdStore, mySocialIdsStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
-  import { getResource, setMetadata } from '@hcengineering/platform'
-  import presentation, { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
+  import { getResource } from '@hcengineering/platform'
+  import { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
   import {
     Breadcrumb,
     Button,
@@ -27,11 +27,9 @@
     Header,
     createFocusManager,
     showPopup,
-    navigate,
-    setMetadataLocalStorage,
-    getCurrentLocation
+    navigate
   } from '@hcengineering/ui'
-  import { clearMetadata } from '@hcengineering/workbench-resources'
+  import { logIn, logOut } from '@hcengineering/workbench-resources'
 
   import setting from '../plugin'
 
@@ -64,15 +62,11 @@
         const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
         const loginInfo = await leaveWorkspace(getCurrentAccount().uuid)
 
-        const loc = getCurrentLocation()
-        clearMetadata(loc.path[1])
-
         if (loginInfo?.token != null) {
-          setMetadata(presentation.metadata.Token, loginInfo.token)
-          setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
-
+          await logIn(loginInfo)
           navigate({ path: [loginId, 'selectWorkspace'] })
         } else {
+          await logOut()
           navigate({ path: [loginId, 'login'] })
         }
       }

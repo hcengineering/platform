@@ -26,7 +26,7 @@
     SortingOrder,
     Space
   } from '@hcengineering/core'
-  import login from '@hcengineering/login'
+  import login, { loginId } from '@hcengineering/login'
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { broadcastEvent, getMetadata, getResource, IntlString, translate } from '@hcengineering/platform'
@@ -100,7 +100,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { buildNavModel, signOut, workspacesStore } from '../utils'
+  import { buildNavModel, logOut, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import AppSwitcher from './AppSwitcher.svelte'
@@ -760,7 +760,9 @@
       kind={'link'}
       size={'small'}
       on:click={() => {
-        signOut()
+        void logOut().then(() => {
+          navigate({ path: [loginId] })
+        })
       }}
     />
   </div>

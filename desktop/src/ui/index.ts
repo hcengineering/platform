@@ -1,6 +1,6 @@
-import login, { loginId } from '@hcengineering/login'
-import { getEmbeddedLabel, getMetadata, setMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, MessageBox, setDownloadProgress } from '@hcengineering/presentation'
+import { loginId } from '@hcengineering/login'
+import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
+import presentation, { MessageBox, setDownloadProgress } from '@hcengineering/presentation'
 import settings, { settingId } from '@hcengineering/setting'
 import {
   closePanel,
@@ -11,12 +11,11 @@ import {
   parseLocation,
   pushRootBarProgressComponent,
   removeRootBarComponent,
-  setMetadataLocalStorage,
   showPopup
 } from '@hcengineering/ui'
 
 import { notificationId } from '@hcengineering/notification'
-import { workbenchId } from '@hcengineering/workbench'
+import { workbenchId, logOut } from '@hcengineering/workbench'
 
 import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
@@ -56,10 +55,7 @@ window.addEventListener('DOMContentLoaded', () => {
   })
 
   ipcMain.on('logout', () => {
-    setMetadata(presentation.metadata.Token, null)
-    setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-    setMetadataLocalStorage(login.metadata.LoginAccount, null)
-    void closeClient().then(() => {
+    void logOut().then(() => {
       navigate({ path: [loginId] })
     })
   })

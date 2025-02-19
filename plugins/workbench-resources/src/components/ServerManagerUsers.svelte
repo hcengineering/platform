@@ -6,7 +6,7 @@
   import { Button, CheckBox, ticker } from '@hcengineering/ui'
   import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
   import { FixedColumn, ObjectPresenter } from '@hcengineering/view-resources'
-  import { employeeByIdStore, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { workspacesStore } from '../utils'
 
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
@@ -24,7 +24,6 @@
   }
   let data: OverviewStatistics | undefined
   $: void fetchStats($ticker)
-  $: employees = $employeeByIdStore
   let realUsers: boolean
   let showActive5: boolean
 
