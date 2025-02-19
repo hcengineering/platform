@@ -107,6 +107,9 @@ export interface AccountClient {
   assignWorkspace: (email: string, workspaceUuid: string, role: AccountRole) => Promise<void>
   updateBackupInfo: (info: BackupStatus) => Promise<void>
   updateWorkspaceRoleBySocialId: (socialKey: string, targetRole: AccountRole) => Promise<void>
+
+  setCookie: () => Promise<void>
+  deleteCookie: () => Promise<void>
 }
 
 /** @public */
@@ -120,16 +123,30 @@ export function getClient (accountsUrl?: string, token?: string): AccountClient 
 
 interface Request {
   method: string
-  params: any[]
+  params: Record<string, any>
 }
 
 class AccountClientImpl implements AccountClient {
+  private readonly request: RequestInit
+
   constructor (
     private readonly url: string,
     private readonly token?: string
   ) {
     if (url === '') {
       throw new Error('Accounts url not specified')
+    }
+
+    this.request = {
+      keepalive: true,
+      headers: {
+        ...(this.token === undefined
+          ? {}
+          : {
+              Authorization: 'Bearer ' + this.token
+            })
+      },
+      credentials: 'include'
     }
   }
 
@@ -143,16 +160,12 @@ class AccountClientImpl implements AccountClient {
 
   private async rpc<T>(request: Request): Promise<T> {
     const response = await fetch(this.url, {
-      method: 'POST',
-      keepalive: true,
+      ...this.request,
       headers: {
-        ...(this.token === undefined
-          ? {}
-          : {
-              Authorization: 'Bearer ' + this.token
-            }),
+        ...this.request.headers,
         'Content-Type': 'application/json'
       },
+      method: 'POST',
       body: JSON.stringify(request)
     })
 
@@ -183,7 +196,7 @@ class AccountClientImpl implements AccountClient {
   async getUserWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
     const request = {
       method: 'getUserWorkspaces' as const,
-      params: []
+      params: {}
     }
 
     return (await this.rpc<any[]>(request)).map((ws) => this.flattenStatus(ws))
@@ -196,7 +209,7 @@ class AccountClientImpl implements AccountClient {
   ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'selectWorkspace' as const,
-      params: [workspaceUrl, kind, externalRegions]
+      params: { workspaceUrl, kind, externalRegions }
     }
 
     return await this.rpc(request)
@@ -205,7 +218,7 @@ class AccountClientImpl implements AccountClient {
   async validateOtp (email: string, code: string): Promise<LoginInfo> {
     const request = {
       method: 'validateOtp' as const,
-      params: [email, code]
+      params: { email, code }
     }
 
     return await this.rpc(request)
@@ -214,7 +227,7 @@ class AccountClientImpl implements AccountClient {
   async loginOtp (email: string): Promise<OtpInfo> {
     const request = {
       method: 'loginOtp' as const,
-      params: [email]
+      params: { email }
     }
 
     return await this.rpc(request)
@@ -223,7 +236,7 @@ class AccountClientImpl implements AccountClient {
   async getLoginInfoByToken (): Promise<LoginInfo | WorkspaceLoginInfo> {
     const request = {
       method: 'getLoginInfoByToken' as const,
-      params: []
+      params: {}
     }
 
     return await this.rpc(request)
@@ -232,7 +245,7 @@ class AccountClientImpl implements AccountClient {
   async restorePassword (password: string): Promise<LoginInfo> {
     const request = {
       method: 'restorePassword' as const,
-      params: [password]
+      params: { password }
     }
 
     return await this.rpc(request)
@@ -241,7 +254,7 @@ class AccountClientImpl implements AccountClient {
   async confirm (): Promise<LoginInfo> {
     const request = {
       method: 'confirm' as const,
-      params: []
+      params: {}
     }
 
     return await this.rpc(request)
@@ -250,7 +263,7 @@ class AccountClientImpl implements AccountClient {
   async requestPasswordReset (email: string): Promise<void> {
     const request = {
       method: 'requestPasswordReset' as const,
-      params: [email]
+      params: { email }
     }
 
     await this.rpc(request)
@@ -259,7 +272,7 @@ class AccountClientImpl implements AccountClient {
   async sendInvite (email: string, role: AccountRole): Promise<void> {
     const request = {
       method: 'sendInvite' as const,
-      params: [email, role]
+      params: { email, role }
     }
 
     await this.rpc(request)
@@ -277,7 +290,7 @@ class AccountClientImpl implements AccountClient {
   async leaveWorkspace (account: string): Promise<LoginInfo | null> {
     const request = {
       method: 'leaveWorkspace' as const,
-      params: [account]
+      params: { account }
     }
 
     return await this.rpc(request)
@@ -286,7 +299,7 @@ class AccountClientImpl implements AccountClient {
   async changeUsername (first: string, last: string): Promise<void> {
     const request = {
       method: 'changeUsername' as const,
-      params: [first, last]
+      params: { first, last }
     }
 
     await this.rpc(request)
@@ -295,7 +308,7 @@ class AccountClientImpl implements AccountClient {
   async changePassword (oldPassword: string, newPassword: string): Promise<void> {
     const request = {
       method: 'changePassword' as const,
-      params: [oldPassword, newPassword]
+      params: { oldPassword, newPassword }
     }
 
     await this.rpc(request)
@@ -310,7 +323,7 @@ class AccountClientImpl implements AccountClient {
   ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'signUpJoin' as const,
-      params: [email, password, first, last, inviteId]
+      params: { email, password, first, last, inviteId }
     }
 
     return await this.rpc(request)
@@ -319,7 +332,7 @@ class AccountClientImpl implements AccountClient {
   async join (email: string, password: string, inviteId: string): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'join' as const,
-      params: [email, password, inviteId]
+      params: { email, password, inviteId }
     }
 
     return await this.rpc(request)
@@ -334,7 +347,7 @@ class AccountClientImpl implements AccountClient {
   ): Promise<string> {
     const request = {
       method: 'createInviteLink' as const,
-      params: [exp, emailMask, limit, role, personId]
+      params: { exp, emailMask, limit, role, personId }
     }
 
     return await this.rpc(request)
@@ -343,7 +356,7 @@ class AccountClientImpl implements AccountClient {
   async checkJoin (inviteId: string): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'checkJoin' as const,
-      params: [inviteId]
+      params: { inviteId }
     }
 
     return await this.rpc(request)
@@ -352,7 +365,7 @@ class AccountClientImpl implements AccountClient {
   async getWorkspaceInfo (updateLastVisit: boolean = false): Promise<WorkspaceInfoWithStatus> {
     const request = {
       method: 'getWorkspaceInfo' as const,
-      params: updateLastVisit ? [true] : []
+      params: updateLastVisit ? { updateLastVisit: true } : {}
     }
 
     return this.flattenStatus(await this.rpc(request))
@@ -361,34 +374,34 @@ class AccountClientImpl implements AccountClient {
   async getRegionInfo (): Promise<RegionInfo[]> {
     const request = {
       method: 'getRegionInfo' as const,
-      params: []
+      params: {}
     }
 
     return await this.rpc(request)
   }
 
-  async createWorkspace (name: string, region?: string): Promise<WorkspaceLoginInfo> {
+  async createWorkspace (workspaceName: string, region?: string): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'createWorkspace' as const,
-      params: [name, region]
+      params: { workspaceName, region }
     }
 
     return await this.rpc(request)
   }
 
-  async signUpOtp (email: string, first: string, last: string): Promise<OtpInfo> {
+  async signUpOtp (email: string, firstName: string, lastName: string): Promise<OtpInfo> {
     const request = {
       method: 'signUpOtp' as const,
-      params: [email, first, last]
+      params: { email, firstName, lastName }
     }
 
     return await this.rpc(request)
   }
 
-  async signUp (email: string, password: string, first: string, last: string): Promise<LoginInfo> {
+  async signUp (email: string, password: string, firstName: string, lastName: string): Promise<LoginInfo> {
     const request = {
       method: 'signUp' as const,
-      params: [email, password, first, last]
+      params: { email, password, firstName, lastName }
     }
 
     return await this.rpc(request)
@@ -397,7 +410,7 @@ class AccountClientImpl implements AccountClient {
   async login (email: string, password: string): Promise<LoginInfo> {
     const request = {
       method: 'login' as const,
-      params: [email, password]
+      params: { email, password }
     }
 
     return await this.rpc(request)
@@ -406,7 +419,7 @@ class AccountClientImpl implements AccountClient {
   async getPerson (): Promise<Person> {
     const request = {
       method: 'getPerson' as const,
-      params: []
+      params: {}
     }
 
     return await this.rpc(request)
@@ -415,7 +428,7 @@ class AccountClientImpl implements AccountClient {
   async getPersonInfo (account: PersonUuid): Promise<PersonInfo> {
     const request = {
       method: 'getPersonInfo' as const,
-      params: [account]
+      params: { account }
     }
 
     return await this.rpc(request)
@@ -424,7 +437,7 @@ class AccountClientImpl implements AccountClient {
   async getSocialIds (): Promise<SocialId[]> {
     const request = {
       method: 'getSocialIds' as const,
-      params: []
+      params: {}
     }
 
     return await this.rpc(request)
@@ -433,7 +446,7 @@ class AccountClientImpl implements AccountClient {
   async workerHandshake (region: string, version: Data<Version>, operation: WorkspaceOperation): Promise<void> {
     const request = {
       method: 'workerHandshake' as const,
-      params: [region, version, operation]
+      params: { region, version, operation }
     }
 
     await this.rpc(request)
@@ -446,7 +459,7 @@ class AccountClientImpl implements AccountClient {
   ): Promise<WorkspaceInfoWithStatus | null> {
     const request = {
       method: 'getPendingWorkspace' as const,
-      params: [region, version, operation]
+      params: { region, version, operation }
     }
 
     const result = await this.rpc(request)
@@ -458,7 +471,7 @@ class AccountClientImpl implements AccountClient {
   }
 
   async updateWorkspaceInfo (
-    wsUuid: string,
+    workspaceUuid: string,
     event: string,
     version: Data<Version>,
     progress: number,
@@ -466,7 +479,7 @@ class AccountClientImpl implements AccountClient {
   ): Promise<void> {
     const request = {
       method: 'updateWorkspaceInfo' as const,
-      params: [wsUuid, event, version, progress, message]
+      params: { workspaceUuid, event, version, progress, message }
     }
 
     await this.rpc(request)
@@ -475,16 +488,16 @@ class AccountClientImpl implements AccountClient {
   async getWorkspaceMembers (): Promise<WorkspaceMemberInfo[]> {
     const request = {
       method: 'getWorkspaceMembers' as const,
-      params: []
+      params: {}
     }
 
     return await this.rpc(request)
   }
 
-  async updateWorkspaceRole (account: string, role: AccountRole): Promise<void> {
+  async updateWorkspaceRole (targetAccount: string, targetRole: AccountRole): Promise<void> {
     const request = {
       method: 'updateWorkspaceRole' as const,
-      params: [account, role]
+      params: { targetAccount, targetRole }
     }
 
     await this.rpc(request)
@@ -493,7 +506,7 @@ class AccountClientImpl implements AccountClient {
   async updateWorkspaceName (name: string): Promise<void> {
     const request = {
       method: 'updateWorkspaceName' as const,
-      params: [name]
+      params: { name }
     }
 
     await this.rpc(request)
@@ -502,7 +515,7 @@ class AccountClientImpl implements AccountClient {
   async deleteWorkspace (): Promise<void> {
     const request = {
       method: 'deleteWorkspace' as const,
-      params: []
+      params: {}
     }
 
     await this.rpc(request)
@@ -511,7 +524,7 @@ class AccountClientImpl implements AccountClient {
   async findPerson (socialString: string): Promise<PersonUuid | undefined> {
     const request = {
       method: 'findPerson' as const,
-      params: [socialString]
+      params: { socialString }
     }
 
     return await this.rpc(request)
@@ -520,7 +533,7 @@ class AccountClientImpl implements AccountClient {
   async listWorkspaces (region?: string | null, mode: WorkspaceMode | null = null): Promise<WorkspaceInfoWithStatus[]> {
     const request = {
       method: 'listWorkspaces' as const,
-      params: [region, mode]
+      params: { region, mode }
     }
 
     return ((await this.rpc<any[]>(request)) ?? []).map((ws) => this.flattenStatus(ws))
@@ -533,16 +546,16 @@ class AccountClientImpl implements AccountClient {
   ): Promise<boolean> {
     const request = {
       method: 'performWorkspaceOperation' as const,
-      params: [workspaceId, event, ...params]
+      params: { workspaceId, event, params }
     }
 
     return await this.rpc(request)
   }
 
-  async updateBackupInfo (info: BackupStatus): Promise<void> {
+  async updateBackupInfo (backupInfo: BackupStatus): Promise<void> {
     const request = {
       method: 'updateBackupInfo' as const,
-      params: [info]
+      params: { backupInfo }
     }
 
     await this.rpc(request)
@@ -551,7 +564,7 @@ class AccountClientImpl implements AccountClient {
   async assignWorkspace (email: string, workspaceUuid: string, role: AccountRole): Promise<void> {
     const request = {
       method: 'assignWorkspace' as const,
-      params: [email, workspaceUuid, role]
+      params: { email, workspaceUuid, role }
     }
 
     await this.rpc(request)
@@ -560,10 +573,34 @@ class AccountClientImpl implements AccountClient {
   async updateWorkspaceRoleBySocialId (socialKey: string, targetRole: AccountRole): Promise<void> {
     const request = {
       method: 'updateWorkspaceRoleBySocialId' as const,
-      params: [socialKey, targetRole]
+      params: { socialKey, targetRole }
     }
 
     await this.rpc(request)
+  }
+
+  async setCookie (): Promise<void> {
+    const url = concatLink(this.url, '/cookie')
+    const response = await fetch(url, { ...this.request, method: 'PUT' })
+
+    if (!response.ok) {
+      const result = await response.json()
+      if (result.error != null) {
+        throw new PlatformError(result.error)
+      }
+    }
+  }
+
+  async deleteCookie (): Promise<void> {
+    const url = concatLink(this.url, '/cookie')
+    const response = await fetch(url, { ...this.request, method: 'DELETE' })
+
+    if (!response.ok) {
+      const result = await response.json()
+      if (result.error != null) {
+        throw new PlatformError(result.error)
+      }
+    }
   }
 }
 

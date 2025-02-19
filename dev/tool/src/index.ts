@@ -279,7 +279,11 @@ export function devTool (
             throw new Error(`Workspace ${workspace} not found`)
           }
 
-          await assignWorkspace(toolCtx, db, null, getToolToken(), email, ws.uuid, AccountRole.User)
+          await assignWorkspace(toolCtx, db, null, getToolToken(), {
+            email,
+            workspaceUuid: ws.uuid,
+            role: AccountRole.User
+          })
         } catch (err: any) {
           console.error(err)
         }
@@ -341,16 +345,12 @@ export function devTool (
           undefined,
           true
         )
-        await updateWorkspaceInfo(
-          measureCtx,
-          db,
-          brandingObj,
-          getToolToken(),
-          res.workspaceUuid,
-          'create-done',
+        await updateWorkspaceInfo(measureCtx, db, brandingObj, getToolToken(), {
+          workspaceUuid: res.workspaceUuid,
+          event: 'create-done',
           version,
-          100
-        )
+          progress: 100
+        })
 
         console.log('create-workspace done')
       })
@@ -372,7 +372,7 @@ export function devTool (
           throw new Error(`Workspace ${workspace} not found`)
         }
 
-        await assignWorkspace(toolCtx, db, null, getToolToken(), email, ws.uuid, role)
+        await assignWorkspace(toolCtx, db, null, getToolToken(), { email, workspaceUuid: ws.uuid, role })
       })
     })
 
@@ -423,7 +423,12 @@ export function devTool (
           true
         )
 
-        await updateWorkspaceInfo(measureCtx, db, null, getToolToken(), info.uuid, 'upgrade-done', version, 100)
+        await updateWorkspaceInfo(measureCtx, db, null, getToolToken(), {
+          workspaceUuid: info.uuid,
+          event: 'upgrade-done',
+          version,
+          progress: 100
+        })
 
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
         console.log('upgrade-workspace done')
