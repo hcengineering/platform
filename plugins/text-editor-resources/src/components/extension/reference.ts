@@ -1,3 +1,18 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { mergeAttributes, type Editor } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import MentionList from '../MentionList.svelte'
@@ -9,8 +24,9 @@ import Suggestion, { type SuggestionKeyDownProps, type SuggestionOptions, type S
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-import { parseLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
+
+import { parseLocation, type Location } from '@hcengineering/ui'
 import workbench, { type Application } from '@hcengineering/workbench'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
@@ -104,7 +120,7 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
 
       const renderLabel = (props: ReferenceNodeProps): void => {
         span.setAttribute('data-label', props.label)
-        span.innerText = options.renderLabel({ options, props: props ?? node.attrs })
+        span.innerText = options.renderLabel({ options, props: props ?? (node.attrs as ReferenceNodeProps) })
       }
 
       const id = node.attrs.id
@@ -328,16 +344,37 @@ export async function getReferenceLabel<T extends Doc> (
   return label
 }
 
-export async function getReferenceFromUrl (text: string): Promise<ReferenceNodeProps | undefined> {
+export async function getReferenceFromUrl (urlString: string): Promise<ReferenceNodeProps | undefined> {
+  const target = await getTargetObjectFromUrl(urlString)
+  if (target === undefined) return
+
+  const label = await getReferenceLabel(target._class, target._id)
+  if (label === '') return
+
+  return {
+    id: target._id,
+    objectclass: target._class,
+    label
+  }
+}
+
+export async function getTargetObjectFromUrl (
+  urlOrLocation: string | Location
+): Promise<{ _id: Ref<Doc>, _class: Ref<Class<Doc>> } | undefined> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const url = new URL(text)
+  let location: Location
+  if (typeof urlOrLocation === 'string') {
+    const url = new URL(urlOrLocation)
 
-  const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-  if (url.origin !== frontUrl) return
+    const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+    if (url.origin !== frontUrl) return
 
-  const location = parseLocation(url)
+    location = parseLocation(url)
+  } else {
+    location = urlOrLocation
+  }
 
   const appAlias = (location.path[2] ?? '').trim()
   if (!(appAlias.length > 0)) return
@@ -363,12 +400,8 @@ export async function getReferenceFromUrl (text: string): Promise<ReferenceNodeP
   const _id: Ref<Doc> | undefined =
     linkProvider !== undefined ? (await (await getResource(linkProvider.decode))(id)) ?? id : id
 
-  const label = await getReferenceLabel(objectclass, _id)
-  if (label === '') return
-
   return {
-    id: _id,
-    objectclass,
-    label
+    _id,
+    _class: objectclass
   }
 }

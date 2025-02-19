@@ -170,11 +170,12 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 
 import { get } from 'svelte/store'
 import { settingId } from '@hcengineering/setting'
+import type { TaskType } from '@hcengineering/task'
 import { getAllStates } from '@hcengineering/task-resources'
+import view, { type Filter } from '@hcengineering/view'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
-import type { TaskType } from '@hcengineering/task'
-import view, { type Filter } from '@hcengineering/view'
+import { getTargetObjectFromUrl } from '@hcengineering/text-editor-resources'
 
 export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
@@ -265,12 +266,19 @@ async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
     },
     action: async () => {
       const objs = Array.isArray(issue) ? issue : [issue]
+
+      const target = await getTargetObjectFromUrl(getCurrentLocation())
+      const deletingFromTargetIssuePage = objs.some((obj) => obj._id === target?._id)
+
       try {
         await deleteObjects(getClient(), objs as unknown as Doc[])
       } catch (err: any) {
         Analytics.handleError(err)
       }
-      closePanel()
+
+      if (deletingFromTargetIssuePage) {
+        closePanel()
+      }
     }
   })
 }
