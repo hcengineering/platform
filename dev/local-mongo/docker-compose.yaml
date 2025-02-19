@@ -40,7 +40,7 @@ services:
     environment:
       - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - MONGO_URL=mongodb://huly.local:27017?compressors=snappy
       - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -65,7 +65,7 @@ services:
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3000
       - UPLOAD_URL=/files
-      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - MONGO_URL=mongodb://huly.local:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName":"collaborator","maxPoolSize":2}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
@@ -83,7 +83,7 @@ services:
       - UV_THREADPOOL_SIZE=10
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - MONGO_URL=mongodb://huly.local:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
       - ACCOUNTS_URL=http://localhost:3000
       - UPLOAD_URL=/files      
@@ -120,7 +120,7 @@ services:
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
-      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - MONGO_URL=mongodb://huly.local:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
@@ -151,7 +151,7 @@ services:
       - 4005:4005
     environment:
       - SECRET=secret
-      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - MONGO_URL=mongodb://huly.local:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName":"print","maxPoolSize":1}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     deploy:
@@ -168,7 +168,7 @@ services:
       - ../../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
     environment:
       - SECRET=secret
-      - MONGO_URL=mongodb://host.docker.internal:27017
+      - MONGO_URL=mongodb://huly.local:27017
       - 'MONGO_OPTIONS={"appName":"sign","maxPoolSize":1}'
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
@@ -189,7 +189,7 @@ services:
 #    environment:
 #      - SECRET=secret
 #      - PORT=4007
-#      - MONGO_URL=mongodb://host.docker.internal:27017
+#      - MONGO_URL=mongodb://huly.local:27017
 #      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
 #      - SERVICE_ID=analytics-collector-service
 #      - ACCOUNTS_URL=http://account:3000
@@ -202,7 +202,7 @@ services:
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://host.docker.internal:27017
+      - MONGO_URL=mongodb://huly.local:27017
       - ACCOUNTS_URL=http://account:3000
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
@@ -219,7 +219,7 @@ services:
 #    environment:
 #      - PORT=4020
 #      - BOT_TOKEN=token
-#      - MONGO_URL=mongodb://host.docker.internal:27017
+#      - MONGO_URL=mongodb://huly.local:27017
 #      - MONGO_DB=telegram-bot
 #      - SECRET=secret
 #      - DOMAIN=domain
