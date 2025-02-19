@@ -1,5 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,12 +13,17 @@
 // limitations under the License.
 //
 
-import { workbenchId, workbenchPlugin } from './plugin'
+import { getResource } from '@hcengineering/platform'
+import { workbenchPlugin as plugin } from './plugin'
 
-export * from './analytics'
-export * from './types'
-export * from './utils'
+/** @public */
+export async function logIn (loginInfo: { account: string, token?: string }): Promise<void> {
+  const res = await getResource(plugin.function.LogIn)
+  await res(loginInfo)
+}
 
-export { workbenchId }
-
-export default workbenchPlugin
+/** @public */
+export async function logOut (): Promise<void> {
+  const res = await getResource(plugin.function.LogOut)
+  await res()
+}

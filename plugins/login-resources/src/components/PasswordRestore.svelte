@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
+  import { OK, Severity, Status } from '@hcengineering/platform'
 
-  import presentation from '@hcengineering/presentation'
-  import { getCurrentLocation, setMetadataLocalStorage } from '@hcengineering/ui'
+  import { getCurrentLocation } from '@hcengineering/ui'
+  import { logIn } from '@hcengineering/workbench'
   import login from '../plugin'
   import type { Field } from '../types'
   import { goTo, restorePassword } from '../utils'
@@ -53,8 +53,7 @@
       status = loginStatus
 
       if (result != null) {
-        setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LoginAccount, result.account)
+        await logIn(result)
         goTo('selectWorkspace')
       }
     }

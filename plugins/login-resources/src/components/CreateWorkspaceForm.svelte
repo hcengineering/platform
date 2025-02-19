@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { type RegionInfo } from '@hcengineering/account-client'
   import { OK, Severity, Status, getEmbeddedLabel } from '@hcengineering/platform'
   import { LoginInfo } from '@hcengineering/login'
   import { ButtonMenu, getCurrentLocation, navigate } from '@hcengineering/ui'
@@ -26,8 +27,7 @@
     getRegionInfo,
     goTo,
     setLoginInfo,
-    getAccountDisplayName,
-    type RegionInfo
+    getAccountDisplayName
   } from '../utils'
   import Form from './Form.svelte'
 
