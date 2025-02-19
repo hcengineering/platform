@@ -55,14 +55,21 @@ import {
   cleanExpiredOtp,
   getWorkspaces,
   verifyAllowedServices,
-  getPersonName
+  getPersonName,
+  getInviteEmail,
+  getFrontUrl,
+  getSesUrl,
+  getSocialIdByKey,
+  getWorkspaceInvite,
+  loginOrSignUpWithProvider,
+  sendEmail
 } from '../utils'
 // eslint-disable-next-line import/no-named-default
 import platform, { getMetadata, PlatformError, Severity, Status } from '@hcengineering/platform'
 import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
 import { randomBytes } from 'crypto'
 
-import { AccountDB, AccountEventType } from '../types'
+import { AccountDB, AccountEventType, Workspace } from '../types'
 import { accountPlugin } from '../plugin'
 
 // Mock platform with minimum required functionality
@@ -985,6 +992,41 @@ describe('account utils', () => {
         })
       })
     })
+
+    describe('sendEmail', () => {
+      beforeEach(() => {
+        ;(getMetadata as jest.Mock).mockImplementation((key) => {
+          switch (key) {
+            case accountPlugin.metadata.SES_URL:
+              return 'https://ses.example.com'
+            case accountPlugin.metadata.SES_AUTH_TOKEN:
+              return 'test-token'
+            default:
+              return undefined
+          }
+        })
+      })
+
+      test('should send email with correct parameters', async () => {
+        const emailInfo = {
+          text: 'Test email',
+          html: '<p>Test email</p>',
+          subject: 'Test Subject',
+          to: 'test@example.com'
+        }
+
+        await sendEmail(emailInfo)
+
+        expect(mockFetch).toHaveBeenCalledWith('https://ses.example.com/send', {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer test-token'
+          },
+          body: JSON.stringify(emailInfo)
+        })
+      })
+    })
   })
 
   describe('selectWorkspace', () => {
@@ -1625,6 +1667,240 @@ describe('account utils', () => {
       }
 
       expect(getPersonName(person)).toBe('John Doe')
+    })
+  })
+
+  describe('loginOrSignUpWithProvider', () => {
+    const mockCtx = {
+      error: jest.fn()
+    } as unknown as MeasureContext
+
+    const mockDb = {
+      socialId: {
+        findOne: jest.fn(),
+        insertOne: jest.fn(),
+        updateOne: jest.fn()
+      },
+      account: {
+        findOne: jest.fn(),
+        insertOne: jest.fn()
+      },
+      accountEvent: {
+        findOne: jest.fn(),
+        insertOne: jest.fn()
+      },
+      person: {
+        findOne: jest.fn(),
+        insertOne: jest.fn(),
+        updateOne: jest.fn()
+      },
+      resetPassword: jest.fn()
+    } as unknown as AccountDB
+
+    const mockBranding = null
+    const mockSocialId = { type: SocialIdType.GOOGLE, value: 'test-id' }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      ;(generateToken as jest.Mock).mockReturnValue('new-token')
+    })
+
+    test('should create new account when no social ids exist', async () => {
+      const email = 'test@example.com'
+      const firstName = 'John'
+      const lastName = 'Doe'
+      const personUuid = 'new-person' as PersonUuid
+
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.person.insertOne as jest.Mock).mockResolvedValue(personUuid)
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ firstName, lastName })
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+
+      const result = await loginOrSignUpWithProvider(
+        mockCtx,
+        mockDb,
+        mockBranding,
+        email,
+        firstName,
+        lastName,
+        mockSocialId
+      )
+
+      expect(result).toEqual({
+        account: personUuid,
+        socialId: expect.any(String),
+        name: 'John Doe',
+        token: 'new-token'
+      })
+    })
+
+    test('should return null when signup disabled and no account exists', async () => {
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+
+      const result = await loginOrSignUpWithProvider(
+        mockCtx,
+        mockDb,
+        mockBranding,
+        'test@example.com',
+        'John',
+        'Doe',
+        mockSocialId,
+        true
+      )
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getWorkspaceInvite', () => {
+    const mockDb = {
+      invite: {
+        findOne: jest.fn()
+      }
+    } as unknown as AccountDB
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    test('should return invite when found by id', async () => {
+      const mockInvite = { id: 'test-invite', workspaceUuid: 'ws1' as WorkspaceUuid }
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValueOnce(mockInvite)
+
+      const result = await getWorkspaceInvite(mockDb, 'test-invite')
+      expect(result).toEqual(mockInvite)
+      expect(mockDb.invite.findOne).toHaveBeenCalledWith({ id: 'test-invite' })
+    })
+
+    test('should check migrated invites when not found by id', async () => {
+      const mockInvite = { id: 'new-id', migratedFrom: 'old-id' }
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValueOnce(null).mockResolvedValueOnce(mockInvite)
+
+      const result = await getWorkspaceInvite(mockDb, 'old-id')
+      expect(result).toEqual(mockInvite)
+      expect(mockDb.invite.findOne).toHaveBeenCalledWith({ migratedFrom: 'old-id' })
+    })
+
+    test('should return null when invite not found', async () => {
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValueOnce(null).mockResolvedValueOnce(null)
+
+      const result = await getWorkspaceInvite(mockDb, 'nonexistent')
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getSocialIdByKey', () => {
+    const mockDb = {
+      socialId: {
+        findOne: jest.fn()
+      }
+    } as unknown as AccountDB
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    test('should return social id when found', async () => {
+      const mockSocialId = { key: 'email:test@example.com' as PersonId }
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(mockSocialId)
+
+      const result = await getSocialIdByKey(mockDb, 'email:test@example.com' as PersonId)
+      expect(result).toEqual(mockSocialId)
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ key: 'email:test@example.com' })
+    })
+
+    test('should return null when social id not found', async () => {
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+
+      const result = await getSocialIdByKey(mockDb, 'nonexistent' as PersonId)
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getSesUrl', () => {
+    beforeEach(() => {
+      ;(getMetadata as jest.Mock).mockImplementation((key) => {
+        switch (key) {
+          case accountPlugin.metadata.SES_URL:
+            return 'https://ses.example.com'
+          case accountPlugin.metadata.SES_AUTH_TOKEN:
+            return 'test-token'
+          default:
+            return undefined
+        }
+      })
+    })
+
+    afterEach(() => {
+      ;(getMetadata as jest.Mock).mockReset()
+    })
+
+    test('should return SES URL and auth token when configured', () => {
+      const result = getSesUrl()
+      expect(result).toEqual({
+        sesURL: 'https://ses.example.com',
+        sesAuth: 'test-token'
+      })
+    })
+
+    test('should throw error when SES URL not configured', () => {
+      ;(getMetadata as jest.Mock).mockReturnValue(undefined)
+
+      expect(() => getSesUrl()).toThrow('Please provide email service url')
+    })
+  })
+
+  describe('getFrontUrl', () => {
+    const mockBranding: Branding = {
+      front: 'https://custom.example.com'
+    }
+
+    beforeEach(() => {
+      ;(getMetadata as jest.Mock).mockImplementation((key) => {
+        if (key === accountPlugin.metadata.FrontURL) {
+          return 'https://default.example.com'
+        }
+        return undefined
+      })
+    })
+
+    test('should return branding front URL when available', () => {
+      const result = getFrontUrl(mockBranding)
+      expect(result).toBe('https://custom.example.com')
+    })
+
+    test('should return FRONT_URL when no branding front URL', () => {
+      const result = getFrontUrl(null)
+      expect(result).toBe('https://default.example.com')
+    })
+
+    test('should throw error when no URL available', () => {
+      ;(getMetadata as jest.Mock).mockReturnValue(undefined)
+      expect(() => getFrontUrl(null)).toThrow('Please provide front url')
+    })
+  })
+
+  describe('getInviteEmail', () => {
+    const mockBranding: Branding = {
+      language: 'en',
+      front: 'https://app.example.com'
+    }
+
+    const mockWorkspace: Workspace = {
+      uuid: 'test-workspace-uuid' as WorkspaceUuid,
+      name: 'Test Workspace',
+      url: 'test-workspace'
+    }
+
+    test('should generate invite email content', async () => {
+      const result = await getInviteEmail(mockBranding, 'test@example.com', 'invite-id', mockWorkspace, 24)
+
+      expect(result).toEqual({
+        text: expect.any(String),
+        html: expect.any(String),
+        subject: expect.any(String),
+        to: 'test@example.com'
+      })
     })
   })
 })
