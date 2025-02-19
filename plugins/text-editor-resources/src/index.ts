@@ -27,6 +27,7 @@ import { openImage, downloadImage, expandImage, moreImageActions } from './compo
 import { configureNote, isEditableNote } from './components/extension/note'
 import { createInlineComment, shouldShowCreateInlineCommentAction } from './components/extension/inlineComment'
 import { isTextStylingEnabled, openBackgroundColorOptions, openTextColorOptions } from './components/extension/colors'
+export { getTargetObjectFromUrl, getReferenceFromUrl, getReferenceLabel } from './components/extension/reference'
 
 export * from '@hcengineering/presentation/src/types'
 export type { EditorKitOptions } from './kits/editor-kit'
