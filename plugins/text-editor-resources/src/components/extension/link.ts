@@ -15,6 +15,8 @@
 
 import { showPopup } from '@hcengineering/ui'
 import { Extension } from '@tiptap/core'
+import { type MarkType } from '@tiptap/pm/model'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 import LinkPopup from '../LinkPopup.svelte'
 
 export const LinkUtilsExtension = Extension.create<any>({
@@ -42,6 +44,28 @@ export const LinkUtilsExtension = Extension.create<any>({
   },
 
   addProseMirrorPlugins () {
-    return []
+    return [LinkClickHandlerPlugin({ type: this.editor.schema.marks.link })]
   }
 })
+
+interface LinkClickHandlerOptions {
+  type: MarkType
+}
+
+export function LinkClickHandlerPlugin (options: LinkClickHandlerOptions): Plugin {
+  return new Plugin({
+    key: new PluginKey('handleClickLink'),
+    props: {
+      handleClick: (view, pos, event) => {
+        const $pos = view.state.doc.resolve(pos)
+        const link = options.type.isInSet($pos.marks())
+        if (typeof link?.attrs.href === 'string') {
+          window.open(link.attrs.href, link.attrs.target)
+          return true
+        }
+
+        return false
+      }
+    }
+  })
+}

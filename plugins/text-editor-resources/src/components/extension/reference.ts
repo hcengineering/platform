@@ -363,7 +363,7 @@ export async function getReferenceFromUrl (text: string): Promise<ReferenceNodeP
   const _id: Ref<Doc> | undefined =
     linkProvider !== undefined ? (await (await getResource(linkProvider.decode))(id)) ?? id : id
 
-  const label = await getReferenceLabel(objectclass, id)
+  const label = await getReferenceLabel(objectclass, _id)
   if (label === '') return
 
   return {
