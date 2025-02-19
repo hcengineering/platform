@@ -40,6 +40,7 @@ export interface Config {
   VERSION?: string
 
   BACKUP_URL?: string
+  PUBLIC_SCHEDULE_URL?: string
 }
 
 export interface Branding {

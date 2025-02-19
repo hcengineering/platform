@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2020-2025 Anticrm Platform Contributors.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -42,6 +42,7 @@ import VisibilityEditor from './components/VisibilityEditor.svelte'
 import CalendarSelector from './components/CalendarSelector.svelte'
 import ConnectApp from './components/ConnectApp.svelte'
 import CalendarWidget from './components/CalendarWidget.svelte'
+import ScheduleNavSection from './components/ScheduleNavSection.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
@@ -56,7 +57,8 @@ export {
   EventReminders,
   VisibilityEditor,
   CalendarSelector,
-  EventPresenter
+  EventPresenter,
+  ScheduleNavSection
 }
 
 export type {

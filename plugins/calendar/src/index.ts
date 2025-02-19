@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Contact } from '@hcengineering/contact'
+import { Contact, Employee } from '@hcengineering/contact'
 import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, SystemSpace, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
@@ -128,6 +128,21 @@ export interface CalendarEventPresenter extends Class<Event> {
   presenter: AnyComponent
 }
 
+export type ScheduleAvailability = Record<number, { start: number, end: number }[]>
+
+/**
+ * @public
+ */
+export interface Schedule extends Doc {
+  owner: Ref<Employee>
+  title: string
+  description?: string
+  meetingDuration: number
+  meetingInterval: number
+  availability: ScheduleAvailability
+  timeZone: string
+}
+
 /**
  * @public
  */
@@ -142,7 +157,8 @@ const calendarPlugin = plugin(calendarId, {
     ExternalCalendar: '' as Ref<Class<ExternalCalendar>>,
     Event: '' as Ref<Class<Event>>,
     ReccuringEvent: '' as Ref<Class<ReccuringEvent>>,
-    ReccuringInstance: '' as Ref<Class<ReccuringInstance>>
+    ReccuringInstance: '' as Ref<Class<ReccuringInstance>>,
+    Schedule: '' as Ref<Class<Schedule>>
   },
   mixin: {
     CalendarEventPresenter: '' as Ref<Mixin<CalendarEventPresenter>>
@@ -160,7 +176,9 @@ const calendarPlugin = plugin(calendarId, {
     Globe: '' as Asset,
     Public: '' as Asset,
     Hidden: '' as Asset,
-    Private: '' as Asset
+    Private: '' as Asset,
+    Duration: '' as Asset,
+    Timer: '' as Asset
   },
   image: {
     Permissions: '' as Asset
@@ -179,7 +197,8 @@ const calendarPlugin = plugin(calendarId, {
     Events: '' as AnyComponent,
     DateTimePresenter: '' as AnyComponent,
     DocReminder: '' as AnyComponent,
-    ConnectApp: '' as AnyComponent
+    ConnectApp: '' as AnyComponent,
+    ScheduleEditor: '' as AnyComponent
   },
   string: {
     Title: '' as IntlString,
@@ -201,7 +220,21 @@ const calendarPlugin = plugin(calendarId, {
     FreeBusy: '' as IntlString,
     Busy: '' as IntlString,
     Private: '' as IntlString,
-    NotAllPermissions: '' as IntlString
+    NotAllPermissions: '' as IntlString,
+    Schedule: '' as IntlString,
+    ScheduleNew: '' as IntlString,
+    ScheduleDeleteConfirm: '' as IntlString,
+    ScheduleShareLink: '' as IntlString,
+    ScheduleSharedLinkTitle: '' as IntlString,
+    ScheduleSharedLinkMessage: '' as IntlString,
+    ScheduleSharedLinkCopy: '' as IntlString,
+    ScheduleAvailability: '' as IntlString,
+    ScheduleAddPeriod: '' as IntlString,
+    ScheduleRemovePeriod: '' as IntlString,
+    ScheduleUnavailable: '' as IntlString,
+    MeetingDuration: '' as IntlString,
+    MeetingInterval: '' as IntlString,
+    MeetingIntervalNone: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler
@@ -210,7 +243,8 @@ const calendarPlugin = plugin(calendarId, {
     Calendar: '' as Ref<IntegrationType>
   },
   metadata: {
-    CalendarServiceURL: '' as Metadata<string>
+    CalendarServiceURL: '' as Metadata<string>,
+    PublicScheduleURL: '' as Metadata<string>
   },
   extensions: {
     EditEventExtensions: '' as ComponentExtensionId
