@@ -19,7 +19,6 @@ import { setCurrentEmployee, ensureEmployee } from '@hcengineering/contact'
 import login, { loginId } from '@hcengineering/login'
 import { broadcastEvent, getMetadata, getResource, OK, setMetadata, translateCB } from '@hcengineering/platform'
 import presentation, {
-  closeClient,
   loadServerConfig,
   purgeClient,
   refreshClient,
@@ -40,7 +39,7 @@ import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { writable, get } from 'svelte/store'
 
 import plugin from './plugin'
-import { workspaceCreating } from './utils'
+import { logOut, workspaceCreating } from './utils'
 
 export const versionError = writable<string | undefined>(undefined)
 const versionStorageKey = 'last_server_version'
@@ -78,30 +77,24 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
-  const workspaceLoginInfo = await ctx.with(
-    'select-workspace',
-    {},
-    async () => (await selectWorkspace(wsUrl, token))[1]
-  )
+  const [, workspaceLoginInfo] = await ctx.with('select-workspace', {}, async () => await selectWorkspace(wsUrl, null))
 
   if (workspaceLoginInfo == null) {
     console.error(
       `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
     )
     // something went wrong with selecting workspace with the selected token
-    clearMetadata()
-    navigate({
-      path: [loginId]
-    })
+    await logOut()
+    navigate({ path: [loginId] })
     return
   }
 
   const token = workspaceLoginInfo.token
 
+  setMetadata(presentation.metadata.Token, workspaceLoginInfo.token)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
   setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
-  setMetadata(presentation.metadata.Token, token)
 
   const fetchWorkspace = await getResource(login.function.FetchWorkspace)
   let workspace = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace())[1])
@@ -226,10 +219,11 @@ export async function connect (title: string): Promise<Client | undefined> {
           location.reload()
         },
         onUnauthorized: () => {
-          clearMetadata()
-          navigate({
-            path: [loginId],
-            query: {}
+          void logOut().then(() => {
+            navigate({
+              path: [loginId],
+              query: {}
+            })
           })
         },
         onArchived: () => {
@@ -427,17 +421,4 @@ async function getGlobalPerson (): Promise<GlobalPerson | undefined> {
   }
 
   return globalPerson
-}
-
-export function clearMetadata (): void {
-  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
-  if (currentWorkspace !== undefined) {
-    setPresentationCookie('', currentWorkspace)
-  }
-
-  setMetadata(presentation.metadata.WorkspaceUuid, null)
-  setMetadata(presentation.metadata.WorkspaceDataId, null)
-  setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-  setMetadataLocalStorage(login.metadata.LoginAccount, null)
-  void closeClient()
 }

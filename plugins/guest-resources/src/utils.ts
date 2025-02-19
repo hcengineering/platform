@@ -1,6 +1,7 @@
 import client from '@hcengineering/client'
 import { type Doc } from '@hcengineering/core'
-import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import login from '@hcengineering/login'
+import { getMetadata, getResource } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import { getCurrentLocation, navigate } from '@hcengineering/ui'
 import view from '@hcengineering/view'
@@ -10,10 +11,10 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function checkAccess (doc: Doc): Promise<void> {
   const loc = getCurrentLocation()
   const ws = loc.path[1]
-  // TODO
-  // const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-  // const token = tokens[ws]
-  const token = undefined
+
+  const selectWorkspace = await getResource(login.function.SelectWorkspace)
+  const wsLoginInfo = (await selectWorkspace(ws, null))[1]
+  const token = wsLoginInfo?.token
 
   const endpoint = getMetadata(presentation.metadata.Endpoint)
   if (token === undefined || endpoint === undefined) return
@@ -30,7 +31,7 @@ export async function checkAccess (doc: Doc): Promise<void> {
     loc.path[0] = workbenchId
     loc.path[1] = ws
     // We have access, let's set correct tokens and redirect)
-    setMetadata(presentation.metadata.Token, token)
+    // setMetadata(presentation.metadata.Token, token)
     navigate(loc)
   }
 }

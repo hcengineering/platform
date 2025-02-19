@@ -64,20 +64,21 @@
       // token handled by auth page
       return
     }
+
     if (getMetadata(presentation.metadata.Token) == null) {
-      // TODO ensure it works
-      // const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
-      // if (lastToken != null) {
-      try {
-        const info = await getAccount(false)
-        if (info !== undefined) {
-          setMetadata(presentation.metadata.Token, info.token)
-          setMetadataLocalStorage(login.metadata.LoginEndpoint, info.endpoint)
-          setMetadataLocalStorage(login.metadata.LoginEmail, info.email)
-          updatePageLoc(getCurrentLocation())
+      const lastAccount = fetchMetadataLocalStorage(login.metadata.LastAccount)
+      if (lastAccount != null) {
+        try {
+          const info = await getAccount(false)
+          if (info != null) {
+            setMetadata(presentation.metadata.Token, info.token)
+            setMetadataLocalStorage(login.metadata.LastAccount, info.account)
+            setMetadataLocalStorage(login.metadata.LoginAccount, info.account)
+            updatePageLoc(getCurrentLocation())
+          }
+        } catch (err: any) {
+          // do nothing
         }
-      } catch (err: any) {
-        // do nothing
       }
     }
   }

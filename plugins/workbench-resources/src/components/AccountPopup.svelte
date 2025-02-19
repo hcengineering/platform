@@ -16,7 +16,7 @@
   import contact, { formatName } from '@hcengineering/contact'
   import { myEmployeeStore } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import login from '@hcengineering/login'
+  import login, { loginId } from '@hcengineering/login'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
   import {
@@ -32,7 +32,7 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import workbench from '../plugin'
-  import { signOut } from '../utils'
+  import { logOut } from '../utils'
   import HelpAndSupport from './HelpAndSupport.svelte'
 
   let items: SettingsCategory[] = []
@@ -143,7 +143,8 @@
         icon: setting.icon.Signout,
         label: setting.string.Signout,
         action: async () => {
-          signOut()
+          await logOut()
+          navigate({ path: [loginId] })
         },
         group: 'end'
       }

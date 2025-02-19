@@ -26,9 +26,9 @@
     SearchEdit,
     Spinner,
     deviceOptionsStore as deviceInfo,
-    setMetadataLocalStorage,
     showPopup
   } from '@hcengineering/ui'
+  import { logOut } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
 
   import login from '../plugin'
@@ -112,8 +112,7 @@
       await updateWorkspaces()
       flagToUpdateWorkspaces = true
     } catch (err: any) {
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-      setMetadataLocalStorage(login.metadata.LoginAccount, null)
+      await logOut()
       goTo('login')
       throw err
     }
@@ -230,10 +229,8 @@
         <span><Label label={login.string.NotSeeingWorkspace} /></span>
         <NavLink
           href={getHref('login')}
-          onClick={() => {
-            setMetadata(presentation.metadata.Token, null)
-            setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-            setMetadataLocalStorage(login.metadata.LoginAccount, null)
+          onClick={async () => {
+            await logOut()
             goTo('login')
           }}
         >
