@@ -179,7 +179,11 @@ const toTransactor = (line: string): { internalUrl: string, region: string, exte
   return { internalUrl: internalUrl ?? '', region: region ?? '', externalUrl: externalUrl ?? internalUrl ?? '' }
 }
 
-const getEndpoints = (): string[] => {
+/**
+ * Internal. Exported for testing only.
+ * @returns list of endpoints
+ */
+export const getEndpoints = (): string[] => {
   const transactorsUrl = getMetadata(accountPlugin.metadata.Transactors)
   if (transactorsUrl === undefined) {
     throw new Error('Please provide transactor endpoint url')
@@ -200,24 +204,35 @@ let regionInfo: RegionInfo[] = []
 
 export const getRegions = (): RegionInfo[] => {
   if (regionInfo.length === 0) {
-    const endpoints = getEndpoints()
-      .map(toTransactor)
-      .map((it) => ({ region: it.region.trim(), name: '' }))
-    if (process.env.REGION_INFO !== undefined) {
-      regionInfo = process.env.REGION_INFO.split(';')
-        .map((it) => it.split('|'))
-        .map((it) => ({ region: it[0].trim(), name: it[1].trim() }))
-      // We need to add all endpoints if they are not in info.
-      for (const endpoint of endpoints) {
-        if (regionInfo.find((it) => it.region === endpoint.region) === undefined) {
-          regionInfo.push(endpoint)
-        }
-      }
-    } else {
-      regionInfo = endpoints
-    }
+    regionInfo = _getRegions()
   }
   return regionInfo
+}
+
+/**
+ * Internal. Exported for tests only.
+ * @returns list of endpoints
+ */
+export const _getRegions = (): RegionInfo[] => {
+  let _regionInfo: RegionInfo[] = []
+  const endpoints = getEndpoints()
+    .map(toTransactor)
+    .map((it) => ({ region: it.region.trim(), name: '' }))
+  if (process.env.REGION_INFO !== undefined) {
+    _regionInfo = process.env.REGION_INFO.split(';')
+      .map((it) => it.split('|'))
+      .map((it) => ({ region: it[0].trim(), name: it[1].trim() }))
+    // We need to add all endpoints if they are not in info.
+    for (const endpoint of endpoints) {
+      if (_regionInfo.find((it) => it.region === endpoint.region) === undefined) {
+        _regionInfo.push(endpoint)
+      }
+    }
+  } else {
+    _regionInfo = endpoints
+  }
+
+  return _regionInfo
 }
 
 export const getEndpoint = (
@@ -290,8 +305,9 @@ export function cleanEmail (email: string): string {
 }
 
 export function isEmail (email: string): boolean {
+  // RFC 5322 compliant email regex
   const EMAIL_REGEX =
-    /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
+    /^[a-zA-Z0-9](?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-](?:\.?[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-])*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/ // eslint-disable-line no-control-regex
   return EMAIL_REGEX.test(email)
 }
 
