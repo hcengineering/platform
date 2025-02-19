@@ -33,11 +33,23 @@
   let _is: AnyComponent | AnySvelteComponent = is
   let _props: any = props
 
+  // See https://github.com/sveltejs/svelte/issues/4068
+  // When passing undefined prop value, then Svelte uses default value only first time when
+  // component is instantiated. On the next update the value will be set to undefined.
+  // Here we filter out undefined values from props on updates to ensure we don't overwrite them.
+  const filterDefaultUndefined = (pnew: any, pold: any): any =>
+    pnew != null
+      ? Object.fromEntries(Object.entries(pnew).filter(([k, v]) => v !== undefined || pold?.[k] !== undefined))
+      : pnew
+
   $: if (!deepEqual(_is, is)) {
     _is = is
   }
-  $: if (!deepEqual(_props, props)) {
-    _props = props
+  $: {
+    const p = filterDefaultUndefined(props, _props)
+    if (!deepEqual(_props, p)) {
+      _props = p
+    }
   }
 
   let Ctor: any
@@ -61,6 +73,7 @@
           .then((res) => {
             if (current === counter) {
               Ctor = res
+              _props = props
               loading = false
             }
           })
@@ -72,9 +85,11 @@
       } else {
         loading = false
         Ctor = component
+        _props = props
       }
     } else {
       Ctor = _is
+      _props = props
     }
   }
 
