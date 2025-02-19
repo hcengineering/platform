@@ -996,7 +996,8 @@
                 currentSpace,
                 space: currentSpace,
                 navigationModel: specialComponent?.navigationModel,
-                workbenchWidth
+                workbenchWidth,
+                queryOptions: specialComponent?.queryOptions
               }}
               on:action={(e) => {
                 if (e?.detail) {

@@ -6,6 +6,8 @@
     "CreateMail": "Новое сообщение",
     "MailThread": "Сообщение",
     "Reply": "Ответить",
-    "Date": "Дата"
+    "Date": "Дата",
+    "MailMessage": "Сообщение",
+    "MailMessages": "Сообщения"
   }
 }

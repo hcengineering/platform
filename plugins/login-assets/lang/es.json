@@ -51,6 +51,8 @@
     "CanFindCode": "¿No encuentras tu código? Revisa tu",
     "LoginWithPassword": "Iniciar sesión con contraseña",
     "LoginWithCode": "Iniciar sesión con código",
+    "SignUpWithPassword": "Registrarse con contraseña",
+    "SignUpWithCode": "Registrarse con código",
     "FillInProfile": "Rellena tu perfil",
     "SetUpPassword": "Establecer tu contraseña",
     "Next": "Siguiente",

@@ -439,7 +439,11 @@ export async function ensureEmployee (
   if (me.role !== AccountRole.Guest) {
     const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
 
-    if (employee === undefined || !client.getHierarchy().hasMixin(employee, contact.mixin.Employee)) {
+    if (
+      employee === undefined ||
+      !client.getHierarchy().hasMixin(employee, contact.mixin.Employee) ||
+      !employee.active
+    ) {
       await ctx.with('create-employee', {}, async () => {
         if (personRef === undefined) {
           // something went wrong

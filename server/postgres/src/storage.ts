@@ -62,12 +62,12 @@ import core, {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import {
+  calcHashHash,
   type DbAdapter,
   type DbAdapterHandler,
   type DomainHelperOperations,
   type ServerFindOptions,
-  type TxAdapter,
-  calcHashHash
+  type TxAdapter
 } from '@hcengineering/server-core'
 import type postgres from 'postgres'
 import { createDBClient, createGreenDBClient, type DBClient } from './client'
@@ -425,6 +425,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   reserveContext (id: string): () => void {
+    if (greenURL != null) {
+      // Do not reserve connection if using green
+      return () => {}
+    }
     const conn = this.mgr.getConnection(id, true)
     return () => {
       conn.released = true
@@ -2096,28 +2100,31 @@ export async function createPostgresAdapter (
   )
 }
 
+let greenDecoder: ((data: any) => Promise<any>) | undefined
+let greenURL: string | undefined
+let useGreenCompression: string | undefined
+
 function toGreenClient (url: string, connection: postgres.Sql): DBClient {
   const originalUrl = new URL(url)
 
   // Extract components with default values if needed
   const token = originalUrl.searchParams.get('token') ?? 'secret'
-  const compression = originalUrl.searchParams.get('compression') ?? ''
 
   // Manually build the new URL components
   const newHost = originalUrl.host
   const newPathname = originalUrl.pathname
 
-  // Construct new search parameters without previous ones
-  const newSearchParams = new URLSearchParams()
-  // Add any search parameters you need, like `token` and `compression` if desired
-  if (compression !== '') {
-    newSearchParams.set('compression', compression)
-  }
-
-  console.warn('USE GREEN', newHost, newPathname, newSearchParams.toString())
+  console.warn('USE GREEN', newHost, newPathname)
   // Construct the new URL
-  const newUrl = `${originalUrl.protocol}//${newHost}${newPathname}${newSearchParams.size > 0 ? '?' + newSearchParams.toString() : ''}`
-  return createGreenDBClient(newUrl, token, connection, greenDecoders.get(compression))
+  const newUrl = `${originalUrl.protocol}//${newHost}${newPathname}`
+  return createGreenDBClient(
+    newUrl,
+    token,
+    connection,
+    useGreenCompression !== undefined && greenDecoder !== undefined
+      ? { decoder: greenDecoder, compression: useGreenCompression }
+      : undefined
+  )
 }
 /**
  * @public
@@ -2143,11 +2150,9 @@ export async function createPostgresTxAdapter (
   )
 }
 
-const greenDecoders = new Map<string, (data: any) => Promise<any>>()
-let greenURL: string | undefined
-
 export function registerGreenDecoder (name: string, decoder: (data: any) => Promise<any>): void {
-  greenDecoders.set(name, decoder)
+  greenDecoder = decoder
+  useGreenCompression = name
 }
 export function registerGreenUrl (url?: string): void {
   greenURL = url

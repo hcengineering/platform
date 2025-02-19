@@ -49,7 +49,6 @@ import {
   type Workspace
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
-import { handleSend } from './utils'
 
 const useReserveContext = (process.env.USE_RESERVE_CTX ?? 'true') === 'true'
 
@@ -224,9 +223,7 @@ export class ClientSession implements Session {
         this.useCompression
       )
     } else {
-      void handleSend(ctx, socket, { result: tx }, 1024 * 1024, this.binaryMode, this.useCompression).catch((err) => {
-        ctx.error('failed to broadcast', err)
-      })
+      socket.send(ctx, { result: tx }, this.binaryMode, this.useCompression)
     }
   }
 

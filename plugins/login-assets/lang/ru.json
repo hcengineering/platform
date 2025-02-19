@@ -51,6 +51,8 @@
     "CanFindCode": "Не нашли код? Проверьте папку со спамом.",
     "LoginWithPassword": "Войти с паролем",
     "LoginWithCode": "Войти с кодом",
+    "SignUpWithPassword": "Регистрация с паролем",
+    "SignUpWithCode": "Регистрация с кодом",
     "FillInProfile": "Заполните профиль",
     "SetUpPassword": "Установите пароль",
     "Next": "Дальше",

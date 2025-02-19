@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { AnyAttribute, Tx, TxCreateDoc, TxProcessor } from '@hcengineering/core'
-import card from '@hcengineering/card'
+import core, { AnyAttribute, Tx, TxCreateDoc, TxProcessor, TxRemoveDoc } from '@hcengineering/core'
+import card, { MasterTag } from '@hcengineering/card'
 import view from '@hcengineering/view'
 import { TriggerControl } from '@hcengineering/server-core'
 
@@ -47,9 +47,31 @@ async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerCo
   return []
 }
 
+async function OnMasterTagRemove (ctx: TxRemoveDoc<MasterTag>[], control: TriggerControl): Promise<Tx[]> {
+  const removeTx = ctx[0]
+  const removedTag = control.removedMap.get(removeTx.objectId)
+  if (removedTag === undefined) return []
+  const res: Tx[] = []
+  // should remove objects if masterTag
+  if (removedTag._class === card.class.MasterTag) {
+    const cards = await control.findAll(control.ctx, removeTx.objectId, {})
+    for (const card of cards) {
+      res.push(control.txFactory.createTxRemoveDoc(card._class, card.space, card._id))
+    }
+  }
+  const desc = control.hierarchy.getDescendants(removeTx.objectId)
+  for (const des of desc) {
+    if (des === removeTx.objectId) continue
+    res.push(control.txFactory.createTxRemoveDoc(card.class.MasterTag, core.space.Model, des))
+  }
+
+  return res
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnAttribute
+    OnAttribute,
+    OnMasterTagRemove
   }
 })

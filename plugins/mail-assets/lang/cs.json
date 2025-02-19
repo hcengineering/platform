@@ -6,6 +6,8 @@
     "CreateMail": "Nová zpráva",
     "MailThread": "Zpráva",
     "Reply": "Odpovědět",
-    "Date": "Datum"
+    "Date": "Datum",
+    "MailMessage": "Zpráva",
+    "MailMessages": "Zprávy"
   }
 }

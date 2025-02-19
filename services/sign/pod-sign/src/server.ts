@@ -17,7 +17,7 @@
 import { generateId, type WorkspaceIds } from '@hcengineering/core'
 import { initStatisticsContext, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { getClient as getAccountClientRaw, AccountClient, WorkspaceLoginInfo } from '@hcengineering/account-client'
+import { getClient as getAccountClientRaw, AccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
@@ -49,8 +49,8 @@ const handleRequest = async (
 ): Promise<void> => {
   try {
     const { rawToken } = extractToken(req.headers, req.query)
-    const wsLoginInfo = (await getAccountClient(rawToken).getLoginInfoByToken()) as WorkspaceLoginInfo
-    if (wsLoginInfo?.workspace === undefined) {
+    const wsLoginInfo = await getAccountClient(rawToken).getLoginInfoByToken()
+    if (!isWorkspaceLoginInfo(wsLoginInfo)) {
       throw new ApiError(401, "Couldn't find workspace with the provided token")
     }
     const wsIds = {

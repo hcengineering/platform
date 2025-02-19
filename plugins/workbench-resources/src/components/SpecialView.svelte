@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup, mergeQueries } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import {
@@ -38,7 +38,7 @@
     ViewletSelector,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
-  import { ParentsNavigationModel } from '@hcengineering/workbench'
+  import { QueryOptions, ParentsNavigationModel } from '@hcengineering/workbench'
 
   import ComponentNavigator from './ComponentNavigator.svelte'
 
@@ -56,6 +56,7 @@
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined = undefined
+  export let queryOptions: QueryOptions | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -68,7 +69,8 @@
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
 
-  $: _baseQuery = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
+  $: spaceQuery = queryOptions?.filterBySpace === true && space !== undefined ? { space } : {}
+  $: _baseQuery = mergeQueries(mergeQueries(baseQuery ?? {}, viewlet?.baseQuery ?? {}), spaceQuery)
   $: query = { ..._baseQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = searchQuery

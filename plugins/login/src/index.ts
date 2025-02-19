@@ -64,8 +64,8 @@ export default plugin(loginId, {
     WorkspaceArchivedDesc: '' as IntlString
   },
   function: {
-    SendInvite: '' as Resource<(email: string, role?: AccountRole) => Promise<void>>,
-    ResendInvite: '' as Resource<(inviteId: string) => Promise<void>>,
+    SendInvite: '' as Resource<(email: string, role: AccountRole) => Promise<void>>,
+    ResendInvite: '' as Resource<(email: string, role: AccountRole) => Promise<void>>,
     GetInviteLink: '' as Resource<
     (
       expHours: number,

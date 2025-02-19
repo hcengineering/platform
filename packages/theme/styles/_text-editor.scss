@@ -323,7 +323,9 @@
 
 .text-editor-highlighted-node-warning {
   background-color: var(--text-editor-highlighted-node-warning-background-color);
-  border-bottom: 0.0625rem solid var(--text-editor-highlighted-node-warning-border-color);
+  border-bottom: 2px solid var(--text-editor-highlighted-node-warning-border-color);
+  padding-bottom: 2px;
+  transition: background 0.2s ease, border 0.2s ease;
 
   &.text-editor-highlighted-node-selected, &:hover {
     background-color: var(--text-editor-highlighted-node-warning-active-background-color);

@@ -51,6 +51,8 @@
     "CanFindCode": "Non riesci a trovare il tuo codice? Controlla la tua cartella spam.",
     "LoginWithPassword": "Accedi con la password",
     "LoginWithCode": "Accedi con il codice",
+    "SignUpWithPassword": "Registrati con la password",
+    "SignUpWithCode": "Registrati con il codice",
     "FillInProfile": "Compila il tuo profilo",
     "SetUpPassword": "Imposta la tua password",
     "Next": "Avanti",

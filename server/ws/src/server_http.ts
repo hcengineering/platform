@@ -36,7 +36,7 @@ import {
 } from '@hcengineering/server'
 import {
   getClient as getAccountClientRaw,
-  type WorkspaceLoginInfo,
+  isWorkspaceLoginInfo,
   type AccountClient
 } from '@hcengineering/account-client'
 import {
@@ -95,7 +95,11 @@ export function startHttpServer (
   }
 
   async function getWorkspaceIds (token: string): Promise<WorkspaceIds> {
-    const wsLoginInfo = (await getAccountClient(token).getLoginInfoByToken()) as WorkspaceLoginInfo
+    const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+
+    if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+      throw new Error('Invalid workspace login info by token')
+    }
 
     return {
       uuid: wsLoginInfo.workspace,

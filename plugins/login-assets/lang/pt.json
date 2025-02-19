@@ -51,6 +51,8 @@
     "CanFindCode": "Não encontra o seu código? Verifique a sua pasta de spam.",
     "LoginWithPassword": "Iniciar sessão com palavra-passe",
     "LoginWithCode": "Iniciar sessão com código",
+    "SignUpWithPassword": "Registar com palavra-passe",
+    "SignUpWithCode": "Registar com código",
     "FillInProfile": "Preencha o seu perfil",
     "SetUpPassword": "Definir a sua palavra-passe",
     "Next": "Seguinte",
