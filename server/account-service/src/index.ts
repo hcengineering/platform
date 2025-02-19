@@ -15,10 +15,11 @@ import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
+import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
-import serverToken, { decodeToken } from '@hcengineering/server-token'
+import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
+import type Cookies from 'cookies'
 import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
@@ -26,7 +27,7 @@ import Router from 'koa-router'
 import os from 'os'
 import { migrateFromOldAccounts } from './migration/migration'
 
-const COOKIE = 'account-metadata-Token'
+const AUTH_TOKEN_COOKIE = 'account-metadata-Token'
 
 /**
  * @public
@@ -147,7 +148,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   const extractCookieToken = (headers: IncomingHttpHeaders): string | undefined => {
     if (headers.cookie != null) {
       const cookies = headers.cookie.split(';')
-      const tokenCookie = cookies.find((cookie) => cookie.includes(COOKIE))
+      const tokenCookie = cookies.find((cookie) => cookie.includes(AUTH_TOKEN_COOKIE))
       return tokenCookie?.split('=')[1]
     }
 
@@ -164,6 +165,25 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   const extractToken = (headers: IncomingHttpHeaders): string | undefined => {
     return extractAuthorizationToken(headers) ?? extractCookieToken(headers)
+  }
+
+  function getCookieOptions (branding: Branding | null): Cookies.SetOption {
+    const front = branding?.front ?? frontURL
+    const url = front !== undefined ? new URL(front) : undefined
+
+    return {
+      httpOnly: true,
+      domain: url?.hostname,
+      secure: url?.protocol === 'https',
+      maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year
+    }
+  }
+
+  const extractHost = (ctx: Koa.Context): string | undefined => {
+    const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
+    if (origin !== undefined) {
+      return new URL(origin).host
+    }
   }
 
   router.get('/api/v1/statistics', (req, res) => {
@@ -190,6 +210,50 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       req.res.writeHead(404, {})
       req.res.end()
     }
+  })
+
+  router.put('/cookie', async (ctx) => {
+    const token = extractToken(ctx.request.headers)
+    if (token === undefined) {
+      ctx.body = JSON.stringify({
+        error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+      })
+      ctx.res.writeHead(401)
+      ctx.res.end()
+      return
+    }
+
+    // Ensure we don't set the token with workspace to the cookie
+    const { account, extra } = decodeTokenVerbose(measureCtx, token)
+    const tokenWithoutWorkspace = generateToken(account, undefined, extra)
+
+    const host = extractHost(ctx)
+    const branding = host !== undefined ? brandings[host] : null
+    const cookieOpts = getCookieOptions(branding)
+
+    ctx.cookies.set(AUTH_TOKEN_COOKIE, tokenWithoutWorkspace, cookieOpts)
+    ctx.res.writeHead(201)
+    ctx.res.end()
+  })
+
+  router.delete('/cookie', async (ctx) => {
+    const token = extractToken(ctx.request.headers)
+    if (token === undefined) {
+      ctx.body = JSON.stringify({
+        error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+      })
+      ctx.res.writeHead(401)
+      ctx.res.end()
+      return
+    }
+
+    const host = extractHost(ctx)
+    const branding = host !== undefined ? brandings[host] : null
+    const cookieOpts = { ...getCookieOptions(branding), maxAge: 0 }
+
+    ctx.cookies.set(AUTH_TOKEN_COOKIE, '', cookieOpts)
+    ctx.res.writeHead(201)
+    ctx.res.end()
   })
 
   router.put('/api/v1/manage', async (req, res) => {
@@ -264,7 +328,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
         return
       }
 
-      return method(mctx, db, branding, request, token)
+      return method(mctx, db, branding, request, token, {})
     })
 
     ctx.body = result
