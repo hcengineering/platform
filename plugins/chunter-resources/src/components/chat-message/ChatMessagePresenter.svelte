@@ -55,6 +55,7 @@
   export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
+  export let isMarkdown = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -258,7 +259,7 @@
         {#if withShowMore}
           <ShowMore limit={compact ? 80 : undefined}>
             <div class="clear-mins">
-              <MessageViewer message={displayText} />
+              <MessageViewer message={displayText} {isMarkdown} />
               {#if (value.attachments ?? 0) > 0}
                 <div class="mt-2" />
               {/if}
@@ -267,7 +268,7 @@
           </ShowMore>
         {:else}
           <div class="clear-mins">
-            <MessageViewer message={displayText} />
+            <MessageViewer message={displayText} {isMarkdown} />
             {#if (value.attachments ?? 0) > 0}
               <div class="mt-2" />
             {/if}
