@@ -151,23 +151,30 @@
             else dir = 'top'
           } else dir = $tooltip.direction
 
-          const left = rectAnchor.x + rectAnchor.width / 2
-          const maxWidth = Math.min(left, docWidth - left)
-
           if (dir === 'right') {
+            const maxWidth = Math.min(docWidth / 2, docWidth - rectAnchor.right)
             options.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
             options.left = `calc(${rectAnchor.right}px + .75rem)`
+            options.maxWidth = `calc(${maxWidth}px - 1.5rem)`
             options.transform = 'translateY(-50%)'
           } else if (dir === 'left') {
+            const maxWidth = Math.min(docWidth / 2, docWidth - rectAnchor.x)
             options.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
             options.right = `calc(${docWidth - rectAnchor.x}px + .75rem)`
+            options.maxWidth = `calc(${maxWidth}px - 1.5rem)`
             options.transform = 'translateY(-50%)'
           } else if (dir === 'bottom') {
+            const left = rectAnchor.x + rectAnchor.width / 2
+            const maxWidth = Math.min(left, docWidth - left)
+
             options.top = `calc(${rectAnchor.bottom}px + .5rem)`
             options.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
             options.maxWidth = `calc(${maxWidth * 2}px - 1.5rem)`
             options.transform = 'translateX(-50%)'
           } else if (dir === 'top') {
+            const left = rectAnchor.x + rectAnchor.width / 2
+            const maxWidth = Math.min(left, docWidth - left)
+
             options.bottom = `calc(${docHeight - rectAnchor.y}px + .75rem)`
             options.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
             options.maxWidth = `calc(${maxWidth * 2}px - 1.5rem)`
