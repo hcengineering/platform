@@ -1,17 +1,17 @@
 {
-  "localhost:8080": {
+  "huly.local:8080": {
     "title": "Huly",
     "language": "en"
   },
-  "localhost:8087": {
+  "huly.local:8087": {
     "title": "Huly",
     "language": "en"
   },
-  "localhost:8081": {
+  "huly.local:8081": {
     "title": "TraceX",
     "language": "en"
   },
-  "localhost:8088": {
+  "huly.local:8088": {
     "title": "TraceX",
     "language": "en"
   }

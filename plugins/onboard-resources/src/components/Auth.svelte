@@ -1,23 +1,20 @@
 <script lang="ts">
-  import login, { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/login'
+  import { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/login'
   import { getLoginInfoFromQuery, navigateToWorkspace } from '@hcengineering/login-resources'
-  import { setMetadata } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
-  import { Loading, setMetadataLocalStorage } from '@hcengineering/ui'
+  import { Loading } from '@hcengineering/ui'
+  import { logIn } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import { afterConfirm, goToLogin } from '../utils'
 
   onMount(async () => {
     const result = await getLoginInfoFromQuery()
-    if (result !== undefined) {
+    if (result != null) {
+      await logIn(result)
+
       if (isWorkspaceLoginInfo(result)) {
         navigateToWorkspace(result.workspace, result, undefined, true)
         return
       }
-      setMetadata(presentation.metadata.Token, result.token)
-      setMetadataLocalStorage(login.metadata.LastToken, result.token)
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
       await afterConfirm(true)
     } else {
       goToLogin('login', true)

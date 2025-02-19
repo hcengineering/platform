@@ -29,8 +29,7 @@ export const loginId = 'login' as Plugin
 export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
-    LoginTokensV2: '' as Metadata<Record<string, string>>,
-    LastToken: '' as Metadata<string>,
+    LastAccount: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
     LoginAccount: '' as Metadata<string>,
     DisableSignUp: '' as Metadata<boolean>,

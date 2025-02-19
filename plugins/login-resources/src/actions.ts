@@ -1,7 +1,6 @@
 import { goTo } from './utils'
 import login from './plugin'
 import { type BottomAction } from '.'
-import { setMetadataLocalStorage } from '@hcengineering/ui'
 import { setMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 
@@ -20,7 +19,6 @@ export const loginAction: BottomAction = {
   page: 'login',
   func: () => {
     setMetadata(presentation.metadata.Token, null)
-    setMetadataLocalStorage(login.metadata.LastToken, null)
     goTo('login', true)
   }
 }
