@@ -37,6 +37,6 @@
   </div>
 {:else}
   <div class="markdown-view">
-    <Html value={marked(message)} />
+    <Html value={marked(message, { async: false })} />
   </div>
 {/if}
