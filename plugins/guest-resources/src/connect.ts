@@ -57,7 +57,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setPresentationCookie(token, workspaceLoginInfo.workspace)
 
-  setMetadata(presentation.metadata.Token, workspaceLoginInfo.token)
+  setMetadata(presentation.metadata.Token, token)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
   setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)

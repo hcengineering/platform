@@ -1,5 +1,5 @@
 import client from '@hcengineering/client'
-import { type Doc } from '@hcengineering/core'
+import { type Doc, AccountRole } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
@@ -14,10 +14,12 @@ export async function checkAccess (doc: Doc): Promise<void> {
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
   const wsLoginInfo = (await selectWorkspace(ws, null))[1]
-  const token = wsLoginInfo?.token
+  if (wsLoginInfo === undefined || wsLoginInfo.role === AccountRole.DocGuest) return
 
+  const token = wsLoginInfo.token
   const endpoint = getMetadata(presentation.metadata.Endpoint)
   if (token === undefined || endpoint === undefined) return
+
   const clientFactory = await getResource(client.function.GetClient)
   const _client = await clientFactory(token, endpoint)
 
