@@ -51,7 +51,7 @@
 </script>
 
 <PopupDialog label={view.string.ChooseIcon} on:changeContent>
-  <div class="float-left-box w-85">
+  <div class="flex-col float-left-box maxWidth">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <TabsControl size={'small'} {model}>
@@ -110,5 +110,13 @@
   .pallete {
     display: flex;
     flex-wrap: wrap;
+    min-width: 0;
+    min-height: 0;
+  }
+  .maxWidth {
+    width: 25rem;
+    height: 30rem;
+    min-width: 0;
+    min-height: 0;
   }
 </style>
