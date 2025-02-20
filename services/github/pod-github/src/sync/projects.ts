@@ -49,7 +49,6 @@ import {
 import { syncConfig } from './syncConfig'
 import {
   collectUpdate,
-  deleteObjects,
   errorToObj,
   getPlatformType,
   getType,
