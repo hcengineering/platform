@@ -78,6 +78,7 @@ export function processRequest (
     }
   }
 }
+
 export function sendResponse (
   ctx: MeasureContext,
   session: Session,

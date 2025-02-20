@@ -11,6 +11,7 @@ import core, {
   ClientConnectEvent,
   DocumentUpdate,
   isActiveMode,
+  isDeletingMode,
   MeasureContext,
   RateLimiter,
   TimeRateLimiter,
@@ -714,35 +715,37 @@ export class PlatformWorker {
     return Array.from(workspaces)
   }
 
-  async checkWorkspaceIsActive (token: string, workspace: string): Promise<WorkspaceInfoWithStatus | undefined> {
+  async checkWorkspaceIsActive (
+    token: string,
+    workspace: string
+  ): Promise<{ workspaceInfo: WorkspaceInfoWithStatus | undefined, needRecheck: boolean }> {
     let workspaceInfo: WorkspaceInfoWithStatus | undefined
     try {
       workspaceInfo = await getAccountClient(token).getWorkspaceInfo(true)
     } catch (err: any) {
       this.ctx.error('Workspace not found:', { workspace })
-      return
+      return { workspaceInfo: undefined, needRecheck: false }
     }
     if (workspaceInfo?.uuid === undefined) {
       this.ctx.error('No workspace exists for workspaceId', { workspace })
-      return
+      return { workspaceInfo: undefined, needRecheck: false }
+    }
+    if (workspaceInfo?.isDisabled === true || isDeletingMode(workspaceInfo?.mode)) {
+      this.ctx.warn('Workspace is disabled', { workspace })
+      return { workspaceInfo: undefined, needRecheck: false }
     }
     if (!isActiveMode(workspaceInfo?.mode)) {
-      this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace })
-      return
-    }
-    if (workspaceInfo?.isDisabled === true) {
-      this.ctx.warn('Workspace is disabled', { workspace })
-      return
+      this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace, mode: workspaceInfo?.mode })
+      return { workspaceInfo: undefined, needRecheck: true }
     }
 
     const lastVisit = (Date.now() - (workspaceInfo.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
 
     if (config.WorkspaceInactivityInterval > 0 && lastVisit > config.WorkspaceInactivityInterval) {
       this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
-      return
+      return { workspaceInfo: undefined, needRecheck: true }
     }
-
-    return workspaceInfo
+    return { workspaceInfo, needRecheck: true }
   }
 
   private async checkWorkspaces (): Promise<boolean> {
@@ -779,9 +782,11 @@ export class PlatformWorker {
       }
       await rateLimiter.add(async () => {
         const token = generateToken(systemAccountUuid, workspace, { service: 'github', mode: 'github' })
-        const workspaceInfo = await this.checkWorkspaceIsActive(token, workspace)
+        const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(token, workspace)
         if (workspaceInfo === undefined) {
-          errors++
+          if (needRecheck) {
+            errors++
+          }
           return
         }
         try {

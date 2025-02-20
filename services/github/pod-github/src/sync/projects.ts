@@ -346,7 +346,7 @@ export class ProjectsSyncManager implements DocSyncManager {
     derivedClient: TxOperations,
     deleteExisting: boolean
   ): Promise<boolean> {
-    return false
+    return true
   }
 
   async externalSync (
