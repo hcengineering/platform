@@ -29,7 +29,12 @@ export class Refs {
       return
     }
     for (const d of docs) {
-      const classKey = Hierarchy.mixinOrClass(d) + ':' + JSON.stringify(q.options?.lookup ?? {})
+      const classKey =
+        Hierarchy.mixinOrClass(d) +
+        ':' +
+        JSON.stringify(q.options?.lookup ?? {}) +
+        ':' +
+        JSON.stringify(q.options?.associations ?? {})
       let docMap = this.documentRefs.get(classKey)
       if (docMap === undefined) {
         if (clean) {
