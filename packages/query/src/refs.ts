@@ -28,13 +28,10 @@ export class Refs {
     if (q.options?.projection !== undefined) {
       return
     }
+    const params = ':' + JSON.stringify(q.options?.lookup ?? {}) + ':' + JSON.stringify(q.options?.associations ?? {})
     for (const d of docs) {
-      const classKey =
-        Hierarchy.mixinOrClass(d) +
-        ':' +
-        JSON.stringify(q.options?.lookup ?? {}) +
-        ':' +
-        JSON.stringify(q.options?.associations ?? {})
+      const classKey = Hierarchy.mixinOrClass(d) + params
+
       let docMap = this.documentRefs.get(classKey)
       if (docMap === undefined) {
         if (clean) {
@@ -93,6 +90,24 @@ export class Refs {
         const q = matchQuery(_docs, query, _class, this.getHierarchy())
         if (q.length > 0) {
           return toFindResult(this.getHierarchy().clone([q[0]]), 1)
+        }
+      }
+      if (options.lookup === undefined && options.associations === undefined) {
+        const keys = Array.from(this.documentRefs.keys())
+        for (const key of keys) {
+          if (key.startsWith(_class + ':')) {
+            const docs = this.documentRefs.get(key)
+            if (docs !== undefined) {
+              const _docs = Array.from(docs.values()).map((it) => it.doc)
+
+              const q = matchQuery(_docs, query, _class, this.getHierarchy())
+              if (q.length > 0) {
+                const clonedDoc = this.getHierarchy().clone(q[0])
+                const { $lookup, $associations, ...clean } = clonedDoc
+                return toFindResult([clean], 1)
+              }
+            }
+          }
         }
       }
     }
