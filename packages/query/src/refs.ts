@@ -104,6 +104,9 @@ export class Refs {
               if (q.length > 0) {
                 const clonedDoc = this.getHierarchy().clone(q[0])
                 const { $lookup, $associations, ...clean } = clonedDoc
+                if (this.getHierarchy().isMixin(_class)) {
+                  return toFindResult([this.getHierarchy().as(clean, _class)] as T[], 1)
+                }
                 return toFindResult([clean], 1)
               }
             }
