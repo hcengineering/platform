@@ -45,6 +45,15 @@
 
     return value !== undefined ? (typeof value === 'string' ? parseInt(value) : value) : undefined
   }
+
+  const checkEmoji = (nodes: MarkupNode[]): boolean => {
+    const matches: boolean[] = []
+    nodes.forEach((node) => {
+      const reg = node.text?.match(/\P{Emoji}/gu)
+      matches.push(reg != null && reg.length > 0 && [65039, 65038, 8205].every((code) => code !== reg[0].charCodeAt(0)))
+    })
+    return matches.every((m) => !m)
+  }
 </script>
 
 {#if node}
@@ -60,7 +69,7 @@
   {:else if node.type === MarkupNodeType.text}
     {node.text}
   {:else if node.type === MarkupNodeType.paragraph}
-    <p class="p-inline contrast" class:overflow-label={preview}>
+    <p class="p-inline contrast" class:overflow-label={preview} class:emojiOnly={checkEmoji(nodes)}>
       {#if nodes.length > 0}
         {#each nodes as node}
           <Node {node} {preview} />
@@ -203,6 +212,10 @@
 <style lang="scss">
   .imgContainer {
     display: inline;
+  }
+  .emojiOnly {
+    font-size: 2rem;
+    line-height: 115%;
   }
 
   .img {
