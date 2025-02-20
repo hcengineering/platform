@@ -33,8 +33,14 @@
   export let embedded: boolean = false
   export let readonly: boolean = false
 
+  $: console.log(readonly)
+
   let object: Poll | undefined = undefined
   let canSubmit = false
+  let requestUpdate = false
+
+  $: isCompleted = object?.isCompleted ?? false
+  $: editable = (!readonly && !isCompleted) || requestUpdate
 
   $: updateObject(_id)
 
@@ -48,19 +54,21 @@
     if (object === undefined) {
       return
     }
-    showPopup(
-      MessageBox,
-      {
-        label: survey.string.SurveySubmit,
-        message: survey.string.SurveySubmitConfirm
-      },
-      undefined,
-      async (result?: boolean) => {
-        if (result === true && object !== undefined) {
-          await getClient().updateDoc(object._class, object.space, object._id, { isCompleted: true })
-        }
-      }
-    )
+    requestUpdate = false
+    // showPopup(
+    //   MessageBox,
+    //   {
+    //     label: survey.string.SurveySubmit,
+    //     message: survey.string.SurveySubmitConfirm
+    //   },
+    //   undefined,
+    //   async (result?: boolean) => {
+    //     if (result === true && object !== undefined) {
+    //       await getClient().updateDoc(object._class, object.space, object._id, { isCompleted: true })
+    //     }
+    //   }
+    // )
+    await getClient().updateDoc(object._class, object.space, object._id, { isCompleted: true })
   }
 </script>
 
@@ -85,30 +93,36 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      {#if !readonly}
-        {#if !(object.isCompleted ?? false)}
-          <Button
-            icon={survey.icon.Submit}
-            label={survey.string.SurveySubmit}
-            kind={'primary'}
-            disabled={!canSubmit}
-            showTooltip={{ label: canSubmit ? undefined : survey.string.ValidateFail }}
-            on:click={submit}
-          />
-        {/if}
+      {#if editable}
         <Button
-          icon={IconMoreH}
-          iconProps={{ size: 'medium' }}
-          kind={'icon'}
-          on:click={(e) => {
-            showMenu(e, { object, excludedActions: [view.action.Open] })
+          icon={survey.icon.Submit}
+          label={survey.string.SurveySubmit}
+          kind={'primary'}
+          disabled={!canSubmit}
+          showTooltip={{ label: canSubmit ? undefined : survey.string.ValidateFail }}
+          on:click={submit}
+        />
+      {:else}
+        <Button
+          icon={view.icon.Edit}
+          label={survey.string.EditAnswers}
+          on:click={() => {
+            requestUpdate = true
           }}
         />
       {/if}
+      <Button
+        icon={IconMoreH}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        on:click={(e) => {
+          showMenu(e, { object, excludedActions: [view.action.Open] })
+        }}
+      />
     </svelte:fragment>
 
     <div class="flex-col flex-grow flex-no-shrink">
-      <EditPoll {object} {readonly} bind:canSubmit />
+      <EditPoll {object} readonly={!editable} bind:canSubmit />
     </div>
   </Panel>
 {/if}
