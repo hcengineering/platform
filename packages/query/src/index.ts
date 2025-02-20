@@ -56,6 +56,7 @@ import core, {
   getObjectValue,
   matchQuery,
   reduceCalls,
+  shouldShowArchived,
   toFindResult
 } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
@@ -522,7 +523,9 @@ export class LiveQuery implements WithTx, Client {
       options.lookup = q.options?.lookup
     }
 
-    options.showArchived = true
+    const showArchived = shouldShowArchived(q.query, q.options)
+
+    options.showArchived = showArchived
     const docIdKey = _id + JSON.stringify(options ?? {}) + q._class
 
     const current = docCache.get(docIdKey) ?? (await this.client.findOne<Doc>(q._class, { _id, space }, options))
