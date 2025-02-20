@@ -248,7 +248,7 @@
           : $resultEmojis.filter((re) => re.key === group.id)}
       <div class="hulyPopupEmoji-group">
         <div id={group.id} class="hulyPopupEmoji-group__header categoryHeader">
-          <Label label={group.label} />
+          <Label label={searching && $resultEmojis.length === 0 ? plugin.string.NoResults : group.label} />
         </div>
         <div class="hulyPopupEmoji-group__palette">
           {#each emojisGroup as emoji}

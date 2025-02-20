@@ -121,6 +121,7 @@ export const uis = plugin(uiId, {
     MediumDark: '' as IntlString,
     Dark: '' as IntlString,
     Remove: '' as IntlString,
+    NoResults: '' as IntlString,
     MoreCount: '' as IntlString,
     Spacious: '' as IntlString,
     Compact: '' as IntlString,
