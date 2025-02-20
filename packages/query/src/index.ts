@@ -522,6 +522,7 @@ export class LiveQuery implements WithTx, Client {
     if (q.options?.lookup !== undefined) {
       options.lookup = q.options?.lookup
     }
+
     const showArchived = shouldShowArchived(q.query, q.options)
 
     options.showArchived = showArchived
