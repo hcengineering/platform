@@ -49,6 +49,7 @@ import {
 import { syncConfig } from './syncConfig'
 import {
   collectUpdate,
+  deleteObjects,
   errorToObj,
   getPlatformType,
   getType,
@@ -344,7 +345,7 @@ export class ProjectsSyncManager implements DocSyncManager {
     derivedClient: TxOperations,
     deleteExisting: boolean
   ): Promise<boolean> {
-    return false
+    return true
   }
 
   async externalSync (
