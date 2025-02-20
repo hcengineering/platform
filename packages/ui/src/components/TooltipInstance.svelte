@@ -158,7 +158,7 @@
             options.maxWidth = `calc(${maxWidth}px - 1.5rem)`
             options.transform = 'translateY(-50%)'
           } else if (dir === 'left') {
-            const maxWidth = Math.min(docWidth / 2, docWidth - rectAnchor.x)
+            const maxWidth = Math.min(docWidth / 2, rectAnchor.x)
             options.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
             options.right = `calc(${docWidth - rectAnchor.x}px + .75rem)`
             options.maxWidth = `calc(${maxWidth}px - 1.5rem)`
