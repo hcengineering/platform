@@ -328,7 +328,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
         return
       }
 
-      return method(mctx, db, branding, request, token, {})
+      return method(mctx, db, branding, request, token)
     })
 
     ctx.body = result

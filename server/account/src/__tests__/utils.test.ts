@@ -538,25 +538,24 @@ describe('account utils', () => {
       const mockResult = { data: 'test' }
       const mockMethod = jest.fn().mockResolvedValue(mockResult)
       const wrappedMethod = wrap(mockMethod)
-      const request = { id: 'req1', params: ['param1', 'param2'] }
+      const request = { id: 'req1', params: { param1: 'value1', param2: 'value2' } }
 
-      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request)
+      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result).toEqual({ id: 'req1', result: mockResult })
-      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, 'param1', 'param2')
+      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, 'token', { param1: 'value1', param2: 'value2' })
     })
 
     test('should handle token parameter', async () => {
       const mockResult = { data: 'test' }
       const mockMethod = jest.fn().mockResolvedValue(mockResult)
       const wrappedMethod = wrap(mockMethod)
-      const request = { id: 'req1', params: ['param1'] }
-      const token = 'test-token'
+      const request = { id: 'req1', params: { param1: 'value1' } }
 
-      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, token)
+      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result).toEqual({ id: 'req1', result: mockResult })
-      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, token, 'param1')
+      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, 'token', { param1: 'value1' })
     })
 
     test('should handle PlatformError', async () => {
@@ -565,7 +564,7 @@ describe('account utils', () => {
       const wrappedMethod = wrap(mockMethod)
       const request = { id: 'req1', params: [] }
 
-      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request)
+      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result).toEqual({ error: errorStatus })
       expect(mockCtx.error).toHaveBeenCalledWith('error', { status: errorStatus })
@@ -576,7 +575,7 @@ describe('account utils', () => {
       const wrappedMethod = wrap(mockMethod)
       const request = { id: 'req1', params: [] }
 
-      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request)
+      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result).toEqual({
         error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
@@ -589,7 +588,7 @@ describe('account utils', () => {
       const wrappedMethod = wrap(mockMethod)
       const request = { id: 'req1', params: [] }
 
-      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request)
+      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result.error.code).toBe(platform.status.InternalServerError)
       expect(mockCtx.error).toHaveBeenCalledWith('error', {
@@ -604,7 +603,7 @@ describe('account utils', () => {
       const wrappedMethod = wrap(mockMethod)
       const request = { id: 'req1', params: [] }
 
-      await wrappedMethod(mockCtx, mockDb, mockBranding, request)
+      await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
     })
   })
 
@@ -1080,7 +1079,7 @@ describe('account utils', () => {
       test('should handle guest access to existing workspace', async () => {
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
 
-        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, guestToken, workspaceUrl, 'external')
+        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, guestToken, { workspaceUrl, kind: 'external' })
 
         expect(result).toEqual({
           account: GUEST_ACCOUNT,
@@ -1097,7 +1096,7 @@ describe('account utils', () => {
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(null)
 
         await expect(
-          selectWorkspace(mockCtx, mockDb, mockBranding, guestToken, workspaceUrl, 'external')
+          selectWorkspace(mockCtx, mockDb, mockBranding, guestToken, { workspaceUrl, kind: 'external' })
         ).rejects.toThrow(
           new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
         )
@@ -1127,7 +1126,7 @@ describe('account utils', () => {
       test('should handle system account access', async () => {
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
 
-        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, systemToken, workspaceUrl, 'external')
+        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, systemToken, { workspaceUrl, kind: 'external' })
 
         expect(result).toEqual({
           account: systemAccountUuid,
@@ -1168,7 +1167,7 @@ describe('account utils', () => {
         ;(mockDb.workspaceStatus.findOne as jest.Mock).mockResolvedValue({ isDisabled: false })
         ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
 
-        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, userToken, workspaceUrl, 'external')
+        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, userToken, { workspaceUrl, kind: 'external' })
 
         expect(result).toEqual({
           account: mockAccount.uuid,
@@ -1185,7 +1184,7 @@ describe('account utils', () => {
         ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
 
         await expect(
-          selectWorkspace(mockCtx, mockDb, mockBranding, userToken, workspaceUrl, 'external')
+          selectWorkspace(mockCtx, mockDb, mockBranding, userToken, { workspaceUrl, kind: 'external' })
         ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {})))
       })
 
@@ -1194,7 +1193,7 @@ describe('account utils', () => {
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(null)
 
         await expect(
-          selectWorkspace(mockCtx, mockDb, mockBranding, userToken, workspaceUrl, 'external')
+          selectWorkspace(mockCtx, mockDb, mockBranding, userToken, { workspaceUrl, kind: 'external' })
         ).rejects.toThrow(
           new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
         )
@@ -1206,7 +1205,7 @@ describe('account utils', () => {
         ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(null)
 
         await expect(
-          selectWorkspace(mockCtx, mockDb, mockBranding, userToken, workspaceUrl, 'external')
+          selectWorkspace(mockCtx, mockDb, mockBranding, userToken, { workspaceUrl, kind: 'external' })
         ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
 
         expect(mockCtx.error).toHaveBeenCalledWith('Not a member of the workspace being selected', expect.any(Object))
@@ -1219,7 +1218,7 @@ describe('account utils', () => {
         ;(mockDb.workspaceStatus.findOne as jest.Mock).mockResolvedValue({ isDisabled: true, mode: 'active' })
 
         await expect(
-          selectWorkspace(mockCtx, mockDb, mockBranding, userToken, workspaceUrl, 'external')
+          selectWorkspace(mockCtx, mockDb, mockBranding, userToken, { workspaceUrl, kind: 'external' })
         ).rejects.toThrow(
           new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
         )
