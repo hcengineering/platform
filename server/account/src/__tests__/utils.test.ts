@@ -543,7 +543,10 @@ describe('account utils', () => {
       const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result).toEqual({ id: 'req1', result: mockResult })
-      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, 'token', { param1: 'value1', param2: 'value2' })
+      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, 'token', {
+        param1: 'value1',
+        param2: 'value2'
+      })
     })
 
     test('should handle token parameter', async () => {
@@ -1079,7 +1082,10 @@ describe('account utils', () => {
       test('should handle guest access to existing workspace', async () => {
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
 
-        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, guestToken, { workspaceUrl, kind: 'external' })
+        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, guestToken, {
+          workspaceUrl,
+          kind: 'external'
+        })
 
         expect(result).toEqual({
           account: GUEST_ACCOUNT,
@@ -1126,7 +1132,10 @@ describe('account utils', () => {
       test('should handle system account access', async () => {
         ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
 
-        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, systemToken, { workspaceUrl, kind: 'external' })
+        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, systemToken, {
+          workspaceUrl,
+          kind: 'external'
+        })
 
         expect(result).toEqual({
           account: systemAccountUuid,
@@ -1167,7 +1176,10 @@ describe('account utils', () => {
         ;(mockDb.workspaceStatus.findOne as jest.Mock).mockResolvedValue({ isDisabled: false })
         ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
 
-        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, userToken, { workspaceUrl, kind: 'external' })
+        const result = await selectWorkspace(mockCtx, mockDb, mockBranding, userToken, {
+          workspaceUrl,
+          kind: 'external'
+        })
 
         expect(result).toEqual({
           account: mockAccount.uuid,
