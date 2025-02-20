@@ -472,7 +472,7 @@ export async function resendInvite (
     inviteId = invite.id
     await db.invite.updateOne({ id: invite.id }, { expiresOn: newExp, remainingUses: 1, role })
   } else {
-    inviteId = await createInviteLink(ctx, db, branding, token, newExp, email, 1, role)
+    inviteId = await createInviteLink(ctx, db, branding, token, { exp: newExp, emailMask: email, limit: 1, role })
   }
 
   const inviteEmail = await getInviteEmail(branding, email, inviteId, workspace, expHours, true)
