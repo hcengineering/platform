@@ -497,7 +497,15 @@ export abstract class IssueSyncManagerBase {
     return (pField.node.options ?? []).find((it) => it.id === field.optionId)
   }
 
-  findOptionId (container: ContainerFocus, fieldId: string, value: string, target: IssueSyncTarget): string | undefined {
+  findOptionId (
+    container: ContainerFocus,
+    fieldId: string,
+    value: string | null,
+    target: IssueSyncTarget
+  ): string | undefined {
+    if (value == null) {
+      return
+    }
     const structure = container.container.projectStructure.get(target.target._id)
     if (structure === undefined) {
       return
@@ -506,7 +514,7 @@ export abstract class IssueSyncManagerBase {
     if (pField === undefined) {
       return undefined
     }
-    return (pField.node.options ?? []).find((it) => it.name.toLowerCase() === value.toLowerCase())?.id
+    return (pField.node.options ?? []).find((it) => it.name?.toLowerCase() === value.toLowerCase())?.id
   }
 
   async toPlatformField (
