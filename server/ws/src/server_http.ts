@@ -47,6 +47,8 @@ import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 import 'bufferutil'
 import { compress } from 'snappy'
 import 'utf-8-validate'
+import { registerRPC } from './rpc'
+import { retrieveJson } from './utils'
 
 let profiling = false
 const rpcHandler = new RPCHandler()
@@ -108,6 +110,7 @@ export function startHttpServer (
       res.end()
     }
   })
+
   app.get('/api/v1/profiling', (req, res) => {
     try {
       const token = req.query.token as string
@@ -297,6 +300,8 @@ export function startHttpServer (
     }
   })
 
+  registerRPC(app, sessions, ctx, pipelineFactory)
+
   app.put('/api/v1/broadcast', (req, res) => {
     try {
       const token = req.query.token as string
@@ -304,26 +309,19 @@ export function startHttpServer (
       const ws = sessions.workspaces.get(req.query.workspace as string)
       if (ws !== undefined) {
         // push the data to body
-        const body: Buffer[] = []
-        req
-          .on('data', (chunk) => {
-            body.push(chunk)
-          })
-          .on('end', () => {
-            // on end of data, perform necessary action
-            try {
-              const data = JSON.parse(Buffer.concat(body as any).toString())
-              if (Array.isArray(data)) {
-                sessions.broadcastAll(ws, data as Tx[])
-              } else {
-                sessions.broadcastAll(ws, [data as unknown as Tx])
-              }
-              res.end()
-            } catch (err: any) {
-              ctx.error('JSON parse error', { err })
-              res.writeHead(400, {})
-              res.end()
+        void retrieveJson(req)
+          .then((data) => {
+            if (Array.isArray(data)) {
+              sessions.broadcastAll(ws, data as Tx[])
+            } else {
+              sessions.broadcastAll(ws, [data as unknown as Tx])
             }
+            res.end()
+          })
+          .catch((err) => {
+            ctx.error('JSON parse error', { err })
+            res.writeHead(400, {})
+            res.end()
           })
       } else {
         res.writeHead(404, {})
