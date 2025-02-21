@@ -116,7 +116,7 @@
     availabilityEditOffset = offset.getTime()
     if (schedule === undefined) {
       for (let i = 0; i < 7; i++) {
-        availability[i] = [defaultAvailability()]
+        availability[i] = (i > 0 && i < 6) ? [defaultAvailability()] : []
       }
     } else {
       for (let i = 0; i < 7; i++) {
@@ -139,7 +139,11 @@
       if (periods.length > 0) {
         const start = periods[0].start.getTime() - availabilityEditOffset
         const end = periods[0].end.getTime() - availabilityEditOffset
-        result[i] = [{ start, end }]
+        if (start > end) {
+          result[i] = [{ start: end, end: start }]
+        } else {
+          result[i] = [{ start, end }]
+        }
       }
     }
     return result
@@ -175,6 +179,7 @@
       const data: Data<Schedule> = {
         owner: currentUser,
         title,
+        description,
         meetingDuration,
         meetingInterval,
         availability: getStorableAvailability(),
@@ -185,6 +190,7 @@
     } else {
       await client.update(schedule, {
         title,
+        description,
         meetingDuration,
         meetingInterval,
         availability: getStorableAvailability(),
@@ -258,7 +264,7 @@
   <div class="header flex-between">
     <EditBox
       bind:value={title}
-      placeholder={calendar.string.EventTitlePlaceholder}
+      placeholder={calendar.string.ScheduleTitlePlaceholder}
       kind={'ghost-large'}
       fullSize
       focusable
@@ -387,8 +393,8 @@
   .scheduleEditor-container {
     display: flex;
     flex-direction: column;
-    max-width: 25rem;
-    min-width: 20rem;
+    max-width: 21rem;
+    min-width: 21rem;
     min-height: 0;
     background: var(--theme-popup-color);
     border-radius: 1rem;

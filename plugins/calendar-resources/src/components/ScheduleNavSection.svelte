@@ -87,6 +87,7 @@
         params: { link, title: schedule.title },
         richMessage: true,
         okLabel: calendar.string.ScheduleSharedLinkCopy,
+        canSubmit: false,
         action: async () => {
           await navigator.clipboard.writeText(link)
         }

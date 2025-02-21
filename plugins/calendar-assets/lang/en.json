@@ -95,6 +95,7 @@
     "ScheduleSharedLinkCopy": "Copy link",
     "ScheduleAvailability": "Availability",
     "ScheduleUnavailable": "Unavailable",
+    "ScheduleTitlePlaceholder": "Schedule title",
     "ScheduleAddPeriod": "Add period",
     "ScheduleRemovePeriod": "Remove period",
     "MeetingDuration": "Meeting duration",

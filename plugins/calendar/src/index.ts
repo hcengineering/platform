@@ -231,6 +231,7 @@ const calendarPlugin = plugin(calendarId, {
     ScheduleAvailability: '' as IntlString,
     ScheduleAddPeriod: '' as IntlString,
     ScheduleRemovePeriod: '' as IntlString,
+    ScheduleTitlePlaceholder: '' as IntlString,
     ScheduleUnavailable: '' as IntlString,
     MeetingDuration: '' as IntlString,
     MeetingInterval: '' as IntlString,
