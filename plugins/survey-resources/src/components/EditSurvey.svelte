@@ -29,6 +29,7 @@
   export let readonly: boolean = false
 
   $: questions = object?.questions ?? []
+  $: questionEditSlots = readonly ? questions : [...questions, {}]
 
   async function nameChange (): Promise<void> {
     await client.updateDoc(object._class, object.space, object._id, { name: object.name })
@@ -114,7 +115,7 @@
         <Label label={survey.string.Questions} />
       </span>
     </div>
-    {#each questions as question, index}
+    {#each questionEditSlots as question, index}
       <div
         role="listitem"
         on:dragover={(ev) => {
@@ -129,35 +130,22 @@
           draggedOverIndex !== draggedIndex &&
           draggedOverIndex !== draggedIndex + 1}
       >
-        <EditQuestion
-          {index}
-          {readonly}
-          parent={object}
-          on:dragStart={() => {
-            draggedIndex = index
-          }}
-          on:dragEnd={() => {
-            draggedIndex = undefined
-            draggedOverIndex = undefined
-          }}
-        />
+        {#key index}
+          <EditQuestion
+            {index}
+            {readonly}
+            parent={object}
+            on:dragStart={() => {
+              draggedIndex = index
+            }}
+            on:dragEnd={() => {
+              draggedIndex = undefined
+              draggedOverIndex = undefined
+            }}
+          />
+        {/key}
       </div>
     {/each}
-    {#if !readonly}
-      <div
-        role="listitem"
-        on:dragover={(ev) => {
-          dragOver(ev, questions.length)
-        }}
-        on:dragleave={(ev) => {
-          dragLeave(ev, questions.length)
-        }}
-        on:drop={dragDrop}
-        class:dragged-over={draggedOverIndex === questions.length && draggedIndex !== questions.length - 1}
-      >
-        <EditQuestion parent={object} index={-1} />
-      </div>
-    {/if}
   </div>
 {/if}
 
