@@ -1215,3 +1215,15 @@ export async function getInviteEmail (
     to: email
   }
 }
+
+export async function getWorkspaceRole (
+  db: AccountDB,
+  account: PersonUuid,
+  workspace: WorkspaceUuid
+): Promise<AccountRole | null> {
+  if (account === systemAccountUuid) {
+    return AccountRole.Owner
+  }
+
+  return await db.getWorkspaceRole(account, workspace)
+}
