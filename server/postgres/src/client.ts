@@ -1,4 +1,4 @@
-import { concatLink } from '@hcengineering/core'
+import { concatLink, platformNow } from '@hcengineering/core'
 import type postgres from 'postgres'
 import type { ParameterOrJSON } from 'postgres'
 import { convertArrayParams, doFetchTypes, getPrepare } from './utils'
@@ -50,7 +50,7 @@ class GreenClient implements DBClient {
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const st = Date.now()
+        const st = platformNow()
         const response = await fetch(this.endpoint, {
           method: 'POST',
           headers: {
@@ -84,7 +84,7 @@ class GreenClient implements DBClient {
           return await response.json()
         } finally {
           const qtime = response.headers.get('querytime')
-          const time = Date.now() - st
+          const time = platformNow() - st
           console.info({
             message: `green query: ${time} ${qtime ?? 0}`,
             query,

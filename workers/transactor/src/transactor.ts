@@ -3,6 +3,8 @@
 import {
   generateId,
   NoMetricsContext,
+  platformNow,
+  platformNowDiff,
   WorkspaceUuid,
   type Account,
   type Class,
@@ -216,11 +218,11 @@ export class Transactor extends DurableObject<Env> {
           s.context.measure('receive-data', buff?.length ?? 0)
           // processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
           const request = cs.readRequest(buff, s.session.binaryMode)
-          const st = Date.now()
+          const st = platformNow()
           const r = this.sessionManager.handleRequest(this.measureCtx, s.session, cs, request, this.workspace)
           this.ctx.waitUntil(
             r.finally(() => {
-              const time = Date.now() - st
+              const time = platformNowDiff(st)
               console.log({
                 message: `handle-request: ${request.method} time: ${time}`,
                 method: request.method,

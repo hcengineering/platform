@@ -61,7 +61,8 @@ import core, {
   type TxRemoveDoc,
   type TxResult,
   type TxUpdateDoc,
-  type WithLookup
+  type WithLookup,
+  platformNow
 } from '@hcengineering/core'
 import {
   type DbAdapter,
@@ -647,7 +648,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     options: ServerFindOptions<T>,
     stTime: number
   ): Promise<FindResult<T>> {
-    const st = Date.now()
+    const st = platformNow()
     const pipeline: any[] = []
     const tquery = this.translateQuery(clazz, query, options)
 
@@ -760,7 +761,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       )
       total = arr?.[0]?.total ?? 0
     }
-    const edTime = Date.now()
+    const edTime = platformNow()
     if (edTime - stTime > 1000 || st - stTime > 1000) {
       ctx.error('aggregate', {
         time: edTime - stTime,
@@ -892,11 +893,11 @@ abstract class MongoAdapterBase implements DbAdapter {
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
-    const stTime = Date.now()
+    const stTime = platformNow()
     const mongoQuery = this.translateQuery(_class, query, options)
     const fQuery = { ...mongoQuery.base, ...mongoQuery.lookup }
     return addOperation(ctx, 'find-all', {}, async () => {
-      const st = Date.now()
+      const st = platformNow()
       let result: FindResult<T>
       const domain = options?.domain ?? this.hierarchy.getDomain(_class)
       if (
@@ -994,7 +995,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         throw e
       }
 
-      const edTime = Date.now()
+      const edTime = platformNow()
       if (edTime - st > 1000 || st - stTime > 1000) {
         ctx.error('FindAll', {
           time: edTime - st,
@@ -1222,8 +1223,8 @@ class MongoAdapter extends MongoAdapterBase {
       return undefined
     })
 
-    const stTime = Date.now()
-    const st = Date.now()
+    const stTime = platformNow()
+    const st = stTime
     let promises: Promise<any>[] = []
     for (const [domain, txs] of byDomain) {
       if (domain === undefined) {
@@ -1319,7 +1320,7 @@ class MongoAdapter extends MongoAdapterBase {
           'find-result',
           {},
           async (ctx) => {
-            const st = Date.now()
+            const st = platformNow()
             const docs = await addOperation(
               ctx,
               'find-result',

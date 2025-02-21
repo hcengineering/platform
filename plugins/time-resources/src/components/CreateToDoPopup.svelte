@@ -158,7 +158,7 @@
       attachedTo: generateId(),
       attachedToClass: time.class.ToDo,
       collection: 'workslots',
-      modifiedOn: Date.now(),
+      modifiedOn: now,
       modifiedBy: myAccount.primarySocialId
     })
     slots = slots
