@@ -33,8 +33,6 @@
   export let embedded: boolean = false
   export let readonly: boolean = false
 
-  $: console.log(readonly)
-
   let object: Poll | undefined = undefined
   let canSubmit = false
   let requestUpdate = false
