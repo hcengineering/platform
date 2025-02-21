@@ -93,7 +93,8 @@ import {
   verifyAllowedServices,
   getPersonName,
   sendEmail,
-  getInviteEmail
+  getInviteEmail,
+  getWorkspaceRole
 } from './utils'
 import { isAdminEmail } from './admin'
 
@@ -1095,7 +1096,7 @@ export async function getLoginInfoByToken (
       }
     }
 
-    const role = isSystem ? AccountRole.Owner : await db.getWorkspaceRole(accountUuid, workspace.uuid)
+    const role = await getWorkspaceRole(db, accountUuid, workspace.uuid)
 
     if (role == null) {
       // User might have been removed from the workspace
@@ -1203,7 +1204,7 @@ export async function getWorkspaceMembers (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
   }
 
-  const accRole = await db.getWorkspaceRole(account, workspace)
+  const accRole = await getWorkspaceRole(db, account, workspace)
 
   if (accRole == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))

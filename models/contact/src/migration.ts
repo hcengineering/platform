@@ -1,8 +1,8 @@
 //
 
-import { AvatarType, type Contact, type SocialIdentity } from '@hcengineering/contact'
+import { AvatarType, type Person, type Contact, type SocialIdentity } from '@hcengineering/contact'
 import {
-  type AccountRole,
+  AccountRole,
   buildSocialIdString,
   type Class,
   type Doc,
@@ -118,6 +118,57 @@ async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
   }
 
   ctx.info('finished assigning workspace roles', { users: oldPersonAccounts.length })
+}
+
+async function assignEmployeeRoles (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact assignEmployeeRoles', {})
+  ctx.info('assigning roles to employees...')
+
+  const wsMembers = await client.accountClient.getWorkspaceMembers()
+  const persons = await client.traverse<Person>(DOMAIN_CONTACT, {
+    _class: contact.class.Person
+  })
+
+  try {
+    while (true) {
+      const docs = await persons.next(50)
+      if (docs === null || docs?.length === 0) {
+        break
+      }
+
+      const updates: { filter: MigrationDocumentQuery<Contact>, update: MigrateUpdate<Contact> }[] = []
+      for (const d of docs) {
+        const employee = client.hierarchy.as(d, contact.mixin.Employee)
+        if (employee === undefined || !employee.active) {
+          continue
+        }
+        if (!employee.active) continue
+
+        const memberInfo = wsMembers.find((m) => m.person === employee.personUuid)
+        if (memberInfo === undefined) {
+          continue
+        }
+
+        const role = memberInfo.role === AccountRole.Guest ? 'GUEST' : 'USER'
+
+        updates.push({
+          filter: { _id: d._id },
+          update: {
+            [contact.mixin.Employee]: {
+              ...(d as any)[contact.mixin.Employee],
+              role
+            }
+          }
+        })
+      }
+      if (updates.length > 0) {
+        await client.bulk(DOMAIN_CONTACT, updates)
+      }
+    }
+  } finally {
+    await persons.close()
+    ctx.info('finished assigning roles to employees...')
+  }
 }
 
 async function createSocialIdentities (client: MigrationClient): Promise<void> {
@@ -302,6 +353,10 @@ export const contactOperation: MigrateOperation = {
       {
         state: 'assign-workspace-roles',
         func: assignWorkspaceRoles
+      },
+      {
+        state: 'assign-employee-roles-v1',
+        func: assignEmployeeRoles
       }
     ])
   },

@@ -293,7 +293,7 @@ async function kickEmployee (doc: Person): Promise<void> {
       const client = getClient()
 
       const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
-      await client.update(employee, { active: false })
+      await client.update(employee, { active: false, $unset: { role: 1 } })
 
       if (doc.personUuid != null) {
         const leaveWorkspace = await getResource(login.function.LeaveWorkspace)

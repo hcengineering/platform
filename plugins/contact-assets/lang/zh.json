@@ -69,6 +69,7 @@
     "CreateEmployee": "员工",
     "Inactive": "非活动",
     "Active": "活动",
+    "Role": "角色",
     "Birthday": "生日",
     "UseImage": "附加照片",
     "UseGravatar": "头像",

@@ -69,6 +69,7 @@
     "CreateEmployee": "Criar funcionário",
     "Inactive": "Inativo",
     "Active": "Ativo",
+    "Role": "Função",
     "Birthday": "Aniversário",
     "UseImage": "Foto anexada",
     "UseGravatar": "Gravatar",
