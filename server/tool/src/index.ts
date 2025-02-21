@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { AccountClient } from '@hcengineering/account-client'
 import core, {
   Branding,
   coreId,
@@ -26,19 +27,20 @@ import core, {
   MeasureContext,
   MigrationState,
   ModelDb,
+  platformNow,
+  platformNowDiff,
   systemAccountUuid,
   Tx,
   TxOperations,
-  WorkspaceUuid,
   WorkspaceIds,
+  WorkspaceUuid,
   type Client,
+  type PersonInfo,
   type Ref,
-  type WithLookup,
-  type PersonInfo
+  type WithLookup
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
 import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
-import { AccountClient } from '@hcengineering/account-client'
 import { InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
@@ -164,10 +166,10 @@ export async function updateModel (
   try {
     let i = 0
     for (const op of migrateOperations) {
-      const st = Date.now()
+      const st = platformNow()
       await op[1].upgrade(migrateState, async () => connection as any, logger)
-      const tdelta = Date.now() - st
-      if (tdelta > 0) {
+      const tdelta = platformNowDiff(st)
+      if (tdelta > 0.5) {
         logger.log('Create', { name: op[0], time: tdelta })
       }
       i++
@@ -272,14 +274,14 @@ export async function upgradeModel (
       }
       const preMigrate = op[1].preMigrate
 
-      const t = Date.now()
+      const t = platformNow()
       try {
         await ctx.with(op[0], {}, (ctx) => preMigrate(preMigrateClient, logger))
       } catch (err: any) {
         logger.error(`error during pre-migrate: ${op[0]} ${err.message}`, err)
         throw err
       }
-      logger.log('pre-migrate:', { workspaceId: wsIds, operation: op[0], time: Date.now() - t })
+      logger.log('pre-migrate:', { workspaceId: wsIds, operation: op[0], time: platformNowDiff(t) })
       await progress(((100 / migrateOperations.length) * i * 10) / 100)
       i++
     }
@@ -317,11 +319,11 @@ export async function upgradeModel (
     let i = 0
     for (const op of migrateOperations) {
       try {
-        const t = Date.now()
+        const t = platformNow()
         await ctx.with(op[0], {}, () => op[1].migrate(migrateClient, logger))
-        const tdelta = Date.now() - t
+        const tdelta = platformNowDiff(t)
         if (tdelta > 0) {
-          logger.log('migrate:', { workspaceId: wsIds, operation: op[0], time: Date.now() - t })
+          logger.log('migrate:', { workspaceId: wsIds, operation: op[0], time: tdelta })
         }
       } catch (err: any) {
         logger.error(`error during migrate: ${op[0]} ${err.message}`, err)

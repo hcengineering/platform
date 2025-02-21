@@ -58,7 +58,9 @@ import core, {
   generateId,
   getObjectValue,
   toIdMap,
-  updateAttribute
+  updateAttribute,
+  platformNow,
+  platformNowDiff
 } from '@hcengineering/core'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
@@ -104,11 +106,10 @@ export async function cleanWorkspace (
         for (const c of part) {
           await op.remove(c)
         }
-        const t = Date.now()
+        const t = platformNow()
         console.log('remove:', part.map((it) => it.name).join(', '))
         await op.commit()
-        const t2 = Date.now()
-        console.log('remove time:', t2 - t, filter.length)
+        console.log('remove time:', platformNowDiff(t), filter.length)
       }
     }
 
@@ -122,10 +123,9 @@ export async function cleanWorkspace (
         for (const c of part) {
           await op.remove(c)
         }
-        const t = Date.now()
+        const t = platformNow()
         await op.commit()
-        const t2 = Date.now()
-        console.log('remove time:', t2 - t, issues.length)
+        console.log('remove time:', platformNowDiff(t), issues.length)
       }
     }
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, toIdMap } from '@hcengineering/core'
+  import { Class, Doc, platformNow, platformNowDiff, Ref, toIdMap } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
@@ -460,7 +460,7 @@
     const client = getClient()
     for (const item of searchPlanElements) {
       console.log('Apply', item.original.title)
-      const st = Date.now()
+      const st = platformNow()
       const ops = client.apply(undefined, 'optimize-skill')
       let allRefs: TagReference[] = await client.findAll(tags.class.TagReference, { tag: item.original._id })
 
@@ -540,7 +540,7 @@
           })
         }
       }
-      console.log('Apply:commit', item.original.title, Date.now() - st)
+      console.log('Apply:commit', item.original.title, platformNowDiff(st))
       await ops.commit(false)
       processed++
     }

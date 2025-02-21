@@ -55,6 +55,7 @@ import core, {
   generateId,
   getObjectValue,
   matchQuery,
+  platformNow,
   reduceCalls,
   shouldShowArchived,
   toFindResult
@@ -187,7 +188,7 @@ export class LiveQuery implements WithTx, Client {
     options?: FindOptions<T>
   ): Query {
     const q = this.createQuery(_class, query, undefined, options)
-    this.queue.set(q.id, { ...q, lastUsed: Date.now() })
+    this.queue.set(q.id, { ...q, lastUsed: platformNow() })
     if (!(q.result instanceof Promise)) {
       q.result.clean()
     }
@@ -223,7 +224,7 @@ export class LiveQuery implements WithTx, Client {
       q.result = await q.result
     }
     if (this.removeFromQueue(q, false)) {
-      this.queue.set(q.id, { ...q, lastUsed: Date.now() })
+      this.queue.set(q.id, { ...q, lastUsed: platformNow() })
       q.result.clean()
     }
     return toFindResult(q.result.getClone(), q.total)
@@ -265,7 +266,7 @@ export class LiveQuery implements WithTx, Client {
       q.result = await q.result
     }
     if (this.removeFromQueue(q, false)) {
-      this.queue.set(q.id, { ...q, lastUsed: Date.now() })
+      this.queue.set(q.id, { ...q, lastUsed: platformNow() })
       q.result.clean()
     }
     return q.result.getClone<WithLookup<T>>().shift()
@@ -443,7 +444,7 @@ export class LiveQuery implements WithTx, Client {
         if (!(q.result instanceof Promise)) {
           q.result.clean()
         }
-        this.queue.set(q.id, { ...q, lastUsed: Date.now() })
+        this.queue.set(q.id, { ...q, lastUsed: platformNow() })
       }
     }
   }

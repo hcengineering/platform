@@ -77,7 +77,7 @@ for(const a of process.argv.slice(2)) {
     args.push(a)
   }
 }
-let st = Date.now()
+let st = performance.now()
 execProcess(
   'svelte-check',
   'svelte-check', [
@@ -85,6 +85,6 @@ execProcess(
   ...args  
 ], useConsole)
   .then(() => {
-    console.log("Svelte check time: ", Date.now() - st)
+    console.log("Svelte check time: ", Math.round((performance.now() - st) * 100) / 100)
   })
 

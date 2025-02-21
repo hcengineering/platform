@@ -1,6 +1,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import { deepEqual } from 'fast-equals'
-import { DocumentUpdate, DOMAIN_MODEL, Hierarchy, MixinData, MixinUpdate, ModelDb, toFindResult } from '.'
+import { DocumentUpdate, DOMAIN_MODEL, Hierarchy, MixinData, MixinUpdate, ModelDb, platformNow, toFindResult } from '.'
 import type {
   PersonId,
   AnyAttribute,
@@ -481,10 +481,10 @@ export class ApplyOperations extends TxOperations {
       this.notMatches.length === 0 &&
       this.measureName == null
     ) {
-      const st = Date.now()
+      const st = platformNow()
       // Individual update, no need for apply
       await this.ops.tx(this.txes[0])
-      const time = Date.now() - st
+      const time = platformNow() - st
       this.txes = []
       return {
         result: true,
@@ -493,7 +493,7 @@ export class ApplyOperations extends TxOperations {
       }
     }
     if (this.txes.length > 0) {
-      const st = Date.now()
+      const st = platformNow()
       const aop = this.ops.txFactory.createTxApplyIf(
         core.space.Tx,
         this.scope,
@@ -505,7 +505,7 @@ export class ApplyOperations extends TxOperations {
         extraNotify
       )
       const result = (await this.ops.tx(aop)) as TxApplyResult
-      const dnow = Date.now()
+      const dnow = platformNow()
       if (typeof window === 'object' && window !== null && this.measureName != null) {
         console.log(`measure ${this.measureName}`, dnow - st, 'server time', result.serverTime)
       }

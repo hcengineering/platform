@@ -1,6 +1,6 @@
 // Basic performance metrics suite.
 
-import { generateId } from '../utils'
+import { generateId, platformNow, platformNowDiff } from '../utils'
 import { childMetrics, newMetrics, updateMeasure } from './metrics'
 import {
   FullParamsType,
@@ -61,7 +61,7 @@ export class MeasureMetricsContext implements MeasureContext {
   metrics: Metrics
   id?: string
 
-  st = Date.now()
+  st = platformNow()
   contextData: object = {}
   private done (value?: number, override?: boolean): void {
     updateMeasure(this.metrics, this.st, this.params, this.fullParams, (spend) => {}, value, override)
@@ -166,10 +166,10 @@ export class MeasureMetricsContext implements MeasureContext {
     op: (ctx: MeasureContext) => T | Promise<T>,
     fullParams?: ParamsType
   ): Promise<T> {
-    const st = Date.now()
+    const st = platformNow()
     const r = this.with(name, params, op, fullParams)
     void r.finally(() => {
-      this.logger.logOperation(name, Date.now() - st, { ...params, ...fullParams })
+      this.logger.logOperation(name, platformNowDiff(st), { ...params, ...fullParams })
     })
     return r
   }
@@ -284,7 +284,7 @@ export function registerOperationLog (ctx: MeasureContext): { opLogMetrics?: Met
   if (!operationProfiling) {
     return {}
   }
-  const op: OperationLog = { start: Date.now(), ops: [], end: -1 }
+  const op: OperationLog = { start: platformNow(), ops: [], end: -1 }
   let opLogMetrics: Metrics | undefined
 
   if (ctx.id === undefined) {
@@ -305,7 +305,7 @@ export function updateOperationLog (opLogMetrics: Metrics | undefined, op: Opera
     return
   }
   if (op !== undefined) {
-    op.end = Date.now()
+    op.end = platformNow()
   }
   // We should keep only longest one entry
   if (opLogMetrics?.opLog !== undefined) {
@@ -352,7 +352,7 @@ export function addOperation<T> (
   if (opLog !== undefined) {
     opEntry = {
       op: name,
-      start: Date.now(),
+      start: performance.now(),
       params: {},
       end: -1
     }
@@ -361,7 +361,7 @@ export function addOperation<T> (
   if (opEntry !== undefined && opLog !== undefined) {
     void result.finally(() => {
       if (opEntry !== undefined && opLog !== undefined) {
-        opEntry.end = Date.now()
+        opEntry.end = performance.now()
         opEntry.params = { ...params, ...(typeof fullParams === 'function' ? fullParams() : fullParams) }
         opLog.ops.push(opEntry)
       }
