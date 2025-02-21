@@ -234,6 +234,11 @@ export class TEmployee extends TPerson implements Employee {
   @Hidden()
     active!: boolean
 
+  @Prop(TypeString(), contact.string.Role)
+  @ReadOnly()
+  @Hidden()
+    role?: 'USER' | 'GUEST'
+
   @Prop(CollectionType(contact.class.Status), contact.string.Status)
   @Hidden()
     statuses?: number

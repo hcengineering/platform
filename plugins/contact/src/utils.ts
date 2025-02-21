@@ -436,34 +436,36 @@ export async function ensureEmployee (
     await client.tx(updatePersonTx)
   }
 
-  if (me.role !== AccountRole.Guest) {
-    const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
+  const employeeRole = me.role === AccountRole.Guest ? 'GUEST' : 'USER'
 
-    if (
-      employee === undefined ||
-      !client.getHierarchy().hasMixin(employee, contact.mixin.Employee) ||
-      !employee.active
-    ) {
-      await ctx.with('create-employee', {}, async () => {
-        if (personRef === undefined) {
-          // something went wrong
-          console.error('Person not found')
-          return null
+  const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
+
+  if (
+    employee === undefined ||
+    !client.getHierarchy().hasMixin(employee, contact.mixin.Employee) ||
+    !employee.active ||
+    employee.role !== employeeRole
+  ) {
+    await ctx.with('create-employee', {}, async () => {
+      if (personRef === undefined) {
+        // something went wrong
+        console.error('Person not found')
+        return null
+      }
+
+      const createEmployeeTx = txFactory.createTxMixin(
+        personRef,
+        contact.class.Person,
+        contact.space.Contacts,
+        contact.mixin.Employee,
+        {
+          active: true,
+          role: employeeRole
         }
+      )
 
-        const createEmployeeTx = txFactory.createTxMixin(
-          personRef,
-          contact.class.Person,
-          contact.space.Contacts,
-          contact.mixin.Employee,
-          {
-            active: true
-          }
-        )
-
-        await client.tx(createEmployeeTx)
-      })
-    }
+      await client.tx(createEmployeeTx)
+    })
   }
 
   const existingIdentifiers = await client.findAll(contact.class.SocialIdentity, {

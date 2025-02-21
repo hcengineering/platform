@@ -66,6 +66,7 @@ export default mergeIds(contactId, contact, {
     CreateEmployee: '' as IntlString,
     Inactive: '' as IntlString,
     Active: '' as IntlString,
+    Role: '' as IntlString,
     NotSpecified: '' as IntlString,
     MergePersons: '' as IntlString,
     MergePersonsFrom: '' as IntlString,

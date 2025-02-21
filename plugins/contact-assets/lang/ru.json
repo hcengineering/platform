@@ -69,6 +69,7 @@
     "CreateEmployee": "Сотрудник",
     "Inactive": "Не активный",
     "Active": "Активный",
+    "Role": "Роль",
     "Birthday": "День рождения",
     "UseImage": "Загруженное Фото",
     "UseGravatar": "Граватар",

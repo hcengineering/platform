@@ -69,6 +69,7 @@
     "CreateEmployee": "Zaměstnanec",
     "Inactive": "Neaktivní",
     "Active": "Aktivní",
+    "Role": "Typ",
     "Birthday": "Narozeniny",
     "UseImage": "Přiložená fotografie",
     "UseGravatar": "Gravatar",
