@@ -15,20 +15,14 @@ import { setCurrentEmployee, type Employee } from '@hcengineering/contact'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
-  closeClient,
   loadServerConfig,
   refreshClient,
   setClient,
   setPresentationCookie,
   upgradeDownloadProgress
 } from '@hcengineering/presentation'
-import {
-  desktopPlatform,
-  fetchMetadataLocalStorage,
-  getCurrentLocation,
-  navigate,
-  setMetadataLocalStorage
-} from '@hcengineering/ui'
+import { desktopPlatform, getCurrentLocation, navigate } from '@hcengineering/ui'
+import { logOut } from '@hcengineering/workbench'
 import { writable, get } from 'svelte/store'
 
 export const versionError = writable<string | undefined>(undefined)
@@ -48,7 +42,6 @@ export async function connect (title: string): Promise<Client | undefined> {
     })
     return
   }
-  setMetadata(presentation.metadata.Token, token)
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
   const workspaceLoginInfo = (await selectWorkspace(wsUrl, token))[1]
@@ -57,10 +50,8 @@ export async function connect (title: string): Promise<Client | undefined> {
       `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
     )
     // something went wrong with selecting workspace with the selected token
-    clearMetadata(wsUrl)
-    navigate({
-      path: [loginId]
-    })
+    await logOut()
+    navigate({ path: [loginId] })
     return
   }
 
@@ -126,10 +117,11 @@ export async function connect (title: string): Promise<Client | undefined> {
       location.reload()
     },
     onUnauthorized: () => {
-      clearMetadata(wsUrl)
-      navigate({
-        path: [loginId],
-        query: {}
+      void logOut().then(() => {
+        navigate({
+          path: [loginId],
+          query: {}
+        })
       })
     },
     // We need to refresh all active live queries and clear old queries.
@@ -239,23 +231,4 @@ export async function connect (title: string): Promise<Client | undefined> {
   await setClient(_client)
 
   return _client
-}
-
-function clearMetadata (ws: string): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
-  if (tokens !== null) {
-    const loc = getCurrentLocation()
-    // eslint-disable-next-line
-    delete tokens[loc.path[1]]
-    setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
-  }
-  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
-  if (currentWorkspace !== undefined) {
-    setPresentationCookie('', currentWorkspace)
-  }
-
-  setMetadata(presentation.metadata.Token, null)
-  setMetadataLocalStorage(login.metadata.LastToken, null)
-  setMetadataLocalStorage(login.metadata.LoginAccount, null)
-  void closeClient()
 }

@@ -17,8 +17,7 @@
   import { WorkspaceInfoWithStatus, isArchivingMode } from '@hcengineering/core'
   import { LoginInfo } from '@hcengineering/login'
   import { OK, Severity, Status } from '@hcengineering/platform'
-  import presentation, { NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
-  import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
+  import presentation, { MessageBox, NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
   import {
     ticker,
     Button,
@@ -27,9 +26,9 @@
     SearchEdit,
     Spinner,
     deviceOptionsStore as deviceInfo,
-    setMetadataLocalStorage,
     showPopup
   } from '@hcengineering/ui'
+  import { logOut } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
 
   import login from '../plugin'
@@ -113,10 +112,7 @@
       await updateWorkspaces()
       flagToUpdateWorkspaces = true
     } catch (err: any) {
-      setMetadataLocalStorage(login.metadata.LastToken, null)
-      setMetadataLocalStorage(presentation.metadata.Token, null)
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-      setMetadataLocalStorage(login.metadata.LoginAccount, null)
+      await logOut()
       goTo('login')
       throw err
     }
@@ -233,11 +229,8 @@
         <span><Label label={login.string.NotSeeingWorkspace} /></span>
         <NavLink
           href={getHref('login')}
-          onClick={() => {
-            setMetadataLocalStorage(login.metadata.LastToken, null)
-            setMetadataLocalStorage(presentation.metadata.Token, null)
-            setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-            setMetadataLocalStorage(login.metadata.LoginAccount, null)
+          onClick={async () => {
+            await logOut()
             goTo('login')
           }}
         >

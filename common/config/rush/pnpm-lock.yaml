@@ -1330,6 +1330,9 @@ importers:
       '@types/compression':
         specifier: ~1.7.2
         version: 1.7.5
+      '@types/cookies':
+        specifier: ^0.9.0
+        version: 0.9.0
       '@types/cors':
         specifier: ^2.8.12
         version: 2.8.17
@@ -1534,6 +1537,9 @@ importers:
       compression-webpack-plugin:
         specifier: ^10.0.0
         version: 10.0.0(webpack@5.97.1)
+      cookies:
+        specifier: ^0.9.1
+        version: 0.9.1
       copy-webpack-plugin:
         specifier: ^11.0.0
         version: 11.0.0(webpack@5.97.1)
@@ -3955,7 +3961,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/account-service@file:projects/account-service.tgz':
-    resolution: {integrity: sha512-SBWP6HBOnzpJC3MIOlYbttcjYw1HoD9VpbLpUS3zRwEL2slU6c0W/hEBU0/rzh3KkLb6bScKssS5utlSx5RrNw==, tarball: file:projects/account-service.tgz}
+    resolution: {integrity: sha512-ViPfMFYJ6+K9NPAIyV9v6+v6BRtdPCSiU4iTXCdZsoPgpag3nFxhE5PC3ahzS2wJ0TbCX+5UdaUX/UE3ySL4OA==, tarball: file:projects/account-service.tgz}
     version: 0.0.0
 
   '@rush-temp/account@file:projects/account.tgz':
@@ -16067,6 +16073,7 @@ snapshots:
   '@rush-temp/account-service@file:projects/account-service.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)':
     dependencies:
       '@koa/cors': 5.0.0
+      '@types/cookies': 0.9.0
       '@types/jest': 29.5.12
       '@types/koa': 2.15.0
       '@types/koa-bodyparser': 4.3.12
@@ -16075,6 +16082,7 @@ snapshots:
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      cookies: 0.9.1
       cross-env: 7.0.3
       esbuild: 0.24.2
       eslint: 8.56.0

@@ -203,7 +203,7 @@ export type AccountMethodHandler = (
   db: AccountDB,
   branding: Branding | null,
   request: any,
-  token?: string
+  token: string | undefined
 ) => Promise<any>
 
 export type WorkspaceEvent =

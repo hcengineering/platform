@@ -20,7 +20,7 @@
   import Form from './Form.svelte'
 
   import { Analytics } from '@hcengineering/analytics'
-  import { workbenchId } from '@hcengineering/workbench'
+  import { logIn, workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import { BottomAction } from '..'
   import { loginAction, recoveryAction } from '../actions'
@@ -77,6 +77,7 @@
       status = loginStatus
 
       if (result != null) {
+        await logIn(result)
         setLoginInfo(result)
 
         if (location.query?.navigateUrl != null) {

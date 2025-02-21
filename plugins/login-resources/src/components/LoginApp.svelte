@@ -72,8 +72,8 @@
       'auth'
     ]
     if (token === undefined ? !allowedUnauthPages.includes(page) : !pages.includes(page)) {
-      const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
-      page = tokens != null ? 'login' : 'signup'
+      const account = fetchMetadataLocalStorage(login.metadata.LastAccount)
+      page = account != null ? 'login' : 'signup'
     }
 
     navigateUrl = loc.query?.navigateUrl ?? undefined
@@ -86,18 +86,17 @@
     }
 
     if (getMetadata(presentation.metadata.Token) == null) {
-      const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
-      if (lastToken != null) {
+      const lastAccount = fetchMetadataLocalStorage(login.metadata.LastAccount)
+      if (lastAccount != null) {
         try {
           const loginInfo = await getAccount(false)
           if (loginInfo != null) {
             setMetadata(presentation.metadata.Token, loginInfo.token)
-            setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
             setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
             updatePageLoc(getCurrentLocation())
           }
         } catch (err: any) {
-          setMetadataLocalStorage(login.metadata.LastToken, null)
+          // do nothing
         }
       }
     }
