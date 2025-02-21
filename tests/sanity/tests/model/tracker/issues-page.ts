@@ -50,7 +50,7 @@ export class IssuesPage extends CommonTrackerPage {
 
   textPopupCreateNewIssueFile = (): Locator => this.page.locator('div[class*="attachments"] > div[class*="attachment"]')
   buttonCreateIssue = (): Locator => this.page.locator('button > span', { hasText: 'Create issue' })
-  inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  inputSearchIcon = (): Locator => this.page.locator('.searchInput-wrapper')
   inputSearch = (): Locator => this.page.locator('input[placeholder="Search"]')
   linkSidebarAll = (): Locator => this.page.locator('a[href$="all-issues"]')
   linkSidebarMyIssue = (): Locator => this.page.locator('a[href$="my-issues"]')

@@ -54,9 +54,11 @@
   .tabs-container {
     flex-shrink: 0;
     flex-wrap: nowrap;
+    align-items: center;
     width: 100%;
     height: 4.5rem;
-    align-items: center;
+    min-width: 0;
+    min-height: 0;
     border-bottom: 1px solid var(--theme-divider-color);
 
     &:not(.noMargin) {

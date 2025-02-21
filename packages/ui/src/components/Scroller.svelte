@@ -106,25 +106,27 @@
     if (divBar && divScroll) {
       dispatch('divScrollTop', divScroll.scrollTop)
 
-      const trackH = divScroll.clientHeight - shiftTop - shiftBottom - 4
+      const visibleTrack = divScroll.clientHeight - shiftTop - shiftBottom - 4
       const scrollH = divScroll.scrollHeight
-      const proc = scrollH / trackH
+      const proc = scrollH / visibleTrack
 
-      const newHeight = (divScroll.clientHeight - 4) / proc
-      const newHeightPx = newHeight + 'px'
-      if (divBar.style.height !== 'newHeight') {
-        divBar.style.height = newHeightPx
-      }
+      const _newHeight = visibleTrack / proc
+      const newHeight = _newHeight < 2 * fz ? 2 * fz : _newHeight
+      const newHeightPx = `${newHeight}px`
+      const procSpace = (scrollH - divScroll.clientHeight) / (visibleTrack - newHeight)
 
       let newTop = '0px'
 
       if (scrollDirection === 'vertical-reverse') {
-        newTop = divScroll.clientHeight + divScroll.scrollTop / proc - newHeight - shiftTop - 2 + 'px'
+        newTop = divScroll.clientHeight + divScroll.scrollTop / procSpace - newHeight - shiftTop - 2 + 'px'
       } else {
-        newTop = divScroll.scrollTop / proc + shiftTop + 2 + 'px'
+        newTop = divScroll.scrollTop / procSpace + shiftTop + 2 + 'px'
       }
       if (divBar.style.top !== newTop) {
         divBar.style.top = newTop
+      }
+      if (divBar.style.height !== newHeightPx) {
+        divBar.style.height = newHeightPx
       }
       if (mask === 'none') {
         if (divBar.style.visibility !== 'hidden') {

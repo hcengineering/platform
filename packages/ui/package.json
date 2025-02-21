@@ -45,11 +45,11 @@
     "svelte": "^4.2.19",
     "fast-equals": "^5.2.2",
     "autolinker": "4.0.0",
-    "emoji-regex": "^10.1.0",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
     "dompurify": "^3.1.6",
-    "@hcengineering/analytics": "^0.6.0"
+    "@hcengineering/analytics": "^0.6.0",
+    "emojibase": "^16.0.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getContext } from 'svelte'
+  import { getContext, onMount } from 'svelte'
   import { getMetadata } from '@hcengineering/platform'
   import ui, { showPopup, deviceOptionsStore as deviceInfo } from '../..'
   import LangPopup from './LangPopup.svelte'
   import Html from '../Html.svelte'
+  import { updateEmojis } from '../emoji'
 
   let pressed: boolean = false
 
@@ -62,11 +63,15 @@
       if (result) {
         selected = langs.find((item) => item.id === result)
         setLanguage(result)
+        void updateEmojis(result)
       }
       pressed = false
     })
   }
   $: $deviceInfo.language = selected?.id
+  onMount(() => {
+    void updateEmojis()
+  })
 </script>
 
 <button

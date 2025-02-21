@@ -451,12 +451,12 @@ importers:
       '@rush-temp/model-mail':
         specifier: file:./projects/model-mail.tgz
         version: file:projects/model-mail.tgz
-      '@rush-temp/model-notification':
-        specifier: file:./projects/model-notification.tgz
-        version: file:projects/model-notification.tgz
       '@rush-temp/model-my-space':
         specifier: file:./projects/model-my-space.tgz
         version: file:projects/model-my-space.tgz
+      '@rush-temp/model-notification':
+        specifier: file:./projects/model-notification.tgz
+        version: file:projects/model-notification.tgz
       '@rush-temp/model-preference':
         specifier: file:./projects/model-preference.tgz
         version: file:projects/model-preference.tgz
@@ -625,6 +625,15 @@ importers:
       '@rush-temp/mongo':
         specifier: file:./projects/mongo.tgz
         version: file:projects/mongo.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/my-space':
+        specifier: file:./projects/my-space.tgz
+        version: file:projects/my-space.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/my-space-assets':
+        specifier: file:./projects/my-space-assets.tgz
+        version: file:projects/my-space-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/my-space-resources':
+        specifier: file:./projects/my-space-resources.tgz
+        version: file:projects/my-space-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/notification':
         specifier: file:./projects/notification.tgz
         version: file:projects/notification.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -649,15 +658,6 @@ importers:
       '@rush-temp/panel':
         specifier: file:./projects/panel.tgz
         version: file:projects/panel.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      '@rush-temp/my-space':
-        specifier: file:./projects/my-space.tgz
-        version: file:projects/my-space.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      '@rush-temp/my-space-assets':
-        specifier: file:./projects/my-space-assets.tgz
-        version: file:projects/my-space-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      '@rush-temp/my-space-resources':
-        specifier: file:./projects/my-space-resources.tgz
-        version: file:projects/my-space-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/platform':
         specifier: file:./projects/platform.tgz
         version: file:projects/platform.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -1621,9 +1621,9 @@ importers:
       email-addresses:
         specifier: ^5.0.0
         version: 5.0.0
-      emoji-regex:
-        specifier: ^10.1.0
-        version: 10.3.0
+      emojibase:
+        specifier: ^16.0.0
+        version: 16.0.0
       esbuild:
         specifier: ^0.24.2
         version: 0.24.2
@@ -4163,7 +4163,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-8we0EU2OgAaGXO+0DTj+BXro2vDokwXNGpKcVrzj9BbIvn6+3+BoRJJ1QcWwFa36XKnGuIKkkWMgMRdB6Quv9A==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-YKF8wyv3wcfxqTNHRQncoFfZt3HiJdnUYv7ZA35uqIAdY7Ib3qEhHH8JMBehGeBwMnXX576RBpeZAU0OYxS8ng==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4343,15 +4343,15 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-assets@file:projects/mail-assets.tgz':
-    resolution: {integrity: sha512-Lp1APt1DRMNrH2DhlOTTJjjIPhThHuc1+3Jj1fJU1ryH4FcJwCDFRw9InLEhjphf9cGC6z06EpgL3+3FtHOmJg==, tarball: file:projects/mail-assets.tgz}
+    resolution: {integrity: sha512-EY+m2n2E2Sm4zD0/n7psqlOwOH/zSinZE0zDfPLKZCFMF++7wuZ7cpkEz9NbL5zELQwqA7sk/G/IwUVIEXB/Kg==, tarball: file:projects/mail-assets.tgz}
     version: 0.0.0
 
   '@rush-temp/mail-resources@file:projects/mail-resources.tgz':
-    resolution: {integrity: sha512-8PtetoobhgQAiaGjqRf2aOgVY3Xh0KkyWTVLA2GIKaWY0lD0Vt69jDk1jptyXJOfkQLXRTSk7JxTs9lH96q8UQ==, tarball: file:projects/mail-resources.tgz}
+    resolution: {integrity: sha512-MArPZYwi2jollp/LHmrsx6wqyZzX/2XwjptpOg/10kADjpwo6wShL95ABMx5sCZo3+8paGXU1PipjnikbpNc0w==, tarball: file:projects/mail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
-    resolution: {integrity: sha512-khCqnHqt/MDtJv8eTx08ov9GkvC00wPeb1Q+QE5zk7xqbjK/QYJWPmdMRkvOJobCHLh2/g6ST2lgNbV938hrJA==, tarball: file:projects/mail.tgz}
+    resolution: {integrity: sha512-0UzQEN733mDUZKfsGvNq8ikfsbVjQgTFOzP7/+buwIfWgeZBqVCoCDJrk90ZQ38yp8dMgdWZ+OymfTZ4WNlb7g==, tarball: file:projects/mail.tgz}
     version: 0.0.0
 
   '@rush-temp/middleware@file:projects/middleware.tgz':
@@ -4371,7 +4371,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-all@file:projects/model-all.tgz':
-    resolution: {integrity: sha512-aDRtqYlITENsW02SJbs+KjoynFL+/QYQmYQVN6++EqsnAT+jHGPl/UpnmSr3ZMcALGcwTx61LKQ1nnxNen8tyA==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-Bo2UPIQp6MhS9V5sv9yJDdjxcjTy7u+2+QoGnGBweuD35Mwzy3MQIKnmf6XRLbvHTSkHno6ZKBMiZfWQReLgIw==, tarball: file:projects/model-all.tgz}
     version: 0.0.0
 
   '@rush-temp/model-analytics-collector@file:projects/model-analytics-collector.tgz':
@@ -4455,15 +4455,15 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-mail@file:projects/model-mail.tgz':
-    resolution: {integrity: sha512-Z2WZ+9IF0119TDZDyODrcI3ptuQLQ/h7WaxvbPIFsUQm+MI5VPV6hCNUBNp8if2XQLmSn0YByejtW1bSBz/WAg==, tarball: file:projects/model-mail.tgz}
+    resolution: {integrity: sha512-/GxdWziahn6TAFJ4/9V7YPatdGo68lWecWkOyMVdBtPFl9VcPsxYKt3cqWz9qk2G6UxV2k2bmI0qt8kg1anxUA==, tarball: file:projects/model-mail.tgz}
+    version: 0.0.0
+
+  '@rush-temp/model-my-space@file:projects/model-my-space.tgz':
+    resolution: {integrity: sha512-P/i9hwPmwSS8ol035oGdkhn66S+D3Knpj2/p65n0wB5oKaFG0Y9sM9NLGUIUAtiDmwGMfFhm2dq0OksEOxZ0BQ==, tarball: file:projects/model-my-space.tgz}
     version: 0.0.0
 
   '@rush-temp/model-notification@file:projects/model-notification.tgz':
     resolution: {integrity: sha512-k7valecajKQwOhAeROASPm+RO2/D3xZSkan8Z09kmy+9dNLYBxQT/mr7k+HBdlzU4JD3fDQRP6EStyJBkLFZsQ==, tarball: file:projects/model-notification.tgz}
-    version: 0.0.0
-
-  '@rush-temp/model-my-space@file:projects/model-my-space.tgz':
-    resolution: {integrity: sha512-OxBDKFosN/3hsy9Ot0fDJTpzqFJvNLWxgJXtmculo1ksyKacMGZc4+9Ouxj49NFQ4JPl1UpBLZjaWPQ7xuyo3w==, tarball: file:projects/model-my-space.tgz}
     version: 0.0.0
 
   '@rush-temp/model-preference@file:projects/model-preference.tgz':
@@ -4694,6 +4694,18 @@ packages:
     resolution: {integrity: sha512-aqU57iG6awiTX9qWSrzXMKyHSbt0V8mKAutQjE3uCx9FdPpnGiZjJflWsMS5PaZ4MdNazv2vUg4XPDHKCc4A/A==, tarball: file:projects/mongo.tgz}
     version: 0.0.0
 
+  '@rush-temp/my-space-assets@file:projects/my-space-assets.tgz':
+    resolution: {integrity: sha512-62sXulipAWdzJz56yQZ2axXBdz7zHmd16Mbi5Edu/nqjoSlNcAxZvB6jUNi+kBi6qlO0jNzfNBRrQqQSi0JvMA==, tarball: file:projects/my-space-assets.tgz}
+    version: 0.0.0
+
+  '@rush-temp/my-space-resources@file:projects/my-space-resources.tgz':
+    resolution: {integrity: sha512-ze063pIWYIHyKghTiUGFua9X86uCshjgGnbZKY4WGjg6bIGhU2GTgDOiRDsGC0gWFKt+mag7hQ/nup2zBggY7Q==, tarball: file:projects/my-space-resources.tgz}
+    version: 0.0.0
+
+  '@rush-temp/my-space@file:projects/my-space.tgz':
+    resolution: {integrity: sha512-lZXMkLZnlmpSkjEj4lV2pxIaObjgAQ3OT4ktzUOzlpP1v3U78XKLJzRQ29SqVBYH+DcEHqL97znDPEGxzYHZKA==, tarball: file:projects/my-space.tgz}
+    version: 0.0.0
+
   '@rush-temp/notification-assets@file:projects/notification-assets.tgz':
     resolution: {integrity: sha512-+skvmrHYDNajtAeq2I5tAQXgK0u7WjzquNZXRe+F3zG81/0P3EDIz2k4qjN2HY6EBYZjJHqYsN1ZBWLBbQ2I2g==, tarball: file:projects/notification-assets.tgz}
     version: 0.0.0
@@ -4724,18 +4736,6 @@ packages:
 
   '@rush-temp/panel@file:projects/panel.tgz':
     resolution: {integrity: sha512-cjwk9I0RxeNJQTgtbbcQlwiurbp+/T5MbiRnYTLWvxsMBVWnnxD5nToECUt1QdW/CjSSbPsaYP8hoMgt/AufCw==, tarball: file:projects/panel.tgz}
-    version: 0.0.0
-
-  '@rush-temp/my-space-assets@file:projects/my-space-assets.tgz':
-    resolution: {integrity: sha512-yGiP0aFiYA6RZiY4Ufqhk2egfhWvjEi3GOjcmLZ3eAl3samu/g4b3BcAKzo6SimMwKM2GQF+9oKHn1F/5LmSjA==, tarball: file:projects/my-space-assets.tgz}
-    version: 0.0.0
-
-  '@rush-temp/my-space-resources@file:projects/my-space-resources.tgz':
-    resolution: {integrity: sha512-dE2Jeu1rsu0l18l6oKj0Z+D99sS8fkuAcqoqh9alzavqquUvgGSXtTUB24l6Y6A0tbpshtAMLhmFSFgwPtSGHw==, tarball: file:projects/my-space-resources.tgz}
-    version: 0.0.0
-
-  '@rush-temp/my-space@file:projects/my-space.tgz':
-    resolution: {integrity: sha512-dBx6We9vl3uuETflughn1Q1jmxjzQdxZ0rf+OiZZ6lRM0u304BhlM7459AMcaZ76oxkqZ6ulRYVVxr8k7ZGHaA==, tarball: file:projects/my-space.tgz}
     version: 0.0.0
 
   '@rush-temp/platform-rig@file:projects/platform-rig.tgz':
@@ -4859,7 +4859,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-VeRmwZegE4UJxGZfbKFP55egCMYIBuW6fCawXf1NHcXc93vnE6m9sax3s/O++FU3bMIhusbA0d74ZRRCCozxTw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-0fwdwfrUoXhanhn42lMUJOjDQmkbEur1NnpK4S8nitU/Bg8eyUil9ihjGj3hhVfSdwP7RAPk1iPNeRaAMCAnwQ==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -5367,7 +5367,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-editor-resources@file:projects/text-editor-resources.tgz':
-    resolution: {integrity: sha512-JAu7yul5yHwjxWkBN9p1LW7HR8vAaRlf8Ioiyc7FYAKaQ1EBV05sCCpYsVayVpmU0vU92XzQffryB8TH/dZ6+A==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-PkvG582CT0XfnKC+4uNE1ZnwUgT9ywmfDmVr5vgcXti04Ntx1rB9VzTqnNDFI/A7h5dFAeEbR8s08gzgO6fdrw==, tarball: file:projects/text-editor-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor@file:projects/text-editor.tgz':
@@ -5427,7 +5427,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ui@file:projects/ui.tgz':
-    resolution: {integrity: sha512-tCUHrjveqVL6d3xRq8jtRIT7LdJUzDQFKavGeigF0kmaZxxSA9z5HBNCxszZu/vnK41+FVThVvwsExWnTr2ahA==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-THkZLcaBxS58m9cqY59M3XZMTKNmmjb4CWSnh3nv8pzI0uuMHhZ9ldjS6zrzOLQJRlVB7XWuJBT/J5F9oLFs+w==, tarball: file:projects/ui.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader-assets@file:projects/uploader-assets.tgz':
@@ -8404,6 +8404,13 @@ packages:
 
   emoji-regex@9.2.2:
     resolution: {integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==}
+
+  emojibase-regex@16.0.0:
+    resolution: {integrity: sha512-ZMp31BkzBWNW+T73of6NURL6nXQa5GkfKneOkr3cEwBDVllbW/2nuva7NO0J3RjaQ07+SZQNgPTGZ4JlIhmM2Q==}
+
+  emojibase@16.0.0:
+    resolution: {integrity: sha512-Nw2m7JLIO4Ou2X/yZPRNscHQXVbbr6SErjkJ7EooG7MbR3yDZszCv9KTizsXFc7yZl0n3WF+qUKIC/Lw6H9xaQ==}
+    engines: {node: '>=18.12.0'}
 
   emojis-list@3.0.0:
     resolution: {integrity: sha512-/kyM18EfinwXZbno9FyUGeFh87KC8HRQBQGildHZbEuRyWFOmv1U10o9BBp8XVZDVNNuQKyIGIu5ZYAAXJ0V2Q==}
@@ -19648,20 +19655,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@rush-temp/model-notification@file:projects/model-notification.tgz':
-    dependencies:
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      prettier: 3.2.5
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@rush-temp/model-my-space@file:projects/model-my-space.tgz':
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
@@ -19673,6 +19666,20 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       typescript: 5.6.2
+    transitivePeerDependencies:
+      - supports-color
+
+  '@rush-temp/model-notification@file:projects/model-notification.tgz':
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
 
@@ -20540,6 +20547,97 @@ snapshots:
       - supports-color
       - ts-node
 
+  '@rush-temp/my-space-assets@file:projects/my-space-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/my-space-resources@file:projects/my-space-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      fast-equals: 5.2.2
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
+      sass: 1.71.1
+      svelte: 4.2.19
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
+      svelte-loader: 3.2.0(svelte@4.2.19)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.6.2)
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+
+  '@rush-temp/my-space@file:projects/my-space.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
   '@rush-temp/notification-assets@file:projects/notification-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
@@ -20792,97 +20890,6 @@ snapshots:
       - pug
       - stylus
       - sugarss
-      - supports-color
-      - ts-node
-
-  '@rush-temp/my-space-assets@file:projects/my-space-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
-    dependencies:
-      '@types/jest': 29.5.12
-      '@types/node': 20.11.19
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      prettier: 3.2.5
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
-      typescript: 5.6.2
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-      - ts-node
-
-  '@rush-temp/my-space-resources@file:projects/my-space-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
-    dependencies:
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      fast-equals: 5.2.2
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
-      sass: 1.71.1
-      svelte: 4.2.19
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)
-      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
-      svelte-loader: 3.2.0(svelte@4.2.19)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.6.2)
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
-      typescript: 5.6.2
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - coffeescript
-      - esbuild
-      - less
-      - node-notifier
-      - postcss
-      - postcss-load-config
-      - pug
-      - stylus
-      - sugarss
-      - supports-color
-      - ts-node
-
-  '@rush-temp/my-space@file:projects/my-space.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
-    dependencies:
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.6.2)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      prettier: 3.2.5
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
-      typescript: 5.6.2
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
       - supports-color
       - ts-node
 
@@ -26136,7 +26143,8 @@ snapshots:
       date-fns: 2.30.0
       date-fns-tz: 2.0.0(date-fns@2.30.0)
       dompurify: 3.1.6
-      emoji-regex: 10.3.0
+      emojibase: 16.0.0
+      emojibase-regex: 16.0.0
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -30185,6 +30193,10 @@ snapshots:
   emoji-regex@8.0.0: {}
 
   emoji-regex@9.2.2: {}
+
+  emojibase-regex@16.0.0: {}
+
+  emojibase@16.0.0: {}
 
   emojis-list@3.0.0: {}
 
