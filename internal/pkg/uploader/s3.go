@@ -37,6 +37,7 @@ import (
 type S3Storage struct {
 	client     *s3.Client
 	bucketName string
+	logger     *zap.Logger
 }
 
 // NewS3 creates a new S3 storage
@@ -44,6 +45,7 @@ func NewS3(ctx context.Context, endpoint string) Storage {
 	var accessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
 	var accessKeySecret = os.Getenv("AWS_SECRET_ACCESS_KEY")
 	var bucketName = os.Getenv("AWS_BUCKET_NAME")
+	var logger = log.FromContext(ctx).With(zap.String("s3", "storage"))
 
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, "")),
@@ -61,6 +63,7 @@ func NewS3(ctx context.Context, endpoint string) Storage {
 	return &S3Storage{
 		client:     s3Client,
 		bucketName: bucketName,
+		logger:     logger,
 	}
 }
 

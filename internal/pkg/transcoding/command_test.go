@@ -14,49 +14,36 @@
 package transcoding_test
 
 import (
-	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/huly-stream/internal/pkg/resconv"
 	"github.com/huly-stream/internal/pkg/transcoding"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_BuildVideoCommand_Basic(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip()
-	}
-	var simpleHlsCommand = transcoding.BuildVideoCommand(&transcoding.Options{
-		OuputDir:    "test",
-		UploadID:    "1",
-		Threads:     4,
-		Resolutions: []string{"1280:720"},
+func Test_BuildVideoCommand_Scaling(t *testing.T) {
+	var scaleCommand = transcoding.BuildScalingVideoCommand(&transcoding.Options{
+		OuputDir:      "test",
+		UploadID:      "1",
+		Threads:       4,
+		ScalingLevels: []string{"720p", "480p"},
 	})
 
-	const expected = `-threads 4 -i pipe:0 -vf scale=1280:720 -c:v libx264 -preset veryfast -crf 23 -g 60 -hls_time 5 -hls_list_size 0 -hls_segment_filename test/1_%03d_720p.ts test/1_720p_master.m3u8`
+	const expected = `-nostdin -threads 4 -i pipe:0 -vf scale=1280:720 -c:v libx264 -preset veryfast -crf 23 -g 60 -hls_time 5 -hls_list_size 0 -hls_segment_filename test/1/1_%03d_720p.ts test/1/1_720p_master.m3u8 -vf scale=640:480 -c:v libx264 -preset veryfast -crf 23 -g 60 -hls_time 5 -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
 
-	require.Contains(t, expected, strings.Join(simpleHlsCommand, " "))
+	require.Contains(t, expected, strings.Join(scaleCommand, " "))
 }
 
-func TestResolutionFromPixels(t *testing.T) {
-	tests := []struct {
-		pixels   int
-		expected string
-	}{
-		{pixels: 320 * 240, expected: "320p"},
-		{pixels: 640 * 480, expected: "480p"},
-		{pixels: 1280 * 720, expected: "720p"},
-		{pixels: 1920 * 1080, expected: "1k"},
-		{pixels: 2560 * 1440, expected: "2k"},
-		{pixels: 3840 * 2160, expected: "4k"},
-		{pixels: 5120 * 2160, expected: "5k"},
-		{pixels: 9000 * 4000, expected: "8k"},
-	}
+func Test_BuildVideoCommand_Raw(t *testing.T) {
+	var rawCommand = transcoding.BuildRawVideoCommand(&transcoding.Options{
+		OuputDir: "test",
+		UploadID: "1",
+		Threads:  4,
+		Level:    resconv.Level("651:490"),
+	})
 
-	for _, tt := range tests {
-		t.Run(tt.expected, func(t *testing.T) {
-			result := transcoding.ResolutionFromPixels(tt.pixels)
-			require.Equal(t, tt.expected, result, "ResolutionFromPixels(%d)", tt.pixels)
-		})
-	}
+	const expected = `-nostdin -threads 4 -i pipe:0 -c:v copy -fps_mode vfr -hls_time 5 -hls_list_size 0 -hls_segment_filename test/1/1_%03d_480p.ts test/1/1_480p_master.m3u8`
+
+	require.Contains(t, expected, strings.Join(rawCommand, " "))
 }

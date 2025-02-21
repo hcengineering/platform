@@ -16,23 +16,24 @@ package config
 
 import (
 	"net/url"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
 
 // Config represents configuration for the huly-stream application.
 type Config struct {
-	SecretToken           string   `split_words:"true" desc:"secret token for authorize requests"`
-	LogLevel              string   `split_words:"true" default:"debug" desc:"sets log level for the application"`
-	PprofEnabled          bool     `default:"false" split_words:"true" desc:"starts profile server on localhost:6060 if true"`
-	Insecure              bool     `default:"false" desc:"ignores authorization check if true"`
-	ServeURL              string   `split_words:"true" desc:"app listen url" default:"0.0.0.0:1080"`
-	EndpointURL           *url.URL `split_words:"true" desc:"S3 or Datalake endpoint, example: s3://my-ip-address, datalake://my-ip-address"`
-	MaxCapacity           int64    `split_words:"true" default:"6220800" desc:"represents the amount of maximum possible capacity for the transcoding. The default value is 1920 * 1080 * 3."`
-	MaxThreads            int      `split_words:"true" default:"4" desc:"means upper bound for the transcoing provider."`
-	OutputDir             string   `split_words:"true" default:"/tmp/transcoing/" desc:"path to the directory with transcoding result."`
-	RemoveContentOnUpload bool     `split_words:"true" default:"true" desc:"deletes all content when content delivered if true"`
-	UploadRawContent      bool     `split_words:"true" default:"false" desc:"uploads content in raw quality to the endpoint if true"`
+	SecretToken  string        `split_words:"true" desc:"secret token for authorize requests"`
+	LogLevel     string        `split_words:"true" default:"debug" desc:"sets log level for the application"`
+	PprofEnabled bool          `default:"false" split_words:"true" desc:"starts profile server on localhost:6060 if true"`
+	Insecure     bool          `default:"false" desc:"ignores authorization check if true"`
+	ServeURL     string        `split_words:"true" desc:"app listen url" default:"0.0.0.0:1080"`
+	EndpointURL  *url.URL      `split_words:"true" desc:"S3 or Datalake endpoint, example: s3://my-ip-address, datalake://my-ip-address"`
+	AuthURL      *url.URL      `split_words:"true" desc:"url to auth the upload"`
+	MaxCapacity  int64         `split_words:"true" default:"6220800" desc:"represents the amount of maximum possible capacity for the transcoding. The default value is 1920 * 1080 * 3."`
+	MaxThreads   int           `split_words:"true" default:"4" desc:"means upper bound for the transcoing provider."`
+	OutputDir    string        `split_words:"true" default:"/tmp/transcoing/" desc:"path to the directory with transcoding result."`
+	Timeout      time.Duration `default:"5m" desc:"timeout for the upload"`
 }
 
 // FromEnv creates new Config from env
@@ -45,6 +46,10 @@ func FromEnv() (*Config, error) {
 
 	if err := envconfig.Process("stream", &result); err != nil {
 		return nil, err
+	}
+
+	if *result.EndpointURL == (url.URL{}) {
+		result.EndpointURL = nil
 	}
 
 	return &result, nil

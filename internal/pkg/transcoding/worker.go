@@ -17,9 +17,11 @@ package transcoding
 import (
 	"context"
 	"io"
+	"sync"
 
 	"github.com/pkg/errors"
 
+	"github.com/huly-stream/internal/pkg/manifest"
 	"github.com/huly-stream/internal/pkg/sharedpipe"
 	"github.com/huly-stream/internal/pkg/uploader"
 	"github.com/tus/tusd/v2/pkg/handler"
@@ -33,8 +35,9 @@ type Worker struct {
 	info            handler.FileInfo
 	writer          *sharedpipe.Writer
 	reader          *sharedpipe.Reader
-	cost            int64
-	done            chan struct{}
+
+	wg   sync.WaitGroup
+	done chan struct{}
 }
 
 // WriteChunk calls when client sends a chunk of raw data
@@ -73,7 +76,7 @@ func (w *Worker) Terminate(ctx context.Context) error {
 	w.logger.Debug("Terminating...")
 	if w.contentUploader != nil {
 		go func() {
-			<-w.done
+			w.wg.Wait()
 			w.contentUploader.Rollback()
 		}()
 	}
@@ -94,7 +97,7 @@ func (w *Worker) FinishUpload(ctx context.Context) error {
 	w.logger.Debug("finishing upload...")
 	if w.contentUploader != nil {
 		go func() {
-			<-w.done
+			w.wg.Wait()
 			w.contentUploader.Terminate()
 		}()
 	}
@@ -108,18 +111,49 @@ func (s *Scheduler) AsConcatableUpload(upload handler.Upload) handler.Concatable
 }
 
 func (w *Worker) start(ctx context.Context, options *Options) error {
+	defer w.logger.Debug("start done")
 	w.reader = w.writer.Transpile()
-	var cmd, err = newFfmpegCommand(ctx, w.reader, options)
-	if err != nil {
+
+	if err := manifest.GenerateHLSPlaylist(append(options.ScalingLevels, options.Level), options.OuputDir, options.UploadID); err != nil {
 		return err
 	}
+
+	w.wg.Add(1)
 	go func() {
-		defer close(w.done)
-		if runErr := cmd.Run(); runErr != nil {
-			w.logger.Error("transoding provider is exited with error", zap.Error(err))
-		} else {
-			w.logger.Debug("transoding provider has finished without errors")
+		defer w.wg.Done()
+		var logger = w.logger.With(zap.String("command", "raw"))
+		defer logger.Debug("done")
+
+		var args = BuildRawVideoCommand(options)
+		var convertSourceCommand, err = newFfmpegCommand(ctx, w.reader, args)
+		if err != nil {
+			logger.Debug("can not start", zap.Error(err))
+		}
+		err = convertSourceCommand.Run()
+		if err != nil {
+			logger.Debug("finished with error", zap.Error(err))
 		}
 	}()
+
+	if len(options.ScalingLevels) > 0 {
+		w.wg.Add(1)
+		var scalingCommandReader = w.writer.Transpile()
+		go func() {
+			defer w.wg.Done()
+			var logger = w.logger.With(zap.String("command", "scaling"))
+			defer logger.Debug("done")
+
+			var args = BuildScalingVideoCommand(options)
+			var convertSourceCommand, err = newFfmpegCommand(ctx, scalingCommandReader, args)
+			if err != nil {
+				logger.Debug("can not start", zap.Error(err))
+			}
+			err = convertSourceCommand.Run()
+			if err != nil {
+				logger.Debug("finished with error", zap.Error(err))
+			}
+		}()
+	}
+
 	return nil
 }

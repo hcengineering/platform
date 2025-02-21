@@ -18,52 +18,54 @@ import (
 	"context"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/tus/tusd/v2/pkg/handler"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/huly-stream/internal/pkg/config"
 	"github.com/huly-stream/internal/pkg/log"
 	"go.uber.org/zap"
 )
 
 type uploader struct {
-	ctx                        context.Context
-	cancel                     context.CancelFunc
-	baseDir                    string
-	uploadID                   string
-	masterFiles                sync.Map
-	postponeDuration           time.Duration
-	sentFiles                  sync.Map
-	storage                    Storage
-	contexts                   sync.Map
-	retryCount                 int
-	removeLocalContentOnUpload bool
-	eventBufferCount           uint
-	isMasterFileFunc           func(s string) bool
+	ctx              context.Context
+	cancel           context.CancelFunc
+	baseDir          string
+	uploadID         string
+	masterFiles      sync.Map
+	postponeDuration time.Duration
+	sentFiles        sync.Map
+	storage          Storage
+	contexts         sync.Map
+	retryCount       int
+	eventBufferCount uint
+	isMasterFileFunc func(s string) bool
+}
+
+func (u *uploader) retry(action func() error) {
+	for range u.retryCount {
+		if err := action(); err == nil {
+			return
+		}
+	}
 }
 
 // Rollback deletes all delivered files and also deletes all local content by uploadID
 func (u *uploader) Rollback() {
-	log.FromContext(u.ctx).Debug("cancel")
+	logger := log.FromContext(u.ctx).With(zap.String("uploader", "Rollback"))
+	logger.Debug("starting")
 	defer u.cancel()
+
 	u.sentFiles.Range(func(key, value any) bool {
-		log.FromContext(u.ctx).Debug("deleting remote file", zap.String("key", key.(string)))
-		for range u.retryCount {
-			var err = u.storage.DeleteFile(u.ctx, key.(string))
-			if err == nil {
-				break
-			}
-			log.FromContext(u.ctx).Debug("can not delete file", zap.Error(err))
-		}
+		logger.Debug("deleting remote file", zap.String("key", key.(string)))
+		u.retry(func() error { return u.storage.DeleteFile(u.ctx, key.(string)) })
 		return true
 	})
-	if !u.removeLocalContentOnUpload {
-		return
-	}
+
 	u.sentFiles.Range(func(key, value any) bool {
 		log.FromContext(u.ctx).Debug("deleting local file", zap.String("key", key.(string)))
 		_ = os.Remove(key.(string))
@@ -72,50 +74,47 @@ func (u *uploader) Rollback() {
 }
 
 func (u *uploader) Terminate() {
-	log.FromContext(u.ctx).Debug("terminate")
+	logger := log.FromContext(u.ctx).With(zap.String("uploader", "Terminate"))
+	logger.Debug("starting")
 	defer u.cancel()
+
 	u.masterFiles.Range(func(key, value any) bool {
 		log.FromContext(u.ctx).Debug("uploading master file", zap.String("key", key.(string)))
-		for range u.retryCount {
-			var uploadErr = u.storage.UploadFile(u.ctx, key.(string))
-			if uploadErr == nil {
-				break
-			}
-			log.FromContext(u.ctx).Debug("can not upload file", zap.Error(uploadErr))
-		}
+		go u.retry(func() error { return u.storage.UploadFile(u.ctx, key.(string)) })
 		return true
 	})
-	if !u.removeLocalContentOnUpload {
-		return
-	}
+
 	u.masterFiles.Range(func(key, value any) bool {
-		log.FromContext(u.ctx).Debug("deleting local master file", zap.String("key", key.(string)))
 		_ = os.Remove(key.(string))
 		return true
 	})
+
 	u.sentFiles.Range(func(key, value any) bool {
-		log.FromContext(u.ctx).Debug("deleting local file", zap.String("key", key.(string)))
 		_ = os.Remove(key.(string))
 		return true
 	})
 }
 
 func (u *uploader) Serve() error {
-	var logger = log.FromContext(u.ctx)
-	logger = logger.With(zap.String("uploader", u.uploadID), zap.String("dir", u.baseDir))
+	var logger = log.FromContext(u.ctx).With(zap.String("uploader", u.uploadID), zap.String("dir", u.baseDir))
 	var watcher, err = fsnotify.NewBufferedWatcher(u.eventBufferCount)
+
 	if err != nil {
 		logger.Error("can not start watcher")
 		return err
 	}
+
+	_ = os.MkdirAll(u.baseDir, os.ModePerm)
+
 	if err := watcher.Add(u.baseDir); err != nil {
 		return err
 	}
+
 	defer func() {
 		_ = watcher.Close()
 	}()
 
-	logger.Debug("uploader initialized and started to watch")
+	logger.Debug("the uploader has initialized and started watching")
 
 	for {
 		select {
@@ -123,6 +122,9 @@ func (u *uploader) Serve() error {
 			logger.Debug("done")
 			return u.ctx.Err()
 		case event, ok := <-watcher.Events:
+			if strings.HasSuffix(event.Name, "tmp") {
+				continue
+			}
 			if !strings.Contains(event.Name, u.uploadID) {
 				continue
 			}
@@ -169,29 +171,32 @@ type Storage interface {
 }
 
 // New creates a new instance of Uplaoder
-func New(ctx context.Context, conf config.Config, uploadID string, metadata map[string]string) (Uploader, error) {
-	var uploaderCtx, uploaderCancel = context.WithCancel(ctx)
+func New(ctx context.Context, baseDir string, endpointURL *url.URL, uploadInfo handler.FileInfo) (Uploader, error) {
+	var uploaderCtx, uploadCancel = context.WithCancel(context.Background())
+	uploaderCtx = log.WithLoggerFields(uploaderCtx)
+	go func() {
+		<-ctx.Done()
+		time.Sleep(time.Minute * 2)
+		uploadCancel()
+	}()
 	var storage Storage
 	var err error
 
-	if conf.EndpointURL != nil {
-		storage, err = NewStorageByURL(ctx, conf.EndpointURL, metadata)
-		if err != nil {
-			uploaderCancel()
-			return nil, err
-		}
+	storage, err = NewStorageByURL(ctx, endpointURL, uploadInfo.MetaData)
+	if err != nil {
+		uploadCancel()
+		return nil, err
 	}
 
 	return &uploader{
-		ctx:                        uploaderCtx,
-		cancel:                     uploaderCancel,
-		uploadID:                   uploadID,
-		removeLocalContentOnUpload: conf.RemoveContentOnUpload,
-		postponeDuration:           time.Second * 2,
-		storage:                    storage,
-		retryCount:                 5,
-		baseDir:                    conf.OutputDir,
-		eventBufferCount:           100,
+		ctx:              uploaderCtx,
+		cancel:           uploadCancel,
+		uploadID:         uploadInfo.ID,
+		postponeDuration: time.Second * 2,
+		storage:          storage,
+		retryCount:       5,
+		baseDir:          filepath.Join(baseDir, uploadInfo.ID),
+		eventBufferCount: 100,
 		isMasterFileFunc: func(s string) bool {
 			return strings.HasSuffix(s, "m3u8")
 		},

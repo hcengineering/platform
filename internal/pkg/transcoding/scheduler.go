@@ -17,14 +17,15 @@ package transcoding
 
 import (
 	"context"
-	"strings"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 
 	"github.com/google/uuid"
 	"github.com/huly-stream/internal/pkg/config"
 	"github.com/huly-stream/internal/pkg/log"
+	"github.com/huly-stream/internal/pkg/resconv"
 	"github.com/huly-stream/internal/pkg/sharedpipe"
 	"github.com/huly-stream/internal/pkg/uploader"
 	"github.com/tus/tusd/v2/pkg/handler"
@@ -40,6 +41,7 @@ type Scheduler struct {
 	mainContext context.Context
 	logger      *zap.Logger
 	workers     sync.Map
+	cancels     sync.Map
 }
 
 // NewScheduler creates a new scheduler for transcode operations.
@@ -57,58 +59,95 @@ func (s *Scheduler) NewUpload(ctx context.Context, info handler.FileInfo) (handl
 	if info.ID == "" {
 		info.ID = uuid.NewString()
 	}
-
+	s.logger.Sugar().Debugf("upload: %v", info)
 	s.logger.Debug("NewUpload", zap.String("ID", info.ID))
 
-	var result = &Worker{
-		done:   make(chan struct{}),
+	var worker = &Worker{
 		writer: sharedpipe.NewWriter(),
 		info:   info,
-		logger: log.FromContext(s.mainContext).With(zap.String("Worker", info.ID)),
+		logger: log.FromContext(s.mainContext).With(zap.String("worker", info.ID)),
+		done:   make(chan struct{}),
 	}
 
-	var resolutions = strings.Split(info.MetaData["resolutions"], ",")
+	var scaling = resconv.SubLevels(info.MetaData["resolution"])
+	var level = resconv.Level(info.MetaData["resolution"])
+	var cost int64
+
+	for _, scale := range scaling {
+		cost += int64(resconv.Pixels(resconv.Resolution(scale)))
+	}
+
+	if !s.limiter.TryConsume(cost) {
+		s.logger.Debug("run out of resources for scaling")
+		scaling = nil
+	}
 
 	var commandOptions = Options{
-		OuputDir:    s.conf.OutputDir,
-		Threads:     s.conf.MaxThreads,
-		UploadID:    info.ID,
-		Resolutions: resolutions,
-	}
-
-	result.cost = measure(&commandOptions)
-
-	if !s.limiter.TryConsume(result.cost) {
-		s.logger.Error("run out of resources")
-		return nil, errors.New("run out of resources")
+		OuputDir:      s.conf.OutputDir,
+		Threads:       s.conf.MaxThreads,
+		UploadID:      info.ID,
+		Level:         level,
+		ScalingLevels: scaling,
 	}
 
 	if s.conf.EndpointURL != nil {
-		s.logger.Debug("found endpoint url in the config, starting uploader...")
-		var contentUploader, err = uploader.New(s.mainContext, *s.conf, info.ID, info.MetaData)
+		s.logger.Sugar().Debugf("initializing uploader for %v", info)
+		var contentUploader, err = uploader.New(s.mainContext, s.conf.OutputDir, s.conf.EndpointURL, info)
 		if err != nil {
+			s.logger.Error("can not create uploader", zap.Error(err))
 			return nil, err
 		}
-		result.contentUploader = contentUploader
+
+		worker.contentUploader = contentUploader
 		go func() {
-			var serverErr = result.contentUploader.Serve()
-			result.logger.Debug("content uploader has finished", zap.Error(serverErr))
+			var serverErr = worker.contentUploader.Serve()
+			worker.logger.Debug("content uploader has finished", zap.Error(serverErr))
 		}()
 	}
-
-	s.workers.Store(result.info.ID, result)
-	s.logger.Sugar().Debugf("New Upload: info %v", result.info)
-	if err := result.start(s.mainContext, &commandOptions); err != nil {
+	s.workers.Store(worker.info.ID, worker)
+	if err := worker.start(s.mainContext, &commandOptions); err != nil {
 		return nil, err
 	}
-	return result, nil
+
+	go func() {
+		worker.wg.Wait()
+		s.limiter.ReturnCapacity(cost)
+		s.logger.Debug("returned capacity", zap.Int64("capacity", cost))
+		close(worker.done)
+	}()
+
+	s.logger.Debug("NewUpload", zap.String("done", info.ID))
+	return worker, nil
 }
 
 // GetUpload returns current a worker based on upload id
 func (s *Scheduler) GetUpload(ctx context.Context, id string) (upload handler.Upload, err error) {
 	if v, ok := s.workers.Load(id); ok {
 		s.logger.Debug("GetUpload: found worker by id", zap.String("id", id))
-		return v.(*Worker), nil
+		var w = v.(*Worker)
+		var cancelCtx, cancel = context.WithCancel(context.Background())
+		if v, ok := s.cancels.Load(id); ok {
+			v.(context.CancelFunc)()
+		}
+		s.cancels.Store(id, cancel)
+		go func() {
+			select {
+			case <-w.done:
+				w.logger.Debug("upload timeout just canceled")
+				s.cancels.Delete(id)
+				return
+			case <-cancelCtx.Done():
+				w.logger.Debug("upload refreshed")
+				return
+			case <-time.After(s.conf.Timeout):
+				w.logger.Debug("upload timeout")
+				s.cancels.Delete(id)
+				var terminateCtx, terminateCancel = context.WithTimeout(context.Background(), s.conf.Timeout)
+				defer terminateCancel()
+				_ = w.Terminate(terminateCtx)
+			}
+		}()
+		return w, nil
 	}
 	s.logger.Debug("GetUpload: worker not found", zap.String("id", id))
 	return nil, errors.New("bad id")
@@ -117,8 +156,7 @@ func (s *Scheduler) GetUpload(ctx context.Context, id string) (upload handler.Up
 // AsTerminatableUpload returns tusd handler.TerminatableUpload
 func (s *Scheduler) AsTerminatableUpload(upload handler.Upload) handler.TerminatableUpload {
 	var worker = upload.(*Worker)
-	s.logger.Debug("AsTerminatableUpload, trying to return capacity", zap.Int64("cost", worker.cost))
-	s.limiter.ReturnCapacity(worker.cost)
+	s.logger.Debug("AsTerminatableUpload")
 	return worker
 }
 
