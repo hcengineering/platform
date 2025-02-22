@@ -23,7 +23,7 @@ import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
 import { SearchOptions, SearchQuery, SearchResult } from './storage'
 import { Tx, TxCUD, WorkspaceEvent, type TxWorkspaceEvent } from './tx'
-import { toFindResult } from './utils'
+import { platformNow, platformNowDiff, toFindResult } from './utils'
 
 /**
  * @public
@@ -345,7 +345,7 @@ async function loadModel (
   conn: ClientConnection,
   persistence?: TxPersistenceStore
 ): Promise<{ mode: 'same' | 'addition' | 'upgrade', current: Tx[], addition: Tx[] }> {
-  const t = Date.now()
+  const t = platformNow()
 
   const current = (await ctx.with('persistence-load', {}, () => persistence?.load())) ?? {
     full: true,
@@ -385,7 +385,7 @@ async function loadModel (
     })
 
   if (typeof window !== 'undefined') {
-    console.log('find' + (result.full ? 'full model' : 'model diff'), result.transactions.length, Date.now() - t)
+    console.log('find' + (result.full ? 'full model' : 'model diff'), result.transactions.length, platformNowDiff(t))
   }
   if (result.full) {
     return { mode: 'upgrade', current: result.transactions, addition: [] }

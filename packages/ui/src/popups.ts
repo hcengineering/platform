@@ -429,7 +429,7 @@ export function fitPopupElement (
   return { props: newProps, showOverlay: show, direction: '' }
 }
 
-export function eventToHTMLElement (evt: MouseEvent): HTMLElement {
+export function eventToHTMLElement (evt: MouseEvent | TouchEvent): HTMLElement {
   return evt.target as HTMLElement
 }
 

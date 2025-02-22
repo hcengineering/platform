@@ -31,7 +31,9 @@ import core, {
   type Ref,
   type WorkspaceUuid,
   SocialIdType,
-  type PersonUuid
+  type PersonUuid,
+  platformNow,
+  platformNowDiff
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
@@ -214,7 +216,7 @@ export async function benchmark (
   let timer: any
   if (isMainThread && monitorConnection !== undefined) {
     timer = setInterval(() => {
-      const st = Date.now()
+      const st = platformNow()
 
       try {
         const fetchUrl = endpoint.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
@@ -269,7 +271,7 @@ export async function benchmark (
               }
             })
             .then((res) => {
-              const cur = Date.now() - st
+              const cur = platformNow() - st
               opTime += cur
               moment = cur
               ops++
@@ -518,7 +520,7 @@ export async function testFindAll (endpoint: string, workspace: WorkspaceUuid, a
   const connection = await connect(endpoint, workspace, account)
   try {
     const client = new TxOperations(connection, core.account.System)
-    const start = Date.now()
+    const start = platformNow()
     const res = await client.findAll(
       recruit.class.Applicant,
       {},
@@ -529,7 +531,7 @@ export async function testFindAll (endpoint: string, workspace: WorkspaceUuid, a
         }
       }
     )
-    console.log('Find all', res.length, 'time', Date.now() - start)
+    console.log('Find all', res.length, 'time', platformNow() - start)
   } finally {
     await connection.close()
   }
@@ -550,7 +552,7 @@ export async function generateWorkspaceData (
       throw new Error('User not found')
     }
     const employees: PersonId[] = [emailSocialString]
-    const start = Date.now()
+    const start = platformNow()
     for (let i = 0; i < 100; i++) {
       const socialString = await generateEmployee(client)
       employees.push(socialString)
@@ -566,7 +568,7 @@ export async function generateWorkspaceData (
         await generateVacancy(client, employees)
       }
     }
-    console.log('Generate', Date.now() - start)
+    console.log('Generate', platformNowDiff(start))
   } finally {
     await connection.close()
   }

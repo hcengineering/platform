@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,6 +18,7 @@ import { type Resources } from '@hcengineering/platform'
 import Presence from './components/Presence.svelte'
 import PresenceAvatars from './components/PresenceAvatars.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
+import { getFollowee, publishData, followeeDataSubscribe, followeeDataUnsubscribe } from './store'
 
 export { Presence, PresenceAvatars }
 export { updateMyPresence, removeMyPresence, presenceByObjectId } from './store'
@@ -29,5 +30,11 @@ export default async (): Promise<Resources> => ({
     Presence,
     PresenceAvatars,
     WorkbenchExtension
+  },
+  function: {
+    PublishData: publishData,
+    GetFollowee: getFollowee,
+    FolloweeDataSubscribe: followeeDataSubscribe,
+    FolloweeDataUnsubscribe: followeeDataUnsubscribe
   }
 })

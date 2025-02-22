@@ -60,7 +60,7 @@
   }
 </script>
 
-<div class="antiSection flex-gap-4">
+<div class="antiSection flex-gap-4 poll mb-8">
   {#if hasText(object.prompt)}
     <div class="antiSection-header">
       <span class="antiSection-header__title">
@@ -73,10 +73,16 @@
       <PollQuestion
         bind:this={questionNodes[index]}
         bind:isAnswered={isAnswered[index]}
-        readonly={readonly || object.isCompleted}
+        {readonly}
         on:answered={saveAnswers}
         {question}
       />
     {/if}
   {/each}
 </div>
+
+<style>
+  .poll {
+    user-select: text;
+  }
+</style>

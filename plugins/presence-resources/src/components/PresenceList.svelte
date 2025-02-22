@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,6 +16,7 @@
   import { Person, formatName } from '@hcengineering/contact'
   import { Avatar } from '@hcengineering/contact-resources'
   import { IconSize, Scroller } from '@hcengineering/ui'
+  import { followee, toggleFollowee } from '../store'
 
   export let persons: Person[]
   export let size: IconSize
@@ -23,11 +24,30 @@
 
 <Scroller padding={'.25rem'} gap={'flex-gap-2'}>
   {#each persons as person}
-    <div class="flex-row-center flex-no-shrink flex-gap-2">
-      <div class="min-w-6">
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div
+      class="flex-row-center flex-no-shrink flex-gap-2 avatar-button"
+      on:click={() => {
+        toggleFollowee(person._id)
+      }}
+    >
+      <div class="min-w-6" class:followee-avatar={$followee === person._id}>
         <Avatar name={person.name} {size} {person} />
       </div>
       {formatName(person.name)}
     </div>
   {/each}
 </Scroller>
+
+<style lang="scss">
+  .avatar-button {
+    cursor: pointer;
+  }
+
+  .followee-avatar {
+    border-radius: 20%;
+    outline: 2px solid var(--primary-button-default);
+    outline-offset: 1px;
+  }
+</style>

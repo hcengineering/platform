@@ -79,7 +79,7 @@ export class ChannelPage extends CommonPage {
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
 
-  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-wrapper')
   readonly inputSearchChannel = (): Locator => this.page.locator('.hulyHeader-container').getByPlaceholder('Search')
 
   readonly channelContainers = (): Locator => this.page.locator('.hulyNavItem-container')

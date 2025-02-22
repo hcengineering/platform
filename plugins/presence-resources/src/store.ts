@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,14 +16,20 @@
 import { type Doc, type Ref } from '@hcengineering/core'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { type PresenceData } from '@hcengineering/presence'
-import { type Readable, derived, writable } from 'svelte/store'
+import { personByIdStore } from '@hcengineering/contact-resources'
+import { type Readable, derived, writable, get } from 'svelte/store'
 
-import { type PersonRoomPresence, type Room, type RoomPresence } from './types'
+import type { PersonRoomPresence, Room, RoomPresence, MyDataItem } from './types'
 
 type PersonPresenceMap = Map<Ref<Person>, RoomPresence[]>
 
 export const myPresence = writable<RoomPresence[]>([])
+export const myData = writable<Map<string, MyDataItem>>(new Map())
 export const otherPresence = writable<PersonPresenceMap>(new Map())
+export const followee = writable<Ref<Person> | undefined>(undefined)
+
+const personDataMap = new Map<Ref<Person>, Map<string, any>>()
+const followeeDataHandlers = new Map<string, Set<(data: any) => void>>()
 
 export const presenceByObjectId = derived<Readable<PersonPresenceMap>, Map<Ref<Doc>, PersonRoomPresence[]>>(
   otherPresence,
@@ -70,11 +76,116 @@ export function onPersonUpdate (person: Ref<Person>, presence: RoomPresence[]): 
     map.set(person, [...presence])
     return map
   })
+  if (person === get(followee) && !isAnybodyInMyRoom()) {
+    toggleFollowee(undefined)
+  }
 }
 
 export function onPersonLeave (person: Ref<Person>): void {
   otherPresence.update((map) => {
     map.delete(person)
+    toggleFollowee(person)
     return map
   })
+}
+
+export function onPersonData (person: Ref<Person>, topic: string, data: any): void {
+  const personData = personDataMap.get(person)
+  if (personData !== undefined) {
+    personData.set(topic, data)
+  } else {
+    personDataMap.set(person, new Map([[topic, data]]))
+  }
+  if (person === get(followee)) {
+    const handlers = followeeDataHandlers.get(topic)
+    if (handlers !== undefined) {
+      for (const handler of handlers) {
+        handler(data)
+      }
+    }
+  }
+}
+
+export function followeeDataSubscribe (topic: string, handler: (data: any) => void): void {
+  const handlers = followeeDataHandlers.get(topic)
+  if (handlers !== undefined) {
+    handlers.add(handler)
+  } else {
+    followeeDataHandlers.set(topic, new Set([handler]))
+  }
+  const f = get(followee)
+  if (f !== undefined) {
+    const followeeData = personDataMap.get(f)
+    if (followeeData !== undefined) {
+      const data = followeeData.get(topic)
+      if (data !== undefined) {
+        handler(data)
+      }
+    }
+  }
+}
+
+export function followeeDataUnsubscribe (topic: string, handler: (data: any) => void): void {
+  const handlers = followeeDataHandlers.get(topic)
+  if (handlers !== undefined) {
+    handlers.delete(handler)
+  }
+}
+
+export function toggleFollowee (person: Ref<Person> | undefined): void {
+  console.log('toggle followee', person)
+  followee.update((p) => (p === person ? undefined : person))
+
+  const f = get(followee)
+  if (f !== undefined) {
+    const otherData = personDataMap.get(f)
+    if (otherData !== undefined) {
+      for (const [topic, data] of otherData) {
+        const handlers = followeeDataHandlers.get(topic)
+        if (handlers !== undefined) {
+          for (const handler of handlers) {
+            handler(data)
+          }
+        }
+      }
+    }
+  } else {
+    console.log('no followee')
+    for (const handlers of followeeDataHandlers.values()) {
+      for (const handler of handlers) {
+        handler(undefined)
+      }
+    }
+  }
+}
+
+export function getFollowee (): Person | undefined {
+  const followeeId = get(followee)
+  if (followeeId === undefined) {
+    return undefined
+  }
+  const personMap = get(personByIdStore)
+  return personMap.get(followeeId)
+}
+
+export function publishData (topic: string, data: any): void {
+  myData.update((map) => {
+    map.set(topic, { lastUpdated: Date.now(), data })
+    return map
+  })
+}
+
+export function isAnybodyInMyRoom (): boolean {
+  for (const my of get(myPresence)) {
+    for (const others of get(otherPresence).values()) {
+      if (
+        others.find(
+          (other) => other.room.objectId === my.room.objectId && other.room.objectClass === my.room.objectClass
+        ) !== undefined
+      ) {
+        return true
+      }
+    }
+  }
+  return false
 }

@@ -127,28 +127,28 @@ switch (args[0]) {
   }
   case 'transpile': {
     const filesToTranspile = collectFiles(join(process.cwd(), args[1]))
-    let st = Date.now()  
+    let st = performance.now()
     const before = {}
     const after = {}
     collectFileStats('lib', before)
 
     performESBuild(filesToTranspile)    
     .then(() => {
-      console.log("Transpile time: ", Date.now() - st)
+      console.log("Transpile time: ", Math.round((performance.now() - st) * 100) / 100)
       collectFileStats('lib', after)
       cleanNonModified(before, after)
     })
     break
   }
   case 'validate': {
-    let st = Date.now()
+    let st = performance.now()
     validateTSC(st).then(() => {
-      console.log("Validate time: ", Date.now() - st)
+      console.log("Validate time: ", Math.round((performance.now() - st) * 100) / 100)
     })
     break
   }
   default: {
-    let st = Date.now()
+    let st = performance.now()
     const filesToTranspile = collectFiles(join(process.cwd(), 'src'))
     Promise.all(
       [
@@ -157,7 +157,7 @@ switch (args[0]) {
       ]
     )
     .then(() => {
-      console.log("Full build time: ", Date.now() - st)
+      console.log("Full build time: ", Math.round((performance.now() - st) * 100) / 100)
     })    
     break
   }

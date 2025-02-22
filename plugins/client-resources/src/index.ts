@@ -35,7 +35,8 @@ import core, {
   type ModelFilter,
   type PluginConfiguration,
   type Ref,
-  type TxCUD
+  type TxCUD,
+  platformNow
 } from '@hcengineering/core'
 import platform, { Severity, Status, getMetadata, getPlugins, setPlatformStatus } from '@hcengineering/platform'
 import { connect } from './connection'
@@ -46,7 +47,7 @@ let dbRequest: IDBOpenDBRequest | undefined
 let dbPromise: Promise<IDBDatabase | undefined> = Promise.resolve(undefined)
 
 if (typeof localStorage !== 'undefined') {
-  const st = Date.now()
+  const st = platformNow()
   dbPromise = new Promise<IDBDatabase>((resolve) => {
     dbRequest = indexedDB.open('model.db.persistence', 2)
 
@@ -58,7 +59,7 @@ if (typeof localStorage !== 'undefined') {
     }
     dbRequest.onsuccess = function () {
       const db = (dbRequest as IDBOpenDBRequest).result
-      console.log('init DB complete', Date.now() - st)
+      console.log('init DB complete', platformNow() - st)
       resolve(db)
     }
   })

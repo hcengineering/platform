@@ -60,7 +60,7 @@ const activeQueries = new Map<number, { time: number, cancel: () => void, query:
 
 setInterval(() => {
   for (const [k, v] of activeQueries.entries()) {
-    if (Date.now() - v.time > tickTimeout) {
+    if (performance.now() - v.time > tickTimeout) {
       console.log('query hang', k, v)
       v.cancel()
       activeQueries.delete(k)
@@ -88,17 +88,17 @@ async function handleSQLFind (
       response.writeHead(403).end('Not allowed')
       return
     }
-    const st = Date.now()
+    const st = performance.now()
     const query = sql.unsafe(json.query, json.params, { prepare: true })
     activeQueries.set(qid, {
-      time: Date.now(),
+      time: performance.now(),
       cancel: () => {
         query.cancel()
       },
       query: json.query
     })
     const result = await query
-    const qtime = Date.now() - st
+    const qtime = performance.now() - st
     console.log('query', json.query, qtime, result.length)
     await toResponse(compression, result, response, qtime)
   } catch (err: any) {

@@ -18,16 +18,16 @@
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import { Question, QuestionKind, Survey } from '@hcengineering/survey'
   import {
+    ButtonIcon,
     EditBox,
     Icon,
     IconDelete,
     SelectPopup,
     eventToHTMLElement,
     showPopup,
-    tooltip,
-    ButtonIcon
+    tooltip
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import survey from '../plugin'
 
   const client = getClient()
@@ -40,40 +40,65 @@
   let editQuestion: EditBox
   let hovered: boolean = false
 
-  $: question = parent?.questions?.[index] as Question
+  let defaultQuestion: Question = {
+    name: '',
+    kind: QuestionKind.STRING,
+    isMandatory: false,
+    hasCustomOption: false
+  }
+
+  $: question = (parent?.questions?.[index] as Question) ?? defaultQuestion
+  $: isNewQuestion = parent?.questions?.[index] === undefined
   $: options = question?.options ?? []
-  $: questionIcon =
-    question === undefined
-      ? survey.icon.Question
-      : question.kind === QuestionKind.OPTIONS
-        ? survey.icon.QuestionKindOptions
-        : question.kind === QuestionKind.OPTION
-          ? survey.icon.QuestionKindOption
-          : survey.icon.QuestionKindString
+  $: questionIcon = isNewQuestion
+    ? survey.icon.Question
+    : question.kind === QuestionKind.OPTIONS
+      ? survey.icon.QuestionKindOptions
+      : question.kind === QuestionKind.OPTION
+        ? survey.icon.QuestionKindOption
+        : survey.icon.QuestionKindString
+
+  let haveNameChanges = false
 
   let newOption = ''
-  let newQuestion = ''
+
+  onDestroy(() => {
+    handleExit()
+  })
+
+  function handleExit (): void {
+    void handleNameChange()
+  }
 
   async function updateParent (): Promise<void> {
     await client.updateDoc(parent._class, parent.space, parent._id, { questions: parent.questions })
   }
 
-  async function createQuestion (): Promise<void> {
+  $: if (isNewQuestion && question.name.trim() !== '') {
+    void createQuestion()
+  }
+
+  function createQuestion (): Promise<void> {
     if (parent.questions === undefined) {
       parent.questions = []
     }
-    parent.questions.push({
-      name: newQuestion,
-      kind: QuestionKind.STRING,
-      isMandatory: false,
-      hasCustomOption: false
-    })
-    await updateParent()
-    newQuestion = ''
+    parent.questions.push({ ...question })
+    defaultQuestion = { ...defaultQuestion, name: '' }
+    return updateParent()
+  }
+
+  function handleNameChange (): Promise<void> | void {
+    if (!haveNameChanges) return
+    haveNameChanges = false
+
+    if (isNewQuestion) return createQuestion()
+    return changeName()
   }
 
   async function changeName (): Promise<void> {
-    await updateParent()
+    if (!isNewQuestion) {
+      await updateParent()
+    }
   }
 
   async function changeKind (kind: QuestionKind): Promise<void> {
@@ -348,6 +373,7 @@
   }
 </script>
 
+<svelte:window on:beforeunload={handleExit} />
 <div
   bind:this={rootElement}
   class="question-container flex-col flex-gap-2"
@@ -357,27 +383,33 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="flex-row-center flex-gap-3 text-base pr-2" on:click={focusQuestion}>
-    {#if question === undefined}
-      <ButtonIcon size={'small'} disabled icon={survey.icon.Question} />
-      <EditBox
-        bind:this={editQuestion}
-        kind={'editbox'}
-        placeholder={survey.string.QuestionPlaceholder}
-        bind:value={newQuestion}
-        on:change={createQuestion}
-      />
+    {#if isNewQuestion}
+      <div class="self-start">
+        <ButtonIcon size={'small'} disabled icon={questionIcon} />
+      </div>
     {:else}
-      <div role="presentation" draggable={!readonly} on:dragstart={rootDragStart} on:dragend={rootDragEnd}>
+      <div
+        class="self-start"
+        role="presentation"
+        draggable={!readonly}
+        on:dragstart={rootDragStart}
+        on:dragend={rootDragEnd}
+      >
         <ButtonIcon size={'small'} disabled={readonly} icon={questionIcon} on:click={showQuestionParams} />
       </div>
-      <EditBox
-        bind:this={editQuestion}
-        kind={'editbox'}
-        disabled={readonly}
-        placeholder={survey.string.QuestionPlaceholderEmpty}
-        bind:value={question.name}
-        on:change={changeName}
-      />
+    {/if}
+    <EditBox
+      bind:this={editQuestion}
+      format={'text-multiline'}
+      disabled={readonly}
+      placeholder={survey.string.QuestionPlaceholderEmpty}
+      bind:value={question.name}
+      on:input={() => {
+        haveNameChanges = true
+      }}
+      on:change={handleNameChange}
+    />
+    {#if !isNewQuestion}
       {#if question.hasCustomOption && question.kind !== QuestionKind.STRING}
         <div class="flex-no-shrink" use:tooltip={{ label: survey.string.QuestionTooltipCustomOption }}>
           <Icon icon={survey.icon.QuestionHasCustomOption} size={'small'} />
@@ -390,7 +422,7 @@
       {/if}
     {/if}
   </div>
-  {#if question !== undefined && question.kind !== QuestionKind.STRING}
+  {#if !isNewQuestion && question.kind !== QuestionKind.STRING}
     {#each options as option, index (index)}
       <div
         class="flex-row-center flex-gap-3 option"

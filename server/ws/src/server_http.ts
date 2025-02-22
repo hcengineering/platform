@@ -13,14 +13,19 @@
 // limitations under the License.
 //
 
+import {
+  getClient as getAccountClientRaw,
+  isWorkspaceLoginInfo,
+  type AccountClient
+} from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import {
   generateId,
   systemAccountUuid,
-  type WorkspaceUuid,
   type MeasureContext,
   type Tx,
-  type WorkspaceIds
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
@@ -35,11 +40,6 @@ import {
   type WebsocketData
 } from '@hcengineering/server'
 import {
-  getClient as getAccountClientRaw,
-  isWorkspaceLoginInfo,
-  type AccountClient
-} from '@hcengineering/account-client'
-import {
   LOGGING_ENABLED,
   pingConst,
   pongConst,
@@ -51,7 +51,7 @@ import {
 } from '@hcengineering/server-core'
 import { decodeToken, type Token } from '@hcengineering/server-token'
 import cors from 'cors'
-import express, { type NextFunction, type Request, type Response as ExpressResponse } from 'express'
+import express, { type Response as ExpressResponse, type NextFunction, type Request } from 'express'
 import http, { type IncomingMessage } from 'http'
 import os from 'os'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
@@ -641,15 +641,11 @@ function createWebsocketClientSocket (
     },
     send: (ctx: MeasureContext, msg, binary, _compression) => {
       const smsg = rpcHandler.serialize(msg, binary)
-
-      ctx.measure('send-data', smsg.length)
-      const st = Date.now()
       if (ws.readyState !== ws.OPEN || cs.isClosed) {
         return
       }
 
       const handleErr = (err?: Error): void => {
-        ctx.measure('msg-send-delta', Date.now() - st)
         if (err != null) {
           if (!`${err.message}`.includes('WebSocket is not open')) {
             ctx.error('send error', { err })

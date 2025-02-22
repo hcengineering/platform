@@ -286,7 +286,7 @@ input.search {
 .items-baseline { align-items: baseline; }
 .items-start { align-items: flex-start; }
 .items-end { align-items: flex-end; }
-.items-center { align-items: center; }
+.items-center { align-items: center !important; }
 .items-stretch { align-items: stretch; }
 .self-start { align-self: flex-start; }
 .self-end { align-self: flex-end; }
@@ -1046,7 +1046,7 @@ a.no-line {
 .tertiary-textColor { color: var(--global-tertiary-TextColor) !important; }
 
 .content-primary-color { color: var(--primary-button-color); }
-.red-color { color: var(--highlight-red); }
+.red-color { color: var(--highlight-red) !important; }
 .error-color { color: var(--theme-error-color); }
 .sunshine-text-color { color: var(--tag-accent-SunshineText) !important; }
 

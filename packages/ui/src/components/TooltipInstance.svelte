@@ -458,7 +458,7 @@
     display: flex;
     flex-direction: column;
     padding: 0.5rem;
-    max-width: 50vw;
+    max-width: 60vw;
     color: var(--theme-content-color);
     background-color: var(--theme-popup-color);
     border: 1px solid var(--theme-popup-divider);

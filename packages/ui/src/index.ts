@@ -217,7 +217,6 @@ export { default as IconCircles } from './components/icons/Circles.svelte'
 export { default as IconLike } from './components/icons/Like.svelte'
 export { default as IconCollapseArrow } from './components/icons/CollapseArrow.svelte'
 export { default as IconEmoji } from './components/icons/Emoji.svelte'
-export { default as IconObjects } from './components/icons/Objects.svelte'
 export { default as IconUndo } from './components/icons/Undo.svelte'
 export { default as IconRedo } from './components/icons/Redo.svelte'
 export { default as IconOpenedArrow } from './components/icons/OpenedArrow.svelte'
@@ -269,7 +268,6 @@ export { NotificationSeverity } from './components/notifications/NotificationSev
 export type { Notification } from './components/notifications/Notification'
 export { default as Wizard } from './components/wizard/Wizard.svelte'
 export { default as StepsDialog } from './components/StepsDialog.svelte'
-export { default as EmojiPopup } from './components/EmojiPopup.svelte'
 export { default as IconWithEmoji } from './components/IconWithEmoji.svelte'
 export { default as ModeSelector } from './components/ModeSelector.svelte'
 export { default as SimpleTimePopup } from './components/calendar/SimpleTimePopup.svelte'
@@ -299,6 +297,7 @@ export * from './colors'
 export * from './focus'
 export * from './resize'
 export * from './lazy'
+export * from './components/emoji'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })

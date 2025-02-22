@@ -24,6 +24,8 @@ import core, {
   generateId,
   type MeasureContext,
   type MixinUpdate,
+  platformNow,
+  platformNowDiff,
   type Projection,
   type Ref,
   systemAccountUuid,
@@ -78,7 +80,7 @@ export async function createTables (
     return
   }
   const mapped = filtered.map((p) => translateDomain(p))
-  const t = Date.now()
+  const t = platformNow()
   loadedTables =
     loadedTables.size === 0
       ? new Set(
@@ -96,7 +98,7 @@ export async function createTables (
         ).map((it) => it.table_name)
       )
       : loadedTables
-  console.log('load-table', Date.now() - t)
+  console.log('load-table', platformNowDiff(t))
 
   const domainsToLoad = mapped.filter((it) => loadedTables.has(it))
   if (domainsToLoad.length > 0) {

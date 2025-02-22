@@ -928,3 +928,13 @@ export function pickPrimarySocialId (socialIds: SocialId[]): SocialId {
 export function notEmpty<T> (id: T | undefined | null): id is T {
   return id !== undefined && id !== null && id !== ''
 }
+
+/**
+ * Return a current performance timestamp
+ */
+export const platformNow: () => number = () => performance.now()
+
+/**
+ * Return a diff with previous performance snapshot with 2 digits after . max.
+ */
+export const platformNowDiff = (old: number): number => Math.round((performance.now() - old) * 100) / 100

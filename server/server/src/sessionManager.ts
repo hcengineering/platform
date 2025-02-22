@@ -40,7 +40,9 @@ import core, {
   type WorkspaceDataId,
   type PersonUuid,
   Data,
-  Version
+  Version,
+  platformNow,
+  platformNowDiff
 } from '@hcengineering/core'
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { unknownError, type Status } from '@hcengineering/platform'
@@ -984,7 +986,7 @@ class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     workspace: WorkspaceUuid
   ): ClientSessionCtx {
-    const st = Date.now()
+    const st = platformNow()
     return {
       ctx,
       pipeline,
@@ -993,7 +995,7 @@ class TSessionManager implements SessionManager {
         sendResponse(ctx, service, ws, {
           id: reqId,
           result: msg,
-          time: Date.now() - st,
+          time: platformNowDiff(st),
           bfst: Date.now(),
           queue: service.requests.size
         }),
@@ -1006,7 +1008,7 @@ class TSessionManager implements SessionManager {
           id: reqId,
           result: msg,
           error,
-          time: Date.now() - st,
+          time: platformNowDiff(st),
           bfst: Date.now(),
           queue: service.requests.size
         })
@@ -1046,7 +1048,7 @@ class TSessionManager implements SessionManager {
     // Calculate total number of clients
     const reqId = generateId()
 
-    const st = Date.now()
+    const st = platformNow()
     return userCtx
       .with('🧭 handleRequest', {}, async (ctx) => {
         if (request.time != null) {

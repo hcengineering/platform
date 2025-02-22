@@ -19,7 +19,7 @@
   .underline {
     font-weight: 500;
 
-    input {
+    .antiEditBoxInput {
       padding: 0.25rem 0.5rem;
       background-color: var(--theme-editbox-focus-color);
       border-radius: 0.25rem;
@@ -43,7 +43,7 @@
     &:focus-within::after { content: ''; }
   }
 
-  input {
+  .antiEditBoxInput {
     margin: 0;
     padding: 0;
     min-width: 0;
@@ -86,7 +86,7 @@
     border-radius: .375rem;
     border: 1px solid transparent;
     
-    input {
+    .antiEditBoxInput {
       color: inherit;
 
       &::placeholder { color: var(--theme-darker-color); }
@@ -109,7 +109,7 @@
     font-weight: 500;
     font-size: 1.5rem;
 
-    input {
+    .antiEditBoxInput {
       font: inherit;
 
       &::placeholder {
@@ -119,17 +119,17 @@
     &:hover input:not(:focus)::placeholder {
       color: var(--input-hover-PlaceholderColor);
     }
-    input:focus::placeholder {
+    .antiEditBoxInput:focus::placeholder {
       color: var(--input-focus-PlaceholderColor);
     }
     &.disabled {
       box-shadow: inset 0 0 0 1px var(--input-BorderColor);
 
       &,
-      input {
+      .antiEditBoxInput {
         cursor: not-allowed;
       }
-      input::placeholder {
+      .antiEditBoxInput::placeholder {
         color: var(--input-PlaceholderColor);
       }
     }
@@ -138,5 +138,28 @@
   .required::after {
     content: ' *';
     color: var(--theme-error-color);
+  }
+
+  .antiEditBoxGridWrapper {
+    display: grid;
+    &::after {
+      content: attr(data-value) " ";
+      white-space: pre-wrap;
+      visibility: hidden;
+      z-index: -1;
+    }
+
+    textarea {
+      resize: none;
+    }
+
+    &::after, textarea {
+      font: inherit;
+      outline: none;
+      background-color: transparent;
+      overflow: hidden;
+      grid-area: 1 / 1 / 2 / 2;
+      min-height: 1.25rem;
+    }
   }
 }
