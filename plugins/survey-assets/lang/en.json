@@ -43,6 +43,7 @@
     "SurveySubmitConfirm": "You will not be able to change answers after that. Are you sure you want to submit now?",
     "ValidateFail": "Some required questions are not answered",
     "ValidateInfo": "This is how the form will look like for an user. Try to type answers and select options to test your survey. A green icon in the header above shows the form is filled properly",
-    "ValidateOk": "Form is filled correctly"
+    "ValidateOk": "Form is filled correctly",
+    "EditAnswers": "Edit answers"
   }
 }
