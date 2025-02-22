@@ -289,8 +289,6 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
       loc.path.length = 2
       navigate(loc)
     }
-
-    return null
   }
 
   try {

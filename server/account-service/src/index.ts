@@ -15,7 +15,7 @@ import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext } from '@hcengineering/core'
+import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
@@ -167,23 +167,36 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     return extractAuthorizationToken(headers) ?? extractCookieToken(headers)
   }
 
-  function getCookieOptions (branding: Branding | null): Cookies.SetOption {
-    const front = branding?.front ?? frontURL
-    const url = front !== undefined ? new URL(front) : undefined
+  function getCookieOptions (ctx: Koa.Context): Cookies.SetOption {
+    const requestUrl = ctx.request.href
+    const url = new URL(requestUrl)
+    const domain = getCookieDomain(requestUrl)
 
     return {
       httpOnly: true,
-      domain: url?.hostname,
+      domain,
       secure: url?.protocol === 'https',
       maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year
     }
   }
 
-  const extractHost = (ctx: Koa.Context): string | undefined => {
-    const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
-    if (origin !== undefined) {
-      return new URL(origin).host
+  const getCookieDomain = (url: string): string => {
+    const hostname = new URL(url).hostname
+
+    if (hostname === 'localhost') {
+      return hostname
     }
+
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+      return hostname
+    }
+
+    const parts = hostname.split('.')
+    if (parts.length > 2) {
+      return '.' + parts.slice(-2).join('.')
+    }
+
+    return hostname
   }
 
   router.get('/api/v1/statistics', (req, res) => {
@@ -227,12 +240,10 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     const { account, extra } = decodeTokenVerbose(measureCtx, token)
     const tokenWithoutWorkspace = generateToken(account, undefined, extra)
 
-    const host = extractHost(ctx)
-    const branding = host !== undefined ? brandings[host] : null
-    const cookieOpts = getCookieOptions(branding)
+    const cookieOpts = getCookieOptions(ctx)
 
     ctx.cookies.set(AUTH_TOKEN_COOKIE, tokenWithoutWorkspace, cookieOpts)
-    ctx.res.writeHead(201)
+    ctx.res.writeHead(204)
     ctx.res.end()
   })
 
@@ -247,9 +258,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       return
     }
 
-    const host = extractHost(ctx)
-    const branding = host !== undefined ? brandings[host] : null
-    const cookieOpts = { ...getCookieOptions(branding), maxAge: 0 }
+    const cookieOpts = { ...getCookieOptions(ctx), maxAge: 0 }
 
     ctx.cookies.set(AUTH_TOKEN_COOKIE, '', cookieOpts)
     ctx.res.writeHead(201)
