@@ -121,6 +121,7 @@
           eventId: generateEventId(),
           title: '',
           description: '',
+          isExternal: false,
           access: 'owner',
           attachedTo: dragItem._id,
           attachedToClass: dragItem._class,

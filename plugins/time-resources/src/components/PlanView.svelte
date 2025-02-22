@@ -61,6 +61,7 @@
       eventId: generateEventId(),
       date,
       dueDate,
+      isExternal: false,
       description: doc.description,
       participants: [currentUser.person],
       title: doc.title,

@@ -16,6 +16,7 @@
 import {
   AccountRole,
   BackupStatus,
+  ClientWorkspaceInfo,
   Doc,
   Ref,
   type BaseWorkspaceInfo,
@@ -260,6 +261,25 @@ export async function getWorkspaceInfo (
   ).json()
 
   return workspaceInfo.result as BaseWorkspaceInfo | undefined
+}
+
+export async function getWorkspacesInfo (token: string, workspaces: string[]): Promise<ClientWorkspaceInfo[]> {
+  const accountsUrl = getAccoutsUrlOrFail()
+  const workspaceInfo = await (
+    await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        method: 'getWorkspacesInfo',
+        params: [workspaces]
+      })
+    })
+  ).json()
+
+  return workspaceInfo.result as ClientWorkspaceInfo[]
 }
 
 export async function login (user: string, password: string, workspace: string): Promise<string> {

@@ -101,6 +101,7 @@ export async function updatePast (ops: DocumentUpdate<Event>, object: ReccuringI
         date: object.date,
         dueDate: object.dueDate,
         ...ops,
+        isExternal: false,
         eventId: generateEventId()
       }
     )
@@ -158,6 +159,7 @@ export async function updateReccuringInstance (
                   exdate: object.exdate,
                   rdate: object.rdate,
                   timeZone: object.timeZone,
+                  isExternal: false,
                   ...ops
                 },
                 object._id

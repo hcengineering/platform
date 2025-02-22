@@ -67,6 +67,7 @@
       eventId: generateEventId(),
       date,
       dueDate,
+      isExternal: false,
       calendar: _calendar,
       description: todo.description,
       participants: [currentUser.person],

@@ -1,4 +1,4 @@
-import { ClientWorkspaceInfo } from '@hcengineering/account'
+import { ClientWorkspaceInfo } from '@hcengineering/core'
 import config from './config'
 
 /**

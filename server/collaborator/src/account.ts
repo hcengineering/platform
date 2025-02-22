@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { ClientWorkspaceInfo } from '@hcengineering/account'
+import { ClientWorkspaceInfo } from '@hcengineering/core'
 import config from './config'
 
 export async function getWorkspaceInfo (token: string): Promise<ClientWorkspaceInfo> {

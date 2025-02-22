@@ -118,6 +118,7 @@
         {
           calendar: _calendar,
           eventId: generateEventId(),
+          isExternal: false,
           date: allDay ? saveUTC(date) : date,
           dueDate: allDay ? saveUTC(dueDate) : dueDate,
           externalParticipants,
@@ -146,6 +147,7 @@
         'events',
         {
           calendar: _calendar,
+          isExternal: false,
           eventId: generateEventId(),
           date: allDay ? saveUTC(date) : date,
           dueDate: allDay ? saveUTC(dueDate) : dueDate,

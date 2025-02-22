@@ -9,6 +9,7 @@ import core, {
   BrandingMap,
   Client,
   ClientConnectEvent,
+  ClientWorkspaceInfo,
   DocumentUpdate,
   isActiveMode,
   isDeletingMode,
@@ -29,7 +30,6 @@ import { Installation, type InstallationCreatedEvent, type InstallationUnsuspend
 import { Collection } from 'mongodb'
 import { App, Octokit } from 'octokit'
 
-import { ClientWorkspaceInfo } from '@hcengineering/account'
 import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger } from '@hcengineering/analytics-service'
 import contact, { Person, PersonAccount } from '@hcengineering/contact'
