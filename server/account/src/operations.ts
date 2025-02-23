@@ -26,6 +26,7 @@ import contact, {
 import core, {
   AccountRole,
   Client,
+  ClientWorkspaceInfo,
   concatLink,
   Data,
   generateId,
@@ -68,7 +69,6 @@ import type {
   Account,
   AccountDB,
   AccountInfo,
-  ClientWorkspaceInfo,
   Invite,
   LoginInfo,
   ObjectId,
@@ -1822,6 +1822,34 @@ export async function getWorkspaceInfo (
   return clientWs
 }
 
+/**
+ * @public
+ */
+export async function getWorkspacesInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  ids: string[]
+): Promise<ClientWorkspaceInfo[]> {
+  const { email } = decodeToken(ctx, token)
+
+  if (email !== systemAccountEmail) {
+    ctx.error('getWorkspaceInfos with wrong email', { email, token })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  const query: Query<Workspace> = {
+    workspace: { $in: ids }
+  }
+  const workspaces = await ctx.with(
+    'get-workspace',
+    {},
+    async () => await db.workspace.find(query, { lastVisit: 'descending' })
+  )
+
+  return workspaces.map(mapToClientWorkspace)
+}
+
 async function getUpgradeStatistics (db: AccountDB, region: string): Promise<UpgradeStatistic | undefined> {
   return (
     (await db.upgrade.findOne({
@@ -2937,6 +2965,7 @@ export function getMethods (hasSignUp: boolean = true): Record<string, AccountMe
     getAllWorkspaces: wrap(getAllWorkspaces),
     getInviteLink: wrap(getInviteLink),
     getAccountInfo: wrap(getAccountInfo),
+    getWorkspacesInfo: wrap(getWorkspacesInfo),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
     ...(hasSignUp ? { createAccount: wrap(createAccount) } : {}),
     createWorkspace: wrap(createUserWorkspace),

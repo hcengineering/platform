@@ -65,11 +65,6 @@ export interface Workspace extends BaseWorkspaceInfo {
 /**
  * @public
  */
-export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'> & { workspaceId: string }
-
-/**
- * @public
- */
 export type WorkspaceInfo = Omit<Workspace, '_id' | 'accounts'>
 
 export interface OtpRecord {
