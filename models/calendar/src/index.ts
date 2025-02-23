@@ -135,8 +135,6 @@ export class TEvent extends TAttachedDoc implements Event {
   visibility?: Visibility
 
   timeZone?: string
-
-  isExternal!: boolean
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)

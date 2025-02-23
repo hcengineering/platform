@@ -149,7 +149,7 @@ async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl):
   if (Object.keys(otherOps).length === 0) return []
   const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: ctx.objectId }, { limit: 1 }))[0]
   if (event === undefined) return []
-  if (!event.isExternal) {
+  if (ctx.modifiedBy !== core.account.System) {
     void sendEventToService(event, 'update', control)
   }
   if (event.access !== 'owner') return []
@@ -263,7 +263,7 @@ async function sendEventToService (
 
 async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl): Promise<Tx[]> {
   const event = TxProcessor.createDoc2Doc(ctx)
-  if (!event.isExternal) {
+  if (ctx.modifiedBy !== core.account.System) {
     void sendEventToService(event, 'create', control)
   }
   if (event.access !== 'owner') return []
@@ -307,7 +307,7 @@ async function onRemoveEvent (ctx: TxRemoveDoc<Event>, control: TriggerControl):
   const removed = control.removedMap.get(ctx.objectId) as Event
   const res: Tx[] = []
   if (removed !== undefined) {
-    if (!removed.isExternal) {
+    if (ctx.modifiedBy !== core.account.System) {
       void sendEventToService(removed, 'delete', control)
     }
     if (removed.access !== 'owner') return []

@@ -50,6 +50,7 @@ export class CalendarClient {
   private readonly calendarHistories: Collection<CalendarHistory>
   private readonly histories: Collection<EventHistory>
   private readonly client: TxOperations
+  private readonly systemTxOp: TxOperations
   private readonly activeSync: Record<string, boolean> = {}
   private readonly dummyWatches: DummyWatch[] = []
   // to do< find!!!!
@@ -66,6 +67,7 @@ export class CalendarClient {
     private readonly workspace: WorkspaceClient
   ) {
     this.client = new TxOperations(client, this.user.userId)
+    this.systemTxOp = new TxOperations(client, core.account.System)
     this.googleClient = new GoogleClient(user, mongo, this)
     this.calendar = this.googleClient.calendar
     this.histories = mongo.collection<EventHistory>('histories')
@@ -526,7 +528,7 @@ export class CalendarClient {
           if (this.client.getHierarchy().hasMixin(current, mixin as Ref<Mixin<Doc>>)) {
             const diff = this.getDiff(attr, this.client.getHierarchy().as(current, mixin as Ref<Mixin<Doc>>))
             if (Object.keys(diff).length > 0) {
-              await this.client.updateMixin(
+              await this.systemTxOp.updateMixin(
                 current._id,
                 current._class,
                 calendar.space.Calendar,
@@ -535,7 +537,7 @@ export class CalendarClient {
               )
             }
           } else {
-            await this.client.createMixin(
+            await this.systemTxOp.createMixin(
               current._id,
               current._class,
               calendar.space.Calendar,
@@ -561,7 +563,7 @@ export class CalendarClient {
       for (const mixin in mixins) {
         const attr = mixins[mixin]
         if (typeof attr === 'object' && Object.keys(attr).length > 0) {
-          await this.client.createMixin(
+          await this.systemTxOp.createMixin(
             _id,
             calendar.class.Event,
             calendar.space.Calendar,
@@ -582,7 +584,7 @@ export class CalendarClient {
     const data: AttachedData<Event> = await this.parseData(event, accessRole, _calendar._id)
     if (event.recurringEventId != null) {
       const parseRule = parseRecurrenceStrings(event.recurrence ?? [])
-      const id = await this.client.addCollection(
+      const id = await this.systemTxOp.addCollection(
         calendar.class.ReccuringInstance,
         calendar.space.Calendar,
         calendar.ids.NoAttached,
@@ -603,7 +605,7 @@ export class CalendarClient {
     } else if (event.status !== 'cancelled') {
       if (event.recurrence != null) {
         const parseRule = parseRecurrenceStrings(event.recurrence)
-        const id = await this.client.addCollection(
+        const id = await this.systemTxOp.addCollection(
           calendar.class.ReccuringEvent,
           calendar.space.Calendar,
           calendar.ids.NoAttached,
@@ -620,7 +622,7 @@ export class CalendarClient {
         )
         await this.saveMixins(event, id)
       } else {
-        const id = await this.client.addCollection(
+        const id = await this.systemTxOp.addCollection(
           calendar.class.Event,
           calendar.space.Calendar,
           calendar.ids.NoAttached,
@@ -708,7 +710,6 @@ export class CalendarClient {
       eventId: event.id ?? '',
       calendar: _calendar,
       access: this.getAccess(event, accessRole),
-      isExternal: true,
       timeZone: event.start?.timeZone ?? event.end?.timeZone ?? 'Etc/GMT'
     }
     if (participants[1].length > 0) {

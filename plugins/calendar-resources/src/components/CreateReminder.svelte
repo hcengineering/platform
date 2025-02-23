@@ -47,7 +47,6 @@
     const _calendar = `${getCurrentAccount()._id}_calendar` as Ref<Calendar>
     await client.addCollection(calendar.class.Event, calendar.space.Calendar, attachedTo, attachedToClass, 'events', {
       calendar: _calendar,
-      isExternal: false,
       eventId: generateEventId(),
       date,
       dueDate: date + defaultDuration,

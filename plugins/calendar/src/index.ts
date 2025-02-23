@@ -83,8 +83,6 @@ export interface Event extends AttachedDoc {
   title: string
   description: Markup
 
-  isExternal: boolean
-
   calendar: Ref<Calendar>
 
   location?: string

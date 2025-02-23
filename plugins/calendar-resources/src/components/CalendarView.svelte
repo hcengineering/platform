@@ -250,7 +250,6 @@
         const temp: Event = {
           _id: dragItemId,
           allDay: false,
-          isExternal: false,
           eventId: generateEventId(),
           title: '',
           description: '',

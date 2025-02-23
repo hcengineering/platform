@@ -89,7 +89,6 @@
     for (const slot of slots) {
       await ops.addCollection(time.class.WorkSlot, calendar.space.Calendar, id, time.class.ToDo, 'workslots', {
         eventId: generateEventId(),
-        isExternal: false,
         date: slot.date,
         dueDate: slot.dueDate,
         description: todo.description,
@@ -152,7 +151,6 @@
       _class: time.class.WorkSlot,
       attachedTo: generateId(),
       attachedToClass: time.class.ToDo,
-      isExternal: false,
       collection: 'workslots',
       modifiedOn: Date.now(),
       modifiedBy: acc._id
