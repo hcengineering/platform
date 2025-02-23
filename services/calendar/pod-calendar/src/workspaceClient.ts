@@ -160,7 +160,6 @@ export class WorkspaceClient {
 
   removeClient (email: string): void {
     this.clients.delete(email)
-    this.serviceController.removeClient(email)
     if (this.clients.size > 0) return
     void this.close()
     this.serviceController.removeWorkspace(this.workspace)

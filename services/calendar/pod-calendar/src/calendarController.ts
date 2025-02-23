@@ -30,7 +30,6 @@ export class CalendarController {
   >()
 
   private readonly tokens: Collection<Token>
-  private readonly clients: Map<string, CalendarClient[]> = new Map<string, CalendarClient[]>()
 
   protected static _instance: CalendarController
 
@@ -120,7 +119,7 @@ export class CalendarController {
     const workspaces = [...new Set(tokens.map((p) => p.workspace))]
     const infos = await getWorkspacesInfo(token, workspaces)
     for (const token of tokens) {
-      const info = infos.find((p) => p.workspace === token.workspace)
+      const info = infos.find((p) => p.workspaceId === token.workspace)
       if (info === undefined) {
         continue
       }
@@ -145,28 +144,6 @@ export class CalendarController {
   async pushEvent (workspace: string, event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
     const workspaceController = await this.getWorkspaceClient(workspace)
     await workspaceController.pushEvent(event, type)
-  }
-
-  addClient (email: string, client: CalendarClient): void {
-    const clients = this.clients.get(email)
-    if (clients === undefined) {
-      this.clients.set(email, [client])
-    } else {
-      clients.push(client)
-      this.clients.set(email, clients)
-    }
-  }
-
-  removeClient (email: string): void {
-    const clients = this.clients.get(email)
-    if (clients !== undefined) {
-      const filtered = clients.filter((p) => !p.isClosed)
-      if (filtered.length === 0) {
-        this.clients.delete(email)
-      } else {
-        this.clients.set(email, filtered)
-      }
-    }
   }
 
   async getUserId (email: string, workspace: string): Promise<Ref<Account>> {
