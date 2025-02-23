@@ -57,8 +57,9 @@ describe('rest-server', () => {
 
   let shutdown: () => Promise<void>
   let sessionManager: SessionManager
+  const port: number = 3330
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     ;({ shutdown, sessionManager } = startSessionManager(new MeasureMetricsContext('test', {}), {
       pipelineFactory: async () => {
         const { modelDb, hierarchy, txes } = await getModelDb()
@@ -111,7 +112,7 @@ describe('rest-server', () => {
         }
       },
       sessionFactory: (token, workspace) => new ClientSession(token, workspace, true),
-      port: 3330,
+      port,
       brandingMap: {},
       serverFactory: startHttpServer,
       accountsUrl: '',
@@ -130,7 +131,7 @@ describe('rest-server', () => {
           createdOn: Date.now(),
           lastVisit: Date.now(),
           disabled: false,
-          endpoint: 'http://localhost:3330',
+          endpoint: `http://localhost:${port}`,
           region: 'test-region',
           targetRegion: 'test-region',
           backupInfo: {
@@ -143,13 +144,13 @@ describe('rest-server', () => {
         }
       })
   })
-  afterEach(async () => {
+  afterAll(async () => {
     await shutdown()
   })
 
   async function connect (): Promise<RestClient> {
     const token: string = generateToken('user1@site.com', getWorkspaceId('test-ws'))
-    return await createRestClient('http://localhost:3330', 'test-ws', token)
+    return await createRestClient(`http://localhost:${port}`, 'test-ws', token)
   }
 
   it('get account', async () => {
