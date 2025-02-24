@@ -63,6 +63,7 @@
     "PasswordMinDigits": "{count, plural, =1 {Das Passwort muss mindestens # Zahl enthalten} other {Das Passwort muss mindestens # Zahlen enthalten}}",
     "PasswordMinUpperChars": "{count, plural, =1 {Das Passwort muss mindestens # Großbuchstaben enthalten} other {Das Passwort muss mindestens # Großbuchstaben enthalten}}",
     "PasswordMinLowerChars": "{count, plural, =1 {Das Passwort muss mindestens # Kleinbuchstaben enthalten} other {Das Passwort muss mindestens # Kleinbuchstaben enthalten}}",
-    "WorkspaceArchivedDesc": "Workspace wurde wegen Inaktivität archiviert. Bitte kontaktieren Sie uns zur Wiederherstellung..."
+    "WorkspaceArchivedDesc": "Workspace wurde wegen Inaktivität archiviert.",
+    "RestoreArchivedWorkspace": "Workspace wiederherstellen."
   }
 }

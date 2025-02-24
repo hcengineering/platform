@@ -549,6 +549,38 @@ export async function fetchWorkspace (workspace: string): Promise<[Status, Works
     return [unknownError(err), undefined]
   }
 }
+
+export async function unArchive (workspaceId: string, token: string): Promise<boolean> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  if (token === undefined) {
+    return false
+  }
+
+  const request = {
+    method: 'performWorkspaceOperation',
+    params: [workspaceId, 'unarchive']
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    return (await response.json()).result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return false
+  }
+}
 export async function createMissingEmployee (workspace: string): Promise<[Status]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
