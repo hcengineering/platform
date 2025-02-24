@@ -53,6 +53,7 @@ import tags from '@hcengineering/tags'
 
 import { makeRank } from '@hcengineering/rank'
 import documents, { DOMAIN_DOCUMENTS } from './index'
+import { compareDocumentVersions } from '@hcengineering/controlled-documents/src'
 
 async function createTemplatesSpace (tx: TxOperations): Promise<void> {
   const existingSpace = await tx.findOne(documents.class.DocumentSpace, {
@@ -404,6 +405,47 @@ async function migrateProjectMetaRank (client: MigrationClient): Promise<void> {
   await client.bulk(DOMAIN_DOCUMENTS, operations)
 }
 
+async function migrateDocumentMetaInternalCode (client: MigrationClient): Promise<void> {
+  const docMetas = await client.find<DocumentMeta>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.DocumentMeta
+  })
+
+  let docs = await client.find<ControlledDocument>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.ControlledDocument
+  })
+
+  docs = docs.slice().sort(compareDocumentVersions).reverse()
+  const docMap = new Map<Ref<DocumentMeta>, ControlledDocument>()
+
+  for (const doc of docs) {
+    const curr = docMap.get(doc.attachedTo)
+    const metaId = doc.attachedTo
+
+    const shouldBind =
+      curr === undefined ||
+      doc.state === DocumentState.Effective ||
+      (doc.state === DocumentState.Archived && curr.state !== DocumentState.Effective)
+
+    if (shouldBind) docMap.set(metaId, doc)
+  }
+
+  const operations: { filter: MigrationDocumentQuery<DocumentMeta>, update: MigrateUpdate<DocumentMeta> }[] = []
+  for (const meta of docMetas) {
+    const doc = docMap.get(meta._id)
+    if (doc === undefined) continue
+
+    const title = `${doc.code} ${doc.title}`
+    if (meta.title === title) continue
+
+    operations.push({
+      filter: { _id: meta._id },
+      update: { $set: { title } }
+    })
+  }
+
+  await client.bulk(DOMAIN_DOCUMENTS, operations)
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentsId, [
@@ -429,6 +471,10 @@ export const documentsOperation: MigrateOperation = {
           )
           await client.move(DOMAIN_DOCUMENTS, { _class: core.class.Sequence }, DOMAIN_SEQUENCE)
         }
+      },
+      {
+        state: 'migrateDocumentMetaInternalCode',
+        func: migrateDocumentMetaInternalCode
       }
     ])
   },
