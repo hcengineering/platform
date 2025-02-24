@@ -212,7 +212,9 @@ export default mergeIds(documentsId, documents, {
 
     CreateDocumentFailed: '' as IntlString,
     CreateDocumentTemplateFailed: '' as IntlString,
-    TryAgain: '' as IntlString
+    TryAgain: '' as IntlString,
+
+    LatestVersionHint: '' as IntlString
   },
   controlledDocStates: {
     Empty: '' as IntlString,
@@ -240,6 +242,7 @@ export default mergeIds(documentsId, documents, {
     GetAllDocumentStates: '' as Resource<() => Promise<DocumentState[]>>,
     GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,
     GetDocumentMetaLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    GetControlledDocumentLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CanDeleteDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanArchiveDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanMakeDocumentObsolete: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,

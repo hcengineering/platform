@@ -106,7 +106,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.ObjectTitle, {
-    titleProvider: documents.function.ControlledDocumentTitleProvider
+    titleProvider: documents.function.DocumentMetaTitleProvider
   })
 
   builder.mixin(documents.class.DocumentApprovalRequest, core.class.Class, view.mixin.ObjectPresenter, {
@@ -404,6 +404,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(documents.class.Document, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: documents.component.DocumentPresenter
+  })
+
+  builder.mixin(documents.class.ControlledDocument, core.class.Class, view.mixin.LinkProvider, {
+    encode: documents.function.GetControlledDocumentLinkFragment
   })
 
   builder.mixin(documents.class.Document, core.class.Class, view.mixin.IgnoreActions, {
@@ -739,6 +743,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(documents.class.Document, core.class.Class, view.mixin.ObjectIdentifier, {
     provider: documents.function.DocumentIdentifierProvider
+  })
+
+  builder.mixin(documents.class.ControlledDocument, core.class.Class, view.mixin.ReferenceObjectProvider, {
+    provider: documents.function.ControlledDocumentReferenceObjectProvider
+  })
+
+  builder.mixin(documents.class.ProjectDocument, core.class.Class, view.mixin.ReferenceObjectProvider, {
+    provider: documents.function.ProjectDocumentReferenceObjectProvider
   })
 
   createAction(

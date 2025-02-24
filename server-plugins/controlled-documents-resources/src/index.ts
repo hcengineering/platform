@@ -9,31 +9,30 @@ import documents, {
   DocumentApprovalRequest,
   DocumentState,
   DocumentTemplate,
-  getDocumentId,
   getEffectiveDocUpdate,
   type DocumentRequest,
   type DocumentTraining
 } from '@hcengineering/controlled-documents'
 import core, {
   AccountRole,
+  combineAttributes,
+  Doc,
   DocumentQuery,
   Ref,
   SortingOrder,
   Tx,
   TxCreateDoc,
+  TxCUD,
   TxFactory,
   TxUpdateDoc,
   type Account,
   type RolesAssignment,
-  type Timestamp,
-  Doc,
-  combineAttributes,
-  TxCUD
+  type Timestamp
 } from '@hcengineering/core'
+import { NotificationType } from '@hcengineering/notification'
 import { RequestStatus } from '@hcengineering/request'
 import { TriggerControl } from '@hcengineering/server-core'
 import training, { TrainingState, type TrainingRequest } from '@hcengineering/training'
-import { NotificationType } from '@hcengineering/notification'
 
 async function getDocs (
   control: TriggerControl,
@@ -77,7 +76,7 @@ function archiveDocs (docs: ControlledDocument[], txFactory: TxFactory): Tx[] {
 function updateMeta (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
   return [
     txFactory.createTxUpdateDoc(doc.attachedToClass, doc.space, doc.attachedTo, {
-      title: `${getDocumentId(doc)} ${doc.title}`
+      title: `${doc.code} ${doc.title}`
     })
   ]
 }
