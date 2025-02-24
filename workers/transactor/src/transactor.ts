@@ -496,8 +496,7 @@ export class Transactor extends DurableObject<Env> {
       pipeline,
       undefined,
       session,
-      cs,
-      this.workspace
+      cs
     )
     session.includeSessionContext(opContext)
     return pipeline

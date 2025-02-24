@@ -983,8 +983,7 @@ export class TSessionManager implements SessionManager {
     pipeline: Pipeline,
     requestId: Request<any>['id'],
     service: Session,
-    ws: ConnectionSocket,
-    workspace: WorkspaceUuid
+    ws: ConnectionSocket
   ): ClientSessionCtx {
     const st = platformNow()
     return {
@@ -1002,7 +1001,7 @@ export class TSessionManager implements SessionManager {
       sendPong: () => {
         ws.sendPong()
       },
-      socialStringsToUsers: this.getActiveSocialStringsToUsersMap(workspace),
+      socialStringsToUsers: this.getActiveSocialStringsToUsersMap(service.workspace.workspaceUuid),
       sendError: (reqId, msg, error: Status) =>
         sendResponse(ctx, service, ws, {
           id: reqId,
@@ -1107,7 +1106,7 @@ export class TSessionManager implements SessionManager {
           const params = [...request.params]
 
           await ctx.with('🧨 process', {}, (callTx) =>
-            f.apply(service, [this.createOpContext(callTx, pipeline, request.id, service, ws, workspace), ...params])
+            f.apply(service, [this.createOpContext(callTx, pipeline, request.id, service, ws), ...params])
           )
         } catch (err: any) {
           Analytics.handleError(err)
@@ -1160,7 +1159,7 @@ export class TSessionManager implements SessionManager {
           service.workspace.pipeline instanceof Promise ? await service.workspace.pipeline : service.workspace.pipeline
 
         try {
-          const uctx = this.createOpContext(ctx, pipeline, reqId, service, ws, service.workspace.workspaceUuid)
+          const uctx = this.createOpContext(ctx, pipeline, reqId, service, ws)
           await operation(uctx)
         } catch (err: any) {
           Analytics.handleError(err)

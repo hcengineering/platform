@@ -719,8 +719,7 @@ export interface SessionManager {
     pipeline: Pipeline,
     requestId: Request<any>['id'],
     service: Session,
-    ws: ConnectionSocket,
-    workspace: WorkspaceUuid
+    ws: ConnectionSocket
   ) => ClientSessionCtx
 
   handleRPC: <S extends Session>(
