@@ -457,11 +457,8 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
   const token = getMetadata(presentation.metadata.Token)
 
   if (token == null) {
-    // fetchMetadataLocalStorage(login.metadata.LoginAccounts)
-    // TODO
-    // const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-    // token = Object.values(tokens)[0]
-    if (token == null) {
+    const loginInfo = await getAccountClient().getLoginInfoByToken()
+    if (loginInfo.token == null) {
       return [unknownStatus('Please login'), null]
     }
   }
