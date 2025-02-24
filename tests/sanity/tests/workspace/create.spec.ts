@@ -1,6 +1,6 @@
 import { test } from '@playwright/test'
 import { LoginPage } from '../model/login-page'
-import { DefaultWorkspace, generateId, PlatformURI, PlatformUser } from '../utils'
+import { generateId } from '../utils'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { SignUpPage } from '../model/signup-page'
 import { SignUpData } from '../model/common-types'
@@ -197,36 +197,5 @@ test.describe('Workspace tests', () => {
     } finally {
       await page2.close()
     }
-  })
-
-  test('Create workspace with LastToken in the localStorage', async ({ page, browser }) => {
-    await loginPage.goto()
-    await loginPage.login(PlatformUser, '1234')
-    await selectWorkspacePage.selectWorkspace(DefaultWorkspace)
-    await leftSideMenuPage.clickTracker()
-
-    // Get and check the last token
-    await leftSideMenuPage.verifyLastTokenNotEmpty()
-
-    await test.step('Check create workspace action', async () => {
-      const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
-      const pageSecond = await browser.newPage()
-      try {
-        // Authenticate in new browser context
-        await pageSecond.goto(`${PlatformURI}/login/login`)
-        await leftSideMenuPage.setLastTokenOnPage(pageSecond, await leftSideMenuPage.getLastToken())
-        await pageSecond.goto(`${PlatformURI}/login/createWorkspace`)
-
-        // Create workspace in the second context
-        const selectWorkspacePageSecond = new SelectWorkspacePage(pageSecond)
-        await selectWorkspacePageSecond.createWorkspace(newWorkspaceName)
-
-        // Use the tracker in the second context
-        const leftSideMenuPageSecond = new LeftSideMenuPage(pageSecond)
-        await leftSideMenuPageSecond.clickTracker()
-      } finally {
-        await pageSecond.close()
-      }
-    })
   })
 })

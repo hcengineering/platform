@@ -17,14 +17,17 @@ import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
 import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
-import serverToken, { decodeToken } from '@hcengineering/server-token'
+import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
+import type Cookies from 'cookies'
 import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import os from 'os'
 import { migrateFromOldAccounts } from './migration/migration'
+
+const AUTH_TOKEN_COOKIE = 'account-metadata-Token'
 
 /**
  * @public
@@ -142,12 +145,58 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     )
   })
 
-  const extractToken = (header: IncomingHttpHeaders): string | undefined => {
+  const extractCookieToken = (headers: IncomingHttpHeaders): string | undefined => {
+    if (headers.cookie != null) {
+      const cookies = headers.cookie.split(';')
+      const tokenCookie = cookies.find((cookie) => cookie.includes(AUTH_TOKEN_COOKIE))
+      return tokenCookie?.split('=')[1]
+    }
+
+    return undefined
+  }
+
+  const extractAuthorizationToken = (headers: IncomingHttpHeaders): string | undefined => {
     try {
-      return header.authorization?.slice(7) ?? undefined
+      return headers.authorization?.slice(7) ?? undefined
     } catch {
       return undefined
     }
+  }
+
+  const extractToken = (headers: IncomingHttpHeaders): string | undefined => {
+    return extractAuthorizationToken(headers) ?? extractCookieToken(headers)
+  }
+
+  function getCookieOptions (ctx: Koa.Context): Cookies.SetOption {
+    const requestUrl = ctx.request.href
+    const url = new URL(requestUrl)
+    const domain = getCookieDomain(requestUrl)
+
+    return {
+      httpOnly: true,
+      domain,
+      secure: url?.protocol === 'https',
+      maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year
+    }
+  }
+
+  const getCookieDomain = (url: string): string => {
+    const hostname = new URL(url).hostname
+
+    if (hostname === 'localhost') {
+      return hostname
+    }
+
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+      return hostname
+    }
+
+    const parts = hostname.split('.')
+    if (parts.length > 2) {
+      return '.' + parts.slice(-2).join('.')
+    }
+
+    return hostname
   }
 
   router.get('/api/v1/statistics', (req, res) => {
@@ -174,6 +223,46 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       req.res.writeHead(404, {})
       req.res.end()
     }
+  })
+
+  router.put('/cookie', async (ctx) => {
+    const token = extractToken(ctx.request.headers)
+    if (token === undefined) {
+      ctx.body = JSON.stringify({
+        error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+      })
+      ctx.res.writeHead(401)
+      ctx.res.end()
+      return
+    }
+
+    // Ensure we don't set the token with workspace to the cookie
+    const { account, extra } = decodeTokenVerbose(measureCtx, token)
+    const tokenWithoutWorkspace = generateToken(account, undefined, extra)
+
+    const cookieOpts = getCookieOptions(ctx)
+
+    ctx.cookies.set(AUTH_TOKEN_COOKIE, tokenWithoutWorkspace, cookieOpts)
+    ctx.res.writeHead(204)
+    ctx.res.end()
+  })
+
+  router.delete('/cookie', async (ctx) => {
+    const token = extractToken(ctx.request.headers)
+    if (token === undefined) {
+      ctx.body = JSON.stringify({
+        error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+      })
+      ctx.res.writeHead(401)
+      ctx.res.end()
+      return
+    }
+
+    const cookieOpts = { ...getCookieOptions(ctx), maxAge: 0 }
+
+    ctx.cookies.set(AUTH_TOKEN_COOKIE, '', cookieOpts)
+    ctx.res.writeHead(201)
+    ctx.res.end()
   })
 
   router.put('/api/v1/manage', async (req, res) => {
