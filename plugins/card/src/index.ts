@@ -19,7 +19,7 @@ export * from './analytics'
 
 export interface MasterTag extends Class<Card> {}
 
-export interface Tag extends Mixin<Card> {}
+export interface Tag extends MasterTag, Mixin<Card> {}
 
 export interface Card extends Doc {
   attachments?: number

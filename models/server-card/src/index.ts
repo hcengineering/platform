@@ -33,6 +33,15 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnAttributeRemove,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: core.class.Attribute
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverCard.trigger.OnMasterTagRemove,
     isAsync: true,
     txMatch: {
