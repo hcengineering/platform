@@ -31,6 +31,8 @@ This project offers a convenient method to host Huly using `docker`, designed fo
   - [Table of Content](#table-of-content)
   - [Pre-requisites](#pre-requisites)
   - [Verification](#verification)
+  - [Fast start](#fast-start)
+  - [Branches \& Contributing](#branches--contributing)
   - [Installation](#installation)
   - [Build and run](#build-and-run)
   - [Run in development mode](#run-in-development-mode)
@@ -81,7 +83,7 @@ We periodically merge `develop` into `staging` to perform testing builds. Once w
 
 ## Installation
 
-You need Microsoft's [rush](https://rushjs.io) to install application.
+You need Microsoft's [rush](https://rushjs.io) to install the application.
 
 1. Install Rush globally using the command:
 
@@ -149,10 +151,10 @@ sh ./scripts/create-workspace.sh
 Add the following line to your /etc/hosts file
 
 ```plain
-127.0.0.1 host.docker.internal
+127.0.0.1 huly.local
 ```
 
-Accessing the URL <http://host.docker.internal:8087> will lead you to the app in development mode.
+Accessing the URL <http://huly.local:8087> will lead you to the app in development mode.
 
 Limitations:
 

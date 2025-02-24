@@ -120,8 +120,7 @@ export function wrap (
     request: any,
     token?: string
   ): Promise<any> {
-    if (token !== undefined) request.params.unshift(token)
-    return await accountMethod(ctx, db, branding, ...request.params)
+    return await accountMethod(ctx, db, branding, token, { ...request.params })
       .then((result) => ({ id: request.id, result }))
       .catch((err) => {
         const status =
@@ -497,12 +496,15 @@ export async function selectWorkspace (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string,
-  workspaceUrl: string,
-  kind: 'external' | 'internal' | 'byregion',
-  externalRegions: string[] = []
+  token: string | undefined,
+  params: {
+    workspaceUrl: string
+    kind: 'external' | 'internal' | 'byregion'
+    externalRegions?: string[]
+  }
 ): Promise<WorkspaceLoginInfo> {
-  const { account: accountUuid, workspace: tokenWorkspaceUuid, extra } = decodeTokenVerbose(ctx, token)
+  const { workspaceUrl, kind, externalRegions = [] } = params
+  const { account: accountUuid, workspace: tokenWorkspaceUuid, extra } = decodeTokenVerbose(ctx, token ?? '')
   const getKind = (region: string | undefined): EndpointKind => {
     switch (kind) {
       case 'external':
@@ -949,7 +951,7 @@ export async function doJoinByInvite (
     await db.updateWorkspaceRole(account, workspace.uuid, invite.role)
   }
 
-  const result = await selectWorkspace(ctx, db, branding, token, workspace.url, 'external')
+  const result = await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
 
   await useInvite(db, invite.id)
 

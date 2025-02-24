@@ -5,7 +5,7 @@ import http from 'node:http'
 
 const port = parseInt(process.env.PORT ?? '6767')
 const version = process.env.VERSION ?? '0.6.388'
-const dbUrl = process.env.DB_URL ?? 'postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable'
+const dbUrl = process.env.DB_URL ?? 'postgresql://root@huly.local:26257/defaultdb?sslmode=disable'
 const extraOptions = JSON.parse(process.env.DB_OPTIONS ?? '{}')
 
 const authToken = process.env.AUTH_TOKEN ?? 'secret'

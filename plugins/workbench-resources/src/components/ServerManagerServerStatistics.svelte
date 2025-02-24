@@ -4,7 +4,6 @@
   import presentation, { type OverviewStatistics } from '@hcengineering/presentation'
   import { Button, DropdownLabels, Expandable, IconArrowRight, ticker } from '@hcengineering/ui'
   import MetricsStats from './MetricsStats.svelte'
-  import type { MetricsData } from '@hcengineering/core'
 
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
 

@@ -32,6 +32,7 @@
     "@types/koa-router": "^7.4.8",
     "@types/koa": "^2.15.0",
     "@types/koa__cors": "^5.0.0",
+    "@types/cookies": "^0.9.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
@@ -53,6 +54,7 @@
     "koa": "^2.15.3",
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
+    "cookies": "^0.9.1",
     "@koa/cors": "^5.0.0",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/analytics": "^0.6.0"

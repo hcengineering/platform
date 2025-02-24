@@ -42,7 +42,7 @@
   $: dimensions = getDimensions(value, size)
 
   function getDimensions (value: Attachment, size: AttachmentImageSize): Dimensions {
-    if (size === 'auto') {
+    if (size === 'auto' || size == null) {
       return {
         width: 300,
         height: 300,

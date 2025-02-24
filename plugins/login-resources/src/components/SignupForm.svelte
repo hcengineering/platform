@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
+  import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { setMetadataLocalStorage } from '@hcengineering/ui'
+  import { logIn } from '@hcengineering/workbench'
   import BottomActionComponent from './BottomAction.svelte'
   import login from '../plugin'
   import { getPasswordValidationRules } from '../validations'
@@ -79,8 +79,7 @@
         status = loginStatus
 
         if (result != null) {
-          setMetadata(presentation.metadata.Token, result.token)
-          setMetadataLocalStorage(login.metadata.LastToken, result.token)
+          await logIn(result)
           goTo('confirmationSend')
         }
       } else {
