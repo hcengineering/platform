@@ -14,80 +14,109 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { LoginInfo, Workspace } from '@hcengineering/login'
+  import { WorkspaceInfoWithStatus, isArchivingMode } from '@hcengineering/core'
+  import { LoginInfo } from '@hcengineering/login'
   import { OK, Severity, Status } from '@hcengineering/platform'
-  import presentation, { NavLink, isAdminUser } from '@hcengineering/presentation'
+  import presentation, { NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
+  import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
   import {
+    ticker,
     Button,
     Label,
     Scroller,
     SearchEdit,
+    Spinner,
     deviceOptionsStore as deviceInfo,
-    setMetadataLocalStorage
+    setMetadataLocalStorage,
+    showPopup
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+
   import login from '../plugin'
-  import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
+  import {
+    fetchWorkspace,
+    getAccount,
+    getHref,
+    getWorkspaces,
+    goTo,
+    navigateToWorkspace,
+    selectWorkspace,
+    getAccountDisplayName
+  } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
-  const CHECK_INTERVAL = 1000
-
   export let navigateUrl: string | undefined = undefined
-  let workspaces: Workspace[] = []
+
+  let workspaces: WorkspaceInfoWithStatus[] = []
+  let status = OK
+  let accountPromise: Promise<LoginInfo | null>
+  let account: LoginInfo | null | undefined = undefined
+
   let flagToUpdateWorkspaces = false
 
-  let status = OK
-
-  let account: LoginInfo | undefined = undefined
-
   async function loadAccount (): Promise<void> {
-    account = await getAccount()
+    accountPromise = getAccount()
+    account = await accountPromise
   }
 
-  async function updateWorkspaces (): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const updateWorkspaces = reduceCalls(async function updateWorkspaces (_time?: number): Promise<void> {
     try {
       workspaces = await getWorkspaces()
     } catch (e) {
       // we should be able to continue from this state
     }
-    if (flagToUpdateWorkspaces) {
-      setTimeout(updateWorkspaces, CHECK_INTERVAL)
-    }
+  })
+
+  $: if (flagToUpdateWorkspaces) {
+    void updateWorkspaces($ticker)
   }
 
   onMount(() => {
     void loadAccount()
-
-    return () => {
-      flagToUpdateWorkspaces = false
-    }
   })
 
-  async function select (workspace: string): Promise<void> {
+  async function select (workspaceUrl: string): Promise<void> {
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-    const [loginStatus, result] = await selectWorkspace(workspace)
+    const [loginStatus, result] = await selectWorkspace(workspaceUrl)
+    if (result != null) {
+      const [, wsResult] = await fetchWorkspace()
+
+      if (isArchivingMode(wsResult?.mode)) {
+        showPopup(MessageBox, {
+          label: login.string.SelectWorkspace,
+          message: login.string.WorkspaceArchivedDesc,
+          canSubmit: false,
+          params: {},
+          action: async () => {}
+        })
+        status = loginStatus
+        return
+      }
+    }
     status = loginStatus
 
-    navigateToWorkspace(workspace, result, navigateUrl)
+    navigateToWorkspace(workspaceUrl, result, navigateUrl)
   }
 
   async function _getWorkspaces (): Promise<void> {
     try {
       const res = await getWorkspaces()
 
-      if (res.length === 0 && account?.confirmed === false) {
+      await accountPromise
+      if (res.length === 0 && account?.token == null) {
         goTo('confirmationSend')
       }
 
       workspaces = res
-      flagToUpdateWorkspaces = true
       await updateWorkspaces()
+      flagToUpdateWorkspaces = true
     } catch (err: any) {
       setMetadataLocalStorage(login.metadata.LastToken, null)
       setMetadataLocalStorage(presentation.metadata.Token, null)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-      setMetadataLocalStorage(login.metadata.LoginEmail, null)
+      setMetadataLocalStorage(login.metadata.LoginAccount, null)
       goTo('login')
       throw err
     }
@@ -97,10 +126,15 @@
   let search: string = ''
 </script>
 
+<!-- TODO: show some social login instead of account.account -->
 <form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="fs-title">
-    {account?.email}
+    {#if account != null}
+      {getAccountDisplayName(account)}
+    {:else}
+      <Label label={login.string.LoadingAccount} />
+    {/if}
   </div>
   <div class="title"><Label label={login.string.SelectWorkspace} /></div>
   <div class="status">
@@ -111,33 +145,64 @@
       <SearchEdit bind:value={search} width={'100%'} />
     </div>
   {/if}
-  {#await _getWorkspaces() then}
-    <Scroller padding={'.125rem 0'}>
+  {#await _getWorkspaces()}
+    <div class="workspace-loader">
+      <Spinner />
+    </div>
+  {:then}
+    <Scroller padding={'.125rem 0'} maxHeight={35}>
       <div class="form">
-        {#each workspaces.filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search)) as workspace}
-          {@const wsName = workspace.workspaceName ?? workspace.workspace}
+        {#each workspaces
+          .filter((it) => search === '' || (it.name?.includes(search) ?? false) || it.url.includes(search))
+          .slice(0, 500) as workspace}
+          {@const wsName = workspace.name ?? workspace.url}
+          {@const lastUsageDays =
+            workspace.lastVisit === undefined
+              ? 'N/A'
+              : Math.round((Date.now() - workspace.lastVisit) / (1000 * 3600 * 24))}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
             class="workspace flex-center fs-title cursor-pointer focused-button bordered form-row"
-            on:click={() => select(workspace.workspace)}
+            on:click={() => select(workspace.url)}
           >
             <div class="flex flex-col flex-grow">
               <span class="label overflow-label flex-center">
                 {wsName}
-                {#if workspace.creating === true}
-                  ({workspace.createProgress}%)
+                {#if isArchivingMode(workspace.mode)}
+                  - <Label label={presentation.string.Archived} />
+                {/if}
+                {#if workspace.mode !== 'active' && workspace.mode !== 'archived'}
+                  ({workspace.processingProgress}%)
                 {/if}
               </span>
-              {#if isAdmin && wsName !== workspace.workspace}
-                <span class="text-xs flex-center">
-                  {workspace.workspace}
-                </span>
-              {/if}
+              <span class="text-xs flex-row-center flex-center">
+                {#if isAdmin}
+                  {workspace.url}
+                  {#if workspace.region !== undefined}
+                    at ({workspace.region})
+                  {/if}
+                {/if}
+                <div class="text-sm">
+                  {#if isAdmin}
+                    {#if workspace.backupInfo != null}
+                      {@const sz = workspace.backupInfo.dataSize + workspace.backupInfo.blobsSize}
+                      {@const szGb = Math.round((sz * 100) / 1024) / 100}
+                      {#if szGb > 0}
+                        - {Math.round((sz * 100) / 1024) / 100}Gb -
+                      {:else}
+                        - {Math.round(sz)}Mb -
+                      {/if}
+                    {/if}
+                  {/if}
+                  ({lastUsageDays} days)
+                </div>
+              </span>
             </div>
           </div>
         {/each}
-        {#if workspaces.length === 0 && account?.confirmed === true}
+
+        {#if workspaces.length === 0 && account?.token != null}
           <div class="form-row send">
             <Button
               label={login.string.CreateWorkspace}
@@ -153,10 +218,15 @@
     </Scroller>
     <div class="grow-separator" />
     <div class="footer">
-      {#if workspaces.length}
+      {#if workspaces.length > 0}
         <div>
           <span><Label label={login.string.WantAnotherWorkspace} /></span>
-          <NavLink href={getHref('createWorkspace')}><Label label={login.string.CreateWorkspace} /></NavLink>
+          <NavLink
+            href={getHref('createWorkspace')}
+            onClick={() => {
+              goTo('createWorkspace')
+            }}><Label label={login.string.CreateWorkspace} /></NavLink
+          >
         </div>
       {/if}
       <div>
@@ -167,10 +237,12 @@
             setMetadataLocalStorage(login.metadata.LastToken, null)
             setMetadataLocalStorage(presentation.metadata.Token, null)
             setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-            setMetadataLocalStorage(login.metadata.LoginEmail, null)
+            setMetadataLocalStorage(login.metadata.LoginAccount, null)
             goTo('login')
-          }}><Label label={login.string.ChangeAccount} /></NavLink
+          }}
         >
+          <Label label={login.string.ChangeAccount} />
+        </NavLink>
       </div>
     </div>
   {/await}
@@ -183,6 +255,13 @@
     justify-content: space-between;
     flex-grow: 1;
     overflow: hidden;
+
+    .workspace-loader {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
     .title {
       font-weight: 600;

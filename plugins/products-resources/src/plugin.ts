@@ -16,8 +16,8 @@
 import products, { productsId } from '@hcengineering/products'
 import { type Ref, type Space } from '@hcengineering/core'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
-import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation/src/types'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type KeyFilter } from '@hcengineering/view'
 
 export default mergeIds(productsId, products, {
@@ -48,8 +48,6 @@ export default mergeIds(productsId, products, {
     CreateProductVersion: '' as IntlString,
     NoProductVersionParent: '' as IntlString,
     NoProductVersions: '' as IntlString,
-    Unarchive: '' as IntlString,
-    UnarchiveConfirm: '' as IntlString,
     CreateDialogClose: '' as IntlString,
     CreateDialogCloseNote: '' as IntlString,
     Description: '' as IntlString,

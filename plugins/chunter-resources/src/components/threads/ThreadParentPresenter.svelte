@@ -17,6 +17,8 @@
   import { ActivityMessage } from '@hcengineering/activity'
 
   export let message: ActivityMessage
+  export let readonly = false
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 </script>
 
 <ActivityMessagePresenter
@@ -24,6 +26,8 @@
   hideFooter
   hoverStyles="filledHover"
   withShowMore={false}
+  attachmentImageSize="x-large"
   skipLabel
-  showLinksPreview={false}
+  {readonly}
+  {onReply}
 />

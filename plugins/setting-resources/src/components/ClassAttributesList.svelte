@@ -86,28 +86,25 @@
       MessageBox,
       {
         label: settings.string.DeleteAttribute,
-        message: exist ? settings.string.DeleteAttributeExistConfirm : settings.string.DeleteAttributeConfirm
-      },
-      'top',
-      async (result) => {
-        if (result != null) {
+        message: exist ? settings.string.DeleteAttributeExistConfirm : settings.string.DeleteAttributeConfirm,
+        action: async () => {
           await client.remove(attribute)
           update()
         }
-      }
+      },
+      'top'
     )
   }
 
   async function showMenu (ev: MouseEvent, attribute: AnyAttribute, row: number): Promise<void> {
     hovered = row
     const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exists: true } })) !== undefined
-
     const actions: Action[] = [
       {
         label: presentation.string.Edit,
         icon: IconEdit,
         action: async () => {
-          dispatch('select', attribute._id)
+          dispatch('select', attribute)
         }
       }
     ]
@@ -120,7 +117,7 @@
         }
       })
     }
-    const extra = await getContextActions(client, attribute, { mode: 'context' })
+    const extra = await getContextActions(client, attribute, { mode: 'context' }, core.class.Attribute)
     actions.push(
       ...extra.map((it) => ({
         label: it.label,

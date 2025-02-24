@@ -14,10 +14,11 @@
  -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import core, { AttachedData, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { DraftController, draftsStore, getClient, deleteFile } from '@hcengineering/presentation'
+  import core, { AttachedData, Doc, makeCollabId, Ref, SortingOrder } from '@hcengineering/core'
+  import { DraftController, draftsStore, getClient, deleteFile, createMarkup } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { makeRank } from '@hcengineering/task'
+  import { isEmptyMarkup } from '@hcengineering/text'
   import { Component, Issue, IssueDraft, IssueParentInfo, Milestone, Project } from '@hcengineering/tracker'
   import { Button, ExpandCollapse, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
@@ -71,7 +72,7 @@
       const childId = subIssue._id
       const cvalue: AttachedData<Issue> = {
         title: subIssue.title.trim(),
-        description: subIssue.description,
+        description: null,
         assignee: subIssue.assignee,
         component: subIssue.component,
         milestone: subIssue.milestone,
@@ -92,6 +93,12 @@
         kind: subIssue.kind,
         identifier: `${project.identifier}-${number}`
       }
+
+      if (!isEmptyMarkup(subIssue.description)) {
+        const collabId = makeCollabId(tracker.class.Issue, childId, 'description')
+        cvalue.description = await createMarkup(collabId, subIssue.description)
+      }
+
       await client.addCollection(
         tracker.class.Issue,
         project._id,

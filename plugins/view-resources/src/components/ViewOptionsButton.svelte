@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { Button, ButtonKind, showPopup } from '@hcengineering/ui'
-  import { ViewOptions, ViewOptionsModel, Viewlet } from '@hcengineering/view'
+  import { ButtonIcon, showPopup, closeTooltip, IconOptions } from '@hcengineering/ui'
+  import { ViewOptionModel, ViewOptions, ViewOptionsModel, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { focusStore } from '../selection'
@@ -24,19 +24,23 @@
   import core from '@hcengineering/core'
 
   export let viewlet: Viewlet | undefined
-  export let kind: ButtonKind = 'regular'
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let viewOptions: ViewOptions
   export let disabled: boolean = false
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   let btn: HTMLButtonElement
+  let pressed: boolean = false
 
   async function clickHandler (event: MouseEvent): Promise<void> {
     if (viewlet === undefined) {
       return
     }
+    pressed = true
+    closeTooltip()
     const h = client.getHierarchy()
     const config = await client.findAll(view.class.Viewlet, {
       attachTo: { $in: h.getDescendants(viewlet.attachTo) },
@@ -86,11 +90,16 @@
     mergedModel.orderBy = mergedModel.orderBy.filter((it, idx, arr) => arr.findIndex((q) => it[0] === q[0]) === idx)
     mergedModel.other = mergedModel.other.filter((it, idx, arr) => arr.findIndex((q) => q.key === it.key) === idx)
 
+    if (viewOptionsConfig !== undefined) {
+      mergedModel.other = viewOptionsConfig
+    }
     showPopup(
       ViewOptionsEditor,
       { viewlet, config: mergedModel, viewOptions: getClient().getHierarchy().clone(viewOptions) },
       btn,
-      undefined,
+      () => {
+        pressed = false
+      },
       (result) => {
         if (result?.key === undefined) return
         if (viewlet) {
@@ -108,14 +117,16 @@
 </script>
 
 {#if viewlet?.viewOptions !== undefined}
-  <Button
-    icon={view.icon.ViewButton}
-    label={view.string.View}
+  <ButtonIcon
+    icon={IconOptions}
     {disabled}
     {kind}
-    adaptiveShrink={'sm'}
-    showTooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
-    bind:input={btn}
+    size={'small'}
+    hasMenu
+    {pressed}
+    tooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
+    dataId={'btn-viewOptions'}
+    bind:element={btn}
     on:click={clickHandler}
   />
 {/if}

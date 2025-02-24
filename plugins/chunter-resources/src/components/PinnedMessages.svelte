@@ -13,38 +13,84 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { eventToHTMLElement, Label, ModernButton, showPopup, Icon } from '@hcengineering/ui'
+  import { eventToHTMLElement, Label, ModernButton, showPopup, Icon, ButtonIcon } from '@hcengineering/ui'
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
   import { createQuery } from '@hcengineering/presentation'
-  import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import activity from '@hcengineering/activity'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import view from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
 
   import chunter from '../plugin'
+  import { getChannelSpace } from '../utils'
 
+  export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   export let _id: Ref<Doc>
+  export let withRefs: boolean = false
+  export let iconOnly: boolean = false
 
+  const dispatch = createEventDispatcher()
   const pinnedQuery = createQuery()
+  const pinnedThreadsQuery = createQuery()
+  const pinnedRefsQuery = createQuery()
 
   let pinnedMessagesCount = 0
+  let pinnedThreadsCount = 0
+  let refsCount = 0
 
+  $: channelSpace = getChannelSpace(_class, _id, space)
   $: pinnedQuery.query(
     activity.class.ActivityMessage,
-    { attachedTo: _id, isPinned: true },
-    (res: ActivityMessage[]) => {
-      pinnedMessagesCount = res.length
-    }
+    { attachedTo: _id, isPinned: true, space: channelSpace },
+    (res) => {
+      pinnedMessagesCount = res.total
+    },
+    { total: true, limit: 1 }
   )
-  function openMessagesPopup (ev: MouseEvent) {
-    showPopup(PinnedMessagesPopup, { attachedTo: _id, attachedToClass: _class }, eventToHTMLElement(ev))
+
+  $: pinnedThreadsQuery.query(
+    chunter.class.ThreadMessage,
+    { objectId: _id, isPinned: true, space: channelSpace },
+    (res) => {
+      pinnedThreadsCount = res.total
+    },
+    { total: true, limit: 1 }
+  )
+
+  $: if (withRefs) {
+    pinnedRefsQuery.query(
+      activity.class.ActivityReference,
+      { attachedTo: _id, isPinned: true, space: { $ne: channelSpace } },
+      (res) => {
+        refsCount = res.total
+      },
+      { limit: 1, total: true }
+    )
   }
+
+  function openMessagesPopup (ev: MouseEvent): void {
+    showPopup(
+      PinnedMessagesPopup,
+      { attachedTo: _id, attachedToClass: _class, space: channelSpace, withRefs },
+      eventToHTMLElement(ev),
+      (result) => {
+        if (result == null) return
+        dispatch('select', result)
+      }
+    )
+  }
+
+  $: count = pinnedMessagesCount + pinnedThreadsCount + refsCount
 </script>
 
-{#if pinnedMessagesCount > 0}
-  <div class="antiHSpacer x2" />
-  <ModernButton size={'extra-small'} on:click={openMessagesPopup}>
-    <Icon icon={view.icon.Pin} size={'x-small'} />
-    <span class="text-sm"><Label label={chunter.string.PinnedCount} params={{ count: pinnedMessagesCount }} /></span>
-  </ModernButton>
+{#if count > 0}
+  {#if iconOnly}
+    <ButtonIcon icon={view.icon.Pin} size={'small'} on:click={openMessagesPopup} />
+  {:else}
+    <ModernButton size={'small'} on:click={openMessagesPopup}>
+      <Icon icon={view.icon.Pin} size={'x-small'} />
+      <span class="text-sm"><Label label={chunter.string.PinnedCount} params={{ count }} /></span>
+    </ModernButton>
+  {/if}
 {/if}

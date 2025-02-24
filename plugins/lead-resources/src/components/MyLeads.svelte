@@ -13,13 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { AttachedDoc, Class, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Lead } from '@hcengineering/lead'
-  import { IntlString } from '@hcengineering/platform'
+  import { IntlString, Asset } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import task from '@hcengineering/task'
-  import { IModeSelector, Label, Loading, ModeSelector, resolvedLocationStore, SearchEdit } from '@hcengineering/ui'
+  import {
+    IModeSelector,
+    Breadcrumb,
+    Loading,
+    ModeSelector,
+    resolvedLocationStore,
+    SearchInput,
+    Header
+  } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import {
     FilterBar,
@@ -28,18 +36,21 @@
     ViewletSelector,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
+  import { socialIdsByPersonRefStore } from '@hcengineering/contact-resources'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
   export let _class: Ref<Class<Lead>> = lead.class.Lead
-  export let labelTasks = lead.string.MyLeads
+  export let labelTasks: IntlString = lead.string.MyLeads
+  export let icon: Asset = lead.icon.Lead
   export let config: [string, IntlString, object][] = []
 
   let search = ''
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const assigned = { assignee: currentUser.person }
-  const created = { createdBy: currentUser._id }
+  const me = getCurrentEmployee()
+  $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
+  const assigned = { assignee: me }
+  $: created = { createdBy: { $in: mySocialStrings } }
   let subscribed = { _id: { $in: [] as Ref<Lead>[] } }
   let mode: string | undefined = undefined
   let baseQuery: DocumentQuery<Lead> | undefined = undefined
@@ -59,7 +70,7 @@
   function getSubscribed () {
     subscribedQuery.query(
       _class,
-      { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
+      { 'notification:mixin:Collaborators.collaborators': { $in: getCurrentAccount().socialIds } },
       (result) => {
         const newSub = result.map((p) => p._id as Ref<AttachedDoc> as Ref<Lead>)
         const curSub = subscribed._id.$in
@@ -90,36 +101,33 @@
   let viewOptions: ViewOptions | undefined = undefined
 </script>
 
-<div
-  class="ac-header short divide caption-height"
-  class:header-with-mode-selector={modeSelectorProps !== undefined}
-  class:header-without-label={!labelTasks}
->
-  <div class="ac-header__wrap-title">
-    <span class="ac-header__title"><Label label={labelTasks} /></span>
-    {#if modeSelectorProps !== undefined}
-      <ModeSelector props={modeSelectorProps} />
-    {/if}
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} />
-    <div class="buttons-divider" />
+<Header adaptive={'freezeActions'} hideActions={modeSelectorProps === undefined}>
+  <svelte:fragment slot="beforeTitle">
+    <ViewletSelector
+      hidden
+      bind:viewlet
+      bind:preference
+      bind:loading
+      viewletQuery={{
+        attachTo: _class,
+        descriptor: task.viewlet.StatusTable
+      }}
+    />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
+  </svelte:fragment>
+
+  <Breadcrumb {icon} label={labelTasks} size={'large'} isCurrent />
+
+  <svelte:fragment slot="search">
+    <SearchInput bind:value={search} collapsed on:change={(e) => (search = e.detail)} />
     <FilterButton {_class} />
-  </div>
-  <ViewletSelector
-    hidden
-    bind:viewlet
-    bind:preference
-    bind:loading
-    viewletQuery={{
-      attachTo: _class,
-      descriptor: task.viewlet.StatusTable
-    }}
-  />
-  <ViewletSettingButton bind:viewOptions bind:viewlet />
-</div>
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    {#if modeSelectorProps !== undefined}
+      <ModeSelector kind={'subtle'} props={modeSelectorProps} />
+    {/if}
+  </svelte:fragment>
+</Header>
 <FilterBar {_class} query={searchQuery} {viewOptions} space={undefined} on:change={(e) => (resultQuery = e.detail)} />
 
 {#if viewlet}

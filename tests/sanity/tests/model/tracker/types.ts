@@ -1,6 +1,7 @@
 export interface NewIssue extends Issue {
   title: string
   description: string
+  projectName?: string
 }
 
 export interface Issue {
@@ -48,10 +49,4 @@ export interface NewComponent {
   name: string
   description?: string
   lead?: string
-}
-
-export interface DateDivided {
-  day: string
-  month: string
-  year: string
 }

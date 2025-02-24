@@ -14,10 +14,10 @@
 //
 
 import { ChannelItem } from '@hcengineering/contact'
-import type { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
-import { NotificationType } from '@hcengineering/notification'
-import type { IntlString, Plugin } from '@hcengineering/platform'
-import { Metadata, plugin } from '@hcengineering/platform'
+import type { PersonId, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import { NotificationProvider, NotificationType } from '@hcengineering/notification'
+import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -48,8 +48,10 @@ export interface BaseMessage extends Doc {
 export interface NewMessage extends BaseMessage {
   status: 'new' | 'sent' | 'error'
   error?: string
-  from?: Ref<Account>
+  from?: PersonId
 }
+
+export * from './analytics'
 
 /**
  * @public
@@ -89,7 +91,8 @@ export default plugin(gmailId, {
   },
   string: {
     From: '' as IntlString,
-    To: '' as IntlString
+    To: '' as IntlString,
+    EmailNotificationsDescription: '' as IntlString
   },
   integrationType: {
     Gmail: '' as Ref<IntegrationType>
@@ -108,5 +111,8 @@ export default plugin(gmailId, {
   },
   metadata: {
     GmailURL: '' as Metadata<string>
+  },
+  providers: {
+    EmailNotificationProvider: '' as Ref<NotificationProvider>
   }
 })

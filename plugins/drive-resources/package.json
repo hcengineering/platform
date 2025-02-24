@@ -46,10 +46,10 @@
     "@hcengineering/panel": "^0.6.23",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
-    "svelte": "^4.2.12",
-    "fast-equals": "^5.0.1",
-    "filesize": "^8.0.3"
+    "svelte": "^4.2.19",
+    "fast-equals": "^5.2.2"
   }
 }

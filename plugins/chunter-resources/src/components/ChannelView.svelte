@@ -16,42 +16,48 @@
   import core, { Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import {
     defineSeparators,
+    getCurrentLocation,
     Label,
     location as locationStore,
     ModernButton,
+    navigate,
     panelSeparators,
     Separator
   } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
-  import { ActivityMessagesFilter } from '@hcengineering/activity'
+  import { ActivityMessage } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
-  import { Channel } from '@hcengineering/chunter'
+  import { Channel, ObjectChatPanel } from '@hcengineering/chunter'
   import view from '@hcengineering/view'
+  import { messageInFocus } from '@hcengineering/activity-resources'
+  import { Presence } from '@hcengineering/presence-resources'
+  import { includesAny } from '@hcengineering/contact'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
   import DocAside from './chat/DocAside.svelte'
   import chunter from '../plugin'
   import ChannelAside from './chat/ChannelAside.svelte'
+  import { isThreadMessage } from '../utils'
 
   export let object: Doc
   export let context: DocNotifyContext | undefined
-  export let allowClose = false
-  export let embedded = false
+  export let autofocus = true
+  export let embedded: boolean = false
+  export let readonly: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount()._id
+  const acc = getCurrentAccount()
 
   let isThreadOpened = false
   let isAsideShown = false
-
-  let filters: Ref<ActivityMessagesFilter>[] = []
 
   locationStore.subscribe((newLocation) => {
     isThreadOpened = newLocation.path[4] != null
   })
 
+  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? readonly || (object as Space).archived : readonly
   $: showJoinOverlay = shouldShowJoinOverlay(object)
   $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: withAside =
@@ -65,30 +71,54 @@
     if (hierarchy.isDerived(object._class, core.class.Space)) {
       const space = object as Space
 
-      return !space.members.includes(me)
+      return !includesAny(space.members, acc.socialIds)
     }
 
     return false
   }
 
   async function join (): Promise<void> {
-    await client.update(object as Space, { $push: { members: me } })
+    await client.update(object as Space, { $push: { members: acc.primarySocialId } })
   }
 
   defineSeparators('aside', panelSeparators)
+
+  async function handleMessageSelect (event: CustomEvent<ActivityMessage>): Promise<void> {
+    const message = event.detail
+
+    if (isThreadMessage(message)) {
+      const location = getCurrentLocation()
+      location.path[4] = message.attachedTo
+      navigate(location)
+    }
+
+    messageInFocus.set(message._id)
+  }
+
+  let objectChatPanel: ObjectChatPanel | undefined
+  let prevObjectId: Ref<Doc> | undefined = undefined
+
+  $: if (prevObjectId !== object._id) {
+    prevObjectId = object._id
+    objectChatPanel = hierarchy.classHierarchyMixin(object._class, chunter.mixin.ObjectChatPanel)
+    isAsideShown = isAsideShown ?? objectChatPanel?.openByDefault === true
+  }
 </script>
 
-<div class="popupPanel panel" class:embedded>
+<Presence {object} />
+
+<div class="popupPanel">
   <ChannelHeader
     _id={object._id}
     _class={object._class}
     {object}
-    {allowClose}
     {withAside}
-    bind:filters
     canOpen={isDocChat}
+    allowClose={embedded}
     {isAsideShown}
+    canOpenInSidebar={true}
     on:close
+    on:select={handleMessageSelect}
     on:aside-toggled={() => {
       isAsideShown = !isAsideShown
     }}
@@ -97,7 +127,7 @@
   <div class="popupPanel-body" class:asideShown={withAside && isAsideShown}>
     <div class="popupPanel-body__main">
       {#key object._id}
-        {#if shouldShowJoinOverlay(object)}
+        {#if !readonly && shouldShowJoinOverlay(object)}
           <div class="body h-full w-full clear-mins flex-center">
             <div class="joinOverlay">
               <div class="an-element__label header">
@@ -107,16 +137,11 @@
                 <Label label={chunter.string.JoinChannelText} />
               </span>
               <span class="mt-4"> </span>
-              <ModernButton label={view.string.Join} kind="primary" on:click={join} />
+              <ModernButton label={view.string.Join} kind={'primary'} dataId={'btnJoin'} on:click={join} />
             </div>
           </div>
         {:else}
-          <ChannelComponent
-            {context}
-            {object}
-            {filters}
-            isAsideOpened={(withAside && isAsideShown) || isThreadOpened}
-          />
+          <ChannelComponent {context} {object} {autofocus} />
         {/if}
       {/key}
     </div>
@@ -127,9 +152,9 @@
         <Separator name="aside" float index={0} />
         <div class="antiPanel-wrap__content">
           {#if hierarchy.isDerived(object._class, chunter.class.Channel)}
-            <ChannelAside _class={object._class} object={toChannel(object)} />
+            <ChannelAside object={toChannel(object)} {objectChatPanel} />
           {:else}
-            <DocAside _class={object._class} {object} />
+            <DocAside {object} {objectChatPanel} />
           {/if}
         </div>
       </div>

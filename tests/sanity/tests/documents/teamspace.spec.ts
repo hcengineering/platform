@@ -1,8 +1,21 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { TestData } from '../chat/types'
+import { SignUpData } from '../model/common-types'
+import { DocumentsPage } from '../model/documents/documents-page'
 import { NewTeamspace } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
-import { DocumentsPage } from '../model/documents/documents-page'
+import { SignInJoinPage } from '../model/signin-page'
+import {
+  createAccount,
+  createAccountAndWorkspace,
+  generateId,
+  generateTestData,
+  generateUser,
+  getInviteLink,
+  PlatformSetting,
+  PlatformURI,
+  setTestOptions
+} from '../utils'
 
 test.use({
   storageState: PlatformSetting
@@ -63,5 +76,68 @@ test.describe('Teamspace tests', () => {
     await documentsPage.editTeamspace(updateEditTeamspace)
     await documentsPage.moreActionTeamspace(updateEditTeamspace.title, 'Edit teamspace')
     await documentsPage.checkTeamspace(updateEditTeamspace)
+  })
+
+  test('Auto-join teamspace', async ({ page, request, browser }) => {
+    const testData: TestData = generateTestData()
+    await createAccountAndWorkspace(page, request, testData)
+    const newUser2: SignUpData = generateUser()
+    await createAccount(request, newUser2)
+
+    const autojoinTeamspace: NewTeamspace = {
+      title: `Auto-join Teamspace-${generateId()}`,
+      description: 'Auto-join Teamspace description',
+      private: false,
+      autoJoin: true
+    }
+    await leftSideMenuPage.clickDocuments()
+    await documentsPage.checkTeamspaceNotExist(autojoinTeamspace.title)
+    await documentsPage.createNewTeamspace(autojoinTeamspace)
+    const linkText = await getInviteLink(page)
+
+    const page2 = await browser.newPage()
+    try {
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage: SignInJoinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
+      const documentsSecondPage: DocumentsPage = new DocumentsPage(page2)
+      await documentsSecondPage.clickDocumentsApp()
+      await documentsSecondPage.checkTeamspaceExist(autojoinTeamspace.title)
+    } finally {
+      await page2.close()
+    }
+  })
+
+  test('Join teamspace', async ({ page, request, browser }) => {
+    const testData: TestData = generateTestData()
+    await createAccountAndWorkspace(page, request, testData)
+    const newUser2: SignUpData = generateUser()
+    await createAccount(request, newUser2)
+
+    const joinTeamspace: NewTeamspace = {
+      title: `Join Teamspace-${generateId()}`,
+      description: 'Join Teamspace description'
+    }
+    await leftSideMenuPage.clickDocuments()
+    await documentsPage.checkTeamspaceNotExist(joinTeamspace.title)
+    await documentsPage.createNewTeamspace(joinTeamspace)
+    const linkText = await getInviteLink(page)
+
+    const page2 = await browser.newPage()
+    try {
+      await page2.goto(linkText ?? '')
+      await setTestOptions(page2)
+      const joinPage: SignInJoinPage = new SignInJoinPage(page2)
+      await joinPage.join(newUser2)
+      const documentsSecondPage: DocumentsPage = new DocumentsPage(page2)
+      await documentsSecondPage.clickDocumentsApp()
+      await documentsSecondPage.checkTeamspaceNotExist(joinTeamspace.title)
+      await documentsSecondPage.clickTeamspaces()
+      await documentsSecondPage.joinTeamspace(joinTeamspace.title)
+      await documentsSecondPage.checkTeamspaceExist(joinTeamspace.title)
+    } finally {
+      await page2.close()
+    }
   })
 })

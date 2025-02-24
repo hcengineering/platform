@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import contact, { getCurrentEmployee, Person } from '@hcengineering/contact'
+  import core, { Class, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Label, Loading, navigate, TabList, SearchEdit, getLocation } from '@hcengineering/ui'
+  import { Label, Loading, navigate, TabList, getLocation } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+
   import { dateFileBrowserFilters, FileBrowserSortMode, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
   import AttachmentsGalleryView from './AttachmentsGalleryView.svelte'
@@ -35,11 +36,11 @@
   $: if (spaceId !== undefined) {
     const loc = getLocation()
     loc.query = undefined
-    navigate(loc)
+    navigate(loc, true)
   }
   export let requestedSpaceClasses: Ref<Class<Space>>[] = []
-  const currentUser = getCurrentAccount() as PersonAccount
-  let selectedParticipants: Ref<Person>[] = [currentUser.person]
+  const currentEmployee = getCurrentEmployee()
+  let selectedParticipants: Ref<Person>[] = [currentEmployee]
   let selectedSpaces: Ref<Space>[] = []
   export let search: string = ''
   let isLoading = false
@@ -65,8 +66,11 @@
 
     const nameQuery = searchQuery_ ? { name: { $like: '%' + searchQuery_ + '%' } } : {}
 
-    const accounts = await client.findAll(contact.class.PersonAccount, { person: { $in: selectedParticipants_ } })
-    const senderQuery = accounts.length ? { modifiedBy: { $in: accounts.map((a) => a._id) } } : {}
+    const allSocialIds = await client.findAll(contact.class.SocialIdentity, {
+      attachedTo: { $in: selectedParticipants_ },
+      attachedToClass: contact.class.Person
+    })
+    const senderQuery = allSocialIds.length !== 0 ? { modifiedBy: { $in: allSocialIds.map((si) => si.key) } } : {}
 
     let spaceQuery: { space: any }
     if (selectedSpaces_.length > 0) {
@@ -92,10 +96,7 @@
       { ...nameQuery, ...senderQuery, ...spaceQuery, ...dateQuery, ...fileTypeQuery },
       {
         sort: sortModeToOptionObject(selectedSort_),
-        limit: 200,
-        lookup: {
-          file: core.class.Blob
-        }
+        limit: 200
       }
     )
     isLoading = false
@@ -121,28 +122,22 @@
     </div>
   </div>
 {/if}
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} on:change={() => {}} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
-  </div>
+<div class="hulyHeader-container background-comp-header-color">
   <FileBrowserFilters
     {requestedSpaceClasses}
-    {spaceId}
     bind:selectedParticipants
     bind:selectedSpaces
     bind:selectedDateId
     bind:selectedFileTypeId
   />
 </div>
+<div class="hulyHeader-container justify-between">
+  <span class="caption-color ml-4">
+    <Label label={attachment.string.FileBrowserFileCounter} params={{ results: attachments?.length ?? 0 }} />
+  </span>
+  <FileBrowserSortMenu bind:selectedSort />
+</div>
 <div class="group">
-  <div class="groupHeader">
-    <div class="eGroupHeaderCount">
-      <Label label={attachment.string.FileBrowserFileCounter} params={{ results: attachments?.length ?? 0 }} />
-    </div>
-    <FileBrowserSortMenu bind:selectedSort />
-  </div>
   {#if isLoading}
     <div class="flex-grow">
       <Loading />
@@ -167,16 +162,5 @@
     flex-direction: column;
     padding: 1rem 0 1rem 0.5rem;
     height: 100%;
-  }
-
-  .groupHeader {
-    margin: 0 1.5rem 0.75rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-
-    .eGroupHeaderCount {
-      font-size: 0.75rem;
-      color: var(--caption-color);
-    }
   }
 </style>

@@ -63,6 +63,7 @@
       kind="primary"
       icon={IconAdd}
       size="small"
+      dataId={'btnAdd'}
       {disabled}
       on:click={(ev) => {
         $settingsStore = { id: 'createRole', component: CreateRole, props: { type, descriptor } }

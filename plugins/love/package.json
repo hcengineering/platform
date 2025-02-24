@@ -9,7 +9,7 @@
     "types/**/*",
     "tsconfig.json"
   ],
-  "author": "Uberflow Contributors",
+  "author": "Copyright © Hardcore Engineering Inc.",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
@@ -43,8 +43,10 @@
     "@hcengineering/preference": "^0.6.13",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/drive": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/view": "^0.6.13"
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/workbench": "^0.6.16"
   }
 }

@@ -13,26 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, ComponentType } from 'svelte'
-  import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent } from '../types'
+  import type { IntlString } from '@hcengineering/platform'
+  import { createEventDispatcher } from 'svelte'
+  import { BreadcrumbItem } from '../types'
+  import Breadcrumb from './Breadcrumb.svelte'
   import ChevronRight from './icons/ChevronRight.svelte'
   import Label from './Label.svelte'
-  import Breadcrumb from './Breadcrumb.svelte'
-
-  interface BreadcrumbItem {
-    icon?: Asset | AnySvelteComponent | ComponentType
-    iconProps?: any
-    iconWidth?: string
-    withoutIconBackground?: boolean
-    label?: IntlString
-    title?: string
-  }
 
   export let items: BreadcrumbItem[]
   export let afterLabel: IntlString | undefined = undefined
   export let size: 'large' | 'small' = 'large'
   export let selected: number | null = null
+  export let currentOnly: boolean = false
+  export let hideAfter: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
@@ -43,13 +36,13 @@
     <Breadcrumb
       {...item}
       {size}
-      isCurrent={selected === i}
+      isCurrent={selected === i || currentOnly}
       on:click={() => {
         if (selected !== i) dispatch('select', i)
       }}
     />
   {/each}
-  {#if afterLabel || $$slots.afterLabel}
+  {#if (afterLabel || $$slots.afterLabel) && !hideAfter}
     <span class="hulyBreadcrumbs-afterLabel font-medium-12">
       {#if afterLabel}<Label label={afterLabel} />{/if}
       <slot name="afterLabel" />
@@ -65,6 +58,7 @@
     min-width: 0;
 
     .hulyBreadcrumbs-afterLabel {
+      max-width: 10rem;
       white-space: nowrap;
       word-break: break-all;
       text-overflow: ellipsis;

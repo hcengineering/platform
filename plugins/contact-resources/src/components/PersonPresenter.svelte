@@ -34,6 +34,7 @@
   export let defaultName: IntlString | undefined = ui.string.NotSelected
   export let statusLabel: IntlString | undefined = undefined
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
+  export let customTooltip: LabelAndProps | undefined = undefined
   export let avatarSize: IconSize = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
   // export let element: HTMLElement | undefined = undefined
@@ -43,6 +44,7 @@
   export let compact = false
   export let type: ObjectPresenterType = 'link'
   export let showStatus: boolean = false
+  export let overflowLabel = true
 
   const client = getClient()
   $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
@@ -80,7 +82,7 @@
 
 {#if value || shouldShowPlaceholder}
   <PersonContent
-    showTooltip={getTooltip(tooltipLabels, personValue)}
+    showTooltip={customTooltip ?? getTooltip(tooltipLabels, personValue)}
     value={personValue}
     {inline}
     {onEdit}
@@ -99,6 +101,7 @@
     {compact}
     {type}
     {showStatus}
+    {overflowLabel}
     on:accent-color
   />
 {/if}

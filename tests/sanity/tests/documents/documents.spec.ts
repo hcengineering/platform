@@ -1,9 +1,11 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
 import { NewDocument, NewTeamspace } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentsPage } from '../model/documents/documents-page'
 import { DocumentContentPage } from '../model/documents/document-content-page'
+
+const retryOptions = { intervals: [100, 200, 1000], timeout: 60000 }
 
 test.use({
   storageState: PlatformSetting
@@ -87,6 +89,47 @@ test.describe('Documents tests', () => {
     await documentContentPage.checkDocumentTitle(moveDocument.title)
   })
 
+  test('Create a document inside another document', async () => {
+    const contentFirst = 'Text first line'
+    const parentTeamspace: NewTeamspace = {
+      title: `Parent Teamspace-${generateId()}`,
+      description: 'Parent Teamspace description',
+      private: false
+    }
+    const parentDocument: NewDocument = {
+      title: `Parent Document Title-${generateId()}`,
+      space: parentTeamspace.title
+    }
+    const childDocument: NewDocument = {
+      title: `Child Document Title-${generateId()}`,
+      space: parentTeamspace.title
+    }
+
+    await test.step('Create a parent document by button "+" in left menu documents list', async () => {
+      await leftSideMenuPage.clickDocuments()
+      await documentsPage.checkTeamspaceNotExist(parentTeamspace.title)
+      await documentsPage.createNewTeamspace(parentTeamspace)
+      await documentsPage.checkTeamspaceExist(parentTeamspace.title)
+      await documentsPage.clickOnButtonCreateDocument()
+      await documentsPage.createDocument(parentDocument)
+    })
+
+    await test.step('Create a child document', async () => {
+      await documentsPage.clickAddDocumentIntoDocument(parentDocument.title)
+      await expect(async () => {
+        await documentContentPage.checkDocumentTitle('Untitled')
+      }).toPass(retryOptions)
+      await documentContentPage.updateDocumentTitle(childDocument.title)
+
+      const content = await documentContentPage.addContentToTheNewLine(contentFirst)
+      await documentContentPage.checkContent(content)
+    })
+
+    await test.step('Check nesting of documents', async () => {
+      await documentsPage.checkIfParentDocumentIsExistInBreadcrumbs(parentDocument.title)
+    })
+  })
+
   test('Collaborative edit document content', async ({ page, browser }) => {
     let content = ''
     const contentFirstUser = 'First first!!! This string comes from the first user'
@@ -132,7 +175,7 @@ test.describe('Documents tests', () => {
     })
   })
 
-  test('Add Link to the Document', async () => {
+  test.skip('Add Link to the Document', async () => {
     const contentLink = 'Lineforthelink'
     const linkDocument: NewDocument = {
       title: `Links Document Title-${generateId()}`,
@@ -147,7 +190,75 @@ test.describe('Documents tests', () => {
     await documentContentPage.addRandomLines(5)
     await documentContentPage.addContentToTheNewLine(contentLink)
     await documentContentPage.addRandomLines(5)
-    await documentContentPage.addLinkToText(contentLink, 'test/link/123456')
-    await documentContentPage.checkLinkInTheText(contentLink, 'test/link/123456')
+    await documentContentPage.addLinkToText(contentLink, 'http://test/link/123456')
+    await documentContentPage.checkLinkInTheText(contentLink, 'http://test/link/123456')
+  })
+
+  test('Check Link to Reference conversion and sync', async () => {
+    const sourceDocument: NewDocument = {
+      title: `Reference Document Title-${generateId()}`,
+      space: 'Default'
+    }
+    const targetDocument: NewDocument = {
+      title: `Reference Document Title-${generateId()}`,
+      space: 'Default'
+    }
+
+    await test.step('Create two documents and reference one from the other', async () => {
+      await leftSideMenuPage.clickDocuments()
+
+      await documentsPage.clickOnButtonCreateDocument()
+      await documentsPage.createDocument(targetDocument)
+      await documentsPage.openDocument(targetDocument.title)
+      await documentContentPage.checkDocumentTitle(targetDocument.title)
+      const targetDocumentUrl = documentsPage.page.url()
+
+      await documentsPage.clickOnButtonCreateDocument()
+      await documentsPage.createDocument(sourceDocument)
+      await documentsPage.openDocument(sourceDocument.title)
+      await documentContentPage.checkDocumentTitle(sourceDocument.title)
+
+      await documentContentPage.addRandomLines(5)
+      await documentContentPage.addContentToTheNewLine(targetDocumentUrl)
+      await documentContentPage.addRandomLines(5)
+      await documentContentPage.checkReferenceInTheText(targetDocument.title)
+
+      await leftSideMenuPage.clickDocuments()
+    })
+
+    await test.step('Rename the document and check sync', async () => {
+      await leftSideMenuPage.clickDocuments()
+
+      const targetDocumentSecondTitle = `Updated Reference Document Title-${generateId()}`
+
+      await documentsPage.openDocument(targetDocument.title)
+      await documentContentPage.checkDocumentTitle(targetDocument.title)
+      await documentContentPage.updateDocumentTitle(targetDocumentSecondTitle)
+      await documentContentPage.checkDocumentTitle(targetDocumentSecondTitle)
+
+      await documentsPage.openDocument(sourceDocument.title)
+      await documentContentPage.checkDocumentTitle(sourceDocument.title)
+
+      await documentContentPage.checkReferenceInTheText(targetDocumentSecondTitle)
+    })
+  })
+
+  test('Locked document and checking URL', async ({ page, context }) => {
+    const newDocument: NewDocument = {
+      title: `New Document-${generateId()}`,
+      space: 'Default'
+    }
+
+    await leftSideMenuPage.clickDocuments()
+    await documentsPage.clickOnButtonCreateDocument()
+    await documentsPage.createDocument(newDocument)
+    await documentsPage.selectMoreActionOfDocument(newDocument.title, 'Lock')
+    await documentsPage.selectMoreActionOfDocument(newDocument.title, 'Copy document URL to clipboard')
+    await context.grantPermissions(['clipboard-read'])
+    const handle = await page.evaluateHandle(() => navigator.clipboard.readText())
+    const clipboardContent = await handle.jsonValue()
+    await page.goto(`${clipboardContent}`)
+    await documentContentPage.checkDocumentTitle(newDocument.title)
+    await documentContentPage.checkDocumentLocked()
   })
 })

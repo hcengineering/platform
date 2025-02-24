@@ -48,13 +48,8 @@
     "Locked": "Bloqueado",
     "ConfigLabel": "Documentos",
     "ConfigDescription": "Extensão para edição colaborativa de documentos",
-    "UnassignToDo": "Remover tarefa atribuída",
-    "UnassignToDoConfirm": "Você deseja remover a tarefa atribuída? A tarefa será removida do planejamento do responsável.",
-    "ReassignToDo": "Alterar responsável pela tarefa",
-    "ReassignToDoConfirm": "Você deseja alterar o responsável pela tarefa? A tarefa será removida do planejamento atual do responsável.",
     "Icon": "Ícone",
     "Color": "Cor",
-    "RoleLabel": "Papel: {role}",
-    "Embeddings": "Incorporações"
+    "RoleLabel": "Papel: {role}"
   }
 }

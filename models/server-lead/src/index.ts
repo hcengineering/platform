@@ -39,14 +39,15 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,
     {
-      func: serverNotification.function.IsUserEmployeeInFieldValue
+      func: serverNotification.function.IsUserEmployeeInFieldValueTypeMatch
     }
   )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverLead.trigger.OnWorkspaceOwnerAdded,
+    trigger: serverLead.trigger.OnSocialIdentityCreate,
     txMatch: {
-      objectClass: contact.class.PersonAccount
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.SocialIdentity
     }
   })
 }

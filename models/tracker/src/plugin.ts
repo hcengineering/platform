@@ -15,8 +15,7 @@
 //
 import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
-import { type StatusCategory, type Doc, type Ref, type DocManager } from '@hcengineering/core'
-import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
+import { type Doc, type DocManager, type Ref, type StatusCategory } from '@hcengineering/core'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type ProjectType } from '@hcengineering/task'
@@ -40,8 +39,6 @@ export default mergeIds(trackerId, tracker, {
     CreatedDate: '' as IntlString,
     ChangeStatus: '' as IntlString,
     ConfigDescription: '' as IntlString,
-    Unarchive: '' as IntlString,
-    UnarchiveConfirm: '' as IntlString,
     AllProjects: '' as IntlString,
     MapRelatedIssues: '' as IntlString,
     Extensions: '' as IntlString
@@ -87,12 +84,7 @@ export default mergeIds(trackerId, tracker, {
     IssueTemplateChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
     ComponentChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
     MilestoneChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
-    ClassingProjectType: '' as Ref<ProjectType>,
     DefaultProjectType: '' as Ref<ProjectType>
-  },
-  completion: {
-    IssueQuery: '' as Resource<ObjectSearchFactory>,
-    IssueCategory: '' as Ref<ObjectSearchCategory>
   },
   actionImpl: {
     Move: '' as ViewAction,
@@ -101,8 +93,7 @@ export default mergeIds(trackerId, tracker, {
     EditProject: '' as ViewAction,
     DeleteProject: '' as ViewAction,
     DeleteIssue: '' as ViewAction,
-    DeleteMilestone: '' as ViewAction,
-    ImportIssues: '' as ViewAction
+    DeleteMilestone: '' as ViewAction
   },
   action: {
     NewRelatedIssue: '' as Ref<Action<Doc, any>>,

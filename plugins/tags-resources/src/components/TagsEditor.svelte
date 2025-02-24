@@ -13,9 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
-  import { KeyedAttribute } from '@hcengineering/presentation'
+  import {
+    toIdMap,
+    type AttachedDoc,
+    type Class,
+    type Collection,
+    type Doc,
+    type IdMap,
+    type Ref
+  } from '@hcengineering/core'
+  import { translateCB } from '@hcengineering/platform'
+  import { createQuery, KeyedAttribute } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
   import {
     Button,
@@ -37,8 +45,14 @@
   export let targetClass: Ref<Class<Doc>>
   export let key: KeyedAttribute
   export let showTitle = true
-  export let elements: Map<Ref<TagElement>, TagElement>
   export let schema: '0' | '3' | '9' = key.attr.schema ?? '0'
+  export let readonly = false
+
+  let elements: IdMap<TagElement> = new Map()
+  const elementQuery = createQuery()
+  $: elementQuery.query(tags.class.TagElement, { _id: { $in: items.map((it) => it.tag) } }, (result) => {
+    elements = toIdMap(result)
+  })
 
   const dispatch = createEventDispatcher()
 
@@ -46,7 +60,7 @@
 
   $: itemLabel = (key.attr.type as Collection<AttachedDoc>).itemLabel
 
-  $: translate(itemLabel ?? key.attr.label, {}, $themeStore.language).then((v) => {
+  $: translateCB(itemLabel ?? key.attr.label, {}, $themeStore.language, (v) => {
     keyLabel = v
   })
 
@@ -100,13 +114,15 @@
         <Label label={key.attr.label} />
       </span>
       <div class="buttons-group x-small">
-        <Button
-          icon={IconAdd}
-          kind={'ghost'}
-          showTooltip={{ label: tags.string.AddTagTooltip, props: { word: keyLabel } }}
-          id={'add-tag'}
-          on:click={addTag}
-        />
+        {#if !readonly}
+          <Button
+            icon={IconAdd}
+            kind={'ghost'}
+            showTooltip={{ label: tags.string.AddTagTooltip, props: { word: keyLabel } }}
+            id={'add-tag'}
+            on:click={addTag}
+          />
+        {/if}
       </div>
     </div>
   {/if}

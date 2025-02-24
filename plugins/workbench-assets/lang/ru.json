@@ -24,11 +24,19 @@
     "OpenInNewTab": "Открыть в новой вкладке",
     "NewVersionAvailable": "Доступна новая версия",
     "PleaseUpdate": "Пожалуйста, обновите приложение",
-    "ServerUnderMaintenance": "Обслуживание сервера",
+    "ServerUnderMaintenance": "Подготовка рабочего пространства для новой версии...",
     "MobileNotSupported": "Простите, поддержка мобильных устройств скоро будет доступна. Пока воспользуйтесь компьютером.",
     "LogInAnyway": "Все равно войти",
     "WorkspaceCreating": "Пространство создается...",
     "AccessDenied": "Объект не существует или у вас нет прав доступа.",
-    "UpgradeDownloadProgress": "Загрузка обновления: {percent}%"
+    "UpgradeDownloadProgress": "Загрузка обновления: {percent}%",
+    "Widget": "Виджет",
+    "WidgetPreferences": "Настройки виджета",
+    "OpenInSidebar": "Открыть в боковой панели",
+    "OpenInSidebarNewTab": "Открыть в новой вкладке боковой панели",
+    "ConfigureWidgets": "Настроить виджеты",
+    "Tab": "Вкладка",
+    "WorkspaceIsArchived": "Рабочее пространство архивировано из-за неиспользования, пожалуйста, свяжитесь с нами для восстановления...",
+    "WorkspaceIsMigrating": "Рабочее пространство обновляется. Пожалуйста, подождите..."
   }
 }

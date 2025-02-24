@@ -10,6 +10,8 @@ import {
   type Vacancy,
   type VacancyList
 } from '@hcengineering/recruit'
+import { type Poll } from '@hcengineering/survey'
+import { generatePollLocation } from '@hcengineering/survey-resources'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
@@ -21,7 +23,7 @@ type RecruitDocument = Vacancy | Applicant | Review
 export async function objectLinkProvider (doc: RecruitDocument): Promise<string> {
   const location = getCurrentResolvedLocation()
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-  const url = `${frontUrl}/${workbenchId}/${location.path[1]}/${recruitId}/${await getSequenceId(doc)}`
+  const url = `${frontUrl}/${workbenchId}/${location.path[1]}/${recruitId}/${getSequenceId(doc)}`
   return url
 }
 
@@ -32,6 +34,10 @@ function isShortId (shortLink: string): boolean {
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== recruitId) {
     return undefined
+  }
+
+  if (loc.path[3] === 'poll') {
+    return await generatePollLocation(loc, loc.path[4] as Ref<Poll>)
   }
 
   const shortLink = loc.path[3]
@@ -66,7 +72,7 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
     console.error(`Not found class with short label ${classLabel}`)
     return undefined
   }
-  const doc = await client.findOne(_class, { _id: _id as Ref<Doc> })
+  const doc = await client.findOne(_class, { _id: _id as Ref<Doc> }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with id ${_id}.`)
@@ -154,7 +160,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
     console.error(`Not found class with short label ${classLabel}`)
     return undefined
   }
-  const doc = await client.findOne(_class, { number })
+  const doc = await client.findOne(_class, { number }, { showArchived: true })
   if (doc === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with number ${number}.`)
@@ -188,7 +194,7 @@ export async function getSequenceLink (doc: RecruitDocument): Promise<Location> 
   loc.fragment = undefined
   loc.query = undefined
   loc.path[2] = recruitId
-  loc.path[3] = await getSequenceId(doc)
+  loc.path[3] = getSequenceId(doc)
 
   return loc
 }
@@ -220,6 +226,12 @@ export async function getAppTitle (client: Client, ref: Ref<Applicant>, doc?: Ap
   return getName(client.getHierarchy(), candidate)
 }
 
+export function getCandidateIdentifier (ref: Ref<Candidate>): string {
+  const hierarchy = getClient().getHierarchy()
+  const clazz = hierarchy.getClass(recruit.mixin.Candidate)
+  return clazz.shortLabel !== undefined ? `${clazz.shortLabel}-${ref}` : ref
+}
+
 export async function getAppIdentifier (client: Client, ref: Ref<Applicant>, doc?: Applicant): Promise<string> {
   const applicant = doc ?? (await client.findOne(recruit.class.Applicant, { _id: ref }))
 
@@ -235,7 +247,7 @@ export async function getRevTitle (client: Client, ref: Ref<Review>, doc?: Revie
   return object != null ? object.title : ''
 }
 
-export async function getSequenceId (doc: RecruitDocument): Promise<string> {
+export function getSequenceId (doc: RecruitDocument): string {
   const client = getClient()
   const hierarchy = client.getHierarchy()
   if (hierarchy.isDerived(doc._class, recruit.class.Applicant)) {
@@ -262,7 +274,7 @@ export async function getVacancyIdentifier (client: Client, ref: Ref<Vacancy>, d
     return ''
   }
 
-  return await getSequenceId(vacancy)
+  return getSequenceId(vacancy)
 }
 
 export async function getReviewIdentifier (client: Client, ref: Ref<Review>, doc?: Review): Promise<string> {
@@ -272,5 +284,5 @@ export async function getReviewIdentifier (client: Client, ref: Ref<Review>, doc
     return ''
   }
 
-  return await getSequenceId(review)
+  return getSequenceId(review)
 }

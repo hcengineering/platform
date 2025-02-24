@@ -41,8 +41,9 @@ import type {
 } from '@hcengineering/telegram'
 import templates from '@hcengineering/templates'
 import view from '@hcengineering/view'
+
 import telegram from './plugin'
-import notification from '@hcengineering/model-notification'
+import { defineNotifications } from './notification'
 
 export { telegramId } from '@hcengineering/telegram'
 export { telegramOperation } from './migration'
@@ -155,6 +156,7 @@ export function createModel (builder: Builder): void {
     {
       label: telegram.string.Telegram,
       description: telegram.string.TelegramIntegrationDesc,
+      descriptionComponent: telegram.component.TelegramIntegrationDescription,
       icon: telegram.component.IconTelegram,
       allowMultiple: false,
       createComponent: telegram.component.Connect,
@@ -178,36 +180,8 @@ export function createModel (builder: Builder): void {
     telegram.ids.TelegramMessageSharedActivityViewlet
   )
 
-  builder.createDoc(
-    notification.class.NotificationGroup,
-    core.space.Model,
-    {
-      label: telegram.string.Telegram,
-      icon: contact.icon.Telegram
-    },
-    telegram.ids.NotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: telegram.string.NewMessage,
-      generated: false,
-      allowedForAuthor: true,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: telegram.class.Message,
-      group: telegram.ids.NotificationGroup,
-      providers: {
-        [notification.providers.PlatformNotification]: true
-      }
-    },
-    telegram.ids.NewMessageNotification
-  )
-
-  builder.mixin(telegram.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
-    parentPropagate: false,
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: telegram.class.Message,
     childProcessingAllowed: true
   })
 
@@ -223,4 +197,6 @@ export function createModel (builder: Builder): void {
       { createdOn: -1 }
     ]
   })
+
+  defineNotifications(builder)
 }

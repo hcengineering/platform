@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
   import { createEventDispatcher, onMount } from 'svelte'
   import { registerFocus } from '../focus'
   import plugin from '../plugin'
   import type { EditStyle } from '../types'
-  import Label from './Label.svelte'
   import { floorFractionDigits } from '../utils'
-  import { themeStore } from '@hcengineering/theme'
+  import Label from './Label.svelte'
 
   export let id: string | undefined = undefined
   export let label: IntlString | undefined = undefined
@@ -29,7 +29,7 @@
   export let value: string | number | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
-  export let format: 'text' | 'password' | 'number' = 'text'
+  export let format: 'text' | 'password' | 'number' | 'text-multiline' = 'text'
   export let maxDigitsAfterPoint: number | undefined = undefined
   export let kind: EditStyle = 'editbox'
   export let autoFocus: boolean = false
@@ -43,8 +43,8 @@
 
   const dispatch = createEventDispatcher()
 
-  let input: HTMLInputElement
-  let phTraslate: string = ''
+  let input: HTMLInputElement | HTMLTextAreaElement
+  let phTranslate: string = ''
 
   $: {
     if (
@@ -56,8 +56,8 @@
       value = floorFractionDigits(Number(value), maxDigitsAfterPoint)
     }
   }
-  $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
-    phTraslate = res
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
+    phTranslate = res
   })
 
   function handleInput (): void {
@@ -135,15 +135,35 @@
     class:w-full={fullSize}
     style:width={maxWidth}
   >
-    {#if format === 'password'}
+    {#if format === 'text-multiline'}
+      <div class="antiEditBoxGridWrapper" data-value={value}>
+        <textarea
+          rows="1"
+          class="antiEditBoxInput"
+          {disabled}
+          style:width={maxWidth}
+          bind:this={input}
+          bind:value
+          placeholder={phTranslate}
+          on:input={handleInput}
+          on:change
+          on:keydown
+          on:keypress
+          on:blur={() => {
+            dispatch('blur', value)
+          }}
+        />
+      </div>
+    {:else if format === 'password'}
       <input
+        class="antiEditBoxInput"
         {disabled}
         style:width={maxWidth}
         id="userPassword"
         bind:this={input}
         type="Password"
         bind:value
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         on:input={handleInput}
         on:change
         on:keydown
@@ -154,13 +174,13 @@
       />
     {:else if format === 'number'}
       <input
+        class="antiEditBoxInput number"
         {disabled}
         style:width={maxWidth}
         bind:this={input}
         type="number"
-        class="number"
         bind:value
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         on:input={handleInput}
         on:change
         on:keydown
@@ -171,12 +191,13 @@
       />
     {:else}
       <input
+        class="antiEditBoxInput"
         {disabled}
         style:width={maxWidth}
         bind:this={input}
         type="text"
         bind:value
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         on:input={handleInput}
         on:change
         on:keydown

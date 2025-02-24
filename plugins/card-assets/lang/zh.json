@@ -1,0 +1,24 @@
+{
+  "string": {
+    "Card": "卡片",
+    "CardApplication": "卡片",
+    "Cards": "卡片",
+    "Content": "内容",
+    "CreateCard": "创建卡片",
+    "CreateMasterTag": "创建类型",
+    "CreateTag": "创建标签",
+    "MasterTag": "类型",
+    "MasterTags": "类型",
+    "Parent": "父级",
+    "Tags": "标签",
+    "Tag": "标签",
+    "CardLibrary": "卡片库",
+    "MinimizeAll": "全部最小化",
+    "ExpandAll": "全部展开",
+    "DeleteTag": "删除标签",
+    "TagRelations": "标签关系",
+    "DeleteTagConfirm": "您确定要删除此标签吗？所有相关属性都将被删除",
+    "DeleteMasterTag": "删除类型",
+    "DeleteMasterTagConfirm": "您确定要删除此类型吗？所有与此类型相关的对象都将被删除"
+  }
+}

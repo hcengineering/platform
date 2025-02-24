@@ -13,133 +13,112 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { type Ref, type Doc, SortingOrder, getCurrentAccount, WithLookup } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import type { PersonAccount } from '@hcengineering/contact'
-  import { type Action } from '@hcengineering/ui'
   import documents, {
-    type ControlledDocument,
     type DocumentMeta,
-    type ProjectMeta,
-    type ProjectDocument,
-    getDocumentName,
-    DocumentState
+    DocumentState,
+    ProjectDocumentTree,
+    getDocumentName
   } from '@hcengineering/controlled-documents'
+  import { type Doc, type Ref } from '@hcengineering/core'
+  import { type Action } from '@hcengineering/ui'
   import { TreeItem } from '@hcengineering/view-resources'
-  import { compareDocs } from '../../utils'
+  import { createEventDispatcher } from 'svelte'
 
-  export let projectMeta: ProjectMeta[] = []
-  export let childrenByParent: Record<Ref<DocumentMeta>, Array<ProjectMeta>>
+  export let tree = new ProjectDocumentTree()
+  export let documentIds: Ref<DocumentMeta>[] = []
+
   export let selected: Ref<Doc> | undefined
   export let level: number = 0
   export let getMoreActions: ((obj: Doc, originalEvent?: MouseEvent) => Promise<Action[]>) | undefined = undefined
   export let collapsedPrefix: string = ''
 
+  export let onDragStart: ((e: DragEvent, object: Ref<DocumentMeta>) => void) | undefined = undefined
+  export let onDragOver: ((e: DragEvent, object: Ref<DocumentMeta>) => void) | undefined = undefined
+  export let onDragEnd: ((e: DragEvent, object: Ref<DocumentMeta>) => void) | undefined = undefined
+  export let onDrop: ((e: DragEvent, object: Ref<DocumentMeta>) => void) | undefined = undefined
+
+  export let draggedItem: Ref<DocumentMeta> | undefined = undefined
+  export let draggedOver: Ref<DocumentMeta> | undefined = undefined
+
+  import DropArea from './DropArea.svelte'
+
+  const removeStates = [DocumentState.Obsolete, DocumentState.Deleted]
+
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const currentPerson = currentUser.person
-
-  const docsQuery = createQuery()
-  let docs: WithLookup<ProjectDocument>[] = []
-
-  $: docsQuery.query(
-    documents.class.ProjectDocument,
-    {
-      '$lookup.document.state': { $ne: DocumentState.Deleted },
-      attachedTo: { $in: projectMeta.map((p) => p._id) }
-    },
-    (result) => {
-      docs = []
-      let lastTemplate: string | undefined = '###'
-      let lastSeqNumber = -1
-
-      for (const prjdoc of result) {
-        const doc = prjdoc.$lookup?.document as ControlledDocument | undefined
-        if (doc === undefined) continue
-        if (doc.state === DocumentState.Deleted) continue
-
-        // TODO add proper fix, when document with no template copied, saved value is null
-        const template = doc.template ?? undefined
-        if (template === lastTemplate && doc.seqNumber === lastSeqNumber) {
-          continue
-        }
-
-        if (
-          [DocumentState.Effective, DocumentState.Archived].includes(doc.state) ||
-          doc.owner === currentPerson ||
-          doc.coAuthors.findIndex((emp) => emp === currentPerson) >= 0 ||
-          doc.approvers.findIndex((emp) => emp === currentPerson) >= 0 ||
-          doc.reviewers.findIndex((emp) => emp === currentPerson) >= 0
-        ) {
-          docs.push(prjdoc)
-
-          lastTemplate = template
-          lastSeqNumber = doc.seqNumber
-        }
-      }
-
-      docs.sort((a, b) => {
-        if (a.$lookup?.document !== undefined && b.$lookup?.document !== undefined) {
-          return compareDocs(a.$lookup.document, b.$lookup.document)
-        }
-        return 0
-      })
-    },
-    {
-      lookup: {
-        document: documents.class.ControlledDocument
-      },
-      sort: {
-        '$lookup.document.template': SortingOrder.Ascending,
-        '$lookup.document.seqNumber': SortingOrder.Ascending,
-        '$lookup.document.major': SortingOrder.Descending,
-        '$lookup.document.minor': SortingOrder.Descending,
-        '$lookup.document.patch': SortingOrder.Descending
-      }
-    }
-  )
 
   async function getDocMoreActions (obj: Doc): Promise<Action[]> {
     return getMoreActions !== undefined ? await getMoreActions(obj) : []
   }
 </script>
 
-{#each docs as prjdoc}
-  {@const doc = prjdoc.$lookup?.document}
+{#each documentIds as metaid}
+  {@const bundle = tree.bundleOf(metaid)}
+  {@const prjdoc = bundle?.ProjectDocument[0]}
+  {@const doc = bundle?.ControlledDocument[0]}
+  {@const meta = bundle?.DocumentMeta[0]}
+  {@const title = doc ? getDocumentName(doc) : meta?.title ?? ''}
+  {@const docid = doc?._id ?? prjdoc?._id}
+  {@const isFolder = prjdoc?.document === documents.ids.Folder}
+  {@const children = tree.childrenOf(metaid)}
+  {@const isRemoved = doc && removeStates.includes(doc.state)}
 
-  {#if doc}
-    {@const children = childrenByParent[doc.attachedTo] ?? []}
-    <TreeItem
-      _id={doc._id}
-      icon={documents.icon.Document}
-      iconProps={{
-        fill: 'currentColor'
-      }}
-      title={getDocumentName(doc)}
-      selected={selected === doc._id || selected === prjdoc._id}
-      isFold
-      empty={children.length === 0 || children === undefined}
-      actions={getMoreActions !== undefined ? () => getDocMoreActions(prjdoc) : undefined}
-      {level}
-      {collapsedPrefix}
-      on:click={() => {
-        dispatch('selected', prjdoc)
-      }}
-    >
-      <svelte:fragment slot="dropbox">
-        {#if children.length}
-          <svelte:self
-            projectMeta={children}
-            {childrenByParent}
-            {selected}
-            {collapsedPrefix}
-            {getMoreActions}
-            level={level + 1}
-            on:selected
-          />
-        {/if}
-      </svelte:fragment>
-    </TreeItem>
+  {#if prjdoc && metaid}
+    {@const isDraggedOver = draggedOver === metaid}
+    <div class="flex-col relative">
+      {#if isDraggedOver}
+        <DropArea />
+      {/if}
+      <TreeItem
+        _id={docid}
+        icon={isFolder ? documents.icon.Folder : documents.icon.Document}
+        iconProps={{
+          fill: isRemoved ? 'var(--dangerous-bg-color)' : 'currentColor'
+        }}
+        {title}
+        selected={selected === docid || selected === prjdoc._id}
+        isFold
+        empty={children.length === 0}
+        actions={getMoreActions !== undefined ? () => getDocMoreActions(prjdoc) : undefined}
+        {level}
+        {collapsedPrefix}
+        shouldTooltip
+        on:click={() => {
+          dispatch('selected', prjdoc)
+        }}
+        draggable={onDragStart !== undefined}
+        on:dragstart={(evt) => {
+          onDragStart?.(evt, metaid)
+        }}
+        on:dragover={(evt) => {
+          onDragOver?.(evt, metaid)
+        }}
+        on:dragend={(evt) => {
+          onDragEnd?.(evt, metaid)
+        }}
+        on:drop={(evt) => {
+          onDrop?.(evt, metaid)
+        }}
+      >
+        <svelte:fragment slot="dropbox">
+          {#if children.length}
+            <svelte:self
+              documentIds={children}
+              {tree}
+              {selected}
+              {collapsedPrefix}
+              {getMoreActions}
+              level={level + 1}
+              {onDragStart}
+              {onDragOver}
+              {onDragEnd}
+              {onDrop}
+              {draggedItem}
+              {draggedOver}
+              on:selected
+            />
+          {/if}
+        </svelte:fragment>
+      </TreeItem>
+    </div>
   {/if}
 {/each}

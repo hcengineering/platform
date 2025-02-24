@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import { CreateGuest, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import contact, { Person } from '@hcengineering/contact'
+  import { CreateGuest, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Ref, type PersonId } from '@hcengineering/core'
+  import { IntlString, translateCB } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import { themeStore } from '@hcengineering/theme'
@@ -40,12 +40,12 @@
   let text: HTMLElement
   let input: HTMLInputElement
   let style: string
-  let phTraslate: string = ''
+  let phTranslate: string = ''
   let parentWidth: number | undefined
 
   $: style = `max-width: ${maxWidth || (parentWidth ? `${parentWidth}px` : 'max-content')};`
-  $: translate(placeholder, {}, $themeStore.language).then((res) => {
-    phTraslate = res
+  $: translateCB(placeholder, {}, $themeStore.language, (res) => {
+    phTranslate = res
   })
 
   function computeSize (t: HTMLInputElement | EventTarget | null) {
@@ -54,7 +54,7 @@
     }
     const target = t as HTMLInputElement
     const value = target.value
-    text.innerHTML = (value === '' ? phTraslate : value)
+    text.innerHTML = (value === '' ? phTranslate : value)
       .replaceAll(' ', '&nbsp;')
       .replaceAll('<', '&lt;')
       .replaceAll('>', '&gt;')
@@ -117,12 +117,12 @@
     }
   )
 
-  $: findCompletions(value, integrations, $personAccountByIdStore, excluded)
+  $: findCompletions(value, integrations, $personRefByPersonIdStore, excluded)
 
   async function findCompletions (
     val: string | undefined,
     integrations: Integration[],
-    accounts: IdMap<PersonAccount>,
+    personRefByPersonIdStore: Map<PersonId, Ref<Person>>,
     excluded: Ref<Person>[]
   ): Promise<void> {
     if (val === undefined || val.length < 3) {
@@ -133,9 +133,9 @@
     const res = new Set<Ref<Person>>()
     for (const integration of integrations) {
       if (integration.value.includes(val)) {
-        const acc = accounts.get((integration.createdBy ?? integration.modifiedBy) as Ref<PersonAccount>)
-        if (acc !== undefined && !excluded.includes(acc.person)) {
-          res.add(acc.person)
+        const authorPerson = personRefByPersonIdStore.get(integration.createdBy ?? integration.modifiedBy)
+        if (authorPerson !== undefined && !excluded.includes(authorPerson)) {
+          res.add(authorPerson)
         }
       }
     }
@@ -201,7 +201,7 @@
         bind:this={input}
         type="text"
         bind:value
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         {style}
         on:input={(ev) => {
           computeSize(ev.target)

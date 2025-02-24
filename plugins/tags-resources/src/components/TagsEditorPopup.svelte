@@ -15,8 +15,11 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import tags, { TagElement } from '@hcengineering/tags'
+  import tags, { TagElement, TagsEvents } from '@hcengineering/tags'
+  import { Analytics } from '@hcengineering/analytics'
+
   import TagsPopup from './TagsPopup.svelte'
+  import { getObjectId } from '@hcengineering/view-resources'
 
   export let object: Doc
   export let targetClass: Ref<Class<Doc>> = object._class
@@ -27,6 +30,7 @@
     selected = result.map(({ tag }) => tag)
   })
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   async function addRef ({ title, color, _id: tag }: TagElement): Promise<void> {
     // check if tag already attached, could happen if 'add' clicked faster than ui updates
     const containsTag = selected.some((refElement) => refElement === tag)
@@ -41,6 +45,8 @@
       color,
       tag
     })
+    const id = await getObjectId(object, hierarchy)
+    Analytics.handleEvent(TagsEvents.TagCreated, { objectId: id, objectClass: object._class })
   }
 
   async function removeTag (tag: TagElement): Promise<void> {
@@ -48,6 +54,8 @@
     if (tagRef) {
       await client.remove(tagRef)
       selected.splice(selected.indexOf(tag._id), 1)
+      const id = await getObjectId(object, hierarchy)
+      Analytics.handleEvent(TagsEvents.TagRemoved, { objectId: id, objectClass: object._class })
     }
   }
 

@@ -17,12 +17,11 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, FileDownload } from '@hcengineering/attachment-resources'
   import { ChunterSpace } from '@hcengineering/chunter'
-  import core, { Doc, SortingOrder, getCurrentAccount, type WithLookup } from '@hcengineering/core'
-  import { createQuery, getBlobHref, getClient } from '@hcengineering/presentation'
+  import { Doc, SortingOrder, getCurrentAccount, type WithLookup } from '@hcengineering/core'
+  import { createQuery, getClient, getFileUrl } from '@hcengineering/presentation'
   import { Icon, IconMoreV, Label, Menu, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
 
   export let channel: ChunterSpace | undefined
-  const myAccId = getCurrentAccount()._id
   const client = getClient()
 
   const query = createQuery()
@@ -38,7 +37,7 @@
       Menu,
       {
         actions: [
-          ...(myAccId === object.modifiedBy
+          ...(getCurrentAccount().socialIds.includes(object.modifiedBy)
             ? [
                 {
                   label: attachment.string.DeleteFile,
@@ -68,10 +67,7 @@
       {
         limit: ATTACHEMNTS_LIMIT,
         sort,
-        total: true,
-        lookup: {
-          file: core.class.Blob
-        }
+        total: true
       }
     )
 </script>
@@ -86,11 +82,9 @@
             <AttachmentPresenter value={attachment} />
           </div>
           <div class="eAttachmentRowActions" class:fixed={i === selectedRowNumber}>
-            {#await getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name) then blobRef}
-              <a href={blobRef} download={attachment.name}>
-                <Icon icon={FileDownload} size={'small'} />
-              </a>
-            {/await}
+            <a href={getFileUrl(attachment.file, attachment.name)} download={attachment.name}>
+              <Icon icon={FileDownload} size={'small'} />
+            </a>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showMenu(event, attachment, i)}>

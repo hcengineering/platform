@@ -32,6 +32,7 @@ export default mergeIds(loginId, login, {
     LastName: '' as IntlString,
     FirstName: '' as IntlString,
     HaveAccount: '' as IntlString,
+    LoadingAccount: '' as IntlString,
     Join: '' as IntlString,
     Email: '' as IntlString,
     Password: '' as IntlString,
@@ -58,7 +59,16 @@ export default mergeIds(loginId, login, {
     AlreadyJoined: '' as IntlString,
     ConfirmationSent: '' as IntlString,
     ConfirmationSent2: '' as IntlString,
-    Slogan: '' as IntlString,
-    ContinueWith: '' as IntlString
+    ContinueWith: '' as IntlString,
+    HaventReceivedCode: '' as IntlString,
+    ResendCode: '' as IntlString,
+    WrongEmail: '' as IntlString,
+    ChangeEmail: '' as IntlString,
+    SentTo: '' as IntlString,
+    CanFindCode: '' as IntlString,
+    LoginWithCode: '' as IntlString,
+    LoginWithPassword: '' as IntlString,
+    SignUpWithCode: '' as IntlString,
+    SignUpWithPassword: '' as IntlString
   }
 })

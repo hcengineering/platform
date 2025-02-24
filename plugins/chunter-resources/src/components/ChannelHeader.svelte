@@ -17,9 +17,9 @@
   import { getDocTitle } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Channel } from '@hcengineering/chunter'
-  import { ActivityMessagesFilter } from '@hcengineering/activity'
+  import { ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
   import contact from '@hcengineering/contact'
-
+  import view from '@hcengineering/view'
   import Header from './Header.svelte'
   import chunter from '../plugin'
   import { getObjectIcon, getChannelName } from '../utils'
@@ -27,18 +27,23 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
-  export let object: Doc | undefined
-  export let allowClose = false
-  export let canOpen = false
-  export let withAside = false
-  export let isAsideShown = false
+  export let object: WithReferences<Doc> | undefined
+  export let allowClose: boolean = false
+  export let canOpen: boolean = false
+  export let withAside: boolean = false
+  export let withSearch: boolean = true
+  export let withPresence: boolean = true
+  export let isAsideShown: boolean = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
+  export let canOpenInSidebar: boolean = false
+  export let closeOnEscape: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   let title: string | undefined = undefined
   let description: string | undefined = undefined
+  let realWidth: number
 
   $: void updateDescription(_id, _class, object)
 
@@ -47,12 +52,13 @@
   })
 
   async function updateDescription (_id: Ref<Doc>, _class: Ref<Class<Doc>>, object?: Doc): Promise<void> {
-    if (hierarchy.isDerived(_class, chunter.class.DirectMessage)) {
+    if (hierarchy.isDerived(_class, chunter.class.DirectMessage) || hierarchy.isDerived(_class, contact.class.Person)) {
       description = undefined
     } else if (hierarchy.isDerived(_class, chunter.class.Channel)) {
       description = (object as Channel)?.topic
     } else {
-      description = await getDocTitle(client, _id, _class, object)
+      const hasId = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectIdentifier) !== undefined
+      description = hasId ? await getDocTitle(client, _id, _class, object) : undefined
     }
   }
 
@@ -60,30 +66,36 @@
     hierarchy.isDerived(_class, chunter.class.DirectMessage) || hierarchy.isDerived(_class, contact.class.Person)
 </script>
 
-<div class="ac-header divide full caption-height">
-  <Header
-    bind:filters
-    {object}
-    icon={getObjectIcon(_class)}
-    iconProps={{ value: object, showStatus: true }}
-    label={title}
-    intlLabel={chunter.string.Channel}
-    {description}
-    titleKind={isPerson ? 'default' : 'breadcrumbs'}
-    withFilters={!hierarchy.isDerived(_class, chunter.class.ChunterSpace)}
-    {allowClose}
-    {canOpen}
-    {withAside}
-    {isAsideShown}
-    on:aside-toggled
-    on:close
-  >
-    <PinnedMessages {_id} {_class} />
-  </Header>
-</div>
-
-<style lang="scss">
-  .ac-header {
-    padding: 0.5rem 1rem;
-  }
-</style>
+<Header
+  bind:filters
+  {object}
+  icon={getObjectIcon(_class)}
+  iconProps={{ value: object, showStatus: true }}
+  label={title}
+  intlLabel={chunter.string.Channel}
+  {description}
+  titleKind={isPerson ? 'default' : 'breadcrumbs'}
+  withFilters={false}
+  {allowClose}
+  {canOpen}
+  {withAside}
+  {isAsideShown}
+  {withSearch}
+  {withPresence}
+  {canOpenInSidebar}
+  {closeOnEscape}
+  bind:realWidth
+  on:aside-toggled
+  on:close
+>
+  {#if object}
+    <PinnedMessages
+      {_id}
+      {_class}
+      space={object.space}
+      withRefs={(object.references ?? 0) > 0}
+      iconOnly={realWidth < 380}
+      on:select
+    />
+  {/if}
+</Header>

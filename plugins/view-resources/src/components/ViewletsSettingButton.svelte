@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, WithLookup } from '@hcengineering/core'
+  import core, { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Button, ButtonKind, showPopup } from '@hcengineering/ui'
+  import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
@@ -25,7 +25,7 @@
   import { restrictionStore } from '../utils'
 
   export let viewletQuery: DocumentQuery<Viewlet> = {}
-  export let kind: ButtonKind = 'regular'
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let viewOptions: ViewOptions | undefined = undefined
 
   export let viewlet: Viewlet | undefined = undefined
@@ -37,9 +37,14 @@
   const dispatch = createEventDispatcher()
 
   let btn: HTMLButtonElement
+  let pressed: boolean = false
 
   function clickHandler (event: MouseEvent) {
-    showPopup(ViewletSetting, { viewlet }, btn)
+    pressed = true
+    closeTooltip()
+    showPopup(ViewletSetting, { viewlet }, btn, () => {
+      pressed = false
+    })
   }
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
@@ -67,6 +72,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {
@@ -87,15 +93,15 @@
     {#if viewOptions}
       <ViewOptionsButton {viewlet} {kind} {viewOptions} {disabled} />
     {/if}
-    <Button
+    <ButtonIcon
       icon={view.icon.Configure}
-      label={view.string.Show}
       {kind}
-      shrink={1}
+      size={'small'}
+      iconSize={'small'}
       {disabled}
-      adaptiveShrink={'sm'}
-      showTooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
-      bind:input={btn}
+      {pressed}
+      tooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
+      bind:element={btn}
       on:click={clickHandler}
     />
   </div>

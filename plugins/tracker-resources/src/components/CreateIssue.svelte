@@ -19,14 +19,16 @@
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Employee } from '@hcengineering/contact'
   import core, {
-    Account,
     Class,
     Doc,
     DocData,
+    type PersonId,
     Ref,
     SortingOrder,
     fillDefaults,
     generateId,
+    makeCollabId,
+    makeDocCollabId,
     toIdMap
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
@@ -40,13 +42,15 @@
     MessageBox,
     MultipleDraftController,
     SpaceSelector,
+    createMarkup,
     createQuery,
-    getClient
+    getClient,
+    getMarkup
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import {
     Component as ComponentType,
     Issue,
@@ -57,7 +61,8 @@
     IssueTemplate,
     Milestone,
     Project,
-    ProjectTargetPreference
+    ProjectTargetPreference,
+    TrackerEvents
   } from '@hcengineering/tracker'
   import {
     Button,
@@ -189,7 +194,6 @@
     if (originalIssue !== undefined && !ignoreOriginal) {
       const res: IssueDraft = {
         ...base,
-        description: originalIssue.description,
         status: originalIssue.status,
         priority: originalIssue.priority,
         component: originalIssue.component,
@@ -199,6 +203,9 @@
         parentIssue: originalIssue.parents[0]?.parentId,
         title: `${originalIssue.title} (copy)`
       }
+      void getMarkup(makeDocCollabId(originalIssue, 'description'), originalIssue.description).then((res) => {
+        object.description = res
+      })
       void client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
         object.labels = p
       })
@@ -269,7 +276,7 @@
       collection: 'labels',
       space: core.space.Workspace,
       modifiedOn: 0,
-      modifiedBy: '' as Ref<Account>,
+      modifiedBy: '' as PersonId,
       title: tag.title,
       tag: tag._id,
       color: tag.color
@@ -351,10 +358,14 @@
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
   }
 
-  $: spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
-    resetDefaultAssigneeId()
-    currentProject = res[0]
-  })
+  $: if (_space !== undefined) {
+    spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
+      resetDefaultAssigneeId()
+      currentProject = res[0]
+    })
+  } else {
+    currentProject = undefined
+  }
 
   const docCreateManager = DocCreateExtensionManager.create(tracker.class.Issue)
 
@@ -406,7 +417,27 @@
   $: projectPreferences.query(tracker.class.ProjectTargetPreference, {}, (res) => {
     preferences = res
   })
-  $: spacePreferences = preferences.find((it) => it.attachedTo === _space)
+
+  async function updateCurrentProjectPref (currentProject: Ref<Project>): Promise<void> {
+    const spacePreferences = await client.findOne(tracker.class.ProjectTargetPreference, { attachedTo: currentProject })
+    if (spacePreferences === undefined) {
+      await client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
+        attachedTo: currentProject,
+        props: [],
+        usedOn: Date.now()
+      })
+    } else {
+      if (spacePreferences.usedOn + 60 * 1000 < Date.now()) {
+        await client.update(spacePreferences, {
+          usedOn: Date.now()
+        })
+      }
+    }
+  }
+
+  $: if (_space !== undefined) {
+    void updateCurrentProjectPref(_space)
+  }
 
   async function createIssue (): Promise<void> {
     const _id: Ref<Issue> = generateId()
@@ -422,10 +453,8 @@
 
     // TODO: We need a measure client and mark all operations with it as measure under one root,
     // to prevent other operations to infer our measurement.
-    const doneOp = await getClient().measure('tracker.createIssue')
-
     try {
-      const operations = client.apply(_id)
+      const operations = client.apply(undefined, 'tracker.createIssue')
 
       const lastOne = await client.findOne<Issue>(
         tracker.class.Issue,
@@ -448,7 +477,7 @@
 
       const value: DocData<Issue> = {
         title: getTitle(object.title),
-        description: object.description,
+        description: null,
         assignee: object.assignee,
         component: object.component,
         milestone: object.milestone,
@@ -479,6 +508,11 @@
         childInfo: [],
         kind,
         identifier
+      }
+
+      if (!isEmptyMarkup(object.description)) {
+        const collabId = makeCollabId(tracker.class.Issue, _id, 'description')
+        value.description = await createMarkup(collabId, object.description)
       }
 
       await docCreateManager.commit(operations, _id, currentProject, value, 'pre')
@@ -513,8 +547,8 @@
         }
       }
 
-      await operations.commit()
-      await descriptionBox?.createAttachments(_id)
+      await descriptionBox?.createAttachments(_id, operations)
+      const result = await operations.commit()
 
       const parents: IssueParentInfo[] =
         parentIssue != null
@@ -545,15 +579,20 @@
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
       const d1 = Date.now()
-      void doneOp().then((res) => {
-        console.log('createIssue measure', res, Date.now() - d1)
+      const analyticsProps = await docCreateManager.getAnalyticsProps(currentProject, value)
+      Analytics.handleEvent(TrackerEvents.IssueCreated, {
+        ok: true,
+        id: value.identifier,
+        project: currentProject.identifier,
+        ...analyticsProps
       })
+      console.log('createIssue measure', result, Date.now() - d1)
     } catch (err: any) {
       resetObject()
       draftController.remove()
       descriptionBox?.removeDraft(false)
       console.error(err)
-      await doneOp() // Complete in case of error
+      Analytics.handleEvent(TrackerEvents.IssueCreated, { ok: false, project: currentProject.identifier })
       Analytics.handleError(err)
     }
   }
@@ -713,24 +752,6 @@
     originalIssue,
     preferences
   }
-
-  function updateCurrentProjectPref (currentProject: Ref<Project>): void {
-    if (spacePreferences === undefined) {
-      void client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
-        attachedTo: currentProject,
-        props: [],
-        usedOn: Date.now()
-      })
-    } else {
-      void client.update(spacePreferences, {
-        usedOn: Date.now()
-      })
-    }
-  }
-
-  $: if (_space !== undefined) {
-    updateCurrentProjectPref(_space)
-  }
 </script>
 
 <FocusHandler {manager} />
@@ -744,6 +765,7 @@
   onCancel={showConfirmationDialog}
   hideAttachments={attachments.size === 0}
   hideSubheader={parentIssue == null}
+  headerNoPadding
   noFade={true}
   on:changeContent
 >
@@ -753,7 +775,7 @@
       label={tracker.string.Project}
       bind:space={_space}
       on:object={(evt) => {
-        currentProject = evt.detail
+        currentProject = evt.detail ?? undefined
       }}
       kind={'regular'}
       size={'small'}
@@ -781,11 +803,16 @@
     <DocCreateExtComponent manager={docCreateManager} kind={'header'} space={currentProject} props={extraProps} />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
-    <div class="flex-row-center gap-2">
-      <div>
+    <div class="flex-row-center gap-2 pt-1 pb-1 pr-1">
+      <span class="overflow-label">
         <Label {label} />
-      </div>
-      <TaskKindSelector projectType={currentProject?.type} bind:value={kind} baseClass={tracker.class.Issue} />
+      </span>
+      <TaskKindSelector
+        projectType={currentProject?.type}
+        bind:value={kind}
+        baseClass={tracker.class.Issue}
+        size={'small'}
+      />
       {#if relatedTo}
         <div class="lower mr-2">
           <Label label={tracker.string.RelatedTo} />

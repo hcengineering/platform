@@ -1,0 +1,235 @@
+services:
+  minio:
+    image: 'minio/minio'
+    command: server /data --address ":9000" --console-address ":9001"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - files:/data
+    restart: unless-stopped
+  elastic:
+    image: 'elasticsearch:7.14.2'
+    command: |
+      /bin/sh -c "./bin/elasticsearch-plugin list | grep -q ingest-attachment || yes | ./bin/elasticsearch-plugin install --silent ingest-attachment;      
+      /usr/local/bin/docker-entrypoint.sh eswrapper"
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    environment:
+      - ELASTICSEARCH_PORT_NUMBER=9200
+      - BITNAMI_DEBUG=true
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+      - http.cors.enabled=true
+      - http.cors.allow-origin=http://localhost:8082      
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
+    restart: unless-stopped
+  account:
+    image: hardcoreeng/account
+    links:
+      - minio
+    ports:
+      - 3000:3000
+    volumes:
+      - ../branding.json:/var/cfg/branding.json
+    environment:
+      - ACCOUNT_PORT=3000
+      - SERVER_SECRET=secret
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
+      - SES_URL=
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://localhost:8087
+      - RESERVED_DB_NAMES=telegram,gmail,github
+      - MODEL_ENABLED=*
+      - LAST_NAME_FIRST=true
+      - ACCOUNTS_URL=http://localhost:3000
+      - BRANDING_PATH=/var/cfg/branding.json
+      - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
+      - INIT_WORKSPACE=onboarding      
+    restart: unless-stopped
+  collaborator:
+    image: hardcoreeng/collaborator
+    links:
+      - minio
+      - transactor
+    ports:
+      - 3078:3078
+    environment:
+      - COLLABORATOR_PORT=3078
+      - SECRET=secret
+      - ACCOUNTS_URL=http://account:3000
+      - UPLOAD_URL=/files
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - 'MONGO_OPTIONS={"appName":"collaborator","maxPoolSize":2}'
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+    restart: unless-stopped
+  front:
+    image: hardcoreeng/front
+    links:
+      - minio
+      - elastic
+      - transactor
+      - collaborator
+    ports:
+      - 8087:8080
+      - 8088:8080
+    environment:
+      - UV_THREADPOOL_SIZE=10
+      - SERVER_PORT=8080
+      - SERVER_SECRET=secret
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
+      - ACCOUNTS_URL=http://localhost:3000
+      - UPLOAD_URL=/files      
+      - GMAIL_URL=http://localhost:8088
+      - CALENDAR_URL=http://localhost:8095
+      - TELEGRAM_URL=http://localhost:8086
+      - REKONI_URL=http://localhost:4004
+      - COLLABORATOR_URL=ws://localhost:3078
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - GITHUB_URL=http://localhost:3500
+      - PRINT_URL=http://localhost:4005
+      - SIGN_URL=http://localhost:4006
+      - ANALYTICS_COLLECTOR_URL=http://localhost:4007
+      - DESKTOP_UPDATES_URL=https://dist.huly.io
+      - DESKTOP_UPDATES_CHANNEL=dev
+      - BRANDING_URL=http://localhost:8087/branding.json
+    restart: unless-stopped    
+  transactor:
+    image: hardcoreeng/transactor
+    links:
+      - elastic
+      - minio
+      - rekoni
+      - account
+      # - apm-server
+    ports:
+      - 3333:3333
+    volumes:
+      - ../branding.json:/var/cfg/branding.json      
+    environment:
+      # - SERVER_PROVIDER=uweb
+      # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
+      - UV_THREADPOOL_SIZE=10    
+      - SERVER_PORT=3333
+      - SERVER_SECRET=secret
+      - ENABLE_COMPRESSION=true
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
+      - METRICS_CONSOLE=false
+      - METRICS_FILE=metrics.txt
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - REKONI_URL=http://rekoni:4004
+      - FRONT_URL=http://localhost:8087
+      - UPLOAD_URL=http://localhost:8087/files
+      # - APM_SERVER_URL=http://apm-server:8200
+      - SES_URL=''
+      - ACCOUNTS_URL=http://account:3000
+      - LAST_NAME_FIRST=true
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - BRANDING_PATH=/var/cfg/branding.json      
+    restart: unless-stopped
+  rekoni:
+    image: hardcoreeng/rekoni-service
+    restart: unless-stopped
+    ports:
+      - 4004:4004
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+  print:
+    image: hardcoreeng/print
+    restart: unless-stopped
+    ports:
+      - 4005:4005
+    environment:
+      - SECRET=secret
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
+      - 'MONGO_OPTIONS={"appName":"print","maxPoolSize":1}'
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+  sign:
+    image: hardcoreeng/sign
+    restart: unless-stopped
+    ports:
+      - 4006:4006
+    volumes:
+      - ../../services/sign/pod-sign/debug/certificate.p12:/var/cfg/certificate.p12
+      - ../../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
+    environment:
+      - SECRET=secret
+      - MONGO_URL=mongodb://host.docker.internal:27017
+      - 'MONGO_OPTIONS={"appName":"sign","maxPoolSize":1}'
+      - MINIO_ENDPOINT=minio
+      - MINIO_ACCESS_KEY=minioadmin
+      - ACCOUNTS_URL=http://account:3000
+      - MINIO_SECRET_KEY=minioadmin
+      - CERTIFICATE_PATH=/var/cfg/certificate.p12
+      - SERVICE_ID=sign-service      
+      - BRANDING_PATH=/var/cfg/branding.json
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+#  analytics:
+#    image: hardcoreeng/analytics-collector
+#    restart: unless-stopped
+#    ports:
+#      - 4007:4007
+#    environment:
+#      - SECRET=secret
+#      - PORT=4007
+#      - MONGO_URL=mongodb://host.docker.internal:27017
+#      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
+#      - SERVICE_ID=analytics-collector-service
+#      - ACCOUNTS_URL=http://account:3000
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 300M
+  aiBot:
+    image: hardcoreeng/ai-bot
+    restart: unless-stopped
+    environment:
+      - SERVER_SECRET=secret
+      - MONGO_URL=mongodb://host.docker.internal:27017
+      - ACCOUNTS_URL=http://account:3000
+      - FIRST_NAME=Jolie
+      - LAST_NAME=AI
+      - PASSWORD=password
+      - AVATAR_PATH=./avatar.png
+      - AVATAR_CONTENT_TYPE=.png
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+#  telegram-bot:
+#    image: hardcoreeng/telegram-bot
+#    restart: unless-stopped
+#    environment:
+#      - PORT=4020
+#      - BOT_TOKEN=token
+#      - MONGO_URL=mongodb://host.docker.internal:27017
+#      - MONGO_DB=telegram-bot
+#      - SECRET=secret
+#      - DOMAIN=domain
+#      - ACCOUNTS_URL=http://account:3000
+#      - SERVICE_ID=telegram-bot-service
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 300M
+volumes:
+  db:
+  files:
+  elastic:

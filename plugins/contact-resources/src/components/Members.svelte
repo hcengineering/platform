@@ -68,7 +68,7 @@
   let preference: ViewletPreference | undefined
 </script>
 
-<Section label={contact.string.Members} icon={IconMembersOutline}>
+<Section id="members" label={contact.string.Members} icon={IconMembersOutline}>
   <svelte:fragment slot="header">
     <div class="buttons-group xsmall-gap">
       <ViewletSelector
@@ -78,7 +78,7 @@
         bind:loading
         viewletQuery={{ _id: contact.viewlet.TableMember }}
       />
-      <ViewletSettingButton kind={'ghost'} bind:viewlet />
+      <ViewletSettingButton kind={'tertiary'} bind:viewlet />
       {#if !readonly}
         <Button id={contact.string.AddMember} icon={IconAdd} kind={'ghost'} on:click={createApp} />
       {/if}

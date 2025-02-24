@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import core, { Doc } from '@hcengineering/core'
   import { AttributeModel } from '@hcengineering/view'
   import { FixedColumn } from '../..'
@@ -26,6 +27,8 @@
   export let hideDivider: boolean = false
   export let compactMode: boolean = false
 
+  const dispatch = createEventDispatcher()
+
   $: dp = attributeModel?.displayProps
 
   function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>) {
@@ -34,6 +37,10 @@
       return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
     }
     return { object, ...clearAttributeProps, space: object.space, ...props }
+  }
+  const translateSize = (e: CustomEvent): void => {
+    if (e.detail === undefined) return
+    dispatch('resize', e.detail)
   }
 </script>
 
@@ -49,6 +56,7 @@
       kind={'list'}
       {compactMode}
       {...joinProps(attributeModel, docObject, props)}
+      on:resize={translateSize}
     />
   </FixedColumn>
 {:else}
@@ -59,5 +67,6 @@
     kind={'list'}
     {compactMode}
     {...joinProps(attributeModel, docObject, props)}
+    on:resize={translateSize}
   />
 {/if}

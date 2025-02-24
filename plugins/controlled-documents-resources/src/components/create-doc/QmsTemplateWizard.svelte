@@ -18,24 +18,14 @@
     ChangeControl,
     ControlledDocument,
     DEFAULT_PERIODIC_REVIEW_INTERVAL,
-    DEFAULT_SECTION_TITLE,
     DocumentState,
     DocumentTemplate,
     TEMPLATE_PREFIX,
     createChangeControl,
     createDocumentTemplate
   } from '@hcengineering/controlled-documents'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import {
-    type AttachedData,
-    type Class,
-    type Data,
-    type Ref,
-    type Mixin,
-    generateId,
-    getCollaborativeDoc,
-    getCurrentAccount
-  } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { type AttachedData, type Class, type Data, type Ref, type Mixin, generateId } from '@hcengineering/core'
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
@@ -70,7 +60,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const currentUser = getCurrentAccount() as PersonAccount
+  const currentUser = getCurrentEmployee()
 
   const steps: IWizardStep<TemplateWizardStep>[] = [
     {
@@ -114,13 +104,12 @@
     seqNumber: 0,
     category: undefined,
     abstract: '',
-    author: currentUser.person as Ref<Employee>,
-    owner: currentUser.person as Ref<Employee>,
+    author: currentUser,
+    owner: currentUser,
     state: DocumentState.Draft,
-    sections: 0,
     snapshots: 0,
     changeControl: ccRecordId,
-    content: getCollaborativeDoc(generateId()),
+    content: null,
 
     requests: 0,
     reviewers: [],
@@ -166,8 +155,7 @@
       docObject.docPrefix,
       spec,
       category,
-      currentUser.person as Ref<Employee>,
-      { title: DEFAULT_SECTION_TITLE }
+      currentUser
     )
 
     if (!success) {

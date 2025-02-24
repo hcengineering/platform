@@ -63,6 +63,8 @@
     "AddMember": "添加成员",
     "KickEmployee": "踢出员工",
     "KickEmployeeDescr": "你确定要将员工踢出工作区吗？此操作无法撤销",
+    "ResendInvite": "重新发送邀请",
+    "ResendInviteDescr": "您确定要重新向此用户发送工作区的邀请吗？",
     "Email": "电子邮件",
     "CreateEmployee": "员工",
     "Inactive": "非活动",
@@ -102,6 +104,13 @@
     "People": "人员",
     "For": "为",
     "SelectUsers": "选择用户",
-    "AddGuest": "添加访客"
+    "AddGuest": "添加访客",
+    "ViewProfile": "查看资料",
+    "Viber": "Viber",
+    "ViberPlaceholder": "Viber",
+    "SocialId": "社交 ID",
+    "SocialIds": "社交 ID",
+    "Type": "类型",
+    "Confirmed": "已确认"
   }
 }

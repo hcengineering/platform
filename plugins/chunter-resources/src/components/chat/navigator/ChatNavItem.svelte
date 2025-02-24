@@ -80,9 +80,10 @@
     result.push({
       icon: view.icon.Open,
       label: view.string.Open,
+      group: 'edit',
       action: async () => {
         const id = await getObjectLinkId(linkProviders, object._id, object._class, object)
-        openChannel(id, object._class)
+        openChannel(id, object._class, undefined, true)
       }
     })
 
@@ -107,9 +108,10 @@
       result.push({
         icon: action.icon ?? IconEdit,
         label: action.label,
+        group: action.context.group,
         action: async (_: any, evt: Event) => {
           const impl = await getResource(action.action)
-          await impl(context, evt, action.actionProps)
+          await impl(context, evt, { ...action.actionProps, object })
         }
       })
     }
@@ -121,13 +123,13 @@
   _id={item.id}
   icon={item.icon}
   withIconBackground={item.withIconBackground}
-  isSecondary={item.isSecondary}
   iconSize={item.iconSize}
   {isSelected}
   iconProps={{ ...item.iconProps, value: item.object }}
   {count}
   title={item.title}
   description={item.description}
+  secondaryNotifyMarker={(context?.lastViewedTimestamp ?? 0) < (context?.lastUpdateTimestamp ?? 0)}
   {actions}
   {type}
   on:click={() => {

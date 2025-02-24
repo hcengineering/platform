@@ -43,7 +43,7 @@
           _id: employee._id as Ref<Item>,
           completion: completionMap.get(employee._id) as CompletionMapValue
         }))
-        .toSorted((item1, item2) => compareCompletionMapValueState(item1.completion.state, item2.completion.state))
+        .sort((item1, item2) => compareCompletionMapValueState(item1.completion.state, item2.completion.state))
     },
     {
       sort: {

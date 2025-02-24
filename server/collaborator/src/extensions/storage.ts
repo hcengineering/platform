@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 
-import { DocumentId } from '@hcengineering/collaborator-client'
-import { MeasureContext } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
+import { type Markup, MeasureContext } from '@hcengineering/core'
 import {
   Document,
   Extension,
+  afterLoadDocumentPayload,
   afterUnloadDocumentPayload,
   onChangePayload,
   onConnectPayload,
@@ -25,6 +26,7 @@ import {
   onLoadDocumentPayload,
   onStoreDocumentPayload
 } from '@hocuspocus/server'
+import { Transformer } from '@hocuspocus/transformer'
 import { Doc as YDoc } from 'yjs'
 import { Context, withContext } from '../context'
 import { CollabStorageAdapter } from '../storage/adapter'
@@ -32,27 +34,58 @@ import { CollabStorageAdapter } from '../storage/adapter'
 export interface StorageConfiguration {
   ctx: MeasureContext
   adapter: CollabStorageAdapter
+  transformer: Transformer
+}
+
+type DocumentName = string
+
+type ConnectionId = string
+
+interface DocumentUpdates {
+  context: Context
+  collaborators: Set<ConnectionId>
 }
 
 export class StorageExtension implements Extension {
   private readonly configuration: StorageConfiguration
-  private readonly collaborators = new Map<string, Set<string>>()
+  private readonly updates = new Map<DocumentName, DocumentUpdates>()
+  private readonly markups = new Map<DocumentName, Record<Markup, Markup>>()
 
   constructor (configuration: StorageConfiguration) {
     this.configuration = configuration
   }
 
   async onChange ({ context, documentName }: withContext<onChangePayload>): Promise<any> {
-    const collaborators = this.collaborators.get(documentName) ?? new Set()
-    collaborators.add(context.connectionId)
-    this.collaborators.set(documentName, collaborators)
+    const { connectionId } = context
+
+    const updates = this.updates.get(documentName)
+    if (updates === undefined) {
+      const collaborators = new Set([connectionId])
+      this.updates.set(documentName, { context, collaborators })
+    } else {
+      updates.context = context
+      updates.collaborators.add(connectionId)
+    }
   }
 
   async onLoadDocument ({ context, documentName }: withContext<onLoadDocumentPayload>): Promise<any> {
     const { connectionId } = context
 
     this.configuration.ctx.info('load document', { documentName, connectionId })
-    return await this.loadDocument(documentName as DocumentId, context)
+    return await this.loadDocument(documentName, context)
+  }
+
+  async afterLoadDocument ({ context, documentName, document }: withContext<afterLoadDocumentPayload>): Promise<any> {
+    const { ctx } = this.configuration
+    const { connectionId } = context
+
+    try {
+      // remember the markup for the document
+      this.markups.set(documentName, this.configuration.transformer.fromYdoc(document))
+    } catch {
+      ctx.warn('document is not of a markup type', { documentName, connectionId })
+      this.markups.set(documentName, {})
+    }
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
@@ -61,14 +94,14 @@ export class StorageExtension implements Extension {
 
     ctx.info('store document', { documentName, connectionId })
 
-    const collaborators = this.collaborators.get(documentName)
-    if (collaborators === undefined || collaborators.size === 0) {
+    const updates = this.updates.get(documentName)
+    if (updates === undefined || updates.collaborators.size === 0) {
       ctx.info('no changes for document', { documentName, connectionId })
       return
     }
 
-    this.collaborators.delete(documentName)
-    await this.storeDocument(documentName as DocumentId, document, context)
+    updates.collaborators = new Set()
+    await this.storeDocument(documentName, document, updates.context)
   }
 
   async onConnect ({ context, documentName, instance }: withContext<onConnectPayload>): Promise<any> {
@@ -84,43 +117,51 @@ export class StorageExtension implements Extension {
     const params = { documentName, connectionId, connections: document.getConnectionsCount() }
     ctx.info('disconnect from document', params)
 
-    const collaborators = this.collaborators.get(documentName)
-    if (collaborators === undefined || !collaborators.has(connectionId)) {
+    const updates = this.updates.get(documentName)
+    if (updates === undefined || updates.collaborators.size === 0) {
       ctx.info('no changes for document', { documentName, connectionId })
       return
     }
 
-    this.collaborators.delete(documentName)
-    await this.storeDocument(documentName as DocumentId, document, context)
+    updates.collaborators = new Set()
+    await this.storeDocument(documentName, document, context)
   }
 
   async afterUnloadDocument ({ documentName }: afterUnloadDocumentPayload): Promise<any> {
     this.configuration.ctx.info('unload document', { documentName })
-    this.collaborators.delete(documentName)
+    this.updates.delete(documentName)
+    this.markups.delete(documentName)
   }
 
-  async loadDocument (documentId: DocumentId, context: Context): Promise<YDoc | undefined> {
+  private async loadDocument (documentName: string, context: Context): Promise<YDoc | undefined> {
     const { ctx, adapter } = this.configuration
 
     try {
-      return await ctx.with('load-document', {}, async (ctx) => {
-        return await adapter.loadDocument(ctx, documentId, context)
+      return await ctx.with('load-document', {}, (ctx) => {
+        return adapter.loadDocument(ctx, documentName, context)
       })
-    } catch (err) {
-      ctx.error('failed to load document', { documentId, error: err })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to load document', { documentName, error: err })
       throw new Error('Failed to load document')
     }
   }
 
-  async storeDocument (documentId: DocumentId, document: Document, context: Context): Promise<void> {
+  private async storeDocument (documentName: string, document: Document, context: Context): Promise<void> {
     const { ctx, adapter } = this.configuration
 
     try {
-      await ctx.with('save-document', {}, async (ctx) => {
-        await adapter.saveDocument(ctx, documentId, document, context)
-      })
-    } catch (err) {
-      ctx.error('failed to save document', { documentId, error: err })
+      const currMarkup = await ctx.with('save-document', {}, (ctx) =>
+        adapter.saveDocument(ctx, documentName, document, context, {
+          prev: () => this.markups.get(documentName) ?? {},
+          curr: () => this.configuration.transformer.fromYdoc(document)
+        })
+      )
+
+      this.markups.set(documentName, currMarkup ?? {})
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to save document', { documentName, error: err })
       throw new Error('Failed to save document')
     }
   }

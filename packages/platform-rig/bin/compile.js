@@ -4,6 +4,7 @@ const { spawn } = require('child_process')
 
 const esbuild = require('esbuild')
 const { copy } = require('esbuild-plugin-copy')
+const fs = require('fs')
 
 async function execProcess(cmd, logFile, args, buildDir= '.build') {
   let compileRoot = dirname(dirname(process.argv[1]))
@@ -89,6 +90,36 @@ function collectFiles(source) {
   return result
 }
 
+function collectFileStats(source, result) {  
+  if( !existsSync(source)) {
+    return
+  }
+  const files = readdirSync(source)
+  for (const f of files) {
+    const sourceFile = join(source, f)
+    const stat = lstatSync(sourceFile)
+    if (stat.isDirectory()) {
+      collectFileStats(sourceFile, result)
+    } else {
+      let ext = basename(sourceFile)
+      if (!ext.endsWith('.ts') && !ext.endsWith('.js') && !ext.endsWith('.svelte')) {
+        continue
+      }
+      result[sourceFile] = stat.mtime.getTime()
+    }
+  }
+}
+
+function cleanNonModified(before, after) {
+  for( const [k,v] of Object.entries(before)) {
+    if( after[k] === v) {
+      // Same modify date, looks like not modified
+      console.log('clean file', k)
+      rmSync(k)
+    }
+  }
+}
+
 switch (args[0]) {
   case 'ui': {
     console.log('Nothing to compile to UI')
@@ -96,22 +127,28 @@ switch (args[0]) {
   }
   case 'transpile': {
     const filesToTranspile = collectFiles(join(process.cwd(), args[1]))
-    let st = Date.now()  
-    performESBuild(filesToTranspile)
+    let st = performance.now()
+    const before = {}
+    const after = {}
+    collectFileStats('lib', before)
+
+    performESBuild(filesToTranspile)    
     .then(() => {
-      console.log("Transpile time: ", Date.now() - st)
+      console.log("Transpile time: ", Math.round((performance.now() - st) * 100) / 100)
+      collectFileStats('lib', after)
+      cleanNonModified(before, after)
     })
     break
   }
   case 'validate': {
-    let st = Date.now()
+    let st = performance.now()
     validateTSC(st).then(() => {
-      console.log("Validate time: ", Date.now() - st)
+      console.log("Validate time: ", Math.round((performance.now() - st) * 100) / 100)
     })
     break
   }
   default: {
-    let st = Date.now()
+    let st = performance.now()
     const filesToTranspile = collectFiles(join(process.cwd(), 'src'))
     Promise.all(
       [
@@ -120,21 +157,22 @@ switch (args[0]) {
       ]
     )
     .then(() => {
-      console.log("Full build time: ", Date.now() - st)
+      console.log("Full build time: ", Math.round((performance.now() - st) * 100) / 100)
     })    
     break
   }
 }
-async function performESBuild(filesToTranspile) {  
+async function performESBuild(filesToTranspile) {
   await esbuild.build({
     entryPoints: filesToTranspile,
     bundle: false,
     minify: false,
     outdir: 'lib',
     keepNames: true,
-    sourcemap: 'inline',
+    sourcemap: 'linked',
     allowOverwrite: true,
     format: 'cjs',
+    color: true,
     plugins: [
       copy({
         // this is equal to process.cwd(), which means we use cwd path as base path to resolve `to` path
@@ -144,7 +182,7 @@ async function performESBuild(filesToTranspile) {
           from: [args[1] + '/**/*.json'],
           to: ['./lib'],
         },
-        watch: true,
+        watch: false
       })
     ]
   })

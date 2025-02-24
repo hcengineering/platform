@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { PersonAccount } from '@hcengineering/contact'
+import type { Person } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import { type Timestamp, type Domain, type Ref, type Tx } from '@hcengineering/core'
 import {
@@ -43,6 +43,7 @@ import {
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import request from './plugin'
 
+export { requestOperation } from './migration'
 export { requestId } from '@hcengineering/request'
 export { default } from './plugin'
 
@@ -51,13 +52,13 @@ export const DOMAIN_REQUEST = 'request' as Domain
 @Model(request.class.Request, core.class.AttachedDoc, DOMAIN_REQUEST)
 @UX(request.string.Request, request.icon.Requests)
 export class TRequest extends TAttachedDoc implements Request {
-  @Prop(ArrOf(TypeRef(contact.class.PersonAccount)), request.string.Requested)
+  @Prop(ArrOf(TypeRef(contact.class.Person)), request.string.Requested)
   // @Index(IndexKind.Indexed)
-    requested!: Ref<PersonAccount>[]
+    requested!: Ref<Person>[]
 
-  @Prop(ArrOf(TypeRef(contact.class.PersonAccount)), request.string.Approved)
+  @Prop(ArrOf(TypeRef(contact.class.Person)), request.string.Approved)
   @ReadOnly()
-    approved!: Ref<PersonAccount>[]
+    approved!: Ref<Person>[]
 
   approvedDates?: Timestamp[]
 
@@ -70,9 +71,9 @@ export class TRequest extends TAttachedDoc implements Request {
   tx!: Tx
   rejectedTx?: Tx
 
-  @Prop(TypeRef(contact.class.PersonAccount), request.string.Rejected)
+  @Prop(TypeRef(contact.class.Person), request.string.Rejected)
   @ReadOnly()
-    rejected?: Ref<PersonAccount>
+    rejected?: Ref<Person>
 
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
@@ -134,11 +135,7 @@ export function createModel (builder: Builder): void {
       group: request.ids.RequestNotificationGroup,
       label: request.string.Request,
       allowedForAuthor: true,
-      providers: {
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.EmailNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: '{sender} sent you a {doc}',
         htmlTemplate: '<p><b>{sender}</b> sent you a {doc}</p>',

@@ -16,15 +16,19 @@
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import type { Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
-import type { Asset, Plugin } from '@hcengineering/platform'
+import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
+import { Person, ChannelProvider as SocialChannelProvider } from '@hcengineering/contact'
+import { Widget, WidgetTab } from '@hcengineering/workbench'
 
 /**
  * @public
  */
-export interface ChunterSpace extends Space {}
+export interface ChunterSpace extends Space {
+  messages?: number
+}
 
 /**
  * @public
@@ -42,6 +46,7 @@ export interface DirectMessage extends ChunterSpace {}
  * @public
  */
 export interface ObjectChatPanel extends Class<Doc> {
+  openByDefault?: boolean
   ignoreKeys: string[]
 }
 
@@ -52,6 +57,7 @@ export interface ChatMessage extends ActivityMessage {
   message: Markup
   attachments?: number
   editedOn?: Timestamp
+  provider?: Ref<SocialChannelProvider>
 }
 
 /**
@@ -72,12 +78,29 @@ export interface ChatMessageViewlet extends ActivityMessageViewlet {
   label?: IntlString
 }
 
+export interface ChatSyncInfo extends Doc {
+  user: Ref<Person>
+  timestamp: Timestamp
+}
+
+export interface ChatWidgetTab extends WidgetTab {
+  data: {
+    _id?: Ref<Doc>
+    _class?: Ref<Class<Doc>>
+    thread?: Ref<ActivityMessage>
+    channelName: string
+    selectedMessageId?: Ref<ActivityMessage>
+    props?: Record<string, any>
+  }
+}
+
 /**
  * @public
  */
 export const chunterId = 'chunter' as Plugin
 
 export * from './utils'
+export * from './analytics'
 
 export default plugin(chunterId, {
   icon: {
@@ -86,7 +109,10 @@ export default plugin(chunterId, {
     Thread: '' as Asset,
     Lock: '' as Asset,
     ChannelBrowser: '' as Asset,
-    Copy: '' as Asset
+    ChunterBrowser: '' as Asset,
+    Copy: '' as Asset,
+    Messages: '' as Asset,
+    Bookmarks: '' as Asset
   },
   component: {
     DmHeader: '' as AnyComponent,
@@ -97,9 +123,13 @@ export default plugin(chunterId, {
     ChatMessagesPresenter: '' as AnyComponent,
     ChatMessagePresenter: '' as AnyComponent,
     ThreadMessagePresenter: '' as AnyComponent,
-    ChatAside: '' as AnyComponent,
     ChatMessagePreview: '' as AnyComponent,
-    ThreadMessagePreview: '' as AnyComponent
+    ThreadMessagePreview: '' as AnyComponent,
+    DirectIcon: '' as AnyComponent,
+    InlineCommentThread: '' as AnyComponent
+  },
+  activity: {
+    MembersChangedMessage: '' as AnyComponent
   },
   class: {
     ThreadMessage: '' as Ref<Class<ThreadMessage>>,
@@ -107,7 +137,8 @@ export default plugin(chunterId, {
     Channel: '' as Ref<Class<Channel>>,
     DirectMessage: '' as Ref<Class<DirectMessage>>,
     ChatMessage: '' as Ref<Class<ChatMessage>>,
-    ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>
+    ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>,
+    ChatSyncInfo: '' as Ref<Class<ChatSyncInfo>>
   },
   mixin: {
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
@@ -153,13 +184,34 @@ export default plugin(chunterId, {
     StarChannel: '' as IntlString,
     StarConversation: '' as IntlString,
     UnstarChannel: '' as IntlString,
-    UnstarConversation: '' as IntlString
+    UnstarConversation: '' as IntlString,
+    NoMessagesInChannel: '' as IntlString,
+    SendMessagesInChannel: '' as IntlString,
+    Joined: '' as IntlString,
+    Left: '' as IntlString,
+    Added: '' as IntlString,
+    Removed: '' as IntlString,
+    CreatedChannelOn: '' as IntlString,
+    YouJoinedChannel: '' as IntlString,
+    AndMore: '' as IntlString,
+    IsTyping: '' as IntlString,
+    ThreadIn: '' as IntlString,
+    TranslateMessage: '' as IntlString,
+    Translate: '' as IntlString,
+    ShowOriginal: '' as IntlString,
+    Translating: '' as IntlString,
+    StartConversation: '' as IntlString,
+    ViewingThreadFromArchivedChannel: '' as IntlString,
+    ViewingArchivedChannel: '' as IntlString,
+    OpenChatInSidebar: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
     ThreadNotification: '' as Ref<NotificationType>,
     ChannelNotification: '' as Ref<NotificationType>,
-    ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>
+    JoinChannelNotification: '' as Ref<NotificationType>,
+    ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>,
+    ChatWidget: '' as Ref<Widget>
   },
   app: {
     Chunter: '' as Ref<Doc>
@@ -168,6 +220,30 @@ export default plugin(chunterId, {
     DeleteChatMessage: '' as Ref<Action>,
     LeaveChannel: '' as Ref<Action>,
     RemoveChannel: '' as Ref<Action>,
+    TranslateMessage: '' as Ref<Action>,
+    ShowOriginalMessage: '' as Ref<Action>,
     CloseConversation: '' as Ref<Action>
+  },
+  function: {
+    CanTranslateMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    OpenThreadInSidebar: '' as Resource<
+    (
+      _id: Ref<ActivityMessage>,
+      msg?: ActivityMessage,
+      doc?: Doc,
+      selectedId?: Ref<ActivityMessage>,
+      props?: Record<string, any>
+    ) => Promise<void>
+    >,
+    OpenChannelInSidebar: '' as Resource<
+    (
+      _id: Ref<Doc>,
+      _class: Ref<Class<Doc>>,
+      doc?: Doc,
+      thread?: Ref<ActivityMessage>,
+      newTab?: boolean,
+      selectedMessageId?: Ref<ActivityMessage>
+    ) => Promise<void>
+    >
   }
 })

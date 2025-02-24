@@ -15,8 +15,8 @@
 //
 
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
-import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type PresentationMiddlewareCreator } from '@hcengineering/presentation/src/pipeline'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import view, { viewId } from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {
@@ -37,13 +37,13 @@ export default mergeIds(viewId, view, {
     LabelYes: '' as IntlString,
     LabelNo: '' as IntlString,
     ChooseAColor: '' as IntlString,
-    DeleteObject: '' as IntlString,
-    DeleteObjectConfirm: '' as IntlString,
+
     DeletePopupNoPermissionTitle: '' as IntlString,
     DeletePopupNoPermissionLabel: '' as IntlString,
     DeletePopupCreatorLabel: '' as IntlString,
     DeletePopupOwnerLabel: '' as IntlString,
     ArchiveConfirm: '' as IntlString,
+    UnArchiveConfirm: '' as IntlString,
     Assignees: '' as IntlString,
     Labels: '' as IntlString,
     ActionPlaceholder: '' as IntlString,
@@ -88,7 +88,6 @@ export default mergeIds(viewId, view, {
     AfterDate: '' as IntlString,
     BetweenDates: '' as IntlString,
     SaveAs: '' as IntlString,
-    And: '' as IntlString,
     Between: '' as IntlString,
     ShowColors: '' as IntlString,
     Show: '' as IntlString,

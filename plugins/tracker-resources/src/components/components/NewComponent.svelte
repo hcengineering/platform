@@ -17,7 +17,7 @@
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
-  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { Component, Project } from '@hcengineering/tracker'
   import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'

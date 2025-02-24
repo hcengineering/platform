@@ -1,4 +1,5 @@
 import { type Locator, type Page, expect } from '@playwright/test'
+import { DateDivided } from './types'
 
 export class CommonPage {
   readonly page: Page
@@ -7,15 +8,19 @@ export class CommonPage {
     this.page = page
   }
 
+  appHeader = (): Locator => this.page.locator('.hulyNavPanel-header')
   selectPopupInput = (): Locator => this.page.locator('div.selectPopup input')
   selectPopupInputSearch = (): Locator => this.page.locator('div.popup input.search')
   selectPopupListItem = (name: string): Locator => this.page.locator('div.selectPopup div.list-item', { hasText: name })
   selectPopupListItemFirst = (): Locator => this.page.locator('div.selectPopup div.list-item')
-  selectPopupHeaderButtonLast = (): Locator => this.page.locator('div.selectPopup div.header button:last-child')
+  selectPopupApMenuItem = (hasText: string): Locator => this.page.locator('div.popup button.ap-menuItem', { hasText })
+  selectPopupAddButton = (): Locator => this.page.locator('div.selectPopup button[data-id="btnAdd"]')
   selectPopupButton = (): Locator => this.page.locator('div.selectPopup button')
-  selectPopupHeaderButtonFirst = (): Locator => this.page.locator('div.selectPopup div.header button:nth-of-type(1)')
+  selectPopupExpandButton = (): Locator => this.page.locator('div.selectPopup button[data-id="btnExpand"]')
   popupSpanLabel = (point: string): Locator =>
-    this.page.locator('div[class$="opup"] span[class*="label"]', { hasText: point })
+    this.page.locator(`div[class$="opup"] span[class*="label"]:has-text("${point}")`)
+
+  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-wrapper')
 
   selectPopupSpanLines = (item: string): Locator =>
     this.page.locator('div.selectPopup span[class^="lines"]', { hasText: item })
@@ -30,14 +35,14 @@ export class CommonPage {
   tagsStringAddTagButtonSubmit = (): Locator =>
     this.page.locator('div.popup form[id="tags:string:AddTag"] button[type="submit"]')
 
-  notifyContainerButton = (): Locator => this.page.locator('div.notify-container button[type="button"].small').nth(0)
+  notifyContainerButton = (): Locator => this.page.locator('div.notifyPopup button[data-id="btnNotifyClose"]').first()
   errorSpan = (): Locator => this.page.locator('div.ERROR span')
   infoSpan = (): Locator => this.page.locator('div.INFO span')
   popupSubmitButton = (): Locator => this.page.locator('div.popup button[type="submit"]')
   historyBoxButtonFirst = (): Locator => this.page.locator('div.history-box button:first-child')
   inboxNotyButton = (): Locator => this.page.locator('button[id$="Inbox"] > div.noty')
   mentionPopupListItem = (mentionName: string): Locator =>
-    this.page.locator('form.mentionPoup div.list-item span.name', { hasText: mentionName })
+    this.page.locator('form.mentionPoup div.list-item', { hasText: mentionName })
 
   hulyPopupRowButton = (name: string): Locator =>
     this.page.locator('div.hulyPopup-container button.hulyPopup-row', { hasText: name })
@@ -45,6 +50,54 @@ export class CommonPage {
   cardCloseButton = (): Locator => this.page.locator('div.popup button[id="card-close"]')
   menuPopupItemButton = (itemText: string): Locator =>
     this.page.locator('div.selectPopup button.menu-item', { hasText: itemText })
+
+  buttonFilter = (): Locator => this.page.getByRole('button', { name: 'Filter' })
+  inputFilterTitle = (): Locator => this.page.locator('div.selectPopup input[placeholder="Title"]')
+  inputFilterName = (): Locator => this.page.locator('div.selectPopup input[placeholder="Name"]')
+  inputSearch = (): Locator => this.page.locator('div.selectPopup input[placeholder="Search..."]')
+  buttonFilterApply = (): Locator => this.page.locator('div.selectPopup button[type="button"]', { hasText: 'Apply' })
+  buttonClearFilters = (): Locator => this.page.locator('button > span', { hasText: 'Clear filters' })
+  filterButton = (index: number): Locator => this.page.locator(`div.filter-section button:nth-child(${index})`)
+  selectFilterSection = (label: string): Locator =>
+    this.page.locator('div.filterbar-container div.filter-section', { hasText: label })
+
+  selectPopupMenu = (filter: string): Locator =>
+    this.page.locator('div.selectPopup [class*="menu"]', { hasText: filter })
+
+  calendarDay = (daySelector: string): Locator => this.page.locator(`div.popup div.calendar button.day${daySelector}`)
+
+  linesFromTable = (text: string = ''): Locator =>
+    this.page.locator('.hulyComponent table tbody tr').filter({ hasText: text })
+
+  linesFromList = (text: string = ''): Locator =>
+    this.page.locator('.hulyComponent .list-container div.row').filter({ hasText: text })
+
+  firstInputFirstDigit = (): Locator =>
+    this.page.locator('div.date-popup-container div.input:first-child span.digit:first-child')
+
+  firstInputThirdDigit = (): Locator =>
+    this.page.locator('div.date-popup-container div.input:first-child span.digit:nth-child(3)')
+
+  firstInputFifthDigit = (): Locator =>
+    this.page.locator('div.date-popup-container div.input:first-child span.digit:nth-child(5)')
+
+  lastInputFirstDigit = (): Locator =>
+    this.page.locator('div.date-popup-container div.input:last-child span.digit:first-child')
+
+  lastInputThirdDigit = (): Locator =>
+    this.page.locator('div.date-popup-container div.input:last-child span.digit:nth-child(3)')
+
+  lastInputFifthDigit = (): Locator =>
+    this.page.locator('div.date-popup-container div.input:last-child span.digit:nth-child(5)')
+
+  submitButton = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
+  buttonBreadcrumb = (hasText?: string): Locator => this.page.locator('button.hulyBreadcrumb-container', { hasText })
+  appsShowMenuButton = (): Locator => this.page.locator('[id="app-workbench\\:string\\:ShowMenu"]')
+
+  async openNavigator (): Promise<void> {
+    const needOpenNavigator = await this.appsShowMenuButton().isVisible()
+    if (needOpenNavigator) await this.appsShowMenuButton().click()
+  }
 
   async selectMenuItem (page: Page, name: string, fullWordFilter: boolean = false): Promise<void> {
     if (name !== 'first') {
@@ -57,11 +110,11 @@ export class CommonPage {
   }
 
   async pressCreateButtonSelectPopup (page: Page): Promise<void> {
-    await this.selectPopupHeaderButtonLast().click()
+    await this.selectPopupAddButton().click()
   }
 
   async pressShowAllButtonSelectPopup (page: Page): Promise<void> {
-    await this.selectPopupHeaderButtonFirst().click()
+    await this.selectPopupExpandButton().click()
   }
 
   async selectFromDropdown (page: Page, point: string): Promise<void> {
@@ -89,6 +142,7 @@ export class CommonPage {
 
   async pressYesDeletePopup (page: Page): Promise<void> {
     await this.viewStringDeleteObjectButtonPrimary().click()
+    await expect(this.viewStringDeleteObjectButtonPrimary()).not.toBeVisible({ timeout: 1000 })
   }
 
   async addNewTagPopup (page: Page, title: string, description: string): Promise<void> {
@@ -124,8 +178,10 @@ export class CommonPage {
     await this.selectPopupSpanLines(point).click()
   }
 
-  async closeNotification (page: Page): Promise<void> {
-    await this.notifyContainerButton().click()
+  async closeNotification (): Promise<void> {
+    while (await this.notifyContainerButton().isVisible()) {
+      await this.notifyContainerButton().click()
+    }
   }
 
   async checkError (page: Page, errorMessage: string): Promise<void> {
@@ -148,6 +204,10 @@ export class CommonPage {
     await this.selectPopupListItem(name).click({ delay: 100 })
   }
 
+  async selectPopupAp (name: string): Promise<void> {
+    await this.selectPopupApMenuItem(name).click({ delay: 100 })
+  }
+
   async selectPopupItem (name: string): Promise<void> {
     await this.hulyPopupRowButton(name).click({ delay: 100 })
   }
@@ -158,5 +218,119 @@ export class CommonPage {
 
   async checkPopupItem (itemText: string): Promise<void> {
     await expect(this.menuPopupItemButton(itemText)).toBeVisible()
+  }
+
+  async clickPopupItem (itemText: string): Promise<void> {
+    await this.menuPopupItemButton(itemText).first().click()
+  }
+
+  async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
+    await this.buttonFilter().click()
+    await this.selectPopupMenu(filter).click()
+
+    if (filterSecondLevel !== null && typeof filterSecondLevel === 'string') {
+      switch (filter) {
+        case 'Title':
+          await this.inputFilterTitle().fill(filterSecondLevel)
+          await this.buttonFilterApply().click()
+          break
+        case 'Name':
+          await this.inputFilterName().fill(filterSecondLevel)
+          await this.buttonFilterApply().click()
+          break
+        case 'Labels':
+          await this.selectFromDropdown(this.page, filterSecondLevel)
+          break
+        case 'Skills':
+          await this.inputSearch().fill(filterSecondLevel)
+          await this.selectFromDropdown(this.page, filterSecondLevel)
+          await this.page.keyboard.press('Escape')
+          break
+        default:
+          await this.selectPopupMenu(filterSecondLevel).click()
+      }
+    }
+  }
+
+  async filterOppositeCondition (filter: string, conditionBefore: string, conditionAfter: string): Promise<void> {
+    const filterSection = this.selectFilterSection(filter)
+    await filterSection.locator('button', { hasText: conditionBefore }).isVisible()
+    await filterSection.locator('button[data-id="btnCondition"]').click()
+    await this.page.locator('div.selectPopup button.menu-item', { hasText: conditionAfter }).click()
+  }
+
+  async checkFilter (filter: string, filterSecondLevel?: string, filterThirdLevel?: string): Promise<void> {
+    await expect(this.filterButton(1)).toHaveText(filter)
+    if (filterSecondLevel !== undefined) {
+      await expect(this.filterButton(2)).toContainText(filterSecondLevel)
+    }
+    if (filterThirdLevel !== undefined) {
+      await expect(this.filterButton(3)).toContainText(filterThirdLevel)
+    }
+  }
+
+  async updateFilterDimension (
+    filterSecondLevel: string,
+    dateStart?: string,
+    needToOpenCalendar: boolean = false
+  ): Promise<void> {
+    await this.filterButton(2).click()
+    await this.selectPopupMenu(filterSecondLevel).click()
+
+    if (dateStart !== undefined) {
+      if (needToOpenCalendar) {
+        await this.filterButton(3).click()
+      }
+      await this.calendarDay(dateStart === 'Today' ? '.today' : `:has-text("${dateStart}")`).click()
+    }
+  }
+
+  async fillBetweenDate (dateStart: DateDivided, dateEnd: DateDivided): Promise<void> {
+    // dateStart - day
+    await this.firstInputFirstDigit().click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.firstInputFirstDigit().pressSequentially(dateStart.day)
+
+    // dateStart - month
+    await this.firstInputThirdDigit().click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.firstInputThirdDigit().pressSequentially(dateStart.month)
+
+    // dateStart - year
+    await this.firstInputFifthDigit().click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.firstInputFifthDigit().pressSequentially(dateStart.year)
+
+    // dateEnd - day
+    await this.lastInputFirstDigit().click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.lastInputFirstDigit().pressSequentially(dateEnd.day)
+
+    // dateEnd - month
+    await this.lastInputThirdDigit().click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.lastInputThirdDigit().pressSequentially(dateEnd.month)
+
+    // dateEnd - year
+    await this.lastInputFifthDigit().click({ delay: 100, position: { x: 1, y: 1 } })
+    await this.lastInputFifthDigit().pressSequentially(dateEnd.year)
+
+    // Submit
+    await this.submitButton().click({ delay: 100 })
+  }
+
+  async checkRowsInTableExist (text: string, count: number = 1): Promise<void> {
+    await expect(this.linesFromTable(text)).toHaveCount(count)
+  }
+
+  async checkRowsInTableNotExist (text: string): Promise<void> {
+    await expect(this.linesFromTable(text)).toHaveCount(0)
+  }
+
+  async openRowInTableByText (text: string): Promise<void> {
+    await this.linesFromTable(text).locator('a', { hasText: text }).click()
+  }
+
+  async checkRowsInListExist (text: string, count: number = 1): Promise<void> {
+    await expect(this.linesFromList(text)).toHaveCount(count)
+  }
+
+  async pressEscape (): Promise<void> {
+    await this.page.keyboard.press('Escape')
   }
 }

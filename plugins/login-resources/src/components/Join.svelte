@@ -13,14 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
-  import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
+  import { OK, Severity, Status } from '@hcengineering/platform'
+  import { Location, getCurrentLocation, navigate } from '@hcengineering/ui'
 
-  import { checkJoined, join, signUpJoin } from '../utils'
+  import { checkJoined, join, setLoginInfo, signUpJoin } from '../utils'
   import Form from './Form.svelte'
 
   import { Analytics } from '@hcengineering/analytics'
-  import presentation from '@hcengineering/presentation'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import { BottomAction } from '..'
@@ -77,15 +76,22 @@
           )
       status = loginStatus
 
-      if (result !== undefined) {
-        setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LastToken, result.token)
-        const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-        tokens[result.workspace] = result.token
-        setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        navigate({ path: [workbenchId, result.workspace] })
+      if (result != null) {
+        setLoginInfo(result)
+
+        if (location.query?.navigateUrl != null) {
+          try {
+            const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
+            if (loc.path[1] === result.workspaceUrl) {
+              navigate(loc)
+              return
+            }
+          } catch (err: any) {
+            // Json parse error could be ignored
+          }
+        }
+
+        navigate({ path: [workbenchId, result.workspaceUrl] })
       }
     }
   }
@@ -117,16 +123,21 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
     const [, result] = await checkJoined(location.query.inviteId)
     status = OK
-    if (result !== undefined) {
-      const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-      setMetadata(presentation.metadata.Token, result.token)
-      setMetadataLocalStorage(login.metadata.LastToken, result.token)
-      tokens[result.workspace] = result.token
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+    if (result != null) {
+      setLoginInfo(result)
 
-      navigate({ path: [workbenchId, result.workspace] })
+      if (location.query?.navigateUrl != null) {
+        try {
+          const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
+          if (loc.path[1] === result.workspaceUrl) {
+            navigate(loc)
+            return
+          }
+        } catch (err: any) {
+          // Json parse error could be ignored
+        }
+      }
+      navigate({ path: [workbenchId, result.workspaceUrl] })
     }
   }
 </script>

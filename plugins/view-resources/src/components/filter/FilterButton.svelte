@@ -26,6 +26,7 @@
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined = undefined
   export let viewOptions: ViewOptions | undefined = undefined
+  export let adaptive: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -77,11 +78,10 @@
     )
   }
 
-  let visible: boolean
+  export let visible: boolean = false
   $: {
     if (_class) {
-      const clazz = hierarchy.getClass(_class)
-      visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+      visible = hierarchy.classHierarchyMixin(_class, view.mixin.ClassFilters) !== undefined
     } else visible = false
   }
 </script>
@@ -89,8 +89,11 @@
 {#if visible}
   <Button
     icon={$filterStore.length === 0 ? IconFilter : IconClose}
-    iconProps={{ fill: $filterStore.length === 0 ? 'var(--theme-content-color)' : 'var(--theme-halfcontent-color)' }}
-    label={$filterStore.length === 0 ? view.string.Filter : view.string.ClearFilters}
+    label={adaptive ? undefined : $filterStore.length === 0 ? view.string.Filter : view.string.ClearFilters}
+    kind={'regular'}
+    size={'medium'}
+    pressed={$filterStore.length > 0}
+    showTooltip={{ label: $filterStore.length === 0 ? view.string.Filter : view.string.ClearFilters }}
     on:click={(ev) => {
       if ($filterStore.length === 0) add(ev)
       else setFilters([])

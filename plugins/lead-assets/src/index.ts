@@ -20,6 +20,7 @@ import { loadMetadata } from '@hcengineering/platform'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(lead.icon, {
   Funnel: `${icons}#funnel`,
+  Funnels: `${icons}#funnels`,
   Lead: `${icons}#lead`,
   LeadApplication: `${icons}#leadapplication`,
   CreateCustomer: `${icons}#new-customer`

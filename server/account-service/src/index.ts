@@ -3,64 +3,48 @@
 //
 
 import account, {
-  ACCOUNT_DB,
-  UpgradeWorker,
+  type AccountMethods,
+  EndpointKind,
   accountId,
-  cleanInProgressWorkspaces,
-  getMethods
+  getAccountDB,
+  getAllTransactors,
+  getMethods,
+  cleanExpiredOtp
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import {
-  metricsAggregate,
-  type BrandingMap,
-  type Data,
-  type MeasureContext,
-  type Tx,
-  type Version
-} from '@hcengineering/core'
-import { type MigrateOperation } from '@hcengineering/model'
+import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
-import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
 import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
-import { MongoClient } from 'mongodb'
 import os from 'os'
+import { migrateFromOldAccounts } from './migration/migration'
 
 /**
  * @public
  */
-export function serveAccount (
-  measureCtx: MeasureContext,
-  version: Data<Version>,
-  txes: Tx[],
-  migrateOperations: [string, MigrateOperation][],
-  productId: string,
-  brandings: BrandingMap,
-  onClose?: () => void
-): void {
+export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap, onClose?: () => void): void {
   console.log('Starting account service with brandings: ', brandings)
-  const methods = getMethods(version, txes, migrateOperations)
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
-  const dbUri = process.env.MONGO_URL
-  if (dbUri === undefined) {
-    console.log('Please provide mongodb url')
+  const dbUrl = process.env.DB_URL
+  if (dbUrl === undefined) {
+    console.log('Please provide DB_URL')
     process.exit(1)
   }
+
+  const oldAccsUrl = process.env.OLD_ACCOUNTS_URL ?? (dbUrl.startsWith('mongodb://') ? dbUrl : undefined)
 
   const transactorUri = process.env.TRANSACTOR_URL
   if (transactorUri === undefined) {
     console.log('Please provide transactor url')
     process.exit(1)
   }
-
-  const endpointUri = process.env.ENDPOINT_URL ?? transactorUri
 
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
@@ -80,54 +64,82 @@ export function serveAccount (
   })
 
   const ses = process.env.SES_URL
+  const sesAuthToken = process.env.SES_AUTH_TOKEN
+
   const frontURL = process.env.FRONT_URL
   const productName = process.env.PRODUCT_NAME
   const lang = process.env.LANGUAGE ?? 'en'
 
+  const wsLivenessDaysRaw = process.env.WS_LIVENESS_DAYS
+  let wsLivenessDays: number | undefined
+
+  if (wsLivenessDaysRaw !== undefined) {
+    try {
+      wsLivenessDays = parseInt(wsLivenessDaysRaw)
+    } catch (err: any) {
+      // DO NOTHING
+    }
+  }
+
+  setMetadata(account.metadata.Transactors, transactorUri)
   setMetadata(platform.metadata.locale, lang)
   setMetadata(account.metadata.ProductName, productName)
+  setMetadata(account.metadata.OtpTimeToLiveSec, parseInt(process.env.OTP_TIME_TO_LIVE ?? '60'))
+  setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
   setMetadata(account.metadata.SES_URL, ses)
+  setMetadata(account.metadata.SES_AUTH_TOKEN, sesAuthToken)
+
   setMetadata(account.metadata.FrontURL, frontURL)
+  setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
-  const initWS = process.env.INIT_WORKSPACE
-  if (initWS !== undefined) {
-    setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
-  }
-  setMetadata(toolPlugin.metadata.Endpoint, endpointUri)
-  setMetadata(toolPlugin.metadata.Transactor, transactorUri)
-  setMetadata(toolPlugin.metadata.UserAgent, 'AccountService')
+  const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
+  const methods = getMethods(hasSignUp)
 
-  let client: MongoClient | Promise<MongoClient> = MongoClient.connect(dbUri)
+  const dbNs = process.env.DB_NS
+  const accountsDb = getAccountDB(dbUrl, dbNs)
+  const migrations = accountsDb.then(async ([db]) => {
+    if (oldAccsUrl !== undefined) {
+      await migrateFromOldAccounts(oldAccsUrl, db)
+      console.log('Migrations verified/done')
+    }
+  })
 
   const app = new Koa()
   const router = new Router()
 
-  let worker: UpgradeWorker | undefined
+  app.use(
+    cors({
+      credentials: true
+    })
+  )
+  app.use(bodyParser())
 
-  void client.then(async (p: MongoClient) => {
-    const db = p.db(ACCOUNT_DB)
-    registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL, brandings)
-
-    // We need to clean workspace with creating === true, since server is restarted.
-    void cleanInProgressWorkspaces(db, productId)
-
-    const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
-    if (performUpgrade) {
-      await measureCtx.with('upgrade-all-models', {}, async (ctx) => {
-        worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
-        await worker.upgradeAll(ctx, {
-          errorHandler: async (ws, err) => {
-            Analytics.handleError(err)
-          },
-          force: false,
-          console: false,
-          logs: 'upgrade-logs',
-          parallel: parseInt(process.env.PARALLEL ?? '1')
-        })
+  registerProviders(
+    measureCtx,
+    app,
+    router,
+    new Promise((resolve) => {
+      void accountsDb.then((res) => {
+        const [db] = res
+        resolve(db)
       })
-    }
+    }),
+    serverSecret,
+    frontURL,
+    brandings,
+    !hasSignUp
+  )
+
+  void accountsDb.then((res) => {
+    const [db] = res
+    setInterval(
+      () => {
+        void cleanExpiredOtp(db)
+      },
+      3 * 60 * 1000
+    )
   })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {
@@ -164,11 +176,49 @@ export function serveAccount (
     }
   })
 
+  router.put('/api/v1/manage', async (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      if (payload.extra?.admin !== 'true') {
+        req.res.writeHead(404, {})
+        req.res.end()
+        return
+      }
+
+      const operation = req.query.operation
+
+      switch (operation) {
+        case 'maintenance': {
+          const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
+          const transactors = getAllTransactors(EndpointKind.Internal)
+          for (const tr of transactors) {
+            const serverEndpoint = tr.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+            await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=${timeMinutes}`, {
+              method: 'PUT'
+            })
+          }
+
+          req.res.writeHead(200)
+          req.res.end()
+          return
+        }
+      }
+
+      req.res.writeHead(404, {})
+      req.res.end()
+    } catch (err: any) {
+      Analytics.handleError(err)
+      req.res.writeHead(404, {})
+      req.res.end()
+    }
+  })
+
   router.post('rpc', '/', async (ctx) => {
     const token = extractToken(ctx.request.headers)
 
     const request = ctx.request.body as any
-    const method = methods[request.method]
+    const method = methods[request.method as AccountMethods]
     if (method === undefined) {
       const response = {
         id: request.id,
@@ -178,10 +228,8 @@ export function serveAccount (
       ctx.body = JSON.stringify(response)
     }
 
-    if (client instanceof Promise) {
-      client = await client
-    }
-    const db = client.db(ACCOUNT_DB)
+    const [db] = await accountsDb
+    await migrations
 
     let host: string | undefined
     const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
@@ -189,22 +237,23 @@ export function serveAccount (
       host = new URL(origin).host
     }
     const branding = host !== undefined ? brandings[host] : null
-    const result = await measureCtx.with(
-      request.method,
-      {},
-      async (ctx) => await method(ctx, db, productId, branding, request, token)
-    )
+    const result = await measureCtx.with(request.method, {}, (mctx) => {
+      if (method === undefined) {
+        const response = {
+          id: request.id,
+          error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
+        }
 
-    worker?.updateResponseStatistics(result)
+        ctx.body = JSON.stringify(response)
+        return
+      }
+
+      return method(mctx, db, branding, request, token)
+    })
+
     ctx.body = result
   })
 
-  app.use(
-    cors({
-      credentials: true
-    })
-  )
-  app.use(bodyParser())
   app.use(router.routes()).use(router.allowedMethods())
 
   const server = app.listen(ACCOUNT_PORT, () => {
@@ -213,11 +262,9 @@ export function serveAccount (
 
   const close = (): void => {
     onClose?.()
-    if (client instanceof Promise) {
-      void client.then((c) => c.close())
-    } else {
-      void client.close()
-    }
+    void accountsDb.then(([, closeAccountsDb]) => {
+      closeAccountsDb()
+    })
     server.close()
   }
 

@@ -25,7 +25,7 @@ import IconGmail from './components/icons/GmailColor.svelte'
 import Main from './components/Main.svelte'
 import NewMessages from './components/NewMessages.svelte'
 import gmail from '@hcengineering/gmail'
-import { checkHasEmail } from './utils'
+import { checkHasEmail, MessageTitleProvider } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -40,7 +40,8 @@ export default async (): Promise<Resources> => ({
     GmailSharedMessage
   },
   function: {
-    HasEmail: checkHasEmail
+    HasEmail: checkHasEmail,
+    MessageTitleProvider
   },
   handler: {
     DisconnectHandler: async () => {

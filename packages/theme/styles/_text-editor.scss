@@ -7,9 +7,11 @@
   }
 }
 
-.text-editor-view {
+.text-editor-view,
+.text-markup-view {
   // overflow-y: auto;
   color: var(--theme-text-primary-color);
+  margin: 0.25rem 0;
 
   .suggestion {
     padding-left: 0.25rem;
@@ -63,6 +65,7 @@
 
   p {
     margin-block-start: 0.5rem;
+    margin-block-end: 0.5rem;
   }
 
   >*+* {
@@ -72,6 +75,8 @@
 
   ul,
   ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
     margin-right: .25rem;
     margin-left: .75rem;
     padding: 0;
@@ -88,8 +93,7 @@
 
   ul[data-type="todoList"] {
     list-style: none;
-    margin: 0;
-    padding: 0;
+    margin-left: 0;
 
     li {
       margin: 0;
@@ -194,6 +198,13 @@
   span.deletion {
     text-decoration: line-through;
   }
+}
+
+.text-markup-view {
+  margin: 0;
+
+  p:first-child { margin-block-start: 0; }
+  p:last-child { margin-block-end: 0; }
 }
 
 @supports (selector(:has(.text-editor-image-container))) {
@@ -312,10 +323,17 @@
 
 .text-editor-highlighted-node-warning {
   background-color: var(--text-editor-highlighted-node-warning-background-color);
-  border-bottom: 0.0625rem solid var(--text-editor-highlighted-node-warning-border-color);
+  border-bottom: 2px solid var(--text-editor-highlighted-node-warning-border-color);
+  padding-bottom: 2px;
+  transition: background 0.2s ease, border 0.2s ease;
 
   &.text-editor-highlighted-node-selected, &:hover {
     background-color: var(--text-editor-highlighted-node-warning-active-background-color);
+  }
+
+  @media print {
+    background-color: inherit !important;
+    border-bottom: none;
   }
 }
 
@@ -328,6 +346,73 @@
 .text-editor-highlighted-node-add {
   background-color: var(--text-editor-highlighted-node-add-background-color);
   color: var(--text-editor-highlighted-node-add-font-color)
+}
+
+.text-editor-note-marker {
+  padding-left: 0.25rem;
+  color: transparent;
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%20id%3D%22note%22%3E%3Crect%20width%3D%22256%22%20height%3D%22256%22%20fill%3D%22none%22%3E%3C%2Frect%3E%3Cline%20x1%3D%2296%22%20x2%3D%22160%22%20y1%3D%2296%22%20y2%3D%2296%22%20fill%3D%22none%22%20stroke%3D%22%23313131%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%3E%3C%2Fline%3E%3Cline%20x1%3D%2296%22%20x2%3D%22160%22%20y1%3D%22128%22%20y2%3D%22128%22%20fill%3D%22none%22%20stroke%3D%22%23313131%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%3E%3C%2Fline%3E%3Cline%20x1%3D%2296%22%20x2%3D%22128%22%20y1%3D%22160%22%20y2%3D%22160%22%20fill%3D%22none%22%20stroke%3D%22%23313131%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%3E%3C%2Fline%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23313131%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%20d%3D%22M156.68629%2C216H48a8%2C8%2C0%2C0%2C1-8-8V48a8%2C8%2C0%2C0%2C1%2C8-8H208a8%2C8%2C0%2C0%2C1%2C8%2C8V156.68629a8%2C8%2C0%2C0%2C1-2.34315%2C5.65686l-51.3137%2C51.3137A8%2C8%2C0%2C0%2C1%2C156.68629%2C216Z%22%3E%3C%2Fpath%3E%3Cpolyline%20fill%3D%22none%22%20stroke%3D%22%23313131%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%20points%3D%22215.277%20159.992%20160%20159.992%20160%20215.272%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  user-select: none;
+  cursor: pointer;
+
+  @media print {
+    display: none;
+  }
+}
+
+.theme-dark {
+  @import './github-dark.scss';
+}
+
+.theme-light {
+  @import './github-light.scss';
+}
+
+.theme-dark .text-editor-note-marker {
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%20id%3D%22note%22%3E%3Crect%20width%3D%22256%22%20height%3D%22256%22%20fill%3D%22none%22%3E%3C%2Frect%3E%3Cline%20x1%3D%2296%22%20x2%3D%22160%22%20y1%3D%2296%22%20y2%3D%2296%22%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%3E%3C%2Fline%3E%3Cline%20x1%3D%2296%22%20x2%3D%22160%22%20y1%3D%22128%22%20y2%3D%22128%22%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%3E%3C%2Fline%3E%3Cline%20x1%3D%2296%22%20x2%3D%22128%22%20y1%3D%22160%22%20y2%3D%22160%22%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%3E%3C%2Fline%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%20d%3D%22M156.68629%2C216H48a8%2C8%2C0%2C0%2C1-8-8V48a8%2C8%2C0%2C0%2C1%2C8-8H208a8%2C8%2C0%2C0%2C1%2C8%2C8V156.68629a8%2C8%2C0%2C0%2C1-2.34315%2C5.65686l-51.3137%2C51.3137A8%2C8%2C0%2C0%2C1%2C156.68629%2C216Z%22%3E%3C%2Fpath%3E%3Cpolyline%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%20points%3D%22215.277%20159.992%20160%20159.992%20160%20215.272%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');
+}
+
+.theme-text-editor-note-anchor {
+  &.neutral {
+    background-color: var(--theme-text-editor-note-anchor-bg-neutral);
+  }
+
+  &.dangerous {
+    background-color: var(--theme-text-editor-note-anchor-bg-dangerous);
+  }
+
+  &.dangerous-light {
+    background-color: var(--theme-text-editor-note-anchor-bg-dangerous-light);
+  }
+  
+  &.warning {
+    background-color: var(--theme-text-editor-note-anchor-bg-warning);
+  }
+  
+  &.warning-light {
+    background-color: var(--theme-text-editor-note-anchor-bg-warning-light);
+  }
+  
+  &.positive {
+    background-color: var(--theme-text-editor-note-anchor-bg-positive);
+  }
+  
+  &.positive-light {
+    background-color: var(--theme-text-editor-note-anchor-bg-positive-light);
+  }
+  
+  &.primary {
+    background-color: var(--theme-text-editor-note-anchor-bg-primary);
+  }
+  
+  &.primary-light {
+    background-color: var(--theme-text-editor-note-anchor-bg-primary-light);
+  }
+
+  @media print {
+    background-color: inherit !important;
+  }
 }
 
 .text-editor-popup {
@@ -361,4 +446,12 @@
   &.delete {
     background: var(--text-editor-highlighted-node-delete-background-color);
   }
+}
+
+// Hiding the selection of an empty line
+.select-text p > br.ProseMirror-trailingBreak::selection {
+  background: transparent;
+}
+.select-text .text-editor-image-container {
+  user-select: all;
 }

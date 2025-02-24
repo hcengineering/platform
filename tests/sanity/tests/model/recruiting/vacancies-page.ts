@@ -27,7 +27,7 @@ export class VacanciesPage extends CommonRecruitingPage {
 
   readonly buttonExport = (): Locator => this.page.locator('button[type="button"] > span', { hasText: 'Export' })
   readonly buttonView = (): Locator =>
-    this.page.locator('div.search-start button[type="button"] > span', { hasText: 'View' })
+    this.page.locator('div.hulyHeader-container > .hulyHeader-buttonsGroup.before button[data-id="btn-viewOptions"]')
 
   readonly buttonHideArchivedVacancies = (): Locator => this.page.locator('div.popup span.toggle-switch')
   readonly popupArchivedVacancy = (): Locator => this.page.locator('div.antiPopup :text("Archive")')
@@ -44,7 +44,7 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly recruitApplicationButton = (): Locator =>
     this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
 
-  readonly vacanciesMenuLink = (): Locator => this.page.locator('text=Vacancies')
+  readonly vacanciesMenuLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Vacancies')
   readonly createVacancyButton = (): Locator => this.page.locator('button:has-text("Vacancy")')
   readonly vacancyInputField = (): Locator => this.page.locator('form [placeholder="Software\\ Engineer"]')
   readonly createButton = (): Locator => this.page.locator('form button:has-text("Create")')
@@ -78,8 +78,8 @@ export class VacanciesPage extends CommonRecruitingPage {
     await this.vacanciesCreateButton().click()
   }
 
-  async createVacancy (vacancyId: string): Promise<void> {
-    await this.recruitApplicationButton().click()
+  async createVacancy (vacancyId: string, jump: boolean = false): Promise<void> {
+    if (jump) await this.recruitApplicationButton().click()
     await this.vacanciesMenuLink().click()
     await this.createVacancyButton().click()
     await this.vacancyInputField().fill(vacancyId)
@@ -102,7 +102,6 @@ export class VacanciesPage extends CommonRecruitingPage {
   }
 
   async navigateToSoftwareEngineerVacancies (): Promise<void> {
-    await this.recruitApplicationButton().click()
     await this.vacanciesMenuLink().click()
     await this.softwareEngineerLink().click()
   }

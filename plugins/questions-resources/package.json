@@ -7,6 +7,7 @@
     "build": "compile ui",
     "build:watch": "compile ui",
     "format": "format src",
+    "svelte-check": "do-svelte-check",
     "_phase:build": "compile ui",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
@@ -39,13 +40,13 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/theme": "^0.6.5",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "lexorank": "~1.0.4",
-    "svelte": "^4.2.12"
+    "svelte": "^4.2.19"
   }
 }

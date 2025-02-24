@@ -48,13 +48,8 @@
     "Locked": "Bloqueado",
     "ConfigLabel": "Documentos",
     "ConfigDescription": "Extensión para edición colaborativo de documentos",
-    "UnassignToDo": "Eliminar tarea asignada",
-    "UnassignToDoConfirm": "¿Desea eliminar la tarea asignada? La tarea será removida del planificador del asignado.",
-    "ReassignToDo": "Cambiar asignado de la tarea",
-    "ReassignToDoConfirm": "¿Desea cambiar el asignado de la tarea? La tarea será removida del planificador actual del asignado.",
     "Icon": "Icono",
     "Color": "Color",
-    "RoleLabel": "Role: {role}",
-    "Embeddings": "Incrustaciones"
+    "RoleLabel": "Role: {role}"
   }
 }

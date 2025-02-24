@@ -17,7 +17,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { getTaskTypeStates } from '@hcengineering/task'
   import { taskTypeStore } from '@hcengineering/task-resources'
-  import { Issue, IssueDraft, IssueStatus, Project } from '@hcengineering/tracker'
+  import { Issue, IssueDraft, IssueStatus, Project, TrackerEvents } from '@hcengineering/tracker'
   import {
     Button,
     ButtonKind,
@@ -29,10 +29,13 @@
     showPopup
   } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
+  import { Analytics } from '@hcengineering/analytics'
   import { createEventDispatcher } from 'svelte'
+
   import tracker from '../../plugin'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
+
   type ValueType = Issue | (AttachedData<Issue> & { space: Ref<Project> }) | IssueDraft
 
   export let value: ValueType
@@ -67,6 +70,10 @@
 
     if ('_class' in value) {
       await client.update(value, { status: newStatus })
+      Analytics.handleEvent(TrackerEvents.IssueSetStatus, {
+        issue: value.identifier,
+        status: newStatus
+      })
     }
   }
 

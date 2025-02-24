@@ -77,7 +77,7 @@
   })
 
   async function createTagElementFnc (): Promise<void> {
-    const res = await createTagElement(title, targetClass, category, description, color)
+    const res = await createTagElement(title, targetClass, category, description, color, keyTitle)
     dispatch('close', res)
   }
 
@@ -107,49 +107,43 @@
   on:changeContent
 >
   <div class="flex-row-top clear-mins">
-    <div class="mr-3">
-      <Button size={'medium'} kind={'link-bordered'} on:click={showColorPopup}>
-        <svelte:fragment slot="content">
-          <div class="color pointer-events-none" style={getTagStyle(getPlatformColorDef(color, $themeStore.dark))} />
-        </svelte:fragment>
-      </Button>
-    </div>
-    <div class="flex-col mt-0-5 w-full">
-      <EditBox
-        bind:value={title}
-        placeholder={tags.string.TagName}
-        placeholderParam={{ word: keyTitle }}
-        kind={'large-style'}
-        autoFocus
-      />
-      <div class="mt-2">
-        <EditBox bind:value={description} placeholder={tags.string.TagDescriptionPlaceholder} kind={'small-style'} />
+    <div class="mr-3 flex-grow">
+      <div class="fs-title flex-row-center">
+        <div
+          class="color"
+          style={getTagStyle(getPlatformColorDef(color, $themeStore.dark))}
+          on:click={showColorPopup}
+        />
+        <EditBox bind:value={title} placeholder={tags.string.TagName} placeholderParam={{ word: keyTitle }} autoFocus />
       </div>
+
+      <div class="fs-title mt-4 flex-grow">
+        <EditBox bind:value={description} placeholder={tags.string.TagDescriptionPlaceholder} />
+      </div>
+      {#if categories.length > 1}
+        <div class="text-sm mt-4">
+          <DropdownLabels
+            icon={IconFolder}
+            label={tags.string.CategoryLabel}
+            kind={'regular'}
+            bind:selected={category}
+            items={categoryItems}
+            on:selected={() => {
+              categoryWasSet = true
+            }}
+          />
+        </div>
+      {/if}
     </div>
   </div>
-  <svelte:fragment slot="pool">
-    {#if categories.length > 1}
-      <div class="ml-12">
-        <DropdownLabels
-          icon={IconFolder}
-          label={tags.string.CategoryLabel}
-          kind={'regular'}
-          size={'large'}
-          bind:selected={category}
-          items={categoryItems}
-          on:selected={() => {
-            categoryWasSet = true
-          }}
-        />
-      </div>
-    {/if}
-  </svelte:fragment>
 </Card>
 
 <style lang="scss">
   .color {
+    margin-right: 0.75rem;
     width: 1rem;
     height: 1rem;
     border-radius: 0.25rem;
+    cursor: pointer;
   }
 </style>

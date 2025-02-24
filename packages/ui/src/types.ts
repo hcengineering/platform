@@ -115,7 +115,7 @@ export interface Tab extends TabBase {
 export type TabModel = Tab[]
 
 export interface TabItem {
-  id: string
+  id: string | number
   label?: string
   labelIntl?: IntlString
   labelParams?: Record<string, any>
@@ -123,6 +123,17 @@ export interface TabItem {
   color?: string
   tooltip?: IntlString
   action?: () => void
+}
+
+export interface BreadcrumbItem {
+  id?: string
+  icon?: Asset | AnySvelteComponent | ComponentType
+  iconProps?: any
+  iconWidth?: string
+  iconMargin?: string
+  withoutIconBackground?: boolean
+  label?: IntlString
+  title?: string
 }
 
 export interface RadioItem {
@@ -181,6 +192,7 @@ export type EditStyle =
   | 'default-large'
   | 'ghost-large'
   | 'modern-ghost-large'
+export type HeaderAdaptive = 'default' | 'freezeActions' | 'autoExtra' | 'doubleRow' | 'disabled'
 
 export interface ButtonItem {
   id: string
@@ -219,7 +231,8 @@ export const posAlignment = [
   'centered',
   'center',
   'status',
-  'movable'
+  'movable',
+  'full-centered'
 ] as const
 
 export type PopupPosAlignment = (typeof posAlignment)[number]
@@ -292,6 +305,7 @@ export interface LabelAndProps {
   onUpdate?: (result: any) => void
   kind?: 'tooltip' | 'submenu' | 'popup'
   keys?: string[]
+  timeout?: number
 }
 
 export interface ListItem {
@@ -314,6 +328,7 @@ export interface DropdownIntlItem {
   id: string | number
   label: IntlString
   icon?: Asset | AnySvelteComponent | ComponentType
+  iconProps?: Record<string, any>
   params?: Record<string, any>
   description?: IntlString
   paramsDescription?: Record<string, any>
@@ -371,6 +386,7 @@ export interface DeviceOptions {
   sizes: Record<WidthType, boolean>
   minWidth: boolean
   twoRows: boolean
+  firstDayOfWeek: number
   theme?: string
   language?: string
   replacedPanel?: HTMLElement

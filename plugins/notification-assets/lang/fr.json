@@ -48,6 +48,15 @@
     "Push": "Push",
     "Unreads": "Non lus",
     "EnablePush": "Activer les notifications push",
-    "NotificationBlockedInBrowser": "Les notifications sont bloquées dans votre navigateur. Veuillez activer les notifications dans les paramètres de votre navigateur"
+    "NotificationBlockedInBrowser": "Les notifications sont bloquées dans votre navigateur. Veuillez activer les notifications dans les paramètres de votre navigateur",
+    "General": "Général",
+    "InboxNotificationsDescription": "Recevez des notifications personnelles dans votre boîte de réception Huly.",
+    "PushNotificationsDescription": "Recevez des notifications personnelles sur le bureau.",
+    "Sound": "Son",
+    "SoundNotificationsDescription": "Recevez des notifications sonores pour les événements.",
+    "CommonNotificationCollectionAdded":  "{senderName} a ajouté {collection}",
+    "CommonNotificationCollectionRemoved": "{senderName} a supprimé {collection}",
+    "NoAccessToObject": "Vous n'avez plus accès à cet objet",
+    "ViewIn": "Voir dans {app}"
   }
 }

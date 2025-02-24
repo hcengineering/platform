@@ -17,7 +17,7 @@
   import { Doc } from '@hcengineering/core'
 
   import { getAttribute, getClient, KeyedAttribute, updateAttribute } from '@hcengineering/presentation'
-  import { FullDescriptionBox } from '@hcengineering/text-editor'
+  import { FullDescriptionBox } from '@hcengineering/text-editor-resources'
 
   // TODO Rename this component to MarkupEditor
   export let object: Doc

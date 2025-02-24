@@ -25,8 +25,8 @@ export async function issueIdentifierProvider (client: TxOperations, ref: Ref<Is
   return object.identifier
 }
 
-export async function issueTitleProvider (client: TxOperations, ref: Ref<Doc>): Promise<string> {
-  const object = await client.findOne(tracker.class.Issue, { _id: ref as Ref<Issue> })
+export async function issueTitleProvider (client: TxOperations, ref: Ref<Doc>, doc?: Issue): Promise<string> {
+  const object = doc ?? (await client.findOne(tracker.class.Issue, { _id: ref as Ref<Issue> }))
 
   if (object === undefined) {
     return ''
@@ -72,7 +72,7 @@ export function generateIssueShortLink (issueId: string): string {
 
 export async function generateIssueLocation (loc: Location, issueId: string): Promise<ResolvedLocation | undefined> {
   const client = getClient()
-  const issue = await client.findOne(tracker.class.Issue, { identifier: issueId })
+  const issue = await client.findOne(tracker.class.Issue, { identifier: issueId }, { showArchived: true })
   if (issue === undefined) {
     accessDeniedStore.set(true)
     console.error(`Could not find issue ${issueId}.`)
@@ -128,8 +128,9 @@ export async function updateIssueRelation (
 }
 
 export async function getIssueIdByIdentifier (identifier: string): Promise<Ref<Issue> | undefined> {
+  if (!isIssueId(identifier)) return
   const client = getClient()
-  const issue = await client.findOne(tracker.class.Issue, { identifier }, { projection: { _id: 1 } })
+  const issue = await client.findOne(tracker.class.Issue, { identifier })
 
   return issue?._id
 }

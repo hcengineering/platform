@@ -1,5 +1,4 @@
 import { test } from '@playwright/test'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { NewIssue } from '../model/tracker/types'
@@ -10,12 +9,10 @@ test.use({
 })
 
 test.describe('Collaborative test for issue', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     issuesPage = new IssuesPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
 
@@ -50,7 +47,6 @@ test.describe('Collaborative test for issue', () => {
 
     // create a new issue by first user
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
-    await leftSideMenuPage.clickTracker()
 
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.clickLinkSidebarAll()
@@ -69,11 +65,7 @@ test.describe('Collaborative test for issue', () => {
     await issuesPageSecond.openIssueByName(newIssue.title)
 
     const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
-    await issuesDetailsPageSecond.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPageSecond.checkIssue(newIssue)
 
     await closePages()
   })
@@ -176,7 +168,7 @@ test.describe('Collaborative test for issue', () => {
       await issuesPageSecond.openIssueByName(issue.title)
 
       const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
-      await issuesDetailsPageSecond.checkIssue({ ...issue })
+      await issuesDetailsPageSecond.checkIssue(issue)
     })
 
     await closePages()

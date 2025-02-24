@@ -20,11 +20,10 @@ import type { Resource } from '@hcengineering/platform'
 
 import core, { DOMAIN_MODEL } from '@hcengineering/core'
 import type {
-  ClassSearchConfig,
+  FieldTemplateComponent,
   ObjectDDParticipant,
   ObjectDDParticipantFunc,
   SearchPresenter,
-  SearchPresenterFunc,
   Trigger,
   TriggerFunc
 } from '@hcengineering/server-core'
@@ -44,9 +43,7 @@ export class TObjectDDParticipant extends TClass implements ObjectDDParticipant 
 
 @Mixin(serverCore.mixin.SearchPresenter, core.class.Class)
 export class TSearchPresenter extends TClass implements SearchPresenter {
-  searchConfig!: ClassSearchConfig
-  getSearchShortTitle!: SearchPresenterFunc
-  getSearchTitle!: SearchPresenterFunc
+  title!: FieldTemplateComponent
 }
 
 export function createModel (builder: Builder): void {

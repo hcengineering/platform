@@ -1,0 +1,94 @@
+{
+  "name": "desktop",
+  "version": "0.6.435",
+  "main": "dist/main/electron.js",
+  "author": "Hardcore Engineering <hey@huly.io>",
+  "template": "@hcengineering/default-package",
+  "scripts": {
+    "_phase:package": "rushx package",
+    "package": "rushx bump && rm -rf ./dist && cp -r ../desktop/dist . && cp ../desktop/.env ./dist && echo 'done'",
+    "dist": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build -p onTag",
+    "dist-local": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build",
+    "dist-signed": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=true NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build -c.afterSign=scripts/notarize.js -p onTag",
+    "dist-mac-win": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build --windows --x64",
+    "format": "echo done",
+    "bump": "bump-package-version"
+  },
+  "devDependencies": {
+    "@hcengineering/platform-rig": "^0.6.0",
+    "@hcengineering/desktop": "^0.6.0",
+    "@vercel/webpack-asset-relocator-loader": "^1.7.3",
+    "node-loader": "~2.0.0",
+    "cross-env": "~7.0.3",
+    "typescript": "^5.3.3",
+    "electron": "^34.0.1",
+    "@types/node": "~20.11.16",
+    "electron-builder": "^25.1.8",
+    "@electron/notarize": "^2.3.2"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "~1.0.0",
+    "dotenv": "~16.0.0"
+  },
+  "homepage": "https://huly.io/",
+  "productName": "Huly Desktop",
+  "description": "Huly Desktop experience",
+  "build": {
+    "productName": "Huly",
+    "appId": "hc.hcengineering.Huly",
+    "directories": {
+      "output": "deploy"
+    },
+    "files": [
+      "./dist/**"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "artifactName": "Huly-macos-${version}-${arch}.${ext}",
+      "target": "default",
+      "icon": "./src/AppIcon.icns",
+      "hardenedRuntime": true,
+      "entitlements": "./entitlements.mac.plist",
+      "entitlementsInherit": "./entitlements.mac.plist",
+      "notarize": false,
+      "publish": {
+        "provider": "generic",
+        "url": "https://dist.huly.io",
+        "channel": "latest"
+      }
+    },
+    "win": {
+      "target": [
+        "zip",
+        "nsis"
+      ],
+      "artifactName": "Huly-windows-${version}.${ext}",
+      "verifyUpdateCodeSignature": false,
+      "icon": "./src/AppIcon.png",
+      "publish": {
+        "provider": "generic",
+        "url": "https://dist.huly.io",
+        "channel": "latest"
+      }
+    },
+    "linux": {
+      "artifactName": "Huly-linux-${version}.${ext}",
+      "target": [
+        "AppImage",
+        "deb",
+        "zip"
+      ],
+      "category": "Utility",
+      "publish": {
+        "provider": "generic",
+        "url": "https://dist.huly.io",
+        "channel": "latest"
+      }
+    }
+  },
+  "keywords": [
+    "electron",
+    "typescript",
+    "svelte"
+  ]
+}

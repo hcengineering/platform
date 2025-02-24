@@ -39,7 +39,8 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
-    "fast-equals": "^5.0.1"
+    "@hcengineering/analytics": "^0.6.0",
+    "fast-equals": "^5.2.2"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

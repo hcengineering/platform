@@ -3,7 +3,7 @@
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient, MessageViewer, SpaceSelector } from '@hcengineering/presentation'
   import { MessageTemplate, TemplateCategory } from '@hcengineering/templates'
-  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { StyledTextEditor } from '@hcengineering/text-editor-resources'
   import {
     Action,
     Button,
@@ -17,7 +17,7 @@
     Breadcrumb,
     Separator,
     defineSeparators,
-    settingsSeparators,
+    twoPanelsSeparators,
     Scroller
   } from '@hcengineering/ui'
   import { getActions as getContributedActions, TreeItem, TreeNode } from '@hcengineering/view-resources'
@@ -147,11 +147,11 @@
   }
 
   let space: Ref<TemplateCategory> | undefined = undefined
-  defineSeparators('workspaceSettings', settingsSeparators)
+  defineSeparators('workspaceSettings', twoPanelsSeparators)
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb
       icon={templatesPlugin.icon.Templates}
       label={templatesPlugin.string.Templates}
@@ -162,7 +162,7 @@
 
   <div class="hulyComponent-content__container columns">
     <div class="hulyComponent-content__column">
-      <div id="create-template" class="flex-between trans-title m-3">
+      <div id="create-template" class="flex-between trans-title flex-no-shrink bottom-divider p-3">
         <Button
           icon={templatesPlugin.icon.Template}
           label={templatesPlugin.string.CreateTemplate}
@@ -179,6 +179,7 @@
             label={getEmbeddedLabel(space.name)}
             actions={async () => await getSpaceActions(space)}
             isFold
+            noDivider
             empty={getTemps.length === 0}
           >
             {#each getTemps as t (t._id)}

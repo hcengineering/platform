@@ -58,30 +58,43 @@
       {@const removeMessages = valueMessages.filter(({ action }) => action === 'remove')}
       {@const createMessages = valueMessages.filter(({ action }) => action === 'create')}
 
+      {@const createMessagesLen = createMessages.length}
+      {@const removeMessagesLen = removeMessages.length}
+
       {#each createMessages as valueMessage, index}
         <DocUpdateMessageObjectValue
-          message={valueMessage}
+          attachedTo={valueMessage.attachedTo}
+          objectClass={valueMessage.objectClass}
+          objectId={valueMessage.objectId}
+          action={valueMessage.action}
           {viewlet}
           withIcon={index === 0}
-          hasSeparator={createMessages.length > 1 && index !== createMessages.length - 1}
+          hasSeparator={createMessagesLen > 1 && index !== createMessagesLen - 1}
           {preview}
         />
       {/each}
       {#each removeMessages as valueMessage, index}
         <DocUpdateMessageObjectValue
-          message={valueMessage}
+          attachedTo={valueMessage.attachedTo}
+          objectClass={valueMessage.objectClass}
+          objectId={valueMessage.objectId}
+          action={valueMessage.action}
           {viewlet}
           withIcon={index === 0}
-          hasSeparator={removeMessages.length > 1 && index !== removeMessages.length - 1}
+          hasSeparator={removeMessagesLen > 1 && index !== removeMessagesLen - 1}
           {preview}
         />
       {/each}
     {:else}
+      {@const len = valueMessages.length}
       {#each valueMessages as valueMessage, index}
         <DocUpdateMessageObjectValue
-          message={valueMessage}
+          attachedTo={valueMessage.attachedTo}
+          objectClass={valueMessage.objectClass}
+          objectId={valueMessage.objectId}
+          action={valueMessage.action}
           {viewlet}
-          hasSeparator={valueMessages.length > 1 && index !== valueMessages.length - 1}
+          hasSeparator={len > 1 && index !== len - 1}
           {preview}
         />
       {/each}

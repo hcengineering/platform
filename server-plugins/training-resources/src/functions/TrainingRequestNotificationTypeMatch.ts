@@ -13,26 +13,24 @@
 // limitations under the License.
 //
 
-import { type Account, type Ref, type TxCUD } from '@hcengineering/core'
+import { Person, type Employee } from '@hcengineering/contact'
+import { type PersonId, type Ref, type TxCUD } from '@hcengineering/core'
 import type { NotificationType } from '@hcengineering/notification'
 import type { TriggerControl } from '@hcengineering/server-core'
 import type { TrainingRequest } from '@hcengineering/training'
-import contact, { type Employee, type PersonAccount } from '@hcengineering/contact'
 import { isTxCreateDoc } from '../utils/isTxCreateDoc'
 import { isTxUpdateDoc } from '../utils/isTxUpdateDoc'
 
-export async function TrainingRequestNotificationTypeMatch (
+export function TrainingRequestNotificationTypeMatch (
   tx: TxCUD<TrainingRequest>,
   doc: TrainingRequest,
-  user: Ref<Account>,
+  person: Person,
+  user: PersonId[],
   type: NotificationType,
   control: TriggerControl
-): Promise<boolean> {
+): boolean {
   if (isTxCreateDoc(tx)) {
-    const employeeRef: Ref<Employee> = (
-      await control.modelDb.findAll(contact.class.PersonAccount, { _id: user as Ref<PersonAccount> })
-    )[0]?.person as Ref<Employee>
-    return doc.trainees.includes(employeeRef)
+    return doc.trainees.includes(person._id as Ref<Employee>)
   }
 
   if (isTxUpdateDoc(tx)) {
@@ -41,11 +39,8 @@ export async function TrainingRequestNotificationTypeMatch (
       return false
     }
 
-    const employeeRef: Ref<Employee> = (
-      await control.modelDb.findAll(contact.class.PersonAccount, { _id: user as Ref<PersonAccount> })
-    )[0]?.person as Ref<Employee>
     const newTrainees = typeof pushed === 'object' ? pushed.$each : [pushed]
-    return newTrainees.includes(employeeRef)
+    return newTrainees.includes(person._id as Ref<Employee>)
   }
 
   return false

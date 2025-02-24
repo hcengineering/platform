@@ -1,10 +1,10 @@
-import { DocumentQuery } from '.'
+import { DocumentQuery, type MemDb } from '.'
 import { Class, Doc, Enum, EnumOf, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { getObjectValue } from './objvalue'
 import { createPredicates, isPredicate } from './predicate'
-import { SortQuerySelector, SortingOrder, SortingQuery, SortingRules, Storage } from './storage'
+import { SortQuerySelector, SortingOrder, SortingQuery, SortingRules } from './storage'
 
 /**
  * @public
@@ -47,14 +47,14 @@ function getEnumValue<T extends Doc> (
 /**
  * @public
  */
-export async function resultSort<T extends Doc> (
+export function resultSort<T extends Doc> (
   result: T[],
   sortOptions: SortingQuery<T>,
   _class: Ref<Class<T>>,
   hierarchy: Hierarchy,
-  modelDb: Storage
-): Promise<void> {
-  const enums = await getEnums(_class, sortOptions, hierarchy, modelDb)
+  modelDb: MemDb
+): void {
+  const enums = getEnums(_class, sortOptions, hierarchy, modelDb)
   const sortFunc = (a: any, b: any): number => {
     for (const key in sortOptions) {
       const _enum = enums[key]
@@ -116,12 +116,12 @@ function getSortingResult (aValue: any, bValue: any, order: SortingOrder | Sorti
   return res * orderOrder
 }
 
-async function getEnums<T extends Doc> (
+function getEnums<T extends Doc> (
   _class: Ref<Class<T>>,
   sortOptions: SortingQuery<T>,
   hierarchy: Hierarchy,
-  modelDb: Storage
-): Promise<Record<string, Enum>> {
+  modelDb: MemDb
+): Record<string, Enum> {
   const res: Record<string, Enum> = {}
   for (const key in sortOptions) {
     const attr = hierarchy.findAttribute(_class, key)
@@ -129,7 +129,7 @@ async function getEnums<T extends Doc> (
       if (attr !== undefined) {
         if (attr.type._class === core.class.EnumOf) {
           const ref = (attr.type as EnumOf).of
-          const enu = await modelDb.findAll(core.class.Enum, { _id: ref })
+          const enu = modelDb.findAllSync(core.class.Enum, { _id: ref })
           res[key] = enu[0]
         }
       }
@@ -156,7 +156,11 @@ export function matchQuery<T extends Doc> (
   hierarchy: Hierarchy,
   skipLookup: boolean = false
 ): Doc[] {
-  let result = [...docs]
+  const baseClass = hierarchy.getBaseClass(clazz)
+  let result = docs.filter((r) => hierarchy.isDerived(r._class, baseClass))
+  if (baseClass !== clazz) {
+    result = docs.filter((r) => hierarchy.hasMixin(r, clazz))
+  }
   for (const key in query) {
     if (skipLookup && key.startsWith('$lookup.')) {
       continue

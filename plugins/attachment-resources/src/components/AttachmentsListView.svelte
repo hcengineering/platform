@@ -15,14 +15,13 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { Doc, getCurrentAccount, type WithLookup } from '@hcengineering/core'
-  import { getBlobHref, getClient } from '@hcengineering/presentation'
+  import { getClient, getFileUrl } from '@hcengineering/presentation'
   import { Icon, IconMoreV, Menu, showPopup } from '@hcengineering/ui'
   import { AttachmentPresenter } from '..'
   import FileDownload from './icons/FileDownload.svelte'
 
   export let attachments: WithLookup<Attachment>[]
   let selectedFileNumber: number | undefined
-  const myAccId = getCurrentAccount()._id
   const client = getClient()
 
   const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
@@ -31,7 +30,7 @@
       Menu,
       {
         actions: [
-          ...(myAccId === object.modifiedBy
+          ...(getCurrentAccount().socialIds.includes(object.modifiedBy)
             ? [
                 {
                   label: attachment.string.DeleteFile,
@@ -51,16 +50,15 @@
 
 <div class="flex-col">
   {#each attachments as attachment, i}
+    {@const href = getFileUrl(attachment.file, attachment.name)}
     <div class="flex-between attachmentRow" class:fixed={i === selectedFileNumber}>
       <div class="item flex">
         <AttachmentPresenter value={attachment} />
       </div>
       <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
-        {#await getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name) then href}
-          <a {href} download={attachment.name}>
-            <Icon icon={FileDownload} size={'small'} />
-          </a>
-        {/await}
+        <a {href} download={attachment.name}>
+          <Icon icon={FileDownload} size={'small'} />
+        </a>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="eAttachmentRowMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
@@ -75,9 +73,10 @@
   .attachmentRow {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     margin: 0.5rem 1.5rem;
     padding: 0.5rem;
-    border: 1px solid var(--divider-color);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 0.5rem;
 
     .eAttachmentRowActions {

@@ -1,0 +1,11 @@
+{
+  "string": {
+    "ShowNotifications": "Show notifications",
+    "PlaySound": "Play sound",
+    "BounceAppIcon": "Bounce app's icon (mac only)",
+    "ShowBadge": "Show a badge on app's icon",
+    "SoundAndAppearance": "Sound and appearance",
+    "HaveGotANotification": "You have got a notification",
+    "TotalNotificationsCount": "You have {count, plural, =1 {# notifcation} other {# notifcations}} total"
+  }
+}

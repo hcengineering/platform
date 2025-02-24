@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Subject": "Тема",
+    "From": "От кого",
+    "To": "Кому",
+    "CreateMail": "Новое сообщение",
+    "MailThread": "Сообщение",
+    "Reply": "Ответить",
+    "Date": "Дата",
+    "MailMessage": "Сообщение",
+    "MailMessages": "Сообщения"
+  }
+}

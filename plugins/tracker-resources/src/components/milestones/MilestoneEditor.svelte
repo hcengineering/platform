@@ -16,7 +16,8 @@
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueTemplate, Milestone, Project } from '@hcengineering/tracker'
+  import { Issue, IssueTemplate, Milestone, Project, TrackerEvents } from '@hcengineering/tracker'
+  import { Analytics } from '@hcengineering/analytics'
   import {
     ButtonKind,
     ButtonShape,
@@ -24,7 +25,7 @@
     DatePresenter,
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { activeMilestone } from '../../issues'
   import tracker from '../../plugin'
   import MilestoneSelector from './MilestoneSelector.svelte'
@@ -50,6 +51,8 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
+  let element: HTMLDivElement
+
   const handleMilestoneIdChanged = async (newMilestoneId: Ref<Milestone> | null | undefined) => {
     if (!isEditable || newMilestoneId === undefined || (!Array.isArray(value) && value.milestone === newMilestoneId)) {
       return
@@ -58,10 +61,18 @@
       await Promise.all(
         value.map(async (p) => {
           await client.update(p, { milestone: newMilestoneId })
+          Analytics.handleEvent(TrackerEvents.IssueMilestoneAdded, {
+            issue: p.identifier ?? p._id,
+            component: newMilestoneId
+          })
         })
       )
     } else {
       await client.update(value, { milestone: newMilestoneId })
+      Analytics.handleEvent(TrackerEvents.IssueMilestoneAdded, {
+        issue: (value as Issue).identifier ?? value._id,
+        component: newMilestoneId
+      })
     }
     if (isAction) dispatch('close')
   }
@@ -77,11 +88,12 @@
   $: _space = space ?? (!Array.isArray(value) ? value.space : { $in: Array.from(new Set(value.map((it) => it.space))) })
 
   $: twoRows = $deviceInfo.twoRows
+  afterUpdate(() => dispatch('resize', element?.clientWidth))
 </script>
 
 {#if kind === 'list'}
   {#if !Array.isArray(value) && value.milestone}
-    <div class={compression ? 'label-wrapper' : 'clear-mins'}>
+    <div bind:this={element} class={compression ? 'label-wrapper' : 'clear-mins'}>
       <MilestoneSelector
         {kind}
         {size}
@@ -103,6 +115,7 @@
   {/if}
 {:else}
   <div
+    bind:this={element}
     class="flex flex-wrap clear-mins"
     class:minus-margin={kind === 'list-header'}
     class:label-wrapper={compression}

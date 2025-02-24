@@ -21,26 +21,31 @@ import { RpcMethodParams } from '../rpc'
 export async function getContent (
   ctx: MeasureContext,
   context: Context,
+  documentName: string,
   payload: GetContentRequest,
   params: RpcMethodParams
 ): Promise<GetContentResponse> {
-  const { documentId, field } = payload
   const { hocuspocus, transformer } = params
+  const { source } = payload
 
-  const connection = await ctx.with('connect', {}, async () => {
-    return await hocuspocus.openDirectConnection(documentId, context)
+  context = { ...context, content: source }
+
+  const connection = await ctx.with('connect', {}, () => {
+    return hocuspocus.openDirectConnection(documentName, context)
   })
 
   try {
-    const html = await ctx.with('transform', {}, async () => {
-      let content = ''
+    const content = await ctx.with('transform', {}, async () => {
+      const object: Record<string, string> = {}
       await connection.transact((document) => {
-        content = transformer.fromYdoc(document, field)
+        document.share.forEach((_, field) => {
+          object[field] = transformer.fromYdoc(document, field)
+        })
       })
-      return content
+      return object
     })
 
-    return { html }
+    return { content }
   } finally {
     await connection.disconnect()
   }

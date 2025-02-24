@@ -43,6 +43,13 @@
     "Thread": "Fil",
     "AddReaction": "Ajouter une réaction",
     "SaveForLater": "Enregistrer pour plus tard",
-    "RemoveFromLater": "Retirer des enregistrements"
+    "RemoveFromLater": "Retirer des enregistrements",
+    "ReactionNotificationTitle": "Réaction sur {title}",
+    "ReactionNotificationBody": "{senderName}: {reaction}",
+    "NewObject": "Nouveau {object}",
+    "RemovedObject": "Supprimé {object}",
+    "ChangedObject": "Modifié {object}",
+    "UnsetObject": "Non défini {object}",
+    "UpdatedObject": "Mis à jour {object}"
   }
 }

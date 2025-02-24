@@ -82,7 +82,14 @@
   }
 
   async function createTagElementQuick (): Promise<void> {
-    const res = await createTagElement(search, targetClass, findTagCategory(search, categories))
+    const res = await createTagElement(
+      search,
+      targetClass,
+      findTagCategory(search, categories),
+      undefined,
+      undefined,
+      keyLabel
+    )
     await onCreateTagElement(res)
   }
 
@@ -146,12 +153,15 @@
         kind={'ghost'}
         size={'large'}
         icon={show ? IconView : IconViewHide}
+        dataId={`btn${show ? 'Collapse' : 'Expand'}`}
         on:click={() => {
           show = !show
         }}
       />
     {/if}
-    {#if !hideAdd}<Button kind={'ghost'} size={'large'} icon={IconAdd} on:click={createTagElementPopup} />{/if}
+    {#if !hideAdd}
+      <Button kind={'ghost'} size={'large'} icon={IconAdd} dataId={'btnAdd'} on:click={createTagElementPopup} />
+    {/if}
   </div>
   <div class="scroll">
     <div class="box">

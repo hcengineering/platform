@@ -14,87 +14,41 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { deepEqual } from 'fast-equals'
 
-  import { DirectMessage } from '@hcengineering/chunter'
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
-  import core, { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { SelectUsersPopup } from '@hcengineering/contact-resources'
-  import notification from '@hcengineering/notification'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { Employee } from '@hcengineering/contact'
+  import { PersonId, Ref, notEmpty } from '@hcengineering/core'
+  import { primarySocialIdByPersonRefStore, SelectUsersPopup } from '@hcengineering/contact-resources'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { Modal, showPopup } from '@hcengineering/ui'
 
   import chunter from '../../../plugin'
-  import { buildDmName } from '../../../utils'
+  import { buildDmName, createDirect } from '../../../utils'
   import ChannelMembers from '../../ChannelMembers.svelte'
   import { openChannel } from '../../../navigation'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const myAccId = getCurrentAccount()._id
-  const query = createQuery()
 
   let employeeIds: Ref<Employee>[] = []
   let dmName = ''
-  let accounts: PersonAccount[] = []
   let hidden = true
 
-  $: void loadDmName(accounts).then((r) => {
+  $: primaryPersonIds = employeeIds.map((e) => $primarySocialIdByPersonRefStore.get(e)).filter(notEmpty)
+  $: void loadDmName(primaryPersonIds).then((r) => {
     dmName = r
   })
-  $: query.query(contact.class.PersonAccount, { person: { $in: employeeIds } }, (res) => {
-    accounts = res
-  })
 
-  async function loadDmName (employeeAccounts: PersonAccount[]): Promise<string> {
-    return await buildDmName(client, employeeAccounts)
+  async function loadDmName (personIds: PersonId[]): Promise<string> {
+    return await buildDmName(client, personIds)
   }
 
   async function createDirectMessage (): Promise<void> {
-    const employeeAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: employeeIds } })
-    const accIds = [myAccId, ...employeeAccounts.filter(({ _id }) => _id !== myAccId).map(({ _id }) => _id)].sort()
+    const dmId = await createDirect(employeeIds)
 
-    const existingDms = await client.findAll(chunter.class.DirectMessage, {})
-
-    let direct: DirectMessage | undefined
-    for (const dm of existingDms) {
-      if (deepEqual(dm.members.sort(), accIds)) {
-        direct = dm
-        break
-      }
-    }
-
-    const dmId =
-      direct?._id ??
-      (await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
-        name: '',
-        description: '',
-        private: true,
-        archived: false,
-        members: accIds
-      }))
-
-    const context = await client.findOne(notification.class.DocNotifyContext, {
-      user: myAccId,
-      attachedTo: dmId,
-      attachedToClass: chunter.class.DirectMessage
-    })
-
-    if (context !== undefined) {
-      await client.diffUpdate(context, { hidden: false })
+    if (dmId !== undefined) {
       openChannel(dmId, chunter.class.DirectMessage)
-
-      return
+      dispatch('close')
     }
-
-    await client.createDoc(notification.class.DocNotifyContext, dmId, {
-      user: myAccId,
-      attachedTo: dmId,
-      attachedToClass: chunter.class.DirectMessage,
-      hidden: false
-    })
-
-    openChannel(dmId, chunter.class.DirectMessage)
   }
 
   function handleCancel (): void {

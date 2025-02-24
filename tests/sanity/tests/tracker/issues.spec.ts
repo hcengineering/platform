@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { Issue, NewIssue } from '../model/tracker/types'
@@ -13,26 +12,24 @@ test.use({
 })
 
 test.describe('Tracker issue tests', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let issuesDetailsPage: IssuesDetailsPage
   let issuesPage: IssuesPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let issueCommentPopup: IssueCommentPopup
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
     issuesPage = new IssuesPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     issueCommentPopup = new IssueCommentPopup(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
-    await leftSideMenuPage.clickTracker()
   })
 
   test('Create an issue with all parameters and attachments', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
       description: 'Created issue with all parameters and attachments description',
+      projectName: 'Default',
       status: 'In Progress',
       priority: 'Urgent',
       assignee: 'Appleseed John',
@@ -46,17 +43,14 @@ test.describe('Tracker issue tests', () => {
     }
 
     await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
   })
 
   test('Edit an issue', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
-      description: 'Created issue with all parameters and attachments description'
+      description: 'Created issue with all parameters and attachments description',
+      projectName: 'Default'
     }
     const editIssue: Issue = {
       status: 'Done',
@@ -74,34 +68,19 @@ test.describe('Tracker issue tests', () => {
 
     await issuesDetailsPage.checkIssue({
       ...newIssue,
-      ...editIssue,
-      estimation: '1d'
+      ...editIssue
     })
 
-    const estimations = new Map([
-      ['0', '0h'],
-      ['1', '1h'],
-      ['1.25', '1h 15m'],
-      ['1.259', '1h 15m'],
-      ['1.26', '1h 15m'],
-      ['1.27', '1h 16m'],
-      ['1.5', '1h 30m'],
-      ['1.75', '1h 45m'],
-      ['2', '2h'],
-      ['7', '7h'],
-      ['8', '1d'],
-      ['9', '1d 1h'],
-      ['9.5', '1d 1h 30m']
-    ])
+    const estimations = ['0', '1', '1.25', '1.259', '1.26', '1.27', '1.5', '1.75', '2', '7', '8', '9', '9.5']
 
-    for (const [input, expected] of estimations.entries()) {
+    for (const input of estimations) {
       await issuesDetailsPage.editIssue({
         estimation: input
       })
       await issuesDetailsPage.checkIssue({
         ...newIssue,
         ...editIssue,
-        estimation: expected
+        estimation: input
       })
     }
   })
@@ -109,7 +88,8 @@ test.describe('Tracker issue tests', () => {
   test.skip('Set parent issue', async ({ page }) => {
     const parentIssue: NewIssue = {
       title: `PARENT ISSUE-${generateId(2)}`,
-      description: 'Created issue to be parent issue'
+      description: 'Created issue to be parent issue',
+      projectName: 'Default'
     }
 
     await issuesPage.clickModelSelectorAll()
@@ -119,7 +99,8 @@ test.describe('Tracker issue tests', () => {
       const newIssue: NewIssue = {
         title: `Set parent issue during creation-${generateId(2)}`,
         description: 'Set parent issue during creation',
-        parentIssue: parentIssue.title
+        parentIssue: parentIssue.title,
+        projectName: 'Default'
       }
 
       await issuesPage.clickModelSelectorAll()
@@ -139,7 +120,8 @@ test.describe('Tracker issue tests', () => {
     await test.step('Set parent issue from issues page', async () => {
       const newIssue: NewIssue = {
         title: `Set parent issue from issues page-${generateId(2)}`,
-        description: 'Set parent issue from issues page'
+        description: 'Set parent issue from issues page',
+        projectName: 'Default'
       }
       await issuesPage.clickModelSelectorAll()
       await issuesPage.createNewIssue(newIssue)
@@ -162,7 +144,8 @@ test.describe('Tracker issue tests', () => {
     await test.step('Set parent issue from issue details page', async () => {
       const newIssue: NewIssue = {
         title: `Set parent issue from issue details page-${generateId(2)}`,
-        description: 'Set parent issue from issue details page'
+        description: 'Set parent issue from issue details page',
+        projectName: 'Default'
       }
       await issuesPage.clickModelSelectorAll()
       await issuesPage.createNewIssue(newIssue)
@@ -183,7 +166,8 @@ test.describe('Tracker issue tests', () => {
     const secondProjectName = 'Second Project'
     const moveIssue: NewIssue = {
       title: `Issue to another project-${generateId()}`,
-      description: 'Issue to move to another project'
+      description: 'Issue to move to another project',
+      projectName: 'Default'
     }
     await prepareNewIssueWithOpenStep(page, moveIssue)
     await issuesDetailsPage.moreActionOnIssue('Move to project')
@@ -193,6 +177,8 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkIssue({
       ...moveIssue
     })
+
+    await trackerNavigationMenuPage.openIssuesForProject('Default')
     // TODO need to return back after bug with activity fixed
     // await issuesDetailsPage.checkActivityExist('changed project in')
     // await issuesDetailsPage.checkActivityExist('changed number in')
@@ -202,7 +188,8 @@ test.describe('Tracker issue tests', () => {
     const commentText = `Comment should be stored after reload-${generateId()}`
     const commentIssue: NewIssue = {
       title: `Issue for stored comment-${generateId()}`,
-      description: 'Issue for comment stored after reload the page'
+      description: 'Issue for comment stored after reload the page',
+      projectName: 'Default'
     }
     await prepareNewIssueWithOpenStep(page, commentIssue)
 
@@ -222,9 +209,10 @@ test.describe('Tracker issue tests', () => {
       title: `New Issue-${generateId(4)}`,
       description: 'New Issue',
       priority: 'Medium',
-      estimation: '1d',
+      estimation: '8',
       component: 'Default component',
-      milestone: 'Edit Milestone'
+      milestone: 'Edit Milestone',
+      projectName: 'Default'
     }
     await issuesPage.clickModelSelectorAll()
     await issuesPage.buttonCreateNewIssue().click()
@@ -240,9 +228,12 @@ test.describe('Tracker issue tests', () => {
 
   test('Delete an issue', async ({ page }) => {
     const deleteIssue: NewIssue = {
-      title: 'Issue for deletion',
-      description: 'Description Issue for deletion'
+      title: `Issue-to-delete-${generateId(4)}`,
+      description: 'Description Issue for deletion',
+      projectName: 'Default'
     }
+    await prepareNewIssueWithOpenStep(page, deleteIssue)
+    await issuesPage.navigateToIssues()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.searchIssueByName(deleteIssue.title)
     await issuesPage.openIssueByName(deleteIssue.title)
@@ -257,7 +248,8 @@ test.describe('Tracker issue tests', () => {
     const additionalDescription = 'New row for the additional description'
     const changedDescriptionIssue: NewIssue = {
       title: `Check the changed description activity-${generateId()}`,
-      description: 'Check the changed description activity description'
+      description: 'Check the changed description activity description',
+      projectName: 'Default'
     }
     await prepareNewIssueWithOpenStep(page, changedDescriptionIssue)
     await issuesDetailsPage.waitDetailsOpened(changedDescriptionIssue.title)
@@ -270,7 +262,8 @@ test.describe('Tracker issue tests', () => {
   test('Add comment with image attachment', async ({ page }) => {
     const commentImageIssue: NewIssue = {
       title: `Add comment with image attachment-${generateId()}`,
-      description: 'Add comment with image attachment'
+      description: 'Add comment with image attachment',
+      projectName: 'Default'
     }
     await prepareNewIssueWithOpenStep(page, commentImageIssue)
     await issuesDetailsPage.waitDetailsOpened(commentImageIssue.title)
@@ -283,7 +276,8 @@ test.describe('Tracker issue tests', () => {
     const commentPopup = `Comment for the popup-${generateId()}`
     const commentIssue: NewIssue = {
       title: `Issue for add comment by popup-${generateId()}`,
-      description: 'Issue for add comment by popup'
+      description: 'Issue for add comment by popup',
+      projectName: 'Default'
     }
     await prepareNewIssueWithOpenStep(page, commentIssue)
     await issuesDetailsPage.waitDetailsOpened(commentIssue.title)
@@ -297,6 +291,8 @@ test.describe('Tracker issue tests', () => {
     await issueCommentPopup.addCommentInPopup(commentPopup, 'cat2.jpeg')
     await issueCommentPopup.checkCommentWithImageExist('left a comment', 'cat2.jpeg')
     await issueCommentPopup.checkCommentExist(commentPopup)
+    await page.locator('.modal-overlay').hover({ position: { x: 10, y: 10 } })
+    await page.locator('.modal-overlay').click({ position: { x: 10, y: 10 } })
     await issuesPage.clickModelSelectorAll()
     await issuesPage.searchIssueByName(commentIssue.title)
     await issuesPage.checkCommentsCount(commentIssue.title, '2')

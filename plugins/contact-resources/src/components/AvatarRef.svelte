@@ -15,10 +15,11 @@
 
 <script lang="ts">
   import contact, { type Contact, type Employee } from '@hcengineering/contact'
-  import core, { Account, type Ref, type WithLookup } from '@hcengineering/core'
+  import { type Ref, type WithLookup } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
+
   import { employeeByIdStore, personByIdStore } from '../utils'
   import Avatar from './Avatar.svelte'
 
@@ -29,8 +30,7 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
-  export let showStatus: boolean = true
-  export let account: Ref<Account> | undefined = undefined
+  export let showStatus: boolean = false
 
   $: empValue = $employeeByIdStore.get(_id as Ref<Employee>) ?? $personByIdStore.get(_id)
 
@@ -38,7 +38,7 @@
 
   $: if (empValue === undefined) {
     void getClient()
-      .findOne(contact.class.Contact, { _id }, { lookup: { avatar: core.class.Blob } })
+      .findOne(contact.class.Contact, { _id })
       .then((c) => {
         _contact = c
       })
@@ -47,4 +47,4 @@
   }
 </script>
 
-<Avatar person={_contact} {name} {size} {icon} {variant} {borderColor} {showStatus} {account} />
+<Avatar person={_contact} {name} {size} {icon} {variant} {borderColor} {showStatus} />

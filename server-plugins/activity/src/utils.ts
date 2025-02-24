@@ -1,52 +1,35 @@
-import type { TriggerControl } from '@hcengineering/server-core'
-import {
-  AttachedDoc,
-  Class,
-  Doc,
-  Mixin,
-  Ref,
-  SortingOrder,
-  TxCollectionCUD,
-  TxCUD,
-  TxMixin,
-  TxUpdateDoc
-} from '@hcengineering/core'
+import { AttachedDoc, Class, Doc, Mixin, Ref, SortingOrder, TxCUD, TxMixin, TxUpdateDoc } from '@hcengineering/core'
 import core from '@hcengineering/core/src/component'
-import { DocObjectCache } from './types'
+import { DocObjectCache, type ActivityControl } from './types'
 
 export async function getAllObjectTransactions (
-  control: Pick<TriggerControl, 'hierarchy' | 'findAll'>,
+  control: Pick<ActivityControl, 'hierarchy' | 'findAll' | 'ctx'>,
   _class: Ref<Class<Doc>>,
   docs: Ref<Doc>[],
   mixin?: Ref<Mixin<Doc>>
 ): Promise<DocObjectCache['transactions']> {
   const cache: DocObjectCache['transactions'] = new Map()
-  const hierarchy = control.hierarchy
-  const isAttached = hierarchy.isDerived(_class, core.class.AttachedDoc)
 
   const ownTxes = await control.findAll<TxCUD<Doc>>(
-    isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
-    isAttached
-      ? { 'tx.objectId': { $in: docs as Ref<AttachedDoc>[] } }
-      : {
-          objectId: { $in: docs },
-          _class: {
-            $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc, core.class.TxMixin]
-          }
-        },
+    control.ctx,
+    core.class.TxCUD,
+    {
+      objectId: { $in: docs }
+    },
     { sort: { modifiedOn: SortingOrder.Ascending } }
   )
 
   for (const tx of ownTxes) {
-    const id = isAttached ? (tx as TxCollectionCUD<Doc, AttachedDoc>).tx.objectId : tx.objectId
+    if (mixin !== undefined && tx._class === core.class.TxMixin && (tx as TxMixin<Doc, Doc>).mixin !== mixin) continue
+    const id = tx.objectId
     cache.set(id, [...(cache.get(id) ?? []), tx])
   }
 
-  const collectionTxes = await control.findAll<TxCollectionCUD<Doc, AttachedDoc>>(
-    core.class.TxCollectionCUD,
+  const collectionTxes = await control.findAll<TxCUD<AttachedDoc>>(
+    control.ctx,
+    core.class.TxCUD,
     {
-      objectId: { $in: docs },
-      'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc] }
+      attachedTo: { $in: docs }
     },
     { sort: { modifiedOn: SortingOrder.Ascending } }
   )
@@ -56,34 +39,17 @@ export async function getAllObjectTransactions (
     cache.set(id, [...(cache.get(id) ?? []), tx])
   }
 
-  const mixinTxes = isAttached
-    ? await control.findAll<TxMixin<Doc, Doc>>(
-      core.class.TxMixin,
-      {
-        objectId: { $in: docs },
-        ...(mixin !== undefined ? { mixin } : {})
-      },
-      { sort: { modifiedOn: SortingOrder.Ascending } }
-    )
-    : []
-
-  for (const tx of mixinTxes) {
-    const id = tx.objectId
-    cache.set(id, [...(cache.get(id) ?? []), tx])
-  }
-
-  const moveCollection = await control.findAll<TxCollectionCUD<Doc, AttachedDoc>>(
-    core.class.TxCollectionCUD,
+  const moveCollection = await control.findAll<TxCUD<AttachedDoc>>(
+    control.ctx,
+    core.class.TxUpdateDoc,
     {
-      'tx.operations.attachedTo': { $in: docs },
-      'tx._class': core.class.TxUpdateDoc
+      'operations.attachedTo': { $in: docs }
     },
     { sort: { modifiedOn: SortingOrder.Ascending } }
   )
 
   for (const tx of moveCollection) {
-    const id = ((tx as TxCollectionCUD<Doc, AttachedDoc>).tx as TxUpdateDoc<AttachedDoc>).operations
-      .attachedTo as Ref<Doc>
+    const id = (tx as TxUpdateDoc<AttachedDoc>).operations.attachedTo as Ref<Doc>
     cache.set(id, [...(cache.get(id) ?? []), tx])
   }
 

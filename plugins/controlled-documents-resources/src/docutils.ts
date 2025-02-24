@@ -22,10 +22,12 @@ import {
   type MixinUpdate,
   type Hierarchy,
   type Class,
-  type MixinData
+  type MixinData,
+  makeCollabId,
+  makeDocCollabId
 } from '@hcengineering/core'
-import { translate } from '@hcengineering/platform'
-import { copyDocument, takeSnapshot } from '@hcengineering/presentation'
+import { setPlatformStatus, translate, unknownError } from '@hcengineering/platform'
+import { copyMarkup } from '@hcengineering/presentation'
 import { themeStore } from '@hcengineering/ui'
 import documents, {
   type ControlledDocument,
@@ -35,14 +37,41 @@ import documents, {
   type DocumentTraining,
   type ControlledDocumentSnapshot,
   type ChangeControl,
+  type ProjectDocument,
   type Project,
   DocumentState,
-  getCollaborativeDocForDocument,
-  createDocSections,
-  createChangeControl
+  createChangeControl,
+  createControlledDocFromTemplate as controlledDocFromTemplate
 } from '@hcengineering/controlled-documents'
+import { getCurrentEmployee } from '@hcengineering/contact'
 import documentsRes from './plugin'
-import { getCurrentEmployee, getDocumentVersionString } from './utils'
+import { getDocumentVersionString } from './utils'
+
+export async function createControlledDocFromTemplate (
+  client: TxOperations,
+  templateId: Ref<DocumentTemplate> | undefined,
+  documentId: Ref<ControlledDocument>,
+  spec: AttachedData<ControlledDocument>,
+  space: Ref<DocumentSpace>,
+  project: Ref<Project> | undefined,
+  parent: Ref<ProjectDocument> | undefined,
+  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
+): Promise<{ seqNumber: number, success: boolean }> {
+  const result = await controlledDocFromTemplate(client, templateId, documentId, spec, space, project, parent, docClass)
+
+  if (result.success && templateId !== undefined) {
+    const source = makeCollabId(documents.mixin.DocumentTemplate, templateId, 'content')
+    const target = makeCollabId(docClass, documentId, 'content')
+    try {
+      await copyMarkup(source, target)
+    } catch (err) {
+      await setPlatformStatus(unknownError(err))
+      return { ...result, success: false }
+    }
+  }
+
+  return result
+}
 
 export async function createNewDraftForControlledDoc (
   client: TxOperations,
@@ -51,10 +80,20 @@ export async function createNewDraftForControlledDoc (
   version: { major: number, minor: number },
   project: Ref<Project>,
   newDraftDocId?: Ref<ControlledDocument>
-): Promise<Ref<ControlledDocument>> {
+): Promise<{ success: boolean, id: Ref<ControlledDocument> }> {
   const hierarchy = client.getHierarchy()
 
   newDraftDocId = newDraftDocId ?? generateId()
+
+  const ops = client.apply(document.code)
+
+  const notMatchQuery = {
+    ...(document.template != null ? { template: document.template } : { template: { $exists: false } }),
+    seqNumber: document.seqNumber,
+    state: DocumentState.Draft
+  }
+
+  ops.notMatch(documents.class.Document, notMatchQuery)
 
   // Create new change control for new version
   const newCCId = generateId<ChangeControl>()
@@ -65,15 +104,7 @@ export async function createNewDraftForControlledDoc (
     impactedDocuments: []
   }
 
-  await createChangeControl(client, newCCId, newCCSpec, document.space)
-
-  const collaborativeDoc = getCollaborativeDocForDocument(
-    `DOC-${document.prefix}`,
-    document.seqNumber,
-    document.major,
-    document.minor,
-    true
-  )
+  await createChangeControl(ops, newCCId, newCCSpec, document.space)
 
   // TODO: copy labels?
   const docSpec: AttachedData<ControlledDocument> = {
@@ -95,11 +126,10 @@ export async function createNewDraftForControlledDoc (
     reviewInterval: document.reviewInterval,
     changeControl: newCCId,
     requests: 0,
-    sections: 0,
     labels: 0,
     state: DocumentState.Draft,
     plannedEffectiveDate: 0,
-    content: collaborativeDoc
+    content: document.content
   }
 
   const meta = await client.findOne(documents.class.ProjectMeta, {
@@ -108,7 +138,7 @@ export async function createNewDraftForControlledDoc (
   })
 
   if (meta !== undefined) {
-    await client.addCollection(documents.class.ProjectDocument, meta.space, meta._id, meta._class, 'documents', {
+    await ops.addCollection(documents.class.ProjectDocument, meta.space, meta._id, meta._class, 'documents', {
       project,
       initial: project,
       document: newDraftDocId
@@ -117,7 +147,7 @@ export async function createNewDraftForControlledDoc (
     console.error('project meta not found', project)
   }
 
-  await client.addCollection(
+  await ops.addCollection(
     document._class,
     space,
     document.attachedTo,
@@ -129,17 +159,11 @@ export async function createNewDraftForControlledDoc (
 
   if (hierarchy.hasMixin(document, documents.mixin.DocumentTemplate)) {
     const template = hierarchy.as<Document, DocumentTemplate>(document, documents.mixin.DocumentTemplate)
-    await client.updateMixin(newDraftDocId, documents.class.Document, space, documents.mixin.DocumentTemplate, {
+    await ops.updateMixin(newDraftDocId, documents.class.Document, space, documents.mixin.DocumentTemplate, {
       sequence: template.sequence,
       docPrefix: template.docPrefix
     })
   }
-
-  if (document.content !== undefined) {
-    await copyDocument(document.content, collaborativeDoc)
-  }
-
-  await createDocSections(client, newDraftDocId, document._id, space, documents.class.ControlledDocument)
 
   const documentTraining = getDocumentTraining(hierarchy, document)
   if (documentTraining !== undefined) {
@@ -147,7 +171,7 @@ export async function createNewDraftForControlledDoc (
     if (newDraftDoc === undefined) {
       console.error(`Document #${newDraftDocId} not found`)
     } else {
-      await createDocumentTraining(client, newDraftDoc, {
+      await createDocumentTraining(ops, newDraftDoc, {
         enabled: false,
         roles: documentTraining.roles,
         training: documentTraining.training,
@@ -158,14 +182,15 @@ export async function createNewDraftForControlledDoc (
     }
   }
 
-  return newDraftDocId
+  const res = await ops.commit()
+
+  return { success: res.result, id: newDraftDocId }
 }
 
 export async function createDocumentSnapshotAndEdit (client: TxOperations, document: ControlledDocument): Promise<void> {
   const language = get(themeStore).language
   const namePrefix = await translate(documents.string.DraftRevision, {}, language)
   const name = `${namePrefix} ${(document.snapshots ?? 0) + 1}`
-  const snapshot = await takeSnapshot(document.content, name)
   const newSnapshotId = generateId<ControlledDocumentSnapshot>()
 
   const op = client.apply(document._id)
@@ -180,23 +205,18 @@ export async function createDocumentSnapshotAndEdit (client: TxOperations, docum
       name,
       state: document.state,
       controlledState: document.controlledState,
-      content: snapshot,
-      sections: 0
+      content: document.content
     },
     newSnapshotId
   )
 
   await op.commit()
 
-  await createDocSections(
-    client,
-    newSnapshotId,
-    document._id,
-    document.space,
-    documents.class.ControlledDocumentSnapshot
-  )
-
   await client.update(document, { controlledState: undefined })
+
+  const source = makeDocCollabId(document, 'content')
+  const target = makeCollabId(documents.class.ControlledDocumentSnapshot, newSnapshotId, 'content')
+  await copyMarkup(source, target)
 }
 
 export function getDocumentTrainingClass (hierarchy: Hierarchy): Class<DocumentTraining> {

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Branding, BrandingMap } from '@hcengineering/core'
 import { IncomingHttpHeaders } from 'http'
 
 export function getHost (headers: IncomingHttpHeaders): string | undefined {
@@ -23,12 +22,6 @@ export function getHost (headers: IncomingHttpHeaders): string | undefined {
   }
 
   return host
-}
-
-export function getBranding (brandings: BrandingMap, key: string | undefined): Branding | null {
-  if (key === undefined) return null
-
-  return Object.values(brandings).find((branding) => branding.key === key) ?? null
 }
 
 export interface AuthState {

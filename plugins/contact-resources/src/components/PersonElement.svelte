@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, Person } from '@hcengineering/contact'
+  import { Employee, Person } from '@hcengineering/contact'
   import { IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { ObjectPresenterType } from '@hcengineering/view'
 
   import Avatar from './Avatar.svelte'
-  import { personAccountByIdStore } from '../utils'
-  import { getClient } from '@hcengineering/presentation'
 
   export let value: Person | Employee | undefined | null
   export let name: string
@@ -38,12 +36,7 @@
   export let maxWidth: string = ''
   export let type: ObjectPresenterType = 'link'
   export let showStatus = true
-
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: showStatus = showStatus && !!value && hierarchy.hasMixin(value, contact.mixin.Employee)
-  $: account = value && Array.from($personAccountByIdStore.values()).find((account) => account.person === value?._id)
+  export let overflowLabel = true
 </script>
 
 {#if value}
@@ -63,18 +56,18 @@
             class:mr-2={shouldShowName && !enlargedText}
             class:mr-3={shouldShowName && enlargedText}
           >
-            <Avatar size={avatarSize} person={value} name={value.name} {showStatus} account={account?._id} />
+            <Avatar size={avatarSize} person={value} name={value.name} {showStatus} />
           </span>
         {/if}
         {#if shouldShowName}
-          <span class="ap-label overflow-label" class:colorInherit class:fs-bold={accent}>
+          <span class="ap-label" class:overflow-label={overflowLabel} class:colorInherit class:fs-bold={accent}>
             {name}
           </span>
         {/if}
       </span>
     </DocNavLink>
   {:else if type === 'text'}
-    <span class="overflow-label" use:tooltip={disabled ? undefined : showTooltip}>
+    <span class:overflow-label={overflowLabel} use:tooltip={disabled ? undefined : showTooltip}>
       {name}
     </span>
   {/if}

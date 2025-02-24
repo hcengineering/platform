@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
 import { type UpdateContentRequest, type UpdateContentResponse } from '@hcengineering/collaborator-client'
+import { MeasureContext } from '@hcengineering/core'
 import { applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
@@ -22,31 +22,40 @@ import { RpcMethodParams } from '../rpc'
 export async function updateContent (
   ctx: MeasureContext,
   context: Context,
+  documentName: string,
   payload: UpdateContentRequest,
   params: RpcMethodParams
 ): Promise<UpdateContentResponse> {
-  const { documentId, field, html } = payload
+  const { content } = payload
   const { hocuspocus, transformer } = params
 
-  const update = await ctx.with('transform', {}, () => {
-    const ydoc = transformer.toYdoc(html, field)
-    return encodeStateAsUpdate(ydoc)
+  const updates = ctx.withSync('transform', {}, () => {
+    const updates: Record<string, Uint8Array> = {}
+
+    Object.entries(content).forEach(([field, markup]) => {
+      const ydoc = transformer.toYdoc(markup, field)
+      updates[field] = encodeStateAsUpdate(ydoc)
+    })
+
+    return updates
   })
 
-  const connection = await ctx.with('connect', {}, async () => {
-    return await hocuspocus.openDirectConnection(documentId, context)
+  const connection = await ctx.with('connect', {}, () => {
+    return hocuspocus.openDirectConnection(documentName, context)
   })
 
   try {
-    await ctx.with('update', {}, async () => {
-      await connection.transact((document) => {
-        const fragment = document.getXmlFragment(field)
+    await ctx.with('update', {}, () =>
+      connection.transact((document) => {
         document.transact(() => {
-          fragment.delete(0, fragment.length)
-          applyUpdate(document, update)
-        })
+          Object.entries(updates).forEach(([field, update]) => {
+            const fragment = document.getXmlFragment(field)
+            fragment.delete(0, fragment.length)
+            applyUpdate(document, update)
+          })
+        }, connection)
       })
-    })
+    )
   } finally {
     await connection.disconnect()
   }

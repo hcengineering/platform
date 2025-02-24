@@ -13,14 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, generateId } from '@hcengineering/core'
+  import { AttachedData } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft } from '@hcengineering/tracker'
   import { DatePopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let value: Issue | AttachedData<Issue> | Issue[] | IssueDraft
-  export let mondayStart = true
   export let withTime = false
 
   const dispatch = createEventDispatcher()
@@ -29,7 +28,7 @@
     const newDueDate = detail?.getTime()
 
     const vv = Array.isArray(value) ? value : [value]
-    const ops = getClient().apply(generateId())
+    const ops = getClient().apply()
     for (const docValue of vv) {
       if ('_class' in docValue && newDueDate !== undefined && newDueDate !== docValue.dueDate) {
         await ops.update(docValue, { dueDate: newDueDate })
@@ -43,4 +42,4 @@
   $: currentDate = Array.isArray(value) || value.dueDate === null ? null : new Date(value.dueDate)
 </script>
 
-<DatePopup {currentDate} {mondayStart} {withTime} on:close on:update={onUpdate} />
+<DatePopup {currentDate} {withTime} on:close on:update={onUpdate} />

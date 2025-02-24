@@ -18,7 +18,6 @@ import {
   type DocumentApprovalRequest,
   type ControlledDocumentSnapshot,
   type DocumentReviewRequest,
-  type DocumentSection,
   type DocumentSnapshot,
   type EditorMode,
   type Project,
@@ -55,10 +54,6 @@ export const controlledDocumentOpened = createEvent<{
 }>(generateActionName('controlledDocumentOpened'))
 export const controlledDocumentClosed = createEvent(generateActionName('controlledDocumentClosed'))
 
-export const controlledDocumentSectionsUpdated = createEvent<DocumentSection[]>(
-  generateActionName('controlledDocumentSectionsUpdated')
-)
-
 export const controlledDocumentUpdated = createEvent<WithLookup<ControlledDocument>>(
   generateActionName('controlledDocumentUpdated')
 )
@@ -68,6 +63,10 @@ export const documentAllVersionsUpdated = createEvent<ControlledDocument[]>(
 )
 
 export const reviewRequestUpdated = createEvent<DocumentReviewRequest>(generateActionName('reviewRequestUpdated'))
+
+export const reviewRequestHistoryUpdated = createEvent<DocumentReviewRequest[]>(
+  generateActionName('reviewRequestHistoryUpdated')
+)
 
 export const approvalRequestUpdated = createEvent<DocumentApprovalRequest>(generateActionName('approvalRequestUpdated'))
 
@@ -81,19 +80,6 @@ export const documentCommentsSortByChanged = createEvent<(typeof documentComment
 
 export const documentCommentsShowResolvedToggled = createEvent(
   generateActionName('documentCommentsShowResolvedToggled')
-)
-
-export const documentSectionToggled = createEvent<Ref<DocumentSection>>(generateActionName('documentSectionToggled'))
-export const documentSectionCollapsed = createEvent<Ref<DocumentSection>>(
-  generateActionName('documentSectionCollapsed')
-)
-export const documentSectionExpanded = createEvent<Ref<DocumentSection>>(generateActionName('documentSectionExpanded'))
-
-export const documentSectionDescriptionEditingRequested = createEvent<Ref<DocumentSection>>(
-  generateActionName('documentSectionDescriptionEditingRequested')
-)
-export const documentSectionDescriptionEditingCompleted = createEvent(
-  generateActionName('documentSectionDescriptionEditingCompleted')
 )
 
 export const comparisonCleared = createEvent(generateActionName('comparisonCleared'))
@@ -112,7 +98,6 @@ export const savedAttachmentsUpdated = createEvent<Array<Ref<Attachment>>>(
 
 export const documentCommentsDisplayRequested = createEvent<{
   nodeId?: string | null
-  sectionKey: string
   element?: PopupAlignment
 }>(generateActionName('documentCommentsDisplayRequested'))
 
@@ -122,11 +107,9 @@ export const documentCommentsNavigateRequested = createEvent<{ value: DocumentCo
 
 export const documentCommentsLocationNavigateRequested = createEvent<{
   nodeId?: string | null
-  sectionKey: string
 }>(generateActionName('documentCommentsLocationNavigateRequested'))
 
 export const documentCommentsHighlightUpdated = createEvent<{
-  sectionKey: string | null
   nodeId?: string | null
 } | null>(generateActionName('documentCommentsHighlightUpdated'))
 

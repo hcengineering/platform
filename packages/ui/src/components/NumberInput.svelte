@@ -14,16 +14,16 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import { registerFocus } from '../focus'
   import plugin from '../plugin'
   import { resizeObserver } from '../resize'
   import { floorFractionDigits } from '../utils'
+  import Button from './Button.svelte'
   import DownOutline from './icons/DownOutline.svelte'
   import UpOutline from './icons/UpOutline.svelte'
-  import Button from './Button.svelte'
 
   export let maxWidth: string | undefined = undefined
   export let value: number = 0
@@ -41,7 +41,7 @@
   let text: HTMLElement
   let input: HTMLInputElement
   let style: string
-  let phTraslate: string = ''
+  let phTranslate: string = ''
   let parentWidth: number | undefined
 
   $: {
@@ -58,8 +58,8 @@
     if (minValue !== undefined && value < minValue) value = minValue
   }
   $: style = `max-width: ${maxWidth || (parentWidth ? `${parentWidth}px` : 'max-content')};`
-  $: translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
-    phTraslate = res
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
+    phTranslate = res
   })
 
   function computeSize (t: HTMLInputElement | EventTarget | null) {
@@ -68,7 +68,7 @@
     }
     const target = t as HTMLInputElement
     const value = target.value
-    text.innerHTML = (value === '' ? phTraslate : value)
+    text.innerHTML = (value === '' ? phTranslate : value)
       .replaceAll(' ', '&nbsp;')
       .replaceAll('<', '&lt;')
       .replaceAll('>', '&gt;')
@@ -139,7 +139,7 @@
       type="number"
       class="number"
       bind:value
-      placeholder={phTraslate}
+      placeholder={phTranslate}
       {style}
       on:input={(ev) => {
         if (ev.target) {

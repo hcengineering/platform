@@ -15,8 +15,6 @@
     "CreateProductVersion": "创建产品版本",
     "NoProductVersionParent": "无父版本",
     "NoProductVersions": "无产品版本",
-    "Unarchive": "取消归档",
-    "UnarchiveConfirm": "您要取消归档产品吗？",
     "CreateDialogClose": "您要关闭此对话框吗？",
     "CreateDialogCloseNote": "所有更改将会丢失",
     "Description": "描述",

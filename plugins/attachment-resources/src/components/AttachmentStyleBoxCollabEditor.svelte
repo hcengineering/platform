@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,27 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@hcengineering/attachment'
+  import attachment, { Attachment, BlobMetadata, AttachmentsEvents } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
-  import core, { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
+  import { Doc, PersonId, Ref, generateId, type Blob } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { KeyedAttribute, createQuery, getClient, uploadFile } from '@hcengineering/presentation'
-  import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
-  import textEditor, {
+  import {
+    FileOrBlob,
+    KeyedAttribute,
+    createQuery,
+    getClient,
+    getFileMetadata,
+    uploadFile
+  } from '@hcengineering/presentation'
+  import textEditor, { type RefAction, type TextEditorHandler } from '@hcengineering/text-editor'
+  import {
     AttachIcon,
     CollaborativeAttributeBox,
-    RefAction,
     TableIcon,
-    TextEditorHandler,
-    addTableHandler
-  } from '@hcengineering/text-editor'
+    addTableHandler,
+    defaultRefActions,
+    getModelRefActions
+  } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
+  import { type FileUploadCallbackParams, uploadFiles } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
-  import { defaultRefActions, getModelRefActions } from '@hcengineering/text-editor/src/components/editor/actions'
+  import { getCollaborationUser, getObjectId, getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { Analytics } from '@hcengineering/analytics'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 
   export let object: Doc
+  export let identifier: string | undefined = undefined
   export let key: KeyedAttribute
   export let placeholder: IntlString
   export let focusIndex = -1
@@ -98,11 +108,6 @@
     },
     (res) => {
       attachments = res
-    },
-    {
-      lookup: {
-        file: core.class.Blob
-      }
     }
   )
 
@@ -124,37 +129,65 @@
 
   async function fileSelected (): Promise<void> {
     if (readonly) return
-    progress = true
+
     const list = inputFile.files
     if (list === null || list.length === 0) return
-    for (let index = 0; index < list.length; index++) {
-      const file = list.item(index)
-      if (file !== null) {
-        await createAttachment(file)
-      }
-    }
+
+    progress = true
+
+    await uploadFiles(list, { onFileUploaded })
+
     inputFile.value = ''
     progress = false
   }
 
-  async function createAttachment (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
+  async function attachFiles (files: File[] | FileList): Promise<void> {
+    progress = true
+    if (files.length > 0) {
+      await uploadFiles(files, { onFileUploaded })
+    }
+    progress = false
+  }
+
+  async function attachFile (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     try {
       const uuid = await uploadFile(file)
+      const metadata = await getFileMetadata(file, uuid)
+      await createAttachment(uuid, file.name, file, metadata)
+      return { file: uuid, type: file.type }
+    } catch (err: any) {
+      await setPlatformStatus(unknownError(err))
+    }
+  }
+
+  async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
+    await createAttachment(uuid, name, file, metadata)
+  }
+
+  async function createAttachment (
+    uuid: Ref<Blob>,
+    name: string,
+    file: FileOrBlob,
+    metadata: BlobMetadata | undefined
+  ): Promise<void> {
+    try {
       const _id: Ref<Attachment> = generateId()
+
       const attachmentDoc: Attachment = {
         _id,
         _class: attachment.class.Attachment,
         collection: 'attachments',
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
+        modifiedBy: '' as PersonId,
         space: object.space,
         attachedTo: object._id,
         attachedToClass: object._class,
-        name: file.name,
+        name,
         file: uuid,
         type: file.type,
         size: file.size,
-        lastModified: file.lastModified
+        metadata,
+        lastModified: file instanceof File ? file.lastModified : Date.now()
       }
 
       await client.addCollection(
@@ -166,7 +199,13 @@
         attachmentDoc,
         attachmentDoc._id
       )
-      return { file: uuid, type: file.type }
+
+      const id = identifier ?? (await getObjectId(object, client.getHierarchy()))
+      Analytics.handleEvent(AttachmentsEvents.FilesAttached, {
+        objectId: id,
+        objectClass: object._class,
+        type: file.type
+      })
     } catch (err: any) {
       await setPlatformStatus(unknownError(err))
     }
@@ -195,31 +234,34 @@
       return
     }
 
+    progress = true
+
     const items = evt.clipboardData?.items ?? []
+    const files = []
     for (const index in items) {
       const item = items[index]
       if (item.kind === 'file') {
         const blob = item.getAsFile()
         if (blob !== null) {
-          await createAttachment(blob)
+          files.push(blob)
         }
       }
     }
+
+    if (files.length > 0) {
+      await attachFiles(files)
+    }
+
+    progress = false
   }
 
   export async function fileDrop (e: DragEvent): Promise<void> {
     if (readonly) return
-    progress = true
+
     const list = e.dataTransfer?.files
     if (list !== undefined && list.length !== 0) {
-      for (let index = 0; index < list.length; index++) {
-        const file = list.item(index)
-        if (file !== null) {
-          await createAttachment(file)
-        }
-      }
+      await attachFiles(list)
     }
-    progress = false
   }
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
@@ -274,9 +316,7 @@
       {boundary}
       {refActions}
       {readonly}
-      attachFile={async (file) => {
-        return await createAttachment(file)
-      }}
+      {attachFile}
       on:open-document={async (event) => {
         const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
         if (doc != null) {
@@ -293,7 +333,6 @@
         {attachments}
         {readonly}
         {progress}
-        {progressItems}
         {useAttachmentPreview}
         on:remove={async (evt) => {
           if (evt.detail !== undefined) {

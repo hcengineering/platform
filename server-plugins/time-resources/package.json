@@ -37,16 +37,19 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/server-contact": "^0.6.1",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/server-notification-resources": "^0.6.0",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/server-time": "^0.6.0",
-    "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-core": "^0.6.0",
     "@hcengineering/time": "^0.6.0"
   }
 }

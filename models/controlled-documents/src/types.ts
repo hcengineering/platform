@@ -15,9 +15,7 @@
 
 import request from '@hcengineering/request'
 import {
-  type AttachmentsDocumentSection,
   type ChangeControl,
-  type CollaborativeDocumentSection,
   type ControlledDocument,
   type ControlledDocumentState,
   type Document,
@@ -26,18 +24,12 @@ import {
   type DocumentCategory,
   type DocumentRequest,
   type DocumentReviewRequest,
-  type DocumentSection,
   type DocumentComment,
-  type DocumentSectionCreator,
-  type DocumentSectionEditor,
-  type DocumentSectionPresenter,
   type DocumentSpace,
   type DocumentSpaceType,
   type DocumentSpaceTypeDescriptor,
   type DocumentState,
   type DocumentTemplate,
-  type DocumentTemplateSection,
-  type Sequence,
   type DocumentMeta,
   type ExternalSpace,
   type OrgSpace,
@@ -54,20 +46,18 @@ import contact, { type Employee } from '@hcengineering/contact'
 import {
   DateRangeMode,
   IndexKind,
-  type AttachedData,
   type Class,
-  type Doc,
-  type Markup,
+  type MarkupBlobRef,
+  type Domain,
   type Ref,
   type Timestamp,
   type Type,
   type CollectionSize,
-  type CollaborativeDoc,
   type Role,
   type TypedSpace,
-  type Account,
   type RolesAssignment,
-  type Domain
+  type Rank,
+  type PersonId
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -91,16 +81,15 @@ import attachment from '@hcengineering/model-attachment'
 import chunter, { TChatMessage } from '@hcengineering/model-chunter'
 import core, {
   TAttachedDoc,
-  TClass,
   TDoc,
   TTypedSpace,
   TType,
   TSpaceTypeDescriptor,
   TSpaceType
 } from '@hcengineering/model-core'
-import { getEmbeddedLabel, type Resource } from '@hcengineering/platform'
+import { getEmbeddedLabel } from '@hcengineering/platform'
 import tags, { type TagReference } from '@hcengineering/tags'
-import { type AnyComponent } from '@hcengineering/ui'
+import time, { type ToDo } from '@hcengineering/time'
 import training, { type Training, type TrainingRequest } from '@hcengineering/training'
 
 import documents from './plugin'
@@ -191,6 +180,10 @@ export class TProjectMeta extends TDoc implements ProjectMeta {
 
   @Prop(Collection(documents.class.ProjectDocument), documents.string.Documents)
     documents!: CollectionSize<ProjectDocument>
+
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(documents.class.ProjectDocument, core.class.AttachedDoc, DOMAIN_DOCUMENTS)
@@ -270,13 +263,10 @@ export class TDocument extends TDoc implements Document {
     state!: DocumentState
 
   @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
-    content!: CollaborativeDoc
+    content!: MarkupBlobRef | null
 
   @Prop(Collection(tags.class.TagReference), documents.string.Labels)
     labels?: CollectionSize<TagReference>
-
-  @Prop(Collection(documents.class.DocumentSection), documents.string.Sections)
-    sections!: CollectionSize<DocumentSection>
 
   @Prop(TypeString(), documents.string.MetaAbstract)
   @Index(IndexKind.FullText)
@@ -291,6 +281,9 @@ export class TDocument extends TDoc implements Document {
 
   @Prop(Collection(documents.class.DocumentSnapshot), documents.string.Snapshots)
     snapshots?: CollectionSize<DocumentSnapshot>
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+    attachments?: CollectionSize<Attachment>
 }
 
 @Model(documents.class.HierarchyDocument, documents.class.Document)
@@ -408,6 +401,9 @@ export class TControlledDocument extends THierarchyDocument implements Controlle
   @Prop(TypeRef(documents.class.Document), documents.string.ChangeControl)
   @Hidden()
     changeControl!: Ref<ChangeControl>
+
+  @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
+    todos?: CollectionSize<ToDo>
 }
 
 @Model(documents.class.ChangeControl, core.class.Doc, DOMAIN_DOCUMENTS)
@@ -428,25 +424,6 @@ export class TChangeControl extends TDoc implements ChangeControl {
     impactedDocuments!: Ref<Document>[]
 }
 
-@Model(documents.class.DocumentSection, core.class.AttachedDoc, DOMAIN_DOCUMENTS)
-@UX(documents.string.Section)
-export class TDocumentSection extends TAttachedDoc implements DocumentSection {
-  @Prop(TypeString(), documents.string.Title)
-  @Index(IndexKind.FullText)
-    title!: string
-
-  @Prop(TypeString(), documents.string.Rank)
-  @Hidden()
-    rank!: string
-
-  @Prop(TypeString(), documents.string.Key)
-  @Hidden()
-    key!: string
-
-  @Prop(TypeRef(documents.mixin.DocumentTemplateSection), documents.string.SectionTemplate)
-    templateSectionId?: Ref<DocumentTemplateSection>
-}
-
 @Model(documents.class.DocumentSnapshot, core.class.AttachedDoc, DOMAIN_DOCUMENTS)
 @UX(documents.string.Snapshot)
 export class TDocumentSnapshot extends TAttachedDoc implements DocumentSnapshot {
@@ -455,13 +432,10 @@ export class TDocumentSnapshot extends TAttachedDoc implements DocumentSnapshot 
 
   @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
   @Hidden()
-    content!: CollaborativeDoc
+    content!: MarkupBlobRef | null
 
   @Prop(TypeDocumentState(), documents.string.Status)
     state?: DocumentState
-
-  @Prop(Collection(documents.class.DocumentSection), documents.string.Sections)
-    sections!: CollectionSize<DocumentSection>
 }
 
 @Model(documents.class.ControlledDocumentSnapshot, documents.class.DocumentSnapshot)
@@ -473,9 +447,6 @@ export class TControlledDocumentSnapshot extends TDocumentSnapshot implements Co
 
 @Model(documents.class.DocumentComment, chunter.class.ChatMessage)
 export class TDocumentComment extends TChatMessage implements DocumentComment {
-  @Prop(TypeString(), documents.string.SectionKey)
-    sectionKey?: string
-
   @Prop(TypeString(), documents.string.ID)
     nodeId?: string
 
@@ -484,48 +455,6 @@ export class TDocumentComment extends TChatMessage implements DocumentComment {
 
   @Prop(TypeNumber(), documents.string.Index)
     index?: number
-}
-
-@Mixin(documents.mixin.DocumentTemplateSection, documents.class.DocumentSection)
-@UX(documents.string.SectionTemplate)
-export class TDocumentTemplateSection extends TDocumentSection implements DocumentTemplateSection {
-  @Prop(TypeBoolean(), documents.string.Required)
-    mandatory?: boolean
-
-  @Prop(TypeString(), documents.string.Description)
-  @Index(IndexKind.FullText)
-    description?: string
-
-  @Prop(TypeMarkup(), documents.string.Guidance)
-  @Index(IndexKind.FullText)
-    guidance?: Markup
-}
-
-@Model(documents.class.CollaborativeDocumentSection, documents.class.DocumentSection)
-@UX(documents.string.CollaborativeSection)
-export class TCollaborativeDocumentSection extends TDocumentSection implements CollaborativeDocumentSection {
-  @Prop(TypeString(), documents.string.CollaboratorSectionId)
-  @Hidden()
-    collaboratorSectionId!: string
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: CollectionSize<Attachment>
-}
-
-@Model(documents.class.AttachmentsDocumentSection, documents.class.DocumentSection)
-@UX(documents.string.AttachmentsSection)
-export class TAttachmentsDocumentSection extends TDocumentSection implements AttachmentsDocumentSection {
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: CollectionSize<Attachment>
-
-  @Prop(TypeNumber(), documents.string.AttachmentsMax)
-    maximum?: number
-}
-
-@Model(documents.class.Sequence, core.class.Doc, DOMAIN_DOCUMENTS)
-export class TSequence extends TDoc implements Sequence {
-  attachedTo!: Ref<Class<Doc>>
-  sequence!: number
 }
 
 @Model(documents.class.DocumentRequest, request.class.Request)
@@ -540,31 +469,10 @@ export class TDocumentReviewRequest extends TDocumentRequest implements Document
 @UX(documents.string.DocumentApprovalRequest)
 export class TDocumentApprovalRequest extends TDocumentRequest implements DocumentApprovalRequest {}
 
-@Mixin(documents.mixin.DocumentSectionEditor, core.class.Class)
-export class TDocumentSectionEditor extends TClass implements DocumentSectionEditor {
-  editor!: AnyComponent
-}
-
-@Mixin(documents.mixin.DocumentSectionPresenter, core.class.Class)
-export class TDocumentSectionPresenter extends TClass implements DocumentSectionPresenter {
-  presenter!: AnyComponent
-}
-
-@Mixin(documents.mixin.DocumentSectionCreator, core.class.Class)
-export class TDocumentSectionCreator extends TClass implements DocumentSectionCreator {
-  creator!: Resource<
-  (
-    document: Document,
-    section: AttachedData<DocumentSection>,
-    copyFrom?: DocumentSection
-  ) => AttachedData<DocumentSection>
-  >
-}
-
 @Mixin(documents.mixin.DocumentSpaceTypeData, documents.class.DocumentSpace)
 @UX(getEmbeddedLabel('Default Documents'), documents.icon.Document)
 export class TDocumentSpaceTypeData extends TDocumentSpace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 /**

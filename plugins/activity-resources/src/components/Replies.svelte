@@ -29,6 +29,7 @@
 
   export let object: ActivityMessage
   export let embedded = false
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
   const maxDisplayPersons = 5
@@ -78,13 +79,17 @@
 
   const replyProvider = client.getModel().findAllSync(activity.class.ReplyProvider, {})[0]
 
-  async function handleReply (e: MouseEvent) {
+  async function handleReply (e: MouseEvent): Promise<void> {
     e.stopPropagation()
     e.preventDefault()
 
+    if (onReply) {
+      onReply(object)
+    }
+
     if (replyProvider) {
       const fn = await getResource(replyProvider.function)
-      fn(object)
+      await fn(object, e)
     }
   }
 </script>
@@ -92,7 +97,7 @@
 {#if !embedded && object.replies && object.replies > 0}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="flex-row-center container cursor-pointer mt-2" on:click={handleReply}>
+  <div class="flex-row-center container cursor-pointer mt-2 overflow-label" on:click={handleReply}>
     <div class="flex-row-center">
       <div class="avatars">
         {#each displayPersons as person}
@@ -112,12 +117,10 @@
     {#if hasNew}
       <div class="notifyMarker" />
     {/if}
-    <div class="lastReply">
+    <span class="lastReply overflow-label">
       <Label label={activity.string.LastReply} />
-    </div>
-    <div class="time">
       <TimeSince value={lastReply} />
-    </div>
+    </span>
   </div>
 {/if}
 
@@ -126,24 +129,23 @@
     border: 1px solid transparent;
     border-radius: 0.5rem;
     padding: 0.25rem 0.5rem;
-    width: fit-content;
     height: 2.125rem;
     margin-left: -0.5rem;
+    min-width: 14.5rem;
 
     .plus {
       margin-left: 0.25rem;
     }
 
     .repliesCount {
+      flex: 1;
+      max-width: fit-content;
       color: var(--theme-link-color);
       font-weight: 500;
     }
 
-    .time {
-      font-size: 0.75rem;
-    }
-
     .lastReply {
+      flex: 1;
       font-size: 0.75rem;
       margin-right: 0.25rem;
     }

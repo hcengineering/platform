@@ -113,12 +113,15 @@
     "Type": "Type",
     "ToViewCommands": "pour voir les commandes disponibles",
     "UnArchive": "Désarchiver",
+    "UnArchiveConfirm": "Voulez-vous désarchiver {count, plural, =1 {cet objet} other {# objets}} ?",
     "Pin": "Épingler",
     "Unpin": "Détacher",
     "Archived": "Archivé",
     "MoreActions": "Plus d'actions",
     "Leave": "Quitter",
     "Join": "Rejoindre",
-    "Copied": "Copié"
+    "Copied": "Copié",
+    "Title": "Titre",
+    "HideArchived": "Masquer les archives"
   }
 }

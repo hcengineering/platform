@@ -24,11 +24,19 @@
     "OpenInNewTab": "Ouvrir dans un nouvel onglet",
     "NewVersionAvailable": "Nouvelle version disponible",
     "PleaseUpdate": "Veuillez mettre à jour",
-    "ServerUnderMaintenance": "Le serveur est en maintenance",
+    "ServerUnderMaintenance": "Préparation de l'espace de travail pour la nouvelle version...",
     "MobileNotSupported": "Désolé, le support pour les appareils mobiles arrive bientôt. En attendant, veuillez utiliser un ordinateur de bureau",
     "LogInAnyway": "Se connecter quand même",
     "WorkspaceCreating": "Création en cours...",
     "AccessDenied": "L'objet n'existe pas ou vous n'êtes pas autorisé à y accéder.",
-    "UpgradeDownloadProgress": "Téléchargement de la mise à jour: {percent}%"
+    "UpgradeDownloadProgress": "Téléchargement de la mise à jour: {percent}%",
+    "Widget": "Widget",
+    "WidgetPreferences": "Préférences du widget",
+    "OpenInSidebar": "Ouvrir dans la barre latérale",
+    "OpenInSidebarNewTab": "Ouvrir dans un nouvel onglet de la barre latérale",
+    "ConfigureWidgets": "Configurer les widgets",
+    "Tab": "Onglet",
+    "WorkspaceIsArchived": "L'espace de travail est archivé en raison de son inactivité, veuillez nous contacter pour le restaurer...",
+    "WorkspaceIsMigrating": "L'espace de travail est en cours de mise à jour. Veuillez patienter..."
   }
 }

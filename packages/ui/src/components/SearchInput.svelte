@@ -13,39 +13,86 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import IconSearch from './icons/Search.svelte'
+  import type { IntlString } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import plugin from '../plugin'
   import IconClose from './icons/Close.svelte'
+  import IconSearch from './icons/Search.svelte'
 
   export let value: string | undefined = undefined
-  export let placeholder: string
+  export let placeholder: IntlString = plugin.string.Search
+  export let placeholderParam: any | undefined = undefined
   export let collapsed: boolean = false
+  export let autoFocus: boolean = false
+  export let width: string | undefined = undefined
+  export let delay: number = 500
 
   let input: HTMLInputElement
+  let phTranslate: string = ''
+
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
+    phTranslate = res
+  })
+
+  $: _search = value
+  const dispatch = createEventDispatcher()
+  let timer: any
+
+  function restartTimer (): void {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      value = _search
+      dispatch('change', _search)
+    }, delay)
+  }
+  onDestroy(() => {
+    clearTimeout(timer)
+  })
+  onMount(() => {
+    if (autoFocus && input) {
+      autoFocus = false
+      input.focus()
+    }
+  })
 </script>
 
-<label class="searchInput-wrapper" class:collapsed class:filled={value && value !== ''}>
+<label class="searchInput-wrapper" class:collapsed class:filled={value && value !== ''} style:width>
   <div class="searchInput-icon">
-    <div><IconSearch size={'small'} /></div>
+    <IconSearch size={'small'} />
   </div>
   <input
     bind:this={input}
     type="text"
     class="font-regular-14"
-    bind:value
-    {placeholder}
+    bind:value={_search}
+    placeholder={phTranslate}
     autocomplete="off"
     spellcheck="false"
-    on:change
-    on:input
+    on:change={() => {
+      restartTimer()
+    }}
+    on:input={() => {
+      restartTimer()
+    }}
+    on:keydown={(evt) => {
+      if (evt.key === 'Enter') {
+        clearTimeout(timer)
+        value = _search
+        dispatch('change', _search)
+      }
+    }}
   />
   <button
     class="searchInput-button"
     on:click={() => {
       value = ''
+      dispatch('change', '')
       input.focus()
     }}
   >
-    <div><IconClose size={'small'} /></div>
+    <IconClose size={'small'} />
   </button>
 </label>
 
@@ -56,11 +103,11 @@
     align-items: center;
     align-self: stretch;
     padding: 0 var(--spacing-0_5) 0 0;
-    height: var(--spacing-4);
-    min-width: var(--spacing-4);
-    background-color: var(--input-BackgroundColor);
+    height: var(--global-small-Size);
+    min-width: var(--global-small-Size);
+    background-color: var(--theme-button-default); // var(--input-BackgroundColor);
     border-radius: var(--small-BorderRadius);
-    box-shadow: inset 0 0 0 1px var(--input-BorderColor);
+    box-shadow: inset 0 0 0 1px var(--theme-button-border); // var(--input-BorderColor);
     transition: max-width 0.2s;
     cursor: text;
 
@@ -75,15 +122,15 @@
       border: none;
 
       div {
-        width: var(--spacing-2);
-        height: var(--spacing-2);
+        width: var(--global-min-Size);
+        height: var(--global-min-Size);
       }
     }
     .searchInput-icon {
       margin: 0 var(--spacing-0_5) 0 0;
-      width: var(--spacing-4);
-      height: var(--spacing-4);
-      fill: var(--input-search-IconColor);
+      width: var(--global-small-Size);
+      height: var(--global-small-Size);
+      color: var(--input-search-IconColor);
       border-radius: var(--small-BorderRadius);
       outline: none;
       cursor: text;
@@ -95,9 +142,9 @@
     }
     .searchInput-button {
       visibility: hidden;
-      width: var(--spacing-3);
-      height: var(--spacing-3);
-      fill: var(--global-primary-TextColor);
+      width: var(--global-extra-small-Size);
+      height: var(--global-extra-small-Size);
+      color: var(--global-primary-TextColor);
       border-radius: var(--extra-small-BorderRadius);
       cursor: pointer;
 
@@ -107,10 +154,6 @@
       &:active {
         background-color: var(--button-tertiary-active-BackgroundColor);
         border-color: var(--button-menu-active-BorderColor);
-      }
-      &:focus {
-        outline: 2px solid var(--global-focus-BorderColor);
-        outline-offset: 2px;
       }
     }
 
@@ -128,7 +171,7 @@
       appearance: none;
 
       &::placeholder {
-        color: var(--input-PlaceholderColor);
+        color: var(--theme-trans-color); // var(--input-PlaceholderColor);
       }
       &:not(:placeholder-shown) + .searchInput-button {
         visibility: visible;
@@ -139,25 +182,25 @@
       background-color: var(--input-hover-BackgroundColor);
 
       input::placeholder {
-        color: var(--input-hover-PlaceholderColor);
+        color: var(--theme-darker-color); // var(--input-hover-PlaceholderColor);
       }
     }
     &:active,
     &:focus-within {
       padding: 0 var(--spacing-0_5) 0 0;
-      max-width: 100%;
+      // max-width: 15rem;
       background-color: var(--input-BackgroundColor);
       outline: 2px solid var(--global-focus-BorderColor);
       outline-offset: 2px;
 
       input::placeholder {
-        color: var(--input-focus-PlaceholderColor);
+        color: var(--theme-darker-color); // var(--input-focus-PlaceholderColor);
       }
     }
 
     &.collapsed:not(:focus-within, :active, .filled) {
       padding: 0;
-      max-width: var(--spacing-4);
+      max-width: var(--global-small-Size);
 
       .searchInput-icon {
         cursor: pointer;

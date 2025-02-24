@@ -16,7 +16,7 @@
   import core, { Doc, FindResult, IdMap, Ref, RefTo, Space, Status, toIdMap } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { ProjectType, TaskType } from '@hcengineering/task'
+  import { ProjectStatus, ProjectType, TaskType } from '@hcengineering/task'
   import ui, {
     EditWithIcon,
     Icon,
@@ -39,7 +39,7 @@
   import view from '@hcengineering/view-resources/src/plugin'
   import { buildConfigLookup, getPresenter } from '@hcengineering/view-resources/src/utils'
   import { createEventDispatcher } from 'svelte'
-  import { selectedTaskTypeStore, selectedTypeStore, taskTypeStore, typeStore } from '..'
+  import { typesOfJoinedProjectsStore, selectedTaskTypeStore, selectedTypeStore, taskTypeStore, typeStore } from '..'
 
   export let filter: Filter
   export let space: Ref<Space> | undefined = undefined
@@ -69,7 +69,8 @@
     typeStore: IdMap<TaskType>,
     statusStore: IdMap<Status>,
     selectedProjectType: Ref<ProjectType> | undefined,
-    projectTypeStore: IdMap<ProjectType>
+    projectTypeStore: IdMap<ProjectType>,
+    joinedSpacesTypes: Ref<ProjectType>[]
   ): Promise<void> {
     await objectsPromise
     targets.clear()
@@ -88,9 +89,14 @@
       }
     } else {
       let statuses: Status[] = []
+      const projectTypesNeeded = joinedSpacesTypes
+        .flatMap((s) => projectTypeStore.get(s)?.statuses)
+        .filter((it, index, arr) => it !== undefined && arr.indexOf(it) === index) as ProjectStatus[]
       const prjStatuses = new Map(
         (
-          (selectedProjectType !== undefined ? projectTypeStore.get(selectedProjectType) : undefined)?.statuses ?? []
+          (selectedProjectType !== undefined ? projectTypeStore.get(selectedProjectType) : undefined)?.statuses ??
+          projectTypesNeeded ??
+          []
         ).map((p) => [p._id, p])
       )
       for (const status of statusStore.values()) {
@@ -182,7 +188,15 @@
   const dispatch = createEventDispatcher()
 
   $: if (targetClass != null) {
-    void getValues(search, $selectedTaskTypeStore, $taskTypeStore, $statusStore.byId, $selectedTypeStore, $typeStore)
+    void getValues(
+      search,
+      $selectedTaskTypeStore,
+      $taskTypeStore,
+      $statusStore.byId,
+      $selectedTypeStore,
+      $typeStore,
+      $typesOfJoinedProjectsStore
+    )
   }
 </script>
 

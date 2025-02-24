@@ -38,6 +38,9 @@
       case DocumentState.Archived:
         statusWMLabel = plugin.string.Archived
         break
+      case DocumentState.Obsolete:
+        statusWMLabel = plugin.string.Obsolete
+        break
     }
   }
 

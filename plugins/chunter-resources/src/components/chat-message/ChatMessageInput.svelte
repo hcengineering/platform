@@ -13,15 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Analytics } from '@hcengineering/analytics'
-  import { createEventDispatcher } from 'svelte'
-  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { Class, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
-  import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
-  import { PersonAccount } from '@hcengineering/contact'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { Analytics } from '@hcengineering/analytics'
+  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
+  import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
+  import { Class, Doc, generateId, Ref, type CommitResult } from '@hcengineering/core'
+  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { createEventDispatcher } from 'svelte'
+  import { getObjectId } from '@hcengineering/view-resources'
+  import { ThrottledCaller } from '@hcengineering/ui'
+  import { getSpace } from '@hcengineering/activity-resources'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { presenceByObjectId, updateMyPresence } from '@hcengineering/presence-resources'
+
+  import { type PresenceTyping } from '../../types'
+  import { getChannelSpace } from '../../utils'
+  import ChannelTypingInfo from '../ChannelTypingInfo.svelte'
 
   export let object: Doc
   export let chatMessage: ChatMessage | undefined = undefined
@@ -31,6 +39,7 @@
   export let loading = false
   export let collection: string = 'comments'
   export let autofocus = false
+  export let withTypingInfo = false
 
   type MessageDraft = Pick<ChatMessage, '_id' | 'message' | 'attachments'>
 
@@ -42,7 +51,6 @@
     ? chunter.class.ThreadMessage
     : chunter.class.ChatMessage
   const createdMessageQuery = createQuery()
-  const account = getCurrentAccount() as PersonAccount
 
   const draftKey = `${object._id}_${_class}`
   const draftController = new DraftController<MessageDraft>(draftKey)
@@ -59,7 +67,7 @@
   let inputContent = currentMessage.message
 
   $: if (currentDraft != null) {
-    createdMessageQuery.query(_class, { _id }, (result: ChatMessage[]) => {
+    createdMessageQuery.query(_class, { _id, space: getSpace(object) }, (result: ChatMessage[]) => {
       if (result.length > 0 && _id !== chatMessage?._id) {
         // Ouch we have got comment with same id created already.
         clear()
@@ -69,13 +77,17 @@
     createdMessageQuery.unsubscribe()
   }
 
+  let typingInfo: PresenceTyping[] = []
+  $: presence = $presenceByObjectId.get(object._id) ?? []
+  $: typingInfo = presence.map((p) => p.presence.typing).filter((p) => p !== undefined)
+
   function clear (): void {
     currentMessage = getDefault()
     _id = currentMessage._id
     inputRef.removeDraft(false)
   }
 
-  function objectChange (draft: MessageDraft, empty: Partial<MessageDraft>) {
+  function objectChange (draft: MessageDraft, empty: Partial<MessageDraft>): void {
     if (shouldSaveDraft) {
       draftController.save(draft, empty)
     }
@@ -90,7 +102,29 @@
     }
   }
 
-  async function onUpdate (event: CustomEvent) {
+  const me = getCurrentEmployee()
+  const throttle = new ThrottledCaller(500)
+
+  async function deleteTypingInfo (): Promise<void> {
+    if (!withTypingInfo) return
+    const room = { objectId: object._id, objectClass: object._class }
+    updateMyPresence(room, { typing: undefined })
+  }
+
+  async function updateTypingInfo (): Promise<void> {
+    if (!withTypingInfo) return
+
+    throttle.call(() => {
+      const room = { objectId: object._id, objectClass: object._class }
+      const typing = { person: me, lastTyping: Date.now() }
+      updateMyPresence(room, { typing })
+    })
+  }
+
+  function onUpdate (event: CustomEvent): void {
+    if (!isEmptyMarkup(event.detail.message)) {
+      void updateTypingInfo()
+    }
     if (!shouldSaveDraft) {
       return
     }
@@ -99,41 +133,55 @@
     currentMessage.attachments = attachments
   }
 
-  async function onMessage (event: CustomEvent) {
-    if (chatMessage) {
-      loading = true
-    } // for new messages we use instant txes
-
-    const doneOp = getClient().measure(`chunter.create.${_class} ${object._class}`)
+  async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
     try {
-      draftController.remove()
-      inputRef.removeDraft(false)
+      const res = await createMessage(event, _id, `chunter.create.${_class} ${object._class}`)
 
-      if (chatMessage) {
-        await editMessage(event)
-      } else {
-        await createMessage(event)
-      }
-
-      // Remove draft from Local Storage
-      currentMessage = getDefault()
-      _id = currentMessage._id
-      const d1 = Date.now()
-      void (await doneOp)().then((res) => {
-        console.log(`create.${_class} measure`, res, Date.now() - d1)
-      })
+      console.log(`create.${_class} measure`, res.serverTime, res.time)
+      const objectId = await getObjectId(object, client.getHierarchy())
+      Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: res.result, objectId, objectClass: object._class })
     } catch (err: any) {
-      void (await doneOp)()
+      const objectId = await getObjectId(object, client.getHierarchy())
+      Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: false, objectId, objectClass: object._class })
       Analytics.handleError(err)
       console.error(err)
     }
+  }
+
+  async function handleEdit (event: CustomEvent): Promise<void> {
+    try {
+      await editMessage(event)
+      const objectId = await getObjectId(object, client.getHierarchy())
+      Analytics.handleEvent(ChunterEvents.MessageEdited, { ok: true, objectId, objectClass: object._class })
+    } catch (err: any) {
+      const objectId = await getObjectId(object, client.getHierarchy())
+      Analytics.handleEvent(ChunterEvents.MessageEdited, { ok: false, objectId, objectClass: object._class })
+      Analytics.handleError(err)
+      console.error(err)
+    }
+  }
+
+  async function onMessage (event: CustomEvent): Promise<void> {
+    draftController.remove()
+    inputRef.removeDraft(false)
+
+    if (chatMessage !== undefined) {
+      loading = true
+      await handleEdit(event)
+    } else {
+      void handleCreate(event, _id)
+      void deleteTypingInfo()
+    }
+
+    // Remove draft from Local Storage
+    clear()
     dispatch('submit', false)
     loading = false
   }
 
-  async function createMessage (event: CustomEvent) {
+  async function createMessage (event: CustomEvent, _id: Ref<ChatMessage>, msg: string): Promise<CommitResult> {
     const { message, attachments } = event.detail
-    const operations = client.apply(_id)
+    const operations = client.apply(undefined, msg)
 
     if (_class === chunter.class.ThreadMessage) {
       const parentMessage = object as ActivityMessage
@@ -152,32 +200,21 @@
         },
         _id as Ref<ThreadMessage>
       )
-
-      clear()
-
-      await operations.update(parentMessage, { lastReply: Date.now() })
-
-      const hasPerson = !!parentMessage.repliedPersons?.includes(account.person)
-
-      if (!hasPerson) {
-        await operations.update(parentMessage, { $push: { repliedPersons: account.person } })
-      }
     } else {
       await operations.addCollection<Doc, ChatMessage>(
         _class,
-        isSpace(object) ? object._id : object.space,
+        getSpace(object),
         object._id,
         object._class,
         collection,
         { message, attachments },
         _id
       )
-      clear()
     }
-    await operations.commit()
+    return await operations.commit()
   }
 
-  async function editMessage (event: CustomEvent) {
+  async function editMessage (event: CustomEvent): Promise<void> {
     if (chatMessage === undefined) {
       return
     }
@@ -194,7 +231,8 @@
   bind:this={inputRef}
   bind:content={inputContent}
   {_class}
-  space={object.space}
+  space={getChannelSpace(object._class, object._id, object.space)}
+  skipAttachmentsPreload={(currentMessage.attachments ?? 0) === 0}
   bind:objectId={_id}
   {shouldSaveDraft}
   {boundary}
@@ -205,3 +243,7 @@
   on:blur
   bind:loading
 />
+
+{#if withTypingInfo}
+  <ChannelTypingInfo {typingInfo} />
+{/if}

@@ -20,8 +20,7 @@
   import type { AnySvelteComponent } from '../types'
   import { getTreeCollapsed, setTreeCollapsed } from '../location'
   import IconChevronRight from './icons/ChevronRight.svelte'
-  import Label from './Label.svelte'
-  import Icon from './Icon.svelte'
+  import { Label, Icon, formatDuration, themeStore } from '..'
 
   export let id: string
   export let label: IntlString | undefined = undefined
@@ -40,6 +39,7 @@
   export let duration: number | boolean = false
   export let fixHeader: boolean = false
   export let categoryHeader: boolean = false
+  export let hiddenHeader: boolean = false
   export let background: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -52,6 +52,16 @@
     if (disabled) return
     collapsed = !collapsed
   }
+
+  let durationLabel: string = ''
+  const updateDurationLabel = (dur: number | boolean): void => {
+    if (typeof dur === 'number') {
+      formatDuration(dur, $themeStore.language).then((res) => {
+        durationLabel = res
+      })
+    } else durationLabel = ''
+  }
+  $: updateDurationLabel(duration)
 </script>
 
 <div class="hulyAccordionItem-container {kind}" class:nested>
@@ -65,6 +75,7 @@
     class:selectable
     class:scroller-header={fixHeader}
     class:categoryHeader
+    class:hiddenHeader
     style:background-color={background ?? 'transparent'}
     on:click|stopPropagation={handleClick}
   >
@@ -95,17 +106,17 @@
         {#if title}{title}{/if}
         <slot name="title" />
       </div>
-      {#if counter !== false || $$slots.counter}
+      {#if counter !== false && ($$slots.counter || typeof counter === 'number')}
         <span class="hulyAccordionItem-header__separator">•</span>
         <span class="hulyAccordionItem-header__counter">
           {#if typeof counter === 'number'}{counter}{/if}
           <slot name="counter" />
         </span>
       {/if}
-      {#if duration !== false || $$slots.duration}
+      {#if duration !== false && ($$slots.duration || duration !== 0)}
         <span class="hulyAccordionItem-header__separator">•</span>
         <span class="hulyAccordionItem-header__duration">
-          {#if typeof duration === 'number'}{duration}{/if}
+          {#if typeof duration === 'number' && durationLabel !== ''}{durationLabel}{/if}
           <slot name="duration" />
         </span>
       {/if}

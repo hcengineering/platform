@@ -1,0 +1,17 @@
+{
+  "name": "@hcengineering/login-assets",
+  "entries": [
+    {
+      "version": "0.6.0",
+      "tag": "@hcengineering/login-assets_v0.6.0",
+      "date": "Sun, 08 Aug 2021 10:14:57 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.3` to `~0.6.4`"
+          }
+        ]
+      }
+    }
+  ]
+}

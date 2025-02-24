@@ -40,6 +40,7 @@
         class:disabled
         class:selected={selected === color.name}
         style="background-color: {col}"
+        data-id={color.name}
         on:click={() => {
           if (disabled) return
           dispatch('close', i)
@@ -59,6 +60,7 @@
           class:disabled
           class:selected={selected === color.name}
           style="background-color: {col}"
+          data-id={color.name}
           on:click={() => {
             if (disabled) return
             dispatch('close', i)

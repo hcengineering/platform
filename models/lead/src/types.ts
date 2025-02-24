@@ -15,8 +15,9 @@
 
 import type { Employee } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   IndexKind,
+  type MarkupBlobRef,
   type Role,
   type RolesAssignment,
   type Ref,
@@ -31,7 +32,7 @@ import {
   Model,
   Prop,
   ReadOnly,
-  TypeCollaborativeMarkup,
+  TypeCollaborativeDoc,
   TypeDate,
   TypeMarkup,
   TypeRef,
@@ -94,15 +95,15 @@ export class TCustomer extends TContact implements Customer {
   @Prop(Collection(lead.class.Lead), lead.string.Leads)
     leads?: number
 
-  @Prop(TypeCollaborativeMarkup(), core.string.Description)
+  @Prop(TypeCollaborativeDoc(), lead.string.Description)
   @Index(IndexKind.FullText)
-    description!: string
+    customerDescription!: MarkupBlobRef | null
 }
 
 @Mixin(lead.mixin.DefaultFunnelTypeData, lead.class.Funnel)
 @UX(getEmbeddedLabel('Default funnel'), lead.icon.Funnel)
 export class TDefaultFunnelTypeData extends TFunnel implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 @Mixin(lead.mixin.LeadTypeData, lead.class.Lead)

@@ -44,8 +44,13 @@
     &.withSub.thinHeader { padding: 1rem 1.5rem 0; }
     &.thinHeader:not(.withSub) { padding: 1rem 1.5rem; }
     &:not(.withSub, .thinHeader) { padding: 1.5rem; }
+    &.noPadding {
+      padding: 0 1.5rem;
+      min-height: 4.75rem;
+    }
 
     &__title-wrap {
+      overflow-x: auto;
       display: flex;
       align-items: center;
       min-width: 0;
@@ -273,6 +278,12 @@
     max-width: 90vw;
     max-height: 90vh;
 
+    @media screen and (max-width: 480px) {
+      width: 100%;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
     .antiCard-header {
       padding: .75rem .75rem .375rem;
 
@@ -300,7 +311,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-width: 25rem;
+  min-width: 20rem;
   min-height: 0;
   background-color: var(--theme-popup-color);
   border-radius: .5rem;
@@ -311,10 +322,17 @@
     box-shadow: var(--theme-popup-shadow);
   }
   &.fullsize {
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
+    width: calc(100vw - 3rem);
+    height: calc(100vh - 4rem);
+    max-width: calc(100vw - 3rem);
+    max-height: calc(100vh - 4rem);
+
+    .mobile-theme & {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+    }
   }
 
   .header {
@@ -336,6 +354,7 @@
     flex-grow: 1;
     min-width: 0;
     min-height: 0;
+    overflow: hidden;
 
     &.rounded { border-radius: 0 0 .5rem .5rem; }
     &:has(audio) {

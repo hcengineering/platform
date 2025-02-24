@@ -15,162 +15,139 @@
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Breadcrumbs, IconClose, Label, location as locationStore } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { Breadcrumbs, location as locationStore, Header, BreadcrumbItem, Loading } from '@hcengineering/ui'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { getMessageFromLoc } from '@hcengineering/activity-resources'
+  import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import contact from '@hcengineering/contact'
+  import attachment from '@hcengineering/attachment'
 
   import chunter from '../../plugin'
-  import ThreadParentMessage from './ThreadParentPresenter.svelte'
   import { getObjectIcon, getChannelName } from '../../utils'
-  import ChannelScrollView from '../ChannelScrollView.svelte'
-  import { ChannelDataProvider } from '../../channelDataProvider'
+  import { threadMessagesStore } from '../../stores'
+  import ThreadContent from './ThreadContent.svelte'
 
   export let _id: Ref<ActivityMessage>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let showHeader: boolean = true
-
-  const dispatch = createEventDispatcher()
+  export let syncLocation = true
+  export let autofocus = true
+  export let readonly: boolean = false
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const dispatch = createEventDispatcher()
 
   const messageQuery = createQuery()
   const channelQuery = createQuery()
 
   let channel: Doc | undefined = undefined
-  let message: DisplayActivityMessage | undefined = undefined
-
+  let message: DisplayActivityMessage | undefined = $threadMessagesStore?._id === _id ? $threadMessagesStore : undefined
+  let isLoading = true
   let channelName: string | undefined = undefined
-  let dataProvider: ChannelDataProvider | undefined = undefined
 
-  locationStore.subscribe((newLocation) => {
-    selectedMessageId = getMessageFromLoc(newLocation)
+  const unsubscribe = messageInFocus.subscribe((id) => {
+    if (!syncLocation) return
+    if (id !== undefined && id !== selectedMessageId) {
+      selectedMessageId = id
+    }
+
+    messageInFocus.set(undefined)
   })
 
-  $: messageQuery.query(activity.class.ActivityMessage, { _id }, (result: ActivityMessage[]) => {
-    message = result[0] as DisplayActivityMessage
+  const unsubscribeLocation = locationStore.subscribe((newLocation) => {
+    if (!syncLocation) return
+    const id = getMessageFromLoc(newLocation)
+    selectedMessageId = id
+    messageInFocus.set(id)
   })
+
+  onDestroy(() => {
+    unsubscribe()
+    unsubscribeLocation()
+  })
+
+  $: if (message && message._id !== _id) {
+    message = $threadMessagesStore?._id === _id ? $threadMessagesStore : undefined
+    isLoading = message === undefined
+  }
+
+  $: messageQuery.query(
+    activity.class.ActivityMessage,
+    { _id },
+    (result: ActivityMessage[]) => {
+      message = result[0] as DisplayActivityMessage
+      isLoading = false
+      if (message === undefined) {
+        dispatch('close')
+      }
+    },
+    {
+      lookup: {
+        _id: {
+          attachments: attachment.class.Attachment
+        }
+      }
+    }
+  )
 
   $: message &&
     channelQuery.query(message.attachedToClass, { _id: message.attachedTo }, (res) => {
       channel = res[0]
     })
 
-  $: if (message !== undefined && dataProvider === undefined) {
-    dataProvider = new ChannelDataProvider(message._id, chunter.class.ThreadMessage, undefined, selectedMessageId, true)
-  }
-
   $: message &&
     getChannelName(message.attachedTo, message.attachedToClass, channel).then((res) => {
       channelName = res
     })
 
-  function getBreadcrumbsItems (channel?: Doc, message?: DisplayActivityMessage, channelName?: string) {
-    if (message === undefined) {
+  let breadcrumbs: BreadcrumbItem[] = []
+  $: breadcrumbs = showHeader ? getBreadcrumbsItems(channel, channelName) : []
+
+  function getBreadcrumbsItems (channel?: Doc, channelName?: string): BreadcrumbItem[] {
+    if (channel === undefined) {
       return []
     }
 
     const isPersonAvatar =
-      message.attachedToClass === chunter.class.DirectMessage ||
-      hierarchy.isDerived(message.attachedToClass, contact.class.Person)
+      channel._class === chunter.class.DirectMessage || hierarchy.isDerived(channel._class, contact.class.Person)
 
     return [
       {
-        icon: getObjectIcon(message.attachedToClass),
+        id: 'channel',
+        icon: getObjectIcon(channel._class),
         iconProps: { value: channel },
         iconWidth: isPersonAvatar ? 'auto' : undefined,
         withoutIconBackground: isPersonAvatar,
         title: channelName,
         label: channelName ? undefined : chunter.string.Channel
       },
-      { label: chunter.string.Thread }
+      { id: 'thread', label: chunter.string.Thread }
     ]
+  }
+
+  function handleBreadcrumbSelect (event: CustomEvent<number>): void {
+    const index = event.detail
+    const breadcrumb = breadcrumbs[index]
+
+    if (breadcrumb === undefined) return
+    if (breadcrumb.id !== 'channel') return
+
+    dispatch('channel')
   }
 </script>
 
-<div class="popupPanel panel">
-  {#if showHeader}
-    <div class="ac-header divide full caption-height" style="padding: 0.5rem 1rem">
-      <Breadcrumbs items={getBreadcrumbsItems(channel, message, channelName)} />
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="close"
-        on:click={() => {
-          dispatch('close')
-        }}
-      >
-        <IconClose size="medium" />
-      </div>
-    </div>
-  {/if}
+{#if showHeader}
+  <Header type={'type-aside'} adaptive={'disabled'} closeOnEscape={false} on:close>
+    <Breadcrumbs items={breadcrumbs} on:select={handleBreadcrumbSelect} selected={1} />
+  </Header>
+{/if}
 
-  <div class="popupPanel-body">
-    <div class="container">
-      {#if message && dataProvider !== undefined}
-        <ChannelScrollView
-          {selectedMessageId}
-          withDates={false}
-          skipLabels
-          object={message}
-          objectId={message._id}
-          objectClass={message._class}
-          provider={dataProvider}
-          loadMoreAllowed={false}
-        >
-          <svelte:fragment slot="header">
-            <div class="mt-3">
-              <ThreadParentMessage {message} />
-            </div>
-            <div class="separator">
-              {#if message.replies && message.replies > 0}
-                <div class="label lower">
-                  <Label label={activity.string.RepliesCount} params={{ replies: message.replies }} />
-                </div>
-              {/if}
-              <div class="line" />
-            </div>
-          </svelte:fragment>
-        </ChannelScrollView>
-      {/if}
-    </div>
-  </div>
-</div>
-
-<style lang="scss">
-  .container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .close {
-    margin-left: 0.75rem;
-    opacity: 0.4;
-    cursor: pointer;
-
-    &:hover {
-      opacity: 1;
-    }
-  }
-
-  .separator {
-    display: flex;
-    align-items: center;
-    margin: 0.5rem 0;
-
-    .label {
-      white-space: nowrap;
-      margin: 0 0.5rem;
-      color: var(--theme-halfcontent-color);
-    }
-
-    .line {
-      background: var(--theme-refinput-border);
-      height: 1px;
-      width: 100%;
-    }
-  }
-</style>
+{#if message}
+  {#key _id}
+    <ThreadContent bind:selectedMessageId {message} {autofocus} {readonly} {onReply} />
+  {/key}
+{:else if isLoading}
+  <Loading />
+{/if}

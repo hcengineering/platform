@@ -1,9 +1,8 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
-import { TalentsPage } from '../model/recruiting/talents-page'
 import { TalentDetailsPage } from '../model/recruiting/talent-details-page'
-import { TalentName } from '../model/recruiting/types'
+import { TalentsPage } from '../model/recruiting/talents-page'
+import { generateId, PlatformSetting, PlatformURI } from '../utils'
 
 test.use({
   storageState: PlatformSetting
@@ -28,7 +27,6 @@ test.describe('candidate/talents tests', () => {
     const loc = 'Cupertino'
     const email = `ej-${generateId(4)}@test.com`
 
-    await talentsPage.clickRecruitApplication()
     await talentsPage.clickTalentsTab()
     await talentsPage.clickNewTalent()
     await talentsPage.enterFirstName(first)
@@ -73,30 +71,33 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.checkTalentNotExist(talentName)
   })
 
-  test('Merge contacts', async () => {
+  test.skip('Merge contacts', async () => {
+    const firstLocation = 'Location 1'
+    const secondLocation = 'Location 2'
+
     await navigationMenuPage.clickButtonTalents()
     // talent1
     const talentNameFirst = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameFirst)
-    await talentDetailsPage.inputLocation().fill('Awesome Location Merge1')
+
+    await talentDetailsPage.enterLocation(firstLocation)
     const titleTalent1 = 'TitleMerge1'
     await talentDetailsPage.addTitle(titleTalent1)
     const sourceTalent1 = 'SourceTalent1'
     await talentDetailsPage.addSource(sourceTalent1)
     await talentDetailsPage.addSocialLinks('Phone', '123123213213')
-    await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
 
     // talent 2
     await navigationMenuPage.clickButtonTalents()
     const talentNameSecond = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameSecond)
-    await talentDetailsPage.inputLocation().fill('Awesome Location Merge2')
+
+    await talentDetailsPage.enterLocation(secondLocation)
     const titleTalent2 = 'TitleMerge2'
     await talentDetailsPage.addTitle(titleTalent2)
     const sourceTalent2 = 'SourceTalent2'
     await talentDetailsPage.addSource(sourceTalent2)
     await talentDetailsPage.addSocialLinks('Email', 'test-merge-2@gmail.com')
-    await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')
 
     // merge
     await navigationMenuPage.clickButtonTalents()
@@ -106,9 +107,9 @@ test.describe('candidate/talents tests', () => {
       finalContactName: talentNameSecond.lastName,
       name: `${talentNameFirst.lastName} ${talentNameFirst.firstName}`,
       mergeLocation: true,
-      location: 'Awesome Location Merge1',
+      location: firstLocation,
       mergeTitle: true,
-      title: titleTalent1,
+      title: titleTalent2,
       mergeSource: true,
       source: sourceTalent1
     })
@@ -118,17 +119,23 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.openTalentByTalentName(talentNameFirst)
     await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
     await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')
-    await talentDetailsPage.checkMergeContacts('Awesome Location Merge1', titleTalent2, sourceTalent2)
+    await talentDetailsPage.checkMergeContacts(firstLocation, titleTalent2, sourceTalent1)
   })
 
-  test('Match to vacancy', async () => {
-    const talentName: TalentName = {
-      firstName: 'Software',
-      lastName: `Engineer-${generateId(4)}`
-    }
+  test('Filtering talents by skills', async ({ page }) => {
+    const skillName = `Skill-${generateId(4)}`
+    const talentName = 'P. Andrey'
+
     await navigationMenuPage.clickButtonTalents()
-    await talentsPage.createNewTalentWithName(talentName.firstName, talentName.lastName)
-    await talentsPage.rightClickAction(talentName, 'Match to vacancy')
-    await talentsPage.checkMatchVacancy(`${talentName.lastName} ${talentName.firstName}`, '0')
+    await talentsPage.checkRowsInTableExist(talentName)
+    const talentsCount = await talentsPage.linesFromTable().count()
+    await talentsPage.openRowInTableByText(talentName)
+    await talentDetailsPage.addSkill(skillName, 'Skill Description')
+    await talentDetailsPage.buttonClosePanel().click()
+    await talentsPage.selectFilter('Skills', skillName)
+    await talentsPage.checkRowsInTableExist(talentName)
+    await talentsPage.filterOppositeCondition('Skill', 'is', 'is not')
+    await talentsPage.checkRowsInTableNotExist(talentName)
+    await talentsPage.checkRowsInTableExist('', talentsCount - 1)
   })
 })

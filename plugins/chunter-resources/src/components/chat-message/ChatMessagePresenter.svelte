@@ -13,21 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
-  import core, { Account, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Class, Doc, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { getClient, MessageViewer, pendingCreatedDocs } from '@hcengineering/presentation'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
-  import { getDocLinkTitle, LinkPresenter } from '@hcengineering/view-resources'
+  import { getDocLinkTitle } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import activity, { ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
-  import { ActivityDocLink, ActivityMessageTemplate } from '@hcengineering/activity-resources'
+  import activity, { ActivityMessage, ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
+  import { ActivityDocLink, ActivityMessageTemplate, MessageInlineAction } from '@hcengineering/activity-resources'
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
   import { Attachment } from '@hcengineering/attachment'
+  import { EmptyMarkup } from '@hcengineering/text'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
+  import { translatedMessagesStore, translatingMessagesStore, shownTranslatedMessagesStore } from '../../stores'
 
   export let value: WithLookup<ChatMessage> | undefined
   export let doc: Doc | undefined = undefined
@@ -45,64 +47,69 @@
   export let inline = false
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let withShowMore: boolean = true
-  export let attachmentImageSize: AttachmentImageSize = 'auto'
-  export let showLinksPreview = true
+  export let attachmentImageSize: AttachmentImageSize = 'x-large'
   export let videoPreload = true
   export let hideLink = false
   export let compact = false
+  export let readonly = false
   export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
-  const { pendingCreatedDocs } = client
   const hierarchy = client.getHierarchy()
   const STALE_TIMEOUT_MS = 5000
-  const userQuery = createQuery()
-  const currentAccount = getCurrentAccount()
-
-  let user: PersonAccount | undefined = undefined
-  let person: Person | undefined = undefined
+  const me = getCurrentEmployee()
 
   let parentMessage: DisplayActivityMessage | undefined = undefined
-  let parentObject: Doc | undefined
   let object: Doc | undefined
 
   let refInput: ChatMessageInput
 
   let viewlet: ChatMessageViewlet | undefined
-  ;[viewlet] = value
-    ? client.getModel().findAllSync(chunter.class.ChatMessageViewlet, {
-      objectClass: value.attachedToClass,
-      messageClass: value._class
+  ;[viewlet] =
+    value !== undefined
+      ? client.getModel().findAllSync(chunter.class.ChatMessageViewlet, {
+        objectClass: value.attachedToClass,
+        messageClass: value._class
+      })
+      : []
+
+  $: personId = value?.createdBy
+  $: person = personId !== undefined ? $personByPersonIdStore.get(personId) : undefined
+
+  let originalText = value?.message
+
+  $: if (value && originalText && originalText !== value?.message) {
+    originalText = value.message
+    translatedMessagesStore.update((map) => {
+      if (value) {
+        map.delete(value._id)
+      }
+      return map
     })
-    : []
-
-  $: value &&
-    userQuery.query(core.class.Account, { _id: value.createdBy }, (res: Account[]) => {
-      user = res[0] as PersonAccount
+    shownTranslatedMessagesStore.update((map) => {
+      if (value) {
+        map.delete(value._id)
+      }
+      return map
     })
+  } else {
+    originalText = value?.message
+  }
 
-  $: person = user?.person && $personByIdStore.get(user.person)
-
-  $: value &&
-    getParentMessage(value.attachedToClass, value.attachedTo).then((res) => {
+  $: value !== undefined &&
+    getParentMessage(value.attachedToClass, value.attachedTo, value.space).then((res) => {
       parentMessage = res as DisplayActivityMessage
     })
 
-  $: if (doc && value?.attachedTo === doc._id) {
+  $: if (doc !== undefined && value?.attachedTo === doc._id) {
     object = doc
-  } else if (value) {
+  } else if (value !== undefined) {
     void client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((result) => {
       object = result
     })
   }
-
-  $: parentMessage &&
-    client.findOne(parentMessage.attachedToClass, { _id: parentMessage.attachedTo }).then((result) => {
-      parentObject = result
-    })
-
-  $: links = showLinksPreview ? getLinks(value?.message) : []
 
   let stale = false
   let markStaleId: NodeJS.Timeout | undefined
@@ -119,42 +126,24 @@
     stale = false
   }
 
-  function getLinks (content?: string): HTMLLinkElement[] {
-    if (!content) {
-      return []
-    }
-    const parser = new DOMParser()
-    const parent = parser.parseFromString(content, 'text/html').firstChild?.childNodes[1] as HTMLElement
-    return parseLinks(parent.childNodes)
-  }
-
-  function parseLinks (nodes: NodeListOf<ChildNode>): HTMLLinkElement[] {
-    const res: HTMLLinkElement[] = []
-    nodes.forEach((node) => {
-      if (node.nodeType !== Node.TEXT_NODE) {
-        if (node.nodeName === 'A') {
-          res.push(node as HTMLLinkElement)
-        }
-        res.push(...parseLinks(node.childNodes))
-      }
-    })
-    return res
-  }
-
-  async function getParentMessage (_class: Ref<Class<Doc>>, _id: Ref<Doc>) {
+  async function getParentMessage (
+    _class: Ref<Class<Doc>>,
+    _id: Ref<Doc>,
+    space: Ref<Space>
+  ): Promise<ActivityMessage | undefined> {
     if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
-      return await client.findOne(_class, { _id })
+      return await client.findOne<ActivityMessage>(_class, { _id: _id as Ref<ActivityMessage>, space })
     }
   }
 
-  async function handleEditAction () {
+  async function handleEditAction (): Promise<void> {
     isEditing = true
   }
 
   let isEditing = false
   let additionalActions: Action[] = []
 
-  $: isOwn = user !== undefined && user._id === currentAccount._id
+  $: isOwn = person !== undefined && person._id === me
 
   $: additionalActions = [
     ...(isOwn
@@ -172,6 +161,53 @@
 
   let attachments: Attachment[] | undefined = undefined
   $: attachments = value?.$lookup?.attachments as Attachment[] | undefined
+
+  let inlineActions: MessageInlineAction[] = []
+
+  $: updateInlineActions($translatingMessagesStore, $shownTranslatedMessagesStore)
+  function updateInlineActions (
+    translatingMessages: Set<Ref<ChatMessage>>,
+    shownTranslated: Set<Ref<ChatMessage>>
+  ): void {
+    if (value === undefined) {
+      inlineActions = []
+      return
+    }
+
+    const result: MessageInlineAction[] = []
+
+    if (translatingMessages.has(value._id)) {
+      result.push({
+        label: chunter.string.Translating
+      })
+    } else if (shownTranslated.has(value._id)) {
+      result.push({
+        label: chunter.string.ShowOriginal,
+        onClick: async () => {
+          shownTranslatedMessagesStore.update((map) => {
+            if (value) {
+              map.delete(value._id)
+            }
+            return map
+          })
+        }
+      })
+    }
+
+    inlineActions = result
+  }
+
+  $: socialProvider = value?.provider
+    ? client.getModel().findAllSync(contact.class.ChannelProvider, { _id: value.provider })[0]
+    : undefined
+
+  let displayText: Markup = value?.message ?? EmptyMarkup
+
+  $: if (value && $shownTranslatedMessagesStore.has(value._id)) {
+    displayText = $translatedMessagesStore.get(value._id) ?? value?.message ?? EmptyMarkup
+  } else {
+    displayText = value?.message ?? EmptyMarkup
+  }
 </script>
 
 {#if inline && object}
@@ -203,32 +239,39 @@
     {skipLabel}
     {pending}
     {stale}
+    {readonly}
+    excludedActions={$shownTranslatedMessagesStore.has(value._id)
+      ? [chunter.action.TranslateMessage]
+      : [chunter.action.ShowOriginalMessage]}
+    socialIcon={socialProvider?.icon}
     showDatePreposition={hideLink}
+    {inlineActions}
     {type}
     {onClick}
+    {onReply}
   >
     <svelte:fragment slot="header">
-      <ChatMessageHeader {object} {parentObject} message={value} {viewlet} {person} {skipLabel} {hideLink} />
+      <ChatMessageHeader label={viewlet?.label} />
     </svelte:fragment>
     <svelte:fragment slot="content">
       {#if !isEditing}
         {#if withShowMore}
           <ShowMore limit={compact ? 80 : undefined}>
             <div class="clear-mins">
-              <MessageViewer message={value.message} />
-              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
-              {#each links as link}
-                <LinkPresenter {link} />
-              {/each}
+              <MessageViewer message={displayText} />
+              {#if (value.attachments ?? 0) > 0}
+                <div class="mt-2" />
+              {/if}
+              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} {isOwn} />
             </div>
           </ShowMore>
         {:else}
           <div class="clear-mins">
-            <MessageViewer message={value.message} />
-            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
-            {#each links as link}
-              <LinkPresenter {link} />
-            {/each}
+            <MessageViewer message={displayText} />
+            {#if (value.attachments ?? 0) > 0}
+              <div class="mt-2" />
+            {/if}
+            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} {isOwn} />
           </div>
         {/if}
       {:else if object}

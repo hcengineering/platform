@@ -17,7 +17,8 @@
   import contact, { Organization } from '@hcengineering/contact'
   import { AccountArrayEditor, UserBox } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
+    AttachedData,
     Data,
     Ref,
     Role,
@@ -25,11 +26,19 @@
     SortingOrder,
     fillDefaults,
     generateId,
-    getCurrentAccount
+    getCurrentAccount,
+    makeCollabId
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Card, InlineAttributeBar, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
-  import { Vacancy as VacancyClass } from '@hcengineering/recruit'
+  import {
+    Card,
+    InlineAttributeBar,
+    MessageBox,
+    createMarkup,
+    createQuery,
+    getClient
+  } from '@hcengineering/presentation'
+  import { RecruitEvents, Vacancy, Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
   import task, { ProjectType, makeRank } from '@hcengineering/task'
   import { selectedTypeStore, typeStore } from '@hcengineering/task-resources'
@@ -40,15 +49,16 @@
     EditBox,
     FocusHandler,
     IconAttachment,
-    Label,
-    Toggle,
     createFocusManager,
     showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import Company from './icons/Company.svelte'
-  import Vacancy from './icons/Vacancy.svelte'
+  import VacancyIcon from './icons/Vacancy.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { getSequenceId } from '../utils'
+  import { isEmptyMarkup } from '@hcengineering/text'
 
   const dispatch = createEventDispatcher()
 
@@ -63,7 +73,7 @@
   let issueTemplates: IssueTemplate[] = []
   let fullDescription: string = ''
 
-  let members = [getCurrentAccount()._id]
+  let members = [getCurrentAccount().primarySocialId]
   let membersChanged: boolean = false
 
   $: setDefaultMembers(typeType)
@@ -88,12 +98,12 @@
     attachments: 0,
     comments: 0,
     company: '' as Ref<Organization>,
-    fullDescription: '',
+    fullDescription: null,
     location: '',
     type: typeId as Ref<ProjectType>
   }
   export function canClose (): boolean {
-    return name === '' && typeId !== undefined
+    return name.trim() === '' && typeId !== undefined
   }
 
   const client = getClient()
@@ -103,7 +113,7 @@
   $: typeId &&
     templateQ.query(task.class.ProjectType, { _id: typeId }, (result) => {
       const { _class, _id, description, targetClass, ...templateData } = result[0]
-      vacancyData = { ...(templateData as unknown as Data<VacancyClass>), fullDescription: description }
+      vacancyData = { ...(templateData as unknown as Data<VacancyClass>) }
       if (appliedTemplateId !== typeId) {
         fullDescription = description ?? ''
         appliedTemplateId = typeId
@@ -172,10 +182,11 @@
     }
     const number = (incResult as any).object.sequence
 
+    const resId: Ref<Issue> = generateId()
     const identifier = `${project?.identifier}-${number}`
-    const resId = await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', {
-      title: template.title + ` (${name})`,
-      description: template.description,
+    const data: AttachedData<Issue> = {
+      title: template.title + ` (${name.trim()})`,
+      description: null,
       assignee: template.assignee,
       component: template.component,
       milestone: template.milestone,
@@ -195,7 +206,14 @@
       childInfo: [],
       kind: taskType._id,
       identifier
-    })
+    }
+
+    if (!isEmptyMarkup(template.description)) {
+      const collabId = makeCollabId(tracker.class.Issue, resId, 'description')
+      data.description = await createMarkup(collabId, template.description)
+    }
+
+    await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', data, resId)
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
       for (const label of tagElements) {
@@ -214,32 +232,46 @@
       throw Error(`Failed to find target project type: ${typeId}`)
     }
 
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Vacancy })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Vacancy })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
 
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
+    const data: Data<Vacancy> = {
+      ...vacancyData,
+      name: name.trim(),
+      description: template?.shortDescription ?? '',
+      fullDescription: null,
+      private: false,
+      archived: false,
+      number: (incResult as any).object.sequence,
+      company,
+      members,
+      autoJoin: typeType.autoJoin ?? false,
+      owners: [getCurrentAccount().primarySocialId],
+      type: typeId
+    }
 
-    const id = await client.createDoc(
-      recruit.class.Vacancy,
-      core.space.Space,
-      {
-        ...vacancyData,
-        name,
-        description: template?.shortDescription ?? '',
-        fullDescription,
-        private: false,
-        archived: false,
-        number: (incResult as any).object.sequence,
-        company,
-        members,
-        autoJoin: typeType.autoJoin ?? false,
-        owners: [getCurrentAccount()._id],
-        type: typeId
-      },
-      objectId
-    )
+    if (!isEmptyMarkup(fullDescription)) {
+      const collabId = makeCollabId(recruit.class.Vacancy, objectId, 'fullDescription')
+      data.fullDescription = await createMarkup(collabId, fullDescription)
+    }
+
+    const ops = client.apply()
+    const id = await ops.createDoc(recruit.class.Vacancy, core.space.Space, data, objectId)
+    await descriptionBox.createAttachments(undefined, ops)
+    await ops.commit()
+    Analytics.handleEvent(RecruitEvents.VacancyCreated, {
+      id: getSequenceId({
+        ...data,
+        _id: id,
+        _class: recruit.class.Vacancy,
+        space: core.space.Space,
+        modifiedOn: 0,
+        modifiedBy: getCurrentAccount().primarySocialId
+      })
+    })
 
     if (issueTemplates.length > 0) {
       for (const issueTemplate of issueTemplates) {
@@ -251,8 +283,6 @@
         }
       }
     }
-
-    await descriptionBox.createAttachments()
 
     // Add vacancy mixin with roles assignment
     await client.createMixin(
@@ -293,7 +323,7 @@
     )
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -306,7 +336,7 @@
 <Card
   label={recruit.string.CreateVacancy}
   okAction={createVacancy}
-  canSave={!!name}
+  canSave={name.trim() !== ''}
   gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
@@ -316,7 +346,7 @@
   <span>{typeType?.name}</span>
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} noFocus />
+      <Button focusIndex={1} icon={VacancyIcon} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
     <EditBox
       focusIndex={2}

@@ -15,19 +15,30 @@
 
 import { Event } from '@hcengineering/calendar'
 import type { Channel, Organization, Person } from '@hcengineering/contact'
-import type { AttachedData, AttachedDoc, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
+import type {
+  AttachedData,
+  AttachedDoc,
+  Collection,
+  MarkupBlobRef,
+  Markup,
+  Ref,
+  Status,
+  Timestamp
+} from '@hcengineering/core'
+import { Poll } from '@hcengineering/survey'
 import { TagReference } from '@hcengineering/tags'
 import type { Project, Task } from '@hcengineering/task'
 
 /** @public */
 export interface Vacancy extends Project {
-  fullDescription?: string
+  fullDescription: MarkupBlobRef | null
   attachments?: number
   dueTo?: Timestamp
   location?: string
   company?: Ref<Organization>
   comments?: number
   number: number
+  polls?: Collection<Poll>
 }
 
 /** @public */
@@ -44,6 +55,7 @@ export interface Candidate extends Person {
   source?: string
   skills?: number
   reviews?: number
+  polls?: Collection<Poll>
 }
 
 /** @public */
@@ -71,6 +83,7 @@ export interface Applicant extends Task {
   attachedTo: Ref<Candidate>
   status: Ref<Status>
   startDate: Timestamp | null
+  polls?: Collection<Poll>
 }
 
 /** @public */

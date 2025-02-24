@@ -13,9 +13,11 @@
 // limitations under the License.
 //
 
-import type { Doc, Domain, Ref } from './classes'
-import { MeasureContext, type FullParamsType, type ParamsType } from './measurements'
-import type { Tx } from './tx'
+import type { Account, Doc, DocIndexState, Domain, PersonId, PersonUuid, Ref } from './classes'
+import { MeasureContext } from './measurements'
+import { DocumentQuery, FindOptions } from './storage'
+import type { DocumentUpdate, Tx } from './tx'
+import { WorkspaceIds } from './utils'
 
 /**
  * @public
@@ -23,30 +25,36 @@ import type { Tx } from './tx'
 export interface DocInfo {
   id: string
   hash: string
-  size: number // Aprox size
+
+  size?: number
 }
 /**
  * @public
  */
 export interface StorageIterator {
-  next: (ctx: MeasureContext) => Promise<DocInfo | undefined>
+  next: (ctx: MeasureContext) => Promise<DocInfo[]>
   close: (ctx: MeasureContext) => Promise<void>
 }
 
-export interface SessionOperationContext {
-  ctx: MeasureContext
-  // A parts of derived data to deal with after operation will be complete
-  derived: {
-    derived: Tx[]
-    target?: string[]
-  }[]
+export type BroadcastTargets = Record<string, (tx: Tx) => string[] | undefined>
 
-  with: <T>(
-    name: string,
-    params: ParamsType,
-    op: (ctx: SessionOperationContext) => T | Promise<T>,
-    fullParams?: FullParamsType
-  ) => Promise<T>
+export interface SessionData {
+  broadcast: {
+    txes: Tx[]
+    targets: BroadcastTargets // A set of broadcast filters if required
+  }
+  contextCache: Map<string, any>
+  removedMap: Map<Ref<Doc>, Doc>
+  account: Account
+  sessionId: string
+  admin?: boolean
+  isTriggerCtx?: boolean
+  workspace: WorkspaceIds
+  branding: Branding | null
+  socialStringsToUsers: Map<PersonId, PersonUuid>
+  fulltextUpdates?: Map<Ref<DocIndexState>, DocIndexState>
+
+  asyncRequests?: (() => Promise<void>)[]
 }
 
 /**
@@ -54,8 +62,7 @@ export interface SessionOperationContext {
  */
 export interface LowLevelStorage {
   // Low level streaming API to retrieve information
-  // If recheck is passed, all %hash% for documents, will be re-calculated.
-  find: (ctx: MeasureContext, domain: Domain, recheck?: boolean) => StorageIterator
+  find: (ctx: MeasureContext, domain: Domain) => StorageIterator
 
   // Load passed documents from domain
   load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
@@ -66,6 +73,35 @@ export interface LowLevelStorage {
 
   // Remove a list of documents.
   clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+
+  // Low level direct group API
+  groupBy: <T, P extends Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ) => Promise<Map<T, number>>
+
+  // migrations
+  rawFindAll: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<T[]>
+
+  rawUpdate: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => Promise<void>
+
+  rawDeleteMany: <T extends Doc>(domain: Domain, query: DocumentQuery<T>) => Promise<void>
+
+  // Traverse documents
+  traverse: <T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ) => Promise<Iterator<T>>
+
+  getDomainHash: (ctx: MeasureContext, domain: Domain) => Promise<string>
+}
+
+export interface Iterator<T extends Doc> {
+  next: (count: number) => Promise<T[] | null>
+  close: () => Promise<void>
 }
 
 export interface Branding {
@@ -75,6 +111,7 @@ export interface Branding {
   language?: string
   initWorkspace?: string
   lastNameFirst?: string
+  protocol?: string
 }
 
 export type BrandingMap = Record<string, Branding>

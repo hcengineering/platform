@@ -16,11 +16,11 @@
   import type { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { DocReferencePresenter } from '@hcengineering/view-resources'
-  import activity from '../../plugin'
-
-  import { isActivityMessage } from '../../activityMessagesUtils'
   import view from '@hcengineering/view'
   import { Icon, Label } from '@hcengineering/ui'
+
+  import activity from '../../plugin'
+  import { isActivityMessage } from '../../activityMessagesUtils'
 
   export let value: Doc | undefined
 
@@ -31,7 +31,7 @@
   $: showParent = isActivityMessage(value)
 
   $: isActivityMessage(value) &&
-    client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((res) => {
+    client.findOne(value.attachedToClass, { _id: value.attachedTo, space: value.space }).then((res) => {
       parentObject = res
     })
 </script>

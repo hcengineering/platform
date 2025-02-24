@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import { Attachment } from '@hcengineering/attachment'
-import { Account, AttachedDoc, Class, CollaborativeDoc, Ref, TypedSpace } from '@hcengineering/core'
+import { PersonId, Doc, MarkupBlobRef, Rank, Ref, TypedSpace } from '@hcengineering/core'
 import { Preference } from '@hcengineering/preference'
 import { IconProps } from '@hcengineering/view'
 
@@ -22,37 +21,32 @@ import { IconProps } from '@hcengineering/view'
 export interface Teamspace extends TypedSpace, IconProps {}
 
 /** @public */
-export interface Document extends AttachedDoc<Document, 'children', Teamspace>, IconProps {
-  attachedTo: Ref<Document>
+export interface Document extends Doc, IconProps {
+  title: string
+  content: MarkupBlobRef | null
+  parent: Ref<Document>
+  space: Ref<Teamspace>
 
-  name: string
-  content: CollaborativeDoc
-
-  lockedBy?: Ref<Account> | null
+  lockedBy?: PersonId | null
 
   snapshots?: number
   attachments?: number
-  children?: number
   comments?: number
   embeddings?: number
   labels?: number
   references?: number
+
+  rank: Rank
 }
 
 /** @public */
-export interface DocumentSnapshot extends AttachedDoc<Document, 'snapshots', Teamspace> {
-  attachedTo: Ref<Document>
-  name: string
-  content: CollaborativeDoc
+export interface DocumentSnapshot extends Doc {
+  title: string
+  content: MarkupBlobRef
+  parent: Ref<Document>
 }
 
 /** @public */
 export interface SavedDocument extends Preference {
   attachedTo: Ref<Document>
-}
-
-/** @public */
-export interface DocumentEmbedding extends Attachment {
-  attachedTo: Ref<Document>
-  attachedToClass: Ref<Class<Document>>
 }

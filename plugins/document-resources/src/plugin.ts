@@ -16,7 +16,7 @@
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import document, { type Document, documentId } from '@hcengineering/document'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
-import { type AnyComponent, type Location } from '@hcengineering/ui'
+import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
 export default mergeIds(documentId, document, {
   component: {
@@ -86,11 +86,6 @@ export default mergeIds(documentId, document, {
     Embeddings: '' as IntlString,
 
     CompareTo: '' as IntlString,
-
-    UnassignToDo: '' as IntlString,
-    UnassignToDoConfirm: '' as IntlString,
-    ReassignToDo: '' as IntlString,
-    ReassignToDoConfirm: '' as IntlString,
 
     Color: '' as IntlString,
     Icon: '' as IntlString,

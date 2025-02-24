@@ -13,55 +13,95 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { WithLookup, type Ref } from '@hcengineering/core'
-  import { type File } from '@hcengineering/drive'
+  import { type Ref, type WithLookup } from '@hcengineering/core'
+  import { createFileVersion, type File as DriveFile, type FileVersion } from '@hcengineering/drive'
   import { Panel } from '@hcengineering/panel'
-  import presentation, { IconDownload, createQuery, getBlobHref } from '@hcengineering/presentation'
+  import { createQuery, getClient, getFileUrl } from '@hcengineering/presentation'
   import { Button, IconMoreH } from '@hcengineering/ui'
+  import { FileUploadCallbackParams, showFilesUploadPopup } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
 
   import EditFile from './EditFile.svelte'
   import FileAside from './FileAside.svelte'
   import FileHeader from './FileHeader.svelte'
+  import IconDownload from './icons/FileDownload.svelte'
+  import IconUpload from './icons/FileUpload.svelte'
 
   import drive from '../plugin'
 
-  export let _id: Ref<File>
+  export let _id: Ref<DriveFile>
   export let readonly: boolean = false
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
 
   export function canClose (): boolean {
     return false
   }
 
-  let object: WithLookup<File> | undefined = undefined
+  let object: WithLookup<DriveFile> | undefined = undefined
+  let version: FileVersion | undefined = undefined
   let download: HTMLAnchorElement
 
+  const client = getClient()
   const query = createQuery()
+
   $: query.query(
     drive.class.File,
     { _id },
     (res) => {
       ;[object] = res
+      version = object?.$lookup?.file
     },
     {
       lookup: {
-        file: core.class.Blob
+        file: drive.class.FileVersion
       }
     }
   )
+
+  function handleDownloadFile (): void {
+    if (object != null && download != null) {
+      download.click()
+    }
+  }
+
+  function handleUploadFile (): void {
+    if (object != null) {
+      void showFilesUploadPopup(
+        {
+          onFileUploaded,
+          showProgress: {
+            target: { objectId: object._id, objectClass: object._class }
+          },
+          maxNumberOfFiles: 1
+        },
+        {}
+      )
+    }
+  }
+
+  async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
+    const data = {
+      file: uuid,
+      title: name,
+      size: file.size,
+      type: file.type,
+      lastModified: file instanceof File ? file.lastModified : Date.now(),
+      metadata
+    }
+
+    await createFileVersion(client, _id, data)
+  }
 </script>
 
-{#if object}
+{#if object && version}
   <Panel
     {object}
     {embedded}
-    {kind}
     allowClose={!embedded}
     isHeader={false}
     useMaxWidth={false}
+    adaptive={'default'}
     on:open
     on:close
     on:update
@@ -71,19 +111,22 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      {#await getBlobHref(object.$lookup?.file, object.file, object.name) then href}
-        <a class="no-line" {href} download={object.name} bind:this={download}>
-          <Button
-            icon={IconDownload}
-            iconProps={{ size: 'medium' }}
-            kind={'icon'}
-            showTooltip={{ label: presentation.string.Download }}
-            on:click={() => {
-              download.click()
-            }}
-          />
-        </a>
-      {/await}
+      <a class="no-line" href={getFileUrl(version.file, object.title)} download={object.title} bind:this={download}>
+        <Button
+          icon={IconDownload}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          showTooltip={{ label: drive.string.Download }}
+          on:click={handleDownloadFile}
+        />
+      </a>
+      <Button
+        icon={IconUpload}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        showTooltip={{ label: drive.string.Upload }}
+        on:click={handleUploadFile}
+      />
       <Button
         icon={IconMoreH}
         iconProps={{ size: 'medium' }}

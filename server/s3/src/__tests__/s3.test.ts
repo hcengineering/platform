@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
+import { MeasureMetricsContext, type WorkspaceDataId, type WorkspaceUuid, generateId } from '@hcengineering/core'
 import { objectsToArray, type StorageConfiguration } from '@hcengineering/server-core'
 import { S3Service, processConfigFromEnv, type S3Config } from '..'
 
@@ -27,51 +27,61 @@ describe('s3 operations', () => {
   }
   const toolCtx = new MeasureMetricsContext('test', {})
   it('check root bucket', async () => {
+    jest.setTimeout(50000)
     const minioService = new S3Service({ ...(config.storages[0] as S3Config), rootBucket: 'haiodo-test-bucket' })
 
-    let existingTestBuckets = await minioService.listBuckets(toolCtx, '')
+    let existingTestBuckets = await minioService.listBuckets(toolCtx)
     // Delete old buckets
     for (const b of existingTestBuckets) {
       await b.delete()
     }
 
-    const genWorkspaceId1 = generateId()
-    const genWorkspaceId2 = generateId()
+    const genWorkspaceId1 = generateId() as unknown as WorkspaceDataId
+    const genWorkspaceId2 = generateId() as unknown as WorkspaceDataId
 
     expect(genWorkspaceId1).not.toEqual(genWorkspaceId2)
 
-    const ws1 = { name: genWorkspaceId1, productId: '' }
-    const ws2 = { name: genWorkspaceId2, productId: '' }
-    await minioService.make(toolCtx, ws1)
-    await minioService.make(toolCtx, ws2)
+    const wsIds1 = {
+      uuid: genWorkspaceId1 as unknown as WorkspaceUuid,
+      dataId: genWorkspaceId1,
+      url: ''
+    }
+    const wsIds2 = {
+      uuid: genWorkspaceId2 as unknown as WorkspaceUuid,
+      dataId: genWorkspaceId2,
+      url: ''
+    }
+    await minioService.make(toolCtx, wsIds1)
+    await minioService.make(toolCtx, wsIds2)
 
     const v1 = generateId()
-    await minioService.put(toolCtx, ws1, 'obj1.txt', v1, 'text/plain')
-    await minioService.put(toolCtx, ws2, 'obj2.txt', v1, 'text/plain')
+    await minioService.put(toolCtx, wsIds1, 'obj1.txt', v1, 'text/plain')
+    await minioService.put(toolCtx, wsIds2, 'obj2.txt', v1, 'text/plain')
 
-    const w1Objects = await objectsToArray(toolCtx, minioService, ws1)
+    const w1Objects = await objectsToArray(toolCtx, minioService, wsIds1)
     expect(w1Objects.map((it) => it._id)).toEqual(['obj1.txt'])
 
-    const w2Objects = await objectsToArray(toolCtx, minioService, ws2)
+    const w2Objects = await objectsToArray(toolCtx, minioService, wsIds2)
     expect(w2Objects.map((it) => it._id)).toEqual(['obj2.txt'])
 
-    await minioService.put(toolCtx, ws1, 'obj1.txt', 'obj1', 'text/plain')
-    await minioService.put(toolCtx, ws1, 'obj2.txt', 'obj2', 'text/plain')
+    await minioService.put(toolCtx, wsIds1, 'obj1.txt', 'obj1', 'text/plain')
+    await minioService.put(toolCtx, wsIds1, 'obj2.txt', 'obj2', 'text/plain')
 
-    const w1Objects2 = await objectsToArray(toolCtx, minioService, ws1)
+    const w1Objects2 = await objectsToArray(toolCtx, minioService, wsIds1)
     expect(w1Objects2.map((it) => it._id)).toEqual(['obj1.txt', 'obj2.txt'])
 
-    const data = Buffer.concat(await minioService.read(toolCtx, ws1, 'obj1.txt'))
+    const read = (await minioService.read(toolCtx, wsIds1, 'obj1.txt')) as unknown as Uint8Array[]
+    const data = Buffer.concat(read)
 
     expect('obj1').toEqual(data.toString())
 
-    existingTestBuckets = await minioService.listBuckets(toolCtx, '')
+    existingTestBuckets = await minioService.listBuckets(toolCtx)
     expect(existingTestBuckets.length).toEqual(2)
     // Delete old buckets
     for (const b of existingTestBuckets) {
       await b.delete()
     }
-    existingTestBuckets = await minioService.listBuckets(toolCtx, '')
+    existingTestBuckets = await minioService.listBuckets(toolCtx)
     expect(existingTestBuckets.length).toEqual(0)
   })
 })

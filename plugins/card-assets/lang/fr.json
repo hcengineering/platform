@@ -1,0 +1,24 @@
+{
+  "string": {
+    "Card": "Carte",
+    "CardApplication": "Cartes",
+    "Cards": "Cartes",
+    "Content": "Contenu",
+    "CreateCard": "Créer une carte",
+    "CreateMasterTag": "Créer un type",
+    "CreateTag": "Créer une étiquette",
+    "MasterTag": "Type",
+    "MasterTags": "Types",
+    "Parent": "Parent",
+    "Tags": "Étiquettes",
+    "Tag": "Étiquette",
+    "CardLibrary": "Bibliothèque de cartes",
+    "MinimizeAll": "Tout réduire",
+    "ExpandAll": "Tout développer",
+    "DeleteTag": "Supprimer l'étiquette",
+    "TagRelations": "Relations d'étiquettes",
+    "DeleteTagConfirm": "Êtes-vous sûr de vouloir supprimer cette étiquette ? Toutes les propriétés associées seront supprimées",
+    "DeleteMasterTag": "Supprimer le type",
+    "DeleteMasterTagConfirm": "Êtes-vous sûr de vouloir supprimer ce type ? Tous les objets liés à ce type seront supprimés"
+  }
+}

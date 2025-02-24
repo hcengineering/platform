@@ -50,10 +50,13 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/notification": "^0.6.23",
+    "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/tags": "^0.6.16",
+    "@hcengineering/text": "^0.6.5",
     "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/request": "^0.6.14",
     "@hcengineering/request-resources": "^0.6.0",
@@ -64,11 +67,12 @@
     "@hcengineering/controlled-documents": "^0.1.0",
     "@hcengineering/training": "^0.1.0",
     "@hcengineering/training-resources": "^0.1.0",
-    "@tiptap/core": "^2.2.4",
+    "@tiptap/core": "^2.11.3",
     "effector": "~22.8.7",
-    "svelte": "^4.2.12",
-    "yjs": "^13.5.52",
+    "svelte": "^4.2.19",
     "slugify": "^1.6.6",
-    "fast-equals": "^5.0.1"
+    "fast-equals": "^5.2.2",
+    "@hcengineering/rank": "^0.6.4",
+    "@hcengineering/print": "^0.6.0"
   }
 }

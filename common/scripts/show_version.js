@@ -13,19 +13,27 @@
 // limitations under the License.
 //
 
+const fs = require('fs')
+const path = require('path')
 const exec = require('child_process').exec
 
-exec('git describe --tags --abbrev=0', (err, stdout, stderr) => {
-  if (err !== null) {
-    console.log('"0.6.0"')
-  }
-  const rawVersion = stdout.trim().replace('v', '').split('.')
-  if (rawVersion.length === 3) {
-    const version = {
-      major: parseInt(rawVersion[0]),
-      minor: parseInt(rawVersion[1]),
-      patch: parseInt(rawVersion[2])
+function main() {
+  exec('git describe --tags --abbrev=0', (err, stdout) => {
+    if (err !== null) {
+      console.log('"0.6.0"')
+      return
     }
-    console.log(`"${version.major}.${version.minor}.${version.patch}"`)
-  }
-})
+    // Take version from file
+    let version
+    try {
+      const versionFilePath = path.resolve(__dirname, 'version.txt')
+      version = fs.readFileSync(versionFilePath, 'utf8').trim()
+    } catch (error) {
+      version = '"0.6.0"'
+    }
+
+    console.log(version)
+  })
+}
+
+main()

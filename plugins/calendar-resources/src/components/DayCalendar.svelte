@@ -29,15 +29,13 @@
     closeTooltip,
     deviceOptionsStore as deviceInfo,
     day as getDay,
-    getEventPositionElement,
-    getMonday,
+    getWeekStart,
     getWeekDayName,
     resizeObserver,
-    showPopup,
     ticker,
     isWeekend
   } from '@hcengineering/ui'
-  import { Menu, showMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import type {
     CalendarADGrid,
@@ -52,7 +50,6 @@
   import EventElement from './EventElement.svelte'
 
   export let events: Event[]
-  export let mondayStart = true
   export let selectedDate: Date = new Date()
   export let currentDate: Date = selectedDate
   export let displayedDaysCount = 7
@@ -82,11 +79,11 @@
   const getTimeFormat = (hour: number, min: number = 0): string => {
     if (min === 0) {
       return ampm
-        ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}`
+        ? `${hour > 12 ? hour - 12 : hour}${hour < 12 || hour === 24 ? 'am' : 'pm'}`
         : `${addZero(hour === 24 ? 0 : hour)}:00`
     } else {
       return ampm
-        ? `${hour > 12 ? hour - 12 : hour}:${addZero(min)}${hour < 12 ? 'am' : 'pm'}`
+        ? `${hour > 12 ? hour - 12 : hour}:${addZero(min)}${hour < 12 || hour === 24 ? 'am' : 'pm'}`
         : `${addZero(hour === 24 ? 0 : hour)}:${addZero(min)}`
     }
   }
@@ -148,14 +145,13 @@
     return result
   }
 
-  $: calendarEvents = toCalendar(events, weekMonday, displayedDaysCount, startHour, displayedHours + startHour)
-
   $: fontSize = $deviceInfo.fontSize
   $: docHeight = $deviceInfo.docHeight
   $: cellHeight = 4 * fontSize
-  $: weekMonday = startFromWeekStart
-    ? getMonday(currentDate, mondayStart)
+  $: weekStart = startFromWeekStart
+    ? getWeekStart(currentDate, $deviceInfo.firstDayOfWeek)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
+  $: calendarEvents = toCalendar(events, weekStart, displayedDaysCount, startHour, displayedHours + startHour)
 
   let timer: any
   let container: HTMLElement
@@ -364,13 +360,13 @@
 
   const getRect = (event: CalendarItem): CalendarElementRect => {
     const result = { ...nullCalendarElement }
-    const checkDate = new Date(weekMonday.getTime() + MILLISECONDS_IN_DAY * event.day)
+    const checkDate = new Date(weekStart.getTime() + MILLISECONDS_IN_DAY * event.day)
     const startDay = checkDate.setHours(startHour, 0, 0, 0)
     const endDay = checkDate.setHours(displayedHours - 1, 59, 59, 999)
     const startTime = event.date <= startDay ? { hours: startHour, mins: 0 } : convertToTime(event.date)
     const endTime =
       event.dueDate > endDay ? { hours: displayedHours - startHour, mins: 0 } : convertToTime(event.dueDate)
-    if (getDay(weekMonday, event.day).setHours(endTime.hours, endTime.mins, 0, 0) <= todayDate.getTime()) {
+    if (getDay(weekStart, event.day).setHours(endTime.hours, endTime.mins, 0, 0) <= todayDate.getTime()) {
       result.visibility = 0
     }
     result.top =
@@ -409,8 +405,8 @@
     const index = adRows.findIndex((ev) => ev.id === id)
 
     const checkTime = new Date().setHours(0, 0, 0, 0)
-    const startEvent = getDay(weekMonday, typeof day !== 'undefined' ? day : adRows[index].startCol).getTime()
-    const endEvent = getDay(weekMonday, adRows[index].endCol).setHours(24)
+    const startEvent = getDay(weekStart, typeof day !== 'undefined' ? day : adRows[index].startCol).getTime()
+    const endEvent = getDay(weekStart, adRows[index].endCol).setHours(24)
     if (endEvent <= checkTime) result.visibility = 0
     else if (startEvent <= checkTime && endEvent > checkTime) {
       const eventTime = endEvent - startEvent
@@ -486,7 +482,7 @@
   const checkNowLine = (): void => {
     if (timer) clearInterval(timer)
     let equal = false
-    for (let i = 0; i < displayedDaysCount; i++) if (areDatesEqual(getDay(weekMonday, i), todayDate)) equal = true
+    for (let i = 0; i < displayedDaysCount; i++) if (areDatesEqual(getDay(weekStart, i), todayDate)) equal = true
     if (equal) {
       renderNow()
       timer = setInterval(() => {
@@ -548,7 +544,8 @@
   }
 
   const getExactly = (e: MouseEvent, correction: boolean = false): number => {
-    return Math.round((e.offsetY * 60) / cellHeight) - (correction ? 15 : 0)
+    const exactly = Math.round((e.offsetY * 60) / cellHeight) - (correction ? 15 : 0)
+    return exactly <= 0 ? 0 : exactly
   }
 
   const getStickyMinutes = (
@@ -568,22 +565,22 @@
       const target = new Date(day).setHours(hour, exactly, 0, 0)
       const events = newEvents.filter((ev) => ev._id !== skipId && !ev.allDay)
       if (events.length > 0) {
-        const minutes: number[] = []
+        const dates: Array<{ date: number, hours: number, mins: number }> = []
         for (const ev of events) {
           if (ev.date >= min && ev.date <= max) {
-            minutes.push(convertToTime(ev.date).mins)
+            dates.push({ date: ev.date, ...convertToTime(ev.date) })
           }
           if (ev.dueDate >= min && ev.dueDate <= max) {
-            minutes.push(convertToTime(ev.dueDate).mins)
+            dates.push({ date: ev.date, ...convertToTime(ev.dueDate) })
           }
         }
-        if (minutes.length > 0) {
-          let nearest = minutes[0]
-          for (let index = 1; index < minutes.length; index++) {
-            const minute = minutes[index]
-            if (Math.abs(minute - target) < Math.abs(nearest - target)) nearest = minute
+        if (dates.length > 0) {
+          let nearest = dates[0]
+          for (let index = 1; index < dates.length; index++) {
+            const date = dates[index]
+            if (Math.abs(date.date - target) < Math.abs(nearest.date - target)) nearest = date
           }
-          return nearest
+          return nearest.hours > hour && nearest.mins === 0 ? 60 : nearest.mins
         }
       }
     }
@@ -630,6 +627,7 @@
   function mouseDownElement (e: MouseEvent, event: Event, direction: 'top' | 'bottom'): void {
     if (e.buttons !== 1) return
     e.stopPropagation()
+    closeTooltip()
     resizeId = event._id
     directionResize = direction
     originDate = event.date
@@ -818,7 +816,7 @@
     {#if showHeader}
       <div class="sticky-header head center"><span class="zone">{getTimeZone()}</span></div>
       {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-        {@const day = getDay(weekMonday, dayOfWeek)}
+        {@const day = getDay(weekStart, dayOfWeek)}
         {@const tday = areDatesEqual(todayDate, day)}
         <div class="sticky-header head title" class:center={displayedDaysCount > 1}>
           <span class="day" class:today={tday}>{day.getDate()}</span>
@@ -964,7 +962,7 @@
         </div>
       {/if}
       {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
-        {@const day = getDay(weekMonday, dayOfWeek)}
+        {@const day = getDay(weekStart, dayOfWeek)}
         {@const weekend = isWeekend(day)}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
@@ -1015,9 +1013,11 @@
         {@const rect = getRect(event)}
         {@const ev = events.find((p) => p._id === event._id)}
         {#if ev}
+          {@const pointerEventsNone = !!resizeId && resizeId !== ev._id}
           <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
           <div
             class="calendar-element"
+            class:pointer-events-none={!!resizeId}
             class:past={rect.visibility === 0}
             style:top={`${rect.top}px`}
             style:bottom={`${rect.bottom}px`}
@@ -1033,6 +1033,7 @@
           >
             <div
               class="calendar-element-start"
+              class:pointer-events-none={pointerEventsNone}
               class:allowed={!resizeId && !dragId && !clearCells}
               class:hovered={resizeId === ev._id && directionResize === 'top'}
               on:mousedown={(e) => {
@@ -1044,6 +1045,7 @@
             />
             <div
               class="calendar-element-end"
+              class:pointer-events-none={pointerEventsNone}
               class:allowed={!resizeId && !dragId && !clearCells}
               class:hovered={resizeId === ev._id && directionResize === 'bottom'}
               on:mousedown={(e) => {

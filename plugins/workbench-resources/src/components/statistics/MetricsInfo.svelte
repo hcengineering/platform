@@ -1,22 +1,54 @@
 <script lang="ts">
-  import { Metrics } from '@hcengineering/core'
-  import { Expandable } from '@hcengineering/ui'
+  import { Metrics, type MetricsData } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Button, Expandable, showPopup } from '@hcengineering/ui'
   import { FixedColumn } from '@hcengineering/view-resources'
+  import Params from './Params.svelte'
 
   export let metrics: Metrics
   export let level = 0
   export let name: string = 'System'
+  export let sortOrder: 'avg' | 'ops' | 'total'
 
-  $: haschilds = Object.keys(metrics.measurements).length > 0 || Object.keys(metrics.params).length > 0
+  $: haschilds =
+    Object.keys(metrics.measurements).length > 0 ||
+    Object.keys(metrics.params).length > 0 ||
+    (metrics.topResult?.length ?? 0) > 0
+
+  const toTime = (value: number, digits = 10): number => Math.round(value * digits) / digits
 
   function showAvg (name: string, time: number, ops: number): string {
     if (name.startsWith('#')) {
-      return `➿ ${time}`
+      return `➿ ${toTime(time)}`
     }
     if (ops === 0) {
-      return `⏱️ ${time}`
+      return `⏱️ ${toTime(time)}`
     }
-    return `${Math.floor((time / ops) * 100) / 100}`
+    return `${toTime(time / ops, 100)}`
+  }
+  const getSorted = (v: Record<string, MetricsData>, sortingOrder: 'avg' | 'ops' | 'total') => {
+    if (sortingOrder === 'avg') {
+      return Object.entries(v).sort((a, b) => b[1].value / (b[1].operations + 1) - a[1].value / (a[1].operations + 1))
+    } else if (sortingOrder === 'ops') {
+      return Object.entries(v).sort((a, b) => b[1].operations + 1 - (a[1].operations + 1))
+    } else {
+      return Object.entries(v).sort((a, b) => b[1].value - a[1].value)
+    }
+  }
+
+  function getSortedMeasurements (
+    m: Record<string, Metrics>,
+    sortingOrder: 'avg' | 'ops' | 'total'
+  ): [string, Metrics][] {
+    const ms = [...Object.entries(m)]
+    if (sortingOrder === 'avg') {
+      ms.sort((a, b) => b[1].value / (b[1].operations + 1) - a[1].value / (a[1].operations + 1))
+    } else if (sortingOrder === 'ops') {
+      ms.sort((a, b) => b[1].operations + 1 - (a[1].operations + 1))
+    } else {
+      ms.sort((a, b) => b[1].value - a[1].value)
+    }
+    return ms
   }
 </script>
 
@@ -28,8 +60,18 @@
   contentColor
 >
   <svelte:fragment slot="title">
+    {@const params = JSON.stringify(metrics.namedParams ?? {})}
     <div class="flex-row-center flex-between flex-grow ml-2">
       {name}
+      {#if params !== '{}'}
+        <Button
+          label={getEmbeddedLabel('*')}
+          on:click={() => {
+            showPopup(Params, { params: metrics.namedParams ?? {}, opLog: metrics.opLog }, 'full')
+          }}
+          kind={'ghost'}
+        />
+      {/if}
     </div>
   </svelte:fragment>
   <svelte:fragment slot="tools">
@@ -47,7 +89,7 @@
         </FixedColumn>
         <FixedColumn key="time-full">
           <span class="p-1">
-            {metrics.value}
+            {toTime(metrics.value)}
           </span>
         </FixedColumn>
       </div>
@@ -58,32 +100,32 @@
       <Expandable>
         <svelte:fragment slot="title">
           <div class="flex-row-center flex-between flex-grow ml-2">
-            Slowest result:{metrics.topResult[0].value}
+            Slowest result:{toTime(metrics.topResult[0].value)}
           </div>
         </svelte:fragment>
         {#each metrics.topResult ?? [] as r}
           <Expandable>
             <svelte:fragment slot="title">
-              <div class="flex-row-center flex-between flex-grow">
-                Time:{r.value}
+              <div class="flex-row-center flex-between flex-grow select-text">
+                Time:{toTime(r.value)}
               </div>
             </svelte:fragment>
-            <pre>
-          {JSON.stringify(r, null, 2)}
-        </pre>
+            <pre class="select-text">
+              {JSON.stringify(r, null, 2)}
+            </pre>
           </Expandable>
         {/each}
       </Expandable>
     </div>
   {/if}
-  {#each Object.entries(metrics.measurements) as [k, v], i (k)}
+  {#each getSortedMeasurements(metrics.measurements, sortOrder) as [k, v], i (k)}
     <div style:margin-left={`${level * 0.5}rem`}>
-      <svelte:self metrics={v} name="{i}. {k}" level={level + 1} />
+      <svelte:self metrics={v} name="{i}. {k}" level={level + 1} {sortOrder} />
     </div>
   {/each}
-  {#each Object.entries(metrics.params) as [k, v], i}
+  {#each Object.entries(metrics.params) as [k, v]}
     <div style:margin-left={`${level * 0.5}rem`}>
-      {#each Object.entries(v).toSorted((a, b) => b[1].value / (b[1].operations + 1) - a[1].value / (a[1].operations + 1)) as [kk, vv]}
+      {#each getSorted(v, sortOrder) as [kk, vv]}
         {@const childExpandable =
           vv.topResult !== undefined &&
           vv.topResult.length > 0 &&
@@ -102,7 +144,7 @@
                 <FixedColumn key="time">
                   {showAvg(kk, vv.value, vv.operations)}
                 </FixedColumn>
-                <FixedColumn key="time-full">{vv.value}</FixedColumn>
+                <FixedColumn key="time-full">{toTime(vv.value)}</FixedColumn>
               </div>
             </FixedColumn>
           </svelte:fragment>
@@ -112,12 +154,12 @@
                 <Expandable>
                   <svelte:fragment slot="title">
                     <div class="flex-row-center flex-between flex-grow">
-                      Time:{r.value}
+                      Time:{toTime(r.value)}
                     </div>
                   </svelte:fragment>
-                  <pre>
-                  {JSON.stringify(r, null, 2)}
-                </pre>
+                  <pre class="select-text">
+                    {JSON.stringify(r, null, 2)}
+                  </pre>
                 </Expandable>
               {/each}
             </div>

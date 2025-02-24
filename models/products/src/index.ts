@@ -22,8 +22,8 @@ import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
 import { getRoleAttributeProps } from '@hcengineering/setting'
-import type { Type, CollectionSize, Markup, Arr, RolesAssignment, Permission, Role } from '@hcengineering/core'
-import { IndexKind, Ref, Account } from '@hcengineering/core'
+import type { Type, Ref, CollectionSize, Markup, Arr, RolesAssignment, Permission, Role } from '@hcengineering/core'
+import { IndexKind, PersonId } from '@hcengineering/core'
 import {
   type Builder,
   Model,
@@ -39,13 +39,14 @@ import {
   ArrOf,
   TypeAny,
   ReadOnly,
+  TypePersonId,
   Mixin
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TType } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import tracker from '@hcengineering/model-tracker'
-import { type Action, type ViewAction } from '@hcengineering/view'
+import { type Action } from '@hcengineering/view'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel, type Asset } from '@hcengineering/platform'
@@ -60,6 +61,7 @@ const productPermissions: Ref<Permission>[] = [
   documents.permission.ReviewDocument,
   documents.permission.ApproveDocument,
   documents.permission.CoAuthorDocument,
+  documents.permission.ArchiveDocument,
   documents.permission.UpdateDocumentOwner,
   core.permission.UpdateSpace,
   core.permission.ArchiveSpace
@@ -77,8 +79,8 @@ export class TTypeProductVersionState extends TType {}
 @Model(products.class.Product, documents.class.ExternalSpace)
 @UX(products.string.Product, products.icon.Product, 'Product', 'name', undefined, products.string.Products)
 export class TProduct extends TExternalSpace implements Product {
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
-  declare members: Arr<Ref<Account>>
+  @Prop(ArrOf(TypePersonId()), core.string.Members)
+  declare members: Arr<PersonId>
 
   @Prop(TypeMarkup(), products.string.Description)
   @Index(IndexKind.FullText)
@@ -144,7 +146,7 @@ export class TProductVersion extends TProject implements ProductVersion {
 @Mixin(products.mixin.ProductTypeData, products.class.Product)
 @UX(getEmbeddedLabel('Default Products'), products.icon.ProductVersion)
 export class TProductTypeData extends TProduct implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 function defineProduct (builder: Builder): void {
@@ -158,7 +160,7 @@ function defineProduct (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: products.class.Product,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(products.class.Product, core.class.Class, view.mixin.ObjectEditor, {
@@ -238,30 +240,6 @@ function defineProduct (builder: Builder): void {
   builder.mixin(products.class.Product, core.class.Class, view.mixin.IgnoreActions, {
     actions: [tracker.action.NewRelatedIssue]
   })
-
-  createAction(builder, {
-    label: products.string.Unarchive,
-    icon: view.icon.Archive,
-    action: view.actionImpl.UpdateDocument as ViewAction,
-    actionProps: {
-      key: 'archived',
-      ask: true,
-      value: false,
-      label: products.string.Unarchive,
-      message: products.string.UnarchiveConfirm
-    },
-    input: 'any',
-    category: view.category.General,
-    target: products.class.Product,
-    visibilityTester: view.function.CanArchiveSpace,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    }
-  })
 }
 
 function defineSpaceType (builder: Builder): void {
@@ -322,7 +300,7 @@ function defineProductVersion (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: products.class.ProductVersion,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   builder.mixin(products.class.ProductVersion, core.class.Class, view.mixin.ObjectEditor, {
@@ -455,6 +433,7 @@ function defineApplication (builder: Builder): void {
             component: workbench.component.SpecialView,
             componentProps: {
               _class: products.class.Product,
+              icon: products.icon.Product,
               label: products.string.Products
             },
             position: 'top'
@@ -466,6 +445,7 @@ function defineApplication (builder: Builder): void {
             component: workbench.component.SpecialView,
             componentProps: {
               _class: products.class.ProductVersion,
+              icon: products.icon.ProductVersion,
               label: products.string.ProductVersions
             },
             position: 'top'

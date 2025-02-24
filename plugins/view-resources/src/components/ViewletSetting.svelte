@@ -55,6 +55,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: { $in: Array.from(viewlets.map((it) => it._id)) }
       },
       (res) => {
@@ -147,13 +148,14 @@
     return result
   }
 
-  function getValue (name: string, type: Type<any>): string {
+  function getValue (name: string, type: Type<any>, attrClass: Ref<Class<Doc>>): string {
+    const presenter = hierarchy.classHierarchyMixin(attrClass, view.mixin.AttributePresenter)?.presenter
+    if (presenter !== undefined) {
+      return name
+    }
     if (hierarchy.isDerived(type._class, core.class.RefTo)) {
       return '$lookup.' + name
     }
-    // if (hierarchy.isDerived(type._class, core.class.ArrOf)) {
-    //   return getValue(name, (type as ArrOf<any>).of)
-    // }
     return name
   }
 
@@ -161,14 +163,14 @@
     if (attribute.hidden === true || attribute.label === undefined) return
     if (viewlet.configOptions?.hiddenKeys?.includes(attribute.name)) return
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
-    const value = getValue(attribute.name, attribute.type)
+    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
+    const value = getValue(attribute.name, attribute.type, attrClass)
     for (const res of result) {
       const key = typeof res.value === 'string' ? res.value : res.value?.key
       if (key === undefined) return
       if (key === attribute.name) return
       if (key === value) return
     }
-    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
     const mixin =
       category === 'object'
         ? view.mixin.ObjectPresenter

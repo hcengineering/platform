@@ -13,48 +13,48 @@
 // limitations under the License.
 //
 
-import core, { Account, AccountRole, systemAccountEmail } from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { SessionContext, type ServerStorage } from '@hcengineering/server-core'
+import core, {
+  Account,
+  AccountRole,
+  systemAccountUuid,
+  TxProcessor,
+  type Doc,
+  type Hierarchy,
+  type MeasureContext,
+  type SessionData,
+  type Tx,
+  type TxCUD
+} from '@hcengineering/core'
 
-export function mergeTargets (current: string[] | undefined, prev: string[] | undefined): string[] | undefined {
-  if (current === undefined) return prev
-  if (prev === undefined) return current
-  const res: string[] = []
-  for (const value of current) {
-    if (prev.includes(value)) {
-      res.push(value)
-    }
-  }
-  return res
+export function isOwner (account: Account, ctx: MeasureContext<SessionData>): boolean {
+  return account.role === AccountRole.Owner || isSystem(account, ctx)
 }
 
-export async function getUser (storage: ServerStorage, ctx: SessionContext): Promise<Account> {
-  if (ctx.userEmail === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-  const account = (await storage.modelDb.findAll(core.class.Account, { email: ctx.userEmail }))[0]
-  if (account === undefined) {
-    if (ctx.userEmail === systemAccountEmail || ctx.admin === true) {
-      return {
-        _id: core.account.System,
-        _class: core.class.Account,
-        role: AccountRole.Owner,
-        email: systemAccountEmail,
-        space: core.space.Model,
-        modifiedBy: core.account.System,
-        modifiedOn: 0
+export function isSystem (account: Account, ctx: MeasureContext<SessionData>): boolean {
+  return account.uuid === systemAccountUuid
+}
+
+export function filterBroadcastOnly (tx: Tx[], hierarchy: Hierarchy): Tx[] {
+  const ftx = tx.filter((it) => {
+    if (TxProcessor.isExtendsCUD(it._class)) {
+      const cud = it as TxCUD<Doc>
+      const bonly = hierarchy.getClassifierProp(cud.objectClass, 'broadcastOnly')
+      if (bonly === true) {
+        return false
+      }
+      try {
+        const objClass = hierarchy.getClass(cud.objectClass)
+        const mix = hierarchy.hasMixin(objClass, core.mixin.TransientConfiguration)
+        if (mix && hierarchy.as(objClass, core.mixin.TransientConfiguration).broadcastOnly) {
+          hierarchy.setClassifierProp(cud.objectClass, 'broadcastOnly', true)
+          // We do not need to store a broadcast only transactions into model.
+          return false
+        }
+      } catch {
+        return true
       }
     }
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-  return account
-}
-
-export function isOwner (account: Account, ctx: SessionContext): boolean {
-  return account.role === AccountRole.Owner || account._id === core.account.System || ctx.admin === true
-}
-
-export function isSystem (account: Account): boolean {
-  return account._id === core.account.System
+    return true
+  })
+  return ftx
 }

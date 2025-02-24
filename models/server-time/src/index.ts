@@ -21,7 +21,7 @@ import { type Resource } from '@hcengineering/platform'
 import serverCore, { type TriggerControl } from '@hcengineering/server-core'
 import tracker from '@hcengineering/tracker'
 import serverTime, { type ToDoFactory, type OnToDo } from '@hcengineering/server-time'
-import { type ToDo, type WorkSlot } from '@hcengineering/time'
+import time, { type ToDo, type WorkSlot } from '@hcengineering/time'
 
 @Mixin(serverTime.mixin.ToDoFactory, core.class.Class)
 export class TToDoFactory extends TClass implements ToDoFactory {
@@ -37,38 +37,48 @@ export function createModel (builder: Builder): void {
   builder.createModel(TToDoFactory, TOnToDo)
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTime.trigger.OnTask
+    trigger: serverTime.trigger.OnTask,
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnToDoUpdate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxUpdateDoc
+      _class: core.class.TxUpdateDoc,
+      objectClass: time.class.ToDo
     }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnToDoRemove,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxRemoveDoc
+      _class: core.class.TxRemoveDoc,
+      objectClass: time.class.ToDo
     }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnToDoCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxCreateDoc
-    }
+      _class: core.class.TxCreateDoc,
+      objectClass: time.class.ToDo
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTime.trigger.OnWorkSlotCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxCreateDoc,
+      objectClass: time.class.WorkSlot
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTime.trigger.OnWorkSlotUpdate,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: time.class.WorkSlot
     }
   })
 

@@ -14,6 +14,25 @@
 // limitations under the License.
 //
 
-export * from './rawAdapter'
+import type { WorkspaceDestroyAdapter } from '@hcengineering/server-core'
+import { getMongoClient, getWorkspaceMongoDB } from './utils'
+
 export * from './storage'
 export * from './utils'
+
+export function createMongoDestroyAdapter (url: string): WorkspaceDestroyAdapter {
+  return {
+    deleteWorkspace: async (ctx, contextVars, workspace, dataId): Promise<void> => {
+      const client = getMongoClient(url)
+      try {
+        await ctx.with('delete-workspace', {}, async () => {
+          const dbClient = await client.getClient()
+          const db = getWorkspaceMongoDB(dbClient, dataId ?? workspace)
+          await db.dropDatabase()
+        })
+      } finally {
+        client.close()
+      }
+    }
+  }
+}

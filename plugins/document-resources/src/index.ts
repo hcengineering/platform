@@ -32,6 +32,7 @@ import { openDoc } from '@hcengineering/view-resources'
 import CreateDocument from './components/CreateDocument.svelte'
 import DocumentIcon from './components/DocumentIcon.svelte'
 import DocumentItem from './components/DocumentItem.svelte'
+import DocumentInlineEditor from './components/DocumentInlineEditor.svelte'
 import DocumentPresenter from './components/DocumentPresenter.svelte'
 import DocumentSearchIcon from './components/DocumentSearchIcon.svelte'
 import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
@@ -57,7 +58,7 @@ import {
 
 const toObjectSearchResult = (e: WithLookup<Document>): ObjectSearchResult => ({
   doc: e,
-  title: e.name,
+  title: e.title,
   icon: document.icon.Document,
   component: DocumentItem
 })
@@ -68,7 +69,7 @@ async function queryDocument (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  const q: DocumentQuery<Document> = { name: { $like: `%${search}%` } }
+  const q: DocumentQuery<Document> = { title: { $like: `%${search}%` } }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
     if (filter.in !== undefined) {
@@ -136,7 +137,7 @@ export async function lockContent (doc: Document | Document[]): Promise<void> {
 
   const arr = Array.isArray(doc) ? doc : [doc]
   for (const doc of arr) {
-    await client.diffUpdate(doc, { lockedBy: me._id })
+    await client.diffUpdate(doc, { lockedBy: me.primarySocialId })
   }
 }
 
@@ -163,6 +164,7 @@ export default async (): Promise<Resources> => ({
   component: {
     CreateDocument,
     CreateTeamspace,
+    DocumentInlineEditor,
     DocumentPresenter,
     Documents,
     EditDoc,

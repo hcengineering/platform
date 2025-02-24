@@ -14,11 +14,11 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly inputComment = (): Locator => this.page.locator('div.text-input div.tiptap')
   readonly buttonSendComment = (): Locator => this.page.locator('g#Send')
   readonly textComment = (): Locator => this.page.locator('div.showMore-content p')
-  readonly inputAddAttachment = (): Locator => this.page.locator('div.antiSection #file')
+  readonly inputAddAttachment = (): Locator => this.page.locator('div.antiSection #file').first()
   readonly textAttachmentName = (): Locator => this.page.locator('div.attachment-container > a')
   readonly buttonCreateFirstReview = (): Locator => this.page.locator('span:has-text("Create review")')
   readonly buttonMoreActions = (): Locator =>
-    this.page.locator('.popupPanel-title > .flex-row-center > button >> nth=0')
+    this.page.locator('.popupPanel > .hulyHeader-container > .hulyHeader-buttonsGroup.actions > button').first()
 
   readonly buttonDelete = (): Locator => this.page.locator('button[class*="menuItem"] span', { hasText: 'Delete' })
   readonly buttonAddSocialLinks = (): Locator => this.page.locator('button[id="presentation:string:AddSocialLinks"]')

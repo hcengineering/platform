@@ -17,16 +17,10 @@
   import { Photo } from '@hcengineering/attachment'
   import { Class, Doc, Ref, Space, type WithLookup } from '@hcengineering/core'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import {
-    FilePreviewPopup,
-    createQuery,
-    getBlobHref,
-    getClient,
-    uploadFile,
-    getBlobRef
-  } from '@hcengineering/presentation'
-  import { Button, IconAdd, Label, Spinner, showPopup } from '@hcengineering/ui'
+  import { createQuery, getBlobRef, getClient, uploadFile } from '@hcengineering/presentation'
+  import { Button, IconAdd, Label, Spinner } from '@hcengineering/ui'
   import attachment from '../plugin'
+  import { showAttachmentPreviewPopup } from '../utils'
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>
@@ -97,11 +91,7 @@
     const el: HTMLElement = ev.currentTarget as HTMLElement
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     if (item !== undefined) {
-      showPopup(
-        FilePreviewPopup,
-        { file: item.$lookup?.file ?? item.file, name: item.name },
-        item.type.startsWith('image/') ? 'centered' : 'float'
-      )
+      showAttachmentPreviewPopup(item)
     } else {
       inputFile.click()
     }
@@ -157,7 +147,7 @@
           click(ev, image)
         }}
       >
-        {#await getBlobRef(image.$lookup?.file, image.file, image.name) then blobRef}
+        {#await getBlobRef(image.file, image.name) then blobRef}
           <img src={blobRef.src} srcset={blobRef.srcset} alt={image.name} />
         {/await}
       </div>

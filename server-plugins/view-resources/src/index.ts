@@ -13,29 +13,37 @@
 // limitations under the License.
 //
 
-import core, { AnyAttribute, Hierarchy, Tx, TxCUD, TxProcessor, TxRemoveDoc } from '@hcengineering/core'
+import core, { AnyAttribute, Hierarchy, Tx, TxRemoveDoc } from '@hcengineering/core'
 import type { TriggerControl } from '@hcengineering/server-core'
 import view from '@hcengineering/view'
 
 /**
  * @public
  */
-export async function OnCustomAttributeRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
-  const ptx = tx as TxRemoveDoc<AnyAttribute>
-  if (!checkTx(ptx, hierarchy)) return []
-  const txes = await control.findAll<TxCUD<AnyAttribute>>(core.class.TxCUD, { objectId: ptx.objectId })
-  const attribute = TxProcessor.buildDoc2Doc<AnyAttribute>(txes)
-  if (attribute === undefined) return []
-  const preferences = await control.findAll(view.class.ViewletPreference, { config: attribute.name })
-  const res: Tx[] = []
-  for (const preference of preferences) {
-    const tx = control.txFactory.createTxUpdateDoc(preference._class, preference.space, preference._id, {
-      $pull: { config: attribute.name }
+export async function OnCustomAttributeRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const hierarchy = control.hierarchy
+    const ptx = tx as TxRemoveDoc<AnyAttribute>
+    if (!checkTx(ptx, hierarchy)) {
+      continue
+    }
+    const attribute = control.removedMap.get(ptx.objectId) as AnyAttribute
+    if (attribute === undefined) {
+      continue
+    }
+    const preferences = await control.findAll(control.ctx, view.class.ViewletPreference, {
+      config: attribute.name,
+      space: core.space.Workspace
     })
-    res.push(tx)
+    for (const preference of preferences) {
+      const tx = control.txFactory.createTxUpdateDoc(preference._class, preference.space, preference._id, {
+        $pull: { config: attribute.name }
+      })
+      result.push(tx)
+    }
   }
-  return res
+  return result
 }
 
 function checkTx (ptx: TxRemoveDoc<AnyAttribute>, hierarchy: Hierarchy): boolean {

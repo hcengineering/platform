@@ -15,9 +15,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Reaction } from '@hcengineering/activity'
-  import { Account, Doc, Ref } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, PersonId } from '@hcengineering/core'
   import { EmojiPopup, IconAdd, showPopup, tooltip } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
+  import { includesAny } from '@hcengineering/contact'
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import { updateDocReactions } from '../../utils'
@@ -27,19 +27,20 @@
   export let readonly: boolean = false
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
+  const me = getCurrentAccount()
 
-  let reactionsAccounts = new Map<string, Ref<Account>[]>()
+  let reactionsAccounts = new Map<string, PersonId[]>()
+
   $: {
     reactionsAccounts.clear()
     reactions.forEach((r) => {
-      let accounts = reactionsAccounts.get(r.emoji)
-      accounts = accounts ? [...accounts, r.createBy] : [r.createBy]
-      reactionsAccounts.set(r.emoji, accounts)
+      const accounts = reactionsAccounts.get(r.emoji) ?? []
+      reactionsAccounts.set(r.emoji, [...accounts, r.createBy])
     })
     reactionsAccounts = reactionsAccounts
   }
-  function getClickHandler (emoji: string) {
+
+  function getClickHandler (emoji: string): ((e: CustomEvent) => void) | undefined {
     if (readonly) return
     return (e: CustomEvent) => {
       e.stopPropagation()
@@ -48,12 +49,12 @@
     }
   }
 
-  function openEmojiPalette (ev: Event) {
+  function openEmojiPalette (ev: Event): void {
     if (readonly) return
     ev.preventDefault()
     ev.stopPropagation()
-    showPopup(EmojiPopup, {}, ev.target as HTMLElement, (emoji: string) => {
-      updateDocReactions(client, reactions, object, emoji)
+    showPopup(EmojiPopup, {}, ev.target as HTMLElement, async (emoji: string) => {
+      await updateDocReactions(reactions, object, emoji)
     })
   }
 </script>
@@ -64,12 +65,13 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="item border-radius-1"
+      class:highlight={includesAny(accounts, me.socialIds)}
       class:cursor-pointer={!readonly}
       use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
       on:click={getClickHandler(emoji)}
     >
       <div class="flex-row-center">
-        <div>{emoji}</div>
+        {emoji}
         <div class="caption-color counter">{accounts.length}</div>
       </div>
     </div>
@@ -108,8 +110,18 @@
     border: none;
     cursor: pointer;
 
+    &.highlight {
+      background: var(--global-ui-highlight-BackgroundColor);
+      border: 1px solid var(--global-accent-BackgroundColor);
+    }
+
     &:hover {
       background: var(--global-ui-highlight-BackgroundColor);
+      border: 1px solid var(--global-popover-ShadowColor);
+
+      &.highlight {
+        border: 1px solid var(--global-accent-BackgroundColor);
+      }
     }
 
     &.withoutBackground {

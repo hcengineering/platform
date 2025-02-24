@@ -58,14 +58,10 @@ export default mergeIds(taskId, task, {
     AllStates: '' as IntlString,
     NoDoneState: '' as IntlString,
     ManageStatusesWithin: '' as IntlString,
-    ArchiveConfirm: '' as IntlString,
-    UnarchiveConfirm: '' as IntlString,
     StatusDeleteConfirm: '' as IntlString,
     StatusDelete: '' as IntlString,
     CantStatusDelete: '' as IntlString,
     CantStatusDeleteError: '' as IntlString,
-    Archive: '' as IntlString,
-    Unarchive: '' as IntlString,
 
     Tasks: '' as IntlString,
     Task: '' as IntlString,
@@ -108,7 +104,6 @@ export default mergeIds(taskId, task, {
     ProjectTypeGeneralSectionEditor: '' as AnyComponent,
     ProjectTypeTasksTypeSectionEditor: '' as AnyComponent,
     ProjectTypeAutomationsSectionEditor: '' as AnyComponent,
-    ProjectTypeCollectionsSectionEditor: '' as AnyComponent,
     TaskTypeEditor: '' as AnyComponent
   },
   function: {

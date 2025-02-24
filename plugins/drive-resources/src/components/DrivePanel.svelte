@@ -16,16 +16,13 @@
   import { type Ref } from '@hcengineering/core'
   import drive, { type Drive } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
-  import { Panel, Scroller, Button, IconMoreH } from '@hcengineering/ui'
-  import { DocAttributeBar, showMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
 
-  import DrivePresenter from './DrivePresenter.svelte'
   import FolderBrowser from './FolderBrowser.svelte'
 
   export let _id: Ref<Drive>
   export let readonly: boolean = false
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
 
   export function canClose (): boolean {
     return false
@@ -40,36 +37,15 @@
 </script>
 
 {#if object}
-  <Panel {embedded} allowClose={false} {kind} selectedAside={false}>
-    <svelte:fragment slot="title">
-      <div class="title">
-        <DrivePresenter value={object} shouldShowAvatar={false} disabled noUnderline />
-      </div>
-    </svelte:fragment>
-    <svelte:fragment slot="utils">
-      <Button
-        icon={IconMoreH}
-        iconProps={{ size: 'medium' }}
-        kind={'icon'}
-        on:click={(ev) => {
-          showMenu(ev, { object })
-        }}
-      />
-      <div class="buttons-divider max-h-7 h-7 mx-2 no-print" />
-    </svelte:fragment>
-    <svelte:fragment slot="aside">
-      <Scroller>
-        <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
-        <div class="space-divider bottom" />
-      </Scroller>
-    </svelte:fragment>
-
-    <FolderBrowser
-      space={object._id}
-      parent={drive.ids.Root}
-      on:contextmenu={(evt) => {
-        showMenu(evt, { object })
-      }}
-    />
-  </Panel>
+  <FolderBrowser
+    space={object._id}
+    parent={drive.ids.Root}
+    {object}
+    {embedded}
+    {readonly}
+    type={'drive'}
+    on:contextmenu={(evt) => {
+      showMenu(evt, { object })
+    }}
+  />
 {/if}

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import core, {
   AttachedDoc,
   Class,
@@ -23,16 +23,17 @@ import core, {
   FindResult,
   LookupData,
   MeasureContext,
+  type PersonUuid,
   Ref,
   Tx,
   TxCUD,
-  systemAccountEmail
+  TxProcessor,
+  systemAccountUuid,
+  type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
+import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
-import { BaseMiddleware } from './base'
-import { getUser, mergeTargets } from './utils'
 
 /**
  * @public
@@ -40,105 +41,118 @@ import { getUser, mergeTargets } from './utils'
 export class PrivateMiddleware extends BaseMiddleware implements Middleware {
   private readonly targetDomains = [DOMAIN_PREFERENCE]
 
-  private constructor (storage: ServerStorage, next?: Middleware) {
-    super(storage, next)
+  private constructor (context: PipelineContext, next?: Middleware) {
+    super(context, next)
   }
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<PrivateMiddleware> {
-    return new PrivateMiddleware(storage, next)
+  static async create (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined
+  ): Promise<PrivateMiddleware> {
+    return new PrivateMiddleware(context, next)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    let target: string[] | undefined
-    if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+  isTargetDomain (tx: Tx): boolean {
+    if (TxProcessor.isExtendsCUD(tx._class)) {
       const txCUD = tx as TxCUD<Doc>
-      const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
-      if (this.targetDomains.includes(domain)) {
-        const account = (await getUser(this.storage, ctx))._id
-        if (account !== tx.modifiedBy && account !== core.account.System) {
+      const domain = this.context.hierarchy.getDomain(txCUD.objectClass)
+      return this.targetDomains.includes(domain)
+    }
+    return false
+  }
+
+  tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
+    for (const tx of txes) {
+      let target: PersonUuid[] | undefined
+      if (this.isTargetDomain(tx)) {
+        const account = ctx.contextData.account
+        if (!account.socialIds.includes(tx.modifiedBy) && account.uuid !== systemAccountUuid) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-        const modifiedByAccount = await this.storage.modelDb.findAll(core.class.Account, { _id: tx.modifiedBy })
-        target = [ctx.userEmail, systemAccountEmail]
-        if (modifiedByAccount.length > 0 && !target.includes(modifiedByAccount[0].email)) {
-          target.push(modifiedByAccount[0].email)
+        const modifiedByAccount = ctx.contextData.socialStringsToUsers.get(tx.modifiedBy)
+        target = [account.uuid, systemAccountUuid]
+        if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount)) {
+          target.push(modifiedByAccount)
+        }
+        ctx.contextData.broadcast.targets['checkDomain' + account.uuid] = (tx) => {
+          if (this.isTargetDomain(tx)) {
+            return target
+          }
         }
       }
     }
-    const res = await this.provideTx(ctx, tx)
-    // Add target to all broadcasts
-    ctx.derived.forEach((it) => {
-      it.target = mergeTargets(target, it.target)
-    })
-    return res
+    return this.provideTx(ctx, txes)
   }
 
   override async findAll<T extends Doc>(
-    ctx: SessionContext,
+    ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     let newQuery = query
-    const hierarchy = this.storage.hierarchy
-    const domain = hierarchy.getDomain(_class)
+    const domain = this.context.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
-      const account = await getUser(this.storage, ctx)
-      if (account._id !== core.account.System) {
+      const account = ctx.contextData.account
+      const socialStrings = account.socialIds
+      if (account.uuid !== systemAccountUuid) {
         newQuery = {
           ...query,
-          createdBy: account._id
+          createdBy: { $in: socialStrings }
         }
       }
     }
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
     if (domain === DOMAIN_TX) {
-      const account = await getUser(this.storage, ctx)
-      if (account._id !== core.account.System) {
+      const account = ctx.contextData.account
+      const socialStrings = account.socialIds
+      if (account.uuid !== systemAccountUuid) {
         const targetClasses = new Set(
-          hierarchy.getDescendants(core.class.Doc).filter((p) => {
-            const domain = hierarchy.findDomain(p)
+          this.context.hierarchy.getDescendants(core.class.Doc).filter((p) => {
+            const domain = this.context.hierarchy.findDomain(p)
             return domain != null && this.targetDomains.includes(domain)
           })
         )
         ;(findResult as FindResult<Doc> as FindResult<Tx>).filter(
           (p) =>
-            !hierarchy.isDerived(p._class, core.class.TxCUD) ||
+            !TxProcessor.isExtendsCUD(p._class) ||
             !targetClasses.has((p as TxCUD<Doc>).objectClass) ||
-            p.createdBy === account._id
+            (p.createdBy !== undefined && socialStrings.includes(p.createdBy))
         )
       }
     }
     if (options?.lookup !== undefined) {
       for (const object of findResult) {
         if (object.$lookup !== undefined) {
-          await this.filterLookup(ctx, object.$lookup)
+          this.filterLookup(ctx, object.$lookup)
         }
       }
     }
     return findResult
   }
 
-  async isAvailable (ctx: SessionContext, doc: Doc): Promise<boolean> {
-    const domain = this.storage.hierarchy.getDomain(doc._class)
+  isAvailable (ctx: MeasureContext<SessionData>, doc: Doc): boolean {
+    const domain = this.context.hierarchy.getDomain(doc._class)
     if (!this.targetDomains.includes(domain)) return true
-    const account = (await getUser(this.storage, ctx))._id
-    return doc.createdBy === account || account === core.account.System
+    const account = ctx.contextData.account
+    const socialStrings = account.socialIds
+    return (doc.createdBy !== undefined && socialStrings.includes(doc.createdBy)) || account.uuid === systemAccountUuid
   }
 
-  async filterLookup<T extends Doc>(ctx: SessionContext, lookup: LookupData<T>): Promise<void> {
+  filterLookup<T extends Doc>(ctx: MeasureContext, lookup: LookupData<T>): void {
     for (const key in lookup) {
       const val = lookup[key]
       if (Array.isArray(val)) {
         const arr: AttachedDoc[] = []
         for (const value of val) {
-          if (await this.isAvailable(ctx, value)) {
+          if (this.isAvailable(ctx, value)) {
             arr.push(value)
           }
         }
         lookup[key] = arr as any
       } else if (val !== undefined) {
-        if (!(await this.isAvailable(ctx, val))) {
+        if (!this.isAvailable(ctx, val)) {
           lookup[key] = undefined
         }
       }

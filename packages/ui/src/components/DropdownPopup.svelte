@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
   import { createEventDispatcher, onMount } from 'svelte'
   import { deviceOptionsStore, resizeObserver } from '..'
   import plugin from '../plugin'
   import type { AnySvelteComponent, ListItem } from '../types'
   import Icon from './Icon.svelte'
   import ListView from './ListView.svelte'
-  import { themeStore } from '@hcengineering/theme'
 
   export let icon: Asset | AnySvelteComponent
   export let placeholder: IntlString = plugin.string.SearchDots
@@ -29,10 +29,10 @@
   export let withSearch: boolean = true
 
   let search: string = ''
-  let phTraslate: string = ''
+  let phTranslate: string = ''
   $: if (placeholder) {
-    translate(placeholder, {}, $themeStore.language).then((res) => {
-      phTraslate = res
+    translateCB(placeholder, {}, $themeStore.language, (res) => {
+      phTranslate = res
     })
   }
   const dispatch = createEventDispatcher()
@@ -82,7 +82,7 @@
         bind:this={searchInput}
         type="text"
         bind:value={search}
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         on:input={(ev) => {}}
         on:change
       />

@@ -21,6 +21,7 @@ import { Context } from '../context'
 
 export interface RpcRequest {
   method: string
+  documentId: string
   payload: object
 }
 
@@ -33,12 +34,13 @@ export type RpcResponse = object | RpcErrorResponse
 export type RpcMethod = (
   ctx: MeasureContext,
   context: Context,
+  documentId: string,
   payload: any,
   params: RpcMethodParams
 ) => Promise<RpcResponse>
 
 export interface RpcMethodParams {
   hocuspocus: Hocuspocus
-  minio: StorageAdapter
+  storageAdapter: StorageAdapter
   transformer: Transformer
 }

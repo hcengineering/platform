@@ -21,9 +21,6 @@
     "WorkItem": "Work Item",
     "Inbox": "Inbox",
     "All": "All",
-    "Days": "{days}d",
-    "Hours": "{hours}h",
-    "Minutes": "{minutes}m",
     "AddToDo": "Add Action Item",
     "CreateToDo": "Add Action Item, press Enter to save",
     "ToDos": "Action Items",
@@ -57,6 +54,11 @@
     "NewToDoDetails": "New Action Item: {details}",
     "MarkedAsDone": "Completed",
     "WorkSchedule": "Work schedule",
-    "SummaryDuration": "Summary"
+    "SummaryDuration": "Summary",
+
+    "UnassignToDo": "Unassign Action Item",
+    "UnassignToDoConfirm": "Do you want to unassign this Action Item? The Action Item will be removed from the assignee's planner.",
+    "ReassignToDo": "Change Action Item assignee",
+    "ReassignToDoConfirm": "Do you want to change the Action Item assignee? The Action Item will be removed from the current assignee's planner."
   }
 }

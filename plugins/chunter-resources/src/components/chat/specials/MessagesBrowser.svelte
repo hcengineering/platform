@@ -76,7 +76,7 @@
   on:change={(e) => (resultQuery = e.detail)}
 />
 {#if messages.length > 0}
-  <Scroller>
+  <Scroller padding={'1rem 0'} bottomPadding={'1rem'}>
     {#each messages as message}
       <ActivityMessagePresenter
         value={message}

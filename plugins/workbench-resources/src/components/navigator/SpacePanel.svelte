@@ -36,9 +36,14 @@
   const clazz = client.getHierarchy().getClass(_class)
 
   const query = createQuery()
-  $: query.query(core.class.Space, { _id }, (result) => {
-    space = result[0]
-  })
+  $: query.query(
+    core.class.Space,
+    { _id },
+    (result) => {
+      space = result[0]
+    },
+    { limit: 1 }
+  )
 
   function onNameChange (ev: Event) {
     const value = (ev.target as HTMLInputElement).value
@@ -46,9 +51,14 @@
       client.updateDoc(_class, space.space, space._id, { name: value })
     } else {
       // Just refresh value
-      query.query(core.class.Space, { _id }, (result) => {
-        space = result[0]
-      })
+      query.query(
+        core.class.Space,
+        { _id },
+        (result) => {
+          space = result[0]
+        },
+        { limit: 1 }
+      )
     }
   }
 </script>

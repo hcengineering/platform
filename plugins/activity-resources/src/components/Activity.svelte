@@ -13,33 +13,45 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { ActivityExtension, ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import activity, {
+    ActivityExtension,
+    ActivityMessage,
+    ActivityReference,
+    DisplayActivityMessage,
+    WithReferences
+  } from '@hcengineering/activity'
+  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Grid, Label, Spinner, location, Lazy } from '@hcengineering/ui'
+  import { Grid, Label, Section, Spinner, location, Lazy } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
-  import { combineActivityMessages } from '../activityMessagesUtils'
-  import { canGroupMessages, getMessageFromLoc } from '../utils'
+  import { combineActivityMessages, sortActivityMessages } from '../activityMessagesUtils'
+  import { canGroupMessages, getMessageFromLoc, getSpace } from '../utils'
   import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
   import { messageInFocus } from '../activity'
 
-  export let object: Doc
+  export let object: WithReferences<Doc>
   export let showCommenInput: boolean = true
   export let transparent: boolean = false
   export let focusIndex: number = -1
   export let boundary: HTMLElement | undefined = undefined
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const activityMessagesQuery = createQuery()
+  const refsQuery = createQuery()
 
   let extensions: ActivityExtension[] = []
 
   let filteredMessages: DisplayActivityMessage[] = []
-  let activityMessages: ActivityMessage[] = []
-  let isLoading = false
+  let allMessages: ActivityMessage[] = []
+  let messages: ActivityMessage[] = []
+  let refs: ActivityReference[] = []
+
+  let isMessagesLoading = false
+  let isRefsLoading = true
 
   let activityBox: HTMLElement | undefined
   let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
@@ -159,21 +171,33 @@
 
   let isNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false')
 
-  $: void client.findAll(activity.class.ActivityExtension, { ofClass: object._class }).then((res) => {
-    extensions = res
-  })
+  $: extensions = getExtensions(object._class)
 
-  async function updateActivityMessages (objectId: Ref<Doc>, order: SortingOrder): Promise<void> {
-    isLoading = true
+  function getExtensions (_class: Ref<Class<Doc>>): ActivityExtension[] {
+    try {
+      let clazz: Ref<Class<Doc>> | undefined = _class
+      while (clazz !== undefined) {
+        const res = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: clazz })
+        if (res.length > 0) {
+          return res
+        }
+        clazz = hierarchy.getClass(clazz).extends
+      }
+    } catch (e) {
+      console.error(e)
+      return []
+    }
+    return []
+  }
 
-    const res = activityMessagesQuery.query(
-      activity.class.ActivityMessage,
-      { attachedTo: objectId },
-      (result: ActivityMessage[]) => {
-        void combineActivityMessages(result, order).then((messages) => {
-          activityMessages = messages
-          isLoading = false
-        })
+  // Load references from other spaces separately because they can have any different spaces
+  $: if ((object.references ?? 0) > 0) {
+    refsQuery.query(
+      activity.class.ActivityReference,
+      { attachedTo: object._id, space: { $ne: getSpace(object) } },
+      (res) => {
+        refs = res
+        isRefsLoading = false
       },
       {
         sort: {
@@ -181,11 +205,43 @@
         }
       }
     )
+  } else {
+    isRefsLoading = false
+    refsQuery.unsubscribe()
+  }
+
+  $: allMessages = sortActivityMessages(messages.concat(refs))
+
+  async function updateActivityMessages (objectId: Ref<Doc>, order: SortingOrder): Promise<void> {
+    isMessagesLoading = true
+
+    const res = activityMessagesQuery.query(
+      activity.class.ActivityMessage,
+      { attachedTo: objectId, space: getSpace(object) },
+      (result: ActivityMessage[]) => {
+        void combineActivityMessages(result, order).then((res) => {
+          messages = res
+          isMessagesLoading = false
+        })
+      },
+      {
+        sort: {
+          createdOn: SortingOrder.Ascending
+        },
+        lookup: {
+          _id: {
+            reactions: activity.class.Reaction
+          }
+        },
+        showArchived: true
+      }
+    )
     if (!res) {
-      isLoading = false
+      isMessagesLoading = false
     }
   }
 
+  $: isLoading = isMessagesLoading || isRefsLoading
   $: areMessagesLoaded = !isLoading && filteredMessages.length > 0
 
   $: if (activityBox && areMessagesLoaded) {
@@ -196,67 +252,81 @@
   $: void updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
 </script>
 
-<div class="antiSection-header high mt-9" class:invisible={transparent}>
-  <span class="antiSection-header__title flex-row-center">
-    <Label label={activity.string.Activity} />
-    {#if isLoading}
-      <div class="ml-1">
-        <Spinner size="small" />
-      </div>
-    {/if}
-  </span>
-  <ActivityFilter
-    messages={activityMessages}
-    {object}
-    on:update={(e) => {
-      filteredMessages = e.detail
-    }}
-    bind:isNewestFirst
-  />
-</div>
-{#if isNewestFirst && showCommenInput}
-  <div class="ref-input newest-first">
-    <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary, focusIndex }} />
-  </div>
-{/if}
-<div
-  class="p-activity select-text"
-  id={activity.string.Activity}
-  class:newest-first={isNewestFirst}
-  bind:this={activityBox}
->
-  {#if filteredMessages.length}
-    <Grid column={1} rowGap={0}>
-      {#each filteredMessages as message, index}
-        {@const canGroup = canGroupMessages(message, filteredMessages[index - 1])}
-        {#if selectedMessageId}
-          <ActivityMessagePresenter
-            value={message}
-            doc={object}
-            hideLink={true}
-            type={canGroup ? 'short' : 'default'}
-            isHighlighted={selectedMessageId === message._id}
+<div class="step-tb-6">
+  <Section label={activity.string.Activity} icon={activity.icon.Activity}>
+    <svelte:fragment slot="header">
+      {#if isLoading}
+        <div class="ml-1">
+          <Spinner size="small" />
+        </div>
+      {/if}
+      <ActivityFilter
+        messages={allMessages}
+        {object}
+        on:update={(e) => {
+          filteredMessages = e.detail
+        }}
+        bind:isNewestFirst
+      />
+    </svelte:fragment>
+
+    <svelte:fragment slot="content">
+      {#if isNewestFirst && showCommenInput}
+        <div class="ref-input newest-first">
+          <ActivityExtensionComponent
+            kind="input"
+            {extensions}
+            props={{ object, boundary, focusIndex, withTypingInfo: true }}
           />
-        {:else}
-          <Lazy>
-            <ActivityMessagePresenter
-              value={message}
-              doc={object}
-              hideLink={true}
-              type={canGroup ? 'short' : 'default'}
-              isHighlighted={selectedMessageId === message._id}
-            />
-          </Lazy>
+        </div>
+      {/if}
+      <div
+        class="p-activity select-text"
+        id={activity.string.Activity}
+        class:newest-first={isNewestFirst}
+        bind:this={activityBox}
+      >
+        {#if filteredMessages.length}
+          <Grid column={1} rowGap={0}>
+            {#each filteredMessages as message, index}
+              {@const canGroup = canGroupMessages(message, filteredMessages[index - 1])}
+              {#if selectedMessageId}
+                <ActivityMessagePresenter
+                  value={message}
+                  doc={object}
+                  hideLink={true}
+                  type={canGroup ? 'short' : 'default'}
+                  isHighlighted={selectedMessageId === message._id}
+                  withShowMore
+                />
+              {:else}
+                <Lazy>
+                  <ActivityMessagePresenter
+                    value={message}
+                    doc={object}
+                    hideLink={true}
+                    type={canGroup ? 'short' : 'default'}
+                    isHighlighted={selectedMessageId === message._id}
+                    withShowMore
+                  />
+                </Lazy>
+              {/if}
+            {/each}
+          </Grid>
         {/if}
-      {/each}
-    </Grid>
-  {/if}
+      </div>
+      {#if showCommenInput && !isNewestFirst}
+        <div class="ref-input oldest-first">
+          <ActivityExtensionComponent
+            kind="input"
+            {extensions}
+            props={{ object, boundary, focusIndex, withTypingInfo: true }}
+          />
+        </div>
+      {/if}
+    </svelte:fragment>
+  </Section>
 </div>
-{#if showCommenInput && !isNewestFirst}
-  <div class="ref-input oldest-first">
-    <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary, focusIndex }} />
-  </div>
-{/if}
 
 <style lang="scss">
   .ref-input {

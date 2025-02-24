@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Header, Breadcrumb } from '@hcengineering/ui'
-  import core, { Account, Ref, Role, RolesAssignment, SpaceType, TypedSpace, WithLookup } from '@hcengineering/core'
+  import core, { PersonId, Ref, Role, RolesAssignment, SpaceType, TypedSpace, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
 
@@ -69,7 +69,7 @@
     }
   }
 
-  async function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): Promise<void> {
+  async function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): Promise<void> {
     await client.updateMixin(space._id, space._class, core.space.Space, spaceType.targetClass, {
       [roleId]: newMembers
     })
@@ -77,7 +77,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Views} label={setting.string.Spaces} size="large" isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
@@ -88,7 +88,7 @@
         </div>
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}
-          label={setting.string.Assignees}
+          label={core.string.Members}
           onChange={(refs) => {
             handleRoleAssignmentChanged(role._id, refs)
           }}

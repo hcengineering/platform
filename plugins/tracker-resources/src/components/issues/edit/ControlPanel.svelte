@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { EmployeeBox, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { EmployeeBox, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
 
@@ -94,11 +93,7 @@
   }
 
   $: updateKeys(issue._class, ignoreKeys)
-
-  let account: PersonAccount | undefined
-
-  $: account = $personAccountByIdStore.get(issue.createdBy as Ref<PersonAccount>)
-  $: employee = account && $personByIdStore.get(account.person)
+  $: creatorPerson = issue.createdBy !== undefined ? $personRefByPersonIdStore.get(issue.createdBy) : undefined
 </script>
 
 <div class="popupPanel-body__aside-grid">
@@ -156,13 +151,13 @@
   <span class="labelOnPanel">
     <Label label={tracker.string.Priority} />
   </span>
-  <PriorityEditor value={issue} size={'medium'} shouldShowLabel isEditable={!readonly} />
+  <PriorityEditor value={issue} size={'medium'} shouldShowLabel isEditable={!readonly} width={'100%'} />
 
   <span class="labelOnPanel">
     <Label label={core.string.CreatedBy} />
   </span>
   <EmployeeBox
-    value={employee?._id}
+    value={creatorPerson}
     label={core.string.CreatedBy}
     kind={'link'}
     size={'medium'}
@@ -209,7 +204,15 @@
   {#if keys.length > 0}
     <div class="divider" />
     {#each keys as key (typeof key === 'string' ? key : key.key)}
-      <AttributeBarEditor {readonly} {key} _class={issue._class} object={issue} showHeader={true} size={'medium'} />
+      <AttributeBarEditor
+        {readonly}
+        {key}
+        identifier={issue.identifier}
+        _class={issue._class}
+        object={issue}
+        showHeader={true}
+        size={'medium'}
+      />
     {/each}
   {/if}
 
@@ -220,6 +223,7 @@
       {#each mixinKeys as key (typeof key === 'string' ? key : key.key)}
         <AttributeBarEditor
           {key}
+          identifier={issue.identifier}
           _class={mixin._id}
           {readonly}
           object={hierarchy.as(issue, mixin._id)}

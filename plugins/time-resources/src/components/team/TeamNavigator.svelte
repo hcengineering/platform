@@ -16,13 +16,11 @@
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import task, { Project } from '@hcengineering/task'
-  import { Label, Separator, Scroller, NavItem } from '@hcengineering/ui'
+  import { Label, Separator, Scroller, NavItem, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { ObjectPresenter, TreeNode } from '@hcengineering/view-resources'
-  import { NavFooter } from '@hcengineering/workbench-resources'
+  import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
   import time from '../../plugin'
 
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
   export let selected: Ref<Project> | undefined = (localStorage.getItem('team_last_mode') as Ref<Project>) ?? undefined
 
   let projects: Project[] = []
@@ -32,7 +30,7 @@
     task.class.Project,
     {
       archived: false,
-      members: getCurrentAccount()._id
+      members: { $in: getCurrentAccount().socialIds }
     },
     (result) => {
       projects = result
@@ -41,11 +39,12 @@
   $: selectedItem = projects.find((pr) => pr._id === selected)
 </script>
 
-<div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+<div
+  class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'} border-left"
+  class:fly={$deviceInfo.navigator.float}
+>
   <div class="antiPanel-wrap__content hulyNavPanel-container">
-    <div class="hulyNavPanel-header">
-      <span class="overflow-label"><Label label={time.string.TeamPlanner} /></span>
-    </div>
+    <NavHeader label={time.string.TeamPlanner} />
 
     <Scroller shrink>
       <TreeNode
@@ -55,6 +54,7 @@
         empty={projects.length === 0}
         highlighted={selected !== undefined}
         visible={selected !== undefined}
+        noDivider
       >
         {#each projects as _project}
           <NavItem
@@ -88,11 +88,12 @@
     </Scroller>
     <NavFooter />
   </div>
-  <Separator
-    name={'time'}
-    float={navFloat ? 'navigator' : true}
-    index={0}
-    disabledWhen={['panel-aside']}
-    color={'var(--theme-navpanel-border)'}
-  />
+  {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+    <Separator
+      name={'time'}
+      float={$deviceInfo.navigator.float ? 'navigator' : true}
+      index={0}
+      color={'var(--theme-divider-color)'}
+    />
+  {/if}
 </div>

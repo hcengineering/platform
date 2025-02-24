@@ -15,11 +15,13 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
+  import { ChatMessagePopup } from '@hcengineering/chunter-resources'
   import { Ref } from '@hcengineering/core'
-  import { IconForward, MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
+  import { IconForward, createQuery, getClient } from '@hcengineering/presentation'
+  import { CollaborativeTextEditor } from '@hcengineering/text-editor-resources'
   import { Issue } from '@hcengineering/tracker'
   import { Label, Scroller, resizeObserver } from '@hcengineering/ui'
-  import { ChatMessagePopup } from '@hcengineering/chunter-resources'
+  import { getCollaborationUser } from '@hcengineering/view-resources'
 
   import tracker from '../../plugin'
   import AssigneeEditor from './AssigneeEditor.svelte'
@@ -33,6 +35,8 @@
 
   const client = getClient()
   const issueQuery = createQuery()
+
+  const user = getCollaborationUser()
 
   $: issueQuery.query(
     object._class,
@@ -57,6 +61,10 @@
   }
 
   $: void getParent(issue?.attachedTo as Ref<Issue>)
+  $: descriptionKey = {
+    key: 'description',
+    attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'description')
+  }
 </script>
 
 {#if issue}
@@ -88,10 +96,12 @@
     <div class="mt-6 mb-2 overflow-label fs-bold content-dark-color">
       <Label label={tracker.string.Description} />:
     </div>
-    {#if issue.description}
+    {#if descriptionKey}
       <div class="description-container" class:masked={cHeight > limit} style:max-height={`${limit}px`}>
         <div class="description-content" use:resizeObserver={(element) => (cHeight = element.clientHeight)}>
-          <MessageViewer message={issue.description} />
+          {#key issue._id}
+            <CollaborativeTextEditor object={issue} attribute={descriptionKey} {user} readonly />
+          {/key}
         </div>
       </div>
     {:else}

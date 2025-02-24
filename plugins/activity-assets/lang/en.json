@@ -43,6 +43,13 @@
     "Thread": "Thread",
     "AddReaction": "Add reaction",
     "SaveForLater": "Save for later",
-    "RemoveFromLater": "Remove from saved"
+    "RemoveFromLater": "Remove from saved",
+    "ReactionNotificationTitle": "Reaction on {title}",
+    "ReactionNotificationBody": "{senderName}: {reaction}",
+    "NewObject": "New {object}",
+    "RemovedObject": "Removed {object}",
+    "ChangedObject": "Changed {object}",
+    "UnsetObject": "Unset {object}",
+    "UpdatedObject": "Updated {object}"
   }
 }

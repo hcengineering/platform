@@ -13,34 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, showPopup, Spinner, tooltip } from '@hcengineering/ui'
+  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, Loading, showPopup, Spinner } from '@hcengineering/ui'
   import notification, {
     ActivityNotificationViewlet,
     DisplayInboxNotification,
     DocNotifyContext,
     InboxNotification
   } from '@hcengineering/notification'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, PersonId, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
-  import { personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
 
-  import MessagesPopup from './MessagePopup.svelte'
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
-  import {
-    archiveContextNotifications,
-    isActivityNotification,
-    isMentionNotification,
-    unarchiveContextNotifications
-  } from '../utils'
+  import { isActivityNotification, isMentionNotification } from '../utils'
 
   export let value: DocNotifyContext
   export let notifications: WithLookup<DisplayInboxNotification>[]
   export let viewlets: ActivityNotificationViewlet[] = []
+  export let isArchiving = false
   export let archived = false
 
   const maxNotifications = 3
@@ -48,6 +43,25 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
+  const query = createQuery()
+
+  let object: Doc | undefined = undefined
+  let isLoading = true
+
+  $: query.query(
+    value.objectClass,
+    { _id: value.objectId, space: value.objectSpace },
+    (res) => {
+      object = res[0]
+      isLoading = false
+    },
+    { limit: 1 }
+  )
+
+  $: if (object !== undefined && object?._id !== value.objectId) {
+    object = undefined
+    isLoading = true
+  }
 
   let isActionMenuOpened = false
   let unreadCount = 0
@@ -57,22 +71,21 @@
   let idTitle: string | undefined
   let title: string | undefined
 
-  $: void getDocIdentifier(client, value.attachedTo, value.attachedToClass).then((res) => {
-    idTitle = res
-  })
+  $: object &&
+    getDocIdentifier(client, object._id, object._class, object).then((res) => {
+      idTitle = res
+    })
 
-  $: void getDocTitle(client, value.attachedTo, value.attachedToClass).then((res) => {
-    title = res
-  })
+  $: object &&
+    getDocTitle(client, object._id, object._class, object).then((res) => {
+      title = res
+    })
 
-  $: presenterMixin = hierarchy.classHierarchyMixin(
-    value.attachedToClass,
-    notification.mixin.NotificationContextPresenter
-  )
+  $: presenterMixin = hierarchy.classHierarchyMixin(value.objectClass, notification.mixin.NotificationContextPresenter)
 
   let groupedNotifications: Array<InboxNotification[]> = []
 
-  $: groupedNotifications = groupNotificationsByUser(notifications, $personAccountByIdStore)
+  $: groupedNotifications = groupNotificationsByUser(notifications, $personRefByPersonIdStore)
 
   function isTextMessage (_class: Ref<Class<Doc>>): boolean {
     return hierarchy.isDerived(_class, chunter.class.ChatMessage)
@@ -88,15 +101,15 @@
 
   function groupNotificationsByUser (
     notifications: WithLookup<InboxNotification>[],
-    personAccountById: IdMap<PersonAccount>
+    personRefByPersonId: Map<PersonId, Ref<Person>>
   ): Array<InboxNotification[]> {
     const result: Array<InboxNotification[]> = []
     let group: InboxNotification[] = []
     let person: Ref<Person> | undefined = undefined
 
     for (const it of notifications) {
-      const account = it.createdBy ?? it.modifiedBy
-      const curPerson = personAccountById.get(account as Ref<PersonAccount>)?.person
+      const pid = it.createdBy ?? it.modifiedBy
+      const curPerson = personRefByPersonId.get(pid)
       const allowGroup = canGroup(it)
 
       if (!allowGroup || curPerson === undefined) {
@@ -157,20 +170,15 @@
     isActionMenuOpened = false
   }
 
-  let archivingPromise: Promise<any> | undefined = undefined
-
   async function checkContext (): Promise<void> {
-    await archivingPromise
-    archivingPromise = archived ? unarchiveContextNotifications(value) : archiveContextNotifications(value)
-    await archivingPromise
-    archivingPromise = undefined
+    dispatch('archive')
   }
 
-  function canShowTooltip (group: InboxNotification[]): boolean {
-    const first = group[0]
-
-    return canGroup(first)
-  }
+  // function canShowTooltip (group: InboxNotification[]): boolean {
+  //   const first = group[0]
+  //
+  //   return canGroup(first)
+  // }
 
   function getKey (group: InboxNotification[]): string {
     return group.map((it) => it._id).join('-')
@@ -182,77 +190,111 @@
 <div
   class="card"
   on:click={() => {
-    dispatch('click', { context: value })
+    dispatch('click', { context: value, object })
   }}
 >
-  <div class="header">
-    <NotifyContextIcon {value} notifyCount={unreadCount} />
-
-    <div class="labels">
-      {#if presenterMixin?.labelPresenter}
-        <Component is={presenterMixin.labelPresenter} props={{ context: value }} />
-      {:else}
-        {#if idTitle}
-          {idTitle}
-        {:else}
-          <Label label={hierarchy.getClass(value.attachedToClass).label} />
-        {/if}
-        <span class="title overflow-label clear-mins" {title}>
-          {#if title}
-            {title}
-          {:else}
-            <Label label={hierarchy.getClass(value.attachedToClass).label} />
-          {/if}
-        </span>
-      {/if}
+  {#if isLoading}
+    <div class="loading">
+      <Loading />
     </div>
+  {:else if object}
+    <div class="header">
+      <NotifyContextIcon {value} notifyCount={unreadCount} {object} />
 
-    <div class="actions clear-mins">
-      <div class="flex-center">
-        {#if archivingPromise !== undefined}
-          <Spinner size="small" />
+      <div class="labels">
+        {#if presenterMixin?.labelPresenter}
+          <Component is={presenterMixin.labelPresenter} props={{ context: value, object }} />
         {:else}
-          <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
+          {#if idTitle}
+            {idTitle}
+          {:else}
+            <Label label={hierarchy.getClass(value.objectClass).label} />
+          {/if}
+          <span class="title overflow-label clear-mins" {title}>
+            {#if title}
+              {title}
+            {:else}
+              <Label label={hierarchy.getClass(value.objectClass).label} />
+            {/if}
+          </span>
         {/if}
       </div>
-      <ButtonIcon
-        icon={IconMoreV}
-        size="small"
-        kind="tertiary"
-        inheritColor
-        pressed={isActionMenuOpened}
-        on:click={showMenu}
-      />
-    </div>
-  </div>
 
-  <div class="content">
-    <div class="notifications">
-      {#each groupedNotifications.slice(0, maxNotifications) as group (getKey(group))}
-        <div
-          class="notification"
-          use:tooltip={canShowTooltip(group)
-            ? {
-                component: MessagesPopup,
-                props: { context: value, notifications: group }
-              }
-            : undefined}
-        >
-          <div class="embeddedMarker" />
-          <InboxNotificationPresenter
-            value={group[0]}
-            {viewlets}
-            space={value.space}
-            on:click={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              dispatch('click', { context: value, notification: group[0] })
-            }}
-          />
+      <div class="actions clear-mins">
+        <div class="flex-center min-w-6">
+          {#if isArchiving}
+            <Spinner size="small" />
+          {:else}
+            <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
+          {/if}
         </div>
-      {/each}
+        <ButtonIcon
+          icon={IconMoreV}
+          size="small"
+          kind="tertiary"
+          inheritColor
+          pressed={isActionMenuOpened}
+          on:click={showMenu}
+        />
+      </div>
     </div>
-  </div>
+    <div class="content">
+      <div class="notifications">
+        {#each groupedNotifications.slice(0, maxNotifications) as group (getKey(group))}
+          <div class="notification">
+            <!--          use:tooltip={canShowTooltip(group)-->
+            <!--            ? {-->
+            <!--                component: MessagesPopup,-->
+            <!--                props: { context: value, notifications: group }-->
+            <!--              }-->
+            <!--            : undefined}-->
+
+            <div class="embeddedMarker" />
+            <InboxNotificationPresenter
+              value={group[0]}
+              {object}
+              {viewlets}
+              space={value.space}
+              on:click={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                dispatch('click', { context: value, notification: group[0], object })
+              }}
+            />
+          </div>
+        {/each}
+      </div>
+    </div>
+  {:else}
+    <div class="header">
+      <NotifyContextIcon {value} notifyCount={unreadCount} {object} />
+
+      <div class="labels">
+        <Label label={hierarchy.getClass(value.objectClass).label} />
+      </div>
+
+      <div class="actions clear-mins">
+        <div class="flex-center">
+          {#if isArchiving}
+            <Spinner size="small" />
+          {:else}
+            <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
+          {/if}
+        </div>
+        <ButtonIcon
+          icon={IconMoreV}
+          size="small"
+          kind="tertiary"
+          inheritColor
+          pressed={isActionMenuOpened}
+          on:click={showMenu}
+        />
+      </div>
+    </div>
+    <div class="content mt-2">
+      <Label label={notification.string.NoAccessToObject} />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -263,6 +305,7 @@
     cursor: pointer;
     padding: var(--spacing-1_5) var(--spacing-1);
     border-bottom: 1px solid var(--global-ui-BorderColor);
+    min-height: 5.625rem;
 
     .header {
       position: relative;
@@ -302,6 +345,8 @@
 
   .notification {
     position: relative;
+    cursor: pointer;
+    user-select: none;
 
     .embeddedMarker {
       position: absolute;
@@ -349,5 +394,11 @@
   .content {
     display: flex;
     width: 100%;
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    flex: 1;
   }
 </style>

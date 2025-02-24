@@ -17,15 +17,16 @@ import { type IntlString, mergeIds } from '@hcengineering/platform'
 import drive, { driveId } from '@hcengineering/drive'
 
 export default mergeIds(driveId, drive, {
-  component: {},
   string: {
     CreateDrive: '' as IntlString,
     CreateFolder: '' as IntlString,
     UploadFile: '' as IntlString,
-    UploadFolder: '' as IntlString,
+    Download: '' as IntlString,
+    Upload: '' as IntlString,
     EditDrive: '' as IntlString,
     Rename: '' as IntlString,
     RoleLabel: '' as IntlString,
-    Root: '' as IntlString
+    Root: '' as IntlString,
+    FileVersions: '' as IntlString
   }
 })

@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test'
 import { generateId, iterateLocator, PlatformSetting, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
-import { DateDivided, NewIssue } from '../model/tracker/types'
+import { NewIssue } from '../model/tracker/types'
+import { DateDivided } from '../model/types'
 import { DEFAULT_STATUSES, DEFAULT_STATUSES_ID, PRIORITIES } from './tracker.utils'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 
@@ -235,8 +236,6 @@ test.describe('Tracker filters tests', () => {
   })
 
   test('Status filter', async () => {
-    await leftSideMenuPage.clickTracker()
-
     await issuesPage.linkSidebarAll().click()
     await issuesPage.clickModelSelectorAll()
 
@@ -281,7 +280,7 @@ test.describe('Tracker filters tests', () => {
     for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      expect(issuesDetailsPage.checkIfButtonCbuttonCreatedByHaveTextCreatedBy(createdBy))
+      await issuesDetailsPage.checkIfButtonCbuttonCreatedByHaveTextCreatedBy(createdBy)
       await issuesDetailsPage.clickCloseIssueButton()
     }
   })
@@ -299,7 +298,7 @@ test.describe('Tracker filters tests', () => {
     for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      expect(issuesDetailsPage.checkIfButtonComponentHasTextDefaultComponent(defaultComponent))
+      await issuesDetailsPage.checkIfButtonComponentHasTextDefaultComponent(defaultComponent)
 
       await issuesDetailsPage.clickCloseIssueButton()
     }
@@ -345,7 +344,7 @@ test.describe('Tracker filters tests', () => {
     for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      expect(issuesDetailsPage.checkIfButtonCreatedByHaveRealName(modifierName))
+      await issuesDetailsPage.checkIfButtonCreatedByHaveRealName(modifierName)
 
       await issuesDetailsPage.clickCloseIssueButton()
     }
@@ -391,7 +390,7 @@ test.describe('Tracker filters tests', () => {
   })
 
   test('Label filter', async () => {
-    const filterLabel = 'Filter Label'
+    const filterLabel = `Filter Label-${generateId(4)}`
     const labelIssue: NewIssue = {
       title: `Issue for the Label filter-${generateId()}`,
       description: 'Issue for the Label filter',
@@ -399,13 +398,12 @@ test.describe('Tracker filters tests', () => {
       createLabel: true
     }
 
-    await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(labelIssue)
 
     await test.step('Check Label filter for exist Label', async () => {
       await issuesPage.selectFilter('Labels', filterLabel)
-      await issuesPage.inputSearch().press('Escape')
+      await issuesPage.closePopup()
       await issuesPage.checkFilter('Labels', 'is', filterLabel)
       for await (const issue of iterateLocator(issuesPage.issuesList())) {
         await expect(issue.locator('div.compression-bar > div.label-box span.label')).toContainText(filterLabel)

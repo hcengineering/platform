@@ -49,6 +49,8 @@
   <Button
     label={reminders.length > 0 ? calendar.string.AddReminder : calendar.string.Reminders}
     {disabled}
+    padding={'0 .5rem'}
+    justify={'left'}
     kind={'ghost'}
     {focusIndex}
     on:click={(e) => {

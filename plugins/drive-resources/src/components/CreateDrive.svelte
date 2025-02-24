@@ -15,9 +15,9 @@
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     Data,
     DocumentUpdate,
     RolesAssignment,
@@ -26,14 +26,16 @@
     SpaceType,
     generateId,
     getCurrentAccount,
-    WithLookup
+    WithLookup,
+    notEmpty
   } from '@hcengineering/core'
-  import { Drive } from '@hcengineering/drive'
+  import { Drive, DriveEvents } from '@hcengineering/drive'
   import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
   import { SpaceTypeSelector } from '@hcengineering/view-resources'
 
   import driveRes from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let drive: Drive | undefined = undefined
 
@@ -45,14 +47,16 @@
   let description: string = drive?.description ?? ''
   let isPrivate: boolean = drive?.private ?? false
 
-  let members: Ref<Account>[] =
-    drive?.members !== undefined ? hierarchy.clone(drive.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] = drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    drive?.members !== undefined ? hierarchy.clone(drive.members) : [getCurrentAccount().primarySocialId]
+  let owners: PersonId[] =
+    drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount().primarySocialId]
   let rolesAssignment: RolesAssignment = {}
 
   let typeId: Ref<SpaceType> | undefined = drive?.type ?? driveRes.spaceType.DefaultDrive
   let spaceType: WithLookup<SpaceType> | undefined
 
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
   $: void loadSpaceType(typeId)
   const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
     spaceType =
@@ -168,7 +172,7 @@
 
     // Create space type's mixin with roles assignments
     await client.createMixin(driveId, driveRes.class.Drive, core.space.Space, spaceType.targetClass, rolesAssignment)
-
+    Analytics.handleEvent(DriveEvents.DriveCreated, { id: driveId })
     close(driveId)
   }
 
@@ -182,14 +186,14 @@
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -203,7 +207,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -299,6 +303,7 @@
         onChange={handleMembersChanged}
         kind={'regular'}
         size={'large'}
+        allowGuests
       />
     </div>
 
@@ -310,8 +315,8 @@
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}
           label={core.string.Members}
-          includeItems={members}
-          readonly={members.length === 0}
+          includeItems={membersPersons}
+          readonly={membersPersons.length === 0}
           onChange={(refs) => {
             handleRoleAssignmentChanged(role._id, refs)
           }}

@@ -19,6 +19,8 @@ import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { FilterMode } from '@hcengineering/view'
 
+export * from './analytics'
+
 /**
  * @public
  */

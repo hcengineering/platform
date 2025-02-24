@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, type MeasureContext, type Ref, type WorkspaceId } from '@hcengineering/core'
-import { type StorageAdapter } from '@hcengineering/server-core'
+import { DOMAIN_TX, type WorkspaceDataId, type MeasureContext, type Ref, type WorkspaceIds } from '@hcengineering/core'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import contact, { DOMAIN_CHANNEL } from '@hcengineering/model-contact'
 import { DOMAIN_TELEGRAM } from '@hcengineering/model-telegram'
-import { getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import telegram, { type SharedTelegramMessage, type SharedTelegramMessages } from '@hcengineering/telegram'
-import { type Document, MongoClient, type UpdateFilter } from 'mongodb'
+import { type Document, type UpdateFilter } from 'mongodb'
 
 const LastMessages = 'last-msgs'
 
@@ -31,15 +31,16 @@ const LastMessages = 'last-msgs'
 export async function clearTelegramHistory (
   ctx: MeasureContext,
   mongoUrl: string,
-  workspaceId: WorkspaceId,
+  wsIds: WorkspaceIds,
   tgDb: string,
   storageAdapter: StorageAdapter
 ): Promise<void> {
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const workspaceDB = getWorkspaceDB(client, workspaceId)
-    const telegramDB = client.db(tgDb)
+    const _client = await client.getClient()
+    const dataId = wsIds.dataId ?? (wsIds.uuid as unknown as WorkspaceDataId)
+    const workspaceDB = getWorkspaceMongoDB(_client, dataId)
+    const telegramDB = _client.db(tgDb)
 
     const sharedMessages = await workspaceDB
       .collection(DOMAIN_TELEGRAM)
@@ -91,14 +92,14 @@ export async function clearTelegramHistory (
       workspaceDB.collection(DOMAIN_ATTACHMENT).deleteMany({
         attachedToClass: telegram.class.Message
       }),
-      storageAdapter.remove(ctx, workspaceId, Array.from(attachments))
+      storageAdapter.remove(ctx, wsIds, Array.from(attachments))
     ])
 
     console.log('clearing telegram service data...')
     await telegramDB.collection(LastMessages).deleteMany({
-      workspace: workspaceId
+      workspace: wsIds.uuid
     })
   } finally {
-    await client.close()
+    client.close()
   }
 }

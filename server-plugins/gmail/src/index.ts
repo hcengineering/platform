@@ -17,7 +17,7 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
-import { TypeMatchFunc } from '@hcengineering/server-notification'
+import { NotificationProviderFunc, TypeMatchFunc } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -32,7 +32,8 @@ export default plugin(serverGmailId, {
     OnMessageCreate: '' as Resource<TriggerFunc>
   },
   function: {
-    IsIncomingMessage: '' as TypeMatchFunc,
-    FindMessages: '' as Resource<ObjectDDParticipantFunc>
+    IsIncomingMessageTypeMatch: '' as TypeMatchFunc,
+    FindMessages: '' as Resource<ObjectDDParticipantFunc>,
+    SendEmailNotifications: '' as Resource<NotificationProviderFunc>
   }
 })

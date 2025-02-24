@@ -16,37 +16,17 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { OK, Severity, Status, translate } from '@hcengineering/platform'
-  import {
-    Button,
-    Label,
-    StylishEdit,
-    deviceOptionsStore as deviceInfo,
-    getCurrentLocation,
-    navigate,
-    themeStore
-  } from '@hcengineering/ui'
+  import { Button, Label, StylishEdit, deviceOptionsStore as deviceInfo, themeStore } from '@hcengineering/ui'
   import StatusControl from './StatusControl.svelte'
 
-  import { NavLink } from '@hcengineering/presentation'
   import { onMount } from 'svelte'
-  import { BottomAction, getHref } from '..'
-  import login from '../plugin'
+  import { BottomAction } from '..'
   import { makeSequential } from '../mutex'
+  import type { Field } from '../types'
+  import login from '../plugin'
+  import BottomActionComponent from './BottomAction.svelte'
   import Providers from './Providers.svelte'
-
-  interface Field {
-    id?: string
-    name: string
-    i18n: IntlString
-    password?: boolean
-    optional?: boolean
-    short?: boolean
-    rules?: {
-      rule: RegExp
-      notMatch: boolean
-      ruleDescr: IntlString
-    }[]
-  }
+  import Tabs from './Tabs.svelte'
 
   interface Action {
     i18n: IntlString
@@ -64,8 +44,7 @@
   export let ignoreInitialValidation: boolean = false
   export let withProviders: boolean = false
   export let subtitle: string | undefined = undefined
-
-  $: $themeStore.language && validate($themeStore.language)
+  export let signUpDisabled = false
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
@@ -93,8 +72,11 @@
       }
       if (f.rules !== undefined) {
         for (const rule of f.rules) {
-          if (rule.rule.test(v) === rule.notMatch) {
-            status = new Status(Severity.INFO, rule.ruleDescr, {})
+          const isValid =
+            typeof rule.rule === 'function' ? rule.rule(v) !== rule.notMatch : rule.rule.test(v) !== rule.notMatch
+
+          if (!isValid) {
+            status = new Status(Severity.INFO, rule.ruleDescr, rule.ruleDescrParams ?? {})
             return false
           }
         }
@@ -103,7 +85,14 @@
     status = OK
     return true
   })
-  validate($themeStore.language)
+
+  export function invalidate (): void {
+    void validate($themeStore.language)
+  }
+
+  $: if ($themeStore.language != null && $themeStore.language !== '') {
+    void validate($themeStore.language)
+  }
 
   let inAction = false
 
@@ -112,7 +101,7 @@
       trim(field.name)
     }
     inAction = true
-    action.func().finally(() => {
+    void action.func().finally(() => {
       inAction = false
     })
   }
@@ -122,15 +111,11 @@
     object[field] = (object[field] as string).trim()
   }
 
-  const goTab = (path: string) => {
-    const loc = getCurrentLocation()
-    loc.path[1] = path
-    loc.path.length = 2
-    navigate(loc)
-  }
+  let loginState: 'login' | 'signup' | 'none' = 'none'
   $: loginState = caption === login.string.LogIn ? 'login' : caption === login.string.SignUp ? 'signup' : 'none'
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <form
   class="container"
   style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
@@ -140,8 +125,8 @@
       evt.preventDefault()
       evt.stopPropagation()
       if (!inAction) {
-        validate($themeStore.language).then((res) => {
-          if (res) {
+        void validate($themeStore.language).then((res) => {
+          if (res != null) {
             performAction(action)
           }
         })
@@ -150,39 +135,21 @@
   }}
 >
   {#if loginState !== 'none'}
-    <div class="flex-row-center caption">
-      <a
-        class="title"
-        class:selected={loginState === 'signup'}
-        href="."
-        on:click|preventDefault={() => {
-          if (loginState !== 'signup') goTab('signup')
-        }}
-      >
-        <Label label={login.string.SignUp} />
-      </a>
-      <a
-        class="title"
-        class:selected={loginState === 'login'}
-        href="."
-        on:click|preventDefault={() => {
-          if (loginState !== 'login') goTab('login')
-        }}
-      >
-        <Label label={login.string.LogIn} />
-      </a>
-    </div>
+    <Tabs {loginState} {signUpDisabled} />
   {:else}
     {#if subtitle !== undefined}
       <div class="fs-title">
         {subtitle}
       </div>
     {/if}
-    <div class="title"><Label label={caption} /></div>
+    <div class="flex-row-center">
+      <div class="title"><Label label={caption} /></div>
+      <slot name="region-selector" />
+    </div>
   {/if}
   <div class="form">
     {#each fields as field (field.name)}
-      <div class={field.short && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
+      <div class={field.short !== undefined && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
         <StylishEdit
           label={field.i18n}
           name={field.id}
@@ -215,7 +182,7 @@
         }}
       />
     </div>
-    {#if secondaryButtonLabel && secondaryButtonAction}
+    {#if secondaryButtonLabel !== undefined && secondaryButtonAction}
       <div class="form-row">
         <Button
           label={secondaryButtonLabel}
@@ -234,14 +201,7 @@
   {#if bottomActions.length}
     <div class="footer">
       {#each bottomActions as action}
-        <div>
-          <span><Label label={action.caption} /></span>
-          {#if action.page}
-            <NavLink href={getHref(action.page)}><Label label={action.i18n} /></NavLink>
-          {:else}
-            <a href="." on:click|preventDefault={action.func}><Label label={action.i18n} /></a>
-          {/if}
-        </div>
+        <BottomActionComponent {action} />
       {/each}
     </div>
   {/if}
@@ -257,28 +217,6 @@
       font-weight: 500;
       font-size: 1.25rem;
       color: var(--theme-caption-color);
-    }
-    .caption a {
-      padding-bottom: 0.375rem;
-      border-bottom: 2px solid var(--theme-caption-color);
-
-      &:not(.selected) {
-        color: var(--theme-dark-color);
-        border-bottom-color: transparent;
-
-        &:hover {
-          color: var(--theme-caption-color);
-        }
-      }
-      &.selected {
-        cursor: default;
-      }
-      &:first-child {
-        margin-right: 1.75rem;
-      }
-      &:hover {
-        text-decoration: none;
-      }
     }
     .status {
       padding-top: 1rem;

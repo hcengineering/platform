@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023-2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,49 +13,102 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { createEventDispatcher, onDestroy, tick } from 'svelte'
+  import { merge } from 'effector'
+  import { type Ref, type Blob, generateId } from '@hcengineering/core'
+  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Heading, TableOfContents, TableOfContentsContent } from '@hcengineering/text-editor'
-  import { EditBox, IconCircles, Scroller } from '@hcengineering/ui'
-  import { showMenu } from '@hcengineering/view-resources'
-  import { DocumentSection, calcRank } from '@hcengineering/controlled-documents'
-  import { onDestroy, tick } from 'svelte'
-  import { flip } from 'svelte/animate'
+  import view from '@hcengineering/view'
+  import attachment, { Attachment } from '@hcengineering/attachment'
+  import documents, { DocumentState } from '@hcengineering/controlled-documents'
+  import { Editor, Heading } from '@hcengineering/text-editor'
+  import {
+    CollaboratorEditor,
+    TableOfContents,
+    TableOfContentsContent,
+    FocusExtension,
+    HeadingsExtension,
+    IsEmptyContentExtension,
+    NodeHighlightExtension,
+    NodeHighlightType,
+    highlightUpdateCommand,
+    getNodeElement
+  } from '@hcengineering/text-editor-resources'
+  import { navigate, EditBox, Scroller, Label } from '@hcengineering/ui'
+  import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
+  import plugin from '../../plugin'
 
   import {
+    $areDocumentCommentPopupsOpened as areDocumentCommentPopupsOpened,
     $controlledDocument as controlledDocument,
-    documentCommentsLocationNavigateRequested,
-    documentSectionCollapsed,
-    documentSectionExpanded,
     $isEditable as isEditable,
-    $controlledDocumentSectionIds as sectionIds,
-    $controlledDocumentSections as sections
+    $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
+    $areDocumentCommentPopupsOpened as arePopupsOpened,
+    $canAddDocumentComments as canAddDocumentComments,
+    $canViewDocumentComments as canViewDocumentComments,
+    $documentComments as documentComments,
+    documentCommentsDisplayRequested,
+    documentCommentsHighlightUpdated,
+    documentCommentsLocationNavigateRequested
   } from '../../stores/editors/document'
-  import DocSectionEditor from './DocSectionEditor.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
   import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
 
   const client = getClient()
-  const sectionRefs: Record<string, HTMLElement> = {}
-  let divScroll: HTMLElement
-  const editors: DocSectionEditor[] = []
-  const sectionHeadings: Record<Ref<DocumentSection>, Heading[]> = {}
+  const hierarchy = client.getHierarchy()
+  const user = getCollaborationUser()
+  const dispatch = createEventDispatcher()
 
-  let draggingId: Ref<DocumentSection> | null = null
-  let dragOverId: Ref<DocumentSection> | null = null
-  let dragging = false
-
+  let headings: Heading[] = []
+  let textEditor: CollaboratorEditor
+  let selectedNodeId: string | null | undefined = undefined
+  let isFocused = false
+  let isEmpty = true
+  let editor: Editor
   let title = $controlledDocument?.title ?? ''
 
-  $: headings = $sectionIds.map((sectionId) => sectionHeadings[sectionId] ?? []).flat()
+  $: isTemplate =
+    $controlledDocument != null && hierarchy.hasMixin($controlledDocument, documents.mixin.DocumentTemplate)
+
+  function handleRefreshHighlight () {
+    if (!textEditor) {
+      return
+    }
+
+    textEditor.commands()?.command(highlightUpdateCommand())
+  }
+
+  const unsubscribeHighlightRefresh = merge([documentCommentHighlightedLocation, documentComments.updates]).subscribe({
+    next: () => {
+      handleRefreshHighlight()
+    }
+  })
 
   const unsubscribeNavigateToLocation = documentCommentsLocationNavigateRequested.subscribe({
-    next: ({ sectionKey }) => {
-      const element = sectionRefs[sectionKey]
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    next: async ({ nodeId }) => {
+      if (!nodeId) {
+        handleRefreshHighlight()
+        return
+      }
+
+      if (!textEditor) {
+        return
+      }
+
+      await tick()
+
+      const element = getNodeElement(editor, nodeId)
+
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' })
       }
     }
+  })
+
+  onDestroy(() => {
+    unsubscribeHighlightRefresh()
+    unsubscribeNavigateToLocation()
   })
 
   const handleUpdateTitle = () => {
@@ -69,150 +122,183 @@
     }
   }
 
-  function resetDrag (ev?: DragEvent): void {
-    draggingId = null
-    dragOverId = null
-    dragging = false
-  }
-
-  function handleDragStart (ev: DragEvent, id: Ref<DocumentSection>): void {
-    if (ev.dataTransfer) {
-      dragging = true
-
-      ev.dataTransfer.effectAllowed = 'move'
-      ev.dataTransfer.dropEffect = 'move'
-
-      const index = $sectionIds.indexOf(id)
-      ev.dataTransfer.setDragImage(editors[index].getSectionElement(), 0, 0)
-
-      draggingId = id
-    }
-  }
-
-  async function handleDrop (ev: DragEvent, toId: Ref<DocumentSection>): Promise<void> {
-    if (ev.dataTransfer && draggingId !== null && toId !== draggingId) {
-      ev.dataTransfer.dropEffect = 'move'
-
-      const draggingIndex = $sectionIds.indexOf(draggingId)
-      const toIndex = $sectionIds.indexOf(toId)
-
-      const [prev, next] = [
-        $sections[draggingIndex < toIndex ? toIndex : toIndex - 1],
-        $sections[draggingIndex < toIndex ? toIndex + 1 : toIndex]
-      ]
-
-      const section = $sections[draggingIndex]
-
-      // workaround to not display editor toolbar
-      documentSectionCollapsed(draggingId)
-      documentSectionCollapsed(toId)
-
-      await client.update(section, { rank: calcRank(prev, next) })
-    }
-    resetDrag()
-  }
-
-  function openSectionMenu (ev: MouseEvent, section: DocumentSection): void {
-    if (!$sections || $sections.length === 0) {
-      return
-    }
-    showMenu(ev, { object: section })
-  }
-
   async function handleShowHeading (heading: Heading): Promise<void> {
-    const sectionId = $sectionIds.find((sectionId) => sectionHeadings[sectionId]?.includes(heading))
-    if (sectionId) {
-      documentSectionExpanded(sectionId)
-    }
-
-    await tick()
-
     const element = window.document.getElementById(heading.id)
     element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  onDestroy(unsubscribeNavigateToLocation)
+  function handleNodeHighlight (id: string) {
+    if ($documentCommentHighlightedLocation) {
+      const { nodeId } = $documentCommentHighlightedLocation
+      if (nodeId === id) {
+        return { type: NodeHighlightType.WARNING, isActive: true }
+      }
+    }
+
+    if ($documentComments.some((c) => c.nodeId === id)) {
+      return { type: NodeHighlightType.WARNING }
+    }
+
+    return null
+  }
+
+  function handleShowDocumentComments (uuid: string) {
+    if (!uuid) {
+      return
+    }
+
+    documentCommentsDisplayRequested({
+      element: getNodeElement(editor, uuid),
+      nodeId: uuid
+    })
+  }
+
+  async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
+    if ($controlledDocument === undefined || $controlledDocument === null) {
+      return undefined
+    }
+
+    try {
+      const uploadFile = await getResource(attachment.helper.UploadFile)
+      const uuid = await uploadFile(file)
+      const attachmentId: Ref<Attachment> = generateId()
+
+      await client.addCollection(
+        attachment.class.Attachment,
+        $controlledDocument.space,
+        $controlledDocument._id,
+        $controlledDocument._class,
+        'attachments',
+        {
+          file: uuid,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          lastModified: file.lastModified
+        },
+        attachmentId
+      )
+
+      return { file: uuid, type: file.type }
+    } catch (err: any) {
+      await setPlatformStatus(unknownError(err))
+    } finally {
+      dispatch('change')
+    }
+  }
+
+  function handleExtensions () {
+    return [
+      FocusExtension.configure({
+        onFocus (focused) {
+          isFocused = focused
+        }
+      }),
+      IsEmptyContentExtension.configure({
+        onChange (empty) {
+          isEmpty = empty
+        }
+      }),
+      HeadingsExtension.configure({
+        onChange: (h) => {
+          headings = h
+        }
+      }),
+      NodeHighlightExtension.configure({
+        isHighlightModeOn: () => $canViewDocumentComments || $canAddDocumentComments,
+        getNodeHighlight: handleNodeHighlight,
+        onNodeSelected: (uuid: string | null) => {
+          if (selectedNodeId !== uuid) {
+            selectedNodeId = uuid
+          }
+          if (isFocused) {
+            documentCommentsHighlightUpdated(selectedNodeId !== null ? { nodeId: selectedNodeId } : null)
+          }
+        },
+        onNodeClicked: (uuid: string) => {
+          if (selectedNodeId !== uuid) {
+            selectedNodeId = uuid
+          }
+
+          if (!$arePopupsOpened && $canViewDocumentComments && selectedNodeId) {
+            handleShowDocumentComments(selectedNodeId)
+          }
+        }
+      })
+    ]
+  }
+
+  $: attribute = {
+    key: 'content',
+    attr: client.getHierarchy().getAttribute(documents.class.ControlledDocument, 'content')
+  }
 </script>
 
-{#if $controlledDocument}
+{#if $controlledDocument && attribute}
   <DocumentPrintTitlePage />
 
-  <div class="root flex-col relative">
-    <div class="toc">
-      <TableOfContents items={headings} on:select={(ev) => handleShowHeading(ev.detail)} />
+  {#if headings.length > 0}
+    <div class="tocContent only-print">
+      <TableOfContentsContent items={headings} enumerated={true} />
     </div>
-    {#if headings.length > 0}
-      <div class="only-print ml-12">
-        <TableOfContentsContent items={headings} />
-      </div>
-      <div class="pagebreak" />
-    {/if}
-    <Scroller bind:divScroll>
-      <div class="antiAccordion">
-        <div class="doc-title">
-          <DocumentTitle>
-            {#if $isEditable}
-              <EditBox
-                value={title}
-                on:value={(event) => {
-                  title = event.detail
-                }}
-                on:blur={handleUpdateTitle}
-              />
-            {:else}
-              {$controlledDocument.title}
-            {/if}
-          </DocumentTitle>
-        </div>
-        {#if $sections}
-          {#each $sections as section, i (section._id)}
-            <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <div
-              class="row"
-              bind:this={sectionRefs[section.key]}
-              class:is-dragging={section._id === draggingId}
-              class:drag-over-highlight={section._id === dragOverId}
-              on:dragstart={(ev) => {
-                handleDragStart(ev, section._id)
+    <div class="pagebreak" />
+  {/if}
+
+  <div class="root relative">
+    <div class="toc">
+      <TableOfContents items={headings} enumerated={true} on:select={(ev) => handleShowHeading(ev.detail)} />
+    </div>
+    <Scroller>
+      <div class="content relative">
+        <DocumentTitle>
+          {#if $isEditable}
+            <EditBox
+              value={title}
+              on:value={(event) => {
+                title = event.detail
               }}
-              on:dragleave|preventDefault={() => {
-                if (dragOverId === section._id) dragOverId = null
-                return false
-              }}
-              on:dragover|preventDefault={() => {
-                dragOverId = section._id
-                return false
-              }}
-              on:dragend={resetDrag}
-              on:drop|preventDefault={(ev) => handleDrop(ev, section._id)}
-              animate:flip={{ duration: 400 }}
-            >
-              <DocSectionEditor
-                bind:headings={sectionHeadings[section._id]}
-                bind:this={editors[i]}
-                value={section}
-                document={$controlledDocument}
-                index={i}
-                {dragging}
-                on:change={resetDrag}
-              >
-                <div class="m0 flex-row-center draggable-container" slot="before-header">
-                  <!-- svelte-ignore a11y-click-events-have-key-events -->
-                  <!-- svelte-ignore a11y-no-static-element-interactions -->
-                  <div
-                    class="draggable-mark"
-                    class:dragging
-                    on:click={(ev) => {
-                      openSectionMenu(ev, section)
-                    }}
-                  >
-                    <IconCircles size="small" />
-                  </div>
-                </div>
-              </DocSectionEditor>
-            </div>
-          {/each}
+              on:blur={handleUpdateTitle}
+            />
+          {:else}
+            {$controlledDocument.title}
+          {/if}
+        </DocumentTitle>
+        {#if $controlledDocument.state === DocumentState.Obsolete}
+          <div class="watermark-container">
+            {#each { length: 24 } as _, i}
+              <div class="watermark"><Label label={plugin.string.Obsolete} /></div>
+            {/each}
+          </div>
         {/if}
+        <CollaboratorEditor
+          bind:this={textEditor}
+          object={$controlledDocument}
+          {attribute}
+          {user}
+          readonly={!$isEditable}
+          editorAttributes={{ style: 'padding: 0 2em; margin: 0 -2em;' }}
+          overflow="none"
+          canShowPopups={!$areDocumentCommentPopupsOpened}
+          enableInlineComments={false}
+          onExtensions={handleExtensions}
+          kitOptions={{
+            note: {
+              readonly: !isTemplate
+            }
+          }}
+          on:editor={(e) => (editor = e.detail)}
+          on:open-document={async (event) => {
+            const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
+            if (doc != null) {
+              const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
+              navigate(location)
+            }
+          }}
+          attachFile={async (file) => {
+            return await createEmbedding(file)
+          }}
+        />
+        <div class="bottomSpacing no-print" />
       </div>
     </Scroller>
   </div>
@@ -220,8 +306,38 @@
 
 <style lang="scss">
   .root {
+    overflow: hidden;
+
     @media print {
       margin-left: -1rem;
+      overflow: visible;
+    }
+
+    // Workaround to quickly enumerate headings for controlled docs
+    :global(h1) {
+      counter-increment: h1;
+      counter-reset: h2;
+
+      &::before {
+        content: counter(h1) '. ';
+      }
+    }
+
+    :global(h2) {
+      counter-increment: h2;
+      counter-reset: h3;
+
+      &::before {
+        content: counter(h1) '.' counter(h2) '. ';
+      }
+    }
+
+    :global(h3) {
+      counter-increment: h3;
+
+      &::before {
+        content: counter(h1) '.' counter(h2) '.' counter(h3) '. ';
+      }
     }
   }
 
@@ -234,41 +350,43 @@
     z-index: 1;
   }
 
-  .doc-title {
-    padding-left: 3.25rem;
+  .tocContent {
+    padding-left: 2.25rem;
   }
 
-  .row {
-    position: relative;
-    margin-left: 0;
-
-    .draggable-container {
-      width: 100%;
-      height: 100%;
-
-      .draggable-mark {
-        padding: 0.375rem 0.125rem;
-        &:hover {
-          background-color: var(--theme-button-hovered);
-          border-radius: 0.375rem;
-          cursor: pointer;
-        }
-        &.dragging {
-          cursor: grabbing;
-          position: relative;
-          align-self: baseline;
-        }
-      }
-    }
-
-    &:hover {
-      .draggable-mark {
-        opacity: 0.9;
-      }
-    }
+  .content {
+    padding: 0 3.25rem;
   }
 
-  .drag-over-highlight {
-    opacity: 0.2;
+  .bottomSpacing {
+    padding-bottom: 55vh;
+  }
+
+  .watermark-container {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 35rem;
+    padding-top: 20rem;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .watermark {
+    z-index: 100;
+    margin: auto;
+    height: 4rem;
+    width: 100%;
+    color: var(--theme-divider-color);
+    font-size: 8rem;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>

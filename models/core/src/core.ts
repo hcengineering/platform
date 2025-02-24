@@ -14,16 +14,10 @@
 //
 
 import {
-  DOMAIN_BLOB,
-  DOMAIN_CONFIGURATION,
-  DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_FULLTEXT_BLOB,
-  DOMAIN_MIGRATION,
-  DOMAIN_MODEL,
-  IndexKind,
-  type Account,
+  type PersonId,
   type AnyAttribute,
   type ArrOf,
+  type Association,
   type AttachedDoc,
   type Blob,
   type Class,
@@ -34,14 +28,19 @@ import {
   type Doc,
   type DocIndexState,
   type Domain,
+  DOMAIN_BLOB,
+  DOMAIN_CONFIGURATION,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_MIGRATION,
+  DOMAIN_MODEL,
+  DOMAIN_RELATION,
   type DomainIndexConfiguration,
   type Enum,
   type EnumOf,
-  type FieldIndex,
-  type FullTextData,
+  type FieldIndexConfig,
   type FullTextSearchContext,
-  type IndexStageState,
   type IndexingConfiguration,
+  IndexKind,
   type Interface,
   type MigrationState,
   type Mixin,
@@ -49,11 +48,15 @@ import {
   type PluginConfiguration,
   type Ref,
   type RefTo,
+  type Relation,
   type Space,
+  type Sequence,
   type Timestamp,
+  type TransientConfiguration,
   type Type,
   type TypeAny,
-  type Version
+  type Version,
+  DOMAIN_SEQUENCE
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -65,10 +68,10 @@ import {
   TypeBoolean,
   TypeFileSize,
   TypeIntlString,
-  TypeRecord,
   TypeRef,
   TypeString,
   TypeTimestamp,
+  TypePersonId,
   UX
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type IntlString, type Plugin } from '@hcengineering/platform'
@@ -100,13 +103,13 @@ export class TDoc extends TObj implements Doc {
   @Index(IndexKind.Indexed)
     modifiedOn!: Timestamp
 
-  @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
+  @Prop(TypePersonId(), core.string.ModifiedBy)
   @Index(IndexKind.Indexed)
-    modifiedBy!: Ref<Account>
+    modifiedBy!: PersonId
 
-  @Prop(TypeRef(core.class.Account), core.string.CreatedBy)
+  @Prop(TypePersonId(), core.string.CreatedBy)
   @Index(IndexKind.Indexed)
-    createdBy!: Ref<Account>
+    createdBy!: PersonId
 
   @Prop(TypeTimestamp(), core.string.CreatedDate)
   @ReadOnly()
@@ -131,12 +134,34 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
     collection!: string
 }
 
+@Model(core.class.Association, core.class.Doc, DOMAIN_MODEL)
+export class TAssociation extends TDoc implements Association {
+  classA!: Ref<Class<Doc>>
+
+  classB!: Ref<Class<Doc>>
+
+  nameA!: string
+
+  nameB!: string
+
+  type!: '1:1' | '1:N' | 'N:N'
+}
+
+@Model(core.class.Relation, core.class.Doc, DOMAIN_RELATION)
+export class TRelation extends TDoc implements Relation {
+  docA!: Ref<Doc<Space>>
+
+  docB!: Ref<Doc<Space>>
+
+  association!: Ref<Association>
+}
+
 @Model(core.class.Blob, core.class.Doc, DOMAIN_BLOB)
 @UX(core.string.Object)
 export class TBlob extends TDoc implements Blob {
   @Prop(TypeString(), core.string.Blob)
   @ReadOnly()
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     provider!: string
 
   @Prop(TypeString(), core.string.BlobContentType)
@@ -236,9 +261,9 @@ export class TTypeFileSize extends TType {}
 @Model(core.class.TypeMarkup, core.class.Type)
 export class TTypeMarkup extends TType {}
 
-@UX(core.string.Collaborative)
-@Model(core.class.TypeCollaborativeMarkup, core.class.Type)
-export class TTypeCollaborativeMarkup extends TType {}
+@UX(core.string.PersonId)
+@Model(core.class.TypePersonId, core.class.Type)
+export class TTypePersonId extends TType {}
 
 @UX(core.string.Ref)
 @Model(core.class.RefTo, core.class.Type)
@@ -309,10 +334,6 @@ export class TPluginConfiguration extends TDoc implements PluginConfiguration {
   enabled!: boolean
   beta!: boolean
 }
-@Model(core.class.FulltextData, core.class.Doc, DOMAIN_FULLTEXT_BLOB)
-export class TFulltextData extends TDoc implements FullTextData {
-  data!: any
-}
 
 @Model(core.class.DocIndexState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
 export class TDocIndexState extends TDoc implements DocIndexState {
@@ -321,44 +342,19 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   @Hidden()
     objectClass!: Ref<Class<Doc>>
 
-  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    attachedTo?: Ref<Doc>
-
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    attachedToClass?: Ref<Class<Doc>>
-
-  // Indexable attributes of document.
-  attributes!: Record<string, any>
-
   @Prop(TypeBoolean(), getEmbeddedLabel('Removed'))
-  @Index(IndexKind.Indexed)
   @Hidden()
     removed!: boolean
 
-  // States for different stages
-  @Prop(TypeRecord(), getEmbeddedLabel('Stages'))
-  @Index(IndexKind.Indexed)
+  @Prop(TypeBoolean(), getEmbeddedLabel('NeedIndexing'))
   @Hidden()
-    stages!: Record<string, boolean | string>
-
-  @Prop(TypeString(), getEmbeddedLabel('Generation'))
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    generationId?: string
+    needIndex!: boolean
 }
 
-@Model(core.class.IndexStageState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
-export class TIndexStageState extends TDoc implements IndexStageState {
-  stageId!: string
-  attributes!: Record<string, any>
+@Model(core.class.FullTextSearchContext, core.class.Doc, DOMAIN_MODEL)
+export class TFullTextSearchContext extends TDoc implements FullTextSearchContext {
+  toClass!: Ref<Class<Doc<Space>>>
 }
-
-@MMixin(core.mixin.FullTextSearchContext, core.class.Class)
-export class TFullTextSearchContext extends TClass implements FullTextSearchContext {}
 
 @MMixin(core.mixin.ConfigurationElement, core.class.Class)
 export class TConfigurationElement extends TClass implements ConfigurationElement {
@@ -377,7 +373,7 @@ export class TConfiguration extends TDoc implements Configuration {
 
 @MMixin(core.mixin.IndexConfiguration, core.class.Class)
 export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements IndexingConfiguration<T> {
-  indexes!: FieldIndex<T>[]
+  indexes!: (string | FieldIndexConfig<T>)[]
   searchDisabled!: boolean
 }
 
@@ -390,10 +386,21 @@ export class TDomainIndexConfiguration extends TDoc implements DomainIndexConfig
 @Model(core.class.TypeCollaborativeDoc, core.class.Type)
 export class TTypeCollaborativeDoc extends TType {}
 
-@UX(core.string.CollaborativeDocVersion)
-@Model(core.class.TypeCollaborativeDocVersion, core.class.Type)
-export class TTypeCollaborativeDocVersion extends TType {}
-
 @UX(core.string.Rank)
 @Model(core.class.TypeRank, core.class.Type)
 export class TTypeRank extends TType {}
+
+@MMixin(core.mixin.TransientConfiguration, core.class.Class)
+export class TTransientConfiguration extends TClass implements TransientConfiguration {
+  @Prop(TypeBoolean(), core.string.Private)
+    broadcastOnly!: boolean
+}
+
+@Model(core.class.Sequence, core.class.Doc, DOMAIN_SEQUENCE)
+export class TSequence extends TDoc implements Sequence {
+  @Prop(TypeRef(core.class.Class), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+    attachedTo!: Ref<Class<Doc>>
+
+  sequence!: number
+}

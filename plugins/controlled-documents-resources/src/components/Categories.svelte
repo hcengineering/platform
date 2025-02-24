@@ -18,7 +18,8 @@
   import { ActionContext } from '@hcengineering/presentation'
   import { Button, IconAdd, Loading, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import { TableBrowser, ViewletPanelHeader, checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
+  import { TableBrowser, ViewletPanelHeader } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
 
   import document from '../plugin'
   import CreateDocumentCategory from './CreateDocumentCategory.svelte'
@@ -47,43 +48,43 @@
     mode: 'browser'
   }}
 />
-<div class="antiPanel-component">
-  <ViewletPanelHeader
-    viewletQuery={{
-      attachTo: _class,
-      descriptor: view.viewlet.Table
-    }}
-    bind:viewlet
-    bind:loading
-    bind:viewOptions
-    bind:preference
-    {_class}
-    title={document.string.Categories}
-    {query}
-    bind:resultQuery
-  >
-    <div slot="header-tools">
-      {#if canCreate}
-        <Button
-          icon={IconAdd}
-          label={document.string.DocumentCategoryCreateLabel}
-          size="small"
-          kind="primary"
-          on:click={showCreateDialog}
-        />
-      {/if}
-    </div>
-  </ViewletPanelHeader>
+<ViewletPanelHeader
+  viewletQuery={{
+    attachTo: _class,
+    descriptor: view.viewlet.Table
+  }}
+  bind:viewlet
+  bind:loading
+  bind:viewOptions
+  bind:preference
+  {_class}
+  title={document.string.Categories}
+  icon={documents.icon.Library}
+  {query}
+  bind:resultQuery
+  hideActions={!canCreate}
+>
+  <svelte:fragment slot="actions">
+    {#if canCreate}
+      <Button
+        icon={IconAdd}
+        label={document.string.DocumentCategoryCreateLabel}
+        size="small"
+        kind="primary"
+        on:click={showCreateDialog}
+      />
+    {/if}
+  </svelte:fragment>
+</ViewletPanelHeader>
 
-  {#if loading}
-    <Loading />
-  {:else if viewlet && viewOptions}
-    <TableBrowser
-      {_class}
-      config={preference?.config ?? viewlet.config}
-      options={viewlet.options}
-      query={resultQuery}
-      showNotification
-    />
-  {/if}
-</div>
+{#if loading}
+  <Loading />
+{:else if viewlet && viewOptions}
+  <TableBrowser
+    {_class}
+    config={preference?.config ?? viewlet.config}
+    options={viewlet.options}
+    query={resultQuery}
+    showNotification
+  />
+{/if}

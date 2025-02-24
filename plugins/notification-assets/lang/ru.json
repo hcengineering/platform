@@ -11,7 +11,7 @@
     "Remove": "Удалить нотификацию",
     "RemoveAll": "Удалить все нотификации",
     "MarkAllAsRead": "Отметить все нотификации как прочитанные",
-    "MarkAsRead": "Отметить нотификация прочитанной",
+    "MarkAsRead": "Отметить прочитанным",
     "MarkAsUnread": "Отметить непрочитанным",
     "Archive": "Архивировать",
     "Inbox": "Входящие",
@@ -38,7 +38,7 @@
     "Pinned": "Закреплено",
     "Message": "Сообщение",
     "ArchiveAll": "Архивировать все",
-    "MarkReadAll": "Oтметить все как прочитанное",
+    "MarkReadAll": "Отметить все как прочитанное",
     "MarkUnreadAll": "Отметить все как непрочитанные",
     "ArchiveAllConfirmationTitle": "Архивировать все уведомления?",
     "ArchiveAllConfirmationMessage": "Вы уверены, что хотите заархивировать все уведомления? Эту операцию невозможно отменить.",
@@ -48,6 +48,15 @@
     "Push": "Push",
     "Unreads": "Непрочитанные",
     "EnablePush": "Включить Push-уведомления",
-    "NotificationBlockedInBrowser": "Уведомления заблокированы в вашем браузере. Пожалуйста, включите уведомления в настройках браузера"
+    "NotificationBlockedInBrowser": "Уведомления заблокированы в вашем браузере. Пожалуйста, включите уведомления в настройках браузера",
+    "General": "Основное",
+    "InboxNotificationsDescription": "Получайте персональные уведомления на свой почтовый ящик Huly.",
+    "PushNotificationsDescription": "Получайте персональные уведомления на рабочий стол.",
+    "Sound": "Звук",
+    "SoundNotificationsDescription": "Получайте звуковые уведомления о событиях.",
+    "CommonNotificationCollectionAdded":  "{senderName} добавил {collection}",
+    "CommonNotificationCollectionRemoved": "{senderName} удалил {collection}",
+    "NoAccessToObject": "У вас больше нет доступа к этому объекту",
+    "ViewIn": "Посмотреть в {app}"
   }
 }

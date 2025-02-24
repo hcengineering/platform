@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import contact from '@hcengineering/contact'
+import { AccountClient } from '@hcengineering/account-client'
 import core, {
-  BackupClient,
-  Client as CoreClient,
+  Branding,
+  coreId,
+  DOMAIN_BENCHMARK,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
@@ -26,21 +27,28 @@ import core, {
   MeasureContext,
   MigrationState,
   ModelDb,
+  platformNow,
+  platformNowDiff,
+  systemAccountUuid,
   Tx,
-  WorkspaceId,
-  type Doc,
-  type TxCUD
+  TxOperations,
+  WorkspaceIds,
+  WorkspaceUuid,
+  type Client,
+  type PersonInfo,
+  type Ref,
+  type WithLookup
 } from '@hcengineering/core'
-import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
-import { createMongoTxAdapter, DBCollectionHelper, getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
-import { DomainIndexHelperImpl, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { Db, Document } from 'mongodb'
-import { connect } from './connect'
+import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
+import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
+import { InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
+import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
+import { generateToken } from '@hcengineering/server-token'
 import fs from 'fs'
+import * as yaml from 'js-yaml'
 import path from 'path'
 
 export * from './connect'
@@ -72,17 +80,17 @@ export class FileModelLogger implements ModelLogger {
  * @public
  */
 export function prepareTools (rawTxes: Tx[]): {
-  mongodbUri: string
+  dbUrl: string
   txes: Tx[]
 } {
-  const mongodbUri = process.env.MONGO_URL
-  if (mongodbUri === undefined) {
-    console.error('please provide mongodb url.')
+  const dbUrl = process.env.DB_URL
+  if (dbUrl === undefined) {
+    console.error('please provide db url.')
     process.exit(1)
   }
 
   return {
-    mongodbUri,
+    dbUrl,
     txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[]
   }
 }
@@ -92,93 +100,133 @@ export function prepareTools (rawTxes: Tx[]): {
  */
 export async function initModel (
   ctx: MeasureContext,
-  transactorUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   rawTxes: Tx[],
-  migrateOperations: [string, MigrateOperation][],
+  adapter: DbAdapter,
+  storageAdapter: StorageAdapter,
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>
 ): Promise<void> {
-  const { mongodbUri, txes } = prepareTools(rawTxes)
+  const { txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }
 
-  const _client = getMongoClient(mongodbUri)
-  const client = await _client.getClient()
-  let connection: (CoreClient & BackupClient) | undefined
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
   try {
-    const db = getWorkspaceDB(client, workspaceId)
-
-    logger.log('creating model...', workspaceId)
-    const result = await db.collection(DOMAIN_TX).insertMany(txes as Document[])
-    logger.log('model transactions inserted.', { count: result.insertedCount })
-
-    await progress(10)
-
-    logger.log('creating data...', { transactorUrl })
-    const { model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
-
-    await progress(20)
-
-    logger.log('create minio bucket', { workspaceId })
-
-    await storageAdapter.make(ctx, workspaceId)
-
-    logger.log('connecting to transactor', { workspaceId, transactorUrl })
-
-    connection = (await connect(
-      transactorUrl,
-      workspaceId,
-      undefined,
-      {
-        model: 'upgrade',
-        admin: 'true'
-      },
-      model
-    )) as unknown as CoreClient & BackupClient
-
-    const states = await connection.findAll<MigrationState>(core.class.MigrationState, {})
-    const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
-    const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
-
-    try {
-      let i = 0
-      for (const op of migrateOperations) {
-        logger.log('Migrate', { name: op[0] })
-        await op[1].upgrade(migrateState, async () => connection as any, logger)
-        i++
-        await progress(20 + (((100 / migrateOperations.length) * i) / 100) * 10)
-      }
-      await progress(30)
-
-      // Create update indexes
-      await createUpdateIndexes(ctx, connection, db, logger, async (value) => {
-        await progress(30 + (Math.min(value, 100) / 100) * 70)
-      })
-      await progress(100)
-    } catch (e: any) {
-      logger.error('error', { error: e })
-      throw e
+    logger.log('creating database...', { workspaceId })
+    const firstTx: Tx = {
+      _class: core.class.Tx,
+      _id: 'first-tx' as Ref<Tx>,
+      modifiedBy: core.account.System,
+      modifiedOn: Date.now(),
+      space: core.space.DerivedTx,
+      objectSpace: core.space.DerivedTx
     }
+
+    await adapter.upload(ctx, DOMAIN_TX, [firstTx])
+
+    await progress(30)
+
+    logger.log('creating data...', { workspaceId })
+
+    await progress(60)
+
+    logger.log('create storage bucket', { workspaceId })
+    const wsIds = { uuid: workspaceId, url: '' } // We don't need dataId for new workspaces
+    await storageAdapter.make(ctx, wsIds)
+    await progress(100)
   } catch (err: any) {
     ctx.error('Failed to create workspace', { error: err })
     throw err
   } finally {
-    await storageAdapter.close()
-    await connection?.sendForceClose()
-    await connection?.close()
-    _client.close()
+    await adapter.close()
   }
 }
 
-export function getStorageAdapter (): StorageAdapter {
-  const { mongodbUri } = prepareTools([])
+export async function updateModel (
+  ctx: MeasureContext,
+  workspaceId: WorkspaceUuid,
+  migrateOperations: [string, MigrateOperation][],
+  connection: TxOperations,
+  pipeline: Pipeline,
+  logger: ModelLogger = consoleModelLogger,
+  progress: (value: number) => Promise<void>
+): Promise<void> {
+  logger.log('connecting to transactor', { workspaceId })
 
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  return buildStorageFromConfig(storageConfig, mongodbUri)
+  const states = await connection.findAll<MigrationState>(core.class.MigrationState, {})
+  const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
+
+  const _toSet = (vals: WithLookup<MigrationState>[]): Set<string> => {
+    return new Set(vals.map((q) => q.state))
+  }
+
+  const migrateState = new Map<string, Set<string>>(sts.map((it) => [it[0], _toSet(it[1])]))
+
+  try {
+    let i = 0
+    for (const op of migrateOperations) {
+      const st = platformNow()
+      await op[1].upgrade(migrateState, async () => connection as any, logger)
+      const tdelta = platformNowDiff(st)
+      if (tdelta > 0.5) {
+        logger.log('Create', { name: op[0], time: tdelta })
+      }
+      i++
+      await progress((((100 / migrateOperations.length) * i) / 100) * 100)
+    }
+    await progress(100)
+  } catch (e: any) {
+    logger.error('error', { error: e })
+    throw e
+  }
+}
+
+/**
+ * @public
+ */
+export async function initializeWorkspace (
+  ctx: MeasureContext,
+  branding: Branding | null,
+  wsIds: WorkspaceIds,
+  personInfo: PersonInfo,
+  storageAdapter: StorageAdapter,
+  client: TxOperations,
+  logger: ModelLogger = consoleModelLogger,
+  progress: (value: number) => Promise<void>
+): Promise<void> {
+  const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
+  const initRepoDir = getMetadata(toolPlugin.metadata.InitRepoDir)
+  ctx.info('Init script details', { initWS, initRepoDir })
+  if (initWS === undefined || initRepoDir === undefined) return
+
+  const initScriptFile = path.resolve(initRepoDir, 'script.yaml')
+  if (!fs.existsSync(initScriptFile)) {
+    ctx.warn('Init script file not found in init directory', { initScriptFile })
+    return
+  }
+
+  try {
+    const text = fs.readFileSync(initScriptFile, 'utf8')
+    const scripts = yaml.load(text) as any as InitScript[]
+
+    let script: InitScript | undefined
+    if (initWS !== undefined) {
+      script = scripts.find((it) => it.name === initWS)
+    }
+    if (script === undefined) {
+      script = scripts.find((it) => it.default)
+    }
+    if (script === undefined) {
+      return
+    }
+
+    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsIds, client, initRepoDir, personInfo)
+    await initializer.processScript(script, logger, progress)
+  } catch (err: any) {
+    ctx.error('Failed to initialize workspace', { error: err })
+    throw err
+  }
 }
 
 /**
@@ -187,243 +235,213 @@ export function getStorageAdapter (): StorageAdapter {
 export async function upgradeModel (
   ctx: MeasureContext,
   transactorUrl: string,
-  workspaceId: WorkspaceId,
-  rawTxes: Tx[],
+  wsIds: WorkspaceIds,
+  txes: Tx[],
+  pipeline: Pipeline,
+  connection: Client,
+  storageAdapter: StorageAdapter,
+  accountClient: AccountClient,
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
-  skipTxUpdate: boolean = false,
-  progress: (value: number) => Promise<void>
+  progress: (value: number) => Promise<void>,
+  updateIndexes: 'perform' | 'skip' | 'disable' = 'skip'
 ): Promise<Tx[]> {
-  const { mongodbUri, txes } = prepareTools(rawTxes)
-
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }
 
-  // const client = new MongoClient(mongodbUri)
-  const _client = getMongoClient(mongodbUri)
-  const client = await _client.getClient()
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+  const newModelRes = await ctx.with('load-model', {}, (ctx) => pipeline.loadModel(ctx, 0))
+  const newModel = Array.isArray(newModelRes) ? newModelRes : newModelRes.transactions
 
-  try {
-    const db = getWorkspaceDB(client, workspaceId)
+  const { hierarchy, modelDb, model } = await buildModel(ctx, newModel)
+  const { migrateClient: preMigrateClient } = await prepareMigrationClient(
+    pipeline,
+    hierarchy,
+    modelDb,
+    logger,
+    storageAdapter,
+    accountClient,
+    wsIds
+  )
 
-    const prevModel = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
-    const { migrateClient: preMigrateClient } = await prepareMigrationClient(
-      db,
-      prevModel.hierarchy,
-      prevModel.modelDb,
-      logger,
-      storageAdapter,
-      workspaceId
-    )
+  await progress(0)
+  await ctx.with('pre-migrate', {}, async (ctx) => {
+    let i = 0
 
-    await progress(0)
-    await ctx.with('pre-migrate', {}, async (ctx) => {
-      let i = 0
-      for (const op of migrateOperations) {
-        if (op[1].preMigrate === undefined) {
-          continue
-        }
-        const preMigrate = op[1].preMigrate
-
-        const t = Date.now()
-        try {
-          await ctx.with(op[0], {}, async (ctx) => {
-            await preMigrate(preMigrateClient, logger)
-          })
-        } catch (err: any) {
-          logger.error(`error during pre-migrate: ${op[0]} ${err.message}`, err)
-          throw err
-        }
-        logger.log('pre-migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
-        await progress(((100 / migrateOperations.length) * i * 10) / 100)
-        i++
+    for (const op of migrateOperations) {
+      if (op[1].preMigrate === undefined) {
+        continue
       }
-    })
+      const preMigrate = op[1].preMigrate
 
-    if (!skipTxUpdate) {
-      logger.log('removing model...', { workspaceId: workspaceId.name })
-      await progress(10)
-      // we're preserving accounts (created by core.account.System).
-      const result = await ctx.with(
-        'mongo-delete',
-        {},
-        async () =>
-          await db.collection(DOMAIN_TX).deleteMany({
-            objectSpace: core.space.Model,
-            modifiedBy: core.account.System,
-            objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
-          })
-      )
-      logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: result.deletedCount })
-      logger.log('creating model...', { workspaceId: workspaceId.name })
-      const insert = await ctx.with(
-        'mongo-insert',
-        {},
-        async () => await db.collection(DOMAIN_TX).insertMany(txes as Document[])
-      )
-
-      logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: insert.insertedCount })
-      await progress(20)
+      const t = platformNow()
+      try {
+        await ctx.with(op[0], {}, (ctx) => preMigrate(preMigrateClient, logger))
+      } catch (err: any) {
+        logger.error(`error during pre-migrate: ${op[0]} ${err.message}`, err)
+        throw err
+      }
+      logger.log('pre-migrate:', { workspaceId: wsIds, operation: op[0], time: platformNowDiff(t) })
+      await progress(((100 / migrateOperations.length) * i * 10) / 100)
+      i++
     }
-    const newModel = [
-      ...txes,
-      ...Array.from(
-        prevModel.model.filter(
-          (it) =>
-            it.modifiedBy !== core.account.System ||
-            (it as TxCUD<Doc>).objectClass === contact.class.Person ||
-            (it as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount'
-        )
-      )
-    ]
+  })
 
-    const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId, newModel)
-    const { migrateClient, migrateState } = await prepareMigrationClient(
-      db,
+  const { migrateClient, migrateState } = await prepareMigrationClient(
+    pipeline,
+    hierarchy,
+    modelDb,
+    logger,
+    storageAdapter,
+    accountClient,
+    wsIds
+  )
+
+  const upgradeIndexes = async (): Promise<void> => {
+    ctx.info('Migrate indexes')
+    // Create update indexes
+    await createUpdateIndexes(
+      ctx,
       hierarchy,
       modelDb,
-      logger,
-      storageAdapter,
-      workspaceId
+      pipeline,
+      async (value) => {
+        await progress(90 + (Math.min(value, 100) / 100) * 10)
+      },
+      wsIds.uuid
     )
-
-    await ctx.with('migrate', {}, async (ctx) => {
-      let i = 0
-      for (const op of migrateOperations) {
-        const t = Date.now()
-        try {
-          await ctx.with(op[0], {}, async () => {
-            await op[1].migrate(migrateClient, logger)
-          })
-        } catch (err: any) {
-          logger.error(`error during migrate: ${op[0]} ${err.message}`, err)
-          throw err
-        }
-        logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
-        await progress(20 + ((100 / migrateOperations.length) * i * 20) / 100)
-        i++
-      }
-    })
-
-    logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
-
-    let connection: (CoreClient & BackupClient) | undefined
-    const getUpgradeClient = async (): Promise<CoreClient & BackupClient> =>
-      await ctx.with('connect-platform', {}, async (ctx) => {
-        if (connection !== undefined) {
-          return connection
-        }
-        connection = (await connect(
-          transactorUrl,
-          workspaceId,
-          undefined,
-          {
-            mode: 'backup',
-            model: 'upgrade',
-            admin: 'true'
-          },
-          model
-        )) as CoreClient & BackupClient
-        return connection
-      })
-    try {
-      await ctx.with('upgrade', {}, async (ctx) => {
-        let i = 0
-        for (const op of migrateOperations) {
-          const t = Date.now()
-          await ctx.with(op[0], {}, async () => {
-            await op[1].upgrade(migrateState, getUpgradeClient, logger)
-          })
-          logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
-          await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
-          i++
-        }
-      })
-    } finally {
-      await connection?.sendForceClose()
-      await connection?.close()
-    }
-    return model
-  } finally {
-    await storageAdapter.close()
-    _client.close()
   }
+  if (updateIndexes === 'perform') {
+    await upgradeIndexes()
+  }
+
+  await ctx.with('migrate', {}, async (ctx) => {
+    let i = 0
+    for (const op of migrateOperations) {
+      try {
+        const t = platformNow()
+        await ctx.with(op[0], {}, () => op[1].migrate(migrateClient, logger))
+        const tdelta = platformNowDiff(t)
+        if (tdelta > 0) {
+          logger.log('migrate:', { workspaceId: wsIds, operation: op[0], time: tdelta })
+        }
+      } catch (err: any) {
+        logger.error(`error during migrate: ${op[0]} ${err.message}`, err)
+        throw err
+      }
+      await progress(20 + ((100 / migrateOperations.length) * i * 20) / 100)
+      i++
+    }
+
+    if (updateIndexes === 'skip') {
+      await tryMigrate(migrateClient, coreId, [
+        {
+          state: 'indexes-v5',
+          func: upgradeIndexes
+        }
+      ])
+    }
+  })
+
+  logger.log('Apply upgrade operations', { workspaceId: wsIds })
+
+  await ctx.with('upgrade', {}, async (ctx) => {
+    let i = 0
+    for (const op of migrateOperations) {
+      const t = Date.now()
+      await ctx.with(op[0], {}, () => op[1].upgrade(migrateState, async () => connection, logger))
+      const tdelta = Date.now() - t
+      if (tdelta > 0) {
+        logger.log('upgrade:', { operation: op[0], time: tdelta, workspaceId: wsIds })
+      }
+      await progress(60 + ((100 / migrateOperations.length) * i * 30) / 100)
+      i++
+    }
+  })
+
+  // We need to send reboot for workspace
+  ctx.info('send force close', { workspace: wsIds, transactorUrl })
+  const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+  const token = generateToken(systemAccountUuid, wsIds.uuid, { service: 'tool', admin: 'true' })
+
+  try {
+    await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
+      method: 'PUT'
+    })
+  } catch (err: any) {
+    // Ignore error if transactor is not yet ready
+  }
+  return model
 }
 
 async function prepareMigrationClient (
-  db: Db,
+  pipeline: Pipeline,
   hierarchy: Hierarchy,
   model: ModelDb,
   logger: ModelLogger,
   storageAdapter: StorageAdapter,
-  workspaceId: WorkspaceId
+  accountClient: AccountClient,
+  wsIds: WorkspaceIds
 ): Promise<{
     migrateClient: MigrateClientImpl
     migrateState: Map<string, Set<string>>
   }> {
-  const migrateClient = new MigrateClientImpl(db, hierarchy, model, logger, storageAdapter, workspaceId)
+  const migrateClient = new MigrateClientImpl(pipeline, hierarchy, model, logger, storageAdapter, accountClient, wsIds)
   const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
-  const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
+
+  const _toSet = (vals: WithLookup<MigrationState>[]): Set<string> => {
+    return new Set(vals.map((q) => q.state))
+  }
+
+  const migrateState = new Map<string, Set<string>>(sts.map((it) => [it[0], _toSet(it[1])]))
+  // const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
   migrateClient.migrateState = migrateState
 
   return { migrateClient, migrateState }
 }
 
-async function fetchModelFromMongo (
+export async function buildModel (
   ctx: MeasureContext,
-  mongodbUri: string,
-  workspaceId: WorkspaceId,
-  model?: Tx[]
+  model: Tx[]
 ): Promise<{ hierarchy: Hierarchy, modelDb: ModelDb, model: Tx[] }> {
   const hierarchy = new Hierarchy()
   const modelDb = new ModelDb(hierarchy)
 
-  const txAdapter = await createMongoTxAdapter(ctx, hierarchy, mongodbUri, workspaceId, modelDb)
-
-  model = model ?? (await ctx.with('get-model', {}, async (ctx) => await txAdapter.getModel(ctx)))
-
-  await ctx.with('build local model', {}, async () => {
+  ctx.withSync('build local model', {}, () => {
     for (const tx of model ?? []) {
       try {
         hierarchy.tx(tx)
       } catch (err: any) {}
     }
-    modelDb.addTxes(ctx, model as Tx[], false)
+    modelDb.addTxes(ctx, model, false)
   })
-  await txAdapter.close()
-  return { hierarchy, modelDb, model }
+  return { hierarchy, modelDb, model: model ?? [] }
 }
 
 async function createUpdateIndexes (
   ctx: MeasureContext,
-  connection: CoreClient,
-  db: Db,
-  logger: ModelLogger,
-  progress: (value: number) => Promise<void>
+  hierarchy: Hierarchy,
+  model: ModelDb,
+  pipeline: Pipeline,
+  progress: (value: number) => Promise<void>,
+  workspaceId: WorkspaceUuid
 ): Promise<void> {
-  const domainHelper = new DomainIndexHelperImpl(connection.getHierarchy(), connection.getModel())
-  const dbHelper = new DBCollectionHelper(db)
-  await dbHelper.init()
+  const domainHelper = new DomainIndexHelperImpl(ctx, hierarchy, model, workspaceId)
   let completed = 0
-  const allDomains = connection.getHierarchy().domains()
+  const allDomains = hierarchy.domains()
   for (const domain of allDomains) {
-    if (domain === DOMAIN_MODEL || domain === DOMAIN_TRANSIENT) {
+    if (domain === DOMAIN_MODEL || domain === DOMAIN_TRANSIENT || domain === DOMAIN_BENCHMARK) {
       continue
     }
-    const result = await domainHelper.checkDomain(ctx, domain, false, dbHelper)
-    if (!result && dbHelper.exists(domain)) {
-      try {
-        logger.log('dropping domain', { domain })
-        if ((await db.collection(domain).countDocuments({})) === 0) {
-          await db.dropCollection(domain)
-        }
-      } catch (err) {
-        logger.error('error: failed to delete collection', { domain, err })
-      }
+    const adapter = pipeline.context.adapterManager?.getAdapter(domain, false)
+    if (adapter === undefined) {
+      throw new PlatformError(unknownError(`Adapter for domain ${domain} not found`))
+    }
+    const dbHelper = adapter.helper?.()
+
+    if (dbHelper !== undefined) {
+      await domainHelper.checkDomain(ctx, domain, await dbHelper.estimatedCount(domain), dbHelper)
     }
     completed++
     await progress((100 / allDomains.length) * completed)

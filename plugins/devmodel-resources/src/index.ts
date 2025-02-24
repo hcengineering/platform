@@ -16,17 +16,14 @@
 import core, {
   DOMAIN_MODEL,
   cutObjectArray,
-  type Account,
-  type AccountClient,
+  platformNow,
+  platformNowDiff,
   type Class,
   type Client,
   type Doc,
   type DocumentQuery,
   type FindOptions,
   type FindResult,
-  type Hierarchy,
-  type MeasureDoneOperation,
-  type ModelDb,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -35,13 +32,10 @@ import core, {
   type TxResult,
   type WithLookup
 } from '@hcengineering/core'
-import { devModelId } from '@hcengineering/devmodel'
-import { Builder } from '@hcengineering/model'
 import { getMetadata, type IntlString, type Resources } from '@hcengineering/platform'
+import { addTxListener } from '@hcengineering/presentation'
+import type { ClientHook } from '@hcengineering/presentation/src/plugin'
 import { testing } from '@hcengineering/ui'
-import view from '@hcengineering/view'
-import workbench from '@hcengineering/workbench'
-import ModelView from './components/ModelView.svelte'
 import devmodel from './plugin'
 
 export interface TxWitHResult {
@@ -57,48 +51,46 @@ export interface QueryWithResult {
   findOne: boolean
 }
 
-class ModelClient implements AccountClient {
+export class PresentationClientHook implements ClientHook {
   notifyEnabled = true
-  constructor (readonly client: AccountClient) {
+  constructor () {
     this.notifyEnabled = (localStorage.getItem('#platform.notification.logging') ?? 'true') === 'true'
 
-    client.notify = (...tx) => {
-      this.notify?.(...tx)
+    addTxListener((tx) => {
       if (this.notifyEnabled) {
-        console.debug(
-          'devmodel# notify=>',
-          testing ? JSON.stringify(cutObjectArray(tx)).slice(0, 160) : tx.length === 1 ? tx[0] : tx
-        )
+        const rtx = tx.filter((tx) => (tx as any).objectClass !== core.class.BenchmarkDoc)
+        if (rtx.length > 0) {
+          console.debug('devmodel# notify=>', testing ? cutObjectArray(rtx) : rtx.length === 1 ? rtx[0] : tx)
+        }
+      }
+    })
+  }
+
+  stackLine (): string {
+    const stack = (new Error().stack ?? '').split('\n')
+
+    let candidate = ''
+    for (let l of stack) {
+      l = l.trim()
+      if (l.includes('.svelte')) {
+        return l
+      }
+      if (l.includes('plugins/') && !l.includes('devmodel-resources/') && l.includes('.ts') && candidate === '') {
+        candidate = l
       }
     }
-  }
-
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    return await this.client.measure(operationName)
-  }
-
-  notify?: (...tx: Tx[]) => void
-
-  getHierarchy (): Hierarchy {
-    return this.client.getHierarchy()
-  }
-
-  getModel (): ModelDb {
-    return this.client.getModel()
-  }
-
-  async getAccount (): Promise<Account> {
-    return await this.client.getAccount()
+    return candidate
   }
 
   async findOne<T extends Doc>(
+    client: Client,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    const startTime = Date.now()
-    const isModel = this.getHierarchy().findDomain(_class) === DOMAIN_MODEL
-    const result = await this.client.findOne(_class, query, options)
+    const startTime = platformNow()
+    const isModel = client.getHierarchy().findDomain(_class) === DOMAIN_MODEL
+    const result = await client.findOne(_class, query, options)
     if (this.notifyEnabled && !isModel) {
       console.debug(
         'devmodel# findOne=>',
@@ -108,22 +100,24 @@ class ModelClient implements AccountClient {
         'result => ',
         testing ? JSON.stringify(cutObjectArray(result)) : result,
         ' =>model',
-        this.client.getModel(),
+        client.getModel(),
         getMetadata(devmodel.metadata.DevModel),
-        Date.now() - startTime
+        platformNow() - startTime,
+        this.stackLine()
       )
     }
     return result
   }
 
   async findAll<T extends Doc>(
+    client: Client,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const startTime = Date.now()
-    const isModel = this.getHierarchy().findDomain(_class) === DOMAIN_MODEL
-    const result = await this.client.findAll(_class, query, options)
+    const startTime = platformNow()
+    const isModel = client.getHierarchy().findDomain(_class) === DOMAIN_MODEL
+    const result = await client.findAll(_class, query, options)
     if (this.notifyEnabled && !isModel) {
       console.debug(
         'devmodel# findAll=>',
@@ -133,17 +127,18 @@ class ModelClient implements AccountClient {
         'result => ',
         testing ? JSON.stringify(cutObjectArray(result)).slice(0, 160) : result,
         ' =>model',
-        this.client.getModel(),
+        client.getModel(),
         getMetadata(devmodel.metadata.DevModel),
-        Date.now() - startTime,
-        JSON.stringify(result).length
+        platformNow() - startTime,
+        JSON.stringify(result).length,
+        this.stackLine()
       )
     }
     return result
   }
 
-  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    const result = await this.client.searchFulltext(query, options)
+  async searchFulltext (client: Client, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    const result = await client.searchFulltext(query, options)
     if (this.notifyEnabled) {
       console.debug(
         'devmodel# searchFulltext=>',
@@ -156,71 +151,25 @@ class ModelClient implements AccountClient {
     return result
   }
 
-  async tx (tx: Tx): Promise<TxResult> {
-    const startTime = Date.now()
-    const result = await this.client.tx(tx)
-    if (this.notifyEnabled) {
+  async tx (client: Client, tx: Tx): Promise<TxResult> {
+    const startTime = platformNow()
+    const result = await client.tx(tx)
+    if (this.notifyEnabled && (tx as any).objectClass !== core.class.BenchmarkDoc) {
       console.debug(
         'devmodel# tx=>',
         testing ? JSON.stringify(cutObjectArray(tx)).slice(0, 160) : tx,
         result,
         getMetadata(devmodel.metadata.DevModel),
-        Date.now() - startTime
+        platformNowDiff(startTime),
+        this.stackLine()
       )
     }
     return result
   }
-
-  async close (): Promise<void> {
-    await this.client.close()
-  }
-}
-export async function Hook (client: AccountClient): Promise<Client> {
-  console.debug('devmodel# Client HOOKED by DevModel')
-
-  // Client is alive here, we could hook with some model extensions special for DevModel plugin.
-  const builder = new Builder()
-
-  builder.createDoc(
-    workbench.class.Application,
-    core.space.Model,
-    {
-      label: 'DevModel' as IntlString,
-      icon: view.icon.DevModel,
-      alias: devModelId,
-      hidden: false,
-      navigatorModel: {
-        spaces: [],
-        specials: [
-          {
-            label: 'Transactions' as IntlString,
-            icon: view.icon.Table,
-            id: 'transactions',
-            component: devmodel.component.ModelView
-          }
-        ]
-      }
-    },
-    devmodel.ids.DevModelApp
-  )
-
-  const model = client.getModel()
-  for (const tx of builder.getTxes()) {
-    await model.tx(tx)
-  }
-
-  return new ModelClient(client)
 }
 
 export function toIntl (value: string): IntlString {
   return value as IntlString
 }
 
-export default async (): Promise<Resources> => ({
-  component: {
-    ModelView
-  },
-  hook: {
-    Hook
-  }
-})
+export default async (): Promise<Resources> => ({})

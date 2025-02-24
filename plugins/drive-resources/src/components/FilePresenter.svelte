@@ -22,7 +22,7 @@
   import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
-  import { getFileTypeIcon } from '../utils'
+  import { formatFileVersion, getFileTypeIcon } from '../utils'
 
   export let value: WithLookup<File>
   export let inline: boolean = false
@@ -32,7 +32,9 @@
   export let shouldShowAvatar = true
   export let type: ObjectPresenterType = 'link'
 
-  $: icon = getFileTypeIcon(value.$lookup?.file?.contentType ?? '')
+  export let shouldShowVersion = false
+
+  $: icon = getFileTypeIcon(value.$lookup?.file?.type ?? '')
 </script>
 
 {#if value}
@@ -40,20 +42,24 @@
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else if type === 'link'}
     <DocNavLink object={value} {disabled} {accent} {noUnderline}>
-      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.title) }}>
         {#if shouldShowAvatar}
           <div class="icon">
             <Icon {icon} size={'small'} />
           </div>
         {/if}
-        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
-          {value.name}
-        </span>
+        <div class="label nowrap flex flex-gap-2" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
+          <span>{value.title}</span>
+          {#if shouldShowVersion}
+            <span>•</span>
+            <span>{formatFileVersion(value.version)}</span>
+          {/if}
+        </div>
       </div>
     </DocNavLink>
   {:else if type === 'text'}
-    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-      {value.name}
+    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.title) }}>
+      {value.title}
     </span>
   {/if}
 {/if}

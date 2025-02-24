@@ -15,16 +15,21 @@
 
 import extract from 'png-chunks-extract'
 
-export async function getImageSize (
-  file: File,
-  src: string
-): Promise<{ width: number, height: number, pixelRatio: number }> {
+export function imageSizeToRatio (width: number, pixelRatio: number): number {
+  // consider pixel ratio < 2 as non retina and display them in original size
+  return pixelRatio < 2 ? width : Math.round(width / pixelRatio)
+}
+
+export async function getImageSize (file: Blob): Promise<{ width: number, height: number, pixelRatio: number }> {
   const size = isPng(file) ? await getPngImageSize(file) : undefined
 
   const promise = new Promise<{ width: number, height: number, pixelRatio: number }>((resolve, reject) => {
     const img = new Image()
 
+    const src = URL.createObjectURL(file)
+
     img.onload = () => {
+      URL.revokeObjectURL(src)
       resolve({
         width: size?.width ?? img.naturalWidth,
         height: size?.height ?? img.naturalHeight,
@@ -39,11 +44,11 @@ export async function getImageSize (
   return await promise
 }
 
-function isPng (file: File): boolean {
+function isPng (file: Blob): boolean {
   return file.type === 'image/png'
 }
 
-async function getPngImageSize (file: File): Promise<{ width: number, height: number, pixelRatio: number } | undefined> {
+async function getPngImageSize (file: Blob): Promise<{ width: number, height: number, pixelRatio: number } | undefined> {
   if (!isPng(file)) {
     return undefined
   }
@@ -65,20 +70,18 @@ async function getPngImageSize (file: File): Promise<{ width: number, height: nu
     const idhrData = parseIHDR(new DataView(iHDRChunk.data.buffer))
     const physData = parsePhys(new DataView(pHYsChunk.data.buffer))
 
-    if (physData.unit === 0 && physData.ppux === physData.ppuy) {
-      const pixelRatio = Math.round(physData.ppux / 2834.5)
-      return {
-        width: idhrData.width,
-        height: idhrData.height,
-        pixelRatio
-      }
+    // Assuming pixels are square
+    // http://www.libpng.org/pub/png/spec/1.2/PNG-Decoders.html#D.Pixel-dimensions
+    const pixelRatio = Math.round(physData.ppux * 0.0254) / 72
+    return {
+      width: idhrData.width,
+      height: idhrData.height,
+      pixelRatio
     }
   } catch (err) {
     console.error(err)
     return undefined
   }
-
-  return undefined
 }
 
 // See http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html

@@ -5,9 +5,9 @@
 
 import { type Builder } from '@hcengineering/model'
 
-import core from '@hcengineering/core'
+import core, { type Class, type Doc } from '@hcengineering/core'
 import document from '@hcengineering/document'
-import serverCore from '@hcengineering/server-core'
+import serverCore, { type ObjectDDParticipant } from '@hcengineering/server-core'
 import serverDocument from '@hcengineering/server-document'
 import serverNotification from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
@@ -28,12 +28,19 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(document.class.Document, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchConfig: {
-      iconConfig: {
-        component: document.component.DocumentSearchIcon,
-        props: ['icon', 'color']
-      },
-      title: 'name'
-    }
+    iconConfig: {
+      component: document.component.DocumentSearchIcon,
+      fields: [['icon'], ['color']]
+    },
+    title: [['title']]
   })
+
+  builder.mixin<Class<Doc>, ObjectDDParticipant>(
+    document.class.Document,
+    core.class.Class,
+    serverCore.mixin.ObjectDDParticipant,
+    {
+      collectDocs: serverDocument.function.FindChildDocuments
+    }
+  )
 }

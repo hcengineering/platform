@@ -17,12 +17,13 @@
   import contact, { Contact } from '@hcengineering/contact'
   import { UserBox } from '@hcengineering/contact-resources'
   import { getClient } from '@hcengineering/presentation'
-  import type { Review } from '@hcengineering/recruit'
-  import { FullDescriptionBox } from '@hcengineering/text-editor'
+  import { RecruitEvents, Review } from '@hcengineering/recruit'
+  import { FullDescriptionBox } from '@hcengineering/text-editor-resources'
   import { EditBox, Grid } from '@hcengineering/ui'
   import { ObjectPresenter, openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let object: Review
 
@@ -52,6 +53,10 @@
   }
 
   $: updateSelected(object)
+
+  onMount(() => {
+    Analytics.handleEvent(RecruitEvents.ReviewViewed, { id: object._id })
+  })
 </script>
 
 {#if object !== undefined}

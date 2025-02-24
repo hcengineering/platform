@@ -14,39 +14,44 @@
 -->
 <script lang="ts">
   import core, { AnyAttribute, Class, DocumentUpdate, IndexKind, PropertyType, Ref, Type } from '@hcengineering/core'
-  import { getEmbeddedLabel, translate } from '@hcengineering/platform'
+  import { Asset, getEmbeddedLabel, getResource, translateCB } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import setting from '../plugin'
   import {
     AnyComponent,
+    ButtonIcon,
     Component,
     DropdownIntlItem,
     DropdownLabelsIntl,
-    ModernEditbox,
-    Label,
-    themeStore,
-    Modal,
-    ButtonIcon,
     IconDelete,
-    IconCopy
+    Label,
+    Modal,
+    ModernEditbox,
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
+  import { IconPicker } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
+  import setting from '../plugin'
   import { clearSettingsStore } from '../store'
 
   export let attribute: AnyAttribute
   export let exist: boolean
   export let disabled: boolean = true
+  export let noTopIndent: boolean = false
 
   let name: string
   let type: Type<PropertyType> | undefined = attribute.type
   let index: IndexKind | undefined = attribute.index
   let defaultValue: any | undefined = attribute.defaultValue
+  let icon: Asset | undefined = attribute.icon
   let is: AnyComponent | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  translate(attribute.label, {}, $themeStore.language).then((p) => (name = p))
+  translateCB(attribute.label, {}, $themeStore.language, (p) => {
+    name = p
+  })
 
   async function save (): Promise<void> {
     if (disabled) {
@@ -60,6 +65,9 @@
     }
     if (defaultValue !== attribute.defaultValue) {
       update.defaultValue = defaultValue
+    }
+    if (icon !== attribute.icon) {
+      update.icon = icon
     }
     if (!exist) {
       if (index !== attribute.index) {
@@ -109,6 +117,29 @@
     index = e.detail?.index
     defaultValue = e.detail?.defaultValue
   }
+
+  async function remove (evt: MouseEvent): Promise<void> {
+    const impl = await getResource(view.actionImpl.Delete)
+    await impl(attribute, evt, {
+      afterDelete: () => {
+        clearSettingsStore()
+      }
+    })
+  }
+
+  async function hide (): Promise<void> {
+    const value = !attribute.hidden
+    attribute.hidden = value
+    await client.update(attribute, { hidden: value })
+  }
+
+  function setIcon (): void {
+    showPopup(IconPicker, { icon, showEmoji: false, showColor: false }, 'top', async (res) => {
+      if (res !== undefined) {
+        icon = res.icon
+      }
+    })
+  }
 </script>
 
 <Modal
@@ -117,23 +148,35 @@
   okLabel={presentation.string.Save}
   okAction={save}
   canSave={!(name === undefined || name.trim().length === 0) && !disabled}
-  onCancel={() => {
-    clearSettingsStore()
-  }}
+  onCancel={clearSettingsStore}
+  {noTopIndent}
 >
   <svelte:fragment slot="actions">
     {#if !disabled}
-      <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} {disabled} />
-      <ButtonIcon icon={IconCopy} size={'small'} kind={'tertiary'} {disabled} />
+      <ButtonIcon
+        icon={attribute.hidden ? view.icon.Eye : view.icon.EyeCrossed}
+        size={'small'}
+        kind={'tertiary'}
+        {disabled}
+        on:click={hide}
+      />
+      {#if attribute.isCustom}
+        <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} {disabled} on:click={remove} />
+      {/if}
     {/if}
   </svelte:fragment>
   <div class="hulyModal-content__titleGroup">
-    {#if attribute.isCustom}
-      <div class="hulyChip-item font-medium-12">
-        <Label label={setting.string.Custom} />
-      </div>
-    {/if}
-    <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} {disabled} />
+    <div class="flex items-center">
+      <ButtonIcon
+        icon={icon ?? setting.icon.Enums}
+        size={'medium'}
+        iconSize={'large'}
+        kind={'tertiary'}
+        {disabled}
+        on:click={setIcon}
+      />
+      <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} {disabled} />
+    </div>
   </div>
   <div class="hulyModal-content__settingsSet">
     <div class="hulyModal-content__settingsSet-line">

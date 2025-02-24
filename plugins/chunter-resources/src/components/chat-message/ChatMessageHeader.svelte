@@ -13,45 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
   import { Label } from '@hcengineering/ui'
-  import { Person } from '@hcengineering/contact'
-  import { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
-  import { getLinkData, LinkData, ActivityDocLink } from '@hcengineering/activity-resources'
-  import notification from '@hcengineering/notification'
-
-  import chunter from '../../plugin'
-
-  export let message: ChatMessage
-  export let person: Person | undefined
-  export let viewlet: ChatMessageViewlet | undefined
-  export let object: Doc | undefined
-  export let parentObject: Doc | undefined
-  export let skipLabel = false
-  export let hideLink = false
-
-  let linkData: LinkData | undefined = undefined
-
-  $: !hideLink &&
-    getLinkData(message, object, parentObject, person).then((data) => {
-      linkData = data
-    })
+  import { IntlString } from '@hcengineering/platform'
+  export let label: IntlString | undefined
 </script>
 
-{#if !skipLabel}
-  <span class="text-sm lower"> <Label label={viewlet?.label ?? chunter.string.SentMessage} /></span>
-
-  {#if linkData}
-    <ActivityDocLink
-      preposition={linkData.preposition}
-      object={linkData.object}
-      panelComponent={linkData.panelComponent}
-      title={linkData.title}
-    />
-  {/if}
-{/if}
-{#if message.editedOn}
-  <span class="text-sm lower"><Label label={notification.string.Edited} /></span>
+{#if label}
+  <span class="text-sm lower"> <Label {label} /></span>
 {/if}
 
 <style lang="scss">

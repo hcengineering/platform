@@ -32,10 +32,11 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
-import notification from '@hcengineering/model-notification'
 import view, { createAction } from '@hcengineering/model-view'
 import setting from '@hcengineering/setting'
+
 import gmail from './plugin'
+import { defineNotifications } from './notification'
 
 export { gmailId } from '@hcengineering/gmail'
 export { gmailOperation } from './migration'
@@ -213,37 +214,8 @@ export function createModel (builder: Builder): void {
     gmail.action.WriteEmail
   )
 
-  builder.createDoc(
-    notification.class.NotificationGroup,
-    core.space.Model,
-    {
-      label: gmail.string.Email,
-      icon: contact.icon.Email
-    },
-    gmail.ids.EmailNotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: gmail.string.NewMessage,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: gmail.class.Message,
-      group: gmail.ids.EmailNotificationGroup,
-      allowedForAuthor: true,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false
-      }
-    },
-    gmail.ids.EmailNotification
-  )
-
-  builder.mixin(gmail.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
-    parentPropagate: false
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: gmail.class.Message
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
@@ -255,7 +227,14 @@ export function createModel (builder: Builder): void {
       { modifiedBy: 1 },
       { createdBy: 1 },
       { attachedToClass: 1 },
-      { createdOn: -1 }
+      { createdOn: -1 },
+      { modifiedOn: 1 }
     ]
   })
+
+  builder.mixin(gmail.class.Message, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: gmail.function.MessageTitleProvider
+  })
+
+  defineNotifications(builder)
 }

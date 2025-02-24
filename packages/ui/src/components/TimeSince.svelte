@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@hcengineering/platform'
-  import { DAY, HOUR, MINUTE, MONTH, YEAR } from '../types'
-  import ui from '../plugin'
-  import { tooltip } from '../tooltips'
+  import { translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
   import { ticker } from '..'
+  import ui from '../plugin'
+  import { tooltip } from '../tooltips'
+  import { DAY, HOUR, MINUTE, MONTH, YEAR } from '../types'
 
   export let value: number | undefined
   export let kind: 'no-border' | 'list' = 'no-border'
@@ -37,19 +37,29 @@
     return (endYear - startYear) * 12 + (endMonth - startMonth)
   }
 
-  async function formatTime (now: number, value: number) {
+  function formatTime (now: number, value: number): void {
     let passed = now - value
     if (passed < 0) passed = 0
     if (passed < HOUR) {
-      time = await translate(ui.string.MinutesAgo, { minutes: Math.floor(passed / MINUTE) }, $themeStore.language)
+      translateCB(ui.string.MinutesAgo, { minutes: Math.floor(passed / MINUTE) }, $themeStore.language, (res) => {
+        time = res
+      })
     } else if (passed < DAY) {
-      time = await translate(ui.string.HoursAgo, { hours: Math.floor(passed / HOUR) }, $themeStore.language)
+      translateCB(ui.string.HoursAgo, { hours: Math.floor(passed / HOUR) }, $themeStore.language, (res) => {
+        time = res
+      })
     } else if (passed < MONTH) {
-      time = await translate(ui.string.DaysAgo, { days: Math.floor(passed / DAY) }, $themeStore.language)
+      translateCB(ui.string.DaysAgo, { days: Math.floor(passed / DAY) }, $themeStore.language, (res) => {
+        time = res
+      })
     } else if (passed < YEAR) {
-      time = await translate(ui.string.MonthsAgo, { months: calculateMonthsPassed(now, value) }, $themeStore.language)
+      translateCB(ui.string.MonthsAgo, { months: calculateMonthsPassed(now, value) }, $themeStore.language, (res) => {
+        time = res
+      })
     } else {
-      time = await translate(ui.string.YearsAgo, { years: Math.floor(passed / YEAR) }, $themeStore.language)
+      translateCB(ui.string.YearsAgo, { years: Math.floor(passed / YEAR) }, $themeStore.language, (res) => {
+        time = res
+      })
     }
   }
 

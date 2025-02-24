@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import {
     Class,
     Doc,
@@ -29,19 +29,19 @@
   import { createQuery } from '@hcengineering/presentation'
   import {
     AnyComponent,
-    Button,
-    DropdownLabelsIntl,
-    IconBack,
-    IconForward,
     MonthCalendar,
     YearCalendar,
     areDatesEqual,
-    getMonday,
-    showPopup
+    getWeekStart,
+    showPopup,
+    AnySvelteComponent,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
+
   import { CalendarMode, DayCalendar, calendarByIdStore, hidePrivateEvents } from '../index'
   import calendar from '../plugin'
   import Day from './Day.svelte'
+  import CalendarHeader from './CalendarHeader.svelte'
 
   export let _class: Ref<Class<Doc>> = calendar.class.Event
   export let query: DocumentQuery<Event> | undefined = undefined
@@ -55,10 +55,13 @@
     CalendarMode.Month,
     CalendarMode.Year
   ]
+  export let headerComponent: AnySvelteComponent | undefined = undefined
 
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
+  const acc = getCurrentAccount()
+  const myPrimaryId = acc.primarySocialId
+  const mySocialStrings = acc.socialIds
 
-  const mondayStart = true
   let mode: CalendarMode = allowedModes.includes(CalendarMode.Days) ? CalendarMode.Days : allowedModes[0]
 
   // Current selected day
@@ -79,7 +82,7 @@
         return new Date(date).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Week: {
-        return getMonday(date, mondayStart).setHours(0, 0, 0, 0)
+        return getWeekStart(date, $deviceInfo.firstDayOfWeek).getTime()
       }
       case CalendarMode.Month: {
         return new Date(new Date(date).setDate(-7)).setHours(0, 0, 0, 0)
@@ -99,8 +102,8 @@
         return new Date(date).setDate(date.getDate() + 1)
       }
       case CalendarMode.Week: {
-        const monday = getMonday(date, mondayStart)
-        return new Date(monday.setDate(monday.getDate() + 7)).setHours(0, 0, 0, 0)
+        const startDay = getWeekStart(date, $deviceInfo.firstDayOfWeek)
+        return new Date(startDay.setDate(startDay.getDate() + 7)).getTime()
       }
       case CalendarMode.Month: {
         return new Date(new Date(date).setMonth(date.getMonth() + 1, 14)).setHours(0, 0, 0, 0)
@@ -118,7 +121,7 @@
 
   let calendars: Calendar[] = []
 
-  calendarsQuery.query(calendar.class.Calendar, { createdBy: me._id, hidden: false }, (res) => {
+  calendarsQuery.query(calendar.class.Calendar, { createdBy: { $in: mySocialStrings }, hidden: false }, (res) => {
     calendars = res
   })
 
@@ -188,6 +191,7 @@
         break
       }
       case CalendarMode.Month: {
+        currentDate.setDate(1)
         currentDate.setMonth(currentDate.getMonth() + val)
         break
       }
@@ -236,7 +240,7 @@
 
   const dragItemId = 'drag_item' as Ref<Event>
 
-  function dragEnter (e: CustomEvent<any>) {
+  function dragEnter (e: CustomEvent<any>): void {
     if (dragItem !== undefined) {
       const current = raw.find((p) => p._id === dragItemId)
       if (current !== undefined) {
@@ -245,7 +249,6 @@
         current.date = e.detail.date.getTime()
         current.dueDate = new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
       } else {
-        const me = getCurrentAccount() as PersonAccount
         const temp: Event = {
           _id: dragItemId,
           allDay: false,
@@ -257,9 +260,9 @@
           attachedToClass: dragItem._class,
           _class: dragEventClass,
           collection: 'events',
-          calendar: `${me._id}_calendar` as Ref<Calendar>,
-          modifiedBy: me._id,
-          participants: [me.person],
+          calendar: `${myPrimaryId}_calendar` as Ref<Calendar>,
+          modifiedBy: myPrimaryId,
+          participants: [me],
           modifiedOn: Date.now(),
           date: e.detail.date.getTime(),
           space: calendar.space.Calendar,
@@ -295,50 +298,45 @@
     { id: 'month', label: calendar.string.ModeMonth, mode: CalendarMode.Month },
     { id: 'year', label: calendar.string.ModeYear, mode: CalendarMode.Year }
   ]
+
+  function handleToday (): void {
+    inc(0)
+  }
+
+  function handleBack (): void {
+    inc(-1)
+  }
+
+  function handleForward (): void {
+    inc(1)
+  }
 </script>
 
-<div class="calendar-header">
-  <div class="title">
-    {getMonthName(currentDate)}
-    <span>{currentDate.getFullYear()}</span>
-  </div>
-  <div class="flex-row-center gap-2">
-    {#if ddItems.length > 1}
-      <DropdownLabelsIntl
-        items={ddItems.map((it) => {
-          return { id: it.id, label: it.label, params: it.params }
-        })}
-        size={'medium'}
-        selected={ddItems.find((it) => it.mode === mode)?.id}
-        on:selected={(e) => (mode = ddItems.find((it) => it.id === e.detail)?.mode ?? ddItems[0].mode)}
-      />
-    {/if}
-    <Button
-      label={calendar.string.Today}
-      on:click={() => {
-        inc(0)
-      }}
-    />
-    <Button
-      icon={IconBack}
-      kind={'ghost'}
-      on:click={() => {
-        inc(-1)
-      }}
-    />
-    <Button
-      icon={IconForward}
-      kind={'ghost'}
-      on:click={() => {
-        inc(1)
-      }}
-    />
-  </div>
-</div>
-
+{#if headerComponent}
+  <svelte:component
+    this={headerComponent}
+    bind:mode
+    {currentDate}
+    {ddItems}
+    monthName={getMonthName(currentDate)}
+    onToday={handleToday}
+    onBack={handleBack}
+    onForward={handleForward}
+    on:close
+  />
+{:else}
+  <CalendarHeader
+    bind:mode
+    {currentDate}
+    {ddItems}
+    monthName={getMonthName(currentDate)}
+    onToday={handleToday}
+    onBack={handleBack}
+    onForward={handleForward}
+  />
+{/if}
 {#if mode === CalendarMode.Year}
   <YearCalendar
-    {mondayStart}
     cellHeight={'2.5rem'}
     bind:selectedDate
     bind:currentDate
@@ -355,7 +353,7 @@
     </svelte:fragment>
   </YearCalendar>
 {:else if mode === CalendarMode.Month}
-  <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
+  <MonthCalendar cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
     <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
       <Day
         events={findEvents(objects, date)}
@@ -381,7 +379,6 @@
   <DayCalendar
     bind:this={dayCalendar}
     events={objects}
-    {mondayStart}
     displayedDaysCount={7}
     {dragItemId}
     startFromWeekStart
@@ -399,7 +396,6 @@
       bind:this={dayCalendar}
       events={objects}
       {dragItemId}
-      {mondayStart}
       displayedDaysCount={mode === CalendarMode.Days ? 3 : 1}
       startFromWeekStart={false}
       bind:selectedDate
@@ -412,27 +408,3 @@
     />
   {/key}
 {/if}
-
-<!-- <div class="min-h-4 max-h-4 h-4 flex-no-shrink" /> -->
-<style lang="scss">
-  .calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1.75rem 0.75rem 2.25rem;
-    min-width: 0;
-    min-height: 0;
-
-    .title {
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-
-      &::first-letter {
-        text-transform: uppercase;
-      }
-      span {
-        opacity: 0.4;
-      }
-    }
-  }
-</style>

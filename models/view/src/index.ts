@@ -14,7 +14,7 @@
 //
 
 import {
-  type Account,
+  type PersonId,
   type Class,
   type Client,
   DOMAIN_MODEL,
@@ -67,6 +67,7 @@ import {
   type ListItemPresenter,
   type ObjectEditor,
   type ObjectEditorFooter,
+  type ObjectPanelFooter,
   type ObjectEditorHeader,
   type ObjectFactory,
   type ObjectPanel,
@@ -115,7 +116,7 @@ export class TFilteredView extends TDoc implements FilteredView {
   viewOptions?: ViewOptions
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
-  users!: Ref<Account>[]
+  users!: PersonId[]
   attachedTo!: string
   sharable?: boolean
 }
@@ -213,6 +214,11 @@ export class TObjectEditorHeader extends TClass implements ObjectEditorHeader {
 
 @Mixin(view.mixin.ObjectEditorFooter, core.class.Class)
 export class TObjectEditorFooter extends TClass implements ObjectEditorFooter {
+  editor!: AnyComponent
+}
+
+@Mixin(view.mixin.ObjectPanelFooter, core.class.Class)
+export class TObjectPanelFooter extends TClass implements ObjectPanelFooter {
   editor!: AnyComponent
 }
 
@@ -445,6 +451,7 @@ export function createModel (builder: Builder): void {
     TObjectTitle,
     TObjectEditorHeader,
     TObjectEditorFooter,
+    TObjectPanelFooter,
     TSpaceHeader,
     TSpaceName,
     TSpacePresenter,
@@ -495,17 +502,8 @@ export function createModel (builder: Builder): void {
     editor: view.component.HTMLEditor
   })
 
-  classPresenter(
-    builder,
-    core.class.TypeCollaborativeMarkup,
-    view.component.MarkupPresenter,
-    undefined,
-    undefined,
-    view.component.MarkupDiffPresenter
-  )
-
-  builder.mixin(core.class.TypeCollaborativeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {
-    editor: view.component.CollaborativeHTMLEditor
+  builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.ActivityAttributePresenter, {
+    presenter: view.component.MarkupDiffPresenter
   })
 
   builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.InlineAttributEditor, {
@@ -513,11 +511,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.ActivityAttributePresenter, {
-    presenter: view.component.CollaborativeDocActivityPresenter
-  })
-
-  builder.mixin(core.class.TypeCollaborativeDocVersion, core.class.Class, view.mixin.InlineAttributEditor, {
-    editor: view.component.CollaborativeDocEditor
+    presenter: view.component.MarkupDiffPresenter
   })
 
   classPresenter(builder, core.class.TypeBoolean, view.component.BooleanPresenter, view.component.BooleanEditor)
@@ -656,12 +650,24 @@ export function createModel (builder: Builder): void {
     presentation.class.FilePreviewExtension,
     core.space.Model,
     {
-      contentType: ['application/pdf', 'application/json', 'text/*'],
+      contentType: ['application/pdf'],
       alignment: 'float',
       component: view.component.PDFViewer,
       extension: presentation.extension.FilePreviewExtension
     },
     view.extension.PDF
+  )
+
+  builder.createDoc(
+    presentation.class.FilePreviewExtension,
+    core.space.Model,
+    {
+      contentType: ['application/json', 'text/*'],
+      alignment: 'float',
+      component: view.component.TextViewer,
+      extension: presentation.extension.FilePreviewExtension
+    },
+    view.extension.Text
   )
 
   createAction(
@@ -697,6 +703,24 @@ export function createModel (builder: Builder): void {
       override: [view.action.Delete]
     },
     view.action.Archive
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.UnArchive,
+      label: view.string.UnArchive,
+      icon: view.icon.Archive,
+      category: view.category.General,
+      input: 'any',
+      query: {
+        archived: true
+      },
+      target: core.class.Space,
+      visibilityTester: view.function.CanArchiveSpace,
+      context: { mode: ['context', 'browser'], group: 'tools' }
+    },
+    view.action.UnArchive
   )
 
   createAction(
@@ -842,7 +866,7 @@ export function createModel (builder: Builder): void {
       category: view.category.GeneralNavigation,
       input: 'none',
       target: core.class.Doc,
-      allowedForEditableContent: true,
+      allowedForEditableContent: 'noSelection',
       context: {
         mode: ['workbench', 'browser', 'panel', 'editor', 'input']
       }
@@ -910,6 +934,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.DateFilter,
     group: 'bottom'
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
   })
 
   builder.createDoc(
@@ -1148,6 +1176,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringFilterPresenter
   })
 
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.StringFilterPresenter
+  })
+
   classPresenter(builder, core.class.EnumOf, view.component.EnumPresenter, view.component.EnumEditor)
 
   createAction(
@@ -1187,6 +1219,19 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.Space, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Open, view.action.OpenInNewTab, view.action.Delete]
+  })
+  builder.mixin(view.class.FilteredView, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.PersonIdPresenter,
+    arrayPresenter: view.component.PersonArrayEditor
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.PersonIdFilterValuePresenter
   })
 }
 

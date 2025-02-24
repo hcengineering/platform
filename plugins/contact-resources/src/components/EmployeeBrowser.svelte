@@ -29,29 +29,23 @@
   $: updateEmployees(resultQuery)
 </script>
 
-<div class="container">
-  <Scroller>
-    <div>
-      {#each employees as employee}
-        <div class="fs-title item">
-          <EmployeePresenter value={employee} avatarSize="medium" />
-        </div>
-      {/each}
+<Scroller padding={'var(--spacing-2)'}>
+  {#each employees as employee}
+    <div class="fs-title item">
+      <EmployeePresenter value={employee} avatarSize="medium" />
     </div>
-  </Scroller>
-</div>
+  {/each}
+</Scroller>
 
 <style lang="scss">
-  .container {
-    border-top: 1px solid var(--divider-color);
-  }
   .item {
-    color: var(--caption-color);
-    padding: 0.5rem 2rem;
+    color: var(--theme-caption-color);
+    padding: 0.5rem 0.5rem;
+    border-radius: var(--medium-BorderRadius);
 
     &:hover,
     &:focus {
-      background-color: var(--popup-bg-hover);
+      background-color: var(--highlight-hover);
     }
   }
 </style>

@@ -15,9 +15,11 @@
 <script lang="ts">
   import { AttachedData } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue, IssueDraft, IssuePriority, IssueTemplateData } from '@hcengineering/tracker'
+  import { Issue, IssueDraft, IssuePriority, IssueTemplateData, TrackerEvents } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
+
   import PriorityInlineEditor from './PriorityInlineEditor.svelte'
 
   export let value: Issue | AttachedData<Issue> | IssueTemplateData | IssueDraft
@@ -44,6 +46,10 @@
 
     if ('_class' in value) {
       await client.update(value, { priority: newPriority })
+      Analytics.handleEvent(TrackerEvents.IssueSetPriority, {
+        issue: value.identifier,
+        priority: newPriority
+      })
     }
   }
 </script>

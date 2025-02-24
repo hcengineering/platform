@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceId } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { type ContentTextAdapterConfiguration } from './configuration'
 import { type ContentTextAdapter } from './types'
@@ -21,32 +21,25 @@ import { type ContentTextAdapter } from './types'
 class ContentAdapter implements ContentTextAdapter {
   constructor (
     private readonly adapters: Map<string, ContentTextAdapter>,
-    private readonly defaultAdapter: ContentTextAdapter,
-    private readonly context: MeasureContext
+    private readonly defaultAdapter: ContentTextAdapter
   ) {}
 
-  async content (name: string, type: string, doc: string | Readable | Buffer): Promise<string> {
+  content (ctx: MeasureContext, workspace: WorkspaceUuid, name: string, type: string, doc: Readable): Promise<string> {
     const adapter = this.adapters.get(type) ?? this.defaultAdapter
-    return await adapter.content(name, type, doc)
-  }
-
-  metrics (): MeasureContext {
-    return this.context
+    return adapter.content(ctx, workspace, name, type, doc)
   }
 }
 
 export async function createContentAdapter (
   contentAdapters: Record<string, ContentTextAdapterConfiguration>,
-  defaultContentAdapter: string,
-  workspace: WorkspaceId,
-  context: MeasureContext
+  defaultContentAdapter: string
 ): Promise<ContentTextAdapter> {
   const adapters = new Map<string, ContentTextAdapter>()
   let defaultAdapter: ContentTextAdapter | undefined
 
   for (const key in contentAdapters) {
     const adapterConf = contentAdapters[key]
-    const adapter = await adapterConf.factory(adapterConf.url, workspace, context.newChild(key, {}))
+    const adapter = await adapterConf.factory(adapterConf.url)
 
     adapters.set(adapterConf.contentType, adapter)
     if (key === defaultContentAdapter) {
@@ -56,5 +49,5 @@ export async function createContentAdapter (
   if (defaultAdapter === undefined) {
     throw new Error('No default content adapter')
   }
-  return new ContentAdapter(adapters, defaultAdapter, context)
+  return new ContentAdapter(adapters, defaultAdapter)
 }

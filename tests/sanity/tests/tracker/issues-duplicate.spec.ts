@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { NewIssue } from '../model/tracker/types'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
@@ -11,13 +10,11 @@ test.use({
 })
 
 test.describe('Tracker duplicate issue tests', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     issuesPage = new IssuesPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
@@ -36,7 +33,6 @@ test.describe('Tracker duplicate issue tests', () => {
       title: `Duplicate issue-${generatedId}`,
       description: 'Second Duplicate issue'
     }
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(firstIssue)
@@ -52,10 +48,13 @@ test.describe('Tracker duplicate issue tests', () => {
     await trackerNavigationMenuPage.openTemplateForProject('Default')
     await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.searchIssueByName(secondIssue.title)
+
+    await issuesPage.checkIssuesCount(secondIssue.title, 2, 30)
+
     const secondIssueId = await issuesPage.getIssueId(secondIssue.title, 0)
 
     expect(firstIssueId).not.toEqual(secondIssueId)
-    await issuesPage.checkIssuesCount(firstIssue.title, 2)
+    await issuesPage.checkIssuesCount(firstIssue.title, 2, 30)
 
     await test.step('Update the first issue title', async () => {
       const newIssueTitle = `Duplicate Update issue-${generateId()}`

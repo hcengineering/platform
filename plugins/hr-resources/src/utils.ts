@@ -35,21 +35,16 @@ export async function addMember (client: TxOperations, employee?: Employee, valu
             params: {
               current: current.name,
               department: value.name
+            },
+            action: async () => {
+              await client.updateMixin(employee._id, employee._class, employee.space, hr.mixin.Staff, {
+                department: value._id
+              })
             }
           },
           undefined,
           (res?: boolean) => {
-            if (res === true && value !== undefined) {
-              void client
-                .updateMixin(employee._id, employee._class, employee.space, hr.mixin.Staff, {
-                  department: value._id
-                })
-                .then(() => {
-                  resolve(null)
-                })
-            } else {
-              resolve(null)
-            }
+            resolve(null)
           }
         )
       })

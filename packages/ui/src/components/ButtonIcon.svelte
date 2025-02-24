@@ -26,13 +26,14 @@
   export let disabled: boolean = false
   export let pressed: boolean = false
   export let hasMenu: boolean = false
+  export let noPrint: boolean = false
   export let loading: boolean = false
   export let inheritColor: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let focusIndex = -1
   export let id: string | undefined = undefined
-
-  let element: ButtonBase | undefined
+  export let dataId: string | undefined = undefined
+  export let element: HTMLButtonElement | undefined = undefined
 
   export function focus () {
     element?.focus()
@@ -40,7 +41,7 @@
 </script>
 
 <ButtonBase
-  bind:this={element}
+  bind:element
   type={'type-button-icon'}
   {kind}
   {iconSize}
@@ -52,9 +53,11 @@
   {inheritColor}
   {pressed}
   {hasMenu}
+  {noPrint}
   {tooltip}
   {focusIndex}
   {id}
+  {dataId}
   on:click
   on:keydown
 />

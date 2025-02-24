@@ -15,23 +15,29 @@
 //
 
 import {
-  Account,
   AttachedDoc,
   Class,
+  Collection,
   Doc,
+  PersonId,
   Ref,
+  SocialKey,
   Space,
   Timestamp,
   UXObject,
+  type BasePerson,
   type Blob,
+  type MarkupBlobRef,
   type Data,
   type WithLookup
 } from '@hcengineering/core'
 import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
-import type { AnyComponent, ColorDefinition, ResolvedLocation, Location } from '@hcengineering/ui'
+import type { AnyComponent, ColorDefinition, ResolvedLocation, Location, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, FilterMode, Viewlet } from '@hcengineering/view'
+import type { Readable } from 'svelte/store'
+import { PermissionsStore } from './types'
 
 /**
  * @public
@@ -48,6 +54,14 @@ export interface ChannelProvider extends Doc, UXObject {
 
   // Integration type
   integrationType?: Ref<Doc>
+}
+
+export interface SocialIdentity extends SocialKey, AttachedDoc {
+  attachedTo: Ref<Person>
+  attachedToClass: Ref<Class<Person>>
+
+  key: PersonId
+  confirmed: boolean
 }
 
 /**
@@ -107,6 +121,7 @@ export interface AvatarInfo extends Doc {
     url?: string
   }
 }
+
 /**
  * @public
  */
@@ -115,14 +130,15 @@ export interface Contact extends Doc, AvatarInfo {
   attachments?: number
   comments?: number
   channels?: number
-  city: string
+  city?: string
 }
 
 /**
  * @public
  */
-export interface Person extends Contact {
+export interface Person extends Contact, BasePerson {
   birthday?: Timestamp | null
+  socialIds?: Collection<SocialIdentity>
 }
 
 /**
@@ -136,7 +152,7 @@ export interface Member extends AttachedDoc {
  */
 export interface Organization extends Contact {
   members: number
-  description?: string
+  description: MarkupBlobRef | null
 }
 
 /**
@@ -161,13 +177,6 @@ export interface Employee extends Person {
 /**
  * @public
  */
-export interface PersonAccount extends Account {
-  person: Ref<Person>
-}
-
-/**
- * @public
- */
 export interface ContactsTab extends Doc {
   label: IntlString
   component: AnyComponent
@@ -178,6 +187,10 @@ export interface ContactsTab extends Doc {
  * @public
  */
 export const contactId = 'contact' as Plugin
+
+export interface PersonSpace extends Space {
+  person: Ref<Person>
+}
 
 /**
  * @public
@@ -191,9 +204,10 @@ export const contactPlugin = plugin(contactId, {
     Person: '' as Ref<Class<Person>>,
     Member: '' as Ref<Class<Member>>,
     Organization: '' as Ref<Class<Organization>>,
-    PersonAccount: '' as Ref<Class<PersonAccount>>,
     Status: '' as Ref<Class<Status>>,
-    ContactsTab: '' as Ref<Class<ContactsTab>>
+    ContactsTab: '' as Ref<Class<ContactsTab>>,
+    PersonSpace: '' as Ref<Class<PersonSpace>>,
+    SocialIdentity: '' as Ref<Class<SocialIdentity>>
   },
   mixin: {
     Employee: '' as Ref<Class<Employee>>
@@ -215,7 +229,9 @@ export const contactPlugin = plugin(contactId, {
     EditOrganizationPanel: '' as AnyComponent,
     CollaborationUserAvatar: '' as AnyComponent,
     CreateGuest: '' as AnyComponent,
-    SpaceMembersEditor: '' as AnyComponent
+    SpaceMembersEditor: '' as AnyComponent,
+    ContactNamePresenter: '' as AnyComponent,
+    PersonFilterValuePresenter: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
@@ -228,7 +244,8 @@ export const contactPlugin = plugin(contactId, {
     Homepage: '' as Ref<ChannelProvider>,
     Whatsapp: '' as Ref<ChannelProvider>,
     Skype: '' as Ref<ChannelProvider>,
-    Profile: '' as Ref<ChannelProvider>
+    Profile: '' as Ref<ChannelProvider>,
+    Viber: '' as Ref<ChannelProvider>
   },
   avatarProvider: {
     Color: '' as Ref<AvatarProvider>,
@@ -265,7 +282,9 @@ export const contactPlugin = plugin(contactId, {
     Whatsapp: '' as Asset,
     ComponentMembers: '' as Asset,
     Profile: '' as Asset,
-    KickUser: '' as Asset
+    KickUser: '' as Asset,
+    Contacts: '' as Asset,
+    Viber: '' as Asset
   },
   space: {
     Contacts: '' as Ref<Space>
@@ -292,7 +311,14 @@ export const contactPlugin = plugin(contactId, {
     SelectUsers: '' as IntlString,
     AddGuest: '' as IntlString,
     Members: '' as IntlString,
-    Contacts: '' as IntlString
+    Contacts: '' as IntlString,
+    Employees: '' as IntlString,
+    Persons: '' as IntlString,
+    ViewProfile: '' as IntlString,
+    SocialId: '' as IntlString,
+    SocialIds: '' as IntlString,
+    Type: '' as IntlString,
+    Confirmed: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
@@ -323,9 +349,16 @@ export const contactPlugin = plugin(contactId, {
   },
   ids: {
     MentionCommonNotificationType: '' as Ref<Doc>
+  },
+  extension: {
+    EmployeePopupActions: '' as ComponentExtensionId
+  },
+  store: {
+    Permissions: '' as Resource<Readable<PermissionsStore>>
   }
 })
 
 export default contactPlugin
 export * from './types'
 export * from './utils'
+export * from './analytics'

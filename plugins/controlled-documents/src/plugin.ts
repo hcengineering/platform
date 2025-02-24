@@ -6,17 +6,17 @@ import {
   type Type,
   type Space,
   type SpaceTypeDescriptor,
-  type Permission
+  type Permission,
+  Role,
+  Sequence
 } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
-import type { AnyComponent, ResolvedLocation, Location } from '@hcengineering/ui'
+import type { AnyComponent, ResolvedLocation, Location } from '@hcengineering/ui/src/types'
 import { Action } from '@hcengineering/view'
 
 import type {
-  AttachmentsDocumentSection,
   ChangeControl,
-  CollaborativeDocumentSection,
   ControlledDocument,
   ControlledDocumentState,
   Document,
@@ -27,16 +27,11 @@ import type {
   DocumentMeta,
   DocumentRequest,
   DocumentReviewRequest,
-  DocumentSection,
-  DocumentSectionCreator,
-  DocumentSectionEditor,
-  DocumentSectionPresenter,
   DocumentSpace,
   DocumentSpaceType,
   DocumentSpaceTypeDescriptor,
   DocumentState,
   DocumentTemplate,
-  DocumentTemplateSection,
   DocumentTraining,
   HierarchyDocument,
   ExternalSpace,
@@ -44,9 +39,9 @@ import type {
   Project,
   ProjectMeta,
   ProjectDocument,
-  Sequence,
   ControlledDocumentSnapshot
 } from './types'
+import type { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public
@@ -74,12 +69,7 @@ export const documentsPlugin = plugin(documentsId, {
     DocumentCategory: '' as Ref<Class<DocumentCategory>>,
     ControlledDocument: '' as Ref<Class<ControlledDocument>>,
     ChangeControl: '' as Ref<Class<ChangeControl>>,
-    DocumentSection: '' as Ref<Class<DocumentSection>>,
     DocumentComment: '' as Ref<Class<DocumentComment>>,
-    CollaborativeDocumentSection: '' as Ref<Class<CollaborativeDocumentSection>>,
-    AttachmentsDocumentSection: '' as Ref<Class<AttachmentsDocumentSection>>,
-
-    Sequence: '' as Ref<Class<Sequence>>,
 
     DocumentRequest: '' as Ref<Class<DocumentRequest>>,
     DocumentReviewRequest: '' as Ref<Class<DocumentReviewRequest>>,
@@ -91,10 +81,6 @@ export const documentsPlugin = plugin(documentsId, {
   mixin: {
     DocumentTemplate: '' as Ref<Mixin<DocumentTemplate>>,
     DocumentTraining: '' as Ref<Mixin<DocumentTraining>>,
-    DocumentSectionEditor: '' as Ref<Mixin<DocumentSectionEditor>>,
-    DocumentSectionPresenter: '' as Ref<Mixin<DocumentSectionPresenter>>,
-    DocumentSectionCreator: '' as Ref<Mixin<DocumentSectionCreator>>,
-    DocumentTemplateSection: '' as Ref<Mixin<DocumentTemplateSection>>,
     DocumentSpaceTypeData: '' as Ref<Mixin<DocumentSpace>>
     // DocTemplateActions: '' as Ref<Mixin<DocTemplateActions>>
   },
@@ -119,19 +105,29 @@ export const documentsPlugin = plugin(documentsId, {
     DocumentMetaPresenter: '' as AnyComponent,
     DocumentVersionPresenter: '' as AnyComponent,
     DeleteCategoryPopup: '' as AnyComponent,
-    DocumentIcon: '' as AnyComponent
+    DocumentIcon: '' as AnyComponent,
+    CreateFolder: '' as AnyComponent
   },
   action: {
     ChangeDocumentOwner: '' as Ref<Action<Doc, any>>,
-    DeleteDocumentTemplateSection: '' as Ref<Action>,
     CreateChildDocument: '' as Ref<Action<Document, any>>,
     CreateChildTemplate: '' as Ref<Action<Document, any>>,
+    CreateChildFolder: '' as Ref<Action<Document, any>>,
+    RenameFolder: '' as Ref<Action<Document, any>>,
+    DeleteFolder: '' as Ref<Action<Document, any>>,
     CreateDocument: '' as Ref<Action<DocumentSpace, any>>,
     CreateTemplate: '' as Ref<Action<DocumentSpace, any>>,
+    CreateFolder: '' as Ref<Action<DocumentSpace, any>>,
     DeleteDocumentCategory: '' as Ref<Action<Doc, any>>,
     DeleteDocument: '' as Ref<Action>,
+    ArchiveDocument: '' as Ref<Action>,
+    MakeDocumentObsolete: '' as Ref<Action>,
     EditDocSpace: '' as Ref<Action>,
-    Print: '' as Ref<Action<Doc, { signed: boolean }>>
+    TransferDocument: '' as Ref<Action>,
+    Print: '' as Ref<Action<Doc, { signed: boolean }>>,
+    PrintProjectDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
+    OpenDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
+    OpenDocumentInNewTab: '' as Ref<Action<Doc, { signed: boolean }>>
   },
   function: {
     CanChangeDocumentOwner: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
@@ -142,6 +138,7 @@ export const documentsPlugin = plugin(documentsId, {
     CheckmarkCircle: '' as Asset,
     DocumentApplication: '' as Asset,
     NewDocument: '' as Asset,
+    Folder: '' as Asset,
     Document: '' as Asset,
     Library: '' as Asset,
     StateDraft: '' as Asset,
@@ -151,9 +148,6 @@ export const documentsPlugin = plugin(documentsId, {
     StateObsolete: '' as Asset,
     ArrowUp: '' as Asset,
     ArrowDown: '' as Asset,
-    Duplicate: '' as Asset,
-    EditDescription: '' as Asset,
-    EditGuidance: '' as Asset,
     Configure: '' as Asset
   },
   space: {
@@ -180,7 +174,6 @@ export const documentsPlugin = plugin(documentsId, {
     Owner: '' as IntlString,
     Status: '' as IntlString,
     Labels: '' as IntlString,
-    Sections: '' as IntlString,
     Description: '' as IntlString,
     Reason: '' as IntlString,
     CollaborativeDocument: '' as IntlString,
@@ -194,11 +187,7 @@ export const documentsPlugin = plugin(documentsId, {
     EffectiveDate: '' as IntlString,
     PlannedEffectiveDate: '' as IntlString,
     ChangeControl: '' as IntlString,
-    Section: '' as IntlString,
     Rank: '' as IntlString,
-    CollaborativeSection: '' as IntlString,
-    CollaboratorSectionId: '' as IntlString,
-    AttachmentsSection: '' as IntlString,
     DocumentRequest: '' as IntlString,
     DocumentReviewRequest: '' as IntlString,
     DocumentApprovalRequest: '' as IntlString,
@@ -206,7 +195,6 @@ export const documentsPlugin = plugin(documentsId, {
     Categories: '' as IntlString,
     Guidance: '' as IntlString,
     Required: '' as IntlString,
-    SectionTemplate: '' as IntlString,
     Major: '' as IntlString,
     Minor: '' as IntlString,
     Patch: '' as IntlString,
@@ -215,12 +203,17 @@ export const documentsPlugin = plugin(documentsId, {
     Deleted: '' as IntlString,
     Effective: '' as IntlString,
     Archived: '' as IntlString,
+    Obsolete: '' as IntlString,
+    MakeDocumentObsolete: '' as IntlString,
+    MakeDocumentObsoleteDialog: '' as IntlString,
+    MakeDocumentObsoleteConfirm: '' as IntlString,
     Parent: '' as IntlString,
     Template: '' as IntlString,
     GeneralInfo: '' as IntlString,
     InProgress: '' as IntlString,
     Resolve: '' as IntlString,
     Unresolve: '' as IntlString,
+    Pending: '' as IntlString,
     Resolved: '' as IntlString,
     ShowResolved: '' as IntlString,
     Ordering: '' as IntlString,
@@ -231,11 +224,12 @@ export const documentsPlugin = plugin(documentsId, {
     ChangeOwnerWarning: '' as IntlString,
     CreateDocument: '' as IntlString,
     CreateTemplate: '' as IntlString,
+    CreateFolder: '' as IntlString,
+    RenameFolder: '' as IntlString,
     DeleteCategory: '' as IntlString,
     DeleteCategoryHint: '' as IntlString,
     DeleteCategoryWarning: '' as IntlString,
     Key: '' as IntlString,
-    SectionKey: '' as IntlString,
     CommentsSequence: '' as IntlString,
     Index: '' as IntlString,
     GeneralDocumentation: '' as IntlString,
@@ -248,6 +242,7 @@ export const documentsPlugin = plugin(documentsId, {
     Path: '' as IntlString,
     CreateChildDocument: '' as IntlString,
     CreateChildTemplate: '' as IntlString,
+    CreateChildFolder: '' as IntlString,
     All: '' as IntlString,
     ImpactAnalysis: '' as IntlString,
     ImpactedDocuments: '' as IntlString,
@@ -266,6 +261,8 @@ export const documentsPlugin = plugin(documentsId, {
     ReviewDocumentDescription: '' as IntlString,
     ApproveDocumentPermission: '' as IntlString,
     ApproveDocumentDescription: '' as IntlString,
+    ArchiveDocumentPermission: '' as IntlString,
+    ArchiveDocumentDescription: '' as IntlString,
     CoAuthorDocumentPermission: '' as IntlString,
     CoAuthorDocumentDescription: '' as IntlString,
     CreateDocumentPermission: '' as IntlString,
@@ -279,11 +276,17 @@ export const documentsPlugin = plugin(documentsId, {
     DeleteDocumentCategoryPermission: '' as IntlString,
     DeleteDocumentCategoryDescription: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+
+    Transfer: '' as IntlString,
+    TransferWarning: '' as IntlString,
+    TransferDocuments: '' as IntlString,
+    TransferDocumentsHint: '' as IntlString
   },
   ids: {
     NoParent: '' as Ref<DocumentMeta>,
-    NoProject: '' as Ref<Project>
+    NoProject: '' as Ref<Project>,
+    Folder: '' as Ref<HierarchyDocument>
   },
   sequence: {
     Templates: '' as Ref<Sequence>,
@@ -297,6 +300,11 @@ export const documentsPlugin = plugin(documentsId, {
     CA: '' as Ref<DocumentCategory>,
     CC: '' as Ref<DocumentCategory>
   },
+  role: {
+    QARA: '' as Ref<Role>,
+    Manager: '' as Ref<Role>,
+    QualifiedUser: '' as Ref<Role>
+  },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   },
@@ -306,6 +314,7 @@ export const documentsPlugin = plugin(documentsId, {
   permission: {
     ReviewDocument: '' as Ref<Permission>,
     ApproveDocument: '' as Ref<Permission>,
+    ArchiveDocument: '' as Ref<Permission>,
     CoAuthorDocument: '' as Ref<Permission>,
     CreateDocument: '' as Ref<Permission>,
     UpdateDocumentOwner: '' as Ref<Permission>,
@@ -315,6 +324,9 @@ export const documentsPlugin = plugin(documentsId, {
   },
   template: {
     ProductChangeControl: '' as Ref<DocumentTemplate>
+  },
+  notification: {
+    CoAuthorsNotification: '' as Ref<NotificationType>
   }
 })
 

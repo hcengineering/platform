@@ -12,7 +12,7 @@ export class InboxPage {
   readonly leftSidePanelOpen = (): Locator => this.page.locator('#btnPAside')
   readonly leftSidePanelClose = (): Locator => this.page.locator('#btnPClose')
   readonly inboxChat = (text: string): Locator => this.page.getByText(text)
-  readonly issueTitle = (issueTitle: string): Locator => this.page.getByTitle(issueTitle)
+  readonly issueTitle = (issueTitle: string): Locator => this.page.getByText(issueTitle).first()
 
   // ACTIONS
 
@@ -46,6 +46,10 @@ export class InboxPage {
 
   async checkIfIssueIsPresentInInbox (issueTitle: string): Promise<void> {
     await expect(this.issueTitle(issueTitle)).toBeVisible()
+  }
+
+  async clickIssuePresentInInbox (issueTitle: string): Promise<void> {
+    await this.issueTitle(issueTitle).click()
   }
 
   async checkIfInboxChatExists (text: string, exists: boolean): Promise<void> {

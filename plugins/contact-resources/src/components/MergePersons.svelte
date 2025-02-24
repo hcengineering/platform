@@ -13,8 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  import { Analytics } from '@hcengineering/analytics'
   import { Channel, Person, getName } from '@hcengineering/contact'
-  import core, { Doc, DocumentUpdate, Mixin, Ref, RefTo, Tx, TxOperations, TxProcessor } from '@hcengineering/core'
+  import core, {
+    ArrOf,
+    Doc,
+    DocumentUpdate,
+    Mixin,
+    Ref,
+    RefTo,
+    Tx,
+    TxOperations,
+    TxProcessor
+  } from '@hcengineering/core'
   import { Card, createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
   import { Toggle } from '@hcengineering/ui'
   import { isCollectionAttr } from '@hcengineering/view-resources'
@@ -23,10 +35,10 @@
   import Avatar from './Avatar.svelte'
   import ChannelPresenter from './ChannelPresenter.svelte'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
-  import EditEmployee from './EditEmployee.svelte'
   import MergeAttributeComparer from './MergeAttributeComparer.svelte'
   import MergeComparer from './MergeComparer.svelte'
   import UserBox from './UserBox.svelte'
+  import EditPerson from './EditPerson.svelte'
 
   export let value: Person
   const dispatch = createEventDispatcher()
@@ -112,15 +124,17 @@
       }
       await client.update(targetPerson, _update)
     }
+    const ops = client.apply()
     for (const channel of resultChannels.values()) {
       if (channel.attachedTo === targetPerson._id) continue
-      await client.update(channel, { attachedTo: targetPerson._id })
+      await ops.update(channel, { attachedTo: targetPerson._id })
     }
     for (const old of oldChannels) {
       if (!(enabledChannels.get(old._id) ?? true)) {
-        await client.remove(old)
+        await ops.remove(old)
       }
     }
+
     for (const mixin in mixinUpdate) {
       const attrs = (mixinUpdate as any)[mixin]
       if (Object.keys(attrs).length > 0) {
@@ -141,6 +155,7 @@
         )
       }
     }
+    await ops.commit()
     await updateAllRefs(client, sourcePerson, targetPerson)
 
     dispatch('close')
@@ -211,7 +226,7 @@
   function selectMixin (mixin: Ref<Mixin<Doc>>, field: string, targetValue: boolean) {
     const upd = mixinUpdate[mixin] ?? {}
     if (!targetValue) {
-      ;(upd as any)[field] = (value as any)[field]
+      ;(upd as any)[field] = (sourcePerson as any)[mixin][field]
     } else {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (upd as any)[field]
@@ -220,84 +235,96 @@
   }
 
   async function updateAllRefs (client: TxOperations, sourceAccount: Person, targetAccount: Person): Promise<Tx[]> {
-    const accounts = await client.findAll(contact.class.PersonAccount, { person: sourceAccount._id })
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const accounts = await client.findAll(contact.class.PersonAccount, { person: sourceAccount._id })
 
-    const h = client.getHierarchy()
-    // Move all possible references to Account and Employee and replace to target one.
-    const reftos = (await client.findAll(core.class.Attribute, { 'type._class': core.class.RefTo })).filter((it) => {
-      const to = it.type as RefTo<Doc>
-      return (
-        to.to === contact.class.Person ||
-        to.to === contact.mixin.Employee ||
-        to.to === core.class.Account ||
-        to.to === contact.class.PersonAccount
-      )
-    })
+    // const h = client.getHierarchy()
+    // // Move all possible references to Account and Employee and replace to target one.
+    // const ancestors = h.getAncestors(contact.class.Person)
+    // const reftos = (await client.findAll(core.class.Attribute, { 'type._class': core.class.RefTo })).filter((it) => {
+    //   const to = it.type as RefTo<Doc>
+    //   return (
+    //     to.to === core.class.Account ||
+    //     to.to === contact.class.PersonAccount ||
+    //     h.getBaseClass(to.to) === contact.class.Person ||
+    //     ancestors.includes(to.to)
+    //   )
+    // })
 
-    for (const attr of reftos) {
-      if (attr.name === '_id') {
-        continue
-      }
-      const to = attr.type as RefTo<Doc>
-      if (to.to === contact.mixin.Employee || to.to === contact.class.Person) {
-        const descendants = h.getDescendants(attr.attributeOf)
-        for (const d of descendants) {
-          if (h.isDerived(d, core.class.Tx)) {
-            continue
-          }
-          if (h.findDomain(d) !== undefined) {
-            while (true) {
-              const values = await client.findAll(d, { [attr.name]: sourceAccount._id }, { limit: 100 })
-              if (values.length === 0) {
-                break
-              }
+    // for (const attr of reftos) {
+    //   if (attr.name === '_id') {
+    //     continue
+    //   }
+    //   try {
+    //     const descendants = h.getDescendants(attr.attributeOf)
+    //     for (const d of descendants) {
+    //       if (h.isDerived(d, core.class.Tx) || h.isDerived(d, core.class.BenchmarkDoc)) {
+    //         continue
+    //       }
+    //       if (h.findDomain(d) !== undefined) {
+    //         while (true) {
+    //           const values = await client.findAll(d, { [attr.name]: sourceAccount._id }, { limit: 100 })
+    //           if (values.length === 0) {
+    //             break
+    //           }
 
-              const builder = client.apply(sourceAccount._id)
-              for (const v of values) {
-                await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
-              }
-              if (builder.txes.length > 0) {
-                await builder.commit()
-              }
-            }
-          }
-        }
-      }
-    }
-    const arrs = await client.findAll(core.class.Attribute, { 'type._class': core.class.ArrOf })
-    for (const attr of arrs) {
-      if (attr.name === '_id') {
-        continue
-      }
-      const to = attr.type as RefTo<Doc>
-      if (to.to === contact.mixin.Employee || to.to === contact.class.Person) {
-        const descendants = h.getDescendants(attr.attributeOf)
-        for (const d of descendants) {
-          if (h.isDerived(d, core.class.Tx)) {
-            continue
-          }
-          if (h.findDomain(d) !== undefined) {
-            while (true) {
-              const values = await client.findAll(attr.attributeOf, { [attr.name]: sourceAccount._id }, { limit: 100 })
-              if (values.length === 0) {
-                break
-              }
-              const builder = client.apply(sourceAccount._id)
-              for (const v of values) {
-                await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
-              }
-              await builder.commit()
-            }
-          }
-        }
-      }
-    }
+    //           const builder = client.apply(sourceAccount._id)
+    //           for (const v of values) {
+    //             await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
+    //           }
+    //           if (builder.txes.length > 0) {
+    //             await builder.commit()
+    //           }
+    //         }
+    //       }
+    //     }
+    //   } catch (err: any) {
+    //     Analytics.handleError(err)
+    //   }
+    // }
+    // const arrs = (await client.findAll(core.class.Attribute, { 'type._class': core.class.ArrOf })).filter((it) => {
+    //   const to = it.type as ArrOf<Doc>
+    //   if (to.of._class !== core.class.RefTo) return false
+    //   const refTo = to.of as RefTo<Doc>
+    //   return (
+    //     refTo.to === core.class.Account ||
+    //     refTo.to === contact.class.PersonAccount ||
+    //     h.getBaseClass(refTo.to) === contact.class.Person ||
+    //     ancestors.includes(refTo.to)
+    //   )
+    // })
 
-    await client.remove(sourceAccount)
-    for (const account of accounts) {
-      await client.update(account, { person: targetAccount._id })
-    }
-    return []
+    // for (const attr of arrs) {
+    //   if (attr.name === '_id') {
+    //     continue
+    //   }
+    //   const descendants = h.getDescendants(attr.attributeOf)
+    //   for (const d of descendants) {
+    //     if (h.isDerived(d, core.class.Tx) || h.isDerived(d, core.class.BenchmarkDoc)) {
+    //       continue
+    //     }
+    //     if (h.findDomain(d) !== undefined) {
+    //       while (true) {
+    //         const values = await client.findAll(attr.attributeOf, { [attr.name]: sourceAccount._id }, { limit: 100 })
+    //         if (values.length === 0) {
+    //           break
+    //         }
+    //         const builder = client.apply(sourceAccount._id)
+    //         for (const v of values) {
+    //           await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
+    //         }
+    //         await builder.commit()
+    //       }
+    //     }
+    //   }
+    // }
+
+    // await client.remove(sourceAccount)
+    // for (const account of accounts) {
+    //   await client.update(account, { person: targetAccount._id })
+    // }
+    // return []
   }
 
   const toAny = (a: any) => a
@@ -330,7 +357,7 @@
         shape={'circle'}
       />
     </div>
-    >>
+    <span class="mx-4">&gt;&gt;</span>
     <div class="flex-row-center">
       <UserBox
         _class={contact.class.Person}
@@ -363,13 +390,7 @@
             <Avatar person={item} size={'x-large'} icon={contact.icon.Person} name={item.name} />
           </svelte:fragment>
         </MergeComparer>
-        <MergeComparer
-          key="name"
-          value={sourcePerson}
-          targetEmp={targetPerson}
-          onChange={select}
-          selected={update.name !== undefined}
-        >
+        <MergeComparer key="name" value={sourcePerson} targetEmp={targetPerson} onChange={select} selected>
           <svelte:fragment slot="item" let:item>
             {getName(client.getHierarchy(), item)}
           </svelte:fragment>
@@ -381,7 +402,7 @@
             targetEmp={targetPerson}
             onChange={select}
             _class={contact.mixin.Employee}
-            selected={toAny(update)[attribute[0]] !== undefined}
+            selected
           />
         {/each}
         {#each mixins as mixin}
@@ -395,7 +416,7 @@
                 selectMixin(mixin, key, value)
               }}
               _class={mixin}
-              selected={toAny(mixinUpdate)?.[mixin]?.[attribute] !== undefined}
+              selected
             />
           {/each}
         {/each}
@@ -416,7 +437,7 @@
         {/each}
       </div>
       <div class="flex-col-center antiPopup p-4">
-        <EditEmployee object={result} readonly channels={resultChannels} />
+        <EditPerson object={result} readonly channels={resultChannels} />
       </div>
     {/if}
   {/key}

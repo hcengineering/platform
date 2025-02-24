@@ -14,9 +14,9 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { createEventDispatcher, afterUpdate, onDestroy } from 'svelte'
   import calendar, { Calendar, generateEventId } from '@hcengineering/calendar'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { TagElement } from '@hcengineering/tags'
@@ -28,6 +28,8 @@
   import { timeSeparators } from '../utils'
   import { dragging } from '../dragging'
   import time from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
+  import { TimeEvents } from '@hcengineering/time'
 
   const dispatch = createEventDispatcher()
 
@@ -46,13 +48,13 @@
     if (dragItem === null) return
     const doc = dragItem
     const date = e.detail.date.getTime()
-    const currentUser = getCurrentAccount() as PersonAccount
+    const currentAccount = getCurrentAccount()
     const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
-      createdBy: currentUser._id,
+      createdBy: currentAccount.primarySocialId,
       hidden: false,
       default: true
     })
-    const _calendar = extCalendar ? extCalendar._id : (`${currentUser._id}_calendar` as Ref<Calendar>)
+    const _calendar = extCalendar ? extCalendar._id : (`${currentAccount.primarySocialId}_calendar` as Ref<Calendar>)
     const dueDate = date + defaultDuration
     await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, doc._id, doc._class, 'workslots', {
       calendar: _calendar,
@@ -60,13 +62,14 @@
       date,
       dueDate,
       description: doc.description,
-      participants: [currentUser.person],
+      participants: [getCurrentEmployee()],
       title: doc.title,
       allDay: false,
       access: 'owner',
       visibility: doc.visibility === 'public' ? 'public' : 'freeBusy',
       reminders: []
     })
+    Analytics.handleEvent(TimeEvents.ToDoScheduled, { id: doc._id })
   }
 
   defineSeparators('time', timeSeparators)
@@ -78,24 +81,28 @@
   afterUpdate(() => {
     $deviceInfo.replacedPanel = replacedPanel ?? mainPanel
   })
+  onDestroy(() => ($deviceInfo.replacedPanel = undefined))
 </script>
 
 {#if $deviceInfo.navigator.visible}
   <ToDosNavigator bind:mode bind:tag bind:currentDate />
-  <Separator
-    name={'time'}
-    float={$deviceInfo.navigator.float}
-    index={0}
-    disabledWhen={['panel-aside']}
-    color={'var(--theme-navpanel-border)'}
-  />
+  <Separator name={'time'} float={$deviceInfo.navigator.float} index={0} color={'var(--theme-divider-color)'} />
 {/if}
-<div class="flex-col w-full clear-mins" class:left-divider={!$deviceInfo.navigator.visible} bind:this={mainPanel}>
+<div
+  class="flex-col w-full clear-mins mobile-wrapper"
+  class:left-divider={!$deviceInfo.navigator.visible}
+  class:right-divider={!visibleCalendar}
+  bind:this={mainPanel}
+>
   <ToDos {mode} {tag} bind:currentDate />
 </div>
 {#if visibleCalendar}
   <Separator name={'time'} index={1} color={'transparent'} separatorSize={0} short />
-  <div class="flex-col clear-mins" bind:this={replacedPanel}>
-    <PlanningCalendar {dragItem} bind:currentDate displayedDaysCount={5} on:dragDrop={drop} />
-  </div>
+  <PlanningCalendar
+    {dragItem}
+    bind:element={replacedPanel}
+    bind:currentDate
+    displayedDaysCount={5}
+    on:dragDrop={drop}
+  />
 {/if}

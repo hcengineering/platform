@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { copyTextToClipboard } from '@hcengineering/presentation'
   import { Button, IconArrowRight, IconBlueCheck, IconClose, IconCopy, Label, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
@@ -27,7 +27,7 @@
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
   let phTranslate: string
-  $: translate(placeholder, {}, $themeStore.language).then((tr) => (phTranslate = tr))
+  $: translateCB(placeholder, {}, $themeStore.language, (tr) => (phTranslate = tr))
 
   onMount(() => {
     if (input) input.focus()
@@ -119,33 +119,6 @@
     position: relative;
     min-width: 0;
     min-height: 0;
-
-    &.show::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: 1px solid transparent;
-      border-radius: 0.25rem;
-      opacity: 0.95;
-    }
-    &.show::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      min-width: 0;
-      top: 50%;
-      left: 50%;
-      width: calc(100% - 0.5rem);
-      text-align: center;
-      font-size: 0.75rem;
-      color: var(--theme-content-color);
-      transform: translate(-50%, -50%);
-    }
   }
 
   .editor-container {

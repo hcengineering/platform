@@ -14,6 +14,7 @@
 //
 
 import { loadMetadata } from '@hcengineering/platform'
+import core from '@hcengineering/core'
 import view from '@hcengineering/view'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
@@ -55,5 +56,28 @@ loadMetadata(view.icon, {
   Circle: `${icons}#circle`,
   Join: `${icons}#join`,
   Leave: `${icons}#leave`,
-  Copy: `${icons}#copy`
+  Copy: `${icons}#copy`,
+  DetailsFilled: `${icons}#details-filled`,
+  Translate: `${icons}#translate`,
+  Undo: `${icons}#undo`,
+  Video: `${icons}#video`,
+  Audio: `${icons}#audio`,
+  File: `${icons}#file`,
+  PinTack: `${icons}#pin-tack`,
+  Feather: `${icons}#feather`
+})
+loadMetadata(core.icon, {
+  TypeString: `${icons}#string`,
+  TypeBlob: `${icons}#blob`,
+  TypeHyperlink: `${icons}#link`,
+  TypeNumber: `${icons}#number`,
+  TypeMarkup: `${icons}#markup`,
+  TypeRank: `${icons}#rank`,
+  TypeRecord: `${icons}#record`,
+  TypeBoolean: `${icons}#boolean`,
+  TypeDate: `${icons}#date`,
+  TypeRef: `${icons}#link`,
+  TypeArray: `${icons}#array`,
+  TypeEnumOf: `${icons}#enumof`,
+  TypeCollection: `${icons}#collection`
 })

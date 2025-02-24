@@ -14,30 +14,32 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import core, {
+import {
   type Attribute,
-  ClassifierKind,
-  DOMAIN_CONFIGURATION,
-  DOMAIN_MODEL,
-  getCurrentAccount,
-  type Space,
-  toIdMap,
-  type AttachedDoc,
   type Class,
   type Client,
   type Doc,
+  type DocManager,
   type DocumentQuery,
+  getCurrentAccount,
   type Ref,
   type RelatedDocument,
-  type TxOperations,
-  type DocManager,
-  AccountRole
+  type Space,
+  toIdMap,
+  type TxOperations
 } from '@hcengineering/core'
-import chunter, { type ChatMessage } from '@hcengineering/chunter'
-import { type Status, translate, type Resources } from '@hcengineering/platform'
+import { includesAny } from '@hcengineering/contact'
+import { type Resources, type Status, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Component, type Issue, type Milestone, type Project } from '@hcengineering/tracker'
-import { getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
+import {
+  closePanel,
+  getCurrentLocation,
+  getCurrentResolvedLocation,
+  navigate,
+  showPopup,
+  themeStore
+} from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
@@ -51,15 +53,16 @@ import ProjectComponents from './components/components/ProjectComponents.svelte'
 import CreateIssue from './components/CreateIssue.svelte'
 import EditRelatedTargets from './components/EditRelatedTargets.svelte'
 import EditRelatedTargetsPopup from './components/EditRelatedTargetsPopup.svelte'
-import Inbox from './components/inbox/Inbox.svelte'
 import AssigneeEditor from './components/issues/AssigneeEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
+import IssueExtra from './components/issues/IssueExtra.svelte'
 import IssueItem from './components/issues/IssueItem.svelte'
 import IssuePresenter from './components/issues/IssuePresenter.svelte'
 import IssuePreview from './components/issues/IssuePreview.svelte'
 import Issues from './components/issues/Issues.svelte'
 import IssueSearchIcon from './components/issues/IssueSearchIcon.svelte'
+import IssueStatusPresenter from './components/issues/IssueStatusPresenter.svelte'
 import IssuesView from './components/issues/IssuesView.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
@@ -75,6 +78,7 @@ import StatusEditor from './components/issues/StatusEditor.svelte'
 import StatusFilterValuePresenter from './components/issues/StatusFilterValuePresenter.svelte'
 import StatusPresenter from './components/issues/StatusPresenter.svelte'
 import TitlePresenter from './components/issues/TitlePresenter.svelte'
+import LabelsView from './components/LabelsView.svelte'
 import EditMilestone from './components/milestones/EditMilestone.svelte'
 import MilestoneDatePresenter from './components/milestones/MilestoneDatePresenter.svelte'
 import MyIssues from './components/myissues/MyIssues.svelte'
@@ -87,8 +91,6 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
-import IssueExtra from './components/issues/IssueExtra.svelte'
-import IssueStatusPresenter from './components/issues/IssueStatusPresenter.svelte'
 import {
   getIssueIdByIdentifier,
   getIssueTitle,
@@ -123,7 +125,13 @@ import ComponentSelector from './components/components/ComponentSelector.svelte'
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
-import { deleteObject, deleteObjects, AggregationManager } from '@hcengineering/view-resources'
+import {
+  AggregationManager,
+  buildFilterKey,
+  deleteObject,
+  deleteObjects,
+  setFilters
+} from '@hcengineering/view-resources'
 import MoveAndDeleteMilestonePopup from './components/milestones/MoveAndDeleteMilestonePopup.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
@@ -161,15 +169,13 @@ import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
 import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.svelte'
 
 import { get } from 'svelte/store'
-
 import { settingId } from '@hcengineering/setting'
+import type { TaskType } from '@hcengineering/task'
 import { getAllStates } from '@hcengineering/task-resources'
+import view, { type Filter } from '@hcengineering/view'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
-import { personAccountByIdStore, personAccountPersonByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-import contact, { AvatarType } from '@hcengineering/contact'
-import task, { type TaskType } from '@hcengineering/task'
-import notification, { type Collaborators } from '@hcengineering/notification'
+import { getTargetObjectFromUrl } from '@hcengineering/text-editor-resources'
 
 export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
@@ -229,7 +235,7 @@ async function move (issues: Issue | Issue[]): Promise<void> {
 async function editWorkflowStatuses (project: Project): Promise<void> {
   const loc = getCurrentLocation()
   loc.path[2] = settingId
-  loc.path[3] = 'statuses'
+  loc.path[3] = 'spaceTypes'
   loc.path[4] = project.type
   navigate(loc)
 }
@@ -250,27 +256,31 @@ async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
   } else {
     subissues = issue.subIssues
   }
-  showPopup(
-    MessageBox,
-    {
-      label: tracker.string.DeleteIssue,
-      labelProps: { issueCount },
-      message: tracker.string.DeleteIssueConfirm,
-      params: {
-        issueCount,
-        subIssueCount: subissues
-      }
+  showPopup(MessageBox, {
+    label: tracker.string.DeleteIssue,
+    labelProps: { issueCount },
+    message: tracker.string.DeleteIssueConfirm,
+    params: {
+      issueCount,
+      subIssueCount: subissues
     },
-    undefined,
-    async (result?: boolean) => {
-      if (result === true) {
-        const objs = Array.isArray(issue) ? issue : [issue]
-        await deleteObjects(getClient(), objs as unknown as Doc[]).catch((err) => {
-          console.error(err)
-        })
+    action: async () => {
+      const objs = Array.isArray(issue) ? issue : [issue]
+
+      const target = await getTargetObjectFromUrl(getCurrentLocation())
+      const deletingFromTargetIssuePage = objs.some((obj) => obj._id === target?._id)
+
+      try {
+        await deleteObjects(getClient(), objs as unknown as Doc[])
+      } catch (err: any) {
+        Analytics.handleError(err)
+      }
+
+      if (deletingFromTargetIssuePage) {
+        closePanel()
       }
     }
-  )
+  })
 }
 
 async function deleteProject (project: Project | undefined): Promise<void> {
@@ -279,99 +289,25 @@ async function deleteProject (project: Project | undefined): Promise<void> {
 
     if (project.archived) {
       // Clean project and all issues
-      showPopup(
-        MessageBox,
-        {
-          label: tracker.string.DeleteProject,
-          labelProps: { name: project.name },
-          message: tracker.string.ArchiveProjectConfirm
-        },
-        undefined,
-        async (result?: boolean) => {
-          if (result === true) {
-            // void client.update(project, { archived: true })
-            const client = getClient()
-            const classes = await client.findAll(core.class.Class, {})
-            const h = client.getHierarchy()
-            for (const c of classes) {
-              if (c.kind !== ClassifierKind.CLASS) {
-                continue
-              }
-              const d = h.findDomain(c._id)
-              if (d !== undefined && d !== DOMAIN_MODEL && d !== DOMAIN_CONFIGURATION) {
-                try {
-                  while (true) {
-                    const docs = await client.findAll(c._id, { space: project._id }, { limit: 50 })
-                    if (docs.length === 0) {
-                      break
-                    }
-                    const ops = client.apply('delete')
-                    for (const object of docs) {
-                      if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
-                        const adoc = object as AttachedDoc
-                        await ops
-                          .removeCollection(
-                            object._class,
-                            object.space,
-                            adoc._id,
-                            adoc.attachedTo,
-                            adoc.attachedToClass,
-                            adoc.collection
-                          )
-                          .catch((err) => {
-                            console.error(err)
-                          })
-                      } else {
-                        await ops.removeDoc(object._class, object.space, object._id).catch((err) => {
-                          console.error(err)
-                        })
-                      }
-                    }
-                    await ops.commit()
-                  }
-                } catch (err: any) {
-                  console.error(err)
-                  Analytics.handleError(err)
-                }
-              }
-            }
-            await client.remove(project)
-          }
+      showPopup(MessageBox, {
+        label: tracker.string.DeleteProject,
+        labelProps: { name: project.name },
+        message: tracker.string.DeleteProjectConfirm,
+        action: async () => {
+          const client = getClient()
+          await client.remove(project)
         }
-      )
+      })
     } else {
       const anyIssue = await client.findOne(tracker.class.Issue, { space: project._id })
-      if (anyIssue !== undefined) {
-        showPopup(
-          MessageBox,
-          {
-            label: tracker.string.ArchiveProjectName,
-            labelProps: { name: project.name },
-            message: tracker.string.ProjectHasIssues
-          },
-          undefined,
-          (result?: boolean) => {
-            if (result === true) {
-              void client.update(project, { archived: true })
-            }
-          }
-        )
-      } else {
-        showPopup(
-          MessageBox,
-          {
-            label: tracker.string.ArchiveProjectName,
-            labelProps: { name: project.name },
-            message: tracker.string.ArchiveProjectConfirm
-          },
-          undefined,
-          (result?: boolean) => {
-            if (result === true) {
-              void client.update(project, { archived: true })
-            }
-          }
-        )
-      }
+      showPopup(MessageBox, {
+        label: tracker.string.ArchiveProjectName,
+        labelProps: { name: project.name },
+        message: anyIssue !== undefined ? tracker.string.ProjectHasIssues : tracker.string.ArchiveProjectConfirm,
+        action: async () => {
+          await client.update(project, { archived: true })
+        }
+      })
     }
   }
 }
@@ -383,29 +319,23 @@ async function moveAndDeleteMilestones (
 ): Promise<void> {
   const noMilestoneLabel = await translate(tracker.string.NoMilestone, {}, get(themeStore).language)
 
-  showPopup(
-    MessageBox,
-    {
-      label: tracker.string.MoveAndDeleteMilestone,
-      message: tracker.string.MoveAndDeleteMilestoneConfirm,
-      labelProps: {
-        newMilestone: newMilestone?.label ?? noMilestoneLabel,
-        deleteMilestone: oldMilestones.map((p) => p.label)
-      }
+  showPopup(MessageBox, {
+    label: tracker.string.MoveAndDeleteMilestone,
+    message: tracker.string.MoveAndDeleteMilestoneConfirm,
+    labelProps: {
+      newMilestone: newMilestone?.label ?? noMilestoneLabel,
+      deleteMilestone: oldMilestones.map((p) => p.label)
     },
-    undefined,
-    (result?: boolean) => {
-      if (result === true) {
-        for (const oldMilestone of oldMilestones) {
-          void moveIssuesToAnotherMilestone(client, oldMilestone, newMilestone).then((success) => {
-            if (success) {
-              void deleteObject(client, oldMilestone)
-            }
-          })
-        }
+    action: async () => {
+      for (const oldMilestone of oldMilestones) {
+        void moveIssuesToAnotherMilestone(client, oldMilestone, newMilestone).then((success) => {
+          if (success) {
+            void deleteObject(client, oldMilestone)
+          }
+        })
       }
     }
-  )
+  })
 }
 
 async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<void> {
@@ -431,173 +361,39 @@ async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<vo
   }
 }
 
-type ImportIssue = Issue & { activity: ChatMessage[] }
-
-export async function importTasks (tasks: File, space: Ref<Project>): Promise<void> {
-  const reader = new FileReader()
-  reader.readAsText(tasks)
-
-  const personAccountById = get(personAccountByIdStore)
-  const personAccountList = Array.from(personAccountById.values())
-  const personAccountPersonById = get(personAccountPersonByIdStore)
-  const personList = Array.from(get(personByIdStore).values())
-
-  const client = getClient()
-  const statuses = await client.findAll(tracker.class.IssueStatus, {})
-  reader.onload = async () => {
-    let tasksArray: ImportIssue[] = Array.from(JSON.parse(reader.result as string))
-    const personToImport = Array.from(
-      new Set(tasksArray.flatMap((t) => [t.createdBy, t.modifiedBy, ...t.activity.flatMap((act) => act.modifiedBy)]))
-    ).filter((x) => x !== undefined) as string[]
-    const peopleToAdd = personToImport.filter((p) => personList.find((x) => x.name === p) === undefined)
-    if (peopleToAdd.length > 0) {
-      console.log('Next people will be created to import properly', peopleToAdd)
-      for (const personToCreate of peopleToAdd) {
-        const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
-          name: personToCreate,
-          avatarType: AvatarType.COLOR,
-          city: '',
-          comments: 0,
-          channels: 0,
-          attachments: 0
-        })
-        await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-          email: `imported:${personId}`,
-          person: personId,
-          role: AccountRole.User
-        })
-      }
-    }
-    const idsParent: Array<{ id: Ref<Issue>, identifier: string }> = []
-
-    while (tasksArray.length > 0) {
-      let taskParsing: ImportIssue | undefined = tasksArray.find((t: ImportIssue) => t?.parents?.length === 0)
-      if (taskParsing === undefined) {
-        taskParsing = tasksArray.find((t: Issue) =>
-          t?.parents?.every((p) => idsParent.findIndex((par) => par.id === p.parentId) !== -1)
-        )
-      }
-      if (taskParsing != null) {
-        tasksArray = tasksArray.filter((t) => t._id !== taskParsing?._id)
-        const proj = await client.findOne(tracker.class.Project, { _id: space })
-        const modifiedByPerson = personList.find((p) => p.name === taskParsing?.modifiedBy)?._id
-        const assignee =
-          taskParsing.assignee !== null ? personList.find((p) => p.name === taskParsing?.assignee)?._id ?? null : null
-        if (modifiedByPerson === undefined) throw new Error('Person not found')
-        const modifiedBy = personAccountList.find((pA) => pA.person === modifiedByPerson)?._id
-        if (modifiedBy === undefined) throw new Error('modifiedBy account not found')
-
-        const collaborators = (taskParsing as any)['notification:mixin:Collaborators']?.collaborators
-        const collaboratorsToImport =
-          collaborators !== undefined
-            ? collaborators
-              .map((name: string) => {
-                const person = personList.find((p) => p.name === name)?._id
-                if (person === undefined) return undefined
-                const account = personAccountPersonById.get(person)
-                return account?._id
-              })
-              .filter((c: any) => c !== undefined)
-            : undefined
-
-        const incResult = await client.updateDoc(
-          tracker.class.Project,
-          core.space.Space,
-          space,
-          {
-            $inc: { sequence: 1 }
-          },
-          true
-        )
-        const number = (incResult as any).object.sequence
-        const identifier = `${proj?.identifier}-${number}`
-        idsParent.push({ id: taskParsing._id, identifier })
-        const taskKind = proj?.type !== undefined ? { parent: proj.type } : {}
-        const kind = (await client.findOne(task.class.TaskType, taskKind)) as TaskType
-        const status = statuses.find((s) => s.name === taskParsing?.status)?._id
-        if (status === undefined) throw new Error('status not found')
-        const taskToCreate = {
-          title: taskParsing.title,
-          description: taskParsing.description,
-          component: taskParsing.component,
-          milestone: taskParsing.milestone,
-          number,
-          status,
-          priority: taskParsing.priority,
-          rank: taskParsing.rank,
-          comments: 0,
-          subIssues: 0,
-          dueDate: taskParsing.dueDate,
-          parents: taskParsing.parents.map((p) => ({
-            ...p,
-            space,
-            identifier: idsParent.find((par) => par.id === p.parentId)?.identifier ?? p.identifier
-          })),
-          reportedTime: 0,
-          remainingTime: 0,
-          estimation: taskParsing.estimation,
-          reports: 0,
-          childInfo: taskParsing.childInfo,
-          identifier,
-          modifiedBy,
-          assignee,
-          kind: kind._id
-        }
-        await client.addCollection(
-          tracker.class.Issue,
-          space,
-          taskParsing?.attachedTo ?? tracker.ids.NoParent,
-          taskParsing._class,
-          'subIssues',
-          taskToCreate,
-          taskParsing._id
-        )
-
-        if (collaboratorsToImport !== undefined) {
-          await client.createMixin<Doc, Collaborators>(
-            taskParsing._id,
-            taskParsing._class,
-            space,
-            notification.mixin.Collaborators,
-            {
-              collaborators: collaboratorsToImport
-            }
-          )
-        }
-
-        // Push activity
-        if (taskParsing.activity !== undefined) {
-          const act = taskParsing.activity.sort((a, b) => a.modifiedOn - b.modifiedOn)
-          for (const activityMessage of act) {
-            const modifiedByPerson = personList.find((p) => p.name === activityMessage.modifiedBy)?._id
-            const modifiedBy = personAccountList.find((pA) => pA.person === modifiedByPerson)?._id
-            if (modifiedBy === undefined) throw new Error('modifiedBy account not found')
-            await client.addCollection(
-              chunter.class.ChatMessage,
-              space,
-              taskParsing._id,
-              tracker.class.Issue,
-              'comments',
-              {
-                message: activityMessage.message
-              },
-              activityMessage._id,
-              activityMessage.modifiedOn,
-              modifiedBy
-            )
-          }
-        }
-      }
-    }
-  }
-}
-
 function filterComponents (doc: Component, target: Component): boolean {
   return doc.label.toLowerCase().trim() === target.label.toLowerCase().trim() && doc._id !== target._id
 }
 
 function setStore (manager: DocManager<Component>): void {
   componentStore.set(manager)
+}
+
+async function openIssuesOfTaskType (taskType: TaskType): Promise<void> {
+  function setFilterTag (taskType: TaskType): void {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const attribute = hierarchy.getAttribute(tracker.class.Issue, 'kind')
+    const key = buildFilterKey(hierarchy, tracker.class.Issue, 'kind', attribute)
+    const filter = {
+      key,
+      value: [taskType._id],
+      props: { level: 0 },
+      modes: [view.filter.FilterObjectIn, view.filter.FilterObjectNin],
+      mode: view.filter.FilterObjectIn,
+      index: 1
+    } as unknown as Filter
+    setFilters([filter])
+  }
+  if (taskType === undefined) return
+  const loc = getCurrentResolvedLocation()
+  loc.path[2] = 'tracker'
+  loc.path[3] = 'all-issues'
+  loc.path.length = 4
+  navigate(loc)
+  setTimeout(() => {
+    setFilterTag(taskType)
+  }, 200)
 }
 
 export default async (): Promise<Resources> => ({
@@ -608,7 +404,6 @@ export default async (): Promise<Resources> => ({
   component: {
     NopeComponent,
     Issues,
-    Inbox,
     MyIssues,
     Components,
     IssuePresenter,
@@ -687,7 +482,8 @@ export default async (): Promise<Resources> => ({
     IssueSearchIcon,
     MembersArrayEditor,
     IssueExtra,
-    IssueStatusPresenter
+    IssueStatusPresenter,
+    LabelsView
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
@@ -718,10 +514,11 @@ export default async (): Promise<Resources> => ({
     ) => await getAllStates(query, onUpdate, queryId, attr, false),
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
-    IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount()._id),
+    IsProjectJoined: async (project: Project) => includesAny(project.members, getCurrentAccount().socialIds),
     GetIssueStatusCategories: getIssueStatusCategories,
     SetComponentStore: setStore,
-    ComponentFilterFunction: filterComponents
+    ComponentFilterFunction: filterComponents,
+    OpenIssuesOfTaskType: openIssuesOfTaskType
   },
   actionImpl: {
     Move: move,
@@ -729,8 +526,7 @@ export default async (): Promise<Resources> => ({
     EditProject: editProject,
     DeleteMilestone: deleteMilestone,
     DeleteProject: deleteProject,
-    DeleteIssue: deleteIssue,
-    ImportIssues: importTasks
+    DeleteIssue: deleteIssue
   },
   resolver: {
     Location: resolveLocation

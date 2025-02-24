@@ -21,6 +21,7 @@ export default class errorBoundary extends ErrorComponent {
       try {
         return x(...args)
       } catch (e) {
+        console.error(e)
         error = e
       }
     })

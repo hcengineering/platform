@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import '@hcengineering/platform-rig/profiles/ui/svelte'
-import { writable } from 'svelte/store'
+import { derived, writable } from 'svelte/store'
 
 export { default as Theme } from './Theme.svelte'
 
@@ -67,10 +67,16 @@ export class ThemeOptions {
     readonly language: string
   ) {}
 }
-export const themeStore = writable<ThemeOptions>(
-  new ThemeOptions(
-    getCurrentFontSize() === 'normal-font' ? 16 : 14,
-    isThemeDark(getCurrentTheme()),
-    getCurrentLanguage()
+export const themeStore = writable<ThemeOptions>()
+
+export function initThemeStore (): void {
+  themeStore.set(
+    new ThemeOptions(
+      getCurrentFontSize() === 'normal-font' ? 16 : 14,
+      isThemeDark(getCurrentTheme()),
+      getCurrentLanguage()
+    )
   )
-)
+}
+
+export const languageStore = derived(themeStore, ($theme) => $theme?.language ?? '')

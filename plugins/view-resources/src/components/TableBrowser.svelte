@@ -14,15 +14,13 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Scroller, tableSP, FadeOptions } from '@hcengineering/ui'
-  import { BuildModelKey } from '@hcengineering/view'
+  import { ActionContext } from '@hcengineering/presentation'
+  import { FadeOptions, Scroller, tableSP } from '@hcengineering/ui'
+  import { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { focusStore, ListSelectionProvider, SelectDirection } from '../selection'
   import { LoadingProps } from '../utils'
-  import SourcePresenter from './inference/SourcePresenter.svelte'
   import Table from './Table.svelte'
-  import { ActionContext } from '@hcengineering/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -35,6 +33,11 @@
   export let enableChecking = true
   export let tableId: string | undefined = undefined
   export let fade: FadeOptions = tableSP
+  export let prefferedSorting: string = 'modifiedOn'
+  export let viewOptions: ViewOptions | undefined = undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
+  export let viewlet: Viewlet | undefined = undefined
+  export let readonly = false
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -53,32 +56,6 @@
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
   })
-
-  // Search config
-  let _config = config
-
-  let prefferedSorting: string = 'modifiedOn'
-
-  function updateConfig (config: Array<BuildModelKey | string>, search?: string): void {
-    const useSearch = search !== '' && search != null
-    _config = [
-      ...(useSearch
-        ? [
-            {
-              key: '',
-              presenter: SourcePresenter,
-              label: getEmbeddedLabel('#'),
-              sortingKey: '#score',
-              props: { search }
-            }
-          ]
-        : []),
-      ...config
-    ]
-    prefferedSorting = !useSearch ? 'modifiedOn' : '#score'
-  }
-
-  $: updateConfig(config, query.$search)
 </script>
 
 <svelte:window />
@@ -88,11 +65,12 @@
     mode: 'browser'
   }}
 />
+
 <Scroller {fade} horizontal={true}>
   <Table
     bind:this={table}
     {_class}
-    config={_config}
+    {config}
     {options}
     {query}
     {totalQuery}
@@ -105,7 +83,10 @@
     checked={$selection ?? []}
     {prefferedSorting}
     {tableId}
+    {viewOptions}
+    viewOptionsConfig={viewOptionsConfig ?? viewlet?.viewOptions?.other}
     selection={listProvider.current($focusStore)}
+    {readonly}
     on:row-focus={(evt) => {
       listProvider.updateFocus(evt.detail)
     }}

@@ -34,10 +34,7 @@ async function migrateMarkup (client: MigrationClient): Promise<void> {
 
     const attributes = hierarchy.getAllAttributes(_class)
     const filtered = Array.from(attributes.values()).filter((attribute) => {
-      return (
-        hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup) ||
-        hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)
-      )
+      return hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup)
     })
     if (filtered.length === 0) continue
 
@@ -56,7 +53,6 @@ async function processMigrateMarkupFor (
   client: MigrationClient,
   iterator: MigrationIterator<Doc>
 ): Promise<void> {
-  let processed = 0
   while (true) {
     const docs = await iterator.next(1000)
     if (docs === null || docs.length === 0) {
@@ -91,9 +87,6 @@ async function processMigrateMarkupFor (
     if (operations.length > 0) {
       await client.bulk(domain, operations)
     }
-
-    processed += docs.length
-    console.log('...processed', processed)
   }
 }
 
@@ -106,10 +99,7 @@ async function fixMigrateMarkup (client: MigrationClient): Promise<void> {
 
     const attributes = hierarchy.getAllAttributes(_class)
     const filtered = Array.from(attributes.values()).filter((attribute) => {
-      return (
-        hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup) ||
-        hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)
-      )
+      return hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup)
     })
     if (filtered.length === 0) continue
 
@@ -128,7 +118,6 @@ async function processFixMigrateMarkupFor (
   client: MigrationClient,
   iterator: MigrationIterator<Doc>
 ): Promise<void> {
-  let processed = 0
   while (true) {
     const docs = await iterator.next(1000)
     if (docs === null || docs.length === 0) {
@@ -170,9 +159,6 @@ async function processFixMigrateMarkupFor (
     if (operations.length > 0) {
       await client.bulk(domain, operations)
     }
-
-    processed += docs.length
-    console.log('...processed', processed)
   }
 }
 

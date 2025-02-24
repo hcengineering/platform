@@ -21,7 +21,7 @@
   export let selected = 0
   export let padding: string | undefined = undefined
   export let noMargin: boolean = false
-  export let size: 'small' | 'medium' = 'medium'
+  export let size: 'small' | 'medium' | 'large' = 'medium'
 </script>
 
 <TabsControl {model} {padding} {noMargin} {size} bind:selected>

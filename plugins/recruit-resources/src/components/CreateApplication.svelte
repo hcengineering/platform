@@ -18,8 +18,8 @@
   import type { Contact, Employee, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
   import { EmployeeBox, ExpandRightDouble, UserBox } from '@hcengineering/contact-resources'
-  import {
-    Account,
+  import core, {
+    AccountRole,
     Class,
     Client,
     Doc,
@@ -28,10 +28,9 @@
     Ref,
     SortingOrder,
     Space,
+    Status as TaskStatus,
     fillDefaults,
     generateId,
-    Status as TaskStatus,
-    AccountRole,
     getCurrentAccount,
     hasAccountRole
   } from '@hcengineering/core'
@@ -43,10 +42,10 @@
     createQuery,
     getClient
   } from '@hcengineering/presentation'
-  import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
+  import { recruitId, type Applicant, type Candidate, type Vacancy, RecruitEvents } from '@hcengineering/recruit'
   import task, { TaskType, getStates, makeRank } from '@hcengineering/task'
   import { TaskKindSelector, selectedTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import ui, {
     Button,
     ColorPopup,
@@ -67,6 +66,8 @@
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { getCandidateIdentifier, getSequenceId } from '../utils'
 
   export let space: Ref<Vacancy>
   export let candidate: Ref<Candidate>
@@ -97,7 +98,7 @@
     _id: generateId(),
     collection: 'applications',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>,
+    modifiedBy: '',
     startDate: null,
     dueDate: null,
     kind: '' as Ref<TaskType>,
@@ -117,7 +118,7 @@
     if (selectedState === undefined) {
       throw new Error(`Please select initial state:${_space}`)
     }
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Applicant })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
@@ -132,8 +133,11 @@
     if (candidateInstance === undefined) {
       throw new Error('contact not found')
     }
+
+    const ops = client.apply(undefined, recruitId + '.Create.CreateApplication')
+
     if (!client.getHierarchy().hasMixin(candidateInstance, recruit.mixin.Candidate)) {
-      await client.createMixin<Contact, Candidate>(
+      await ops.createMixin<Contact, Candidate>(
         candidateInstance._id,
         candidateInstance._class,
         candidateInstance.space,
@@ -144,7 +148,7 @@
 
     const number = (incResult as any).object.sequence
 
-    await client.addCollection(
+    await ops.addCollection(
       recruit.class.Applicant,
       _space,
       candidateInstance._id,
@@ -155,22 +159,26 @@
         status: selectedState._id,
         number,
         identifier: `APP-${number}`,
-        assignee: doc.assignee,
         rank: makeRank(lastOne?.rank, undefined),
-        startDate: null,
-        dueDate: null,
         kind
       },
       doc._id
     )
 
-    await descriptionBox.createAttachments()
+    await descriptionBox.createAttachments(undefined, ops)
 
-    if (_comment.trim().length > 0) {
-      await client.addCollection(chunter.class.ChatMessage, _space, doc._id, recruit.class.Applicant, 'comments', {
+    if (_comment.trim().length > 0 && !isEmptyMarkup(_comment)) {
+      await ops.addCollection(chunter.class.ChatMessage, _space, doc._id, recruit.class.Applicant, 'comments', {
         message: _comment
       })
     }
+    await ops.commit()
+
+    Analytics.handleEvent(RecruitEvents.ApplicationCreated, {
+      id: `APP-${number}`,
+      talent: getCandidateIdentifier(candidateInstance._id),
+      vacancy: vacancy ? getSequenceId(vacancy) : ''
+    })
   }
 
   async function invokeValidate (
@@ -208,9 +216,11 @@
   const spaceQuery = createQuery()
 
   let vacancy: Vacancy | undefined
+  const acc = getCurrentAccount()
+  const socialIds = acc.socialIds
 
   $: if (_space) {
-    spaceQuery.query(recruit.class.Vacancy, { _id: _space }, (res) => {
+    spaceQuery.query(recruit.class.Vacancy, { _id: _space, members: { $in: socialIds } }, (res) => {
       vacancy = res.shift()
     })
   }
@@ -294,7 +304,7 @@
         id={'vacancy.talant.selector'}
         focusIndex={1}
         readonly={preserveCandidate}
-        _class={recruit.mixin.Candidate}
+        _class={contact.class.Person}
         options={{ sort: { modifiedOn: -1 } }}
         excluded={existingApplicants}
         label={recruit.string.Talent}
@@ -317,7 +327,11 @@
     <div class="flex-grow">
       <SpaceSelect
         _class={recruit.class.Vacancy}
-        spaceQuery={{ archived: false, ...($selectedTypeStore !== undefined ? { type: $selectedTypeStore } : {}) }}
+        spaceQuery={{
+          archived: false,
+          members: { $in: socialIds },
+          ...($selectedTypeStore !== undefined ? { type: $selectedTypeStore } : {})
+        }}
         spaceOptions={orgOptions}
         readonly={preserveVacancy}
         label={recruit.string.Vacancy}
@@ -413,7 +427,7 @@
         <InlineAttributeBar
           _class={recruit.class.Applicant}
           object={doc}
-          toClass={task.class.Task}
+          toClass={core.class.AttachedDoc}
           ignoreKeys={['assignee', 'status']}
           extraProps={{ showNavigate: false, space: vacancy._id }}
         />

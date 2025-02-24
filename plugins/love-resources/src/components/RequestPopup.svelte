@@ -13,35 +13,44 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount, formatName } from '@hcengineering/contact'
+  import { formatName, getCurrentEmployee } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, playSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { JoinRequest, RequestStatus } from '@hcengineering/love'
   import love from '../plugin'
   import { myInfo, myOffice } from '../stores'
   import { connectRoom, isConnected } from '../utils'
+  import { onDestroy, onMount } from 'svelte'
 
   export let request: JoinRequest
 
   $: person = $personByIdStore.get(request.person)
 
   const client = getClient()
+  let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
+    await client.update(request, { status: RequestStatus.Approved })
     if (request.room === $myOffice?._id && !$isConnected) {
-      const me = (getCurrentAccount() as PersonAccount).person
+      const me = getCurrentEmployee()
       const person = $personByIdStore.get(me)
       if (person === undefined) return
       await connectRoom(0, 0, $myInfo, person, $myOffice)
-      await client.update(request, { status: RequestStatus.Approved })
     }
   }
 
   async function decline (): Promise<void> {
     await client.update(request, { status: RequestStatus.Rejected })
   }
+
+  onMount(async () => {
+    stopSound = await playSound(love.sound.Knock, love.class.JoinRequest, true)
+  })
+
+  onDestroy(() => {
+    stopSound?.()
+  })
 </script>
 
 <div class="antiPopup flex-col-center">

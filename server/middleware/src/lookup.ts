@@ -21,31 +21,28 @@ import {
   FindResult,
   MeasureContext,
   Ref,
-  Tx,
   clone,
   toFindResult
 } from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
-import { BaseMiddleware } from './base'
-
+import { BaseMiddleware, Middleware, type PipelineContext } from '@hcengineering/server-core'
 /**
  * @public
  */
 export class LookupMiddleware extends BaseMiddleware implements Middleware {
-  private constructor (storage: ServerStorage, next?: Middleware) {
-    super(storage, next)
+  private constructor (context: PipelineContext, next?: Middleware) {
+    super(context, next)
   }
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<LookupMiddleware> {
-    return new LookupMiddleware(storage, next)
-  }
-
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    return await this.provideTx(ctx, tx)
+  static async create (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined
+  ): Promise<LookupMiddleware> {
+    return new LookupMiddleware(context, next)
   }
 
   override async findAll<T extends Doc>(
-    ctx: SessionContext,
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -70,8 +67,9 @@ export class LookupMiddleware extends BaseMiddleware implements Middleware {
       }
 
       for (const d of result) {
+        const newDoc: any = { ...d }
         if (d.$lookup !== undefined) {
-          const newDoc = clone(d)
+          newDoc.$lookup = clone(d.$lookup)
           newResult.push(newDoc)
           for (const [k, v] of Object.entries(d.$lookup)) {
             if (!Array.isArray(v)) {
@@ -80,25 +78,41 @@ export class LookupMiddleware extends BaseMiddleware implements Middleware {
               newDoc.$lookup[k] = v.map((it) => (it != null ? mapDoc(it) : it))
             }
           }
+        } else {
+          newResult.push(newDoc)
         }
       }
       const lookupMap = Object.fromEntries(Array.from(Object.values(idClassMap)).map((it) => [it.id, it.doc]))
-      if (Object.keys(lookupMap).length > 0) {
-        return toFindResult(newResult, result.total, lookupMap)
-      }
+      return this.cleanQuery<T>(toFindResult(newResult, result.total, lookupMap), query, lookupMap)
     }
 
     // We need to get rid of simple query parameters matched in documents
+    return this.cleanQuery<T>(result, query)
+  }
+
+  private cleanQuery<T extends Doc>(
+    result: FindResult<T>,
+    query: DocumentQuery<T>,
+    lookupMap?: Record<string, Doc>
+  ): FindResult<T> {
+    const newResult: T[] = []
     for (const doc of result) {
+      let _doc = doc
+      let cloned = false
       for (const [k, v] of Object.entries(query)) {
         if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
-          if ((doc as any)[k] === v) {
+          if ((_doc as any)[k] === v) {
+            if (!cloned) {
+              _doc = { ...doc } as any
+              cloned = true
+            }
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete (doc as any)[k]
+            delete (_doc as any)[k]
           }
         }
       }
+      newResult.push(_doc)
     }
-    return result
+    return toFindResult(newResult, result.total, lookupMap)
   }
 }

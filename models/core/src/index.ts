@@ -14,28 +14,22 @@
 //
 
 import {
-  AccountRole,
   DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MIGRATION,
+  DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TRANSIENT,
-  DOMAIN_TX,
-  systemAccountEmail,
-  type AttachedDoc,
-  type Class,
-  type Doc,
-  type DocIndexState,
-  type IndexingConfiguration,
-  type TxCollectionCUD
+  DOMAIN_TX
 } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import { TBenchmarkDoc } from './benchmark'
 import core from './component'
 import {
   TArrOf,
+  TAssociation,
   TAttachedDoc,
   TAttribute,
   TBlob,
@@ -49,65 +43,45 @@ import {
   TEnum,
   TEnumOf,
   TFullTextSearchContext,
-  TFulltextData,
   TIndexConfiguration,
-  TIndexStageState,
   TInterface,
   TMigrationState,
   TMixin,
   TObj,
   TPluginConfiguration,
   TRefTo,
+  TRelation,
+  TTransientConfiguration,
   TType,
   TTypeAny,
   TTypeBlob,
   TTypeBoolean,
   TTypeCollaborativeDoc,
-  TTypeCollaborativeDocVersion,
-  TTypeCollaborativeMarkup,
   TTypeDate,
   TTypeFileSize,
   TTypeHyperlink,
   TTypeIntlString,
   TTypeMarkup,
+  TTypePersonId,
   TTypeNumber,
   TTypeRank,
   TTypeRecord,
   TTypeRelatedDocument,
   TTypeString,
   TTypeTimestamp,
-  TVersion
+  TVersion,
+  TSequence
 } from './core'
 import { definePermissions } from './permissions'
-import {
-  DOMAIN_SPACE,
-  TAccount,
-  TPermission,
-  TRole,
-  TSpace,
-  TSpaceType,
-  TSpaceTypeDescriptor,
-  TSystemSpace,
-  TTypedSpace
-} from './security'
+import { TPermission, TRole, TSpace, TSpaceType, TSpaceTypeDescriptor, TSystemSpace, TTypedSpace } from './security'
 import { defineSpaceType } from './spaceType'
 import { TDomainStatusPlaceholder, TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'
-import {
-  TTx,
-  TTxApplyIf,
-  TTxCUD,
-  TTxCollectionCUD,
-  TTxCreateDoc,
-  TTxMixin,
-  TTxRemoveDoc,
-  TTxUpdateDoc,
-  TTxWorkspaceEvent
-} from './tx'
+import { TTx, TTxApplyIf, TTxCreateDoc, TTxCUD, TTxMixin, TTxRemoveDoc, TTxUpdateDoc, TTxWorkspaceEvent } from './tx'
 
-export { coreId } from '@hcengineering/core'
+export { coreId, DOMAIN_SPACE } from '@hcengineering/core'
 export * from './core'
-export { coreOperation } from './migration'
+export { coreOperation, getSocialIdByOldAccount, getAccountsFromTxes, getSocialKeyByOldEmail } from './migration'
 export * from './security'
 export * from './status'
 export * from './tx'
@@ -124,7 +98,6 @@ export function createModel (builder: Builder): void {
     TTxCUD,
     TTxCreateDoc,
     TAttachedDoc,
-    TTxCollectionCUD,
     TTxMixin,
     TTxUpdateDoc,
     TTxRemoveDoc,
@@ -137,14 +110,12 @@ export function createModel (builder: Builder): void {
     TSpaceTypeDescriptor,
     TRole,
     TPermission,
-    TAccount,
     TAttribute,
     TType,
     TEnumOf,
     TTypeMarkup,
+    TTypePersonId,
     TTypeCollaborativeDoc,
-    TTypeCollaborativeDocVersion,
-    TTypeCollaborativeMarkup,
     TArrOf,
     TRefTo,
     TTypeDate,
@@ -164,58 +135,43 @@ export function createModel (builder: Builder): void {
     TUserStatus,
     TEnum,
     TTypeAny,
-    TFulltextData,
     TTypeRelatedDocument,
     TDocIndexState,
-    TIndexStageState,
     TFullTextSearchContext,
     TConfiguration,
     TConfigurationElement,
     TIndexConfiguration,
     TStatus,
+    TSequence,
     TDomainStatusPlaceholder,
     TStatusCategory,
     TMigrationState,
     TBlob,
+    TRelation,
+    TAssociation,
     TDomainIndexConfiguration,
-    TBenchmarkDoc
+    TBenchmarkDoc,
+    TTransientConfiguration
   )
 
-  builder.createDoc(
-    core.class.Account,
-    core.space.Model,
-    {
-      email: systemAccountEmail,
-      role: AccountRole.Owner
-    },
-    core.account.System
-  )
-
-  builder.mixin<Class<TxCollectionCUD<Doc, AttachedDoc>>, IndexingConfiguration<TxCollectionCUD<Doc, AttachedDoc>>>(
-    core.class.TxCollectionCUD,
-    core.class.Class,
-    core.mixin.IndexConfiguration,
-    {
-      indexes: [
-        'tx.objectId',
-        'tx.operations.attachedTo',
-        'space',
-        {
-          objectSpace: 1,
-          _id: 1,
-          modifiedOn: 1
-        },
-        {
-          objectSpace: 1,
-          modifiedBy: 1,
-          objectClass: 1
-        }
-      ]
-    }
-  )
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_TX,
-    disabled: [{ space: 1 }, { objectClass: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+    disabled: [
+      { _class: 1 },
+      { space: 1 },
+      { objectClass: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 },
+      { modifiedBy: 1 }
+    ],
+    indexes: [
+      {
+        keys: {
+          objectSpace: 1
+        }
+      }
+    ]
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
@@ -266,7 +222,14 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_STATUS,
-    disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+    disabled: [
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 },
+      { space: 1 }
+    ]
   })
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_SPACE,
@@ -275,55 +238,59 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_BLOB,
-    disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+    disabled: [
+      { _class: 1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 },
+      { modifiedOn: 1 }
+    ]
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_DOC_INDEX_STATE,
+    indexes: [
+      {
+        keys: { needIndex: 1, objectClass: 1 }
+      }
+    ],
     disabled: [
       { attachedToClass: 1 },
       { stages: 1 },
-      { generationId: 1 },
       { space: 1 },
       { _class: 1 },
+      { needIndex: 1 },
+      { objectClass: 1 },
+      { _class: 1 },
+      { attachedTo: 1 },
       { modifiedBy: 1 },
+      { modifiedOn: 1 },
       { createdBy: 1 },
       { createdBy: -1 },
       { createdOn: -1 }
-    ],
-    skip: ['stages.']
+    ]
   })
 
-  builder.mixin<Class<DocIndexState>, IndexingConfiguration<TxCollectionCUD<Doc, AttachedDoc>>>(
-    core.class.DocIndexState,
-    core.class.Class,
-    core.mixin.IndexConfiguration,
-    {
-      indexes: [
-        {
-          _class: 1,
-          stages: 1,
-          _id: 1,
-          modifiedOn: 1
-        },
-        {
-          _class: 1,
-          _id: 1,
-          modifiedOn: 1
-        },
-        {
-          _class: 1,
-          _id: 1,
-          objectClass: 1
-        }
-      ]
-    }
-  )
-
-  builder.mixin(core.class.Space, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: core.class.Space,
     childProcessingAllowed: false
   })
 
   definePermissions(builder)
   defineSpaceType(builder)
+
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: core.class.MigrationState,
+    forceIndex: false
+  })
+  builder.mixin(core.class.Configuration, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
+  builder.mixin(core.class.MigrationState, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
 }

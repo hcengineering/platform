@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import core, {
     Class,
     Doc,
@@ -30,19 +30,17 @@
     resolvedLocationStore,
     resizeObserver,
     Breadcrumbs,
-    ButtonIcon,
     Header,
-    IconCopy,
-    IconDelete,
-    IconMoreV,
     AnySvelteComponent,
     navigate,
-    getCurrentResolvedLocation
+    getCurrentResolvedLocation,
+    IconWithEmoji,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { showMenu } from '@hcengineering/view-resources'
   import setting, { SpaceTypeEditor } from '@hcengineering/setting'
   import { Asset, getResource } from '@hcengineering/platform'
+  import view from '@hcengineering/view'
 
   import SpaceTypeEditorComponent from './editor/SpaceTypeEditor.svelte'
   import { clearSettingsStore } from '../../store'
@@ -59,6 +57,7 @@
   let selectedSubObjectId: Ref<Doc> | undefined
   let subItemName: string | undefined
   let subItemIcon: Asset | undefined
+  let subItemIconColor: number | undefined
 
   onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
 
@@ -109,7 +108,7 @@
     subEditor = undefined
   }
 
-  let bcItems: Array<{ title: string, icon?: Asset }> = []
+  let bcItems: Array<{ title: string, icon?: Asset | AnySvelteComponent, iconProps?: any }> = []
   $: {
     bcItems = []
 
@@ -117,7 +116,11 @@
       bcItems.push({ title: type.name, icon: descriptor?.icon })
 
       if (selectedSubObjectId) {
-        bcItems.push({ title: subItemName ?? selectedSubObjectId, icon: subItemIcon })
+        bcItems.push({
+          title: subItemName ?? selectedSubObjectId,
+          icon: subItemIcon === view.ids.IconWithEmoji ? IconWithEmoji : subItemIcon,
+          iconProps: { icon: subItemIconColor }
+        })
       }
     }
   }
@@ -131,6 +134,12 @@
       navigate(loc)
     }
   }
+
+  onMount(() => {
+    setTimeout(() => {
+      if (type === undefined && descriptor === undefined) $deviceInfo.navigator.visible = true
+    }, 500)
+  })
 </script>
 
 <div
@@ -140,35 +149,7 @@
   }}
 >
   {#if type !== undefined && descriptor !== undefined}
-    <Header>
-      {#if canEdit}
-        <ButtonIcon
-          icon={IconCopy}
-          size={'small'}
-          kind={'secondary'}
-          disabled
-          on:click={(ev) => {
-            // TODO: copy space type
-          }}
-        />
-        <ButtonIcon
-          icon={IconDelete}
-          size={'small'}
-          kind={'secondary'}
-          disabled
-          on:click={(ev) => {
-            // TODO: delete space type
-          }}
-        />
-        <ButtonIcon
-          icon={IconMoreV}
-          size={'small'}
-          kind={'secondary'}
-          on:click={(ev) => {
-            showMenu(ev, { object: type })
-          }}
-        />
-      {/if}
+    <Header adaptive={'disabled'}>
       <Breadcrumbs
         items={bcItems}
         size="large"
@@ -193,6 +174,7 @@
           this={subEditor}
           bind:name={subItemName}
           bind:icon={subItemIcon}
+          bind:color={subItemIconColor}
           readonly={!canEdit}
           spaceType={type}
           {descriptor}

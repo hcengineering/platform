@@ -118,12 +118,15 @@
     "Type": "类型",
     "ToViewCommands": "查看可用命令",
     "UnArchive": "取消归档",
+    "UnArchiveConfirm": "您想要取消归档这个 {count, plural, =1 {对象} other {# 个对象}} 吗？",
     "Pin": "固定",
     "Unpin": "取消固定",
     "Archived": "已归档",
     "MoreActions": "更多操作",
     "Leave": "离开",
     "Join": "加入",
-    "Copied": "已复制"
+    "Copied": "已复制",
+    "Title": "标题",
+    "HideArchived": "隱藏已存檔"
   }
 }

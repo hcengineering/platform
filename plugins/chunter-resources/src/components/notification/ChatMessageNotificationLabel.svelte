@@ -27,79 +27,67 @@
   import ThreadMessagePreview from '../threads/ThreadMessagePreview.svelte'
 
   export let context: DocNotifyContext
+  export let object: ChatMessage
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   let title: string | undefined = undefined
-  let parentMessage: ChatMessage | undefined = undefined
-  let object: Doc | undefined = undefined
+  let channel: Doc | undefined = undefined
 
-  $: isThread = hierarchy.isDerived(context.attachedToClass, chunter.class.ThreadMessage)
+  $: isThread = hierarchy.isDerived(context.objectClass, chunter.class.ThreadMessage)
 
-  $: void client
-    .findOne(context.attachedToClass as Ref<Class<ChatMessage>>, { _id: context.attachedTo as Ref<ChatMessage> })
-    .then((res) => {
-      parentMessage = res
-    })
-
-  $: loadObject(parentMessage, isThread)
-  $: object &&
-    getDocLinkTitle(client, object._id, object._class, object).then((res) => {
+  $: loadChannel(object, isThread)
+  $: channel &&
+    getDocLinkTitle(client, channel._id, channel._class, channel).then((res) => {
       title = res
     })
 
-  function loadObject (parentMessage: ChatMessage | undefined, isThread: boolean): void {
-    if (parentMessage === undefined) {
-      object = undefined
-      return
-    }
+  function loadChannel (object: ChatMessage, isThread: boolean): void {
+    const _class = isThread ? (object as ThreadMessage).objectClass : object.attachedToClass
+    const _id = isThread ? (object as ThreadMessage).objectId : object.attachedTo
 
-    const _class = isThread ? (parentMessage as ThreadMessage).objectClass : parentMessage.attachedToClass
-    const _id = isThread ? (parentMessage as ThreadMessage).objectId : parentMessage.attachedTo
-
-    void client.findOne(_class, { _id }).then((res) => {
-      object = res
+    void client.findOne(_class, { _id, ...(isThread ? { space: object.space } : {}) }).then((res) => {
+      channel = res
     })
   }
 
   function toThread (message: ChatMessage): ThreadMessage {
     return message as ThreadMessage
   }
+
+  function isAvatarIcon (_class: Ref<Class<Doc>>): boolean {
+    return hierarchy.isDerived(_class, contact.class.Person) || hierarchy.isDerived(_class, chunter.class.DirectMessage)
+  }
 </script>
 
-{#if parentMessage}
-  <span class="flex-presenter flex-gap-1 font-semi-bold">
-    {#if isThread || (parentMessage.replies ?? 0) > 0}
-      <Label label={chunter.string.Thread} />
-    {:else}
-      <Label label={chunter.string.Message} />
-    {/if}
-    {#if title && object}
-      <span class="lower">
-        <Label label={chunter.string.In} />
-      </span>
-      {#await getDocTitle(client, object._id, object._class, object) then tooltipLabel}
-        <span
-          class="flex-presenter flex-gap-0-5"
-          use:tooltip={tooltipLabel ? { label: getEmbeddedLabel(tooltipLabel) } : undefined}
-        >
-          <ObjectIcon
-            value={object}
-            size={hierarchy.isDerived(object._class, contact.class.Person) ? 'tiny' : 'small'}
-          />
-          <span class="overflow-label">
-            {title}
-          </span>
+<span class="flex-presenter flex-gap-1 font-semi-bold">
+  {#if isThread || (object.replies ?? 0) > 0}
+    <Label label={chunter.string.Thread} />
+  {:else}
+    <Label label={chunter.string.Message} />
+  {/if}
+  {#if title && channel}
+    <span class="lower">
+      <Label label={chunter.string.In} />
+    </span>
+    {#await getDocTitle(client, channel._id, channel._class, channel) then tooltipLabel}
+      <span
+        class="flex-presenter flex-gap-0-5"
+        use:tooltip={tooltipLabel ? { label: getEmbeddedLabel(tooltipLabel) } : undefined}
+      >
+        <ObjectIcon value={channel} size={isAvatarIcon(channel._class) ? 'tiny' : 'small'} />
+        <span class="overflow-label">
+          {title}
         </span>
-      {/await}
-    {/if}
-  </span>
-  <span class="font-normal">
-    {#if isThread}
-      <ThreadMessagePreview value={toThread(parentMessage)} readonly type="content-only" />
-    {:else}
-      <ChatMessagePreview value={parentMessage} readonly type="content-only" />
-    {/if}
-  </span>
-{/if}
+      </span>
+    {/await}
+  {/if}
+</span>
+<span class="font-normal">
+  {#if isThread}
+    <ThreadMessagePreview value={toThread(object)} readonly type="content-only" />
+  {:else}
+    <ChatMessagePreview value={object} readonly type="content-only" />
+  {/if}
+</span>

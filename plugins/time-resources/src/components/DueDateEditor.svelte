@@ -55,6 +55,7 @@
   type="type-button"
   icon={time.icon.Calendar}
   iconSize="small"
+  id={'dueDateButton'}
   title={buttonTitle}
   label={buttonLabel}
   pressed={opened}

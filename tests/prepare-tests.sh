@@ -2,7 +2,7 @@
 
 docker compose -p sanity kill
 docker compose -p sanity down --volumes
-docker compose -p sanity up elastic mongodb -d --force-recreate --renew-anon-volumes
+docker compose -f docker-compose.yaml -p sanity up elastic mongodb cockroach -d --force-recreate --renew-anon-volumes
 docker_exit=$?
 if [ ${docker_exit} -eq 0 ]; then
     echo "Container started successfully"

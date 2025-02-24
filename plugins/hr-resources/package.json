@@ -37,8 +37,9 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/calendar-resources": "^0.6.0",
     "@hcengineering/hr": "^0.6.19",
@@ -53,7 +54,7 @@
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/workbench-resources": "^0.6.1",
     "@hcengineering/text": "^0.6.5",
-    "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/tracker": "^0.6.24"

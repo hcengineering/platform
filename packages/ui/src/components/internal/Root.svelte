@@ -5,8 +5,15 @@
   import { deviceSizes, deviceWidths } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
   import { Theme } from '@hcengineering/theme'
-  import { IconArrowLeft, IconArrowRight, checkMobile, deviceOptionsStore as deviceInfo } from '../../'
-  import { embeddedPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
+  import {
+    IconArrowLeft,
+    IconArrowRight,
+    checkMobile,
+    deviceOptionsStore as deviceInfo,
+    checkAdaptiveMatching,
+    getLocalWeekStart
+  } from '../../'
+  import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
   import Component from '../Component.svelte'
   import Label from '../Label.svelte'
@@ -129,15 +136,27 @@
     }
   }
   updateDeviceSize()
+
+  $: secondRow = checkAdaptiveMatching($deviceInfo.size, 'xs')
+  $: appsMini =
+    $deviceInfo.isMobile &&
+    (($deviceInfo.isPortrait && $deviceInfo.docWidth <= 480) ||
+      (!$deviceInfo.isPortrait && $deviceInfo.docHeight <= 480))
+
+  const weekInfoFirstDay: number = getLocalWeekStart()
+  const savedFirstDayOfWeek = localStorage.getItem('firstDayOfWeek') ?? 'system'
+  $deviceInfo.firstDayOfWeek =
+    parseInt(savedFirstDayOfWeek === 'system' ? weekInfoFirstDay.toString() : savedFirstDayOfWeek, 10) ??
+    weekInfoFirstDay
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
 
 <Theme>
-  <div id="ui-root">
+  <div id="ui-root" class:mobile-theme={isMobile}>
     <div class="antiStatusBar">
       <div class="flex-row-center h-full content-color gap-3 pl-4">
-        {#if embeddedPlatform}
+        {#if desktopPlatform}
           <div class="history-box flex-row-center gap-3">
             <button
               id="statusbar-back"
@@ -161,9 +180,15 @@
             </button>
           </div>
         {/if}
-        <div class="flex-row-center" style:-webkit-app-region={'no-drag'}>
-          <RootBarExtension position="left" />
-        </div>
+        {#if !secondRow}
+          <div
+            class="flex-row-center left-items flex-gap-0-5"
+            class:ml-14={appsMini}
+            style:-webkit-app-region={'no-drag'}
+          >
+            <RootBarExtension position="left" />
+          </div>
+        {/if}
         <div
           class="flex-row-center justify-center status-info"
           style:margin-left={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480) ? '1.5rem' : '0'}
@@ -181,13 +206,25 @@
             <Clock />
           </div>
           <div class="flex-row-center gap-statusbar">
-            <RootBarExtension position="right" />
+            {#if !secondRow}
+              <RootBarExtension position="right" />
+            {/if}
             <FontSizeSelector />
             <ThemeSelector />
             <LangSelector />
           </div>
         </div>
       </div>
+      {#if secondRow}
+        <div class="flex-between h-full content-color gap-3 px-2 second-row" style:-webkit-app-region={'no-drag'}>
+          <div class="flex-row-center flex-gap-0-5">
+            <RootBarExtension position="left" />
+          </div>
+          <div class="flex-row-center flex-gap-0-5">
+            <RootBarExtension position="right" />
+          </div>
+        </div>
+      {/if}
     </div>
     <div class="app">
       {#if application}
@@ -213,10 +250,11 @@
 
     .antiStatusBar {
       -webkit-app-region: drag;
+      min-width: 0;
       min-height: var(--status-bar-height);
       height: var(--status-bar-height);
       // min-width: 600px;
-      font-size: 12px;
+      font-size: 0.75rem;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
       // border-bottom: 1px solid var(--theme-navpanel-divider);
@@ -248,6 +286,21 @@
         margin: 0 12px 0 8px;
       }
 
+      .second-row {
+        display: none;
+      }
+
+      @media (max-width: 480px) {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 2px 0;
+        width: 100%;
+
+        .second-row {
+          display: flex;
+        }
+      }
       @media print {
         display: none;
       }
@@ -266,5 +319,9 @@
         flex-direction: column;
       }
     }
+  }
+
+  .left-items {
+    overflow-x: auto;
   }
 </style>

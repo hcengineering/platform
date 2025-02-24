@@ -14,31 +14,23 @@
 //
 
 import { type Employee } from '@hcengineering/contact'
+import core, { type AttachedData, type Class, type Ref, type TxOperations, Blob, Mixin } from '@hcengineering/core'
 import {
-  type AttachedData,
-  type Class,
-  type CollaborativeDoc,
-  type Ref,
-  type TxOperations,
-  Mixin,
-  generateId,
-  getCollaborativeDoc
-} from '@hcengineering/core'
-import {
-  type Document,
-  type DocumentTemplate,
-  type CollaborativeDocumentSection,
   type ControlledDocument,
+  type Document,
   type DocumentCategory,
-  type DocumentSpace,
   type DocumentMeta,
+  type DocumentSpace,
+  type DocumentTemplate,
+  type HierarchyDocument,
   type Project,
-  DocumentState,
-  ProjectDocument
+  type ProjectDocument,
+  DocumentState
 } from './types'
+import { makeRank } from '@hcengineering/rank'
 
 import documents from './plugin'
-import { TEMPLATE_PREFIX, calcRank, createDocSections } from './utils'
+import { getFirstRank, TEMPLATE_PREFIX } from './utils'
 
 async function getParentPath (client: TxOperations, parent: Ref<ProjectDocument>): Promise<Array<Ref<DocumentMeta>>> {
   const parentDocObj = await client.findOne(documents.class.ProjectDocument, {
@@ -76,26 +68,55 @@ export async function createControlledDocFromTemplate (
     return { seqNumber: -1, success: false }
   }
 
-  const template = await client.findOne(
-    documents.mixin.DocumentTemplate,
-    {
-      _id: templateId
-    },
-    {
-      lookup: {
-        _id: { sections: documents.class.DocumentSection }
-      }
-    }
+  const { seqNumber, prefix, content, category } = await useDocumentTemplate(client, templateId)
+  const { success, documentMetaId } = await createControlledDocMetadata(
+    client,
+    templateId,
+    documentId,
+    space,
+    project,
+    parent,
+    prefix,
+    seqNumber,
+    spec.code,
+    spec.title
   )
 
-  if (template === undefined) {
+  if (!success) {
     return { seqNumber: -1, success: false }
   }
 
-  let path: Array<Ref<DocumentMeta>> = []
+  await client.addCollection(
+    docClass,
+    space,
+    documentMetaId,
+    documents.class.DocumentMeta,
+    'documents',
+    {
+      ...spec,
+      category,
+      template: templateId,
+      seqNumber,
+      prefix,
+      state: DocumentState.Draft,
+      content
+    },
+    documentId
+  )
 
-  if (parent !== undefined) {
-    path = await getParentPath(client, parent)
+  return { seqNumber, success: true }
+}
+
+export async function useDocumentTemplate (
+  client: TxOperations,
+  templateId: Ref<DocumentTemplate>
+): Promise<{ seqNumber: number, prefix: string, content: Ref<Blob> | null, category: Ref<DocumentCategory> }> {
+  const template = await client.findOne(documents.mixin.DocumentTemplate, {
+    _id: templateId
+  })
+
+  if (template === undefined) {
+    return { seqNumber: -1, prefix: '', content: null, category: '' as Ref<DocumentCategory> }
   }
 
   await client.updateMixin(templateId, documents.class.Document, template.space, documents.mixin.DocumentTemplate, {
@@ -106,37 +127,30 @@ export async function createControlledDocFromTemplate (
   const seqNumber = template.sequence + 1
   const prefix = template.docPrefix
 
-  return await createControlledDoc(
-    client,
-    templateId,
-    documentId,
-    { ...spec, category: template.category },
-    space,
-    project,
-    prefix,
-    seqNumber,
-    path,
-    docClass
-  )
+  return { seqNumber, prefix, content: template.content, category: template.category as Ref<DocumentCategory> }
 }
 
-async function createControlledDoc (
+export async function createControlledDocMetadata (
   client: TxOperations,
   templateId: Ref<DocumentTemplate>,
   documentId: Ref<ControlledDocument>,
-  spec: AttachedData<ControlledDocument>,
   space: Ref<DocumentSpace>,
   project: Ref<Project> | undefined,
+  parent: Ref<ProjectDocument> | undefined,
   prefix: string,
   seqNumber: number,
-  path: Ref<DocumentMeta>[] = [],
-  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
-): Promise<{ seqNumber: number, success: boolean }> {
+  specCode: string,
+  specTitle: string,
+  metaId?: Ref<DocumentMeta>
+): Promise<{
+    success: boolean
+    seqNumber: number
+    documentMetaId: Ref<DocumentMeta>
+    projectDocumentId: Ref<ProjectDocument>
+  }> {
   const projectId = project ?? documents.ids.NoProject
 
-  const collaborativeDoc = getCollaborativeDocForDocument(`DOC-${prefix}`, seqNumber, 0, 1)
-
-  const ops = client.apply(documentId)
+  const ops = client.apply()
 
   ops.notMatch(documents.class.Document, {
     template: templateId,
@@ -144,23 +158,37 @@ async function createControlledDoc (
   })
 
   ops.notMatch(documents.class.Document, {
-    code: spec.code
+    code: specCode
   })
 
-  const metaId = await ops.createDoc(documents.class.DocumentMeta, space, {
-    documents: 0,
-    title: `${prefix}-${seqNumber} ${spec.title}`
-  })
+  const documentMetaId = await ops.createDoc(
+    documents.class.DocumentMeta,
+    space,
+    {
+      documents: 0,
+      title: `${prefix}-${seqNumber} ${specTitle}`
+    },
+    metaId
+  )
+
+  let path: Array<Ref<DocumentMeta>> = []
+  if (parent !== undefined) {
+    path = await getParentPath(client, parent)
+  }
+
+  const parentMeta = path[0] ?? documents.ids.NoParent
+  const lastRank = await getFirstRank(client, space, projectId, parentMeta)
 
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
-    meta: metaId,
+    meta: documentMetaId,
     path,
-    parent: path[0] ?? documents.ids.NoParent,
-    documents: 0
+    parent: parentMeta,
+    documents: 0,
+    rank: makeRank(lastRank, undefined)
   })
 
-  await client.addCollection(
+  const projectDocumentId = await client.addCollection(
     documents.class.ProjectDocument,
     space,
     projectMetaId,
@@ -173,28 +201,9 @@ async function createControlledDoc (
     }
   )
 
-  await ops.addCollection(
-    docClass,
-    space,
-    metaId,
-    documents.class.DocumentMeta,
-    'documents',
-    {
-      ...spec,
-      template: templateId,
-      seqNumber,
-      prefix,
-      state: DocumentState.Draft,
-      content: collaborativeDoc
-    },
-    documentId
-  )
-
-  await createDocSections(ops, documentId, templateId, space, documents.class.ControlledDocument)
-
   const success = await ops.commit()
 
-  return { seqNumber, success }
+  return { success: success.result, seqNumber, documentMetaId, projectDocumentId }
 }
 
 export async function createDocumentTemplate (
@@ -206,15 +215,78 @@ export async function createDocumentTemplate (
   parent: Ref<ProjectDocument> | undefined,
   templateId: Ref<ControlledDocument>,
   prefix: string,
-  spec: AttachedData<ControlledDocument>,
+  spec: Omit<AttachedData<ControlledDocument>, 'prefix'>,
   category: Ref<DocumentCategory>,
-  author?: Ref<Employee>,
-  defaultSection?: { title: string }
+  author?: Ref<Employee>
 ): Promise<{ seqNumber: number, success: boolean }> {
+  const { success, seqNumber, code, documentMetaId } = await createDocumentTemplateMetadata(
+    client,
+    _class,
+    space,
+    _mixin,
+    project,
+    parent,
+    templateId,
+    prefix,
+    spec.code ?? '',
+    spec.title
+  )
+
+  if (!success) {
+    return { seqNumber: -1, success: false }
+  }
+
+  const ops = client.apply()
+  await ops.addCollection<DocumentMeta, HierarchyDocument>(
+    _class,
+    space,
+    documentMetaId,
+    documents.class.DocumentMeta,
+    'documents',
+    {
+      ...spec,
+      code,
+      seqNumber,
+      category,
+      prefix: TEMPLATE_PREFIX,
+      author,
+      owner: author,
+      content: spec.content ?? null
+    },
+    templateId
+  )
+  await ops.createMixin(templateId, documents.class.Document, space, _mixin, {
+    sequence: 0,
+    docPrefix: prefix
+  })
+  const commit = await ops.commit()
+
+  return { seqNumber, success: commit.result }
+}
+
+export async function createDocumentTemplateMetadata (
+  client: TxOperations,
+  _class: Ref<Class<Document>>,
+  space: Ref<DocumentSpace>,
+  _mixin: Ref<Mixin<DocumentTemplate>>,
+  project: Ref<Project> | undefined,
+  parent: Ref<ProjectDocument> | undefined,
+  templateId: Ref<ControlledDocument>,
+  prefix: string,
+  specCode: string,
+  specTitle: string,
+  metaId?: Ref<DocumentMeta>
+): Promise<{
+    success: boolean
+    seqNumber: number
+    code: string
+    documentMetaId: Ref<DocumentMeta>
+    projectDocumentId: Ref<ProjectDocument>
+  }> {
   const projectId = project ?? documents.ids.NoProject
 
   const incResult = await client.updateDoc(
-    documents.class.Sequence,
+    core.class.Sequence,
     documents.space.Documents,
     documents.sequence.Templates,
     {
@@ -223,7 +295,7 @@ export async function createDocumentTemplate (
     true
   )
   const seqNumber = (incResult as any).object.sequence as number
-  const collaborativeDocId = getCollaborativeDocForDocument('TPL-DOC', seqNumber, 0, 1)
+  const code = specCode === '' ? `${TEMPLATE_PREFIX}-${seqNumber}` : specCode
 
   let path: Array<Ref<DocumentMeta>> = []
 
@@ -231,7 +303,7 @@ export async function createDocumentTemplate (
     path = await getParentPath(client, parent)
   }
 
-  const ops = client.apply(templateId)
+  const ops = client.apply()
 
   ops.notMatch(documents.class.Document, {
     template: { $exists: false },
@@ -239,27 +311,36 @@ export async function createDocumentTemplate (
   })
 
   ops.notMatch(documents.class.Document, {
-    code: spec.code
+    code
   })
 
   ops.notMatch(documents.mixin.DocumentTemplate, {
     docPrefix: prefix
   })
 
-  const metaId = await ops.createDoc(documents.class.DocumentMeta, space, {
-    documents: 0,
-    title: `${TEMPLATE_PREFIX}-${seqNumber} ${spec.title}`
-  })
+  const documentMetaId = await ops.createDoc(
+    documents.class.DocumentMeta,
+    space,
+    {
+      documents: 0,
+      title: `${TEMPLATE_PREFIX}-${seqNumber} ${specTitle}`
+    },
+    metaId
+  )
+
+  const parentMeta = path[0] ?? documents.ids.NoParent
+  const lastRank = await getFirstRank(client, space, projectId, parentMeta)
 
   const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
     project: projectId,
-    meta: metaId,
+    meta: documentMetaId,
     path,
     parent: path[0] ?? documents.ids.NoParent,
-    documents: 0
+    documents: 0,
+    rank: makeRank(lastRank, undefined)
   })
 
-  await client.addCollection(
+  const projectDocumentId = await client.addCollection(
     documents.class.ProjectDocument,
     space,
     projectMetaId,
@@ -272,74 +353,59 @@ export async function createDocumentTemplate (
     }
   )
 
-  await ops.addCollection(
-    _class,
-    space,
-    metaId,
-    documents.class.DocumentMeta,
-    'documents',
-    {
-      ...spec,
-      seqNumber,
-      category,
-      prefix: TEMPLATE_PREFIX,
-      author,
-      owner: author,
-      content: collaborativeDocId
-    },
-    templateId
-  )
+  const success = await ops.commit()
 
-  await ops.createMixin(templateId, documents.class.Document, space, _mixin, {
-    sequence: 0,
-    docPrefix: prefix
+  return { success: success.result, seqNumber, code, documentMetaId, projectDocumentId }
+}
+
+export async function createNewFolder (
+  client: TxOperations,
+  space: Ref<DocumentSpace>,
+  project: Ref<Project> | undefined,
+  parent: Ref<ProjectDocument> | undefined,
+  title: string
+): Promise<{
+    success: boolean
+    documentMetaId: Ref<DocumentMeta>
+    projectDocumentId: Ref<ProjectDocument>
+  }> {
+  const projectId = project ?? documents.ids.NoProject
+
+  const ops = client.apply()
+
+  const documentMetaId = await ops.createDoc(documents.class.DocumentMeta, space, { documents: 0, title })
+
+  let path: Array<Ref<DocumentMeta>> = []
+  if (parent !== undefined) {
+    path = await getParentPath(client, parent)
+  }
+
+  const parentMeta = path[0] ?? documents.ids.NoParent
+  const lastRank = await getFirstRank(client, space, projectId, parentMeta)
+
+  const projectMetaId = await ops.createDoc(documents.class.ProjectMeta, space, {
+    project: projectId,
+    meta: documentMetaId,
+    path,
+    parent: parentMeta,
+    documents: 0,
+    rank: makeRank(lastRank, undefined)
   })
 
-  if (defaultSection != null) {
-    // adding the default first section
-    const sectionId = generateId()
-    const collaboratorSectionId = generateId()
-
-    await ops.addCollection(
-      documents.class.CollaborativeDocumentSection,
-      space,
-      templateId,
-      documents.mixin.DocumentTemplate,
-      'sections',
-      {
-        title: defaultSection.title,
-        rank: calcRank(),
-        key: sectionId,
-        collaboratorSectionId,
-        attachments: 0
-      },
-      sectionId as Ref<CollaborativeDocumentSection>
-    )
-
-    await ops.updateMixin(
-      sectionId,
-      documents.class.CollaborativeDocumentSection,
-      space,
-      documents.mixin.DocumentTemplateSection,
-      { description: '', guidance: '' }
-    )
-  }
+  const projectDocumentId = await client.addCollection(
+    documents.class.ProjectDocument,
+    space,
+    projectMetaId,
+    documents.class.ProjectMeta,
+    'documents',
+    {
+      project: projectId,
+      initial: projectId,
+      document: documents.ids.Folder
+    }
+  )
 
   const success = await ops.commit()
 
-  return { seqNumber, success }
-}
-
-export function getCollaborativeDocForDocument (
-  prefix: string,
-  seqNumber: number,
-  major: number,
-  minor: number,
-  next: boolean = false
-): CollaborativeDoc {
-  if (prefix.endsWith('-')) {
-    prefix = prefix.substring(0, prefix.length - 1)
-  }
-
-  return getCollaborativeDoc(`${prefix}-${seqNumber}-${major}.${minor}${next ? '.next' : ''}-` + generateId())
+  return { success: success.result, documentMetaId, projectDocumentId }
 }

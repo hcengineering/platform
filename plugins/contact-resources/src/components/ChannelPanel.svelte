@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Channel } from '@hcengineering/contact'
-  import { Class, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
   import { channelProviders } from '../utils'
@@ -23,6 +23,7 @@
   export let _id: Ref<Channel>
   export let _class: Ref<Class<Channel>>
   export let embedded: boolean = false
+  export let selectedDoc: Ref<Doc> | undefined = undefined
   export let activityMessage: DocUpdateMessage | undefined = undefined
 
   const client = getClient()
@@ -52,7 +53,7 @@
         _id: channel?.attachedTo,
         _class: channel?.attachedToClass,
         channel,
-        messageId: activityMessage?.objectId
+        messageId: selectedDoc ?? activityMessage?.objectId
       }}
       on:close
     />

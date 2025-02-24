@@ -43,7 +43,7 @@
   $: icon = getIcon()
 </script>
 
-<div class="root" in:fade out:fade>
+<div class="notifyPopup" in:fade out:fade>
   <div class="flex-between">
     <div class="flex-row-center">
       {#if icon}
@@ -60,7 +60,7 @@
       <span class="overflow-label fs-bold text-base caption-color">{title}</span>
     </div>
     {#if onClose !== undefined}
-      <Button icon={Close} kind="ghost" size="small" on:click={onClose} />
+      <Button icon={Close} kind="ghost" size="small" dataId={'btnNotifyClose'} on:click={onClose} />
     {/if}
   </div>
 
@@ -76,7 +76,7 @@
 </div>
 
 <style lang="scss">
-  .root {
+  .notifyPopup {
     overflow: hidden;
     display: flex;
     flex-direction: column;

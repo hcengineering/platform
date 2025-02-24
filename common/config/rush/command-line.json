@@ -50,6 +50,14 @@
       "allowWarningsOnSuccess": false
     },
     {
+      "name": "_phase:format",
+      "dependencies": {
+        "self": ["_phase:build"]
+      },
+      "ignoreMissingScript": true,
+      "allowWarningsOnSuccess": false
+    },
+    {
       "name": "_phase:svelte-check",
       "dependencies": {
         "self": ["_phase:build"]
@@ -81,10 +89,29 @@
         "self": ["_phase:build", "_phase:package", "_phase:bundle"]
       },
       "ignoreMissingScript": true,
-      "allowWarningsOnSuccess": false
+      "allowWarningsOnSuccess": true
     }
   ],
-  "commands": [   
+  "commands": [
+    {
+      "commandKind": "bulk",
+      "name": "format",
+      "summary": "Format",
+      "description": "Perform a formatting",
+      "enableParallelism": true,
+      "incremental": false,
+      "ignoreMissingScript": true,
+      "safeForSimultaneousRushProcesses": true,
+      "disableBuildCache": true
+    },
+    {
+      "commandKind": "global",
+      "name": "doformat",
+      "summary": "Do a format and show errors after it",
+      "description": "Do a format and show errors after it",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "rush format && ./common/scripts/format-show.sh"
+    },        
     {
       "commandKind": "phased",
       "name": "build:watch",
@@ -98,17 +125,6 @@
         "alwaysWatch": true,
         "watchPhases": ["_phase:build", "_phase:validate"]
       }
-    },
-    {
-      "commandKind": "bulk",
-      "name": "format",
-      "summary": "Format",
-      "description": "Perform a formatting",
-      "enableParallelism": true,
-      "incremental": false,
-      "ignoreMissingScript": true,
-      "safeForSimultaneousRushProcesses": true,
-      "disableBuildCache": true
     },
     {      
       "summary": "svelte-check",
@@ -124,7 +140,11 @@
       "summary": "build",
       "phases": ["_phase:build"],
       "enableParallelism": true,
-      "incremental": true
+      "incremental": true,
+      "watchOptions": {
+        "alwaysWatch": false,
+        "watchPhases": ["_phase:build"]
+      }
     },
     {
       "commandKind": "phased",
@@ -144,9 +164,9 @@
     },
     {
       "commandKind": "phased",
-      "name": "revalidate",
+      "name": "dorevalidate",
       "phases": ["_phase:validate"],
-      "summary": "revalidate",
+      "summary": "dorevalidate",
       "enableParallelism": true,
       "incremental": false
     },
@@ -190,15 +210,15 @@
       "name": "docker:build",
       "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
       "enableParallelism": true,
-      "incremental": true
+      "incremental": true      
     },
     {
-      "commandKind": "global",
-      "name": "docker:up",
-      "summary": "Up development build",
-      "description": "Up development build",
-      "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
+      "summary": "docker:rebuild",
+      "commandKind": "phased",
+      "name": "docker:rebuild",
+      "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
+      "enableParallelism": true,
+      "incremental": false
     },
     {
       "summary": "docker:staging",
@@ -222,6 +242,38 @@
     },
     {
       "commandKind": "global",
+      "name": "docker",
+      "summary": "Build docker with platform",
+      "description": "use to build all docker containers required for platform",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "rush docker:build -p 20 --to @hcengineering/pod-server --to @hcengineering/pod-front --to @hcengineering/prod --to @hcengineering/pod-account --to @hcengineering/pod-workspace --to @hcengineering/pod-collaborator --to @hcengineering/tool --to @hcengineering/pod-print --to @hcengineering/pod-sign --to @hcengineering/pod-analytics-collector --to @hcengineering/rekoni-service --to @hcengineering/pod-ai-bot --to @hcengineering/import-tool --to @hcengineering/pod-stats --to @hcengineering/pod-fulltext --to @hcengineering/pod-love --to @hcengineering/green"
+    },
+    {
+      "commandKind": "global",
+      "name": "docker:up",
+      "summary": "Up development build",
+      "description": "Up development build",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
+    },
+    {
+      "commandKind": "global",
+      "name": "docker:local",
+      "summary": "Up development build",
+      "description": "Up development build",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev/local-mongo && docker compose -p dev up -d --force-recreate"
+    },
+    {
+      "commandKind": "global",
+      "name": "tool:upgrade",
+      "summary": "Upgrade all local models",
+      "description": "Upgrade all local models",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev/tool && rushx run-local upgrade -f"
+    },
+    {
+      "commandKind": "global",
       "name": "apply-templates",
       "summary": "Update all package.json according to templates matched from templates folder",
       "description": "Use to update all projects to templates",
@@ -235,7 +287,28 @@
       "description": "Clean typescript incremental cache",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "find .|grep tsconfig.tsbuildinfo | xargs rm | pwd"
-    },    
+    }, 
+    {
+      "commandKind": "global",
+      "name": "revalidate",
+      "summary": "Clean Validate cache and to validate again",
+      "description": "Clean typescript incremental cache",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "find .|grep tsBuildInfoFile.info | xargs rm | pwd && rush dorevalidate"
+    },
+    {
+      "commandKind": "bulk",
+      "name": "remove-ts-types",
+      "summary": "Clean validate types",
+      "description": "Clean validate types",
+      "shellCommand": "rm -rf ./types",
+      "enableParallelism": true,
+      "incremental": false,
+      "ignoreDependencyOrder": true,
+      "ignoreMissingScript": true,
+      "disableBuildCache": true,
+      "allowWarningsInSuccessfulBuild": true
+    },  
     {
       "commandKind": "global",
       "name": "model-version",
@@ -243,6 +316,14 @@
       "description": "show model version",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "npx node ./common/scripts/show_version.js"
+    },
+    {
+      "commandKind": "global",
+      "name": "show-model",
+      "summary": "show model",
+      "description": "show model",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./models/all && rushx show-model"
     },
     {
       "commandKind": "global",
@@ -258,8 +339,16 @@
       "summary": "Format changed projects",
       "description": "Format and autofix linting issues in changed projects",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "./common/scripts/each-diff.sh rushx format --force"
-    }
+      "shellCommand": "./common/scripts/fast-format.sh"
+    },
+    {
+      "commandKind": "global",
+      "name": "desktop",
+      "summary": "Build desktop build",
+      "description": "use to build all docker containers required for platform",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "rush package -p 20 --to desktop && cd ./desktop-package && rushx dist"
+    },        
   ],
 
   /**
@@ -286,6 +375,16 @@
       "shortName": "-f",
       "description": "Force formatting",
       "associatedCommands": ["format"]
+    },
+    {
+      "parameterKind": "string",   
+      "argumentName": "BRANCH",
+      "required": false,
+      "associatedPhases": [],
+      "shortName": "-b",
+      "longName": "--branch",
+      "description": "Force formatting of branch",
+      "associatedCommands": ["fast-format"]
     }
     // {
     //   /**

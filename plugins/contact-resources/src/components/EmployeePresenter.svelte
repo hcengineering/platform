@@ -2,12 +2,15 @@
   import { Employee, Person } from '@hcengineering/contact'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import ui, { IconSize } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import ui, { IconSize, LabelAndProps } from '@hcengineering/ui'
   import { PersonLabelTooltip, employeeByIdStore, personByIdStore } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
+  import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
 
   export let value: Ref<Person> | WithLookup<Person> | null | undefined
+  export let showPopup: boolean = true
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
@@ -24,16 +27,32 @@
   export let compact: boolean = false
   export let showStatus: boolean = false
 
-  $: employeeValue = typeof value === 'string' ? $personByIdStore.get(value) : value
+  const client = getClient()
+  const h = client.getHierarchy()
 
-  $: active =
-    employeeValue !== undefined ? $employeeByIdStore.get(employeeValue?._id as Ref<Employee>)?.active ?? false : false
+  $: person = typeof value === 'string' ? ($personByIdStore.get(value) as Person) : (value as Person)
+
+  $: employeeValue = person != null ? h.as(person, contact.mixin.Employee) : undefined
+
+  $: active = employeeValue?.active ?? false
+
+  function getPreviewPopup (active: boolean, value: Employee | undefined): LabelAndProps | undefined {
+    if (!active || value === undefined || !showPopup) {
+      return undefined
+    }
+    return {
+      component: EmployeePreviewPopup,
+      props: { employeeId: value._id },
+      timeout: 300
+    }
+  }
 </script>
 
 <PersonPresenter
   value={employeeValue}
   {tooltipLabels}
   onEdit={onEmployeeEdit}
+  customTooltip={getPreviewPopup(active, employeeValue)}
   {shouldShowAvatar}
   {shouldShowName}
   {avatarSize}

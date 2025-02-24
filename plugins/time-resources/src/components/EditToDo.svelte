@@ -19,18 +19,8 @@
   import { SpaceSelector, getClient, createQuery } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import task from '@hcengineering/task'
-  import { StyledTextBox } from '@hcengineering/text-editor'
-  import {
-    ModernEditbox,
-    CheckBox,
-    Component,
-    EditBox,
-    IconClose,
-    Label,
-    Modal,
-    Spinner,
-    ButtonIcon
-  } from '@hcengineering/ui'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
+  import { ModernEditbox, CheckBox, Component, IconClose, Label, Modal, Spinner, ButtonIcon } from '@hcengineering/ui'
   import { ToDo, ToDoPriority } from '@hcengineering/time'
   import { createEventDispatcher } from 'svelte'
   import time from '../plugin'
@@ -43,7 +33,6 @@
   export let _id: Ref<ToDo>
   export let _class: Ref<Class<ToDo>>
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
 
   let object: ToDo
   let title: string
@@ -111,7 +100,7 @@
   }
 </script>
 
-<Modal type={'type-component'} noResize padding={'0'}>
+<Modal type={'type-component'} padding={'0'}>
   <svelte:fragment slot="beforeTitle">
     <div class="flex-center flex-no-shrink min-w-6 min-h-6">
       {#if object}
@@ -168,7 +157,7 @@
           <span class="font-medium"><Label label={time.string.AddTo} /></span>
           <SpaceSelector
             _class={task.class.Project}
-            query={{ archived: false, members: getCurrentAccount()._id }}
+            query={{ archived: false, members: { $in: getCurrentAccount().socialIds } }}
             label={core.string.Space}
             kind={'regular'}
             size={'medium'}

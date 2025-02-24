@@ -1,0 +1,32 @@
+{
+  "string": {
+    "Drive": "Disk",
+    "Drives": "Disky",
+    "Grid": "Mřížka",
+    "File": "Soubor",
+    "Files": "Soubory",
+    "FileVersion": "Verze souboru",
+    "FileVersions": "Verze souborů",
+    "Folder": "Složka",
+    "Folders": "Složky",
+    "Resource": "Zdroj",
+    "Name": "Název",
+    "Description": "Popis",
+    "Parent": "Nadřazená položka",
+    "Path": "Cesta",
+    "Version": "Verze",
+    "Size": "Velikost",
+    "ContentType": "Typ obsahu",
+    "LastModified": "Naposledy upraveno",
+    "Download": "Stáhnout",
+    "Upload": "Nahrát",
+    "CreateDrive": "Vytvořit disk",
+    "CreateFolder": "Vytvořit složku",
+    "UploadFile": "Nahrát soubory",
+    "EditDrive": "Upravit disk",
+    "Rename": "Přejmenovat",
+    "Restore": "Obnovit",
+    "RoleLabel": "Role",
+    "Root": "/"
+  }
+}

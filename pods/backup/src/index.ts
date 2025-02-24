@@ -13,8 +13,96 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
+import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
 import { startBackup } from '@hcengineering/backup-service'
+import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
+import { initStatisticsContext, type PipelineFactory } from '@hcengineering/server-core'
+import {
+  createBackupPipeline,
+  getConfig,
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerTxAdapterFactory,
+  setAdapterSecurity,
+  sharedPipelineContextVars
+} from '@hcengineering/server-pipeline'
+import { join } from 'path'
 
-const ctx = new MeasureMetricsContext('backup-service', {})
-startBackup(ctx)
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  setDBExtraOptions,
+  shutdownPostgres
+} from '@hcengineering/postgres'
+import { readFileSync } from 'node:fs'
+const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
+
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
+
+const metricsContext = initStatisticsContext('backup', {
+  factory: () =>
+    new MeasureMetricsContext(
+      'backup',
+      {},
+      {},
+      newMetrics(),
+      new SplitLogger('backup', {
+        root: join(process.cwd(), 'logs'),
+        enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+      })
+    )
+})
+
+const sentryDSN = process.env.SENTRY_DSN
+
+configureAnalytics(sentryDSN, {})
+Analytics.setTag('application', 'backup-service')
+
+const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
+
+setDBExtraOptions({
+  prepare: usePrepare // We override defaults
+})
+
+registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+registerAdapterFactory('mongodb', createMongoAdapter)
+registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+registerAdapterFactory('postgresql', createPostgresAdapter, true)
+registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+setAdapterSecurity('postgresql', true)
+
+startBackup(
+  metricsContext,
+  (mongoUrl, storageAdapter) => {
+    const factory: PipelineFactory = createBackupPipeline(metricsContext, mongoUrl, model, {
+      externalStorage: storageAdapter,
+      usePassedCtx: true
+    })
+    return factory
+  },
+  (ctx, dbUrl, workspace, branding, externalStorage) => {
+    return getConfig(ctx, dbUrl, ctx, {
+      externalStorage,
+      disableTriggers: true
+    })
+  },
+  sharedPipelineContextVars
+)

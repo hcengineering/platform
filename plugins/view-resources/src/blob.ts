@@ -14,10 +14,14 @@
 //
 
 import { type Blob, type Ref } from '@hcengineering/core'
-import { type BlobMetadata, getFileUrl, getImageSize } from '@hcengineering/presentation'
+import { type BlobMetadata, getImageSize } from '@hcengineering/presentation'
 
 export async function blobImageMetadata (file: File, blob: Ref<Blob>): Promise<BlobMetadata | undefined> {
-  const size = await getImageSize(file, getFileUrl(blob, 'full'))
+  if (file.size === 0) {
+    return undefined
+  }
+
+  const size = await getImageSize(file)
 
   return {
     originalHeight: size.height,
@@ -27,7 +31,11 @@ export async function blobImageMetadata (file: File, blob: Ref<Blob>): Promise<B
 }
 
 export async function blobVideoMetadata (file: File, blob: Ref<Blob>): Promise<BlobMetadata | undefined> {
-  const size = await getVideoSize(blob)
+  if (file.size === 0) {
+    return undefined
+  }
+
+  const size = await getVideoSize(file)
 
   if (size === undefined) {
     return undefined
@@ -39,19 +47,22 @@ export async function blobVideoMetadata (file: File, blob: Ref<Blob>): Promise<B
   }
 }
 
-async function getVideoSize (uuid: Ref<Blob>): Promise<{ width: number, height: number } | undefined> {
+async function getVideoSize (file: File): Promise<{ width: number, height: number } | undefined> {
   const promise = new Promise<{ width: number, height: number }>((resolve, reject) => {
     const element = document.createElement('video')
+
+    const src = URL.createObjectURL(file)
 
     element.onloadedmetadata = () => {
       const height = element.videoHeight
       const width = element.videoWidth
 
+      URL.revokeObjectURL(src)
       resolve({ height, width })
     }
 
     element.onerror = reject
-    element.src = getFileUrl(uuid)
+    element.src = src
   })
 
   return await promise

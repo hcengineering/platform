@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, IdMap, Ref, toIdMap } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
   import tags from '../plugin'
@@ -22,6 +22,7 @@
   export let object: Doc
   export let _class: Ref<Class<Doc>>
   export let key: KeyedAttribute
+  export let readonly: boolean = false
 
   const client = getClient()
 
@@ -52,17 +53,11 @@
   async function updateWeight (tag: TagReference, weight: TagReference['weight']): Promise<void> {
     await client.update(tag, { weight })
   }
-
-  let elements: IdMap<TagElement> = new Map()
-  const elementQuery = createQuery()
-  $: elementQuery.query(tags.class.TagElement, {}, (result) => {
-    elements = toIdMap(result)
-  })
 </script>
 
 <TagsEditor
-  bind:elements
   {key}
+  {readonly}
   bind:items
   targetClass={_class}
   on:open={(evt) => addRef(evt.detail)}

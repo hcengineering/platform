@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 
+import { ActivityMessage } from '@hcengineering/activity'
 import { ChannelItem } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
-import { NotificationType } from '@hcengineering/notification'
-import type { Plugin } from '@hcengineering/platform'
-import { Metadata, plugin } from '@hcengineering/platform'
+import { PersonId, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import { InboxNotification, NotificationProvider, NotificationType } from '@hcengineering/notification'
+import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import { TemplateField } from '@hcengineering/templates'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -58,6 +59,19 @@ export interface SharedTelegramMessages extends AttachedDoc {
   messages: SharedTelegramMessage[]
 }
 
+export interface TelegramNotificationRequest {
+  notificationId: Ref<InboxNotification>
+  messageId?: Ref<ActivityMessage>
+  attachments: boolean
+  workspace: string
+  account: PersonId
+  title: string
+  quote?: string
+  body: string
+  sender: string
+  link: string
+}
+
 /**
  * @public
  */
@@ -91,6 +105,37 @@ export default plugin(telegramId, {
     IntegrationOwnerTG: '' as Ref<TemplateField>
   },
   metadata: {
-    TelegramURL: '' as Metadata<string>
+    TelegramURL: '' as Metadata<string>,
+    BotUrl: '' as Metadata<string>
+  },
+  providers: {
+    TelegramNotificationProvider: '' as Ref<NotificationProvider>
+  },
+  string: {
+    BotDescription: '' as IntlString,
+    BotShortDescription: '' as IntlString,
+    WelcomeMessage: '' as IntlString,
+    TestMessage: '' as IntlString,
+    ConnectMessage: '' as IntlString,
+    StopMessage: '' as IntlString,
+    StartBot: '' as IntlString,
+    ConnectAccount: '' as IntlString,
+    ShowCommandsDetails: '' as IntlString,
+    TurnNotificationsOff: '' as IntlString,
+    ConnectedDescriptionHtml: '' as IntlString,
+    AccountAlreadyConnectedHtml: '' as IntlString,
+    AccountConnectedHtml: '' as IntlString,
+    AccountAlreadyConnected: '' as IntlString,
+    InvalidCode: '' as IntlString,
+    SomethingWentWrong: '' as IntlString,
+    Configure: '' as IntlString,
+    ConnectTelegramBot: '' as IntlString,
+    DisconnectMessage: '' as IntlString,
+    SyncAllChannels: '' as IntlString,
+    SyncStarredChannels: '' as IntlString,
+    TelegramIntegrationDesc: '' as IntlString,
+    TelegramIntegrationDesc2: '' as IntlString,
+    ToSetupNotification: '' as IntlString,
+    TelegramNotificationPath: '' as IntlString
   }
 })

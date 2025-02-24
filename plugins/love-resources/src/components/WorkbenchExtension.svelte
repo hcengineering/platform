@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { rootBarExtensions } from '@hcengineering/ui'
+  import { pushRootBarComponent } from '@hcengineering/ui'
   import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, Track } from 'livekit-client'
   import { onDestroy, onMount } from 'svelte'
   import love from '../plugin'
@@ -33,12 +33,7 @@
   }
 
   onMount(() => {
-    rootBarExtensions.update((cur) => {
-      if (cur.find((p) => p[1] === love.component.ControlExt) === undefined) {
-        cur.push(['left', love.component.ControlExt])
-      }
-      return cur
-    })
+    pushRootBarComponent('left', love.component.ControlExt, 20)
     lk.on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
   })
@@ -52,4 +47,4 @@
   })
 </script>
 
-<div bind:this={parentElement}></div>
+<div bind:this={parentElement} class="hidden"></div>

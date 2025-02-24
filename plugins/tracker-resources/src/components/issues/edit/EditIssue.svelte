@@ -25,7 +25,7 @@
   } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { Issue } from '@hcengineering/tracker'
+  import { Issue, TrackerEvents } from '@hcengineering/tracker'
   import {
     AnyComponent,
     Button,
@@ -40,7 +40,10 @@
     navigate
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink, ParentsNavigator, showMenu } from '@hcengineering/view-resources'
+  import { DocNavLink, ParentsNavigator, showMenu, RelationsEditor } from '@hcengineering/view-resources'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { Analytics } from '@hcengineering/analytics'
+
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueIdByIdentifier } from '../../../issues'
   import tracker from '../../../plugin'
@@ -49,12 +52,10 @@
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
   import SubIssues from './SubIssues.svelte'
-  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
   export let _id: Ref<Issue> | string
   export let _class: Ref<Class<Issue>>
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
   export let readonly: boolean = false
 
   let lastId: Ref<Issue> | undefined
@@ -88,13 +89,13 @@
     if (_id && lastId && lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void inboxClient.readDoc(getClient(), prev)
+      void inboxClient.readDoc(prev)
     }
   }
 
   onDestroy(async () => {
     if (issueId === undefined) return
-    void inboxClient.readDoc(getClient(), issueId)
+    void inboxClient.readDoc(issueId)
   })
 
   $: if (issueId !== undefined && _class !== undefined) {
@@ -129,6 +130,7 @@
 
     if (trimmedTitle.length > 0 && trimmedTitle !== issue.title?.trim()) {
       await client.update(issue, { title: trimmedTitle })
+      Analytics.handleEvent(TrackerEvents.IssueTitleUpdated, { issue: issue.identifier ?? issue._id })
     }
   }
 
@@ -173,6 +175,13 @@
   $: taskType = issue?.kind !== undefined ? $taskTypeStore.get(issue?.kind) : undefined
 
   $: projectType = taskType?.parent !== undefined ? $typeStore.get(taskType.parent) : undefined
+
+  async function unsetParentIssue (): Promise<void> {
+    if (issue === undefined || readonly) return
+
+    await client.update(issue, { attachedTo: tracker.ids.NoParent })
+    Analytics.handleEvent(TrackerEvents.IssueParentUnset, { issue: issue.identifier ?? issue._id })
+  }
 </script>
 
 {#if !embedded}
@@ -193,9 +202,9 @@
     isAside={true}
     isSub={false}
     {embedded}
-    {kind}
     withoutActivity={false}
     printAside={true}
+    adaptive={'default'}
     bind:content
     bind:innerWidth
     on:open
@@ -234,13 +243,20 @@
 
     <svelte:fragment slot="utils">
       {#if !readonly}
-        <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
+        <Button
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          dataId={'btnMoreActions'}
+          on:click={showContextMenu}
+        />
         <CopyToClipboard issueUrl={generateIssueShortLink(issue.identifier)} />
         <Button
           icon={setting.icon.Setting}
           kind={'icon'}
           iconProps={{ size: 'medium' }}
           showTooltip={{ label: setting.string.ClassSetting }}
+          dataId={'btnClassSetting'}
           on:click={(ev) => {
             ev.stopPropagation()
             const loc = getCurrentResolvedLocation()
@@ -259,6 +275,7 @@
         iconProps={{ size: 'medium' }}
         kind={'icon'}
         selected={showAllMixins}
+        dataId={'btnMixin'}
         on:click={() => {
           showAllMixins = !showAllMixins
         }}
@@ -266,8 +283,22 @@
     </svelte:fragment>
 
     {#if hasParentIssue}
-      <div class="mb-6">
+      <div class="mb-6 flex-row-center">
         <SubIssueSelector {issue} />
+        {#if !readonly}
+          <div class="ml-2">
+            <Button
+              icon={tracker.icon.UnsetParent}
+              iconProps={{ size: 'medium' }}
+              kind={'regular'}
+              showTooltip={{ label: tracker.string.UnsetParentIssue }}
+              dataId={'btnUnsetParent'}
+              on:click={() => {
+                void unsetParentIssue()
+              }}
+            />
+          </div>
+        {/if}
       </div>
     {/if}
     <EditBox
@@ -285,6 +316,7 @@
         {readonly}
         key={{ key: 'description', attr: descriptionKey }}
         bind:this={descriptionBox}
+        identifier={issue?.identifier}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
         boundary={content}
         on:saved={(evt) => {
@@ -297,6 +329,8 @@
         <SubIssues focusIndex={50} {issue} shouldSaveDraft />
       {/key}
     </div>
+
+    <RelationsEditor object={issue} {readonly} />
 
     {#if editorFooter}
       <div class="step-tb-6">

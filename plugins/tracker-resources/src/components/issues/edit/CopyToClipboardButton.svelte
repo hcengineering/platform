@@ -20,6 +20,7 @@
   export let icon: Asset
   export let title: IntlString
   export let text: string
+  export let dataId: string | undefined = undefined
 </script>
 
 <Button
@@ -27,5 +28,6 @@
   iconProps={{ size: 'medium' }}
   kind={'icon'}
   showTooltip={{ label: title, direction: 'bottom' }}
+  {dataId}
   on:click={() => copyTextToClipboard(text)}
 />

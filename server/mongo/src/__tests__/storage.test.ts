@@ -15,41 +15,19 @@
 //
 import core, {
   type Client,
-  type ClientConnection,
   createClient,
-  type Doc,
-  type DocChunk,
-  type Domain,
-  DOMAIN_MODEL,
-  DOMAIN_TX,
-  generateId,
-  getWorkspaceId,
   Hierarchy,
-  type MeasureContext,
   MeasureMetricsContext,
   ModelDb,
   type Ref,
   SortingOrder,
   type Space,
   TxOperations,
-  type WorkspaceId,
-  type SessionOperationContext,
-  type ParamsType,
-  type FullParamsType
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import {
-  type ContentTextAdapter,
-  createNullStorageFactory,
-  createServerStorage,
-  type DbAdapter,
-  type DbConfiguration,
-  DummyDbAdapter,
-  DummyFullTextAdapter,
-  type FullTextAdapter,
-  type ServerStorage
-} from '@hcengineering/server-core'
+import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
-import { getMongoClient, type MongoClientReference, shutdown } from '../utils'
+import { getMongoClient, type MongoClientReference, shutdownMongo } from '../utils'
 import { genMinModel } from './minmodel'
 import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
@@ -57,56 +35,33 @@ const txes = genMinModel()
 
 createTaskModel(txes)
 
-async function createNullAdapter (
-  ctx: MeasureContext,
-  hierarchy: Hierarchy,
-  url: string,
-  db: WorkspaceId,
-  modelDb: ModelDb
-): Promise<DbAdapter> {
-  return new DummyDbAdapter()
-}
-
-async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
-  return new DummyFullTextAdapter()
-}
-
-async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
-  return {
-    async content (name: string, type: string, doc) {
-      return ''
-    },
-    metrics (): MeasureContext {
-      return new MeasureMetricsContext('', {})
-    }
-  }
-}
-
 describe('mongo operations', () => {
   const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
   let mongoClient!: MongoClientReference
-  let dbId: string = generateId()
+  let dbUuid = crypto.randomUUID() as WorkspaceUuid
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
   let operations: TxOperations
-  let serverStorage: ServerStorage
+  let serverStorage: DbAdapter
 
   beforeAll(async () => {
     mongoClient = getMongoClient(mongodbUri)
   })
 
   afterAll(async () => {
-    await shutdown()
+    mongoClient.close()
+    await shutdownMongo()
   })
 
   beforeEach(async () => {
-    dbId = 'mongo-testdb-' + generateId()
+    dbUuid = crypto.randomUUID() as WorkspaceUuid
+    await initDb()
   })
 
   afterEach(async () => {
     try {
-      await (await mongoClient.getClient()).db(dbId).dropDatabase()
+      await (await mongoClient.getClient()).db(dbUuid).dropDatabase()
     } catch (eee) {}
     await serverStorage.close()
   })
@@ -125,9 +80,25 @@ describe('mongo operations', () => {
     const mctx = new MeasureMetricsContext('', {})
     const txStorage = await createMongoTxAdapter(
       new MeasureMetricsContext('', {}),
+      {},
       hierarchy,
       mongodbUri,
-      getWorkspaceId(dbId, ''),
+      {
+        uuid: dbUuid,
+        url: dbUuid
+      },
+      model
+    )
+
+    serverStorage = await createMongoAdapter(
+      new MeasureMetricsContext('', {}),
+      {},
+      hierarchy,
+      mongodbUri,
+      {
+        uuid: dbUuid,
+        url: dbUuid
+      },
       model
     )
 
@@ -136,108 +107,36 @@ describe('mongo operations', () => {
       await txStorage.tx(mctx, t)
     }
 
-    const conf: DbConfiguration = {
-      domains: {
-        [DOMAIN_TX]: 'MongoTx',
-        [DOMAIN_MODEL]: 'Null'
-      },
-      defaultAdapter: 'Mongo',
-      adapters: {
-        MongoTx: {
-          factory: createMongoTxAdapter,
-          url: mongodbUri
-        },
-        Mongo: {
-          factory: createMongoAdapter,
-          url: mongodbUri
-        },
-        Null: {
-          factory: createNullAdapter,
-          url: ''
-        }
-      },
-      metrics: new MeasureMetricsContext('', {}),
-      fulltextAdapter: {
-        factory: createNullFullTextAdapter,
-        url: '',
-        stages: () => []
-      },
-      contentAdapters: {
-        default: {
-          factory: createNullContentTextAdapter,
-          contentType: '',
-          url: ''
-        }
-      },
-      serviceAdapters: {},
-      defaultContentAdapter: 'default',
-      workspace: { ...getWorkspaceId(dbId, ''), workspaceName: '', workspaceUrl: '' },
-      storageFactory: createNullStorageFactory()
-    }
+    await txStorage.close()
+
     const ctx = new MeasureMetricsContext('client', {})
-    serverStorage = await createServerStorage(ctx, conf, {
-      upgrade: false,
-      broadcast: () => {},
-      branding: null
-    })
-    const soCtx: SessionOperationContext = {
-      ctx,
-      derived: [],
-      with: async <T>(
-        name: string,
-        params: ParamsType,
-        op: (ctx: SessionOperationContext) => T | Promise<T>,
-        fullParams?: FullParamsType
-      ): Promise<T> => {
-        return await op(soCtx)
-      }
-    }
+
     client = await createClient(async (handler) => {
-      const st: ClientConnection = {
-        isConnected: () => true,
-        findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
-        tx: async (tx) => await serverStorage.tx(soCtx, tx),
-        searchFulltext: async () => ({ docs: [] }),
-        close: async () => {},
-        loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
-        closeChunk: async (idx) => {},
-        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async () => txes,
-        getAccount: async () => ({}) as any,
-        measure: async () => async () => ({ time: 0, serverTime: 0 }),
-        sendForceClose: async () => {}
-      }
-      return st
+      return wrapAdapterToClient(ctx, serverStorage, txes)
     })
 
     operations = new TxOperations(client, core.account.System)
   }
 
-  beforeEach(async () => {
-    await initDb()
-  })
-
   it('check add', async () => {
-    jest.setTimeout(500000)
+    const times: number[] = []
     for (let i = 0; i < 50; i++) {
+      const t = Date.now()
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,
         description: `${i * i}`,
         rate: 20 + i
       })
+      times.push(Date.now() - t)
     }
+
+    console.log('createDoc times', times)
 
     const r = await client.findAll<Task>(taskPlugin.class.Task, {})
     expect(r.length).toEqual(50)
-
-    const r2 = await client.findAll(core.class.Tx, {})
-    expect(r2.length).toBeGreaterThan(50)
   })
 
   it('check find by criteria', async () => {
-    jest.setTimeout(20000)
     for (let i = 0; i < 50; i++) {
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,
@@ -391,5 +290,40 @@ describe('mongo operations', () => {
     )
     expect((r4[0].$lookup?.attachedTo as TaskComment)?._id).toEqual(commentId)
     expect(((r4[0].$lookup?.attachedTo as any)?.$lookup.attachedTo as Task)?._id).toEqual(docId)
+  })
+
+  it('check associations', async () => {
+    const association = await operations.findOne(core.class.Association, {})
+    if (association == null) {
+      throw new Error('Association not found')
+    }
+
+    const firstTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task',
+      description: 'Descr',
+      rate: 20
+    })
+
+    const secondTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task2',
+      description: 'Descr',
+      rate: 20
+    })
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: firstTask,
+      docB: secondTask,
+      association: association._id
+    })
+
+    const r = await client.findAll(
+      taskPlugin.class.Task,
+      { _id: firstTask },
+      {
+        associations: [[association._id, 1]]
+      }
+    )
+    expect(r.length).toEqual(1)
+    expect((r[0].$associations?.[association._id][0] as unknown as Task)?._id).toEqual(secondTask)
   })
 })

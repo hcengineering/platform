@@ -13,32 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar from '@hcengineering/calendar'
-  import type { Contact, PersonAccount, Organization, Person } from '@hcengineering/contact'
-  import contact from '@hcengineering/contact'
-  import core, {
-    Account,
-    Class,
-    Client,
-    DateRangeMode,
-    Doc,
-    generateId,
-    getCurrentAccount,
-    Markup,
-    Ref
-  } from '@hcengineering/core'
+  import calendar, { Calendar } from '@hcengineering/calendar'
+  import type { Organization, Person } from '@hcengineering/contact'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
+  import core, { Class, Client, DateRangeMode, Doc, generateId, Markup, Ref } from '@hcengineering/core'
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import { UserBox, UserBoxList } from '@hcengineering/contact-resources'
-  import type { Applicant, Candidate, Review } from '@hcengineering/recruit'
-  import task from '@hcengineering/task'
-  import { EmptyMarkup, StyledTextArea } from '@hcengineering/text-editor'
+  import { Applicant, Candidate, RecruitEvents, Review } from '@hcengineering/recruit'
+  import { EmptyMarkup } from '@hcengineering/text'
+  import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { DateRangePresenter, EditBox, Status as StatusControl } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectSearchBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
   import IconCompany from '../icons/Company.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   // export let space: Ref<Project>
   export let candidate: Ref<Person>
@@ -50,7 +41,7 @@
   const initDate =
     date === undefined ? now : withTime ? date : new Date(date.setHours(now.getHours(), now.getMinutes()))
 
-  const currentUser = getCurrentAccount() as PersonAccount
+  const currentUser = getCurrentEmployee()
 
   let status: Status = OK
 
@@ -72,7 +63,7 @@
     _id: generateId(),
     collection: 'reviews',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>,
+    modifiedBy: '',
     date: 0,
     access: 'reader',
     allDay: false,
@@ -81,9 +72,10 @@
     company,
     verdict: '',
     title,
-    participants: [currentUser.person],
+    participants: [currentUser],
     eventId: '',
-    dueDate: 0
+    dueDate: 0,
+    calendar: '' as Ref<Calendar>
   }
 
   const dispatch = createEventDispatcher()
@@ -95,7 +87,7 @@
   }
 
   async function createReview () {
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Review })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Review })
     if (sequence === undefined) {
       throw new Error('sequence object not found')
     }
@@ -107,7 +99,7 @@
       throw new Error('contact not found')
     }
     if (!client.getHierarchy().hasMixin(candidateInstance, recruit.mixin.Candidate)) {
-      await client.createMixin<Contact, Candidate>(
+      await client.createMixin<Person, Candidate>(
         candidateInstance._id,
         candidateInstance._class,
         candidateInstance.space,
@@ -116,22 +108,31 @@
       )
     }
 
-    await client.addCollection(recruit.class.Review, doc.space, doc.attachedTo, doc.attachedToClass, 'reviews', {
-      number: (incResult as any).object.sequence,
-      date: startDate ?? 0,
-      dueDate: dueDate ?? 0,
-      description,
-      verdict: '',
-      title,
-      participants: doc.participants,
-      company,
-      application,
-      location,
-      access: 'reader',
-      allDay: false,
-      eventId: '',
-      calendar: undefined
-    })
+    const ref = await client.addCollection(
+      recruit.class.Review,
+      doc.space,
+      doc.attachedTo,
+      doc.attachedToClass,
+      'reviews',
+      {
+        number: (incResult as any).object.sequence,
+        date: startDate ?? 0,
+        dueDate: dueDate ?? 0,
+        description,
+        verdict: '',
+        title,
+        participants: doc.participants,
+        company,
+        application,
+        location,
+        access: 'reader',
+        allDay: false,
+        eventId: '',
+        calendar: '' as Ref<Calendar>
+      }
+    )
+
+    Analytics.handleEvent(RecruitEvents.ReviewCreated, { id: ref })
   }
 
   async function invokeValidate (

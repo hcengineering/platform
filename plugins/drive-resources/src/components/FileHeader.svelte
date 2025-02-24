@@ -32,6 +32,6 @@
 
 <div class="antiHSpacer x2" />
 <DocsNavigator elements={parents} />
-<div class="title">
-  <FilePresenter value={object} shouldShowAvatar={false} disabled noUnderline />
+<div class="fs-title flex-row-center">
+  <FilePresenter value={object} shouldShowAvatar={false} shouldShowVersion disabled noUnderline />
 </div>

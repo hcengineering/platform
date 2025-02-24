@@ -13,41 +13,48 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { onDestroy } from 'svelte'
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { DocumentQuery, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { DocumentQuery, Ref } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
-  import type { TabItem } from '@hcengineering/ui'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import type { TabItem, DropdownIntlItem } from '@hcengineering/ui'
   import {
-    Button,
+    ModernButton,
+    ButtonIcon,
     IconBack,
     IconForward,
-    Label,
-    SearchEdit,
+    SearchInput,
     Separator,
-    TabList,
+    Header,
+    Breadcrumb,
+    Switcher,
     defineSeparators,
-    workbenchSeparators,
-    deviceOptionsStore as deviceInfo
+    twoPanelsSeparators,
+    deviceOptionsStore as deviceInfo,
+    tableToCSV,
+    showPopup
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { getCurrentEmployee } from '@hcengineering/contact'
 
   import hr from '../plugin'
 
   import ScheduleView from './ScheduleView.svelte'
   import Sidebar from './sidebar/Sidebar.svelte'
+  import ExportPopup from './schedule/ExportPopup.svelte'
 
-  const accountEmployee = $employeeByIdStore.get((getCurrentAccount() as PersonAccount).person as Ref<Employee>)
+  const me = getCurrentEmployee()
   let accountStaff: Staff | undefined
 
   const accountStaffQ = createQuery()
 
   let department = accountStaff !== undefined ? accountStaff.department : hr.ids.Head
-  $: if (accountEmployee !== undefined) {
-    accountStaffQ.query(hr.mixin.Staff, { _id: accountEmployee._id as Ref<Staff> }, (res) => {
+  $: if (me !== undefined) {
+    accountStaffQ.query(hr.mixin.Staff, { _id: me as Ref<Staff> }, (res) => {
       accountStaff = res[0]
       department = accountStaff !== undefined ? accountStaff.department : hr.ids.Head
     })
@@ -74,7 +81,7 @@
     departments.clear()
     descendants.clear()
     for (const doc of res) {
-      if (doc.parent !== undefined) {
+      if (doc.parent !== undefined && doc._id !== hr.ids.Head) {
         const current = descendants.get(doc.parent) ?? []
         current.push(doc)
         descendants.set(doc.parent, current)
@@ -88,6 +95,7 @@
   function inc (val: number): void {
     switch (mode) {
       case CalendarMode.Month: {
+        currentDate.setDate(1)
         currentDate.setMonth(currentDate.getMonth() + val)
         break
       }
@@ -122,10 +130,60 @@
     { id: 'stats', icon: view.icon.Table }
   ]
 
-  defineSeparators('workbench', workbenchSeparators)
+  let viewlet: Viewlet | undefined
+  let preference: ViewletPreference | undefined
+  let loading = false
+
+  function exportTable (evt: Event) {
+    interface ExportPopupItem extends DropdownIntlItem {
+      separator: ',' | ';'
+    }
+    const items: ExportPopupItem[] = [
+      {
+        id: '0',
+        label: getEmbeddedLabel(', (csv)'),
+        separator: ','
+      },
+      {
+        id: '1',
+        label: getEmbeddedLabel('; (MS Excel)'),
+        separator: ';'
+      }
+    ]
+    showPopup(
+      ExportPopup,
+      {
+        items
+      },
+      evt.target as HTMLElement,
+      (res) => {
+        if (res != null) {
+          const filename = 'exportStaff' + new Date().toLocaleDateString() + '.csv'
+          const link = document.createElement('a')
+          link.style.display = 'none'
+          link.setAttribute('target', '_blank')
+          link.setAttribute(
+            'href',
+            'data:text/csv;charset=utf-8,%EF%BB%BF' +
+              encodeURIComponent(tableToCSV('exportableData', items[res].separator))
+          )
+          link.setAttribute('download', filename)
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }
+      }
+    )
+  }
+
+  let replacedPanel: HTMLElement
+  $: $deviceInfo.replacedPanel = replacedPanel
+  onDestroy(() => ($deviceInfo.replacedPanel = undefined))
+
+  defineSeparators('schedule', twoPanelsSeparators)
 </script>
 
-<div class="flex h-full clear-mins">
+<div class="hulyPanels-container">
   {#if $deviceInfo.navigator.visible}
     <Sidebar
       {department}
@@ -136,72 +194,93 @@
       }}
     />
     <Separator
-      name={'workbench'}
+      name={'schedule'}
       float={$deviceInfo.navigator.float}
-      disabledWhen={['panel-aside']}
       index={0}
-      color={'var(--theme-navpanel-border)'}
+      color={'transparent'}
+      separatorSize={0}
+      short
     />
   {/if}
 
-  <div class="antiPanel-component filled">
-    <div class="ac-header full divide caption-height">
-      <div class="ac-header__wrap-title mr-3">
-        <span class="ac-header__title"><Label label={hr.string.Schedule} /></span>
-      </div>
-
-      <div class="ac-header-full medium-gap mb-1">
+  <div class="hulyComponent" bind:this={replacedPanel}>
+    <Header
+      adaptive={'disabled'}
+      hideBefore={mode === CalendarMode.Year}
+      hideActions={!(mode === CalendarMode.Month && display === 'stats')}
+    >
+      <svelte:fragment slot="beforeTitle">
         {#if mode === CalendarMode.Month}
-          <TabList
+          <Switcher
+            name={'schedule-mode-view'}
             items={viewslist}
-            multiselect={false}
+            kind={'subtle'}
             selected={display}
             on:select={(result) => {
               if (result.detail !== undefined) display = result.detail.id
             }}
           />
+          {#if display === 'stats'}
+            <ViewletSelector
+              hidden
+              bind:viewlet
+              bind:preference
+              bind:loading
+              viewletQuery={{ _id: hr.viewlet.StaffStats }}
+            />
+            <ViewletSettingButton bind:viewlet />
+          {/if}
         {/if}
-      </div>
-    </div>
-    <div class="ac-header full divide search-start">
-      <div class="ac-header-full small-gap">
-        <SearchEdit
+      </svelte:fragment>
+
+      <Breadcrumb icon={hr.icon.HR} label={hr.string.Schedule} size={'large'} isCurrent />
+
+      <svelte:fragment slot="search">
+        <SearchInput
           bind:value={search}
+          collapsed
           on:change={() => {
             updateResultQuery(search)
           }}
         />
-        <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-      </div>
-      <div class="ac-header-full medium-gap">
-        <!-- <ViewletSettingButton bind:viewOptions {viewlet} /> -->
-        <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-      </div>
-    </div>
-    <div class="ac-header full divide">
-      <div class="ac-header-full small-gap">
-        <Button
+      </svelte:fragment>
+      <svelte:fragment slot="actions">
+        {#if mode === CalendarMode.Month && display === 'stats'}
+          <ModernButton
+            label={hr.string.Export}
+            size={'small'}
+            on:click={(evt) => {
+              exportTable(evt)
+            }}
+          />
+        {/if}
+      </svelte:fragment>
+    </Header>
+    <div class="hulyHeader-container clearPadding justify-between flex-gap-4">
+      <div class="flex-row-center flex-gap-2">
+        <ButtonIcon
           icon={IconBack}
-          kind={'ghost'}
+          kind={'tertiary'}
+          size={'small'}
           on:click={() => {
             inc(-1)
           }}
         />
-        <Button
+        <ModernButton
           label={calendar.string.Today}
-          kind={'ghost'}
-          on:click={() => {
-            currentDate = new Date()
-          }}
+          kind={'tertiary'}
+          size={'small'}
+          on:click={() => (currentDate = new Date())}
         />
-        <Button
+        <ButtonIcon
           icon={IconForward}
-          kind={'ghost'}
+          kind={'tertiary'}
+          size={'small'}
           on:click={() => {
             inc(1)
           }}
         />
-        <div class="buttons-divider" />
+        <div class="hulyHeader-divider short" />
         <div class="fs-title flex-row-center flex-grow firstLetter">
           {#if mode === CalendarMode.Month}
             <span class="mr-2 overflow-label">{getMonthName(currentDate)}</span>
@@ -209,12 +288,14 @@
           {currentDate.getFullYear()}
         </div>
       </div>
-      <TabList
+      <Switcher
+        name={'calendar-mode-view'}
+        selected={mode === CalendarMode.Month ? 'ModeMonth' : 'ModeYear'}
+        kind={'subtle'}
         items={[
           { id: 'ModeMonth', labelIntl: calendar.string.ModeMonth },
           { id: 'ModeYear', labelIntl: calendar.string.ModeYear }
         ]}
-        multiselect={false}
         on:select={handleSelect}
       />
     </div>
@@ -227,6 +308,9 @@
       {currentDate}
       {mode}
       {display}
+      {preference}
+      {viewlet}
+      {loading}
     />
   </div>
 </div>

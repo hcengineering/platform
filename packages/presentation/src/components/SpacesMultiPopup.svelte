@@ -31,7 +31,6 @@
   import SpaceInfo from './SpaceInfo.svelte'
 
   export let _classes: Ref<Class<Space>>[] = []
-  export let allowDeselect: boolean = false
   export let titleDeselect: IntlString | undefined = undefined
   export let placeholder: IntlString = presentation.string.Search
   export let placeholderParam: any | undefined = undefined
@@ -100,26 +99,21 @@
     <div class="box">
       {#each shownSpaces as space}
         <button
-          class="menu-item"
+          class="menu-item justify-between"
           on:click={() => {
             checkSelected(space)
           }}
         >
-          <div class="check pointer-events-none">
-            <CheckBox checked={isSelected(space)} kind={'primary'} />
-          </div>
           <SpaceInfo size={'medium'} value={space} {iconWithEmoji} {defaultIcon} />
-          {#if allowDeselect && space._id === selected}
-            <div class="check pointer-events-none">
-              {#if titleDeselect}
-                <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
-                  <CheckBox checked circle kind={'primary'} />
-                </div>
-              {:else}
-                <CheckBox checked circle kind={'primary'} />
-              {/if}
-            </div>
-          {/if}
+          <div class="check ml-0 pointer-events-none">
+            {#if titleDeselect}
+              <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                <CheckBox checked={isSelected(space)} kind={'primary'} />
+              </div>
+            {:else}
+              <CheckBox checked={isSelected(space)} kind={'primary'} />
+            {/if}
+          </div>
         </button>
       {/each}
     </div>

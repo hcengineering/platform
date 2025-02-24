@@ -23,6 +23,7 @@ import { devTool } from '.'
 import { addLocation } from '@hcengineering/platform'
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
+import { serverCardId } from '@hcengineering/server-card'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverCollaborationId } from '@hcengineering/server-collaboration'
@@ -44,6 +45,7 @@ import { serverTelegramId } from '@hcengineering/server-telegram'
 import { serverTimeId } from '@hcengineering/server-time'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
+import { serverAiBotId } from '@hcengineering/server-ai-bot'
 
 addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
 addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
@@ -58,6 +60,7 @@ addLocation(serverSettingId, () => import('@hcengineering/server-setting-resourc
 addLocation(serverTaskId, () => import('@hcengineering/server-task-resources'))
 addLocation(serverTrackerId, () => import('@hcengineering/server-tracker-resources'))
 addLocation(serverTagsId, () => import('@hcengineering/server-tags-resources'))
+addLocation(serverCardId, () => import('@hcengineering/server-card-resources'))
 addLocation(serverCalendarId, () => import('@hcengineering/server-calendar-resources'))
 addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
 addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))
@@ -68,18 +71,36 @@ addLocation(serverDocumentId, () => import('@hcengineering/server-document-resou
 addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
 addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
 addLocation(serverDriveId, () => import('@hcengineering/server-drive-resources'))
+addLocation(serverAiBotId, () => import('@hcengineering/server-ai-bot-resources'))
 
 function prepareTools (): {
-  mongodbUri: string
+  dbUrl: string
   txes: Tx[]
   version: Data<Version>
   migrateOperations: [string, MigrateOperation][]
 } {
   const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
   const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
+
   return { ...prepareToolsRaw(builder(enabled, disabled).getTxes()), version: getModelVersion(), migrateOperations }
 }
 
-console.log(`tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`)
+export function getMongoDBUrl (): string {
+  const url = process.env.MONGO_URL
+  if (url === undefined) {
+    console.error('please provide mongo DB URL')
+    process.exit(1)
+  }
+  return url
+}
 
-devTool(prepareTools, process.env.PRODUCT_ID ?? '')
+export function getAccountDBUrl (): string {
+  const url = process.env.ACCOUNT_DB_URL
+  if (url === undefined) {
+    console.error('please provide mongo ACCOUNT_DB_URL')
+    process.exit(1)
+  }
+  return url
+}
+
+devTool(prepareTools)

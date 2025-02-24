@@ -37,7 +37,7 @@
   $: if (message && hasReactions) {
     reactionsQuery.query(
       activity.class.Reaction,
-      { attachedTo: message._id },
+      { attachedTo: message._id, space: message.space },
       (res: Reaction[]) => {
         reactions = res
 
@@ -66,7 +66,7 @@
     e.stopPropagation()
     e.preventDefault()
     showPopup(EmojiPopup, {}, e.target as HTMLElement, (emoji: string) => {
-      void updateDocReactions(client, reactions, message, emoji)
+      void updateDocReactions(reactions, message, emoji)
     })
   }
 </script>

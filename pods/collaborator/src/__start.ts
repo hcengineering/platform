@@ -13,9 +13,28 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
+import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
 import { startCollaborator } from '@hcengineering/collaborator'
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { initStatisticsContext } from '@hcengineering/server-core'
+import { join } from 'path'
 
-const ctx = new MeasureMetricsContext('collaborator', {}, {}, newMetrics())
+configureAnalytics(process.env.SENTRY_DSN, {})
+Analytics.setTag('application', 'collaborator')
 
-void startCollaborator(ctx)
+const metricsContext = initStatisticsContext('collaborator', {
+  factory: () =>
+    new MeasureMetricsContext(
+      'collaborator',
+      {},
+      {},
+      newMetrics(),
+      new SplitLogger('collaborator', {
+        root: join(process.cwd(), 'logs'),
+        enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+      })
+    )
+})
+
+void startCollaborator(metricsContext, () => {})

@@ -18,7 +18,7 @@
   import { rightPanelTabChanged } from '../../../stores/editors/document'
 </script>
 
-<div class="header h-12 flex-between min-h-12 pl-4 pr-4 font-medium text-md bottom-divider">
+<div class="header flex-between min-h-14 pl-4 pr-4 font-medium text-md bottom-divider">
   <slot />
   <Button
     kind="ghost"

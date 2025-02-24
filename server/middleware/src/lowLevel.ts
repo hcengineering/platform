@@ -1,0 +1,91 @@
+//
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+import {
+  DocumentQuery,
+  DocumentUpdate,
+  FindOptions,
+  type Doc,
+  type Domain,
+  type Iterator,
+  type MeasureContext,
+  type Ref,
+  type StorageIterator
+} from '@hcengineering/core'
+import { PlatformError, unknownStatus } from '@hcengineering/platform'
+import type { Middleware, PipelineContext } from '@hcengineering/server-core'
+import { BaseMiddleware } from '@hcengineering/server-core'
+
+/**
+ * Will perform a find inside adapters
+ * @public
+ */
+export class LowLevelMiddleware extends BaseMiddleware implements Middleware {
+  static async create (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined
+  ): Promise<Middleware | undefined> {
+    if (context.adapterManager == null) {
+      throw new PlatformError(unknownStatus('No AdapterManager'))
+    }
+    const adapterManager = context.adapterManager
+    context.lowLevelStorage = {
+      find (ctx: MeasureContext, domain: Domain): StorageIterator {
+        return adapterManager.getAdapter(domain, false).find(ctx, domain)
+      },
+
+      load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+        return adapterManager.getAdapter(domain, false).load(ctx, domain, docs)
+      },
+
+      upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+        return adapterManager.getAdapter(domain, true).upload(ctx, domain, docs)
+      },
+
+      clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+        return adapterManager.getAdapter(domain, true).clean(ctx, domain, docs)
+      },
+      groupBy<T, P extends Doc>(
+        ctx: MeasureContext,
+        domain: Domain,
+        field: string,
+        query?: DocumentQuery<P>
+      ): Promise<Map<T, number>> {
+        return adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field, query)
+      },
+      rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+        return adapterManager.getAdapter(domain, false).rawFindAll(domain, query, options)
+      },
+      rawUpdate<T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>): Promise<void> {
+        return adapterManager.getAdapter(domain, true).rawUpdate(domain, query, operations)
+      },
+      rawDeleteMany (domain, query) {
+        return adapterManager.getAdapter(domain, true).rawDeleteMany(domain, query)
+      },
+      getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+        return adapterManager.getAdapter(domain, false).getDomainHash(ctx, domain)
+      },
+      traverse<T extends Doc>(
+        domain: Domain,
+        query: DocumentQuery<T>,
+        options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+      ): Promise<Iterator<T>> {
+        return adapterManager.getAdapter(domain, false).traverse(domain, query, options)
+      }
+    }
+    return undefined
+  }
+}

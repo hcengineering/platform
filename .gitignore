@@ -9,7 +9,7 @@ temp/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-tests/sanity/screenshots
+*tests/sanity/screenshots
 
 # Runtime data
 *.pid
@@ -92,3 +92,20 @@ tests/db_dump
 .build
 .format
 tools/apm/apm.js
+deploy
+metrics.txt
+services/github/pod-github/src/github.graphql
+.build
+.format
+dev/tool/report.csv
+bundle/*
+bundle.js.map
+tests/profiles
+**/bundle/model.json
+.wrangler
+dump
+**/logs/**
+dev/tool/history.json
+.aider*
+/combined_dependencies
+.tmp

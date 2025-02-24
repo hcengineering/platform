@@ -28,20 +28,23 @@ function $push (document: Doc, keyval: Record<string, PropertyType>): void {
     if (doc[key] === undefined) {
       doc[key] = []
     }
-    const val = keyval[key]
-    if (typeof val === 'object') {
+    const kvk = keyval[key]
+    if (typeof kvk === 'object' && kvk != null) {
       const arr = doc[key] as Array<any>
-      const desc = val as Position<PropertyType>
+      const desc = kvk as Position<PropertyType>
       if ('$each' in desc) {
-        arr.splice(desc.$position ?? 0, 0, ...desc.$each)
+        if (arr != null && Array.isArray(arr)) {
+          arr.splice(desc.$position ?? 0, 0, ...desc.$each)
+        }
       } else {
-        arr.push(val)
+        arr.push(kvk)
       }
     } else {
-      if (doc[key] == null) {
-        doc[key] = []
+      if (doc[key] === null || doc[key] === undefined) {
+        doc[key] = [kvk]
+      } else {
+        doc[key].push(kvk)
       }
-      doc[key].push(val)
     }
   }
 }
@@ -53,15 +56,16 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
       doc[key] = []
     }
     const arr = doc[key] as Array<any>
-    if (typeof keyval[key] === 'object' && keyval[key] !== null) {
-      const { $in } = keyval[key] as PullArray<PropertyType>
+    const kvk = keyval[key]
+    if (typeof kvk === 'object' && kvk !== null) {
+      const { $in } = kvk as PullArray<PropertyType>
 
       doc[key] = (arr ?? []).filter((val) => {
         if ($in !== undefined) {
           return !$in.includes(val)
         } else {
           // We need to match all fields
-          for (const [kk, kv] of Object.entries(keyval[key])) {
+          for (const [kk, kv] of Object.entries(kvk)) {
             if (val[kk] !== kv) {
               return true
             }
@@ -70,7 +74,7 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
         }
       })
     } else {
-      doc[key] = (arr ?? []).filter((val) => val !== keyval[key])
+      doc[key] = (arr ?? []).filter((val) => val !== kvk)
     }
   }
 }
@@ -114,37 +118,6 @@ function $update (document: Doc, keyval: Record<string, PropertyType>): void {
   }
 }
 
-function $move (document: Doc, keyval: Record<string, PropertyType>): void {
-  const doc = document as any
-  for (const key in keyval) {
-    if (doc[key] === undefined) {
-      doc[key] = []
-    }
-    const arr = doc[key] as Array<any>
-    const desc = keyval[key]
-    doc[key] = (arr ?? []).filter((val) => val !== desc.$value)
-    doc[key].splice(desc.$position, 0, desc.$value)
-  }
-}
-
-function $pushMixin (document: Doc, options: any): void {
-  const doc = document as any
-  const mixinId = options.$mixin
-  if (mixinId === undefined) {
-    throw new Error('$mixin must be specified for $push_mixin operation')
-  }
-  const mixin = doc[mixinId]
-  const keyval = options.values
-  for (const key in keyval) {
-    const arr = mixin[key]
-    if (arr == null) {
-      mixin[key] = [keyval[key]]
-    } else {
-      arr.push(keyval[key])
-    }
-  }
-}
-
 function $inc (document: Doc, keyval: Record<string, number>): void {
   const doc = document as unknown as Record<string, number | undefined>
   for (const key in keyval) {
@@ -163,14 +136,24 @@ function $unset (document: Doc, keyval: Record<string, PropertyType>): void {
   }
 }
 
+function $rename (document: Doc, keyval: Record<string, string>): void {
+  const doc = document as any
+  for (const key in keyval) {
+    if (doc[key] !== undefined) {
+      doc[keyval[key]] = doc[key]
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete doc[key]
+    }
+  }
+}
+
 const operators: Record<string, _OperatorFunc> = {
   $push,
   $pull,
   $update,
-  $move,
-  $pushMixin,
   $inc,
-  $unset
+  $unset,
+  $rename
 }
 
 /**

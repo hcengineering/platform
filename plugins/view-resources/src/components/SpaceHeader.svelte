@@ -1,12 +1,14 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IModeSelector, ModeSelector, SearchEdit } from '@hcengineering/ui'
+  import { IModeSelector, ModeSelector, SearchInput, Header, Breadcrumb, HeaderAdaptive } from '@hcengineering/ui'
+  import type { Asset } from '@hcengineering/platform'
   import { Viewlet } from '@hcengineering/view'
   import ViewletSelector from './ViewletSelector.svelte'
   import FilterButton from './filter/FilterButton.svelte'
 
   export let space: Ref<Space> | undefined = undefined
   export let _class: Ref<Class<Doc>>
+  export let icon: Asset | undefined = undefined
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewletQuery: DocumentQuery<Viewlet> | undefined = undefined
   export let viewlets: Array<WithLookup<Viewlet>> = []
@@ -14,42 +16,44 @@
   export let search: string
   export let showLabelSelector = false
   export let modeSelectorProps: IModeSelector | undefined = undefined
+  export let adaptive: HeaderAdaptive = 'doubleRow'
+
+  let scroller: HTMLElement
 </script>
 
-<div
-  class="ac-header full divide caption-height"
-  class:header-with-mode-selector={modeSelectorProps !== undefined}
-  class:header-without-label={!label}
+<Header
+  {adaptive}
+  overflowExtra
+  hideActions={!$$slots.actions}
+  hideExtra={!$$slots.extra && modeSelectorProps === undefined}
 >
-  <div class="ac-header__wrap-title">
-    {#if showLabelSelector}
-      <slot name="label_selector" />
-    {:else if label}
-      <span class="ac-header__title">{label}</span>
-    {/if}
-    {#if $$slots.type_selector}
-      <div class="ml-2">
-        <slot name="type_selector" />
-      </div>
-    {/if}
-    {#if modeSelectorProps !== undefined}
-      <ModeSelector props={modeSelectorProps} />
-    {/if}
-  </div>
-  <div class="mb-1 clear-mins flex-row-center">
-    <ViewletSelector bind:viewlet bind:viewlets viewletQuery={viewletQuery ?? { attachTo: _class }} />
+  <svelte:fragment slot="beforeTitle">
+    <ViewletSelector bind:viewlet bind:viewlets ignoreFragment viewletQuery={viewletQuery ?? { attachTo: _class }} />
     <slot name="header-tools" />
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} on:change={() => {}} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
+  </svelte:fragment>
+
+  {#if showLabelSelector}
+    <slot name="label_selector" />
+  {:else if label}
+    <Breadcrumb {icon} title={label} size={'large'} isCurrent />
+  {/if}
+  {#if $$slots.type_selector}
+    <div class="ml-2">
+      <slot name="type_selector" />
+    </div>
+  {/if}
+
+  <svelte:fragment slot="search">
+    <SearchInput bind:value={search} collapsed />
     <FilterButton {_class} {space} />
-  </div>
-  <div class="ac-header-full medium-gap">
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    <slot name="actions" />
+  </svelte:fragment>
+  <svelte:fragment slot="extra">
     <slot name="extra" />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-  </div>
-</div>
+    {#if modeSelectorProps !== undefined}
+      <ModeSelector kind={'subtle'} props={modeSelectorProps} />
+    {/if}
+  </svelte:fragment>
+</Header>

@@ -13,53 +13,103 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
-  import { ActionIcon, IconClose } from '@hcengineering/ui'
+  import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
+  import { ActivityMessagePresenter, sortActivityMessages } from '@hcengineering/activity-resources'
+  import { ActionIcon, IconClose, Loading } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { ThreadMessage } from '@hcengineering/chunter'
+  import { Class, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
 
   import chunter from '../plugin'
 
   export let attachedTo: Ref<Doc>
   export let attachedToClass: Ref<Class<Doc>>
+  export let space: Ref<Space>
+  export let withRefs = false
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const messagesQuery = createQuery()
   const dispatch = createEventDispatcher()
+  const pinnedQuery = createQuery()
+  const pinnedThreadsQuery = createQuery()
+  const pinnedRefsQuery = createQuery()
 
-  let pinnedMessages: DisplayActivityMessage[] = []
+  let pinnedMessages: ActivityMessage[] = []
+  let pinnedThreads: ThreadMessage[] = []
+  let pinnedRefs: ActivityReference[] = []
 
-  $: messagesQuery.query(activity.class.ActivityMessage, { attachedTo, isPinned: true }, (res: ActivityMessage[]) => {
-    pinnedMessages = res as DisplayActivityMessage[]
+  let isPinnedLoaded = false
+  let isThreadsPinnedLoaded = false
+  let isPinnedRefsLoaded = false
 
-    if (pinnedMessages.length === 0) {
-      dispatch('close')
+  $: isLoaded = isPinnedLoaded && isThreadsPinnedLoaded && isPinnedRefsLoaded
+
+  $: pinnedQuery.query(
+    activity.class.ActivityMessage,
+    { attachedTo, isPinned: true, space },
+    (res: ActivityMessage[]) => {
+      pinnedMessages = res
+      isPinnedLoaded = true
     }
-  })
+  )
 
-  async function unPinMessaage (message: ActivityMessage): Promise<void> {
+  $: pinnedThreadsQuery.query(
+    chunter.class.ThreadMessage,
+    { objectId: attachedTo, isPinned: true, space },
+    (res: ThreadMessage[]) => {
+      pinnedThreads = res
+      isThreadsPinnedLoaded = true
+    }
+  )
+
+  $: if (withRefs) {
+    pinnedRefsQuery.query(
+      activity.class.ActivityReference,
+      { attachedTo, isPinned: true, space: { $ne: space } },
+      (res) => {
+        pinnedRefs = res
+        isPinnedRefsLoaded = true
+      }
+    )
+  } else {
+    isPinnedRefsLoaded = true
+  }
+
+  $: if (isLoaded && pinnedMessages.length === 0 && pinnedThreads.length === 0 && pinnedRefs.length === 0) {
+    dispatch('close', undefined)
+  }
+
+  async function unpinMessage (message: ActivityMessage): Promise<void> {
     await client.update(message, { isPinned: false })
   }
+
+  $: displayMessages = sortActivityMessages(
+    pinnedMessages.concat(pinnedThreads).concat(pinnedRefs),
+    SortingOrder.Descending
+  )
 </script>
 
 <div class="antiPopup vScroll popup">
-  {#each pinnedMessages as message}
+  {#if displayMessages.length === 0}
+    <Loading size="small" />
+  {/if}
+  {#each displayMessages as message}
     <div class="message relative">
       <ActivityMessagePresenter
         value={message}
         withActions={false}
         hoverable={false}
-        skipLabel={!hierarchy.isDerived(attachedToClass, chunter.class.ChunterSpace)}
+        skipLabel={true}
+        onClick={() => {
+          dispatch('close', message)
+        }}
       />
       <div class="actions">
         <ActionIcon
           size="small"
           icon={IconClose}
           action={() => {
-            unPinMessaage(message)
+            void unpinMessage(message)
           }}
         />
       </div>

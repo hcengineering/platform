@@ -13,14 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Folder } from '@hcengineering/drive'
+  import { type Drive, type Folder } from '@hcengineering/drive'
 
+  import { type Ref } from '@hcengineering/core'
   import FolderBrowser from './FolderBrowser.svelte'
 
   export let object: Folder
   export let readonly: boolean = false
+
+  function getSpace (object: Folder): Ref<Drive> {
+    return object.space as Ref<Drive>
+  }
 </script>
 
 {#if object}
-  <FolderBrowser space={object.space} parent={object._id} {readonly} />
+  <FolderBrowser space={getSpace(object)} parent={object._id} {readonly} type={'folder'} />
 {/if}

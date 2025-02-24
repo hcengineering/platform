@@ -15,17 +15,20 @@
 
 import { ActivityMessage } from '@hcengineering/activity'
 import {
-  Account,
+  PersonId,
   AnyAttribute,
   Class,
   Doc,
   DocumentQuery,
+  type Domain,
   IdMap,
   Markup,
   Mixin,
   Ref,
+  Space,
   Timestamp,
   Tx,
+  TxCUD,
   TxOperations
 } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
@@ -34,21 +37,30 @@ import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
+import { PersonSpace } from '@hcengineering/contact'
+
 import { Readable, Writable } from './types'
 
 export * from './types'
+
+export const DOMAIN_NOTIFICATION = 'notification' as Domain
+export const DOMAIN_DOC_NOTIFY = 'notification-dnc' as Domain
+export const DOMAIN_USER_NOTIFY = 'notification-user' as Domain
 
 /**
  * @public
  */
 export interface BrowserNotification extends Doc {
-  user: Ref<Account>
-  status: NotificationStatus
+  user: PersonId
   title: string
   body: string
   onClickLocation?: Location
-  senderId?: Ref<Account>
+  senderId?: PersonId
   tag: Ref<Doc>
+  messageId?: Ref<ActivityMessage>
+  messageClass?: Ref<Class<ActivityMessage>>
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
 }
 
 export interface PushData {
@@ -66,17 +78,9 @@ export interface PushSubscriptionKeys {
 }
 
 export interface PushSubscription extends Doc {
-  user: Ref<Account>
+  user: PersonId
   endpoint: string
   keys: PushSubscriptionKeys
-}
-
-/**
- * @public
- */
-export enum NotificationStatus {
-  New,
-  Notified
 }
 
 /**
@@ -113,6 +117,7 @@ export interface NotificationTemplate {
 export interface NotificationContent {
   title: IntlString
   body: IntlString
+  data?: Markup
   intlParams: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
 }
@@ -124,8 +129,7 @@ export interface BaseNotificationType extends Doc {
   // allowed to  change setting (probably we should show it, but disable toggle??)
   hidden: boolean
   group: Ref<NotificationGroup>
-  // allowed providers and default value for it
-  providers: Record<Ref<NotificationProvider>, boolean>
+  defaultEnabled: boolean
   // templates for email (and browser/push?)
   templates?: NotificationTemplate
 }
@@ -152,19 +156,32 @@ export interface NotificationType extends BaseNotificationType {
 
 export interface CommonNotificationType extends BaseNotificationType {}
 
-/**
- * @public
- */
 export interface NotificationProvider extends Doc {
   label: IntlString
+  description: IntlString
+  icon: Asset
+  defaultEnabled: boolean
   depends?: Ref<NotificationProvider>
-  onChange?: Resource<(value: boolean) => Promise<boolean>>
+  canDisable: boolean
+  ignoreAll?: boolean
+  order: number
+  presenter?: AnyComponent
+  isAvailableFn?: Resource<() => boolean>
 }
 
-/**
- * @public
- */
-export interface NotificationSetting extends Preference {
+export interface NotificationProviderDefaults extends Doc {
+  provider: Ref<NotificationProvider>
+  excludeIgnore?: Ref<BaseNotificationType>[]
+  ignoredTypes: Ref<BaseNotificationType>[]
+  enabledTypes: Ref<BaseNotificationType>[]
+}
+
+export interface NotificationProviderSetting extends Preference {
+  attachedTo: Ref<NotificationProvider>
+  enabled: boolean
+}
+
+export interface NotificationTypeSetting extends Preference {
   attachedTo: Ref<NotificationProvider>
   type: Ref<BaseNotificationType>
   enabled: boolean
@@ -174,7 +191,7 @@ export interface NotificationSetting extends Preference {
  * @public
  */
 export interface ClassCollaborators extends Class<Doc> {
-  fields: string[] // Ref<Account> | Ref<Employee> | Ref<Account>[] | Ref<Employee>[]
+  fields: string[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
 }
 
 /**
@@ -188,7 +205,7 @@ export interface NotificationObjectPresenter extends Class<Doc> {
  * @public
  */
 export interface Collaborators extends Doc {
-  collaborators: Ref<Account>[]
+  collaborators: PersonId[]
 }
 
 /**
@@ -213,18 +230,21 @@ export interface NotificationContextPresenter extends Class<Doc> {
 /**
  * @public
  */
-export interface InboxNotification extends Doc {
-  user: Ref<Account>
+export interface InboxNotification extends Doc<PersonSpace> {
+  user: PersonId
   isViewed: boolean
 
   docNotifyContext: Ref<DocNotifyContext>
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
 
   // For browser notifications
   title?: IntlString
   body?: IntlString
+  data?: Markup
   intlParams?: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
-  archived?: boolean
+  archived: boolean
 }
 
 export interface ActivityInboxNotification extends InboxNotification {
@@ -259,17 +279,20 @@ export type DisplayInboxNotification = DisplayActivityInboxNotification | InboxN
 /**
  * @public
  */
-export interface DocNotifyContext extends Doc {
-  user: Ref<Account>
-
+export interface DocNotifyContext extends Doc<PersonSpace> {
+  user: PersonId
   // Context
-  attachedTo: Ref<Doc>
-  attachedToClass: Ref<Class<Doc>>
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+  objectSpace: Ref<Space>
 
+  isPinned: boolean
   hidden: boolean
-  isPinned?: boolean
   lastViewedTimestamp?: Timestamp
   lastUpdateTimestamp?: Timestamp
+
+  // Only for debug
+  tx?: Ref<TxCUD<Doc>>
 }
 
 /**
@@ -284,9 +307,8 @@ export interface InboxNotificationsClient {
   activityInboxNotifications: Writable<ActivityInboxNotification[]>
   inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
 
-  readDoc: (client: TxOperations, _id: Ref<Doc>) => Promise<void>
-  forceReadDoc: (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
-  readMessages: (client: TxOperations, ids: Ref<ActivityMessage>[]) => Promise<void>
+  readDoc: (_id: Ref<Doc>) => Promise<void>
+  forceReadDoc: (_id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
   readNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   archiveNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
@@ -330,8 +352,6 @@ const notification = plugin(notificationId, {
     BaseNotificationType: '' as Ref<Class<BaseNotificationType>>,
     NotificationType: '' as Ref<Class<NotificationType>>,
     CommonNotificationType: '' as Ref<Class<CommonNotificationType>>,
-    NotificationProvider: '' as Ref<Class<NotificationProvider>>,
-    NotificationSetting: '' as Ref<Class<NotificationSetting>>,
     NotificationGroup: '' as Ref<Class<NotificationGroup>>,
     NotificationPreferencesGroup: '' as Ref<Class<NotificationPreferencesGroup>>,
     DocNotifyContext: '' as Ref<Class<DocNotifyContext>>,
@@ -339,7 +359,11 @@ const notification = plugin(notificationId, {
     ActivityInboxNotification: '' as Ref<Class<ActivityInboxNotification>>,
     CommonInboxNotification: '' as Ref<Class<CommonInboxNotification>>,
     ActivityNotificationViewlet: '' as Ref<Class<ActivityNotificationViewlet>>,
-    MentionInboxNotification: '' as Ref<Class<MentionInboxNotification>>
+    MentionInboxNotification: '' as Ref<Class<MentionInboxNotification>>,
+    NotificationProvider: '' as Ref<Class<NotificationProvider>>,
+    NotificationTypeSetting: '' as Ref<Class<NotificationTypeSetting>>,
+    NotificationProviderSetting: '' as Ref<Class<NotificationProviderSetting>>,
+    NotificationProviderDefaults: '' as Ref<Mixin<NotificationProviderDefaults>>
   },
   ids: {
     NotificationSettings: '' as Ref<Doc>,
@@ -351,9 +375,9 @@ const notification = plugin(notificationId, {
     PushPublicKey: '' as Metadata<string>
   },
   providers: {
-    PlatformNotification: '' as Ref<NotificationProvider>,
-    BrowserNotification: '' as Ref<NotificationProvider>,
-    EmailNotification: '' as Ref<NotificationProvider>
+    InboxNotificationProvider: '' as Ref<NotificationProvider>,
+    PushNotificationProvider: '' as Ref<NotificationProvider>,
+    SoundNotificationProvider: '' as Ref<NotificationProvider>
   },
   integrationType: {
     MobileApp: '' as Ref<IntegrationType>
@@ -364,7 +388,8 @@ const notification = plugin(notificationId, {
     CollaboratorsChanged: '' as AnyComponent,
     DocNotifyContextPresenter: '' as AnyComponent,
     NotificationCollaboratorsChanged: '' as AnyComponent,
-    ReactionNotificationPresenter: '' as AnyComponent
+    ReactionNotificationPresenter: '' as AnyComponent,
+    GeneralPreferencesGroup: '' as AnyComponent
   },
   action: {
     PinDocNotifyContext: '' as Ref<Action>,
@@ -401,7 +426,16 @@ const notification = plugin(notificationId, {
     ArchiveAllConfirmationMessage: '' as IntlString,
     YouAddedCollaborators: '' as IntlString,
     YouRemovedCollaborators: '' as IntlString,
-    Push: '' as IntlString
+    Push: '' as IntlString,
+    General: '' as IntlString,
+    InboxNotificationsDescription: '' as IntlString,
+    PushNotificationsDescription: '' as IntlString,
+    CommonNotificationCollectionAdded: '' as IntlString,
+    CommonNotificationCollectionRemoved: '' as IntlString,
+    SoundNotificationsDescription: '' as IntlString,
+    Sound: '' as IntlString,
+    NoAccessToObject: '' as IntlString,
+    ViewIn: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,
@@ -409,6 +443,9 @@ const notification = plugin(notificationId, {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
     HasInboxNotifications: '' as Resource<
     (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>
+    >,
+    IsNotificationAllowed: '' as Resource<
+    (type: BaseNotificationType, providerId: Ref<NotificationProvider>) => boolean
     >
   },
   resolver: {

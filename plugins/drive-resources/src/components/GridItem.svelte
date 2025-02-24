@@ -13,11 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   import core, { type WithLookup } from '@hcengineering/core'
   import { type Resource } from '@hcengineering/drive'
   import { getClient } from '@hcengineering/presentation'
   import { Button, IconMoreH } from '@hcengineering/ui'
-  import { ObjectPresenter, TimestampPresenter, openDoc, showMenu } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
+  import {
+    ObjectPresenter,
+    TimestampPresenter,
+    PersonIdPresenter,
+    openDoc,
+    showMenu
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import FileSizePresenter from './FileSizePresenter.svelte'
@@ -31,6 +39,8 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
+  $: version = object.$lookup?.file
+
   let hovered = false
 </script>
 
@@ -39,6 +49,7 @@
   class="card-container"
   class:selected
   class:hovered
+  draggable="false"
   on:mouseover={() => dispatch('obj-focus', object)}
   on:mouseenter={() => dispatch('obj-focus', object)}
   on:focus={() => {}}
@@ -55,7 +66,7 @@
     }}
   >
     <div class="card-content">
-      <Thumbnail {object} size={'x-large'} />
+      <Thumbnail {object} />
     </div>
 
     <div class="header flex-col p-2 pt-1">
@@ -68,6 +79,7 @@
             icon={IconMoreH}
             kind="ghost"
             size="medium"
+            showTooltip={{ label: view.string.MoreActions, direction: 'bottom' }}
             on:click={(evt) => {
               hovered = true
               showMenu(evt, { object }, () => {
@@ -80,19 +92,14 @@
 
       <div class="flex-between flex-gap-2 h-4">
         <div class="flex-row-center flex-gap-2 font-regular-12">
-          <ObjectPresenter
-            _class={core.class.Account}
-            objectId={object.createdBy}
-            noUnderline
-            props={{ avatarSize: 'tiny' }}
-          />
+          <PersonIdPresenter value={object.createdBy} noUnderline avatarSize="tiny" />
           <span>•</span>
           <span class="flex-no-shrink">
-            <TimestampPresenter value={object.$lookup?.file?.modifiedOn ?? object.createdOn ?? object.modifiedOn} />
+            <TimestampPresenter value={version?.lastModified ?? object.createdOn ?? object.modifiedOn} />
           </span>
         </div>
         <div class="flex-no-shrink font-regular-12">
-          <FileSizePresenter value={object.$lookup?.file?.size} />
+          <FileSizePresenter value={version?.size} />
         </div>
       </div>
     </div>

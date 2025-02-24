@@ -15,18 +15,16 @@
 //
 
 import { UNAUTHORIZED } from '@hcengineering/platform'
-import { readResponse, serialize } from '@hcengineering/rpc'
+import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
-import { start } from '../server'
 
 import {
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
-  getWorkspaceId,
   toFindResult,
-  type Account,
+  type PersonId,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -35,17 +33,21 @@ import {
   type FindResult,
   type MeasureContext,
   type Ref,
+  type SessionData,
   type Space,
   type Tx,
-  type TxResult
+  type TxResult,
+  type PersonUuid,
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import { createDummyStorageAdapter, type ServerStorage, type SessionContext } from '@hcengineering/server-core'
-import { ClientSession } from '../client'
+import { ClientSession, startSessionManager } from '@hcengineering/server'
+import { createDummyStorageAdapter } from '@hcengineering/server-core'
 import { startHttpServer } from '../server_http'
 import { genMinModel } from './minmodel'
 
 describe('server', () => {
-  async function getModelDb (): Promise<ModelDb> {
+  const handler = new RPCHandler()
+  async function getModelDb (): Promise<{ modelDb: ModelDb, hierarchy: Hierarchy }> {
     const txes = genMinModel()
     const hierarchy = new Hierarchy()
     for (const tx of txes) {
@@ -55,36 +57,46 @@ describe('server', () => {
     for (const tx of txes) {
       await modelDb.tx(tx)
     }
-    return modelDb
+    return { modelDb, hierarchy }
   }
 
-  const cancelOp = start(new MeasureMetricsContext('test', {}), {
-    pipelineFactory: async () => ({
-      modelDb: await getModelDb(),
-      findAll: async <T extends Doc>(
-        ctx: SessionContext,
-        _class: Ref<Class<T>>,
-        query: DocumentQuery<T>,
-        options?: FindOptions<T>
-      ): Promise<FindResult<T>> => toFindResult([]),
-      tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
-      close: async () => {},
-      storage: {} as unknown as ServerStorage,
-      domains: async () => [],
-      find: (ctx: MeasureContext, domain: Domain) => ({
-        next: async (ctx: MeasureContext) => undefined,
-        close: async (ctx: MeasureContext) => {}
-      }),
-      load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
-      upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
-      clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
-      searchFulltext: async (ctx, query, options) => {
-        return { docs: [] }
+  const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), {
+    pipelineFactory: async () => {
+      const { modelDb, hierarchy } = await getModelDb()
+      return {
+        hierarchy,
+        modelDb,
+        context: {} as any,
+        handleBroadcast: async (ctx) => {},
+        findAll: async <T extends Doc>(
+          ctx: MeasureContext,
+          _class: Ref<Class<T>>,
+          query: DocumentQuery<T>,
+          options?: FindOptions<T>
+        ): Promise<FindResult<T>> => toFindResult([]),
+        tx: async (ctx: MeasureContext, tx: Tx[]): Promise<[TxResult, Tx[], string[] | undefined]> => [
+          {},
+          [],
+          undefined
+        ],
+        close: async () => {},
+        domains: async () => [],
+        groupBy: async () => new Map(),
+        find: (ctx: MeasureContext, domain: Domain) => ({
+          next: async (ctx: MeasureContext) => undefined,
+          close: async (ctx: MeasureContext) => {}
+        }),
+        load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
+        upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
+        clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
+        searchFulltext: async (ctx, query, options) => {
+          return { docs: [] }
+        },
+        loadModel: async (ctx, lastModelTx, hash) => []
       }
-    }),
-    sessionFactory: (token, pipeline) => new ClientSession(token, pipeline, {}),
+    },
+    sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
     port: 3335,
-    productId: '',
     brandingMap: {},
     serverFactory: startHttpServer,
     accountsUrl: '',
@@ -92,12 +104,12 @@ describe('server', () => {
   })
 
   function connect (): WebSocket {
-    const token: string = generateToken('', getWorkspaceId('latest', ''))
+    const token: string = generateToken('' as PersonUuid, 'latest' as WorkspaceUuid)
     return new WebSocket(`ws://localhost:3335/${token}`)
   }
 
   afterAll(async () => {
-    await cancelOp()
+    await cancelOp.shutdown()
   })
 
   it('should connect to server', (done) => {
@@ -116,7 +128,7 @@ describe('server', () => {
       conn.close(1000)
     })
     conn.on('message', (msg: string) => {
-      const resp = readResponse(msg, false)
+      const resp: Response<any> = handler.readResponse(msg, false)
       expect(resp.result === 'hello')
       expect(resp.error?.code).toBe(UNAUTHORIZED.code)
       conn.close(1000)
@@ -132,12 +144,12 @@ describe('server', () => {
     // const start = Date.now()
     conn.on('open', () => {
       for (let i = 0; i < total; i++) {
-        conn.send(serialize({ method: 'tx', params: [], id: i }, false))
+        conn.send(handler.serialize({ method: 'tx', params: [], id: i }, false))
       }
     })
     let received = 0
     conn.on('message', (msg: string) => {
-      readResponse(msg, false)
+      handler.readResponse(msg, false)
       if (++received === total) {
         // console.log('resp:', resp, ' Time: ', Date.now() - start)
         conn.close(1000)
@@ -149,43 +161,53 @@ describe('server', () => {
   })
 
   it('reconnect', async () => {
-    const cancelOp = start(new MeasureMetricsContext('test', {}), {
-      pipelineFactory: async () => ({
-        modelDb: await getModelDb(),
-        findAll: async <T extends Doc>(
-          ctx: SessionContext,
-          _class: Ref<Class<T>>,
-          query: DocumentQuery<T>,
-          options?: FindOptions<T>
-        ): Promise<FindResult<T>> => {
-          const d: Doc & { sessionId: string } = {
-            _class: 'result' as Ref<Class<Doc>>,
-            _id: '1' as Ref<Doc & { sessionId: string }>,
-            space: '' as Ref<Space>,
-            modifiedBy: '' as Ref<Account>,
-            modifiedOn: Date.now(),
-            sessionId: ctx.sessionId
-          }
-          return toFindResult([d as unknown as T])
-        },
-        tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
-        close: async () => {},
-        storage: {} as unknown as ServerStorage,
-        domains: async () => [],
-        find: (ctx: MeasureContext, domain: Domain) => ({
-          next: async (ctx: MeasureContext) => undefined,
-          close: async (ctx: MeasureContext) => {}
-        }),
-        load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
-        clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
-        searchFulltext: async (ctx, query, options) => {
-          return { docs: [] }
+    const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), {
+      pipelineFactory: async () => {
+        const { modelDb, hierarchy } = await getModelDb()
+        return {
+          hierarchy,
+          modelDb,
+          context: {} as any,
+          handleBroadcast: async (ctx) => {},
+          findAll: async <T extends Doc>(
+            ctx: MeasureContext<SessionData>,
+            _class: Ref<Class<T>>,
+            query: DocumentQuery<T>,
+            options?: FindOptions<T>
+          ): Promise<FindResult<T>> => {
+            const d: Doc & { sessionId: string } = {
+              _class: 'result' as Ref<Class<Doc>>,
+              _id: '1' as Ref<Doc & { sessionId: string }>,
+              space: '' as Ref<Space>,
+              modifiedBy: '' as PersonId,
+              modifiedOn: Date.now(),
+              sessionId: ctx.contextData.sessionId
+            }
+            return toFindResult([d as unknown as T])
+          },
+          tx: async (ctx: MeasureContext, tx: Tx[]): Promise<[TxResult, Tx[], string[] | undefined]> => [
+            {},
+            [],
+            undefined
+          ],
+          groupBy: async () => new Map(),
+          close: async () => {},
+          domains: async () => [],
+          find: (ctx: MeasureContext, domain: Domain) => ({
+            next: async (ctx: MeasureContext) => undefined,
+            close: async (ctx: MeasureContext) => {}
+          }),
+          load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
+          upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
+          clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
+          searchFulltext: async (ctx, query, options) => {
+            return { docs: [] }
+          },
+          loadModel: async (ctx, lastModelTx, hash) => []
         }
-      }),
-      sessionFactory: (token, pipeline) => new ClientSession(token, pipeline, {}),
+      },
+      sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
       port: 3336,
-      productId: '',
       brandingMap: {},
       serverFactory: startHttpServer,
       accountsUrl: '',
@@ -199,8 +221,8 @@ describe('server', () => {
         timeoutPromise,
         new Promise((resolve) => {
           newConn.on('open', () => {
-            newConn.send(serialize({ method: 'hello', params: [], id: -1 }, false))
-            newConn.send(serialize({ method: 'findAll', params: [], id: -1 }, false))
+            newConn.send(handler.serialize({ method: 'hello', params: [], id: -1 }, false))
+            newConn.send(handler.serialize({ method: 'findAll', params: [], id: -1 }, false))
             resolve(null)
           })
         })
@@ -216,13 +238,13 @@ describe('server', () => {
           newConn.on('message', (msg: Buffer) => {
             try {
               console.log('resp:', msg.toString())
-              const parsedMsg = readResponse(msg.toString(), false) // Hello
+              const parsedMsg: Response<any> = handler.readResponse(msg.toString(), false) // Hello
               if (!helloReceived) {
                 expect(parsedMsg.result === 'hello')
                 helloReceived = true
                 return
               }
-              responseMsg = readResponse(msg.toString(), false) // our message
+              responseMsg = handler.readResponse(msg.toString(), false) // our message
               resolve(null)
             } catch (err: any) {
               console.error(err)
@@ -241,7 +263,7 @@ describe('server', () => {
 
     try {
       //
-      const token: string = generateToken('my@email.com', getWorkspaceId('latest', ''))
+      const token: string = generateToken('my-account-uuid' as PersonUuid, 'latest' as WorkspaceUuid)
       let clearTo: any
       const timeoutPromise = new Promise<void>((resolve) => {
         clearTo = setTimeout(resolve, 4000)
@@ -255,7 +277,7 @@ describe('server', () => {
       console.error(err)
     } finally {
       console.log('calling shutdown')
-      await cancelOp()
+      await cancelOp.shutdown()
     }
   })
 })

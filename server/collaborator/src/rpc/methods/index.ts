@@ -14,18 +14,12 @@
 //
 
 import { getContent } from './getContent'
-import { copyContent } from './copyContent'
+import { createContent } from './createContent'
 import { updateContent } from './updateContent'
-import { branchDocument } from './branchDocument'
-import { removeDocument } from './removeDocument'
-import { takeSnapshot } from './takeSnapshot'
 import { RpcMethod } from '../rpc'
 
 export const methods: Record<string, RpcMethod> = {
   getContent,
-  copyContent,
-  updateContent,
-  branchDocument,
-  removeDocument,
-  takeSnapshot
+  createContent,
+  updateContent
 }

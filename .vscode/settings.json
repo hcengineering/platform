@@ -1,0 +1,19 @@
+{
+  "eslint.format.enable": true,
+  "eslint.enable": true,
+  "eslint.probe": ["javascript", "typescript", "html", "markdown", "svelte"],
+  "eslint.validate": ["javascript", "typescript", "markdown", "svelte"],
+  "eslint.lintTask.enable": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[svelte]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  }
+}

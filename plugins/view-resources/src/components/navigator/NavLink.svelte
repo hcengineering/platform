@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Location, location, locationToUrl, navigate } from '@hcengineering/ui'
+  import { Location, location, locationStorageKeyId, locationToUrl, navigate } from '@hcengineering/ui'
   import { setFilters } from '../../filter'
 
   export let app: string | undefined = undefined
@@ -21,6 +21,8 @@
   export let special: string | undefined = undefined
   export let disabled = false
   export let shrink: number | undefined = undefined
+  export let restoreLastLocation = false
+  export let noUnderline = true
 
   $: loc = createLocation($location, app, space, special)
 
@@ -32,6 +34,20 @@
     space: string | undefined,
     special: string | undefined
   ): Location {
+    if (restoreLastLocation) {
+      const last = localStorage.getItem(`${locationStorageKeyId}_${app}`)
+      if (last != null) {
+        try {
+          const newLocation: Location = JSON.parse(last)
+          if (newLocation.path[1] === loc.path[1] && newLocation.path[2] === app && newLocation.path[3] != null) {
+            return newLocation
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+
     const location: Location = {
       path: [...loc.path]
     }
@@ -50,7 +66,7 @@
     return location
   }
 
-  function clickHandler (e: MouseEvent) {
+  function clickHandler (e: MouseEvent): void {
     if (e.metaKey || e.ctrlKey) return
     e.preventDefault()
     setFilters([])
@@ -61,7 +77,7 @@
 {#if disabled}
   <slot />
 {:else}
-  <a class="noUnderline noBold" style:flex-shrink={shrink} {href} on:click={clickHandler}>
+  <a class:noUnderline class="noBold" style:flex-shrink={shrink} {href} on:click={clickHandler}>
     <slot />
   </a>
 {/if}

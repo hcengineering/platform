@@ -1,0 +1,221 @@
+version: "3"
+services:
+  mongodb:
+    image: 'mongo:7-jammy'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: mongod --port 27018
+    environment:
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - 27018:27018
+    restart: unless-stopped
+  minio:
+    image: 'minio/minio'
+    command: server /data --address ":9000"
+    expose:
+      - 9000
+    ports:
+      - 9002:9000
+  elastic:
+    image: 'elasticsearch:7.14.2'
+    command: |
+      /bin/sh -c "./bin/elasticsearch-plugin list | grep -q ingest-attachment || yes | ./bin/elasticsearch-plugin install --silent ingest-attachment;      
+      /usr/local/bin/docker-entrypoint.sh eswrapper"
+    expose:
+      - 9200
+    ports:
+      - 9201:9200
+    environment:
+      - ELASTICSEARCH_PORT_NUMBER=9200
+      - BITNAMI_DEBUG=true
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+      - http.cors.enabled=true
+      - http.cors.allow-origin=http://localhost:8082
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
+  account:
+    image: hardcoreeng/account
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    pull_policy: never
+    links:
+      - mongodb
+      - minio
+    ports:
+      - 3003:3003
+    volumes:
+      - ./branding-test.json:/var/cfg/branding-test.json
+    environment:
+      - ACCOUNT_PORT=3003
+      - SERVER_SECRET=secret
+      - DB_URL=mongodb://mongodb:27018
+      - TRANSACTOR_URL=ws://transactor:3334;ws://host.docker.internal:3334
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - MODEL_ENABLED=*
+      - BRANDING_PATH=/var/cfg/branding-test.json
+  workspace:
+    image: hardcoreeng/workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    links:
+      - mongodb
+      - minio
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
+    environment:
+      - SERVER_SECRET=secret
+      - DB_URL=mongodb://mongodb:27018
+      - MONGO_URL=mongodb://mongodb:27018
+      - TRANSACTOR_URL=ws://transactor:3334;ws://host.docker.internal:3334
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - MODEL_ENABLED=*
+      - ACCOUNTS_URL=http://account:3003
+      - BRANDING_PATH=/var/cfg/branding.json
+    restart: unless-stopped
+  front:
+    image: hardcoreeng/front
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    pull_policy: never
+    links:
+      - account
+      - mongodb
+      - minio
+      - elastic
+      - collaborator
+      - transactor
+    ports:
+      - 8083:8083
+    volumes:
+      - ./branding-test.json:/app/dist/branding-test.json
+    environment:
+      - SERVER_PORT=8083
+      - SERVER_SECRET=secret
+      - ACCOUNTS_URL=http://host.docker.internal:3003
+      - MONGO_URL=mongodb://mongodb:27018
+      - UPLOAD_URL=/files
+      - GMAIL_URL=http://host.docker.internal:8088
+      - CALENDAR_URL=http://host.docker.internal:8095
+      - REKONI_URL=http://rekoni:4007
+      - TELEGRAM_URL=http://host.docker.internal:8086
+      - COLLABORATOR_URL=ws://host.docker.internal:3079
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - BRANDING_URL=http://host.docker.internal:8083/branding-test.json
+      - PRINT_URL=http://host.docker.internal:4003
+      - SIGN_URL=http://host.docker.internal:4008
+  transactor:
+    image: hardcoreeng/transactor
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    pull_policy: never
+    links:
+      - mongodb
+      - minio
+      - rekoni
+      - account
+    ports:
+      - 3334:3334
+    volumes:
+      - ./branding-test.json:/var/cfg/branding-test.json
+    environment:
+      - SERVER_PROVIDER=${SERVER_PROVIDER}
+      - SERVER_PORT=3334
+      - SERVER_SECRET=secret
+      - DB_URL=mongodb://mongodb:27018
+      - METRICS_CONSOLE=false
+      - METRICS_FILE=metrics.txt
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://host.docker.internal:8083
+      - UPLOAD_URL=http://host.docker.internal:8083/files
+      - ACCOUNTS_URL=http://account:3003
+      - LAST_NAME_FIRST=true
+      - FULLTEXT_URL=http://fulltext:4710
+      - BRANDING_PATH=/var/cfg/branding-test.json
+  collaborator:
+    image: hardcoreeng/collaborator
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    links:
+      - mongodb
+      - minio
+      - transactor
+    ports:
+      - 3079:3079
+    environment:
+      - COLLABORATOR_PORT=3079
+      - SECRET=secret
+      - ACCOUNTS_URL=http://account:3003
+      - UPLOAD_URL=/files
+      - MONGO_URL=mongodb://mongodb:27018
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+    restart: unless-stopped 
+  rekoni:
+    image: hardcoreeng/rekoni-service
+    restart: on-failure
+    ports:
+      - 4007:4004
+  print:
+    image: hardcoreeng/print
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    ports:
+      - 4003:4005
+    environment:
+      - SECRET=secret
+      - MONGO_URL=${MONGO_URL}
+      - MONGO_OPTIONS={"appName":"print","maxPoolSize":1}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - ACCOUNTS_URL=http://account:3003
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+  sign:
+    image: hardcoreeng/sign
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    ports:
+      - 4008:4006
+    volumes:
+      - ../services/sign/pod-sign/debug/certificate.p12:/var/cfg/certificate.p12
+      - ../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
+    environment:
+      - SECRET=secret
+      - MONGO_URL=${MONGO_URL}
+      - MONGO_OPTIONS={"appName":"sign","maxPoolSize":1}
+      - MINIO_ENDPOINT=minio
+      - MINIO_ACCESS_KEY=minioadmin
+      - ACCOUNTS_URL=http://account:3003
+      - MINIO_SECRET_KEY=minioadmin
+      - CERTIFICATE_PATH=/var/cfg/certificate.p12
+      - SERVICE_ID=sign-service      
+      - BRANDING_PATH=/var/cfg/branding.json
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+  fulltext:
+    image: hardcoreeng/fulltext
+    restart: unless-stopped
+    links:
+      - elastic
+      - mongodb
+      - rekoni
+    ports:
+      - 4710:4710
+    environment:
+      - PORT=4710
+      - SERVER_SECRET=secret
+      - DB_URL=mongodb://mongodb:27018
+      - FULLTEXT_DB_URL=http://elastic:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - REKONI_URL=http://rekoni:4007
+      - ACCOUNTS_URL=http://account:3003          

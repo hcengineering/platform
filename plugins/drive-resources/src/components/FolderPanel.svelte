@@ -14,18 +14,15 @@
 -->
 <script lang="ts">
   import { type Ref } from '@hcengineering/core'
-  import drive, { type Folder } from '@hcengineering/drive'
+  import drive, { Drive, type Folder } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
-  import { Panel, Button, Scroller, IconMoreH } from '@hcengineering/ui'
-  import { DocAttributeBar, showMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
 
-  import FolderHeader from './FolderHeader.svelte'
   import FolderBrowser from './FolderBrowser.svelte'
 
   export let _id: Ref<Folder>
   export let readonly: boolean = false
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
 
   export function canClose (): boolean {
     return false
@@ -37,38 +34,20 @@
   $: query.query(drive.class.Folder, { _id }, (res) => {
     ;[object] = res
   })
+
+  $: space = object?.space as Ref<Drive>
 </script>
 
 {#if object}
-  <Panel {embedded} allowClose={false} {kind} selectedAside={false}>
-    <svelte:fragment slot="title">
-      <FolderHeader {object} />
-    </svelte:fragment>
-    <svelte:fragment slot="utils">
-      <Button
-        icon={IconMoreH}
-        iconProps={{ size: 'medium' }}
-        kind={'icon'}
-        on:click={(ev) => {
-          showMenu(ev, { object })
-        }}
-      />
-      <div class="buttons-divider max-h-7 h-7 mx-2 no-print" />
-    </svelte:fragment>
-    <svelte:fragment slot="aside">
-      <Scroller>
-        <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
-        <div class="space-divider bottom" />
-      </Scroller>
-    </svelte:fragment>
-
-    <FolderBrowser
-      space={object.space}
-      parent={object._id}
-      {readonly}
-      on:contextmenu={(evt) => {
-        showMenu(evt, { object })
-      }}
-    />
-  </Panel>
+  <FolderBrowser
+    {space}
+    parent={object._id}
+    {object}
+    {embedded}
+    {readonly}
+    type={'folder'}
+    on:contextmenu={(evt) => {
+      showMenu(evt, { object })
+    }}
+  />
 {/if}

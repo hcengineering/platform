@@ -12,31 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import core, { MeasureContext, Tx, TxCollectionCUD, systemAccountEmail } from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
-import { BaseMiddleware } from './base'
+import core, { MeasureContext, Tx, systemAccountUuid, type SessionData, type TxApplyIf } from '@hcengineering/core'
+import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 
 /**
  * @public
  */
 export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
-  private constructor (storage: ServerStorage, next?: Middleware) {
-    super(storage, next)
+  private constructor (context: PipelineContext, next?: Middleware) {
+    super(context, next)
   }
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<ModifiedMiddleware> {
-    return new ModifiedMiddleware(storage, next)
+  static async create (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined
+  ): Promise<ModifiedMiddleware> {
+    return new ModifiedMiddleware(context, next)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    if (tx.modifiedBy !== core.account.System && ctx.userEmail !== systemAccountEmail) {
-      tx.modifiedOn = Date.now()
-      tx.createdOn = tx.createdOn ?? tx.modifiedOn
-      if (tx._class === core.class.TxCollectionCUD) {
-        ;(tx as TxCollectionCUD<any, any>).tx.modifiedOn = Date.now()
+  tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
+    const now = Date.now()
+    function updateTx (tx: Tx): void {
+      if (tx.modifiedBy !== core.account.System && ctx.contextData.account.uuid !== systemAccountUuid) {
+        tx.modifiedOn = now
+        tx.createdOn = tx.modifiedOn
       }
     }
-    return await this.provideTx(ctx, tx)
+    for (const tx of txes) {
+      updateTx(tx)
+      if (tx._class === core.class.TxApplyIf) {
+        const atx = tx as TxApplyIf
+        atx.txes.forEach(updateTx)
+      }
+    }
+    return this.provideTx(ctx, txes)
   }
 }

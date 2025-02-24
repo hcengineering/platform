@@ -32,7 +32,7 @@
         <div class="antiPopup version-popup">
           <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
           {$versionError}
-          {#if $upgradeDownloadProgress > 0}
+          {#if $upgradeDownloadProgress >= 0}
             <div class="mt-1">
               <Label label={workbench.string.UpgradeDownloadProgress} params={{ percent: $upgradeDownloadProgress }} />
             </div>

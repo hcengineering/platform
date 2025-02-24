@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/login": "^0.6.12",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/workbench": "^0.6.16",
@@ -48,6 +48,7 @@
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/theme": "^0.6.5",
-    "@hcengineering/analytics": "^0.6.0"
+    "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/account-client": "^0.6.0"
   }
 }

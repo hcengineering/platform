@@ -15,7 +15,8 @@
     tracker.class.RelatedIssueTarget,
     {},
     (res) => {
-      targets = res.toSorted((a, b) => a.rule.kind.localeCompare(b.rule.kind))
+      res.sort((a, b) => a.rule.kind.localeCompare(b.rule.kind))
+      targets = res
     },
     {
       lookup: {

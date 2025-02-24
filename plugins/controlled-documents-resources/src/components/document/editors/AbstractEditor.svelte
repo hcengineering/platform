@@ -24,8 +24,9 @@
   export let value: Document | undefined
   export let readonly = true
 
-  let abstract = value?.abstract
   const client = getClient()
+
+  $: abstract = value?.abstract
 
   const handleUpdateAbstract = () => {
     if (readonly) {

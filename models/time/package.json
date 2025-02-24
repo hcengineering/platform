@@ -4,7 +4,7 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
-  "author": "Uberflow Contributors",
+  "author": "Copyright © Hardcore Engineering Inc.",
   "template": "@hcengineering/model-package",
   "license": "EPL-2.0",
   "scripts": {
@@ -49,6 +49,7 @@
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/model-tracker": "^0.6.0",
+    "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/time": "^0.6.0",
     "@hcengineering/time-resources": "^0.6.0",
     "@hcengineering/rank": "^0.6.4"

@@ -1,0 +1,23 @@
+{
+  "string": {
+    "Requests": "Žádosti",
+    "Request": "Žádost",
+    "Approve": "Schválit",
+    "Approved": "Schváleno",
+    "CreatedRequest": "Vytvořil(a) ",
+    "For": "Pro",
+    "Change": "Změnit",
+    "Add": "Přidat",
+    "Remove": "Odstranit",
+    "Status": "Stav",
+    "Requested": "Požádáno",
+    "Completed": "Dokončeno",
+    "Reject": "Zamítnout",
+    "Rejected": "Zamítnuto",
+    "Comment": "Komentář",
+    "PleaseTypeMessage": "Zadejte prosím zprávu ke komentáři, abyste mohli pokračovat...",
+    "NoRequests": "Žádné žádosti",
+    "Cancel": "Zrušit",
+    "Cancelled": "Zrušeno"
+  }
+}

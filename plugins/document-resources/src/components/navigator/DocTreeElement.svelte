@@ -19,6 +19,7 @@
   import type { Action, AnySvelteComponent } from '@hcengineering/ui'
   import { IconMoreH, Menu, navigate, showPopup, NavItem, ButtonIcon } from '@hcengineering/ui'
   import { getDocumentLink } from '../../utils'
+  import view from '@hcengineering/view'
 
   export let doc: Document
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -63,6 +64,11 @@
   showMenu={hovered}
   {shouldTooltip}
   {forciblyСollapsed}
+  draggable
+  on:dragstart
+  on:dragover
+  on:dragend
+  on:drop
   on:click={() => {
     selectDocument()
     dispatch('click')
@@ -75,14 +81,24 @@
           icon={action.icon}
           kind={'tertiary'}
           size={'extra-small'}
+          dataId={action.label}
           tooltip={{ label: action.label, direction: 'top' }}
           on:click={(evt) => action.action({}, evt)}
         />
       {/if}
     {/each}
-    <ButtonIcon icon={IconMoreH} kind={'tertiary'} size={'extra-small'} pressed={hovered} on:click={onMenuClick} />
+    <ButtonIcon
+      icon={IconMoreH}
+      kind={'tertiary'}
+      size={'extra-small'}
+      pressed={hovered}
+      dataId={'btnDocMore'}
+      tooltip={{ label: view.string.MoreActions, direction: 'top' }}
+      on:click={onMenuClick}
+    />
   </svelte:fragment>
   <svelte:fragment slot="dropbox">
     <slot />
   </svelte:fragment>
+  <slot name="extra" />
 </NavItem>

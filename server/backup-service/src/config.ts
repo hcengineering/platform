@@ -16,41 +16,65 @@
 import { type BackupConfig } from '@hcengineering/server-backup'
 
 interface Config extends Omit<BackupConfig, 'Token'> {
-  TransactorURL: string
   AccountsURL: string
   ServiceID: string
   Secret: string
 
   Interval: number // Timeout in seconds
+  CoolDown: number
   Timeout: number // Timeout in seconds
   BucketName: string
+  Storage: string // A bucket storage config
+  WorkspaceStorage: string // A workspace storage config
 
-  MongoURL: string
+  SkipWorkspaces: string
+
+  DbURL: string
+
+  Region: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
-  TransactorURL: 'TRANSACTOR_URL',
   AccountsURL: 'ACCOUNTS_URL',
   ServiceID: 'SERVICE_ID',
   Secret: 'SECRET',
   BucketName: 'BUCKET_NAME',
   Interval: 'INTERVAL',
+  CoolDown: 'COOL_DOWN',
   Timeout: 'TIMEOUT',
-  MongoURL: 'MONGO_URL'
+  DbURL: 'DB_URL',
+  SkipWorkspaces: 'SKIP_WORKSPACES',
+  Storage: 'STORAGE',
+  WorkspaceStorage: 'WORKSPACE_STORAGE',
+  Region: 'REGION',
+  Parallel: 'PARALLEL'
 }
 
-const required: Array<keyof Config> = ['TransactorURL', 'AccountsURL', 'Secret', 'ServiceID', 'BucketName', 'MongoURL']
+const required: Array<keyof Config> = [
+  'AccountsURL',
+  'Secret',
+  'ServiceID',
+  'BucketName',
+  'DbURL',
+  'Storage',
+  'WorkspaceStorage'
+]
 
-const config: Config = (() => {
+export const config: () => Config = () => {
   const params: Partial<Config> = {
-    TransactorURL: process.env[envMap.TransactorURL],
     AccountsURL: process.env[envMap.AccountsURL],
     Secret: process.env[envMap.Secret],
     BucketName: process.env[envMap.BucketName] ?? 'backups',
     ServiceID: process.env[envMap.ServiceID] ?? 'backup-service',
     Interval: parseInt(process.env[envMap.Interval] ?? '3600'),
     Timeout: parseInt(process.env[envMap.Timeout] ?? '3600'),
-    MongoURL: process.env[envMap.MongoURL]
+    CoolDown: parseInt(process.env[envMap.CoolDown] ?? '300'),
+    DbURL: process.env[envMap.DbURL],
+    SkipWorkspaces: process.env[envMap.SkipWorkspaces] ?? '',
+    WorkspaceStorage: process.env[envMap.WorkspaceStorage],
+    Storage: process.env[envMap.Storage],
+    Region: process.env[envMap.Region] ?? '',
+    Parallel: parseInt(process.env[envMap.Parallel] ?? '1')
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])
@@ -60,6 +84,4 @@ const config: Config = (() => {
   }
 
   return params as Config
-})()
-
-export default config
+}

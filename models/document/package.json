@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@hcengineering/model-core": "^0.6.0",
+    "@hcengineering/model-activity": "^0.6.0",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/model-attachment": "^0.6.0",
@@ -50,6 +51,7 @@
     "@hcengineering/time": "^0.6.0",
     "@hcengineering/document": "^0.6.0",
     "@hcengineering/document-resources": "^0.6.0",
-    "@hcengineering/collaboration": "^0.6.0"
+    "@hcengineering/collaboration": "^0.6.0",
+    "@hcengineering/rank": "^0.6.4"
   }
 }

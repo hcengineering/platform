@@ -8,9 +8,8 @@ import {
   type FindOptions,
   type FindResult,
   type Hierarchy,
-  type MeasureClient,
-  type MeasureDoneOperation,
   type ModelDb,
+  type QuerySelector,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -19,7 +18,7 @@ import {
   type TxResult,
   type WithLookup
 } from '@hcengineering/core'
-import { setPlatformStatus, unknownError, type Resource } from '@hcengineering/platform'
+import platform, { PlatformError, setPlatformStatus, unknownError, type Resource } from '@hcengineering/platform'
 
 /**
  * @public
@@ -65,7 +64,7 @@ export type PresentationMiddlewareCreator = (client: Client, next?: Presentation
 /**
  * @public
  */
-export interface PresentationPipeline extends MeasureClient, Exclude<PresentationMiddleware, 'next'> {
+export interface PresentationPipeline extends Client, Exclude<PresentationMiddleware, 'next'> {
   close: () => Promise<void>
 }
 
@@ -75,7 +74,7 @@ export interface PresentationPipeline extends MeasureClient, Exclude<Presentatio
 export class PresentationPipelineImpl implements PresentationPipeline {
   private head: PresentationMiddleware | undefined
 
-  private constructor (readonly client: MeasureClient) {}
+  private constructor (readonly client: Client) {}
 
   getHierarchy (): Hierarchy {
     return this.client.getHierarchy()
@@ -89,11 +88,7 @@ export class PresentationPipelineImpl implements PresentationPipeline {
     await this.head?.notifyTx(...tx)
   }
 
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    return await this.client.measure(operationName)
-  }
-
-  static create (client: MeasureClient, constructors: PresentationMiddlewareCreator[]): PresentationPipeline {
+  static create (client: Client, constructors: PresentationMiddlewareCreator[]): PresentationPipeline {
     const pipeline = new PresentationPipelineImpl(client)
     pipeline.head = pipeline.buildChain(constructors)
     return pipeline
@@ -117,7 +112,12 @@ export class PresentationPipelineImpl implements PresentationPipeline {
       return this.head !== undefined
         ? await this.head.findAll(_class, query, options)
         : await this.client.findAll(_class, query, options)
-    } catch (err) {
+    } catch (err: any) {
+      if (err instanceof PlatformError) {
+        if (err.status.code === platform.status.ConnectionClosed) {
+          return toFindResult([], -1)
+        }
+      }
       Analytics.handleError(err as Error)
       const status = unknownError(err)
       await setPlatformStatus(status)
@@ -139,6 +139,11 @@ export class PresentationPipelineImpl implements PresentationPipeline {
         ? await this.head.findOne(_class, query, options)
         : await this.client.findOne(_class, query, options)
     } catch (err) {
+      if (err instanceof PlatformError) {
+        if (err.status.code === platform.status.ConnectionClosed) {
+          return
+        }
+      }
       Analytics.handleError(err as Error)
       const status = unknownError(err)
       await setPlatformStatus(status)
@@ -168,6 +173,11 @@ export class PresentationPipelineImpl implements PresentationPipeline {
         return await this.head.tx(tx)
       }
     } catch (err) {
+      if (err instanceof PlatformError) {
+        if (err.status.code === platform.status.ConnectionClosed) {
+          return {}
+        }
+      }
       Analytics.handleError(err as Error)
       const status = unknownError(err)
       await setPlatformStatus(status)
@@ -336,6 +346,22 @@ export class OptimizeQueryMiddleware extends BasePresentationMiddleware implemen
     const fQuery = { ...query }
     const fOptions = { ...options }
     this.optimizeQuery<T>(fQuery, fOptions)
+
+    // Immidiate response queries, if have some $in with empty list.
+
+    for (const [k, v] of Object.entries(fQuery)) {
+      if (typeof v === 'object' && v != null) {
+        const vobj = v as QuerySelector<any>
+        if (vobj.$in != null && vobj.$in.length === 0) {
+          // Emopty in, will always return []
+          return toFindResult([], 0)
+        } else if (vobj.$in != null && vobj.$in.length === 1 && Object.keys(vobj).length === 1) {
+          ;(fQuery as any)[k] = vobj.$in[0]
+        } else if (vobj.$nin != null && vobj.$nin.length === 1 && Object.keys(vobj).length === 1) {
+          ;(fQuery as any)[k] = { $ne: vobj.$nin[0] }
+        }
+      }
+    }
     return await this.provideFindAll(_class, fQuery, fOptions)
   }
 

@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
-  import { Employee, PersonAccount } from '@hcengineering/contact'
+  import { Employee, getCurrentEmployee } from '@hcengineering/contact'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { DocumentQuery, Ref, getCurrentAccount } from '@hcengineering/core'
-  import { Department, DepartmentMember, Request, RequestType, Staff, fromTzDate } from '@hcengineering/hr'
+  import { Department, Request, RequestType, Staff, fromTzDate } from '@hcengineering/hr'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tracker, { Issue } from '@hcengineering/tracker'
   import { Label } from '@hcengineering/ui'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { groupBy } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { EmployeeReports, getEndDate, getStartDate } from '../utils'
@@ -35,6 +36,9 @@
   export let mode: CalendarMode
   export let display: 'chart' | 'stats'
   export let staffQuery: DocumentQuery<Staff> = {}
+  export let preference: ViewletPreference | undefined = undefined
+  export let viewlet: Viewlet | undefined = undefined
+  export let loading: boolean = false
 
   $: startDate =
     mode === CalendarMode.Year
@@ -52,7 +56,7 @@
   const lq = createQuery()
   const typeQuery = createQuery()
   const staffQ = createQuery()
-  const currentEmployee = (getCurrentAccount() as PersonAccount).person
+  const currentEmployee = getCurrentEmployee()
 
   let staff: Staff[] = []
   let requests: Request[] = []
@@ -143,7 +147,7 @@
   }
 
   function isEditable (department: Department): boolean {
-    return department.teamLead === currentEmployee || department.managers.includes(currentEmployee as Ref<Employee>)
+    return department.teamLead === currentEmployee || department.managers.includes(currentEmployee)
   }
 
   function checkDepartmentEditable (
@@ -175,7 +179,7 @@
     departmentStaff: Staff[],
     descendants: Map<Ref<Department>, Department[]>
   ) {
-    editableList = [currentEmployee as Ref<Employee>]
+    editableList = [currentEmployee]
     checkDepartmentEditable(departmentById, hr.ids.Head, departmentStaff, descendants)
     editableList = editableList
   }
@@ -212,11 +216,13 @@
             tasks: new Map()
           }
           const tsk = r.$lookup?.attachedTo as Issue
-          newMap.set(r.employee, {
-            value: or.value + r.value,
-            reports: [...or.reports, r],
-            tasks: or.tasks.set(tsk._id, tsk)
-          })
+          if (tsk !== undefined) {
+            newMap.set(r.employee, {
+              value: or.value + r.value,
+              reports: [...or.reports, r],
+              tasks: or.tasks.set(tsk._id, tsk)
+            })
+          }
         }
       }
       timeReports = newMap
@@ -268,14 +274,13 @@
   async function getDepartmentsForEmployee (departmentStaff: Staff[]): Promise<Map<Ref<Staff>, Department[]>> {
     const map = new Map<Ref<Staff>, Department[]>()
     if (departmentStaff && departmentStaff.length > 0) {
-      const ids = departmentStaff.map((staff) => staff._id)
-      const staffs = await client.findAll(contact.class.PersonAccount, { person: { $in: ids } })
+      const staffIds = departmentStaff.map((staff) => staff._id)
       const departments = await client.findAll(hr.class.Department, {
-        members: { $in: staffs.map((staff) => staff._id as Ref<DepartmentMember>) }
+        members: { $in: staffIds }
       })
-      staffs.forEach((staff) => {
-        const filteredDepartments = departments.filter((department) => department.members.includes(staff._id))
-        map.set(staff.person as Ref<Staff>, filteredDepartments as Department[])
+      staffIds.forEach((id) => {
+        const filteredDepartments = departments.filter((department) => department.members.includes(id))
+        map.set(id, filteredDepartments as Department[])
       })
     }
     return map
@@ -313,6 +318,9 @@
         {holidays}
         {staffDepartmentMap}
         {getHolidays}
+        {preference}
+        {viewlet}
+        {loading}
       />
     {/if}
   {/if}

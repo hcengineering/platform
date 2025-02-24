@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Subject": "Asunto",
+    "From": "De",
+    "To": "Para",
+    "CreateMail": "Nuevo mensaje",
+    "MailThread": "Mensaje",
+    "Reply": "Responder",
+    "Date": "Fecha",
+    "MailMessage": "Mensaje",
+    "MailMessages": "Mensajes"
+  }
+}

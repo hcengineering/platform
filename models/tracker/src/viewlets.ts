@@ -66,6 +66,14 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
       action: view.function.ShowEmptyGroups,
       label: view.string.ShowEmptyGroups
     },
+    {
+      key: 'hideArchived',
+      type: 'toggle',
+      defaultValue: true,
+      actionTarget: 'options',
+      action: view.function.HideArchived,
+      label: view.string.HideArchived
+    },
     ...(!kanban ? [showColorsViewOption] : [])
   ]
 })
@@ -97,13 +105,13 @@ export function issueConfig (
       props: { kind: 'list', size: 'small', justify: 'center' },
       displayProps: { key: key + 'status' }
     },
-    // {
-    //   key: 'kind',
-    //   label: task.string.TaskType,
-    //   presenter: task.component.TaskTypePresenter,
-    //   props: { kind: 'list', size: 'small', justify: 'center' },
-    //   displayProps: { key: key + 'kind' }
-    // },
+    {
+      key: 'kind',
+      label: task.string.TaskType,
+      presenter: task.component.TaskTypeListPresenter,
+      props: { kind: 'list', size: 'small', justify: 'center' },
+      displayProps: { key: key + 'kind' }
+    },
     {
       key: '',
       label: tracker.string.Title,
@@ -528,7 +536,13 @@ export function defineViewlets (builder: Builder): void {
         hiddenKeys: ['identifier', 'name', 'description']
       },
       config: [
-        '',
+        {
+          key: '',
+          presenter: tracker.component.ProjectPresenter,
+          props: {
+            openIssues: true
+          }
+        },
         'members',
         {
           key: 'defaultAssignee',
@@ -539,7 +553,10 @@ export function defineViewlets (builder: Builder): void {
           presenter: tracker.component.ModificationDatePresenter,
           displayProps: { fixed: 'right', dividerBefore: true }
         }
-      ]
+      ],
+      options: {
+        showArchived: true
+      }
     },
     tracker.viewlet.ProjectList
   )

@@ -40,6 +40,7 @@
     getCategoryQueryProjection,
     getGroupByValues,
     getPresenter,
+    getResultOptions,
     groupBy,
     ListSelectionProvider,
     noCategory,
@@ -56,7 +57,7 @@
   export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let query: DocumentQuery<Task> = {}
-  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let viewOptions: ViewOptions
   export let viewlet: Viewlet
   export let config: (string | BuildModelKey)[]
@@ -80,9 +81,11 @@
     resultQuery = mergeQueries(p, query)
   })
 
-  $: queryNoLookup = getCategoryQueryNoLookup(
-    mergeQueries(resultQuery, activeSpaces.length > 0 ? { space: { $in: activeSpaces } } : {})
-  )
+  $: void getResultOptions(options, viewOptionsConfig, viewOptions).then((p) => {
+    configOptions = p
+  })
+
+  $: queryNoLookup = getCategoryQueryNoLookup(resultQuery)
   const lookup: Lookup<Task> = {
     ...(options?.lookup ?? {}),
     space: task.class.Project,
@@ -91,7 +94,12 @@
       labels: tags.class.TagReference
     }
   }
-  $: resultOptions = { ...options, lookup, ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {}) }
+  let configOptions = options
+  $: resultOptions = {
+    ...configOptions,
+    lookup,
+    ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {})
+  }
 
   let kanbanUI: KanbanUI
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
@@ -113,10 +121,8 @@
 
   let fastDocs: DocWithRank[] = []
   let slowDocs: DocWithRank[] = []
-  let activeSpaces: Ref<Project>[] = []
   const docsQuery = createQuery()
   const docsQuerySlow = createQuery()
-  const activeSpaceQuery = createQuery()
 
   let fastQueryIds = new Set<Ref<DocWithRank>>()
 
@@ -131,16 +137,7 @@
       ...getCategoryQueryProjection(client.getHierarchy(), _class, queryNoLookup, viewOptions.groupBy)
     }
   }
-  $: activeSpaceQuery.query(
-    task.class.Project,
-    {
-      archived: false
-    },
-    (res) => {
-      activeSpaces = res.map((r: Project) => r._id)
-    },
-    { projection: { _id: 1 } }
-  )
+
   $: docsQuery.query(
     _class,
     queryNoLookup,

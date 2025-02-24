@@ -17,17 +17,24 @@ import { ControlledDocumentState, DocumentState } from '@hcengineering/controlle
 import { TrainingState } from '@hcengineering/training'
 import { combine } from 'effector'
 import { $documentComments } from './documentComments'
-import { $documentState, $isLatestVersion, $training } from './editor'
+import { $controlledDocument, $documentState, $isLatestVersion, $reviewRequestHistory, $training } from './editor'
 
 export const $canSendForApproval = combine(
+  $controlledDocument,
   $isLatestVersion,
   $documentState,
   $documentComments,
   $training,
-  (isLatestVersion, state, comments, training) => {
+  $reviewRequestHistory,
+  (document, isLatestVersion, state, comments, training, reviewHistory) => {
+    let haveBeenReviewedOnce = false
+    if (document !== null) {
+      const reviews = (reviewHistory ?? []).filter((review) => review.attachedTo === document._id)
+      if (reviews.length > 0) haveBeenReviewedOnce = true
+    }
     return (
       isLatestVersion &&
-      (state === DocumentState.Draft || state === ControlledDocumentState.Reviewed) &&
+      ((state === DocumentState.Draft && !haveBeenReviewedOnce) || state === ControlledDocumentState.Reviewed) &&
       comments.every((comment) => comment.resolved) &&
       (training === null || training.state === TrainingState.Released)
     )

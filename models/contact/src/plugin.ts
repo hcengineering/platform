@@ -21,9 +21,10 @@ import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineer
 import { type NotificationGroup } from '@hcengineering/notification'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type TemplateFieldFunc } from '@hcengineering/templates'
-import type { AnyComponent } from '@hcengineering/ui/src/types'
+import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
+import { type LocationData } from '@hcengineering/workbench'
 
 export default mergeIds(contactId, contact, {
   activity: {
@@ -34,13 +35,10 @@ export default mergeIds(contactId, contact, {
     ContactRefPresenter: '' as AnyComponent,
     ContactPresenter: '' as AnyComponent,
     EditPerson: '' as AnyComponent,
-    EditEmployee: '' as AnyComponent,
     EditOrganization: '' as AnyComponent,
     OrganizationPresenter: '' as AnyComponent,
     Contacts: '' as AnyComponent,
     ContactsTabs: '' as AnyComponent,
-    PersonAccountPresenter: '' as AnyComponent,
-    PersonAccountRefPresenter: '' as AnyComponent,
     OrganizationEditor: '' as AnyComponent,
     EmployeePresenter: '' as AnyComponent,
     EmployeeRefPresenter: '' as AnyComponent,
@@ -59,11 +57,9 @@ export default mergeIds(contactId, contact, {
     ActivityChannelPresenter: '' as AnyComponent,
     EmployeeFilter: '' as AnyComponent,
     EmployeeFilterValuePresenter: '' as AnyComponent,
-    PersonAccountFilterValuePresenter: '' as AnyComponent,
     ChannelIcon: '' as AnyComponent
   },
   string: {
-    Persons: '' as IntlString,
     SearchEmployee: '' as IntlString,
     SearchPerson: '' as IntlString,
     SearchOrganization: '' as IntlString,
@@ -92,12 +88,13 @@ export default mergeIds(contactId, contact, {
     SkypePlaceholder: '' as IntlString,
     Profile: '' as IntlString,
     ProfilePlaceholder: '' as IntlString,
+    Viber: '' as IntlString,
+    ViberPlaceholder: '' as IntlString,
 
     CurrentEmployee: '' as IntlString,
 
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
-    Employees: '' as IntlString,
     People: '' as IntlString
   },
   completion: {
@@ -121,6 +118,7 @@ export default mergeIds(contactId, contact, {
   },
   action: {
     KickEmployee: '' as Ref<Action>,
+    ResendInvite: '' as Ref<Action>,
     DeleteEmployee: '' as Ref<Action>,
     MergePersons: '' as Ref<Action<Doc, any>>,
     OpenChannel: '' as Ref<Action>,
@@ -128,7 +126,8 @@ export default mergeIds(contactId, contact, {
   },
   actionImpl: {
     KickEmployee: '' as ViewAction,
-    OpenChannel: '' as ViewAction
+    OpenChannel: '' as ViewAction,
+    ResendInvite: '' as ViewAction
   },
   function: {
     GetCurrentEmployeeName: '' as Resource<TemplateFieldFunc>,
@@ -142,5 +141,8 @@ export default mergeIds(contactId, contact, {
     ChannelIdentifierProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     SetPersonStore: '' as Resource<(manager: DocManager<any>) => void>,
     PersonFilterFunction: '' as Resource<(doc: Doc, target: Doc) => boolean>
+  },
+  resolver: {
+    LocationData: '' as Resource<(loc: Location) => Promise<LocationData>>
   }
 })

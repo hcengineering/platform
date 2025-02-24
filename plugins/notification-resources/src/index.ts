@@ -17,7 +17,7 @@
 import { type Resources } from '@hcengineering/platform'
 
 import Inbox from './components/inbox/Inbox.svelte'
-import NotificationSettings from './components/NotificationSettings.svelte'
+import NotificationSettings from './components/settings/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
 import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
 import CollaboratorsChanged from './components/activity/CollaboratorsChanged.svelte'
@@ -25,6 +25,7 @@ import ActivityInboxNotificationPresenter from './components/inbox/ActivityInbox
 import CommonInboxNotificationPresenter from './components/inbox/CommonInboxNotificationPresenter.svelte'
 import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
 import ReactionNotificationPresenter from './components/ReactionNotificationPresenter.svelte'
+import GeneralPreferencesGroup from './components/settings/GeneralPreferencesGroup.svelte'
 import {
   unsubscribe,
   resolveLocation,
@@ -42,7 +43,9 @@ import {
   readAll,
   unreadAll,
   checkPermission,
-  unarchiveContextNotifications
+  unarchiveContextNotifications,
+  isNotificationAllowed,
+  locationDataResolver
 } from './utils'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -63,7 +66,8 @@ export default async (): Promise<Resources> => ({
     ActivityInboxNotificationPresenter,
     CommonInboxNotificationPresenter,
     NotificationCollaboratorsChanged,
-    ReactionNotificationPresenter
+    ReactionNotificationPresenter,
+    GeneralPreferencesGroup
   },
   function: {
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -73,7 +77,9 @@ export default async (): Promise<Resources> => ({
     CanReadNotifyContext: canReadNotifyContext,
     CanUnReadNotifyContext: canUnReadNotifyContext,
     HasInboxNotifications: hasInboxNotifications,
-    CheckPushPermission: checkPermission
+    CheckPushPermission: checkPermission,
+    IsNotificationAllowed: isNotificationAllowed,
+    LocationDataResolver: locationDataResolver
   },
   actionImpl: {
     Unsubscribe: unsubscribe,

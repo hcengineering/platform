@@ -29,6 +29,7 @@
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
   export let selected: boolean = false
   export let showMenu: boolean = false
+  export let noDivider: boolean = false
   export let empty: boolean = false
   export let bold: boolean = false
   export let indent: boolean = false
@@ -38,6 +39,7 @@
   export let showNotify: boolean = false
   export let forciblyСollapsed: boolean = false
   export let collapsedPrefix: string = ''
+  export let draggable: boolean = false
 </script>
 
 <TreeElement
@@ -59,8 +61,14 @@
   {collapsedPrefix}
   {level}
   {showMenu}
+  {noDivider}
   {forciblyСollapsed}
+  {draggable}
   on:click
+  on:dragstart
+  on:dragover
+  on:dragend
+  on:drop
 >
   <svelte:fragment slot="extra"><slot name="extra" /></svelte:fragment>
   <svelte:fragment slot="dropbox"><slot name="dropbox" /></svelte:fragment>

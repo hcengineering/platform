@@ -37,6 +37,7 @@
     "NewIncomingMessage": "Vous a envoyé un nouvel email",
     "ConfigLabel": "Email",
     "ConfigDescription": "Extension pour l'intégration des emails Gmail",
-    "GooglePrivacy": "L'utilisation et le transfert des informations reçues des API Google par Huly à toute autre application respecteront les <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">règles d'utilisation des données utilisateur des services API Google</a>, y compris les exigences d'utilisation limitée."
+    "GooglePrivacy": "L'utilisation et le transfert des informations reçues des API Google par Huly à toute autre application respecteront les <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">règles d'utilisation des données utilisateur des services API Google</a>, y compris les exigences d'utilisation limitée.",
+    "EmailNotificationsDescription": "Recevez des notifications personnelles par e-mail."
   }
 }

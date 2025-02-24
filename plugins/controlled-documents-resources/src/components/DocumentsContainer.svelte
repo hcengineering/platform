@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Class, DocumentQuery, Ref, Space } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import type { IntlString, Asset } from '@hcengineering/platform'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
   import documents, { type Document, type DocumentSpace, DocumentState } from '@hcengineering/controlled-documents'
 
@@ -26,6 +26,7 @@
   export let _class: Ref<Class<Document>> = document.class.Document
   export let query: DocumentQuery<Document> = {}
   export let title: IntlString
+  export let icon: Asset | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
   export let config: [string, IntlString, object][]
   export let panelWidth: number = 0
@@ -56,9 +57,10 @@
   $: inProgress = { state: { $in: [DocumentState.Draft] }, space: { $in: spaces } }
   $: effective = { state: { $in: [DocumentState.Effective] }, space: { $in: spaces } }
   $: archived = { state: { $in: [DocumentState.Archived, DocumentState.Deleted] }, space: { $in: spaces } }
+  $: obsolete = { state: { $in: [DocumentState.Obsolete] }, space: { $in: spaces } }
   $: all = { space: { $in: spaces } }
 
-  $: queries = { inProgress, effective, archived, all }
+  $: queries = { inProgress, effective, archived, obsolete, all }
 
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
   $: if (mode === undefined || (queries as any)[mode] === undefined) {
@@ -77,4 +79,4 @@
   }
 </script>
 
-<Documents query={modifiedQuery} {_class} {title} {space} {panelWidth} {modeSelectorProps} />
+<Documents query={modifiedQuery} {_class} {icon} {title} {space} {panelWidth} {modeSelectorProps} />

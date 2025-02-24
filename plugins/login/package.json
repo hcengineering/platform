@@ -34,14 +34,15 @@
     "typescript": "^5.3.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5"
+    "@types/jest": "^29.5.5",
+    "@hcengineering/account-client": "^0.6.0"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/ui": "^0.6.15"
   },
-  "repository": "https://github.com/hcenginneing/anticrm",
+  "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   }

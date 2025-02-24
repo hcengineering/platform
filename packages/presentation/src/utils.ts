@@ -16,16 +16,15 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
+  MeasureMetricsContext,
   TxOperations,
   TxProcessor,
-  concatLink,
   getCurrentAccount,
   reduceCalls,
-  type TxApplyIf,
+  type Account,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
-  type BlobLookup,
   type Class,
   type Client,
   type Collection,
@@ -34,11 +33,8 @@ import core, {
   type FindOptions,
   type FindResult,
   type Hierarchy,
-  type MeasureClient,
-  type MeasureDoneOperation,
   type Mixin,
   type Obj,
-  type Blob as PlatformBlob,
   type Ref,
   type RefTo,
   type SearchOptions,
@@ -46,10 +42,12 @@ import core, {
   type SearchResult,
   type Space,
   type Tx,
+  type TxApplyIf,
+  type TxCUD,
   type TxResult,
   type TypeAny,
   type WithLookup,
-  type TxCUD
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
@@ -57,85 +55,83 @@ import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteCo
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
-import { type Writable, get, writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
+
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
+
 export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ
-let client: TxOperations & MeasureClient & OptimisticTxes
+let rawLiveQuery: LQ
+let client: TxOperations & Client
 let pipeline: PresentationPipeline
 
-const txListeners: Array<(...tx: Tx[]) => void> = []
+export type TxListener = (tx: Tx[]) => void
+const txListeners: TxListener[] = []
 
 /**
  * @public
  */
-export function addTxListener (l: (tx: Tx) => void): void {
+export function addTxListener (l: TxListener): void {
   txListeners.push(l)
+}
+
+export function getRawLiveQuery (): LQ {
+  return rawLiveQuery
 }
 
 /**
  * @public
  */
-export function removeTxListener (l: (tx: Tx) => void): void {
+export function removeTxListener (l: TxListener): void {
   const pos = txListeners.findIndex((it) => it === l)
   if (pos !== -1) {
     txListeners.splice(pos, 1)
   }
 }
 
-export interface OptimisticTxes {
-  pendingCreatedDocs: Writable<Record<Ref<Doc>, boolean>>
-}
+export const uiContext = new MeasureMetricsContext('client-ui', {})
 
-class UIClient extends TxOperations implements Client, MeasureClient, OptimisticTxes {
+export const pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
+
+class UIClient extends TxOperations implements Client {
+  hook = getMetadata(plugin.metadata.ClientHook)
   constructor (
-    client: MeasureClient,
+    client: Client,
     private readonly liveQuery: Client
   ) {
-    super(client, getCurrentAccount()._id)
+    super(client, getCurrentAccount().primarySocialId)
   }
 
-  afterMeasure: Tx[] = []
-  measureOp?: MeasureDoneOperation
   protected pendingTxes = new Set<Ref<Tx>>()
-  protected _pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
-
-  get pendingCreatedDocs (): typeof this._pendingCreatedDocs {
-    return this._pendingCreatedDocs
-  }
 
   async doNotify (...tx: Tx[]): Promise<void> {
-    if (this.measureOp !== undefined) {
-      this.afterMeasure.push(...tx)
-    } else {
-      const pending = get(this._pendingCreatedDocs)
-      let pendingUpdated = false
-      tx.forEach((t) => {
-        if (this.pendingTxes.has(t._id)) {
-          this.pendingTxes.delete(t._id)
+    const pending = get(pendingCreatedDocs)
+    let pendingUpdated = false
+    tx.forEach((t) => {
+      if (this.pendingTxes.has(t._id)) {
+        this.pendingTxes.delete(t._id)
 
-          // Only CUD tx can be pending now
-          const innerTx = TxProcessor.extractTx(t) as TxCUD<Doc>
+        // Only CUD tx can be pending now
+        const innerTx = t as TxCUD<Doc>
 
-          if (innerTx._class === core.class.TxCreateDoc) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete pending[innerTx.objectId]
-            pendingUpdated = true
-          }
+        if (innerTx._class === core.class.TxCreateDoc) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete pending[innerTx.objectId]
+          pendingUpdated = true
         }
-      })
-      if (pendingUpdated) {
-        this._pendingCreatedDocs.set(pending)
       }
-
-      // We still want to notify about all transactions because there might be queries created after
-      // the early applied transaction
-      // For old queries there's a check anyway that prevents the same document from being added twice
-      await this.provideNotify(...tx)
+    })
+    if (pendingUpdated) {
+      pendingCreatedDocs.set(pending)
     }
+
+    // We still want to notify about all transactions because there might be queries created after
+    // the early applied transaction
+    // For old queries there's a check anyway that prevents the same document from being added twice
+    await this.provideNotify(...tx)
   }
 
   private async provideNotify (...tx: Tx[]): Promise<void> {
@@ -144,8 +140,10 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
 
       await liveQuery.tx(...tx)
 
+      await rawLiveQuery.tx(...tx)
+
       txListeners.forEach((it) => {
-        it(...tx)
+        it(tx)
       })
     } catch (err: any) {
       Analytics.handleError(err)
@@ -158,6 +156,9 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    if (this.hook !== undefined) {
+      return await this.hook.findAll(this.liveQuery, _class, query, options)
+    }
     return await this.liveQuery.findAll(_class, query, options)
   }
 
@@ -166,12 +167,17 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
+    if (this.hook !== undefined) {
+      return await this.hook.findOne(this.liveQuery, _class, query, options)
+    }
     return await this.liveQuery.findOne(_class, query, options)
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
     void this.notifyEarly(tx)
-
+    if (this.hook !== undefined) {
+      return await this.hook.tx(this.client, tx)
+    }
     return await this.client.tx(tx)
   }
 
@@ -179,7 +185,7 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 
-      if (applyTx.match.length !== 0 || applyTx.notMatch.length !== 0) {
+      if ((applyTx.match?.length ?? 0) !== 0 || (applyTx.notMatch?.length ?? 0) !== 0) {
         // Cannot early apply conditional transactions
         return
       }
@@ -192,11 +198,11 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
       return
     }
 
-    if (!this.getHierarchy().isDerived(tx._class, core.class.TxCUD)) {
+    if (!TxProcessor.isExtendsCUD(tx._class)) {
       return
     }
 
-    const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    const innerTx = tx as TxCUD<Doc>
     // Can pre-build some configuration later from the model if this will be too slow.
     const instantTxes = this.getHierarchy().classHierarchyMixin(innerTx.objectClass, plugin.mixin.InstantTransactions)
     if (instantTxes?.txClasses.includes(innerTx._class) !== true) {
@@ -204,9 +210,9 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
     }
 
     if (innerTx._class === core.class.TxCreateDoc) {
-      const pending = get(this._pendingCreatedDocs)
+      const pending = get(pendingCreatedDocs)
       pending[innerTx.objectId] = true
-      this._pendingCreatedDocs.set(pending)
+      pendingCreatedDocs.set(pending)
     }
 
     this.pendingTxes.add(tx._id)
@@ -214,64 +220,112 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
   }
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    if (this.hook !== undefined) {
+      return await this.hook.searchFulltext(this.client, query, options)
+    }
     return await this.client.searchFulltext(query, options)
   }
+}
 
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    // return await (this.client as MeasureClient).measure(operationName)
-    const mop = await (this.client as MeasureClient).measure(operationName)
-    this.measureOp = mop
-    return async () => {
-      const result = await mop()
-      this.measureOp = undefined
-      if (this.afterMeasure.length > 0) {
-        const txes = this.afterMeasure
-        this.afterMeasure = []
-        for (const tx of txes) {
-          await this.doNotify(tx)
-        }
-      }
-      return result
+const hierarchyProxy = new Proxy(
+  {},
+  {
+    get (target, p, receiver) {
+      const h = client.getHierarchy()
+      return Reflect.get(h, p)
     }
+  }
+) as TxOperations & Client
+
+// We need a proxy to handle all the calls to the proper client.
+const clientProxy = new Proxy(
+  {},
+  {
+    get (target, p, receiver) {
+      if (p === 'getHierarchy') {
+        return () => hierarchyProxy
+      }
+      return Reflect.get(client, p)
+    }
+  }
+) as TxOperations & Client
+/**
+ * @public
+ */
+export function getClient (): TxOperations & Client {
+  return clientProxy
+}
+
+export type OnClientListener = (client: Client, account: Account) => void | Promise<void>
+const onClientListeners: OnClientListener[] = []
+
+export function onClient (l: OnClientListener): void {
+  onClientListeners.push(l)
+  if (client !== undefined) {
+    setTimeout(() => {
+      void l(client, getCurrentAccount())
+    })
   }
 }
 
-/**
- * @public
- */
-export function getClient (): TxOperations & MeasureClient & OptimisticTxes {
-  return client
+let txQueue: Tx[] = []
+
+export type RefreshListener = () => void
+
+const refreshListeners = new Set<RefreshListener>()
+
+export function addRefreshListener (r: RefreshListener): void {
+  refreshListeners.add(r)
 }
 
 /**
  * @public
  */
-export async function setClient (_client: MeasureClient): Promise<void> {
+export async function setClient (_client: Client): Promise<void> {
+  pendingCreatedDocs.set({})
   if (liveQuery !== undefined) {
     await liveQuery.close()
+  }
+  if (rawLiveQuery !== undefined) {
+    await rawLiveQuery.close()
   }
   if (pipeline !== undefined) {
     await pipeline.close()
   }
+
+  const needRefresh = liveQuery !== undefined
+  rawLiveQuery = new LQ(_client)
+
   const factories = await _client.findAll(plugin.class.PresentationMiddlewareFactory, {})
   const promises = factories.map(async (it) => await getResource(it.createPresentationMiddleware))
   const creators = await Promise.all(promises)
   // eslint-disable-next-line @typescript-eslint/unbound-method
   pipeline = PresentationPipelineImpl.create(_client, [OptimizeQueryMiddleware.create, ...creators])
 
-  const needRefresh = liveQuery !== undefined
   liveQuery = new LQ(pipeline)
+
   const uiClient = new UIClient(pipeline, liveQuery)
+
   client = uiClient
 
+  const notifyCaller = reduceCalls(async () => {
+    const t = txQueue
+    txQueue = []
+    await uiClient.doNotify(...t)
+  })
+
   _client.notify = (...tx: Tx[]) => {
-    void uiClient.doNotify(...tx)
+    txQueue.push(...tx)
+    void notifyCaller()
   }
   if (needRefresh || globalQueries.length > 0) {
     await refreshClient(true)
   }
+  const acc = getCurrentAccount()
+  onClientListeners.forEach((l) => {
+    void l(_client, acc)
+  })
 }
-
 /**
  * @public
  */
@@ -280,6 +334,9 @@ export async function refreshClient (clean: boolean): Promise<void> {
     await liveQuery?.refreshConnect(clean)
     for (const q of globalQueries) {
       q.refreshClient()
+    }
+    for (const listener of refreshListeners.values()) {
+      listener()
     }
   }
 }
@@ -441,18 +498,6 @@ export function createQuery (dontDestroy?: boolean): LiveQuery {
   return new LiveQuery(dontDestroy)
 }
 
-export async function getBlobHref (
-  _blob: PlatformBlob | undefined,
-  file: Ref<PlatformBlob>,
-  filename?: string
-): Promise<string> {
-  let blob = _blob as BlobLookup
-  if (blob?.downloadUrl === undefined) {
-    blob = (await getClient().findOne(core.class.Blob, { _id: file })) as BlobLookup
-  }
-  return blob?.downloadUrl ?? getFileUrl(file, filename)
-}
-
 export function getCurrentWorkspaceUrl (): string {
   const wsId = get(workspaceId)
   if (wsId == null) {
@@ -461,20 +506,9 @@ export function getCurrentWorkspaceUrl (): string {
   return wsId
 }
 
-/**
- * @public
- */
-export function getFileUrl (file: Ref<PlatformBlob>, filename?: string, useToken?: boolean): string {
-  if (file.includes('://')) {
-    return file
-  }
-  const frontUrl = getMetadata(plugin.metadata.FrontUrl) ?? window.location.origin
-  let uploadUrl = getMetadata(plugin.metadata.UploadURL) ?? ''
-  if (!uploadUrl.includes('://')) {
-    uploadUrl = concatLink(frontUrl ?? '', uploadUrl)
-  }
-  const token = getMetadata(plugin.metadata.Token) ?? ''
-  return `${uploadUrl}/${getCurrentWorkspaceUrl()}${filename !== undefined ? '/' + encodeURIComponent(filename) : ''}?file=${file}${useToken === true ? `&token=${token}` : ''}`
+export function remToPx (rem: number): number {
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+  return rem * fontSize
 }
 
 export function sizeToWidth (size: string): number | undefined {
@@ -486,22 +520,22 @@ export function sizeToWidth (size: string): number | undefined {
     case 'x-small':
     case 'smaller':
     case 'small':
-      width = 32
+      width = 2
       break
     case 'medium':
-      width = 64
+      width = 2.5
       break
     case 'large':
-      width = 256
+      width = 4.5
       break
     case 'x-large':
-      width = 512
+      width = 7.5
       break
     case '2x-large':
-      width = 1024
+      width = 10
       break
   }
-  return width
+  return width !== undefined ? remToPx(width) : undefined
 }
 
 /**
@@ -525,17 +559,36 @@ export async function getBlobURL (blob: Blob): Promise<string> {
 /**
  * @public
  */
-export async function copyTextToClipboard (text: string): Promise<void> {
+export function copyTextToClipboardOldBrowser (text: string): void {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.classList.add('hulyClipboardArea')
+  document.body.appendChild(textarea)
+  textarea.select()
+  try {
+    document.execCommand('copy')
+  } catch (err) {
+    console.error(err)
+  }
+  document.body.removeChild(textarea)
+}
+
+/**
+ * @public
+ */
+export async function copyTextToClipboard (text: string | Promise<string>): Promise<void> {
   try {
     // Safari specific behavior
     // see https://bugs.webkit.org/show_bug.cgi?id=222262
     const clipboardItem = new ClipboardItem({
-      'text/plain': Promise.resolve(text)
+      'text/plain': text instanceof Promise ? text : Promise.resolve(text)
     })
     await navigator.clipboard.write([clipboardItem])
   } catch {
     // Fallback to default clipboard API implementation
-    await navigator.clipboard.writeText(text)
+    if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
+    } else copyTextToClipboardOldBrowser(text instanceof Promise ? await text : text)
   }
 }
 
@@ -553,9 +606,6 @@ export function getAttributePresenterClass (
     category = 'object'
   }
   if (hierarchy.isDerived(attrClass, core.class.TypeMarkup)) {
-    category = 'inplace'
-  }
-  if (hierarchy.isDerived(attrClass, core.class.TypeCollaborativeMarkup)) {
     category = 'inplace'
   }
   if (hierarchy.isDerived(attrClass, core.class.TypeCollaborativeDoc)) {
@@ -646,7 +696,7 @@ export async function getAttributeEditor (
 
 function filterKeys (hierarchy: Hierarchy, keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
   const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
-  keys = keys.filter((k) => !docKeys.has(k.key))
+  keys = keys.filter((k) => !docKeys.has(k.key) || k.attr.editor !== undefined)
   keys = keys.filter((k) => !ignoreKeys.includes(k.key))
   return keys
 }
@@ -677,6 +727,20 @@ export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): bo
 /**
  * @public
  */
+export function isMarkupAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+  return hierarchy.isDerived(key.attr.type._class, core.class.TypeMarkup)
+}
+
+/**
+ * @public
+ */
+export function isCollabAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+  return hierarchy.isDerived(key.attr.type._class, core.class.TypeCollaborativeDoc)
+}
+
+/**
+ * @public
+ */
 export function decodeTokenPayload (token: string): any {
   try {
     return JSON.parse(atob(token.split('.')[1]))
@@ -687,25 +751,32 @@ export function decodeTokenPayload (token: string): any {
 }
 
 export function isAdminUser (): boolean {
-  return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
+  const decodedToken = decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '')
+  return decodedToken.extra?.admin === 'true'
 }
 
 export function isSpace (space: Doc): space is Space {
-  return getClient().getHierarchy().isDerived(space._class, core.class.Space)
+  return isSpaceClass(space._class)
 }
 
-export function setPresentationCookie (token: string, workspaceId: string): void {
+export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
+  return client.getHierarchy().isDerived(_class, core.class.Space)
+}
+
+export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUuid): void {
   function setToken (path: string): void {
-    document.cookie =
+    const res =
       encodeURIComponent(plugin.metadata.Token.replaceAll(':', '-')) +
       '=' +
       encodeURIComponent(token) +
       `; path=${path}`
+    console.log('setting cookie', res)
+    document.cookie = res
   }
-  setToken('/files/' + workspaceId)
+  setToken('/files/' + workspaceUuid)
 }
 
-export const upgradeDownloadProgress = writable(0)
+export const upgradeDownloadProgress = writable(-1)
 
 export function setDownloadProgress (percent: number): void {
   if (Number.isNaN(percent)) {
@@ -713,4 +784,29 @@ export function setDownloadProgress (percent: number): void {
   }
 
   upgradeDownloadProgress.set(Math.round(percent))
+}
+
+export async function loadServerConfig (url: string): Promise<any> {
+  let retries = 5
+  let res: Response | undefined
+
+  do {
+    try {
+      res = await fetch(url, { keepalive: true })
+      break
+    } catch (e: any) {
+      retries--
+      if (retries === 0) {
+        throw new Error(`Failed to load server config: ${e}`)
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (5 - retries)))
+    }
+  } while (retries > 0)
+
+  if (res === undefined) {
+    // In theory should never get here
+    throw new Error('Failed to load server config')
+  }
+
+  return await res.json()
 }

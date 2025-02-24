@@ -34,11 +34,11 @@
     "typescript": "^5.3.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5",
-    "@types/web-push": "~3.6.3"
+    "@types/jest": "^29.5.5"
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
@@ -47,9 +47,9 @@
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/view": "^0.6.13",
-    "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-core": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/server-view": "^0.6.0",
-    "web-push": "~3.6.7"
+    "@hcengineering/server-contact": "^0.6.1"
   }
 }

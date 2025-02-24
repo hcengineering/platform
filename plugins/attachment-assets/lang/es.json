@@ -24,7 +24,7 @@
     "FileBrowserFilterIn": "En",
     "FileBrowserFilterDate": "Fecha",
     "FileBrowserFilterFileType": "Tipo de archivo",
-    "FileBrowserSort": "Ordenar:",
+    "FileBrowserSort": "Ordenar",
     "FileBrowserSortNewest": "Archivo más reciente",
     "FileBrowserSortOldest": "Archivo más antiguo",
     "FileBrowserSortAZ": "A a Z",
@@ -52,6 +52,8 @@
     "UnPinAttachment": "Marcar como menos importante",
     "FilterAttachments": "Adjuntos",
     "RemovedAttachment": "Adjunto eliminado",
-    "ContentType": "Tipo de contenido"
+    "ContentType": "Tipo de contenido",
+    "OpenInWindow": "Abrir en ventana",
+    "Embeddings": "Incrustaciones"
   }
 }

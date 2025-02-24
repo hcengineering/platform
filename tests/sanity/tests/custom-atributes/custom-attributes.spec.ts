@@ -12,6 +12,7 @@ import { NewCompany } from '../model/recruiting/types'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { CompaniesPage } from '../model/recruiting/companies-page'
 import { CompanyDetailsPage } from '../model/recruiting/company-details-page'
+import { SelectWorkspacePage } from '../model/select-workspace-page'
 
 test.describe('Custom attributes tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -42,7 +43,9 @@ test.describe('Custom attributes tests', () => {
     await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
     await (await page.goto(`${PlatformURI}`))?.finished()
     await loginPage.login(data.userName, '1234')
-    await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
+    const swp = new SelectWorkspacePage(page)
+    await swp.selectWorkspace(data.workspaceName)
+    // await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
   })
 
   test('Check if all custom attributes exists', async ({ browser, page }) => {

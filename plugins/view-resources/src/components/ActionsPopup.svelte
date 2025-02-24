@@ -18,13 +18,11 @@
     Ref,
     SearchResultDoc,
     Tx,
-    TxBuilder,
     TxWorkspaceEvent,
     WithLookup,
-    WorkspaceEvent,
-    coreId
+    WorkspaceEvent
   } from '@hcengineering/core'
-  import { getResource, translate } from '@hcengineering/platform'
+  import { getResource, translate, translateCB } from '@hcengineering/platform'
   import {
     ActionContext,
     SearchResult,
@@ -264,12 +262,14 @@
 
   $: void updateItems(search, filteredActions)
 
-  function txListener (tx: Tx): void {
-    if (tx._class === core.class.TxWorkspaceEvent) {
-      const evt = tx as TxWorkspaceEvent
-      if (evt.event === WorkspaceEvent.IndexingUpdate) {
-        void updateItems(search, filteredActions)
-      }
+  function txListener (txes: Tx[]): void {
+    if (
+      txes.some(
+        (it) =>
+          it._class === core.class.TxWorkspaceEvent && (it as TxWorkspaceEvent).event === WorkspaceEvent.IndexingUpdate
+      )
+    ) {
+      void updateItems(search, filteredActions)
     }
   }
 
@@ -292,7 +292,7 @@
     if (autoFocus) focus()
   }
 
-  $: void translate(view.string.ActionPlaceholder, {}).then((res) => {
+  $: translateCB(view.string.ActionPlaceholder, {}, $themeStore.language, (res) => {
     phTraslate = res
   })
   let timer: any

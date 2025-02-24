@@ -12,7 +12,7 @@ export class TalentsPage extends CommonRecruitingPage {
   }
 
   pageHeader = (): Locator => this.page.locator('span[class*="header"]', { hasText: 'Talents' })
-  buttonCreateTalent = (): Locator => this.page.locator('div[class*="ac-header"] button > span', { hasText: 'Talent' })
+  buttonCreateTalent = (): Locator => this.page.getByRole('button', { name: 'New Talent', exact: true })
 
   textVacancyMatchingTalent = (): Locator =>
     this.page.locator(
@@ -22,7 +22,7 @@ export class TalentsPage extends CommonRecruitingPage {
   textVacancyMatchingScore = (): Locator =>
     this.page.locator('form[id="recruit:string:VacancyMatching"] table > tbody > tr > td:nth-child(2)')
 
-  inputSearchTalent = (): Locator => this.page.locator('div[class*="header"] input')
+  inputSearchTalent = (): Locator => this.page.getByPlaceholder('Search')
   andreyTalet = (): Locator => this.page.locator('text=P. Andrey')
 
   readonly addApplicationButton = (): Locator => this.page.locator('button[id="appls.add"]')
@@ -34,18 +34,21 @@ export class TalentsPage extends CommonRecruitingPage {
   createButton = (): Locator => this.page.locator('button:has-text("Create")')
   assignedRecruiterButton = (): Locator => this.page.locator('button:has-text("Assigned recruiter")')
   chenRosamundButton = (): Locator => this.page.locator('button:has-text("Chen Rosamund")')
+  recruterSelectItemButton = (name: string): Locator =>
+    this.page.locator(`button.menu-item.withList:has-text("${name}")`)
+
   vacancyApplicatio = (vacancyId: string): Locator => this.page.locator(`tr:has-text("${vacancyId}") >> text=APP-`)
 
   recruitApplicationButton = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
 
-  talentsTab = (): Locator => this.page.locator('text=Talents')
+  talentsTab = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Talents')
   newTalentButton = (): Locator => this.page.locator('button:has-text("New Talent")')
   addSocialLinksButton = (): Locator => this.page.locator('[id="presentation\\:string\\:AddSocialLinks"]')
   emailSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=Email')
   confirmEmailButton = (): Locator => this.page.locator('#channel-ok.antiButton')
   createTalentButton = (): Locator => this.page.locator('.antiCard button:has-text("Create")')
   popupPanel = (): Locator => this.page.locator('.popupPanel')
-  talentsLink = (): Locator => this.page.locator('text=Talents')
+  talentsLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Talents')
   firstNameInput = (): Locator => this.page.locator('[placeholder="First name"]')
   lastNameInput = (): Locator => this.page.locator('[placeholder="Last name"]')
   skillsButton = (): Locator =>
@@ -59,7 +62,7 @@ export class TalentsPage extends CommonRecruitingPage {
   selectSkillButton = (skillName: string): Locator => this.page.locator(`button:has-text("${skillName}") .check`)
   createCandidateButton = (): Locator => this.page.locator('button:has-text("Create")')
   openOtherSkills = (): Locator => this.page.getByText('Other')
-  skillsLink = (): Locator => this.page.locator('text=Skills')
+  skillsLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Skills')
   newSkillButton = (): Locator => this.page.getByRole('button', { name: 'Skill', exact: true })
   emailContact = (): Locator =>
     this.page.locator('div[class^="popupPanel-body__header"] button[id="gmail:string:Email"]')
@@ -101,6 +104,10 @@ export class TalentsPage extends CommonRecruitingPage {
 
   async selectChenRosamund (): Promise<void> {
     await this.chenRosamundButton().click()
+  }
+
+  async selectRecruterToAssignByName (recruterName: string): Promise<void> {
+    await this.recruterSelectItemButton(recruterName).click()
   }
 
   async clickOnAndreyTalet (): Promise<void> {
@@ -211,12 +218,8 @@ export class TalentsPage extends CommonRecruitingPage {
     await this.selectFromDropdown(this.page, action)
   }
 
-  async checkMatchVacancy (talentName: string, score: string): Promise<void> {
-    await expect(this.textVacancyMatchingTalent()).toContainText(talentName, { ignoreCase: true })
-    await expect(this.textVacancyMatchingScore()).toContainText(score)
-  }
-
   async searchTalentByTalentName (talentName: TalentName): Promise<void> {
+    await this.inputSearchIcon().click()
     await this.inputSearchTalent().fill(`${talentName.lastName} ${talentName.firstName}`)
     await this.inputSearchTalent().press('Enter')
     await expect(this.page.locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })).toBeVisible()

@@ -25,12 +25,27 @@ export interface MetricsData {
   }[]
 }
 
+export interface OperationLogEntry {
+  op: string
+  params: ParamsType
+  start: number
+  end: number
+}
+export interface OperationLog {
+  ops: OperationLogEntry[]
+  start: number
+  end: number
+}
+
 /**
  * @public
  */
 export interface Metrics extends MetricsData {
+  namedParams: ParamsType
   params: Record<string, Record<string, MetricsData>>
   measurements: Record<string, Metrics>
+
+  opLog?: Record<string, OperationLog>
 }
 
 /**
@@ -51,21 +66,34 @@ export interface MeasureLogger {
 /**
  * @public
  */
-export interface MeasureContext {
+export interface MeasureContext<Q = any> {
+  id?: string
+
+  // Context data will be copied referenced for all child contexts.
+  contextData: Q
   // Create a child metrics context
   newChild: (name: string, params: ParamsType, fullParams?: FullParamsType, logger?: MeasureLogger) => MeasureContext
+
+  metrics?: Metrics
 
   with: <T>(
     name: string,
     params: ParamsType,
-    op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: FullParamsType
+    op: (ctx: MeasureContext<Q>) => T | Promise<T>,
+    fullParams?: FullParamsType | (() => FullParamsType)
   ) => Promise<T>
+
+  withSync: <T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext<Q>) => T,
+    fullParams?: FullParamsType | (() => FullParamsType)
+  ) => T
 
   withLog: <T>(
     name: string,
     params: ParamsType,
-    op: (ctx: MeasureContext) => T | Promise<T>,
+    op: (ctx: MeasureContext<Q>) => T | Promise<T>,
     fullParams?: FullParamsType
   ) => Promise<T>
 
@@ -73,7 +101,7 @@ export interface MeasureContext {
 
   parent?: MeasureContext
 
-  measure: (name: string, value: number) => void
+  measure: (name: string, value: number, override?: boolean) => void
 
   // Capture error
   error: (message: string, obj?: Record<string, any>) => void

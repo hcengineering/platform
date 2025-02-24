@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref } from '@hcengineering/core'
-import { type NotificationGroup } from '@hcengineering/notification'
-import { mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type Client, type Doc, type Ref } from '@hcengineering/core'
+import { type NotificationType, type NotificationGroup } from '@hcengineering/notification'
+import { type Resource, mergeIds } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { loveId } from '@hcengineering/love'
 import love from '@hcengineering/love-resources/src/plugin'
@@ -25,7 +25,11 @@ export default mergeIds(loveId, love, {
   component: {
     Main: '' as AnyComponent,
     WorkbenchExtension: '' as AnyComponent,
-    Settings: '' as AnyComponent
+    Settings: '' as AnyComponent,
+    LoveWidget: '' as AnyComponent,
+    MeetingWidget: '' as AnyComponent,
+    WidgetSwitcher: '' as AnyComponent,
+    RoomLanguageEditor: '' as AnyComponent
   },
   app: {
     Love: '' as Ref<Doc>
@@ -35,10 +39,16 @@ export default mergeIds(loveId, love, {
   },
   actionImpl: {
     ToggleMic: '' as ViewAction,
-    ToggleVideo: '' as ViewAction
+    ToggleVideo: '' as ViewAction,
+    ShowRoomSettings: '' as ViewAction,
+    CopyGuestLink: '' as ViewAction
   },
   ids: {
     Settings: '' as Ref<Doc>,
-    LoveNotificationGroup: '' as Ref<NotificationGroup>
+    LoveNotificationGroup: '' as Ref<NotificationGroup>,
+    MeetingMinutesChatNotification: '' as Ref<NotificationType>
+  },
+  function: {
+    MeetingMinutesTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

@@ -32,6 +32,7 @@
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-preference": "^0.6.0",
+    "@hcengineering/model-presentation": "^0.6.0",
     "@hcengineering/model-print": "^0.6.0",
     "@hcengineering/model-tracker": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",

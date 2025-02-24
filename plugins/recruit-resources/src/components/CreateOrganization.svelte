@@ -16,6 +16,9 @@
   import contact, { Organization } from '@hcengineering/contact'
   import { CreateOrganization } from '@hcengineering/contact-resources'
   import { Ref, TxOperations } from '@hcengineering/core'
+  import { Analytics } from '@hcengineering/analytics'
+  import { RecruitEvents } from '@hcengineering/recruit'
+
   import recruit from '../plugin'
 
   let createOrg: CreateOrganization
@@ -28,6 +31,8 @@
     await client.createMixin(org, contact.class.Organization, contact.space.Contacts, recruit.mixin.VacancyList, {
       vacancies: 0
     })
+    const clazz = client.getHierarchy().getClass(recruit.mixin.VacancyList)
+    Analytics.handleEvent(RecruitEvents.CompanyCreated, { company: `${clazz.shortLabel}-${org}` })
   }
 </script>
 

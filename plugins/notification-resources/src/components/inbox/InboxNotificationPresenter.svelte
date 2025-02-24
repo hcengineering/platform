@@ -20,6 +20,7 @@
   import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
 
   export let value: DisplayInboxNotification
+  export let object: Doc | undefined
   export let viewlets: ActivityNotificationViewlet[] = []
   export let space: Ref<Space> | undefined = undefined
 
@@ -30,5 +31,5 @@
 </script>
 
 {#if objectPresenter}
-  <Component is={objectPresenter.presenter} props={{ value, viewlets, space }} on:click />
+  <Component is={objectPresenter.presenter} props={{ value, viewlets, space, object }} on:click />
 {/if}

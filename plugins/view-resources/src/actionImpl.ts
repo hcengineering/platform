@@ -9,7 +9,14 @@ import {
   getCurrentAccount
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource, getResource } from '@hcengineering/platform'
-import { MessageBox, getClient, updateAttribute, type ContextStore, contextStore } from '@hcengineering/presentation'
+import {
+  MessageBox,
+  getClient,
+  updateAttribute,
+  type ContextStore,
+  contextStore,
+  copyTextToClipboardOldBrowser
+} from '@hcengineering/presentation'
 import {
   type AnyComponent,
   type AnySvelteComponent,
@@ -32,8 +39,8 @@ import {
   selectionStore,
   selectionLimit
 } from './selection'
-import { deleteObjects, getObjectLinkFragment, restrictionStore } from './utils'
-import contact from '@hcengineering/contact'
+import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
+import contact, { includesAny } from '@hcengineering/contact'
 import { locationToUrl } from '@hcengineering/ui'
 import { get } from 'svelte/store'
 
@@ -73,15 +80,18 @@ async function CopyTextToClipboard (
     const text = Array.isArray(doc)
       ? (await Promise.all(doc.map(async (d) => await getText(d, props.props)))).join(',')
       : await getText(doc, props.props)
-    await navigator.clipboard.writeText(text)
+    if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text)
+    } else copyTextToClipboardOldBrowser(text)
   }
 }
 
 function Delete (
   object: Doc | Doc[],
   evt: Event,
-  props: {
-    skipCheck: boolean
+  props?: {
+    skipCheck?: boolean
+    afterDelete?: () => Promise<void>
   }
 ): void {
   const skipCheck = props?.skipCheck ?? false
@@ -91,10 +101,15 @@ function Delete (
       object,
       skipCheck,
       deleteAction: async () => {
-        const objs = Array.isArray(object) ? object : [object]
-        await deleteObjects(getClient(), objs, skipCheck).catch((err) => {
-          console.error(err)
-        })
+        try {
+          const objs = Array.isArray(object) ? object : [object]
+          await deleteObjects(getClient(), objs, skipCheck)
+          if (props?.afterDelete !== undefined) {
+            await props.afterDelete()
+          }
+        } catch (e) {
+          console.error(e)
+        }
       }
     },
     undefined
@@ -122,14 +137,35 @@ function Archive (object: Space | Space[]): void {
   )
 }
 
+function UnArchive (object: Space | Space[]): void {
+  showPopup(
+    MessageBox,
+    {
+      label: view.string.UnArchive,
+      message: view.string.UnArchiveConfirm,
+      params: { count: Array.isArray(object) ? object.length : 1 },
+      action: async () => {
+        const objs = Array.isArray(object) ? object : [object]
+        const client = getClient()
+        const promises: Array<Promise<TxResult>> = []
+        for (const obj of objs) {
+          promises.push(client.update(obj, { archived: false }))
+        }
+        await Promise.all(promises)
+      }
+    },
+    undefined
+  )
+}
+
 async function Leave (object: Space | Space[]): Promise<void> {
   const client = getClient()
   const promises: Array<Promise<TxResult>> = []
   const objs = Array.isArray(object) ? object : [object]
-  const me = getCurrentAccount()._id
+  const mySocialIds = getCurrentAccount().socialIds
   for (const obj of objs) {
-    if (obj.members.includes(me)) {
-      promises.push(client.update(obj, { $pull: { members: me } }))
+    if (includesAny(obj.members, mySocialIds)) {
+      promises.push(client.update(obj, { $pull: { members: { $in: mySocialIds } } }))
     }
   }
   await Promise.all(promises)
@@ -139,10 +175,10 @@ async function Join (object: Space | Space[]): Promise<void> {
   const client = getClient()
   const promises: Array<Promise<TxResult>> = []
   const objs = Array.isArray(object) ? object : [object]
-  const me = getCurrentAccount()._id
+  const myAcc = getCurrentAccount()
   for (const obj of objs) {
-    if (!obj.members.includes(me)) {
-      promises.push(client.update(obj, { $push: { members: me } }))
+    if (!includesAny(obj.members, myAcc.socialIds)) {
+      promises.push(client.update(obj, { $push: { members: myAcc.primarySocialId } }))
     }
   }
   await Promise.all(promises)
@@ -405,7 +441,9 @@ async function ShowEditor (
         value: (doc as any)[props.attribute]
       }
     }
+
     if (editor !== undefined) {
+      const identifier = await getObjectId(doc, hierarchy)
       showPopup(
         editor,
         cprops,
@@ -414,7 +452,18 @@ async function ShowEditor (
         },
         (result) => {
           if (result != null) {
-            void updateAttribute(client, doc, doc._class, { key: props.attribute, attr: attribute }, result)
+            const analyticsProps = {
+              objectId: identifier
+            }
+            void updateAttribute(
+              client,
+              doc,
+              doc._class,
+              { key: props.attribute, attr: attribute },
+              result,
+              false,
+              analyticsProps
+            )
           }
         }
       )
@@ -435,19 +484,13 @@ function UpdateDocument (doc: Doc | Doc[], evt: Event, props: Record<string, any
     }
   }
   if (props?.ask === true) {
-    showPopup(
-      MessageBox,
-      {
-        label: props.label ?? view.string.LabelYes,
-        message: props.message ?? view.string.LabelYes
-      },
-      undefined,
-      (result: boolean) => {
-        if (result) {
-          void update()
-        }
+    showPopup(MessageBox, {
+      label: props.label ?? view.string.LabelYes,
+      message: props.message ?? view.string.LabelYes,
+      action: async () => {
+        await update()
       }
-    )
+    })
   } else {
     void update()
   }
@@ -500,13 +543,30 @@ function AttributeSelector (
   const hierarchy = client.getHierarchy()
   const docArray = Array.isArray(doc) ? doc : [doc]
   const attribute = hierarchy.getAttribute(docArray[0]._class, props.attribute)
-  showPopup(props.actionPopup, { ...props, [props.valueKey ?? 'value']: docArray, width: 'large' }, 'top', (result) => {
-    if (result != null) {
-      for (const docEl of docArray) {
-        void updateAttribute(client, docEl, docEl._class, { key: props.attribute, attr: attribute }, result)
+  showPopup(
+    props.actionPopup,
+    { ...props, [props.valueKey ?? 'value']: docArray, width: 'large' },
+    'top',
+    async (result) => {
+      if (result != null) {
+        for (const docEl of docArray) {
+          const identifier = await getObjectId(docEl, hierarchy)
+          const analyticsProps = {
+            objectId: identifier
+          }
+          void updateAttribute(
+            client,
+            docEl,
+            docEl._class,
+            { key: props.attribute, attr: attribute },
+            result,
+            false,
+            analyticsProps
+          )
+        }
       }
     }
-  })
+  )
 }
 
 async function getPopupAlignment (
@@ -534,6 +594,7 @@ export const actionImpl = {
   CopyTextToClipboard,
   Delete,
   Archive,
+  UnArchive,
   Join,
   Leave,
   Move,

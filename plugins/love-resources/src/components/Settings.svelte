@@ -14,7 +14,7 @@
     if (myPreferences !== undefined) {
       await client.update(myPreferences, { micEnabled: !value })
     } else {
-      const space = getCurrentAccount()._id as string as Ref<Space>
+      const space = getCurrentAccount().uuid as unknown as Ref<Space>
       await client.createDoc(love.class.DevicesPreference, space, {
         attachedTo: space,
         noiseCancellation: true,
@@ -29,7 +29,7 @@
     if (myPreferences !== undefined) {
       await client.update(myPreferences, { camEnabled: !value })
     } else {
-      const space = getCurrentAccount()._id as string as Ref<Space>
+      const space = getCurrentAccount().uuid as unknown as Ref<Space>
       await client.createDoc(love.class.DevicesPreference, space, {
         attachedTo: space,
         noiseCancellation: true,
@@ -47,7 +47,7 @@
     if (myPreferences !== undefined) {
       await client.update(myPreferences, { noiseCancellation: value })
     } else {
-      const space = getCurrentAccount()._id as string as Ref<Space>
+      const space = getCurrentAccount().uuid as unknown as Ref<Space>
       await client.createDoc(love.class.DevicesPreference, space, {
         attachedTo: space,
         noiseCancellation: value,
@@ -61,7 +61,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={love.icon.Love} label={love.string.Settings} size={'large'} isCurrent />
   </Header>
   <div class="flex-row-stretch flex-grow p-10">

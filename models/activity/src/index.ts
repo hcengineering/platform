@@ -31,14 +31,14 @@ import {
   type DocUpdateMessageViewletAttributesConfig,
   type IgnoreActivity,
   type Reaction,
-  type SavedMessage,
-  type ReplyProvider
+  type ReplyProvider,
+  type SavedMessage
 } from '@hcengineering/activity'
 import contact, { type Person } from '@hcengineering/contact'
 import core, {
   DOMAIN_MODEL,
   IndexKind,
-  type Account,
+  type PersonId,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -62,22 +62,27 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
+  TypePersonId,
   UX,
   type Builder
 } from '@hcengineering/model'
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import view, { createAction } from '@hcengineering/model-view'
-import notification from '@hcengineering/notification'
+import presentation from '@hcengineering/model-presentation'
+import view from '@hcengineering/model-view'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
+import { buildActions } from './actions'
+import { buildNotifications } from './notification'
 import activity from './plugin'
 
 export { activityId } from '@hcengineering/activity'
 export { activityOperation, migrateMessagesSpace } from './migration'
 
 export const DOMAIN_ACTIVITY = 'activity' as Domain
+export const DOMAIN_USER_MENTION = 'user_mention' as Domain
+export const DOMAIN_REACTION = 'reaction' as Domain
 
 @Mixin(activity.mixin.ActivityDoc, core.class.Class)
 export class TActivityDoc extends TClass implements ActivityDoc {
@@ -123,7 +128,7 @@ export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMess
 
   @Prop(TypeRef(core.class.TxCUD), core.string.Object)
   // @Index(IndexKind.Indexed)
-    txId!: Ref<TxCUD<Doc>>
+    txId?: Ref<TxCUD<Doc>>
 
   @Prop(TypeString(), core.string.Object)
   // @Index(IndexKind.Indexed)
@@ -151,6 +156,9 @@ export class TActivityReference extends TActivityMessage implements ActivityRefe
   @Prop(TypeMarkup(), activity.string.Message)
   @Index(IndexKind.FullText)
     message!: string
+
+  @Prop(TypeTimestamp(), activity.string.Edit)
+    editedOn?: Timestamp
 }
 
 @Model(activity.class.ActivityInfoMessage, activity.class.ActivityMessage)
@@ -194,11 +202,8 @@ export class TDocUpdateMessageViewlet extends TDoc implements DocUpdateMessageVi
 
 @Model(activity.class.ActivityExtension, core.class.Doc, DOMAIN_MODEL)
 export class TActivityExtension extends TDoc implements ActivityExtension {
-  @Prop(TypeRef(core.class.Class), core.string.Class)
-  @Index(IndexKind.Indexed)
-    ofClass!: Ref<Class<Doc>>
-
-  components!: Record<ActivityExtensionKind, AnyComponent>
+  ofClass!: Ref<Class<Doc>>
+  components!: Record<ActivityExtensionKind, { component: AnyComponent, props?: Record<string, any> }>
 }
 
 @Model(activity.class.ActivityMessagesFilter, core.class.Doc, DOMAIN_MODEL)
@@ -208,7 +213,7 @@ export class TActivityMessagesFilter extends TDoc implements ActivityMessagesFil
   filter!: Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
 }
 
-@Model(activity.class.Reaction, core.class.AttachedDoc, DOMAIN_ACTIVITY)
+@Model(activity.class.Reaction, core.class.AttachedDoc, DOMAIN_REACTION)
 @UX(activity.string.Reactions)
 export class TReaction extends TAttachedDoc implements Reaction {
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
@@ -222,8 +227,8 @@ export class TReaction extends TAttachedDoc implements Reaction {
   @Prop(TypeString(), activity.string.Emoji)
     emoji!: string
 
-  @Prop(TypeRef(core.class.Account), view.string.Created)
-    createBy!: Ref<Account>
+  @Prop(TypePersonId(), view.string.Created)
+    createBy!: PersonId
 }
 
 @Model(activity.class.SavedMessage, preference.class.Preference)
@@ -243,7 +248,7 @@ export class TReplyProvider extends TDoc implements ReplyProvider {
   function!: Resource<(message: ActivityMessage) => Promise<void>>
 }
 
-@Model(activity.class.UserMentionInfo, core.class.AttachedDoc, DOMAIN_ACTIVITY)
+@Model(activity.class.UserMentionInfo, core.class.AttachedDoc, DOMAIN_USER_MENTION)
 export class TUserMentionInfo extends TAttachedDoc {
   user!: Ref<Person>
   content!: string
@@ -335,20 +340,8 @@ export function createModel (builder: Builder): void {
     activity.ids.ReactionAddedActivityViewlet
   )
 
-  builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy', 'repliedPersons']
-  })
-
-  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy', 'repliedPersons']
-  })
-
   builder.mixin(activity.class.ActivityMessage, core.class.Class, view.mixin.ObjectPanel, {
     component: view.component.AttachedDocPanel
-  })
-
-  builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
-    labelPresenter: activity.component.ActivityMessageNotificationLabel
   })
 
   builder.mixin<Class<DocUpdateMessage>, IndexingConfiguration<DocUpdateMessage>>(
@@ -371,30 +364,8 @@ export function createModel (builder: Builder): void {
     }
   )
 
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      hidden: false,
-      generated: false,
-      label: activity.string.Reactions,
-      group: activity.ids.ActivityNotificationGroup,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: activity.class.Reaction,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false
-      }
-    },
-    activity.ids.AddReactionNotification
-  )
-
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_ACTIVITY,
-    indexes: [
-      { attachedTo: 1, createdOn: 1 },
-      { attachedTo: 1, createdOn: -1 }
-    ],
     disabled: [
       { modifiedOn: 1 },
       { createdOn: -1 },
@@ -405,112 +376,12 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.AddReaction,
-      label: activity.string.AddReaction,
-      icon: activity.icon.Emoji,
-      input: 'focus',
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      inline: true,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.AddReactionAction
-  )
+  builder.mixin(activity.class.Reaction, core.class.Class, presentation.mixin.InstantTransactions, {
+    txClasses: [core.class.TxCreateDoc]
+  })
 
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.SaveForLater,
-      label: activity.string.SaveForLater,
-      icon: activity.icon.Bookmark,
-      input: 'focus',
-      inline: true,
-      actionProps: {
-        size: 'x-small'
-      },
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      visibilityTester: activity.function.CanSaveForLater,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.SaveForLaterAction
-  )
-
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.RemoveFromSaved,
-      label: activity.string.RemoveFromLater,
-      icon: activity.icon.BookmarkFilled,
-      input: 'focus',
-      inline: true,
-      actionProps: {
-        iconProps: {
-          fill: 'var(--global-accent-TextColor)'
-        }
-      },
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      visibilityTester: activity.function.CanRemoveFromSaved,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.RemoveFromLaterAction
-  )
-
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.PinMessage,
-      label: view.string.Pin,
-      icon: view.icon.Pin,
-      input: 'focus',
-      inline: true,
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      visibilityTester: activity.function.CanPinMessage,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.PinMessageAction
-  )
-
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.UnpinMessage,
-      label: view.string.Unpin,
-      icon: view.icon.Pin,
-      input: 'focus',
-      inline: true,
-      actionProps: {
-        iconProps: {
-          fill: 'var(--global-accent-TextColor)'
-        }
-      },
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      visibilityTester: activity.function.CanUnpinMessage,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.UnpinMessageAction
-  )
+  buildActions(builder)
+  buildNotifications(builder)
 }
 
 export default activity

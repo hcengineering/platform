@@ -244,7 +244,7 @@
         break
       }
 
-      const op = client.apply(oldStatus)
+      const op = client.apply(undefined, 'rename-status')
       for (const d of docs) {
         await op.update(d, { status: newStatus })
       }

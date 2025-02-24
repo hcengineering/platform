@@ -52,6 +52,7 @@
     "@hcengineering/recruit": "^0.6.29",
     "@hcengineering/recruit-resources": "^0.6.0",
     "@hcengineering/setting": "^0.6.17",
+    "@hcengineering/survey": "^0.6.0",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",

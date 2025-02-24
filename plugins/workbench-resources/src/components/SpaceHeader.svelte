@@ -15,13 +15,28 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import core, { WithLookup } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
-  import presentation, { createQuery } from '@hcengineering/presentation'
-  import { AnyComponent, Button, IconAdd, SearchEdit, showPopup } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import { FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { IntlString, Asset } from '@hcengineering/platform'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    AnyComponent,
+    Button,
+    IconAdd,
+    SearchInput,
+    showPopup,
+    Header,
+    LinkWrapper,
+    Breadcrumbs
+  } from '@hcengineering/ui'
+  import view, { ViewOptions, Viewlet } from '@hcengineering/view'
+  import {
+    FilterButton,
+    ViewletSelector,
+    ViewletSettingButton,
+    DocNavLink,
+    classIcon
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import Header from './Header.svelte'
+  import plugin from '../plugin'
 
   export let spaceId: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
@@ -33,15 +48,23 @@
   export let _class: Ref<Class<Doc>> | undefined = undefined
   export let viewOptions: ViewOptions | undefined
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
   const query = createQuery()
   let space: Space | undefined
   const dispatch = createEventDispatcher()
 
   const prevSpaceId = spaceId
 
-  $: query.query(core.class.Space, { _id: spaceId }, (result) => {
-    space = result[0]
-  })
+  $: query.query(
+    core.class.Space,
+    { _id: spaceId },
+    (result) => {
+      space = result[0]
+    },
+    { limit: 1 }
+  )
 
   function showCreateDialog (ev: Event) {
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, 'top')
@@ -52,15 +75,43 @@
     dispatch('search', '')
   }
 
-  // $: twoRows = $deviceInfo.twoRows
+  let description: string
+  let editor: AnyComponent
+  let icon: Asset | undefined = undefined
+  $: if (space) {
+    editor = getEditor(space._class) ?? plugin.component.SpacePanel
+    icon = classIcon(client, space._class)
+    description = space.description
+  }
+
+  function getEditor (_class: Ref<Class<Doc>>): AnyComponent | undefined {
+    const clazz = hierarchy.getClass(_class)
+    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
+    if (editorMixin?.editor == null && clazz.extends != null) return getEditor(clazz.extends)
+    return editorMixin.editor
+  }
 </script>
 
 {#if space}
-  <div class="ac-header full divide caption-height">
-    <Header {space} />
+  <Header hideActions={createItemDialog === undefined}>
+    <svelte:fragment slot="beforeTitle">
+      <ViewletSelector {viewletQuery} ignoreFragment bind:viewlet bind:viewlets />
+      <ViewletSettingButton bind:viewOptions bind:viewlet />
+    </svelte:fragment>
 
-    <div class="ac-header-full medium-gap mb-1">
-      <ViewletSelector {viewletQuery} bind:viewlet bind:viewlets />
+    <DocNavLink object={space} component={editor} noUnderline>
+      <Breadcrumbs items={[{ icon, title: space.name }]} size={'large'} hideAfter={description === ''}>
+        <svelte:fragment slot="afterLabel">
+          <LinkWrapper text={description} />
+        </svelte:fragment>
+      </Breadcrumbs>
+    </DocNavLink>
+
+    <svelte:fragment slot="search">
+      <SearchInput bind:value={search} collapsed on:change={() => dispatch('search', search)} />
+      <FilterButton {_class} space={spaceId} />
+    </svelte:fragment>
+    <svelte:fragment slot="actions">
       {#if createItemDialog}
         <Button
           icon={IconAdd}
@@ -71,20 +122,8 @@
           }}
         />
       {/if}
-    </div>
-  </div>
-  <div class="ac-header full divide search-start">
-    <div class="ac-header-full small-gap">
-      <SearchEdit bind:value={search} on:change={() => dispatch('search', search)} />
-      <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-      <div class="buttons-divider" />
-      <FilterButton {_class} space={spaceId} />
-    </div>
-    <div class="ac-header-full medium-gap">
-      <ViewletSettingButton bind:viewOptions bind:viewlet />
-      <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    </div>
-  </div>
+    </svelte:fragment>
+  </Header>
 {:else}
-  <div class="ac-header full divide caption-height" />
+  <div class="hulyHeader-container" />
 {/if}

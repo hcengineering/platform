@@ -19,10 +19,12 @@
     Breadcrumbs,
     Button,
     Icon,
-    IconClose,
-    IconDetails,
     Label,
-    SearchEdit
+    SearchInput,
+    Header,
+    HeaderAdaptive,
+    IconSettings,
+    IconToDetails
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
@@ -30,9 +32,12 @@
   import { getClient } from '@hcengineering/presentation'
   import { Doc, Ref } from '@hcengineering/core'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
+  import workbench from '@hcengineering/workbench'
+  import { PresenceAvatars } from '@hcengineering/presence-resources'
 
   import { userSearch } from '../index'
-  import { navigateToSpecial } from '../navigation'
+  import chunter from '../plugin'
+  import { navigateToSpecial, openChannelInSidebar } from '../navigation'
   import ChannelMessagesFilter from './ChannelMessagesFilter.svelte'
 
   export let object: Doc | undefined = undefined
@@ -41,110 +46,144 @@
   export let label: string | undefined = undefined
   export let intlLabel: IntlString | undefined = undefined
   export let description: string | undefined = undefined
-  export let allowClose = false
-  export let canOpen = false
-  export let withAside = false
-  export let isAsideShown = false
+  export let allowClose: boolean = false
+  export let allowFullsize: boolean = false
+  export let canOpen: boolean = false
+  export let withAside: boolean = false
+  export let isAsideShown: boolean = false
   export let titleKind: 'default' | 'breadcrumbs' = 'default'
-  export let withFilters = false
+  export let withFilters: boolean = false
+  export let withSearch: boolean = true
+  export let withPresence: boolean = true
   export let filters: Ref<ActivityMessagesFilter>[] = []
+  export let adaptive: HeaderAdaptive = 'default'
+  export let hideActions: boolean = false
+  export let canOpenInSidebar: boolean = false
+  export let closeOnEscape: boolean = true
+  export let realWidth: number | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  let searchValue: string = ''
+  export let searchValue: string = ''
   userSearch.subscribe((v) => (searchValue = v))
 </script>
 
-<div class="header ac-header__wrap-title flex-grow">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="ac-header__wrap-title" on:click>
-    {#if allowClose}
-      <Button
-        focusIndex={10001}
-        icon={IconClose}
-        iconProps={{ size: 'medium' }}
-        kind={'icon'}
-        on:click={() => {
-          dispatch('close')
-        }}
-      />
-      <div class="antiHSpacer x2" />
-    {/if}
+<Header
+  {allowFullsize}
+  type={allowClose ? 'type-aside' : 'type-component'}
+  hideBefore={false}
+  hideActions={!((canOpen && object) || withAside || $$slots.actions || canOpenInSidebar) || hideActions}
+  hideDescription={!description}
+  adaptive={adaptive !== 'default' ? adaptive : withFilters ? 'freezeActions' : 'disabled'}
+  {closeOnEscape}
+  bind:realWidth
+  on:click
+  on:close
+>
+  <svelte:fragment slot="beforeTitle">
     <slot />
-    {#if titleKind === 'breadcrumbs'}
-      <Breadcrumbs
-        items={[
-          {
-            icon,
-            iconProps,
-            title: label,
-            label: label ? undefined : intlLabel
-          }
-        ]}
-      />
-    {:else}
+  </svelte:fragment>
+
+  {#if titleKind === 'breadcrumbs'}
+    <Breadcrumbs
+      items={[
+        {
+          icon,
+          iconProps,
+          title: label,
+          label: label ? undefined : intlLabel
+        }
+      ]}
+      currentOnly
+    />
+  {:else}
+    <div class="hulyHeader-titleGroup">
       {#if icon}
-        <div class="ac-header__icon pl-2">
+        <div class="content-color mr-2 pl-2">
           <Icon {icon} size={'small'} {iconProps} />
         </div>
       {/if}
       {#if label}
-        <span class="title overflow-label heading-medium-16 mr-2">{label}</span>
+        <span class="secondary-textColor overflow-label heading-medium-16 line-height-auto mr-2">{label}</span>
       {:else if intlLabel}
-        <div class="title overflow-label mr-2">
+        <div class="secondary-textColor overflow-label mr-2">
           <Label label={intlLabel} />
         </div>
       {/if}
-    {/if}
-  </div>
-  {#if description}
-    <div class="ac-header__description over-underline" style="flex: 1" title={description}>{description}</div>
+    </div>
   {/if}
-</div>
-{#if withFilters}
-  <ChannelMessagesFilter bind:selectedFilters={filters} />
-{/if}
-{#if canOpen && object}
-  <Button
-    icon={view.icon.Open}
-    iconProps={{ size: 'small' }}
-    kind={'icon'}
-    on:click={() => {
-      if (object) {
-        openDoc(client.getHierarchy(), object)
-      }
-    }}
-  />
-{/if}
-<SearchEdit
-  value={searchValue}
-  on:change={(ev) => {
-    userSearch.set(ev.detail)
 
-    if (ev.detail !== '') {
-      navigateToSpecial('chunterBrowser')
-    }
-  }}
-/>
-{#if withAside}
-  <Button
-    icon={IconDetails}
-    iconProps={{ size: 'medium', filled: isAsideShown }}
-    kind={'icon'}
-    selected={isAsideShown}
-    on:click={() => dispatch('aside-toggled')}
-  />
-{/if}
+  <svelte:fragment slot="description">
+    {#if description}
+      <div class="overflow-label content-dark-color text-sm pl-2 mt--1" title={description}>{description}</div>
+    {/if}
+  </svelte:fragment>
 
-<style lang="scss">
-  .title {
-    cursor: pointer;
-    color: var(--global-secondary-TextColor);
+  <svelte:fragment slot="presence">
+    {#if withPresence && object}
+      <PresenceAvatars {object} size="x-small" limit={4} />
+    {/if}
+  </svelte:fragment>
 
-    &:hover {
-      color: var(--global-primary-LinkColor);
-    }
-  }
-</style>
+  <svelte:fragment slot="search" let:doubleRow>
+    {#if withSearch}
+      <SearchInput
+        collapsed
+        bind:value={searchValue}
+        on:change={(ev) => {
+          userSearch.set(ev.detail)
+
+          if (ev.detail !== '') {
+            navigateToSpecial('chunterBrowser')
+          }
+        }}
+      />
+      {#if withFilters}
+        <ChannelMessagesFilter bind:selectedFilters={filters} />
+      {/if}
+      <slot name="search" {doubleRow} />
+    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="actions" let:doubleRow>
+    <slot name="actions" {doubleRow} />
+    {#if canOpenInSidebar}
+      <Button
+        icon={IconToDetails}
+        iconProps={{ size: 'small' }}
+        kind={'icon'}
+        showTooltip={{ label: workbench.string.OpenInSidebar }}
+        dataId="open-in-sidebar"
+        on:click={() => {
+          if (object !== undefined) {
+            void openChannelInSidebar(object._id, object._class, object, undefined, true)
+          }
+        }}
+      />
+    {/if}
+    {#if canOpen && object}
+      <Button
+        icon={view.icon.Open}
+        iconProps={{ size: 'small' }}
+        kind={'icon'}
+        showTooltip={{ label: view.string.Open }}
+        on:click={() => {
+          if (object !== undefined) {
+            void openDoc(client.getHierarchy(), object)
+          }
+        }}
+      />
+    {/if}
+    {#if withAside}
+      <Button
+        icon={IconSettings}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        dataId="aside-toggle"
+        showTooltip={{ label: chunter.string.Settings }}
+        selected={isAsideShown}
+        on:click={() => dispatch('aside-toggled')}
+      />
+    {/if}
+  </svelte:fragment>
+</Header>

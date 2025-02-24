@@ -1,0 +1,131 @@
+{
+  "localhost:8083": {
+    "key": "tracex",
+    "title": "TraceX",
+    "protocol": "http",
+    "languages": "en",
+    "defaultLanguage": "en",
+    "defaultApplication": "documents",
+    "defaultSpace": "documents:space:QualityDocuments",
+    "defaultSpecial": "",
+    "lastNameFirst": "true",
+    "initWorkspace": "init-ws-qms",
+    "links": [
+      {
+        "rel": "shortcut icon",
+        "type": "image/x-icon",
+        "href": "/tracex/favicon.ico"
+      },
+      {
+        "rel": "icon",
+        "type": "image/svg+xml",
+        "sizes": "any",
+        "href": "/tracex/favicon.svg"
+      },
+      {
+        "rel": "icon",
+        "type": "image/png",
+        "sizes": "16x16",
+        "href": "/tracex/favicon_16.png"
+      },
+      {
+        "rel": "icon",
+        "type": "image/png",
+        "sizes": "32x32",
+        "href": "/tracex/favicon_32.png"
+      },
+      {
+        "rel": "icon",
+        "type": "image/png",
+        "sizes": "192x192",
+        "href": "/tracex/favicon_192.png"
+      }
+    ]
+  },
+  "host.docker.internal:8083": {
+    "key": "tracex-docker",
+    "title": "TraceX",
+    "protocol": "http",
+    "languages": "en",
+    "defaultLanguage": "en",
+    "defaultApplication": "documents",
+    "defaultSpace": "documents:space:QualityDocuments",
+    "defaultSpecial": "",
+    "lastNameFirst": "true",
+    "initWorkspace": "init-ws-qms",
+    "links": [
+      {
+        "rel": "shortcut icon",
+        "type": "image/x-icon",
+        "href": "/tracex/favicon.ico"
+      },
+      {
+        "rel": "icon",
+        "type": "image/svg+xml",
+        "sizes": "any",
+        "href": "/tracex/favicon.svg"
+      },
+      {
+        "rel": "icon",
+        "type": "image/png",
+        "sizes": "16x16",
+        "href": "/tracex/favicon_16.png"
+      },
+      {
+        "rel": "icon",
+        "type": "image/png",
+        "sizes": "32x32",
+        "href": "/tracex/favicon_32.png"
+      },
+      {
+        "rel": "icon",
+        "type": "image/png",
+        "sizes": "192x192",
+        "href": "/tracex/favicon_192.png"
+      }
+    ]
+  },
+  "localhost:8080": {
+    "key": "tracex-dev",
+    "title": "TraceX",
+    "protocol": "http",
+    "languages": "en",
+    "defaultLanguage": "en",
+    "defaultApplication": "documents",
+    "defaultSpace": "documents:space:QualityDocuments",
+    "defaultSpecial": "",
+    "lastNameFirst": "true",
+    "initWorkspace": "init-ws-qms",
+    "links": [
+      {
+        "rel": "shortcut icon",
+        "type": "image/x-icon",
+        "href": "/tracex/favicon.ico"
+      },
+      {
+        "rel": "icon",
+        "type": "image/svg+xml",
+        "sizes": "any",
+        "href": "/tracex/favicon.svg"
+      },
+      {
+        "rel": "icon",
+        "type": "image/png",
+        "sizes": "16x16",
+        "href": "/tracex/favicon_16.png"
+      },
+      {
+        "rel": "icon",
+        "type": "image/png",
+        "sizes": "32x32",
+        "href": "/tracex/favicon_32.png"
+      },
+      {
+        "rel": "icon",
+        "type": "image/png",
+        "sizes": "192x192",
+        "href": "/tracex/favicon_192.png"
+      }
+    ]
+  }
+}

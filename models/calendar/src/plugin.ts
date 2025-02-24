@@ -28,6 +28,7 @@ import {
   type Viewlet,
   type ViewletDescriptor
 } from '@hcengineering/view'
+import { type Widget } from '@hcengineering/workbench'
 
 export default mergeIds(calendarId, calendar, {
   component: {
@@ -36,7 +37,8 @@ export default mergeIds(calendarId, calendar, {
     EventPresenter: '' as AnyComponent,
     CalendarIntegrationIcon: '' as AnyComponent,
     CalendarEventPresenter: '' as AnyComponent,
-    IntegrationConfigure: '' as AnyComponent
+    IntegrationConfigure: '' as AnyComponent,
+    CalendarWidget: '' as AnyComponent
   },
   action: {
     SaveEventReminder: '' as Ref<Action>,
@@ -66,6 +68,7 @@ export default mergeIds(calendarId, calendar, {
   },
   ids: {
     UpdateRemainderActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
-    CalendarNotificationGroup: '' as Ref<NotificationGroup>
+    CalendarNotificationGroup: '' as Ref<NotificationGroup>,
+    CalendarWidget: '' as Ref<Widget>
   }
 })

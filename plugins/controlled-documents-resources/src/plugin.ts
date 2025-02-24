@@ -14,14 +14,13 @@
 //
 import documents, {
   type Document,
-  type DocumentSection,
   type DocumentState,
   type DocumentSpace,
   documentsId
 } from '@hcengineering/controlled-documents'
-import { type Client, type AttachedData, type Doc, type Ref, type Space } from '@hcengineering/core'
+import { type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
-import { type AnyComponent, type Location } from '@hcengineering/ui'
+import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 import type { KeyFilter, SortFunc, ViewActionAvailabilityFunction } from '@hcengineering/view'
 
 export default mergeIds(documentsId, documents, {
@@ -32,10 +31,6 @@ export default mergeIds(documentsId, documents, {
     ProjectPresenter: '' as AnyComponent,
     ProjectRefPresenter: '' as AnyComponent,
     Revision: '' as AnyComponent,
-    EditTemplateSections: '' as AnyComponent,
-    CollaborativeSectionEditor: '' as AnyComponent,
-    AttachmentsSectionEditor: '' as AnyComponent,
-    DocumentSectionDeletePopup: '' as AnyComponent,
 
     // New model components
     EditDocumentCategory: '' as AnyComponent,
@@ -51,7 +46,7 @@ export default mergeIds(documentsId, documents, {
   },
   string: {
     ID: '' as IntlString,
-    DocumentApprovals: '' as IntlString,
+    ValidationWorkflow: '' as IntlString,
     Cancel: '' as IntlString,
     NewDocumentDialogClose: '' as IntlString,
     NewDocumentCloseNote: '' as IntlString,
@@ -86,7 +81,6 @@ export default mergeIds(documentsId, documents, {
     DocumentPrefix: '' as IntlString,
     DocumentCodePlaceholder: '' as IntlString,
     DocumentPrefixPlaceholder: '' as IntlString,
-    TemplateSectionTitle: '' as IntlString,
     DocumentTemplateCreateLabel: '' as IntlString,
     DomainTitle: '' as IntlString,
     MetaAbstract: '' as IntlString,
@@ -115,12 +109,6 @@ export default mergeIds(documentsId, documents, {
     MakeDocumentEffective: '' as IntlString,
     CreateDraftQmsTemplates: '' as IntlString,
 
-    DocTemplateDeleteSectionTitle: '' as IntlString,
-    DocTemplateDeleteSectionConfirm: '' as IntlString,
-
-    AddSectionAbove: '' as IntlString,
-    AddSectionBelow: '' as IntlString,
-
     SelectReviewers: '' as IntlString,
     SelectApprovers: '' as IntlString,
     RequestsToReviewTheDoc: '' as IntlString,
@@ -128,9 +116,11 @@ export default mergeIds(documentsId, documents, {
 
     ConfirmApproval: '' as IntlString,
     ConfirmRejection: '' as IntlString,
+    ConfirmApprovalSubmission: '' as IntlString,
     ProvideRejectionReason: '' as IntlString,
     RejectionReason: '' as IntlString,
     ConfirmReviewCompletion: '' as IntlString,
+    ConfirmReviewSubmission: '' as IntlString,
     AddApprovalTitle: '' as IntlString,
     AddApprovalDescription1: '' as IntlString,
     AddApprovalDescription2: '' as IntlString,
@@ -138,9 +128,6 @@ export default mergeIds(documentsId, documents, {
     AddApprovalDescription4: '' as IntlString,
     NoApprovalsDescription: '' as IntlString,
     CurrentVersion: '' as IntlString,
-
-    EditDescription: '' as IntlString,
-    EditGuidance: '' as IntlString,
 
     NewDocument: '' as IntlString,
     NewDocumentCategory: '' as IntlString,
@@ -150,8 +137,6 @@ export default mergeIds(documentsId, documents, {
     TemplateStepTitle: '' as IntlString,
     InfoStepTitle: '' as IntlString,
     TeamStepTitle: '' as IntlString,
-
-    Duplicate: '' as IntlString,
 
     TitleAndDescr: '' as IntlString,
     AbstractPlaceholder: '' as IntlString,
@@ -188,6 +173,9 @@ export default mergeIds(documentsId, documents, {
     MarkDocAsDeleted: '' as IntlString,
     MarkDocsAsDeleted: '' as IntlString,
     MarkDocAsDeletedConfirm: '' as IntlString,
+
+    ArchiveDocs: '' as IntlString,
+    ArchiveDocsConfirm: '' as IntlString,
 
     DocumentInHierarchy: '' as IntlString,
     FirstDraftVersion: '' as IntlString,
@@ -236,33 +224,28 @@ export default mergeIds(documentsId, documents, {
     ToReview: '' as IntlString
   },
   function: {
-    AttachmentsSectionCreator: '' as Resource<
-    (
-      document: Document,
-      section: AttachedData<DocumentSection>,
-      copyFrom?: DocumentSection
-    ) => AttachedData<DocumentSection>
-    >,
     CanCreateTemplate: '' as Resource<ViewActionAvailabilityFunction<DocumentSpace>>,
     CanCreateDocument: '' as Resource<ViewActionAvailabilityFunction<DocumentSpace>>,
+    CanCreateFolder: '' as Resource<ViewActionAvailabilityFunction<DocumentSpace>>,
     CanCreateChildTemplate: '' as Resource<ViewActionAvailabilityFunction<Document>>,
     CanCreateChildDocument: '' as Resource<ViewActionAvailabilityFunction<Document>>,
+    CanCreateChildFolder: '' as Resource<ViewActionAvailabilityFunction<Document>>,
+    CanRenameFolder: '' as Resource<ViewActionAvailabilityFunction<Document>>,
+    CanDeleteFolder: '' as Resource<ViewActionAvailabilityFunction<Document>>,
     CheckIsDocumentCreationDisabled: '' as Resource<() => Promise<boolean>>,
     CheckAreTemplatesDisabled: '' as Resource<() => Promise<boolean>>,
     CheckAreDomainsDisabled: '' as Resource<() => Promise<boolean>>,
     CheckIsLibraryDisabled: '' as Resource<() => Promise<boolean>>,
-    CollaborativeSectionCreator: '' as Resource<
-    (
-      document: Document,
-      section: AttachedData<DocumentSection>,
-      copyFrom?: DocumentSection
-    ) => AttachedData<DocumentSection>
-    >,
     DocumentStateSort: '' as SortFunc,
     GetAllDocumentStates: '' as Resource<() => Promise<DocumentState[]>>,
     GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,
     GetDocumentMetaLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
-    IsLatestDraftDoc: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanDeleteDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanArchiveDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanMakeDocumentObsolete: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanOpenDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanPrintDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanTransferDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     ControlledDocumentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

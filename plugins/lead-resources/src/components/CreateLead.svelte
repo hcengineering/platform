@@ -16,7 +16,7 @@
 <script lang="ts">
   import contact, { Contact } from '@hcengineering/contact'
   import { UserBox } from '@hcengineering/contact-resources'
-  import {
+  import core, {
     AccountRole,
     AttachedData,
     AttachedDoc,
@@ -27,7 +27,7 @@
     SortingOrder,
     Status as TaskStatus
   } from '@hcengineering/core'
-  import type { Customer, Funnel, Lead } from '@hcengineering/lead'
+  import { Customer, Funnel, Lead, LeadEvents } from '@hcengineering/lead'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, createQuery, getClient, InlineAttributeBar, SpaceSelector } from '@hcengineering/presentation'
   import task, { getStates, makeRank, TaskType } from '@hcengineering/task'
@@ -36,6 +36,7 @@
   import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let space: Ref<Funnel>
   export let customer: Ref<Contact> | null = null
@@ -84,7 +85,7 @@
   let kind: Ref<TaskType> | undefined = undefined
 
   async function createLead () {
-    const sequence = await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead })
+    const sequence = await client.findOne(core.class.Sequence, { attachedTo: lead.class.Lead })
     if (sequence === undefined || customer == null) {
       throw new Error('Lead  creation failed')
     }
@@ -119,11 +120,12 @@
         customerInstance._class,
         customerInstance.space,
         lead.mixin.Customer,
-        { description: '' }
+        { customerDescription: null }
       )
     }
 
     await client.addCollection(lead.class.Lead, _space, customer, lead.mixin.Customer, 'leads', value, leadId)
+    Analytics.handleEvent(LeadEvents.LeadCreated, { id: `LEAD-${number}`, customer })
     dispatch('close')
   }
 

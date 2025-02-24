@@ -28,6 +28,7 @@
   export let bColor: string | undefined = undefined
   export let withStatus: boolean = false
   export let element: HTMLElement
+  export let adaptiveName: boolean = false
 
   export function pulse (): void {
     if (element === undefined) return
@@ -42,18 +43,25 @@
   }
 
   let fontSize: number = 16
+  let imgError = false
+
+  function handleImgError (): void {
+    imgError = true
+  }
+
+  $: hasImg = url != null && !imgError
 </script>
 
-{#if size === 'full' && !url && displayName && displayName !== ''}
+{#if (size === 'full' || adaptiveName) && !url && displayName && displayName !== ''}
   <div
     bind:this={element}
     class="hulyAvatar-container hulyAvatarSize-{size} {variant}"
-    class:no-img={!url && color}
-    class:bordered={!url && color === undefined}
+    class:no-img={!hasImg && color}
+    class:bordered={!hasImg && color === undefined}
     class:border={bColor !== undefined}
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
+    style:background-color={color && !hasImg ? color.icon : 'var(--theme-button-default)'}
     use:resizeObserver={(element) => {
       fontSize = element.clientWidth * 0.6
     }}
@@ -69,15 +77,15 @@
   <div
     bind:this={element}
     class="hulyAvatar-container hulyAvatarSize-{size} stat {variant}"
-    class:no-img={!url && color}
-    class:bordered={!url && color === undefined}
+    class:no-img={!hasImg && color}
+    class:bordered={!hasImg && color === undefined}
     class:border={bColor !== undefined}
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
+    style:background-color={color && !hasImg ? color.icon : 'var(--theme-button-default)'}
   >
-    {#if url}
-      <img class="hulyAvatarSize-{size} ava-image" src={url} {srcset} alt={''} />
+    {#if url && !imgError}
+      <img class="hulyAvatarSize-{size} ava-image" src={url} {srcset} alt={''} on:error={handleImgError} />
     {:else if displayName && displayName !== ''}
       <div
         class="ava-text"

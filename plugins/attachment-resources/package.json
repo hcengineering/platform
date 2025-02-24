@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
@@ -47,12 +48,16 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/preference": "^0.6.13",
     "@hcengineering/presentation": "^0.6.3",
+    "@hcengineering/text": "^0.6.5",
     "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
+    "@hcengineering/workbench": "^0.6.16",
     "filesize": "^8.0.3",
-    "svelte": "^4.2.12"
+    "svelte": "^4.2.19"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,9 +15,9 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, Blob as PlatformBlob, WorkspaceId, metricsAggregate } from '@hcengineering/core'
-import { Token, decodeToken } from '@hcengineering/server-token'
-import { StorageAdapter, removeAllObjects } from '@hcengineering/storage'
+import { MeasureContext, Blob as PlatformBlob, WorkspaceIds, metricsAggregate, type Ref } from '@hcengineering/core'
+import { TokenError, decodeToken } from '@hcengineering/server-token'
+import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
 import cors from 'cors'
 import express, { Request, Response } from 'express'
@@ -25,38 +25,37 @@ import fileUpload, { UploadedFile } from 'express-fileupload'
 import expressStaticGzip from 'express-static-gzip'
 import https from 'https'
 import morgan from 'morgan'
-import { join, resolve } from 'path'
+import { join, normalize, resolve } from 'path'
 import { cwd } from 'process'
-import sharp from 'sharp'
+import sharp, { type Sharp } from 'sharp'
 import { v4 as uuid } from 'uuid'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { preConditions } from './utils'
 
-import fs from 'fs'
+import fs, { createReadStream, mkdtempSync } from 'fs'
+import { rm, writeFile } from 'fs/promises'
+import { tmpdir } from 'os'
 
-const cacheControlValue = 'public, max-age=365d'
+const cacheControlValue = 'public, no-cache, must-revalidate, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
-
-type SupportedFormat = 'jpeg' | 'avif' | 'heif' | 'webp' | 'png'
-const supportedFormats: SupportedFormat[] = ['avif', 'webp', 'heif', 'jpeg', 'png']
 
 async function storageUpload (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   file: UploadedFile
 ): Promise<string> {
-  const id = uuid()
-
+  const uuid = file.name
   const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
     'storage upload',
-    { workspace: workspace.name },
-    async (ctx) => await storageAdapter.put(ctx, workspace, id, data, file.mimetype, file.size),
+    { workspace: wsIds.uuid },
+    (ctx) => storageAdapter.put(ctx, wsIds, uuid, data, file.mimetype, file.size),
     { file: file.name, contentType: file.mimetype }
   )
 
-  ctx.info('minio upload', resp)
-  return id
+  ctx.info('storage upload', resp)
+  return uuid
 }
 
 function getRange (range: string, size: number): [number, number] {
@@ -82,9 +81,10 @@ async function getFileRange (
   stat: PlatformBlob,
   range: string,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   res: Response
 ): Promise<void> {
+  const uuid = stat._id
   const size: number = stat.size
 
   const [start, end] = getRange(range, size)
@@ -105,15 +105,17 @@ async function getFileRange (
         const dataStream = await ctx.with(
           'partial',
           {},
-          async (ctx) => await client.partial(ctx, workspace, stat._id, start, end - start + 1),
+          (ctx) => client.partial(ctx, wsIds, stat._id, start, end - start + 1),
           {}
         )
         res.writeHead(206, {
           Connection: 'keep-alive',
+          'Keep-Alive': 'timeout=5',
           'Content-Range': `bytes ${start}-${end}/${size}`,
           'Accept-Ranges': 'bytes',
           'Content-Length': end - start + 1,
           'Content-Type': stat.contentType,
+          'Content-Security-Policy': "default-src 'none';",
           Etag: stat.etag,
           'Last-Modified': new Date(stat.modifiedOn).toISOString()
         })
@@ -127,18 +129,22 @@ async function getFileRange (
             resolve()
           })
           dataStream.on('error', (err) => {
-            ctx.error('error receive stream', { workspace: workspace.name, uuid, error: err })
+            ctx.error('error receive stream', { workspace: wsIds.uuid, uuid, error: err })
             Analytics.handleError(err)
+
             res.end()
+            dataStream.destroy()
             reject(err)
-          })
-          dataStream.on('close', () => {
-            res.end()
           })
         })
       } catch (err: any) {
-        if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
-          ctx.info('No such key', { workspace: workspace.name, uuid })
+        if (
+          err?.code === 'NoSuchKey' ||
+          err?.code === 'NotFound' ||
+          err?.message === 'No such key' ||
+          err?.Code === 'NoSuchKey'
+        ) {
+          ctx.info('No such key', { workspace: wsIds.uuid, uuid })
           res.status(404).send()
           return
         } else {
@@ -156,7 +162,7 @@ async function getFile (
   ctx: MeasureContext,
   stat: PlatformBlob,
   client: StorageAdapter,
-  workspace: WorkspaceId,
+  wsIds: WorkspaceIds,
   req: Request,
   res: Response
 ): Promise<void> {
@@ -172,14 +178,23 @@ async function getFile (
       'content-type': stat.contentType,
       etag: stat.etag,
       'last-modified': new Date(stat.modifiedOn).toISOString(),
-      'cache-control': cacheControlValue
+      'cache-control': cacheControlValue,
+      Connection: 'keep-alive',
+      'Keep-Alive': 'timeout=5'
     })
     res.end()
     return
   }
   if (preConditions.IfUnmodifiedSince(req.headers, { lastModified: new Date(stat.modifiedOn) }) === 'failed') {
     // Send 412 (Precondition Failed)
-    res.statusCode = 412
+    res.writeHead(412, {
+      'content-type': stat.contentType,
+      etag: stat.etag,
+      'last-modified': new Date(stat.modifiedOn).toISOString(),
+      'cache-control': cacheControlValue,
+      Connection: 'keep-alive',
+      'Keep-Alive': 'timeout=5'
+    })
     res.end()
     return
   }
@@ -189,12 +204,16 @@ async function getFile (
     { contentType: stat.contentType },
     async (ctx) => {
       try {
-        const dataStream = await ctx.with('readable', {}, async (ctx) => await client.get(ctx, workspace, stat._id))
+        const dataStream = await ctx.with('readable', {}, (ctx) => client.get(ctx, wsIds, stat._id))
         res.writeHead(200, {
           'Content-Type': stat.contentType,
+          'Content-Security-Policy': "default-src 'none';",
+          'Content-Length': stat.size,
           Etag: stat.etag,
           'Last-Modified': new Date(stat.modifiedOn).toISOString(),
-          'Cache-Control': cacheControlValue
+          'Cache-Control': cacheControlValue,
+          Connection: 'keep-alive',
+          'Keep-Alive': 'timeout=5'
         })
 
         dataStream.pipe(res)
@@ -207,11 +226,14 @@ async function getFile (
           dataStream.on('error', function (err) {
             Analytics.handleError(err)
             ctx.error('error', { err })
+
+            res.end()
+            dataStream.destroy()
             reject(err)
           })
         })
       } catch (err: any) {
-        ctx.error('get-file-error', { workspace: workspace.name, err })
+        ctx.error('get-file-error', { workspace: wsIds.uuid, err })
         Analytics.handleError(err)
         res.status(500).send()
       }
@@ -227,37 +249,70 @@ async function getFile (
 export function start (
   ctx: MeasureContext,
   config: {
-    elasticUrl: string
     storageAdapter: StorageAdapter
     accountsUrl: string
+    accountsUrlInternal?: string
     uploadUrl: string
+    filesUrl: string
     modelVersion: string
+    version: string
     rekoniUrl: string
     telegramUrl: string
     gmailUrl: string
     calendarUrl: string
+    collaborator?: string
     collaboratorUrl: string
-    collaboratorApiUrl: string
     brandingUrl?: string
     previewConfig: string
+    uploadConfig: string
+    linkPreviewUrl?: string
+    pushPublicKey?: string
+    disableSignUp?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
 ): () => void {
   const app = express()
 
+  const tempFileDir = mkdtempSync(join(tmpdir(), 'front-'))
+  let temoFileIndex = 0
+
+  function cleanupTempFiles (): void {
+    const maxAge = 1000 * 60 * 60 // 1 hour
+    fs.readdir(tempFileDir, (err, files) => {
+      if (err != null) return
+      files.forEach((file) => {
+        const filePath = join(tempFileDir, file)
+        fs.stat(filePath, (err, stats) => {
+          if (err != null) return
+          if (Date.now() - stats.mtime.getTime() > maxAge) {
+            fs.unlink(filePath, () => {})
+          }
+        })
+      })
+    })
+  }
+
+  setInterval(cleanupTempFiles, 1000 * 60 * 15) // Run every 15 minutes
+
   app.use(cors())
   app.use(
     fileUpload({
-      useTempFiles: true
+      useTempFiles: true,
+      tempFileDir
     })
   )
   app.use(bp.json())
   app.use(bp.urlencoded({ extended: true }))
 
+  const childLogger = ctx.logger.childLogger?.('requests', {
+    enableConsole: 'true'
+  })
+  const requests = ctx.newChild('requests', {}, {}, childLogger)
+
   class MyStream {
     write (text: string): void {
-      ctx.info(text)
+      requests.info(text)
     }
   }
 
@@ -270,19 +325,27 @@ export function start (
     const data = {
       ACCOUNTS_URL: config.accountsUrl,
       UPLOAD_URL: config.uploadUrl,
+      FILES_URL: config.filesUrl,
       MODEL_VERSION: config.modelVersion,
+      VERSION: config.version,
       REKONI_URL: config.rekoniUrl,
       TELEGRAM_URL: config.telegramUrl,
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
+      COLLABORATOR: config.collaborator,
+      LINK_PREVIEW_URL: config.linkPreviewUrl,
       COLLABORATOR_URL: config.collaboratorUrl,
-      COLLABORATOR_API_URL: config.collaboratorApiUrl,
       BRANDING_URL: config.brandingUrl,
       PREVIEW_CONFIG: config.previewConfig,
+      UPLOAD_CONFIG: config.uploadConfig,
+      PUSH_PUBLIC_KEY: config.pushPublicKey,
+      DISABLE_SIGNUP: config.disableSignUp,
       ...(extraConfig ?? {})
     }
-    res.set('Cache-Control', cacheControlNoCache)
     res.status(200)
+    res.set('Cache-Control', cacheControlNoCache)
+    res.set('Connection', 'keep-alive')
+    res.set('Keep-Alive', 'timeout=5')
     res.json(data)
   })
 
@@ -293,6 +356,8 @@ export function start (
       const admin = payload.extra?.admin === 'true'
       res.status(200)
       res.setHeader('Content-Type', 'application/json')
+      res.setHeader('Connection', 'keep-alive')
+      res.setHeader('Keep-Alive', 'timeout=5')
       res.setHeader('Cache-Control', cacheControlNoCache)
 
       const json = JSON.stringify({
@@ -304,10 +369,13 @@ export function start (
       })
       res.end(json)
     } catch (err: any) {
+      if (err instanceof TokenError) {
+        res.status(401).send()
+        return
+      }
       ctx.error('statistics error', { err })
       Analytics.handleError(err)
-      res.writeHead(404, {})
-      res.end()
+      res.status(404).send()
     }
   })
 
@@ -339,66 +407,81 @@ export function start (
           ) {
             res.setHeader('Cache-Control', cacheControlNoCache)
           }
+          res.setHeader('Connection', 'keep-alive')
+          res.setHeader('Keep-Alive', 'timeout=5')
         }
       }
     })
   )
+
+  const getWorkspaceIds = async (ctx: MeasureContext, token: string, path?: string): Promise<WorkspaceIds | null> => {
+    const accountClient = getAccountClient(config.accountsUrlInternal ?? config.accountsUrl, token)
+    const workspaceInfo = await accountClient.getWorkspaceInfo()
+    const wsIds = {
+      uuid: workspaceInfo.uuid,
+      dataId: workspaceInfo.dataId,
+      url: workspaceInfo.url
+    }
+    if (path === undefined) {
+      return wsIds
+    }
+
+    const actualUuid = workspaceInfo.uuid
+    const expectedUuid = path.split('/')[2]
+    if (expectedUuid !== undefined && actualUuid !== expectedUuid) {
+      ctx.error('Cannot validate uuid', {
+        expectedUuid,
+        actualUuid,
+        path,
+        workspaceUuid: workspaceInfo.uuid,
+        workspaceDataId: workspaceInfo.dataId
+      })
+      return null
+    }
+
+    return wsIds
+  }
 
   const filesHandler = async (req: Request<any>, res: Response<any>): Promise<void> => {
     await ctx.with(
       'handle-file',
       {},
       async (ctx) => {
-        let payload: Token = { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
           const token =
             cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ??
-            (req.query.token as string | undefined)
-          payload = token !== undefined ? decodeToken(token) : payload
+            (req.query.token as string | undefined) ??
+            ''
+          const wsIds = await getWorkspaceIds(ctx, token, req.path)
+          if (wsIds === null) {
+            res.status(403).send()
+            return
+          }
 
-          let uuid = req.params.file ?? req.query.file
+          const uuid = req.params.file ?? req.query.file
           if (uuid === undefined) {
             res.status(404).send()
             return
           }
 
-          const format: SupportedFormat | undefined = supportedFormats.find((it) => uuid.endsWith(it))
-          if (format !== undefined) {
-            uuid = uuid.slice(0, uuid.length - format.length - 1)
-          }
-
-          let blobInfo = await ctx.with(
-            'notoken-stat',
-            { workspace: payload.workspace.name },
-            async (ctx) => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
+          let blobInfo = await ctx.with('stat', { workspace: wsIds.uuid }, (ctx) =>
+            config.storageAdapter.stat(ctx, wsIds, uuid)
           )
 
           if (blobInfo === undefined) {
-            ctx.error('No such key', { file: uuid, workspace: payload.workspace })
+            ctx.error('No such key', { file: uuid, workspace: wsIds.uuid })
             res.status(404).send()
             return
-          }
-
-          // try image and octet streams
-          const isImage =
-            blobInfo.contentType.includes('image/') || blobInfo.contentType.includes('application/octet-stream')
-
-          if (token === undefined) {
-            if (blobInfo !== undefined && !isImage) {
-              // Do not allow to return non images with no token.
-              if (token === undefined) {
-                res.status(403).send()
-                return
-              }
-            }
           }
 
           if (req.method === 'HEAD') {
             res.writeHead(200, {
               'accept-ranges': 'bytes',
+              'Keep-Alive': 'timeout=5',
               'content-length': blobInfo.size,
+              'content-security-policy': "default-src 'none';",
               Etag: blobInfo.etag,
               'Last-Modified': new Date(blobInfo.modifiedOn).toISOString()
             })
@@ -407,38 +490,42 @@ export function start (
             res.end()
             return
           }
+          // try image and octet streams
+          const isImage =
+            blobInfo.contentType.includes('image/') || blobInfo.contentType.includes('application/octet-stream')
 
           const size = req.query.size !== undefined ? parseInt(req.query.size as string) : undefined
-          if (format !== undefined && isImage && blobInfo.contentType !== 'image/gif') {
-            blobInfo = await ctx.with(
-              'resize',
-              {},
-              async (ctx) =>
-                await getGeneratePreview(ctx, blobInfo as PlatformBlob, size ?? -1, uuid, config, payload, format)
+          const accept = req.headers.accept
+          if (accept !== undefined && isImage && blobInfo.contentType !== 'image/gif' && size !== undefined) {
+            blobInfo = await ctx.with('resize', {}, (ctx) =>
+              getGeneratePreview(ctx, blobInfo as PlatformBlob, size, uuid, config, wsIds, accept, () =>
+                join(tempFileDir, `${++temoFileIndex}`)
+              )
             )
           }
 
           const range = req.headers.range
           if (range !== undefined) {
-            await ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-              await getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, payload.workspace, res)
-            })
+            await ctx.with('file-range', { workspace: wsIds.uuid }, (ctx) =>
+              getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, wsIds, res)
+            )
           } else {
             await ctx.with(
               'file',
-              { workspace: payload.workspace.name },
-              async (ctx) => {
-                await getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, payload.workspace, req, res)
-              },
+              { workspace: wsIds.uuid },
+              (ctx) => getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, wsIds, req, res),
               { uuid }
             )
           }
         } catch (error: any) {
-          if (error?.code === 'NoSuchKey' || error?.code === 'NotFound' || error?.message === 'No such key') {
+          if (
+            error?.code === 'NoSuchKey' ||
+            error?.code === 'NotFound' ||
+            error?.message === 'No such key' ||
+            error?.Code === 'NoSuchKey'
+          ) {
             ctx.error('No such storage key', {
-              file: req.query.file,
-              workspace: payload?.workspace,
-              email: payload?.email
+              file: req.query.file
             })
             res.status(404).send()
             return
@@ -464,8 +551,15 @@ export function start (
     void filesHandler(req, res)
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.post('/files', async (req, res) => {
+  app.post('/files', (req, res) => {
+    void handleUpload(req, res)
+  })
+
+  app.post('/files/*', (req, res) => {
+    void handleUpload(req, res)
+  })
+
+  const handleUpload = async (req: Request, res: Response): Promise<void> => {
     await ctx.with(
       'post-file',
       {},
@@ -485,10 +579,19 @@ export function start (
 
         try {
           const token = authHeader.split(' ')[1]
-          const payload = decodeToken(token)
-          const uuid = await storageUpload(ctx, config.storageAdapter, payload.workspace, file)
+          const workspaceDataId = await getWorkspaceIds(ctx, token, req.path)
+          if (workspaceDataId === null) {
+            res.status(403).send()
+            return
+          }
+          const uuid = await storageUpload(ctx, config.storageAdapter, workspaceDataId, file)
 
-          res.status(200).send(uuid)
+          res.status(200).send([
+            {
+              key: 'file',
+              id: uuid
+            }
+          ])
         } catch (error: any) {
           ctx.error('error-post-files', error)
           res.status(500).send()
@@ -496,7 +599,7 @@ export function start (
       },
       { url: req.path, query: req.query }
     )
-  })
+  }
 
   const handleDelete = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -507,7 +610,11 @@ export function start (
       }
 
       const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
+      const workspaceDataId = await getWorkspaceIds(ctx, token, req.path)
+      if (workspaceDataId === null) {
+        res.status(403).send()
+        return
+      }
       const uuid = req.query.file as string
       if (uuid === '') {
         res.status(500).send()
@@ -515,11 +622,7 @@ export function start (
       }
 
       // TODO: We need to allow delete only of user attached documents. (https://front.hc.engineering/workbench/platform/tracker/TSK-1081)
-      await config.storageAdapter.remove(ctx, payload.workspace, [uuid])
-
-      // TODO: Add support for related documents.
-      // TODO: Move support of image resize/format change to separate place.
-      await removeAllObjects(ctx, config.storageAdapter, payload.workspace, uuid)
+      await config.storageAdapter.remove(ctx, workspaceDataId, [uuid])
 
       res.status(200).send()
     } catch (error: any) {
@@ -529,14 +632,7 @@ export function start (
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.delete('/files', handleDelete)
-
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.delete('/files/*', handleDelete)
-
-  // todo remove it after update all customers chrome extensions
-  app.get('/import', (req, res) => {
+  const handleImportGet = async (req: Request, res: Response): Promise<void> => {
     try {
       const authHeader = req.headers.authorization
       if (authHeader === undefined) {
@@ -544,7 +640,11 @@ export function start (
         return
       }
       const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
+      const workspaceDataId = await getWorkspaceIds(ctx, token)
+      if (workspaceDataId === null) {
+        res.status(403).send()
+        return
+      }
       const url = req.query.url as string
       const cookie = req.query.cookie as string | undefined
       // const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
@@ -574,16 +674,16 @@ export function start (
           }
           const id = uuid()
           const contentType = response.headers['content-type'] ?? 'application/octet-stream'
-          const data: Buffer[] = []
+          const data: Uint8Array[] = []
           response
             .on('data', function (chunk) {
               data.push(chunk)
             })
             .on('end', function () {
-              const buffer = Buffer.concat(data)
+              const buffer = Buffer.concat(data as unknown as Uint8Array[])
               config.storageAdapter
-                .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
-                .then(async (objInfo) => {
+                .put(ctx, workspaceDataId, id, buffer, contentType, buffer.length)
+                .then(async () => {
                   res.status(200).send({
                     id,
                     contentType,
@@ -614,9 +714,9 @@ export function start (
       ctx.error('error', { error })
       res.status(500).send()
     }
-  })
+  }
 
-  app.post('/import', (req, res) => {
+  const handleImportPost = async (req: Request, res: Response): Promise<void> => {
     try {
       const authHeader = req.headers.authorization
       if (authHeader === undefined) {
@@ -624,7 +724,11 @@ export function start (
         return
       }
       const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
+      const workspaceDataId = await getWorkspaceIds(ctx, token)
+      if (workspaceDataId === null) {
+        res.status(403).send()
+        return
+      }
       const { url, cookie } = req.body
       if (url === undefined) {
         res.status(500).send('URL param is not defined')
@@ -652,16 +756,16 @@ export function start (
         }
         const id = uuid()
         const contentType = response.headers['content-type']
-        const data: Buffer[] = []
+        const data: Uint8Array[] = []
         response
           .on('data', function (chunk) {
             data.push(chunk)
           })
           .on('end', function () {
-            const buffer = Buffer.concat(data)
+            const buffer = Buffer.concat(data as unknown as Uint8Array[])
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             config.storageAdapter
-              .put(ctx, payload.workspace, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
+              .put(ctx, workspaceDataId, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
               .then(async () => {
                 res.status(200).send({
                   id,
@@ -686,6 +790,21 @@ export function start (
       ctx.error('error', { error })
       res.status(500).send()
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.delete('/files', handleDelete)
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.delete('/files/*', handleDelete)
+
+  // todo remove it after update all customers chrome extensions
+  app.get('/import', (req, res) => {
+    void handleImportGet(req, res)
+  })
+
+  app.post('/import', (req, res) => {
+    void handleImportPost(req, res)
   })
 
   const filesPatterns = [
@@ -705,7 +824,12 @@ export function start (
     '.avif'
   ]
 
-  app.get('*', function (request, response) {
+  app.get('*', (request, response) => {
+    const safePath = normalize(join(dist, request.path))
+    if (!safePath.startsWith(dist)) {
+      response.sendStatus(403)
+      return
+    }
     if (filesPatterns.some((it) => request.path.endsWith(it))) {
       response.sendStatus(404)
       return
@@ -715,16 +839,22 @@ export function start (
       lastModified: true,
       cacheControl: false,
       headers: {
-        'Cache-Control': cacheControlNoCache
+        'Cache-Control': cacheControlNoCache,
+        'Keep-Alive': 'timeout=5'
       }
     })
   })
 
   const server = app.listen(port)
+
+  server.keepAliveTimeout = 60 * 1000 + 1000
+  server.headersTimeout = 60 * 1000 + 2000
   return () => {
     server.close()
   }
 }
+
+const supportedFormats = ['avif', 'webp', 'heif', 'jpeg', 'png']
 
 async function getGeneratePreview (
   ctx: MeasureContext,
@@ -732,79 +862,132 @@ async function getGeneratePreview (
   size: number | undefined,
   uuid: string,
   config: { storageAdapter: StorageAdapter },
-  payload: Token,
-  format: SupportedFormat = 'jpeg'
+  wsIds: WorkspaceIds,
+  accept: string,
+  tempFile: () => string
 ): Promise<PlatformBlob> {
   if (size === undefined) {
     return blob
   }
+
+  const formats = accept.split(',').map((it) => it.trim())
+
+  // Select appropriate format
+  let format: string | undefined
+
+  for (const f of formats) {
+    const [type] = f.split(';')
+    const [clazz, kind] = type.split('/')
+    if (clazz === 'image' && supportedFormats.includes(kind)) {
+      format = kind
+      break
+    }
+  }
+  if (format === undefined) {
+    return blob
+  }
+
+  if (size === -1) {
+    size = 2048
+  }
+
+  if (size > 2048) {
+    size = 2048
+  }
+
   const sizeId = uuid + `%preview%${size}${format !== 'jpeg' ? format : ''}`
 
-  const d = await config.storageAdapter.stat(ctx, payload.workspace, sizeId)
+  const d = await config.storageAdapter.stat(ctx, wsIds, sizeId)
   const hasSmall = d !== undefined && d.size > 0
 
   if (hasSmall) {
     // We have cached small document, let's proceed with it.
     return d
   } else {
-    let data: Buffer
+    const files: string[] = []
+    let pipeline: Sharp | undefined
     try {
       // Let's get data and resize it
-      data = Buffer.concat(await config.storageAdapter.read(ctx, payload.workspace, uuid))
+      const fname = tempFile()
+      files.push(fname)
+      await writeFile(fname, await config.storageAdapter.get(ctx, wsIds, uuid))
 
-      let pipeline = sharp(data)
-
+      pipeline = sharp(fname)
+      const md = await pipeline.metadata()
+      if (md.format === undefined) {
+        // No format detected, return blob
+        return blob
+      }
       sharp.cache(false)
 
-      // const metadata = await pipeline.metadata()
-
-      if (size !== -1) {
-        pipeline = pipeline.resize({
-          width: size,
-          fit: 'cover',
-          withoutEnlargement: true
-        })
-      }
+      pipeline = pipeline.resize({
+        width: size,
+        fit: 'cover',
+        withoutEnlargement: true
+      })
 
       let contentType = 'image/jpeg'
       switch (format) {
         case 'jpeg':
-          pipeline = pipeline.jpeg({})
+          pipeline = pipeline.jpeg({
+            progressive: true
+          })
           contentType = 'image/jpeg'
           break
         case 'avif':
           pipeline = pipeline.avif({
-            quality: size !== undefined && size < 128 ? undefined : 85
+            lossless: false,
+            effort: 0
           })
           contentType = 'image/avif'
           break
         case 'heif':
           pipeline = pipeline.heif({
-            quality: size !== undefined && size < 128 ? undefined : 80
+            effort: 0
           })
           contentType = 'image/heif'
           break
         case 'webp':
-          pipeline = pipeline.webp()
+          pipeline = pipeline.webp({
+            effort: 0
+          })
           contentType = 'image/webp'
           break
         case 'png':
-          pipeline = pipeline.png()
+          pipeline = pipeline.png({
+            effort: 0
+          })
           contentType = 'image/png'
           break
       }
 
-      const dataBuff = await pipeline.toBuffer()
+      const outFile = tempFile()
+      files.push(outFile)
+
+      const dataBuff = await ctx.with('resize', { contentType }, () => (pipeline as Sharp).toFile(outFile))
       pipeline.destroy()
 
       // Add support of avif as well.
-      await config.storageAdapter.put(ctx, payload.workspace, sizeId, dataBuff, contentType, dataBuff.length)
-      return (await config.storageAdapter.stat(ctx, payload.workspace, sizeId)) ?? blob
+      const upload = await config.storageAdapter.put(
+        ctx,
+        wsIds,
+        sizeId,
+        createReadStream(outFile),
+        contentType,
+        dataBuff.size
+      )
+      return {
+        ...blob,
+        _id: sizeId as Ref<PlatformBlob>,
+        size: dataBuff.size,
+        contentType,
+        etag: upload.etag
+      }
     } catch (err: any) {
       Analytics.handleError(err)
       ctx.error('failed to resize image', {
         err,
-        format,
+        format: accept,
         contentType: blob.contentType,
         uuid,
         size: blob.size,
@@ -813,6 +996,11 @@ async function getGeneratePreview (
 
       // Return original in case of error
       return blob
+    } finally {
+      pipeline?.destroy()
+      for (const f of files) {
+        await rm(f)
+      }
     }
   }
 }

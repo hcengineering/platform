@@ -16,14 +16,15 @@
   import { Analytics } from '@hcengineering/analytics'
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
-  import contact, { Channel, Contact, getName as getContactName } from '@hcengineering/contact'
+  import contact, { Channel, Contact, getName as getContactName, includesAny } from '@hcengineering/contact'
   import core, { generateId, getCurrentAccount, Markup, Ref, toIdMap } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { EmptyMarkup, StyledTextEditor, isEmptyMarkup } from '@hcengineering/text-editor'
+  import { StyledTextEditor } from '@hcengineering/text-editor-resources'
+  import { EmptyMarkup, isEmptyMarkup, markupToHTML } from '@hcengineering/text'
   import {
     Button,
     EditBox,
@@ -34,11 +35,11 @@
     Scroller,
     showPopup
   } from '@hcengineering/ui'
+  import { GmailEvents } from '@hcengineering/gmail'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
   import Connect from './Connect.svelte'
   import IntegrationSelector from './IntegrationSelector.svelte'
-  import { markupToHTML } from '@hcengineering/text'
 
   export let value: Contact[] | Contact
   const contacts = Array.isArray(value) ? value : [value]
@@ -68,6 +69,7 @@
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
   const attachmentParentId = generateId()
+  const mySocialIds = getCurrentAccount().socialIds
 
   let subject: string = ''
   let content: Markup = EmptyMarkup
@@ -94,7 +96,8 @@
           .map((m) => m.trim())
           .filter((m) => m.length)
       })
-      await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
+      Analytics.handleEvent(GmailEvents.SentEmail, { to: channel.value })
+      await inboxClient.forceReadDoc(channel._id, channel._class)
       for (const attachment of attachments) {
         await client.addCollection(
           attachmentP.class.Attachment,
@@ -197,7 +200,6 @@
   }
 
   const settingsQuery = createQuery()
-  const me = getCurrentAccount()._id
 
   let templateProvider: TemplateDataProvider | undefined
   let integrations: Integration[] = []
@@ -215,8 +217,13 @@
   $: templateProvider && !Array.isArray(value) && templateProvider.set(contact.class.Contact, value)
 
   settingsQuery.query(setting.class.Integration, { type: plugin.integrationType.Gmail, disabled: false }, (res) => {
-    integrations = res.filter((p) => p.createdBy === me || p.shared?.includes(me))
-    selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
+    integrations = res.filter(
+      (p) =>
+        (p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ||
+        (includesAny(p.shared ?? [], mySocialIds) && p.value !== '')
+    )
+    selectedIntegration =
+      integrations.find((p) => p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ?? integrations[0]
   })
 
   function onTemplate (e: CustomEvent<string>): void {

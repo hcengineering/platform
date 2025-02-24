@@ -41,7 +41,7 @@
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/support": "^0.6.5",
     "@hcengineering/ui": "^0.6.15",
-    "svelte": "^4.2.12"
+    "svelte": "^4.2.19"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

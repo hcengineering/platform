@@ -14,13 +14,11 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { type BlobMetadata } from '@hcengineering/presentation'
   import AudioPlayer from './AudioPlayer.svelte'
 
-  export let value: Blob | Ref<Blob>
+  export let value: Ref<Blob>
   export let name: string
   export let contentType: string
-  export let metadata: BlobMetadata | undefined
 </script>
 
 <AudioPlayer {value} {name} {contentType} fullSize={true} />

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import core, { DocumentQuery } from '@hcengineering/core'
-  import { Button, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
+  import { Button, Breadcrumb, Scroller, SearchInput, showPopup, IconAdd, Header } from '@hcengineering/ui'
   import type { Category } from '@hcengineering/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
@@ -36,27 +36,22 @@
   // $: twoRows = $deviceInfo.twoRows
 </script>
 
-<div class="ac-header full divide caption-height">
-  <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label label={inventory.string.Categories} /></span>
-  </div>
+<Header adaptive={'disabled'}>
+  <Breadcrumb icon={inventory.icon.Categories} label={inventory.string.Categories} size={'large'} isCurrent />
 
-  <div class="mb-1 clear-mins">
-    <Button icon={IconAdd} label={inventory.string.CategoryCreateLabel} kind={'primary'} on:click={showCreateDialog} />
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit
+  <svelte:fragment slot="search">
+    <SearchInput
       bind:value={search}
+      collapsed
       on:change={() => {
         updateResultQuery(search)
       }}
     />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
-  </div>
-</div>
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    <Button icon={IconAdd} label={inventory.string.CategoryCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+  </svelte:fragment>
+</Header>
 
 <Scroller>
   <HierarchyView _class={inventory.class.Category} config={['', 'modifiedOn']} options={{}} query={resultQuery} />

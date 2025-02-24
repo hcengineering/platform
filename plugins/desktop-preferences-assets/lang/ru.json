@@ -1,0 +1,11 @@
+{
+  "string": {
+    "ShowNotifications": "Показывать уведомления",
+    "PlaySound": "Проигрывать звук",
+    "BounceAppIcon": "Прыжок иконки приложения (только mac)",
+    "ShowBadge": "Показывать кол-во уведомлений",
+    "SoundAndAppearance": "Звук и внешний вид",
+    "HaveGotANotification": "Новое уведомление",
+    "TotalNotificationsCount": "Всего {count, plural, =1 {# уведомление} few {# уведомления} other {# уведомлений}}"
+  }
+}

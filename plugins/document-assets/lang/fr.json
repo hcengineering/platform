@@ -48,13 +48,8 @@
     "Locked": "Verrouillé",
     "ConfigLabel": "Documents",
     "ConfigDescription": "Extension pour l'édition collaborative de documents",
-    "UnassignToDo": "Désassigner la tâche",
-    "UnassignToDoConfirm": "Voulez-vous désassigner la tâche ? La tâche sera retirée de la planification de l'assigné.",
-    "ReassignToDo": "Changer l'assigné de la tâche",
-    "ReassignToDoConfirm": "Voulez-vous changer l'assigné de la tâche ? La tâche sera retirée de la planification de l'assigné actuel.",
     "Icon": "Icône",
     "Color": "Couleur",
-    "RoleLabel": "Rôle : {role}",
-    "Embeddings": "Intégrations"
+    "RoleLabel": "Rôle : {role}"
   }
 }

@@ -16,15 +16,21 @@
 import { type Blob, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import { type FilterFunction, type ViewAction, type ViewCategoryAction, viewId } from '@hcengineering/view'
-import { type BlobMetadata, type FilePreviewExtension } from '@hcengineering/presentation'
+import {
+  type FilterFunction,
+  type ViewAction,
+  type ViewCategoryAction,
+  viewId,
+  type ViewOptionsAction
+} from '@hcengineering/view'
+import { type BlobMetadata, type FileOrBlob, type FilePreviewExtension } from '@hcengineering/presentation/src/types'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
 import view from '@hcengineering/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {
   actionImpl: {
-    Delete: '' as ViewAction,
     Archive: '' as ViewAction,
+    UnArchive: '' as ViewAction,
     Join: '' as ViewAction,
     Leave: '' as ViewAction,
     Move: '' as ViewAction,
@@ -64,6 +70,7 @@ export default mergeIds(viewId, view, {
     TimestampPresenter: '' as AnyComponent,
     DateEditor: '' as AnyComponent,
     DatePresenter: '' as AnyComponent,
+    DateTimePresenter: '' as AnyComponent,
     TableBrowser: '' as AnyComponent,
     RolePresenter: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
@@ -75,21 +82,22 @@ export default mergeIds(viewId, view, {
     HTMLEditor: '' as AnyComponent,
     CollaborativeHTMLEditor: '' as AnyComponent,
     CollaborativeDocEditor: '' as AnyComponent,
-    CollaborativeDocActivityPresenter: '' as AnyComponent,
     MarkupEditor: '' as AnyComponent,
     MarkupEditorPopup: '' as AnyComponent,
     ListView: '' as AnyComponent,
-    IndexedDocumentPreview: '' as AnyComponent,
     SpaceRefPresenter: '' as AnyComponent,
     EnumPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
     StatusRefPresenter: '' as AnyComponent,
+    PersonArrayEditor: '' as AnyComponent,
+    PersonIdFilterValuePresenter: '' as AnyComponent,
     DateFilterPresenter: '' as AnyComponent,
     StringFilterPresenter: '' as AnyComponent,
     AudioViewer: '' as AnyComponent,
     ImageViewer: '' as AnyComponent,
     VideoViewer: '' as AnyComponent,
-    PDFViewer: '' as AnyComponent
+    PDFViewer: '' as AnyComponent,
+    TextViewer: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,
@@ -110,7 +118,8 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString
+    MarkdownFormatting: '' as IntlString,
+    HideArchived: '' as IntlString
   },
   function: {
     FilterArrayAllResult: '' as FilterFunction,
@@ -134,14 +143,16 @@ export default mergeIds(viewId, view, {
     FilterDateNotSpecified: '' as FilterFunction,
     FilterDateCustom: '' as FilterFunction,
     ShowEmptyGroups: '' as ViewCategoryAction,
+    HideArchived: '' as ViewOptionsAction,
     CanDeleteObject: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanEditSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanArchiveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanDeleteSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanJoinSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanLeaveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    BlobImageMetadata: '' as Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
-    BlobVideoMetadata: '' as Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
+    IsClipboardAvailable: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    BlobImageMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
+    BlobVideoMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,
@@ -151,6 +162,7 @@ export default mergeIds(viewId, view, {
     Audio: '' as Ref<FilePreviewExtension>,
     Image: '' as Ref<FilePreviewExtension>,
     Video: '' as Ref<FilePreviewExtension>,
-    PDF: '' as Ref<FilePreviewExtension>
+    PDF: '' as Ref<FilePreviewExtension>,
+    Text: '' as Ref<FilePreviewExtension>
   }
 })

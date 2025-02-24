@@ -63,6 +63,8 @@
     "AddMember": "Add member",
     "KickEmployee": "Kick employee",
     "KickEmployeeDescr": "Are you sure you want to kick the employee out of the workspace? This action cannot be undone",
+    "ResendInvite": "Resend Invite",
+    "ResendInviteDescr": "Are you sure you want to resend an invitation to this user for the workspace?",
     "Email": "Email",
     "CreateEmployee": "Employee",
     "Inactive": "Inactive",
@@ -90,7 +92,7 @@
     "AddMembersHeader": "Add members to {value}:",
     "Assigned": "Assigned",
     "Unassigned": "Unassigned",
-    "CategoryCurrentUser": "Current user",    
+    "CategoryCurrentUser": "Current user",
     "CategoryOther": "Other",
     "NumberMembers": "{count, plural, =0 {no members} =1 {1 member} other {# members}}",
     "Position": "Position",
@@ -102,6 +104,13 @@
     "People": "People",
     "For": "For",
     "SelectUsers": "Select users",
-    "AddGuest": "Add guest"
+    "AddGuest": "Add guest",
+    "ViewProfile": "View profile",
+    "Viber": "Viber",
+    "ViberPlaceholder": "Viber",
+    "SocialId": "Social ID",
+    "SocialIds": "Social IDs",
+    "Type": "Type",
+    "Confirmed": "Confirmed"
   }
 }

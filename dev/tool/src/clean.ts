@@ -12,54 +12,77 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import attachment from '@hcengineering/attachment'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { getAccountDB } from '@hcengineering/account'
+import calendar from '@hcengineering/calendar'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
+import { loadCollabYdoc, saveCollabYdoc, yDocToBuffer } from '@hcengineering/collaboration'
 import contact from '@hcengineering/contact'
 import core, {
-  ClassifierKind,
-  DOMAIN_STATUS,
-  DOMAIN_TX,
-  SortingOrder,
-  TxOperations,
-  TxProcessor,
-  generateId,
-  getObjectValue,
-  toIdMap,
+  type ArrOf,
   type BackupClient,
   type Class,
+  ClassifierKind,
+  type CollaborativeDoc,
   type Client as CoreClient,
+  DOMAIN_BENCHMARK,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_MIGRATION,
+  DOMAIN_MODEL,
+  DOMAIN_STATUS,
+  DOMAIN_TX,
   type Doc,
+  type DocumentUpdate,
   type Domain,
+  type Hierarchy,
+  type Markup,
   type MeasureContext,
+  type MigrationState,
   type Ref,
+  type RefTo,
+  type RelatedDocument,
+  SortingOrder,
   type Status,
   type StatusCategory,
+  type Tx,
   type TxCUD,
   type TxCreateDoc,
   type TxMixin,
+  TxOperations,
+  TxProcessor,
+  type TxRemoveDoc,
   type TxUpdateDoc,
-  type WorkspaceId
+  type WorkspaceUuid,
+  type WorkspaceDataId,
+  type WorkspaceIds,
+  generateId,
+  getObjectValue,
+  toIdMap,
+  updateAttribute,
+  platformNow,
+  platformNowDiff
 } from '@hcengineering/core'
-import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import recruitModel, { defaultApplicantStatuses } from '@hcengineering/model-recruit'
-import { getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import recruit, { type Applicant, type Vacancy } from '@hcengineering/recruit'
+import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { type StorageAdapter } from '@hcengineering/server-core'
+import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import tags, { type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
 import task, { type ProjectType, type Task, type TaskType } from '@hcengineering/task'
+import { updateYDocContent } from '@hcengineering/text-ydoc'
 import tracker from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
-import { MongoClient } from 'mongodb'
+import { type Db } from 'mongodb'
 
 export async function cleanWorkspace (
   ctx: MeasureContext,
   mongoUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   storageAdapter: StorageAdapter,
-  elasticUrl: string,
   transactorUrl: string,
   opt: { recruit: boolean, tracker: boolean, removedTx: boolean }
 ): Promise<void> {
@@ -72,27 +95,6 @@ export async function cleanWorkspace (
 
     const hierarchy = ops.getHierarchy()
 
-    const attachments = await ops.findAll(attachment.class.Attachment, {})
-
-    const contacts = await ops.findAll(contact.class.Contact, {})
-
-    const files = new Set(
-      attachments.map((it) => it.file as string).concat(contacts.map((it) => it.avatar).filter((it) => it) as string[])
-    )
-
-    const minioList = await storageAdapter.listStream(ctx, workspaceId)
-    const toClean: string[] = []
-    while (true) {
-      const mv = await minioList.next()
-      if (mv === undefined) {
-        break
-      }
-      if (!files.has(mv._id)) {
-        toClean.push(mv._id)
-      }
-    }
-    await storageAdapter.remove(ctx, workspaceId, toClean)
-
     if (opt.recruit) {
       const contacts = await ops.findAll(recruit.mixin.Candidate, {})
       console.log('removing Talents', contacts.length)
@@ -100,23 +102,15 @@ export async function cleanWorkspace (
 
       while (filter.length > 0) {
         const part = filter.splice(0, 100)
-        const op = ops.apply('')
+        const op = ops.apply()
         for (const c of part) {
           await op.remove(c)
         }
-        const t = Date.now()
+        const t = platformNow()
         console.log('remove:', part.map((it) => it.name).join(', '))
         await op.commit()
-        const t2 = Date.now()
-        console.log('remove time:', t2 - t, filter.length)
+        console.log('remove time:', platformNowDiff(t), filter.length)
       }
-
-      // const vacancies = await ops.findAll(recruit.class.Vacancy, {})
-      // console.log('removing vacancies', vacancies.length)
-      // for (const c of vacancies) {
-      //   console.log('Remove', c.name)
-      //   await ops.remove(c)
-      // }
     }
 
     if (opt.tracker) {
@@ -125,34 +119,50 @@ export async function cleanWorkspace (
 
       while (issues.length > 0) {
         const part = issues.splice(0, 5)
-        const op = ops.apply('')
+        const op = ops.apply()
         for (const c of part) {
           await op.remove(c)
         }
-        const t = Date.now()
+        const t = platformNow()
         await op.commit()
-        const t2 = Date.now()
-        console.log('remove time:', t2 - t, issues.length)
+        console.log('remove time:', platformNowDiff(t), issues.length)
       }
     }
 
-    const client = new MongoClient(mongoUrl)
+    const client = getMongoClient(mongoUrl)
     try {
-      await client.connect()
-      const db = getWorkspaceDB(client, workspaceId)
+      const _client = await client.getClient()
+      const db = getWorkspaceMongoDB(_client, workspaceId)
 
       if (opt.removedTx) {
-        const txes = await db.collection(DOMAIN_TX).find({}).toArray()
+        let processed = 0
+        const iterator = db.collection(DOMAIN_TX).find({})
+        while (true) {
+          const txes: Tx[] = []
 
-        for (const tx of txes) {
-          if (tx._class === core.class.TxRemoveDoc) {
-            // We need to remove all update and create operations for document
-            await db.collection(DOMAIN_TX).deleteMany({ objectId: tx.objectId })
+          const doc = await iterator.next()
+          if (doc == null) {
+            break
+          }
+          txes.push(doc as unknown as Tx)
+          if (iterator.bufferedCount() > 0) {
+            txes.push(...(iterator.readBufferedDocuments() as unknown as Tx[]))
+          }
+
+          for (const tx of txes) {
+            if (tx._class === core.class.TxRemoveDoc) {
+              // We need to remove all update and create operations for document
+              await db.collection(DOMAIN_TX).deleteMany({ objectId: (tx as TxRemoveDoc<Doc>).objectId })
+              processed++
+            }
+          }
+          if (processed % 1000 === 0) {
+            console.log('processed', processed)
           }
         }
       }
     } finally {
-      await client.close()
+      client.close()
     }
   } catch (err: any) {
     console.trace(err)
@@ -163,49 +173,46 @@ export async function cleanWorkspace (
 
 export async function fixMinioBW (
   ctx: MeasureContext,
-  workspaceId: WorkspaceId,
+  wsIds: WorkspaceIds,
   storageService: StorageAdapter
 ): Promise<void> {
-  console.log('try clean bw miniature for ', workspaceId.name)
+  console.log('try clean bw miniature for ', wsIds)
   const from = new Date(new Date().setDate(new Date().getDate() - 7)).getTime()
-  const list = await storageService.listStream(ctx, workspaceId)
+  const list = await storageService.listStream(ctx, wsIds)
   let removed = 0
   while (true) {
-    const obj = await list.next()
-    if (obj === undefined) {
+    const objs = await list.next()
+    if (objs.length === 0) {
       break
     }
-    if (obj.modifiedOn < from) continue
-    if ((obj._id as string).includes('%preview%')) {
-      await storageService.remove(ctx, workspaceId, [obj._id])
-      removed++
-      if (removed % 100 === 0) {
-        console.log('removed: ', removed)
+    for (const obj of objs) {
+      if (obj.modifiedOn < from) continue
+      if ((obj._id as string).includes('%preview%')) {
+        await storageService.remove(ctx, wsIds, [obj._id])
+        removed++
+        if (removed % 100 === 0) {
+          console.log('removed: ', removed)
+        }
       }
     }
   }
   console.log('FINISH, removed: ', removed)
 }
 
-export async function cleanRemovedTransactions (workspaceId: WorkspaceId, transactorUrl: string): Promise<void> {
+export async function cleanRemovedTransactions (workspaceId: WorkspaceUuid, transactorUrl: string): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
   try {
     let count = 0
     while (true) {
-      const removedDocs = await connection.findAll(
-        core.class.TxCollectionCUD,
-        { 'tx._class': core.class.TxRemoveDoc },
-        { limit: 1000 }
-      )
+      const removedDocs = await connection.findAll(core.class.TxRemoveDoc, {}, { limit: 1000 })
       if (removedDocs.length === 0) {
         break
       }
 
-      const toRemove = await connection.findAll(core.class.TxCollectionCUD, {
-        'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc] },
-        'tx.objectId': { $in: removedDocs.map((it) => it.tx.objectId) }
+      const toRemove = await connection.findAll(core.class.TxCUD, {
+        objectId: { $in: removedDocs.map((it) => it.objectId) }
       })
       await connection.clean(
         DOMAIN_TX,
@@ -224,7 +231,7 @@ export async function cleanRemovedTransactions (workspaceId: WorkspaceId, transa
   }
 }
 
-export async function optimizeModel (workspaceId: WorkspaceId, transactorUrl: string): Promise<void> {
+export async function optimizeModel (workspaceId: WorkspaceUuid, transactorUrl: string): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup',
     model: 'upgrade'
@@ -295,7 +302,7 @@ export async function optimizeModel (workspaceId: WorkspaceId, transactorUrl: st
     await connection.close()
   }
 }
-export async function cleanArchivedSpaces (workspaceId: WorkspaceId, transactorUrl: string): Promise<void> {
+export async function cleanArchivedSpaces (workspaceId: WorkspaceUuid, transactorUrl: string): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
@@ -338,25 +345,23 @@ export async function cleanArchivedSpaces (workspaceId: WorkspaceId, transactorU
   }
 }
 
-export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transactorUrl: string): Promise<void> {
+export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceUuid, transactorUrl: string): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
   try {
-    const commentTxes = await connection.findAll(core.class.TxCollectionCUD, {
-      'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': chunter.class.ChatMessage
+    const commentTxes = await connection.findAll(core.class.TxCreateDoc, {
+      objectClass: chunter.class.ChatMessage
     })
-    const commentTxesRemoved = await connection.findAll(core.class.TxCollectionCUD, {
-      'tx._class': core.class.TxRemoveDoc,
-      'tx.objectClass': chunter.class.ChatMessage
+    const commentTxesRemoved = await connection.findAll(core.class.TxRemoveDoc, {
+      objectClass: chunter.class.ChatMessage
     })
-    const removed = new Map(commentTxesRemoved.map((it) => [it.tx.objectId, it]))
+    const removed = new Map(commentTxesRemoved.map((it) => [it.objectId, it]))
     // Do not checked removed
     const objSet = new Set<Ref<Doc>>()
     const oldValue = new Map<Ref<Doc>, string>()
     for (const c of commentTxes) {
-      const cid = c.tx.objectId
+      const cid = c.objectId
       if (removed.has(cid)) {
         continue
       }
@@ -364,7 +369,7 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
       objSet.add(cid)
       if (has) {
         // We have found duplicate one, let's rename it.
-        const doc = TxProcessor.createDoc2Doc<ChatMessage>(c.tx as unknown as TxCreateDoc<ChatMessage>)
+        const doc = TxProcessor.createDoc2Doc<ChatMessage>(c as unknown as TxCreateDoc<ChatMessage>)
         if (doc.message !== '' && doc.message.trim() !== '<p></p>') {
           await connection.clean(DOMAIN_TX, [c._id])
           if (oldValue.get(cid) === doc.message.trim()) {
@@ -373,8 +378,8 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
             oldValue.set(doc._id, doc.message)
             console.log('renaming', cid, doc.message)
             // Remove previous transaction.
-            c.tx.objectId = generateId()
-            doc._id = c.tx.objectId as Ref<ChatMessage>
+            c.objectId = generateId()
+            doc._id = c.objectId as Ref<ChatMessage>
             await connection.upload(DOMAIN_TX, [c])
             // Also we need to create snapsot
             await connection.upload(DOMAIN_ACTIVITY, [doc])
@@ -392,17 +397,17 @@ export async function fixCommentDoubleIdCreate (workspaceId: WorkspaceId, transa
 const DOMAIN_TAGS = 'tags' as Domain
 export async function fixSkills (
   mongoUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   transactorUrl: string,
   step: string
 ): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
+    const _client = await client.getClient()
+    const db = getWorkspaceMongoDB(_client, workspaceId)
 
     async function fixCount (): Promise<void> {
       console.log('fixing ref-count...')
@@ -643,7 +648,7 @@ export async function fixSkills (
   } catch (err: any) {
     console.trace(err)
   } finally {
-    await client.close()
+    client.close()
     await connection.close()
   }
 }
@@ -661,17 +666,17 @@ function groupBy<T extends Doc> (docs: T[], key: string): Record<any, T[]> {
 
 export async function restoreRecruitingTaskTypes (
   mongoUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   transactorUrl: string
 ): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup',
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
+    const _client = await client.getClient()
+    const db = getWorkspaceMongoDB(_client, workspaceId)
 
     // Query all vacancy project types creations (in Model)
     // We only update new project types in model here and not old ones in spaces
@@ -818,24 +823,24 @@ export async function restoreRecruitingTaskTypes (
   } catch (err: any) {
     console.trace(err)
   } finally {
-    await client.close()
+    client.close()
     await connection.close()
   }
 }
 
 export async function restoreHrTaskTypesFromUpdates (
   mongoUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   transactorUrl: string
 ): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup',
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
+    const _client = await client.getClient()
+    const db = getWorkspaceMongoDB(_client, workspaceId)
     const hierarchy = connection.getHierarchy()
     const descr = connection.getModel().getObject(recruit.descriptors.VacancyType)
     const knownCategories = [
@@ -1026,7 +1031,330 @@ export async function restoreHrTaskTypesFromUpdates (
   } catch (err: any) {
     console.trace(err)
   } finally {
-    await client.close()
+    client.close()
     await connection.close()
   }
 }
+
+export async function removeDuplicateIds (
+  ctx: MeasureContext,
+  mongodbUri: string,
+  storageAdapter: StorageAdapter,
+  accountsUrl: string,
+  initWorkspacesStr: string
+): Promise<void> {
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // const state = 'REMOVE_DUPLICATE_IDS'
+  // const [accountsDb, closeAccountsDb] = await getAccountDB(mongodbUri)
+  // const mongoClient = getMongoClient(mongodbUri)
+  // const _client = await mongoClient.getClient()
+  // // disable spaces while change hardocded ids
+  // const skippedDomains: string[] = [DOMAIN_DOC_INDEX_STATE, DOMAIN_BENCHMARK, DOMAIN_TX, DOMAIN_SPACE]
+  // try {
+  //   const workspaces = await listWorkspacesRaw(accountsDb)
+  //   workspaces.sort((a, b) => b.status.lastVisit - a.status.lastVisit)
+  //   const initWorkspaces = initWorkspacesStr.split(';')
+  //   const initWS = workspaces.filter((p) => initWorkspaces.includes(p.uuid))
+  //   const ids = new Map<string, RelatedDocument[]>()
+  //   for (const workspace of initWS) {
+  //     const db = getWorkspaceMongoDB(_client, workspace.dataId)
+
+  //     const txex = await db.collection(DOMAIN_TX).find<TxCUD<Doc>>({}).toArray()
+  //     const txesArr = []
+  //     for (const obj of txex) {
+  //       if (obj.objectSpace === core.space.Model) {
+  //         continue
+  //       }
+  //       txesArr.push({ _id: obj._id, _class: obj._class })
+  //     }
+  //     txesArr.filter((it, idx, array) => array.findIndex((pt) => pt._id === it._id) === idx)
+  //     ids.set(DOMAIN_TX, txesArr)
+
+  //     const colls = await db.collections()
+  //     for (const coll of colls) {
+  //       if (skippedDomains.includes(coll.collectionName)) continue
+  //       const arr = ids.get(coll.collectionName) ?? []
+  //       const data = await coll.find<RelatedDocument>({}, { projection: { _id: 1, _class: 1 } }).toArray()
+  //       for (const obj of data) {
+  //         arr.push(obj)
+  //       }
+  //       ids.set(coll.collectionName, arr)
+  //     }
+
+  //     const arr = ids.get(DOMAIN_MODEL) ?? []
+  //     const data = await db
+  //       .collection(DOMAIN_TX)
+  //       .find<TxCUD<Doc>>(
+  //       { objectSpace: core.space.Model },
+  //       { projection: { objectId: 1, objectClass: 1, modifiedBy: 1 } }
+  //     )
+  //       .toArray()
+  //     for (const obj of data) {
+  //       if (obj.modifiedBy === core.account.ConfigUser || obj.modifiedBy === core.account.System) {
+  //         continue
+  //       }
+  //       if (obj.objectId === core.account.ConfigUser || obj.objectId === core.account.System) continue
+  //       arr.push({ _id: obj.objectId, _class: obj.objectClass })
+  //     }
+  //     arr.filter((it, idx, array) => array.findIndex((pt) => pt._id === it._id) === idx)
+  //     ids.set(DOMAIN_MODEL, arr)
+  //   }
+
+  //   for (let index = 0; index < workspaces.length; index++) {
+  //     const workspace = workspaces[index]
+  //     // we should skip init workspace first time, for case if something went wrong
+  //     if (initWorkspaces.includes(workspace.uuid)) continue
+
+  //     ctx.info(`Processing workspace ${workspace.name ?? workspace.url ?? workspace.uuid}`)
+  //     const workspaceId = workspace.uuid
+  //     const wsDataId = workspace.dataId ?? workspaceId
+  //     const db = getWorkspaceMongoDB(_client, workspace.dataId)
+  //     const plugins = [workspace.uuid]
+  //     if (workspace.dataId != null) {
+  //       plugins.push(workspace.dataId)
+  //     }
+
+  //     const check = await db.collection(DOMAIN_MIGRATION).findOne({ state, plugin: { $in: plugins } })
+  //     if (check != null) continue
+
+  //     const endpoint = await getTransactorEndpoint(generateToken(systemAccountUuid, workspaceId, { service: 'tool' }))
+  //     const wsClient = (await connect(endpoint, workspaceId, undefined, {
+  //       model: 'upgrade'
+  //     })) as CoreClient & BackupClient
+  //     for (const set of ids) {
+  //       if (set[1].length === 0) continue
+  //       for (const doc of set[1]) {
+  //         await updateId(ctx, wsClient, db, storageAdapter, wsDataId, doc)
+  //       }
+  //     }
+  //     await wsClient.sendForceClose()
+  //     await wsClient.close()
+  //     await db.collection<MigrationState>(DOMAIN_MIGRATION).insertOne({
+  //       _id: generateId(),
+  //       state,
+  //       plugin: workspace.uuid,
+  //       space: core.space.Configuration,
+  //       modifiedOn: Date.now(),
+  //       modifiedBy: core.account.System,
+  //       _class: core.class.MigrationState
+  //     })
+  //     ctx.info(`Done ${index} / ${workspaces.length - initWorkspaces.length}`)
+  //   }
+  // } catch (err: any) {
+  //   console.trace(err)
+  // } finally {
+  //   mongoClient.close()
+  //   closeAccountsDb()
+  // }
+}
+
+// async function update<T extends Doc> (h: Hierarchy, db: Db, doc: T, update: DocumentUpdate<T>): Promise<void> {
+//   await db
+//     .collection(h.getDomain(doc._class))
+//     .updateOne({ _id: doc._id }, { $set: { ...update, '%hash%': Date.now().toString(16) } })
+// }
+
+// async function updateId (
+//   ctx: MeasureContext,
+//   client: CoreClient & BackupClient,
+//   db: Db,
+//   storage: StorageAdapter,
+//   workspaceId: WorkspaceDataId,
+//   docRef: RelatedDocument
+// ): Promise<void> {
+//   const h = client.getHierarchy()
+//   const txop = new TxOperations(client, core.account.System)
+//   try {
+//     // chech the doc exists
+//     const doc = await client.findOne(docRef._class, { _id: docRef._id })
+//     if (doc === undefined) return
+//     const domain = h.getDomain(doc._class)
+//     const newId = generateId()
+
+//     // update txes
+//     await db
+//       .collection(DOMAIN_TX)
+//       .updateMany({ objectId: doc._id }, { $set: { objectId: newId, '%hash%': Date.now().toString(16) } })
+
+//     // update nested txes
+//     await db
+//       .collection(DOMAIN_TX)
+//       .updateMany({ 'tx.objectId': doc._id }, { $set: { 'tx.objectId': newId, '%hash%': Date.now().toString(16) } })
+
+//     // we have generated ids for calendar, let's update in
+//     if (h.isDerived(doc._class, core.class.Account)) {
+//       await updateId(ctx, client, db, storage, workspaceId, {
+//         _id: `${doc._id}_calendar` as Ref<Doc>,
+//         _class: calendar.class.Calendar
+//       })
+//     }
+
+//     // update backlinks
+//     const backlinks = await client.findAll(activity.class.ActivityReference, { attachedTo: doc._id })
+//     for (const backlink of backlinks) {
+//       const contentDoc = await client.findOne(backlink.attachedDocClass ?? backlink.srcDocClass, {
+//         _id: backlink.attachedDocId ?? backlink.srcDocClass
+//       })
+//       if (contentDoc !== undefined) {
+//         const attrs = h.getAllAttributes(contentDoc._class)
+//         for (const [attrName, attr] of attrs) {
+//           if (attr.type._class === core.class.TypeMarkup) {
+//             const markup = (contentDoc as any)[attrName] as Markup
+//             const newMarkup = markup.replaceAll(doc._id, newId)
+//             await update(h, db, contentDoc, { [attrName]: newMarkup })
+//           } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
+//             const collabId = makeDocCollabId(contentDoc, attr.name)
+//             await updateYDoc(ctx, collabId, storage, workspaceId, contentDoc, newId, doc)
+//           }
+//         }
+//       }
+//       await update(h, db, backlink, { attachedTo: newId, message: backlink.message.replaceAll(doc._id, newId) })
+//     }
+
+//     // blobs
+
+//     await updateRefs(txop, newId, doc)
+
+//     await updateArrRefs(txop, newId, doc)
+
+//     // update docIndexState
+//     const docIndexState = await client.findOne(core.class.DocIndexState, { doc: doc._id })
+//     if (docIndexState !== undefined) {
+//       const { _id, space, modifiedBy, modifiedOn, createdBy, createdOn, _class, ...data } = docIndexState
+//       await txop.createDoc(docIndexState._class, docIndexState.space, {
+//         ...data,
+//         removed: false
+//       })
+//       await txop.update(docIndexState, { removed: true, needIndex: true })
+//     }
+
+//     if (domain !== DOMAIN_MODEL) {
+//       const raw = await db.collection(domain).findOne({ _id: doc._id })
+//       await db.collection(domain).insertOne({
+//         ...raw,
+//         _id: newId as any,
+//         '%hash%': Date.now().toString(16)
+//       })
+//       await db.collection(domain).deleteOne({ _id: doc._id })
+//     }
+//   } catch (err: any) {
+//     console.error('Error processing', docRef._id)
+//   }
+// }
+
+// async function updateYDoc (
+//   ctx: MeasureContext,
+//   _id: CollaborativeDoc,
+//   storage: StorageAdapter,
+//   workspaceId: WorkspaceDataId,
+//   contentDoc: Doc,
+//   newId: Ref<Doc>,
+//   doc: RelatedDocument
+// ): Promise<void> {
+//   try {
+//     const ydoc = await loadCollabYdoc(ctx, storage, workspaceId, _id)
+//     if (ydoc === undefined) {
+//       ctx.error('document content not found', { document: contentDoc._id })
+//       return
+//     }
+//     const buffer = yDocToBuffer(ydoc)
+
+//     const updatedYDoc = updateYDocContent(buffer, (body: Record<string, any>) => {
+//       const str = JSON.stringify(body)
+//       const updated = str.replaceAll(doc._id, newId)
+//       return JSON.parse(updated)
+//     })
+
+//     if (updatedYDoc !== undefined) {
+//       await saveCollabYdoc(ctx, storage, workspaceId, _id, updatedYDoc)
+//     }
+//   } catch {
+//     // do nothing, the collaborative doc does not sem to exist yet
+//   }
+// }
+
+// async function updateRefs (client: TxOperations, newId: Ref<Doc>, doc: RelatedDocument): Promise<void> {
+//   const h = client.getHierarchy()
+//   const ancestors = h.getAncestors(doc._class)
+//   const reftos = (await client.findAll(core.class.Attribute, { 'type._class': core.class.RefTo })).filter((it) => {
+//     const to = it.type as RefTo<Doc>
+//     return ancestors.includes(h.getBaseClass(to.to))
+//   })
+//   for (const attr of reftos) {
+//     if (attr.name === '_id') {
+//       continue
+//     }
+//     const descendants = h.getDescendants(attr.attributeOf)
+//     for (const d of descendants) {
+//       if (h.isDerived(d, core.class.BenchmarkDoc)) {
+//         continue
+//       }
+//       if (h.isDerived(d, core.class.Tx)) {
+//         continue
+//       }
+//       if (h.findDomain(d) !== undefined) {
+//         while (true) {
+//           const values = await client.findAll(d, { [attr.name]: doc._id }, { limit: 100 })
+//           if (values.length === 0) {
+//             break
+//           }
+
+//           const builder = client.apply(doc._id)
+//           for (const v of values) {
+//             await updateAttribute(builder, v, d, { key: attr.name, attr }, newId, true)
+//           }
+//           const modelTxes = builder.txes.filter((p) => p.objectSpace === core.space.Model)
+//           builder.txes = builder.txes.filter((p) => p.objectSpace !== core.space.Model)
+//           for (const modelTx of modelTxes) {
+//             await client.tx(modelTx)
+//           }
+//           await builder.commit()
+//         }
+//       }
+//     }
+//   }
+// }
+
+// async function updateArrRefs (client: TxOperations, newId: Ref<Doc>, doc: RelatedDocument): Promise<void> {
+//   const h = client.getHierarchy()
+//   const ancestors = h.getAncestors(doc._class)
+//   const arrs = await client.findAll(core.class.Attribute, { 'type._class': core.class.ArrOf })
+//   for (const attr of arrs) {
+//     if (attr.name === '_id') {
+//       continue
+//     }
+//     const to = attr.type as ArrOf<Doc>
+//     if (to.of._class !== core.class.RefTo) continue
+//     const refto = to.of as RefTo<Doc>
+//     if (ancestors.includes(h.getBaseClass(refto.to))) {
+//       const descendants = h.getDescendants(attr.attributeOf)
+//       for (const d of descendants) {
+//         if (h.isDerived(d, core.class.BenchmarkDoc)) {
+//           continue
+//         }
+//         if (h.isDerived(d, core.class.Tx)) {
+//           continue
+//         }
+//         if (h.findDomain(d) !== undefined) {
+//           while (true) {
+//             const values = await client.findAll(attr.attributeOf, { [attr.name]: doc._id }, { limit: 100 })
+//             if (values.length === 0) {
+//               break
+//             }
+//             const builder = client.apply(doc._id)
+//             for (const v of values) {
+//               await updateAttribute(builder, v, d, { key: attr.name, attr }, newId, true)
+//             }
+//             const modelTxes = builder.txes.filter((p) => p.objectSpace === core.space.Model)
+//             builder.txes = builder.txes.filter((p) => p.objectSpace !== core.space.Model)
+//             for (const modelTx of modelTxes) {
+//               await client.tx(modelTx)
+//             }
+//             await builder.commit()
+//           }
+//         }
+//       }
+//     }
+//   }
+// }

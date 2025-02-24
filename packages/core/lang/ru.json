@@ -36,7 +36,7 @@
     "Enum": "Справочник",
     "Members": "Участники",
     "Hyperlink": "URL",
-    "Collaborative": "Коллаборативный",
+    "MarkupBlobRef": "Коллаборативный",
     "Object": "Объект",
     "System": "Система",
     "CreatedBy": "Создан",
@@ -62,6 +62,10 @@
     "AutoJoin": "Автоприсоединение",
     "AutoJoinDescr": "Автоматически присоединять новых сотрудников к этому пространству",
     "BlobSize": "Размер",
-    "BlobContentType": "Тип контента"
+    "BlobContentType": "Тип контента",
+    "Relation": "Связь",
+    "Relations": "Связи",
+    "AddRelation": "Добавить связь",
+    "PersonId": "Персона"
   }
 }

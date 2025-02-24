@@ -31,7 +31,7 @@ export class ClassProperties {
   inputName = (): Locator => this.page.getByPlaceholder('Name')
   createButton = (): Locator => this.page.getByRole('button', { name: 'Create' })
   enterTextString = (): Locator => this.page.getByPlaceholder('Type text...')
-  confirmChange = (): Locator => this.page.locator('.ml-2 > .antiButton')
+  confirmChange = (): Locator => this.page.locator('.selectPopup button')
 
   async selectDataType (dataType: DataType): Promise<void> {
     switch (dataType) {

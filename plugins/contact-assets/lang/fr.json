@@ -63,6 +63,8 @@
     "AddMember": "Ajouter un membre",
     "KickEmployee": "Exclure l'employé",
     "KickEmployeeDescr": "Êtes-vous sûr de vouloir exclure l'employé de l'espace de travail ? Cette action est irréversible",
+    "ResendInvite": "Renvoyer l'Invitation",
+    "ResendInviteDescr": "Êtes-vous sûr de vouloir renvoyer une invitation à cet utilisateur pour l'espace de travail ?",
     "Email": "E-mail",
     "CreateEmployee": "Employé",
     "Inactive": "Inactif",
@@ -102,6 +104,13 @@
     "People": "Personnes",
     "For": "Pour",
     "SelectUsers": "Sélectionner des utilisateurs",
-    "AddGuest": "Ajouter un invité"
+    "AddGuest": "Ajouter un invité",
+    "ViewProfile": "Voir le profil",
+    "Viber": "Viber",
+    "ViberPlaceholder": "Viber",
+    "SocialId": "Identifiant social",
+    "SocialIds": "Identifiants sociaux",
+    "Type": "Type",
+    "Confirmed": "Confirmé"
   }
 }

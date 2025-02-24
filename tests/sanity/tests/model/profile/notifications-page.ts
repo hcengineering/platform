@@ -36,7 +36,7 @@ export class NotificationsPage {
   documents = (): Locator => this.page.getByRole('button', { name: 'Documents' })
   requests = (): Locator => this.page.getByRole('button', { name: 'Requests' })
   todos = (): Locator => this.page.getByRole('button', { name: "Todo's" })
-  chatMessageToggle = (): Locator => this.page.locator('div:nth-child(6) > .flex-between > .toggle > .toggle-switch')
+  chatMessageToggle = (): Locator => this.page.locator('.grid > div:nth-child(6)')
 
   constructor (page: Page) {
     this.page = page

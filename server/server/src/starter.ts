@@ -1,39 +1,33 @@
 export interface ServerEnv {
-  url: string
-  elasticUrl: string
+  dbUrl: string
+  mongoUrl?: string
+  fulltextUrl: string
   serverSecret: string
-  rekoniUrl: string
   frontUrl: string
-  uploadUrl: string
+  filesUrl: string | undefined
   sesUrl: string | undefined
+  sesAuthToken: string | undefined
   accountsUrl: string
   serverPort: number
   enableCompression: boolean
-  elasticIndexName: string
-  pushPublicKey: string | undefined
-  pushPrivateKey: string | undefined
-  pushSubject: string | undefined
   brandingPath: string | undefined
 }
 
 export function serverConfigFromEnv (): ServerEnv {
   const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
-  const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'true') === 'true'
+  const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'false') === 'true'
 
-  const url = process.env.MONGO_URL
-  if (url === undefined) {
-    console.error('please provide mongodb url')
+  const dbUrl = process.env.DB_URL
+  if (dbUrl === undefined) {
+    console.error('please provide DB_URL')
     process.exit(1)
   }
 
-  const elasticUrl = process.env.ELASTIC_URL
-  if (elasticUrl === undefined) {
-    console.error('please provide elastic url')
-    process.exit(1)
-  }
-  const elasticIndexName = process.env.ELASTIC_INDEX_NAME
-  if (elasticIndexName === undefined) {
-    console.log('Please provide ELASTIC_INDEX_NAME')
+  const mongoUrl = process.env.MONGO_URL
+
+  const fulltextUrl = process.env.FULLTEXT_URL
+  if (fulltextUrl === undefined) {
+    console.error('please provide Fulltext URL')
     process.exit(1)
   }
 
@@ -43,25 +37,15 @@ export function serverConfigFromEnv (): ServerEnv {
     process.exit(1)
   }
 
-  const rekoniUrl = process.env.REKONI_URL
-  if (rekoniUrl === undefined) {
-    console.log('Please provide REKONI_URL url')
-    process.exit(1)
-  }
-
   const frontUrl = process.env.FRONT_URL
   if (frontUrl === undefined) {
     console.log('Please provide FRONT_URL url')
     process.exit(1)
   }
 
-  const uploadUrl = process.env.UPLOAD_URL
-  if (uploadUrl === undefined) {
-    console.log('Please provide UPLOAD_URL url')
-    process.exit(1)
-  }
-
+  const filesUrl = process.env.FILES_URL
   const sesUrl = process.env.SES_URL
+  const sesAuthToken = process.env.SES_AUTH_TOKEN
 
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -69,26 +53,20 @@ export function serverConfigFromEnv (): ServerEnv {
     process.exit(1)
   }
 
-  const pushPublicKey = process.env.PUSH_PUBLIC_KEY
-  const pushPrivateKey = process.env.PUSH_PRIVATE_KEY
-  const pushSubject = process.env.PUSH_SUBJECT
   const brandingPath = process.env.BRANDING_PATH
 
   return {
-    url,
-    elasticUrl,
-    elasticIndexName,
+    dbUrl,
+    mongoUrl,
+    fulltextUrl,
     serverSecret,
-    rekoniUrl,
     frontUrl,
-    uploadUrl,
+    filesUrl,
     sesUrl,
+    sesAuthToken,
     accountsUrl,
     serverPort,
     enableCompression,
-    pushPublicKey,
-    pushPrivateKey,
-    pushSubject,
     brandingPath
   }
 }

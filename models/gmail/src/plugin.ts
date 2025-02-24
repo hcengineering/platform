@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref } from '@hcengineering/core'
+import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { gmailId } from '@hcengineering/gmail'
 import gmail from '@hcengineering/gmail-resources/src/plugin'
@@ -52,6 +52,7 @@ export default mergeIds(gmailId, gmail, {
     GmailWriteMessage: '' as AnyComponent
   },
   function: {
-    HasEmail: '' as Resource<(doc?: Doc | Doc[] | undefined) => Promise<boolean>>
+    HasEmail: '' as Resource<(doc?: Doc | Doc[] | undefined) => Promise<boolean>>,
+    MessageTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

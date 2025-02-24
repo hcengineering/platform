@@ -14,7 +14,6 @@
 //
 
 import {
-  type AttachedDoc,
   type Class,
   type Data,
   type Doc,
@@ -28,7 +27,6 @@ import {
   type Space,
   type Tx,
   type TxApplyIf,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxCUD,
   type TxMixin,
@@ -46,7 +44,7 @@ import { TDoc } from './core'
 @Model(core.class.Tx, core.class.Doc, DOMAIN_TX)
 export class TTx extends TDoc implements Tx {
   @Prop(TypeRef(core.class.Space), core.string.Space)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
   @Hidden()
     objectSpace!: Ref<Space>
 }
@@ -62,7 +60,7 @@ export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
     objectId!: Ref<T>
 
   @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
   @Hidden()
     objectClass!: Ref<Class<T>>
 }
@@ -70,12 +68,6 @@ export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
 @Model(core.class.TxCreateDoc, core.class.TxCUD)
 export class TTxCreateDoc<T extends Doc> extends TTxCUD<T> implements TxCreateDoc<T> {
   attributes!: Data<T>
-}
-
-@Model(core.class.TxCollectionCUD, core.class.TxCUD)
-export class TTxCollectionCUD<T extends Doc, P extends AttachedDoc> extends TTxCUD<T> implements TxCollectionCUD<T, P> {
-  collection!: string
-  tx!: TxCUD<P>
 }
 
 @Model(core.class.TxMixin, core.class.TxCUD)

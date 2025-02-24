@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -25,9 +25,6 @@ export interface Config {
   Port: number
 
   AccountsUrl: string
-  TransactorUrl: string
-  MongoUrl: string
-  UploadUrl: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -35,13 +32,10 @@ const envMap: { [key in keyof Config]: string } = {
   Secret: 'SECRET',
   Interval: 'INTERVAL',
   Port: 'COLLABORATOR_PORT',
-  AccountsUrl: 'ACCOUNTS_URL',
-  TransactorUrl: 'TRANSACTOR_URL',
-  MongoUrl: 'MONGO_URL',
-  UploadUrl: 'UPLOAD_URL'
+  AccountsUrl: 'ACCOUNTS_URL'
 }
 
-const required: Array<keyof Config> = ['Secret', 'ServiceID', 'Port', 'AccountsUrl', 'TransactorUrl', 'MongoUrl']
+const required: Array<keyof Config> = ['Secret', 'ServiceID', 'Port', 'AccountsUrl']
 
 const config: Config = (() => {
   const params: Partial<Config> = {
@@ -49,10 +43,7 @@ const config: Config = (() => {
     ServiceID: process.env[envMap.ServiceID] ?? 'collaborator-service',
     Interval: parseInt(process.env[envMap.Interval] ?? '30000'),
     Port: parseInt(process.env[envMap.Port] ?? '3078'),
-    AccountsUrl: process.env[envMap.AccountsUrl],
-    TransactorUrl: process.env[envMap.TransactorUrl],
-    MongoUrl: process.env[envMap.MongoUrl],
-    UploadUrl: process.env[envMap.UploadUrl] ?? '/files'
+    AccountsUrl: process.env[envMap.AccountsUrl]
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])

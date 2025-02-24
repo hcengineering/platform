@@ -23,9 +23,10 @@ export class ApplicationsPage extends CommonRecruitingPage {
   readonly buttonCreateNewApplication = (): Locator =>
     this.page.locator('form[id="recruit:string:CreateApplication"] button[type="submit"]')
 
-  readonly buttonTabCreated = (): Locator => this.page.locator('div[data-id="tab-created"]')
+  readonly buttonTabCreated = (): Locator => this.page.locator('label[data-id="tab-created"]')
   readonly textTableFirstCell = (): Locator => this.page.locator('div[class$="firstCell"]')
-  readonly buttonTypeSelector = (): Locator => this.page.locator('div[class*="header"] div[class*="title"] button')
+  readonly buttonTypeSelector = (): Locator =>
+    this.page.locator('div[class*="hulyHeader-container"] div[class*="hulyHeader-titleGroup"] button')
 
   // ACTIONS
   async clickButtonTabCreated (): Promise<void> {
@@ -46,7 +47,8 @@ export class ApplicationsPage extends CommonRecruitingPage {
       lastName: `TestLast-${generateId(2)}`
     }
 
-    await this.selectType('Default vacancy')
+    // TODO: rectify vacancy types in test workspace
+    await this.selectType('Default vacancy (custom)', true)
     await this.buttonCreateApplication().click()
     await this.buttonTalentSelector().click()
     await this.pressCreateButtonSelectPopup(this.page)
@@ -77,6 +79,9 @@ export class ApplicationsPage extends CommonRecruitingPage {
       .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('div[class*="firstCell"]')
       .click()
+    await expect(
+      this.page.locator('div.hulyHeader-container div.hulyHeader-titleGroup', { hasText: talentName.lastName })
+    ).toBeVisible({ timeout: 1000 })
   }
 
   async checkApplicationState (talentName: TalentName, done: string): Promise<void> {
@@ -101,8 +106,8 @@ export class ApplicationsPage extends CommonRecruitingPage {
     await this.selectFromDropdown(this.page, status)
   }
 
-  async selectType (type: string): Promise<void> {
+  async selectType (type: string, fullWordFilter: boolean = false): Promise<void> {
     await this.buttonTypeSelector().click()
-    await this.selectMenuItem(this.page, type)
+    await this.selectMenuItem(this.page, type, fullWordFilter)
   }
 }

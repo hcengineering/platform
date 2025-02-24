@@ -25,6 +25,9 @@
     showPopup
   } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
+  import { Analytics } from '@hcengineering/analytics'
+  import { DocumentEvents } from '@hcengineering/document'
+
   import document from '../plugin'
   import { getDocumentIdFromFragment } from '../utils'
   import CreateDocument from './CreateDocument.svelte'
@@ -35,14 +38,14 @@
 
   const client = getClient()
   const query = createQuery()
-
-  const me = getCurrentAccount()
+  const myAcc = getCurrentAccount()
+  const socialStrings = myAcc.socialIds
 
   let loading = true
   let hasTeamspace = false
   query.query(
     document.class.Teamspace,
-    { archived: false, members: me._id },
+    { archived: false, members: { $in: socialStrings } },
     (res) => {
       hasTeamspace = res.length > 0
       loading = false
@@ -53,6 +56,7 @@
   $: parent = getDocumentIdFromFragment(currentFragment ?? '')
 
   async function newDocument (): Promise<void> {
+    Analytics.handleEvent(DocumentEvents.CreateDocumentButtonClicked)
     showPopup(CreateDocument, { space: currentSpace, parent }, 'top', async (id) => {
       if (id !== undefined && id !== null) {
         const doc = await client.findOne(document.class.Document, { _id: id })
@@ -75,7 +79,7 @@
     }
   }
 
-  const dropdownItems = hasAccountRole(me, AccountRole.User)
+  const dropdownItems = hasAccountRole(myAcc, AccountRole.User)
     ? [
         { id: document.string.CreateDocument, label: document.string.CreateDocument },
         { id: document.string.CreateTeamspace, label: document.string.CreateTeamspace }

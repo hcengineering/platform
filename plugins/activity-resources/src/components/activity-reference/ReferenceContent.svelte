@@ -13,22 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, MessageViewer } from '@hcengineering/presentation'
-  import { Ref } from '@hcengineering/core'
-  import activity, { ActivityReference } from '@hcengineering/activity'
+  import { MessageViewer } from '@hcengineering/presentation'
+  import { ActivityReference } from '@hcengineering/activity'
 
-  export let _id: Ref<ActivityReference> | undefined = undefined
   export let value: ActivityReference | undefined = undefined
-
-  const query = createQuery()
-
-  $: if (value === undefined && _id !== undefined) {
-    query.query(activity.class.ActivityReference, { _id }, (res) => {
-      value = res.shift()
-    })
-  } else {
-    query.unsubscribe()
-  }
 </script>
 
 {#if value}

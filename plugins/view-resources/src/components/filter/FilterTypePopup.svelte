@@ -178,11 +178,11 @@
 
   const keyDown = (event: KeyboardEvent, index: number) => {
     if (event.key === 'ArrowDown') {
-      actionElements[(index + 1) % actionElements.length].focus()
+      actionElements[(index + 1) % actionElements.length]?.focus()
     }
 
     if (event.key === 'ArrowUp') {
-      actionElements[(actionElements.length + index - 1) % actionElements.length].focus()
+      actionElements[(actionElements.length + index - 1) % actionElements.length]?.focus()
     }
 
     if (event.key === 'ArrowLeft') {

@@ -30,7 +30,6 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "@types/ws": "^8.5.3",
     "ts-node": "^10.8.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -44,11 +43,12 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-ws": "^0.6.11",
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/s3": "^0.6.0",
-    "elastic-apm-node": "~3.26.0",
+    "@hcengineering/datalake": "^0.6.0",
+    "@hcengineering/storage": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11"
   }
 }

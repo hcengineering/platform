@@ -67,7 +67,7 @@
   let oldX: number = -1
   let oldY: number = -1
 
-  let cursor: string = 'default'
+  let cursor: string = ''
   $: document.body.style.cursor = cursor
 
   async function updateRoom (id: Ref<Room>): Promise<void> {
@@ -282,7 +282,7 @@
       roomsConf[lockedID].clearShadow()
     }
     window.removeEventListener('mouseup', docMouseUp)
-    cursor = 'default'
+    cursor = ''
     lockedRoom.set('')
     lockedID = -1
   }
@@ -290,7 +290,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header allowFullsize adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="actions">
       <ButtonIcon icon={IconAdd} size={'small'} on:click={addRoom} />

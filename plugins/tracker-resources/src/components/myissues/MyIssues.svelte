@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
-  import type { IntlString } from '@hcengineering/platform'
+  import type { IntlString, Asset } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
@@ -26,11 +26,12 @@
   import IssuesView from '../issues/IssuesView.svelte'
 
   export let config: [string, IntlString, object][] = []
+  export let icon: Asset | undefined = undefined
 
+  const socialIds = getCurrentAccount().socialIds
   const dispatch = createEventDispatcher()
-  const currentUser = getCurrentAccount() as PersonAccount
-  const assigned = { assignee: currentUser.person }
-  const created = { createdBy: currentUser._id }
+  const assigned = { assignee: getCurrentEmployee() }
+  const created = { createdBy: { $in: socialIds } }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
@@ -63,7 +64,7 @@
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
     tracker.class.Issue,
-    { 'notification:mixin:Collaborators.collaborators': getCurrentAccount()._id },
+    { 'notification:mixin:Collaborators.collaborators': { $in: socialIds } },
     (result) => {
       const newSub = result.map((p) => p._id as Ref<Doc> as Ref<Issue>)
       const curSub = subscribed._id.$in
@@ -74,18 +75,6 @@
     { sort: { _id: 1 }, projection: { _id: 1 } }
   )
 
-  const archivedProjectQuery = createQuery()
-  let archived: Ref<Project>[] = []
-
-  archivedProjectQuery.query(
-    tracker.class.Project,
-    { archived: true },
-    (res) => {
-      archived = res.map((it) => it._id)
-    },
-    { projection: { _id: 1 } }
-  )
-
   $: queries = { assigned, active, backlog, created, subscribed }
   $: mode = $resolvedLocationStore.query?.mode ?? undefined
   $: if (mode === undefined || (queries as any)[mode] === undefined) {
@@ -93,9 +82,7 @@
   }
   $: if (mode !== undefined) {
     query = { ...(queries as any)[mode] }
-    if (query?.space === undefined) {
-      query = { ...query, space: { $nin: archived } }
-    }
+
     modeSelectorProps = {
       config,
       mode,
@@ -105,5 +92,5 @@
 </script>
 
 {#if query !== undefined && modeSelectorProps !== undefined}
-  <IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />
+  <IssuesView {query} space={undefined} {icon} title={tracker.string.MyIssues} {modeSelectorProps} />
 {/if}

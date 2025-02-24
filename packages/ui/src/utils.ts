@@ -15,10 +15,12 @@
 
 import { generateId } from '@hcengineering/core'
 import type { IntlString, Metadata } from '@hcengineering/platform'
-import { setMetadata } from '@hcengineering/platform'
+import { setMetadata, translate } from '@hcengineering/platform'
 import autolinker from 'autolinker'
 import { writable } from 'svelte/store'
 import { NotificationPosition, NotificationSeverity, notificationsStore, type Notification } from '.'
+import ui, { DAY, HOUR, MINUTE } from '..'
+import RootStatusComponent from './components/RootStatusComponent.svelte'
 import { deviceSizes, type AnyComponent, type AnySvelteComponent, type WidthType } from './types'
 
 /**
@@ -101,7 +103,8 @@ export function addNotification (
   subTitle: string,
   component: AnyComponent | AnySvelteComponent,
   params?: Record<string, any>,
-  severity: NotificationSeverity = NotificationSeverity.Success
+  severity: NotificationSeverity = NotificationSeverity.Success,
+  group?: string
 ): void {
   const closeTimeout = parseInt(localStorage.getItem('#platform.notification.timeout') ?? '10000')
   const notification: Notification = {
@@ -109,7 +112,8 @@ export function addNotification (
     title,
     subTitle,
     severity,
-    position: NotificationPosition.BottomRight,
+    group,
+    position: NotificationPosition.BottomLeft,
     component,
     closeTimeout,
     params
@@ -210,8 +214,12 @@ export function replaceURLs (text: string): string {
  * @returns {string} string with parsed URL
  */
 export function parseURL (text: string): string {
-  const matches = autolinker.parse(text, { urls: true })
-  return matches.length > 0 ? matches[0].getAnchorHref() : ''
+  try {
+    const matches = autolinker.parse(text ?? '', { urls: true })
+    return matches.length > 0 ? matches[0].getAnchorHref() : ''
+  } catch (err: any) {
+    return ''
+  }
 }
 
 /**
@@ -296,4 +304,100 @@ export class ThrottledCaller {
 
 export const testing = (localStorage.getItem('#platform.testing.enabled') ?? 'false') === 'true'
 
-export const rootBarExtensions = writable<Array<['left' | 'right', AnyComponent]>>([])
+export const rootBarExtensions = writable<
+Array<
+[
+  'left' | 'right',
+  {
+    id: string
+    component: AnyComponent | AnySvelteComponent
+    props?: Record<string, any>
+    order: number
+  }
+]
+>
+>([])
+
+export async function formatDuration (duration: number, language: string): Promise<string> {
+  let text = ''
+  const days = Math.floor(duration / DAY)
+  if (days > 0) {
+    text += await translate(ui.string.DaysShort, { value: days }, language)
+  }
+  const hours = Math.floor((duration % DAY) / HOUR)
+  if (hours > 0) {
+    text += ' '
+    text += await translate(ui.string.HoursShort, { value: hours }, language)
+  }
+  const minutes = Math.floor((duration % HOUR) / MINUTE)
+  if (minutes > 0) {
+    text += ' '
+    text += await translate(ui.string.MinutesShort, { value: minutes }, language)
+  }
+  text = text.trim()
+  return text
+}
+
+export function pushRootBarComponent (pos: 'left' | 'right', component: AnyComponent, order?: number): void {
+  rootBarExtensions.update((cur) => {
+    if (cur.find((p) => p[1].component === component) === undefined) {
+      cur.push([
+        pos,
+        {
+          id: component,
+          component,
+          order: order ?? 1000
+        }
+      ])
+    }
+    return cur
+  })
+}
+export function removeRootBarComponent (id: string): void {
+  rootBarExtensions.update((cur) => {
+    return cur.filter((p) => p[1].id !== id)
+  })
+}
+
+export function pushRootBarProgressComponent (
+  id: string,
+  label: IntlString,
+  // In case onProgress return value >=100, it will be closed
+  onProgress: (props?: Record<string, any>) => number,
+  onCancel?: (props?: Record<string, any>) => void,
+  props?: Record<string, any>,
+  labelProps?: Record<string, any>,
+  interval?: number
+): void {
+  rootBarExtensions.update((cur) => {
+    const p = cur.find((p) => p[1].id === id)
+    if (p === undefined) {
+      cur.push([
+        'left',
+        {
+          id,
+          component: RootStatusComponent,
+          order: 10,
+          props: {
+            label,
+            onProgress,
+            onCancel,
+            props,
+            labelProps,
+            interval: interval ?? 100
+          }
+        }
+      ])
+    } else {
+      p[1].props = {
+        label,
+        onProgress,
+        onCancel,
+        props,
+        labelProps,
+        interval: interval ?? 100
+      }
+    }
+    return cur
+  })
+}

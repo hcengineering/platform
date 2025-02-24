@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, onMount } from 'svelte'
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
+  import { afterUpdate, onMount } from 'svelte'
 
-  import { DelayedCaller } from '../utils'
   import ui from '../plugin'
+  import { DelayedCaller } from '../utils'
 
   export let value: string | undefined = undefined
   export let placeholder: IntlString = ui.string.TypeHere
@@ -27,10 +27,10 @@
   export let disabled: boolean = false
 
   let input: HTMLTextAreaElement
-  let phTraslate: string = ''
+  let phTranslate: string = ''
 
-  $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
-    phTraslate = res
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
+    phTranslate = res
   })
 
   onMount(() => {
@@ -48,6 +48,10 @@
   afterUpdate(adjustHeight)
 
   function adjustHeight (): void {
+    if (input == null) {
+      return
+    }
+
     input.style.height = 'auto'
     input.style.height = `${input.scrollHeight + 2}px`
   }
@@ -62,7 +66,7 @@
   bind:value
   bind:this={input}
   {disabled}
-  placeholder={phTraslate}
+  placeholder={phTranslate}
   on:keydown
   on:change
   on:keydown

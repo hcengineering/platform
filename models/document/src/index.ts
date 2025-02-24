@@ -1,5 +1,5 @@
 //
-// Copyright © 2022, 2023 Hardcore Engineering Inc.
+// Copyright © 2022, 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,11 +14,10 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Class, CollaborativeDoc, CollectionSize, Domain, Role, RolesAssignment } from '@hcengineering/core'
-import { IndexKind, Account, Ref, AccountRole } from '@hcengineering/core'
+import type { CollectionSize, MarkupBlobRef, Domain, Rank, Ref, Role, RolesAssignment } from '@hcengineering/core'
+import { PersonId, AccountRole, IndexKind } from '@hcengineering/core'
 import {
   type Document,
-  type DocumentEmbedding,
   type DocumentSnapshot,
   type SavedDocument,
   type Teamspace,
@@ -29,19 +28,20 @@ import {
   Collection,
   Hidden,
   Index,
+  Mixin,
   Model,
   Prop,
+  ReadOnly,
+  TypeCollaborativeDoc,
   TypeNumber,
   TypeRef,
   TypeString,
-  UX,
-  TypeCollaborativeDoc,
-  TypeCollaborativeDocVersion,
-  Mixin
+  TypePersonId,
+  UX
 } from '@hcengineering/model'
-import attachment, { TAttachment } from '@hcengineering/model-attachment'
+import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TAttachedDoc, TTypedSpace } from '@hcengineering/model-core'
+import core, { TDoc, TTypedSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import preference, { TPreference } from '@hcengineering/model-preference'
@@ -50,9 +50,9 @@ import tracker from '@hcengineering/model-tracker'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { getEmbeddedLabel, type Asset } from '@hcengineering/platform'
+import { type Asset, getEmbeddedLabel } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
-import time from '@hcengineering/time'
+import time, { type ToDo, type Todoable } from '@hcengineering/time'
 import document from './plugin'
 
 export { documentId } from '@hcengineering/document'
@@ -62,47 +62,29 @@ export { document as default }
 
 export const DOMAIN_DOCUMENT = 'document' as Domain
 
-@Model(document.class.DocumentEmbedding, attachment.class.Attachment)
-@UX(document.string.Embedding)
-export class TDocumentEmbedding extends TAttachment implements DocumentEmbedding {
-  declare attachedTo: Ref<Document>
-  declare attachedToClass: Ref<Class<Document>>
-}
-
-@Model(document.class.Document, core.class.AttachedDoc, DOMAIN_DOCUMENT)
+@Model(document.class.Document, core.class.Doc, DOMAIN_DOCUMENT)
 @UX(document.string.Document, document.icon.Document, undefined, 'name', undefined, document.string.Documents)
-export class TDocument extends TAttachedDoc implements Document {
-  @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
-  declare attachedTo: Ref<Document>
+export class TDocument extends TDoc implements Document, Todoable {
+  @Prop(TypeString(), document.string.Name)
+  @Index(IndexKind.FullText)
+    title!: string
 
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  @Hidden()
-  declare attachedToClass: Ref<Class<Document>>
+  @Prop(TypeCollaborativeDoc(), document.string.Document)
+    content!: MarkupBlobRef | null
+
+  @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
+    parent!: Ref<Document>
 
   @Prop(TypeRef(core.class.Space), core.string.Space)
   @Index(IndexKind.Indexed)
   @Hidden()
   declare space: Ref<Teamspace>
 
-  @Prop(TypeString(), core.string.Collection)
+  @Prop(TypePersonId(), document.string.LockedBy)
   @Hidden()
-  override collection: 'children' = 'children'
+    lockedBy?: PersonId
 
-  @Prop(TypeString(), document.string.Name)
-  @Index(IndexKind.FullText)
-    name!: string
-
-  @Prop(TypeCollaborativeDoc(), document.string.Document)
-    content!: CollaborativeDoc
-
-  @Prop(TypeRef(core.class.Account), document.string.LockedBy)
-  @Hidden()
-    lockedBy?: Ref<Account>
-
-  @Prop(Collection(document.class.Document), document.string.ChildDocument)
-    children!: CollectionSize<Document>
-
-  @Prop(Collection(document.class.DocumentEmbedding), document.string.Embeddings)
+  @Prop(Collection(attachment.class.Embedding), attachment.string.Embeddings)
     embeddings?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
@@ -127,33 +109,33 @@ export class TDocument extends TAttachedDoc implements Document {
   @Hidden()
   @Index(IndexKind.FullText)
     color?: number
+
+  @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
+    todos?: CollectionSize<ToDo>
+
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    rank!: Rank
 }
 
-@Model(document.class.DocumentSnapshot, core.class.AttachedDoc, DOMAIN_DOCUMENT)
+@Model(document.class.DocumentSnapshot, core.class.Doc, DOMAIN_DOCUMENT)
 @UX(document.string.Version)
-export class TDocumentSnapshot extends TAttachedDoc implements DocumentSnapshot {
-  @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
-  declare attachedTo: Ref<Document>
-
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  declare attachedToClass: Ref<Class<Document>>
-
+export class TDocumentSnapshot extends TDoc implements DocumentSnapshot {
   @Prop(TypeRef(core.class.Space), core.string.Space)
   @Index(IndexKind.Indexed)
   @Hidden()
   declare space: Ref<Teamspace>
 
-  @Prop(TypeString(), core.string.Collection)
-  @Hidden()
-  override collection: 'snapshots' = 'snapshots'
-
   @Prop(TypeString(), document.string.Name)
   @Index(IndexKind.FullText)
-    name!: string
+    title!: string
 
-  @Prop(TypeCollaborativeDocVersion(), document.string.Document)
-  @Hidden()
-    content!: CollaborativeDoc
+  @Prop(TypeCollaborativeDoc(), document.string.Document)
+  @ReadOnly()
+    content!: MarkupBlobRef
+
+  @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
+    parent!: Ref<Document>
 }
 
 @Model(document.class.SavedDocument, preference.class.Preference)
@@ -169,7 +151,7 @@ export class TTeamspace extends TTypedSpace implements Teamspace {}
 @Mixin(document.mixin.DefaultTeamspaceTypeData, document.class.Teamspace)
 @UX(getEmbeddedLabel('Default teamspace type'), document.icon.Document)
 export class TDefaultTeamspaceTypeData extends TTeamspace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 function defineTeamspace (builder: Builder): void {
@@ -219,7 +201,21 @@ function defineTeamspace (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name', 'description']
       },
-      config: ['', 'members', 'private', 'archived']
+      config: ['', 'members', 'private', 'archived'],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
+            label: view.string.HideArchived
+          }
+        ]
+      }
     },
     document.viewlet.TeamspaceTable
   )
@@ -275,7 +271,7 @@ function defineTeamspace (builder: Builder): void {
 }
 
 function defineDocument (builder: Builder): void {
-  builder.createModel(TDocument, TDocumentSnapshot, TDocumentEmbedding, TSavedDocument, TDefaultTeamspaceTypeData)
+  builder.createModel(TDocument, TDocumentSnapshot, TSavedDocument, TDefaultTeamspaceTypeData)
 
   builder.mixin(document.class.Document, core.class.Class, time.mixin.ItemPresenter, {
     presenter: document.component.DocumentToDoPresenter
@@ -308,6 +304,10 @@ function defineDocument (builder: Builder): void {
 
   builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectIcon, {
     component: document.component.DocumentIcon
+  })
+
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: document.component.DocumentInlineEditor
   })
 
   // Actions
@@ -458,20 +458,28 @@ function defineDocument (builder: Builder): void {
       field: 'content',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: document.class.Document,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
       }
     },
     document.ids.ContentNotification
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [document.ids.ContentNotification]
+  })
 
   generateClassNotificationTypes(
     builder,
     document.class.Document,
     document.ids.DocumentNotificationGroup,
     [],
-    ['attachments', 'children', 'comments']
+    ['attachments', 'comments']
   )
 
   // Activity & Inbox
@@ -482,7 +490,7 @@ function defineDocument (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: document.class.Document,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   // Search
@@ -496,7 +504,8 @@ function defineDocument (builder: Builder): void {
       label: document.string.SearchDocument,
       query: document.completion.DocumentQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: document.class.Document
+      classToSearch: document.class.Document,
+      priority: 800
     },
     document.completion.DocumentQueryCategory
   )
@@ -522,6 +531,7 @@ function defineApplication (builder: Builder): void {
             component: workbench.component.SpecialView,
             componentProps: {
               _class: document.class.Teamspace,
+              icon: view.icon.List,
               label: document.string.Teamspaces
             },
             position: 'top'

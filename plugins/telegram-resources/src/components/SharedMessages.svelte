@@ -17,12 +17,14 @@
   import { SharedTelegramMessages } from '@hcengineering/telegram'
   import Messages from './Messages.svelte'
 
-  export let value: SharedTelegramMessages
+  export let value: SharedTelegramMessages | undefined
 </script>
 
-<div class="container">
-  <Messages messages={value.messages} />
-</div>
+{#if value}
+  <div class="container">
+    <Messages messages={value.messages} />
+  </div>
+{/if}
 
 <style lang="scss">
   .container {

@@ -24,6 +24,7 @@
   export let richMessage: boolean = false
   export let params: Record<string, any> = {}
   export let okLabel: IntlString | undefined = undefined
+  export let dangerous: boolean = false
   export let canSubmit = true
   export let action: (() => Promise<void>) | undefined = undefined
 
@@ -48,11 +49,11 @@
   </div>
   <div class="footer">
     <Button
-      focus
+      focus={!dangerous}
       focusIndex={1}
       label={okLabel ?? presentation.string.Ok}
       size={'large'}
-      kind={'primary'}
+      kind={dangerous ? 'dangerous' : 'primary'}
       loading={processing}
       on:click={() => {
         processing = true
@@ -91,6 +92,11 @@
     border-radius: 0.5rem;
     user-select: none;
     box-shadow: var(--theme-popup-shadow);
+
+    @media screen and (max-width: 480px) {
+      width: 100%;
+      max-width: 100%;
+    }
 
     .message {
       margin-bottom: 1.75rem;

@@ -2,8 +2,8 @@
 // Copyright @ 2024 Hardcore Engineering Inc.
 //
 
-import type { Question } from '@hcengineering/questions'
 import { getClient } from '@hcengineering/presentation'
+import type { Question } from '@hcengineering/questions'
 import { canUpdateQuestion, findPreviousQuestion, updateQuestion } from '../utils'
 import { focusActionWithAvailability } from './ActionWithAvailability'
 
@@ -20,7 +20,7 @@ export const questionMoveUpAction = focusActionWithAvailability<Question<unknown
     if (prevQuestion === undefined) {
       return
     }
-    const ops = getClient().apply('up')
+    const ops = getClient().apply()
     await updateQuestion(ops, object, { rank: prevQuestion.rank })
     await updateQuestion(ops, prevQuestion, { rank: object.rank })
     await ops.commit()

@@ -17,17 +17,21 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Class, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Icon, Label, resizeObserver, Scroller, Spinner, Button, IconAdd } from '@hcengineering/ui'
+  import { Icon, Label, resizeObserver, Scroller, Spinner, ButtonIcon, IconAdd } from '@hcengineering/ui'
   import view, { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
-  import attachment from '../plugin'
-  import { createAttachments } from '../utils'
+  import { FileUploadCallbackParams, uploadFiles } from '@hcengineering/uploader'
   import { createEventDispatcher } from 'svelte'
+
+  import attachment from '../plugin'
+  import { createAttachment } from '../utils'
+
   import AttachmentDroppable from './AttachmentDroppable.svelte'
   import IconAttachments from './icons/Attachments.svelte'
   import UploadDuo from './icons/UploadDuo.svelte'
 
+  export let object: Doc | undefined = undefined
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
@@ -48,19 +52,31 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  async function fileSelected () {
+  async function onFileUploaded ({ uuid, name, file }: FileUploadCallbackParams): Promise<void> {
+    await createAttachment(
+      client,
+      uuid,
+      name,
+      file,
+      { objectClass: object?._class ?? _class, objectId, space },
+      attachmentClass,
+      attachmentClassOptions
+    )
+  }
+
+  async function fileSelected (): Promise<void> {
     const list = inputFile.files
     if (list === null || list.length === 0) return
 
     loading++
     try {
-      await createAttachments(
-        client,
-        list,
-        { objectClass: _class, objectId, space },
-        attachmentClass,
-        attachmentClassOptions
-      )
+      const options = {
+        onFileUploaded,
+        showProgress: {
+          target: { objectId, objectClass: object?._class ?? _class }
+        }
+      }
+      await uploadFiles(list, options)
     } finally {
       loading--
     }
@@ -70,11 +86,11 @@
     dispatch('attached')
   }
 
-  function openFile () {
+  function openFile (): void {
     inputFile.click()
   }
 
-  function updateContent (evt: CustomEvent) {
+  function updateContent (evt: CustomEvent): void {
     attachments = evt.detail.length
     dispatch('attachments', evt.detail)
   }
@@ -93,7 +109,7 @@
         {#if loading}
           <Spinner />
         {:else if !readonly}
-          <Button icon={IconAdd} kind={'ghost'} on:click={openFile} />
+          <ButtonIcon icon={IconAdd} kind={'tertiary'} size={'small'} on:click={openFile} />
         {/if}
       </div>
     </div>
@@ -155,7 +171,7 @@
           ...extraConfig,
           'lastModified'
         ]}
-        options={{ sort: { pinned: -1 } }}
+        options={{ sort: { pinned: -1 }, showArchived: true }}
         query={{ ...query, attachedTo: objectId }}
         loadingProps={{ length: attachments ?? 0 }}
         on:content={updateContent}
@@ -177,7 +193,7 @@
         ...extraConfig,
         'lastModified'
       ]}
-      options={{ sort: { pinned: -1 } }}
+      options={{ sort: { pinned: -1 }, showArchived: true }}
       query={{ ...query, attachedTo: objectId }}
       loadingProps={{ length: attachments ?? 0 }}
       on:content={updateContent}

@@ -18,7 +18,6 @@
   import {
     Icon,
     Label,
-    IconOpenedArrow,
     IconDown,
     AnySvelteComponent,
     IconSize,
@@ -45,7 +44,6 @@
   export let disabled: boolean = false
   export let isFold: boolean = false
   export let isOpen: boolean = false
-  export let isSecondary: boolean = false
   export let withBackground: boolean = false
   export let showMenu: boolean = false
   export let shouldTooltip: boolean = false
@@ -56,12 +54,13 @@
   export let level: number = 0
   export let _id: any = undefined
 
+  export let draggable: boolean = false
+
   let labelEl: HTMLSpanElement
   let labelWidth: number
   let levelReset: boolean = false
   let hovered: boolean = false
 
-  $: showArrow = selected && (type === 'type-link' || type === 'type-object')
   $: if (!showMenu && levelReset && !hovered) levelReset = false
   $: isOpen = !getTreeCollapsed(_id, collapsedPrefix)
   $: setTreeCollapsed(_id, !isOpen, collapsedPrefix)
@@ -78,7 +77,7 @@
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <button
-  class="hulyNavItem-container line-height-auto {type} {type === 'type-anchor-link' || isSecondary
+  class="hulyNavItem-container line-height-auto {type} {type === 'type-anchor-link'
     ? 'font-regular-12'
     : 'font-regular-14'}"
   class:selected
@@ -86,7 +85,12 @@
   class:indent
   class:disabled
   class:showMenu
+  {draggable}
   class:noActions={$$slots.actions === undefined}
+  on:dragstart
+  on:dragover
+  on:dragend
+  on:drop
   on:mouseover={mouseOver}
   on:mouseleave={() => {
     if (levelReset && !showMenu) levelReset = false
@@ -147,14 +151,11 @@
     </div>
   {/if}
   {#if count !== null}
-    <span class="hulyNavItem-count font-regular-12">
+    <span class="hulyNavItem-count font-bold-12">
       {count}
     </span>
   {/if}
   <slot name="notify" />
-  {#if showArrow}
-    <div class="hulyNavItem-icon right"><IconOpenedArrow size={'small'} /></div>
-  {/if}
 </button>
 {#if (isFold && (isOpen || (!isOpen && visible)) && !empty) || forciblyСollapsed}
   <div class="hulyNavItem-dropbox">
@@ -202,6 +203,7 @@
       }
     }
     .hulyNavItem-icon {
+      margin-right: var(--spacing-1);
       width: var(--global-min-Size);
       height: var(--global-min-Size);
       color: var(--global-primary-TextColor);
@@ -211,14 +213,6 @@
         width: 0.625rem;
         height: 0.625rem;
         border-radius: var(--min-BorderRadius);
-      }
-      &.right {
-        visibility: hidden;
-        margin-left: var(--spacing-0_5);
-        color: var(--global-accent-IconColor);
-      }
-      &:not(.right) {
-        margin-right: var(--spacing-1);
       }
       &.withBackground {
         width: var(--global-extra-small-Size);
@@ -245,37 +239,26 @@
       gap: var(--spacing-0_25);
     }
     .hulyNavItem-count {
-      margin-left: var(--spacing-1);
+      margin: 0 var(--spacing-1);
       color: var(--global-tertiary-TextColor);
-    }
-    &:not(.selected) .hulyNavItem-count {
-      margin-right: var(--spacing-1);
     }
     &:not(.selected):hover,
     &:not(.selected).showMenu {
       background-color: var(--global-ui-hover-highlight-BackgroundColor);
     }
     &.selected {
-      cursor: auto;
+      cursor: default;
       background-color: var(--global-ui-highlight-BackgroundColor);
 
-      // &:not(.type-anchor-link) .hulyNavItem-label:not(.description) {
-      //   font-weight: 700;
-      // }
       .hulyNavItem-count {
         color: var(--global-secondary-TextColor);
       }
     }
-    // &.bold:not(.type-anchor-link) .hulyNavItem-label:not(.description) {
-    //   font-weight: 700;
-    // }
 
     &.type-link {
       padding: 0 var(--spacing-0_5) 0 var(--spacing-1_25);
 
       &.selected {
-        padding: 0 var(--spacing-0_75) 0 var(--spacing-1_25);
-
         &.indent {
           padding-left: var(--spacing-4);
         }
@@ -284,9 +267,6 @@
         }
         .hulyNavItem-label:not(.description) {
           color: var(--global-accent-TextColor);
-        }
-        .hulyNavItem-icon.right {
-          visibility: visible;
         }
       }
     }
@@ -299,17 +279,14 @@
       }
     }
     &.type-object {
-      padding: 0 var(--spacing-0_5) 0 var(--spacing-0_5);
+      padding: 0 var(--spacing-0_5);
 
       .hulyNavItem-icon {
+        margin-right: var(--spacing-0_75);
         width: var(--global-extra-small-Size);
         height: var(--global-extra-small-Size);
-
-        &:not(.right) {
-          margin-right: var(--spacing-0_75);
-          background-color: var(--global-ui-BackgroundColor);
-          border-radius: var(--extra-small-BorderRadius);
-        }
+        background-color: var(--global-ui-BackgroundColor);
+        border-radius: var(--extra-small-BorderRadius);
       }
       &.selected {
         .hulyNavItem-label:not(.description) {
@@ -317,10 +294,6 @@
         }
         .hulyNavItem-icon {
           color: var(--global-accent-TextColor);
-
-          &.right {
-            visibility: visible;
-          }
         }
       }
     }
@@ -349,14 +322,9 @@
       background-color: var(--button-tertiary-hover-BackgroundColor);
     }
 
-    &:not(.noActions):hover,
-    &:not(.noActions).showMenu {
-      .hulyNavItem-actions {
-        display: flex;
-      }
-      .hulyNavItem-icon.right {
-        display: none;
-      }
+    &:not(.noActions):hover .hulyNavItem-actions,
+    &:not(.noActions).showMenu .hulyNavItem-actions {
+      display: flex;
     }
     &.disabled {
       cursor: not-allowed;

@@ -22,7 +22,8 @@
   export let iconProps: any | undefined = undefined
   export let size: IconSize = 'small'
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}
-  export let opened = false
+  export let opened: boolean = false
+  export let dataId: string | undefined = undefined
 
   function onClick (ev: MouseEvent): void {
     ev.stopPropagation()
@@ -38,6 +39,7 @@
   size="small"
   kind="tertiary"
   pressed={opened}
+  {dataId}
+  tooltip={{ label, direction: 'bottom' }}
   on:click={onClick}
-  tooltip={{ label }}
 />

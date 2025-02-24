@@ -14,10 +14,15 @@
 // limitations under the License.
 -->
 
+<script lang="ts">
+  export let size: 'small' | 'medium' | 'large' | undefined = undefined
+</script>
+
 <svg
   xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink"
   viewBox="0 0 36 36"
+  class={size !== undefined ? `svg-${size}` : null}
   style="enable-background:new 0 0 36 36;"
   xml:space="preserve"
 >

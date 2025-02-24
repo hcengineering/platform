@@ -13,14 +13,13 @@
 // limitations under the License.
 //
 
-import { DocumentId, parseDocumentId } from '@hcengineering/collaborator-client'
-import { isReadonlyDoc } from '@hcengineering/collaboration'
+import { decodeDocumentId } from '@hcengineering/collaborator-client'
 import { MeasureContext } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { Extension, onAuthenticatePayload } from '@hocuspocus/server'
 
-import { getWorkspaceInfo } from '../account'
 import { Context, buildContext } from '../context'
+import { getWorkspaceIds } from '../utils'
 
 export interface AuthenticationConfiguration {
   ctx: MeasureContext
@@ -35,24 +34,22 @@ export class AuthenticationExtension implements Extension {
 
   async onAuthenticate (data: onAuthenticatePayload): Promise<Context> {
     const ctx = this.configuration.ctx
-    const { workspaceUrl: workspace, collaborativeDoc } = parseDocumentId(data.documentName as DocumentId)
+    const { workspaceId } = decodeDocumentId(data.documentName)
 
-    return await ctx.with('authenticate', { workspace }, async () => {
+    return await ctx.with('authenticate', { workspaceId }, async () => {
       const token = decodeToken(data.token)
 
-      ctx.info('authenticate', { workspace, mode: token.extra?.mode ?? '' })
+      ctx.info('authenticate', { workspaceId, mode: token.extra?.mode ?? '' })
 
       // verify workspace can be accessed with the token
-      const workspaceInfo = await getWorkspaceInfo(data.token)
+      const ids = await getWorkspaceIds(data.token)
 
-      // verify workspace url in the document matches the token
-      if (workspaceInfo.workspace !== workspace) {
-        throw new Error('documentName must include workspace')
+      // verify workspace uuid in the document matches the token
+      if (ids.uuid !== workspaceId) {
+        throw new Error('documentName must include workspace id')
       }
 
-      data.connection.readOnly = isReadonlyDoc(collaborativeDoc)
-
-      return buildContext(data)
+      return buildContext(data, ids)
     })
   }
 }

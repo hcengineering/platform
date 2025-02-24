@@ -14,53 +14,54 @@
 -->
 <script lang="ts">
   import { DirectMessage } from '@hcengineering/chunter'
-  import { Avatar, CombineAvatars, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Icon, IconSize } from '@hcengineering/ui'
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import { classIcon } from '@hcengineering/view-resources'
+  import contact, { Person } from '@hcengineering/contact'
+  import { Avatar, CombineAvatars } from '@hcengineering/contact-resources'
+  import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Account, IdMap } from '@hcengineering/core'
+  import { Icon, IconSize } from '@hcengineering/ui'
+  import { classIcon } from '@hcengineering/view-resources'
 
   import chunter from '../plugin'
   import { getDmPersons } from '../utils'
 
   export let value: DirectMessage | undefined
+  export let _id: Ref<DirectMessage> | undefined = undefined
   export let size: IconSize = 'small'
   export let showStatus = false
+  export let compact = false
 
   const visiblePersons = 4
   const client = getClient()
 
   let persons: Person[] = []
 
-  $: value &&
-    getDmPersons(client, value).then((res) => {
+  if (_id !== undefined && value === undefined) {
+    void client.findOne(chunter.class.DirectMessage, { _id }).then((res) => {
+      value = res
+    })
+  } else if (_id && value && value._id !== _id) {
+    value = undefined
+  }
+
+  $: if (value !== undefined) {
+    void getDmPersons(client, value).then((res) => {
       persons = res
     })
+  }
 
   let avatarSize = size
 
   $: if (size === 'small') {
     avatarSize = 'x-small'
   }
-
-  function getAccountByPerson (accountById: IdMap<PersonAccount>, person: Person): Account | undefined {
-    return Array.from(accountById.values()).find((account) => account.person === person._id)
-  }
 </script>
 
-{#if persons.length === 0 && value}
-  <Icon icon={classIcon(client, value._class) ?? chunter.icon.Chunter} {size} />
+{#if persons.length === 0}
+  <Icon icon={classIcon(client, chunter.class.DirectMessage) ?? chunter.icon.Chunter} {size} />
 {/if}
 
 {#if persons.length === 1}
-  <Avatar
-    person={persons[0]}
-    size={avatarSize}
-    name={persons[0].name}
-    {showStatus}
-    account={getAccountByPerson($personAccountByIdStore, persons[0])?._id}
-  />
+  <Avatar person={persons[0]} size={avatarSize} name={persons[0].name} {showStatus} />
 {/if}
 
 {#if persons.length > 1 && size === 'medium'}
@@ -82,12 +83,18 @@
 {/if}
 
 {#if persons.length > 1 && size !== 'medium'}
-  <CombineAvatars
-    _class={contact.class.Person}
-    items={persons.map(({ _id }) => _id)}
-    size={avatarSize}
-    limit={visiblePersons}
-  />
+  {#if compact}
+    <div class="hulyAvatar-container hulyAvatarSize-{size} group-ava">
+      {persons.length}
+    </div>
+  {:else}
+    <CombineAvatars
+      _class={contact.class.Person}
+      items={persons.map(({ _id }) => _id)}
+      size={avatarSize}
+      limit={visiblePersons}
+    />
+  {/if}
 {/if}
 
 <style lang="scss">
@@ -115,5 +122,20 @@
     background-color: var(--theme-button-hovered);
     font-size: 0.688rem;
     font-weight: 500;
+  }
+
+  .group-ava {
+    color: var(--theme-caption-color);
+    background-color: var(--theme-bg-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.25rem;
+    opacity: 0.9;
+
+    &.inline,
+    &.tiny,
+    &.card,
+    &.x-small {
+      font-size: 0.625rem;
+    }
   }
 </style>

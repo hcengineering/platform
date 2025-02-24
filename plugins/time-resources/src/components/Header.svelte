@@ -1,8 +1,19 @@
 <script lang="ts">
-  import calendar from '@hcengineering/calendar'
   import { Timestamp } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
-  import { Button, IconBack, IconForward, Label, areDatesEqual, ticker } from '@hcengineering/ui'
+  import {
+    Label,
+    areDatesEqual,
+    ticker,
+    Header,
+    ButtonIcon,
+    ButtonBase,
+    IconChevronLeft,
+    IconChevronRight,
+    getFormattedDate
+  } from '@hcengineering/ui'
+  import IconSun from './icons/Sun.svelte'
+  import time from '../plugin'
 
   export let currentDate: Date = new Date()
 
@@ -32,50 +43,49 @@
     )
   }
 
+  const todayDate = new Date()
   $: isToday = areDatesEqual(currentDate, new Date($ticker))
 </script>
 
-<div class="flex-between header-container bottom-divider flex-reverse">
-  <div class="my-1 flex-row-center">
+<Header adaptive={'disabled'}>
+  <div class="heading-medium-20 line-height-auto overflow-label pl-2">
+    <Label label={getTitle(currentDate, $ticker)} />
+  </div>
+
+  <svelte:fragment slot="actions" let:doubleRow>
     <slot />
-    <div class="date">
-      <Label label={getTitle(currentDate, $ticker)} />
-    </div>
-    <Button
-      icon={IconBack}
-      kind={'ghost'}
+    <ButtonIcon
+      icon={IconChevronLeft}
+      kind={'secondary'}
+      size={'small'}
+      dataId={'btnPrev'}
       on:click={() => {
         inc(-1)
       }}
     />
-    <div class="antiHSpacer x2" />
-    <Button
-      icon={IconForward}
-      kind={'ghost'}
-      on:click={() => {
-        inc(1)
-      }}
-    />
-    <div class="antiHSpacer x4" />
-    <Button
-      label={calendar.string.Today}
+    <ButtonBase
+      icon={IconSun}
+      label={!doubleRow ? time.string.TodayColon : undefined}
+      title={!doubleRow ? getFormattedDate(todayDate.getTime(), { weekday: 'short', day: 'numeric' }) : undefined}
+      type={!doubleRow ? 'type-button' : 'type-button-icon'}
+      kind={'secondary'}
+      size={'small'}
+      dataId={'btnToday'}
+      inheritFont
+      hasMenu
       disabled={isToday}
-      kind={isToday ? 'primary' : 'regular'}
       on:click={() => {
         inc(0)
       }}
     />
-  </div>
-</div>
-
-<style lang="scss">
-  .header-container {
-    flex-shrink: 0;
-    padding: 0.5rem 2rem;
-  }
-  .date {
-    color: var(--theme-caption-color);
-    font-size: 1.25rem;
-    margin-right: 1rem;
-  }
-</style>
+    <ButtonIcon
+      icon={IconChevronRight}
+      kind={'secondary'}
+      size={'small'}
+      dataId={'btnNext'}
+      on:click={() => {
+        inc(1)
+      }}
+    />
+  </svelte:fragment>
+</Header>

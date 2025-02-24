@@ -14,21 +14,22 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { ActionIcon, eventToHTMLElement, Icon, Label, showPopup } from '@hcengineering/ui'
-  import { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
+  import { Button, eventToHTMLElement, Icon, Label, showPopup } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   import activity from '../plugin'
   import FilterPopup from './FilterPopup.svelte'
   import IconClose from './icons/Close.svelte'
-  import IconFilter from './icons/Filter.svelte'
   import { sortActivityMessages } from '../activityMessagesUtils'
 
   export let messages: ActivityMessage[]
   export let object: Doc
   export let isNewestFirst = false
+  export let showFilter = true
 
   const allId = activity.ids.AllFilter
   const client = getClient()
@@ -46,7 +47,7 @@
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
   $: localStorage.setItem('activity-newest-first', JSON.stringify(isNewestFirst))
 
-  client.findAll(activity.class.ActivityMessagesFilter, {}).then((res) => {
+  void client.findAll(activity.class.ActivityMessagesFilter, {}).then((res) => {
     filters = res
 
     if (saved !== null && saved !== undefined) {
@@ -117,30 +118,34 @@
   )
 </script>
 
-<div class="w-4 min-w-4 max-w-4" />
-{#if selectedFiltersRefs === 'All'}
-  <div class="antiSection-header__tag highlight">
-    <Label label={activity.string.All} />
-  </div>
-{:else}
-  {#each selectedFilters as filter}
-    <div class="antiSection-header__tag overflow-label">
-      <Label label={filter.label} />
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="tag-icon"
-        on:click={() => {
-          if (selectedFiltersRefs !== allId && Array.isArray(selectedFiltersRefs)) {
-            const ids = selectedFiltersRefs.filter((it) => it !== filter._id)
-            selectedFiltersRefs = ids.length > 0 ? ids : allId
-          }
-        }}
-      >
-        <Icon icon={IconClose} size={'small'} />
-      </div>
+{#if showFilter}
+  <div class="w-4 min-w-4 max-w-4" />
+  {#if selectedFiltersRefs === allId}
+    <div class="antiSection-header__tag highlight">
+      <Label label={activity.string.All} />
     </div>
-  {/each}
+  {:else}
+    {#each selectedFilters as filter}
+      <div class="antiSection-header__tag overflow-label">
+        <Label label={filter.label} />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="tag-icon"
+          on:click={() => {
+            if (selectedFiltersRefs !== allId && Array.isArray(selectedFiltersRefs)) {
+              const ids = selectedFiltersRefs.filter((it) => it !== filter._id)
+              selectedFiltersRefs = ids.length > 0 ? ids : allId
+            }
+          }}
+        >
+          <Icon icon={IconClose} size={'small'} />
+        </div>
+      </div>
+    {/each}
+  {/if}
 {/if}
 <div class="w-4 min-w-4 max-w-4" />
-<ActionIcon icon={IconFilter} size={'medium'} action={handleOptions} />
+<div class="buttons-group small-gap pr-2">
+  <Button icon={view.icon.Configure} size={'small'} kind={'ghost'} on:click={handleOptions} />
+</div>

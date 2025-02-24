@@ -13,27 +13,29 @@
 // limitations under the License.
 //
 import { type Asset, type IntlString } from '@hcengineering/platform'
-import { type Account, type Doc, type DocumentQuery, type IdMap, type Ref, type UserStatus } from '@hcengineering/core'
+import { type PersonId, type Class, type Doc, type Ref, type UserStatus, type PersonUuid } from '@hcengineering/core'
+import { type Person } from '@hcengineering/contact'
 import { type DocNotifyContext } from '@hcengineering/notification'
 import { type AnySvelteComponent, type IconSize, type Action } from '@hcengineering/ui'
-import { type PersonAccount } from '@hcengineering/contact'
 
 export type ChatGroup = 'activity' | 'direct' | 'channels' | 'starred'
 
 export interface SortFnOptions {
   contexts: DocNotifyContext[]
-  userStatusByAccount: Map<Ref<Account>, UserStatus>
-  personAccountById: IdMap<PersonAccount>
+  userStatusByAccount: Map<PersonUuid, UserStatus>
+  personByPersonId: Map<PersonId, Person>
 }
 
 export interface ChatNavGroupModel {
   id: ChatGroup
   label?: IntlString
-  query: DocumentQuery<DocNotifyContext>
   sortFn: (items: ChatNavItemModel[], options: SortFnOptions) => ChatNavItemModel[]
   wrap: boolean
   getActionsFn?: (contexts: DocNotifyContext[]) => Action[]
   maxSectionItems?: number
+  isPinned: boolean
+  _class?: Ref<Class<Doc>>
+  skipClasses?: Array<Ref<Class<Doc>>>
 }
 
 export interface ChatNavItemModel {
@@ -44,7 +46,6 @@ export interface ChatNavItemModel {
   icon: Asset | AnySvelteComponent | undefined
   iconSize?: IconSize
   iconProps: Record<string, any>
-  isSecondary: boolean
   withIconBackground: boolean
 }
 

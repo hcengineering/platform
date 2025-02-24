@@ -14,17 +14,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     getCurrentAccount,
     Ref,
     Role,
     RolesAssignment,
     SpaceType,
-    WithLookup
+    WithLookup,
+    notEmpty
   } from '@hcengineering/core'
-  import lead, { Funnel } from '@hcengineering/lead'
+  import lead, { Funnel, LeadEvents } from '@hcengineering/lead'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import task, { ProjectType } from '@hcengineering/task'
   import ui, { Component, EditBox, Label, Toggle, ToggleWithLabel } from '@hcengineering/ui'
@@ -32,6 +33,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import leadRes from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let funnel: Funnel | undefined = undefined
   const dispatch = createEventDispatcher()
@@ -48,10 +50,12 @@
   let rolesAssignment: RolesAssignment = {}
   let isPrivate: boolean = funnel?.private ?? false
 
-  let members: Ref<Account>[] =
-    funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount().primarySocialId]
+  let owners: PersonId[] =
+    funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount().primarySocialId]
 
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
     spaceType =
@@ -106,6 +110,7 @@
 
     // Create space type's mixin with roles assignments
     await client.createMixin(funnelId, leadRes.class.Funnel, core.space.Space, spaceType.targetClass, rolesAssignment)
+    Analytics.handleEvent(LeadEvents.FunnelCreated, { id: funnelId })
   }
 
   async function save (): Promise<void> {
@@ -130,14 +135,14 @@
     }
   }
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -152,7 +157,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -261,8 +266,8 @@
       <AccountArrayEditor
         value={rolesAssignment?.[role._id] ?? []}
         label={leadRes.string.FunnelMembers}
-        includeItems={members}
-        readonly={members.length === 0}
+        includeItems={membersPersons}
+        readonly={membersPersons.length === 0}
         onChange={(refs) => {
           handleRoleAssignmentChanged(role._id, refs)
         }}

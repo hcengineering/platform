@@ -1,17 +1,18 @@
 import { expect, type Locator } from '@playwright/test'
 import path from 'path'
+import { createIssue, toTime } from '../../tracker/tracker.utils'
 import { attachScreenshot, iterateLocator } from '../../utils'
 import { CommonTrackerPage } from './common-tracker-page'
 import { NewIssue } from './types'
-import { createIssue, toTime } from '../../tracker/tracker.utils'
 
+const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 export class IssuesPage extends CommonTrackerPage {
-  modelSelectorAll = (): Locator => this.page.locator('div[data-id="tab-all"]')
-  issues = (): Locator => this.page.locator('text="Issues"')
+  modelSelectorAll = (): Locator => this.page.locator('label[data-id="tab-all"]')
+  issues = (): Locator => this.page.locator('.antiPanel-navigator').locator('text="Issues"')
   subIssues = (): Locator => this.page.locator('button:has-text("Add sub-issue")')
   newIssue = (): Locator => this.page.locator('#new-issue')
-  modelSelectorActive = (): Locator => this.page.locator('div[data-id="tab-active"]')
-  modelSelectorBacklog = (): Locator => this.page.locator('div[data-id="tab-backlog"]')
+  modelSelectorActive = (): Locator => this.page.locator('label[data-id="tab-active"]')
+  modelSelectorBacklog = (): Locator => this.page.locator('label[data-id="tab-backlog"]')
   buttonCreateNewIssue = (): Locator => this.page.locator('button > div', { hasText: 'New issue' })
   inputPopupCreateNewIssueTitle = (): Locator =>
     this.page.locator('form[id="tracker:string:NewIssue"] input[type="text"]')
@@ -19,6 +20,7 @@ export class IssuesPage extends CommonTrackerPage {
   inputPopupCreateNewIssueDescription = (): Locator =>
     this.page.locator('form[id="tracker:string:NewIssue"] div.tiptap')
 
+  buttonPopupCreateNewIssueProject = (): Locator => this.page.locator('[id="space\\.selector"]')
   buttonPopupCreateNewIssueStatus = (): Locator =>
     this.page.locator('form[id="tracker:string:NewIssue"] div#status-editor button')
 
@@ -48,10 +50,11 @@ export class IssuesPage extends CommonTrackerPage {
 
   textPopupCreateNewIssueFile = (): Locator => this.page.locator('div[class*="attachments"] > div[class*="attachment"]')
   buttonCreateIssue = (): Locator => this.page.locator('button > span', { hasText: 'Create issue' })
+  inputSearchIcon = (): Locator => this.page.locator('.searchInput-wrapper')
   inputSearch = (): Locator => this.page.locator('input[placeholder="Search"]')
   linkSidebarAll = (): Locator => this.page.locator('a[href$="all-issues"]')
   linkSidebarMyIssue = (): Locator => this.page.locator('a[href$="my-issues"]')
-  buttonClearFilers = (): Locator => this.page.locator('div.search-start > div:first-child button')
+  buttonClearFilers = (): Locator => this.page.getByRole('button', { name: 'Clear filters' })
   issuesList = (): Locator => this.page.locator('div.listGrid')
   buttonPopupCreateNewIssueParent = (): Locator => this.page.locator('div#parentissue-editor button')
   buttonPopupCreateNewIssueTemplate = (): Locator =>
@@ -61,9 +64,7 @@ export class IssuesPage extends CommonTrackerPage {
   textPopupAddAttachmentsFile = (): Locator => this.page.locator('div.popup-tooltip div.item div.name')
   buttonCollapsedCategories = (): Locator => this.page.locator('div.categoryHeader.collapsed')
   pupupTagsPopup = (): Locator => this.page.locator('.popup#TagsPopup')
-  issupeByName = (issueName: string): Locator => this.page.locator('a', { hasText: issueName })
   issueNotExist = (issueName: string): Locator => this.page.locator('tr', { hasText: issueName })
-  filterRowExists = (issueName: string): Locator => this.page.locator('div.row span', { hasText: issueName })
   issueListGrid = (): Locator => this.page.locator('div.listGrid')
   issueList = (): Locator => this.page.locator('div[class*="square"] > div')
   issueByName = (issueName: string): Locator => this.page.locator('a', { hasText: issueName })
@@ -101,13 +102,30 @@ export class IssuesPage extends CommonTrackerPage {
   todoHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Todo")').first()
   doneHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Done")').first()
   canceledHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Canceled")').first()
-  myIssuesButton = (): Locator => this.page.locator('text="My issues"')
+
+  inProgressHeaderKanban = (): Locator => this.page.locator('.header :text-is("In Progress")').first()
+  backlogHeaderKanban = (): Locator => this.page.locator('.header :text-is("Backlog")').first()
+  todoHeaderKanban = (): Locator => this.page.locator('.header :text-is("Todo")').first()
+  doneHeaderKanban = (): Locator => this.page.locator('.header :text-is("Done")').first()
+  canceledHeaderKanban = (): Locator => this.page.locator('.header :text-is("Canceled")').first()
+
+  myIssuesButton = (): Locator => this.page.locator('.antiPanel-navigator').locator('text="My issues"')
   assignedTab = (): Locator => this.page.locator('[data-id="tab-assigned"]')
   createdTab = (): Locator => this.page.locator('[data-id="tab-created"]')
   subscribedTab = (): Locator => this.page.locator('[data-id="tab-subscribed"]')
-  issueListPanel = (): Locator => this.page.locator('.antiPanel-component')
-  notTrackButton = (): Locator => this.page.locator('button:has-text("Appleseed John") >> nth=1')
+  issueListPanel = (): Locator => this.page.locator('.hulyComponent')
+  notTrackButton = (): Locator =>
+    this.page
+      .locator('span.labelOnPanel', { hasText: 'Collaborators' })
+      .locator('xpath=following-sibling::div[1]')
+      .locator('button')
+
   selectPopup = (): Locator => this.page.locator('.selectPopup >> button:has-text("Appleseed John")')
+
+  closePopup = async (): Promise<void> => {
+    await this.page.locator('.selectPopup').press('Escape')
+  }
+
   notificationTimeoutSetting = (timeout: string): Promise<void> => {
     return this.page.evaluate((timeout) => {
       localStorage.setItem('#platform.notification.timeout', timeout)
@@ -124,12 +142,12 @@ export class IssuesPage extends CommonTrackerPage {
   createButton = (): Locator => this.page.locator('button:has-text("Create")')
   spentTimeInput = (): Locator => this.page.locator('[placeholder="Spent time"]')
 
-  timeSpentReports = (): Locator => this.page.locator('text="Time spent reports"')
+  timeSpentReports = (): Locator => this.page.getByText('Time spent reports', { exact: true })
   addTimeReport = (): Locator => this.page.locator('text="Add time report"')
   issueName = (name: string): Locator => this.page.locator(`text="${name}"`)
-  issuesButton = (): Locator => this.page.locator('text="Issues"')
-  viewButton = (): Locator => this.page.locator('button:has-text("View")')
-  orderingButton = (): Locator => this.page.locator('.ordering >> nth=0')
+  issuesButton = (): Locator => this.page.locator('.antiPanel-navigator').locator('text="Issues"')
+  viewButton = (): Locator => this.page.locator('button[data-id="btn-viewOptions"]')
+  orderingButton = (): Locator => this.page.locator('.ordering button')
   modifiedDateMenuItem = (): Locator => this.page.locator('button.menu-item', { hasText: 'Modified date' })
   estimationContainer = (): Locator => this.page.locator('.estimation-container').first()
   addTimeReportButton = (): Locator => this.page.locator('button:has-text("Add time report")')
@@ -137,7 +155,7 @@ export class IssuesPage extends CommonTrackerPage {
     this.page.locator('[id="tracker\\:string\\:TimeSpendReportAdd"] >> text=Add time report')
 
   estimationSpan = (): Locator => this.page.locator('.estimation-container >> span').first()
-  okButton = (): Locator => this.page.getByRole('button', { name: 'Ok' })
+  okButton = (): Locator => this.page.getByRole('button', { name: 'Ok', exact: true })
   newIssueButton = (): Locator => this.page.locator('#new-issue')
   issueNameInput = (): Locator => this.page.locator('#issue-name >> input')
   issueDescriptionInput = (): Locator => this.page.locator('#issue-description >> [contenteditable]')
@@ -146,22 +164,22 @@ export class IssuesPage extends CommonTrackerPage {
   priorityEditor = (): Locator => this.page.locator('#priority-editor')
   urgentButton = (): Locator => this.page.locator('button:has-text("Urgent")')
   assigneeEditor = (): Locator => this.page.locator('#assignee-editor')
-  appleseedJohnButton = (): Locator => this.page.locator('button:has-text("Appleseed John")')
+  appleseedJohnButton = (): Locator => this.page.locator('button.menu-item:has-text("Appleseed John")')
   estimationEditor = (): Locator => this.page.locator('#estimation-editor')
   dueDateButton = (): Locator => this.page.locator('button:has-text("Due date")')
   specificDay = (day: string): Locator => this.page.locator(`.date-popup-container div.day >> text=${day}`).first()
   inputTextPlaceholder = (): Locator => this.page.getByPlaceholder('Type text...')
-  confirmInput = (): Locator => this.page.locator('.ml-2 > .antiButton')
+  confirmInput = (): Locator => this.page.locator('.selectPopup button')
 
   async navigateToIssues (): Promise<void> {
     await this.page.click('text="Issues"')
     await this.page.keyboard.press('Escape')
   }
 
-  async createAndOpenIssue (name: string, assignee: string, status: string): Promise<void> {
+  async createAndOpenIssue (name: string, assignee: string, status: string, taskType?: string): Promise<void> {
     try {
       await this.notificationTimeoutSetting('5000')
-      await createIssue(this.page, { name, assignee, status })
+      await createIssue(this.page, { name, assignee, status, taskType })
       await this.page.waitForSelector(`text="${name}"`)
       await this.viewIssueButton().click()
     } finally {
@@ -266,10 +284,6 @@ export class IssuesPage extends CommonTrackerPage {
 
   async selectModifiedDate (): Promise<void> {
     await this.modifiedDateMenuItem().click()
-  }
-
-  async pressEscape (): Promise<void> {
-    await this.page.keyboard.press('Escape')
   }
 
   async clickEstimationContainer (): Promise<void> {
@@ -404,7 +418,7 @@ export class IssuesPage extends CommonTrackerPage {
     await this.fillNewIssueForm(data)
     await this.clickButtonCreateIssue()
     if (closeNotification) {
-      await this.closeNotification(this.page)
+      await this.closeNotification()
     }
     await attachScreenshot(`createdNewIssue-${data.title}.png`, this.page)
   }
@@ -412,6 +426,10 @@ export class IssuesPage extends CommonTrackerPage {
   async fillNewIssueForm (data: NewIssue): Promise<void> {
     await this.inputPopupCreateNewIssueTitle().fill(data.title)
     await this.inputPopupCreateNewIssueDescription().fill(data.description)
+    if (data.projectName != null) {
+      await this.buttonPopupCreateNewIssueProject().click()
+      await this.selectMenuItem(this.page, data.projectName)
+    }
     if (data.status != null) {
       await this.buttonPopupCreateNewIssueStatus().click()
       await this.selectFromDropdown(this.page, data.status)
@@ -480,18 +498,18 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async searchIssueByName (issueName: string): Promise<void> {
-    for (let i = 0; i < 5; i++) {
+    await expect(async () => {
+      await this.inputSearchIcon().click()
       await this.inputSearch().fill(issueName)
       const v = await this.inputSearch().inputValue()
       if (v === issueName) {
         await this.inputSearch().press('Enter')
-        break
       }
-    }
+    }).toPass(retryOptions)
   }
 
   async openIssueByName (issueName: string): Promise<void> {
-    await this.issupeByName(issueName).click()
+    await this.issueByName(issueName).click()
   }
 
   async checkIssueNotExist (issueName: string): Promise<void> {
@@ -499,11 +517,11 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkFilteredIssueExist (issueName: string): Promise<void> {
-    await expect(this.filterRowExists(issueName)).toHaveCount(1)
+    await expect(this.linesFromList(issueName)).toHaveCount(1)
   }
 
   async checkFilteredIssueNotExist (issueName: string): Promise<void> {
-    await expect(this.filterRowExists(issueName)).toHaveCount(0)
+    await expect(this.linesFromList(issueName)).toHaveCount(0)
   }
 
   async checkAllIssuesInStatus (statusId?: string, statusName?: string): Promise<void> {
@@ -519,7 +537,7 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async doActionOnIssue (issueName: string, action: string): Promise<void> {
-    await this.issupeByName(issueName).click({ button: 'right' })
+    await this.issueByName(issueName).click({ button: 'right' })
     await this.selectFromDropdown(this.page, action)
   }
 
@@ -543,8 +561,10 @@ export class IssuesPage extends CommonTrackerPage {
     await this.issueAnchorById(issueId).click()
   }
 
-  async checkIssuesCount (issueName: string, count: number): Promise<void> {
-    await expect(this.issueAnchorByName(issueName)).toHaveCount(count)
+  async checkIssuesCount (issueName: string, count: number, timeout?: number): Promise<void> {
+    await expect(async () => {
+      await expect(this.issueAnchorByName(issueName)).toHaveCount(count)
+    }).toPass(retryOptions)
   }
 
   async selectTemplate (templateName: string): Promise<void> {
@@ -558,7 +578,9 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkAttachmentsCount (issueName: string, count: string): Promise<void> {
-    await expect(this.attachmentContentButton(issueName)).toHaveText(count)
+    await expect(async () => {
+      await expect(this.attachmentContentButton(issueName)).toHaveText(count)
+    }).toPass(retryOptions)
   }
 
   async addAttachmentToIssue (issueName: string, filePath: string): Promise<void> {
@@ -599,6 +621,14 @@ export class IssuesPage extends CommonTrackerPage {
     await expect(this.todoHeader()).toBeVisible()
     await expect(this.doneHeader()).toBeVisible()
     await expect(this.canceledHeader()).toBeVisible()
+  }
+
+  async verifyCategoryHeadersVisibilityKanban (): Promise<void> {
+    await expect(this.inProgressHeaderKanban()).toBeVisible()
+    await expect(this.backlogHeaderKanban()).toBeVisible()
+    await expect(this.todoHeaderKanban()).toBeVisible()
+    await expect(this.doneHeaderKanban()).toBeVisible()
+    await expect(this.canceledHeaderKanban()).toBeVisible()
   }
 
   async openAllCategories (): Promise<void> {

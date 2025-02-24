@@ -20,6 +20,7 @@
   }
 
   onDestroy(() => {
+    removeNotificationHandler()
     if (closeTimeout && timeout) {
       clearTimeout(timeout)
     }

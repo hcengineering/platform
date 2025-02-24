@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Subject": "Téma",
+    "From": "Od",
+    "To": "Komu",
+    "CreateMail": "Nová zpráva",
+    "MailThread": "Zpráva",
+    "Reply": "Odpovědět",
+    "Date": "Datum",
+    "MailMessage": "Zpráva",
+    "MailMessages": "Zprávy"
+  }
+}

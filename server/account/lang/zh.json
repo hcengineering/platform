@@ -8,6 +8,12 @@
     "RecoverySubject": "密码恢复",
     "InviteText": "您被邀请加入 {ws}。要加入，请将以下链接粘贴到您的浏览器地址栏中：{link}。链接有效期为 {expHours} 小时。",
     "InviteHTML": "<p>您被邀请加入 {ws}。要加入，请点击以下链接：<a href={link}>加入</a></p><p>如果上面的邀请链接不起作用，请将以下链接粘贴到您的浏览器地址栏中：{link}</p><p>链接有效期为 {expHours} 小时。</p>",
-    "InviteSubject": "邀请加入 {ws}"
+    "InviteSubject": "邀请加入 {ws}",
+    "OtpText": "确认您的电子邮件地址以访问 {app}！\n\n您的确认码如下 - 请在您开始登录 {app} 的窗口中输入。\n\n{code}\n\n如果您没有请求此邮件，不用担心 — 您可以放心地忽略它。",
+    "OtpHTML": "<h3>确认您的电子邮件地址以访问 {app}！</h3><p>您的确认码如下 - 请在您开始登录 {app} 的窗口中输入。<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>如果您没有请求此邮件，不用担心 — 您可以放心地忽略它。</p>",
+    "OtpSubject": "{app} 确认码：{code}",
+    "ResendInviteText": "您已被重新邀请加入 {ws}。请使用以下链接加入：{link}。重新邀请链接的有效期为 {expHours} 小时。",
+    "ResendInviteHTML": "<p>您已被重新邀请加入 {ws}。要加入，请点击以下链接：<a href={link}>加入</a></p><p>如果上方的邀请链接无效，请将以下链接粘贴到您的浏览器地址栏中：{link}</p><p>重新邀请链接的有效期为 {expHours} 小时。</p>",
+    "ResendInviteSubject": "重新邀请加入 {ws}"
   }
 }

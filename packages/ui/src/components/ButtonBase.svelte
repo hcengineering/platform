@@ -34,13 +34,16 @@
   export let loading: boolean = false
   export let pressed: boolean = false
   export let hasMenu: boolean = false
+  export let noPrint: boolean = false
   export let autoFocus: boolean = false
   export let type: ButtonBaseType
   export let inheritColor: boolean = false
   export let inheritFont: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
+  export let shape: 'rectangle' | 'round' = 'rectangle'
   export let id: string | undefined = undefined
+  export let dataId: string | undefined = undefined
 
   let actualIconSize: IconSize = 'small'
 
@@ -89,313 +92,26 @@
 <button
   {id}
   bind:this={element}
-  class="font-medium-14 {kind} {size} {type}"
+  class="hulyButton font-medium-14 {kind} {size} {type} {shape}"
   class:loading
   class:pressed
   class:inheritColor
   class:inheritFont
   class:menu={hasMenu}
   class:iconOnly
+  class:no-print={noPrint}
   disabled={loading || disabled}
+  data-id={dataId}
   use:tp={tooltip}
   on:click|stopPropagation|preventDefault
   on:keydown
 >
   {#if loading}
-    <div class="icon animate"><Spinner size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} /></div>
-  {:else if icon}<div class="icon">
-      <Icon {icon} {iconProps} size={actualIconSize} />
-    </div>{/if}
+    <div class="icon no-gap"><Spinner size={'small'} /></div>
+  {:else if icon}
+    <div class="icon no-gap"><Icon {icon} {iconProps} size={actualIconSize} /></div>
+  {/if}
   {#if label}<span><Label {label} params={labelParams} /></span>{/if}
   {#if title}<span>{title}</span>{/if}
   <slot />
 </button>
-
-<style lang="scss">
-  button {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-    gap: var(--spacing-1);
-
-    border: 1px;
-    border-style: solid;
-
-    &:not(:disabled, .loading) {
-      cursor: pointer;
-    }
-    &.inheritFont {
-      font: inherit;
-    }
-
-    .icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: var(--spacing-2_5);
-      height: var(--spacing-2_5);
-
-      &.animate {
-        animation: rotate 2s linear infinite;
-      }
-    }
-    span {
-      white-space: nowrap;
-    }
-
-    &:focus {
-      outline: 2px solid var(--global-focus-BorderColor);
-      outline-offset: 2px;
-    }
-    &.type-button-icon {
-      padding: 0;
-    }
-    &.large {
-      height: var(--global-large-Size);
-      border-radius: var(--medium-BorderRadius);
-
-      &.type-button:not(.iconOnly) {
-        padding: 0 var(--spacing-2);
-      }
-      &.iconOnly,
-      &.type-button-icon {
-        width: var(--global-large-Size);
-      }
-    }
-    &.medium {
-      height: var(--global-medium-Size);
-      border-radius: var(--medium-BorderRadius);
-
-      &.type-button:not(.iconOnly) {
-        padding: 0 var(--spacing-2);
-      }
-      &.iconOnly,
-      &.type-button-icon {
-        width: var(--global-medium-Size);
-      }
-    }
-    &.small {
-      height: var(--global-small-Size);
-      gap: var(--spacing-0_5);
-      border-radius: var(--small-BorderRadius);
-
-      &.type-button:not(.iconOnly) {
-        padding: 0 var(--spacing-1);
-      }
-      &.iconOnly,
-      &.type-button-icon {
-        width: var(--global-small-Size);
-      }
-    }
-    &.extra-small {
-      height: var(--global-extra-small-Size);
-      border-radius: var(--extra-small-BorderRadius);
-
-      &.type-button:not(.iconOnly) {
-        padding: 0 var(--spacing-1);
-      }
-      &.iconOnly,
-      &.type-button-icon {
-        width: var(--global-extra-small-Size);
-      }
-    }
-    &.min {
-      height: var(--global-min-Size);
-      border: 0;
-      border-radius: var(--min-BorderRadius);
-    }
-    &.type-button-icon .icon,
-    &.menu .icon {
-      width: var(--spacing-2);
-      height: var(--spacing-2);
-    }
-
-    &.primary {
-      border-color: var(--button-primary-BorderColor);
-      background-color: var(--button-primary-BackgroundColor);
-
-      .icon {
-        color: var(--button-accent-IconColor);
-      }
-      span {
-        color: var(--button-accent-LabelColor);
-      }
-      &:hover {
-        background-color: var(--button-primary-hover-BackgroundColor);
-      }
-      &:active,
-      &.pressed {
-        background-color: var(--button-primary-active-BackgroundColor);
-      }
-      &.menu:enabled:active,
-      &.pressed {
-        border-color: var(--button-menu-active-BorderColor);
-      }
-      &:disabled:not(.loading) {
-        background-color: var(--button-disabled-BackgroundColor);
-        border-color: transparent;
-        cursor: not-allowed;
-
-        .icon {
-          color: var(--button-disabled-IconColor);
-        }
-        span {
-          color: var(--button-disabled-LabelColor);
-        }
-      }
-      &.loading {
-        background-color: var(--button-primary-active-BackgroundColor);
-
-        span {
-          color: var(--button-primary-loading-LabelColor);
-        }
-      }
-    }
-
-    &.secondary {
-      border-color: var(--button-secondary-BorderColor);
-      background-color: var(--button-secondary-BackgroundColor);
-
-      .icon {
-        color: var(--button-subtle-IconColor);
-      }
-      span {
-        color: var(--button-subtle-LabelColor);
-      }
-      &:hover {
-        background-color: var(--button-secondary-hover-BackgroundColor);
-      }
-      &:active,
-      &.pressed {
-        background-color: var(--button-secondary-active-BackgroundColor);
-      }
-      &.menu:enabled:active,
-      &.pressed {
-        border-color: var(--button-menu-active-BorderColor);
-      }
-      &:disabled:not(.loading) {
-        background-color: var(--button-disabled-BackgroundColor);
-        border-color: transparent;
-        cursor: not-allowed;
-
-        .icon {
-          color: var(--button-disabled-IconColor);
-        }
-        span {
-          color: var(--button-disabled-LabelColor);
-        }
-      }
-      &.loading {
-        background-color: var(--button-secondary-active-BackgroundColor);
-
-        span {
-          color: var(--button-disabled-LabelColor);
-        }
-      }
-    }
-
-    &.tertiary {
-      border-color: transparent;
-      background-color: transparent;
-
-      &:not(.inheritColor) .icon {
-        color: var(--button-subtle-IconColor);
-      }
-      &.inheritColor {
-        color: inherit;
-
-        .icon {
-          color: currentColor;
-        }
-      }
-      span {
-        color: var(--button-subtle-LabelColor);
-      }
-      &:hover:enabled {
-        background-color: var(--button-tertiary-hover-BackgroundColor);
-      }
-      &:active:enabled,
-      &.pressed:enabled {
-        background-color: var(--button-tertiary-active-BackgroundColor);
-      }
-      &.menu:active:enabled,
-      &.pressed:enabled {
-        border-color: var(--button-menu-active-BorderColor);
-      }
-      &:disabled:not(.loading) {
-        border-color: transparent;
-        cursor: not-allowed;
-
-        .icon {
-          color: var(--button-disabled-IconColor);
-        }
-        span {
-          color: var(--button-disabled-LabelColor);
-        }
-      }
-      &.loading {
-        background-color: var(--button-tertiary-active-BackgroundColor);
-
-        span {
-          color: var(--button-disabled-LabelColor);
-        }
-      }
-    }
-
-    &.negative {
-      border-color: var(--button-negative-BorderColor);
-      background-color: var(--button-negative-BackgroundColor);
-
-      .icon {
-        color: var(--button-accent-IconColor);
-      }
-      span {
-        color: var(--button-accent-LabelColor);
-      }
-      &:hover {
-        background-color: var(--button-negative-hover-BackgroundColor);
-      }
-      &:active,
-      &.pressed {
-        background-color: var(--button-negative-active-BackgroundColor);
-      }
-      &.menu:enabled:active,
-      &.pressed {
-        border-color: var(--button-menu-active-BorderColor);
-      }
-      &:disabled:not(.loading) {
-        background-color: var(--button-disabled-BackgroundColor);
-        border-color: transparent;
-        cursor: not-allowed;
-
-        .icon {
-          color: var(--button-disabled-IconColor);
-        }
-        span {
-          color: var(--button-disabled-LabelColor);
-        }
-      }
-      &.loading {
-        background-color: var(--button-negative-active-BackgroundColor);
-
-        span {
-          color: var(--button-negative-loading-LabelColor);
-        }
-      }
-    }
-
-    & > * {
-      pointer-events: none;
-    }
-  }
-
-  @keyframes rotate {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(359deg);
-    }
-  }
-</style>

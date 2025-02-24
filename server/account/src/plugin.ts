@@ -12,7 +12,12 @@ export const accountPlugin = plugin(accountId, {
   metadata: {
     FrontURL: '' as Metadata<string>,
     SES_URL: '' as Metadata<string>,
-    ProductName: '' as Metadata<string>
+    SES_AUTH_TOKEN: '' as Metadata<string>,
+    ProductName: '' as Metadata<string>,
+    Transactors: '' as Metadata<string>,
+    OtpTimeToLiveSec: '' as Metadata<number>,
+    OtpRetryDelaySec: '' as Metadata<number>,
+    WsLivenessDays: '' as Metadata<number>
   },
   string: {
     ConfirmationText: '' as IntlString,
@@ -23,6 +28,12 @@ export const accountPlugin = plugin(accountId, {
     RecoverySubject: '' as IntlString,
     InviteText: '' as IntlString,
     InviteHTML: '' as IntlString,
-    InviteSubject: '' as IntlString
+    InviteSubject: '' as IntlString,
+    ResendInviteText: '' as IntlString,
+    ResendInviteHTML: '' as IntlString,
+    ResendInviteSubject: '' as IntlString,
+    OtpText: '' as IntlString,
+    OtpHTML: '' as IntlString,
+    OtpSubject: '' as IntlString
   }
 })

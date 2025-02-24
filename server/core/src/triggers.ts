@@ -16,30 +16,31 @@
 
 import core, {
   TxFactory,
-  cutObjectArray,
+  TxProcessor,
+  groupByArray,
   matchQuery,
-  type AttachedDoc,
   type Class,
   type Doc,
   type DocumentQuery,
   type Hierarchy,
+  type MeasureContext,
+  type ModelDb,
   type Obj,
   type Ref,
-  type SessionOperationContext,
   type Tx,
-  type TxCollectionCUD,
-  type TxCreateDoc
+  type TxCreateDoc,
+  type WithLookup
 } from '@hcengineering/core'
 
+import { Analytics } from '@hcengineering/analytics'
 import { getResource, type Resource } from '@hcengineering/platform'
 import type { Trigger, TriggerControl, TriggerFunc } from './types'
-import { Analytics } from '@hcengineering/analytics'
 
 import serverCore from './plugin'
 
 interface TriggerRecord {
   query?: DocumentQuery<Tx>
-  trigger: { op: TriggerFunc, resource: Resource<TriggerFunc>, isAsync: boolean }
+  trigger: { op: TriggerFunc | Promise<TriggerFunc>, resource: Resource<TriggerFunc>, isAsync: boolean }
 }
 /**
  * @public
@@ -49,120 +50,113 @@ export class Triggers {
 
   constructor (protected readonly hierarchy: Hierarchy) {}
 
-  async tx (tx: Tx): Promise<void> {
-    if (tx._class === core.class.TxCollectionCUD) {
-      tx = (tx as TxCollectionCUD<Doc, AttachedDoc>).tx
-    }
-    if (tx._class === core.class.TxCreateDoc) {
-      const createTx = tx as TxCreateDoc<Doc>
-      if (createTx.objectClass === serverCore.class.Trigger) {
-        const match = (createTx as TxCreateDoc<Trigger>).attributes.txMatch
-
-        const trigger = (createTx as TxCreateDoc<Trigger>).attributes.trigger
-        const func = await getResource(trigger)
-        const isAsync = (createTx as TxCreateDoc<Trigger>).attributes.isAsync === true
-
-        this.triggers.push({
-          query: match,
-          trigger: { op: func, resource: trigger, isAsync }
-        })
-      }
+  init (model: ModelDb): void {
+    const allTriggers = model.findAllSync(serverCore.class.Trigger, {})
+    for (const t of allTriggers) {
+      this.addTrigger(t)
     }
   }
 
-  async apply (
-    ctx: SessionOperationContext,
-    tx: Tx[],
-    ctrl: Omit<TriggerControl, 'txFactory'>
-  ): Promise<{
-      transactions: Tx[]
-      performAsync?: (ctx: SessionOperationContext) => Promise<Tx[]>
-    }> {
-    const result: Tx[] = []
+  private addTrigger (t: WithLookup<Trigger>): void {
+    const match = t.txMatch
 
-    const asyncRequest: {
-      matches: Tx[]
-      trigger: TriggerRecord['trigger']
-    }[] = []
+    const trigger = t.trigger
+    const func = getResource(trigger)
+    const isAsync = t.isAsync === true
+    this.triggers.push({
+      query: match,
+      trigger: { op: func, resource: trigger, isAsync }
+    })
+  }
 
-    const applyTrigger = async (
-      ctx: SessionOperationContext,
-      matches: Tx[],
-      trigger: TriggerRecord['trigger'],
-      result: Tx[]
-    ): Promise<void> => {
-      for (const tx of matches) {
-        try {
-          result.push(
-            ...(await trigger.op(tx, {
-              ...ctrl,
-              ctx: ctx.ctx,
-              txFactory: new TxFactory(tx.modifiedBy, true),
-              findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx.ctx, clazz, query, options),
-              apply: async (tx, broadcast, target) => {
-                return await ctrl.applyCtx(ctx, tx, broadcast, target)
-              },
-              result
-            }))
-          )
-        } catch (err: any) {
-          ctx.ctx.error('failed to process trigger', { trigger: trigger.resource, tx, err })
-          Analytics.handleError(err)
+  tresolve = Promise.resolve()
+  tx (txes: Tx[]): Promise<void> {
+    for (const tx of txes) {
+      if (tx._class === core.class.TxCreateDoc) {
+        const createTx = tx as TxCreateDoc<Doc>
+        if (createTx.objectClass === serverCore.class.Trigger) {
+          const trigger = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Trigger>)
+          this.addTrigger(trigger)
         }
       }
     }
+    return this.tresolve
+  }
 
-    const promises: Promise<void>[] = []
+  async applyTrigger (
+    ctx: MeasureContext,
+    ctrl: Omit<TriggerControl, 'txFactory'>,
+    matches: Tx[],
+    { trigger }: TriggerRecord
+  ): Promise<Tx[]> {
+    const result: Tx[] = []
+    const apply: Tx[] = []
+    const group = groupByArray(matches, (it) => it.modifiedBy)
+
+    const tctrl: TriggerControl = {
+      ...ctrl,
+      ctx,
+      txFactory: null as any, // Will be set later
+      apply: (ctx, tx, needResult) => {
+        if (needResult !== true) {
+          apply.push(...tx)
+        }
+        ctrl.txes.push(...tx) // We need to put them so other triggers could check if similar operation is already performed.
+        return ctrl.apply(ctx, tx, needResult)
+      }
+    }
+    if (trigger.op instanceof Promise) {
+      trigger.op = await trigger.op
+    }
+    for (const [k, v] of group.entries()) {
+      tctrl.txFactory = new TxFactory(k, true)
+      try {
+        const tresult = await trigger.op(v, tctrl)
+        result.push(...tresult)
+        ctrl.txes.push(...tresult)
+      } catch (err: any) {
+        ctx.error('failed to process trigger', { trigger: trigger.resource, err })
+        Analytics.handleError(err)
+      }
+    }
+    return result.concat(apply)
+  }
+
+  async apply (
+    ctx: MeasureContext,
+    tx: Tx[],
+    ctrl: Omit<TriggerControl, 'txFactory'>,
+    mode: 'sync' | 'async'
+  ): Promise<Tx[]> {
+    const result: Tx[] = []
     for (const { query, trigger } of this.triggers) {
+      if ((trigger.isAsync ? 'async' : 'sync') !== mode) {
+        continue
+      }
       let matches = tx
       if (query !== undefined) {
         this.addDerived(query, 'objectClass')
-        this.addDerived(query, 'tx.objectClass')
+        this.addDerived(query, 'attachedToClass')
         matches = matchQuery(tx, query, core.class.Tx, ctrl.hierarchy) as Tx[]
       }
       if (matches.length > 0) {
-        if (trigger.isAsync) {
-          asyncRequest.push({
-            matches,
-            trigger
-          })
-        } else {
-          promises.push(
-            ctx.with(trigger.resource, {}, async (ctx) => {
-              await applyTrigger(ctx, matches, trigger, result)
-            })
-          )
-        }
+        await ctx.with(
+          trigger.resource,
+          {},
+          async (ctx) => {
+            try {
+              const tresult = await this.applyTrigger(ctx, ctrl, matches, { trigger })
+              result.push(...tresult)
+            } catch (err: any) {
+              ctx.error('error during async processing', { err })
+            }
+          },
+          { count: matches.length }
+        )
       }
     }
-    // Wait all regular triggers to complete in parallel
-    await Promise.all(promises)
 
-    return {
-      transactions: result,
-      performAsync:
-        asyncRequest.length > 0
-          ? async (ctx) => {
-            // If we have async triggers let's sheculed them after IO phase.
-            const result: Tx[] = []
-            for (const request of asyncRequest) {
-              try {
-                await ctx.with(request.trigger.resource, {}, async (ctx) => {
-                  await applyTrigger(ctx, request.matches, request.trigger, result)
-                })
-              } catch (err: any) {
-                ctx.ctx.error('failed to process trigger', {
-                  trigger: request.trigger.resource,
-                  matches: cutObjectArray(request.matches),
-                  err
-                })
-                Analytics.handleError(err)
-              }
-            }
-            return result
-          }
-          : undefined
-    }
+    return result
   }
 
   private addDerived (q: DocumentQuery<Tx>, key: string): void {
@@ -170,9 +164,9 @@ export class Triggers {
       return
     }
     if (typeof q[key] === 'string') {
-      const descendants = this.hierarchy.getDescendants(q[key])
+      const descendants = this.hierarchy.getDescendants(q[key] as Ref<Class<Doc>>)
       q[key] = {
-        $in: [...(q[key].$in ?? []), ...descendants]
+        $in: [q[key] as Ref<Class<Doc>>, ...descendants]
       }
     } else {
       if (Array.isArray(q[key].$in)) {

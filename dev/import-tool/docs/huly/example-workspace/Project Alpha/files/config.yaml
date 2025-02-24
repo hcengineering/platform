@@ -1,0 +1,18 @@
+# Development environment configuration
+server:
+  port: 3000
+  host: localhost
+
+database:
+  host: localhost
+  port: 5432
+  name: project_alpha
+  user: postgres
+
+github:
+  webhook_url: https://api.github.com/webhooks
+  branch: master
+
+logging:
+  level: debug
+  format: json 

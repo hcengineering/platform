@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import core, { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, Component, Loading } from '@hcengineering/ui'
@@ -14,6 +14,7 @@
 
   export let createItemDialog: AnySvelteComponent | undefined = undefined
   export let createItemLabel: IntlString | undefined = undefined
+  export let createItemEvent: string | undefined = undefined
   export let createItemDialogProps = { shouldSaveDraft: true }
 
   const hierarchy = getClient().getHierarchy()
@@ -21,13 +22,17 @@
   const preferenceQuery = createQuery()
   const objectConfigurations = createQuery()
   let preference: ViewletPreference[] = []
-  let loading = true
+
+  let configurationsLoading = true
+  let preferencesLoading = true
+  $: loading = configurationsLoading || preferencesLoading
 
   let configurationRaw: Viewlet[] = []
   let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
 
-  $: viewlet &&
-    objectConfigurations.query(
+  function fetchConfigurations (viewlet: Viewlet): void {
+    configurations = {}
+    configurationsLoading = objectConfigurations.query(
       view.class.Viewlet,
       {
         attachTo: { $in: hierarchy.getDescendants(_class) },
@@ -36,21 +41,26 @@
       },
       (res) => {
         configurationRaw = res
-        loading = false
+        configurationsLoading = false
+        loading = configurationsLoading || preferencesLoading
       }
     )
+  }
 
-  $: viewlet &&
-    preferenceQuery.query(
+  function fetchPreferences (configurationRaw: Viewlet[]): void {
+    preferencesLoading = preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: { $in: configurationRaw.map((it) => it._id) }
       },
       (res) => {
         preference = res
-        loading = false
+        preferencesLoading = false
+        loading = configurationsLoading || preferencesLoading
       }
     )
+  }
 
   function updateConfiguration (configurationRaw: Viewlet[], preference: ViewletPreference[]): void {
     const newConfigurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
@@ -72,6 +82,9 @@
     configurations = newConfigurations
   }
 
+  $: fetchConfigurations(viewlet)
+  $: fetchPreferences(configurationRaw)
+
   $: updateConfiguration(configurationRaw, preference)
 
   $: config = preference.find((it) => it.attachedTo === viewlet._id)?.config ?? viewlet.config
@@ -91,6 +104,7 @@
         createItemDialog,
         createItemDialogProps,
         createItemLabel,
+        createItemEvent,
         viewlet,
         viewOptions,
         viewOptionsConfig: viewlet.viewOptions?.other,

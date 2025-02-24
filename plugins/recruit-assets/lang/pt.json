@@ -98,7 +98,6 @@
     "HasNoActiveApplicant": "Sem Ativos",
     "NoneApplications": "Nenhuma",
     "VacancyList": "Vagas",
-    "MatchVacancy": "Atribuir à vaga",
     "VacancyMatching": "Atribuir Talentos à vaga",
     "Score": "Pontuação",
     "Match": "Correspondência",
@@ -119,7 +118,8 @@
     "HideDoneState": "Ocultar candidaturas concluídas",
     "HideArchivedVacancies": "Ocultar vagas arquivadas",
     "HideApplicantsFromArchivedVacancies": "Ocultar de vagas arquivadas",
-    "CreateNewSkills": "Criar novas competências se as existentes não forem encontradas"
+    "CreateNewSkills": "Criar novas competências se as existentes não forem encontradas",
+    "SwapFirstAndLastNames": "Trocar primeiro e último nome"
   },
   "status": {
     "ApplicationExists": "A candidatura já existe",

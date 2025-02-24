@@ -30,6 +30,7 @@
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import Spinner from './Spinner.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
@@ -57,15 +58,18 @@
   export let title: string | undefined = undefined
   export let borderStyle: 'solid' | 'dashed' | 'none' = 'solid'
   export let id: string | undefined = undefined
+  export let dataId: string | undefined = undefined
   export let input: HTMLButtonElement | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
   export let short: boolean = false
   export let shrink: number = 0
   export let accent: boolean = false
   export let noFocus: boolean = false
+  export let noPrint: boolean = false
   export let adaptiveShrink: WidthType | null = null
   export let gap: 'medium' | 'large' = 'medium'
   export let stopPropagation: boolean = true
+  export let event: string | undefined = undefined
 
   $: iconSize = iconProps?.size !== undefined ? iconProps.size : size && size === 'inline' ? 'inline' : 'small'
   $: iconRightSize = iconRightProps?.size !== undefined ? iconRightProps.size : 'x-small'
@@ -128,6 +132,7 @@
   class="antiButton {kind} {size} jf-{justify} sh-{shape ?? 'no-shape'} bs-{borderStyle} gap-{gap}"
   class:only-icon={iconOnly || adaptive}
   class:no-focus={noFocus}
+  class:no-print={noPrint}
   class:accent
   class:highlight
   class:pressed
@@ -146,12 +151,18 @@
   {title}
   type={kind === 'primary' ? 'submit' : 'button'}
   on:click={preventHandler}
+  on:click={() => {
+    if (event) {
+      Analytics.handleEvent(event)
+    }
+  }}
   on:click
   on:focus
   on:blur
   on:mousemove
   on:mouseleave
   {id}
+  data-id={dataId}
 >
   {#if icon && !loading}
     <div class="btn-icon pointer-events-none" class:resetIconSize={resetIconSize === 'icon'}>

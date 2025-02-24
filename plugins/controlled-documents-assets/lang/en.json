@@ -9,11 +9,7 @@
     "Requests": "Requests",
     "EffectiveDate": "Effective date",
     "PlannedEffectiveDate": "Planned effective date",
-    "Section": "Section",
     "Rank": "Rang",
-    "CollaborativeSection": "Collaborative section",
-    "CollaboratorSectionId": "Collaborator section ID",
-    "AttachmentsSection": "Attachments section",
     "DocumentRequest": "Request",
     "DocumentReviewRequest": "Document review request",
     "DocumentApprovalRequest": "Document approval request",
@@ -22,11 +18,10 @@
     "Guidance": "Guidance",
     "Required": "Required",
     "Description": "Description",
-    "SectionTemplate": "Section template",
     "Major": "Major",
     "Minor": "Minor",
     "Patch": "Patch",
-    "DocumentApprovals": "Reviews and Approvals",
+    "ValidationWorkflow": "Validation workflow",
     "ChangeOwner": "Change document owner",
     "ChangeOwnerHintBeginning": "Transfer ownership of the",
     "ChangeOwnerHintEnd": "to another person.",
@@ -89,6 +84,8 @@
     "ProvideRejectionReason": "Type rejection reason...",
     "RejectionReason": "Rejection reason",
     "ConfirmReviewCompletion": "Confirm review completion",
+    "ConfirmApprovalSubmission": "Confirm submission for approval",
+    "ConfirmReviewSubmission": "Confirm submission for review",
     "AddApprovalTitle": "Send your document to approvers",
     "AddApprovalDescription1": "To prepare your document for approval it should fit few requirements:",
     "AddApprovalDescription2": "has status 'Draft' or 'Reviewed'",
@@ -104,8 +101,6 @@
     "DocumentCodePlaceholder": "DOC-1",
     "DocumentPrefixPlaceholder": "DOC",
     "DocumentPrefix": "Documents prefix",
-    "Sections": "Sections",
-    "TemplateSectionTitle": "Title",
     "DocumentTemplateCreateLabel": "Template",
     "DocumentCategoryCreateLabel": "Category",
     "CreateDocumentCategory": "Create a category",
@@ -114,6 +109,7 @@
     "AttachmentsMax": "Maximum allowed attachments",
     "Resolve": "Resolve",
     "Unresolve": "Unresolve",
+    "Pending": "Pending",
     "Resolved": "Resolved",
     "ShowResolved": "Show resolved comments",
     "Ordering": "Ordering",
@@ -123,6 +119,11 @@
     "Archived": "Archived",
     "Deleted": "Deleted",
     "MetaAbstract": "Abstract",
+    
+    "Obsolete": "Obsolete",
+    "MakeDocumentObsolete": "Mark as obsolete",
+    "MakeDocumentObsoleteDialog": "Mark {count, plural, =0 {document} other {documents}} as obsolete",
+    "MakeDocumentObsoleteConfirm": "Do you really want to mark the following documents as obsolete: {titles}?",
 
     "ContentTab": "Content",
     "TeamTab": "Team",
@@ -152,12 +153,6 @@
     "ChangeControl": "Change Control",
     "ReviewInterval": "Review interval",
 
-    "DocTemplateDeleteSectionTitle": "Confirm deletion of section",
-    "DocTemplateDeleteSectionConfirm": "Are you sure that you want to permanently remove section \"{section}\" from the template?",
-
-    "AddSectionAbove": "Add new section above",
-    "AddSectionBelow": "Add new section below",
-
     "SelectReviewers": "Select reviewers",
     "SelectApprovers": "Select approvers",
     "RequestsToReviewTheDoc": "requests you to review the document",
@@ -179,8 +174,6 @@
     "InfoStepTitle": "Info",
     "TeamStepTitle": "Team",
 
-    "Duplicate": "Duplicate",
-
     "TitleAndDescr": "Title and description",
     "Reason": "Reason",
     "AbstractPlaceholder": "What is this document about? Who will need it and when? ...",
@@ -193,7 +186,6 @@
     "EditDocument": "Edit document",
 
     "Key": "Key",
-    "SectionKey": "Section key",
     "CommentsSequence": "Comments sequence",
 
     "Email": "Email",
@@ -237,6 +229,9 @@
     "MarkDocAsDeleted": "Marking document as deleted",
     "MarkDocsAsDeleted": "Marking multiple documents as deleted",
     "MarkDocAsDeletedConfirm": "Do you really want to mark the following documents as deleted: {titles}?",
+
+    "ArchiveDocs": "Archive {count, plural, =0 {document} other {documents}}",
+    "ArchiveDocsConfirm": "Do you really want to archive the following documents: {titles}?",
 
     "DocumentInHierarchy": "Document in hierarchy",
     "FirstDraftVersion": "This is the first draft version of the document. There's no history yet.",
@@ -289,6 +284,8 @@
     "ReviewDocumentDescription": "Grants users ability to review a document",
     "ApproveDocumentPermission": "Approve document",
     "ApproveDocumentDescription": "Grants users ability to approve a document",
+    "ArchiveDocumentPermission": "Archive document",
+    "ArchiveDocumentDescription": "Grants users ability to archive a document",
     "CoAuthorDocumentPermission": "Co-author document",
     "CoAuthorDocumentDescription": "Grants users ability to co-author a document",
     "CreateDocumentPermission": "Create document",
@@ -303,7 +300,16 @@
     "DeleteDocumentCategoryPermission": "Delete document category",
     "DeleteDocumentCategoryDescription": "Grants users ability to delete a document category",
     "ConfigLabel": "Controlled Documents",
-    "ConfigDescription": "Extension to manage controlled documents"
+    "ConfigDescription": "Extension to manage controlled documents",
+
+    "Transfer": "Transfer",
+    "TransferWarning": "Some team members may lose the ability to view or edit this document after this action.",
+    "TransferDocuments": "Transfer controlled documents",
+    "TransferDocumentsHint": "Documents to be transferred to the selected space:",
+
+    "CreateFolder": "Create new folder",
+    "RenameFolder": "Rename folder",
+    "CreateChildFolder": "Create child folder"
   },
   "controlledDocStates": {
     "Empty": "",

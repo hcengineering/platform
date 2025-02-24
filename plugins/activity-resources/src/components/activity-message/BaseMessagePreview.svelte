@@ -15,9 +15,8 @@
 
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
+  import { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
 
-  import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import ReactionsPreview from '../reactions/ReactionsPreview.svelte'
   import BasePreview from '../BasePreview.svelte'
   import { Action } from '@hcengineering/ui'
@@ -53,15 +52,15 @@
       <ReactionsPreview {message} {readonly} />
     {/if}
   </svelte:fragment>
-  <svelte:fragment slot="actions">
-    {#if previewElement}
-      <ActivityMessageActions
-        {message}
-        {actions}
-        withActionMenu={false}
-        onOpen={previewElement.onActionsOpened}
-        onClose={previewElement.onActionsClosed}
-      />
-    {/if}
-  </svelte:fragment>
+  <!--  <svelte:fragment slot="actions">-->
+  <!--    {#if previewElement}-->
+  <!--      <ActivityMessageActions-->
+  <!--        {message}-->
+  <!--        {actions}-->
+  <!--        withActionMenu={false}-->
+  <!--        onOpen={previewElement.onActionsOpened}-->
+  <!--        onClose={previewElement.onActionsClosed}-->
+  <!--      />-->
+  <!--    {/if}-->
+  <!--  </svelte:fragment>-->
 </BasePreview>

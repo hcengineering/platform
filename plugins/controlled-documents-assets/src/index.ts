@@ -21,6 +21,7 @@ loadMetadata(documents.icon, {
   Approvals: `${icons}#approvals`,
   DocumentApplication: `${icons}#documentapplication`,
   NewDocument: `${icons}#newdocument`,
+  Folder: `${icons}#c-folder`,
   Document: `${icons}#document`,
   Library: `${icons}#library`,
   StateApproved: `${icons}#state-approved`,
@@ -30,8 +31,5 @@ loadMetadata(documents.icon, {
   StateObsolete: `${icons}#state-obsolete`,
   ArrowUp: `${icons}#arrow-up`,
   ArrowDown: `${icons}#arrow-down`,
-  Duplicate: `${icons}#duplicate`,
-  EditDescription: `${icons}#edit-description`,
-  EditGuidance: `${icons}#edit-guidance`,
   Configure: `${icons}#configure`
 })

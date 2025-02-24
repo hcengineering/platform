@@ -16,12 +16,13 @@
   import { Employee } from '@hcengineering/contact'
   import { EmployeeBox } from '@hcengineering/contact-resources'
   import core, { Ref } from '@hcengineering/core'
-  import { Department } from '@hcengineering/hr'
+  import { Department, HrEvents } from '@hcengineering/hr'
   import { Card, getClient } from '@hcengineering/presentation'
   import { Button, EditBox, FocusHandler, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
   import DepartmentEditor from './DepartmentEditor.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let parent: Ref<Department> = hr.ids.Head
 
@@ -45,7 +46,7 @@
       teamLead: lead,
       managers: []
     })
-
+    Analytics.handleEvent(HrEvents.DepartmentCreated, { id, lead })
     dispatch('close', id)
   }
   const manager = createFocusManager()

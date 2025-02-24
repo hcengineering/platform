@@ -1,25 +1,30 @@
+import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
 import {
-  Account,
+  PersonId,
   AttachedDoc,
+  type Attribute,
   Class,
+  Collection,
   Doc,
   Hierarchy,
+  MeasureContext,
   Mixin,
   Ref,
   RefTo,
-  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxMixin,
   TxProcessor,
-  TxUpdateDoc
+  TxUpdateDoc,
+  combineAttributes,
+  ArrOf
 } from '@hcengineering/core'
 import core from '@hcengineering/core/src/component'
-import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
-import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
-import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 import notification from '@hcengineering/notification'
+import { translate } from '@hcengineering/platform'
+import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
 import { TriggerControl } from '@hcengineering/server-core'
+import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 
 function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): string[] {
   if (hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
@@ -73,16 +78,6 @@ function getModifiedAttributes (tx: TxCUD<Doc>, hierarchy: Hierarchy): Record<st
   return {}
 }
 
-function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
-  return Array.from(
-    new Set(
-      attributes.flatMap((attr) =>
-        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
-      )
-    )
-  ).filter((v) => v != null)
-}
-
 export function getDocUpdateAction (control: ActivityControl, tx: TxCUD<Doc>): DocUpdateAction {
   const hierarchy = control.hierarchy
 
@@ -106,16 +101,13 @@ export async function getDocDiff (
   objectCache?: DocObjectCache
 ): Promise<{ doc?: Doc, prevDoc?: Doc }> {
   const hierarchy = control.hierarchy
-  const isAttached = hierarchy.isDerived(_class, core.class.AttachedDoc)
 
   const objectTxes =
     objectCache?.transactions.get(objectId) ??
     (await getAllObjectTransactions(control, _class, [objectId], mixin)).get(objectId) ??
     []
 
-  const createTx = isAttached
-    ? objectTxes.find((tx) => (tx as TxCollectionCUD<Doc, AttachedDoc>).tx?._class === core.class.TxCreateDoc)
-    : objectTxes.find((tx) => tx._class === core.class.TxCreateDoc)
+  const createTx = objectTxes.find((tx) => tx._class === core.class.TxCreateDoc)
 
   if (createTx === undefined) {
     return {}
@@ -124,11 +116,9 @@ export async function getDocDiff (
   let doc: Doc | undefined
   let prevDoc: Doc | undefined
 
-  doc = TxProcessor.createDoc2Doc(TxProcessor.extractTx(createTx) as TxCreateDoc<Doc>)
+  doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
 
-  for (const objectTx of objectTxes) {
-    const actualTx = TxProcessor.extractTx(objectTx) as TxCUD<Doc>
-
+  for (const actualTx of objectTxes) {
     if (actualTx._class === core.class.TxUpdateDoc) {
       prevDoc = hierarchy.clone(doc)
       doc = TxProcessor.updateDoc2Doc(doc, actualTx as TxUpdateDoc<Doc>)
@@ -139,7 +129,7 @@ export async function getDocDiff (
       doc = TxProcessor.updateMixin4Doc(doc, actualTx as TxMixin<Doc, Doc>)
     }
 
-    if (objectTx._id === lastTxId) {
+    if (actualTx._id === lastTxId) {
       break
     }
   }
@@ -160,13 +150,16 @@ async function getCollaboratorsDiff (
   const { hierarchy } = control
   const value = hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? []
 
-  let prevValue: Ref<Account>[] = []
+  let prevValue: PersonId[] = []
 
   if (prevDoc !== undefined && hierarchy.hasMixin(prevDoc, notification.mixin.Collaborators)) {
     prevValue = hierarchy.as(prevDoc, notification.mixin.Collaborators).collaborators ?? []
   } else if (prevDoc !== undefined) {
     const mixin = hierarchy.classHierarchyMixin(prevDoc._class, notification.mixin.ClassCollaborators)
-    prevValue = mixin !== undefined ? await getDocCollaborators(prevDoc, mixin, control as TriggerControl) : []
+    prevValue =
+      mixin !== undefined
+        ? await getDocCollaborators((control as TriggerControl).ctx, prevDoc, mixin, control as TriggerControl)
+        : []
   }
 
   const added = value.filter((item) => !prevValue.includes(item)) as DocAttributeUpdates['added']
@@ -220,8 +213,8 @@ export async function getAttributeDiff (
 }
 
 export async function getTxAttributesUpdates (
+  ctx: MeasureContext,
   control: ActivityControl,
-  originTx: TxCUD<Doc>,
   tx: TxCUD<Doc>,
   object: Doc,
   objectCache?: DocObjectCache,
@@ -235,7 +228,7 @@ export async function getTxAttributesUpdates (
 
   if (updateObject._id !== tx.objectId) {
     updateObject =
-      objectCache?.docs?.get(tx.objectId) ?? (await control.findAll(tx.objectClass, { _id: tx.objectId }))[0]
+      objectCache?.docs?.get(tx.objectId) ?? (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }))[0]
   }
 
   if (updateObject === undefined) {
@@ -244,14 +237,12 @@ export async function getTxAttributesUpdates (
 
   const hierarchy = control.hierarchy
 
-  const filterSet = new Set<string>()
-  for (const c of controlRules ?? []) {
-    for (const f of c.skipFields ?? []) {
-      filterSet.add(f)
-    }
-  }
+  const allowedFields = new Set<string>(controlRules?.flatMap((it) => it.allowedFields ?? []) ?? [])
+  const skipFields = new Set<string>(controlRules?.flatMap((it) => it.skipFields ?? []) ?? [])
 
-  const keys = getAvailableAttributesKeys(tx, hierarchy).filter((it) => !filterSet.has(it))
+  const keys = getAvailableAttributesKeys(tx, hierarchy).filter(
+    (it) => !skipFields.has(it) && (allowedFields.size === 0 || allowedFields.has(it))
+  )
 
   if (keys.length === 0) {
     return []
@@ -262,14 +253,7 @@ export async function getTxAttributesUpdates (
   const isMixin = hierarchy.isDerived(tx._class, core.class.TxMixin)
   const mixin = isMixin ? (tx as TxMixin<Doc, Doc>).mixin : undefined
 
-  const { doc, prevDoc } = await getDocDiff(
-    control,
-    updateObject._class,
-    updateObject._id,
-    originTx._id,
-    mixin,
-    objectCache
-  )
+  let docDiff: { doc?: Doc, prevDoc?: Doc } | undefined
 
   for (const key of keys) {
     let attrValue = modifiedAttributes[key]
@@ -284,6 +268,8 @@ export async function getTxAttributesUpdates (
 
     if (clazz !== undefined && 'to' in clazz.type) {
       attrClass = clazz.type.to as Ref<Class<Doc>>
+    } else if (clazz !== undefined && hierarchy.isDerived(clazz.type._class, core.class.ArrOf)) {
+      attrClass = (clazz.type as ArrOf<Doc>).of._class
     } else if (clazz !== undefined && 'of' in clazz?.type) {
       attrClass = (clazz.type.of as RefTo<Doc>).to
     }
@@ -296,14 +282,26 @@ export async function getTxAttributesUpdates (
       continue
     }
 
-    if (Array.isArray(attrValue) && doc != null) {
-      const diff = await getAttributeDiff(control, doc, prevDoc, key, attrClass, isMixin)
+    if (attrClass === core.class.TypeCollaborativeDoc) {
+      // collaborative documents activity is handled by collaborator
+      continue
+    }
+
+    if (hierarchy.isDerived(attrClass, core.class.TypeMarkup) || mixin === notification.mixin.Collaborators) {
+      if (docDiff === undefined) {
+        docDiff = await getDocDiff(control, updateObject._class, updateObject._id, tx._id, mixin, objectCache)
+      }
+    }
+
+    if (Array.isArray(attrValue) && docDiff?.doc !== undefined) {
+      const diff = await getAttributeDiff(control, docDiff.doc, docDiff.prevDoc, key, attrClass, isMixin)
       added.push(...diff.added)
       removed.push(...diff.removed)
       attrValue = []
     }
 
-    if (prevDoc !== undefined) {
+    if (docDiff?.prevDoc !== undefined) {
+      const { prevDoc } = docDiff
       const rawPrevValue = isMixin ? (hierarchy.as(prevDoc, attrClass) as any)[key] : (prevDoc as any)[key]
 
       if (Array.isArray(rawPrevValue)) {
@@ -341,4 +339,60 @@ function getHiddenAttrs (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): Set<str
   return new Set(
     [...hierarchy.getAllAttributes(_class).entries()].filter(([, attr]) => attr.hidden === true).map(([k]) => k)
   )
+}
+
+export async function getAttrName (
+  attributeUpdates: DocAttributeUpdates,
+  objectClass: Ref<Class<Doc>>,
+  hierarchy: Hierarchy
+): Promise<string | undefined> {
+  const { attrKey, attrClass, isMixin } = attributeUpdates
+  let attrObjectClass = objectClass
+
+  try {
+    if (isMixin) {
+      const keyedAttribute = [...hierarchy.getAllAttributes(attrClass).entries()]
+        .filter(([, value]) => value.hidden !== true)
+        .map(([key, attr]) => ({ key, attr }))
+        .find(({ key }) => key === attrKey)
+      if (keyedAttribute === undefined) {
+        return undefined
+      }
+      attrObjectClass = keyedAttribute.attr.attributeOf
+    }
+
+    const attribute = hierarchy.getAttribute(attrObjectClass, attrKey)
+
+    const label = attribute.shortLabel ?? attribute.label
+
+    if (label === undefined) {
+      return undefined
+    }
+
+    return await translate(label, {})
+  } catch (e) {
+    console.error(e)
+    return undefined
+  }
+}
+
+export function getCollectionAttribute (
+  hierarchy: Hierarchy,
+  objectClass: Ref<Class<Doc>>,
+  collection?: string
+): Attribute<Collection<AttachedDoc>> | undefined {
+  if (collection === undefined) {
+    return undefined
+  }
+
+  const descendants = hierarchy.getDescendants(objectClass)
+
+  for (const descendant of descendants) {
+    const collectionAttribute = hierarchy.findAttribute(descendant, collection)
+    if (collectionAttribute !== undefined) {
+      return collectionAttribute
+    }
+  }
+
+  return undefined
 }

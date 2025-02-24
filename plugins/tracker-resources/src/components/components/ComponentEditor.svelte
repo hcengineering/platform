@@ -16,9 +16,11 @@
   import { AttachedData, DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
-  import { Component, Issue, IssueTemplate, Project } from '@hcengineering/tracker'
+  import { Component, Issue, IssueTemplate, Project, TrackerEvents } from '@hcengineering/tracker'
   import { ButtonKind, ButtonShape, ButtonSize, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
+
   import { activeComponent } from '../../issues'
   import tracker from '../../plugin'
   import ComponentSelector from './ComponentSelector.svelte'
@@ -45,6 +47,8 @@
 
   const dispatch = createEventDispatcher()
 
+  let element: HTMLDivElement
+
   const handleComponentIdChanged = async (newComponentId: Ref<Component> | null | undefined) => {
     if (!isEditable || newComponentId === undefined || (!Array.isArray(value) && value.component === newComponentId)) {
       return
@@ -54,12 +58,20 @@
       await Promise.all(
         value.map(async (p) => {
           if ('_class' in p) {
+            Analytics.handleEvent(TrackerEvents.IssueComponentAdded, {
+              issue: p.identifier ?? p._id,
+              component: newComponentId
+            })
             await client.update(p, { component: newComponentId })
           }
         })
       )
     } else {
       if ('_class' in value) {
+        Analytics.handleEvent(TrackerEvents.IssueComponentAdded, {
+          issue: (value as Issue).identifier ?? value._id,
+          component: newComponentId
+        })
         await client.update(value, { component: newComponentId })
       }
     }
@@ -91,11 +103,13 @@
       }
     }
   }
+
+  afterUpdate(() => dispatch('resize', element?.clientWidth))
 </script>
 
 {#if kind === 'list'}
   {#if !Array.isArray(value) && value.component}
-    <div class={compression ? 'label-wrapper' : 'clear-mins'}>
+    <div bind:this={element} class={compression ? 'label-wrapper' : 'clear-mins'}>
       <ComponentSelector
         {kind}
         {size}
@@ -117,6 +131,7 @@
   {/if}
 {:else}
   <div
+    bind:this={element}
     class="flex flex-wrap clear-mins"
     class:minus-margin={kind === 'list-header'}
     class:label-wrapper={compression}

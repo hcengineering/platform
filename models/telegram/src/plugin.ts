@@ -31,12 +31,12 @@ export default mergeIds(telegramId, telegram, {
     Incoming: '' as IntlString,
     Messages: '' as IntlString,
     Telegram: '' as IntlString,
-    TelegramIntegrationDesc: '' as IntlString,
     Status: '' as IntlString,
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     NewMessage: '' as IntlString,
-    NewIncomingMessage: '' as IntlString
+    NewIncomingMessage: '' as IntlString,
+    TelegramNotificationDescription: '' as IntlString
   },
   ids: {
     NotificationGroup: '' as Ref<NotificationGroup>,
@@ -45,9 +45,14 @@ export default mergeIds(telegramId, telegram, {
   },
   function: {
     GetCurrentEmployeeTG: '' as Resource<TemplateFieldFunc>,
-    GetIntegrationOwnerTG: '' as Resource<TemplateFieldFunc>
+    GetIntegrationOwnerTG: '' as Resource<TemplateFieldFunc>,
+    IsTelegramNotificationsAvailable: '' as Resource<() => boolean>
   },
   activity: {
     TelegramMessageCreated: '' as AnyComponent
+  },
+  component: {
+    NotificationProviderPresenter: '' as AnyComponent,
+    TelegramIntegrationDescription: '' as AnyComponent
   }
 })

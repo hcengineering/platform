@@ -1,6 +1,6 @@
 {
   "string": {
-    "MessageID": "MessageID",
+    "MessageID": "ID сообщения",
     "IntegrationLabel": "Gmail",
     "IntegrationDescription": "Используйте интеграцию с Gmail",
     "SharedMessages": "общие письма",
@@ -37,6 +37,7 @@
     "NewIncomingMessage": "Прислал вам новое сообщение",
     "ConfigLabel": "Электронная почта",
     "ConfigDescription": "Расширение по работе с Gmail электронной почтой",
-    "GooglePrivacy": "Использование и передача информации, полученной Huly от Google API, будет соответствовать <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Политике использования данных пользователей Google API</a>, включая требования ограниченного использования."
+    "GooglePrivacy": "Использование и передача информации, полученной Huly от Google API, будет соответствовать <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Политике использования данных пользователей Google API</a>, включая требования ограниченного использования.",
+    "EmailNotificationsDescription": "Получайте персональные уведомления на электронную почту."
   }
 }

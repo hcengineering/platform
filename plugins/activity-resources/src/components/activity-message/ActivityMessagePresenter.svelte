@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DisplayActivityMessage, ActivityMessageViewType } from '@hcengineering/activity'
+  import { DisplayActivityMessage, ActivityMessageViewType, ActivityMessage } from '@hcengineering/activity'
   import view from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
   import { Action, Component } from '@hcengineering/ui'
@@ -33,14 +33,15 @@
   export let actions: Action[] = []
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
-  export let withShowMore: boolean = true
+  export let withShowMore: boolean = false
   export let attachmentImageSize: 'x-large' | undefined = undefined
   export let type: ActivityMessageViewType = 'default'
-  export let showLinksPreview = true
   export let videoPreload = true
   export let hideLink = false
   export let compact = false
+  export let readonly = false
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -69,12 +70,13 @@
       hoverStyles,
       withShowMore,
       attachmentImageSize,
-      showLinksPreview,
       videoPreload,
       hideLink,
       type,
       compact,
-      onClick
+      readonly,
+      onClick,
+      onReply
     }}
   />
 {/if}

@@ -273,8 +273,6 @@
     "NoStatusFound": "未找到匹配的状态",
     "CreateMissingStatus": "创建缺失的状态",
     "UnsetParent": "父问题将被取消设置",
-    "Unarchive": "取消归档",
-    "UnarchiveConfirm": "您想要取消归档项目吗？",
     "AllProjects": "所有项目",
     "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "由 {senderName} 更新",
@@ -282,13 +280,14 @@
     "IssueNotificationChangedProperty": "{senderName} 将 {property} 更改为 \"{newValue}\"",
     "IssueNotificationMessage": "{senderName}：{message}",
     "PreviousAssigned": "以前分配的",
-    "IssueAssigneedToYou": "分配给您",
+    "IssueAssignedToYou": "分配给您",
     "RelatedIssueTargetDescription": "相关问题项目目标用于类别或空间",
     "MapRelatedIssues": "配置相关问题默认项目",
     "DefaultIssueStatus": "默认问题状态",
     "IssueStatus": "状态",
     "Extensions": "扩展",
-    "RoleLabel": "角色：{role}"
+    "RoleLabel": "角色：{role}",
+    "UnsetParentIssue": "取消父问题"
   },
   "status": {}
 }

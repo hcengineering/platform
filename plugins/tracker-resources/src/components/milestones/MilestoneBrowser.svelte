@@ -16,7 +16,7 @@
   import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Milestone } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, SearchEdit, TabItem, TabList, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, SearchInput, TabItem, Switcher, showPopup, Header, Breadcrumbs } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -103,42 +103,33 @@
   ]
 </script>
 
-<div class="ac-header full divide caption-height">
-  <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label {label} /></span>
-    <span class="componentTitle">
-      &nbsp;› <Label label={title} />
-    </span>
-  </div>
-
-  <div class="ac-header-full medium-gap mb-1">
-    <Button icon={IconAdd} label={tracker.string.Milestone} kind={'primary'} on:click={showCreateDialog} />
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} on:change={() => {}} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
-    <FilterButton _class={tracker.class.Milestone} {space} />
-  </div>
-  <div class="ac-header-full medium-gap">
+<Header adaptive={'doubleRow'}>
+  <svelte:fragment slot="beforeTitle">
     <ViewletSelector viewletQuery={{ attachTo: tracker.class.Milestone }} bind:viewlet />
     <ViewletSettingButton bind:viewOptions bind:viewlet />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-  </div>
-</div>
-<div class="ac-header tabs-start full divide">
-  <TabList
-    items={modeList}
-    selected={mode}
-    kind={'plain'}
-    on:select={(result) => {
-      if (result.detail !== undefined && result.detail.action) result.detail.action()
-    }}
-  />
-</div>
+  </svelte:fragment>
 
+  <Breadcrumbs items={[{ icon: tracker.icon.Milestone, label }, { label: title }]} />
+
+  <svelte:fragment slot="search">
+    <SearchInput bind:value={search} collapsed />
+    <FilterButton _class={tracker.class.Milestone} {space} />
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    <Button icon={IconAdd} label={tracker.string.Milestone} kind={'primary'} on:click={showCreateDialog} />
+  </svelte:fragment>
+  <svelte:fragment slot="extra">
+    <Switcher
+      name={'milestone-mode'}
+      items={modeList}
+      selected={mode}
+      kind={'subtle'}
+      on:select={(result) => {
+        if (result.detail !== undefined && result.detail.action) result.detail.action()
+      }}
+    />
+  </svelte:fragment>
+</Header>
 <FilterBar
   _class={tracker.class.Milestone}
   query={searchQuery}
@@ -146,14 +137,6 @@
   {viewOptions}
   on:change={(e) => (resultQuery = e.detail)}
 />
-
-<div class="flex w-full h-full clear-mins">
-  {#if viewlet && viewOptions}
-    <MilestoneContent {viewlet} query={{ ...resultQuery, ...includedMilestonesQuery }} {space} {viewOptions} />
-  {/if}
-  {#if $$slots.aside !== undefined && asideShown}
-    <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>
-      <slot name="aside" />
-    </div>
-  {/if}
-</div>
+{#if viewlet && viewOptions}
+  <MilestoneContent {viewlet} query={{ ...resultQuery, ...includedMilestonesQuery }} {space} {viewOptions} />
+{/if}

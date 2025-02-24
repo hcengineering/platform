@@ -24,7 +24,7 @@
     "FileBrowserFilterIn": "В",
     "FileBrowserFilterDate": "Дата",
     "FileBrowserFilterFileType": "Тип файла",
-    "FileBrowserSort": "Сортировка:",
+    "FileBrowserSort": "Сортировка",
     "FileBrowserSortNewest": "Самый новый файл",
     "FileBrowserSortOldest": "Самый старый файл",
     "FileBrowserSortAZ": "От А до Я",
@@ -52,6 +52,8 @@
     "UnPinAttachment": "Убрать пометку важное",
     "FilterAttachments": "Вложения",
     "RemovedAttachment": "Удалил(а) вложение",
-    "ContentType": "Тип контента"
+    "ContentType": "Тип контента",
+    "OpenInWindow": "Открыть в окне",
+    "Embeddings": "Вложения"
   }
 }

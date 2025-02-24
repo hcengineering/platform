@@ -28,16 +28,17 @@
   } from '@hcengineering/ui'
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { chunterId } from '@hcengineering/chunter'
   import view, { decodeObjectURI } from '@hcengineering/view'
   import { parseLinkId, getObjectLinkId } from '@hcengineering/view-resources'
+  import { ActivityMessage } from '@hcengineering/activity'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
   import { chatSpecials, loadSavedAttachments } from './utils'
   import { SelectChannelEvent } from './types'
-  import { openChannel } from '../../navigation'
+  import { openChannel, openThreadInSidebar } from '../../navigation'
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = notificationsClient.contextByDoc
@@ -56,9 +57,14 @@
   let currentSpecial: SpecialNavModel | undefined
 
   let object: Doc | undefined = undefined
+  let replacedPanel: HTMLElement
+  let needRestoreLoc = true
 
-  location.subscribe((loc) => {
+  const unsubcribe = location.subscribe((loc) => {
     syncLocation(loc)
+  })
+  onDestroy(() => {
+    unsubcribe()
   })
 
   $: void loadObject(selectedData?.id, selectedData?._class)
@@ -99,10 +105,14 @@
       currentSpecial = undefined
       selectedData = undefined
       object = undefined
-      restoreLocation(loc, chunterId)
+      if (needRestoreLoc) {
+        needRestoreLoc = false
+        restoreLocation(loc, chunterId)
+      }
       return
     }
 
+    needRestoreLoc = false
     currentSpecial = navigatorModel?.specials?.find((special) => special.id === id)
 
     if (currentSpecial !== undefined) {
@@ -111,6 +121,12 @@
     } else {
       const [id, _class] = decodeObjectURI(loc.path[3])
       selectedData = { id, _class }
+    }
+
+    const thread = loc.path[4] as Ref<ActivityMessage> | undefined
+
+    if (thread !== undefined) {
+      void openThreadInSidebar(thread)
     }
   }
 
@@ -132,31 +148,47 @@
       object = detail.object
     }
 
-    openChannel(selectedData.id, selectedData._class)
+    openChannel(selectedData.id, selectedData._class, undefined, true)
   }
 
   defineSeparators('chat', [
     { minSize: 20, maxSize: 40, size: 30, float: 'navigator' },
-    { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
+    { size: 'auto', minSize: 20, maxSize: 'auto' },
+    { size: 20, minSize: 20, maxSize: 50, float: 'aside' }
   ])
 
   onMount(() => {
     loadSavedAttachments()
   })
+  $: $deviceInfo.replacedPanel = replacedPanel
+  onDestroy(() => ($deviceInfo.replacedPanel = undefined))
 </script>
 
-<div class="flex-row-top h-full">
+<div class="hulyPanels-container">
   {#if $deviceInfo.navigator.visible}
-    <div class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'}">
+    <div
+      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
+        ? 'portrait'
+        : 'landscape'} border-left"
+      class:fly={$deviceInfo.navigator.float}
+    >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
-      <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
+      {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+        <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
+      {/if}
     </div>
-    <Separator name="chat" float={$deviceInfo.navigator.float} index={0} />
+    <Separator
+      name="chat"
+      float={$deviceInfo.navigator.float}
+      index={0}
+      color={'transparent'}
+      separatorSize={0}
+      short
+    />
   {/if}
-
-  <div class="antiPanel-component filled w-full">
+  <div bind:this={replacedPanel} class="hulyComponent">
     {#if currentSpecial}
       <Component
         is={currentSpecial.component}

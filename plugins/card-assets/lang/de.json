@@ -1,0 +1,24 @@
+{
+  "string": {
+    "Card": "Karte",
+    "CardApplication": "Karten",
+    "Cards": "Karten",
+    "Content": "Inhalt",
+    "CreateCard": "Karte erstellen",
+    "CreateMasterTag": "Master-Tag erstellen",
+    "CreateTag": "Tag erstellen",
+    "MasterTag": "Master-Tag",
+    "MasterTags": "Master-Tags",
+    "Parent": "Eltern",
+    "Tags": "Tags",
+    "Tag": "Tag",
+    "CardLibrary": "Kartenbibliothek",
+    "MinimizeAll": "Alle minimieren",
+    "ExpandAll": "Alle erweitern",
+    "TagRelations": "Tag-Beziehungen",
+    "DeleteTag": "Tag löschen",
+    "DeleteTagConfirm": "Möchten Sie diesen Tag wirklich löschen? Alle zugehörigen Eigenschaften werden gelöscht",
+    "DeleteMasterTag": "Master-Tag löschen",
+    "DeleteMasterTagConfirm": "Möchten Sie diesen Master-Tag wirklich löschen? Alle mit diesem Master-Tag verbundenen Objekte werden gelöscht"
+  }
+}

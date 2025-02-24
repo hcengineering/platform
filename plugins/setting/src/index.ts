@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Account, AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref } from '@hcengineering/core'
-import type { Plugin } from '@hcengineering/platform'
+import type { PersonId, AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref } from '@hcengineering/core'
+import type { Metadata, Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import { AnyComponent } from '@hcengineering/ui'
@@ -23,6 +23,7 @@ import { SpaceTypeCreator, SpaceTypeEditor } from './spaceTypeEditor'
 
 export * from './spaceTypeEditor'
 export * from './utils'
+export * from './analytics'
 
 /**
  * @public
@@ -35,6 +36,7 @@ export type Handler = Resource<(value: string) => Promise<void>>
 export interface IntegrationType extends Doc {
   label: IntlString
   description: IntlString
+  descriptionComponent?: AnyComponent
   icon: AnyComponent
   allowMultiple: boolean
 
@@ -53,7 +55,7 @@ export interface Integration extends Doc {
   disabled: boolean
   value: string
   error?: IntlString | null
-  shared?: Ref<Account>[]
+  shared?: PersonId[]
 }
 
 /**
@@ -121,15 +123,18 @@ export default plugin(settingId, {
     Password: '' as Ref<Doc>,
     Setting: '' as Ref<Doc>,
     Integrations: '' as Ref<Doc>,
+    Relations: '' as Ref<Doc>,
     Support: '' as Ref<Doc>,
     Privacy: '' as Ref<Doc>,
     Terms: '' as Ref<Doc>,
     ClassSetting: '' as Ref<Doc>,
+    General: '' as Ref<Doc>,
     Owners: '' as Ref<Doc>,
     InviteSettings: '' as Ref<Doc>,
     WorkspaceSetting: '' as Ref<Doc>,
     ManageSpaces: '' as Ref<Doc>,
-    Spaces: '' as Ref<Doc>
+    Spaces: '' as Ref<Doc>,
+    Backup: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -149,7 +154,6 @@ export default plugin(settingId, {
     Settings: '' as AnyComponent,
     Profile: '' as AnyComponent,
     Password: '' as AnyComponent,
-    WorkspaceSetting: '' as AnyComponent,
     WorkspaceSettings: '' as AnyComponent,
     Integrations: '' as AnyComponent,
     Support: '' as AnyComponent,
@@ -162,14 +166,18 @@ export default plugin(settingId, {
     SpaceTypePropertiesSectionEditor: '' as AnyComponent,
     SpaceTypeRolesSectionEditor: '' as AnyComponent,
     RoleEditor: '' as AnyComponent,
-    RoleAssignmentEditor: '' as AnyComponent
+    RoleAssignmentEditor: '' as AnyComponent,
+    RelationSetting: '' as AnyComponent,
+    Backup: '' as AnyComponent,
+    CreateAttributePopup: '' as AnyComponent,
+    CreateRelation: '' as AnyComponent,
+    EditRelation: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
     Setting: '' as IntlString,
     Spaces: '' as IntlString,
     WorkspaceSettings: '' as IntlString,
-    Branding: '' as IntlString,
     Integrations: '' as IntlString,
     Support: '' as IntlString,
     Privacy: '' as IntlString,
@@ -202,7 +210,20 @@ export default plugin(settingId, {
     Automations: '' as IntlString,
     Collections: '' as IntlString,
     SpaceTypes: '' as IntlString,
-    Roles: '' as IntlString
+    Roles: '' as IntlString,
+    OwnerOrMaintainerRequired: '' as IntlString,
+    Backup: '' as IntlString,
+    BackupLast: '' as IntlString,
+    BackupTotalSnapshots: '' as IntlString,
+    BackupTotalFiles: '' as IntlString,
+    BackupSize: '' as IntlString,
+    BackupLinkInfo: '' as IntlString,
+    BackupBearerTokenInfo: '' as IntlString,
+    BackupSnapshots: '' as IntlString,
+    BackupFileDownload: '' as IntlString,
+    BackupFiles: '' as IntlString,
+    BackupNoBackup: '' as IntlString,
+    AddAttribute: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
@@ -219,7 +240,8 @@ export default plugin(settingId, {
     Enums: '' as Asset,
     InviteSettings: '' as Asset,
     InviteWorkspace: '' as Asset,
-    Views: '' as Asset
+    Views: '' as Asset,
+    Relations: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>
@@ -229,5 +251,8 @@ export default plugin(settingId, {
     OwnerLastName: '' as Ref<TemplateField>,
     OwnerPosition: '' as Ref<TemplateField>,
     Value: '' as Ref<TemplateField>
+  },
+  metadata: {
+    BackupUrl: '' as Metadata<string>
   }
 })

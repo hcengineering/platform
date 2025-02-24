@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { Class, IdMap, Ref, Status, generateId } from '@hcengineering/core'
+  import { Analytics } from '@hcengineering/analytics'
+  import { Class, IdMap, Ref, Status } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { DocPopup, getClient } from '@hcengineering/presentation'
   import { Task, TaskType } from '@hcengineering/task'
-  import { ObjectPresenter, statusStore } from '@hcengineering/view-resources'
+  import { getObjectId, ObjectPresenter, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { taskTypeStore } from '..'
 
@@ -24,15 +25,28 @@
     progress = true
     const docs = Array.isArray(value) ? value : [value]
 
-    const ops = client.apply('set-status' + generateId())
+    const ops = client.apply(undefined, 'set-status')
     const changed = (d: Task) => d.status !== newStatus
     for (const it of docs.filter(changed)) {
       await ops.update(it, { status: newStatus })
     }
     await ops.commit()
+
     progress = false
 
     dispatch('close', newStatus)
+    const ids = await getAnalyticsIds(docs)
+    Analytics.handleEvent('task.SetStatus', { status: newStatus, objects: ids })
+  }
+
+  async function getAnalyticsIds (docs: Task[]): Promise<string[]> {
+    const result: string[] = []
+
+    for (const doc of docs) {
+      const id = await getObjectId(doc, client.getHierarchy())
+      result.push(id)
+    }
+    return result
   }
 
   $: current = Array.isArray(value)

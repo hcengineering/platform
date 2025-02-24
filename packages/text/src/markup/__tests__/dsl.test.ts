@@ -1,5 +1,13 @@
-import { nodeDoc, nodeImage, nodeParagraph, nodeReference, nodeText, markLink, markUnderline } from '../dsl'
-import { MarkupNodeType } from '../model'
+import {
+  markLink,
+  markUnderline,
+  MarkupNodeType,
+  nodeDoc,
+  nodeImage,
+  nodeParagraph,
+  nodeReference,
+  nodeText
+} from '@hcengineering/text-core'
 import { jsonToHTML } from '../utils'
 
 describe('dsl', () => {
@@ -13,7 +21,7 @@ describe('dsl', () => {
       )
     )
     expect(jsonToHTML(doc)).toEqual(
-      '<p>Hello, <span data-type="reference" data-id="123" data-objectclass="world" data-label="World">@World</span></p><p>Check out <a target="_blank" rel="noopener noreferrer" class="cursor-pointer" href="https://example.com"><u>this link</u></a>.</p>'
+      '<p>Hello, <span data-type="reference" class="antiMention" data-id="123" data-objectclass="world" data-label="World">@World</span></p><p>Check out <a target="_blank" rel="noopener noreferrer" class="cursor-pointer" href="https://example.com"><u>this link</u></a>.</p>'
     )
   })
 })

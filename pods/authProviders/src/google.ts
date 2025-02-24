@@ -1,20 +1,20 @@
-import { joinWithProvider, loginWithProvider } from '@hcengineering/account'
-import { BrandingMap, concatLink, MeasureContext } from '@hcengineering/core'
+import { type AccountDB, LoginInfo, joinWithProvider, loginOrSignUpWithProvider } from '@hcengineering/account'
+import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
-import { Db } from 'mongodb'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
+import qs from 'querystringify'
 import { Passport } from '.'
-import { getBranding, getHost, safeParseAuthState } from './utils'
+import { getHost, safeParseAuthState } from './utils'
 
 export function registerGoogle (
   measureCtx: MeasureContext,
   passport: Passport,
   router: Router<any, any>,
   accountsUrl: string,
-  db: Db,
-  productId: string,
+  dbPromise: Promise<AccountDB>,
   frontUrl: string,
-  brandings: BrandingMap
+  brandings: BrandingMap,
+  signUpDisabled?: boolean
 ): string | undefined {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
   const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
@@ -69,38 +69,58 @@ export function registerGoogle (
       const first = ctx.state.user.name.givenName
       const last = ctx.state.user.name.familyName
       measureCtx.info('Provider auth handler', { email, type: 'google' })
-      if (email !== undefined) {
-        try {
-          const state = safeParseAuthState(ctx.query?.state)
-          const branding = getBranding(brandings, state?.branding)
-          if (state.inviteId != null && state.inviteId !== '') {
-            const loginInfo = await joinWithProvider(
-              measureCtx,
-              db,
-              productId,
-              null,
-              email,
-              first,
-              last,
-              state.inviteId as any
-            )
-            if (ctx.session != null) {
-              ctx.session.loginInfo = loginInfo
-            }
-          } else {
-            const loginInfo = await loginWithProvider(measureCtx, db, productId, null, email, first, last)
-            if (ctx.session != null) {
-              ctx.session.loginInfo = loginInfo
-            }
-          }
+
+      try {
+        let loginInfo: LoginInfo | null
+        const state = safeParseAuthState(ctx.query?.state)
+        const branding = getBranding(brandings, state?.branding)
+        const db = await dbPromise
+        const socialKey = { type: SocialIdType.GOOGLE, value: email }
+
+        if (state.inviteId != null && state.inviteId !== '') {
+          loginInfo = await joinWithProvider(
+            measureCtx,
+            db,
+            null,
+            email,
+            first,
+            last,
+            state.inviteId as any,
+            socialKey,
+            signUpDisabled
+          )
+        } else {
+          loginInfo = await loginOrSignUpWithProvider(
+            measureCtx,
+            db,
+            null,
+            email,
+            first,
+            last,
+            socialKey,
+            signUpDisabled
+          )
+        }
+
+        if (loginInfo === null) {
+          measureCtx.info('Failed to auth: no associated account found', {
+            email,
+            type: 'google',
+            user: ctx.state?.user
+          })
+          ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login'))
+        } else {
+          const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
+          const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
 
           // Successful authentication, redirect to your application
-          measureCtx.info('Success auth, redirect', { email, type: 'google' })
-          ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login/auth'))
-        } catch (err: any) {
-          measureCtx.error('failed to auth', { err, type: 'google', user: ctx.state?.user })
+          measureCtx.info('Success auth, redirect', { email, type: 'google', target: origin })
+          ctx.redirect(`${origin}?${query}`)
         }
+      } catch (err: any) {
+        measureCtx.error('failed to auth', { err, type: 'google', user: ctx.state?.user })
       }
+
       await next()
     }
   )

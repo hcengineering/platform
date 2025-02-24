@@ -256,8 +256,6 @@
     "NoStatusFound": "Nenhum estado correspondente encontrado",
     "CreateMissingStatus": "Criar estado em falta",
     "UnsetParent": "O problema pai será desassociado",
-    "Unarchive": "Desarquivar",
-    "UnarchiveConfirm": "Deseja desarquivar o projeto?",
     "AllProjects": "Todos os projetos",
     "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "Atualizado por {senderName}",
@@ -265,13 +263,14 @@
     "IssueNotificationChangedProperty": "{senderName} alterou {property} para \"{newValue}\"",
     "IssueNotificationMessage": "{senderName}: {message}",
     "PreviousAssigned": "Anteriormente atribuído",
-    "IssueAssigneedToYou": "Atribuído a si",
+    "IssueAssignedToYou": "Atribuído a si",
     "RelatedIssueTargetDescription": "Projeto alvo de problemas relacionados para Classe ou Espaço",
     "MapRelatedIssues": "Configurar projetos padrão de problemas relacionados",
     "DefaultIssueStatus": "Estado padrão do problema",
     "IssueStatus": "Estado",
     "Extensions": "Extensions",
-    "RoleLabel": "Cargo: {role}"
+    "RoleLabel": "Cargo: {role}",
+    "UnsetParentIssue": "Desmarcar problema pai"
   },
   "status": {}
 }

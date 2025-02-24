@@ -18,16 +18,13 @@ import core, {
   MeasureMetricsContext,
   SortingOrder,
   TxFactory,
-  TxProcessor,
   toFindResult,
   toIdMap,
-  type AttachedDoc,
   type Class,
   type Doc,
   type Ref,
   type Tx,
   type TxCUD,
-  type TxCollectionCUD,
   type TxCreateDoc
 } from '@hcengineering/core'
 import {
@@ -50,11 +47,14 @@ function getActivityControl (client: MigrationClient): ActivityControl {
   const txFactory = new TxFactory(core.account.System, false)
 
   return {
+    ctx: new MeasureMetricsContext('migration', {}),
     txFactory,
     modelDb: client.model,
     hierarchy: client.hierarchy,
-    findAll: async (_class, query, options) =>
-      toFindResult(await client.find(client.hierarchy.getDomain(_class), query, options))
+    findAll: async (ctx, _class, query, options) =>
+      toFindResult(await client.find(client.hierarchy.getDomain(_class), query, options)),
+    storageAdapter: client.storageAdapter,
+    workspace: client.wsIds
   }
 }
 
@@ -82,12 +82,11 @@ async function generateDocUpdateMessageByTx (
     tx,
     control,
     undefined,
-    undefined,
     objectCache
   )
 
   for (const collectionTx of createCollectionCUDTxes) {
-    const createTx = collectionTx.tx as TxCreateDoc<DocUpdateMessage>
+    const createTx = collectionTx as TxCreateDoc<DocUpdateMessage>
     const domain = client.hierarchy.getDomain(createTx.objectClass)
 
     await client.create<DocUpdateMessage>(domain, {
@@ -109,9 +108,10 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
 
   const notificationControl = getActivityControl(client)
 
-  const txClient: Pick<ActivityControl, 'hierarchy' | 'findAll'> = {
+  const txClient: Pick<ActivityControl, 'hierarchy' | 'findAll' | 'ctx'> = {
     hierarchy: notificationControl.hierarchy,
-    findAll: notificationControl.findAll
+    findAll: notificationControl.findAll,
+    ctx: new MeasureMetricsContext('migration', {})
   }
 
   let processed = 0
@@ -148,15 +148,14 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
             continue
           }
 
-          if (v._class === core.class.TxCollectionCUD) {
+          if (v.attachedToClass !== undefined && v.attachedTo !== undefined) {
             try {
-              const vcol = v as TxCollectionCUD<Doc, AttachedDoc>
-              const _cl = client.hierarchy.getBaseClass(vcol.tx.objectClass)
+              const _cl = client.hierarchy.getBaseClass(v.attachedToClass)
               const s = byClass.get(_cl) ?? new Set()
-              s.add(vcol.tx.objectId)
+              s.add(v.attachedTo)
               byClass.set(_cl, s)
             } catch {
-              const objClass = (v as TxCollectionCUD<Doc, AttachedDoc>).tx.objectClass
+              const objClass = v.attachedToClass
               const has = classNotFound.has(objClass)
               if (!has) {
                 classNotFound.add(objClass)
@@ -175,7 +174,7 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
           for (const di of ids) {
             docIds.set(di, null)
           }
-          const edocs = await txClient.findAll(_class, { _id: { $in: ids } })
+          const edocs = await txClient.findAll(txClient.ctx, _class, { _id: { $in: ids } })
           for (const ed of edocs) {
             docIds.set(ed._id, ed)
           }
@@ -194,8 +193,7 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
         }
         const transactions = allTransactions.get(d._id) ?? []
         for (const tx of transactions) {
-          const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-          txIds.add(innerTx._id)
+          txIds.add(tx._id)
         }
       }
 
@@ -216,10 +214,8 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
         }
         const transactions = allTransactions.get(d._id) ?? []
         for (const tx of transactions) {
-          const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-
-          if (!client.hierarchy.hasClass(innerTx.objectClass)) {
-            const objClass = innerTx.objectClass
+          if (!client.hierarchy.hasClass(tx.objectClass)) {
+            const objClass = tx.objectClass
             const has = classNotFound.has(objClass)
             if (!has) {
               classNotFound.add(objClass)

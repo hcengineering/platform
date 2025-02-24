@@ -37,12 +37,16 @@ export function createModel (builder: Builder): void {
     }
   )
 
+  builder.createDoc(serverNotification.class.NotificationProviderResources, core.space.Model, {
+    provider: telegram.providers.TelegramNotificationProvider,
+    fn: serverTelegram.function.SendTelegramNotifications
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTelegram.trigger.OnMessageCreate,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': telegram.class.Message,
-      'tx._class': core.class.TxCreateDoc
+      _class: core.class.TxCreateDoc,
+      objectClass: telegram.class.Message
     }
   })
 
@@ -51,7 +55,7 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,
     {
-      func: serverTelegram.function.IsIncomingMessage
+      func: serverTelegram.function.IsIncomingMessageTypeMatch
     }
   )
 

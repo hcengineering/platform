@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,18 +14,34 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import core, { Account, Class, Doc, IdMap, Markup, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
+  import {
+    Class,
+    Doc,
+    IdMap,
+    Markup,
+    PersonId,
+    RateLimiter,
+    Ref,
+    Space,
+    generateId,
+    toIdMap
+  } from '@hcengineering/core'
   import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,
+    canDisplayLinkPreview,
     createQuery,
     deleteFile,
     draftsStore,
+    fetchLinkPreviewDetails,
     getClient,
     getFileMetadata,
+    isLinkPreviewEnabled,
     uploadFile
   } from '@hcengineering/presentation'
-  import textEditor, { AttachIcon, EmptyMarkup, ReferenceInput, type RefAction } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
+  import textEditor, { type RefAction } from '@hcengineering/text-editor'
+  import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
@@ -50,6 +66,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] = []
   export let boundary: HTMLElement | undefined = undefined
+  export let skipAttachmentsPreload = false
 
   let refInput: ReferenceInput
 
@@ -60,24 +77,66 @@
   const client = getClient()
   const query = createQuery()
 
-  const draftKey = `${objectId}_attachments`
-  const draftController = new DraftController<Record<Ref<Attachment>, Attachment>>(draftKey)
+  $: draftKey = `${objectId}_attachments`
+  $: draftController = new DraftController<Record<Ref<Attachment>, Attachment>>(draftKey)
 
   let draftAttachments: Record<Ref<Attachment>, Attachment> | undefined = undefined
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
+  const maxLinkPreviewCount = 3
+  const urlSet = new Set<string>()
 
   let progress = false
 
   let refContainer: HTMLElement
 
+  const existingAttachmentsQuery = createQuery()
+  let existingAttachments: Ref<Attachment>[] = []
+
+  $: if (Array.from(attachments.keys()).length > 0) {
+    existingAttachmentsQuery.query(
+      attachment.class.Attachment,
+      {
+        space,
+        attachedTo: objectId,
+        attachedToClass: _class,
+        _id: { $in: Array.from(attachments.keys()) }
+      },
+      (res) => {
+        existingAttachments = res.map((p) => {
+          if (p.type === 'application/link-preview') {
+            urlSet.add(getUrlKey(p.name))
+          }
+          return p._id
+        })
+      }
+    )
+  } else {
+    existingAttachments = []
+    existingAttachmentsQuery.unsubscribe()
+  }
+
+  function isValidUrl (s: string): boolean {
+    let url: URL
+    try {
+      url = new URL(s)
+    } catch {
+      return false
+    }
+    return url.protocol.startsWith('http')
+  }
+
+  function getUrlKey (s: string): string {
+    return s
+  }
+
   $: objectId && updateAttachments(objectId)
 
-  async function updateAttachments (objectId: Ref<Doc>) {
+  async function updateAttachments (objectId: Ref<Doc>): Promise<void> {
     draftAttachments = $draftsStore[draftKey]
     if (draftAttachments && shouldSaveDraft) {
-      attachments.clear()
+      attachments = new Map()
       newAttachments.clear()
       Object.entries(draftAttachments).map((file) => {
         return attachments.set(file[0] as Ref<Attachment>, file[1])
@@ -87,7 +146,9 @@
       })
       originalAttachments.clear()
       removedAttachments.clear()
-    } else {
+      urlSet.clear()
+      query.unsubscribe()
+    } else if (!skipAttachmentsPreload) {
       query.query(
         attachment.class.Attachment,
         {
@@ -96,35 +157,37 @@
         (res) => {
           originalAttachments = new Set(res.map((p) => p._id))
           attachments = toIdMap(res)
-        },
-        {
-          lookup: {
-            file: core.class.Blob
-          }
         }
       )
+    } else {
+      attachments = new Map()
+      newAttachments.clear()
+      originalAttachments.clear()
+      removedAttachments.clear()
+      urlSet.clear()
+      query.unsubscribe()
     }
   }
 
-  async function saveDraft () {
+  function saveDraft (): void {
     if (shouldSaveDraft) {
       draftAttachments = Object.fromEntries(attachments)
       draftController.save(draftAttachments)
     }
   }
 
-  async function createAttachment (file: File) {
+  async function createAttachment (file: File): Promise<void> {
     try {
       const uuid = await uploadFile(file)
       const metadata = await getFileMetadata(file, uuid)
-
       const _id: Ref<Attachment> = generateId()
+
       attachments.set(_id, {
         _id,
         _class: attachment.class.Attachment,
         collection: 'attachments',
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
+        modifiedBy: '' as PersonId,
         space,
         attachedTo: objectId,
         attachedToClass: _class,
@@ -137,30 +200,18 @@
       })
       newAttachments.add(_id)
       attachments = attachments
+      saved = false
       saveDraft()
+      dispatch('update', { message: content, attachments: attachments.size })
     } catch (err: any) {
-      setPlatformStatus(unknownError(err))
+      void setPlatformStatus(unknownError(err))
     }
   }
-
-  const existingAttachmentsQuery = createQuery()
-  let existingAttachments: Ref<Attachment>[] = []
-  $: existingAttachmentsQuery.query(
-    attachment.class.Attachment,
-    {
-      space,
-      attachedTo: objectId,
-      attachedToClass: _class,
-      _id: { $in: Array.from(attachments.keys()) }
-    },
-    (res) => {
-      existingAttachments = res.map((p) => p._id)
-    }
-  )
 
   async function saveAttachment (doc: Attachment): Promise<void> {
     if (!existingAttachments.includes(doc._id)) {
       await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+      newAttachments.delete(doc._id)
     }
   }
 
@@ -169,40 +220,46 @@
     await tick()
     const list = inputFile.files
     if (list === null || list.length === 0) return
+    const limiter = new RateLimiter(10)
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        await createAttachment(file)
+        await limiter.add(() => createAttachment(file))
       }
     }
+    await limiter.waitProcessing()
     inputFile.value = ''
     progress = false
   }
 
   async function fileDrop (e: DragEvent): Promise<void> {
-    progress = true
     const list = e.dataTransfer?.files
+    const limiter = new RateLimiter(10)
+
     if (list === undefined || list.length === 0) return
+    progress = true
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        await createAttachment(file)
+        await limiter.add(() => createAttachment(file))
       }
     }
+    await limiter.waitProcessing()
     progress = false
   }
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
-    if (shouldSaveDraft) {
-      await createAttachments()
-    }
     attachments = attachments
     saveDraft()
+    dispatch('update', { message: content, attachments: attachments.size })
   }
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
+    if (attachment.type === 'application/link-preview') {
+      urlSet.delete(getUrlKey(attachment.name))
+    }
     if (originalAttachments.has(attachment._id)) {
       await client.removeCollection(
         attachment._class,
@@ -226,12 +283,9 @@
         }
       })
     }
-    if (!saved && shouldSaveDraft) {
-      void createAttachments()
-    }
   })
 
-  export function removeDraft (removeFiles: boolean) {
+  export function removeDraft (removeFiles: boolean): void {
     draftController.remove()
     if (removeFiles) {
       newAttachments.forEach((p) => {
@@ -243,30 +297,76 @@
     }
   }
 
-  export function createAttachments (): Promise<void> {
+  export async function createAttachments (): Promise<void> {
+    if (saved) {
+      return
+    }
     saved = true
-    const promises: Promise<any>[] = []
+    const limiter = new RateLimiter(10)
     newAttachments.forEach((p) => {
       const attachment = attachments.get(p)
       if (attachment !== undefined) {
-        promises.push(saveAttachment(attachment))
+        void limiter.add(() => saveAttachment(attachment))
       }
     })
     removedAttachments.forEach((p) => {
-      promises.push(deleteAttachment(p))
+      void limiter.add(() => deleteAttachment(p))
     })
-    return Promise.all(promises).then()
+    await limiter.waitProcessing()
+    newAttachments.clear()
+    urlSet.clear()
+    removedAttachments.clear()
+    saveDraft()
   }
 
-  async function onMessage (event: CustomEvent) {
+  async function onMessage (event: CustomEvent): Promise<void> {
     loading = true
     await createAttachments()
     loading = false
     dispatch('message', { message: event.detail, attachments: attachments.size })
   }
 
-  async function onUpdate (event: CustomEvent) {
+  function updateLinkPreview (): void {
+    const hrefs = refContainer.getElementsByTagName('a')
+    const newUrls: string[] = []
+    for (let i = 0; i < hrefs.length; i++) {
+      if (hrefs[i].target !== '_blank' || !isValidUrl(hrefs[i].href) || hrefs[i].rel === '') {
+        continue
+      }
+      const key = getUrlKey(hrefs[i].href)
+      if (urlSet.has(key)) {
+        continue
+      }
+      urlSet.add(key)
+      newUrls.push(hrefs[i].href)
+    }
+    if (newUrls.length > 0) {
+      void loadLinks(newUrls)
+    }
+  }
+
+  function onUpdate (event: CustomEvent): void {
+    if (isLinkPreviewEnabled() && !loading && urlSet.size < maxLinkPreviewCount) {
+      updateLinkPreview()
+    }
     dispatch('update', { message: event.detail, attachments: attachments.size })
+  }
+
+  async function loadLinks (urls: string[]): Promise<void> {
+    progress = true
+    for (const url of urls) {
+      try {
+        const meta = await fetchLinkPreviewDetails(url)
+        if (canDisplayLinkPreview(meta) && meta.url !== undefined) {
+          const blob = new Blob([JSON.stringify(meta)])
+          const file = new File([blob], meta.url, { type: 'application/link-preview' })
+          await createAttachment(file)
+        }
+      } catch (err: any) {
+        void setPlatformStatus(unknownError(err))
+      }
+    }
+    progress = false
   }
 
   async function loadFiles (evt: ClipboardEvent): Promise<void> {
@@ -293,19 +393,18 @@
     if (!allowed) {
       return false
     }
-
     const hasFiles = Array.from(evt.clipboardData?.items ?? []).some((i) => i.kind === 'file')
 
-    if (!hasFiles) {
-      return false
+    if (hasFiles) {
+      void loadFiles(evt)
+      return true
     }
 
-    void loadFiles(evt)
-    return true
+    return false
   }
 </script>
 
-<div class="no-print" bind:this={refContainer}>
+<div class="flex-col no-print" bind:this={refContainer}>
   <input
     bind:this={inputFile}
     disabled={inputFile == null}
@@ -318,7 +417,7 @@
   />
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
-    class="container"
+    class="flex-col"
     on:dragover|preventDefault={() => {}}
     on:dragleave={() => {}}
     on:drop|preventDefault|stopPropagation={fileDrop}
@@ -326,7 +425,7 @@
     <ReferenceInput
       {focusIndex}
       bind:this={refInput}
-      {content}
+      bind:content
       {iconSend}
       {labelSend}
       {showSend}
@@ -358,7 +457,7 @@
       {placeholder}
     >
       <div slot="header">
-        {#if attachments.size || progress}
+        {#if attachments.size > 0 || progress}
           <div class="flex-row-center list scroll-divider-color">
             {#if progress}
               <div class="flex p-3">
@@ -371,7 +470,7 @@
                   value={attachment}
                   removable
                   on:remove={(result) => {
-                    if (result !== undefined) removeAttachment(attachment)
+                    if (result !== undefined) void removeAttachment(attachment)
                   }}
                 />
               </div>

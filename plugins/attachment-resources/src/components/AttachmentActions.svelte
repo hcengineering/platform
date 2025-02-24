@@ -14,29 +14,17 @@
 -->
 <script lang="ts">
   import { type Attachment } from '@hcengineering/attachment'
-  import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
-  import {
-    FilePreviewPopup,
-    canPreviewFile,
-    getBlobHref,
-    getPreviewAlignment,
-    previewTypes
-  } from '@hcengineering/presentation'
-  import {
-    ActionIcon,
-    IconMoreH,
-    IconOpen,
-    Menu,
-    Action as UIAction,
-    closeTooltip,
-    showPopup,
-    tooltip
-  } from '@hcengineering/ui'
-  import view, { Action } from '@hcengineering/view'
-
   import type { WithLookup } from '@hcengineering/core'
-  import attachmentPlugin from '../plugin'
+  import { getResource } from '@hcengineering/platform'
+  import presentation, { canPreviewFile, getFileUrl, previewTypes } from '@hcengineering/presentation'
+  import { IconMoreH, Menu, Action as UIAction, showPopup, tooltip } from '@hcengineering/ui'
+  import view, { Action } from '@hcengineering/view'
+  import workbench from '@hcengineering/workbench'
+
+  import AttachmentAction from './AttachmentAction.svelte'
   import FileDownload from './icons/FileDownload.svelte'
+  import attachmentPlugin from '../plugin'
+  import { openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
 
   export let attachment: WithLookup<Attachment>
   export let isSaved = false
@@ -66,17 +54,7 @@
       window.open((e.target as HTMLAnchorElement).href, '_blank')
       return
     }
-    closeTooltip()
-
-    showPopup(
-      FilePreviewPopup,
-      {
-        file: attachment.$lookup?.file ?? attachment.file,
-        name: attachment.name,
-        metadata: attachment.metadata
-      },
-      getPreviewAlignment(attachment.type ?? '')
-    )
+    showAttachmentPreviewPopup(attachment)
   }
 
   $: saveAttachmentAction = isSaved
@@ -91,17 +69,24 @@
 
   const openAction: UIAction = {
     label: view.string.Open,
-    icon: IconOpen,
+    icon: view.icon.Open,
     action: async (props: any, evt: Event) => {
       showPreview(evt as MouseEvent)
     }
   }
 
-  const showMenu = (ev: Event) => {
+  const showMenu = (ev: Event): void => {
     const actions: UIAction[] = []
     if (canPreview) {
       actions.push(openAction)
     }
+    actions.push({
+      icon: view.icon.DetailsFilled,
+      label: workbench.string.OpenInSidebar,
+      action: async () => {
+        await openAttachmentInSidebar(attachment)
+      }
+    })
     actions.push({
       label: saveAttachmentAction.label,
       icon: saveAttachmentAction.icon,
@@ -130,32 +115,37 @@
 </script>
 
 <div class="flex">
-  {#await getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name) then href}
-    <a
-      class="mr-1 flex-row-center gap-2 p-1"
-      {href}
-      download={attachment.name}
-      bind:this={download}
-      use:tooltip={{ label: getEmbeddedLabel(attachment.name) }}
-      on:click|stopPropagation
-    >
-      {#if canPreview}
-        <ActionIcon
-          icon={IconOpen}
-          size={'medium'}
-          action={(evt) => {
-            showPreview(evt)
-          }}
-        />
-      {/if}
-      <ActionIcon
-        icon={FileDownload}
-        size={'medium'}
-        action={() => {
-          download.click()
-        }}
-      />
-    </a>
-  {/await}
-  <ActionIcon icon={IconMoreH} size={'medium'} action={showMenu} />
+  {#if canPreview}
+    <AttachmentAction
+      label={view.string.Open}
+      icon={view.icon.Open}
+      size="small"
+      dataId="open-in-sidebar"
+      action={showPreview}
+    />
+  {/if}
+  <a
+    href={getFileUrl(attachment.file, attachment.name)}
+    download={attachment.name}
+    bind:this={download}
+    use:tooltip={{ label: presentation.string.Download }}
+    on:click|stopPropagation
+  >
+    <AttachmentAction
+      label={presentation.string.Download}
+      icon={FileDownload}
+      size="small"
+      dataId="open-in-sidebar"
+      action={() => {
+        download.click()
+      }}
+    />
+  </a>
+  <AttachmentAction
+    label={view.string.MoreActions}
+    icon={IconMoreH}
+    size="small"
+    dataId="open-in-sidebar"
+    action={showMenu}
+  />
 </div>

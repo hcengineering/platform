@@ -17,7 +17,7 @@
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 
 import telegram, { telegramId } from '@hcengineering/telegram'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export default mergeIds(telegramId, telegram, {
   string: {
@@ -35,7 +35,12 @@ export default mergeIds(telegramId, telegram, {
     Cancel: '' as IntlString,
     Share: '' as IntlString,
     PublishSelected: '' as IntlString,
-    MessagesSelected: '' as IntlString
+    MessagesSelected: '' as IntlString,
+    ConnectBotInfoStart: '' as IntlString,
+    ConnectBotInfoEnd: '' as IntlString,
+    ConnectBotError: '' as IntlString,
+    TestConnection: '' as IntlString,
+    Connected: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent

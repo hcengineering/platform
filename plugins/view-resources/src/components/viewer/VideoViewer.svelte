@@ -14,25 +14,69 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { getBlobSrcFor, type BlobMetadata } from '@hcengineering/presentation'
+  import { getFileUrl, getVideoMeta, type BlobMetadata } from '@hcengineering/presentation'
+  import { onDestroy } from 'svelte'
+  import HLS from 'hls.js'
 
-  export let value: Blob | Ref<Blob>
+  export let value: Ref<Blob>
   export let name: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
 
+  let video: HTMLVideoElement
+  let hls: HLS
+
+  async function fetchVideoMeta (value: Ref<Blob>, name: string): Promise<void> {
+    const src = getFileUrl(value, name)
+    const meta = await getVideoMeta(value, name)
+    if (meta != null && meta.status === 'ready' && HLS.isSupported()) {
+      hls?.destroy()
+      hls = new HLS({ autoStartLoad: false })
+      hls.loadSource(meta.hls)
+      hls.attachMedia(video)
+
+      video.poster = meta.thumbnail
+      video.onplay = () => {
+        // autoStartLoad disables autoplay, so we need to enable it manually
+        video.onplay = null
+        hls.startLoad()
+      }
+    } else {
+      video.src = src
+    }
+  }
+
+  onDestroy(() => {
+    hls?.destroy()
+  })
+
+  $: aspectRatio =
+    metadata?.originalWidth && metadata?.originalHeight
+      ? `${metadata.originalWidth} / ${metadata.originalHeight}`
+      : '16 / 9'
   $: maxWidth = metadata?.originalWidth ? `min(${metadata.originalWidth}px, 100%)` : undefined
   $: maxHeight = metadata?.originalHeight ? `min(${metadata.originalHeight}px, 80vh)` : undefined
+  $: void fetchVideoMeta(value, name)
 </script>
 
-{#await getBlobSrcFor(value, name) then src}
-  <video
-    style:max-width={fit ? '100%' : maxWidth}
-    style:max-height={fit ? '100%' : maxHeight}
-    controls
-    preload={'auto'}
-  >
-    <source {src} />
-    <track kind="captions" label={name} />
-  </video>
-{/await}
+<video
+  bind:this={video}
+  width="100%"
+  style:aspect-ratio={aspectRatio}
+  style:max-width={fit ? '100%' : maxWidth}
+  style:max-height={fit ? '100%' : maxHeight}
+  controls
+  preload={'auto'}
+>
+  <track kind="captions" label={name} />
+</video>
+
+<style lang="scss">
+  video::-webkit-media-controls {
+    visibility: hidden;
+  }
+
+  video::-webkit-media-controls-enclosure {
+    visibility: visible;
+  }
+</style>

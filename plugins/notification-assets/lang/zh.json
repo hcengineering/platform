@@ -48,6 +48,15 @@
     "Push": "推送",
     "Unreads": "未读",
     "EnablePush": "启用推送通知",
-    "NotificationBlockedInBrowser": "通知在您的浏览器中被阻止。请在浏览器设置中启用通知"
+    "NotificationBlockedInBrowser": "通知在您的浏览器中被阻止。请在浏览器设置中启用通知",
+    "General": "通用",
+    "InboxNotificationsDescription": "在您的 Huly 收件匣中接收個人通知。",
+    "PushNotificationsDescription": "在桌面上接收個人通知。",
+    "Sound": "声音",
+    "SoundNotificationsDescription": "接收事件的声音通知。",
+    "CommonNotificationCollectionAdded":  "{senderName} 添加了 {collection}",
+    "CommonNotificationCollectionRemoved": "{senderName} 移除了 {collection}",
+    "NoAccessToObject": "您不再可以访问此对象",
+    "ViewIn": "在 {app} 中查看"
   }
 }

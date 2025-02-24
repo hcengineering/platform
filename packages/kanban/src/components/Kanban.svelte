@@ -82,12 +82,13 @@
       return
     }
 
-    if (!dontUpdateRank && dragCardInitialRank !== dragCard.rank) {
+    if (!dontUpdateRank && dragCardInitialRank !== dragCard.rank && dragCardInitialRank !== undefined) {
       const dragCardRank = dragCard.rank
       updates = {
         ...updates,
         rank: dragCardRank
       }
+      dragCard.rank = dragCardInitialRank
     }
     if (Object.keys(updates).length > 0) {
       await client.diffUpdate(dragCard, updates)
@@ -175,6 +176,15 @@
     return false
   }
 
+  interface DragCardOverPos {
+    dragCardId: Ref<Doc>
+    dragCardPos: number
+    overCardId: Ref<Doc>
+    overCardPos: number
+  }
+
+  let cardOverPos: DragCardOverPos | undefined
+
   function cardDragOver (evt: CardDragEvent, object: Item, state: CategoryType): void {
     if (dragCard !== undefined && !dontUpdateRank) {
       const updates = getUpdateProps(dragCard, state)
@@ -183,9 +193,29 @@
       }
       if (object._id !== dragCard._id) {
         let arr = getGroupByValues(groupByDocs, state) ?? []
-        const dragCardIndex = arr.findIndex((p) => p._id === dragCard?._id)
-        const targetIndex = arr.findIndex((p) => p._id === object._id)
+        let dragCardIndex = -1
+        let targetIndex = -1
         if (
+          cardOverPos !== undefined &&
+          cardOverPos.overCardId === object._id &&
+          cardOverPos.dragCardId === dragCard._id
+        ) {
+          dragCardIndex = cardOverPos.dragCardPos
+          targetIndex = cardOverPos.overCardPos
+        } else {
+          dragCardIndex = arr.findIndex((p) => p._id === dragCard?._id)
+          targetIndex = arr.findIndex((p) => p._id === object._id)
+          cardOverPos = {
+            dragCardId: dragCard._id,
+            dragCardPos: dragCardIndex,
+            overCardId: object._id,
+            overCardPos: targetIndex
+          }
+        }
+
+        if (
+          dragCardIndex !== -1 &&
+          targetIndex !== -1 &&
           dragswap(evt, targetIndex, dragCardIndex) &&
           arr[targetIndex] !== undefined &&
           arr[dragCardIndex] !== undefined
@@ -194,20 +224,28 @@
           arr = [...arr.slice(0, targetIndex), dragCard, ...arr.slice(targetIndex)]
           setGroupByValues(groupByDocs, state, arr)
           groupByDocs = groupByDocs
+          cardOverPos = undefined
         }
       }
     }
   }
-  function cardDrop (evt: CardDragEvent, object: Item, state: CategoryType): void {
+
+  async function cardDrop (evt: CardDragEvent, object: Item, state: CategoryType): Promise<void> {
     if (!dontUpdateRank && dragCard !== undefined) {
       const arr = getGroupByValues(groupByDocs, state) ?? []
       const s = arr.findIndex((p) => p._id === dragCard?._id)
       if (s !== -1) {
         dragCard.rank = makeRank(arr[s - 1]?.rank, arr[s + 1]?.rank)
+        const updates = getUpdateProps(dragCard, state)
+
+        if (updates === undefined) {
+          await client.update(dragCard, { rank: dragCard.rank })
+        }
       }
     }
     isDragging = false
   }
+
   async function onDragStart (object: Item, state: CategoryType): Promise<void> {
     dragCardInitialState = state
     dragCardState = state
@@ -383,7 +421,7 @@
                 cardDragOver(evt, obj, state)
               }}
               cardDrop={(evt, obj) => {
-                cardDrop(evt, obj, state)
+                void cardDrop(evt, obj, state)
               }}
               {onDragStart}
               {showMenu}

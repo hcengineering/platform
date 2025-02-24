@@ -30,29 +30,29 @@
 </script>
 
 <Header bind:currentDate>
-  <svelte:fragment>
-    <div class="p-1 flex-row-center">
-      {#if mode === 'day'}
-        <DropdownLabels
-          items={[
-            { id: '1hour', label: '1 hour' },
-            { id: '30mins', label: '30 mins' },
-            { id: '15mins', label: '15 mins' }
-          ]}
-          bind:selected={timeMode}
-          kind={'ghost'}
-        />
-      {/if}
-      <DropdownLabelsIntl
-        items={[
-          { id: 'day', label: time.string.DayCalendar },
-          { id: 'week', label: time.string.WeekCalendar }
-        ]}
-        bind:selected={mode}
-        kind={'ghost'}
-      />
-    </div>
-  </svelte:fragment>
+  {#if mode === 'day'}
+    <DropdownLabels
+      items={[
+        { id: '1hour', label: '1 hour' },
+        { id: '30mins', label: '30 mins' },
+        { id: '15mins', label: '15 mins' }
+      ]}
+      bind:selected={timeMode}
+      kind={'regular'}
+      size={'medium'}
+      showDropdownIcon
+    />
+  {/if}
+  <DropdownLabelsIntl
+    items={[
+      { id: 'day', label: time.string.DayCalendar },
+      { id: 'week', label: time.string.WeekCalendar }
+    ]}
+    bind:selected={mode}
+    kind={'regular'}
+    size={'medium'}
+  />
+  <div class="hulyHeader-divider short" />
 </Header>
 
 {#if mode === 'week'}

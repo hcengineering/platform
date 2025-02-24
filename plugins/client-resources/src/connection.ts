@@ -15,7 +15,13 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import client, { ClientSocket, ClientSocketReadyState } from '@hcengineering/client'
+import client, {
+  ClientSocket,
+  ClientSocketReadyState,
+  pingConst,
+  pongConst,
+  type ClientFactoryOptions
+} from '@hcengineering/client'
 import core, {
   Account,
   Class,
@@ -28,7 +34,7 @@ import core, {
   FindOptions,
   FindResult,
   LoadModelResponse,
-  MeasureDoneOperation,
+  MeasureMetricsContext,
   Ref,
   SearchOptions,
   SearchQuery,
@@ -38,12 +44,24 @@ import core, {
   TxApplyIf,
   TxHandler,
   TxResult,
+  clone,
   generateId,
-  toFindResult
+  toFindResult,
+  type MeasureContext,
+  type PersonUuid,
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
+import platform, {
+  PlatformError,
+  Severity,
+  Status,
+  UNAUTHORIZED,
+  broadcastEvent,
+  getMetadata
+} from '@hcengineering/platform'
+import { uncompress } from 'snappyjs'
 
-import { HelloRequest, HelloResponse, ReqId, readResponse, serialize, type Response } from '@hcengineering/rpc'
+import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -71,9 +89,12 @@ class RequestPromise {
   chunks?: { index: number, data: FindResult<any> }[]
 }
 
+const globalRPCHandler: RPCHandler = new RPCHandler()
+
 class Connection implements ClientConnection {
   private websocket: ClientSocket | null = null
   binaryMode = false
+  compressionMode = false
   private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
   private interval: number | undefined
@@ -92,14 +113,23 @@ class Connection implements ClientConnection {
 
   private pingResponse: number = Date.now()
 
+  private helloReceived: boolean = false
+
+  private account: Account | undefined
+
+  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
+
+  rpcHandler: RPCHandler
+
+  lastHash?: string
+
   constructor (
+    private readonly ctx: MeasureContext,
     private readonly url: string,
     private readonly handler: TxHandler,
-    readonly workspace: string,
-    readonly email: string,
-    private readonly onUpgrade?: () => void,
-    private readonly onUnauthorized?: () => void,
-    readonly onConnect?: (event: ClientConnectEvent, data?: any) => Promise<void>
+    readonly workspace: WorkspaceUuid,
+    readonly user: PersonUuid,
+    readonly opt?: ClientFactoryOptions
   ) {
     if (typeof sessionStorage !== 'undefined') {
       // Find local session id in session storage only if user refresh a page.
@@ -119,8 +149,16 @@ class Connection implements ClientConnection {
     } else {
       this.sessionId = generateId()
     }
+    this.rpcHandler = opt?.useGlobalRPCHandler === true ? globalRPCHandler : new RPCHandler()
 
-    this.scheduleOpen(false)
+    this.onConnect = opt?.onConnect
+
+    this.scheduleOpen(this.ctx, false)
+  }
+
+  async getLastHash (ctx: MeasureContext): Promise<string | undefined> {
+    await this.waitOpenConnection(ctx)
+    return this.lastHash
   }
 
   private schedulePing (socketId: number): void {
@@ -136,7 +174,7 @@ class Connection implements ClientConnection {
         // No ping response from server.
 
         if (this.websocket !== null) {
-          console.log('no ping response from server. Closing socket.', socketId, this.workspace, this.email)
+          console.log('no ping response from server. Closing socket.', socketId, this.workspace, this.user)
           clearInterval(this.interval)
           this.websocket.close(1000)
           return
@@ -146,7 +184,7 @@ class Connection implements ClientConnection {
       if (!this.closed) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         void this.sendRequest({
-          method: 'ping',
+          method: pingConst,
           params: [],
           once: true,
           handleResult: async (result) => {
@@ -154,6 +192,8 @@ class Connection implements ClientConnection {
               this.pingResponse = Date.now()
             }
           }
+        }).catch((err) => {
+          this.ctx.error('failed to send msg', { err })
         })
       } else {
         clearInterval(this.interval)
@@ -174,32 +214,39 @@ class Connection implements ClientConnection {
   }
 
   isConnected (): boolean {
-    return this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN
+    return this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN && this.helloReceived
   }
 
   delay = 0
   onConnectHandlers: (() => void)[] = []
 
-  private waitOpenConnection (): Promise<void> | undefined {
+  private waitOpenConnection (ctx: MeasureContext): Promise<void> | undefined {
     if (this.isConnected()) {
       return undefined
     }
 
-    return new Promise((resolve) => {
-      this.onConnectHandlers.push(() => {
-        resolve()
-      })
-      // Websocket is null for first time
-      this.scheduleOpen(false)
-    })
+    return ctx.with(
+      'wait-connection',
+      {},
+      (ctx) =>
+        new Promise((resolve) => {
+          this.onConnectHandlers.push(() => {
+            resolve()
+          })
+          // Websocket is null for first time
+          this.scheduleOpen(ctx, false)
+        })
+    )
   }
 
-  scheduleOpen (force: boolean): void {
+  scheduleOpen (ctx: MeasureContext, force: boolean): void {
     if (force) {
-      if (this.websocket !== null) {
-        this.websocket.close()
-        this.websocket = null
-      }
+      ctx.withSync('close-ws', {}, () => {
+        if (this.websocket !== null) {
+          this.websocket.close()
+          this.websocket = null
+        }
+      })
       clearTimeout(this.openAction)
       this.openAction = undefined
     }
@@ -209,11 +256,11 @@ class Connection implements ClientConnection {
         const socketId = ++this.sockets
         // Re create socket in case of error, if not closed
         if (this.delay === 0) {
-          this.openConnection(socketId)
+          this.openConnection(ctx, socketId)
         } else {
           this.openAction = setTimeout(() => {
             this.openAction = undefined
-            this.openConnection(socketId)
+            this.openConnection(ctx, socketId)
           }, this.delay * 1000)
         }
       }
@@ -221,35 +268,70 @@ class Connection implements ClientConnection {
   }
 
   handleMsg (socketId: number, resp: Response<any>): void {
+    if (this.closed) {
+      return
+    }
+
     if (resp.error !== undefined) {
-      if (resp.error?.code === UNAUTHORIZED.code) {
+      if (resp.error?.code === UNAUTHORIZED.code || resp.terminate === true) {
         Analytics.handleError(new PlatformError(resp.error))
         this.closed = true
         this.websocket?.close()
-        this.onUnauthorized?.()
+        if (resp.error?.code === UNAUTHORIZED.code) {
+          this.opt?.onUnauthorized?.()
+        }
+        if (resp.error?.code === platform.status.WorkspaceArchived) {
+          this.opt?.onArchived?.()
+        }
+        if (resp.error?.code === platform.status.WorkspaceMigration) {
+          this.opt?.onMigration?.()
+        }
       }
-      console.error(resp.error)
+
+      if (resp.id !== undefined) {
+        const promise = this.requests.get(resp.id)
+        if (promise !== undefined) {
+          promise.reject(new PlatformError(resp.error))
+        }
+      }
+
       return
     }
 
     if (resp.id === -1) {
       this.delay = 0
       if (resp.result?.state === 'upgrading') {
-        void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
+        void this.onConnect?.(ClientConnectEvent.Maintenance, undefined, resp.result.stats)
         this.upgrading = true
         this.delay = 3
         return
       }
       if (resp.result === 'hello') {
+        const helloResp = resp as HelloResponse
+        this.binaryMode = helloResp.binary
+        this.compressionMode = helloResp.useCompression ?? false
+
+        // We need to clear dial timer, since we recieve hello response.
+        clearTimeout(this.dialTimer)
+        this.dialTimer = null
+        this.lastHash = (resp as HelloResponse).lastHash
+
+        const serverVersion = helloResp.serverVersion
+        console.log('Connected to server:', serverVersion)
+
+        if (this.opt?.onHello !== undefined && !this.opt.onHello(serverVersion)) {
+          this.closed = true
+          this.websocket?.close()
+          return
+        }
+        this.account = helloResp.account
+        this.helloReceived = true
         if (this.upgrading) {
           // We need to call upgrade since connection is upgraded
-          this.onUpgrade?.()
+          this.opt?.onUpgrade?.()
         }
 
         this.upgrading = false
-        if ((resp as HelloResponse).binary) {
-          this.binaryMode = true
-        }
         // Notify all waiting connection listeners
         const handlers = this.onConnectHandlers.splice(0, this.onConnectHandlers.length)
         for (const h of handlers) {
@@ -261,8 +343,12 @@ class Connection implements ClientConnection {
         }
 
         void this.onConnect?.(
-          (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
-        )
+          helloResp.reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
+          helloResp.lastTx,
+          this.sessionId
+        )?.catch((err) => {
+          this.ctx.error('failed to call onConnect', { err })
+        })
         this.schedulePing(socketId)
         return
       } else {
@@ -270,15 +356,17 @@ class Connection implements ClientConnection {
       }
       return
     }
-    if (resp.result === 'ping') {
-      void this.sendRequest({ method: 'ping', params: [] })
+    if (resp.result === pingConst) {
+      void this.sendRequest({ method: pingConst, params: [] }).catch((err) => {
+        this.ctx.error('failed to send ping', { err })
+      })
       return
     }
     if (resp.id !== undefined) {
       const promise = this.requests.get(resp.id)
       if (promise === undefined) {
         console.error(
-          new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`),
+          new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.user}`),
           JSON.stringify(this.requests)
         )
         return
@@ -337,44 +425,74 @@ class Connection implements ClientConnection {
           'result: ',
           resp.result,
           this.workspace,
-          this.email
+          this.user
         )
         promise.reject(new PlatformError(resp.error))
       } else {
         if (request?.handleResult !== undefined) {
-          void request.handleResult(resp.result).then(() => {
-            promise.resolve(resp.result)
-          })
+          void request
+            .handleResult(resp.result)
+            .then(() => {
+              promise.resolve(resp.result)
+            })
+            .catch((err) => {
+              this.ctx.error('failed to handleResult', { err })
+            })
         } else {
           promise.resolve(resp.result)
         }
       }
-      void broadcastEvent(client.event.NetworkRequests, this.requests.size)
+      void broadcastEvent(client.event.NetworkRequests, this.requests.size).catch((err) => {
+        this.ctx.error('failed to broadcast', { err })
+      })
     } else {
       const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
 
       for (const tx of txArr) {
         if (tx?._class === core.class.TxModelUpgrade) {
-          console.log('Processing upgrade', this.workspace, this.email)
-          this.onUpgrade?.()
+          console.log('Processing upgrade', this.workspace, this.user)
+          this.opt?.onUpgrade?.()
           return
         }
       }
       this.handler(...txArr)
 
       clearTimeout(this.incomingTimer)
-      void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1)
+      void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1).catch((err) => {
+        this.ctx.error('failed to broadcast', { err })
+      })
 
       this.incomingTimer = setTimeout(() => {
-        void broadcastEvent(client.event.NetworkRequests, this.requests.size)
+        void broadcastEvent(client.event.NetworkRequests, this.requests.size).catch((err) => {
+          this.ctx.error('failed to broadcast', { err })
+        })
       }, 500)
     }
   }
 
-  private openConnection (socketId: number): void {
+  checkArrayBufferPing (data: ArrayBuffer): boolean {
+    if (data.byteLength === pingConst.length || data.byteLength === pongConst.length) {
+      const text = new TextDecoder().decode(data)
+      if (text === pingConst) {
+        void this.sendRequest({ method: pingConst, params: [] }).catch((err) => {
+          this.ctx.error('failed to send ping', { err })
+        })
+        return true
+      }
+      if (text === pongConst) {
+        this.pingResponse = Date.now()
+        return true
+      }
+    }
+    return false
+  }
+
+  private openConnection (ctx: MeasureContext, socketId: number): void {
     this.binaryMode = false
+    this.helloReceived = false
     // Use defined factory or browser default one.
     const clientSocketFactory =
+      this.opt?.socketFactory ??
       getMetadata(client.metadata.ClientSocketFactory) ??
       ((url: string) => {
         const s = new WebSocket(url)
@@ -385,7 +503,9 @@ class Connection implements ClientConnection {
     if (socketId !== this.sockets) {
       return
     }
-    const wsocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
+    const wsocket = ctx.withSync('create-socket', {}, () =>
+      clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
+    )
 
     if (socketId !== this.sockets) {
       wsocket.close()
@@ -394,11 +514,17 @@ class Connection implements ClientConnection {
     this.websocket = wsocket
     const opened = false
 
-    this.dialTimer = setTimeout(() => {
-      if (!opened && !this.closed) {
-        this.scheduleOpen(true)
-      }
-    }, dialTimeout)
+    if (this.dialTimer != null) {
+      this.dialTimer = setTimeout(() => {
+        this.dialTimer = null
+        if (!opened && !this.closed) {
+          void this.opt?.onDialTimeout?.()?.catch((err) => {
+            this.ctx.error('failed to handle dial timeout', { err })
+          })
+          this.scheduleOpen(this.ctx, true)
+        }
+      }, dialTimeout)
+    }
 
     wsocket.onmessage = (event: MessageEvent) => {
       if (this.closed) {
@@ -407,46 +533,102 @@ class Connection implements ClientConnection {
       if (this.websocket !== wsocket) {
         return
       }
-      if (event.data instanceof Blob) {
-        void event.data.arrayBuffer().then((data) => {
-          const resp = readResponse<any>(data, this.binaryMode)
-          this.handleMsg(socketId, resp)
+      if (event.data === pongConst) {
+        this.pingResponse = Date.now()
+        return
+      }
+      if (event.data === pingConst) {
+        void this.sendRequest({ method: pingConst, params: [] }).catch((err) => {
+          this.ctx.error('failed to send ping', { err })
         })
+        return
+      }
+      if (event.data instanceof ArrayBuffer && this.checkArrayBufferPing(event.data)) {
+        return
+      }
+      if (event.data instanceof Blob) {
+        void event.data
+          .arrayBuffer()
+          .then((data) => {
+            if (this.checkArrayBufferPing(data)) {
+              // Support ping/pong
+              return
+            }
+            if (this.compressionMode && this.helloReceived) {
+              try {
+                data = uncompress(data)
+              } catch (err: any) {
+                // Ignore
+                console.error(err)
+              }
+            }
+            try {
+              const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
+              this.handleMsg(socketId, resp)
+            } catch (err: any) {
+              if (!this.helloReceived) {
+                // Just error and ignore for now.
+                console.error(err)
+              } else {
+                throw err
+              }
+            }
+          })
+          .catch((err) => {
+            this.ctx.error('failed to decode array buffer', { err })
+          })
       } else {
-        const resp = readResponse<any>(event.data, this.binaryMode)
-        this.handleMsg(socketId, resp)
+        let data = event.data
+        if (this.compressionMode && this.helloReceived) {
+          try {
+            data = uncompress(data)
+          } catch (err: any) {
+            // Ignore
+            console.error(err)
+          }
+        }
+        try {
+          const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
+          this.handleMsg(socketId, resp)
+        } catch (err: any) {
+          if (!this.helloReceived) {
+            // Just error and ignore for now.
+            console.error(err)
+          } else {
+            throw err
+          }
+        }
       }
     }
     wsocket.onclose = (ev) => {
-      clearTimeout(this.dialTimer)
       if (this.websocket !== wsocket) {
         wsocket.close()
-        clearTimeout(this.dialTimer)
         return
       }
       // console.log('client websocket closed', socketId, ev?.reason)
-      void broadcastEvent(client.event.NetworkRequests, -1)
-      this.scheduleOpen(true)
+      void broadcastEvent(client.event.NetworkRequests, -1).catch((err) => {
+        this.ctx.error('failed broadcast', { err })
+      })
+      this.scheduleOpen(this.ctx, true)
     }
     wsocket.onopen = () => {
       if (this.websocket !== wsocket) {
         return
       }
-      const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
-      const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
-      clearTimeout(this.dialTimer)
+      const useBinary = this.opt?.useBinaryProtocol ?? getMetadata(client.metadata.UseBinaryProtocol) ?? true
+      this.compressionMode =
+        this.opt?.useProtocolCompression ?? getMetadata(client.metadata.UseProtocolCompression) ?? false
       const helloRequest: HelloRequest = {
         method: 'hello',
         params: [],
         id: -1,
         binary: useBinary,
-        compression: useCompression
+        compression: this.compressionMode
       }
-      this.websocket?.send(serialize(helloRequest, false))
+      ctx.withSync('send-hello', {}, () => this.websocket?.send(this.rpcHandler.serialize(helloRequest, false)))
     }
 
     wsocket.onerror = (event: any) => {
-      clearTimeout(this.dialTimer)
       if (this.websocket !== wsocket) {
         return
       }
@@ -454,13 +636,15 @@ class Connection implements ClientConnection {
         this.delay += 1
       }
       if (opened) {
-        console.error('client websocket error:', socketId, this.url, this.workspace, this.email)
+        console.error('client websocket error:', socketId, this.url, this.workspace, this.user)
       }
-      void broadcastEvent(client.event.NetworkRequests, -1)
+      void broadcastEvent(client.event.NetworkRequests, -1).catch((err) => {
+        this.ctx.error('failed to broadcast', { err })
+      })
     }
   }
 
-  private async sendRequest (data: {
+  private sendRequest (data: {
     method: string
     params: any[]
     // If not defined, on reconnect with timeout, will retry automatically.
@@ -469,87 +653,91 @@ class Connection implements ClientConnection {
     once?: boolean // Require handleResult to retrieve result
     measure?: (time: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
     allowReconnect?: boolean
+    overrideId?: number
   }): Promise<any> {
-    if (this.closed) {
-      throw new PlatformError(unknownError('connection closed'))
-    }
+    return this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
+      if (this.closed) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.ConnectionClosed, {}))
+      }
 
-    if (data.once === true) {
-      // Check if has same request already then skip
-      for (const [, v] of this.requests) {
-        if (v.method === data.method && JSON.stringify(v.params) === JSON.stringify(data.params)) {
-          // We have same unanswered, do not add one more.
-          return
+      if (data.once === true) {
+        // Check if has same request already then skip
+        const dparams = JSON.stringify(data.params)
+        for (const [, v] of this.requests) {
+          if (v.method === data.method && JSON.stringify(v.params) === dparams) {
+            // We have same unanswered, do not add one more.
+            return
+          }
         }
       }
-    }
 
-    const id = this.lastId++
-    const promise = new RequestPromise(data.method, data.params, data.handleResult)
-    promise.handleTime = data.measure
+      const id = data.overrideId ?? this.lastId++
+      const promise = new RequestPromise(data.method, data.params, data.handleResult)
+      promise.handleTime = data.measure
 
-    const w = this.waitOpenConnection()
-    if (w instanceof Promise) {
-      await w
-    }
-    this.requests.set(id, promise)
-    const sendData = async (): Promise<void> => {
-      if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
-        promise.startTime = Date.now()
-        this.websocket?.send(
-          serialize(
-            {
-              method: data.method,
-              params: data.params,
-              id,
-              time: Date.now()
-            },
-            this.binaryMode
-          )
-        )
+      const w = this.waitOpenConnection(ctx)
+      if (w instanceof Promise) {
+        await w
       }
-    }
-    if (data.allowReconnect ?? true) {
-      promise.reconnect = () => {
-        setTimeout(async () => {
-          // In case we don't have response yet.
-          if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
-            void sendData()
+      if (data.method !== pingConst) {
+        this.requests.set(id, promise)
+      }
+      const sendData = (): void => {
+        if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
+          promise.startTime = Date.now()
+
+          if (data.method !== pingConst) {
+            const dta = ctx.withSync('serialize', {}, () =>
+              this.rpcHandler.serialize(
+                {
+                  method: data.method,
+                  params: data.params,
+                  id,
+                  time: Date.now()
+                },
+                this.binaryMode
+              )
+            )
+
+            ctx.withSync('send-data', {}, () => this.websocket?.send(dta))
+          } else {
+            this.websocket?.send(pingConst)
           }
-        }, 50)
+        }
       }
-    }
-    void sendData()
-    void broadcastEvent(client.event.NetworkRequests, this.requests.size)
-    return await promise.promise
-  }
-
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    const dateNow = Date.now()
-
-    // Send measure-start
-    const mid = await this.sendRequest({
-      method: 'measure',
-      params: [operationName]
-    })
-    return async () => {
-      const serverTime: number = await this.sendRequest({
-        method: 'measure-done',
-        params: [operationName, mid]
+      if (data.allowReconnect ?? true) {
+        promise.reconnect = () => {
+          setTimeout(async () => {
+            // In case we don't have response yet.
+            if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
+              sendData()
+            }
+          }, 50)
+        }
+      }
+      ctx.withSync('send-data', {}, () => {
+        sendData()
       })
-      return {
-        time: Date.now() - dateNow,
-        serverTime
+      void ctx
+        .with('broadcast-event', {}, () => broadcastEvent(client.event.NetworkRequests, this.requests.size))
+        .catch((err) => {
+          this.ctx.error('failed to broadcast', { err })
+        })
+      if (data.method !== pingConst) {
+        return await promise.promise
       }
+    })
+  }
+
+  loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
+    return this.sendRequest({ method: 'loadModel', params: [last, hash] })
+  }
+
+  getAccount (): Promise<Account> {
+    if (this.account !== undefined) {
+      return clone(this.account)
     }
-  }
-
-  async loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
-    return await this.sendRequest({ method: 'loadModel', params: [last, hash] })
-  }
-
-  async getAccount (): Promise<Account> {
-    return await this.sendRequest({ method: 'getAccount', params: [] })
+    return this.sendRequest({ method: 'getAccount', params: [] })
   }
 
   async findAll<T extends Doc>(
@@ -624,8 +812,12 @@ class Connection implements ClientConnection {
     })
   }
 
-  loadChunk (domain: Domain, idx?: number, recheck?: boolean): Promise<DocChunk> {
-    return this.sendRequest({ method: 'loadChunk', params: [domain, idx, recheck] })
+  loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    return this.sendRequest({ method: 'loadChunk', params: [domain, idx] })
+  }
+
+  async getDomainHash (domain: Domain): Promise<string> {
+    return await this.sendRequest({ method: 'getDomainHash', params: [domain] })
   }
 
   closeChunk (idx: number): Promise<void> {
@@ -649,7 +841,7 @@ class Connection implements ClientConnection {
   }
 
   sendForceClose (): Promise<void> {
-    return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false })
+    return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false, overrideId: -2, once: true })
   }
 }
 
@@ -659,13 +851,16 @@ class Connection implements ClientConnection {
 export function connect (
   url: string,
   handler: TxHandler,
-  workspace: string,
-  user: string,
-  onUpgrade?: () => void,
-  onUnauthorized?: () => void,
-  onConnect?: (event: ClientConnectEvent, data?: any) => void
+  workspace: WorkspaceUuid,
+  user: PersonUuid,
+  opt?: ClientFactoryOptions
 ): ClientConnection {
-  return new Connection(url, handler, workspace, user, onUpgrade, onUnauthorized, async (event, data) => {
-    onConnect?.(event, data)
-  })
+  return new Connection(
+    opt?.ctx?.newChild?.('connection', {}) ?? new MeasureMetricsContext('connection', {}),
+    url,
+    handler,
+    workspace,
+    user,
+    opt
+  )
 }

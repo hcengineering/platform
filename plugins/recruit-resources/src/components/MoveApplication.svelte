@@ -19,6 +19,8 @@
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { Card, SpaceSelect, createQuery, getClient } from '@hcengineering/presentation'
   import type { Applicant, Vacancy } from '@hcengineering/recruit'
+  import { getStates } from '@hcengineering/task'
+  import { typeStore } from '@hcengineering/task-resources'
   import ui, {
     Button,
     ColorPopup,
@@ -41,8 +43,6 @@
   import ApplicationPresenter from './ApplicationPresenter.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
-  import { getStates } from '@hcengineering/task'
-  import { typeStore } from '@hcengineering/task-resources'
 
   export let selected: Applicant[]
 
@@ -65,7 +65,7 @@
       throw new Error(`create application: state not found space:${_space}`)
     }
 
-    const op = client.apply('application.states')
+    const op = client.apply(undefined, 'application.states')
 
     for (const a of selected) {
       await moveToSpace(op, a, _space, { status: selectedState._id })

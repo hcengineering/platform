@@ -13,26 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
-  import { Button, Component, EditBox, IconClose, Label, Scroller } from '@hcengineering/ui'
-  import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import { ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
+  import { Analytics } from '@hcengineering/analytics'
   import { Calendar, generateEventId } from '@hcengineering/calendar'
-  import tagsPlugin, { TagReference } from '@hcengineering/tags'
-  import { createEventDispatcher } from 'svelte'
   import { VisibilityEditor } from '@hcengineering/calendar-resources'
-  import { StyledTextBox } from '@hcengineering/text-editor'
-  import { PersonAccount } from '@hcengineering/contact'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
+  import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
+  import tagsPlugin, { TagReference } from '@hcengineering/tags'
   import task, { makeRank } from '@hcengineering/task'
-  import PriorityEditor from './PriorityEditor.svelte'
-  import DueDateEditor from './DueDateEditor.svelte'
-  import Workslots from './Workslots.svelte'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
+  import { TimeEvents, ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
+  import { Button, Component, EditBox, IconClose, Label, Scroller } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import time from '../plugin'
+  import DueDateEditor from './DueDateEditor.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
+  import Workslots from './Workslots.svelte'
+  import { mySocialStringsStore } from '@hcengineering/contact-resources'
 
   export let object: Doc | undefined
 
-  const acc = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
+  const myAccount = getCurrentAccount()
+
   const todo: AttachedData<ToDo> = {
     workslots: 0,
     title: '',
@@ -40,7 +44,7 @@
     priority: ToDoPriority.NoPriority,
     attachedSpace: object?.space,
     visibility: 'private',
-    user: acc.person,
+    user: me,
     rank: ''
   }
 
@@ -55,11 +59,11 @@
 
   async function saveToDo (): Promise<void> {
     loading = true
-    const ops = client.apply('todo-' + generateId())
+    const ops = client.apply(undefined, 'create-todo')
     const latestTodo = await ops.findOne(
       time.class.ToDo,
       {
-        user: acc.person,
+        user: me,
         doneOn: null
       },
       {
@@ -78,19 +82,20 @@
         description: todo.description,
         priority: todo.priority,
         visibility: todo.visibility,
-        user: acc.person,
+        user: me,
         dueDate: todo.dueDate,
         attachedSpace: todo.attachedSpace,
         rank: makeRank(undefined, latestTodo?.rank)
       }
     )
+    Analytics.handleEvent(TimeEvents.ToDoCreated, { id })
     for (const slot of slots) {
       await ops.addCollection(time.class.WorkSlot, calendar.space.Calendar, id, time.class.ToDo, 'workslots', {
         eventId: generateEventId(),
         date: slot.date,
         dueDate: slot.dueDate,
         description: todo.description,
-        participants: [acc.person],
+        participants: [me],
         calendar: _calendar,
         title: todo.title,
         allDay: false,
@@ -98,6 +103,7 @@
         visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
         reminders: []
       })
+      Analytics.handleEvent(TimeEvents.ToDoScheduled, { id })
     }
     for (const tag of tags) {
       await ops.addCollection(tagsPlugin.class.TagReference, time.space.ToDos, id, time.class.ToDo, 'labels', tag)
@@ -106,15 +112,18 @@
     dispatch('close', true)
   }
 
-  const currentUser = getCurrentAccount() as PersonAccount
-  let _calendar: Ref<Calendar> = `${currentUser._id}_calendar` as Ref<Calendar>
+  let _calendar: Ref<Calendar> = `${myAccount.primarySocialId}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, hidden: false, createdBy: currentUser._id }, (res) => {
-    if (res.length > 0) {
-      _calendar = res[0]._id
+  q.query(
+    calendar.class.ExternalCalendar,
+    { default: true, hidden: false, createdBy: { $in: $mySocialStringsStore } },
+    (res) => {
+      if (res.length > 0) {
+        _calendar = res[0]._id
+      }
     }
-  })
+  )
 
   let slots: WorkSlot[] = []
 
@@ -136,7 +145,7 @@
       date,
       dueDate,
       description: todo.description,
-      participants: [acc.person],
+      participants: [me],
       title: todo.title,
       allDay: false,
       access: 'owner',
@@ -149,8 +158,8 @@
       attachedTo: generateId(),
       attachedToClass: time.class.ToDo,
       collection: 'workslots',
-      modifiedOn: Date.now(),
-      modifiedBy: acc._id
+      modifiedOn: now,
+      modifiedBy: myAccount.primarySocialId
     })
     slots = slots
   }
@@ -224,7 +233,7 @@
         </div>
         <SpaceSelector
           _class={task.class.Project}
-          query={{ archived: false, members: getCurrentAccount()._id }}
+          query={{ archived: false, members: { $in: getCurrentAccount().socialIds } }}
           label={core.string.Space}
           autoSelect={false}
           allowDeselect

@@ -3,7 +3,7 @@
     "Document": "Document",
     "ParentDocument": "Parent document",
     "ChildDocument": "Child document",
-    "CreateDocument": "Create a document",
+    "CreateDocument": "Create document",
     "Documents": "Documents",
     "CreateAnVersion": "Create new version",
     "DocumentNamePlaceholder": "Untitled",
@@ -38,7 +38,7 @@
 
     "Description": "Description",
 
-    "CopyDocumentUrl": "Copy Document URL to clipboard",
+    "CopyDocumentUrl": "Copy document URL to clipboard",
 
     "ViewMode": "View",
     "EditMode": "Edit",
@@ -55,13 +55,8 @@
     "ConfigLabel": "Documents",
     "ConfigDescription": "Extension for collaborative document editing",
 
-    "UnassignToDo": "Unassign Action Item",
-    "UnassignToDoConfirm": "Do you want to unassign this Action Item? The Action Item will be removed from the assignee's planner.",
-    "ReassignToDo": "Change Action Item assignee",
-    "ReassignToDoConfirm": "Do you want to change the Action Item assignee? The Action Item will be removed from the current assignee's planner.",
     "Icon": "Icon",
     "Color": "Color",
-    "RoleLabel": "Role: {role}",
-    "Embeddings": "Embeddings"
+    "RoleLabel": "Role: {role}"
   }
 }

@@ -78,7 +78,7 @@
 
   let resultQuery: DocumentQuery<Card>
 
-  $: resultQuery = { ...query, isArchived: { $nin: [true] }, space }
+  $: resultQuery = { ...query, isArchived: { $ne: true }, space }
 
   const cardQuery = createQuery()
   let cards: Card[] = []

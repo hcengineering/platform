@@ -12,34 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import core, {
   MeasureMetricsContext,
   RateLimiter,
   TxOperations,
+  concatLink,
+  generateId,
   metricsToString,
   newMetrics,
-  systemAccountEmail,
-  type Account,
+  systemAccountUuid,
+  buildSocialIdString,
+  type PersonId,
   type BackupClient,
   type BenchmarkDoc,
   type Client,
   type Metrics,
   type Ref,
-  type WorkspaceId
+  type WorkspaceUuid,
+  SocialIdType,
+  type PersonUuid,
+  platformNow,
+  platformNowDiff
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 
 import client from '@hcengineering/client'
 import { setMetadata } from '@hcengineering/platform'
+import serverClientPlugin, { getTransactorEndpoint } from '@hcengineering/server-client'
 import os from 'os'
 import { Worker, isMainThread, parentPort } from 'worker_threads'
 import { CSVWriter } from './csv'
 
+import { AvatarType, getPersonBySocialId } from '@hcengineering/contact'
+import contact from '@hcengineering/model-contact'
+import recruit from '@hcengineering/model-recruit'
+import { type Vacancy } from '@hcengineering/recruit'
+import { WebSocket } from 'ws'
+
 interface StartMessage {
-  email: string
-  workspaceId: WorkspaceId
+  account: PersonUuid
+  workspaceId: WorkspaceUuid
   transactorUrl: string
   id: number
   idd: number
@@ -76,9 +90,9 @@ interface PendingMsg extends Msg {
 }
 
 export async function benchmark (
-  workspaceId: WorkspaceId[],
-  users: Map<string, string[]>,
-  transactorUrl: string,
+  workspaceId: WorkspaceUuid[],
+  users: Map<WorkspaceUuid, PersonUuid[]>,
+  accountsUrl: string,
   cmd: {
     from: number
     steps: number
@@ -166,13 +180,16 @@ export async function benchmark (
   let transfer: number = 0
   let oldTransfer: number = 0
 
-  const token = generateToken(systemAccountEmail, workspaceId[0])
+  const token = generateToken(systemAccountUuid, workspaceId[0])
 
+  setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl)
+  const endpoint = await getTransactorEndpoint(token, 'external')
+  console.log('monitor endpoint', endpoint, 'workspace', workspaceId[0])
   const monitorConnection = isMainThread
     ? ((await ctx.with(
         'connect',
         {},
-        async () => await connect(transactorUrl, workspaceId[0], undefined, { mode: 'backup' })
+        async () => await connect(endpoint, workspaceId[0], undefined, { mode: 'backup' })
       )) as BackupClient & Client)
     : undefined
 
@@ -199,10 +216,10 @@ export async function benchmark (
   let timer: any
   if (isMainThread && monitorConnection !== undefined) {
     timer = setInterval(() => {
-      const st = Date.now()
+      const st = platformNow()
 
       try {
-        const fetchUrl = transactorUrl.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
+        const fetchUrl = endpoint.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
         void fetch(fetchUrl)
           .then((res) => {
             void res
@@ -227,7 +244,7 @@ export async function benchmark (
 
                 requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
 
-                const tr = extract(json.metrics as Metrics, '🧲 session', 'client', 'handleRequest', '#send-data')
+                const tr = extract(json.metrics as Metrics, '🧲 session', '#send-data')
                 transfer = (tr?.value ?? 0) - oldTransfer
                 oldTransfer = tr?.value ?? 0
               })
@@ -254,7 +271,7 @@ export async function benchmark (
               }
             })
             .then((res) => {
-              const cur = Date.now() - st
+              const cur = platformNow() - st
               opTime += cur
               moment = cur
               ops++
@@ -286,14 +303,18 @@ export async function benchmark (
         await Promise.all(
           Array.from(Array(i))
             .map((it, idx) => idx)
-            .map((it) => {
+            .map(async (it) => {
               const wsid = workspaceId[randNum(workspaceId.length)]
               const workId = 'w-' + i + '-' + it
-              const wsUsers = users.get(wsid.name) ?? []
+              const wsUsers = users.get(wsid) ?? []
+
+              const token = generateToken(systemAccountUuid, wsid)
+              const endpoint = await getTransactorEndpoint(token, 'external')
+              console.log('endpoint', endpoint, 'workspace', wsid)
               const msg: StartMessage = {
-                email: wsUsers[randNum(wsUsers.length)],
+                account: wsUsers[randNum(wsUsers.length)],
                 workspaceId: wsid,
-                transactorUrl,
+                transactorUrl: endpoint,
                 id: i,
                 idd: it,
                 workId,
@@ -314,7 +335,7 @@ export async function benchmark (
               }
               workers[i % workers.length].postMessage(msg)
 
-              return new Promise((resolve) => {
+              return await new Promise((resolve) => {
                 works.set(workId, () => {
                   resolve(null)
                 })
@@ -353,10 +374,11 @@ export function benchmarkWorker (): void {
       setMetadata(client.metadata.UseProtocolCompression, msg.compression)
       console.log('connecting to', msg.workspaceId)
 
-      connection = await connect(msg.transactorUrl, msg.workspaceId, msg.email)
+      connection = await connect(msg.transactorUrl, msg.workspaceId, msg.account)
 
       if (msg.options.mode === 'find-all') {
-        const opt = new TxOperations(connection, (core.account.System + '_benchmark') as Ref<Account>)
+        const benchmarkPersonId = (core.account.System + '_benchmark') as PersonId
+        const opt = new TxOperations(connection, benchmarkPersonId)
         parentPort?.postMessage({
           type: 'operate',
           workId: msg.workId
@@ -455,6 +477,188 @@ export function benchmarkWorker (): void {
     parentPort?.postMessage({
       type: 'complete',
       workId: msg.workId
+    })
+  }
+}
+
+export type StressBenchmarkMode = 'wrong' | 'connect-disconnect'
+export async function stressBenchmark (transactor: string, mode: StressBenchmarkMode): Promise<void> {
+  // TODO: FIXME
+  throw new Error('Not implemented')
+  // if (mode === 'wrong') {
+  //   console.log('Stress with wrong workspace/email')
+  //   let counter = 0
+  //   const rate = new RateLimiter(1)
+  //   while (true) {
+  //     try {
+  //       counter++
+  //       console.log('Attempt', counter)
+  //       const token = generateToken(generateId(), generateId())
+  //       await rate.add(async () => {
+  //         try {
+  //           const ws = new WebSocket(concatLink(transactor, token))
+  //           await new Promise<void>((resolve) => {
+  //             ws.onopen = () => {
+  //               resolve()
+  //             }
+  //           })
+  //           // ws.close()
+  //           // await createClient(transactor, token, undefined, 50)
+  //           console.log('out')
+  //         } catch (err: any) {
+  //           console.error(err)
+  //         }
+  //       })
+  //     } catch (err: any) {
+  //       // Ignore
+  //     }
+  //   }
+  // }
+}
+
+export async function testFindAll (endpoint: string, workspace: WorkspaceUuid, account: PersonUuid): Promise<void> {
+  const connection = await connect(endpoint, workspace, account)
+  try {
+    const client = new TxOperations(connection, core.account.System)
+    const start = platformNow()
+    const res = await client.findAll(
+      recruit.class.Applicant,
+      {},
+      {
+        lookup: {
+          attachedTo: recruit.mixin.Candidate,
+          space: recruit.class.Vacancy
+        }
+      }
+    )
+    console.log('Find all', res.length, 'time', platformNow() - start)
+  } finally {
+    await connection.close()
+  }
+}
+
+export async function generateWorkspaceData (
+  endpoint: string,
+  workspace: WorkspaceUuid,
+  parallel: boolean,
+  email: string
+): Promise<void> {
+  const connection = await connect(endpoint, workspace)
+  const client = new TxOperations(connection, core.account.System)
+  try {
+    const emailSocialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
+    const person = await getPersonBySocialId(client, emailSocialString)
+    if (person == null) {
+      throw new Error('User not found')
+    }
+    const employees: PersonId[] = [emailSocialString]
+    const start = platformNow()
+    for (let i = 0; i < 100; i++) {
+      const socialString = await generateEmployee(client)
+      employees.push(socialString)
+    }
+    if (parallel) {
+      const promises: Promise<void>[] = []
+      for (let i = 0; i < 10; i++) {
+        promises.push(generateVacancy(client, employees))
+      }
+      await Promise.all(promises)
+    } else {
+      for (let i = 0; i < 10; i++) {
+        await generateVacancy(client, employees)
+      }
+    }
+    console.log('Generate', platformNowDiff(start))
+  } finally {
+    await connection.close()
+  }
+}
+
+export async function generateEmployee (client: TxOperations): Promise<PersonId> {
+  const personUuid = generateId() as unknown as PersonUuid // TODO: will it work or need to actually be a UUID?
+  const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
+    name: generateId().toString(),
+    city: '',
+    avatarType: AvatarType.COLOR,
+    personUuid
+  })
+
+  await client.createMixin(personId, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
+    active: true
+  })
+
+  const socialString = buildSocialIdString({ type: SocialIdType.HULY, value: personUuid })
+
+  await client.addCollection(
+    contact.class.SocialIdentity,
+    contact.space.Contacts,
+    personId,
+    contact.class.Person,
+    'socialIds',
+    {
+      type: SocialIdType.HULY,
+      value: personUuid,
+      key: socialString,
+      confirmed: true
+    }
+  )
+
+  return socialString
+}
+
+async function generateVacancy (client: TxOperations, members: PersonId[]): Promise<void> {
+  // generate vacancies
+  const _id = generateId<Vacancy>()
+  await client.createDoc(
+    recruit.class.Vacancy,
+    core.space.Space,
+    {
+      name: generateId().toString(),
+      number: 0,
+      fullDescription: generateId(),
+      type: recruit.template.DefaultVacancy,
+      description: '',
+      private: false,
+      members,
+      archived: false
+    },
+    _id
+  )
+
+  for (let i = 0; i < 100; i++) {
+    // generate candidate
+    const personUuid = generateId() as unknown as PersonUuid // TODO: will it work or need to actually be a UUID?
+    const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
+      name: generateId().toString(),
+      city: '',
+      avatarType: AvatarType.COLOR,
+      personUuid
+    })
+    const socialString = buildSocialIdString({ type: SocialIdType.HULY, value: personUuid })
+    await client.addCollection(
+      contact.class.SocialIdentity,
+      contact.space.Contacts,
+      personId,
+      contact.class.Person,
+      'socialIds',
+      {
+        type: SocialIdType.HULY,
+        value: personUuid,
+        key: socialString,
+        confirmed: true
+      }
+    )
+    await client.createMixin(personId, contact.class.Person, contact.space.Contacts, recruit.mixin.Candidate, {})
+    // generate applicants
+    await client.addCollection(recruit.class.Applicant, _id, personId, recruit.mixin.Candidate, 'applications', {
+      status: recruit.taskTypeStatus.Backlog,
+      number: i + 1,
+      identifier: `APP-${i + 1}`,
+      assignee: null,
+      rank: '',
+      startDate: null,
+      dueDate: null,
+      kind: recruit.taskTypes.Applicant
     })
   }
 }

@@ -15,7 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { AccountRole, DOMAIN_MODEL, type Account, type Blob, type Domain, type Ref } from '@hcengineering/core'
+import { AccountRole, DOMAIN_MODEL, type PersonId, type Blob, type Domain, type Ref } from '@hcengineering/core'
 import { Mixin, Model, type Builder, UX } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
@@ -28,17 +28,17 @@ import {
   type Integration,
   type IntegrationType,
   type InviteSettings,
-  type WorkspaceSetting,
   type SettingsCategory,
-  type UserMixin,
+  type SpaceTypeCreator,
   type SpaceTypeEditor,
   type SpaceTypeEditorSection,
-  type SpaceTypeCreator
+  type UserMixin,
+  type WorkspaceSetting
 } from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
 import setting from './plugin'
 
-import workbench from '@hcengineering/model-workbench'
+import workbench, { WidgetType } from '@hcengineering/model-workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 export { settingId } from '@hcengineering/setting'
@@ -53,7 +53,7 @@ export class TIntegration extends TDoc implements Integration {
   type!: Ref<IntegrationType>
   disabled!: boolean
   value!: string
-  shared!: Ref<Account>[]
+  shared!: PersonId[]
   error?: IntlString | null
 }
 @Model(setting.class.SettingsCategory, core.class.Doc, DOMAIN_MODEL)
@@ -133,6 +133,18 @@ export function createModel (builder: Builder): void {
     TSpaceTypeCreator
   )
 
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: setting.string.Settings,
+      type: WidgetType.Flexible,
+      icon: setting.icon.Setting,
+      component: setting.component.SettingsWidget
+    },
+    setting.ids.SettingsWidget
+  )
+
   builder.mixin(setting.class.Integration, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['modifiedBy']
   })
@@ -205,6 +217,32 @@ export function createModel (builder: Builder): void {
     setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
+      name: 'general',
+      label: setting.string.General,
+      icon: setting.icon.Setting,
+      component: setting.component.General,
+      order: 900,
+      role: AccountRole.Owner
+    },
+    setting.ids.General
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'backup',
+      label: setting.string.Backup,
+      icon: setting.icon.Setting,
+      component: setting.component.Backup,
+      order: 950,
+      role: AccountRole.Owner
+    },
+    setting.ids.Backup
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
       name: 'owners',
       label: setting.string.Owners,
       icon: setting.icon.Owners,
@@ -245,19 +283,6 @@ export function createModel (builder: Builder): void {
     setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
-      name: 'workspaceSettings',
-      label: setting.string.Branding,
-      icon: setting.icon.AccountSettings,
-      component: setting.component.WorkspaceSetting,
-      order: 1300,
-      role: AccountRole.Owner
-    },
-    setting.ids.WorkspaceSetting
-  )
-  builder.createDoc(
-    setting.class.WorkspaceSettingCategory,
-    core.space.Model,
-    {
       name: 'classes',
       label: setting.string.Classes,
       icon: setting.icon.Clazz,
@@ -267,6 +292,20 @@ export function createModel (builder: Builder): void {
       order: 4500
     },
     setting.ids.ClassSetting
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'relation',
+      label: core.string.Relations,
+      icon: setting.icon.Relations,
+      component: setting.component.RelationSetting,
+      group: 'settings-editor',
+      role: AccountRole.Maintainer,
+      order: 4501
+    },
+    setting.ids.Relations
   )
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,
@@ -349,8 +388,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Setting,
       alias: settingId,
       hidden: true,
-      component: setting.component.Settings,
-      modern: true
+      component: setting.component.Settings
     },
     setting.ids.SettingApp
   )
@@ -407,24 +445,28 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Delete]
   })
 
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: setting.component.CreateMixin,
-      fillProps: {
-        _object: 'value'
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: setting.component.CreateMixin,
+        fillProps: {
+          _object: 'value'
+        }
+      },
+      label: setting.string.CreateMixin,
+      input: 'focus',
+      icon: view.icon.Pin,
+      category: setting.category.Settings,
+      target: core.class.Class,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
       }
     },
-    label: setting.string.CreateMixin,
-    input: 'focus',
-    icon: view.icon.Pin,
-    category: setting.category.Settings,
-    target: core.class.Class,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    }
-  })
+    setting.action.CreateMixin
+  )
 
   createAction(
     builder,
@@ -454,7 +496,7 @@ export function createModel (builder: Builder): void {
     },
     label: setting.string.HideAttribute,
     input: 'any',
-    icon: view.icon.Setting,
+    icon: view.icon.EyeCrossed,
     category: setting.category.Settings,
     target: core.class.Attribute,
     context: {
@@ -474,7 +516,7 @@ export function createModel (builder: Builder): void {
     },
     label: setting.string.ShowAttribute,
     input: 'any',
-    icon: view.icon.Setting,
+    icon: view.icon.Eye,
     category: setting.category.Settings,
     target: core.class.Attribute,
     context: {
@@ -566,10 +608,7 @@ export function createModel (builder: Builder): void {
         htmlTemplate: '<p>Integration with {doc} was disabled</p>',
         subjectTemplate: 'Integration with {doc} was disabled'
       },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.EmailNotification]: true
-      }
+      defaultEnabled: true
     },
     setting.ids.IntegrationDisabledNotification
   )
@@ -605,7 +644,8 @@ export function createModel (builder: Builder): void {
       {
         id: 'properties',
         label: setting.string.Properties,
-        component: setting.component.SpaceTypePropertiesSectionEditor
+        component: setting.component.SpaceTypePropertiesSectionEditor,
+        withoutContainer: true
       },
       {
         id: 'roles',

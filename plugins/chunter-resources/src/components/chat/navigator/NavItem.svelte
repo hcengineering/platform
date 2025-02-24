@@ -35,6 +35,7 @@
   export let isSelected: boolean = false
   export let isSecondary: boolean = false
   export let count: number | null = null
+  export let secondaryNotifyMarker: boolean = false
   export let title: string | undefined = undefined
   export let intlTitle: IntlString | undefined = undefined
   export let description: string | undefined = undefined
@@ -70,7 +71,6 @@
   {title}
   {description}
   selected={isSelected}
-  {isSecondary}
   count={elementsCount > 0 ? elementsCount : null}
   {type}
   withBackground={withIconBackground}
@@ -97,7 +97,15 @@
   <svelte:fragment slot="notify">
     {#if count != null && count > 0}
       <div class="antiHSpacer" />
-      <NotifyMarker {count} />
+      <div class="notify">
+        <NotifyMarker {count} />
+      </div>
+      <div class="antiHSpacer" />
+    {:else if secondaryNotifyMarker}
+      <div class="antiHSpacer" />
+      <div class="notify">
+        <NotifyMarker count={0} kind="simple" size="xx-small" />
+      </div>
       <div class="antiHSpacer" />
     {/if}
   </svelte:fragment>
@@ -109,7 +117,6 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-left: var(--spacing-1);
     padding: var(--spacing-0_5);
     color: var(--global-tertiary-TextColor);
     border: none;
@@ -121,5 +128,13 @@
       color: var(--global-primary-TextColor);
       background-color: var(--global-ui-highlight-BackgroundColor);
     }
+  }
+
+  .notify {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
   }
 </style>

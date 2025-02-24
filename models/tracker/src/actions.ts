@@ -20,8 +20,8 @@ import task from '@hcengineering/model-task'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import { type IntlString } from '@hcengineering/platform'
-import { trackerId } from '@hcengineering/tracker'
-import { type KeyBinding, type ViewAction } from '@hcengineering/view'
+import { TrackerEvents, trackerId } from '@hcengineering/tracker'
+import { type KeyBinding } from '@hcengineering/view'
 import tracker from './plugin'
 
 import tags from '@hcengineering/tags'
@@ -124,6 +124,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: ['context', 'browser'],
         group: 'edit'
       },
+      analyticsEvent: TrackerEvents.ProjectArchived,
       override: [view.action.Archive, view.action.Delete]
     },
     tracker.action.DeleteProject
@@ -145,33 +146,11 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: ['context', 'browser'],
         group: 'edit'
       },
+      analyticsEvent: TrackerEvents.ProjectDeleted,
       override: [view.action.Archive, view.action.Delete]
     },
     tracker.action.DeleteProjectClean
   )
-  createAction(builder, {
-    label: tracker.string.Unarchive,
-    icon: view.icon.Archive,
-    action: view.actionImpl.UpdateDocument as ViewAction,
-    actionProps: {
-      key: 'archived',
-      ask: true,
-      value: false,
-      label: tracker.string.Unarchive,
-      message: tracker.string.UnarchiveConfirm
-    },
-    input: 'any',
-    category: tracker.category.Tracker,
-    visibilityTester: view.function.CanArchiveSpace,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    },
-    target: tracker.class.Project
-  })
 
   createAction(
     builder,
@@ -187,7 +166,8 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         group: 'remove'
       },
       visibilityTester: view.function.CanDeleteObject,
-      override: [view.action.Delete]
+      override: [view.action.Delete],
+      analyticsEvent: TrackerEvents.IssueDeleted
     },
     tracker.action.DeleteIssue
   )
@@ -218,7 +198,8 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         application: tracker.app.Tracker,
         group: 'create'
       },
-      override: [tracker.action.NewIssueGlobal]
+      override: [tracker.action.NewIssueGlobal],
+      analyticsEvent: TrackerEvents.NewIssueBindingCalled
     },
     tracker.action.NewIssue
   )
@@ -239,7 +220,8 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       context: {
         mode: [],
         group: 'create'
-      }
+      },
+      analyticsEvent: TrackerEvents.IssueCreateFromGlobalActionCalled
     },
     tracker.action.NewIssueGlobal
   )
@@ -293,6 +275,30 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       }
     },
     tracker.action.SetParent
+  )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.UpdateDocument,
+      actionProps: {
+        key: 'attachedTo',
+        value: tracker.ids.NoParent
+      },
+      query: {
+        attachedTo: { $ne: tracker.ids.NoParent }
+      },
+      label: tracker.string.UnsetParentIssue,
+      icon: tracker.icon.UnsetParent,
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'associate'
+      }
+    },
+    tracker.action.UnsetParent
   )
 
   createAction(
@@ -547,7 +553,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: tracker.component.SetDueDateActionPopup,
-        props: { mondayStart: true, withTime: false },
+        props: { withTime: false },
         element: 'top',
         fillProps: {
           _objects: 'value'
@@ -580,6 +586,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
+      visibilityTester: view.function.IsClipboardAvailable,
       context: {
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,
@@ -600,6 +607,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
+      visibilityTester: view.function.IsClipboardAvailable,
       context: {
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,
@@ -620,6 +628,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
+      visibilityTester: view.function.IsClipboardAvailable,
       context: {
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,
@@ -729,7 +738,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       category: tracker.category.Tracker,
       target: core.class.Space,
       query: {
-        _class: { $nin: [tracker.class.Project] }
+        _class: { $ne: tracker.class.Project }
       },
       context: {
         mode: ['context'],

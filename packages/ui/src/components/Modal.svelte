@@ -31,7 +31,11 @@
   export let okLabel: IntlString = ui.string.Ok
   export let padding: string | undefined = undefined
   export let hidden: boolean = false
-  export let noResize: boolean = false
+  export let allowFullsize: boolean = false
+  export let noTopIndent: boolean = false
+  export let hideFooter: boolean = false
+  export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'disabled'
+  export let showCancelButton: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -53,8 +57,15 @@
 
 <svelte:window on:keydown={onKeyDown} />
 
-<div class="hulyModal-container {type}" class:hidden>
-  <Header {type} {noResize} on:close={close}>
+<div class="hulyModal-container {type}" class:hidden class:noTopIndent>
+  <Header
+    {type}
+    {allowFullsize}
+    {adaptive}
+    on:close={close}
+    hideBefore={!$$slots.beforeTitle}
+    hideActions={!$$slots.actions}
+  >
     <svelte:fragment slot="beforeTitle">
       <slot name="beforeTitle" />
     </svelte:fragment>
@@ -78,7 +89,7 @@
     </Scroller>
   </div>
   <slot name="afterContent" />
-  {#if type !== 'type-component'}
+  {#if type !== 'type-component' && !hideFooter}
     <div class="hulyModal-footer">
       <ButtonBase
         type={'type-button'}
@@ -88,13 +99,15 @@
         on:click={okAction}
         disabled={!canSave}
       />
-      <ButtonBase
-        type={'type-button'}
-        kind={'secondary'}
-        size={type === 'type-aside' ? 'large' : 'medium'}
-        label={ui.string.Cancel}
-        on:click={onCancel}
-      />
+      {#if showCancelButton}
+        <ButtonBase
+          type={'type-button'}
+          kind={'secondary'}
+          size={type === 'type-aside' ? 'large' : 'medium'}
+          label={ui.string.Cancel}
+          on:click={onCancel}
+        />
+      {/if}
     </div>
   {/if}
 </div>

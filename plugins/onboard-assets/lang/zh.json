@@ -1,0 +1,19 @@
+{
+  "status": {
+    "RequiredField": "必填字段 {field}",
+    "FieldsDoNotMatch": "{field} 与 {field2} 不匹配",
+    "ConnectingToServer": "正在连接服务器...."
+  },
+  "string": {
+    "CreateWorkspace": "创建工作区",
+    "LastName": "姓",
+    "FirstName": "名",
+    "Workspace": "工作区名称",
+    "FillInProfile": "填写您的个人资料",
+    "SetUpPassword": "设置您的密码",
+    "Next": "下一个",
+    "Skip": "跳过",
+    "SignUpCompleted": "注册完成",
+    "StartUsingHuly": "开始使用 Huly"
+  }
+}

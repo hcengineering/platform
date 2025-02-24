@@ -14,22 +14,21 @@
 //
 
 import {
-  type Account,
-  type AccountRole,
-  type Arr,
-  type Domain,
   DOMAIN_MODEL,
+  DOMAIN_SPACE,
   IndexKind,
+  type PersonId,
+  type Arr,
+  type Class,
+  type CollectionSize,
+  type Permission,
   type Ref,
+  type Role,
+  type RolesAssignment,
   type Space,
-  type TypedSpace,
   type SpaceType,
   type SpaceTypeDescriptor,
-  type Role,
-  type Class,
-  type Permission,
-  type CollectionSize,
-  type RolesAssignment
+  type TypedSpace
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -42,13 +41,12 @@ import {
   TypeBoolean,
   TypeRef,
   TypeString,
+  TypePersonId,
   UX
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import core from './component'
-import { TDoc, TAttachedDoc } from './core'
-
-export const DOMAIN_SPACE = 'space' as Domain
+import { TAttachedDoc, TDoc } from './core'
 
 // S P A C E
 
@@ -67,13 +65,15 @@ export class TSpace extends TDoc implements Space {
     private!: boolean
 
   @Prop(TypeBoolean(), core.string.Archived)
+  @Index(IndexKind.Indexed)
     archived!: boolean
 
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
-    members!: Arr<Ref<Account>>
+  @Prop(ArrOf(TypePersonId()), core.string.Members)
+  @Index(IndexKind.Indexed)
+    members!: Arr<PersonId>
 
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Owners)
-    owners?: Ref<Account>[]
+  @Prop(ArrOf(TypePersonId()), core.string.Owners)
+    owners?: PersonId[]
 
   @Prop(TypeBoolean(), core.string.AutoJoin)
     autoJoin?: boolean
@@ -119,8 +119,8 @@ export class TSpaceType extends TDoc implements SpaceType {
   @Prop(Collection(core.class.Role), core.string.Roles)
     roles!: CollectionSize<Role>
 
-  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
-    members!: Arr<Ref<Account>>
+  @Prop(ArrOf(TypePersonId()), core.string.Members)
+    members!: Arr<PersonId>
 
   @Prop(TypeBoolean(), core.string.AutoJoin)
     autoJoin?: boolean
@@ -162,12 +162,5 @@ export class TPermission extends TDoc implements Permission {
 @Mixin(core.mixin.SpacesTypeData, core.class.Space)
 @UX(getEmbeddedLabel("All spaces' type")) // TODO: add icon?
 export class TSpacesTypeData extends TSpace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
-}
-
-@Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)
-@UX(core.string.Account, undefined, undefined, 'name')
-export class TAccount extends TDoc implements Account {
-  email!: string
-  role!: AccountRole
+  [key: Ref<Role>]: PersonId[]
 }

@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -24,26 +24,16 @@ import { start } from '.'
 export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
-  const url = process.env.MONGO_URL
-  if (url === undefined) {
-    console.error('please provide mongodb url')
-    process.exit(1)
-  }
-
-  const elasticUrl = process.env.ELASTIC_URL
-  if (elasticUrl === undefined) {
-    console.error('please provide elastic url')
-    process.exit(1)
-  }
-
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, url)
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
     console.error('please provide accounts url')
     process.exit(1)
   }
+
+  const accountsUrlInternal = process.env.ACCOUNTS_URL_INTERNAL
 
   const uploadUrl = process.env.UPLOAD_URL
   if (uploadUrl === undefined) {
@@ -81,15 +71,17 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
-  const collaboratorApiUrl = process.env.COLLABORATOR_API_URL
-  if (collaboratorApiUrl === undefined) {
-    console.error('please provide collaborator api url')
-    process.exit(1)
-  }
+  const collaborator = process.env.COLLABORATOR
 
   const modelVersion = process.env.MODEL_VERSION
   if (modelVersion === undefined) {
     console.error('please provide model version requirement')
+    process.exit(1)
+  }
+
+  const version = process.env.VERSION
+  if (version === undefined) {
+    console.error('please provide version requirement')
     process.exit(1)
   }
 
@@ -99,31 +91,52 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
-  let previewConfig = process.env.PREVIEW_CONFIG
+  let uploadConfig = process.env.UPLOAD_CONFIG
+  if (uploadConfig === undefined) {
+    uploadConfig = ''
+  }
 
+  let previewConfig = process.env.PREVIEW_CONFIG
   if (previewConfig === undefined) {
     // Use universal preview config
-    previewConfig = `*|${uploadUrl}/:workspace?file=:blobId.:format&size=:size`
+    previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
   }
+
+  let filesUrl = process.env.FILES_URL
+  if (filesUrl === undefined) {
+    filesUrl = `${uploadUrl}/:workspace/:filename?file=:blobId&workspace=:workspace`
+  }
+
+  const pushPublicKey = process.env.PUSH_PUBLIC_KEY
 
   const brandingUrl = process.env.BRANDING_URL
 
+  const linkPreviewUrl = process.env.LINK_PREVIEW_URL
+
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
+  const disableSignUp = process.env.DISABLE_SIGNUP
+
   const config = {
-    elasticUrl,
     storageAdapter,
     accountsUrl,
+    accountsUrlInternal,
     uploadUrl,
+    filesUrl,
     modelVersion,
+    version,
     gmailUrl,
     telegramUrl,
     rekoniUrl,
     calendarUrl,
     collaboratorUrl,
-    collaboratorApiUrl,
+    collaborator,
     brandingUrl,
-    previewConfig
+    previewConfig,
+    uploadConfig,
+    pushPublicKey,
+    disableSignUp,
+    linkPreviewUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

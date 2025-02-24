@@ -1,6 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test'
 import { CalendarPage } from '../calendar-page'
-import { DateDivided } from './types'
 import path from 'path'
 
 export class CommonTrackerPage extends CalendarPage {
@@ -26,7 +25,9 @@ export class CommonTrackerPage extends CalendarPage {
   inputKeepOriginalMoveIssuesModal = (): Locator =>
     this.page.locator('form[id="tracker:string:MoveIssues"] input[type="checkbox"]')
 
-  buttonMoreActions = (): Locator => this.page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
+  buttonMoreActions = (): Locator =>
+    this.page.locator('.popupPanel > .hulyHeader-container button[data-id="btnMoreActions"]')
+
   textActivityContent = (): Locator => this.page.locator('div.activityMessage div.content')
   linkInActivity = (): Locator => this.page.locator('div[id="activity:string:Activity"] a')
   inputCommentFile = (): Locator => this.page.locator('input#file')
@@ -34,15 +35,8 @@ export class CommonTrackerPage extends CalendarPage {
     this.page.locator('div[slot="header"] div.item div.name', { hasText: fileName })
 
   commentImg = (): Locator => this.page.locator('div.activityMessage div.content img')
-  inputFilterTitle = (): Locator => this.page.locator('div.selectPopup input[placeholder="Title"]')
-  buttonFilterApply = (): Locator => this.page.locator('div.selectPopup button[type="button"]', { hasText: 'Apply' })
-  buttonClearFilters = (): Locator => this.page.locator('button > span', { hasText: 'Clear filters' })
   textCategoryHeader = (): Locator =>
     this.page.locator('div.category-container > div.categoryHeader span[class*="label"]')
-
-  buttonFilter = (): Locator => this.page.locator('div.search-start > div:first-child button')
-  selectPopupMenu = (filter: string): Locator =>
-    this.page.locator('div.selectPopup [class*="menu"]', { hasText: filter })
 
   popupCalendarButton = (dateStart: string): Locator =>
     this.page.locator('div.popup div.calendar button.day', { hasText: dateStart })
@@ -57,30 +51,9 @@ export class CommonTrackerPage extends CalendarPage {
     this.page.locator('div.date-popup-container div.input:first-child span.digit:nth-child(5)')
 
   submitDatePopup = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
-  filterButton = (index: number): Locator => this.page.locator(`div.filter-section button:nth-child(${index})`)
-  calendarDay = (daySelector: string): Locator => this.page.locator(`div.popup div.calendar button.day${daySelector}`)
-  firstInputFirstDigit = (): Locator =>
-    this.page.locator('div.date-popup-container div.input:first-child span.digit:first-child')
-
-  firstInputThirdDigit = (): Locator =>
-    this.page.locator('div.date-popup-container div.input:first-child span.digit:nth-child(3)')
-
-  firstInputFifthDigit = (): Locator =>
-    this.page.locator('div.date-popup-container div.input:first-child span.digit:nth-child(5)')
-
-  lastInputFirstDigit = (): Locator =>
-    this.page.locator('div.date-popup-container div.input:last-child span.digit:first-child')
-
-  lastInputThirdDigit = (): Locator =>
-    this.page.locator('div.date-popup-container div.input:last-child span.digit:nth-child(3)')
-
-  lastInputFifthDigit = (): Locator =>
-    this.page.locator('div.date-popup-container div.input:last-child span.digit:nth-child(5)')
-
-  submitButton = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
 
   trackerApplicationButton = (): Locator => this.page.locator('[id="app-tracker\\:string\\:TrackerApplication"]')
-  componentsLink = (): Locator => this.page.locator('text=Components')
+  componentsLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Components')
   createComponentButton = (): Locator => this.page.getByRole('button', { name: 'Component', exact: true })
   componentNameInput = (): Locator => this.page.locator('[placeholder="Component\\ name"]')
   createComponentConfirmButton = (): Locator => this.page.locator('button:has-text("Create component")')
@@ -90,13 +63,17 @@ export class CommonTrackerPage extends CalendarPage {
   createIssueButton = (): Locator => this.page.locator('form button:has-text("Create issue")')
   componentName = (componentName: string): Locator => this.page.locator(`text=${componentName}`)
   panelSelector = (panel: string): Locator => this.page.locator(`text="${panel}"`)
-  viewButton = (): Locator => this.page.locator('button:has-text("View")')
+  viewButton = (): Locator => this.page.locator('button[data-id="btn-viewOptions"]')
   firstOptionButton = (): Locator => this.page.locator('.antiCard >> button >> nth=0')
   assigneeMenuItem = (): Locator => this.page.locator('.menu-item:has-text("Assignee")')
-  header = (): Locator => this.page.getByText('Issues All Active Backlog')
-  filter = (): Locator => this.page.getByRole('button', { name: 'Filter' })
-  view = (): Locator => this.page.getByRole('button', { name: 'View' })
-  showMore = (): Locator => this.page.getByRole('button', { name: 'Show' })
+  shouldShowAllToggle = (): Locator =>
+    this.page.locator('.antiCard.menu .antiCard-menu__item:has-text("Show empty groups")')
+
+  header = (): Locator =>
+    this.page.locator('button.hulyBreadcrumb-container > span.hulyBreadcrumb-label', { hasText: 'Issues' })
+
+  view = (): Locator => this.page.locator('.hulyHeader-buttonsGroup > button[data-id="btn-viewOptions"]')
+  showMore = (): Locator => this.page.locator('.hulyHeader-buttonsGroup > button[data-id="btn-viewSetting"]')
   task1 = (): Locator => this.page.getByRole('link', { name: 'Welcome to Huly! 🌟' })
   task2 = (): Locator => this.page.getByRole('link', { name: 'Create your first Project 📌' })
   task3 = (): Locator => this.page.getByRole('link', { name: 'Create your first Issue 📝' })
@@ -113,20 +90,31 @@ export class CommonTrackerPage extends CalendarPage {
     await this.viewButton().click()
     await this.firstOptionButton().click()
     await this.assigneeMenuItem().click()
+    await this.closePopup()
+  }
+
+  async closePopup (): Promise<void> {
+    while (await this.page.locator('.popup').isVisible()) {
+      await this.page.keyboard.press('Escape')
+    }
+  }
+
+  async openViewOptionsAndToggleShouldShowAll (): Promise<void> {
+    await this.viewButton().click()
+    await this.shouldShowAllToggle().click()
     await this.page.keyboard.press('Escape')
   }
 
   async verifyViewOption (panel: string, viewletSelector: string): Promise<void> {
     await this.page.click(`text="${panel}"`)
     const viewlet = this.page.locator(viewletSelector)
-    await expect(viewlet).toHaveClass(/selected/)
+    await expect(viewlet.locator('input')).toBeChecked()
     await this.viewButton().click()
     await expect(this.firstOptionButton()).toContainText('Assignee')
-    await this.page.keyboard.press('Escape')
+    await this.closePopup()
   }
 
   async navigateToComponents (PlatformURI: string): Promise<void> {
-    await this.trackerApplicationButton().click()
     await this.componentsLink().first().click()
     await expect(this.page).toHaveURL(
       `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
@@ -156,80 +144,6 @@ export class CommonTrackerPage extends CalendarPage {
     await this.page.click(`.selectPopup button:has-text("${componentName}")`)
     await this.createIssueButton().click()
     await this.page.waitForSelector('form.antiCard', { state: 'detached' })
-  }
-
-  async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
-    await this.buttonFilter().click()
-    await this.selectPopupMenu(filter).click()
-
-    if (filterSecondLevel !== null && typeof filterSecondLevel === 'string') {
-      switch (filter) {
-        case 'Title':
-          await this.inputFilterTitle().fill(filterSecondLevel)
-          await this.buttonFilterApply().click()
-          break
-        case 'Labels':
-          await this.selectFromDropdown(this.page, filterSecondLevel)
-          break
-        default:
-          await this.selectPopupMenu(filterSecondLevel).click()
-      }
-    }
-  }
-
-  async checkFilter (filter: string, filterSecondLevel?: string, filterThirdLevel?: string): Promise<void> {
-    await expect(this.filterButton(1)).toHaveText(filter)
-    if (filterSecondLevel !== undefined) {
-      await expect(this.filterButton(2)).toContainText(filterSecondLevel)
-    }
-    if (filterThirdLevel !== undefined) {
-      await expect(this.filterButton(3)).toContainText(filterThirdLevel)
-    }
-  }
-
-  async updateFilterDimension (
-    filterSecondLevel: string,
-    dateStart?: string,
-    needToOpenCalendar: boolean = false
-  ): Promise<void> {
-    await this.filterButton(2).click()
-    await this.selectPopupMenu(filterSecondLevel).click()
-
-    if (dateStart !== undefined) {
-      if (needToOpenCalendar) {
-        await this.filterButton(3).click()
-      }
-      await this.calendarDay(dateStart === 'Today' ? '.today' : `:has-text("${dateStart}")`).click()
-    }
-  }
-
-  async fillBetweenDate (dateStart: DateDivided, dateEnd: DateDivided): Promise<void> {
-    // dateStart - day
-    await this.firstInputFirstDigit().click({ delay: 100, position: { x: 1, y: 1 } })
-    await this.firstInputFirstDigit().pressSequentially(dateStart.day)
-
-    // dateStart - month
-    await this.firstInputThirdDigit().click({ delay: 100, position: { x: 1, y: 1 } })
-    await this.firstInputThirdDigit().pressSequentially(dateStart.month)
-
-    // dateStart - year
-    await this.firstInputFifthDigit().click({ delay: 100, position: { x: 1, y: 1 } })
-    await this.firstInputFifthDigit().pressSequentially(dateStart.year)
-
-    // dateEnd - day
-    await this.lastInputFirstDigit().click({ delay: 100, position: { x: 1, y: 1 } })
-    await this.lastInputFirstDigit().pressSequentially(dateEnd.day)
-
-    // dateEnd - month
-    await this.lastInputThirdDigit().click({ delay: 100, position: { x: 1, y: 1 } })
-    await this.lastInputThirdDigit().pressSequentially(dateEnd.month)
-
-    // dateEnd - year
-    await this.lastInputFifthDigit().click({ delay: 100, position: { x: 1, y: 1 } })
-    await this.lastInputFifthDigit().pressSequentially(dateEnd.year)
-
-    // Submit
-    await this.submitButton().click({ delay: 100 })
   }
 
   async addComment (comment: string): Promise<void> {
@@ -294,7 +208,7 @@ export class CommonTrackerPage extends CalendarPage {
 
   async checkIfMainPanelIsVisible (): Promise<void> {
     await expect(this.header()).toBeVisible({ timeout: 60000 })
-    await expect(this.filter()).toBeVisible()
+    await expect(this.buttonFilter()).toBeVisible()
     await expect(this.view()).toBeVisible()
     await expect(this.showMore()).toBeVisible()
   }

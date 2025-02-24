@@ -14,10 +14,19 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
-  import { Asset, IntlString, translate } from '@hcengineering/platform'
+  import { Asset, IntlString, translateCB } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { AnySvelteComponent, Button, Label, SearchEdit, showPopup, IconAdd, themeStore } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Breadcrumb,
+    Button,
+    Header,
+    IconAdd,
+    SearchInput,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
@@ -33,7 +42,7 @@
   export let onTag: ((tag: TagElement) => void) | undefined = undefined
 
   let keyTitle: string
-  $: translate(item, {}, $themeStore.language).then((t) => {
+  $: translateCB(item, {}, $themeStore.language, (t) => {
     keyTitle = t.toLowerCase()
   })
 
@@ -86,31 +95,26 @@
     (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) -
       (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0) ?? 0
 
-    // $: twoRows = $deviceInfo.twoRows
+  let visibleCategories: TagCategory[] = []
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label label={title} /></span>
-  </div>
+<Header adaptive={'disabled'}>
+  <Breadcrumb {icon} label={title} size={'large'} isCurrent />
 
-  <div class="ac-header-full medium-gap mb-1">
-    <slot />
-    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit
+  <svelte:fragment slot="search">
+    <SearchInput
       bind:value={search}
+      collapsed
       on:change={() => {
         updateResultQuery(search, category)
       }}
     />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-  </div>
-</div>
-
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    <slot />
+    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
+  </svelte:fragment>
+</Header>
 <CategoryBar
   {targetClass}
   {category}
@@ -118,6 +122,9 @@
   on:change={(evt) => {
     category = evt.detail.category ?? undefined
     updateResultQuery(search, category)
+  }}
+  on:categories={(evt) => {
+    visibleCategories = evt.detail
   }}
 />
 <TableBrowser
@@ -130,12 +137,16 @@
       props: { edit: true, keyTitle },
       sortingKey: 'title'
     },
-    {
-      key: '$lookup.category',
-      presenter: tags.component.CategoryPresenter,
-      sortingKey: 'category',
-      label: tags.string.CategoryLabel
-    },
+    ...(visibleCategories.length > 1
+      ? [
+          {
+            key: '$lookup.category',
+            presenter: tags.component.CategoryPresenter,
+            sortingKey: 'category',
+            label: tags.string.CategoryLabel
+          }
+        ]
+      : []),
     {
       key: '',
       presenter: tags.component.TagElementCountPresenter,

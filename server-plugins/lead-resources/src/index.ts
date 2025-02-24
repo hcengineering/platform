@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import { PersonAccount } from '@hcengineering/contact'
-import core, { AccountRole, concatLink, Doc, Ref, Tx, TxCreateDoc, TxUpdateDoc } from '@hcengineering/core'
+import core, { AccountRole, concatLink, Doc, Tx } from '@hcengineering/core'
 import lead, { Lead, leadId } from '@hcengineering/lead'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
@@ -27,9 +26,31 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const lead = doc as Lead
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content`
+  const path = `${workbenchId}/${control.workspace.url}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content`
   const link = concatLink(front, path)
   return `<a href="${link}">${lead.title}</a>`
+}
+
+export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  // Fill owner of default space with the very first owner account creating a social identity
+  const account = control.ctx.contextData.account
+  if (account.role !== AccountRole.Owner) return []
+
+  const defaultSpace = (await control.findAll(control.ctx, lead.class.Funnel, { _id: lead.space.DefaultFunnel }))[0]
+
+  if (defaultSpace === undefined) return []
+
+  const owners = defaultSpace.owners ?? []
+
+  if (owners.length === 0 || (owners.length === 1 && owners[0] === core.account.System)) {
+    const setOwnerTx = control.txFactory.createTxUpdateDoc(defaultSpace._class, defaultSpace.space, defaultSpace._id, {
+      owners: [account.primarySocialId]
+    })
+
+    return [setOwnerTx]
+  }
+
+  return []
 }
 
 /**
@@ -40,53 +61,6 @@ export async function leadTextPresenter (doc: Doc): Promise<string> {
   return `LEAD-${lead.number}`
 }
 
-/**
- * @public
- */
-export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  let ownerId: Ref<PersonAccount> | undefined
-  if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
-    const createTx = tx as TxCreateDoc<PersonAccount>
-
-    if (createTx.attributes.role === AccountRole.Owner) {
-      ownerId = createTx.objectId
-    }
-  } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
-    const updateTx = tx as TxUpdateDoc<PersonAccount>
-
-    if (updateTx.operations.role === AccountRole.Owner) {
-      ownerId = updateTx.objectId
-    }
-  }
-
-  if (ownerId === undefined) {
-    return []
-  }
-
-  const targetFunnel = (
-    await control.findAll(lead.class.Funnel, {
-      _id: lead.space.DefaultFunnel
-    })
-  )[0]
-
-  if (targetFunnel === undefined) {
-    return []
-  }
-
-  if (
-    targetFunnel.owners === undefined ||
-    targetFunnel.owners.length === 0 ||
-    targetFunnel.owners[0] === core.account.System
-  ) {
-    const updTx = control.txFactory.createTxUpdateDoc(lead.class.Funnel, targetFunnel.space, targetFunnel._id, {
-      owners: [ownerId]
-    })
-    return [updTx]
-  }
-
-  return []
-}
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
@@ -94,6 +68,6 @@ export default async () => ({
     LeadTextPresenter: leadTextPresenter
   },
   trigger: {
-    OnWorkspaceOwnerAdded
+    OnSocialIdentityCreate
   }
 })

@@ -16,7 +16,9 @@
   import { createEventDispatcher } from 'svelte'
   import { Doc, Ref, Space, Class } from '@hcengineering/core'
   import { Button, Label, IconDownOutline, tooltip } from '@hcengineering/ui'
-  import textEditorPlugin, { IsEmptyContentExtension, TextEditor } from '@hcengineering/text-editor'
+  import textEditorPlugin from '@hcengineering/text-editor'
+  import { IsEmptyContentExtension, TextEditor } from '@hcengineering/text-editor-resources'
+
   import type { AccordionItem } from '..'
   import AttachmentStyledBox from './AttachmentStyledBox.svelte'
 

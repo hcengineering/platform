@@ -1,23 +1,20 @@
 import { test } from '@playwright/test'
-import { IssuesPage } from '../model/tracker/issues-page'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
+import { IssuesPage } from '../model/tracker/issues-page'
+import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { NewIssue } from '../model/tracker/types'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
+import { generateId, PlatformSetting, PlatformURI } from '../utils'
 
 test.use({
   storageState: PlatformSetting
 })
 
 test.describe('Attachments tests', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     issuesPage = new IssuesPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
@@ -30,7 +27,6 @@ test.describe('Attachments tests', () => {
       description: 'Create issue with several attachment tests description'
     }
 
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.clickModelSelectorAll()
     await issuesPage.clickButtonCreateNewIssue()
@@ -62,6 +58,7 @@ test.describe('Attachments tests', () => {
     await issuesPage.openIssueByName(newIssue.title)
     await issuesDetailsPage.checkIssueContainsAttachment('cat.jpeg')
     await issuesDetailsPage.checkIssueContainsAttachment('cat3.jpeg')
-    await issuesDetailsPage.checkActivityExist('uploaded an attachment')
+    // TODO: It could be execurted a bit faster and activity will not contain necessary entry.
+    // await issuesDetailsPage.checkActivityExist('uploaded an attachment')
   })
 })

@@ -21,7 +21,7 @@
   import { Request, RequestType, Staff, timeToTzDate } from '@hcengineering/hr'
   import { translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
   import ui, {
     Button,
     DateRangePresenter,

@@ -33,6 +33,7 @@
     sort: {
       modifiedOn: SortingOrder.Descending
     },
+    showArchived: true,
     limit: 200
   }
 
@@ -51,6 +52,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {

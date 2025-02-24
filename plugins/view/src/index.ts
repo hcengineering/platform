@@ -16,7 +16,7 @@
 
 import { Class, Doc, DocumentQuery, FindOptions, Mixin, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
-import { AnyComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui'
+import { AnyComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui/src/types'
 import {
   Action,
   ActionCategory,
@@ -91,6 +91,7 @@ const view = plugin(viewId, {
     ObjectPresenter: '' as Ref<Mixin<ObjectPresenter>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectEditorFooter: '' as Ref<Mixin<ObjectEditorFooter>>,
+    ObjectPanelFooter: '' as Ref<Mixin<ObjectEditorFooter>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
     ObjectTitle: '' as Ref<Mixin<ObjectTitle>>,
@@ -126,6 +127,7 @@ const view = plugin(viewId, {
   action: {
     Delete: '' as Ref<Action>,
     Archive: '' as Ref<Action>,
+    UnArchive: '' as Ref<Action>,
     Join: '' as Ref<Action>,
     Leave: '' as Ref<Action>,
     Move: '' as Ref<Action>,
@@ -164,7 +166,9 @@ const view = plugin(viewId, {
     IconWithEmoji: '' as AnyComponent,
     AttachedDocPanel: '' as AnyComponent,
     ObjectMention: '' as AnyComponent,
-    SearchSelector: '' as AnyComponent
+    SearchSelector: '' as AnyComponent,
+    FoldersBrowser: '' as AnyComponent,
+    PersonIdPresenter: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset
@@ -209,7 +213,11 @@ const view = plugin(viewId, {
     Unpin: '' as IntlString,
     Join: '' as IntlString,
     Leave: '' as IntlString,
-    Copied: '' as IntlString
+    Copied: '' as IntlString,
+    And: '' as IntlString,
+    Title: '' as IntlString,
+    DeleteObject: '' as IntlString,
+    DeleteObjectConfirm: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -249,7 +257,15 @@ const view = plugin(viewId, {
     Join: '' as Asset,
     Leave: '' as Asset,
     Copy: '' as Asset,
-    TodoList: '' as Asset
+    TodoList: '' as Asset,
+    DetailsFilled: '' as Asset,
+    Translate: '' as Asset,
+    Undo: '' as Asset,
+    Video: '' as Asset,
+    Audio: '' as Asset,
+    File: '' as Asset,
+    PinTack: '' as Asset,
+    Feather: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
@@ -352,7 +368,8 @@ const view = plugin(viewId, {
 
       // If defined, documents will be set into value
       valueKey?: string
-    }>
+    }>,
+    Delete: '' as ViewAction
   }
 })
 export default view

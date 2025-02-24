@@ -1,0 +1,24 @@
+{
+  "status": {
+    "LoadingPlugin": "Caricamento del plugin {plugin}...",
+    "UnknownError": "Errore sconosciuto: {message}",
+    "InvalidId": "Id non valido: {id}",
+    "BadRequest": "Richiesta non valida",
+    "Forbidden": "Proibito",
+    "ExpiredLink": "Questo link di invito è scaduto",
+    "Unauthorized": "Non autorizzato",
+    "UnknownMethod": "Metodo sconosciuto: {method}",
+    "InternalServerError": "Errore interno del server",
+    "MaintenanceWarning": "Manutenzione programmata tra {time, plural, =1 {meno di un minuto} other {# minuti}}",
+    "AccountNotFound": "Account non trovato",
+    "AccountNotConfirmed": "Account non confermato",
+    "WorkspaceNotFound": "Spazio di lavoro non trovato",
+    "InvalidPassword": "Password non valida",
+    "AccountAlreadyExists": "Account già esistente",
+    "WorkspaceRateLimit": "Il server è occupato, attendere un momento e riprovare",
+    "AccountAlreadyConfirmed": "Account già confermato",
+    "WorkspaceAlreadyExists": "Spazio di lavoro già esistente",
+    "InvalidOtp": "Codice non valido",
+    "InviteNotFound": "Invito con email:{email} non trovato."
+  }
+}

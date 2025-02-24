@@ -14,27 +14,25 @@
 // limitations under the License.
 //
 
-import contact from '@hcengineering/contact'
 import core, {
-  type Client as CoreClient,
   type BackupClient,
-  DOMAIN_TX,
-  type Tx,
-  type WorkspaceId,
-  type Ref,
+  type Class,
+  type Client as CoreClient,
   type Doc,
-  DOMAIN_DOC_INDEX_STATE
+  DOMAIN_TX,
+  type Ref,
+  type Tx,
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import { getWorkspaceDB } from '@hcengineering/mongo'
-import { MongoClient } from 'mongodb'
-import { generateModelDiff, printDiff } from './mdiff'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { connect } from '@hcengineering/server-tool'
+import { generateModelDiff, printDiff } from './mdiff'
 
-export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, rawTxes: Tx[]): Promise<void> {
-  const client = new MongoClient(mongoUrl)
+export async function diffWorkspace (mongoUrl: string, dbName: string, rawTxes: Tx[]): Promise<void> {
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspace)
+    const _client = await client.getClient()
+    const db = getWorkspaceMongoDB(_client, dbName)
 
     console.log('diffing transactions...')
 
@@ -43,7 +41,7 @@ export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, r
       .find<Tx>({
       objectSpace: core.space.Model,
       modifiedBy: core.account.System,
-      objectClass: { $ne: contact.class.PersonAccount }
+      objectClass: { $ne: 'contact:class:PersonAccount' } // Note: we may keep these transactions in old workspaces for history purposes
     })
       .toArray()
 
@@ -51,7 +49,7 @@ export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, r
       return (
         tx.objectSpace === core.space.Model &&
         tx.modifiedBy === core.account.System &&
-        (tx as any).objectClass !== contact.class.PersonAccount
+        (tx as any).objectClass !== 'contact:class:PersonAccount'
       )
     })
 
@@ -68,55 +66,31 @@ export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, r
       }
     }
   } finally {
-    await client.close()
+    client.close()
   }
 }
 
 export async function updateField (
-  mongoUrl: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceUuid,
   transactorUrl: string,
   cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
 ): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
-  const client = new MongoClient(mongoUrl)
-  let valueToPut: string | number = cmd.value
-  if (cmd.type === 'number') valueToPut = parseFloat(valueToPut)
-  try {
-    try {
-      await client.connect()
-      const db = getWorkspaceDB(client, workspaceId)
-      await db
-        .collection(cmd.domain)
-        .updateOne({ _id: cmd.objectId as Ref<Doc> }, { $set: { [cmd.attribute]: valueToPut } })
-    } finally {
-      await client.close()
-    }
-  } finally {
-    await connection.close()
-  }
-}
 
-export async function recreateElastic (
-  mongoUrl: string,
-  workspaceId: WorkspaceId,
-  transactorUrl: string
-): Promise<void> {
-  const client = new MongoClient(mongoUrl)
-  const connection = (await connect(transactorUrl, workspaceId, undefined, {
-    mode: 'backup'
-  })) as unknown as CoreClient & BackupClient
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
-    await db
-      .collection(DOMAIN_DOC_INDEX_STATE)
-      .updateMany({ _class: core.class.DocIndexState }, { $set: { stages: {} } })
-    await connection.sendForceClose()
+    const doc = await connection.findOne(cmd.objectClass as Ref<Class<Doc>>, { _id: cmd.objectId as Ref<Doc> })
+    if (doc === undefined) {
+      console.error('Document not found')
+      process.exit(1)
+    }
+    let valueToPut: string | number = cmd.value
+    if (cmd.type === 'number') valueToPut = parseFloat(valueToPut)
+    ;(doc as any)[cmd.attribute] = valueToPut
+
+    await connection.upload(connection.getHierarchy().getDomain(doc?._class), [doc])
   } finally {
-    await client.close()
     await connection.close()
   }
 }

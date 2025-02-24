@@ -14,10 +14,9 @@
 // limitations under the License.
 //
 
-import type { Plugin, Resource } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
+import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
-import { TypeMatchFunc } from '@hcengineering/server-notification'
+import { NotificationProviderFunc, TypeMatchFunc } from '@hcengineering/server-notification'
 import { TemplateFieldServerFunc } from '@hcengineering/server-templates'
 
 /**
@@ -29,13 +28,17 @@ export const serverTelegramId = 'server-telegram' as Plugin
  * @public
  */
 export default plugin(serverTelegramId, {
+  metadata: {
+    BotUrl: '' as Metadata<string>
+  },
   trigger: {
     OnMessageCreate: '' as Resource<TriggerFunc>
   },
   function: {
-    IsIncomingMessage: '' as TypeMatchFunc,
+    IsIncomingMessageTypeMatch: '' as TypeMatchFunc,
     FindMessages: '' as Resource<ObjectDDParticipantFunc>,
     GetCurrentEmployeeTG: '' as Resource<TemplateFieldServerFunc>,
-    GetIntegrationOwnerTG: '' as Resource<TemplateFieldServerFunc>
+    GetIntegrationOwnerTG: '' as Resource<TemplateFieldServerFunc>,
+    SendTelegramNotifications: '' as Resource<NotificationProviderFunc>
   }
 })

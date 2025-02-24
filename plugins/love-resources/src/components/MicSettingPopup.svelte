@@ -12,10 +12,12 @@
 
   void Room.getLocalDevices().then(async (devices) => {
     devices.forEach((device) => {
-      if (device.kind === 'audiooutput') {
-        speakers.push({ label: device.label, id: device.deviceId })
-      } else if (device.kind === 'audioinput') {
-        mics.push({ label: device.label, id: device.deviceId })
+      if (device.deviceId !== 'default') {
+        if (device.kind === 'audiooutput') {
+          speakers.push({ label: device.label, id: device.deviceId })
+        } else if (device.kind === 'audioinput') {
+          mics.push({ label: device.label, id: device.deviceId })
+        }
       }
     })
     if (speakers.length === 0) {
@@ -43,7 +45,7 @@
     if (myPreferences !== undefined) {
       await client.update(myPreferences, { noiseCancellation: value })
     } else {
-      const space = getCurrentAccount()._id as string as Ref<Space>
+      const space = getCurrentAccount().uuid as unknown as Ref<Space>
       await client.createDoc(love.class.DevicesPreference, space, {
         attachedTo: space,
         noiseCancellation: value,

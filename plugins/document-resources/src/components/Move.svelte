@@ -21,6 +21,7 @@
   import { createEventDispatcher } from 'svelte'
   import document from '../plugin'
   import TeamspacePresenter from './teamspace/TeamspacePresenter.svelte'
+  import { moveDocument } from '../utils'
 
   export let value: Document
 
@@ -28,7 +29,7 @@
   const dispatch = createEventDispatcher()
 
   let space: Ref<Teamspace> = value.space
-  let parent: Ref<Document> = value.attachedTo
+  let parent: Ref<Document> = value.parent
 
   let children: Ref<Document>[] = []
   $: void updateChildren(value)
@@ -40,15 +41,12 @@
   async function save (): Promise<void> {
     const ops = client.apply(value._id)
 
-    await ops.update(value, {
-      space,
-      attachedTo: parent ?? document.ids.NoParent
-    })
+    await moveDocument(value, space, parent ?? document.ids.NoParent)
 
     if (space !== value.space) {
       const children = await findChildren(value)
       for (const child of children) {
-        await client.updateDoc(document.class.Document, value.space, child, {
+        await ops.updateDoc(document.class.Document, value.space, child, {
           space
         })
       }
@@ -60,15 +58,15 @@
   async function findChildren (doc: Document): Promise<Array<Ref<Document>>> {
     const documents = await client.findAll(
       document.class.Document,
-      { space: doc.space, attachedTo: { $ne: document.ids.NoParent } },
-      { projection: { _id: 1, attachedTo: 1 } }
+      { space: doc.space, parent: { $ne: document.ids.NoParent } },
+      { projection: { _id: 1, parent: 1 } }
     )
 
     const byParent = new Map<Ref<Document>, Array<Ref<Document>>>()
     for (const document of documents) {
-      const group = byParent.get(document.attachedTo) ?? []
+      const group = byParent.get(document.parent) ?? []
       group.push(document._id)
-      byParent.set(document.attachedTo, group)
+      byParent.set(document.parent, group)
     }
 
     const result: Ref<Document>[] = []
@@ -85,7 +83,7 @@
     return result
   }
 
-  $: canSave = space !== value.space || parent !== value.attachedTo
+  $: canSave = space !== value.space || parent !== value.parent
 </script>
 
 <Card

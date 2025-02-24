@@ -1,13 +1,8 @@
-import { MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
-import { createRawMongoDBAdapter } from '@hcengineering/mongo'
-import { S3Service, type S3Config } from '@hcengineering/s3'
-import {
-  AggregatorStorageAdapter,
-  StorageAdapter,
-  StorageConfiguration,
-  buildStorage,
-  type StorageConfig
-} from '@hcengineering/server-core'
+import { CONFIG_KIND as DATALAKE_CONFIG_KIND, DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
+import { CONFIG_KIND as MINIO_CONFIG_KIND, MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
+import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
+import { StorageAdapter, StorageConfiguration, type StorageConfig } from '@hcengineering/server-core'
+import { FallbackStorageAdapter, buildStorage } from './fallback'
 
 /*
 
@@ -18,8 +13,6 @@ import {
   * kind - an storage kind minior/s3 for now.
   * name - a symbolic name for provider, name could be ommited in case kind will be used as name.
   * uri - an storage URI with encoded parameters.
-  * contentTypes - a comma separated list of content type patterns. Like 'image/*,video/gif' will match all image/* and video/gif formats.
-  So * will be replaced to `.*` for regexp
 
   Last one is used as default one, or one with conrent type matched will be used.
 
@@ -29,10 +22,10 @@ import {
 
 */
 
-export function storageConfigFromEnv (): StorageConfiguration {
+export function storageConfigFromEnv (configEnv?: string): StorageConfiguration {
   const storageConfig: StorageConfiguration = { default: '', storages: [] }
 
-  const storageEnv = process.env.STORAGE_CONFIG
+  const storageEnv = configEnv ?? process.env.STORAGE_CONFIG
   if (storageEnv !== undefined) {
     parseStorageEnv(storageEnv, storageConfig)
   }
@@ -50,7 +43,7 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
     if (st.trim().length === 0 || !st.includes('|')) {
       throw new Error('Invalid storage config:' + st)
     }
-    let [kindName, url, contentTypes] = st.split('|')
+    let [kindName, url] = st.split('|')
     let [kind, name] = kindName.split(',')
     if (name == null) {
       name = kind
@@ -66,8 +59,7 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
       kind,
       name,
       endpoint: (hasProtocol ? uri.protocol + '//' : '') + uri.hostname, // Port should go away
-      port: uri.port !== '' ? parseInt(uri.port) : undefined,
-      contentTypes: contentTypes !== undefined ? contentTypes.split(',') : undefined
+      port: uri.port !== '' ? parseInt(uri.port) : undefined
     }
 
     // Add all extra parameters
@@ -83,22 +75,31 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
   }
 }
 
-export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: string): AggregatorStorageAdapter {
-  return buildStorage(config, createRawMongoDBAdapter(dbUrl), (kind, config): StorageAdapter => {
-    if (kind === MinioService.config) {
-      const c = config as MinioConfig
-      if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
-        throw new Error('One of endpoint/accessKey/secretKey values are not specified')
-      }
-      return new MinioService(c)
-    } else if (kind === S3Service.config) {
-      const c = config as S3Config
-      if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
-        throw new Error('One of endpoint/accessKey/secretKey values are not specified')
-      }
-      return new S3Service(c)
-    } else {
-      throw new Error('Unsupported storage kind:' + kind)
+export function createStorageFromConfig (config: StorageConfig): StorageAdapter {
+  const kind = config.kind
+  if (kind === MINIO_CONFIG_KIND) {
+    const c = config as MinioConfig
+    if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
+      throw new Error('One of endpoint/accessKey/secretKey values are not specified')
     }
-  })
+    return new MinioService(c)
+  } else if (kind === S3_CONFIG_KIND) {
+    const c = config as S3Config
+    if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
+      throw new Error('One of endpoint/accessKey/secretKey values are not specified')
+    }
+    return new S3Service(c)
+  } else if (kind === DATALAKE_CONFIG_KIND) {
+    const c = config as DatalakeConfig
+    if (c.endpoint == null) {
+      throw new Error('Endpoint value is not specified')
+    }
+    return new DatalakeService(c)
+  } else {
+    throw new Error('Unsupported storage kind:' + kind)
+  }
+}
+
+export function buildStorageFromConfig (config: StorageConfiguration): FallbackStorageAdapter {
+  return buildStorage(config, createStorageFromConfig)
 }

@@ -15,14 +15,13 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { Doc, getCurrentAccount, type WithLookup } from '@hcengineering/core'
-  import { getBlobHref, getClient } from '@hcengineering/presentation'
+  import { getClient, getFileUrl } from '@hcengineering/presentation'
   import { Icon, IconMoreV, Menu, showPopup } from '@hcengineering/ui'
   import { AttachmentGalleryPresenter } from '..'
   import FileDownload from './icons/FileDownload.svelte'
 
   export let attachments: WithLookup<Attachment>[]
   let selectedFileNumber: number | undefined
-  const myAccId = getCurrentAccount()._id
   const client = getClient()
 
   const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
@@ -31,7 +30,7 @@
       Menu,
       {
         actions: [
-          ...(myAccId === object.modifiedBy
+          ...(getCurrentAccount().socialIds.includes(object.modifiedBy)
             ? [
                 {
                   label: attachment.string.DeleteFile,
@@ -56,12 +55,11 @@
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <AttachmentGalleryPresenter value={attachment}>
         <svelte:fragment slot="rowMenu">
+          {@const href = getFileUrl(attachment.file, attachment.name)}
           <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
-            {#await getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name) then href}
-              <a {href} download={attachment.name}>
-                <Icon icon={FileDownload} size={'small'} />
-              </a>
-            {/await}
+            <a {href} download={attachment.name}>
+              <Icon icon={FileDownload} size={'small'} />
+            </a>
             <div class="eAttachmentCellMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
               <IconMoreV size={'small'} />
             </div>

@@ -12,12 +12,10 @@
     "esModuleInterop": true,
     "declarationMap": true,
     "sourceMap": true,
-    "lib": [
-      "esnext",
-      "dom"
-    ],
+    "lib": ["esnext", "dom"],
     "incremental": true,
     "types": ["jest"],
-    "isolatedModules": true
+    "isolatedModules": true,
+    
   }
 }

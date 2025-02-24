@@ -15,7 +15,7 @@
 //
 
 import type { Contact } from '@hcengineering/contact'
-import type { Attribute, Class, Doc, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
+import type { Attribute, Class, MarkupBlobRef, Doc, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
 import { Mixin } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -36,7 +36,7 @@ export interface Funnel extends Project {
 export interface Customer extends Contact {
   leads?: number
 
-  description: string
+  customerDescription: MarkupBlobRef | null
 }
 
 /**
@@ -80,6 +80,7 @@ const lead = plugin(leadId, {
   },
   icon: {
     Funnel: '' as Asset,
+    Funnels: '' as Asset,
     Lead: '' as Asset,
     LeadApplication: '' as Asset,
     CreateCustomer: '' as Asset
@@ -102,3 +103,5 @@ const lead = plugin(leadId, {
  * @public
  */
 export default lead
+
+export * from './analytics'

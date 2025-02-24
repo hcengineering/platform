@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import notification, { type NotificationType } from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
-import type { BuildModelKey, Viewlet, ViewletDescriptor } from '@hcengineering/view'
+import type { BuildModelKey, KeyFilterPreset, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 import questions from '@hcengineering/model-questions'
 import contact from '@hcengineering/contact'
 import tracker from '@hcengineering/model-tracker'
@@ -40,7 +40,6 @@ import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import training from './plugin'
 import {
-  TSequence,
   TTraining,
   TTrainingAttempt,
   TTrainingAttemptState,
@@ -91,8 +90,6 @@ function defineBase (builder: Builder): void {
     },
     presenter: training.component.TrainingRequestNotificationPresenter
   })
-
-  builder.createModel(TSequence)
 }
 
 function defineSpaceType (builder: Builder): void {
@@ -587,10 +584,7 @@ function defineTrainingRequest (builder: Builder): void {
       group: training.notification.TrainingGroup,
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: training.class.TrainingRequest,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: '{sender} sent you a training request {doc}',
         htmlTemplate: '<p><b>{sender}</b> sent you a training request {doc}</p>',
@@ -665,9 +659,19 @@ function defineTrainingAttempt (builder: Builder): void {
     sortingKey: 'state',
     displayProps: { align: 'center' }
   }
-  const columnOwner: BuildModelKey = {
-    ...columns.owner,
-    key: 'owner'
+  const columnTrainee: BuildModelKey = {
+    key: 'owner',
+    label: training.string.TrainingRequestTrainee,
+    presenter: contacts.component.EmployeePresenter,
+    props: { shouldShowName: true },
+    displayProps: { align: 'center' }
+  }
+
+  const columnTraineeFilter: KeyFilterPreset = {
+    _class: training.class.TrainingAttempt,
+    component: contacts.component.EmployeeFilter,
+    key: 'owner',
+    label: training.string.TrainingRequestTrainee
   }
 
   defineTableBrowserViewletDescriptor(
@@ -699,7 +703,7 @@ function defineTrainingAttempt (builder: Builder): void {
       columnScore,
       'createdOn',
       'submittedOn',
-      columnOwner
+      columnTrainee
     ],
     configOptions: {
       strict: true,
@@ -726,7 +730,7 @@ function defineTrainingAttempt (builder: Builder): void {
   })
 
   builder.mixin(training.class.TrainingAttempt, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['state', 'owner', 'submittedOn'] as Array<keyof TrainingAttempt>,
+    filters: ['state', 'submittedOn', columnTraineeFilter] as Array<keyof TrainingAttempt>,
     strict: true
   })
 

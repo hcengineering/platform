@@ -15,7 +15,7 @@
 
 import { chunterId, type ThreadMessage } from '@hcengineering/chunter'
 import core, {
-  type Account,
+  type PersonId,
   TxOperations,
   type Class,
   type Doc,
@@ -33,7 +33,14 @@ import {
 } from '@hcengineering/model'
 import activity, { migrateMessagesSpace, DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
-import contactPlugin, { type PersonAccount } from '@hcengineering/contact'
+import {
+  getAllEmployeesPrimarySocialStrings,
+  pickPrimarySocialId,
+  getSocialStringsByEmployee,
+  includesAny
+} from '@hcengineering/contact'
+import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
+import { type DocUpdateMessage } from '@hcengineering/activity'
 
 import chunter from './plugin'
 import { DOMAIN_CHUNTER } from './index'
@@ -43,27 +50,29 @@ export const DOMAIN_COMMENT = 'comment' as Domain
 export async function createDocNotifyContexts (
   client: MigrationUpgradeClient,
   tx: TxOperations,
-  attachedTo: Ref<Doc>,
-  attachedToClass: Ref<Class<Doc>>
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  objectSpace: Ref<Space>
 ): Promise<void> {
-  const users = await client.findAll(core.class.Account, {})
+  const socialStringsByEmployee = getSocialStringsByEmployee(tx)
+  const allSocialStrings = Object.values(socialStringsByEmployee).flat()
+
   const docNotifyContexts = await client.findAll(notification.class.DocNotifyContext, {
-    user: { $in: users.map((it) => it._id) },
-    attachedTo,
-    attachedToClass
+    user: { $in: allSocialStrings },
+    objectId
   })
-  for (const user of users) {
-    if (user._id === core.account.System) {
-      continue
-    }
-    const docNotifyContext = docNotifyContexts.find((it) => it.user === user._id)
+
+  for (const userSocialStrings of Object.values(socialStringsByEmployee)) {
+    const docNotifyContext = docNotifyContexts.find((it) => userSocialStrings.includes(it.user))
 
     if (docNotifyContext === undefined) {
       await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-        user: user._id,
-        attachedTo,
-        attachedToClass,
-        hidden: false
+        user: pickPrimarySocialId(userSocialStrings),
+        objectId,
+        objectClass,
+        objectSpace,
+        hidden: false,
+        isPinned: false
       })
     }
   }
@@ -93,7 +102,7 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
           topic: 'General Channel',
           private: false,
           archived: false,
-          members: await getAllEmployeeAccounts(tx),
+          members: await getAllEmployeesPrimarySocialStrings(tx),
           autoJoin: true
         },
         chunter.space.General
@@ -101,25 +110,19 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
     }
   }
 
-  await createDocNotifyContexts(client, tx, chunter.space.General, chunter.class.Channel)
-}
-
-async function getAllEmployeeAccounts (tx: TxOperations): Promise<Ref<PersonAccount>[]> {
-  const employees = await tx.findAll(contactPlugin.mixin.Employee, { active: true })
-  const accounts = await tx.findAll(contactPlugin.class.PersonAccount, {
-    person: { $in: employees.map((it) => it._id) }
-  })
-  return accounts.map((it) => it._id)
+  await createDocNotifyContexts(client, tx, chunter.space.General, chunter.class.Channel, core.space.Space)
 }
 
 async function joinEmployees (current: Space, tx: TxOperations): Promise<void> {
-  const accs = await getAllEmployeeAccounts(tx)
-  const newMembers: Ref<Account>[] = [...current.members]
-  for (const acc of accs) {
-    if (!newMembers.includes(acc)) {
-      newMembers.push(acc)
+  const byEmployee = await getSocialStringsByEmployee(tx)
+  const newMembers: PersonId[] = [...current.members]
+
+  for (const socialStrings of Object.values(byEmployee)) {
+    if (!includesAny(newMembers, socialStrings)) {
+      newMembers.push(pickPrimarySocialId(socialStrings))
     }
   }
+
   await tx.update(current, {
     members: newMembers
   })
@@ -149,7 +152,7 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
           topic: 'Random Talks',
           private: false,
           archived: false,
-          members: await getAllEmployeeAccounts(tx),
+          members: await getAllEmployeesPrimarySocialStrings(tx),
           autoJoin: true
         },
         chunter.space.Random
@@ -157,7 +160,7 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
     }
   }
 
-  await createDocNotifyContexts(client, tx, chunter.space.Random, chunter.class.Channel)
+  await createDocNotifyContexts(client, tx, chunter.space.Random, chunter.class.Channel, core.space.Space)
 }
 
 async function convertCommentsToChatMessages (client: MigrationClient): Promise<void> {
@@ -187,9 +190,53 @@ async function removeOldClasses (client: MigrationClient): Promise<void> {
 
   for (const _class of classes) {
     await client.deleteMany(DOMAIN_CHUNTER, { _class })
+    await client.deleteMany(DOMAIN_ACTIVITY, { attachedToClass: _class })
+    await client.deleteMany(DOMAIN_ACTIVITY, { objectClass: _class })
+    await client.deleteMany(DOMAIN_NOTIFICATION, { attachedToClass: _class })
     await client.deleteMany(DOMAIN_TX, { objectClass: _class })
     await client.deleteMany(DOMAIN_TX, { 'tx.objectClass': _class })
   }
+}
+
+async function removeWrongActivity (client: MigrationClient): Promise<void> {
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.Channel,
+    action: 'update',
+    'attributeUpdates.attrKey': { $ne: 'members' }
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.Channel,
+    action: 'create',
+    objectClass: { $ne: chunter.class.Channel }
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.Channel,
+    action: 'remove'
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.DirectMessage,
+    action: 'update',
+    'attributeUpdates.attrKey': { $ne: 'members' }
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.DirectMessage,
+    action: 'create'
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.DirectMessage,
+    action: 'remove'
+  })
 }
 
 export const chunterOperation: MigrateOperation = {
@@ -226,9 +273,37 @@ export const chunterOperation: MigrateOperation = {
         }
       },
       {
-        state: 'remove-old-classes',
+        state: 'remove-old-classes-v1',
         func: async (client) => {
           await removeOldClasses(client)
+        }
+      },
+      {
+        state: 'remove-wrong-activity-v1',
+        func: async (client) => {
+          await removeWrongActivity(client)
+        }
+      },
+      {
+        state: 'remove-chat-info-v1',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:ChatInfo' as Ref<Class<Doc>> })
+          await client.deleteMany(DOMAIN_TX, { objectClass: 'chunter:class:ChatInfo' })
+          await client.update(
+            DOMAIN_DOC_NOTIFY,
+            { 'chunter:mixin:ChannelInfo': { $exists: true } },
+            { $unset: { 'chunter:mixin:ChannelInfo': true } }
+          )
+          await client.deleteMany(DOMAIN_TX, { mixin: 'chunter:mixin:ChannelInfo' })
+        }
+      },
+      {
+        state: 'remove-direct-doc-update-messages',
+        func: async (client) => {
+          await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+            _class: activity.class.DocUpdateMessage,
+            attachedToClass: chunter.class.DirectMessage
+          })
         }
       }
     ])

@@ -35,8 +35,9 @@ export default plugin(serverTrackerId, {
     IssueLinkIdProvider: '' as Resource<(doc: Doc) => Promise<string>>
   },
   trigger: {
+    OnSocialIdentityCreate: '' as Resource<TriggerFunc>,
     OnIssueUpdate: '' as Resource<TriggerFunc>,
     OnComponentRemove: '' as Resource<TriggerFunc>,
-    OnWorkspaceOwnerAdded: '' as Resource<TriggerFunc>
+    OnProjectRemove: '' as Resource<TriggerFunc>
   }
 })

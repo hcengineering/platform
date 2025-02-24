@@ -1,98 +1,42 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023-2024 Hardcore Engineering Inc.
 //
 import core, {
-  Data,
   DocumentQuery,
   Ref,
   SortingOrder,
   Tx,
-  TxCollectionCUD,
   TxFactory,
   TxUpdateDoc,
-  generateId,
   type Timestamp,
-  type Account,
   type RolesAssignment,
   AccountRole,
+  type TxCUD,
+  type Doc,
+  PersonId,
+  combineAttributes,
+  includesAny,
   TxCreateDoc
 } from '@hcengineering/core'
-import contact, { type Employee, type PersonAccount } from '@hcengineering/contact'
+import { Person, pickPrimarySocialId, type Employee } from '@hcengineering/contact'
+import { getSocialStrings, getEmployees, getSocialStringsByPersons } from '@hcengineering/server-contact'
 import { TriggerControl } from '@hcengineering/server-core'
+
 import documents, {
-  CollaborativeDocumentSection,
   ControlledDocument,
   ControlledDocumentState,
-  DEFAULT_SECTION_TITLE,
   Document,
   DocumentApprovalRequest,
   DocumentState,
   DocumentTemplate,
-  calcRank,
-  type DocumentTraining,
+  getDocumentId,
   getEffectiveDocUpdate,
-  getDocumentId
+  type DocumentRequest,
+  type DocumentTraining
 } from '@hcengineering/controlled-documents'
-import training, { type TrainingRequest, TrainingState } from '@hcengineering/training'
-
-/**
- * @public
- */
-export async function OnCollaborativeSectionDeleted (
-  tx: TxCollectionCUD<Document, CollaborativeDocumentSection>,
-  control: TriggerControl
-): Promise<Tx[]> {
-  const sections = await control.findAll(documents.class.DocumentSection, { attachedTo: tx.objectId })
-  if (sections.length > 0) {
-    return []
-  }
-
-  // checking if the document itself is deleted
-  const removeTx = (await control.findAll(core.class.TxRemoveDoc, { objectId: tx.objectId }, { limit: 1 })).shift()
-  if (removeTx != null) {
-    return []
-  }
-
-  const document = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
-  if (document == null) {
-    return []
-  }
-
-  const isTemplate = control.hierarchy.hasMixin(document, documents.mixin.DocumentTemplate)
-
-  const sectionId = generateId()
-  const collaboratorSectionId = generateId()
-  return [
-    control.txFactory.createTxCollectionCUD(
-      tx.objectClass,
-      tx.objectId,
-      tx.objectSpace,
-      tx.collection,
-      control.txFactory.createTxCreateDoc(
-        documents.class.CollaborativeDocumentSection,
-        tx.objectSpace,
-        {
-          title: DEFAULT_SECTION_TITLE,
-          rank: calcRank(),
-          collaboratorSectionId,
-          attachments: 0
-        } as unknown as Data<CollaborativeDocumentSection>,
-        sectionId as Ref<CollaborativeDocumentSection>
-      )
-    ),
-    ...(isTemplate
-      ? [
-          control.txFactory.createTxMixin(
-            sectionId,
-            documents.class.CollaborativeDocumentSection,
-            tx.objectSpace,
-            documents.mixin.DocumentTemplateSection,
-            { description: '', guidance: '', mandatory: false }
-          )
-        ]
-      : [])
-  ]
-}
+import { RequestStatus } from '@hcengineering/request'
+import training, { TrainingState, type TrainingRequest } from '@hcengineering/training'
+import { NotificationType } from '@hcengineering/notification'
 
 async function getDocs (
   control: TriggerControl,
@@ -107,7 +51,7 @@ async function getDocs (
   if (states != null) query = { ...query, state: { $in: states } }
   if (controlledStates != null) query = { ...query, controlledState: { $in: controlledStates } }
 
-  const allDocs = await control.findAll(documents.class.ControlledDocument, query, {
+  const allDocs = await control.findAll(control.ctx, documents.class.ControlledDocument, query, {
     sort: { major: SortingOrder.Descending, minor: SortingOrder.Descending, patch: SortingOrder.Descending }
   })
 
@@ -168,7 +112,8 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
     return []
   }
 
-  const trainingObject = (await control.findAll(training.class.Training, { _id: documentTraining.training }))[0] ?? null
+  const trainingObject =
+    (await control.findAll(control.ctx, training.class.Training, { _id: documentTraining.training }))[0] ?? null
 
   if (trainingObject === null) {
     console.error(`Planned training ${documentTraining.training} not found`)
@@ -186,12 +131,9 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
   const dueDate: Timestamp | null =
     documentTraining.dueDays === null ? null : doc.effectiveDate + documentTraining.dueDays * 24 * 60 * 60 * 1000
 
+  const ownerSocialStrings = await getSocialStrings(control, doc.owner)
   // TODO: Encapsulate training request creation logic in training plugin?
-  const modifiedBy = (
-    await control.modelDb.findAll<Account>(contact.class.PersonAccount, {
-      person: doc.owner
-    })
-  ).shift()?._id
+  const modifiedBy = pickPrimarySocialId(ownerSocialStrings)
 
   let trainees: Array<Ref<Employee>> = documentTraining.trainees
   const roles = documentTraining.roles
@@ -200,6 +142,7 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
 
     const space = (
       await control.findAll(
+        control.ctx,
         core.class.TypedSpace,
         {
           _id: trainingObject.space
@@ -225,19 +168,8 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
     }
 
     const mixin = control.hierarchy.as(space, spaceType.targetClass) as unknown as RolesAssignment
-    const accountRefs = roles.reduce<Array<Ref<Account>>>(
-      (accountRefs, roleId) => [...accountRefs, ...(mixin[roleId] ?? [])],
-      []
-    )
-
-    const personAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
-      _id: { $in: accountRefs as Array<Ref<PersonAccount>> }
-    })
-
-    const employeeRefs = personAccounts.map((personAccount) => personAccount.person as Ref<Employee>)
-    const employees = await control.findAll(contact.mixin.Employee, {
-      _id: { $in: employeeRefs }
-    })
+    const personIds = roles.map((roleId) => mixin[roleId] ?? []).flat()
+    const employees = await getEmployees(control, personIds)
 
     for (const employee of employees) {
       traineesMap.set(employee._id, true)
@@ -284,7 +216,7 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
   // Force space to make transaction persistent and raise notifications
   resTx.space = core.space.Tx
 
-  await control.apply([resTx], true)
+  await control.apply(control.ctx, [resTx])
 
   return []
 }
@@ -332,126 +264,169 @@ function updateTemplate (doc: ControlledDocument, olderEffective: ControlledDocu
 }
 
 export async function OnDocHasBecomeEffective (
-  tx: TxUpdateDoc<ControlledDocument>,
+  txes: TxUpdateDoc<ControlledDocument>[],
   control: TriggerControl
 ): Promise<Tx[]> {
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
-  if (doc === undefined) {
-    return []
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
+    if (doc === undefined) {
+      continue
+    }
+
+    const olderEffective = await getDocsOlderThanDoc(doc, control, [DocumentState.Effective])
+
+    result.push(
+      ...updateAuthor(doc, control.txFactory),
+      ...archiveDocs(olderEffective, control.txFactory),
+      ...updateMeta(doc, control.txFactory),
+      ...updateTemplate(doc, olderEffective, control),
+      ...(await createDocumentTrainingRequest(doc, control))
+    )
+  }
+  return result
+}
+
+export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  // Fill owner of default space with the very first owner account creating a social identity
+  const account = control.ctx.contextData.account
+  if (account.role !== AccountRole.Owner) return []
+
+  const defaultSpace = (
+    await control.findAll(control.ctx, documents.class.OrgSpace, { _id: documents.space.QualityDocuments })
+  )[0]
+
+  if (defaultSpace === undefined) return []
+
+  const owners = defaultSpace.owners ?? []
+
+  if (owners.length === 0 || (owners.length === 1 && owners[0] === core.account.System)) {
+    const setOwnerTx = control.txFactory.createTxUpdateDoc(defaultSpace._class, defaultSpace.space, defaultSpace._id, {
+      owners: [account.primarySocialId]
+    })
+
+    return [setOwnerTx]
   }
 
-  const olderEffective = await getDocsOlderThanDoc(doc, control, [DocumentState.Effective])
+  return []
+}
 
-  return [
-    ...updateAuthor(doc, control.txFactory),
-    ...archiveDocs(olderEffective, control.txFactory),
-    ...updateMeta(doc, control.txFactory),
-    ...updateTemplate(doc, olderEffective, control),
-    ...(await createDocumentTrainingRequest(doc, control))
-  ]
+export async function OnDocDeleted (txes: TxUpdateDoc<ControlledDocument>[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const requests = await control.findAll(control.ctx, documents.class.DocumentRequest, {
+      attachedTo: tx.objectId,
+      status: RequestStatus.Active
+    })
+    const cancelTxes = requests.map((request) =>
+      control.txFactory.createTxUpdateDoc<DocumentRequest>(request._class, request.space, request._id, {
+        status: RequestStatus.Cancelled
+      })
+    )
+    await control.apply(control.ctx, [
+      ...cancelTxes,
+      control.txFactory.createTxUpdateDoc<ControlledDocument>(tx.objectClass, tx.objectSpace, tx.objectId, {
+        controlledState: undefined
+      })
+    ])
+  }
+
+  return result
 }
 
 export async function OnDocPlannedEffectiveDateChanged (
-  tx: TxUpdateDoc<ControlledDocument>,
+  txes: TxUpdateDoc<ControlledDocument>[],
   control: TriggerControl
 ): Promise<Tx[]> {
-  if (!('plannedEffectiveDate' in tx.operations)) {
-    return []
+  const result: Tx[] = []
+  for (const tx of txes) {
+    if (!('plannedEffectiveDate' in tx.operations)) {
+      continue
+    }
+
+    const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
+    if (doc === undefined) {
+      continue
+    }
+
+    // make doc effective immediately if required
+    if (tx.operations.plannedEffectiveDate === 0 && doc.controlledState === ControlledDocumentState.Approved) {
+      // Create with not derived tx factory in order for notifications to work
+      const factory = new TxFactory(control.txFactory.account)
+      await control.apply(control.ctx, [makeDocEffective(doc, factory)])
+    }
   }
 
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
-  if (doc === undefined) {
-    return []
-  }
-
-  // make doc effective immediately if required
-  if (tx.operations.plannedEffectiveDate === 0 && doc.controlledState === ControlledDocumentState.Approved) {
-    // Create with not derived tx factory in order for notifications to work
-    const factory = new TxFactory(control.txFactory.account)
-    await control.apply([makeDocEffective(doc, factory)], true)
-  }
-
-  return []
+  return result
 }
 
 export async function OnDocApprovalRequestApproved (
-  tx: TxCollectionCUD<ControlledDocument, DocumentApprovalRequest>,
+  txes: TxUpdateDoc<DocumentApprovalRequest>[],
   control: TriggerControl
 ): Promise<Tx[]> {
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId })).shift()
-  if (doc == null || doc.plannedEffectiveDate !== 0) {
-    return []
-  }
-
-  // Create with not derived tx factory in order for notifications to work
-  const factory = new TxFactory(control.txFactory.account)
-  await control.apply([makeDocEffective(doc, factory)], true)
-
-  // make doc effective immediately
-  return []
-}
-
-/**
- * @public
- */
-export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  let ownerId: Ref<PersonAccount> | undefined
-  if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
-    const createTx = tx as TxCreateDoc<PersonAccount>
-
-    if (createTx.attributes.role === AccountRole.Owner) {
-      ownerId = createTx.objectId
+  const result: Tx[] = []
+  for (const tx of txes) {
+    if (tx.attachedTo === undefined || tx.attachedToClass === undefined) continue
+    const doc = (
+      await control.findAll<ControlledDocument>(control.ctx, tx.attachedToClass, {
+        _id: tx.attachedTo as Ref<ControlledDocument>
+      })
+    )[0]
+    if (doc == null || doc.plannedEffectiveDate !== 0) {
+      continue
     }
-  } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
-    const updateTx = tx as TxUpdateDoc<PersonAccount>
 
-    if (updateTx.operations.role === AccountRole.Owner) {
-      ownerId = updateTx.objectId
-    }
+    // Create with not derived tx factory in order for notifications to work
+    const factory = new TxFactory(control.txFactory.account)
+    await control.apply(control.ctx, [makeDocEffective(doc, factory)])
+    // make doc effective immediately
   }
-
-  if (ownerId === undefined) {
-    return []
-  }
-
-  const targetSpace = (
-    await control.findAll(documents.class.OrgSpace, {
-      _id: documents.space.QualityDocuments
-    })
-  )[0]
-
-  if (targetSpace === undefined) {
-    return []
-  }
-
-  if (
-    targetSpace.owners === undefined ||
-    targetSpace.owners.length === 0 ||
-    targetSpace.owners[0] === core.account.System
-  ) {
-    const updTx = control.txFactory.createTxUpdateDoc(documents.class.OrgSpace, targetSpace.space, targetSpace._id, {
-      owners: [ownerId]
-    })
-    return [updTx]
-  }
-
-  return []
+  return result
 }
 
 export async function documentTextPresenter (doc: ControlledDocument): Promise<string> {
   return doc.title
 }
 
+async function CoAuthorsTypeMatch (
+  originTx: TxCUD<ControlledDocument>,
+  _doc: Doc,
+  person: Person,
+  socialIds: PersonId[],
+  _type: NotificationType,
+  control: TriggerControl
+): Promise<boolean> {
+  if (socialIds.includes(originTx.modifiedBy)) return false
+  if (originTx._class === core.class.TxUpdateDoc) {
+    const tx = originTx as TxUpdateDoc<ControlledDocument>
+    const employees = Array.isArray(tx.operations.coAuthors)
+      ? tx.operations.coAuthors ?? []
+      : (combineAttributes([tx.operations], 'coAuthors', '$push', '$each') as Ref<Employee>[])
+    const employeeSocialStrings = Object.values(await getSocialStringsByPersons(control, employees)).flat()
+
+    return includesAny(socialIds, employeeSocialStrings)
+  } else if (originTx._class === core.class.TxCreateDoc) {
+    const tx = originTx as TxCreateDoc<ControlledDocument>
+    const employees = tx.attributes.coAuthors
+    const employeeSocialStrings = Object.values(await getSocialStringsByPersons(control, employees)).flat()
+
+    return includesAny(socialIds, employeeSocialStrings)
+  }
+
+  return false
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnCollaborativeSectionDeleted,
+    OnSocialIdentityCreate,
+    OnDocDeleted,
     OnDocPlannedEffectiveDateChanged,
     OnDocApprovalRequestApproved,
-    OnDocHasBecomeEffective,
-    OnWorkspaceOwnerAdded
+    OnDocHasBecomeEffective
   },
   function: {
-    ControlledDocumentTextPresenter: documentTextPresenter
+    ControlledDocumentTextPresenter: documentTextPresenter,
+    CoAuthorsTypeMatch
   }
 })

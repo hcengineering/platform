@@ -8,6 +8,7 @@
     "build": "compile ui",
     "build:docs": "api-extractor run --local",
     "format": "format src",
+    "svelte-check": "do-svelte-check",
     "build:watch": "compile ui",
     "_phase:build": "compile ui",
     "_phase:format": "format src",
@@ -36,7 +37,7 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/client": "^0.6.18",
@@ -56,7 +57,8 @@
     "@hcengineering/support": "^0.6.5",
     "@hcengineering/support-resources": "^0.6.0",
     "@hcengineering/view-resources": "^0.6.0",
-    "fast-copy": "~3.0.1",
-    "@hcengineering/analytics": "^0.6.0"
+    "fast-copy": "^3.0.2",
+    "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/account-client": "^0.6.0"
   }
 }

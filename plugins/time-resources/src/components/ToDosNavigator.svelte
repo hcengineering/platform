@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
@@ -23,8 +23,8 @@
   export let tag: Ref<TagElementType> | undefined
   export let currentDate: Date
 
-  const acc = getCurrentAccount() as PersonAccount
-  const user = acc.person
+  const currentAccount = getCurrentAccount()
+  const currentUser = getCurrentEmployee()
 
   interface IMode {
     label: IntlString
@@ -71,7 +71,7 @@
   $: myTagsQuery.query(
     tagsPlugin.class.TagReference,
     {
-      createdBy: acc._id,
+      createdBy: currentAccount.primarySocialId,
       tag: { $in: allTags.map((p) => p._id) }
     },
     (result) => {
@@ -86,7 +86,7 @@
   unplannedQuery.query(
     time.class.ToDo,
     {
-      user,
+      user: currentUser,
       doneOn: null,
       workslots: 0
     },
@@ -105,6 +105,7 @@
 
 <div
   class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'} border-left"
+  class:fly={$deviceInfo.navigator.float}
 >
   <div class="antiPanel-wrap__content hulyNavPanel-container">
     <div class="hulyNavPanel-header">
@@ -137,6 +138,8 @@
               tag = undefined
               currentDate = event.detail
               mode = 'date'
+              localStorage.setItem('todos_last_mode', mode)
+              localStorage.removeItem('todos_last_tag')
             }
           }}
         >
@@ -202,13 +205,15 @@
     </Scroller>
     <NavFooter />
   </div>
-  <Separator
-    name={'time'}
-    float={$deviceInfo.navigator.float ? 'navigator' : true}
-    index={0}
-    disabledWhen={['panel-aside']}
-    color={'var(--theme-navpanel-border)'}
-  />
+  {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+    <Separator
+      name={'time'}
+      float={$deviceInfo.navigator.float ? 'navigator' : true}
+      index={0}
+      disabledWhen={['panel-aside']}
+      color={'var(--theme-divider-color)'}
+    />
+  {/if}
 </div>
 
 <style lang="scss">

@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,10 +13,16 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, Ref, Tx } from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
-import { BaseMiddleware } from './base'
-
+import {
+  type Class,
+  type Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  type MeasureContext,
+  Ref
+} from '@hcengineering/core'
+import { BaseMiddleware, Middleware, ServerFindOptions, type PipelineContext } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 
 interface Query {
@@ -30,39 +36,33 @@ interface Query {
 /**
  * @public
  */
-export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
+export class QueryJoiner {
   private readonly queries: Map<Ref<Class<Doc>>, Query[]> = new Map<Ref<Class<Doc>>, Query[]>()
 
-  private constructor (storage: ServerStorage, next?: Middleware) {
-    super(storage, next)
-  }
+  constructor (readonly _findAll: Middleware['findAll']) {}
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<QueryJoinMiddleware> {
-    return new QueryJoinMiddleware(storage, next)
-  }
-
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    return await this.provideTx(ctx, tx)
-  }
-
-  override async findAll<T extends Doc>(
-    ctx: SessionContext,
+  async findAll<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
     // Will find a query or add + 1 to callbacks
     const q = this.findQuery(_class, query, options) ?? this.createQuery(_class, query, options)
-    if (q.result === undefined) {
-      q.result = this.provideFindAll(ctx, _class, query, options)
-    }
-    if (q.result instanceof Promise) {
-      q.result = await q.result
-      q.callbacks--
-    }
-    this.removeFromQueue(q)
+    try {
+      if (q.result === undefined) {
+        q.result = this._findAll(ctx, _class, query, options)
+      }
+      if (q.result instanceof Promise) {
+        q.result = await q.result
+      }
 
-    return q.result as FindResult<T>
+      return q.result as FindResult<T>
+    } finally {
+      q.callbacks--
+
+      this.removeFromQueue(q)
+    }
   }
 
   private findQuery<T extends Doc>(
@@ -106,5 +106,37 @@ export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
         queries.filter((it) => it !== q)
       )
     }
+  }
+}
+
+/**
+ * @public
+ */
+export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
+  private readonly joiner: QueryJoiner
+
+  private constructor (context: PipelineContext, next?: Middleware) {
+    super(context, next)
+    this.joiner = new QueryJoiner((ctx, _class, query, options) => {
+      return this.provideFindAll(ctx, _class, query, options)
+    })
+  }
+
+  static async create (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined
+  ): Promise<QueryJoinMiddleware> {
+    return new QueryJoinMiddleware(context, next)
+  }
+
+  override findAll<T extends Doc>(
+    ctx: MeasureContext,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: ServerFindOptions<T>
+  ): Promise<FindResult<T>> {
+    // Will find a query or add + 1 to callbacks
+    return this.joiner.findAll(ctx, _class, query, options)
   }
 }

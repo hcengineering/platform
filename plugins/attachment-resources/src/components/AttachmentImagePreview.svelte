@@ -14,18 +14,20 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import { getBlobRef, sizeToWidth } from '@hcengineering/presentation'
-  import { IconSize } from '@hcengineering/ui'
-
   import type { WithLookup } from '@hcengineering/core'
+  import { Image } from '@hcengineering/presentation'
+  import { Loading } from '@hcengineering/ui'
+
+  import BrokenImage from './icons/BrokenImage.svelte'
   import { AttachmentImageSize } from '../types'
 
   export let value: WithLookup<Attachment>
   export let size: AttachmentImageSize = 'auto'
 
   interface Dimensions {
-    width: 'auto' | number
-    height: 'auto' | number
+    width: number
+    height: number
+    fit: 'cover' | 'contain'
   }
 
   const minSizeRem = 4
@@ -36,100 +38,122 @@
   } as const
 
   let dimensions: Dimensions
-  let urlSize: IconSize
 
   $: dimensions = getDimensions(value, size)
-  $: urlSize = getUrlSize(size)
 
   function getDimensions (value: Attachment, size: AttachmentImageSize): Dimensions {
     if (size === 'auto') {
       return {
-        width: 'auto',
-        height: 'auto'
+        width: 300,
+        height: 300,
+        fit: 'contain'
       }
     }
 
     const preferredWidth = preferredWidthMap[size]
     const { metadata } = value
 
-    if (!metadata) {
+    if (metadata === undefined) {
       return {
         width: preferredWidth,
-        height: preferredWidth
+        height: preferredWidth,
+        fit: 'contain'
       }
     }
 
     const { originalWidth, originalHeight } = metadata
-    const maxSize = maxSizeRem * parseFloat(getComputedStyle(document.documentElement).fontSize)
+    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+    const maxSize = maxSizeRem * fontSize
+    const minSize = minSizeRem * fontSize
 
     const width = Math.min(originalWidth, preferredWidth)
     const ratio = originalHeight / originalWidth
-    const height = width * ratio
+    const height = Math.ceil(width * ratio)
+
+    const fit = width < minSize || height < minSize ? 'cover' : 'contain'
 
     if (height > maxSize) {
       return {
         width: maxSize / ratio,
-        height: maxSize
+        height: maxSize,
+        fit
+      }
+    } else if (height < minSize) {
+      return {
+        width,
+        height: minSize,
+        fit
+      }
+    } else {
+      return {
+        width,
+        height,
+        fit
       }
     }
-
-    return {
-      width,
-      height
-    }
-  }
-
-  function getObjectFit (size: Dimensions): 'contain' | 'cover' {
-    if (size.width === 'auto' || size.height === 'auto') {
-      return 'contain'
-    }
-
-    const minSize = minSizeRem * parseFloat(getComputedStyle(document.documentElement).fontSize)
-
-    if (size.width < minSize || size.height < minSize) {
-      return 'cover'
-    }
-
-    return 'contain'
-  }
-
-  function getUrlSize (size: AttachmentImageSize): IconSize {
-    if (size === 'auto') {
-      return 'large'
-    }
-
-    return 'x-large'
   }
 
   function toStyle (size: 'auto' | number): string {
     return size === 'auto' ? 'auto' : `${size}px`
   }
+
+  let loading = false
+  let error = false
+
+  function handleLoadStart (): void {
+    loading = true
+  }
+
+  function handleLoad (): void {
+    loading = false
+  }
+
+  function handleError (): void {
+    loading = false
+    error = true
+  }
 </script>
 
-<div class="container" style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
-  {#await getBlobRef(value.$lookup?.file, value.file, value.name, sizeToWidth(urlSize)) then blobSrc}
-    <img
-      src={blobSrc.src}
-      style:object-fit={getObjectFit(dimensions)}
-      width={dimensions.width}
-      height={dimensions.height}
-      srcset={blobSrc.srcset}
-      alt={value.name}
-    />
-  {/await}
+<div class="container" class:loading style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
+  {#if loading}
+    <div class="image-overlay">
+      <Loading />
+    </div>
+  {/if}
+
+  {#if error}
+    <div class="image-overlay">
+      <BrokenImage size={'large'} />
+    </div>
+  {/if}
+
+  <Image
+    blob={value.file}
+    alt={value.name}
+    fit={dimensions.fit}
+    width={dimensions.width}
+    height={dimensions.height}
+    on:load={handleLoad}
+    on:error={handleError}
+    on:loadstart={handleLoadStart}
+  />
 </div>
 
 <style lang="scss">
-  img {
-    max-width: 20rem;
-    max-height: 20rem;
-    border-radius: 0.75rem;
-    object-fit: contain;
-    min-height: 4rem;
-    min-width: 4rem;
-  }
-
   .container {
     display: inline-flex;
+    background-color: var(--theme-link-preview-bg-color);
+    border-radius: 0.75rem;
+
+    .image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   }
 </style>

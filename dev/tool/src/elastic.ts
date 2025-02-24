@@ -14,37 +14,36 @@
 //
 
 import { Client as ElasticClient } from '@elastic/elasticsearch'
-import core, { DOMAIN_DOC_INDEX_STATE, toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
-import { getWorkspaceDB } from '@hcengineering/mongo'
+import core, { DOMAIN_DOC_INDEX_STATE } from '@hcengineering/core'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { type StorageAdapter } from '@hcengineering/server-core'
-import { MongoClient } from 'mongodb'
 
 export async function rebuildElastic (
   mongoUrl: string,
-  workspaceId: WorkspaceId,
+  dataId: string,
   storageAdapter: StorageAdapter,
   elasticUrl: string
 ): Promise<void> {
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
+    const _client = await client.getClient()
+    const db = getWorkspaceMongoDB(_client, dataId)
     await db
       .collection(DOMAIN_DOC_INDEX_STATE)
       .updateMany({ _class: core.class.DocIndexState }, { $set: { elastic: false } })
   } finally {
-    await client.close()
+    client.close()
   }
 
-  await dropElastic(elasticUrl, workspaceId)
+  await dropElastic(elasticUrl, dataId)
 }
 
-async function dropElastic (elasticUrl: string, workspaceId: WorkspaceId): Promise<void> {
+async function dropElastic (elasticUrl: string, dataId: string): Promise<void> {
   console.log('drop existing elastic docment')
   const client = new ElasticClient({
     node: elasticUrl
   })
-  const productWs = toWorkspaceString(workspaceId)
+  const productWs = dataId
   await new Promise((resolve, reject) => {
     client.indices.exists(
       {

@@ -14,16 +14,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity, OK, setMetadata } from '@hcengineering/platform'
-
-  import Form from './Form.svelte'
-  import { createWorkspace, getAccount, goTo } from '../utils'
-  import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
-  import login from '../plugin'
-  import { workbenchId } from '@hcengineering/workbench'
-  import presentation from '@hcengineering/presentation'
-  import { onMount } from 'svelte'
+  import { OK, Severity, Status, getEmbeddedLabel } from '@hcengineering/platform'
   import { LoginInfo } from '@hcengineering/login'
+  import { ButtonMenu, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { workbenchId } from '@hcengineering/workbench'
+  import { onMount } from 'svelte'
+  import login from '../plugin'
+  import {
+    createWorkspace,
+    getAccount,
+    getRegionInfo,
+    goTo,
+    setLoginInfo,
+    getAccountDisplayName,
+    type RegionInfo
+  } from '../utils'
+  import Form from './Form.svelte'
 
   const fields = [
     {
@@ -39,12 +45,17 @@
   }
 
   let status: Status<any> = OK
-
-  let account: LoginInfo | undefined = undefined
+  let loginInfo: LoginInfo | null | undefined
+  let regions: RegionInfo[] = []
+  let selectedRegion: string = ''
 
   onMount(async () => {
-    account = await getAccount()
-    if (account?.confirmed === false) {
+    loginInfo = await getAccount()
+    // Show only regions with specified name
+    regions = (await getRegionInfo())?.filter((it) => it.name.length > 0) ?? []
+    selectedRegion = regions[0]?.region
+
+    if (loginInfo?.token == null) {
       const loc = getCurrentLocation()
       loc.path[1] = 'confirmationSend'
       loc.path.length = 2
@@ -57,18 +68,12 @@
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await createWorkspace(object.workspace)
+      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion ?? '')
       status = loginStatus
 
-      if (result !== undefined) {
-        setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LastToken, result.token)
-        const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-        tokens[result.workspace] = result.token
-        setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        navigate({ path: [workbenchId, result.workspace] })
+      if (result != null) {
+        setLoginInfo(result as any)
+        navigate({ path: [workbenchId, result.workspaceUrl] })
       }
     }
   }
@@ -80,7 +85,7 @@
   {fields}
   {object}
   {action}
-  subtitle={account?.email}
+  subtitle={getAccountDisplayName(loginInfo)}
   bottomActions={[
     {
       caption: login.string.HaveWorkspace,
@@ -91,4 +96,20 @@
       }
     }
   ]}
-/>
+>
+  <svelte:fragment slot="region-selector">
+    {#if regions.length > 1}
+      <div class="flex flex-grow flex-reverse">
+        <ButtonMenu
+          bind:selected={selectedRegion}
+          autoSelectionIfOne
+          title={regions.find((it) => it.region === selectedRegion)?.name}
+          items={regions.map((it) => ({ id: it.region, label: getEmbeddedLabel(it.name) }))}
+          on:selected={(it) => {
+            selectedRegion = it.detail
+          }}
+        />
+      </div>
+    {/if}
+  </svelte:fragment>
+</Form>

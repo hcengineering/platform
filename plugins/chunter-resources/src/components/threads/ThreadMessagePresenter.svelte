@@ -39,6 +39,7 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let attachmentImageSize: AttachmentImageSize = 'x-large'
   export let videoPreload = true
+  export let readonly = false
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -73,7 +74,7 @@
     {withShowMore}
     {attachmentImageSize}
     {videoPreload}
-    showLinksPreview={false}
     {onClick}
+    {readonly}
   />
 {/if}

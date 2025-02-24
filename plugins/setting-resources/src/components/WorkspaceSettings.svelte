@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
   import { getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { createQuery, isAdminUser } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
@@ -23,9 +22,10 @@
     NavItem,
     getCurrentResolvedLocation,
     navigate,
-    resolvedLocationStore
+    resolvedLocationStore,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { clearSettingsStore } from '../store'
 
   export let kind: 'navigation' | 'content' | undefined
@@ -35,8 +35,7 @@
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  const account = getCurrentAccount() as PersonAccount
-
+  const account = getCurrentAccount()
   const admin = isAdminUser()
 
   const settingsQuery = createQuery()
@@ -65,6 +64,11 @@
       })(loc)
     })
   )
+  onMount(() => {
+    setTimeout(() => {
+      if (kind === 'content' && category === undefined) $deviceInfo.navigator.visible = true
+    }, 500)
+  })
 
   function selectCategory (id: string): void {
     clearSettingsStore()
@@ -94,8 +98,8 @@
       <Component is={category.extraComponents?.navigation} props={{ kind: 'navigation', categoryName: categoryId }} />
     {/if}
   {/each}
-{:else if kind === 'content' && !category}
+{:else if kind === 'content' && category === undefined}
   <div class="hulyComponent" />
 {:else if category}
-  <Component is={category.component} props={{ kind: 'content' }} on:change />
+  <Component is={category.component} props={{ kind: 'content', ...category.props }} on:change />
 {/if}

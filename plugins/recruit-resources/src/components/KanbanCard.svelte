@@ -35,10 +35,8 @@
   export let groupByKey: string
   export let config: (string | BuildModelKey)[]
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const assigneeAttribute = hierarchy.getAttribute(recruit.class.Applicant, 'assignee')
-  const isTitleHidden = client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'title').hidden
+  const assigneeAttribute = getClient().getHierarchy().getAttribute(recruit.class.Applicant, 'assignee')
+  const isTitleHidden = getClient().getHierarchy().getAttribute(recruit.mixin.Candidate, 'title').hidden
 
   $: channels = (object.$lookup?.attachedTo as WithLookup<Candidate>)?.$lookup?.channels
 
@@ -70,7 +68,7 @@
         <Avatar person={object.$lookup?.attachedTo} size={'medium'} name={object.$lookup?.attachedTo?.name} />
         <div class="flex-grow flex-col min-w-0 ml-2">
           <div class="fs-title over-underline lines-limit-2">
-            {object.$lookup?.attachedTo ? getName(client.getHierarchy(), object.$lookup.attachedTo) : ''}
+            {object.$lookup?.attachedTo ? getName(getClient().getHierarchy(), object.$lookup.attachedTo) : ''}
           </div>
           {#if !isTitleHidden && enabledConfig(config, 'title')}
             <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
@@ -107,11 +105,11 @@
           shrink={1}
           value={object.status}
           onChange={(status) => {
-            client.update(object, { status })
+            getClient().update(object, { status })
           }}
         />
       {/if}
-      <!-- <Component showLoading={false} is={tracker.component.RelatedIssueSelector} props={{ object, size: 'small' }} /> -->
+      <Component showLoading={false} is={tracker.component.RelatedIssueSelector} props={{ object, size: 'small' }} />
       {#if enabledConfig(config, 'dueDate')}
         <DueDatePresenter
           size={'small'}
@@ -120,7 +118,7 @@
           shouldRender={object.dueDate !== null && object.dueDate !== undefined}
           shouldIgnoreOverdue={isDone}
           onChange={async (e) => {
-            await client.update(object, { dueDate: e })
+            await getClient().update(object, { dueDate: e })
           }}
         />
       {/if}

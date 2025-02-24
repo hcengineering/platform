@@ -1,6 +1,6 @@
 import type { ActivityMessage, Reaction } from '@hcengineering/activity'
-import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type TxOperations } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type Space } from '@hcengineering/core'
+import { getClient, isSpace } from '@hcengineering/presentation'
 import {
   EmojiPopup,
   closePopup,
@@ -15,24 +15,20 @@ import { get } from 'svelte/store'
 import { savedMessagesStore } from './activity'
 import activity from './plugin'
 
-export async function updateDocReactions (
-  client: TxOperations,
-  reactions: Reaction[],
-  object?: Doc,
-  emoji?: string
-): Promise<void> {
+export async function updateDocReactions (reactions: Reaction[], object?: Doc, emoji?: string): Promise<void> {
   if (emoji === undefined || object === undefined) {
     return
   }
 
+  const client = getClient()
   const currentAccount = getCurrentAccount()
-
-  const reaction = reactions.find((r) => r.emoji === emoji && r.createBy === currentAccount._id)
+  const socialStrings = currentAccount.socialIds
+  const reaction = reactions.find((r) => r.emoji === emoji && socialStrings.includes(r.createBy))
 
   if (reaction == null) {
     await client.addCollection(activity.class.Reaction, object.space, object._id, object._class, 'reactions', {
       emoji,
-      createBy: currentAccount._id
+      createBy: currentAccount.primarySocialId
     })
   } else {
     await client.remove(reaction)
@@ -58,14 +54,14 @@ export async function addReactionAction (
   const client = getClient()
   const reactions: Reaction[] =
     (message.reactions ?? 0) > 0
-      ? await client.findAll<Reaction>(activity.class.Reaction, { attachedTo: message._id })
+      ? await client.findAll<Reaction>(activity.class.Reaction, { attachedTo: message._id, space: message.space })
       : []
   const element = getEventPositionElement(ev)
 
   closePopup()
 
   showPopup(EmojiPopup, {}, element, (emoji: string) => {
-    void updateDocReactions(client, reactions, message, emoji)
+    void updateDocReactions(reactions, message, emoji)
     params?.onClose?.()
   })
   params?.onOpen?.()
@@ -137,7 +133,6 @@ export function getIsTextType (attributeModel?: AttributeModel): boolean {
 
   return (
     attributeModel.attribute?.type?._class === core.class.TypeMarkup ||
-    attributeModel.attribute?.type?._class === core.class.TypeCollaborativeMarkup ||
     attributeModel.attribute?.type?._class === core.class.TypeCollaborativeDoc
   )
 }
@@ -168,4 +163,8 @@ export function canGroupMessages (message: MessageData, prevMessage?: MessageDat
 export function shouldScrollToActivity (): boolean {
   const loc = getCurrentResolvedLocation()
   return getMessageFromLoc(loc) !== undefined
+}
+
+export function getSpace (doc: Doc): Ref<Space> {
+  return isSpace(doc) ? doc._id : doc.space
 }

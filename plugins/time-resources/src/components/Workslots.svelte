@@ -13,12 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonBase, ButtonIcon, IconDelete, themeStore, Hotkey, HotkeyGroup, Scroller } from '@hcengineering/ui'
+  import {
+    ButtonBase,
+    ButtonIcon,
+    IconDelete,
+    themeStore,
+    Hotkey,
+    HotkeyGroup,
+    Scroller,
+    formatDuration
+  } from '@hcengineering/ui'
   import { EventTimeEditor } from '@hcengineering/calendar-resources'
   import { WorkSlot } from '@hcengineering/time'
   import { createEventDispatcher } from 'svelte'
   import time from '../plugin'
-  import { calculateEventsDuration, formatEventsDuration } from '../utils'
+  import { calculateEventsDuration } from '../utils'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
 
   export let slots: WorkSlot[] = []
@@ -28,7 +37,7 @@
   const dispatch = createEventDispatcher()
 
   let duration: string
-  $: formatEventsDuration(calculateEventsDuration(slots), $themeStore.language).then((res) => {
+  $: formatDuration(calculateEventsDuration(slots), $themeStore.language).then((res) => {
     duration = res
   })
 
@@ -65,16 +74,15 @@
         on:change={(e) => change(e, slot)}
         on:dueChange={(e) => dueChange(e, slot)}
       />
-      <div class="tool flex-no-shrink">
-        <ButtonIcon
-          kind="tertiary"
-          size="small"
-          icon={IconDelete}
-          on:click={() => {
-            dispatch('remove', { _id: slot._id })
-          }}
-        />
-      </div>
+      <ButtonIcon
+        kind="tertiary"
+        size="small"
+        icon={IconDelete}
+        dataId={'btnDelete'}
+        on:click={() => {
+          dispatch('remove', { _id: slot._id })
+        }}
+      />
     </div>
   {/each}
 </Scroller>

@@ -18,6 +18,7 @@
     "WorkspaceRateLimit": "El servidor está ocupado. Espere un momento e inténtelo de nuevo",
     "AccountAlreadyConfirmed": "La cuenta ya está confirmada",
     "WorkspaceAlreadyExists": "El espacio de trabajo ya existe",
-    "ProductIdMismatch": "Desajuste de producto"
+    "InvalidOtp": "Código no válido",
+    "InviteNotFound": "No se encontró la invitación con email:{email}."
   }
 }

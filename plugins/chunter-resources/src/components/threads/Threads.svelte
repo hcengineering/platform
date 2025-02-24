@@ -13,51 +13,51 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
+  import { SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Scroller } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { socialIdsByPersonRefStore } from '@hcengineering/contact-resources'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
+  import notification from '@hcengineering/notification'
+  import attachment from '@hcengineering/attachment'
 
   import chunter from '../../plugin'
   import Header from '../Header.svelte'
   import { openMessageFromSpecial } from '../../navigation'
 
   const threadsQuery = createQuery()
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
+  $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
 
   let threads: ActivityMessage[] = []
 
   $: threadsQuery.query(
     activity.class.ActivityMessage,
     {
-      replies: { $exists: true }
+      replies: { $exists: true },
+      [`${notification.mixin.Collaborators}.collaborators`]: { $in: mySocialStrings }
     },
     (res) => {
-      threads = res.filter(
-        ({ createdBy, repliedPersons, replies }) =>
-          (replies !== undefined && replies > 0 && createdBy === me._id) || repliedPersons?.includes(me.person)
-      )
+      threads = res.filter(({ replies }) => (replies ?? 0) > 0)
     },
-    { sort: { modifiedOn: SortingOrder.Descending } }
+    {
+      sort: { modifiedOn: SortingOrder.Descending },
+      lookup: {
+        _id: {
+          attachments: attachment.class.Attachment,
+          reactions: activity.class.Reaction
+        }
+      }
+    }
   )
 </script>
 
-<div class="ac-header full divide caption-height" style="padding: 0.5rem 1rem">
-  <Header icon={chunter.icon.Thread} intlLabel={chunter.string.Threads} titleKind="breadcrumbs" />
-</div>
+<Header icon={chunter.icon.Thread} intlLabel={chunter.string.Threads} titleKind={'breadcrumbs'} />
 
-<div class="body h-full w-full">
-  <Scroller padding="0.75rem 0.5rem">
-    {#each threads as thread}
-      <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} withShowMore={false} />
-    {/each}
-  </Scroller>
-</div>
-
-<style lang="scss">
-  .body {
-    background-color: var(--theme-panel-color);
-  }
-</style>
+<Scroller padding="0.75rem 0.5rem">
+  {#each threads as thread}
+    <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} withShowMore={false} />
+  {/each}
+</Scroller>

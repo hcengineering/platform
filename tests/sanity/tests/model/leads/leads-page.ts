@@ -8,7 +8,7 @@ export class LeadsPage {
   }
 
   readonly leadApplication = (): Locator => this.page.locator('[id="app-lead\\:string\\:LeadApplication"]')
-  readonly customersNavElement = (): Locator => this.page.locator('text=Customers')
+  readonly customersNavElement = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Customers')
   readonly newCustomerButton = (): Locator => this.page.locator('button:has-text("New Customer")')
   readonly personButton = (): Locator => this.page.locator('button:has-text("Person")')
   readonly companyButton = (): Locator => this.page.locator('button:has-text("Company")')

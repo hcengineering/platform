@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Doc, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountRole, Doc, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { Scroller, SearchEdit, Label, ButtonIcon, IconAdd, showPopup, Menu } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { SpecialNavModel } from '@hcengineering/workbench'
@@ -73,7 +73,7 @@
   }
 </script>
 
-<div class="hulyNavPanel-header withButton">
+<div class="hulyNavPanel-header" class:withButton={hasAccountRole(getCurrentAccount(), AccountRole.User)}>
   <span class="overflow-label">
     <Label label={chunter.string.Chat} />
   </span>
@@ -110,7 +110,7 @@
   />
 </div>
 <Scroller shrink>
-  {#each chatNavGroupModels as model}
+  {#each chatNavGroupModels as model (model.id)}
     <ChatNavGroup {object} {model} on:select />
   {/each}
 </Scroller>

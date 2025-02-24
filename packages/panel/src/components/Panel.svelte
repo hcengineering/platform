@@ -18,10 +18,18 @@
   import { Writable, writable } from 'svelte/store'
 
   import activity from '@hcengineering/activity'
-  import { Doc } from '@hcengineering/core'
-  import { Component, deviceOptionsStore as deviceInfo, Panel, Scroller, resizeObserver } from '@hcengineering/ui'
+  import { AccountRole, Doc, getCurrentAccount } from '@hcengineering/core'
+  import {
+    Component,
+    deviceOptionsStore as deviceInfo,
+    Panel,
+    Scroller,
+    resizeObserver,
+    HeaderAdaptive
+  } from '@hcengineering/ui'
   import type { ButtonItem } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
+  import presence from '@hcengineering/presence'
 
   export let title: string | undefined = undefined
   export let withoutActivity: boolean = false
@@ -34,20 +42,32 @@
   export let isSub: boolean = true
   export let isAside: boolean = true
   export let isUtils: boolean = true
+  export let isPresence: boolean = true
   export let isCustomAttr: boolean = true
   export let floatAside: boolean = false
   export let allowClose: boolean = true
   export let embedded: boolean = false
   export let useMaxWidth: boolean | undefined = undefined
+  export let sideContentSpace: number = 0
   export let isFullSize: boolean = false
   export let contentClasses: string | undefined = undefined
   export let content: HTMLElement | undefined | null = undefined
   export let withoutContentScroll: boolean = false
   export let customAside: ButtonItem[] | undefined = undefined
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
-  export let kind: 'default' | 'modern' = 'default'
-  export let printHeader = true
-  export let printAside = false
+  export let printHeader: boolean = true
+  export let printAside: boolean = false
+  export let adaptive: HeaderAdaptive = 'disabled'
+  export let hideBefore: boolean = false
+  export let hideSearch: boolean = true
+  export let hideActions: boolean = false
+  export let hideExtra: boolean = false
+  export let overflowExtra: boolean = false
+
+  const account = getCurrentAccount()
+  $: isGuest = account.role === AccountRole.DocGuest
+
+  $: showActivity = !withoutActivity && !isGuest
 
   export function getAside (): string | boolean {
     return panel.getAside()
@@ -94,7 +114,7 @@
   afterUpdate(async () => {
     const fn = await getResource(activity.function.ShouldScrollToActivity)
 
-    if (!withoutActivity && fn?.()) {
+    if (showActivity && fn?.()) {
       return
     }
 
@@ -115,19 +135,26 @@
   on:close
   {allowClose}
   {embedded}
-  {kind}
   {floatAside}
   bind:useMaxWidth
   {isFullSize}
   {customAside}
   {printHeader}
   {printAside}
+  {adaptive}
+  {hideBefore}
+  {hideSearch}
+  {hideActions}
+  {hideExtra}
+  {overflowExtra}
   bind:selectedAside
   on:select={(result) => {
     selectedAside = result.detail
     dispatch('select', result.detail)
   }}
 >
+  <Component is={presence.component.Presence} props={{ object }} />
+
   <svelte:fragment slot="title">
     {#if !withoutTitle}
       {#if $$slots.title}
@@ -138,13 +165,23 @@
     {/if}
   </svelte:fragment>
 
+  <svelte:fragment slot="presence">
+    {#if isPresence}
+      <Component is={presence.component.PresenceAvatars} props={{ object, size: 'x-small', limit: 5 }} />
+    {/if}
+  </svelte:fragment>
+
   <svelte:fragment slot="pre-utils">
     <slot name="pre-utils" />
   </svelte:fragment>
+
+  <svelte:fragment slot="panel-footer">
+    <slot name="panel-footer" />
+  </svelte:fragment>
+
   <svelte:fragment slot="utils">
     {#if isUtils && $$slots.utils}
       <slot name="utils" />
-      <div class="buttons-divider max-h-7 h-7 mx-2 no-print" />
     {/if}
   </svelte:fragment>
 
@@ -196,6 +233,10 @@
     <slot name="post-utils" />
   </svelte:fragment>
 
+  <svelte:fragment slot="extra">
+    <slot name="extra" />
+  </svelte:fragment>
+
   <svelte:fragment slot="page-header">
     <slot name="page-header" />
   </svelte:fragment>
@@ -207,7 +248,7 @@
   {#if $deviceInfo.isMobile}
     <div bind:this={content} class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
       <slot />
-      {#if !withoutActivity}
+      {#if showActivity}
         {#key object._id}
           <Component
             is={activity.component.Activity}
@@ -221,9 +262,11 @@
       bind:this={content}
       class={contentClasses ?? 'popupPanel-body__main-content py-8 clear-mins'}
       class:max={useMaxWidth}
+      class:side-content-space={sideContentSpace > 0}
+      style:--side-content-space={`${sideContentSpace}px`}
     >
       <slot />
-      {#if !withoutActivity}
+      {#if showActivity}
         {#key object._id}
           <Component
             is={activity.component.Activity}
@@ -250,12 +293,14 @@
       <div
         class={contentClasses ?? 'popupPanel-body__main-content py-8'}
         class:max={useMaxWidth}
+        class:side-content-space={sideContentSpace > 0}
+        style:--side-content-space={`${sideContentSpace}px`}
         use:resizeObserver={(element) => {
           activityRef?.onContainerResized?.(element)
         }}
       >
         <slot />
-        {#if !withoutActivity}
+        {#if showActivity}
           {#key object._id}
             <Component
               is={activity.component.Activity}

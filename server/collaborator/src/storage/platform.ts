@@ -13,97 +13,68 @@
 // limitations under the License.
 //
 
-import {
-  YDocVersion,
-  loadCollaborativeDoc,
-  saveCollaborativeDoc,
-  takeCollaborativeDocSnapshot
-} from '@hcengineering/collaboration'
-import {
-  DocumentId,
-  PlatformDocumentId,
-  parseDocumentId,
-  parsePlatformDocumentId
-} from '@hcengineering/collaborator-client'
-import core, {
-  CollaborativeDoc,
-  Doc,
-  MeasureContext,
-  TxOperations,
-  collaborativeDocWithLastVersion,
-  toWorkspaceString
-} from '@hcengineering/core'
+import activity, { DocUpdateMessage } from '@hcengineering/activity'
+import { Analytics } from '@hcengineering/analytics'
+import { loadCollabJson, loadCollabYdoc, saveCollabJson, saveCollabYdoc } from '@hcengineering/collaboration'
+import { decodeDocumentId } from '@hcengineering/collaborator-client'
+import core, { AttachedData, MeasureContext, Ref, Space, TxOperations } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { areEqualMarkups } from '@hcengineering/text'
-import { Transformer } from '@hocuspocus/transformer'
-import { MongoClient } from 'mongodb'
+import { markupToYDocNoSchema } from '@hcengineering/text-ydoc'
 import { Doc as YDoc } from 'yjs'
-import { Context } from '../context'
 
+import { Context } from '../context'
 import { CollabStorageAdapter } from './adapter'
 
-export type StorageAdapters = Record<string, StorageAdapter>
-
 export class PlatformStorageAdapter implements CollabStorageAdapter {
-  constructor (
-    private readonly adapters: StorageAdapters,
-    private readonly mongodb: MongoClient,
-    private readonly transformer: Transformer
-  ) {}
+  constructor (private readonly storage: StorageAdapter) {}
 
-  async loadDocument (ctx: MeasureContext, documentId: DocumentId, context: Context): Promise<YDoc | undefined> {
+  async loadDocument (ctx: MeasureContext, documentName: string, context: Context): Promise<YDoc | undefined> {
+    const { content, wsIds } = context
+    const { documentId } = decodeDocumentId(documentName)
+
     // try to load document content
     try {
-      ctx.info('load document content', { documentId })
-      const ydoc = await this.loadDocumentFromStorage(ctx, documentId, context)
+      ctx.info('load document content', { documentName })
+
+      const ydoc = await ctx.with('loadCollabYdoc', {}, (ctx) => {
+        return withRetry(ctx, 5, () => {
+          return loadCollabYdoc(ctx, this.storage, wsIds, documentId)
+        })
+      })
 
       if (ydoc !== undefined) {
         return ydoc
       }
-    } catch (err) {
-      ctx.error('failed to load document content', { documentId, error: err })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to load document content', { documentName, error: err })
       throw err
     }
 
     // then try to load from inital content
-    const { initialContentId } = context
-    if (initialContentId !== undefined && initialContentId.length > 0) {
+    if (content !== undefined) {
       try {
-        ctx.info('load document initial content', { documentId, initialContentId })
-        const ydoc = await this.loadDocumentFromStorage(ctx, initialContentId, context)
+        ctx.info('load document initial content', { documentName, content })
 
-        // if document was loaded from the initial content or storage we need to save
-        // it to ensure the next time we load it from the ydoc document
-        if (ydoc !== undefined) {
-          ctx.info('save document content', { documentId, initialContentId })
-          await this.saveDocumentToStorage(ctx, documentId, ydoc, context)
+        const markup = await ctx.with('loadCollabJson', {}, (ctx) => {
+          return withRetry(ctx, 5, () => {
+            return loadCollabJson(ctx, this.storage, wsIds, content)
+          })
+        })
+        if (markup !== undefined) {
+          const ydoc = markupToYDocNoSchema(markup, documentId.objectAttr)
+
+          // if document was loaded from the initial content or storage we need to save
+          // it to ensure the next time we load it from the ydoc document
+          await saveCollabYdoc(ctx, this.storage, wsIds, documentId, ydoc)
+
           return ydoc
         }
-      } catch (err) {
-        ctx.error('failed to load initial document content', { documentId, initialContentId, error: err })
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('failed to load initial document content', { documentName, content, error: err })
         throw err
-      }
-    }
-
-    // finally try to load from the platform
-    const { platformDocumentId } = context
-    if (platformDocumentId !== undefined) {
-      ctx.info('load document platform content', { documentId, platformDocumentId })
-      const ydoc = await ctx.with('load-from-platform', {}, async (ctx) => {
-        try {
-          return await this.loadDocumentFromPlatform(ctx, platformDocumentId, context)
-        } catch (err) {
-          ctx.error('failed to load platform document', { documentId, platformDocumentId, error: err })
-          throw err
-        }
-      })
-
-      // if document was loaded from the initial content or storage we need to save
-      // it to ensure the next time we load it from the ydoc document
-      if (ydoc !== undefined) {
-        ctx.info('save document content', { documentId, platformDocumentId })
-        await this.saveDocumentToStorage(ctx, documentId, ydoc, context)
-        return ydoc
       }
     }
 
@@ -111,185 +82,137 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     return undefined
   }
 
-  async saveDocument (ctx: MeasureContext, documentId: DocumentId, document: YDoc, context: Context): Promise<void> {
-    const { clientFactory } = context
-
-    const client = await ctx.with('connect', {}, async () => {
-      return await clientFactory()
-    })
+  async saveDocument (
+    ctx: MeasureContext,
+    documentName: string,
+    document: YDoc,
+    context: Context,
+    getMarkup: {
+      prev: () => Record<string, string>
+      curr: () => Record<string, string>
+    }
+  ): Promise<Record<string, string> | undefined> {
+    const { clientFactory, wsIds } = context
+    const { documentId } = decodeDocumentId(documentName)
 
     try {
-      let snapshot: YDocVersion | undefined
-      try {
-        ctx.info('take document snapshot', { documentId })
-        snapshot = await this.takeSnapshot(ctx, client, documentId, document, context)
-      } catch (err) {
-        ctx.error('failed to take document snapshot', { documentId, error: err })
-      }
-
-      try {
-        ctx.info('save document content', { documentId })
-        await this.saveDocumentToStorage(ctx, documentId, document, context)
-      } catch (err) {
-        ctx.error('failed to save document', { documentId, error: err })
-        // raise an error if failed to save document to storage
-        // this will prevent document from being unloaded from memory
-        throw err
-      }
-
-      const { platformDocumentId } = context
-      if (platformDocumentId !== undefined) {
-        ctx.info('save document content to platform', { documentId, platformDocumentId })
-        await ctx.with('save-to-platform', {}, async (ctx) => {
-          await this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, document, snapshot, context)
+      ctx.info('save document ydoc content', { documentName })
+      await ctx.with('saveCollabYdoc', {}, (ctx) => {
+        return withRetry(ctx, 5, () => {
+          return saveCollabYdoc(ctx, this.storage, wsIds, documentId, document)
         })
-      }
+      })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to save document ydoc content', { documentName, error: err })
+      // raise an error if failed to save document to storage
+      // this will prevent document from being unloaded from memory
+      throw err
+    }
+
+    let client: TxOperations
+    try {
+      client = await ctx.with('connect', {}, () => clientFactory())
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to connect to platform', { documentName, error: err })
+      throw err
+    }
+
+    try {
+      ctx.info('save document content to platform', { documentName })
+      return await ctx.with('save-to-platform', {}, (ctx) => {
+        return this.saveDocumentToPlatform(ctx, client, context, documentName, getMarkup)
+      })
     } finally {
       await client.close()
     }
   }
 
-  getStorageAdapter (storage: string): StorageAdapter {
-    const adapter = this.adapters[storage]
-
-    if (adapter === undefined) {
-      throw new Error(`unknown storage adapter ${storage}`)
-    }
-
-    return adapter
-  }
-
-  async loadDocumentFromStorage (
-    ctx: MeasureContext,
-    documentId: DocumentId,
-    context: Context
-  ): Promise<YDoc | undefined> {
-    const { storage, collaborativeDoc } = parseDocumentId(documentId)
-    const adapter = this.getStorageAdapter(storage)
-
-    return await ctx.with('load-document', { storage }, async (ctx) => {
-      return await withRetry(ctx, 5, async () => {
-        return await loadCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, ctx)
-      })
-    })
-  }
-
-  async saveDocumentToStorage (
-    ctx: MeasureContext,
-    documentId: DocumentId,
-    document: YDoc,
-    context: Context
-  ): Promise<void> {
-    const { storage, collaborativeDoc } = parseDocumentId(documentId)
-    const adapter = this.getStorageAdapter(storage)
-
-    await ctx.with('save-document', {}, async (ctx) => {
-      await withRetry(ctx, 5, async () => {
-        await saveCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, document, ctx)
-      })
-    })
-  }
-
-  async takeSnapshot (
-    ctx: MeasureContext,
-    client: Omit<TxOperations, 'close'>,
-    documentId: DocumentId,
-    document: YDoc,
-    context: Context
-  ): Promise<YDocVersion | undefined> {
-    const { storage, collaborativeDoc } = parseDocumentId(documentId)
-    const adapter = this.getStorageAdapter(storage)
-
-    const { workspaceId } = context
-
-    const timestamp = Date.now()
-
-    const yDocVersion: YDocVersion = {
-      versionId: `${timestamp}`,
-      name: 'Automatic snapshot',
-      createdBy: client.user,
-      createdOn: timestamp
-    }
-
-    await ctx.with('take-snapshot', {}, async (ctx) => {
-      await takeCollaborativeDocSnapshot(adapter, workspaceId, collaborativeDoc, document, yDocVersion, ctx)
-    })
-
-    return yDocVersion
-  }
-
-  async loadDocumentFromPlatform (
-    ctx: MeasureContext,
-    platformDocumentId: PlatformDocumentId,
-    context: Context
-  ): Promise<YDoc | undefined> {
-    const { mongodb, transformer } = this
-    const { workspaceId } = context
-    const { objectDomain, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
-
-    const doc = await ctx.with('query', {}, async () => {
-      const db = mongodb.db(toWorkspaceString(workspaceId))
-      return await db.collection<Doc>(objectDomain).findOne({ _id: objectId }, { projection: { [objectAttr]: 1 } })
-    })
-
-    const content = doc !== null && objectAttr in doc ? ((doc as any)[objectAttr] as string) : ''
-    if (content.startsWith('{') && content.endsWith('}')) {
-      return await ctx.with('transform', {}, () => {
-        return transformer.toYdoc(content, objectAttr)
-      })
-    }
-
-    // the content does not seem to be an HTML document
-    return undefined
-  }
-
   async saveDocumentToPlatform (
     ctx: MeasureContext,
     client: Omit<TxOperations, 'close'>,
+    context: Context,
     documentName: string,
-    platformDocumentId: PlatformDocumentId,
-    document: YDoc,
-    snapshot: YDocVersion | undefined,
-    context: Context
-  ): Promise<void> {
-    const { objectClass, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
+    getMarkup: {
+      prev: () => Record<string, string>
+      curr: () => Record<string, string>
+    }
+  ): Promise<Record<string, string> | undefined> {
+    const { wsIds } = context
+    const { documentId } = decodeDocumentId(documentName)
+    const { objectAttr, objectClass, objectId } = documentId
 
     const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
     if (attribute === undefined) {
-      ctx.info('attribute not found', { documentName, objectClass, objectAttr })
+      ctx.warn('attribute not found', { documentName, objectClass, objectAttr })
       return
     }
 
-    const current = await ctx.with('query', {}, async () => {
-      return await client.findOne(objectClass, { _id: objectId })
+    const markup = {
+      prev: getMarkup.prev(),
+      curr: getMarkup.curr()
+    }
+
+    const currMarkup = markup.curr[objectAttr]
+    const prevMarkup = markup.prev[objectAttr]
+
+    if (areEqualMarkups(currMarkup, prevMarkup)) {
+      ctx.info('markup not changed, skip platform update', { documentName })
+      return
+    }
+
+    const current = await ctx.with('query', {}, () => {
+      return client.findOne(objectClass, { _id: objectId })
     })
 
     if (current === undefined) {
+      ctx.warn('document not found', { documentName, objectClass, objectId })
       return
     }
 
     const hierarchy = client.getHierarchy()
-    if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
-      const collaborativeDoc = (current as any)[objectAttr] as CollaborativeDoc
-      const newCollaborativeDoc =
-        snapshot !== undefined
-          ? collaborativeDocWithLastVersion(collaborativeDoc, snapshot.versionId)
-          : collaborativeDoc
-
-      await ctx.with('update', {}, async () => {
-        await client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc })
-      })
-    } else if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)) {
-      // TODO a temporary solution while we are keeping Markup in Mongo
-      const content = await ctx.with('transform', {}, () => {
-        return this.transformer.fromYdoc(document, objectAttr)
-      })
-      if (!areEqualMarkups(content, (current as any)[objectAttr])) {
-        await ctx.with('update', {}, async () => {
-          await client.diffUpdate(current, { [objectAttr]: content })
-        })
-      }
+    if (!hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
+      ctx.warn('unsupported attribute type', { documentName, objectClass, objectAttr })
+      return
     }
+
+    const blobId = await ctx.with('saveCollabJson', {}, (ctx) => {
+      return withRetry(ctx, 5, () => {
+        return saveCollabJson(ctx, this.storage, wsIds, documentId, markup.curr[objectAttr])
+      })
+    })
+
+    await ctx.with('update', {}, () => client.diffUpdate(current, { [objectAttr]: blobId }))
+
+    await ctx.with('activity', {}, () => {
+      const space = hierarchy.isDerived(current._class, core.class.Space) ? (current._id as Ref<Space>) : current.space
+
+      const data: AttachedData<DocUpdateMessage> = {
+        objectId,
+        objectClass,
+        action: 'update',
+        attributeUpdates: {
+          attrKey: objectAttr,
+          attrClass: core.class.TypeMarkup,
+          prevValue: prevMarkup,
+          set: [currMarkup],
+          added: [],
+          removed: [],
+          isMixin: hierarchy.isMixin(objectClass)
+        }
+      }
+      return client.addCollection(
+        activity.class.DocUpdateMessage,
+        space,
+        current._id,
+        current._class,
+        'docUpdateMessages',
+        data
+      )
+    })
+
+    return markup.curr
   }
 }
 
@@ -306,7 +229,7 @@ async function withRetry<T> (
       return await op()
     } catch (err: any) {
       error = err
-      ctx.error('error', err)
+      ctx.info('error', { err, retries })
       if (retries !== 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }

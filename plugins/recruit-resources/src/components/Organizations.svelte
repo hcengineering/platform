@@ -17,7 +17,7 @@
   import core, { Doc, DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Applicant, Vacancy } from '@hcengineering/recruit'
-  import { Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { Button, Component, IconAdd, Breadcrumb, Loading, SearchInput, showPopup, Header } from '@hcengineering/ui'
   import view, { BuildModelKey, ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -25,6 +25,7 @@
   import VacancyListApplicationsPopup from './organizations/VacancyListApplicationsPopup.svelte'
   import VacancyListCountPresenter from './organizations/VacancyListCountPresenter.svelte'
   import VacancyPopup from './organizations/VacancyPopup.svelte'
+  import IconCompany from './icons/Company.svelte'
 
   let search: string = ''
   let searchQuery: DocumentQuery<Doc> = {}
@@ -191,36 +192,31 @@
   $: finalConfig = createConfig(viewlet, preference, replacedKeys)
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label label={recruit.string.Organizations} /></span>
-  </div>
-  <div class="ac-header-full medium-gap mb-1">
+<Header adaptive={'freezeActions'}>
+  <svelte:fragment slot="beforeTitle">
     <ViewletSelector
       bind:loading
       bind:viewlet
       bind:preference
+      ignoreFragment
       viewletQuery={{
         attachTo: recruit.mixin.VacancyList,
         descriptor: { $in: [view.viewlet.Table, view.viewlet.List] }
       }}
     />
-    <Button icon={IconAdd} label={recruit.string.CompanyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} on:change={(e) => (search = e.detail)} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
-    <FilterButton _class={recruit.mixin.VacancyList} />
-  </div>
-  <div class="ac-header-full medium-gap">
     <ViewletSettingButton bind:viewOptions bind:viewlet />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-  </div>
-</div>
+  </svelte:fragment>
 
+  <Breadcrumb icon={IconCompany} label={recruit.string.Organizations} size={'large'} isCurrent />
+
+  <svelte:fragment slot="search">
+    <SearchInput bind:value={search} collapsed on:change={(e) => (search = e.detail)} />
+    <FilterButton _class={recruit.mixin.VacancyList} />
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    <Button icon={IconAdd} label={recruit.string.CompanyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+  </svelte:fragment>
+</Header>
 <FilterBar
   _class={recruit.mixin.VacancyList}
   space={undefined}

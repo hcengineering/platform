@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import core, { getCurrentAccount, type Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Scroller } from '@hcengineering/ui'
+  import { Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
@@ -26,6 +27,8 @@
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
   export let direction: 'vertical' | 'horizontal' = 'vertical'
+
+  const dispatch = createEventDispatcher()
 
   let loaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
@@ -43,9 +46,8 @@
 
   const me = getCurrentAccount()
 
-  $: filteredApps = apps.filter((it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me))
-  $: topApps = filteredApps.filter((it) => it.position === 'top')
-  $: bottomdApps = filteredApps.filter((it) => it.position !== 'top')
+  $: topApps = apps.filter((it) => it.position === 'top')
+  $: bottomdApps = apps.filter((it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me) && it.position !== 'top')
 </script>
 
 <div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">
@@ -56,17 +58,34 @@
       gap={direction === 'horizontal' ? 'gap-1' : 'gapV-1'}
       horizontal={direction === 'horizontal'}
       contentDirection={direction}
+      align={direction === 'horizontal' ? 'center' : 'start'}
       buttons={'union'}
     >
       {#each topApps as app}
-        <NavLink app={app.alias} shrink={0}>
-          <AppItem selected={app._id === active} icon={app.icon} label={app.label} />
+        <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
+          <AppItem
+            selected={app._id === active}
+            icon={app.icon}
+            label={app.label}
+            navigator={app._id === active && $deviceInfo.navigator.visible}
+            on:click={() => {
+              if (app._id === active) dispatch('toggleNav')
+            }}
+          />
         </NavLink>
       {/each}
       <div class="divider" />
       {#each bottomdApps as app}
-        <NavLink app={app.alias} shrink={0}>
-          <AppItem selected={app._id === active} icon={app.icon} label={app.label} />
+        <NavLink app={app.alias} shrink={0} disabled={app._id === active}>
+          <AppItem
+            selected={app._id === active}
+            icon={app.icon}
+            label={app.label}
+            navigator={app._id === active && $deviceInfo.navigator.visible}
+            on:click={() => {
+              if (app._id === active) dispatch('toggleNav')
+            }}
+          />
         </NavLink>
       {/each}
       <div class="apps-space-{direction}" />

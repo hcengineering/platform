@@ -55,6 +55,7 @@
   export let showMenu: boolean = false
   export let shouldTooltip: boolean = false
   export let forciblyСollapsed: boolean = false
+  export let draggable: boolean = false
   export let actions: Action[] = []
   export let _id: Ref<Doc> | string | undefined = undefined
 
@@ -97,6 +98,11 @@
     class:selected
     class:showMenu={showMenu || pressed}
     on:click={toggle}
+    {draggable}
+    on:dragstart
+    on:dragover
+    on:dragend
+    on:drop
   >
     {#if isFold && !empty}
       <button class="hulyNavGroup-header__chevron" class:collapsed={!isOpen}>

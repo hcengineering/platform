@@ -36,8 +36,10 @@
   export let highlighted: boolean = false
   export let selected: boolean = false
   export let showMenu: boolean = false
+  export let noDivider: boolean = false
   export let shouldTooltip: boolean = false
   export let forciblyСollapsed: boolean = false
+  export let draggable: boolean = false
 </script>
 
 <TreeElement
@@ -60,8 +62,13 @@
   {selected}
   {shouldTooltip}
   {showMenu}
+  {noDivider}
   {forciblyСollapsed}
+  {draggable}
   on:click
+  on:dragstart
+  on:dragover
+  on:drop
 >
   <slot />
   <svelte:fragment slot="extra"><slot name="extra" /></svelte:fragment>

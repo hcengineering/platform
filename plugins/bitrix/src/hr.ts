@@ -1,5 +1,15 @@
 import { Organization } from '@hcengineering/contact'
-import core, { Account, Client, Data, Doc, Ref, SortingOrder, Status, TxOperations } from '@hcengineering/core'
+import core, {
+  PersonId,
+  Client,
+  Data,
+  Doc,
+  Ref,
+  SortingOrder,
+  Status,
+  TxOperations,
+  generateId
+} from '@hcengineering/core'
 import recruit, { Applicant, Vacancy } from '@hcengineering/recruit'
 import task, { ProjectType, makeRank } from '@hcengineering/task'
 
@@ -7,7 +17,7 @@ export async function createVacancy (
   rawClient: Client,
   name: string,
   typeId: Ref<ProjectType>,
-  account: Ref<Account>,
+  account: PersonId,
   company?: Ref<Organization>
 ): Promise<Ref<Vacancy>> {
   const client = new TxOperations(rawClient, account)
@@ -16,24 +26,32 @@ export async function createVacancy (
     throw Error(`Failed to find target project type: ${typeId}`)
   }
 
-  const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Vacancy })
+  const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Vacancy })
   if (sequence === undefined) {
     throw new Error('sequence object not found')
   }
 
   const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
-  const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, {
-    name,
-    description: type.shortDescription ?? '',
-    fullDescription: type.description,
-    private: false,
-    archived: false,
-    company,
-    number: (incResult as any).object.sequence,
-    members: [],
-    type: typeId
-  })
+  const id: Ref<Vacancy> = generateId()
+  await client.createDoc(
+    recruit.class.Vacancy,
+    core.space.Space,
+    {
+      name,
+      description: type.shortDescription ?? '',
+      fullDescription: null,
+      private: false,
+      archived: false,
+      company,
+      number: (incResult as any).object.sequence,
+      members: [],
+      type: typeId
+    },
+    id
+  )
+
+  // TODO type.description
 
   return id
 }
@@ -48,7 +66,7 @@ export async function createApplication (
   if (selectedState === undefined) {
     throw new Error(`Please select initial state:${_space}`)
   }
-  const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
+  const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Applicant })
   if (sequence === undefined) {
     throw new Error('sequence object not found')
   }

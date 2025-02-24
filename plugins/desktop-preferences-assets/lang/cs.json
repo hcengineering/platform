@@ -1,0 +1,11 @@
+{
+  "string": {
+    "ShowNotifications": "Zobrazit upozornění",
+    "PlaySound": "Přehrát zvuk",
+    "BounceAppIcon": "Pohybovat ikonou aplikace (pouze pro Mac)",
+    "ShowBadge": "Zobrazit odznak na ikoně aplikace",
+    "SoundAndAppearance": "Zvuk a vzhled",
+    "HaveGotANotification": "Obdrželi jste upozornění",
+    "TotalNotificationsCount": "Máte celkem {count, plural, =1 {# upozornění} other {# upozornění}}"
+  }
+}

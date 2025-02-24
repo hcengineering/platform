@@ -18,12 +18,13 @@
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { UserBox } from '@hcengineering/contact-resources'
-  import { Issue, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
+  import { Issue, TimeReportDayType, TimeSpendReport, TrackerEvents } from '@hcengineering/tracker'
   import { Button, DatePresenter, EditBox, Label } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import { getTimeReportDate, getTimeReportDayType } from '../../../utils'
   import TitlePresenter from '../TitlePresenter.svelte'
   import TimeReportDayDropdown from './TimeReportDayDropdown.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let issue: Issue | undefined = undefined
   export let issueId: Ref<Issue> | undefined = issue?._id
@@ -61,6 +62,7 @@
           'reports',
           data as AttachedData<TimeSpendReport>
         )
+        Analytics.handleEvent(TrackerEvents.IssueTimeSpentAdded, { issue: issue?.identifier ?? issueId })
       }
     } else {
       const ops: DocumentUpdate<TimeSpendReport> = {}
@@ -78,6 +80,7 @@
       }
       if (Object.keys(ops).length > 0) {
         await client.update(value, ops)
+        Analytics.handleEvent(TrackerEvents.IssueTimeSpentUpdated, { issue: issue?.identifier ?? issueId })
       }
     }
   }
@@ -109,24 +112,24 @@
       maxDigitsAfterPoint={3}
       kind={'editbox'}
     />
-    <Button kind={'link-bordered'} on:click={() => (data.value = 1)}
-      ><span slot="content">1<Label label={tracker.string.HourLabel} /></span></Button
-    >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 2)}
-      ><span slot="content">2<Label label={tracker.string.HourLabel} /></span></Button
-    >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 4)}
-      ><span slot="content">4<Label label={tracker.string.HourLabel} /></span></Button
-    >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 6)}
-      ><span slot="content">6<Label label={tracker.string.HourLabel} /></span></Button
-    >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 7)}
-      ><span slot="content">7<Label label={tracker.string.HourLabel} /></span></Button
-    >
-    <Button kind={'link-bordered'} on:click={() => (data.value = 8)}
-      ><span slot="content">8<Label label={tracker.string.HourLabel} /></span></Button
-    >
+    <Button kind={'link-bordered'} on:click={() => (data.value = 1)}>
+      <span slot="content">1<Label label={tracker.string.HourLabel} /></span>
+    </Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 2)}>
+      <span slot="content">2<Label label={tracker.string.HourLabel} /></span>
+    </Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 4)}>
+      <span slot="content">4<Label label={tracker.string.HourLabel} /></span>
+    </Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 6)}>
+      <span slot="content">6<Label label={tracker.string.HourLabel} /></span>
+    </Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 7)}>
+      <span slot="content">7<Label label={tracker.string.HourLabel} /></span>
+    </Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 8)}>
+      <span slot="content">8<Label label={tracker.string.HourLabel} /></span>
+    </Button>
   </div>
   <EditBox bind:value={data.description} placeholder={tracker.string.TimeSpendReportDescription} kind={'editbox'} />
   <svelte:fragment slot="pool">

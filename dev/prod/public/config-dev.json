@@ -7,5 +7,7 @@
   "CALENDAR_URL": "https://calendar.hc.engineering",
   "REKONI_URL": "https://rekoni.hc.engineering",
   "COLLABORATOR_URL": "wss://collaborator.hc.engineering",
-  "COLLABORATOR_API_URL": "https://collaborator.hc.engineering"
+  "STATS_URL": "https://stats.hc.engineering",
+  "PRESENCE_URL": "wss://presence.hc.engineering",
+  "BACKUP_URL": "https://front.hc.engineering/api/backup"
 }

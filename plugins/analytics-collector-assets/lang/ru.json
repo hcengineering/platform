@@ -1,0 +1,22 @@
+{
+  "string": {
+    "OnboardingChannelDescription": "User: {user}; Workspace: {workspace}",
+    "Error": "Error: ",
+    "InProject": " in project ",
+    "NavigateToSpecial": "{app}: open {special}",
+    "OpenSpecial": "open {special} ",
+    "Set": "Set ",
+    "To": " to ",
+    "Open": "open ",
+    "Workbench": "Workbench: ",
+    "OnboardingChannel": "Канал обучения",
+    "OnboardingChannels": "Каналы обучения",
+    "WorkspaceId": "Id пространства",
+    "WorkspaceName": "Имя пространства",
+    "WorkspaceUrl": "URL пространства",
+    "SocialId": "Социальный ID",
+    "UserName": "Имя пользователя",
+    "DisableAIReplies": "Отключить ответы ИИ",
+    "ShowAIReplies": "Показать ответы ИИ"
+  }
+}

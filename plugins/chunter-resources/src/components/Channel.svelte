@@ -13,30 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Timestamp } from '@hcengineering/core'
-  import { DocNotifyContext } from '@hcengineering/notification'
-  import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
-  import { getClient } from '@hcengineering/presentation'
+  import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import activity, { ActivityMessage, WithReferences } from '@hcengineering/activity'
+  import { getClient, isSpace } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import { location as locationStore } from '@hcengineering/ui'
-
-  import chunter from '../plugin'
-  import ChannelScrollView from './ChannelScrollView.svelte'
-  import { ChannelDataProvider } from '../channelDataProvider'
   import { onDestroy } from 'svelte'
 
+  import chunter from '../plugin'
+  import { ChannelDataProvider } from '../channelDataProvider'
+  import ReverseChannelScrollView from './ReverseChannelScrollView.svelte'
+
   export let object: Doc
-  export let context: DocNotifyContext | undefined
-  export let filters: Ref<ActivityMessagesFilter>[] = []
-  export let isAsideOpened = false
+  export let context: DocNotifyContext | undefined = undefined
+  export let syncLocation = true
+  export let autofocus = true
+  export let freeze = false
+  export let readonly = false
+  export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+  export let collection: string | undefined = undefined
+  export let withInput: boolean = true
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   let dataProvider: ChannelDataProvider | undefined
-  let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
 
   const unsubscribe = messageInFocus.subscribe((id) => {
+    if (!syncLocation) return
     if (id !== undefined && id !== selectedMessageId) {
       selectedMessageId = id
     }
@@ -45,6 +51,7 @@
   })
 
   const unsubscribeLocation = locationStore.subscribe((newLocation) => {
+    if (!syncLocation) return
     const id = getMessageFromLoc(newLocation)
     selectedMessageId = id
     messageInFocus.set(id)
@@ -53,41 +60,58 @@
   onDestroy(() => {
     unsubscribe()
     unsubscribeLocation()
+    dataProvider?.destroy()
+    dataProvider = undefined
   })
 
+  let refsLoaded = false
+
   $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
-  $: _class = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
-  $: collection = isDocChannel ? 'comments' : 'messages'
 
-  $: updateDataProvider(object._id, _class, context?.lastViewedTimestamp, selectedMessageId)
+  $: void updateDataProvider(object._id, selectedMessageId)
 
-  function updateDataProvider (
-    attachedTo: Ref<Doc>,
-    _class: Ref<Class<ActivityMessage>>,
-    lastViewedTimestamp?: Timestamp,
-    selectedMessageId?: Ref<ActivityMessage>
-  ): void {
+  async function updateDataProvider (attachedTo: Ref<Doc>, selectedMessageId?: Ref<ActivityMessage>): Promise<void> {
     if (dataProvider === undefined) {
-      // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
-      // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
-      const loadAll = isDocChannel
-      dataProvider = new ChannelDataProvider(attachedTo, _class, lastViewedTimestamp ?? 0, selectedMessageId, loadAll)
+      const ctx =
+        context ??
+        (await client.findOne(notification.class.DocNotifyContext, {
+          objectId: object._id,
+          user: { $in: getCurrentAccount().socialIds }
+        }))
+      const hasRefs = ((object as WithReferences<Doc>).references ?? 0) > 0
+      refsLoaded = hasRefs
+      const space = isSpace(object) ? object._id : object.space
+      dataProvider = new ChannelDataProvider(
+        ctx,
+        space,
+        attachedTo,
+        activity.class.ActivityMessage,
+        selectedMessageId,
+        false,
+        hasRefs,
+        collection
+      )
     }
+  }
+
+  $: if (dataProvider && !refsLoaded && ((object as WithReferences<Doc>).references ?? 0) > 0) {
+    dataProvider.loadRefs()
+    refsLoaded = true
   }
 </script>
 
 {#if dataProvider}
-  <ChannelScrollView
-    objectId={object._id}
-    objectClass={object._class}
+  <ReverseChannelScrollView
+    channel={object}
+    bind:selectedMessageId
     {object}
-    skipLabels={!isDocChannel}
-    selectedFilters={filters}
-    startFromBottom
-    {selectedMessageId}
-    {collection}
+    collection={collection ?? (isDocChannel ? 'comments' : 'messages')}
     provider={dataProvider}
-    {isAsideOpened}
-    loadMoreAllowed={!isDocChannel}
+    {freeze}
+    {autofocus}
+    loadMoreAllowed
+    {withInput}
+    {readonly}
+    {onReply}
   />
 {/if}

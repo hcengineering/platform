@@ -1,6 +1,5 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI, fillSearch } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { ComponentsPage } from '../model/tracker/components-page'
 import { NewComponent } from '../model/tracker/types'
@@ -13,14 +12,12 @@ test.use({
 
 test.describe('Tracker component tests', () => {
   let commonTrackerPage: CommonTrackerPage
-  let leftSideMenuPage: LeftSideMenuPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let componentsPage: ComponentsPage
   let componentsDetailsPage: ComponentsDetailsPage
 
   test.beforeEach(async ({ page }) => {
     commonTrackerPage = new CommonTrackerPage(page)
-    leftSideMenuPage = new LeftSideMenuPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     componentsPage = new ComponentsPage(page)
     componentsDetailsPage = new ComponentsDetailsPage(page)
@@ -32,6 +29,7 @@ test.describe('Tracker component tests', () => {
     await commonTrackerPage.navigateToComponents(PlatformURI)
     const componentName = 'component-' + generateId()
     await commonTrackerPage.createComponent(componentName)
+    await page.locator('#btnPClose').click()
     await fillSearch(page, componentName)
     await commonTrackerPage.createIssueForComponent(componentName)
   })
@@ -47,7 +45,6 @@ test.describe('Tracker component tests', () => {
       description: 'Edit component test description update',
       lead: 'Appleseed John'
     }
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openComponentsForProject('Default')
     await componentsPage.createNewComponent(newComponent)
     await componentsPage.openComponentByName(newComponent.name)
@@ -64,7 +61,6 @@ test.describe('Tracker component tests', () => {
       description: 'Delete component test description'
     }
 
-    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openComponentsForProject('Default')
     await componentsPage.openComponentByName(newComponent.name)
     await componentsDetailsPage.checkComponent(newComponent)

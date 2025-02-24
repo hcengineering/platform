@@ -18,6 +18,8 @@
 <script lang="ts">
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import core, { type Class, type Doc, type Ref, getCurrentAccount } from '@hcengineering/core'
+  import { includesAny } from '@hcengineering/contact'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -33,15 +35,7 @@
     themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import {
-    DocAttributeBar,
-    IconPicker,
-    checkMyPermission,
-    getDocMixins,
-    permissionsStore,
-    showMenu
-  } from '@hcengineering/view-resources'
-  import documents from '@hcengineering/controlled-documents'
+  import { DocAttributeBar, IconPicker, getDocMixins, showMenu } from '@hcengineering/view-resources'
   import type { Product } from '@hcengineering/products'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
@@ -57,7 +51,6 @@
   const dispatch = createEventDispatcher()
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
-  const me = getCurrentAccount()._id
   let object: Product | undefined
   let title = ''
   let showAllMixins = false
@@ -68,12 +61,12 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void notificationClient.then((client) => client.readDoc(getClient(), prev))
+      void notificationClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
-    void notificationClient.then((client) => client.readDoc(getClient(), _id))
+    void notificationClient.then((client) => client.readDoc(_id))
   })
 
   const query = createQuery()
@@ -112,7 +105,7 @@
     !readonly &&
     object !== undefined &&
     !object.archived &&
-    ((object.owners?.includes(me) ?? false) ||
+    (includesAny(object.owners ?? [], getCurrentAccount().socialIds) ||
       checkMyPermission(core.permission.UpdateSpace, _id, $permissionsStore) ||
       checkMyPermission(core.permission.UpdateObject, core.space.Space, $permissionsStore))
 
@@ -146,6 +139,7 @@
     isHeader={false}
     isAside={true}
     isSub={false}
+    adaptive={'default'}
     on:open
     on:close={() => dispatch('close')}
   >

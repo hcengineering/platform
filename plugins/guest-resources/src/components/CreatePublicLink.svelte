@@ -77,13 +77,15 @@
       MessageBox,
       {
         label: guest.string.Revoke,
-        message: guest.string.RevokeConfirmation
+        message: guest.string.RevokeConfirmation,
+        action: async () => {
+          if (link !== undefined) {
+            await client.remove(link)
+          }
+        }
       },
       'top',
       (res) => {
-        if (res === true && link !== undefined) {
-          client.remove(link)
-        }
         dispatch('close')
       }
     )

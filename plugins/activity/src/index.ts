@@ -15,7 +15,7 @@
 
 import { Person } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   AttachedDoc,
   Class,
   Doc,
@@ -30,13 +30,14 @@ import {
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
+import type { Action } from '@hcengineering/view'
 
 /**
  * @public
  */
 export interface ActivityMessage extends AttachedDoc {
-  modifiedBy: Ref<Account>
+  modifiedBy: PersonId
   modifiedOn: Timestamp
 
   isPinned?: boolean
@@ -46,6 +47,7 @@ export interface ActivityMessage extends AttachedDoc {
 
   replies?: number
   reactions?: number
+  editedOn?: Timestamp
 }
 
 export type DisplayActivityMessage = DisplayDocUpdateMessage | ActivityMessage
@@ -67,6 +69,7 @@ export interface ActivityMessageControl<T extends Doc = Doc> extends Doc {
 
   // Skip field activity operations.
   skipFields?: (keyof T)[]
+  allowedFields?: (keyof T)[]
 }
 
 /**
@@ -80,6 +83,7 @@ export interface ActivityInfoMessage extends ActivityMessage {
   props?: Record<string, any>
   icon?: Asset
   iconProps?: Record<string, any>
+  editedOn?: Timestamp
 
   // A possible set of links to some platform resources.
   links?: { _class: Ref<Class<Doc>>, _id: Ref<Doc> }[]
@@ -92,7 +96,7 @@ export interface DocUpdateMessage extends ActivityMessage {
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
 
-  txId: Ref<TxCUD<Doc>>
+  txId?: Ref<TxCUD<Doc>>
 
   action: DocUpdateAction
   updateCollection?: string
@@ -206,7 +210,7 @@ export type ActivityExtensionKind = 'input'
  */
 export interface ActivityExtension extends Doc {
   ofClass: Ref<Class<Doc>>
-  components: Record<ActivityExtensionKind, AnyComponent>
+  components: Record<ActivityExtensionKind, { component: AnyComponent, props?: Record<string, any> }>
 }
 
 /**
@@ -216,7 +220,7 @@ export interface Reaction extends AttachedDoc {
   attachedTo: Ref<ActivityMessage>
   attachedToClass: Ref<Class<ActivityMessage>>
   emoji: string
-  createBy: Ref<Account>
+  createBy: PersonId
 }
 
 /**
@@ -227,12 +231,16 @@ export interface SavedMessage extends Preference {
 }
 
 export interface ReplyProvider extends Doc {
-  function: Resource<(message: ActivityMessage) => Promise<void>>
+  function: Resource<(message: ActivityMessage, event: MouseEvent) => Promise<void>>
 }
 
 export interface UserMentionInfo extends AttachedDoc {
   user: Ref<Person>
   content: string
+}
+
+export type WithReferences<T extends Doc> = T & {
+  references?: number
 }
 
 /**
@@ -302,7 +310,14 @@ export default plugin(activityId, {
     Mentions: '' as IntlString,
     MentionedYouIn: '' as IntlString,
     Messages: '' as IntlString,
-    Thread: '' as IntlString
+    Thread: '' as IntlString,
+    ReactionNotificationTitle: '' as IntlString,
+    ReactionNotificationBody: '' as IntlString,
+    NewObject: '' as IntlString,
+    RemovedObject: '' as IntlString,
+    ChangedObject: '' as IntlString,
+    UnsetObject: '' as IntlString,
+    UpdatedObject: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,
@@ -320,11 +335,17 @@ export default plugin(activityId, {
     AllFilter: '' as Ref<ActivityMessagesFilter>,
     MentionNotification: '' as Ref<Doc>
   },
+  extension: {
+    ActivityEmployeePresenter: '' as ComponentExtensionId
+  },
   function: {
     ShouldScrollToActivity: '' as Resource<() => boolean>
   },
   backreference: {
     // Update list of back references
     Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => Promise<void>>
+  },
+  action: {
+    Reply: '' as Ref<Action>
   }
 })

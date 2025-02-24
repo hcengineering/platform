@@ -24,9 +24,11 @@ import Reconnect from './components/Reconnect.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
 import TelegramMessageCreated from './components/activity/TelegramMessageCreated.svelte'
 import MessagePresenter from './components/MessagePresenter.svelte'
+import NotificationProviderPresenter from './components/NotificationProviderPresenter.svelte'
+import TelegramIntegrationDescription from './components/TelegramIntegrationDescription.svelte'
 
 import telegram from './plugin'
-import { getCurrentEmployeeTG, getIntegrationOwnerTG } from './utils'
+import { getCurrentEmployeeTG, getIntegrationOwnerTG, isTelegramNotificationsAvailable } from './utils'
 import SharedMessages from './components/SharedMessages.svelte'
 
 export default async (): Promise<Resources> => ({
@@ -36,14 +38,17 @@ export default async (): Promise<Resources> => ({
     Reconnect,
     IconTelegram,
     SharedMessages,
-    MessagePresenter
+    MessagePresenter,
+    NotificationProviderPresenter,
+    TelegramIntegrationDescription
   },
   activity: {
     TelegramMessageCreated
   },
   function: {
     GetCurrentEmployeeTG: getCurrentEmployeeTG,
-    GetIntegrationOwnerTG: getIntegrationOwnerTG
+    GetIntegrationOwnerTG: getIntegrationOwnerTG,
+    IsTelegramNotificationsAvailable: isTelegramNotificationsAvailable
   },
   handler: {
     DisconnectHandler: async () => {

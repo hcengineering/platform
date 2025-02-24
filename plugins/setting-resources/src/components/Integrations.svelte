@@ -20,7 +20,6 @@
   import { Header, Breadcrumb } from '@hcengineering/ui'
   import PluginCard from './PluginCard.svelte'
 
-  const accountId = getCurrentAccount()._id
   const typeQuery = createQuery()
   const integrationQuery = createQuery()
 
@@ -30,7 +29,7 @@
   typeQuery.query(setting.class.IntegrationType, {}, (res) => {
     integrationTypes = res
   })
-  integrationQuery.query(setting.class.Integration, { createdBy: accountId }, (res) => {
+  integrationQuery.query(setting.class.Integration, { createdBy: { $in: getCurrentAccount().socialIds } }, (res) => {
     integrations = res.filter((p) => p.value !== '')
   })
 
@@ -40,10 +39,11 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Integrations} label={setting.string.Integrations} size={'large'} isCurrent />
   </Header>
-  <div class="ac-body__cards-container">
+
+  <div class="cards_grid">
     {#each integrationTypes as integrationType (integrationType._id)}
       {#if integrationType.allowMultiple}
         {#each getIntegrations(integrationType._id, integrations) as integration (integration._id)}
@@ -56,3 +56,14 @@
     {/each}
   </div>
 </div>
+
+<style lang="scss">
+  .cards_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, auto));
+    grid-auto-rows: minmax(12.5rem, auto);
+    grid-gap: 1.5rem;
+    padding: 1.5rem;
+    overflow: auto;
+  }
+</style>

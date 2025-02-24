@@ -1,3 +1,5 @@
+import { AccountClient } from '@hcengineering/account-client'
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   Class,
   Client,
@@ -9,29 +11,26 @@ import core, {
   Domain,
   FindOptions,
   Hierarchy,
-  IncOptions,
   MigrationState,
   ModelDb,
   ObjQueryType,
-  PushOptions,
+  Rank,
   Ref,
+  SortingOrder,
   Space,
   TxOperations,
   UnsetOptions,
-  WorkspaceId,
+  WorkspaceIds,
   generateId
 } from '@hcengineering/core'
+import { makeRank } from '@hcengineering/rank'
 import { StorageAdapter } from '@hcengineering/storage'
 import { ModelLogger } from './utils'
 
 /**
  * @public
  */
-export type MigrateUpdate<T extends Doc> = Partial<T> &
-Omit<PushOptions<T>, '$move'> &
-IncOptions<T> &
-UnsetOptions &
-Record<string, any>
+export type MigrateUpdate<T extends Doc> = Partial<T> & UnsetOptions & Record<string, any>
 
 /**
  * @public
@@ -75,11 +74,14 @@ export interface MigrationClient {
     options?: Omit<FindOptions<T>, 'lookup'>
   ) => Promise<T[]>
 
+  // Raw group by, allow to group documents inside domain.
+  groupBy: <T, P extends Doc>(domain: Domain, field: string, query?: DocumentQuery<P>) => Promise<Map<T, number>>
+
   // Traverse documents
   traverse: <T extends Doc>(
     domain: Domain,
     query: MigrationDocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'lookup'>
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
   ) => Promise<MigrationIterator<T>>
 
   // Allow to raw update documents inside domain.
@@ -87,15 +89,20 @@ export interface MigrationClient {
     domain: Domain,
     query: MigrationDocumentQuery<T>,
     operations: MigrateUpdate<T>
-  ) => Promise<MigrationResult>
+  ) => Promise<void>
 
   bulk: <T extends Doc>(
     domain: Domain,
     operations: { filter: MigrationDocumentQuery<T>, update: MigrateUpdate<T> }[]
-  ) => Promise<MigrationResult>
+  ) => Promise<void>
 
   // Move documents per domain
-  move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<MigrationResult>
+  move: <T extends Doc>(
+    sourceDomain: Domain,
+    query: DocumentQuery<T>,
+    targetDomain: Domain,
+    size?: number
+  ) => Promise<void>
 
   create: <T extends Doc>(domain: Domain, doc: T | T[]) => Promise<void>
   delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>
@@ -106,8 +113,9 @@ export interface MigrationClient {
 
   migrateState: Map<string, Set<string>>
   storageAdapter: StorageAdapter
+  accountClient: AccountClient
 
-  workspaceId: WorkspaceId
+  wsIds: WorkspaceIds
 }
 
 /**
@@ -154,7 +162,14 @@ export async function tryMigrate (client: MigrationClient, plugin: string, migra
   const states = client.migrateState.get(plugin) ?? new Set()
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
-    await migration.func(client)
+    try {
+      console.log('running migration', plugin, migration.state)
+      await migration.func(client)
+    } catch (err: any) {
+      console.error(err)
+      Analytics.handleError(err)
+      continue
+    }
     const st: MigrationState = {
       plugin,
       state: migration.state,
@@ -181,7 +196,13 @@ export async function tryUpgrade (
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
     const _client = await client()
-    await migration.func(_client)
+    try {
+      await migration.func(_client)
+    } catch (err: any) {
+      console.error(err)
+      Analytics.handleError(err)
+      continue
+    }
     const st: Data<MigrationState> = {
       plugin,
       state: migration.state
@@ -238,4 +259,35 @@ export async function migrateSpace (
     await client.update(domain, { space: from }, { space: to })
   }
   await client.update(DOMAIN_TX, { objectSpace: from }, { objectSpace: to })
+}
+
+export async function migrateSpaceRanks (client: MigrationClient, domain: Domain, space: Space): Promise<void> {
+  type WithRank = Doc & { rank: Rank }
+
+  const iterator = await client.traverse<WithRank>(
+    domain,
+    { space: space._id, rank: { $exists: true } },
+    { sort: { rank: SortingOrder.Ascending } }
+  )
+
+  try {
+    let rank = '0|100000:'
+
+    while (true) {
+      const docs = await iterator.next(1000)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const updates: { filter: MigrationDocumentQuery<Doc<Space>>, update: MigrateUpdate<Doc<Space>> }[] = []
+      for (const doc of docs) {
+        rank = makeRank(rank, undefined)
+        updates.push({ filter: { _id: doc._id }, update: { rank } })
+      }
+
+      await client.bulk(domain, updates)
+    }
+  } finally {
+    await iterator.close()
+  }
 }

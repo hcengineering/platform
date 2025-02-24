@@ -1,0 +1,52 @@
+{
+  "prefix": "IMPORTED",
+  "type": "toc",
+  "metadata": {
+    "in": "table-row",
+    "tableHeader": {
+      "col": 0,
+      "content": "title:"
+    },
+    "docName": {
+      "extract": { "row": 0, "col": 1 }
+    },
+    "docId": {
+      "extract": { "row": 1, "col": 1 }
+    }
+  },
+  "spec": {
+    "toc": {
+      "type": "toc",
+      "node": {
+        "type": "toc-paragraph-seq",
+        "params": {
+          "sectionHeaders": {
+            "tags": ["h1"]
+          },
+          "start": {
+            "patterns": ["Table of contents", "Table des matières"],
+            "tags": ["h1", "h2", "h3", "p"]
+          },
+          "end": {
+            "tags": ["h1"]
+          }
+        }
+      }
+    },
+    "sections": [
+      {
+        "type": "related-docs",
+        "node": {
+          "type": "list",
+          "params": {
+            "start": {
+              "tags": ["h2"],
+              "patterns": ["related documents"]
+            },
+            "title": "related-docs"
+          }
+        }
+      }
+    ]
+  }
+}

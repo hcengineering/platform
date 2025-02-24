@@ -16,9 +16,9 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Collaboration } from '@hcengineering/text-editor'
+  import { Collaboration } from '@hcengineering/text-editor-resources'
   import {
     Button,
     Chevron,
@@ -36,6 +36,7 @@
     ControlledDocument,
     ControlledDocumentState,
     DocumentRequest,
+    DocumentState,
     Project
   } from '@hcengineering/controlled-documents'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -96,6 +97,7 @@
 
   let innerWidth: number
   let isTitlePressed: boolean = false
+  let creating: boolean = false
 
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
@@ -104,13 +106,13 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void notificationClient.then((client) => client.readDoc(getClient(), prev))
+      void notificationClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
     controlledDocumentClosed()
-    void notificationClient.then((client) => client.readDoc(getClient(), _id))
+    void notificationClient.then((client) => client.readDoc(_id))
   })
 
   $: if (_id && _class && project) {
@@ -162,9 +164,15 @@
       return
     }
 
+    const hierarchy = client.getHierarchy()
+
+    const isReviewed = $controlledDocument.controlledState === ControlledDocumentState.Reviewed
+    const isApprovalRequest = hierarchy.isDerived(requestClass, documents.class.DocumentApprovalRequest)
+
     const teamPopupData: TeamPopupData = {
       controlledDoc: $controlledDocument,
-      requestClass
+      requestClass,
+      requireSignature: !(isReviewed && isApprovalRequest)
     }
 
     showPopup(TeamPopup, teamPopupData, 'center')
@@ -212,32 +220,51 @@
   }
 
   async function onCreateNewDraft (): Promise<void> {
-    if ($controlledDocument != null && $canCreateNewDraft && $documentLatestVersion != null) {
-      const latest = $documentLatestVersion
-      const version = { major: latest.major, minor: latest.minor + 1 }
-      const project = await getLatestProjectId($controlledDocument.space)
+    if (creating) {
+      return
+    }
 
-      if (project !== undefined) {
-        const id = await createNewDraftForControlledDoc(
-          client,
-          $controlledDocument,
-          $controlledDocument.space,
-          version,
-          project
-        )
-        const loc = getProjectDocumentLink(id, project)
-        navigate(loc)
+    creating = true
+    try {
+      if ($controlledDocument != null && $canCreateNewDraft && $documentLatestVersion != null) {
+        const latest = $documentLatestVersion
+        const version = { major: latest.major, minor: latest.minor + 1 }
+        const project = await getLatestProjectId($controlledDocument.space)
+
+        if (project !== undefined) {
+          try {
+            const { id, success } = await createNewDraftForControlledDoc(
+              client,
+              $controlledDocument,
+              $controlledDocument.space,
+              version,
+              project
+            )
+            if (success) {
+              const loc = getProjectDocumentLink(id, project)
+              navigate(loc)
+            }
+          } catch (err) {
+            await setPlatformStatus(unknownError(err))
+          }
+        } else {
+          console.warn('No document project found for space', $controlledDocument.space)
+        }
       } else {
-        console.warn('No document project found for space', $controlledDocument.space)
+        console.warn('Unexpected document state', $documentState)
       }
-    } else {
-      console.warn('Unexpected document state', $documentState)
+    } finally {
+      creating = false
     }
   }
 
   async function onEditDocument (): Promise<void> {
     if ($controlledDocument != null && $canCreateNewSnapshot && $isProjectEditable) {
-      await createDocumentSnapshotAndEdit(client, $controlledDocument)
+      try {
+        await createDocumentSnapshotAndEdit(client, $controlledDocument)
+      } catch (err) {
+        await setPlatformStatus(unknownError(err))
+      }
     } else {
       console.warn('Unexpected document state', $documentState)
     }
@@ -254,16 +281,18 @@
   $: canShowSidebar = $editorMode !== 'comparing'
   $: sideBar = canShowSidebar ? $availableRightPanelTabs : []
 
-  $: collaborativeDoc = $controlledDocument?.content
-  $: initialCollaborativeDoc = $controlledDocumentTemplate?.content
-
   $: workspace = $resolvedLocationStore.path[1].toUpperCase()
 
   $: docReference = getDocReference($controlledDocument)
   $: templateReference = getDocReference($controlledDocumentTemplate)
+
+  $: attribute = {
+    key: 'content',
+    attr: client.getHierarchy().getAttribute(documents.class.ControlledDocument, 'content')
+  }
 </script>
 
-{#if $controlledDocument !== null && collaborativeDoc !== undefined}
+{#if $controlledDocument !== null && attribute !== undefined}
   <Panel
     bind:innerWidth
     isHeader={false}
@@ -273,11 +302,14 @@
     isSub={false}
     selectedAside={$activeRightPanelTab ?? false}
     withoutActivity
-    contentClasses="m0 h-full flex-col"
+    contentClasses="h-full flex-col"
     withoutContentScroll
     allowClose={withClose && !embedded}
     {embedded}
     printHeader={false}
+    adaptive={'autoExtra'}
+    overflowExtra
+    hideSearch
     on:close
     on:select={(ev) => rightPanelTabChanged(ev.detail)}
   >
@@ -312,8 +344,8 @@
         </button>
       </div>
     </svelte:fragment>
-    <svelte:fragment slot="pre-utils">
-      <div class="flex flex-gap-2 no-print">
+    <svelte:fragment slot="extra">
+      <div class="flex flex-gap-1 no-print">
         {#if $isProjectEditable}
           {#if $isDocumentOwner && !$documentReviewIsActive && !$documentApprovalIsActive}
             {#if $canSendForReview}
@@ -338,7 +370,13 @@
             {/if}
 
             {#if $canCreateNewDraft}
-              <Button label={documentRes.string.CreateNewDraft} kind="regular" on:click={onCreateNewDraft} />
+              <Button
+                label={documentRes.string.CreateNewDraft}
+                kind="regular"
+                loading={creating}
+                disabled={creating}
+                on:click={onCreateNewDraft}
+              />
             {:else if $canCreateNewSnapshot}
               <Button label={documentRes.string.EditDocument} kind="regular" on:click={onEditDocument} />
             {/if}
@@ -377,7 +415,7 @@
       </div>
     </svelte:fragment>
     <svelte:fragment slot="post-utils">
-      <div class="no-print">
+      <div class="no-print ml-1">
         <Button
           icon={IconMoreV}
           iconProps={{ size: 'medium' }}
@@ -401,17 +439,11 @@
 
     <svelte:component this={DocumentTemplateFooter} slot="page-footer" {templateReference} />
 
-    <Collaboration
-      {collaborativeDoc}
-      {initialCollaborativeDoc}
-      objectClass={$controlledDocument._class}
-      objectId={$controlledDocument._id}
-      objectAttr="content"
-    >
+    <Collaboration object={$controlledDocument} {attribute}>
       {#if $editorMode === 'comparing'}
         <DocumentDiffViewer />
       {:else}
-        <Tabs model={tabs} bind:selected={selectedTab} size="small" padding="0 1.5rem" noMargin />
+        <Tabs model={tabs} bind:selected={selectedTab} size={'large'} padding="0 1.5rem" noMargin />
       {/if}
     </Collaboration>
     <svelte:fragment slot="custom-attributes">

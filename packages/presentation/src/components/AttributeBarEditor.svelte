@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { Class, Doc, Ref } from '@hcengineering/core'
   import type { AnySvelteComponent, ButtonKind, ButtonSize } from '@hcengineering/ui'
-  import { Label, tooltip } from '@hcengineering/ui'
+  import { Icon, Label, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { getAttributeEditor, getClient } from '../utils'
@@ -27,8 +27,10 @@
   export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
   export let showHeader: boolean = true
+  export let withIcon: boolean = false
   export let readonly = false
   export let draft = false
+  export let identifier: string | undefined = undefined
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -48,7 +50,9 @@
     if (draft) {
       ;(doc as any)[attributeKey] = value
     } else {
-      void updateAttribute(client, doc, doc._class, { key: attributeKey, attr: attribute }, value)
+      void updateAttribute(client, doc, doc._class, { key: attributeKey, attr: attribute }, value, false, {
+        objectId: identifier ?? doc._id
+      })
     }
   }
 
@@ -63,6 +67,8 @@
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
   $: isReadonly = (attribute.readonly ?? false) || readonly
+
+  $: icon = attribute?.icon ?? attribute?.type?.icon
 </script>
 
 {#if editor}
@@ -72,8 +78,17 @@
       use:tooltip={{
         component: Label,
         props: { label: attribute.label }
-      }}><Label label={attribute.label} /></span
+      }}
     >
+      {#if withIcon && icon}
+        <div class="flex flex-gap-1 items-center">
+          <Icon {icon} size="small" />
+          <Label label={attribute.label} />
+        </div>
+      {:else}
+        <Label label={attribute.label} />
+      {/if}
+    </span>
     <div class="flex flex-grow min-w-0">
       <svelte:component
         this={editor}

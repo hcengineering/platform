@@ -14,33 +14,23 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import {
   Class,
   Doc,
   DocumentQuery,
-  FullTextData,
-  IndexingConfiguration,
   MeasureContext,
   Ref,
   SearchOptions,
   SearchQuery,
-  toWorkspaceString,
   TxResult,
-  WorkspaceId
+  WorkspaceUuid
 } from '@hcengineering/core'
-import type {
-  EmbeddingSearchOption,
-  FullTextAdapter,
-  IndexedDoc,
-  SearchScoring,
-  SearchStringResult
-} from '@hcengineering/server-core'
+import type { FullTextAdapter, IndexedDoc, SearchScoring, SearchStringResult } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
-import { Analytics } from '@hcengineering/analytics'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { getMetadata } from '@hcengineering/platform'
-import { Domain } from 'node:domain'
 
 const DEFAULT_LIMIT = 200
 
@@ -53,163 +43,103 @@ function getIndexVersion (): string {
 }
 
 class ElasticAdapter implements FullTextAdapter {
-  private readonly workspaceString: string
-  private readonly getFulltextDocId: (doc: Ref<Doc>) => Ref<FullTextData>
-  private readonly getDocId: (fulltext: Ref<FullTextData>) => Ref<Doc>
+  private readonly getFulltextDocId: (workspaceId: WorkspaceUuid, doc: Ref<Doc>) => Ref<Doc>
+  private readonly getDocId: (workspaceId: WorkspaceUuid, fulltext: Ref<Doc>) => Ref<Doc>
   private readonly indexName: string
 
   constructor (
     private readonly client: Client,
-    readonly workspaceId: WorkspaceId,
     private readonly indexBaseName: string,
-    readonly indexVersion: string,
-    private readonly _metrics: MeasureContext
+    readonly indexVersion: string
   ) {
     this.indexName = `${indexBaseName}_${indexVersion}`
-    this.workspaceString = toWorkspaceString(workspaceId)
-    this.getFulltextDocId = (doc) => `${doc}@${this.workspaceString}` as Ref<FullTextData>
-    this.getDocId = (fulltext) => fulltext.slice(0, -1 * (this.workspaceString.length + 1)) as Ref<Doc>
+    this.getFulltextDocId = (workspaceId, doc) => `${doc}@${workspaceId}` as Ref<Doc>
+    this.getDocId = (workspaceId, fulltext) => fulltext.slice(0, -1 * (workspaceId.length + 1)) as Ref<Doc>
   }
 
-  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
-
-  async initMapping (field?: { key: string, dims: number }): Promise<Record<string, number>> {
-    // const current = await this.client.indices.getMapping({})
-    // console.log('Mappings', current)
-    // const mappings = current.body[this.workspaceString]
+  async initMapping (ctx: MeasureContext): Promise<boolean> {
     const indexName = this.indexName
-    const result: Record<string, number> = {}
     try {
-      const baseIndexExists = await this.client.indices.exists({
-        index: this.indexBaseName
-      })
-      const existingVersions = await this.client.indices.get({
-        index: [`${this.indexBaseName}_*`]
-      })
-      const existingOldVersionIndices = Object.keys(existingVersions.body).filter((name) => name !== indexName)
-      if (baseIndexExists.body) {
-        existingOldVersionIndices.push(this.indexBaseName)
-      }
-
+      const existingVersions = await ctx.withSync('get-indexes', {}, () =>
+        this.client.indices.get({
+          index: [`${this.indexBaseName}_*`]
+        })
+      )
+      const allIndexes = Object.keys(existingVersions.body)
+      const existingOldVersionIndices = allIndexes.filter((name) => name !== indexName)
       if (existingOldVersionIndices.length > 0) {
-        await this.client.indices.delete({
-          index: existingOldVersionIndices
-        })
+        await ctx.with('delete-old-index', {}, () =>
+          this.client.indices.delete({
+            index: existingOldVersionIndices
+          })
+        )
       }
-
-      const existsOldIndex = await this.client.indices.exists({
-        index: this.workspaceString
-      })
-      if (existsOldIndex.body) {
-        await this.client.indices.delete({
-          index: this.workspaceString
-        })
-      }
-      const existsIndex = await this.client.indices.exists({
-        index: indexName
-      })
-      if (!existsIndex.body) {
-        const createIndex = await this.client.indices.create({
-          index: indexName,
-          body: {
-            settings: {
-              analysis: {
-                filter: {
-                  english_stemmer: {
-                    type: 'stemmer',
-                    language: 'english'
-                  },
-                  english_possessive_stemmer: {
-                    type: 'stemmer',
-                    language: 'possessive_english'
-                  }
-                },
-                analyzer: {
-                  rebuilt_english: {
-                    type: 'custom',
-                    tokenizer: 'standard',
-                    filter: ['english_possessive_stemmer', 'lowercase', 'english_stemmer']
-                  }
-                }
-              }
-            }
-          }
-        })
-        console.log(createIndex)
-      }
-
-      const mappings = await this.client.indices.getMapping({
-        index: indexName
-      })
-      if (field !== undefined) {
-        console.log('Mapping', mappings.body)
-      }
-      const wsMappings = mappings.body[indexName]
-
-      // Collect old values.
-      for (const [k, v] of Object.entries(wsMappings?.mappings?.properties ?? {})) {
-        const va = v as any
-        if (va?.type === 'dense_vector') {
-          result[k] = va?.dims as number
-        }
-        if (k === 'workspaceId') {
-          if (va?.type !== 'keyword') {
-            this.metrics().info('Force index-recreate, since wrong index type was used')
-            await this.client.indices.delete({
-              index: indexName
-            })
-            return await this.initMapping(field)
-          }
-        }
-      }
-      await this.client.indices.putMapping({
-        index: indexName,
-        body: {
-          properties: {
-            fulltextSummary: {
-              type: 'text',
-              analyzer: 'rebuilt_english'
-            },
-            workspaceId: {
-              type: 'keyword',
-              index: true
-            }
-          }
-        }
-      })
-      if (field?.key !== undefined) {
-        if (!(wsMappings?.mappings?.properties?.[field.key]?.type === 'dense_vector')) {
-          result[field.key] = field.dims
-          await this.client.indices.putMapping({
+      const existsIndex = allIndexes.find((it) => it === indexName) !== undefined
+      if (!existsIndex) {
+        await ctx.with('create-index', { indexName }, () =>
+          this.client.indices.create({
             index: indexName,
-            allow_no_indices: true,
             body: {
-              properties: {
-                [field.key]: {
-                  type: 'dense_vector',
-                  dims: field.dims
+              settings: {
+                analysis: {
+                  filter: {
+                    english_stemmer: {
+                      type: 'stemmer',
+                      language: 'english'
+                    },
+                    english_possessive_stemmer: {
+                      type: 'stemmer',
+                      language: 'possessive_english'
+                    }
+                  },
+                  analyzer: {
+                    rebuilt_english: {
+                      type: 'custom',
+                      tokenizer: 'standard',
+                      filter: ['english_possessive_stemmer', 'lowercase', 'english_stemmer']
+                    }
+                  }
                 }
               }
             }
           })
-        }
+        )
       }
+
+      await ctx.with('put-mapping', {}, () =>
+        this.client.indices.putMapping({
+          index: indexName,
+          body: {
+            properties: {
+              fulltextSummary: {
+                type: 'text',
+                analyzer: 'rebuilt_english'
+              },
+              workspaceId: {
+                type: 'keyword',
+                index: true
+              }
+            }
+          }
+        })
+      )
     } catch (err: any) {
-      Analytics.handleError(err)
-      console.error(err)
+      if (err.name !== 'ConnectionError') {
+        Analytics.handleError(err)
+        ctx.error(err)
+      }
+      return false
     }
-    return result
+    return true
   }
 
   async close (): Promise<void> {
     await this.client.close()
   }
 
-  metrics (): MeasureContext {
-    return this._metrics
-  }
-
   async searchString (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceUuid,
     query: SearchQuery,
     options: SearchOptions & { scoring?: SearchScoring[] }
   ): Promise<SearchStringResult> {
@@ -235,30 +165,12 @@ class ElasticAdapter implements FullTextAdapter {
                   },
                   {
                     match: {
-                      workspaceId: { query: this.workspaceString, operator: 'and' }
+                      workspaceId: { query: workspaceId, operator: 'and' }
                     }
                   }
                 ]
               }
             },
-            functions: [
-              {
-                script_score: {
-                  script: {
-                    source: "Math.max(0, ((doc['modifiedOn'].value / 1000 - 1672531200) / 2592000))"
-                    /*
-                      Give more score for more recent objects. 1672531200 is the start of 2023
-                      2592000 is a month. The idea is go give 1 point for each month. For objects
-                      older than Jan 2023 it will give just zero.
-                      Better approach is to use gauss function, need to investigate futher how be
-                      map modifiedOn, need to tell elastic that this is a date.
-
-                      But linear function is perfect to conduct an experiment
-                    */
-                  }
-                }
-              }
-            ],
             boost_mode: 'sum'
           }
         },
@@ -314,13 +226,20 @@ class ElasticAdapter implements FullTextAdapter {
       }
 
       return resp
-    } catch (err) {
-      console.error('elastic error', JSON.stringify(err, null, 2))
+    } catch (err: any) {
+      if (err.name === 'ConnectionError') {
+        ctx.warn('Elastic DB is not available')
+        return { docs: [] }
+      }
+      Analytics.handleError(err)
+      ctx.error('Elastic error', { error: err })
       return { docs: [] }
     }
   }
 
   async search (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceUuid,
     _classes: Ref<Class<Doc>>[],
     query: DocumentQuery<Doc>,
     size: number | undefined,
@@ -340,7 +259,7 @@ class ElasticAdapter implements FullTextAdapter {
           },
           {
             match: {
-              workspaceId: { query: this.workspaceString, operator: 'and' }
+              workspaceId: { query: workspaceId, operator: 'and' }
             }
           }
         ],
@@ -384,18 +303,34 @@ class ElasticAdapter implements FullTextAdapter {
     }
 
     try {
-      const result = await this.client.search({
-        index: this.indexName,
-        body: {
-          query: request,
-          size: size ?? 200,
-          from: from ?? 0
+      const result = await ctx.with(
+        'search',
+        {},
+        () =>
+          this.client.search({
+            index: this.indexName,
+            body: {
+              query: request,
+              size: size ?? 200,
+              from: from ?? 0
+            }
+          }),
+        {
+          _classes,
+          size,
+          from,
+          query: request
         }
-      })
+      )
       const hits = result.body.hits.hits as any[]
       return hits.map((hit) => ({ ...hit._source, _score: hit._score }))
-    } catch (err) {
-      console.error(JSON.stringify(err, null, 2))
+    } catch (err: any) {
+      if (err.name === 'ConnectionError') {
+        ctx.warn('Elastic DB is not available')
+        return []
+      }
+      ctx.error('Elastic error', { error: err })
+      Analytics.handleError(err)
       return []
     }
   }
@@ -407,88 +342,12 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
-  async searchEmbedding (
-    _classes: Ref<Class<Doc>>[],
-    search: DocumentQuery<Doc>,
-    embedding: number[],
-    options: EmbeddingSearchOption
-  ): Promise<IndexedDoc[]> {
-    if (embedding.length === 0) return []
-    const request: any = {
-      bool: {
-        should: [
-          {
-            script_score: {
-              query: {
-                bool: {
-                  filter: {
-                    term: {
-                      [options.field_enable]: true
-                    }
-                  }
-                }
-              },
-              script: {
-                source: `cosineSimilarity(params.queryVector, '${options.field}') + 1`,
-                params: {
-                  queryVector: embedding
-                }
-              },
-              boost: options.embeddingBoost ?? 10.0
-            }
-          },
-          {
-            simple_query_string: {
-              query: search.$search,
-              flags: 'OR|PREFIX|PHRASE',
-              default_operator: 'and',
-              boost: options.fulltextBoost ?? 1
-            }
-          }
-        ],
-        must: {
-          match: {
-            workspaceId: { query: this.workspaceString, operator: 'and' }
-          }
-        },
-        filter: [
-          {
-            bool: {
-              must: [{ terms: this.getTerms(_classes, '_class') }]
-            }
-          }
-        ]
-      }
-    }
-
-    try {
-      const result = await this.client.search({
-        index: this.indexName,
-        body: {
-          query: request,
-          size: options?.size ?? 200,
-          from: options?.from ?? 0
-        }
-      })
-      const sourceHits = result.body.hits.hits
-
-      const min = options?.minScore ?? 75
-      const embBoost = options.embeddingBoost ?? 10.0
-
-      const hits: any[] = sourceHits.filter((it: any) => it._score - embBoost > min)
-      return hits.map((hit) => ({ ...hit._source, _score: hit._score - embBoost }))
-    } catch (err) {
-      console.error(JSON.stringify(err, null, 2))
-      return []
-    }
-  }
-
-  async index (doc: IndexedDoc): Promise<TxResult> {
+  async index (ctx: MeasureContext, workspaceId: WorkspaceUuid, doc: IndexedDoc): Promise<TxResult> {
     const wsDoc = {
-      workspaceId: this.workspaceString,
+      workspaceId,
       ...doc
     }
-    const fulltextId = this.getFulltextDocId(doc.id)
+    const fulltextId = this.getFulltextDocId(workspaceId, doc.id)
     if (doc.data === undefined) {
       await this.client.index({
         index: this.indexName,
@@ -508,10 +367,15 @@ class ElasticAdapter implements FullTextAdapter {
     return {}
   }
 
-  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
+  async update (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceUuid,
+    id: Ref<Doc>,
+    update: Record<string, any>
+  ): Promise<TxResult> {
     await this.client.update({
       index: this.indexName,
-      id: this.getFulltextDocId(id),
+      id: this.getFulltextDocId(workspaceId, id),
       body: {
         doc: update
       }
@@ -520,14 +384,17 @@ class ElasticAdapter implements FullTextAdapter {
     return {}
   }
 
-  async updateMany (docs: IndexedDoc[]): Promise<TxResult[]> {
+  async updateMany (ctx: MeasureContext, workspaceId: WorkspaceUuid, docs: IndexedDoc[]): Promise<TxResult[]> {
     const parts = Array.from(docs)
     while (parts.length > 0) {
-      const part = parts.splice(0, 1000)
+      const part = parts.splice(0, 500)
 
       const operations = part.flatMap((doc) => {
-        const wsDoc = { workspaceId: this.workspaceString, ...doc }
-        return [{ index: { _index: this.indexName, _id: this.getFulltextDocId(doc.id) } }, { ...wsDoc, type: '_doc' }]
+        const wsDoc = { workspaceId, ...doc }
+        return [
+          { index: { _index: this.indexName, _id: this.getFulltextDocId(workspaceId, doc.id) } },
+          { ...wsDoc, type: '_doc' }
+        ]
       })
 
       const response = await this.client.bulk({ refresh: true, body: operations })
@@ -548,10 +415,10 @@ class ElasticAdapter implements FullTextAdapter {
     return []
   }
 
-  async remove (docs: Ref<Doc>[]): Promise<void> {
+  async remove (ctx: MeasureContext, workspaceId: WorkspaceUuid, docs: Ref<Doc>[]): Promise<void> {
     try {
       while (docs.length > 0) {
-        const part = docs.splice(0, 10000)
+        const part = docs.splice(0, 5000)
         await this.client.deleteByQuery(
           {
             type: '_doc',
@@ -562,13 +429,13 @@ class ElasticAdapter implements FullTextAdapter {
                   must: [
                     {
                       terms: {
-                        _id: part.map(this.getFulltextDocId),
+                        _id: part.map((it) => this.getFulltextDocId(workspaceId, it)),
                         boost: 1.0
                       }
                     },
                     {
                       match: {
-                        workspaceId: { query: this.workspaceString, operator: 'and' }
+                        workspaceId: { query: workspaceId, operator: 'and' }
                       }
                     }
                   ]
@@ -588,7 +455,37 @@ class ElasticAdapter implements FullTextAdapter {
     }
   }
 
-  async load (docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
+  async clean (ctx: MeasureContext, workspaceId: WorkspaceUuid): Promise<void> {
+    try {
+      await this.client.deleteByQuery(
+        {
+          type: '_doc',
+          index: this.indexName,
+          body: {
+            query: {
+              bool: {
+                must: [
+                  {
+                    match: {
+                      workspaceId: { query: workspaceId, operator: 'and' }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        undefined
+      )
+    } catch (e: any) {
+      if (e instanceof esErr.ResponseError && e.meta.statusCode === 404) {
+        return
+      }
+      throw e
+    }
+  }
+
+  async load (ctx: MeasureContext, workspaceId: WorkspaceUuid, docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
     const resp = await this.client.search({
       index: this.indexName,
       type: '_doc',
@@ -598,13 +495,13 @@ class ElasticAdapter implements FullTextAdapter {
             must: [
               {
                 terms: {
-                  _id: docs.map(this.getFulltextDocId),
+                  _id: docs.map((it) => this.getFulltextDocId(workspaceId, it)),
                   boost: 1.0
                 }
               },
               {
                 match: {
-                  workspaceId: { query: this.workspaceString, operator: 'and' }
+                  workspaceId: { query: workspaceId, operator: 'and' }
                 }
               }
             ]
@@ -613,23 +510,21 @@ class ElasticAdapter implements FullTextAdapter {
         size: docs.length
       }
     })
-    return Array.from(resp.body.hits.hits.map((hit: any) => ({ ...hit._source, id: this.getDocId(hit._id) })))
+    return Array.from(
+      resp.body.hits.hits.map((hit: any) => ({ ...hit._source, id: this.getDocId(workspaceId, hit._id) }))
+    )
   }
 }
 
 /**
  * @public
  */
-export async function createElasticAdapter (
-  url: string,
-  workspaceId: WorkspaceId,
-  metrics: MeasureContext
-): Promise<FullTextAdapter> {
+export async function createElasticAdapter (url: string): Promise<FullTextAdapter> {
   const client = new Client({
     node: url
   })
   const indexBaseName = getIndexName()
   const indexVersion = getIndexVersion()
 
-  return new ElasticAdapter(client, workspaceId, indexBaseName, indexVersion, metrics)
+  return new ElasticAdapter(client, indexBaseName, indexVersion)
 }

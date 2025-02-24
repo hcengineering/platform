@@ -19,10 +19,9 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentsTooltip } from '@hcengineering/attachment-resources'
   import { ChatMessage } from '@hcengineering/chunter'
-  import core from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Action, Icon, Label, tooltip } from '@hcengineering/ui'
-  import { convert } from 'html-to-text'
+  import { isEmptyMarkup } from '@hcengineering/text'
 
   export let value: ChatMessage
   export let readonly = false
@@ -41,32 +40,20 @@
       },
       (res) => {
         attachments = res
-      },
-      {
-        lookup: {
-          file: core.class.Blob
-        }
       }
     )
   } else {
     attachmentsQuery.unsubscribe()
   }
-
-  $: text = value.message
-    ? convert(value.message, {
-      preserveNewlines: false,
-      selectors: [{ selector: 'img', format: 'skip' }]
-    })
-    : undefined
 </script>
 
-<BaseMessagePreview text={text ? value.message : undefined} message={value} {type} {readonly} {actions} on:click>
-  {#if value.attachments && type === 'full' && text}
+<BaseMessagePreview text={value.message} message={value} {type} {readonly} {actions} on:click>
+  {#if value.attachments && type === 'full' && !isEmptyMarkup(value.message)}
     <div class="attachments" use:tooltip={{ component: AttachmentsTooltip, props: { attachments } }}>
       {value.attachments}
       <Icon icon={attachment.icon.Attachment} size="small" />
     </div>
-  {:else if attachments.length > 0 && !text}
+  {:else if attachments.length > 0 && isEmptyMarkup(value.message)}
     <span class="font-normal">
       <Label label={attachment.string.Attachments} />:
       <span class="ml-1">

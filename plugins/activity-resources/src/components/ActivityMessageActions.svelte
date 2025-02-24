@@ -19,25 +19,34 @@
   import { getClient } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
   import view, { Action as ViewAction } from '@hcengineering/view'
+  import { Ref } from '@hcengineering/core'
 
   import ActivityMessageAction from './ActivityMessageAction.svelte'
   import { savedMessagesStore } from '../activity'
 
   export let message: ActivityMessage | undefined
   export let actions: Action[] = []
+  export let excludedActions: Ref<ViewAction>[] = []
   export let withActionMenu = true
   export let onOpen: () => void
   export let onClose: () => void
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
+
+  let providedMenuActions: Action[] = []
+  let providedInlineActions: Action[] = []
 
   let inlineActions: ViewAction[] = []
   let isActionMenuOpened = false
 
-  $: void updateInlineActions(message)
+  $: providedMenuActions = actions.filter((a) => !a.inline)
+  $: providedInlineActions = actions.filter((a) => a.inline)
+
+  $: void updateInlineActions(message, excludedActions)
 
   savedMessagesStore.subscribe(() => {
-    void updateInlineActions(message)
+    void updateInlineActions(message, excludedActions)
   })
 
   function handleActionMenuOpened (): void {
@@ -51,15 +60,13 @@
   }
 
   function showMenu (ev: MouseEvent): void {
-    const excludedActions = inlineActions.map(({ _id }) => _id)
-
     showPopup(
       Menu,
       {
         object: message,
-        actions,
+        actions: providedMenuActions,
         baseMenuClass: activity.class.ActivityMessage,
-        excludedActions
+        excludedActions: inlineActions.map(({ _id }) => _id).concat(excludedActions)
       },
       ev.target as HTMLElement,
       handleActionMenuClosed
@@ -67,47 +74,71 @@
     handleActionMenuOpened()
   }
 
-  async function updateInlineActions (message?: ActivityMessage): Promise<void> {
+  async function updateInlineActions (message?: ActivityMessage, excludedAction: Ref<ViewAction>[] = []): Promise<void> {
     if (message === undefined) {
       inlineActions = []
       return
     }
-    inlineActions = (await getActions(client, message, activity.class.ActivityMessage)).filter(
-      (action) => action.inline
-    )
+    inlineActions = (await getActions(client, message, activity.class.ActivityMessage))
+      .filter((action) => action.inline)
+      .filter((action) => !excludedAction.includes(action._id))
+  }
+
+  async function handleAction (action: ViewAction, ev?: Event): Promise<void> {
+    if (message === undefined) return
+
+    if (onReply !== undefined && action._id === activity.action.Reply) {
+      onReply(message)
+      handleActionMenuClosed()
+      return
+    }
+    const fn = await getResource(action.action)
+
+    await fn(message, ev, { onOpen, onClose })
   }
 </script>
 
 {#if message}
-  <div class="root">
+  <div class="activityMessage-actionPopup">
+    {#each providedInlineActions as inline}
+      {#if inline.icon}
+        <ActivityMessageAction
+          label={inline.label}
+          size={'small'}
+          icon={inline.icon}
+          action={(ev) => inline.action({}, ev)}
+        />
+      {/if}
+    {/each}
+
     {#each inlineActions as inline}
       {#if inline.icon}
-        {#await getResource(inline.action) then action}
-          <ActivityMessageAction
-            label={inline.label}
-            size={inline.actionProps?.size ?? 'small'}
-            icon={inline.icon}
-            iconProps={inline.actionProps?.iconProps}
-            action={(ev) => action(message, ev, { onOpen, onClose })}
-          />
-        {/await}
+        <ActivityMessageAction
+          label={inline.label}
+          size={inline.actionProps?.size ?? 'small'}
+          icon={inline.icon}
+          iconProps={inline.actionProps?.iconProps}
+          dataId={inline._id}
+          action={(ev) => handleAction(inline, ev)}
+        />
       {/if}
     {/each}
 
     {#if withActionMenu}
       <ActivityMessageAction
-        size="small"
         icon={IconMoreV}
-        opened={isActionMenuOpened}
-        action={showMenu}
         label={view.string.MoreActions}
+        size={'small'}
+        opened={isActionMenuOpened}
+        dataId={'btnMoreActions'}
+        action={showMenu}
       />
     {/if}
   </div>
 {/if}
 
 <style lang="scss">
-  .root {
+  .activityMessage-actionPopup {
     display: flex;
     align-items: center;
     border-radius: 0.375rem;

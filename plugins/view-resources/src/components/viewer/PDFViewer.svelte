@@ -14,29 +14,12 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { getBlobSrcFor, type BlobMetadata } from '@hcengineering/presentation'
+  import { getFileUrl } from '@hcengineering/presentation'
+  import { EmbeddedPDF } from '@hcengineering/ui'
 
-  export let value: Blob | Ref<Blob>
+  export let value: Ref<Blob>
   export let name: string
-  export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
 </script>
 
-{#await getBlobSrcFor(value, name) then href}
-  <iframe class:fit src={href + '#view=FitH&navpanes=0'} title={name} />
-{/await}
-
-<style lang="scss">
-  iframe {
-    width: 100%;
-    border: none;
-
-    &.fit {
-      min-height: 100%;
-    }
-    &:not(.fit) {
-      height: 80vh;
-      min-height: 20rem;
-    }
-  }
-</style>
+<EmbeddedPDF src={getFileUrl(value, name)} {name} {fit} />

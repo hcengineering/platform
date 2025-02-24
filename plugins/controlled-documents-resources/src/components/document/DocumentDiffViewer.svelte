@@ -1,82 +1,39 @@
 <script lang="ts">
   import { getContext, onDestroy } from 'svelte'
-  import { Doc as Ydoc } from 'yjs'
   import { getClient } from '@hcengineering/presentation'
-  import { type Doc } from '@hcengineering/core'
+  import { makeDocCollabId, type Doc } from '@hcengineering/core'
+  import { CollaborationIds } from '@hcengineering/text-editor'
   import {
-    CollaborationIds,
+    CollaborationDiffViewer,
+    Provider,
     StringDiffViewer,
-    TiptapCollabProvider,
-    createTiptapCollaborationData,
-    formatCollaborativeDocumentId
-  } from '@hcengineering/text-editor'
+    createTiptapCollaborationData
+  } from '@hcengineering/text-editor-resources'
   import { Dropdown, Label, ListItem, Loading, Scroller, themeStore } from '@hcengineering/ui'
   import documents, {
     ControlledDocument,
     ControlledDocumentSnapshot,
     ControlledDocumentState,
     Document,
-    DocumentSection,
     DocumentState
   } from '@hcengineering/controlled-documents'
   import plugin from '../../plugin'
   import {
     $controlledDocument as controlledDocument,
-    $controlledDocumentSections as sections,
     $comparedDocument as compareTo,
-    $comparedDocumentSections as compareToSections,
     $documentComparisonVersions as documentComparisonVersions,
-    ComparisonSectionPair,
-    comparisonRequested,
-    loadComparedDocumentSectionsFx
+    comparisonRequested
   } from '../../stores/editors/document'
-  import { COLLABORATOR_URL, TOKEN, getTranslatedControlledDocStates, getTranslatedDocumentStates } from '../../utils'
-  import DocumentSectionPairDiffViewer from './DocumentSectionPairDiffViewer.svelte'
+  import { getTranslatedControlledDocStates, getTranslatedDocumentStates } from '../../utils'
   import DocumentTitle from './DocumentTitle.svelte'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const ydoc = getContext<Ydoc>(CollaborationIds.Doc)
+  const ydoc: any = getContext(CollaborationIds.Doc)
 
-  let collapsedPairIndices = new Set<number>()
-  let comparedYdoc: Ydoc | undefined = undefined
-  let comparedProvider: TiptapCollabProvider | undefined = undefined
+  let comparedYdoc: any | undefined = undefined
+  let comparedProvider: Provider | undefined = undefined
   let loading = true
-  const isLoadPending = loadComparedDocumentSectionsFx.pending
-
-  const handleSectionDiffPairs = (firstSections: DocumentSection[], secondSections: DocumentSection[]) => {
-    const result: ComparisonSectionPair[] = []
-    const firstSectionKeys = new Set(firstSections.map((section) => section.key))
-    const secondSectionKeys = new Set(secondSections.map((section) => section.key))
-    let secondIndex = 0
-    let firstIndex = 0
-    while (firstIndex < firstSections.length) {
-      const firstSection = firstSections[firstIndex]
-      if (secondSectionKeys.has(firstSection.key)) {
-        while (secondIndex < secondSections.length && !firstSectionKeys.has(secondSections[secondIndex].key)) {
-          result.push([null, { section: secondSections[secondIndex], index: secondIndex + 1 }])
-          secondIndex++
-        }
-      }
-      if (secondIndex < secondSections.length && firstSection.key === secondSections[secondIndex].key) {
-        result.push([
-          { section: firstSection, index: firstIndex + 1 },
-          { section: secondSections[secondIndex], index: secondIndex + 1 }
-        ])
-        secondIndex++
-      } else {
-        result.push([{ section: firstSection, index: firstIndex + 1 }, null])
-      }
-      firstIndex++
-    }
-
-    while (secondIndex < secondSections.length) {
-      result.push([null, { section: secondSections[secondIndex], index: secondIndex + 1 }])
-      secondIndex++
-    }
-
-    return result
-  }
 
   const handleSelect = (event: CustomEvent<ListItem>) => {
     const version = $documentComparisonVersions.find((item) => item._id === event.detail._id)
@@ -128,25 +85,19 @@
   }))
   $: if ($compareTo) {
     if (comparedProvider) {
-      comparedProvider.disconnect()
+      comparedProvider.destroy()
     }
     loading = true
-    const collaborativeDoc = $compareTo.content
 
-    const data = createTiptapCollaborationData({
-      collaboratorURL: COLLABORATOR_URL,
-      token: TOKEN,
-      documentId: formatCollaborativeDocumentId(collaborativeDoc)
-    })
+    const compareToDoc = makeDocCollabId($compareTo, 'content')
+    const data = createTiptapCollaborationData(compareToDoc, $compareTo.content)
     comparedYdoc = data.ydoc
     comparedProvider = data.provider
-    comparedProvider.loaded.then(() => (loading = false))
+    void comparedProvider.loaded.then(() => (loading = false))
   }
 
-  $: sectionDiffPairs = handleSectionDiffPairs($sections, $compareToSections)
-
   onDestroy(() => {
-    comparedProvider?.destroy()
+    void comparedProvider?.destroy()
   })
 </script>
 
@@ -168,35 +119,29 @@
     on:selected={handleSelect}
   />
 </div>
-{#if loading || $isLoadPending}
+{#if loading}
   <Loading />
 {:else}
   <Scroller>
-    <div class="antiAccordion">
-      <div class="pl-7">
-        <DocumentTitle>
-          <StringDiffViewer
-            value={$controlledDocument?.title ?? ''}
-            compareTo={(isDocument($compareTo) ? $compareTo : $controlledDocument)?.title ?? ''}
-          />
-        </DocumentTitle>
-      </div>
-      {#each sectionDiffPairs as pair, index}
-        <DocumentSectionPairDiffViewer
-          {pair}
-          firstYdoc={ydoc}
-          secondYdoc={comparedYdoc}
-          expanded={!collapsedPairIndices.has(index)}
-          on:toggle={() => {
-            if (collapsedPairIndices.has(index)) {
-              collapsedPairIndices.delete(index)
-            } else {
-              collapsedPairIndices.add(index)
-            }
-            collapsedPairIndices = new Set(collapsedPairIndices)
-          }}
+    <div class="root">
+      <DocumentTitle>
+        <StringDiffViewer
+          value={$controlledDocument?.title ?? ''}
+          compareTo={(isDocument($compareTo) ? $compareTo : $controlledDocument)?.title ?? ''}
         />
-      {/each}
+      </DocumentTitle>
+      <CollaborationDiffViewer field="content" comparedField="content" {ydoc} {comparedYdoc} />
+      <div class="bottomSpacing" />
     </div>
   </Scroller>
 {/if}
+
+<style lang="scss">
+  .root {
+    padding: 0 3.25rem;
+  }
+
+  .bottomSpacing {
+    padding-bottom: 30vh;
+  }
+</style>

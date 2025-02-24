@@ -16,6 +16,8 @@
       "dom"
     ],
     "types": ["node", "jest"],
-    "incremental": true
+    "incremental": true,
+    "isolatedModules": true,
+    
   }
 }

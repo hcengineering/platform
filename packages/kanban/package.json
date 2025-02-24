@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@hcengineering/ui": "^0.6.15",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "lexorank": "~1.0.4",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",

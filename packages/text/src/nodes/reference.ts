@@ -13,45 +13,20 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Ref } from '@hcengineering/core'
 import { Node, mergeAttributes } from '@tiptap/core'
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { getDataAttribute } from './utils'
+import { Class, Doc, Ref } from '@hcengineering/core'
 
-/**
- * @public
- */
-export interface Reference {
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-  parentNode: ProseMirrorNode | null
-}
-
-/**
- * @public
- */
-export function extractReferences (content: ProseMirrorNode): Array<Reference> {
-  const result: Array<Reference> = []
-
-  content.descendants((node, _pos, parent): boolean => {
-    if (node.type.name === ReferenceNode.name) {
-      const objectId = node.attrs.id as Ref<Doc>
-      const objectClass = node.attrs.objectclass as Ref<Class<Doc>>
-      const e = result.find((e) => e.objectId === objectId && e.objectClass === objectClass)
-      if (e === undefined) {
-        result.push({ objectId, objectClass, parentNode: parent })
-      }
-    }
-
-    return true
-  })
-
-  return result
+export interface ReferenceNodeProps {
+  id: Ref<Doc>
+  objectclass: Ref<Class<Doc>>
+  label: string
 }
 
 export interface ReferenceOptions {
-  renderLabel: (props: { options: ReferenceOptions, node: any }) => string
-  suggestion: { char: string }
+  renderLabel: (props: { options: ReferenceOptions, props: ReferenceNodeProps }) => string
+  suggestion: { char?: string }
+  HTMLAttributes: Record<string, any>
 }
 
 /**
@@ -61,50 +36,72 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
   name: 'reference',
   group: 'inline',
   inline: true,
+  selectable: true,
+  atom: true,
+  draggable: true,
 
   addAttributes () {
     return {
       id: getDataAttribute('id'),
       objectclass: getDataAttribute('objectclass'),
-      label: getDataAttribute('label'),
-      class: { default: null }
+      label: getDataAttribute('label')
     }
   },
 
   addOptions () {
     return {
-      renderLabel ({ options, node }) {
+      renderLabel ({ options, props }) {
         // eslint-disable-next-line
-        return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`
+        return `${options.suggestion.char}${props.label ?? props.id}`
       },
-      suggestion: { char: '@' }
+      suggestion: { char: '@' },
+      HTMLAttributes: {}
     }
   },
 
   parseHTML () {
     return [
       {
-        tag: `span[data-type="${this.name}"]`
+        tag: `span[data-type="${this.name}"]`,
+        getAttrs: (el) => {
+          const id = (el as HTMLSpanElement).getAttribute('id')?.trim()
+          const label = (el as HTMLSpanElement).getAttribute('label')?.trim()
+          const objectclass = (el as HTMLSpanElement).getAttribute('objectclass')?.trim()
+
+          if (id == null || label == null || objectclass == null) {
+            return false
+          }
+
+          return {
+            id,
+            label,
+            objectclass
+          }
+        }
       }
     ]
   },
 
   renderHTML ({ node, HTMLAttributes }) {
-    const options = this.options
     return [
       'span',
       mergeAttributes(
         {
-          'data-type': this.name
+          'data-type': this.name,
+          class: 'antiMention'
         },
+        this.options.HTMLAttributes,
         HTMLAttributes
       ),
-      this.options.renderLabel({ options, node })
+      this.options.renderLabel({
+        options: this.options,
+        props: node.attrs as ReferenceNodeProps
+      })
     ]
   },
 
   renderText ({ node }) {
     const options = this.options
-    return options.renderLabel({ options, node })
+    return options.renderLabel({ options, props: node.attrs as ReferenceNodeProps })
   }
 })

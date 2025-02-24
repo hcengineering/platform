@@ -9,7 +9,9 @@ export class ApplicationsDetailsPage extends CommonRecruitingPage {
     this.page = page
   }
 
-  readonly textApplicationId = (): Locator => this.page.locator('div.popupPanel-title div.title:last-child')
+  readonly textApplicationId = (): Locator =>
+    this.page.locator('div.hulyHeader-container div.hulyHeader-titleGroup > *').last()
+
   readonly buttonState = (): Locator =>
     this.page
       .locator('div[class*="collapsed-container"]')

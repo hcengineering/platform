@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     Data,
     DocumentUpdate,
     RolesAssignment,
@@ -25,9 +25,10 @@
     SpaceType,
     generateId,
     getCurrentAccount,
-    WithLookup
+    WithLookup,
+    notEmpty
   } from '@hcengineering/core'
-  import document, { Teamspace } from '@hcengineering/document'
+  import document, { Teamspace, DocumentEvents } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
   import {
@@ -45,6 +46,7 @@
   import view from '@hcengineering/view'
   import { IconPicker, SpaceTypeSelector } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   import documentRes from '../../plugin'
 
@@ -62,13 +64,14 @@
   let icon: Asset | undefined = teamspace?.icon ?? undefined
   let color = teamspace?.color ?? getColorNumberByText(name)
   let isColorSelected = false
-  let members: Ref<Account>[] =
-    teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] =
-    teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount().primarySocialId]
+  let owners: PersonId[] =
+    teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount().primarySocialId]
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
 
   let typeId: Ref<SpaceType> | undefined = teamspace?.type ?? document.spaceType.DefaultTeamspaceType
   let spaceType: WithLookup<SpaceType> | undefined
@@ -207,6 +210,7 @@
       rolesAssignment
     )
 
+    Analytics.handleEvent(DocumentEvents.TeamspaceCreated, { id: teamspaceId })
     close(teamspaceId)
   }
 
@@ -232,14 +236,14 @@
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -254,7 +258,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -408,7 +412,7 @@
         <Label label={core.string.AutoJoin} />
         <span><Label label={core.string.AutoJoinDescr} /></span>
       </div>
-      <Toggle bind:on={autoJoin} />
+      <Toggle id={'teamspace-autoJoin'} bind:on={autoJoin} />
     </div>
 
     {#each roles as role}
@@ -419,8 +423,8 @@
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}
           label={documentRes.string.TeamspaceMembers}
-          includeItems={members}
-          readonly={members.length === 0}
+          includeItems={membersPersons}
+          readonly={membersPersons.length === 0}
           onChange={(refs) => {
             handleRoleAssignmentChanged(role._id, refs)
           }}

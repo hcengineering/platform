@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Product, ProductVersion } from '@hcengineering/products'
-  import { FindOptions, SortingOrder } from '@hcengineering/core'
+  import core, { FindOptions, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Label, Loading } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -45,6 +45,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {

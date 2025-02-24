@@ -21,7 +21,6 @@
   import { dateFileBrowserFilters, fileTypeFileBrowserFilters } from '..'
 
   export let requestedSpaceClasses: Ref<Class<Space>>[]
-  export let spaceId: Ref<Space> | undefined
   export let selectedParticipants: Ref<Person>[]
   export let selectedSpaces: Ref<Space>[]
   export let selectedDateId: string
@@ -44,7 +43,7 @@
   <SpaceMultiBoxList
     _classes={requestedSpaceClasses}
     label={attachment.string.FileBrowserFilterIn}
-    selectedItems={spaceId ? [spaceId] : []}
+    selectedItems={selectedSpaces}
     kind={'ghost'}
     size={'medium'}
     on:update={(evt) => {

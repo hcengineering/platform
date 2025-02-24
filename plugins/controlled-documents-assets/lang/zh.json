@@ -9,11 +9,7 @@
     "Requests": "请求",
     "EffectiveDate": "生效日期",
     "PlannedEffectiveDate": "计划生效日期",
-    "Section": "章节",
     "Rank": "等级",
-    "CollaborativeSection": "协作章节",
-    "CollaboratorSectionId": "协作章节 ID",
-    "AttachmentsSection": "附件章节",
     "DocumentRequest": "请求",
     "DocumentReviewRequest": "文档审查请求",
     "DocumentApprovalRequest": "文档审批请求",
@@ -22,11 +18,10 @@
     "Guidance": "指导",
     "Required": "必需的",
     "Description": "描述",
-    "SectionTemplate": "章节模板",
     "Major": "主要",
     "Minor": "次要",
     "Patch": "补丁",
-    "DocumentApprovals": "审查和批准",
+    "ValidationWorkflow": "验证工作流程",
     "ChangeOwner": "更改文档所有者",
     "ChangeOwnerHintBeginning": "转移所有权",
     "ChangeOwnerHintEnd": "给其他人。",
@@ -104,8 +99,6 @@
     "DocumentCodePlaceholder": "DOC-1",
     "DocumentPrefixPlaceholder": "DOC",
     "DocumentPrefix": "文档前缀",
-    "Sections": "章节",
-    "TemplateSectionTitle": "标题",
     "DocumentTemplateCreateLabel": "模板",
     "DocumentCategoryCreateLabel": "类别",
     "CreateDocumentCategory": "创建类别",
@@ -114,6 +107,7 @@
     "AttachmentsMax": "允许的最大附件数",
     "Resolve": "解决",
     "Unresolve": "取消解决",
+    "Pending": "待定",
     "Resolved": "已解决",
     "ShowResolved": "显示已解决的评论",
     "Ordering": "排序",
@@ -152,12 +146,6 @@
     "ChangeControl": "变更控制",
     "ReviewInterval": "审查间隔",
 
-    "DocTemplateDeleteSectionTitle": "确认删除章节",
-    "DocTemplateDeleteSectionConfirm": "您确定要从模板中永久删除章节 \"{section}\" 吗？",
-
-    "AddSectionAbove": "在上方添加新章节",
-    "AddSectionBelow": "在下方添加新章节",
-
     "SelectReviewers": "选择审查人",
     "SelectApprovers": "选择批准人",
     "RequestsToReviewTheDoc": "请求您审查文档",
@@ -179,8 +167,6 @@
     "InfoStepTitle": "信息",
     "TeamStepTitle": "团队",
 
-    "Duplicate": "复制",
-
     "TitleAndDescr": "标题和描述",
     "Reason": "原因",
     "AbstractPlaceholder": "这份文档是关于什么的？谁需要它以及何时需要？...",
@@ -193,7 +179,6 @@
     "EditDocument": "编辑文档",
 
     "Key": "键",
-    "SectionKey": "章节键",
     "CommentsSequence": "评论顺序",
 
     "Email": "电子邮件",
@@ -237,6 +222,8 @@
     "MarkDocAsDeleted": "标记文档为已删除",
     "MarkDocsAsDeleted": "标记多个文档为已删除",
     "MarkDocAsDeletedConfirm": "您真的想将以下文档标记为已删除吗：{titles}？",
+    "ArchiveDocs": "归档 {count, plural, =0 {文档} other {文档}}",
+    "ArchiveDocsConfirm": "您真的想将以下文档归档吗：{titles}？",
 
     "DocumentInHierarchy": "层级中的文档",
     "FirstDraftVersion": "这是文档的第一个草稿版本。尚无历史记录。",
@@ -289,6 +276,8 @@
     "ReviewDocumentDescription": "授予用户审查文档的权限",
     "ApproveDocumentPermission": "批准文档",
     "ApproveDocumentDescription": "授予用户批准文档的权限",
+    "ArchiveDocumentPermission": "归档文档",
+    "ArchiveDocumentDescription": "授予用户归档文档的权限",
     "CoAuthorDocumentPermission": "共同撰写文档",
     "CoAuthorDocumentDescription": "授予用户共同撰写文档的权限",
     "CreateDocumentPermission": "创建文档",
@@ -303,7 +292,21 @@
     "DeleteDocumentCategoryPermission": "删除文档类别",
     "DeleteDocumentCategoryDescription": "授予用户删除文档类别的权限",
     "ConfigLabel": "受控文档",
-    "ConfigDescription": "用于管理受控文档的扩展"
+    "ConfigDescription": "用于管理受控文档的扩展",
+
+    "Transfer": "转让",
+    "TransferWarning": "执行此操作后，某些团队成员可能会失去查看或编辑此文档的能力",
+    "TransferDocuments": "移交受控文件",
+    "TransferDocumentsHint": "要转移到所选空间的文件：",
+
+    "CreateFolder": "创建新文件夹",
+    "RenameFolder": "重命名文件夹",
+    "CreateChildFolder": "创建子文件夹",
+    
+    "Obsolete": "已过时",
+    "MakeDocumentObsolete": "标记为过时",
+    "MakeDocumentObsoleteDialog": "标记 {count, plural, one {文档为过时} other {文档为过时}}",
+    "MakeDocumentObsoleteConfirm": "您确定要将以下文档标记为过时吗：{titles}？"
   },
   "controlledDocStates": {
     "Empty": "",

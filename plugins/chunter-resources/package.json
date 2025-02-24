@@ -39,9 +39,11 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/activity-resources": "^0.6.1",
+    "@hcengineering/ai-bot": "^0.6.0",
+    "@hcengineering/ai-bot-resources": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/chunter": "^0.6.20",
@@ -54,14 +56,16 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/preference": "^0.6.13",
     "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text": "^0.6.5",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/workbench-resources": "^0.6.1",
-    "fast-equals": "^5.0.1",
-    "svelte": "^4.2.12",
-    "html-to-text": "^9.0.3"
+    "@hcengineering/presence-resources": "^0.6.0",
+    "fast-equals": "^5.2.2",
+    "svelte": "^4.2.19",
+    "@hcengineering/text-editor-resources": "^0.6.0",
+    "@hcengineering/text-editor": "^0.6.0"
   }
 }

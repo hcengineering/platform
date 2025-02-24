@@ -14,22 +14,11 @@
 -->
 <script lang="ts">
   import { AccountRole, getCurrentAccount, hasAccountRole, Timestamp } from '@hcengineering/core'
-  import { loginId } from '@hcengineering/login'
-  import { getMetadata } from '@hcengineering/platform'
-  import presentation, { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
+  import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import {
-    Button,
-    EditBox,
-    getCurrentLocation,
-    Grid,
-    Label,
-    Loading,
-    locationToUrl,
-    MiniToggle,
-    ticker
-  } from '@hcengineering/ui'
+  import { Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+
   import login from '../plugin'
   import { getInviteLink } from '../utils'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
@@ -40,6 +29,7 @@
   const dispatch = createEventDispatcher()
 
   const query = createQuery()
+  const isSecureContext = window.isSecureContext
 
   interface InviteParams {
     expirationTime: number
@@ -57,7 +47,9 @@
         expHours = 48
         limit = -1
       }
+
       if (limit === -1) noLimit = true
+
       defaultValues = {
         expirationTime: expHours,
         emailMask,
@@ -79,16 +71,16 @@
 
   let copiedTime: Timestamp | undefined
   let copied = false
-  $: {
-    if (copiedTime) {
-      if (copied && $ticker - copiedTime > 1000) {
-        copied = false
-      }
-    }
+
+  $: if (copiedTime !== undefined && copied && $ticker - copiedTime > 1000) {
+    copied = false
   }
-  function copy (): void {
+
+  async function copy (): Promise<void> {
+    if (!isSecureContext) return
     if (link === undefined) return
-    copyTextToClipboard(link)
+
+    await copyTextToClipboard(link)
     copied = true
     copiedTime = Date.now()
   }
@@ -109,7 +101,7 @@
   let loading = false
 </script>
 
-<div class="antiPopup popup">
+<div class="antiPopup popup" class:secure={isSecureContext}>
   <div class="flex-between fs-title mb-9">
     <Label label={login.string.InviteDescription} />
     <InviteWorkspace size={'large'} />
@@ -154,7 +146,9 @@
     <Loading />
   {:else if link !== undefined}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="over-underline link" on:click={copy}>{link}</div>
+    <div class="link" class:notSecure={!isSecureContext} class:over-underline={isSecureContext} on:click={copy}>
+      {link}
+    </div>
     <div class="buttons">
       <Button
         label={login.string.Close}
@@ -164,7 +158,9 @@
           dispatch('close')
         }}
       />
-      <Button label={copied ? login.string.Copied : login.string.Copy} size={'medium'} on:click={copy} />
+      {#if isSecureContext}
+        <Button label={copied ? login.string.Copied : login.string.Copy} size={'medium'} on:click={copy} />
+      {/if}
     </div>
   {:else}
     <div class="buttons">
@@ -195,6 +191,10 @@
     .link {
       margin: 1.75rem 0 0;
       overflow-wrap: break-word;
+
+      &.notSecure {
+        user-select: text;
+      }
     }
 
     .buttons {

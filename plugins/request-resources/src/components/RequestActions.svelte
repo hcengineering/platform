@@ -15,11 +15,13 @@
 <script lang="ts">
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage } from '@hcengineering/chunter'
-  import { PersonAccount } from '@hcengineering/contact'
-  import { AttachedData, getCurrentAccount, Markup, Ref } from '@hcengineering/core'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { mySocialStringsStore } from '@hcengineering/contact-resources'
+  import { AttachedData, Markup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
-  import { type RefAction, EmptyMarkup, isEmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { type RefAction } from '@hcengineering/text-editor'
   import { Button } from '@hcengineering/ui'
 
   import request from '../plugin'
@@ -30,15 +32,16 @@
   export let value: Request
 
   const client = getClient()
-  const me = getCurrentAccount()._id as Ref<PersonAccount>
+  const myPerson = getCurrentEmployee()
 
-  const approvable = value.requested.filter((a) => a === me).length > value.approved.filter((a) => a === me).length
+  const approvable =
+    value.requested.filter((a) => a === myPerson).length > value.approved.filter((a) => a === myPerson).length
 
   async function approve () {
     await saveComment()
     await client.update(value, {
       $push: {
-        approved: me
+        approved: myPerson
       }
     })
   }
@@ -48,7 +51,7 @@
   async function reject () {
     await saveComment()
     await client.update(value, {
-      rejected: me,
+      rejected: myPerson,
       status: RequestStatus.Rejected
     })
   }
@@ -127,7 +130,7 @@
 </script>
 
 {#if value.status === RequestStatus.Active}
-  {#if value.createdBy === me}
+  {#if value.createdBy !== undefined && $mySocialStringsStore.includes(value.createdBy)}
     <div class="mt-2">
       <Button label={request.string.Cancel} on:click={cancel} />
     </div>

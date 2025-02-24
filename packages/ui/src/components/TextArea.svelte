@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
   import plugin from '../plugin'
   import Label from './Label.svelte'
-  import { themeStore } from '@hcengineering/theme'
 
   export let label: IntlString | undefined = undefined
   export let width: string | undefined = undefined
@@ -30,10 +30,10 @@
   export let disabled: boolean = false
 
   let input: HTMLTextAreaElement
-  let phTraslate: string = ''
+  let phTranslate: string = ''
 
-  $: translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
-    phTraslate = res
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
+    phTranslate = res
   })
 
   export function focus () {
@@ -47,7 +47,7 @@
     bind:value
     bind:this={input}
     {disabled}
-    placeholder={phTraslate}
+    placeholder={phTranslate}
     on:keydown
     on:change
     on:keydown

@@ -13,24 +13,22 @@
 // limitations under the License.
 //
 
-import { toWorkspaceString, type Doc, type Domain, type FieldIndex, type WorkspaceId } from '@hcengineering/core'
+import { generateId, type Doc, type Domain, type FieldIndexConfig } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
-import { MongoClient, type Collection, type Db, type Document, type MongoClientOptions } from 'mongodb'
+import { MongoClient, type Collection, type Db, type Document } from 'mongodb'
 
 const connections = new Map<string, MongoClientReferenceImpl>()
 
-// Register mongo close on process exit.
-process.on('exit', () => {
-  shutdown().catch((err) => {
-    console.error(err)
-  })
-})
+const clientRefs = new Map<string, ClientRef>()
 
 /**
  * @public
  */
-export async function shutdown (): Promise<void> {
+export async function shutdownMongo (contextVars: Record<string, any> = {}): Promise<void> {
+  for (const it of Array.from(clientRefs.values())) {
+    console.error((it as any).stack)
+  }
   for (const c of connections.values()) {
     c.close(true)
   }
@@ -69,7 +67,11 @@ class MongoClientReferenceImpl {
       }
       this.onclose()
       void (async () => {
-        await (await this.client).close()
+        let cl = this.client
+        if (cl instanceof Promise) {
+          cl = await cl
+        }
+        await cl.close()
       })()
     }
   }
@@ -78,9 +80,12 @@ class MongoClientReferenceImpl {
     this.count++
   }
 }
-
 export class ClientRef implements MongoClientReference {
-  constructor (readonly client: MongoClientReferenceImpl) {}
+  id = generateId()
+  stack = new Error().stack
+  constructor (readonly client: MongoClientReferenceImpl) {
+    clientRefs.set(this.id, this)
+  }
 
   closed = false
   async getClient (): Promise<MongoClient> {
@@ -94,6 +99,7 @@ export class ClientRef implements MongoClientReference {
   close (): void {
     // Do not allow double close of mongo connection client
     if (!this.closed) {
+      clientRefs.delete(this.id)
       this.closed = true
       this.client.close()
     }
@@ -104,17 +110,19 @@ export class ClientRef implements MongoClientReference {
  * Initialize a workspace connection to DB
  * @public
  */
-export function getMongoClient (uri: string, options?: MongoClientOptions): MongoClientReference {
+export function getMongoClient (uri: string): MongoClientReference {
   const extraOptions = JSON.parse(process.env.MONGO_OPTIONS ?? '{}')
-  const key = `${uri}${process.env.MONGO_OPTIONS}_${JSON.stringify(options)}`
+  const key = `${uri}${process.env.MONGO_OPTIONS ?? '{}'}`
   let existing = connections.get(key)
 
   // If not created or closed
   if (existing === undefined) {
     existing = new MongoClientReferenceImpl(
       MongoClient.connect(uri, {
-        ...options,
+        retryReads: true,
+        appName: 'transactor',
         enableUtf8Validation: false,
+
         ...extraOptions
       }),
       () => {
@@ -133,15 +141,21 @@ export function getMongoClient (uri: string, options?: MongoClientOptions): Mong
  *
  * Construct MongoDB table from workspace.
  */
-export function getWorkspaceDB (client: MongoClient, workspaceId: WorkspaceId): Db {
-  return client.db(toWorkspaceString(workspaceId))
+export function getWorkspaceMongoDB (client: MongoClient, dbName: string): Db {
+  return client.db(dbName)
 }
 
 export class DBCollectionHelper implements DomainHelperOperations {
   collections = new Map<string, Collection<any>>()
   constructor (readonly db: Db) {}
 
+  async listDomains (): Promise<Set<Domain>> {
+    const collections = await this.db.listCollections({}, { nameOnly: true }).toArray()
+    return new Set(collections.map((it) => it.name as unknown as Domain))
+  }
+
   async init (domain?: Domain): Promise<void> {
+    // Check and create DB if missin
     if (domain === undefined) {
       // Init existing collecfions
       for (const c of (await this.db.listCollections({}, { nameOnly: true }).toArray()).map((it) => it.name)) {
@@ -180,12 +194,23 @@ export class DBCollectionHelper implements DomainHelperOperations {
     }
   }
 
-  exists (domain: Domain): boolean {
+  async exists (domain: Domain): Promise<boolean> {
     return this.collections.has(domain)
   }
 
-  async createIndex (domain: Domain, value: string | FieldIndex<Doc>, options?: { name: string }): Promise<void> {
-    await this.collection(domain).createIndex(value, options)
+  async createIndex (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }): Promise<void> {
+    if (typeof value === 'string') {
+      await this.collection(domain).createIndex(value, options)
+    } else {
+      if (value.filter !== undefined) {
+        await this.collection(domain).createIndex(value.keys, {
+          ...options,
+          partialFilterExpression: value.filter
+        })
+      } else {
+        await this.collection(domain).createIndex(value.keys, { ...options, sparse: value.sparse ?? false })
+      }
+    }
   }
 
   async dropIndex (domain: Domain, name: string): Promise<void> {
@@ -196,7 +221,11 @@ export class DBCollectionHelper implements DomainHelperOperations {
     return await this.collection(domain).listIndexes().toArray()
   }
 
-  async hasDocuments (domain: Domain, count: number): Promise<boolean> {
-    return (await this.collection(domain).countDocuments({}, { limit: count })) >= count
+  async estimatedCount (domain: Domain): Promise<number> {
+    if (await this.exists(domain)) {
+      const c = this.collection(domain)
+      return await c.estimatedDocumentCount()
+    }
+    return 0
   }
 }

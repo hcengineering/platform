@@ -12,110 +12,106 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import contact from '@hcengineering/contact'
 import {
+  type Document,
+  type DocumentMeta,
+  type DocumentSpace,
+  DocumentState,
+  type Project,
+  type ProjectDocument
+} from '@hcengineering/controlled-documents'
+import {
+  checkPermission,
   type Class,
   type Client,
+  type Doc,
   type DocumentQuery,
   type Ref,
   type RelatedDocument,
   SortingOrder,
-  type WithLookup,
-  type Doc
+  type WithLookup
 } from '@hcengineering/core'
-import {
-  type CollaborativeDocumentSection,
-  type Document,
-  type DocumentSection,
-  type DocumentSpace,
-  DocumentState,
-  type DocumentMeta
-} from '@hcengineering/controlled-documents'
 import { type Resources } from '@hcengineering/platform'
-import { type ObjectSearchResult, getClient, MessageBox, getCollaboratorClient } from '@hcengineering/presentation'
-import { EmptyMarkup } from '@hcengineering/text-editor'
+import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
-import { deleteObjects } from '@hcengineering/view-resources'
+import { getCurrentEmployee } from '@hcengineering/contact'
 
 import CreateDocument from './components/CreateDocument.svelte'
+import DeleteCategoryPopup from './components/category/popups/DeleteCategoryPopup.svelte'
 import QmsDocumentWizard from './components/create-doc/QmsDocumentWizard.svelte'
 import QmsTemplateWizard from './components/create-doc/QmsTemplateWizard.svelte'
 import DocumentStatusTag from './components/document/common/DocumentStatusTag.svelte'
-import DocumentSpacePresenter from './components/hierarchy/DocumentSpacePresenter.svelte'
-import DocumentPresenter from './components/document/presenters/DocumentPresenter.svelte'
-import StatePresenter from './components/document/presenters/StatePresenter.svelte'
-import StateFilterValuePresenter from './components/document/presenters/StateFilterValuePresenter.svelte'
-import TitlePresenter from './components/document/presenters/TitlePresenter.svelte'
-import OwnerPresenter from './components/document/presenters/OwnerPresenter.svelte'
 import AddCommentPopup from './components/document/popups/AddCommentPopup.svelte'
-import DocumentCommentsPopup from './components/document/popups/DocumentCommentsPopup.svelte'
 import ChangeOwnerPopup from './components/document/popups/ChangeOwnerPopup.svelte'
-import DeleteCategoryPopup from './components/category/popups/DeleteCategoryPopup.svelte'
+import DocumentCommentsPopup from './components/document/popups/DocumentCommentsPopup.svelte'
+import DocumentPresenter from './components/document/presenters/DocumentPresenter.svelte'
+import OwnerPresenter from './components/document/presenters/OwnerPresenter.svelte'
+import StateFilterValuePresenter from './components/document/presenters/StateFilterValuePresenter.svelte'
+import StatePresenter from './components/document/presenters/StatePresenter.svelte'
+import TitlePresenter from './components/document/presenters/TitlePresenter.svelte'
+import DocumentSpacePresenter from './components/hierarchy/DocumentSpacePresenter.svelte'
 
-import CategoryPresenter from './components/category/presenters/CategoryPresenter.svelte'
+import DocumentItem from './components/DocumentItem.svelte'
 import Documents from './components/Documents.svelte'
 import DocumentsContainer from './components/DocumentsContainer.svelte'
-import MyDocuments from './components/MyDocuments.svelte'
 import EditDoc from './components/EditDoc.svelte'
 import EditProjectDoc from './components/EditProjectDoc.svelte'
-import DocumentItem from './components/DocumentItem.svelte'
+import MyDocuments from './components/MyDocuments.svelte'
 import NewDocumentHeader from './components/NewDocumentHeader.svelte'
+import CategoryPresenter from './components/category/presenters/CategoryPresenter.svelte'
 import DocumentIcon from './components/icons/DocumentIcon.svelte'
 
 import DocumentTemplates from './components/DocumentTemplates.svelte'
 
-import EditTemplateSections from './components/template/EditTemplateSections.svelte'
-
 import Categories from './components/Categories.svelte'
 import EditDocumentCategory from './components/EditDocumentCategory.svelte'
 
+import DocumentMetaPresenter from './components/DocumentMetaPresenter.svelte'
+import CreateDocumentSpaceType from './components/docspace/CreateDocumentSpaceType.svelte'
+import CreateDocumentsSpace from './components/docspace/CreateDocumentsSpace.svelte'
 import DocumentTitle from './components/document/DocumentTitle.svelte'
 import EditDocContent from './components/document/EditDocContent.svelte'
-import CollaborativeSectionEditor from './components/document/editors/CollaborativeSectionEditor.svelte'
-import AttachmentsSectionEditor from './components/document/editors/AttachmentsSectionEditor.svelte'
-
-import CollaborativeSectionPresenter from './components/document/presenters/CollaborativeSectionPresenter.svelte'
-import AttachmentsSectionPresenter from './components/document/presenters/AttachmentsSectionPresenter.svelte'
+import ControlledStateFilterValuePresenter from './components/document/presenters/ControlledStateFilterValuePresenter.svelte'
 import DocumentVersionPresenter from './components/document/presenters/DocumentVersionPresenter.svelte'
-
-import DocumentSectionDeletePopup from './components/DocumentSectionDeletePopup.svelte'
-
-import DocumentReviewRequest from './components/requests/DocumentReviewRequest.svelte'
-import DocumentReviewRequestPresenter from './components/requests/DocumentReviewRequestPresenter.svelte'
 import DocumentApprovalRequest from './components/requests/DocumentApprovalRequest.svelte'
 import DocumentApprovalRequestPresenter from './components/requests/DocumentApprovalRequestPresenter.svelte'
-import ControlledStateFilterValuePresenter from './components/document/presenters/ControlledStateFilterValuePresenter.svelte'
-import DocumentMetaPresenter from './components/DocumentMetaPresenter.svelte'
-import CreateDocumentsSpace from './components/docspace/CreateDocumentsSpace.svelte'
-import CreateDocumentSpaceType from './components/docspace/CreateDocumentSpaceType.svelte'
+import DocumentReviewRequest from './components/requests/DocumentReviewRequest.svelte'
+import DocumentReviewRequestPresenter from './components/requests/DocumentReviewRequestPresenter.svelte'
 
-import Projects from './components/project/Projects.svelte'
 import ProjectPresenter from './components/project/ProjectPresenter.svelte'
 import ProjectRefPresenter from './components/project/ProjectRefPresenter.svelte'
+import Projects from './components/project/Projects.svelte'
 
-import documents from './plugin'
-import { documentSectionDescriptionEditingRequested } from './stores/editors/document'
-import './styles/_colors.scss'
+import { getPrintBaseURL } from '@hcengineering/print'
+import CreateFolder from './components/create-doc/CreateFolder.svelte'
+import TransferDocumentPopup from './components/document/popups/TransferDocumentPopup.svelte'
 import { resolveLocation } from './navigation'
+import documents from './plugin'
+import './styles/_colors.scss'
+import { comment, isCommentVisible } from './text'
 import {
-  addSectionBetween,
-  createAttachmentsSection,
-  createCollaborativeSection,
-  getVisibleFilters,
-  sortDocumentStates,
-  getAllDocumentStates,
-  openGuidanceEditor,
   canChangeDocumentOwner,
-  canDeleteDocumentCategory,
-  canCreateChildTemplate,
   canCreateChildDocument,
-  documentIdentifierProvider,
-  getControlledDocumentTitle,
-  getDocumentMetaLinkFragment,
+  canCreateChildFolder,
+  canCreateChildTemplate,
+  canDeleteDocumentCategory,
+  canDeleteFolder,
+  canRenameFolder,
   createChildDocument,
+  createChildFolder,
   createChildTemplate,
   createDocument,
-  createTemplate
+  createFolder,
+  createTemplate,
+  deleteFolder,
+  documentIdentifierProvider,
+  getAllDocumentStates,
+  getControlledDocumentTitle,
+  getDocumentMetaLinkFragment,
+  getVisibleFilters,
+  isFolder,
+  renameFolder,
+  sortDocumentStates
 } from './utils'
 
 export { DocumentStatusTag, DocumentTitle, DocumentVersionPresenter, StatePresenter }
@@ -150,88 +146,6 @@ async function queryDocumentMeta (
   ).map(toObjectSearchResult)
 }
 
-async function addSection (
-  section: CollaborativeDocumentSection,
-  addAfter: boolean = true,
-  copyFrom?: DocumentSection
-): Promise<void> {
-  const client = getClient()
-
-  const doc = await client.findOne(section.attachedToClass, { _id: section.attachedTo })
-  if (doc === undefined) {
-    return
-  }
-
-  const sections = await client.findAll(
-    documents.class.DocumentSection,
-    { attachedTo: section.attachedTo },
-    { sort: { rank: !addAfter ? SortingOrder.Ascending : SortingOrder.Descending } }
-  )
-  if (sections === undefined) {
-    return
-  }
-
-  let prevSection: DocumentSection | undefined
-  for (const s of sections) {
-    if (s._id === section._id) {
-      break
-    }
-
-    prevSection = s
-  }
-
-  const [first, second] = !addAfter ? [prevSection, section] : [section, prevSection]
-  const sectionClass = client.getHierarchy().getClass(section._class)
-  await addSectionBetween(client, doc as Document, sectionClass, first, second, copyFrom)
-}
-
-async function addCollaborativeSectionAbove (section: CollaborativeDocumentSection): Promise<void> {
-  await addSection(section, false)
-}
-
-async function addCollaborativeSectionBelow (section: CollaborativeDocumentSection): Promise<void> {
-  await addSection(section)
-}
-
-async function deleteCollaborativeSection (section: CollaborativeDocumentSection): Promise<void> {
-  showPopup(
-    contact.component.DeleteConfirmationPopup,
-    {
-      object: section,
-      deleteAction: async () => {
-        const client = getClient()
-
-        const document = await client.findOne(documents.class.Document, { _id: section.attachedTo as Ref<Document> })
-        await deleteObjects(client, [section], false)
-
-        if (document !== undefined) {
-          await getCollaboratorClient().updateContent(document.content, section.collaboratorSectionId, EmptyMarkup)
-        }
-      }
-    },
-    undefined
-  )
-}
-
-async function duplicateSection (section: CollaborativeDocumentSection): Promise<void> {
-  await addSection(section, true, section)
-}
-
-async function editSectionDescription (section: CollaborativeDocumentSection): Promise<void> {
-  documentSectionDescriptionEditingRequested(section._id)
-}
-
-async function editSectionGuidance (section: CollaborativeDocumentSection): Promise<void> {
-  const client = getClient()
-  const sections = await client.findAll(
-    documents.class.DocumentSection,
-    { attachedTo: section.attachedTo },
-    { sort: { rank: SortingOrder.Ascending } }
-  )
-  const sectionIndex = sections.findIndex((s) => s._id === section._id)
-  openGuidanceEditor(client, section, sectionIndex + 1, 'editing')
-}
-
 async function deleteDocuments (obj: Document | Document[]): Promise<void> {
   const docs = Array.isArray(obj) ? obj : [obj]
   const docNames = docs.map((d) => `${d.title} (${d.prefix}-${d.seqNumber})`).join(', ')
@@ -247,6 +161,173 @@ async function deleteDocuments (obj: Document | Document[]): Promise<void> {
       }
     }
   })
+}
+
+async function archiveDocuments (obj: Document | Document[]): Promise<void> {
+  const docs = Array.isArray(obj) ? obj : [obj]
+  const docNames = docs.map((d) => `${d.title} (${d.prefix}-${d.seqNumber})`).join(', ')
+
+  showPopup(MessageBox, {
+    label: documents.string.ArchiveDocs,
+    labelProps: { count: docs.length },
+    message: documents.string.ArchiveDocsConfirm,
+    params: { titles: docNames },
+    action: async () => {
+      const client = getClient()
+      for (const doc of docs) {
+        await client.update(doc, { state: DocumentState.Archived })
+      }
+    }
+  })
+}
+
+async function makeDocumentObsolete (obj: Document | Document[]): Promise<void> {
+  const docs = Array.isArray(obj) ? obj : [obj]
+  const docNames = docs.map((d) => `${d.title} (${d.prefix}-${d.seqNumber})`).join(', ')
+
+  showPopup(MessageBox, {
+    label: documents.string.MakeDocumentObsoleteDialog,
+    labelProps: { count: docs.length },
+    message: documents.string.MakeDocumentObsoleteConfirm,
+    params: { titles: docNames },
+    action: async () => {
+      const client = getClient()
+      for (const doc of docs) {
+        await client.update(doc, { state: DocumentState.Obsolete })
+      }
+    }
+  })
+}
+
+async function canDeleteDocument (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+  const currentUser = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === currentUser)
+
+  if (!isOwner) {
+    return false
+  }
+
+  return await isLatestDraftDoc(obj)
+}
+
+async function canArchiveDocument (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+  const currentUser = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === currentUser)
+
+  if (isOwner) {
+    return true
+  }
+
+  const spaces = new Set(objs.map((doc) => doc.space))
+
+  return await Promise.all(
+    Array.from(spaces).map(
+      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
+    )
+  ).then((res) => res.every((r) => r))
+}
+
+async function canMakeDocumentObsolete (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+  const currentUser = getCurrentEmployee()
+  const isOwner = objs.every((doc) => doc.owner === currentUser)
+
+  if (isOwner) {
+    return true
+  }
+
+  const spaces = new Set(objs.map((doc) => doc.space))
+
+  return await Promise.all(
+    Array.from(spaces).map(
+      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
+    )
+  ).then((res) => res.every((r) => r))
+}
+
+async function canOpenDocument (obj?: ProjectDocument | ProjectDocument[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const h = getClient().getHierarchy()
+
+  const objs = Array.isArray(obj) ? obj : [obj]
+  return !objs.some((d) => isFolder(h, d))
+}
+
+async function canPrintDocument (obj?: Document | Document[] | ProjectDocument | ProjectDocument[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const h = getClient().getHierarchy()
+
+  const objs = Array.isArray(obj) ? obj : [obj]
+  if (objs.some((d) => isFolder(h, d))) return false
+
+  let printURL = ''
+  try {
+    printURL = getPrintBaseURL()
+  } catch (err) {
+    // do nothing
+  }
+
+  return printURL?.length > 0
+}
+
+async function canTransferDocument (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+  const spaces = new Set(objs.map((doc) => doc.space))
+
+  return await Promise.all(
+    Array.from(spaces).map(
+      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
+    )
+  ).then((res) => res.every((r) => r))
+}
+
+async function transferDocuments (selection: Document | Document[]): Promise<void> {
+  const objects = Array.isArray(selection) ? selection : [selection]
+
+  const client = getClient()
+  const h = client.getHierarchy()
+
+  let sourceDocumentIds: Array<Ref<DocumentMeta>> = []
+  let sourceSpaceId: Ref<DocumentSpace> | undefined
+  let sourceProjectId: Ref<Project<DocumentSpace>> | undefined
+
+  if (objects.length < 1) return
+  if (h.isDerived(objects[0]._class, documents.class.ProjectDocument)) {
+    const pjDocs = objects as unknown as ProjectDocument[]
+    const pjMeta = await client.findAll(documents.class.ProjectMeta, { _id: { $in: pjDocs.map((d) => d.attachedTo) } })
+    const docMeta = await client.findAll(documents.class.DocumentMeta, { _id: { $in: pjMeta.map((d) => d.meta) } })
+    sourceDocumentIds = docMeta.map((d) => d._id)
+    sourceSpaceId = pjDocs[0].space
+    sourceProjectId = pjDocs[0].project
+  }
+
+  if (sourceDocumentIds.length < 1) return
+
+  showPopup(TransferDocumentPopup, { sourceDocumentIds, sourceSpaceId, sourceProjectId })
 }
 
 async function isLatestDraftDoc (obj?: Doc | Doc[]): Promise<boolean> {
@@ -321,16 +402,10 @@ export default async (): Promise<Resources> => ({
     NewDocumentHeader,
     MyDocuments,
     DocumentTemplates,
-    EditTemplateSections,
     CategoryPresenter,
     Categories,
     EditDocumentCategory,
     EditDocContent,
-    CollaborativeSectionEditor,
-    AttachmentsSectionEditor,
-    DocumentSectionDeletePopup,
-    CollaborativeSectionPresenter,
-    AttachmentsSectionPresenter,
     DocumentReviewRequest,
     DocumentReviewRequestPresenter,
     DocumentApprovalRequest,
@@ -344,7 +419,8 @@ export default async (): Promise<Resources> => ({
     Projects,
     ProjectPresenter,
     ProjectRefPresenter,
-    DocumentIcon
+    DocumentIcon,
+    CreateFolder
   },
   completion: {
     DocumentMetaQuery: async (
@@ -361,31 +437,41 @@ export default async (): Promise<Resources> => ({
     CanChangeDocumentOwner: canChangeDocumentOwner,
     CanCreateTemplate: canCreateChildTemplate,
     CanCreateDocument: canCreateChildDocument,
+    CanCreateFolder: canCreateChildFolder,
     CanCreateChildTemplate: canCreateChildTemplate,
     CanCreateChildDocument: canCreateChildDocument,
+    CanCreateChildFolder: canCreateChildFolder,
+    CanRenameFolder: canRenameFolder,
+    CanDeleteFolder: canDeleteFolder,
     CanDeleteDocumentCategory: canDeleteDocumentCategory,
-    CollaborativeSectionCreator: createCollaborativeSection,
-    AttachmentsSectionCreator: createAttachmentsSection,
     GetVisibleFilters: getVisibleFilters,
     DocumentStateSort: sortDocumentStates,
     GetAllDocumentStates: getAllDocumentStates,
     GetDocumentMetaLinkFragment: getDocumentMetaLinkFragment,
-    IsLatestDraftDoc: isLatestDraftDoc,
+    CanDeleteDocument: canDeleteDocument,
+    CanArchiveDocument: canArchiveDocument,
+    CanMakeDocumentObsolete: canMakeDocumentObsolete,
+    CanTransferDocument: canTransferDocument,
+    CanOpenDocument: canOpenDocument,
+    CanPrintDocument: canPrintDocument,
     DocumentIdentifierProvider: documentIdentifierProvider,
-    ControlledDocumentTitleProvider: getControlledDocumentTitle
+    ControlledDocumentTitleProvider: getControlledDocumentTitle,
+    Comment: comment,
+    IsCommentVisible: isCommentVisible
   },
   actionImpl: {
-    AddCollaborativeSectionAbove: addCollaborativeSectionAbove,
-    AddCollaborativeSectionBelow: addCollaborativeSectionBelow,
-    DeleteCollaborativeSection: deleteCollaborativeSection,
-    Duplicate: duplicateSection,
-    EditDescription: editSectionDescription,
-    EditGuidance: editSectionGuidance,
     CreateChildDocument: createChildDocument,
     CreateChildTemplate: createChildTemplate,
+    CreateChildFolder: createChildFolder,
+    RenameFolder: renameFolder,
+    DeleteFolder: deleteFolder,
     CreateDocument: createDocument,
     CreateTemplate: createTemplate,
+    CreateFolder: createFolder,
     DeleteDocument: deleteDocuments,
+    ArchiveDocument: archiveDocuments,
+    MakeDocumentObsolete: makeDocumentObsolete,
+    TransferDocument: transferDocuments,
     EditDocSpace: editDocSpace
   },
   resolver: {

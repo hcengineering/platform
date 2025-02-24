@@ -28,6 +28,7 @@
     "Vacation": "休假",
     "Sick": "病假",
     "PTO": "带薪休假",
+    "PTOs": "PTOs",
     "Remote": "远程工作",
     "Overtime": "加班",
     "PTO2": "带薪休假/2",
@@ -47,6 +48,7 @@
     "PublicHoliday": "公共假期",
     "Title": "标题",
     "Description": "描述",
+    "PublicHolidays": "Public holidays",
     "MarkAsPublicHoliday": "标记为公共假期",
     "EditPublicHoliday": "编辑公共假期",
     "Managers": "管理人",
@@ -57,6 +59,11 @@
     "RequestUpdated": "请求已更新",
     "RequestRemoved": "请求已移除",
     "ConfigLabel": "人力资源",
-    "ConfigDescription": "用于管理组织结构和员工工作日历的扩展"
+    "ConfigDescription": "用于管理组织结构和员工工作日历的扩展",
+    "WorkingDays": "Working days",
+    "ReportedDays": "Reported days",
+    "Tasks": "Tasks",
+    "TPD": "TPD",
+    "EXTRa": "EXTRa"
   }
 }

@@ -110,6 +110,7 @@
       }
     }
     &.primary {
+      color: var(--secondary-button-color);
       background-color: var(--secondary-button-default);
       &:hover {
         background-color: var(--secondary-button-hovered);

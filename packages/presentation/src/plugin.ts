@@ -14,25 +14,66 @@
 // limitations under the License.
 //
 
-import { type Mixin, type Class, type Ref } from '@hcengineering/core'
+import {
+  type WorkspaceDataId,
+  type WorkspaceUuid,
+  type Class,
+  type Client,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type Mixin,
+  type Ref,
+  type SearchOptions,
+  type SearchQuery,
+  type SearchResult,
+  type Tx,
+  type TxResult,
+  type WithLookup
+} from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { type ComponentExtensionId } from '@hcengineering/ui'
+import { type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import { type PresentationMiddlewareFactory } from './pipeline'
+import type { PreviewConfig } from './preview'
 import {
   type ComponentPointExtension,
-  type DocRules,
   type DocCreateExtension,
+  type DocRules,
   type FilePreviewExtension,
-  type ObjectSearchCategory,
-  type InstantTransactions
+  type InstantTransactions,
+  type ObjectSearchCategory
 } from './types'
-import type { PreviewConfig } from './preview'
+import { type UploadConfig } from './file'
 
 /**
  * @public
  */
 export const presentationId = 'presentation' as Plugin
+
+/**
+ * @public
+ */
+export interface ClientHook {
+  findAll: <T extends Doc>(
+    client: Client,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+
+  findOne: <T extends Doc>(
+    client: Client,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<WithLookup<T> | undefined>
+
+  tx: (client: Client, tx: Tx) => Promise<TxResult>
+
+  searchFulltext: (client: Client, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
+}
 
 export default plugin(presentationId, {
   class: {
@@ -82,20 +123,35 @@ export default plugin(presentationId, {
     Next: '' as IntlString,
     FailedToPreview: '' as IntlString,
     ContentType: '' as IntlString,
-    ContentTypeNotSupported: '' as IntlString
+    ContentTypeNotSupported: '' as IntlString,
+    StartDrawing: '' as IntlString,
+    DrawingHistory: '' as IntlString,
+    ColorAdd: '' as IntlString,
+    ColorRemove: '' as IntlString,
+    ColorReset: '' as IntlString
   },
   extension: {
-    FilePreviewExtension: '' as ComponentExtensionId
+    FilePreviewExtension: '' as ComponentExtensionId,
+    FilePreviewPopupActions: '' as ComponentExtensionId
   },
   metadata: {
-    RequiredVersion: '' as Metadata<string>,
+    ModelVersion: '' as Metadata<string>,
+    FrontVersion: '' as Metadata<string>,
     Draft: '' as Metadata<Record<string, any>>,
     UploadURL: '' as Metadata<string>,
+    FilesURL: '' as Metadata<string>,
     CollaboratorUrl: '' as Metadata<string>,
-    CollaboratorApiUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
+    Endpoint: '' as Metadata<string>,
+    WorkspaceUuid: '' as Metadata<WorkspaceUuid>,
+    WorkspaceDataId: '' as Metadata<WorkspaceDataId>,
     FrontUrl: '' as Asset,
-    PreviewConfig: '' as Metadata<PreviewConfig | undefined>
+    LinkPreviewUrl: '' as Metadata<string>,
+    UploadConfig: '' as Metadata<UploadConfig>,
+    PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
+    ClientHook: '' as Metadata<ClientHook>,
+    SessionId: '' as Metadata<string>,
+    StatsUrl: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode

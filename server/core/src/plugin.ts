@@ -36,13 +36,11 @@ const serverCore = plugin(serverCoreId, {
     SearchPresenter: '' as Ref<Mixin<SearchPresenter>>
   },
   space: {
-    DocIndexState: '' as Ref<Space>,
-    TriggerState: '' as Ref<Space>
+    DocIndexState: '' as Ref<Space>
   },
   metadata: {
     FrontUrl: '' as Metadata<string>,
-    UploadURL: '' as Metadata<string>,
-    CursorMaxTimeMS: '' as Metadata<string>,
+    FilesUrl: '' as Metadata<string>,
     ElasticIndexName: '' as Metadata<string>,
     ElasticIndexVersion: '' as Metadata<string>
   }

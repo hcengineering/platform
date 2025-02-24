@@ -12,32 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import {
-  generateId,
-  type Ref,
-  SortingOrder,
-  type WithLookup,
-  hasAccountRole,
-  getCurrentAccount,
+import attachment, { type SavedAttachments } from '@hcengineering/attachment'
+import { type DirectMessage } from '@hcengineering/chunter'
+import contact, { type Person } from '@hcengineering/contact'
+import core, {
+  type PersonId,
   AccountRole,
-  type IdMap,
-  type Account,
-  type UserStatus
+  getCurrentAccount,
+  hasAccountRole,
+  SortingOrder,
+  type UserStatus,
+  type WithLookup,
+  type PersonUuid
 } from '@hcengineering/core'
-import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-import { get, writable } from 'svelte/store'
+import notification, { type DocNotifyContext } from '@hcengineering/notification'
+import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+import { createQuery, getClient, MessageBox, onClient } from '@hcengineering/presentation'
+import { type Action, showPopup } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
-import attachment, { type SavedAttachments } from '@hcengineering/attachment'
-import activity from '@hcengineering/activity'
-import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { type Action, showPopup } from '@hcengineering/ui'
-import contact, { type PersonAccount } from '@hcengineering/contact'
-import { type DirectMessage } from '@hcengineering/chunter'
+import { get, writable } from 'svelte/store'
 
-import { type ChatNavGroupModel, type ChatNavItemModel, type SortFnOptions } from './types'
 import chunter from '../../plugin'
+import { type ChatNavGroupModel, type ChatNavItemModel, type SortFnOptions } from './types'
 
 const navigatorStateStorageKey = 'chunter.navigatorState'
 
@@ -84,24 +81,25 @@ export const chatSpecials: SpecialNavModel[] = [
   {
     id: 'saved',
     label: chunter.string.Saved,
-    icon: activity.icon.Bookmark,
+    icon: chunter.icon.Bookmarks,
     position: 'top',
     component: chunter.component.SavedMessages
   },
   {
     id: 'chunterBrowser',
     label: chunter.string.ChunterBrowser,
-    icon: view.icon.Database,
+    icon: chunter.icon.ChunterBrowser,
     component: chunter.component.ChunterBrowser,
     position: 'top'
   },
   {
     id: 'channels',
     label: chunter.string.Channels,
-    icon: view.icon.List,
+    icon: chunter.icon.ChannelBrowser,
     component: workbench.component.SpecialView,
     componentProps: {
       _class: chunter.class.Channel,
+      icon: chunter.icon.ChannelBrowser,
       label: chunter.string.Channels,
       createLabel: chunter.string.CreateChannel,
       createComponent: chunter.component.CreateChannel
@@ -139,29 +137,23 @@ export const chatNavGroupModels: ChatNavGroupModel[] = [
     sortFn: sortAlphabetically,
     wrap: false,
     getActionsFn: getPinnedActions,
-    query: {
-      isPinned: true
-    }
+    isPinned: true
   },
   {
     id: 'channels',
     sortFn: sortAlphabetically,
     wrap: true,
     getActionsFn: getChannelsActions,
-    query: {
-      isPinned: { $ne: true },
-      attachedToClass: { $in: [chunter.class.Channel] }
-    }
+    isPinned: false,
+    _class: chunter.class.Channel
   },
   {
     id: 'direct',
     sortFn: sortDirects,
     wrap: true,
     getActionsFn: getDirectActions,
-    query: {
-      isPinned: { $ne: true },
-      attachedToClass: { $in: [chunter.class.DirectMessage] }
-    }
+    isPinned: false,
+    _class: chunter.class.DirectMessage
   },
   {
     id: 'activity',
@@ -169,13 +161,8 @@ export const chatNavGroupModels: ChatNavGroupModel[] = [
     wrap: true,
     getActionsFn: getActivityActions,
     maxSectionItems: 5,
-    query: {
-      isPinned: { $ne: true },
-      attachedToClass: {
-        // Ignore external channels until support is provided for them
-        $nin: [chunter.class.DirectMessage, chunter.class.Channel, contact.class.Channel]
-      }
-    }
+    isPinned: false,
+    skipClasses: [chunter.class.DirectMessage, chunter.class.Channel, contact.class.Channel]
   }
 ]
 
@@ -183,70 +170,72 @@ function sortAlphabetically (items: ChatNavItemModel[]): ChatNavItemModel[] {
   return items.sort((i1, i2) => i1.title.localeCompare(i2.title))
 }
 
-function getDirectCompanion (
-  direct: DirectMessage,
-  me: PersonAccount,
-  personAccountById: IdMap<PersonAccount>
-): Ref<Account> | undefined {
-  return direct.members.find((member) => personAccountById.get(member as Ref<PersonAccount>)?.person !== me.person)
+function getDirectCompanion (direct: DirectMessage, mySocialIds: PersonId[]): PersonId | undefined {
+  return direct.members.find((member) => !mySocialIds.includes(member))
 }
 
-function isOnline (account: Ref<Account> | undefined, userStatusByAccount: Map<Ref<Account>, UserStatus>): boolean {
-  if (account === undefined) {
+function isOnline (
+  user: PersonId | undefined,
+  personByPersonId: Map<PersonId, Person>,
+  userStatusByAccount: Map<PersonUuid, UserStatus>
+): boolean {
+  if (user === undefined) {
     return false
   }
 
-  return userStatusByAccount.get(account)?.online ?? false
+  const person = personByPersonId.get(user)
+
+  if (person?.personUuid === undefined) {
+    return false
+  }
+
+  return userStatusByAccount.get(person.personUuid)?.online ?? false
 }
 
-function isGroupChat (direct: DirectMessage, personAccountById: IdMap<PersonAccount>): boolean {
-  const persons = new Set(
-    direct.members
-      .map((member) => personAccountById.get(member as Ref<PersonAccount>)?.person)
-      .filter((it) => it !== undefined)
-  )
+function isGroupChat (direct: DirectMessage, personByPersonId: Map<PersonId, Person>): boolean {
+  const persons = new Set(direct.members.map((member) => personByPersonId.get(member)).filter((it) => it !== undefined))
 
   return persons.size > 2
 }
 
 function sortDirects (items: ChatNavItemModel[], option: SortFnOptions): ChatNavItemModel[] {
-  const { userStatusByAccount, personAccountById } = option
-  const me = getCurrentAccount() as PersonAccount
+  const { userStatusByAccount, personByPersonId } = option
+  const mySocialIds = getCurrentAccount().socialIds
 
   return items.sort((i1, i2) => {
     const direct1 = i1.object as DirectMessage
     const direct2 = i2.object as DirectMessage
 
-    const isGroupChat1 = isGroupChat(direct1, personAccountById)
-    const isGroupChat2 = isGroupChat(direct2, personAccountById)
+    const isGroupChat1 = isGroupChat(direct1, personByPersonId)
+    const isGroupChat2 = isGroupChat(direct2, personByPersonId)
 
     if (isGroupChat1 && isGroupChat2) {
       return i1.title.localeCompare(i2.title)
     }
 
     if (isGroupChat1 && !isGroupChat2) {
-      const isOnline2 = isOnline(getDirectCompanion(direct2, me, personAccountById), userStatusByAccount)
+      const isOnline2 = isOnline(getDirectCompanion(direct2, mySocialIds), personByPersonId, userStatusByAccount)
       return isOnline2 ? 1 : -1
     }
 
     if (!isGroupChat1 && isGroupChat2) {
-      const isOnline1 = isOnline(getDirectCompanion(direct1, me, personAccountById), userStatusByAccount)
+      const isOnline1 = isOnline(getDirectCompanion(direct1, mySocialIds), personByPersonId, userStatusByAccount)
       return isOnline1 ? -1 : 1
     }
 
-    const account1 = getDirectCompanion(direct1, me, personAccountById)
-    const account2 = getDirectCompanion(direct2, me, personAccountById)
+    const user1 = getDirectCompanion(direct1, mySocialIds)
+    const user2 = getDirectCompanion(direct2, mySocialIds)
 
-    if (account1 === undefined) {
+    if (user1 === undefined) {
       return 1
     }
 
-    if (account2 === undefined) {
+    if (user2 === undefined) {
       return -1
     }
 
-    const isOnline1 = isOnline(account1, userStatusByAccount)
-    const isOnline2 = isOnline(account2, userStatusByAccount)
+    const isOnline1 = isOnline(user1, personByPersonId, userStatusByAccount)
+    const isOnline2 = isOnline(user2, personByPersonId, userStatusByAccount)
 
     if (isOnline1 === isOnline2) {
       return i1.title.localeCompare(i2.title)
@@ -262,7 +251,7 @@ function sortDirects (items: ChatNavItemModel[], option: SortFnOptions): ChatNav
 
 function sortActivityChannels (items: ChatNavItemModel[], option: SortFnOptions): ChatNavItemModel[] {
   const { contexts } = option
-  const contextByDoc = new Map(contexts.map((context) => [context.attachedTo, context]))
+  const contextByDoc = new Map(contexts.map((context) => [context.objectId, context]))
 
   return items.sort((i1, i2) => {
     const context1 = contextByDoc.get(i1.id)
@@ -304,8 +293,7 @@ function getPinnedActions (contexts: DocNotifyContext[]): Action[] {
 }
 
 async function unpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
-  const doneOp = await getClient().measure('unpinAllChannels')
-  const ops = getClient().apply(generateId())
+  const ops = getClient().apply(undefined, 'unpinAllChannels')
 
   try {
     for (const context of contexts) {
@@ -313,7 +301,6 @@ async function unpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
@@ -355,8 +342,8 @@ function getActivityActions (contexts: DocNotifyContext[]): Action[] {
       }
     },
     {
-      icon: view.icon.CheckCircle,
-      label: notification.string.ArchiveAll,
+      icon: view.icon.EyeCrossed,
+      label: view.string.Hide,
       action: async () => {
         archiveActivityChannels(contexts)
       }
@@ -369,69 +356,50 @@ function archiveActivityChannels (contexts: DocNotifyContext[]): void {
     MessageBox,
     {
       label: chunter.string.ArchiveActivityConfirmationTitle,
-      message: chunter.string.ArchiveActivityConfirmationMessage
-    },
-    'top',
-    (result?: boolean) => {
-      if (result === true) {
-        void removeActivityChannels(contexts)
+      message: chunter.string.ArchiveActivityConfirmationMessage,
+      action: async () => {
+        await hideActivityChannels(contexts)
       }
-    }
+    },
+    'top'
   )
 }
 
+const savedAttachmentsQuery = createQuery(true)
 export function loadSavedAttachments (): void {
-  const client = getClient()
-
-  if (client !== undefined) {
-    const savedAttachmentsQuery = createQuery(true)
-
+  onClient(() => {
     savedAttachmentsQuery.query(
       attachment.class.SavedAttachments,
-      {},
+      { space: core.space.Workspace },
       (res) => {
         savedAttachmentsStore.set(res.filter(({ $lookup }) => $lookup?.attachedTo !== undefined))
       },
       { lookup: { attachedTo: attachment.class.Attachment }, sort: { modifiedOn: SortingOrder.Descending } }
     )
-  } else {
-    setTimeout(() => {
-      loadSavedAttachments()
-    }, 50)
-  }
+  })
 }
 
-export async function removeActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
-  const client = InboxNotificationsClientImpl.getClient()
-  const notificationsByContext = get(client.inboxNotificationsByContext)
-  const doneOp = await getClient().measure('removeActivityChannels')
-  const ops = getClient().apply(generateId())
+export async function hideActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
+  const ops = getClient().apply(undefined, 'hideActivityChannels')
 
   try {
     for (const context of contexts) {
-      const notifications = notificationsByContext.get(context._id) ?? []
-      await client.archiveNotifications(
-        ops,
-        notifications.map(({ _id }) => _id)
-      )
-      await ops.remove(context)
+      await ops.update(context, { hidden: true })
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
 export async function readActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
   const client = InboxNotificationsClientImpl.getClient()
   const notificationsByContext = get(client.inboxNotificationsByContext)
-  const doneOp = await getClient().measure('readActivityChannels')
-  const ops = getClient().apply(generateId())
+  const ops = getClient().apply(undefined, 'readActivityChannels', true)
 
   try {
     for (const context of contexts) {
       const notifications = notificationsByContext.get(context._id) ?? []
-      await client.archiveNotifications(
+      await client.readNotifications(
         ops,
         notifications
           .filter(({ _class }) => _class === notification.class.ActivityInboxNotification)
@@ -441,6 +409,5 @@ export async function readActivityChannels (contexts: DocNotifyContext[]): Promi
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }

@@ -135,6 +135,22 @@ export function createModel (builder: Builder): void {
   )
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_BITRIX,
-    disabled: [{ _id: 1 }, { _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
+    disabled: [
+      { _id: 1 },
+      { _class: 1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdOn: -1 },
+      { modifiedOn: 1 }
+    ]
+  })
+  builder.mixin(bitrix.class.FieldMapping, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
+  builder.mixin(bitrix.class.EntityMapping, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
   })
 }

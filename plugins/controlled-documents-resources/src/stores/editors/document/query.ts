@@ -32,7 +32,6 @@ import {
   approvalRequestUpdated,
   controlledDocumentClosed,
   controlledDocumentOpened,
-  controlledDocumentSectionsUpdated,
   controlledDocumentUpdated,
   documentAllVersionsUpdated,
   reviewRequestUpdated,
@@ -40,7 +39,8 @@ import {
   documentSnapshotsUpdated,
   trainingUpdated,
   projectUpdated,
-  projectDocumentsUpdated
+  projectDocumentsUpdated,
+  reviewRequestHistoryUpdated
 } from './actions'
 import { $documentCommentsFilter } from './documentComments'
 import { $controlledDocument, $documentTraining } from './editor'
@@ -49,9 +49,9 @@ const controlledDocumentQuery = createQuery(true)
 const documentVersionsQuery = createQuery(true)
 const documentSnapshotsQuery = createQuery(true)
 const reviewRequestQuery = createQuery(true)
+const reviewRequestHistoryQuery = createQuery(true)
 const approvalRequestQuery = createQuery(true)
 const documentCommentsQuery = createQuery(true)
-const sectionsQuery = createQuery(true)
 const workingCopyMetadataQuery = createQuery(true)
 const savedAttachmentsQuery = createQuery(true)
 const trainingQuery = createQuery(true)
@@ -83,27 +83,6 @@ const queryControlledDocumentFx = createEffect(
     )
   }
 )
-
-const querySectionsFx = createEffect((payload: { _id: Ref<ControlledDocument> }) => {
-  const { _id } = payload
-  if (_id == null) {
-    sectionsQuery.unsubscribe()
-    return
-  }
-
-  sectionsQuery.query(
-    documents.class.DocumentSection,
-    { attachedTo: _id },
-    (result) => {
-      controlledDocumentSectionsUpdated(result ?? [])
-    },
-    {
-      sort: {
-        rank: SortingOrder.Ascending
-      }
-    }
-  )
-})
 
 const queryDocumentVersionsFx = createEffect((payload: ControlledDocument) => {
   if (payload == null) {
@@ -142,6 +121,25 @@ const queryReviewRequestFx = createEffect(
       (result) => {
         if (result !== null && result !== undefined && result.length > 0) {
           reviewRequestUpdated(result[0])
+        }
+      }
+    )
+  }
+)
+
+const queryReviewRequestHistoryFx = createEffect(
+  (payload: { _id: Ref<ControlledDocument>, _class: Ref<Class<ControlledDocument>> }) => {
+    const { _id, _class } = payload
+    if (_id == null || _class == null) {
+      reviewRequestHistoryQuery.unsubscribe()
+      return
+    }
+    reviewRequestHistoryQuery.query(
+      documents.class.DocumentReviewRequest,
+      { attachedTo: _id, attachedToClass: _class },
+      (result) => {
+        if (result !== null && result !== undefined && result.length > 0) {
+          reviewRequestHistoryUpdated(result)
         }
       }
     )
@@ -269,7 +267,6 @@ const unsubscribeFx = createEffect(() => {
   reviewRequestQuery.unsubscribe()
   approvalRequestQuery.unsubscribe()
   documentCommentsQuery.unsubscribe()
-  sectionsQuery.unsubscribe()
   workingCopyMetadataQuery.unsubscribe()
   documentVersionsQuery.unsubscribe()
   savedAttachmentsQuery.unsubscribe()
@@ -282,8 +279,8 @@ forward({
   from: controlledDocumentOpened,
   to: [
     queryControlledDocumentFx,
-    querySectionsFx,
     queryReviewRequestFx,
+    queryReviewRequestHistoryFx,
     queryApprovalRequestFx,
     querySavedAttachmentsFx,
     queryProjectFx,

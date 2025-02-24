@@ -1,0 +1,22 @@
+{
+  "string": {
+      "OnboardingChannelDescription": "User: {user}; Workspace: {workspace}",
+      "Error": "Error: ",
+      "InProject": " in project ",
+      "NavigateToSpecial": "{app}: open {special}",
+      "OpenSpecial": "open {special} ",
+      "Set": "Set ",
+      "To": " to ",
+      "Open": "open ",
+      "Workbench": "Workbench: ",
+      "OnboardingChannel": "Onboarding Channel",
+      "OnboardingChannels": "Onboarding Channels",
+      "WorkspaceId": "Workspace id",
+      "WorkspaceName": "Workspace name",
+      "WorkspaceUrl": "Workspace url",
+      "SocialId": "Social Id",
+      "UserName": "User name",
+      "DisableAIReplies": "Disable AI replies",
+      "ShowAIReplies": "Show AI replies"
+  }
+}

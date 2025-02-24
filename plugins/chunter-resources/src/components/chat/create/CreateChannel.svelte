@@ -17,7 +17,7 @@
   import { ModernEditbox, ButtonMenu, Label, Modal, TextArea } from '@hcengineering/ui'
   import presentation, { getClient } from '@hcengineering/presentation'
   import core, { getCurrentAccount } from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
 
   import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
@@ -51,20 +51,19 @@
   $: canSave = !!channelName
 
   async function save (): Promise<void> {
-    const accountId = getCurrentAccount()._id
+    const primaryPersonId = getCurrentAccount().primarySocialId
+    const employee = getCurrentEmployee()
+    const space = await client.findOne(contact.class.PersonSpace, { person: employee }, { projection: { _id: 1 } })
+    if (!space) return
+
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
       name: channelName,
       description: '',
       private: selectedVisibilityId === 'private',
       archived: false,
-      members: [accountId],
-      topic: description
-    })
-    await client.createDoc(notification.class.DocNotifyContext, channelId, {
-      user: accountId,
-      attachedTo: channelId,
-      attachedToClass: chunter.class.Channel,
-      hidden: false
+      members: [primaryPersonId],
+      topic: description,
+      owners: [primaryPersonId]
     })
 
     openChannel(channelId, chunter.class.Channel)

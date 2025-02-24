@@ -13,93 +13,26 @@
 // limitations under the License.
 //
 
-import {
-  Class,
-  CollaborativeDoc,
-  Doc,
-  Domain,
-  Ref,
-  collaborativeDocChain,
-  collaborativeDocFormat,
-  collaborativeDocParse,
-  collaborativeDocUnchain
-} from '@hcengineering/core'
-import { DocumentId, PlatformDocumentId } from './types'
+import { Class, CollaborativeDoc, Doc, Ref } from '@hcengineering/core'
 
 /** @public */
-export function formatMinioDocumentId (workspaceUrl: string, collaborativeDoc: CollaborativeDoc): DocumentId {
-  return formatDocumentId('minio', workspaceUrl, collaborativeDoc)
-}
-
-/**
- * Formats collaborative document as Hocuspocus document name.
- *
- * The document name is used for document identification on the server so should remain the same even
- * when document is updated. Hence, we remove lastVersionId component from CollaborativeDoc.
- *
- * Example:
- * minio://workspace1/doc1:HEAD/doc2:v1
- *
- * @public
- */
-export function formatDocumentId (
-  storage: string,
-  workspaceUrl: string,
-  collaborativeDoc: CollaborativeDoc
-): DocumentId {
-  const path = collaborativeDocUnchain(collaborativeDoc)
-    .map((p) => {
-      const { documentId, versionId } = collaborativeDocParse(p)
-      return `${documentId}:${versionId}`
-    })
-    .join('/')
-
-  return `${storage}://${workspaceUrl}/${path}` as DocumentId
+export function encodeDocumentId (workspaceId: string, documentId: CollaborativeDoc): string {
+  const { objectClass, objectId, objectAttr } = documentId
+  return [workspaceId, objectClass, objectId, objectAttr].join('|')
 }
 
 /** @public */
-export function parseDocumentId (documentId: DocumentId): {
-  storage: string
-  workspaceUrl: string
-  collaborativeDoc: CollaborativeDoc
+export function decodeDocumentId (documentId: string): {
+  workspaceId: string
+  documentId: CollaborativeDoc
 } {
-  const [storage, path] = documentId.split('://')
-  const [workspaceUrl, ...rest] = path.split('/')
-
-  const collaborativeDocs = rest.map((p) => {
-    const [documentId, versionId] = p.split(':')
-    return collaborativeDocFormat({ documentId, versionId, lastVersionId: versionId })
-  })
-
+  const [workspaceId, objectClass, objectId, objectAttr] = documentId.split('|')
   return {
-    storage,
-    workspaceUrl,
-    collaborativeDoc: collaborativeDocChain(...collaborativeDocs)
-  }
-}
-
-/** @public */
-export function formatPlatformDocumentId (
-  objectDomain: Domain,
-  objectClass: Ref<Class<Doc>>,
-  objectId: Ref<Doc>,
-  objectAttr: string
-): PlatformDocumentId {
-  return `${objectDomain}/${objectClass}/${objectId}/${objectAttr}` as PlatformDocumentId
-}
-
-/** @public */
-export function parsePlatformDocumentId (platformDocumentId: PlatformDocumentId): {
-  objectDomain: Domain
-  objectClass: Ref<Class<Doc>>
-  objectId: Ref<Doc>
-  objectAttr: string
-} {
-  const [objectDomain, objectClass, objectId, objectAttr] = platformDocumentId.split('/')
-  return {
-    objectDomain: objectDomain as Domain,
-    objectClass: objectClass as Ref<Class<Doc>>,
-    objectId: objectId as Ref<Doc>,
-    objectAttr
+    workspaceId,
+    documentId: {
+      objectClass: objectClass as Ref<Class<Doc>>,
+      objectId: objectId as Ref<Doc>,
+      objectAttr
+    }
   }
 }

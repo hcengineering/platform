@@ -9,11 +9,7 @@
     "Requests": "Запросы",
     "EffectiveDate": "Дата выпуска",
     "PlannedEffectiveDate": "Планируемая дата выпуска",
-    "Section": "Section",
     "Rank": "Ранг",
-    "CollaborativeSection": "Коллаборативная секция",
-    "CollaboratorSectionId": "ID коллаборационной секции",
-    "AttachmentsSection": "Секция прикрепленных файлов",
     "DocumentRequest": "Запрос",
     "DocumentReviewRequest": "Запрос рецензии документа",
     "DocumentApprovalRequest": "Запрос утверждения документа",
@@ -22,11 +18,10 @@
     "Guidance": "Руководство",
     "Required": "Обязательно",
     "Description": "Описание",
-    "SectionTemplate": "Шаблон секции",
     "Major": "Мажорная",
     "Minor": "Минорная",
     "Patch": "Патч",
-    "DocumentApprovals": "Рецензии и утверждения",
+    "ValidationWorkflow": "Процесс валидации",
     "ChangeOwner": "Изменить владельца документа",
     "ChangeOwnerHintBeginning": "Передайте права владельца документа",
     "ChangeOwnerHintEnd": "другому лицу.",
@@ -89,6 +84,8 @@
     "ProvideRejectionReason": "Напишите причину отказа",
     "RejectionReason": "Причина отказа",
     "ConfirmReviewCompletion": "Подтвердите окончание рецензии",
+    "ConfirmApprovalSubmission": "Подтвердите отправку на рецензцию",
+    "ConfirmReviewSubmission": "Подтвердите отправку на утверждение",
     "AddApprovalTitle": "Отправьте ваш документ на утверждение",
     "AddApprovalDescription1": "Для отправки вашего документа на утверждение, он должен удовлетворять следующим требованиям:",
     "AddApprovalDescription2": "иметь статус 'Рабочая копия' или 'Рецензии получены'",
@@ -104,9 +101,7 @@
     "DocumentCodePlaceholder": "ДОК-1",
     "DocumentPrefixPlaceholder": "ДОК",
     "DocumentPrefix": "Префикс документов",
-    "Sections": "Разделы",
-    "TemplateSectionTitle": "Заголовок",
-    "DocumentTemplateCreateLabel": "Шалблон",
+    "DocumentTemplateCreateLabel": "Шаблон",
     "DocumentCategoryCreateLabel": "Категория",
     "CreateDocumentCategory": "Создать категорию документа",
     "DocumentCategoryAlreadyExists": "Категория \"{title}\" уже существует. ",
@@ -114,6 +109,7 @@
     "AttachmentsMax": "Максимальное число допустимых файлов",
     "Resolve": "Пометить выполненным",
     "Unresolve": "Пометить невыполненным",
+    "Pending": "В ожидании",
     "Resolved": "Выполненный",
     "ShowResolved": "Показать выполненные",
     "Ordering": "Сортировка",
@@ -134,7 +130,7 @@
     "ModificationDate": "Модифицированно",
     "Modified": "Модифицированно",
     "Owner": "Владелец",
-    "AssignedTo": "Назначано на",
+    "AssignedTo": "Назначено на",
     "Unassigned": "Не назначено",
     "Untitled": "Без названия",
     "Copy": "копия",
@@ -152,12 +148,6 @@
     "ChangeControl": "Контроль Изменений",
     "ReviewInterval": "Интервал ревью",
 
-    "DocTemplateDeleteSectionTitle": "Подтверждение удаления секции",
-    "DocTemplateDeleteSectionConfirm": "Вы действительно хотите навсегда удалить секцию \"{section}\" из шаблона?",
-
-    "AddSectionAbove": "Добавить новую секцию сверху",
-    "AddSectionBelow": "Добавить новую секцию снизу",
-
     "SelectReviewers": "Выберите рецензентов",
     "SelectApprovers": "Выберите утверждающих",
     "RequestsToReviewTheDoc": "запрашивает у вас рецензию на документ",
@@ -165,7 +155,7 @@
     "Parent": "Родитель",
     "Template": "Шаблон",
     "GeneralInfo": "Общая информация",
-    "InProgress": "В прогресссе",
+    "InProgress": "Выполняется",
 
     "EditDescription": "Редактировать описание",
     "EditGuidance": "Редактировать руководство",
@@ -179,8 +169,6 @@
     "InfoStepTitle": "Инфо",
     "TeamStepTitle": "Команда",
 
-    "Duplicate": "Дублировать",
-
     "TitleAndDescr": "Заголовок и описание",
     "Reason": "Причина",
     "AbstractPlaceholder": "О чем этот документ? Кто будет его использовать и как? ...",
@@ -193,7 +181,6 @@
     "EditDocument": "Редактировать документ",
 
     "Key": "Ключ",
-    "SectionKey": "Ключ секции",
     "CommentsSequence": "Последовательность комментариев",
 
     "Email": "Email",
@@ -237,13 +224,15 @@
     "MarkDocAsDeleted": "Пометить документ как удаленный",
     "MarkDocsAsDeleted": "Пометить несколько документов как удаленные",
     "MarkDocAsDeletedConfirm": "Вы действительно хотите пометить следующие документы как удаленные: {titles}?",
+    "ArchiveDocs": "Архивировать {count, plural, =0 {документ} other {документы}}",
+    "ArchiveDocsConfirm": "Вы действительно хотите архивировать следующие документы: {titles}?",
 
     "DocumentInHierarchy": "Документ в иерархии",
     "FirstDraftVersion": "Это первая рабочая копия документа. Для него пока нет истории.",
 
     "EffectiveDocumentLifecycle": "Жизненный цикл эффективного документа",
 
-    "ReasonAndImpact": "Причина & Воздействие",
+    "ReasonAndImpact": "Причина и Воздействие",
     "ImpactAnalysis": "Анализ воздействия",
     "ImpactedDocuments": "Подверженные документы",
 
@@ -290,6 +279,8 @@
     "ReviewDocumentDescription": "Предоставляет пользователям разрешение рецензировать документ",
     "ApproveDocumentPermission": "Утверждать документ",
     "ApproveDocumentDescription": "Предоставляет пользователям разрешение утверждать документ",
+    "ArchiveDocumentPermission": "Архивировать документ",
+    "ArchiveDocumentDescription": "Предоставляет пользователям разрешение архивировать документ",
     "CoAuthorDocumentPermission": "Быть со-автором документа",
     "CoAuthorDocumentDescription": "Предоставляет пользователям разрешение быть со-автором документа",
     "CreateDocumentPermission": "Создавать документ",
@@ -304,7 +295,21 @@
     "DeleteDocumentCategoryPermission": "Удалять категорию",
     "DeleteDocumentCategoryDescription": "Предоставляет пользователям разрешение удалять категорию",
     "ConfigLabel": "Управляемые Документы",
-    "ConfigDescription": "Расширение для управления управялемыми документами"
+    "ConfigDescription": "Расширение для управления управляемыми документами",
+
+    "Transfer": "Трансфер",
+    "TransferWarning": "После этого действия некоторые члены команды могут потерять возможность просматривать или редактировать этот документ.",
+    "TransferDocuments": "Трансфер управляемых документов",
+    "TransferDocumentsHint": "Документы, которые будут перенесены в выбранное пространство:",
+
+    "CreateFolder": "Создать новую папку",
+    "RenameFolder": "Переименовать папку",
+    "CreateChildFolder": "Создать подпапку",
+
+    "Obsolete": "Устаревший",
+    "MakeDocumentObsolete": "Пометить как устаревшее",
+    "MakeDocumentObsoleteDialog": "Пометить {count, plural, one {документ как устаревший} other {документы как устаревшие}}",
+    "MakeDocumentObsoleteConfirm": "Вы действительно хотите пометить следующие документы как устаревшие: {titles}?"
   },
   "controlledDocStates": {
     "Empty": "",

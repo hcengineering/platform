@@ -17,10 +17,10 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { Invite, RequestStatus } from '@hcengineering/love'
+  import { Invite, RequestStatus, getFreeRoomPlace } from '@hcengineering/love'
   import love from '../plugin'
   import { infos, myInfo, rooms } from '../stores'
-  import { connectRoom, getFreePlace } from '../utils'
+  import { connectRoom } from '../utils'
 
   export let invite: Invite
 
@@ -35,13 +35,13 @@
     if (myPerson === undefined) return
     if ($myInfo === undefined) return
     await client.update(invite, { status: RequestStatus.Approved })
-    const place = getFreePlace(
+    const place = getFreeRoomPlace(
       room,
-      $infos.filter((p) => p.room === room?._id)
+      $infos.filter((p) => p.room === room?._id),
+      myPerson._id
     )
     await connectRoom(place.x, place.y, $myInfo, myPerson, room)
   }
-
   async function decline (): Promise<void> {
     await client.update(invite, { status: RequestStatus.Rejected })
   }
@@ -79,12 +79,12 @@
 
   .title {
     color: var(--caption-color);
-    font-size: 700;
+    font-weight: 700;
   }
 
   .roomTitle {
     color: var(--caption-color);
-    font-size: 700;
+    font-weight: 700;
     font-size: 1rem;
   }
 </style>

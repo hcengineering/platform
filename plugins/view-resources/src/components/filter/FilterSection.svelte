@@ -118,6 +118,7 @@
   </button>
   <button
     class="filter-button hoverable lower"
+    data-id="btnCondition"
     on:click={(e) => {
       clickHandler(e, false)
     }}

@@ -18,7 +18,7 @@ import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 
 import type { MeasureContext } from '@hcengineering/core'
-import { getMongoClient } from '@hcengineering/mongo'
+import serverClient from '@hcengineering/server-client'
 import type { StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import config from './config'
@@ -26,19 +26,17 @@ import { start } from './server'
 
 export async function startCollaborator (ctx: MeasureContext, onClose?: () => void): Promise<void> {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
+  setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoUrl)
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
-  const mongoClient = getMongoClient(config.MongoUrl)
-
-  const shutdown = await start(ctx, config, storageAdapter, mongoClient)
+  const shutdown = await start(ctx, config, storageAdapter)
 
   const close = (): void => {
     void storageAdapter.close()
-    void shutdown().then(() => {
-      mongoClient.close()
-    })
+    void shutdown()
     onClose?.()
   }
 

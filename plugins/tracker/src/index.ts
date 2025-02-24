@@ -18,6 +18,7 @@ import {
   AttachedDoc,
   Attribute,
   Class,
+  MarkupBlobRef,
   CollectionSize,
   Data,
   Doc,
@@ -33,7 +34,9 @@ import {
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
+import { ToDo } from '@hcengineering/time'
 import {
+  ProjectType,
   ProjectTypeDescriptor,
   Task,
   Project as TaskProject,
@@ -43,6 +46,8 @@ import {
 } from '@hcengineering/task'
 import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
+
+export * from './analytics'
 
 /**
  * @public
@@ -178,7 +183,7 @@ export interface Milestone extends Doc {
 export interface Issue extends Task {
   attachedTo: Ref<Issue>
   title: string
-  description: Markup
+  description: MarkupBlobRef | null
   status: Ref<IssueStatus>
   priority: IssuePriority
 
@@ -213,6 +218,8 @@ export interface Issue extends Task {
     // Child id in template
     childId?: string
   }
+
+  todos?: CollectionSize<ToDo>
 }
 
 /**
@@ -352,6 +359,7 @@ export interface Component extends Doc {
  * @public
  */
 export const trackerId = 'tracker' as Plugin
+export * from './analytics'
 
 const pluginState = plugin(trackerId, {
   class: {
@@ -377,7 +385,8 @@ const pluginState = plugin(trackerId, {
   ids: {
     NoParent: '' as Ref<Issue>,
     IssueDraft: '',
-    IssueDraftChild: ''
+    IssueDraftChild: '',
+    ClassingProjectType: '' as Ref<ProjectType>
   },
   status: {
     Backlog: '' as Ref<Status>,
@@ -400,7 +409,8 @@ const pluginState = plugin(trackerId, {
     ProjectPresenter: '' as AnyComponent,
     CreateIssueTemplate: '' as AnyComponent,
     CreateProject: '' as AnyComponent,
-    IssueStatusPresenter: '' as AnyComponent
+    IssueStatusPresenter: '' as AnyComponent,
+    LabelsView: '' as AnyComponent
   },
   attribute: {
     IssueStatus: '' as Ref<Attribute<Status>>
@@ -422,6 +432,7 @@ const pluginState = plugin(trackerId, {
     Labels: '' as Asset,
     DueDate: '' as Asset,
     Parent: '' as Asset,
+    UnsetParent: '' as Asset,
     Milestone: '' as Asset,
     IssueTemplates: '' as Asset,
     Start: '' as Asset,
@@ -485,7 +496,8 @@ const pluginState = plugin(trackerId, {
     EditProject: '' as Ref<Action>,
     SetMilestone: '' as Ref<Action<Doc, any>>,
     SetLabels: '' as Ref<Action<Doc, any>>,
-    EditRelatedTargets: '' as Ref<Action<Doc, any>>
+    EditRelatedTargets: '' as Ref<Action<Doc, any>>,
+    UnsetParent: '' as Ref<Action<Doc, any>>
   },
   project: {
     DefaultProject: '' as Ref<Project>
@@ -502,11 +514,12 @@ const pluginState = plugin(trackerId, {
     IssueNotificationChanged: '' as IntlString,
     IssueNotificationChangedProperty: '' as IntlString,
     IssueNotificationMessage: '' as IntlString,
-    IssueAssigneedToYou: '' as IntlString,
+    IssueAssignedToYou: '' as IntlString,
     Project: '' as IntlString,
     RelatedIssues: '' as IntlString,
     Issue: '' as IntlString,
-    NewProject: '' as IntlString
+    NewProject: '' as IntlString,
+    UnsetParentIssue: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,

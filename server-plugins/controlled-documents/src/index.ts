@@ -6,7 +6,7 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TriggerFunc } from '@hcengineering/server-core'
-import { Presenter } from '@hcengineering/server-notification'
+import { Presenter, TypeMatchFunc } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -18,13 +18,14 @@ export const serverDocumentsId = 'server-documents' as Plugin
  */
 export default plugin(serverDocumentsId, {
   trigger: {
-    OnCollaborativeSectionDeleted: '' as Resource<TriggerFunc>,
+    OnSocialIdentityCreate: '' as Resource<TriggerFunc>,
+    OnDocDeleted: '' as Resource<TriggerFunc>,
     OnDocPlannedEffectiveDateChanged: '' as Resource<TriggerFunc>,
     OnDocApprovalRequestApproved: '' as Resource<TriggerFunc>,
-    OnDocHasBecomeEffective: '' as Resource<TriggerFunc>,
-    OnWorkspaceOwnerAdded: '' as Resource<TriggerFunc>
+    OnDocHasBecomeEffective: '' as Resource<TriggerFunc>
   },
   function: {
-    ControlledDocumentTextPresenter: '' as Resource<Presenter>
+    ControlledDocumentTextPresenter: '' as Resource<Presenter>,
+    CoAuthorsTypeMatch: '' as TypeMatchFunc
   }
 })

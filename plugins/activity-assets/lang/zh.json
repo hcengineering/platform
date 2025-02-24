@@ -43,6 +43,13 @@
     "Thread": "线程",
     "AddReaction": "添加回应",
     "SaveForLater": "稍后保存",
-    "RemoveFromLater": "从保存中移除"
+    "RemoveFromLater": "从保存中移除",
+    "ReactionNotificationTitle": "反應於 {title}",
+    "ReactionNotificationBody": "{senderName}: {reaction}",
+    "NewObject": "新 {object}",
+    "RemovedObject": "移除 {object}",
+    "ChangedObject": "更改 {object}",
+    "UnsetObject": "取消设置 {object}",
+    "UpdatedObject": "更新 {object}"
   }
 }

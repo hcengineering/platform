@@ -16,23 +16,14 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { Document } from '@hcengineering/document'
+  import document, { Document } from '@hcengineering/document'
   import { getResource } from '@hcengineering/platform'
-  import {
-    CollaboratorEditor,
-    HeadingsExtension,
-    ImageUploadOptions,
-    SvelteNodeViewRenderer,
-    TodoItemExtension,
-    TodoListExtension
-  } from '@hcengineering/text-editor'
+  import { getClient } from '@hcengineering/presentation'
+  import { CollaboratorEditor, HeadingsExtension, ImageUploadOptions } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent } from '@hcengineering/ui'
   import { getCollaborationUser } from '@hcengineering/view-resources'
   import { Extensions, FocusPosition } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
-
-  import ToDoItemNodeView from './node-view/ToDoItemNodeView.svelte'
-  import ToDoListNodeView from './node-view/ToDoListNodeView.svelte'
 
   export let object: Document
   export let readonly = false
@@ -41,6 +32,9 @@
   export let focusIndex = -1
   export let overflow: 'auto' | 'none' = 'none'
   export let editorAttributes: Record<string, string> = {}
+  export let requestSideSpace: ((width: number) => void) | undefined = undefined
+
+  const client = getClient()
 
   const user = getCollaborationUser()
   let userComponent: AnySvelteComponent | undefined
@@ -61,39 +55,18 @@
       onChange: (headings) => {
         dispatch('headings', headings)
       }
-    }),
-    TodoItemExtension.extend({
-      addNodeView () {
-        return SvelteNodeViewRenderer(ToDoItemNodeView, {
-          contentAs: 'li',
-          contentClass: 'todo-item',
-          componentProps: { object },
-          ignoreMutation: () => true
-        })
-      }
-    }).configure({
-      HTMLAttributes: {
-        class: 'todo-item'
-      }
-    }),
-    TodoListExtension.extend({
-      addNodeView () {
-        return SvelteNodeViewRenderer(ToDoListNodeView, { ignoreMutation: () => true })
-      }
-    }).configure({
-      HTMLAttributes: {
-        class: 'todo-list'
-      }
     })
   ]
+
+  $: attribute = {
+    key: 'content',
+    attr: client.getHierarchy().getAttribute(document.class.Document, 'content')
+  }
 </script>
 
 <CollaboratorEditor
-  collaborativeDoc={object.content}
-  objectClass={object._class}
-  objectId={object._id}
-  objectAttr="content"
-  field="content"
+  {object}
+  {attribute}
   {user}
   {userComponent}
   {focusIndex}
@@ -102,8 +75,10 @@
   {boundary}
   {overflow}
   {editorAttributes}
+  {requestSideSpace}
   onExtensions={handleExtensions}
   on:update
   on:open-document
+  on:loaded
   bind:this={collabEditor}
 />

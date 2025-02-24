@@ -41,6 +41,7 @@ import {
   shouldScrollToActivity
 } from './utils'
 
+export * from './types'
 export * from './activity'
 export * from './utils'
 export * from './activityMessagesUtils'
@@ -52,6 +53,7 @@ export { default as ActivityMessagePresenter } from './components/activity-messa
 export { default as ActivityExtension } from './components/ActivityExtension.svelte'
 export { default as ActivityDocLink } from './components/ActivityDocLink.svelte'
 export { default as ReactionPresenter } from './components/reactions/ReactionPresenter.svelte'
+export { default as ActivityFilter } from './components/ActivityFilter.svelte'
 export { default as ActivityMessageNotificationLabel } from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 export { default as ActivityMessageHeader } from './components/activity-message/ActivityMessageHeader.svelte'
 export { default as ActivityMessageAction } from './components/ActivityMessageAction.svelte'

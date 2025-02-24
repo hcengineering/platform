@@ -1,6 +1,6 @@
 import {
   type Tx,
-  type Blob,
+  type Blob as PlatformBlob,
   type Class,
   type Client,
   type Doc,
@@ -13,7 +13,7 @@ import {
   type TxOperations
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
-import { type AnyComponent, type AnySvelteComponent, type ComponentExtensionId } from '@hcengineering/ui'
+import { type AnyComponent, type AnySvelteComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 
 export * from './components/breadcrumbs/types'
 
@@ -72,6 +72,9 @@ export interface ObjectSearchCategory extends Doc {
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>
   classToSearch?: Ref<Class<Doc>>
+  includeChilds?: boolean
+
+  priority?: number
 }
 
 export interface ComponentExt {
@@ -106,6 +109,12 @@ export type DocCreateFunction = (
   phase: DocCreatePhase
 ) => Promise<void>
 
+export type DocCreateAnalyticsPropsFunction = (
+  space: Space,
+  document: DocData<Doc>,
+  extraData: Record<string, any>
+) => Record<string, any>
+
 /**
  * @public
  */
@@ -123,6 +132,7 @@ export interface DocCreateExtension extends Doc {
 
   components: Partial<Record<CreateExtensionKind, AnyComponent>>
   apply: Resource<DocCreateFunction>
+  getAnalyticsProps?: Resource<DocCreateAnalyticsPropsFunction>
 }
 
 export interface DocAttributeRule {
@@ -172,6 +182,11 @@ export interface DocRules extends Doc {
 /**
  * @public
  */
+export type FileOrBlob = File | Blob
+
+/**
+ * @public
+ */
 export type BlobMetadata = Record<string, any>
 
 /**
@@ -180,7 +195,7 @@ export type BlobMetadata = Record<string, any>
 export interface FilePreviewExtension extends ComponentPointExtension {
   contentType: string | string[]
   alignment?: string
-  metadataProvider?: Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
+  metadataProvider?: Resource<(file: FileOrBlob, blob: Ref<PlatformBlob>) => Promise<BlobMetadata | undefined>>
   // Extension is only available if this checker returns true
   availabilityChecker?: Resource<() => Promise<boolean>>
 }

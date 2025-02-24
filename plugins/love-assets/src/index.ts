@@ -36,5 +36,9 @@ loadMetadata(love.icon, {
   StopRecord: `${icons}#stopRecord`,
   FullScreen: `${icons}#fullscreen`,
   ExitFullScreen: `${icons}#exitfullscreen`,
-  Invite: `${icons}#invite`
+  Invite: `${icons}#invite`,
+  Kick: `${icons}#kick`
+})
+loadMetadata(love.sound, {
+  Knock: require('../assets/knock.wav')
 })

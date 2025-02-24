@@ -18,6 +18,8 @@
   import { onDestroy } from 'svelte'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { RecruitEvents } from '@hcengineering/recruit'
 
   let draftExists = false
 
@@ -30,6 +32,7 @@
 
   async function newCandidate (): Promise<void> {
     showPopup(CreateCandidate, { shouldSaveDraft: true }, 'top')
+    Analytics.handleEvent(RecruitEvents.NewTalentButtonClicked)
   }
 </script>
 

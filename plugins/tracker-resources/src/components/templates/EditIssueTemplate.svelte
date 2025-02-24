@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
+  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -45,7 +45,7 @@
   let title = ''
   let innerWidth: number
 
-  let descriptionBox: AttachmentStyleBoxCollabEditor
+  let descriptionBox: AttachmentStyleBoxEditor
 
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
@@ -54,12 +54,12 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void inboxClient.then((client) => client.readDoc(getClient(), prev))
+      void inboxClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
-    void inboxClient.then((client) => client.readDoc(getClient(), _id))
+    void inboxClient.then((client) => client.readDoc(_id))
   })
 
   $: _id !== undefined &&
@@ -69,7 +69,9 @@
       { _id },
       async (result) => {
         ;[template] = result
-        title = template.title
+        if (template != null) {
+          title = template.title
+        }
         currentProject = template.$lookup?.space
       },
       { lookup: { space: tracker.class.Project, labels: tags.class.TagElement } }
@@ -147,7 +149,7 @@
   >
     <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" on:blur={save} />
     <div class="w-full mt-6">
-      <AttachmentStyleBoxCollabEditor
+      <AttachmentStyleBoxEditor
         focusIndex={30}
         object={template}
         key={{ key: 'description', attr: descriptionKey }}
@@ -179,12 +181,19 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
+      <Button
+        icon={IconMoreH}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        dataId={'btnMoreActions'}
+        on:click={showContextMenu}
+      />
       <Button
         icon={setting.icon.Setting}
         iconProps={{ size: 'medium' }}
         kind={'icon'}
         showTooltip={{ label: setting.string.ClassSetting }}
+        dataId={'btnClassSetting'}
         on:click={(ev) => {
           ev.stopPropagation()
           const loc = getCurrentResolvedLocation()

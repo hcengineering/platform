@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Ref } from '@hcengineering/core'
+  import { type Ref, type Space } from '@hcengineering/core'
   import { type Drive, type Folder } from '@hcengineering/drive'
-
-  import { createFiles } from '../utils'
+  import { uploadFilesToDrive } from '../utils'
 
   export let space: Ref<Drive>
   export let parent: Ref<Folder>
@@ -39,6 +38,9 @@
   }
 
   async function handleDragOver (e: DragEvent): Promise<void> {
+    if (e.dataTransfer?.files === undefined) {
+      return
+    }
     if (canDrop !== undefined && !canDrop(e)) {
       return
     }
@@ -60,45 +62,37 @@
     e.preventDefault()
     e.stopPropagation()
 
-    // progress = true
-    const list = e.dataTransfer?.files
-    if (list !== undefined && list.length !== 0) {
-      await createFiles(list, space, parent)
+    if (e.dataTransfer != null) {
+      await uploadFilesToDrive(e.dataTransfer, space, parent)
     }
-    // progress = false
   }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="dropzone h-full"
+  class="dropzone flex-col w-full h-full"
+  class:dragover
   on:dragenter={handleDragEnter}
   on:dragleave={handleDragLeave}
   on:dragover|preventDefault={handleDragOver}
   on:drop={handleDrop}
 >
-  {#if dragover}
-    <div class="dropzone-overlay" />
-  {/if}
-
   <slot />
 </div>
 
 <style lang="scss">
   .dropzone {
     position: relative;
-  }
 
-  .dropzone-overlay {
-    pointer-events: none;
-
-    z-index: 1;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background-color: var(--primary-button-transparent);
-    border: 2px dashed var(--primary-button-outline);
+    &::after {
+      position: absolute;
+      inset: 0;
+      background-color: var(--primary-button-transparent);
+      border: 2px dashed var(--primary-button-outline);
+      pointer-events: none;
+    }
+    &.dragover::after {
+      content: '';
+    }
   }
 </style>

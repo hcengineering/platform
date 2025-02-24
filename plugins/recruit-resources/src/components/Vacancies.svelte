@@ -24,11 +24,22 @@
   } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
-  import { Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup, tableToCSV } from '@hcengineering/ui'
+  import {
+    Button,
+    Component,
+    IconAdd,
+    Loading,
+    SearchInput,
+    showPopup,
+    tableToCSV,
+    Header,
+    Breadcrumb
+  } from '@hcengineering/ui'
   import view, { BuildModelKey, ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
+  import IconVacancy from './icons/Vacancy.svelte'
 
   let search: string = ''
   let searchQuery: DocumentQuery<Doc> = {}
@@ -43,7 +54,7 @@
   let applications: Map<Ref<Vacancy>, ApplicationInfo> = new Map<Ref<Vacancy>, ApplicationInfo>()
 
   const applicantQuery = createQuery()
-  applicantQuery.query(
+  $: applicantQuery.query(
     recruit.class.Applicant,
     {},
     (res) => {
@@ -58,6 +69,7 @@
       applications = applications
     },
     {
+      showArchived: true,
       projection: {
         _id: 1,
         modifiedOn: 1,
@@ -125,20 +137,31 @@
   }
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label label={recruit.string.Vacancies} /></span>
-  </div>
-  <div class="ac-header-full medium-gap mb-1">
+<Header
+  adaptive={'freezeActions'}
+  hideActions={!(viewlet?.descriptor === view.viewlet.Table || hasAccountRole(getCurrentAccount(), AccountRole.User))}
+>
+  <svelte:fragment slot="beforeTitle">
     <ViewletSelector
       bind:loading
       bind:viewlet
       bind:preference
+      ignoreFragment
       viewletQuery={{
         attachTo: recruit.class.Vacancy,
         descriptor: { $in: [view.viewlet.Table, view.viewlet.List] }
       }}
     />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
+  </svelte:fragment>
+
+  <Breadcrumb icon={IconVacancy} label={recruit.string.Vacancies} size={'large'} isCurrent />
+
+  <svelte:fragment slot="search">
+    <SearchInput bind:value={search} collapsed on:change={(e) => (search = e.detail)} />
+    <FilterButton _class={recruit.class.Vacancy} {viewOptions} />
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
     {#if viewlet?.descriptor === view.viewlet.Table}
       <Button
         label={recruit.string.Export}
@@ -162,21 +185,8 @@
     {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
       <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
     {/if}
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} on:change={(e) => (search = e.detail)} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
-    <FilterButton _class={recruit.class.Vacancy} {viewOptions} />
-  </div>
-  <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-  </div>
-</div>
-
+  </svelte:fragment>
+</Header>
 <FilterBar
   _class={recruit.class.Vacancy}
   space={undefined}
@@ -197,10 +207,7 @@
       viewlet,
       viewOptions,
       viewOptionsConfig: viewlet.viewOptions?.other,
-      query: {
-        ...resultQuery,
-        ...(viewOptions?.hideArchived !== false ? { archived: false } : {})
-      },
+      query: resultQuery,
       totalQuery: {},
       tableId: 'vacanciesData'
     }}

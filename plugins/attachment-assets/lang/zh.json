@@ -24,7 +24,7 @@
     "FileBrowserFilterIn": "在",
     "FileBrowserFilterDate": "日期",
     "FileBrowserFilterFileType": "文件类型",
-    "FileBrowserSort": "排序：",
+    "FileBrowserSort": "排序",
     "FileBrowserSortNewest": "最新文件",
     "FileBrowserSortOldest": "最旧文件",
     "FileBrowserSortAZ": "A 到 Z",
@@ -52,6 +52,8 @@
     "UnPinAttachment": "标记为不重要",
     "FilterAttachments": "附件",
     "RemovedAttachment": "移除附件",
-    "ContentType": "内容类型"
+    "ContentType": "内容类型",
+    "OpenInWindow": "在新窗口中打开",
+    "Embeddings": "嵌入"
   }
 }

@@ -21,12 +21,11 @@
     DocUpdateMessage,
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, ShowMore, Action } from '@hcengineering/ui'
+  import { Action, Component, ShowMore } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
@@ -54,6 +53,7 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
   export let type: ActivityMessageViewType = 'default'
+  export let readonly = false
   export let space: Ref<Space> | undefined = undefined
   export let onClick: (() => void) | undefined = undefined
 
@@ -72,7 +72,6 @@
   $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel ?? clazz.label
   $: collectionName = collectionAttribute?.label
 
-  let person: Person | undefined = undefined
   let viewlet: DocUpdateMessageViewlet | undefined
   let attributeModel: AttributeModel | undefined = undefined
   let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -88,35 +87,21 @@
     attributeModel = model
   })
 
-  async function getParentMessage (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<ActivityMessage | undefined> {
+  async function getParentMessage (
+    _class: Ref<Class<Doc>>,
+    _id: Ref<Doc>,
+    space: Ref<Space>
+  ): Promise<ActivityMessage | undefined> {
     if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
-      return await client.findOne(activity.class.ActivityMessage, { _id: _id as Ref<ActivityMessage> })
+      return await client.findOne(activity.class.ActivityMessage, { _id: _id as Ref<ActivityMessage>, space })
     }
   }
 
-  $: void getParentMessage(value.attachedToClass, value.attachedTo).then((res) => {
+  $: void getParentMessage(value.attachedToClass, value.attachedTo, value.space).then((res) => {
     parentMessage = res as DisplayActivityMessage
   })
 
-  $: person = getPerson(value.createdBy, $personAccountByIdStore, $personByIdStore)
-
-  function getPerson (
-    _id: Ref<Account> | undefined,
-    accountById: Map<Ref<PersonAccount>, PersonAccount>,
-    personById: Map<Ref<Person>, Person>
-  ): Person | undefined {
-    if (_id === undefined) {
-      return undefined
-    }
-
-    const personAccount = accountById.get(_id as Ref<PersonAccount>)
-
-    if (personAccount === undefined) {
-      return undefined
-    }
-
-    return personById.get(personAccount.person)
-  }
+  $: person = value.createdBy !== undefined ? $personByPersonIdStore.get(value.createdBy) : undefined
 
   $: void loadObject(value.objectId, value.objectClass, doc)
   $: void loadParentObject(value, parentMessage, doc)
@@ -140,16 +125,17 @@
   }
 
   async function loadParentObject (
-    message: DocUpdateMessage,
-    parentMessage?: ActivityMessage,
+    message: Pick<DocUpdateMessage, 'attachedTo' | 'attachedToClass' | 'objectId' | 'space'>,
+    parentMessage?: Pick<ActivityMessage, 'attachedTo' | 'space' | 'attachedToClass'>,
     doc?: Doc
   ): Promise<void> {
-    if (!parentMessage && message.objectId === message.attachedTo) {
+    if (parentMessage === undefined && message.objectId === message.attachedTo) {
       return
     }
 
-    const _id = parentMessage ? parentMessage.attachedTo : message.attachedTo
-    const _class = parentMessage ? parentMessage.attachedToClass : message.attachedToClass
+    const _id = parentMessage !== undefined ? parentMessage.attachedTo : message.attachedTo
+    const _class = parentMessage !== undefined ? parentMessage.attachedToClass : message.attachedToClass
+    const space = parentMessage !== undefined ? parentMessage.space : message.space
 
     if (doc !== undefined && doc._id === _id) {
       parentObject = doc
@@ -163,7 +149,7 @@
       return
     }
 
-    parentObjectQuery.query(_class, { _id }, (res) => {
+    parentObjectQuery.query(_class, { _id, space }, (res) => {
       parentObject = res[0]
     })
   }
@@ -190,6 +176,7 @@
   {skipLabel}
   {hoverable}
   {hoverStyles}
+  {readonly}
   type={viewlet?.label || getIsTextType(attributeModel) ? 'default' : type}
   showDatePreposition={hideLink}
   {onClick}
@@ -224,7 +211,14 @@
         />
       </ShowMore>
     {:else if value.attributeUpdates && attributeModel}
-      <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} {space} />
+      <DocUpdateMessageAttributes
+        attributeUpdates={value.attributeUpdates}
+        {attributeModel}
+        {viewlet}
+        {space}
+        {object}
+        message={value}
+      />
     {/if}
   </svelte:fragment>
 </ActivityMessageTemplate>

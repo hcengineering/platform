@@ -13,12 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, Channel, combineName, Contact, findContacts } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, Contact, findContacts, type Organization } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
-  import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@hcengineering/core'
-  import type { Customer } from '@hcengineering/lead'
-  import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
+  import {
+    AttachedData,
+    Class,
+    Data,
+    Doc,
+    MixinData,
+    Ref,
+    WithLookup,
+    generateId,
+    makeCollabId
+  } from '@hcengineering/core'
+  import { Customer, LeadEvents } from '@hcengineering/lead'
+  import { Card, createMarkup, getClient, InlineAttributeBar } from '@hcengineering/presentation'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import {
     Button,
     createFocusManager,
@@ -31,10 +43,12 @@
     showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
   import lead from '../plugin'
 
   let firstName = ''
   let lastName = ''
+  let description = EmptyMarkup
 
   export function canClose (): boolean {
     return firstName === '' && lastName === ''
@@ -57,9 +71,9 @@
     return targetClass === contact.class.Person ? combineName(firstName.trim(), lastName.trim()) : objectName
   }
 
-  async function createCustomer () {
+  async function createCustomer (): Promise<void> {
     const candidate: Data<Contact> = {
-      name: formatName(targetClass._id, firstName, lastName, object.name),
+      name,
       city: object.city,
       avatarType: AvatarType.COLOR
     }
@@ -69,8 +83,18 @@
       candidate.avatarType = info.avatarType
       candidate.avatarProps = info.avatarProps
     }
+
+    if (client.getHierarchy().isDerived(targetClass._id, contact.class.Organization)) {
+      ;(candidate as Organization).description = null
+    }
+
     const candidateData: MixinData<Contact, Customer> = {
-      description: object.description
+      customerDescription: null
+    }
+
+    if (!isEmptyMarkup(description)) {
+      const collabId = makeCollabId(lead.mixin.Customer, customerId, 'customerDescription')
+      candidateData.customerDescription = await createMarkup(collabId, description)
     }
 
     const id = await client.createDoc(targetClass._id, contact.space.Contacts, { ...candidate, ...object }, customerId)
@@ -95,6 +119,7 @@
         }
       )
     }
+    Analytics.handleEvent(LeadEvents.CustomerCreated, { id })
   }
 
   const targets = [
@@ -129,19 +154,18 @@
       }
     )
   }
-  $: canSave = formatName(targetClass._id, firstName, lastName, object.name).length > 0
+  $: name = formatName(targetClass._id, firstName, lastName, object.name)
+  $: canSave = name.trim().length > 0
 
   const manager = createFocusManager()
 
   let matches: WithLookup<Contact>[] = []
   let matchedChannels: AttachedData<Channel>[] = []
   $: if (targetClass !== undefined) {
-    findContacts(client, targetClass._id, formatName(targetClass._id, firstName, lastName, object.name), channels).then(
-      (p) => {
-        matches = p.contacts
-        matchedChannels = p.channels
-      }
-    )
+    void findContacts(client, targetClass._id, name, channels).then((p) => {
+      matches = p.contacts
+      matchedChannels = p.channels
+    })
   }
 </script>
 
@@ -183,12 +207,16 @@
             focusIndex={3}
           />
         </div>
-        <EditBox
-          placeholder={lead.string.IssueDescriptionPlaceholder}
-          bind:value={object.description}
-          kind={'small-style'}
-          focusIndex={4}
-        />
+        <div class="mt-1">
+          <StyledTextBox
+            bind:content={description}
+            placeholder={lead.string.IssueDescriptionPlaceholder}
+            kind={'normal'}
+            alwaysEdit={true}
+            showButtons={false}
+            focusIndex={4}
+          />
+        </div>
       </div>
       <div class="ml-4 flex">
         <EditableAvatar
@@ -212,6 +240,18 @@
         autoFocus
         focusIndex={1}
       />
+    </div>
+    <div class="flex-col flex-grow">
+      <div class="mt-1">
+        <StyledTextBox
+          bind:content={description}
+          placeholder={lead.string.IssueDescriptionPlaceholder}
+          kind={'normal'}
+          alwaysEdit={true}
+          showButtons={false}
+          focusIndex={4}
+        />
+      </div>
     </div>
   {/if}
   <svelte:fragment slot="pool">

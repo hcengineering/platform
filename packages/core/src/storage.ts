@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { Asset } from '@hcengineering/platform'
+import type { Asset, Resource } from '@hcengineering/platform'
 
 import type { KeysByType } from 'simplytyped'
-import type { AttachedDoc, Class, Doc, Ref, Space } from './classes'
+import type { Association, AttachedDoc, Class, Doc, Ref, Space } from './classes'
 import type { Tx } from './tx'
 
 /**
@@ -113,6 +113,8 @@ export type Projection<T extends Doc> = {
   [P in keyof T]?: 0 | 1
 }
 
+export type AssociationQuery = [Ref<Association>, 1 | -1]
+
 /**
  * @public
  */
@@ -122,9 +124,12 @@ export type FindOptions<T extends Doc> = {
   sort?: SortingQuery<T>
   lookup?: Lookup<T>
   projection?: Projection<T>
+  associations?: AssociationQuery[]
 
   // If specified total will be returned
   total?: boolean
+
+  showArchived?: boolean
 }
 
 /**
@@ -185,6 +190,7 @@ export type LookupData<T extends Doc> = Partial<RefsAsDocs<T>>
  */
 export type WithLookup<T extends Doc> = T & {
   $lookup?: LookupData<T>
+  $associations?: Record<string, Doc[]>
   $source?: {
     $score: number // Score for document result
     [key: string]: any
@@ -221,16 +227,23 @@ export interface SearchOptions {
   limit?: number
 }
 
+export interface SearchComponentWithProps {
+  component?: Resource<any>
+  props?: Record<string, string>
+}
+
 /**
  * @public
  */
 export interface SearchResultDoc {
   id: Ref<Doc>
+
   icon?: Asset
-  iconComponent?: string
-  iconProps?: Record<string, string>
+  iconComponent?: SearchComponentWithProps
   shortTitle?: string
+  shortTitleComponent?: SearchComponentWithProps
   title?: string
+  titleComponent?: SearchComponentWithProps
   score?: number
   doc: Pick<Doc, '_id' | '_class'>
 }
@@ -261,4 +274,20 @@ export interface Storage {
  */
 export interface FulltextStorage {
   searchFulltext: (query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
+}
+
+export function shouldShowArchived<T extends Doc> (
+  query: DocumentQuery<T>,
+  options: FindOptions<T> | undefined
+): boolean {
+  if (options?.showArchived !== undefined) {
+    return options.showArchived
+  }
+  if (query._id !== undefined && typeof query._id === 'string') {
+    return true
+  }
+  if (query.space !== undefined && typeof query.space === 'string') {
+    return true
+  }
+  return false
 }

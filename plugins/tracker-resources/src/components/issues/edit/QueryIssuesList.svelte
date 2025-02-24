@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
   import { Button, Chevron, ExpandCollapse, IconAdd, closeTooltip, resizeObserver, showPopup } from '@hcengineering/ui'
@@ -30,7 +30,7 @@
 
   export let createParams: Record<string, any> = {}
   export let viewletId = tracker.viewlet.SubIssues
-  export let createLabel = tracker.string.CreatedIssue
+  export let createLabel = tracker.string.AddIssue
   export let hasSubIssues = false
 
   let isCollapsed = false
@@ -77,6 +77,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: { $in: configurationRaw.map((it) => it._id) }
       },
       (res) => {
@@ -134,7 +135,7 @@
   {/if}
   <div class="flex-row-center gap-2 no-print">
     {#if hasSubIssues}
-      <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'ghost'} bind:viewlet />
+      <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
     {/if}
     {#if hasSubIssues}
       <slot name="buttons" />

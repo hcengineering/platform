@@ -43,6 +43,7 @@ import {
   Hidden,
   Index
 } from '@hcengineering/model'
+import textEditor from '@hcengineering/text-editor'
 import { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TClass, TDoc, TType } from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
@@ -52,7 +53,7 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import recruit from '@hcengineering/recruit'
 import tags from '@hcengineering/tags'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import {
   type TodoDoneTester,
   timeId,
@@ -103,7 +104,9 @@ export class TToDO extends TAttachedDoc implements ToDo {
     priority!: ToDoPriority
 
   visibility!: Visibility
-  attachedSpace?: Ref<Space> | undefined
+
+  @Prop(TypeRef(core.class.Space), core.string.Space)
+    attachedSpace?: Ref<Space> | undefined
 
   @Prop(TypeString(), calendarPlugin.string.Title)
     title!: string
@@ -194,7 +197,6 @@ export function createModel (builder: Builder): void {
       alias: timeId,
       hidden: false,
       position: 'top',
-      modern: true,
       component: time.component.Me
     },
     time.app.Me
@@ -366,12 +368,21 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc],
       objectClass: time.class.ProjectToDo,
       onlyOwn: true,
-      providers: {
-        [notification.providers.PlatformNotification]: true
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
       }
     },
     time.ids.ToDoCreated
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [time.ids.ToDoCreated]
+  })
 
   builder.mixin(time.class.ToDo, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['user']
@@ -395,6 +406,16 @@ export function createModel (builder: Builder): void {
       { createdOn: -1 },
       { modifiedOn: 1 }
     ]
+  })
+
+  builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
+    index: 510,
+    create: time.function.CreateTodoItemExtension
+  })
+
+  builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
+    index: 520,
+    create: time.function.CreateTodoListExtension
   })
 }
 

@@ -16,8 +16,8 @@
   import { Event, ReccuringEvent, ReccuringInstance, RecurringRule } from '@hcengineering/calendar'
   import { Person } from '@hcengineering/contact'
   import { DocumentUpdate, Ref } from '@hcengineering/core'
-  import presentation, { getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import presentation, { ComponentExtensions, getClient } from '@hcengineering/presentation'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import {
     Button,
     EditBox,
@@ -199,6 +199,7 @@
     <div class="block rightCropPadding">
       <LocationEditor bind:value={location} focusIndex={10005} />
       <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} focusIndex={10006} />
+      <ComponentExtensions extension={calendar.extensions.EditEventExtensions} props={{ readOnly, value: object }} />
     </div>
     <div class="block row gap-1-5">
       <div class="top-icon">
@@ -210,6 +211,7 @@
         focusIndex={10007}
         kind={'indented'}
         showButtons={false}
+        readonly={readOnly}
         placeholder={calendar.string.Description}
         bind:content={description}
       />

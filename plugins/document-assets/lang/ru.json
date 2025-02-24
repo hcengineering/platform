@@ -50,18 +50,13 @@
 
     "Lock": "Запретить изменения",
     "Unlock": "Разрешить изменения",
-    "Locked": "Защищино от изменений",
+    "Locked": "Защищено от изменений",
 
     "ConfigLabel": "Документы",
     "ConfigDescription": "Расширение по работе с текстовыми документами",
 
-    "UnassignToDo": "Отменить назначение Action Item",
-    "UnassignToDoConfirm": "Вы хотите отменить назначение Action Item? Action Item будет удалена из планирования исполнителя.",
-    "ReassignToDo": "Изменить исполнителя Action Item",
-    "ReassignToDoConfirm": "Вы хотите изменить исполнителя Action Item? Action Item будет удалена из планирования текущего исполнителя.",
     "Icon": "Иконка",
     "Color": "Цвет",
-    "RoleLabel": "Роль: {role}",
-    "Embeddings": "Вложения"
+    "RoleLabel": "Роль: {role}"
   }
 }

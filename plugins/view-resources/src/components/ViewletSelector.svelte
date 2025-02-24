@@ -1,9 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { activeViewlet, makeViewletKey, setActiveViewletId } from '../utils'
-  import { TabList, resolvedLocationStore } from '@hcengineering/ui'
+  import { resolvedLocationStore, Switcher } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
+  import core, { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
 
   export let viewlet: WithLookup<Viewlet> | undefined
@@ -12,6 +12,7 @@
   export let preference: ViewletPreference | undefined = undefined
   export let loading = true
   export let hidden = false
+  export let ignoreFragment = false
 
   const query = createQuery()
 
@@ -29,11 +30,11 @@
     }
   )
 
-  let key = makeViewletKey()
+  let key = makeViewletKey(undefined, ignoreFragment)
 
   onDestroy(
     resolvedLocationStore.subscribe((loc) => {
-      key = makeViewletKey(loc)
+      key = makeViewletKey(loc, ignoreFragment)
     })
   )
 
@@ -69,6 +70,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {
@@ -85,10 +87,11 @@
 </script>
 
 {#if viewlets?.length > 1 && !hidden}
-  <TabList
+  <Switcher
+    name={'viewletSelector'}
     items={viewslist}
-    multiselect={false}
     selected={viewlet?._id}
+    kind={'subtle'}
     on:select={(result) => {
       if (result.detail !== undefined) {
         if (viewlet?._id === result.detail.id) {

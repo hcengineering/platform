@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery, Ref } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
@@ -30,6 +30,7 @@
   export let currentSpace: Ref<Project> | undefined = undefined
   export let baseQuery: DocumentQuery<Issue> = {}
   export let title: IntlString
+  export let icon: Asset | undefined = undefined
   export let config: [string, IntlString, object][]
   export let allProjectsTypes: boolean = false
 
@@ -40,18 +41,7 @@
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
 
-  const archivedProjectQuery = createQuery()
-  let archived: Ref<Project>[] = []
-
-  archivedProjectQuery.query(
-    tracker.class.Project,
-    { archived: true },
-    (res) => {
-      archived = res.map((it) => it._id)
-    },
-    { projection: { _id: 1 } }
-  )
-  $: spaceQuery = currentSpace ? { space: currentSpace } : { space: { $nin: archived } }
+  $: spaceQuery = currentSpace !== undefined ? { space: currentSpace } : {}
 
   $: all = { ...baseQuery, ...spaceQuery }
 
@@ -110,7 +100,7 @@
 </script>
 
 {#if query !== undefined && modeSelectorProps !== undefined}
-  <IssuesView query={finalQuery} space={currentSpace} {title} {modeSelectorProps}>
+  <IssuesView query={finalQuery} space={currentSpace} {icon} {title} {modeSelectorProps}>
     <svelte:fragment slot="type_selector" let:viewlet>
       {#if !allProjectsTypes}
         <TypeSelector {baseClass} project={currentSpace} allTypes={toVL(viewlet)?.descriptor === view.viewlet.List} />

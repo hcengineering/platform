@@ -13,24 +13,28 @@
 // limitations under the License.
 //
 
-import { Blob, Doc, Ref, TypedSpace } from '@hcengineering/core'
+import { AttachedDoc, Blob, CollectionSize, Doc, Ref, Type, TypedSpace } from '@hcengineering/core'
+
+import drive from './plugin'
 
 /** @public */
-export type FileSize = number
+export function TypeFileVersion (): Type<number> {
+  return { _class: drive.class.TypeFileVersion, label: drive.string.FileVersion }
+}
 
 /** @public */
 export interface Drive extends TypedSpace {}
 
 /** @public */
-export interface Resource extends Doc<Drive> {
-  name: string
-  file?: Ref<Blob>
-  preview?: Ref<Blob>
-
+export interface Resource extends Doc {
+  title: string
   parent: Ref<Resource>
   path: Ref<Resource>[]
 
   comments?: number
+
+  // ugly but needed here to get version lookup work for Resource
+  file?: Ref<FileVersion>
 }
 
 /** @public */
@@ -43,9 +47,21 @@ export interface Folder extends Resource {
 
 /** @public */
 export interface File extends Resource {
-  file: Ref<Blob>
-  metadata?: Record<string, any>
-
   parent: Ref<Folder>
   path: Ref<Folder>[]
+
+  file: Ref<FileVersion>
+  versions: CollectionSize<FileVersion>
+  version: number
+}
+
+/** @public */
+export interface FileVersion extends AttachedDoc<File, 'versions', Drive> {
+  title: string
+  file: Ref<Blob>
+  size: number
+  type: string
+  lastModified: number
+  metadata?: Record<string, any>
+  version: number
 }

@@ -46,6 +46,7 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/tags": "^0.6.16",
+    "@hcengineering/time": "^0.6.0",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/tracker-resources": "^0.6.0",

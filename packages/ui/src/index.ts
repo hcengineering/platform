@@ -34,8 +34,10 @@ export type {
   ButtonKind,
   ButtonSize,
   ButtonItem,
+  HeaderAdaptive,
   IconSize,
   TabItem,
+  BreadcrumbItem,
   DeviceOptions,
   TSeparatedItem,
   SeparatedItem,
@@ -45,7 +47,7 @@ export type {
   MouseTargetEvent
 } from './types'
 
-export { themeStore } from '@hcengineering/theme'
+export { themeStore, languageStore } from '@hcengineering/theme'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location, setLocationStorageKey } from './location'
 
@@ -94,6 +96,7 @@ export { default as DatePresenter } from './components/calendar/DatePresenter.sv
 export { default as DueDatePresenter } from './components/calendar/DueDatePresenter.svelte'
 export { default as DateTimePresenter } from './components/calendar/DateTimePresenter.svelte'
 export { default as TimeInputBox } from './components/calendar/TimeInputBox.svelte'
+export { default as Html } from './components/Html.svelte'
 export { default as StylishEdit } from './components/StylishEdit.svelte'
 export { default as Grid } from './components/Grid.svelte'
 export { default as Row } from './components/Row.svelte'
@@ -102,6 +105,9 @@ export { default as Row } from './components/Row.svelte'
 export { default as EditWithIcon } from './components/EditWithIcon.svelte'
 export { default as SearchEdit } from './components/SearchEdit.svelte'
 export { default as SearchPicker } from './components/SearchPicker.svelte'
+export { default as SearchInput } from './components/SearchInput.svelte'
+export { default as Switcher } from './components/Switcher.svelte'
+export { default as SwitcherBase } from './components/SwitcherBase.svelte'
 export { default as Chip } from './components/Chip.svelte'
 export { default as Loading } from './components/Loading.svelte'
 export { default as Spinner } from './components/Spinner.svelte'
@@ -151,6 +157,9 @@ export { default as Hotkey } from './components/Hotkey.svelte'
 export { default as HotkeyGroup } from './components/HotkeyGroup.svelte'
 export { default as ModernWizardDialog } from './components/wizard/ModernWizardDialog.svelte'
 export { default as ModernWizardBar } from './components/wizard/ModernWizardBar.svelte'
+export { default as ModernTab } from './components/ModernTab.svelte'
+export { default as ModernCheckbox } from './components/ModernCheckbox.svelte'
+export { default as ModernRadioButton } from './components/ModernRadioButton.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconCircleAdd } from './components/icons/CircleAdd.svelte'
@@ -208,7 +217,6 @@ export { default as IconCircles } from './components/icons/Circles.svelte'
 export { default as IconLike } from './components/icons/Like.svelte'
 export { default as IconCollapseArrow } from './components/icons/CollapseArrow.svelte'
 export { default as IconEmoji } from './components/icons/Emoji.svelte'
-export { default as IconObjects } from './components/icons/Objects.svelte'
 export { default as IconUndo } from './components/icons/Undo.svelte'
 export { default as IconRedo } from './components/icons/Redo.svelte'
 export { default as IconOpenedArrow } from './components/icons/OpenedArrow.svelte'
@@ -230,6 +238,11 @@ export { default as IconKeyShift } from './components/icons/KeyShift.svelte'
 export { default as IconFolderCollapsed } from './components/icons/FolderCollapsed.svelte'
 export { default as IconFolderExpanded } from './components/icons/FolderExpanded.svelte'
 export { default as IconCheckmark } from './components/icons/Checkmark.svelte'
+export { default as IconToDetails } from './components/icons/ToDetails.svelte'
+export { default as IconHistory } from './components/icons/History.svelte'
+export { default as IconScribble } from './components/icons/Scribble.svelte'
+export { default as IconMenuOpen } from './components/icons/MenuOpen.svelte'
+export { default as IconMenuClose } from './components/icons/MenuClose.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'
@@ -247,6 +260,7 @@ export { default as ExpandCollapse } from './components/ExpandCollapse.svelte'
 export { default as BooleanIcon } from './components/BooleanIcon.svelte'
 export { default as Expandable } from './components/Expandable.svelte'
 export { default as BarDashboard } from './components/BarDashboard.svelte'
+export { default as MultiProgress } from './components/MultiProgress.svelte'
 export { default as Notifications } from './components/notifications/Notifications.svelte'
 export { default as notificationsStore } from './components/notifications/store'
 export { NotificationPosition } from './components/notifications/NotificationPosition'
@@ -254,15 +268,22 @@ export { NotificationSeverity } from './components/notifications/NotificationSev
 export type { Notification } from './components/notifications/Notification'
 export { default as Wizard } from './components/wizard/Wizard.svelte'
 export { default as StepsDialog } from './components/StepsDialog.svelte'
-export { default as EmojiPopup } from './components/EmojiPopup.svelte'
 export { default as IconWithEmoji } from './components/IconWithEmoji.svelte'
 export { default as ModeSelector } from './components/ModeSelector.svelte'
 export { default as SimpleTimePopup } from './components/calendar/SimpleTimePopup.svelte'
 export { default as NumberInput } from './components/NumberInput.svelte'
 export { default as Lazy } from './components/Lazy.svelte'
 export { default as TimeZonesPopup } from './components/TimeZonesPopup.svelte'
+export { default as CodeForm } from './components/CodeForm.svelte'
+export { default as CodeInput } from './components/CodeInput.svelte'
+export { default as TimeLeft } from './components/TimeLeft.svelte'
+export { default as SectionEmpty } from './components/SectionEmpty.svelte'
+export { default as EmbeddedPDF } from './components/EmbeddedPDF.svelte'
+export { default as NestedMenu } from './components/NestedMenu.svelte'
+export { default as NestedDropdown } from './components/NestedDropdown.svelte'
 
 export { default as Dock } from './components/Dock.svelte'
+export { default as Image } from './components/Image.svelte'
 
 export * from './types'
 export * from './location'
@@ -276,6 +297,7 @@ export * from './colors'
 export * from './focus'
 export * from './resize'
 export * from './lazy'
+export * from './components/emoji'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
@@ -305,7 +327,8 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   size: null,
   sizes: { xs: false, sm: false, md: false, lg: false, xl: false, xxl: false },
   minWidth: false,
-  twoRows: false
+  twoRows: false,
+  firstDayOfWeek: 1
 })
 
 export default uis

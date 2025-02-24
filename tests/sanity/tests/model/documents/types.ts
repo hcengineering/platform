@@ -2,6 +2,7 @@ export interface NewTeamspace {
   title: string
   description?: string
   private?: boolean
+  autoJoin?: boolean
 }
 
 export interface NewDocument {

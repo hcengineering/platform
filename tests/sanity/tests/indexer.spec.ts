@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 import { NewDocument } from './model/documents/types'
 import { LeftSideMenuPage } from './model/left-side-menu-page'
 import { DocumentsPage } from './model/documents/documents-page'
@@ -16,8 +16,6 @@ import { SelectWorkspacePage } from './model/select-workspace-page'
 test.use({
   storageState: PlatformSetting
 })
-
-const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 
 test.describe('Fulltext index', () => {
   test.beforeEach(async ({ page }) => {
@@ -65,21 +63,17 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newDocument.title, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newDocument.title, 1)
+        await spotlight.close()
       })
 
       await test.step('search by content', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(contentId)
-          await spotlight.checkSearchResult(newDocument.title, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(contentId)
+        await spotlight.checkSearchResult(newDocument.title, 1)
+        await spotlight.close()
       })
     })
 
@@ -120,30 +114,24 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by old title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.checkSearchResult(newDocument.title, 0)
-          await spotlight.checkSearchResult(updatedTitle, 0)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.checkSearchResult(newDocument.title, 0)
+        await spotlight.checkSearchResult(updatedTitle, 0)
+        await spotlight.close()
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(updatedTitleId)
-          await spotlight.checkSearchResult(updatedTitle, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(updatedTitleId)
+        await spotlight.checkSearchResult(updatedTitle, 1)
+        await spotlight.close()
       })
 
       await test.step('search by content', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(updatedContentId)
-          await spotlight.checkSearchResult(updatedTitle, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(updatedContentId)
+        await spotlight.checkSearchResult(updatedTitle, 1)
+        await spotlight.close()
       })
     })
 
@@ -169,12 +157,10 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newDocument.title, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newDocument.title, 1)
+        await spotlight.close()
       })
 
       await test.step('remove document', async () => {
@@ -185,28 +171,23 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newDocument.title, 0)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newDocument.title, 0)
+        await spotlight.close()
       })
     })
   })
 
   test.describe('Issues', () => {
-    let leftSideMenuPage: LeftSideMenuPage
     let issuesPage: IssuesPage
     let spotlight: SpotlightPopup
     let issuesDetailsPage: IssuesDetailsPage
 
     test.beforeEach(async ({ page }) => {
-      leftSideMenuPage = new LeftSideMenuPage(page)
       issuesPage = new IssuesPage(page)
       spotlight = new SpotlightPopup(page)
       issuesDetailsPage = new IssuesDetailsPage(page)
-      await leftSideMenuPage.clickTracker()
     })
 
     test('Search created issue', async ({ page }) => {
@@ -224,21 +205,17 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newIssue.title, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newIssue.title, 1)
+        await spotlight.close()
       })
 
       await test.step('search by content', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(contentId)
-          await spotlight.checkSearchResult(newIssue.title, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(contentId)
+        await spotlight.checkSearchResult(newIssue.title, 1)
+        await spotlight.close()
       })
     })
 
@@ -262,12 +239,10 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newIssue.title, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newIssue.title, 1)
+        await spotlight.close()
       })
 
       await test.step('update issue', async () => {
@@ -281,30 +256,24 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by old title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newIssue.title, 0)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newIssue.title, 0)
+        await spotlight.close()
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(updatedTitleId)
-          await spotlight.checkSearchResult(updatedTitle, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(updatedTitleId)
+        await spotlight.checkSearchResult(updatedTitle, 1)
+        await spotlight.close()
       })
 
       await test.step('search by content', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(updatedContentId)
-          await spotlight.checkSearchResult(updatedTitle, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(updatedContentId)
+        await spotlight.checkSearchResult(updatedTitle, 1)
+        await spotlight.close()
       })
     })
 
@@ -323,12 +292,10 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newIssue.title, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newIssue.title, 1)
+        await spotlight.close()
       })
 
       await test.step('remove issue', async () => {
@@ -341,12 +308,10 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newIssue.title, 0)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newIssue.title, 0)
+        await spotlight.close()
       })
     })
   })
@@ -365,22 +330,18 @@ test.describe('Fulltext index', () => {
       const loginPage = new LoginPage(page)
       const signUpPage = new SignUpPage(page)
       const selectWorkspacePage = new SelectWorkspacePage(page)
-      const leftSideMenuPage = new LeftSideMenuPage(page)
       const issuesPage = new IssuesPage(page)
       const spotlight = new SpotlightPopup(page)
 
       await test.step('create issue', async () => {
-        await leftSideMenuPage.clickTracker()
         await issuesPage.createNewIssue(newIssue)
       })
 
       await test.step('search by title', async () => {
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newIssue.title, 1)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newIssue.title, 1)
+        await spotlight.close()
       })
 
       await test.step('create workspace', async () => {
@@ -394,19 +355,16 @@ test.describe('Fulltext index', () => {
 
         await loginPage.goto()
         await loginPage.clickSignUp()
-        await signUpPage.signUp(newUser)
+        await signUpPage.signUpPwd(newUser)
 
         await selectWorkspacePage.createWorkspace(newWorkspaceName)
       })
 
       await test.step('search by title', async () => {
-        await leftSideMenuPage.clickTracker()
-        await expect(async () => {
-          await spotlight.open()
-          await spotlight.fillSearchInput(titleId)
-          await spotlight.checkSearchResult(newIssue.title, 0)
-          await spotlight.close()
-        }).toPass(retryOptions)
+        await spotlight.open()
+        await spotlight.fillSearchInput(titleId)
+        await spotlight.checkSearchResult(newIssue.title, 0)
+        await spotlight.close()
       })
     })
   })

@@ -16,14 +16,18 @@
   import activity, {
     ActivityMessageViewlet,
     DisplayActivityMessage,
-    ActivityMessageViewType
+    ActivityMessageViewType,
+    ActivityMessage
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
-  import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
-  import core from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { Avatar, SystemAvatar } from '@hcengineering/contact-resources'
+  import core, { Ref } from '@hcengineering/core'
+  import { ComponentExtensions, getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
+  import { Asset } from '@hcengineering/platform'
+  import { Action as ViewAction } from '@hcengineering/view'
+  import notification from '@hcengineering/notification'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
@@ -32,6 +36,8 @@
   import { savedMessagesStore } from '../../activity'
   import MessageTimestamp from '../MessageTimestamp.svelte'
   import Replies from '../Replies.svelte'
+  import { MessageInlineAction } from '../../types'
+  import InlineAction from './InlineAction.svelte'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -51,14 +57,21 @@
   export let hoverable = true
   export let pending = false
   export let stale = false
-  export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hoverStyles: 'borderedHover' | 'filledHover' | 'none' = 'borderedHover'
   export let showDatePreposition = false
   export let type: ActivityMessageViewType = 'default'
+  export let inlineActions: MessageInlineAction[] = []
+  export let excludedActions: Ref<ViewAction>[] = []
+  export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
+  export let embeddedActions: boolean = false
+
+  export let socialIcon: Asset | undefined = undefined
 
   const client = getClient()
 
-  let menuActionIds: string[] = []
+  let menuActions: ViewAction[] = []
 
   let element: HTMLDivElement | undefined = undefined
   let isActionsOpened = false
@@ -71,7 +84,7 @@
 
   $: withActions &&
     getActions(client, message, activity.class.ActivityMessage).then((res) => {
-      menuActionIds = res.map(({ _id }) => _id)
+      menuActions = res
     })
 
   function scrollToMessage (): void {
@@ -96,10 +109,9 @@
   $: key = parentMessage != null ? `${message._id}_${parentMessage._id}` : message._id
 
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
-  $: withActionMenu = withActions && !embedded && (actions.length > 0 || menuActionIds.length > 0)
+  $: withActionMenu = withActions && !embedded && (actions.findIndex((a) => !a.inline) >= 0 || menuActions.length > 0)
 
-  let readonly: boolean = false
-  $: readonly = $restrictionStore.disableComments
+  $: readonly = readonly || $restrictionStore.disableComments
 
   function canDisplayShort (type: ActivityMessageViewType, isSaved: boolean): boolean {
     return type === 'short' && !isSaved && (message.replies ?? 0) === 0
@@ -134,11 +146,17 @@
   }
 
   function handleContextMenu (event: MouseEvent): void {
+    if (readonly) return
     const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
     if (showCustomPopup) {
-      showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
-        isActionsOpened = false
-      })
+      const overrides = onReply ? new Map([[activity.action.Reply, onReply]]) : new Map()
+      showMenu(
+        event,
+        { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions, overrides },
+        () => {
+          isActionsOpened = false
+        }
+      )
       isActionsOpened = true
     }
   }
@@ -174,7 +192,7 @@
           <MessageTimestamp date={message.createdOn ?? message.modifiedOn} shortTime />
         </span>
       {:else}
-        <div class="min-w-6 mt-1 relative">
+        <div class="avatar mt-1 relative flex-no-shrink">
           {#if $$slots.icon}
             <slot name="icon" />
           {:else if person}
@@ -187,13 +205,20 @@
               <Icon icon={activity.icon.BookmarkFilled} size="xx-small" />
             </div>
           {/if}
+          {#if socialIcon}
+            <div class="socialIcon">
+              <Icon icon={socialIcon} size="x-small" />
+            </div>
+          {/if}
         </div>
       {/if}
       <div class="flex-col ml-2 w-full clear-mins message-content">
         {#if !isShort}
           <div class="header clear-mins">
             {#if person}
-              <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+              <div class="username">
+                <ComponentExtensions extension={activity.extension.ActivityEmployeePresenter} props={{ person }} />
+              </div>
             {:else}
               <div class="strong">
                 <Label label={core.string.System} />
@@ -213,13 +238,24 @@
             <span class="text-sm lower">
               <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
             </span>
+            {#if message.editedOn}
+              <span class="text-sm lower">(<Label label={notification.string.Edited} />)</span>
+            {/if}
+
+            {#if withActions && inlineActions.length > 0 && !readonly}
+              <div class="flex-presenter flex-gap-2 ml-2">
+                {#each inlineActions as item}
+                  <InlineAction {item} />
+                {/each}
+              </div>
+            {/if}
           </div>
         {/if}
 
-        <slot name="content" />
+        <slot name="content" {readonly} />
 
         {#if !hideFooter}
-          <Replies {embedded} object={message} />
+          <Replies {embedded} object={message} {onReply} />
         {/if}
         <ReactionsPresenter object={message} {readonly} />
         {#if parentMessage && showEmbedded}
@@ -229,11 +265,19 @@
       </div>
 
       {#if withActions && !readonly}
-        <div class="actions" class:pending class:opened={isActionsOpened}>
+        <div
+          class="actions"
+          class:embedded={embeddedActions}
+          class:pending
+          class:opened={isActionsOpened}
+          class:isShort
+        >
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}
             {actions}
             {withActionMenu}
+            {excludedActions}
+            {onReply}
             onOpen={handleActionsOpened}
             onClose={handleActionsClosed}
           />
@@ -260,6 +304,7 @@
     border: 1px solid transparent;
     border-radius: 0.25rem;
     width: 100%;
+    user-select: text;
 
     &.clickable {
       cursor: pointer;
@@ -285,8 +330,16 @@
       top: -0.75rem;
       right: 0.75rem;
 
+      &.embedded {
+        top: 0.25rem;
+        right: 0.25rem;
+      }
+
       &.opened:not(.pending) {
         visibility: visible;
+      }
+      &.isShort {
+        top: -1.875rem;
       }
     }
 
@@ -304,6 +357,7 @@
       display: flex;
       justify-content: end;
       width: 2.5rem;
+      min-width: 2.5rem;
       visibility: hidden;
       margin-top: 0.125rem;
     }
@@ -333,6 +387,11 @@
     &.stale {
       opacity: 0.5;
     }
+  }
+
+  .avatar {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .header {
@@ -389,5 +448,26 @@
     height: max-content;
     flex-shrink: 1;
     padding: 0;
+  }
+
+  .socialIcon {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: var(--spacing-1);
+    border-radius: 50%;
+    background: var(--theme-bg-color);
+    border: 1px solid var(--global-ui-BorderColor);
+    bottom: -0.375rem;
+    right: -0.375rem;
+    color: var(--content-color);
+  }
+
+  .username {
+    font-weight: 500;
+    margin-right: 0.25rem;
   }
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import core, { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
   import { Component } from '@hcengineering/ui'
@@ -19,6 +19,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {

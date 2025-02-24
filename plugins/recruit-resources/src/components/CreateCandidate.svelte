@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import attachment from '@hcengineering/attachment'
+  import attachment, { AttachmentsEvents } from '@hcengineering/attachment'
   import contact, {
     AvatarType,
     Channel,
@@ -35,22 +35,23 @@
     Ref,
     toIdMap,
     TxProcessor,
-    WithLookup
+    WithLookup,
+    type Blob
   } from '@hcengineering/core'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import presentation, {
-    FilePreviewPopup,
     Card,
     createQuery,
+    deleteFile,
     DraftController,
+    FilePreviewPopup,
     getClient,
     InlineAttributeBar,
     KeyedAttribute,
     MessageBox,
-    MultipleDraftController,
-    deleteFile
+    MultipleDraftController
   } from '@hcengineering/presentation'
-  import type { Candidate, CandidateDraft } from '@hcengineering/recruit'
+  import { Candidate, CandidateDraft, RecruitEvents } from '@hcengineering/recruit'
   import { recognizeDocument } from '@hcengineering/rekoni'
   import tags, { findTagCategory, TagElement, TagReference } from '@hcengineering/tags'
   import {
@@ -64,13 +65,16 @@
     IconAttachment,
     IconInfo,
     Label,
+    MiniToggle,
     showPopup,
     Spinner,
-    MiniToggle
+    ActionIcon
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
+  import { getCandidateIdentifier } from '../utils'
   import YesNo from './YesNo.svelte'
+  import IconShuffle from './icons/Shuffle.svelte'
 
   export let shouldSaveDraft: boolean = true
 
@@ -184,7 +188,7 @@
     )
   })
 
-  async function createCandidate () {
+  async function createCandidate (): Promise<void> {
     const _id: Ref<Person> = generateId()
     const candidate: Data<Person> = {
       name: combineName(object.firstName ?? '', object.lastName ?? ''),
@@ -220,7 +224,7 @@
       }
     }
 
-    const applyOps = client.apply(_id)
+    const applyOps = client.apply(undefined, 'create-candidate')
 
     await applyOps.createDoc(contact.class.Person, contact.space.Contacts, candidate, _id)
     await applyOps.createMixin(
@@ -230,10 +234,12 @@
       recruit.mixin.Candidate,
       candidateData
     )
+    const candidateIdentifier = getCandidateIdentifier(_id)
+    Analytics.handleEvent(RecruitEvents.TalentCreated, { _id: candidateIdentifier })
 
     if (object.resumeUuid !== undefined) {
       const resume = resumeDraft() as resumeFile
-      applyOps.addCollection(
+      await applyOps.addCollection(
         attachment.class.Attachment,
         contact.space.Contacts,
         _id,
@@ -241,12 +247,13 @@
         'attachments',
         {
           name: resume.name,
-          file: resume.uuid,
+          file: resume.uuid as Ref<Blob>,
           size: resume.size,
           type: resume.type,
           lastModified: resume.lastModified
         }
       )
+      Analytics.handleEvent(AttachmentsEvents.FilesAttached, { object: candidateIdentifier, count: 1 })
     }
     for (const channel of object.channels) {
       await applyOps.addCollection(
@@ -277,6 +284,7 @@
           description: '',
           category: findTagCategory(skill.title, categories)
         })
+        Analytics.handleEvent(RecruitEvents.SkillCreated, { skill: skill.tag })
       }
       await applyOps.addCollection(skill._class, skill.space, _id, recruit.mixin.Candidate, 'skills', {
         title: skill.title,
@@ -365,7 +373,7 @@
       const formattedSkills = (doc.skills.map((s) => s.toLowerCase()) ?? []).filter(
         (skill) => !namedElements.has(skill)
       )
-      const refactoredSkills = []
+      const refactoredSkills: any[] = []
       if (formattedSkills.length > 0) {
         const existingTags = Array.from(namedElements.keys()).filter((x) => x.length > 2)
         const regex = /\S+(?:[-+]\S+)+/g
@@ -509,7 +517,7 @@
         collection: 'skills',
         space: core.space.Workspace,
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
+        modifiedBy: '' as PersonId,
         title: tag.title,
         tag: tag._id,
         color: tag.color
@@ -517,9 +525,8 @@
     ]
   }
 
-  $: object.firstName &&
-    object.lastName &&
-    findContacts(
+  $: if (object.firstName != null && object.lastName != null) {
+    void findContacts(
       client,
       contact.class.Person,
       combineName(object.firstName.trim(), object.lastName.trim()),
@@ -528,6 +535,7 @@
       matches = p.contacts
       matchedChannels = p.channels
     })
+  }
 
   const manager = createFocusManager()
 
@@ -536,13 +544,13 @@
     fillDefaults(hierarchy, object, recruit.mixin.Candidate)
   }
 
-  export async function onOutsideClick () {
+  export async function onOutsideClick (): Promise<void> {
     if (shouldSaveDraft) {
       draftController.save(object, empty)
     }
   }
 
-  async function showConfirmationDialog () {
+  async function showConfirmationDialog (): Promise<void> {
     draftController.save(object, empty)
     const isFormEmpty = draft === undefined
 
@@ -553,15 +561,17 @@
         MessageBox,
         {
           label: recruit.string.CreateTalentDialogClose,
-          message: recruit.string.CreateTalentDialogCloseNote
+          message: recruit.string.CreateTalentDialogCloseNote,
+          action: async () => {
+            await deleteResume()
+            resetObject()
+            draftController.remove()
+          }
         },
         'top',
         (result?: boolean) => {
           if (result === true) {
             dispatch('close')
-            deleteResume()
-            resetObject()
-            draftController.remove()
           }
         }
       )
@@ -623,7 +633,7 @@
         maxWidth={'30rem'}
       />
     </div>
-    <div class="ml-4">
+    <div class="flex-col items-center flex-gap-2 ml-4">
       <EditableAvatar
         disabled={loading}
         bind:this={avatarEditor}
@@ -633,6 +643,16 @@
         }}
         size={'large'}
         name={combineName(object?.firstName?.trim() ?? '', object?.lastName?.trim() ?? '')}
+      />
+      <ActionIcon
+        icon={IconShuffle}
+        label={recruit.string.SwapFirstAndLastNames}
+        size={'medium'}
+        action={() => {
+          const first = object.firstName
+          object.firstName = object.lastName
+          object.lastName = first
+        }}
       />
     </div>
   </div>
@@ -754,6 +774,7 @@
                 FilePreviewPopup,
                 {
                   file: object.resumeUuid,
+                  contentType: object.resumeType,
                   name: object.resumeName
                 },
                 object.resumeType?.startsWith('image/') ? 'centered' : 'float'

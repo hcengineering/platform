@@ -25,13 +25,14 @@
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
-  export let size: 'large' | 'medium' | 'small' = 'large'
+  export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let disabled: boolean = false
   export let loading: boolean = false
   export let inheritColor: boolean = false
   export let noSelection: boolean = false
+  export let noPrint: boolean = false
   export let autoSelectionIfOne: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
 
@@ -41,6 +42,7 @@
   export let element: HTMLButtonElement | undefined = undefined
   export let focusIndex = -1
   export let id: string | undefined = undefined
+  export let dataId: string | undefined = undefined
 
   let opened: boolean = false
 
@@ -89,11 +91,13 @@
   {icon}
   {iconProps}
   {disabled}
+  {noPrint}
   {loading}
   {inheritColor}
   pressed={opened}
   {focusIndex}
   {id}
+  {dataId}
   {tooltip}
   on:click={openPopup}
 />

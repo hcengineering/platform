@@ -14,107 +14,79 @@
 //
 
 import {
+  type WorkspaceIds,
   type Class,
   type Doc,
   type DocumentQuery,
-  type DocumentUpdate,
   type Domain,
-  type FieldIndex,
-  type FindOptions,
+  type FieldIndexConfig,
   type FindResult,
   type Hierarchy,
-  type IndexingConfiguration,
+  type LowLevelStorage,
   type MeasureContext,
   type ModelDb,
   type Ref,
-  type StorageIterator,
   type Tx,
   type TxResult,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { type StorageAdapter } from './storage'
+import type { ServerFindOptions } from './types'
 
 export interface DomainHelperOperations {
   create: (domain: Domain) => Promise<void>
-  exists: (domain: Domain) => boolean
-  createIndex: (domain: Domain, value: string | FieldIndex<Doc>, options?: { name: string }) => Promise<void>
+  exists: (domain: Domain) => Promise<boolean>
+
+  listDomains: () => Promise<Set<Domain>>
+  createIndex: (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }) => Promise<void>
   dropIndex: (domain: Domain, name: string) => Promise<void>
   listIndexes: (domain: Domain) => Promise<{ name: string }[]>
-  hasDocuments: (domain: Domain, count: number) => Promise<boolean>
+
+  // Could return 0 even if it has documents
+  estimatedCount: (domain: Domain) => Promise<number>
 }
 
 export interface DomainHelper {
   checkDomain: (
     ctx: MeasureContext,
     domain: Domain,
-    forceCreate: boolean,
+    documents: number,
     operations: DomainHelperOperations
-  ) => Promise<boolean>
-}
-
-export interface RawDBAdapterStream<T extends Doc> {
-  next: () => Promise<T | undefined>
-  close: () => Promise<void>
-}
-
-/**
- * @public
- */
-export interface RawDBAdapter {
-  find: <T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    query: DocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
-  ) => Promise<FindResult<T>>
-  findStream: <T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    query: DocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
-  ) => Promise<RawDBAdapterStream<T>>
-  upload: <T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: T[]) => Promise<void>
-  update: <T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    docs: Map<Ref<T>, DocumentUpdate<T>>
   ) => Promise<void>
-  clean: <T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: Ref<T>[]) => Promise<void>
-  close: () => Promise<void>
 }
 
+export type DbAdapterHandler = (
+  domain: Domain,
+  event: 'add' | 'update' | 'delete' | 'read',
+  count: number,
+  helper: DomainHelperOperations
+) => void
 /**
  * @public
  */
-export interface DbAdapter {
-  init?: () => Promise<void>
+export interface DbAdapter extends LowLevelStorage {
+  init?: (
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    domains?: string[],
+    excludeDomains?: string[]
+  ) => Promise<void>
 
   helper?: () => DomainHelperOperations
-  createIndexes: (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>) => Promise<void>
-  removeOldIndex: (domain: Domain, deletePattern: RegExp, keepPattern: RegExp) => Promise<void>
 
+  reserveContext?: (id: string) => () => void
   close: () => Promise<void>
   findAll: <T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T> & {
-      domain?: Domain // Allow to find for Doc's in specified domain only.
-    }
+    options?: ServerFindOptions<T>
   ) => Promise<FindResult<T>>
+
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
 
-  find: (ctx: MeasureContext, domain: Domain, recheck?: boolean) => StorageIterator
-
-  load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
-  upload: (ctx: MeasureContext, domain: Domain, docs: Doc[]) => Promise<void>
-  clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
-
-  // Bulk update operations
-  update: (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>) => Promise<void>
+  // Allow to register a handler to listen for domain operations
+  on?: (handler: DbAdapterHandler) => void
 }
 
 /**
@@ -125,13 +97,27 @@ export interface TxAdapter extends DbAdapter {
 }
 
 /**
+ * Adpater to delete a selected workspace and all its data.
+ * @public
+ */
+export interface WorkspaceDestroyAdapter {
+  deleteWorkspace: (
+    ctx: MeasureContext,
+    contextVars: Record<string, any>,
+    workspace: WorkspaceUuid,
+    dataId?: string
+  ) => Promise<void>
+}
+
+/**
  * @public
  */
 export type DbAdapterFactory = (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb,
-  storage: StorageAdapter
+  storage?: StorageAdapter
 ) => Promise<DbAdapter>

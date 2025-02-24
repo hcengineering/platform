@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { CommonTrackerPage } from './common-tracker-page'
 import { Issue, NewIssue } from './types'
+import { convertEstimation } from '../../tracker/tracker.utils'
 
 export class IssuesDetailsPage extends CommonTrackerPage {
   readonly page: Page
@@ -10,6 +11,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.page = page
   }
 
+  readonly issueTitle = (): Locator => this.page.locator('div.hulyHeader-container div.title')
   readonly inputTitle = (): Locator => this.page.locator('div.popupPanel-body input[type="text"]')
   readonly inputDescription = (): Locator => this.page.locator('div.popupPanel-body div.textInput div.tiptap')
   readonly textIdentifier = (): Locator => this.page.locator('div.title.not-active')
@@ -66,6 +68,11 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly stateHistoryDropdown = (nameDr: string): Locator => {
     return this.popup().locator(this.page.getByRole('button', { name: nameDr }))
   }
+
+  readonly rowDecriptionToDo = (hasText: string): Locator => this.page.locator('div.tiptap div.todo-item', { hasText })
+  readonly assigneeToDo = (hasText: string): Locator => this.rowDecriptionToDo(hasText).locator('div.assignee')
+  readonly checkboxToDo = (hasText: string): Locator => this.rowDecriptionToDo(hasText).locator('input.chBox')
+  readonly slashActionItemsPopup = (): Locator => this.page.locator('.selectPopup')
 
   async clickCloseIssueButton (): Promise<void> {
     await this.buttonCloseIssue().click()
@@ -138,10 +145,10 @@ export class IssuesDetailsPage extends CommonTrackerPage {
       await expect(this.buttonComponent()).toHaveText(data.component)
     }
     if (data.milestone != null) {
-      await expect(this.buttonMilestone()).toHaveText(data.milestone)
+      await expect(this.buttonMilestone()).toHaveText(data.milestone === 'No Milestone' ? 'Milestone' : data.milestone)
     }
     if (data.estimation != null) {
-      await expect(this.textEstimation()).toHaveText(data.estimation)
+      await expect(this.textEstimation()).toHaveText(convertEstimation(data.estimation))
     }
     if (data.parentIssue != null) {
       await expect(this.textParentTitle()).toHaveText(data.parentIssue)
@@ -167,7 +174,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   }
 
   async openSubIssueByName (issueName: string): Promise<void> {
-    await this.page.locator('div.main div.listGrid a', { hasText: issueName }).click()
+    await this.page.locator('div.listGrid a', { hasText: issueName }).click()
   }
 
   async checkIssueContainsAttachment (fileName: string): Promise<void> {
@@ -227,5 +234,11 @@ export class IssuesDetailsPage extends CommonTrackerPage {
 
   async checkIfButtonCbuttonCreatedByHaveTextCreatedBy (createdBy: string): Promise<void> {
     await expect(this.buttonCreatedBy()).toHaveText(createdBy)
+  }
+
+  async assignToDo (user: string, text: string): Promise<void> {
+    await this.rowDecriptionToDo(text).hover()
+    await this.assigneeToDo(text).click()
+    await this.selectListItem(user)
   }
 }

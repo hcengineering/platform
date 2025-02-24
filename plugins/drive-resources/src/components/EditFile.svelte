@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { type Blob } from '@hcengineering/core'
-  import { type File } from '@hcengineering/drive'
+  import { type Blob, type Ref, type WithLookup } from '@hcengineering/core'
+  import drive, { type File, type FileVersion } from '@hcengineering/drive'
   import { FilePreview, createQuery } from '@hcengineering/presentation'
 
   import { createEventDispatcher, onMount } from 'svelte'
+  import EditFileVersions from './EditFileVersions.svelte'
 
   export let object: File
   export let readonly: boolean = false
@@ -25,18 +26,33 @@
   const dispatch = createEventDispatcher()
   const query = createQuery()
 
-  let blob: Blob | undefined = undefined
-  $: query.query(core.class.Blob, { _id: object.file }, (res) => {
-    ;[blob] = res
+  let blob: Ref<Blob> | undefined = undefined
+  let version: WithLookup<FileVersion> | undefined = undefined
+  let contentType: string | undefined
+
+  $: query.query(drive.class.FileVersion, { _id: object.file }, (res) => {
+    ;[version] = res
+    blob = version.file
+    contentType = version.type
   })
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['file', 'preview', 'parent', 'path', 'metadata'] })
+    dispatch('open', { ignoreKeys: ['parent', 'path', 'version', 'versions'] })
   })
 </script>
 
-{#if object !== undefined}
-  {#if blob !== undefined}
-    <FilePreview file={blob} name={object.name} metadata={object.metadata} />
+{#if object !== undefined && version !== undefined && blob !== undefined && contentType !== undefined}
+  <FilePreview
+    file={blob}
+    {contentType}
+    name={version.title}
+    metadata={version.metadata}
+    fit={contentType !== 'application/pdf'}
+  />
+
+  {#if object.versions > 1}
+    <div class="w-full mt-6">
+      <EditFileVersions {object} {readonly} />
+    </div>
   {/if}
 {/if}
