@@ -14,7 +14,7 @@ import core, {
   type MeasureMetricsContext,
   type Version
 } from '@hcengineering/core'
-import login, { loginId } from '@hcengineering/login'
+import login, { loginId, type Pages } from '@hcengineering/login'
 import { broadcastEvent, getMetadata, getResource, setMetadata, translateCB } from '@hcengineering/platform'
 import presentation, {
   closeClient,
@@ -208,13 +208,15 @@ export async function connect (title: string): Promise<Client | undefined> {
         },
         onArchived: () => {
           translateCB(plugin.string.WorkspaceIsArchived, {}, get(themeStore).language, (r) => {
-            versionError.set(r)
-            setTimeout(() => {
-              location.reload()
-            }, 5000)
+            const selectWorkspace: Pages = 'selectWorkspace'
+            navigate({
+              path: [loginId, selectWorkspace],
+              query: {}
+            })
           })
         },
         onMigration: () => {
+          // TODO: Rework maitenance mode as well
           translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
             versionError.set(r)
             setTimeout(() => {

@@ -1305,7 +1305,9 @@ export async function performWorkspaceOperation (
   }
 
   if (account.admin !== true) {
-    return false
+    if (event !== 'unarchive' || workspaceId !== decodedToken.workspace.name) {
+      return false
+    }
   }
   const workspaceInfos = await getWorkspacesById(db, workspaceId)
   if (workspaceInfos.length === 0) {

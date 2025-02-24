@@ -64,6 +64,23 @@ export interface OtpInfo {
   retryOn: Timestamp
 }
 
+export const pages = [
+  'login',
+  'signup',
+  'createWorkspace',
+  'password',
+  'recovery',
+  'selectWorkspace',
+  'admin',
+  'join',
+  'confirm',
+  'confirmationSend',
+  'auth',
+  'login-password'
+] as const
+
+export type Pages = (typeof pages)[number]
+
 export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
@@ -99,7 +116,8 @@ export default plugin(loginId, {
     PasswordMinUpperChars: '' as IntlString<{ count: number }>,
     PasswordMinLowerChars: '' as IntlString<{ count: number }>,
     WorkspaceArchived: '' as IntlString,
-    WorkspaceArchivedDesc: '' as IntlString
+    WorkspaceArchivedDesc: '' as IntlString,
+    RestoreArchivedWorkspace: '' as IntlString
   },
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,

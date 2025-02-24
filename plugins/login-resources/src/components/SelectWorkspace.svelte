@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { isArchivingMode } from '@hcengineering/core'
+  import { isActiveMode, isArchivingMode, isRestoringMode, isUpgradingMode } from '@hcengineering/core'
   import { LoginInfo, Workspace } from '@hcengineering/login'
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
@@ -32,7 +32,7 @@
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
-  import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
+  import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace, unArchive } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
   export let navigateUrl: string | undefined = undefined
@@ -69,13 +69,25 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const [loginStatus, result] = await selectWorkspace(workspace)
-    if (isArchivingMode(result?.mode)) {
+    if (isArchivingMode(result?.mode) && result?.workspaceId !== undefined) {
+      const workspaceId = result?.workspaceId
       showPopup(MessageBox, {
         label: login.string.SelectWorkspace,
         message: login.string.WorkspaceArchivedDesc,
-        canSubmit: false,
+        canSubmit: true,
         params: {},
-        action: async () => {}
+        okLabel: login.string.RestoreArchivedWorkspace,
+        action: async () => {
+          if (await unArchive(workspaceId, result.token)) {
+            workspaces = await getWorkspaces()
+            let info = workspaces.filter((it) => it.workspaceId === workspaceId).shift()
+            while (isRestoringMode(info?.mode) || isUpgradingMode(info?.mode)) {
+              await new Promise<void>((resolve) => setTimeout(resolve, 5000))
+              workspaces = await getWorkspaces()
+              info = workspaces.filter((it) => it.workspaceId === workspaceId).shift()
+            }
+          }
+        }
       })
       status = loginStatus
       return
@@ -152,7 +164,7 @@
                 {#if isArchivingMode(workspace.mode)}
                   - <Label label={presentation.string.Archived} />
                 {/if}
-                {#if workspace.mode !== 'active' && workspace.mode !== 'archived'}
+                {#if !isActiveMode(workspace.mode) && !isArchivingMode(workspace.mode)}
                   ({workspace.progress}%)
                 {/if}
               </span>
