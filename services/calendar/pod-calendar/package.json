@@ -56,6 +56,7 @@
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/client": "^0.6.18",
+    "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/client-resources": "^0.6.27",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",

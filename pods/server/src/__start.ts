@@ -10,6 +10,7 @@ import { MeasureMetricsContext, newMetrics, setOperationLogProfiling } from '@hc
 import { setMetadata } from '@hcengineering/platform'
 import { serverConfigFromEnv } from '@hcengineering/server'
 import serverAiBot from '@hcengineering/server-ai-bot'
+import serverCalendar from '@hcengineering/server-calendar'
 import serverCore, {
   type ConnectionSocket,
   type Session,
@@ -74,6 +75,7 @@ setMetadata(serverNotification.metadata.SesUrl, config.sesUrl ?? '')
 setMetadata(serverNotification.metadata.SesAuthToken, config.sesAuthToken)
 setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
+setMetadata(serverCalendar.metadata.EndpointURL, process.env.CALENDAR_URL)
 
 const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   fulltextUrl: config.fulltextUrl,

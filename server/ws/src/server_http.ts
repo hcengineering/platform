@@ -362,6 +362,8 @@ export function startHttpServer (
 
   registerRPC(app, sessions, ctx, pipelineFactory)
 
+  registerRPC(app, sessions, ctx, pipelineFactory)
+
   app.put('/api/v1/broadcast', (req, res) => {
     try {
       const token = req.query.token as string

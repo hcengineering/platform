@@ -18,17 +18,28 @@ import type { PersonId, Timestamp, WorkspaceUuid } from '@hcengineering/core'
 import type { NextFunction, Request, Response } from 'express'
 import type { Credentials } from 'google-auth-library'
 
-export interface Watch {
-  timer: NodeJS.Timeout
+export interface WatchBase {
+  userId: PersonId
+  workspace: WorkspaceUuid
+  expired: Timestamp
   channelId: string
   resourceId: string
+  calendarId: string | null
 }
 
-export interface EventWatch {
+export interface CalendarsWatch extends WatchBase {
+  calendarId: null
+}
+
+export interface EventWatch extends WatchBase {
+  calendarId: string
+}
+
+export type Watch = CalendarsWatch | EventWatch
+
+export interface DummyWatch {
   timer: NodeJS.Timeout
   calendarId: string
-  channelId: string
-  resourceId: string
 }
 
 export type Token = User & Credentials

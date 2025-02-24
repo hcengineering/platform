@@ -51,6 +51,7 @@ import type {
   AccountMethodHandler,
   LoginInfo,
   OtpInfo,
+  Query,
   RegionInfo,
   SocialId,
   Workspace,
@@ -910,6 +911,38 @@ export async function getUserWorkspaces (
   )
 }
 
+/**
+ * @public
+ */
+export async function getWorkspacesInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  ids: WorkspaceUuid[]
+): Promise<WorkspaceInfoWithStatus[]> {
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  if (account !== systemAccountUuid) {
+    ctx.error('getWorkspaceInfos with wrong user', { account, token })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  const query: Query<Workspace> = {
+    uuid: { $in: ids }
+  }
+  const workspaces: WorkspaceInfoWithStatus[] = []
+  for (const id of ids) {
+    const ws = await getWorkspaceInfoWithStatusById(db, id)
+    if (ws !== null) {
+      workspaces.push(ws)
+    }
+  }
+
+  workspaces.sort((a, b) => (b.status.lastVisit ?? 0) - (a.status.lastVisit ?? 0))
+  
+  return workspaces
+}
+
 export async function getWorkspaceInfo (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1651,6 +1684,7 @@ export type AccountMethods =
   | 'getRegionInfo'
   | 'getUserWorkspaces'
   | 'getWorkspaceInfo'
+  | 'getWorkspacesInfo'
   | 'listWorkspaces'
   | 'getLoginInfoByToken'
   | 'getSocialIds'
@@ -1700,6 +1734,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getRegionInfo: wrap(getRegionInfo),
     getUserWorkspaces: wrap(getUserWorkspaces),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
+    getWorkspacesInfo: wrap(getWorkspacesInfo),
     getLoginInfoByToken: wrap(getLoginInfoByToken),
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),
