@@ -983,8 +983,7 @@ export class TSessionManager implements SessionManager {
     pipeline: Pipeline,
     requestId: Request<any>['id'],
     service: Session,
-    ws: ConnectionSocket,
-    workspace: WorkspaceUuid
+    ws: ConnectionSocket
   ): ClientSessionCtx {
     const st = platformNow()
     return {
@@ -1002,7 +1001,7 @@ export class TSessionManager implements SessionManager {
       sendPong: () => {
         ws.sendPong()
       },
-      socialStringsToUsers: this.getActiveSocialStringsToUsersMap(workspace),
+      socialStringsToUsers: this.getActiveSocialStringsToUsersMap(service.workspace.workspaceUuid),
       sendError: (reqId, msg, error: Status) =>
         sendResponse(ctx, service, ws, {
           id: reqId,

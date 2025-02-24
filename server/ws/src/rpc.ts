@@ -93,7 +93,7 @@ export function registerRPC (
     token = token.split(' ')[1]
 
     const decodedToken = decodeToken(token)
-    if (workspaceId !== decodedToken.workspace.name) {
+    if (workspaceId !== decodedToken.workspace) {
       sendError(res, 401, { message: 'Invalid workspace' })
       return
     }
@@ -136,7 +136,7 @@ export function registerRPC (
       const query = req.query.query !== undefined ? JSON.parse(req.query.query as string) : {}
       const options = req.query.options !== undefined ? JSON.parse(req.query.options as string) : {}
 
-      const result = await session.findAllRaw(ctx.ctx, ctx.pipeline, _class, query, options)
+      const result = await session.findAllRaw(ctx, _class, query, options)
       await sendJson(req, res, result)
     })
   })
@@ -145,7 +145,7 @@ export function registerRPC (
     void withSession(req, res, async (ctx, session) => {
       const { _class, query, options }: any = (await retrieveJson(req)) ?? {}
 
-      const result = await session.findAllRaw(ctx.ctx, ctx.pipeline, _class, query, options)
+      const result = await session.findAllRaw(ctx, _class, query, options)
       await sendJson(req, res, result)
     })
   })
@@ -160,7 +160,7 @@ export function registerRPC (
   })
   app.get('/api/v1/account/:workspaceId', (req, res) => {
     void withSession(req, res, async (ctx, session) => {
-      const result = session.getRawAccount(ctx.pipeline)
+      const result = session.getRawAccount()
       await sendJson(req, res, result)
     })
   })
