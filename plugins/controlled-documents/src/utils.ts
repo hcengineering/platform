@@ -156,16 +156,24 @@ export function isFolder (doc: ProjectDocument | undefined): boolean {
   return doc !== undefined && doc.document === documents.ids.Folder
 }
 
+function getDocumentSortSequence (doc: ControlledDocument | undefined): number[] {
+  return doc !== undefined ? [doc.seqNumber, doc.major, doc.minor, doc.createdOn ?? 0] : [0, 0, 0, 0]
+}
+
+export function compareDocumentVersions (
+  doc1: ControlledDocument | undefined,
+  doc2: ControlledDocument | undefined
+): number {
+  const s0 = getDocumentSortSequence(doc1)
+  const s1 = getDocumentSortSequence(doc2)
+  return s0.reduce((r, v, i) => (r !== 0 ? r : s1[i] - v), 0)
+}
+
 function extractPresentableStateFromDocumentBundle (bundle: DocumentBundle, prjmeta: ProjectMeta): DocumentBundle {
   bundle = { ...bundle }
 
   const person = getCurrentAccount().person as Ref<Employee>
   const documentById = toIdMap(bundle.ControlledDocument)
-
-  const getSortSequence = (prjdoc: ProjectDocument): number[] => {
-    const doc = documentById.get(prjdoc.document as Ref<ControlledDocument>)
-    return doc !== undefined ? [doc.seqNumber, doc.major, doc.minor, doc.createdOn ?? 0] : [0, 0, 0, 0]
-  }
 
   const prjdoc = bundle.ProjectDocument.filter((prjdoc) => {
     if (prjdoc.attachedTo !== prjmeta._id) return false
@@ -174,9 +182,10 @@ function extractPresentableStateFromDocumentBundle (bundle: DocumentBundle, prjm
     const isPublicState = doc?.state === DocumentState.Effective || doc?.state === DocumentState.Archived
     return doc !== undefined && (isPublicState || isCollaborator(doc, person))
   }).sort((a, b) => {
-    const s0 = getSortSequence(a)
-    const s1 = getSortSequence(b)
-    return s0.reduce((r, v, i) => (r !== 0 ? r : s1[i] - v), 0)
+    return compareDocumentVersions(
+      documentById.get(a.document as Ref<ControlledDocument>),
+      documentById.get(b.document as Ref<ControlledDocument>)
+    )
   })[0]
 
   const doc = prjdoc !== undefined ? documentById.get(prjdoc.document as Ref<ControlledDocument>) : undefined
