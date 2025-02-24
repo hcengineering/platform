@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
-  import { Ref } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     BreadcrumbItem,
@@ -46,7 +46,7 @@
   const hierarchy = client.getHierarchy()
 
   const query = createQuery()
-  $: query.query(card.class.MasterTag, { _id: selectedTagId }, (res) => {
+  $: query.query(core.class.Class, { _id: selectedTagId }, (res) => {
     masterTag = res[0]
   })
 

@@ -34,9 +34,41 @@ async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerCo
         )
         const prefs = await control.findAll(control.ctx, view.class.ViewletPreference, { attachedTo: viewlet._id })
         for (const pref of prefs) {
+          pref.config.push(attr.name)
           res.push(
             control.txFactory.createTxUpdateDoc(pref._class, pref.space, pref._id, {
-              config: viewlet.config
+              config: pref.config
+            })
+          )
+        }
+      }
+    }
+    return res
+  }
+  return []
+}
+
+async function OnAttributeRemove (ctx: TxRemoveDoc<AnyAttribute>[], control: TriggerControl): Promise<Tx[]> {
+  const attr = control.removedMap.get(ctx[0].objectId) as AnyAttribute
+  if (attr === undefined) return []
+  if (control.hierarchy.isDerived(attr.attributeOf, card.class.Card)) {
+    const desc = control.hierarchy.getDescendants(attr.attributeOf)
+    const res: Tx[] = []
+    for (const des of desc) {
+      const viewlets = control.modelDb.findAllSync(view.class.Viewlet, { attachTo: des })
+      for (const viewlet of viewlets) {
+        viewlet.config = viewlet.config.filter((p) => p !== attr.name)
+        res.push(
+          control.txFactory.createTxUpdateDoc(viewlet._class, viewlet.space, viewlet._id, {
+            config: viewlet.config
+          })
+        )
+        const prefs = await control.findAll(control.ctx, view.class.ViewletPreference, { attachedTo: viewlet._id })
+        for (const pref of prefs) {
+          pref.config = pref.config.filter((p) => p !== attr.name)
+          res.push(
+            control.txFactory.createTxUpdateDoc(pref._class, pref.space, pref._id, {
+              config: pref.config
             })
           )
         }
@@ -72,6 +104,7 @@ async function OnMasterTagRemove (ctx: TxRemoveDoc<MasterTag>[], control: Trigge
 export default async () => ({
   trigger: {
     OnAttribute,
+    OnAttributeRemove,
     OnMasterTagRemove
   }
 })
