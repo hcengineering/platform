@@ -17,9 +17,10 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle --platform=node > bundle/bundle.js",
+    "bundle": "node ../../../common/scripts/esbuild.js",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/ses",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/ses staging",
+    "docker:abuild": "docker build -t hardcoreeng/ses . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/ses",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/ses",
     "run-local": "cross-env SOURCE=no-reply@bold.ru ts-node src/index.ts",
     "format": "format src",
@@ -39,7 +40,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "prettier": "^3.1.0",
     "ts-node": "^10.8.0",
     "typescript": "^5.3.3",
@@ -49,7 +50,8 @@
     "@tsconfig/node16": "^1.0.4",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
-    "eslint-plugin-node": "^11.1.0"
+    "eslint-plugin-node": "^11.1.0",
+    "@types/web-push": "^3.6.4"
   },
   "dependencies": {
     "@hcengineering/client": "^0.6.18",
@@ -58,10 +60,10 @@
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-token": "^0.6.11",
-    "aws-sdk": "^2.1423.0",
+    "@aws-sdk/client-ses": "^3.738.0",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
-    "express": "^4.19.2",
-    "got": "^11.8.3"
+    "express": "^4.21.2",
+    "web-push": "^3.6.7"
   }
 }

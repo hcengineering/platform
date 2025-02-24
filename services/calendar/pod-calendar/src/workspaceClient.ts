@@ -14,19 +14,33 @@
 //
 
 import calendar, { Event, ExternalCalendar } from '@hcengineering/calendar'
-import contact, { Channel, Contact, type Employee, type PersonAccount } from '@hcengineering/contact'
+import contact, {
+  Channel,
+  Contact,
+  Person,
+  getPrimarySocialId,
+  getPersonRefBySocialId,
+  getPersonRefsBySocialIds,
+  type Employee
+} from '@hcengineering/contact'
 import core, {
+  PersonId,
+  SocialIdType,
+  buildSocialIdString,
+  TxMixin,
   TxOperations,
   TxProcessor,
+  WorkspaceUuid,
   toIdMap,
-  type Account,
   type Client,
   type Doc,
   type Ref,
   type Tx,
   type TxCreateDoc,
   type TxRemoveDoc,
-  type TxUpdateDoc
+  type TxUpdateDoc,
+  systemAccountUuid,
+  PersonUuid
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import setting, { Integration } from '@hcengineering/setting'
@@ -34,7 +48,6 @@ import { Collection, type Db } from 'mongodb'
 import { CalendarClient } from './calendar'
 import { CalendarController } from './calendarController'
 import { getClient } from './client'
-import config from './config'
 import { SyncHistory, type ProjectCredentials, type User } from './types'
 
 export class WorkspaceClient {
@@ -44,7 +57,7 @@ export class WorkspaceClient {
   private readonly clients: Map<string, CalendarClient> = new Map<string, CalendarClient>()
   private readonly syncHistory: Collection<SyncHistory>
   private channels = new Map<Ref<Channel>, Channel>()
-  private readonly calendarsByEmail = new Map<string, ExternalCalendar[]>()
+  private readonly calendarsByGoogleId = new Map<PersonId, ExternalCalendar[]>()
   readonly calendars = {
     byId: new Map<Ref<ExternalCalendar>, ExternalCalendar>(),
     byExternal: new Map<string, ExternalCalendar[]>()
@@ -64,7 +77,7 @@ export class WorkspaceClient {
   private constructor (
     private readonly credentials: ProjectCredentials,
     private readonly mongo: Db,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceUuid,
     private readonly serviceController: CalendarController
   ) {
     this.syncHistory = mongo.collection<SyncHistory>('syncHistories')
@@ -73,7 +86,7 @@ export class WorkspaceClient {
   static async create (
     credentials: ProjectCredentials,
     mongo: Db,
-    workspace: string,
+    workspace: WorkspaceUuid,
     serviceController: CalendarController
   ): Promise<WorkspaceClient> {
     const instance = new WorkspaceClient(credentials, mongo, workspace, serviceController)
@@ -82,10 +95,11 @@ export class WorkspaceClient {
   }
 
   async createCalendarClient (user: User): Promise<CalendarClient> {
-    const current = this.getCalendarClient(user.email)
+    const current = this.getCalendarClient(user.userId)
     if (current !== undefined) return current
     const newClient = await CalendarClient.create(this.credentials, user, this.mongo, this.client, this)
-    this.clients.set(user.email, newClient)
+    this.clients.set(user.userId, newClient)
+    console.log('create new client', user.userId, this.workspace)
     return newClient
   }
 
@@ -108,22 +122,29 @@ export class WorkspaceClient {
     await this.client?.close()
   }
 
-  async getUserId (email: string): Promise<Ref<Account>> {
-    const user = this.client.getModel().getAccountByEmail(email)
-    if (user === undefined) {
-      throw new Error('User not found')
+  async getUserId (account: PersonUuid): Promise<PersonId> {
+    const person = await this.client.findOne(contact.class.Person, { personUuid: account })
+    if (person === undefined) {
+      throw new Error('Person not found')
     }
-    return user._id
+
+    const personId = await getPrimarySocialId(this.client, person._id)
+
+    if (personId === undefined) {
+      throw new Error('PersonId not found')
+    }
+
+    return personId
   }
 
-  async signout (value: string, byError: boolean = false): Promise<number> {
-    const client = this.clients.get(value)
+  async signout (personId: PersonId, byError: boolean = false): Promise<number> {
+    const client = this.clients.get(personId)
     if (client !== undefined) {
       await client.signout(byError)
     } else {
       const integration = await this.client.findOne(setting.class.Integration, {
         type: calendar.integrationType.Calendar,
-        value
+        value: personId
       })
       if (integration !== undefined) {
         const txOp = new TxOperations(this.client, core.account.System)
@@ -134,28 +155,31 @@ export class WorkspaceClient {
         }
       }
     }
-    this.clients.delete(value)
+    this.clients.delete(personId)
     return this.clients.size
   }
 
-  removeClient (email: string): void {
-    this.clients.delete(email)
-    this.serviceController.removeClient(email)
+  removeClient (personId: PersonId): void {
+    this.clients.delete(personId)
+    this.serviceController.removeClient(personId)
     if (this.clients.size > 0) return
     this.serviceController.removeWorkspace(this.workspace)
   }
 
-  private getCalendarClient (email: string): CalendarClient | undefined {
-    return this.clients.get(email)
+  private getCalendarClient (personId: PersonId): CalendarClient | undefined {
+    return this.clients.get(personId)
   }
 
   private getCalendarClientByCalendar (id: Ref<ExternalCalendar>): CalendarClient | undefined {
     const calendar = this.calendars.byId.get(id)
+    if (calendar === undefined) {
+      console.log("couldn't find calendar by id", id)
+    }
     return calendar != null ? this.clients.get(calendar.externalUser) : undefined
   }
 
-  private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(config.SystemEmail, { name: workspace })
+  private async initClient (workspace: WorkspaceUuid): Promise<Client> {
+    const token = generateToken(systemAccountUuid, workspace, { service: 'calendar' })
     const client = await getClient(token)
     client.notify = (...tx: Tx[]) => {
       void this.txHandler(...tx)
@@ -216,30 +240,32 @@ export class WorkspaceClient {
     this.txHandlers.push(async (...tx: Tx[]) => {
       await this.txEventHandler(...tx)
     })
+    console.log('receive new events', this.workspace, newEvents.length)
     for (const newEvent of newEvents) {
       const client = this.getCalendarClientByCalendar(newEvent.calendar as Ref<ExternalCalendar>)
       if (client === undefined) {
+        console.log('Client not found', newEvent.calendar, this.workspace)
         return
       }
       await client.syncMyEvent(newEvent)
       await this.updateSyncTime()
     }
+    console.log('all messages synced', this.workspace)
   }
 
   private async txEventHandler (...txes: Tx[]): Promise<void> {
     for (const tx of txes) {
-      const actualTx = TxProcessor.extractTx(tx)
-      switch (actualTx._class) {
+      switch (tx._class) {
         case core.class.TxCreateDoc: {
-          await this.txCreateEvent(actualTx as TxCreateDoc<Doc>)
+          await this.txCreateEvent(tx as TxCreateDoc<Doc>)
           return
         }
         case core.class.TxUpdateDoc: {
-          await this.txUpdateEvent(actualTx as TxUpdateDoc<Event>)
+          await this.txUpdateEvent(tx as TxUpdateDoc<Event>)
           return
         }
         case core.class.TxRemoveDoc: {
-          await this.txRemoveEvent(actualTx as TxRemoveDoc<Doc>)
+          await this.txRemoveEvent(tx as TxRemoveDoc<Doc>)
         }
       }
     }
@@ -269,10 +295,10 @@ export class WorkspaceClient {
       return
     }
     try {
-      const txes = await this.client.findAll(core.class.TxCollectionCUD, {
-        'tx.objectId': tx.objectId
+      const txes = await this.client.findAll(core.class.TxCUD, {
+        objectId: tx.objectId
       })
-      const extracted = txes.map((tx) => TxProcessor.extractTx(tx)).filter((p) => p._id !== tx._id)
+      const extracted = txes.filter((p) => p._id !== tx._id)
       const ev = TxProcessor.buildDoc2Doc<Event>(extracted)
       if (ev !== undefined) {
         const oldClient = this.getCalendarClientByCalendar(ev.calendar as Ref<ExternalCalendar>)
@@ -325,10 +351,10 @@ export class WorkspaceClient {
   private async txRemoveEvent (tx: TxRemoveDoc<Doc>): Promise<void> {
     const hierarhy = this.client.getHierarchy()
     if (hierarhy.isDerived(tx.objectClass, calendar.class.Event)) {
-      const txes = await this.client.findAll(core.class.TxCollectionCUD, {
-        'tx.objectId': tx.objectId
+      const txes = await this.client.findAll(core.class.TxCUD, {
+        objectId: tx.objectId
       })
-      const ev = TxProcessor.buildDoc2Doc<Event>(txes.map((tx) => TxProcessor.extractTx(tx)))
+      const ev = TxProcessor.buildDoc2Doc<Event>(txes)
       if (ev === undefined) return
       if (ev.access !== 'owner' && ev.access !== 'writer') return
       const client = this.getCalendarClientByCalendar(ev?.calendar as Ref<ExternalCalendar>)
@@ -348,11 +374,12 @@ export class WorkspaceClient {
     const calendars = await this.client.findAll(calendar.class.ExternalCalendar, {})
     this.calendars.byId = toIdMap(calendars)
     this.calendars.byExternal.clear()
-    this.calendarsByEmail.clear()
+    this.calendarsByGoogleId.clear()
     for (const calendar of calendars) {
-      const arr = this.calendarsByEmail.get(calendar.externalUser) ?? []
+      const googleId = buildSocialIdString({ type: SocialIdType.GOOGLE, value: calendar.externalUser })
+      const arr = this.calendarsByGoogleId.get(googleId) ?? []
       arr.push(calendar)
-      this.calendarsByEmail.set(calendar.externalUser, arr)
+      this.calendarsByGoogleId.set(googleId, arr)
       const arrByExt = this.calendars.byExternal.get(calendar.externalId) ?? []
       arrByExt.push(calendar)
       this.calendars.byExternal.set(calendar.externalId, arrByExt)
@@ -364,12 +391,11 @@ export class WorkspaceClient {
     })
   }
 
-  getMyCalendars (email: string): ExternalCalendar[] {
-    return this.calendarsByEmail.get(email) ?? []
+  getMyCalendars (personId: PersonId): ExternalCalendar[] {
+    return this.calendarsByGoogleId.get(personId) ?? []
   }
 
-  private async txCalendarHandler (tx: Tx): Promise<void> {
-    const actualTx = TxProcessor.extractTx(tx)
+  private async txCalendarHandler (actualTx: Tx): Promise<void> {
     if (actualTx._class === core.class.TxCreateDoc) {
       if ((actualTx as TxCreateDoc<Doc>).objectClass === calendar.class.ExternalCalendar) {
         const calendar = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<ExternalCalendar>)
@@ -377,20 +403,22 @@ export class WorkspaceClient {
         const arr = this.calendars.byExternal.get(calendar.externalId) ?? []
         arr.push(calendar)
         this.calendars.byExternal.set(calendar.externalId, arr)
-        const arrByExt = this.calendarsByEmail.get(calendar.externalUser) ?? []
+        const googleId = buildSocialIdString({ type: SocialIdType.GOOGLE, value: calendar.externalUser })
+        const arrByExt = this.calendarsByGoogleId.get(googleId) ?? []
         arrByExt.push(calendar)
-        this.calendarsByEmail.set(calendar.externalUser, arrByExt)
+        this.calendarsByGoogleId.set(googleId, arrByExt)
       }
     }
     if (actualTx._class === core.class.TxRemoveDoc) {
       const remTx = actualTx as TxRemoveDoc<ExternalCalendar>
       const calendar = this.calendars.byId.get(remTx.objectId)
       if (calendar !== undefined) {
-        const arr = this.calendarsByEmail.get(calendar.externalUser) ?? []
+        const googleId = buildSocialIdString({ type: SocialIdType.GOOGLE, value: calendar.externalUser })
+        const arr = this.calendarsByGoogleId.get(googleId) ?? []
         const index = arr.findIndex((p) => p._id === calendar._id)
         if (index !== -1) {
           arr.splice(index, 1)
-          this.calendarsByEmail.set(calendar.externalUser, arr)
+          this.calendarsByGoogleId.set(googleId, arr)
         }
         this.calendars.byId.delete(remTx.objectId)
         const arrByExt = this.calendars.byExternal.get(calendar.externalId) ?? []
@@ -410,10 +438,11 @@ export class WorkspaceClient {
   private async initContacts (): Promise<void> {
     const channels = await this.client.findAll(contact.class.Channel, { provider: contact.channelProvider.Email })
     this.channels = toIdMap(channels)
-    const accounts = await this.client.findAll(contact.class.PersonAccount, {})
-    for (const acc of accounts) {
-      this.contacts.byEmail.set(acc.email, acc.person)
-      this.contacts.byId.set(acc.person, acc.email)
+    const emailSocialIds = await this.client.findAll(contact.class.SocialIdentity, { type: SocialIdType.EMAIL })
+    for (const socialId of emailSocialIds) {
+      this.contacts.byEmail.set(socialId.value, socialId.attachedTo)
+      // Note: this doesn't seem to support multiple emails
+      this.contacts.byId.set(socialId.attachedTo, socialId.value)
     }
     for (const channel of channels) {
       if (channel.value !== '') {
@@ -428,8 +457,7 @@ export class WorkspaceClient {
     })
   }
 
-  private async txChannelHandler (tx: Tx): Promise<void> {
-    const actualTx = TxProcessor.extractTx(tx)
+  private async txChannelHandler (actualTx: Tx): Promise<void> {
     if (actualTx._class === core.class.TxCreateDoc) {
       if ((actualTx as TxCreateDoc<Doc>).objectClass === contact.class.Channel) {
         const channel = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Channel>)
@@ -470,17 +498,17 @@ export class WorkspaceClient {
   // #region Integrations
 
   private async initIntegrations (): Promise<void> {
-    const accounts = toIdMap(await this.client.findAll(contact.class.PersonAccount, {}))
+    const personsBySocialId = await getPersonRefsBySocialIds(this.client)
     const integrations = await this.client.findAll(setting.class.Integration, {
       type: calendar.integrationType.Calendar
     })
     for (const integration of integrations) {
-      const person = accounts.get((integration.createdBy ?? integration.modifiedBy) as Ref<PersonAccount>)
+      const person = personsBySocialId[integration.createdBy ?? integration.modifiedBy]
       if (person != null) {
-        this.integrations.byEmail.set(integration.value, person.person)
-        const arr = this.integrations.byContact.get(person.person) ?? []
+        this.integrations.byEmail.set(integration.value, person)
+        const arr = this.integrations.byContact.get(person) ?? []
         arr.push(integration.value)
-        this.integrations.byContact.set(person.person, arr)
+        this.integrations.byContact.set(person, arr)
         this.integrations.byId.set(integration._id, integration)
       }
     }
@@ -491,53 +519,48 @@ export class WorkspaceClient {
     })
   }
 
-  private addContactIntegration (integration: Integration, account: PersonAccount): void {
-    const arr = this.integrations.byContact.get(account.person) ?? []
+  private addContactIntegration (integration: Integration, person: Ref<Contact>): void {
+    const arr = this.integrations.byContact.get(person) ?? []
     arr.push(integration.value)
-    this.integrations.byContact.set(account.person, arr)
+    this.integrations.byContact.set(person, arr)
   }
 
-  private removeContactIntegration (integration: Integration, account: PersonAccount): void {
-    const arr = this.integrations.byContact.get(account.person)
+  private removeContactIntegration (integration: Integration, person: Ref<Contact>): void {
+    const arr = this.integrations.byContact.get(person)
     if (arr !== undefined) {
       const index = arr.findIndex((p) => p === integration.value)
       if (index !== -1) {
         arr.splice(index, 1)
         if (arr.length > 0) {
-          this.integrations.byContact.set(account.person, arr)
+          this.integrations.byContact.set(person, arr)
         } else {
-          this.integrations.byContact.delete(account.person)
+          this.integrations.byContact.delete(person)
         }
       }
     }
   }
 
   private async addIntegration (integration: Integration): Promise<void> {
-    const account = await this.client.findOne(contact.class.PersonAccount, {
-      _id: (integration.createdBy ?? integration.modifiedBy) as Ref<PersonAccount>
-    })
-    if (account != null) {
+    const person = await getPersonRefBySocialId(this.client, integration.createdBy ?? integration.modifiedBy)
+    if (person != null) {
       if (integration.value !== '') {
-        this.integrations.byEmail.set(integration.value, account.person)
-        this.addContactIntegration(integration, account)
+        this.integrations.byEmail.set(integration.value, person)
+        this.addContactIntegration(integration, person)
       }
       this.integrations.byId.set(integration._id, integration)
     }
   }
 
   private async removeIntegration (integration: Integration): Promise<void> {
-    const account = await this.client.findOne(contact.class.PersonAccount, {
-      _id: (integration.createdBy ?? integration.modifiedBy) as Ref<PersonAccount>
-    })
-    if (account != null) {
-      this.removeContactIntegration(integration, account)
+    const person = await getPersonRefBySocialId(this.client, integration.createdBy ?? integration.modifiedBy)
+    if (person != null) {
+      this.removeContactIntegration(integration, person)
     }
     this.integrations.byEmail.delete(integration.value)
     this.integrations.byId.delete(integration._id)
   }
 
-  private async txIntegrationHandler (tx: Tx): Promise<void> {
-    const actualTx = TxProcessor.extractTx(tx)
+  private async txIntegrationHandler (actualTx: Tx): Promise<void> {
     if (actualTx._class === core.class.TxCreateDoc) {
       if ((actualTx as TxCreateDoc<Doc>).objectClass === setting.class.Integration) {
         const integration = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Integration>)
@@ -563,37 +586,32 @@ export class WorkspaceClient {
     const removedEmployees = await this.client.findAll(contact.mixin.Employee, {
       active: false
     })
-    const accounts = await this.client.findAll(contact.class.PersonAccount, {
-      person: { $in: removedEmployees.map((p) => p._id) }
-    })
+
     this.txHandlers.push(async (...txes: Tx[]) => {
       for (const tx of txes) {
         await this.txEmployeeHandler(tx)
       }
     })
-    for (const acc of accounts) {
-      await this.deactivateUser(acc)
+    for (const employee of removedEmployees) {
+      await this.deactivateUser(employee._id)
     }
   }
 
-  private async deactivateUser (acc: PersonAccount): Promise<void> {
-    const integrations = this.integrations.byContact.get(acc.person) ?? []
+  private async deactivateUser (person: Ref<Contact>): Promise<void> {
+    const integrations = this.integrations.byContact.get(person) ?? []
     for (const integration of integrations) {
       if (integration !== '') {
-        await this.signout(integration, true)
+        await this.signout(integration as any, true) // TODO: FIXME
       }
     }
   }
 
   private async txEmployeeHandler (tx: Tx): Promise<void> {
     if (tx._class !== core.class.TxUpdateDoc) return
-    const ctx = tx as TxUpdateDoc<Employee>
-    if (!this.client.getHierarchy().isDerived(ctx.objectClass, contact.class.PersonAccount)) return
-    if (ctx.operations.active === false) {
-      const acc = await this.client.findOne(contact.class.PersonAccount, { person: ctx.objectId })
-      if (acc !== undefined) {
-        await this.deactivateUser(acc)
-      }
+    const ctx = tx as TxMixin<Person, Employee>
+    if (!this.client.getHierarchy().isDerived(ctx.objectClass, contact.mixin.Employee)) return
+    if (ctx.attributes.active === false) {
+      await this.deactivateUser(ctx.objectId)
     }
   }
 

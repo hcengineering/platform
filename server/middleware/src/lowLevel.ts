@@ -19,10 +19,10 @@ import {
   FindOptions,
   type Doc,
   type Domain,
+  type Iterator,
   type MeasureContext,
   type Ref,
-  type StorageIterator,
-  type Iterator
+  type StorageIterator
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import type { Middleware, PipelineContext } from '@hcengineering/server-core'
@@ -43,40 +43,47 @@ export class LowLevelMiddleware extends BaseMiddleware implements Middleware {
     }
     const adapterManager = context.adapterManager
     context.lowLevelStorage = {
-      find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
-        return adapterManager.getAdapter(domain, false).find(ctx, domain, recheck)
+      find (ctx: MeasureContext, domain: Domain): StorageIterator {
+        return adapterManager.getAdapter(domain, false).find(ctx, domain)
       },
 
-      async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-        return await adapterManager.getAdapter(domain, false).load(ctx, domain, docs)
+      load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+        return adapterManager.getAdapter(domain, false).load(ctx, domain, docs)
       },
 
-      async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-        await adapterManager.getAdapter(domain, true).upload(ctx, domain, docs)
+      upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+        return adapterManager.getAdapter(domain, true).upload(ctx, domain, docs)
       },
 
-      async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-        await adapterManager.getAdapter(domain, true).clean(ctx, domain, docs)
+      clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+        return adapterManager.getAdapter(domain, true).clean(ctx, domain, docs)
       },
-      async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-        return await adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field)
-      },
-      async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
-        return await adapterManager.getAdapter(domain, false).rawFindAll(domain, query, options)
-      },
-      async rawUpdate<T extends Doc>(
+      groupBy<T, P extends Doc>(
+        ctx: MeasureContext,
         domain: Domain,
-        query: DocumentQuery<T>,
-        operations: DocumentUpdate<T>
-      ): Promise<void> {
-        await adapterManager.getAdapter(domain, true).rawUpdate(domain, query, operations)
+        field: string,
+        query?: DocumentQuery<P>
+      ): Promise<Map<T, number>> {
+        return adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field, query)
       },
-      async traverse<T extends Doc>(
+      rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+        return adapterManager.getAdapter(domain, false).rawFindAll(domain, query, options)
+      },
+      rawUpdate<T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>): Promise<void> {
+        return adapterManager.getAdapter(domain, true).rawUpdate(domain, query, operations)
+      },
+      rawDeleteMany (domain, query) {
+        return adapterManager.getAdapter(domain, true).rawDeleteMany(domain, query)
+      },
+      getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+        return adapterManager.getAdapter(domain, false).getDomainHash(ctx, domain)
+      },
+      traverse<T extends Doc>(
         domain: Domain,
         query: DocumentQuery<T>,
         options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
       ): Promise<Iterator<T>> {
-        return await adapterManager.getAdapter(domain, false).traverse(domain, query, options)
+        return adapterManager.getAdapter(domain, false).traverse(domain, query, options)
       }
     }
     return undefined

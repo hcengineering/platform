@@ -35,7 +35,6 @@ export const DEFAULT_STATUSES_ID = new Map([
 
 export async function navigate (page: Page): Promise<void> {
   await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
-  await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
 }
 
 export async function setViewGroup (page: Page, groupName: string): Promise<void> {
@@ -295,7 +294,7 @@ export function convertEstimation (estimation: number | string): string {
 
   const days = Math.floor(value / hoursInWorkingDay)
   const hours = Math.floor(value % hoursInWorkingDay)
-  const minutes = Math.floor((value % 1) * 60)
+  const minutes = Math.round((value % 1) * 60)
   const result = [
     ...(days === 0 ? [] : [`${days}d`]),
     ...(hours === 0 ? [] : [`${hours}h`]),

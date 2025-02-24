@@ -18,7 +18,6 @@ import attachments from '@hcengineering/model-attachment'
 import questions, { TypePercentage } from '@hcengineering/model-questions'
 import type { Answer, Percentage, Question } from '@hcengineering/questions'
 import {
-  type Sequence,
   type Training,
   type TrainingAttempt,
   TrainingAttemptState,
@@ -29,7 +28,6 @@ import contact, { type Employee } from '@hcengineering/contact'
 import core, {
   type Class,
   type CollectionSize,
-  type Doc,
   type Domain,
   IndexKind,
   type Markup,
@@ -39,7 +37,7 @@ import core, {
   type TypedSpace,
   RolesAssignment,
   Role,
-  Account
+  PersonId
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -261,17 +259,8 @@ export class TTrainingAttempt extends TAttachedDoc implements TrainingAttempt {
     assessmentsPassed: number | null = null
 }
 
-@Model(training.class.Sequence, core.class.Doc, DOMAIN_TRAINING)
-export class TSequence extends TDoc implements Sequence {
-  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-    attachedTo!: Ref<Class<Doc>>
-
-  sequence!: number
-}
-
 @Mixin(training.mixin.TrainingsTypeData, core.class.TypedSpace)
 @UX(getEmbeddedLabel('Default Trainings'), training.icon.TrainingApplication)
 export class TTrainingsTypeData extends TTypedSpace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }

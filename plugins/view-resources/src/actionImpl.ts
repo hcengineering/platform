@@ -9,7 +9,14 @@ import {
   getCurrentAccount
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource, getResource } from '@hcengineering/platform'
-import { MessageBox, getClient, updateAttribute, type ContextStore, contextStore } from '@hcengineering/presentation'
+import {
+  MessageBox,
+  getClient,
+  updateAttribute,
+  type ContextStore,
+  contextStore,
+  copyTextToClipboardOldBrowser
+} from '@hcengineering/presentation'
 import {
   type AnyComponent,
   type AnySvelteComponent,
@@ -33,7 +40,7 @@ import {
   selectionLimit
 } from './selection'
 import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
-import contact from '@hcengineering/contact'
+import contact, { includesAny } from '@hcengineering/contact'
 import { locationToUrl } from '@hcengineering/ui'
 import { get } from 'svelte/store'
 
@@ -73,7 +80,9 @@ async function CopyTextToClipboard (
     const text = Array.isArray(doc)
       ? (await Promise.all(doc.map(async (d) => await getText(d, props.props)))).join(',')
       : await getText(doc, props.props)
-    await navigator.clipboard.writeText(text)
+    if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text)
+    } else copyTextToClipboardOldBrowser(text)
   }
 }
 
@@ -153,10 +162,10 @@ async function Leave (object: Space | Space[]): Promise<void> {
   const client = getClient()
   const promises: Array<Promise<TxResult>> = []
   const objs = Array.isArray(object) ? object : [object]
-  const me = getCurrentAccount()._id
+  const mySocialIds = getCurrentAccount().socialIds
   for (const obj of objs) {
-    if (obj.members.includes(me)) {
-      promises.push(client.update(obj, { $pull: { members: me } }))
+    if (includesAny(obj.members, mySocialIds)) {
+      promises.push(client.update(obj, { $pull: { members: { $in: mySocialIds } } }))
     }
   }
   await Promise.all(promises)
@@ -166,10 +175,10 @@ async function Join (object: Space | Space[]): Promise<void> {
   const client = getClient()
   const promises: Array<Promise<TxResult>> = []
   const objs = Array.isArray(object) ? object : [object]
-  const me = getCurrentAccount()._id
+  const myAcc = getCurrentAccount()
   for (const obj of objs) {
-    if (!obj.members.includes(me)) {
-      promises.push(client.update(obj, { $push: { members: me } }))
+    if (!includesAny(obj.members, myAcc.socialIds)) {
+      promises.push(client.update(obj, { $push: { members: myAcc.primarySocialId } }))
     }
   }
   await Promise.all(promises)

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { WorkspaceId, type MeasureContext } from '@hcengineering/core'
+import { type WorkspaceIds, type MeasureContext } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Buffer } from 'node:buffer'
 
@@ -24,7 +24,7 @@ export class BlobClient {
   constructor (
     readonly transactorUrl: string,
     readonly token: string,
-    readonly workspace: WorkspaceId,
+    readonly workspace: WorkspaceIds,
     readonly opt?: {
       storageAdapter?: StorageAdapter
     }
@@ -62,7 +62,7 @@ export class BlobClient {
         if (i === 4) {
           ctx.error('Failed to check file', { name, error: err })
         }
-        await new Promise<void>((resolve) => setTimeout(resolve, 500))
+        await new Promise<void>((resolve) => setTimeout(resolve, 10))
       }
     }
     return false
@@ -119,12 +119,12 @@ export class BlobClient {
             if (response.status === 403) {
               i = 5
               // No file, so make it empty
-              throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+              throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspace.uuid}/${name}`)
             }
             if (response.status === 404) {
               i = 5
               // No file, so make it empty
-              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.uuid}/${name}`)
             }
             if (response.status === 416) {
               if (size === -1) {
@@ -133,7 +133,7 @@ export class BlobClient {
               }
 
               // No file, so make it empty
-              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.uuid}/${name}`)
             }
             chunk = Buffer.from(await response.arrayBuffer())
 
@@ -189,7 +189,7 @@ export class BlobClient {
             })
             throw err
           }
-          await new Promise<void>((resolve) => setTimeout(resolve, 1000))
+          await new Promise<void>((resolve) => setTimeout(resolve, 10))
           // retry
         }
       }

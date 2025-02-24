@@ -82,7 +82,7 @@
       objectId
     )
     Analytics.handleEvent(GmailEvents.SentEmail, { to: channel.value })
-    await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
+    await inboxClient.forceReadDoc(channel._id, channel._class)
     objectId = generateId()
     dispatch('close')
   }

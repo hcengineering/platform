@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
+import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Class, Ref } from '@hcengineering/core'
-import { Channel, InlineButtonAction } from '@hcengineering/chunter'
+import { Channel } from '@hcengineering/chunter'
 
 import { OnboardingChannel } from './types'
 
@@ -35,9 +35,6 @@ const analyticsCollector = plugin(analyticsCollectorId, {
   space: {
     GeneralOnboardingChannel: '' as Ref<Channel>
   },
-  function: {
-    AnalyticsCollectorInlineAction: '' as Resource<InlineButtonAction>
-  },
   string: {
     OnboardingChannelDescription: '' as IntlString,
     Error: '' as IntlString,
@@ -52,7 +49,7 @@ const analyticsCollector = plugin(analyticsCollectorId, {
     WorkspaceId: '' as IntlString,
     WorkspaceName: '' as IntlString,
     WorkspaceUrl: '' as IntlString,
-    Email: '' as IntlString,
+    SocialId: '' as IntlString,
     UserName: '' as IntlString,
     DisableAIReplies: '' as IntlString,
     ShowAIReplies: '' as IntlString

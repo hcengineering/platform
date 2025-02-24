@@ -13,15 +13,14 @@
 // limitations under the License.
 //
 
+import textEditor, { type ActionContext } from '@hcengineering/text-editor'
+import { getEventPositionElement, SelectPopup, showPopup } from '@hcengineering/ui'
 import { type Editor } from '@tiptap/core'
 import TiptapTable from '@tiptap/extension-table'
-import { CellSelection } from '@tiptap/pm/tables'
-import { getEventPositionElement, SelectPopup, showPopup } from '@hcengineering/ui'
-import textEditor from '@hcengineering/text-editor'
+import { CellSelection, TableMap } from '@tiptap/pm/tables'
 
-import { SvelteNodeViewRenderer } from '../../node-view'
-import TableNodeView from './TableNodeView.svelte'
-import { isTableSelected } from './utils'
+import { Plugin, type Transaction } from '@tiptap/pm/state'
+import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import AddColAfter from '../../icons/table/AddColAfter.svelte'
 import AddColBefore from '../../icons/table/AddColBefore.svelte'
 import AddRowAfter from '../../icons/table/AddRowAfter.svelte'
@@ -29,21 +28,93 @@ import AddRowBefore from '../../icons/table/AddRowBefore.svelte'
 import DeleteCol from '../../icons/table/DeleteCol.svelte'
 import DeleteRow from '../../icons/table/DeleteRow.svelte'
 import DeleteTable from '../../icons/table/DeleteTable.svelte'
+import { SvelteNodeViewRenderer } from '../../node-view'
+import TableNodeView from './TableNodeView.svelte'
+import { TableSelection } from './types'
+import { findTable, isTableSelected, selectTable as selectTableNode } from './utils'
 
 export const Table = TiptapTable.extend({
+  draggable: true,
+
   addKeyboardShortcuts () {
     return {
-      'Mod-Backspace': () => handleDelete(this.editor),
-      'Mod-Delete': () => handleDelete(this.editor)
+      Backspace: () => handleDelete(this.editor),
+      Delete: () => handleDelete(this.editor),
+      'Mod-Backspace': () => handleModDelete(this.editor),
+      'Mod-Delete': () => handleModDelete(this.editor)
     }
   },
   addNodeView () {
     return SvelteNodeViewRenderer(TableNodeView, {})
+  },
+  addProseMirrorPlugins () {
+    return [...(this.parent?.() ?? []), tableSelectionHighlight(), cleanupBrokenTables()]
   }
 })
 
 function handleDelete (editor: Editor): boolean {
-  const { selection } = editor.state
+  const { selection } = editor.state.tr
+  if (selection instanceof TableSelection && isTableSelected(selection)) {
+    return editor.commands.deleteTable()
+  }
+  return false
+}
+
+export const tableSelectionHighlight = (): Plugin<DecorationSet> => {
+  return new Plugin<DecorationSet>({
+    props: {
+      decorations (state) {
+        return this.getState(state)
+      }
+    },
+    state: {
+      init: () => {
+        return DecorationSet.empty
+      },
+      apply (tr, value, oldState, newState) {
+        const selection = newState.selection
+        if (!(selection instanceof TableSelection)) return DecorationSet.empty
+
+        const table = findTable(newState.selection)
+        if (table === undefined) return DecorationSet.empty
+
+        const decorations: Decoration[] = [
+          Decoration.node(table.pos, table.pos + table.node.nodeSize, { class: 'table-node-selected' })
+        ]
+        return DecorationSet.create(newState.doc, decorations)
+      }
+    }
+  })
+}
+
+export const cleanupBrokenTables = (): Plugin<DecorationSet> => {
+  return new Plugin<DecorationSet>({
+    appendTransaction: (transactions, oldState, newState) => {
+      const lastTx = transactions[0]
+      if (!lastTx?.docChanged) return
+
+      let tr: Transaction | undefined
+      newState.doc.descendants((node, pos) => {
+        if (node.type.name !== 'table') return
+
+        const map = TableMap.get(node)
+
+        const isBroken = map.width === 0 || map.height === 0
+        if (!isBroken) return
+
+        tr = tr ?? newState.tr
+        const mpos = tr.mapping.map(pos)
+
+        tr = tr.delete(mpos, mpos + node.nodeSize)
+      })
+
+      return tr
+    }
+  })
+}
+
+function handleModDelete (editor: Editor): boolean {
+  const { selection } = editor.state.tr
   if (selection instanceof CellSelection) {
     if (isTableSelected(selection)) {
       return editor.commands.deleteTable()
@@ -115,6 +186,24 @@ export async function openTableOptions (editor: Editor, event: MouseEvent): Prom
       }
     },
     {
+      id: '#mergeCells',
+      icon: textEditor.icon.MergeCells,
+      label: textEditor.string.MergeCells,
+      action: () => editor.commands.mergeCells(),
+      category: {
+        label: textEditor.string.CategoryCell
+      }
+    },
+    {
+      id: '#splitCell',
+      icon: textEditor.icon.SplitCells,
+      label: textEditor.string.SplitCells,
+      action: () => editor.commands.splitCell(),
+      category: {
+        label: textEditor.string.CategoryCell
+      }
+    },
+    {
       id: '#deleteTable',
       icon: DeleteTable,
       label: textEditor.string.DeleteTable,
@@ -145,6 +234,19 @@ export async function openTableOptions (editor: Editor, event: MouseEvent): Prom
   })
 }
 
+export async function selectTable (editor: Editor, event: MouseEvent): Promise<void> {
+  const table = findTable(editor.state.selection)
+  if (table === undefined) return
+
+  event.preventDefault()
+
+  editor.view.dispatch(selectTableNode(table, editor.state.tr))
+}
+
 export async function isEditableTableActive (editor: Editor): Promise<boolean> {
   return editor.isEditable && editor.isActive('table')
+}
+
+export async function isTableToolbarContext (editor: Editor, context: ActionContext): Promise<boolean> {
+  return editor.isEditable && editor.isActive('table') && context.tag === 'table-toolbar'
 }

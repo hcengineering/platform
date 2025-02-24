@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
-  import activity, { ActivityMessage, ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
+  import activity, { ActivityMessage, WithReferences } from '@hcengineering/activity'
   import { getClient, isSpace } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import { location as locationStore } from '@hcengineering/ui'
@@ -26,12 +26,15 @@
   import ReverseChannelScrollView from './ReverseChannelScrollView.svelte'
 
   export let object: Doc
-  export let context: DocNotifyContext | undefined
-  export let filters: Ref<ActivityMessagesFilter>[] = []
-  export let isAsideOpened = false
+  export let context: DocNotifyContext | undefined = undefined
   export let syncLocation = true
+  export let autofocus = true
   export let freeze = false
+  export let readonly = false
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+  export let collection: string | undefined = undefined
+  export let withInput: boolean = true
+  export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -64,20 +67,16 @@
   let refsLoaded = false
 
   $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
-  $: collection = isDocChannel ? 'comments' : 'messages'
 
   $: void updateDataProvider(object._id, selectedMessageId)
 
   async function updateDataProvider (attachedTo: Ref<Doc>, selectedMessageId?: Ref<ActivityMessage>): Promise<void> {
     if (dataProvider === undefined) {
-      // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
-      // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
-      const loadAll = isDocChannel
       const ctx =
         context ??
         (await client.findOne(notification.class.DocNotifyContext, {
           objectId: object._id,
-          user: getCurrentAccount()._id
+          user: { $in: getCurrentAccount().socialIds }
         }))
       const hasRefs = ((object as WithReferences<Doc>).references ?? 0) > 0
       refsLoaded = hasRefs
@@ -88,8 +87,9 @@
         attachedTo,
         activity.class.ActivityMessage,
         selectedMessageId,
-        loadAll,
-        hasRefs
+        false,
+        hasRefs,
+        collection
       )
     }
   }
@@ -105,9 +105,13 @@
     channel={object}
     bind:selectedMessageId
     {object}
-    {collection}
+    collection={collection ?? (isDocChannel ? 'comments' : 'messages')}
     provider={dataProvider}
     {freeze}
-    loadMoreAllowed={!isDocChannel}
+    {autofocus}
+    loadMoreAllowed
+    {withInput}
+    {readonly}
+    {onReply}
   />
 {/if}

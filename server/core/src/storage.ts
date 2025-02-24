@@ -1,5 +1,4 @@
 import {
-  toWorkspaceString,
   type Doc,
   type DocInfo,
   type Domain,
@@ -7,20 +6,19 @@ import {
   type MeasureContext,
   type Ref,
   type StorageIterator,
-  type WorkspaceId
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import { estimateDocSize } from './utils'
 
 export * from '@hcengineering/storage'
 
 /**
  * @public
  */
-export function getBucketId (workspaceId: WorkspaceId): string {
-  return toWorkspaceString(workspaceId)
+export function getBucketId (workspace: WorkspaceUuid): string {
+  return workspace
 }
 
-const chunkSize = 512 * 1024
+const chunkSize = 200
 
 /**
  * @public
@@ -41,19 +39,19 @@ export class BackupClientOps {
   idIndex = 0
   chunkInfo = new Map<number, ChunkInfo>()
 
-  async loadChunk (
+  loadChunk (
     ctx: MeasureContext,
     domain: Domain,
-    idx?: number,
-    recheck?: boolean
+    idx?: number
   ): Promise<{
       idx: number
       docs: DocInfo[]
       finished: boolean
     }> {
-    return await ctx.with('load-chunk', { domain }, async (ctx) => {
+    return ctx.with('load-chunk', {}, async (ctx) => {
       idx = idx ?? this.idIndex++
       let chunk: ChunkInfo | undefined = this.chunkInfo.get(idx)
+      let size = 0
       if (chunk !== undefined) {
         chunk.index++
         if (chunk.finished === undefined || chunk.finished) {
@@ -64,34 +62,38 @@ export class BackupClientOps {
           }
         }
       } else {
-        chunk = { idx, iterator: this.storage.find(ctx, domain, recheck), finished: false, index: 0 }
+        chunk = { idx, iterator: this.storage.find(ctx, domain), finished: false, index: 0 }
         this.chunkInfo.set(idx, chunk)
       }
-      let size = 0
       const docs: DocInfo[] = []
 
-      while (size < chunkSize) {
+      while (docs.length < chunkSize) {
         const _docs = await chunk.iterator.next(ctx)
         if (_docs.length === 0) {
           chunk.finished = true
           break
         }
-        for (const doc of _docs) {
-          size += estimateDocSize(doc)
-          docs.push(doc)
+        docs.push(..._docs)
+        for (const d of _docs) {
+          size += d.size ?? 0
         }
       }
 
       return {
         idx,
         docs,
-        finished: chunk.finished
+        finished: chunk.finished,
+        size
       }
     })
   }
 
-  async closeChunk (ctx: MeasureContext, idx: number): Promise<void> {
-    await ctx.with('close-chunk', {}, async () => {
+  getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    return this.storage.getDomainHash(ctx, domain)
+  }
+
+  closeChunk (ctx: MeasureContext, idx: number): Promise<void> {
+    return ctx.with('close-chunk', {}, async () => {
       const chunk = this.chunkInfo.get(idx)
       this.chunkInfo.delete(idx)
       if (chunk != null) {

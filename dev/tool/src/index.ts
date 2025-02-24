@@ -13,102 +13,71 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import accountPlugin, {
-  type AccountDB,
   assignWorkspace,
-  confirmEmail,
-  createAcc,
-  createWorkspace as createWorkspaceRecord,
-  dropAccount,
-  dropWorkspace,
-  dropWorkspaceFull,
-  getAccount,
+  createWorkspaceRecord,
+  flattenStatus,
   getAccountDB,
-  getWorkspaceById,
-  listAccounts,
-  listWorkspacesByAccount,
-  listWorkspacesPure,
-  listWorkspacesRaw,
-  replacePassword,
-  setAccountAdmin,
-  setRole,
-  updateWorkspace,
-  type Workspace
+  getWorkspaceInfoWithStatusById,
+  signUpByEmail,
+  updateWorkspaceInfo,
+  type AccountDB
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
+import { createFileBackupStorage, createStorageBackupStorage, restore } from '@hcengineering/server-backup'
+import serverClientPlugin, { getAccountClient } from '@hcengineering/server-client'
 import {
-  backup,
-  backupFind,
-  backupList,
-  backupSize,
-  compactBackup,
-  createFileBackupStorage,
-  createStorageBackupStorage,
-  restore
-} from '@hcengineering/server-backup'
-import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
-import { getServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
-import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerServerPlugins,
+  registerStringLoaders,
+  registerTxAdapterFactory,
+  setAdapterSecurity,
+  sharedPipelineContextVars
+} from '@hcengineering/server-pipeline'
+import serverToken from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
-import path from 'path'
 
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
-import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, recreateElastic, updateField } from './workspace'
+import { updateField } from './workspace'
 
-import core, {
+import {
   AccountRole,
-  generateId,
-  getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
-  systemAccountEmail,
-  versionToString,
+  type PersonId,
+  type WorkspaceUuid,
   type Data,
-  type Doc,
-  type Ref,
   type Tx,
   type Version,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
-import contact from '@hcengineering/model-contact'
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
-import { getMongoClient, getWorkspaceMongoDB, shutdown } from '@hcengineering/mongo'
 
-import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
-import { deepEqual } from 'fast-equals'
-import { createWriteStream, readFileSync } from 'fs'
+import { getModelVersion } from '@hcengineering/model-all'
 import {
-  benchmark,
-  benchmarkWorker,
-  generateWorkspaceData,
-  stressBenchmark,
-  testFindAll,
-  type StressBenchmarkMode
-} from './benchmark'
-import {
-  cleanArchivedSpaces,
-  cleanRemovedTransactions,
-  cleanWorkspace,
-  fixCommentDoubleIdCreate,
-  fixMinioBW,
-  fixSkills,
-  optimizeModel,
-  removeDuplicateIds,
-  restoreHrTaskTypesFromUpdates,
-  restoreRecruitingTaskTypes
-} from './clean'
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  shutdownPostgres
+} from '@hcengineering/postgres'
+import type { StorageAdapter } from '@hcengineering/server-core'
+import { getAccountDBUrl, getMongoDBUrl } from './__start'
+// import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import { changeConfiguration } from './configuration'
-import { moveFromMongoToPG, moveWorkspaceFromMongoToPG, moveAccountDbFromMongoToPG } from './db'
-import { fixJsonMarkup, migrateMarkup, restoreLostMarkup } from './markup'
-import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
-import { fixAccountEmails, renameAccount } from './renameAccount'
-import { moveFiles, showLostFiles, syncFiles } from './storage'
+import { reindexWorkspace } from './fulltext'
+
+import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
+import { moveAccountDbFromMongoToPG } from './db'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -122,12 +91,21 @@ const colorConstants = {
   reset: '\u001b[0m'
 }
 
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
+
 /**
  * @public
  */
 export function devTool (
   prepareTools: () => {
-    mongodbUri: string | undefined
     dbUrl: string
     txes: Tx[]
     version: Data<Version>
@@ -136,6 +114,18 @@ export function devTool (
   extendProgram?: (prog: Command) => void
 ): void {
   const toolCtx = new MeasureMetricsContext('tool', {})
+
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+  setAdapterSecurity('postgresql', true)
+
+  registerServerPlugins()
+  registerStringLoaders()
 
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
@@ -154,25 +144,12 @@ export function devTool (
     console.error('please provide transactor url.')
   }
 
-  function getElasticUrl (): string {
-    const elasticUrl = process.env.ELASTIC_URL
-    if (elasticUrl === undefined) {
-      console.error('please provide elastic url')
-      process.exit(1)
-    }
-    return elasticUrl
-  }
-
-  const initScriptUrl = process.env.INIT_SCRIPT_URL
-  if (initScriptUrl !== undefined) {
-    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
-  }
-
   setMetadata(accountPlugin.metadata.Transactors, transactorUrl)
   setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl)
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
-  async function withDatabase (uri: string, f: (db: AccountDB) => Promise<any>): Promise<void> {
+  async function withAccountDatabase (f: (db: AccountDB) => Promise<any>, dbOverride?: string): Promise<void> {
+    const uri = dbOverride ?? getAccountDBUrl()
     console.log(`connecting to database '${uri}'...`)
 
     const [accountDb, closeAccountsDb] = await getAccountDB(uri)
@@ -183,11 +160,11 @@ export function devTool (
     }
     closeAccountsDb()
     console.log(`closing database connection to '${uri}'...`)
-    await shutdown()
+    await shutdownMongo()
   }
 
-  async function withStorage (dbUrl: string, f: (storageAdapter: StorageAdapter) => Promise<any>): Promise<void> {
-    const adapter = buildStorageFromConfig(storageConfigFromEnv(), dbUrl)
+  async function withStorage (f: (storageAdapter: StorageAdapter) => Promise<any>): Promise<void> {
+    const adapter = buildStorageFromConfig(storageConfigFromEnv())
     try {
       await f(adapter)
     } catch (err: any) {
@@ -200,7 +177,7 @@ export function devTool (
 
   program.command('version').action(() => {
     console.log(
-      `tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`
+      `tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''} ${JSON.stringify(getModelVersion())}`
     )
   })
 
@@ -211,164 +188,169 @@ export function devTool (
     .requiredOption('-p, --password <password>', 'user password')
     .requiredOption('-f, --first <first>', 'first name')
     .requiredOption('-l, --last <last>', 'last name')
-    .action(async (email: string, cmd) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
-        await createAcc(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, true)
+    .option('-n, --notconfirmed', 'creates not confirmed account', false)
+    .action(async (email: string, cmd: { password: string, first: string, last: string, notconfirmed: boolean }) => {
+      await withAccountDatabase(async (db) => {
+        console.log(`creating account ${cmd.first} ${cmd.last} (${email})...`)
+        await signUpByEmail(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, !cmd.notconfirmed)
       })
     })
 
-  program
-    .command('reset-account <email>')
-    .description('create user and corresponding account in master database')
-    .option('-p, --password <password>', 'new user password')
-    .action(async (email: string, cmd) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        console.log(`update account ${email} ${cmd.first as string} ${cmd.last as string}...`)
-        await replacePassword(db, email, cmd.password)
-      })
-    })
+  // program
+  // .command('reset-account <email>')
+  // .description('create user and corresponding account in master database')
+  // .option('-p, --password <password>', 'new user password')
+  // .action(async (email: string, cmd) => {
+  //   await withAccountDatabase(async (db) => {
+  //     console.log(`update account ${email} ${cmd.first as string} ${cmd.last as string}...`)
+  //     await replacePassword(db, email, cmd.password)
+  //   })
+  // })
 
-  program
-    .command('reset-email <email> <newEmail>')
-    .description('rename account in accounts and all workspaces')
-    .action(async (email: string, newEmail: string, cmd) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        console.log(`update account ${email} to ${newEmail}`)
-        await renameAccount(toolCtx, db, accountsUrl, email, newEmail)
-      })
-    })
+  // program
+  // .command('reset-email <email> <newEmail>')
+  // .description('rename account in accounts and all workspaces')
+  // .action(async (email: string, newEmail: string, cmd) => {
+  //   await withAccountDatabase(async (db) => {
+  //     console.log(`update account ${email} to ${newEmail}`)
+  //     await renameAccount(toolCtx, db, accountsUrl, email, newEmail)
+  //   })
+  // })
 
-  program
-    .command('fix-email <email> <newEmail>')
-    .description('fix email in all workspaces to be proper one')
-    .action(async (email: string, newEmail: string, cmd) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        console.log(`update account ${email} to ${newEmail}`)
-        await fixAccountEmails(toolCtx, db, accountsUrl, email, newEmail)
-      })
-    })
+  // program
+  // .command('fix-email <email> <newEmail>')
+  // .description('fix email in all workspaces to be proper one')
+  // .action(async (email: string, newEmail: string, cmd) => {
+  //   await withAccountDatabase(async (db) => {
+  //     console.log(`update account ${email} to ${newEmail}`)
+  //     await fixAccountEmails(toolCtx, db, accountsUrl, email, newEmail)
+  //   })
+  // })
 
-  program
-    .command('compact-db')
-    .description('compact all db collections')
-    .option('-w, --workspace <workspace>', 'A selected "workspace" only', '')
-    .action(async (cmd: { workspace: string }) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        console.log('compacting db ...')
-        let gtotal: number = 0
-        const client = getMongoClient(mongodbUri ?? dbUrl)
-        const _client = await client.getClient()
-        try {
-          const workspaces = await listWorkspacesPure(db)
-          for (const workspace of workspaces) {
-            if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
-              continue
-            }
-            let total: number = 0
-            const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
-            const collections = wsDb.listCollections()
-            while (true) {
-              const collInfo = await collections.next()
-              if (collInfo === null) {
-                break
-              }
-              const result = await wsDb.command({ compact: collInfo.name })
-              total += result.bytesFreed
-            }
-            gtotal += total
-            console.log('total feed for db', workspace.workspaceName, Math.round(total / (1024 * 1024)))
-          }
-          console.log('global total feed', Math.round(gtotal / (1024 * 1024)))
-        } catch (err: any) {
-          console.error(err)
-        } finally {
-          client.close()
-        }
-      })
-    })
+  // program
+  // .command('compact-db-mongo')
+  // .description('compact all db collections')
+  // .option('-w, --workspace <workspace>', 'A selected "workspace" only', '')
+  // .action(async (cmd: { workspace: string }) => {
+  //   const dbUrl = getMongoDBUrl()
+  //   await withAccountDatabase(async (db) => {
+  //     console.log('compacting db ...')
+  //     let gtotal: number = 0
+  //     const client = getMongoClient(dbUrl)
+  //     const _client = await client.getClient()
+  //     try {
+  //       const workspaces = await listWorkspacesPure(db)
+  //       for (const workspace of workspaces) {
+  //         if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+  //           continue
+  //         }
+  //         let total: number = 0
+  //         const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+  //         const collections = wsDb.listCollections()
+  //         while (true) {
+  //           const collInfo = await collections.next()
+  //           if (collInfo === null) {
+  //             break
+  //           }
+  //           const result = await wsDb.command({ compact: collInfo.name })
+  //           total += result.bytesFreed
+  //         }
+  //         gtotal += total
+  //         console.log('total feed for db', workspace.workspaceName, Math.round(total / (1024 * 1024)))
+  //       }
+  //       console.log('global total feed', Math.round(gtotal / (1024 * 1024)))
+  //     } catch (err: any) {
+  //       console.error(err)
+  //     } finally {
+  //       client.close()
+  //     }
+  //   })
+  // })
 
   program
     .command('assign-workspace <email> <workspace>')
     .description('assign workspace')
     .action(async (email: string, workspace: string, cmd) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
+      await withAccountDatabase(async (db) => {
         console.log(`assigning user ${email} to ${workspace}...`)
         try {
-          const workspaceInfo = await getWorkspaceById(db, workspace)
-          if (workspaceInfo === null) {
-            throw new Error(`workspace ${workspace} not found`)
+          const ws = await getWorkspace(db, workspace)
+          if (ws === null) {
+            throw new Error(`Workspace ${workspace} not found`)
           }
-          const token = generateToken(systemAccountEmail, { name: workspaceInfo.workspace })
-          const endpoint = await getTransactorEndpoint(token, 'external')
-          console.log('assigning to workspace', workspaceInfo, endpoint)
-          const client = await createClient(endpoint, token)
-          console.log('assigning to workspace connected', workspaceInfo, endpoint)
-          await assignWorkspace(
-            toolCtx,
-            db,
-            null,
-            email,
-            workspaceInfo.workspace,
-            AccountRole.User,
-            undefined,
-            undefined,
-            client
-          )
-          await client.close()
+
+          await assignWorkspace(toolCtx, db, null, getToolToken(), email, ws.uuid, AccountRole.User)
         } catch (err: any) {
           console.error(err)
         }
       })
     })
 
-  program
-    .command('show-user <email>')
-    .description('show user')
-    .action(async (email) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const info = await getAccount(db, email)
-        console.log(info)
-      })
-    })
+  // program
+  // .command('show-user <email>')
+  // .description('show user')
+  // .action(async (email) => {
+  //   await withAccountDatabase(async (db) => {
+  //     const info = await getAccount(db, email)
+  //     console.log(info)
+  //   })
+  // })
 
   program
-    .command('create-workspace <name>')
+    .command('create-workspace <name> <owner_social_id>')
     .description('create workspace')
-    .requiredOption('-w, --workspaceName <workspaceName>', 'Workspace name')
-    .option('-e, --email <email>', 'Author email', 'platform@email.com')
     .option('-i, --init <ws>', 'Init from workspace')
+    .option('-r, --region <region>', 'Region')
     .option('-b, --branding <key>', 'Branding key')
-    .action(async (workspace, cmd: { email: string, workspaceName: string, init?: string, branding?: string }) => {
-      const { dbUrl, txes, version, migrateOperations } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
+    .action(async (name, socialString, cmd: { account: string, init?: string, branding?: string, region?: string }) => {
+      const { txes, version, migrateOperations } = prepareTools()
+      await withAccountDatabase(async (db) => {
         const measureCtx = new MeasureMetricsContext('create-workspace', {})
         const brandingObj =
           cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
-        const wsInfo = await createWorkspaceRecord(measureCtx, db, brandingObj, cmd.email, cmd.workspaceName, workspace)
+        const socialId = await db.socialId.findOne({ key: socialString as PersonId })
+        if (socialId == null) {
+          throw new Error(`Social id ${socialString} not found`)
+        }
 
-        // update the record so it's not taken by one of the workers for the next 60 seconds
-        await updateWorkspace(db, wsInfo, {
-          mode: 'creating',
-          progress: 0,
-          lastProcessingTime: Date.now() + 1000 * 60
-        })
+        const res = await createWorkspaceRecord(
+          measureCtx,
+          db,
+          brandingObj,
+          name,
+          socialId.personUuid,
+          cmd.region,
+          'manual-creation'
+        )
+        const wsInfo = await getWorkspaceInfoWithStatusById(db, res.workspaceUuid)
 
-        await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations)
+        if (wsInfo == null) {
+          throw new Error(`Created workspace record ${res.workspaceUuid} not found`)
+        }
+        const coreWsInfo = flattenStatus(wsInfo)
+        const accountClient = getAccountClient(getToolToken())
 
-        await updateWorkspace(db, wsInfo, {
-          mode: 'active',
-          progress: 100,
-          disabled: false,
-          version
-        })
+        await createWorkspace(
+          measureCtx,
+          version,
+          brandingObj,
+          coreWsInfo,
+          txes,
+          migrateOperations,
+          accountClient,
+          undefined,
+          true
+        )
+        await updateWorkspaceInfo(
+          measureCtx,
+          db,
+          brandingObj,
+          getToolToken(),
+          res.workspaceUuid,
+          'create-done',
+          version,
+          100
+        )
 
         console.log('create-workspace done')
       })
@@ -378,32 +360,31 @@ export function devTool (
     .command('set-user-role <email> <workspace> <role>')
     .description('set user role')
     .action(async (email: string, workspace: string, role: AccountRole, cmd) => {
-      const { dbUrl } = prepareTools()
       console.log(`set user ${email} role for ${workspace}...`)
-      await withDatabase(dbUrl, async (db) => {
-        const workspaceInfo = await getWorkspaceById(db, workspace)
-        if (workspaceInfo === null) {
-          throw new Error(`workspace ${workspace} not found`)
+      await withAccountDatabase(async (db) => {
+        const rolesArray = ['DocGuest', 'GUEST', 'USER', 'MAINTAINER', 'OWNER']
+        if (!rolesArray.includes(role)) {
+          throw new Error(`Invalid role ${role}. Valid roles are ${rolesArray.join(', ')}`)
         }
-        console.log('assigning to workspace', workspaceInfo)
-        const token = generateToken(systemAccountEmail, { name: workspaceInfo.workspace })
-        const endpoint = await getTransactorEndpoint(token, 'external')
-        const client = await createClient(endpoint, token)
-        await setRole(toolCtx, db, email, workspace, role, client)
-        await client.close()
+
+        const ws = await getWorkspace(db, workspace)
+        if (ws === null) {
+          throw new Error(`Workspace ${workspace} not found`)
+        }
+
+        await assignWorkspace(toolCtx, db, null, getToolToken(), email, ws.uuid, role)
       })
     })
 
-  program
-    .command('set-user-admin <email> <role>')
-    .description('set user role')
-    .action(async (email: string, role: string) => {
-      const { dbUrl } = prepareTools()
-      console.log(`set user ${email} admin...`)
-      await withDatabase(dbUrl, async (db) => {
-        await setAccountAdmin(db, email, role === 'true')
-      })
-    })
+  // program
+  // .command('set-user-admin <email> <role>')
+  // .description('set user role')
+  // .action(async (email: string, role: string) => {
+  //   console.log(`set user ${email} admin...`)
+  //   await withAccountDatabase(async (db) => {
+  //     await setAccountAdmin(db, email, role === 'true')
+  //   })
+  // })
 
   program
     .command('upgrade-workspace <name>')
@@ -411,21 +392,30 @@ export function devTool (
     .option('-f|--force [force]', 'Force update', true)
     .option('-i|--indexes [indexes]', 'Force indexes rebuild', false)
     .action(async (workspace, cmd: { force: boolean, indexes: boolean }) => {
-      const { dbUrl, version, txes, migrateOperations } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const info = await getWorkspaceById(db, workspace)
+      const { version, txes, migrateOperations } = prepareTools()
+
+      await withAccountDatabase(async (db) => {
+        const info = await getWorkspace(db, workspace)
         if (info === null) {
           throw new Error(`workspace ${workspace} not found`)
         }
 
+        const wsInfo = await getWorkspaceInfoWithStatusById(db, info.uuid)
+        if (wsInfo === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+
+        const coreWsInfo = flattenStatus(wsInfo)
         const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
+        const accountClient = getAccountClient(getToolToken(wsInfo.uuid))
 
         await upgradeWorkspace(
           measureCtx,
           version,
           txes,
           migrateOperations,
-          info,
+          accountClient,
+          coreWsInfo,
           consoleModelLogger,
           async () => {},
           cmd.force,
@@ -433,387 +423,497 @@ export function devTool (
           true
         )
 
-        await updateWorkspace(db, info, {
-          mode: 'active',
-          progress: 100,
-          version,
-          attempts: 0
-        })
+        await updateWorkspaceInfo(measureCtx, db, null, getToolToken(), info.uuid, 'upgrade-done', version, 100)
 
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
         console.log('upgrade-workspace done')
       })
     })
 
-  program
-    .command('upgrade')
-    .description('upgrade')
-    .option('-l|--logs <logs>', 'Default logs folder', './logs')
-    .option('-i|--ignore [ignore]', 'Ignore workspaces', '')
-    .option(
-      '-c|--console',
-      'Display all information into console(default will create logs folder with {workspace}.log files',
-      false
-    )
-    .option('-f|--force [force]', 'Force update', false)
-    .action(async (cmd: { logs: string, force: boolean, console: boolean, ignore: string }) => {
-      const { dbUrl, version, txes, migrateOperations } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const workspaces = (await listWorkspacesRaw(db)).filter((ws) => !cmd.ignore.includes(ws.workspace))
-        workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-        const measureCtx = new MeasureMetricsContext('upgrade', {})
+  // program
+  // .command('upgrade')
+  // .description('upgrade')
+  // .option('-l|--logs <logs>', 'Default logs folder', './logs')
+  // .option('-i|--ignore [ignore]', 'Ignore workspaces', '')
+  // .option('-r|--region [region]', 'Region of workspaces', '')
+  // .option(
+  //   '-c|--console',
+  //   'Display all information into console(default will create logs folder with {workspace}.log files',
+  //   false
+  // )
+  // .option('-f|--force [force]', 'Force update', false)
+  // .action(async (cmd: { logs: string, force: boolean, console: boolean, ignore: string, region: string }) => {
+  //   const { version, txes, migrateOperations } = prepareTools()
+  //   await withAccountDatabase(async (db) => {
+  //     const workspaces = (await listWorkspacesRaw(db, cmd.region)).filter((ws) => !cmd.ignore.includes(ws.workspace))
+  //     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+  //     const measureCtx = new MeasureMetricsContext('upgrade', {})
 
-        for (const ws of workspaces) {
-          console.warn('UPGRADING', ws.workspaceName)
-          const logger = cmd.console
-            ? consoleModelLogger
-            : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
+  //     for (const ws of workspaces) {
+  //       console.warn('UPGRADING', ws.workspaceName)
+  //       const logger = cmd.console
+  //         ? consoleModelLogger
+  //         : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
 
-          try {
-            await upgradeWorkspace(
-              measureCtx,
-              version,
-              txes,
-              migrateOperations,
-              ws,
-              logger,
-              async () => {},
-              cmd.force,
-              false,
-              true
-            )
+  //       try {
+  //         await upgradeWorkspace(
+  //           measureCtx,
+  //           version,
+  //           txes,
+  //           migrateOperations,
+  //           ws,
+  //           logger,
+  //           async () => {},
+  //           cmd.force,
+  //           false,
+  //           true
+  //         )
 
-            await updateWorkspace(db, ws, {
-              mode: 'active',
-              progress: 100,
-              version,
-              attempts: 0
-            })
-          } catch (err: any) {
-            toolCtx.error('failed to upgrade', { err, workspace: ws.workspace, workspaceName: ws.workspaceName })
-            continue
-          }
-        }
-        console.log('upgrade done')
-      })
-    })
+  //         await updateWorkspace(db, ws, {
+  //           mode: 'active',
+  //           progress: 100,
+  //           version,
+  //           attempts: 0
+  //         })
+  //       } catch (err: any) {
+  //         toolCtx.error('failed to upgrade', { err, workspace: ws.workspace, workspaceName: ws.workspaceName })
+  //         continue
+  //       }
+  //     }
+  //     console.log('upgrade done')
+  //   })
+  // })
 
-  program
-    .command('list-unused-workspaces')
-    .description(
-      'remove unused workspaces, please pass --remove to really delete them. Without it will only mark them disabled'
-    )
-    .option('-r|--remove [remove]', 'Force remove', false)
-    .option('-t|--timeout [timeout]', 'Timeout in days', '7')
-    .action(async (cmd: { remove: boolean, disable: boolean, exclude: string, timeout: string }) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const workspaces = new Map((await listWorkspacesPure(db)).map((p) => [p._id.toString(), p]))
+  // program
+  // .command('list-unused-workspaces')
+  // .description('list unused workspaces. Without it will only mark them disabled')
+  // .option('-t|--timeout [timeout]', 'Timeout in days', '60')
+  // .action(async (cmd: { disable: boolean, exclude: string, timeout: string }) => {
+  //   await withAccountDatabase(async (db) => {
+  //     const workspaces = new Map((await listWorkspacesPure(db)).map((p) => [p._id.toString(), p]))
 
-        const accounts = await listAccounts(db)
+  //     const accounts = await listAccounts(db)
 
-        const _timeout = parseInt(cmd.timeout) ?? 7
+  //     const _timeout = parseInt(cmd.timeout) ?? 7
 
-        await withStorage(dbUrl, async (adapter) => {
-          // We need to update workspaces with missing workspaceUrl
-          const client = getMongoClient(mongodbUri ?? dbUrl)
-          const _client = await client.getClient()
-          try {
-            for (const a of accounts) {
-              const authored = a.workspaces
-                .map((it) => workspaces.get(it.toString()))
-                .filter((it) => it !== undefined && it.createdBy?.trim() === a.email?.trim()) as Workspace[]
-              authored.sort((a, b) => b.lastVisit - a.lastVisit)
-              if (authored.length > 0) {
-                const lastLoginDays = Math.floor((Date.now() - a.lastVisit) / 1000 / 3600 / 24)
-                toolCtx.info(a.email, {
-                  workspaces: a.workspaces.length,
-                  firstName: a.first,
-                  lastName: a.last,
-                  lastLoginDays
-                })
-                for (const ws of authored) {
-                  const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+  //     let used = 0
+  //     let unused = 0
 
-                  if (lastVisitDays > _timeout) {
-                    toolCtx.warn('  --- unused', {
-                      url: ws.workspaceUrl,
-                      id: ws.workspace,
-                      lastVisitDays
-                    })
-                    if (cmd.remove) {
-                      await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, adapter)
-                    }
-                  } else {
-                    toolCtx.warn('  +++ used', {
-                      url: ws.workspaceUrl,
-                      id: ws.workspace,
-                      createdBy: ws.createdBy,
-                      lastVisitDays
-                    })
-                  }
-                }
-              }
-            }
-          } finally {
-            client.close()
-          }
-        })
-      })
-    })
+  //     for (const a of accounts) {
+  //       const authored = a.workspaces
+  //         .map((it) => workspaces.get(it.toString()))
+  //         .filter((it) => it !== undefined && it.createdBy?.trim() === a.email?.trim()) as Workspace[]
+  //       authored.sort((a, b) => b.lastVisit - a.lastVisit)
+  //       if (authored.length > 0) {
+  //         const lastLoginDays = Math.floor((Date.now() - a.lastVisit) / 1000 / 3600 / 24)
+  //         toolCtx.info(a.email, {
+  //           workspaces: a.workspaces.length,
+  //           firstName: a.first,
+  //           lastName: a.last,
+  //           lastLoginDays
+  //         })
+  //         for (const ws of authored) {
+  //           const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
 
-  program
-    .command('drop-workspace <name>')
-    .description('drop workspace')
-    .option('--full [full]', 'Force remove all data', false)
-    .action(async (workspace, cmd: { full: boolean }) => {
-      const { dbUrl, mongodbUri } = prepareTools()
+  //           if (lastVisitDays > _timeout) {
+  //             unused++
+  //             toolCtx.warn('  --- unused', {
+  //               url: ws.workspaceUrl,
+  //               id: ws.workspace,
+  //               lastVisitDays
+  //             })
+  //           } else {
+  //             used++
+  //             toolCtx.warn('  +++ used', {
+  //               url: ws.workspaceUrl,
+  //               id: ws.workspace,
+  //               createdBy: ws.createdBy,
+  //               lastVisitDays
+  //             })
+  //           }
+  //         }
+  //       }
+  //     }
 
-      await withStorage(dbUrl, async (storageAdapter) => {
-        await withDatabase(dbUrl, async (db) => {
-          const ws = await getWorkspaceById(db, workspace)
-          if (ws === null) {
-            console.log('no workspace exists')
-            return
-          }
-          if (cmd.full) {
-            const client = getMongoClient(mongodbUri ?? dbUrl)
-            const _client = await client.getClient()
-            try {
-              await dropWorkspaceFull(toolCtx, db, _client, null, workspace, storageAdapter)
-            } finally {
-              client.close()
-            }
-          } else {
-            await dropWorkspace(toolCtx, db, null, workspace)
-          }
-        })
-      })
-    })
+  //     console.log('Used: ', used, 'Unused: ', unused)
+  //   })
+  // })
 
-  program
-    .command('drop-workspace-by-email <email>')
-    .description('drop workspace')
-    .option('--full [full]', 'Force remove all data', false)
-    .action(async (email, cmd: { full: boolean }) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      await withStorage(dbUrl, async (storageAdapter) => {
-        await withDatabase(dbUrl, async (db) => {
-          const client = getMongoClient(mongodbUri ?? dbUrl)
-          const _client = await client.getClient()
-          try {
-            for (const workspace of await listWorkspacesByAccount(db, email)) {
-              if (cmd.full) {
-                await dropWorkspaceFull(toolCtx, db, _client, null, workspace.workspace, storageAdapter)
-              } else {
-                await dropWorkspace(toolCtx, db, null, workspace.workspace)
-              }
-            }
-          } finally {
-            client.close()
-          }
-        })
-      })
-    })
-  program
-    .command('list-workspace-by-email <email>')
-    .description('drop workspace')
-    .option('--full [full]', 'Force remove all data', false)
-    .action(async (email, cmd: { full: boolean }) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        for (const workspace of await listWorkspacesByAccount(db, email)) {
-          console.log(workspace.workspace, workspace.workspaceUrl, workspace.workspaceName)
-        }
-      })
-    })
+  // program
+  //   .command('archive-workspaces')
+  //   .description('Archive and delete non visited workspaces...')
+  //   .option('-r|--remove [remove]', 'Pass to remove all data', false)
+  //   .option('--region [region]', 'Pass to remove all data', '')
+  //   .option('-t|--timeout [timeout]', 'Timeout in days', '60')
+  //   .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+  //   .action(
+  //     async (cmd: {
+  //       disable: boolean
+  //       exclude: string
+  //       timeout: string
+  //       remove: boolean
+  //       workspace: string
+  //       region: string
+  //     }) => {
+  //       const { dbUrl, txes } = prepareTools()
+  //       await withAccountDatabase(async (db) => {
+  //         const workspaces = (await listWorkspacesPure(db))
+  //           .sort((a, b) => a.lastVisit - b.lastVisit)
+  //           .filter((it) => cmd.workspace === '' || cmd.workspace === it.workspace)
 
-  program
-    .command('drop-workspace-last-visit')
-    .description('drop old workspaces')
-    .action(async (cmd: any) => {
-      const { dbUrl, mongodbUri } = prepareTools()
+  //         const _timeout = parseInt(cmd.timeout) ?? 7
 
-      await withStorage(dbUrl, async (storageAdapter) => {
-        await withDatabase(dbUrl, async (db) => {
-          const workspacesJSON = await listWorkspacesPure(db)
-          const client = getMongoClient(mongodbUri ?? dbUrl)
-          const _client = await client.getClient()
-          try {
-            for (const ws of workspacesJSON) {
-              const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
-              if (lastVisit > 30) {
-                await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, storageAdapter)
-              }
-            }
-          } finally {
-            client.close()
-          }
-        })
-      })
-    })
+  //         let unused = 0
+  //         for (const ws of workspaces) {
+  //           const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
 
-  program
-    .command('list-workspaces')
-    .description('List workspaces')
-    .option('-e|--expired [expired]', 'Show only expired', false)
-    .action(async (cmd: { expired: boolean }) => {
-      const { dbUrl, version } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const workspacesJSON = await listWorkspacesPure(db)
-        for (const ws of workspacesJSON) {
-          let lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
-          if (cmd.expired && lastVisit <= 7) {
-            continue
-          }
-          console.log(
-            colorConstants.colorBlue +
-              '####################################################################################################' +
-              colorConstants.reset
-          )
-          console.log('id:', colorConstants.colorWhiteCyan + ws.workspace + colorConstants.reset)
-          console.log('url:', ws.workspaceUrl, 'name:', ws.workspaceName)
-          console.log(
-            'version:',
-            ws.version !== undefined ? versionToString(ws.version) : 'not-set',
-            !deepEqual(ws.version, version) ? `upgrade to ${versionToString(version)} is required` : ''
-          )
-          console.log('disabled:', ws.disabled)
-          console.log('created by:', ws.createdBy)
-          console.log('members:', (ws.accounts ?? []).length)
-          if (Number.isNaN(lastVisit)) {
-            lastVisit = 365
-          }
-          if (lastVisit > 30) {
-            console.log(colorConstants.colorRed + `last visit: ${lastVisit} days ago` + colorConstants.reset)
-          } else if (lastVisit > 7) {
-            console.log(colorConstants.colorRedYellow + `last visit: ${lastVisit} days ago` + colorConstants.reset)
-          } else {
-            console.log('last visit:', lastVisit, 'days ago')
-          }
-        }
+  //           if (lastVisitDays > _timeout && isActiveMode(ws.mode)) {
+  //             unused++
+  //             toolCtx.warn('--- unused', {
+  //               url: ws.workspaceUrl,
+  //               id: ws.workspace,
+  //               lastVisitDays,
+  //               mode: ws.mode
+  //             })
+  //             try {
+  //               await backupWorkspace(
+  //                 toolCtx,
+  //                 ws,
+  //                 (dbUrl, storageAdapter) => {
+  //                   const factory: PipelineFactory = createBackupPipeline(toolCtx, dbUrl, txes, {
+  //                     externalStorage: storageAdapter,
+  //                     usePassedCtx: true
+  //                   })
+  //                   return factory
+  //                 },
+  //                 (ctx, dbUrls, workspace, branding, externalStorage) => {
+  //                   return getConfig(ctx, dbUrls, ctx, {
+  //                     externalStorage,
+  //                     disableTriggers: true
+  //                   })
+  //                 },
+  //                 cmd.region,
+  //                 5000, // 5 gigabytes per blob
+  //                 sharedPipelineContextVars,
+  //                 async (storage, workspaceStorage) => {
+  //                   if (cmd.remove) {
+  //                     await updateArchiveInfo(toolCtx, db, ws.workspace, true)
+  //                     const files = await workspaceStorage.listStream(toolCtx, { name: ws.workspace })
 
-        console.log('latest model version:', JSON.stringify(version))
-      })
-    })
+  //                     while (true) {
+  //                       const docs = await files.next()
+  //                       if (docs.length === 0) {
+  //                         break
+  //                       }
+  //                       await workspaceStorage.remove(
+  //                         toolCtx,
+  //                         { name: ws.workspace },
+  //                         docs.map((it) => it._id)
+  //                       )
+  //                     }
 
-  program.command('fix-person-accounts').action(async () => {
-    const { dbUrl, mongodbUri, version } = prepareTools()
-    await withDatabase(dbUrl, async (db) => {
-      const ws = await listWorkspacesPure(db)
-      const client = getMongoClient(mongodbUri ?? dbUrl)
-      const _client = await client.getClient()
-      try {
-        for (const w of ws) {
-          const wsDb = getWorkspaceMongoDB(_client, { name: w.workspace })
-          await wsDb.collection('tx').updateMany(
-            {
-              objectClass: contact.class.PersonAccount,
-              objectSpace: null
-            },
-            { $set: { objectSpace: core.space.Model } }
-          )
-        }
-      } finally {
-        client.close()
-      }
+  //                     const destroyer = getWorkspaceDestroyAdapter(dbUrl)
 
-      console.log('latest model version:', JSON.stringify(version))
-    })
-  })
+  //                     await destroyer.deleteWorkspace(toolCtx, sharedPipelineContextVars, { name: ws.workspace })
+  //                   }
+  //                 }
+  //               )
+  //             } catch (err: any) {
+  //               toolCtx.error('Failed to backup/archive workspace', { workspace: ws.workspace })
+  //             }
+  //           }
+  //         }
+  //         console.log('Processed unused workspaces', unused)
+  //       })
+  //     }
+  //   )
 
-  program
-    .command('show-accounts')
-    .description('Show accounts')
-    .action(async () => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const workspaces = await listWorkspacesPure(db)
-        const accounts = await listAccounts(db)
-        for (const a of accounts) {
-          const wss = a.workspaces.map((it) => it.toString())
-          console.info(
-            a.email,
-            a.confirmed,
-            workspaces.filter((it) => wss.includes(it._id.toString())).map((it) => it.workspaceUrl ?? it.workspace)
-          )
-        }
-      })
-    })
+  // program
+  //   .command('backup-all')
+  //   .description('Backup all workspaces...')
+  //   .option('--region [region]', 'Force backup of selected workspace', '')
+  //   .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+  //   .action(async (cmd: { workspace: string, region: string }) => {
+  //     const { txes } = prepareTools()
+  //     await withAccountDatabase(async (db) => {
+  //       const workspaces = (await listWorkspacesPure(db))
+  //         .sort((a, b) => a.lastVisit - b.lastVisit)
+  //         .filter((it) => cmd.workspace === '' || cmd.workspace === it.workspace)
 
-  program
-    .command('drop-account <name>')
-    .description('drop account')
-    .action(async (email: string, cmd) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        await dropAccount(toolCtx, db, null, email)
-      })
-    })
+  //       let processed = 0
 
-  program
-    .command('backup <dirName> <workspace>')
-    .description('dump workspace transactions and minio resources')
-    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
-    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
-    .option(
-      '-ct, --contentTypes <contentTypes>',
-      'A list of ; separated content types for blobs to skip download if size >= limit',
-      ''
-    )
-    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
-    .option('-f, --force', 'Force backup', false)
-    .option('-c, --recheck', 'Force hash recheck on server', false)
-    .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
-    .action(
-      async (
-        dirName: string,
-        workspace: string,
-        cmd: {
-          skip: string
-          force: boolean
-          recheck: boolean
-          timeout: string
-          include: string
-          blobLimit: string
-          contentTypes: string
-        }
-      ) => {
-        const storage = await createFileBackupStorage(dirName)
-        const wsid = getWorkspaceId(workspace)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-        await backup(toolCtx, endpoint, wsid, storage, {
-          force: cmd.force,
-          recheck: cmd.recheck,
-          include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
-          skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
-          timeout: 0,
-          connectTimeout: parseInt(cmd.timeout) * 1000,
-          blobDownloadLimit: parseInt(cmd.blobLimit),
-          skipBlobContentTypes: cmd.contentTypes
-            .split(';')
-            .map((it) => it.trim())
-            .filter((it) => it.length > 0)
-        })
-      }
-    )
-  program
-    .command('backup-find <dirName> <fileId>')
-    .description('dump workspace transactions and minio resources')
-    .option('-d, --domain <domain>', 'Check only domain')
-    .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined }) => {
-      const storage = await createFileBackupStorage(dirName)
-      await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.domain)
-    })
+  //       // We need to update workspaces with missing workspaceUrl
+  //       for (const ws of workspaces) {
+  //         try {
+  //           if (
+  //             await backupWorkspace(
+  //               toolCtx,
+  //               ws,
+  //               (dbUrl, storageAdapter) => {
+  //                 const factory: PipelineFactory = createBackupPipeline(toolCtx, dbUrl, txes, {
+  //                   externalStorage: storageAdapter,
+  //                   usePassedCtx: true
+  //                 })
+  //                 return factory
+  //               },
+  //               (ctx, dbUrls, workspace, branding, externalStorage) => {
+  //                 return getConfig(ctx, dbUrls, ctx, {
+  //                   externalStorage,
+  //                   disableTriggers: true
+  //                 })
+  //               },
+  //               cmd.region,
+  //               100,
+  //               sharedPipelineContextVars
+  //             )
+  //           ) {
+  //             processed++
+  //           }
+  //         } catch (err: any) {
+  //           toolCtx.error('Failed to backup workspace', { workspace: ws.workspace })
+  //         }
+  //       }
+  //       console.log('Processed workspaces', processed)
+  //     })
+  //   })
 
-  program
-    .command('backup-compact <dirName>')
-    .description('Compact a given backup, will create one snapshot clean unused resources')
-    .option('-f, --force', 'Force compact.', false)
-    .action(async (dirName: string, cmd: { force: boolean }) => {
-      const storage = await createFileBackupStorage(dirName)
-      await compactBackup(toolCtx, storage, cmd.force)
-    })
+  // program
+  // .command('drop-workspace <name>')
+  // .description('drop workspace')
+  // .option('--full [full]', 'Force remove all data', false)
+  // .action(async (workspace, cmd: { full: boolean }) => {
+  //   const { dbUrl } = prepareTools()
+
+  //   await withStorage(async (storageAdapter) => {
+  //     await withAccountDatabase(async (db) => {
+  //       const ws = await getWorkspaceById(db, workspace)
+  //       if (ws === null) {
+  //         console.log('no workspace exists')
+  //         return
+  //       }
+  //       if (cmd.full) {
+  //         await dropWorkspaceFull(toolCtx, db, dbUrl, null, workspace, storageAdapter)
+  //       } else {
+  //         await dropWorkspace(toolCtx, db, null, workspace)
+  //       }
+  //     })
+  //   })
+  // })
+
+  // program
+  // .command('drop-workspace-by-email <email>')
+  // .description('drop workspace')
+  // .option('--full [full]', 'Force remove all data', false)
+  // .action(async (email, cmd: { full: boolean }) => {
+  //   const { dbUrl } = prepareTools()
+  //   await withStorage(async (storageAdapter) => {
+  //     await withAccountDatabase(async (db) => {
+  //       for (const workspace of await listWorkspacesByAccount(db, email)) {
+  //         if (cmd.full) {
+  //           await dropWorkspaceFull(toolCtx, db, dbUrl, null, workspace.workspace, storageAdapter)
+  //         } else {
+  //           await dropWorkspace(toolCtx, db, null, workspace.workspace)
+  //         }
+  //       }
+  //     })
+  //   })
+  // })
+  // program
+  // .command('list-workspace-by-email <email>')
+  // .description('drop workspace')
+  // .option('--full [full]', 'Force remove all data', false)
+  // .action(async (email, cmd: { full: boolean }) => {
+  //   await withAccountDatabase(async (db) => {
+  //     for (const workspace of await listWorkspacesByAccount(db, email)) {
+  //       console.log(workspace.workspace, workspace.workspaceUrl, workspace.workspaceName)
+  //     }
+  //   })
+  // })
+
+  // program
+  // .command('drop-workspace-last-visit')
+  // .description('drop old workspaces')
+  // .action(async (cmd: any) => {
+  //   const { dbUrl } = prepareTools()
+
+  //   await withStorage(async (storageAdapter) => {
+  //     await withAccountDatabase(async (db) => {
+  //       const workspacesJSON = await listWorkspacesPure(db)
+  //       for (const ws of workspacesJSON) {
+  //         const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+  //         if (lastVisit > 60) {
+  //           await dropWorkspaceFull(toolCtx, db, dbUrl, null, ws.workspace, storageAdapter)
+  //         }
+  //       }
+  //     })
+  //   })
+  // })
+
+  // program
+  // .command('list-workspaces')
+  // .description('List workspaces')
+  // .option('-e|--expired [expired]', 'Show only expired', false)
+  // .action(async (cmd: { expired: boolean }) => {
+  //   const { version } = prepareTools()
+  //   await withAccountDatabase(async (db) => {
+  //     const workspacesJSON = await listWorkspacesPure(db)
+  //     for (const ws of workspacesJSON) {
+  //       let lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+  //       if (cmd.expired && lastVisit <= 7) {
+  //         continue
+  //       }
+  //       console.log(
+  //         colorConstants.colorBlue +
+  //           '####################################################################################################' +
+  //           colorConstants.reset
+  //       )
+  //       console.log('id:', colorConstants.colorWhiteCyan + ws.workspace + colorConstants.reset)
+  //       console.log('url:', ws.workspaceUrl, 'name:', ws.workspaceName)
+  //       console.log(
+  //         'version:',
+  //         ws.version !== undefined ? versionToString(ws.version) : 'not-set',
+  //         !deepEqual(ws.version, version) ? `upgrade to ${versionToString(version)} is required` : ''
+  //       )
+  //       console.log('disabled:', ws.disabled)
+  //       console.log('mode:', ws.mode)
+  //       console.log('created by:', ws.createdBy)
+  //       console.log('members:', (ws.accounts ?? []).length)
+  //       if (Number.isNaN(lastVisit)) {
+  //         lastVisit = 365
+  //       }
+  //       if (lastVisit > 30) {
+  //         console.log(colorConstants.colorRed + `last visit: ${lastVisit} days ago` + colorConstants.reset)
+  //       } else if (lastVisit > 7) {
+  //         console.log(colorConstants.colorRedYellow + `last visit: ${lastVisit} days ago` + colorConstants.reset)
+  //       } else {
+  //         console.log('last visit:', lastVisit, 'days ago')
+  //       }
+  //     }
+
+  //     console.log('latest model version:', JSON.stringify(version))
+  //   })
+  // })
+
+  // program.command('fix-person-accounts-mongo').action(async () => {
+  // const { version } = prepareTools()
+  // const mongodbUri = getMongoDBUrl()
+  // await withAccountDatabase(async (db) => {
+  //   const ws = await listWorkspacesPure(db)
+  //   const client = getMongoClient(mongodbUri)
+  //   const _client = await client.getClient()
+  //   try {
+  //     for (const w of ws) {
+  //       const wsDb = getWorkspaceMongoDB(_client, { name: w.workspace })
+  //       await wsDb.collection('tx').updateMany(
+  //         {
+  //           objectClass: contact.class.PersonAccount,
+  //           objectSpace: null
+  //         },
+  //         { $set: { objectSpace: core.space.Model } }
+  //       )
+  //     }
+  //   } finally {
+  //     client.close()
+  //   }
+
+  //   console.log('latest model version:', JSON.stringify(version))
+  // })
+  // })
+
+  // program
+  // .command('show-accounts')
+  // .description('Show accounts')
+  // .action(async () => {
+  //   await withAccountDatabase(async (db) => {
+  //     const workspaces = await listWorkspacesPure(db)
+  //     const accounts = await listAccounts(db)
+  //     for (const a of accounts) {
+  //       const wss = a.workspaces.map((it) => it.toString())
+  //       console.info(
+  //         a.email,
+  //         a.confirmed,
+  //         workspaces.filter((it) => wss.includes(it._id.toString())).map((it) => it.workspaceUrl ?? it.workspace)
+  //       )
+  //     }
+  //   })
+  // })
+
+  // program
+  // .command('drop-account <name>')
+  // .description('drop account')
+  // .action(async (email: string, cmd) => {
+  //   await withAccountDatabase(async (db) => {
+  //     await dropAccount(toolCtx, db, null, email)
+  //   })
+  // })
+
+  // program
+  // .command('backup <dirName> <workspace>')
+  // .description('dump workspace transactions and minio resources')
+  // .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+  // .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+  // .option(
+  //   '-ct, --contentTypes <contentTypes>',
+  //   'A list of ; separated content types for blobs to skip download if size >= limit',
+  //   ''
+  // )
+  // .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
+  // .option('-f, --force', 'Force backup', false)
+  // .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
+  // .action(
+  //   async (
+  //     dirName: string,
+  //     workspace: string,
+  //     cmd: {
+  //       skip: string
+  //       force: boolean
+  //       timeout: string
+  //       include: string
+  //       blobLimit: string
+  //       contentTypes: string
+  //     }
+  //   ) => {
+  //     const storage = await createFileBackupStorage(dirName)
+  //     const wsid = getWorkspaceId(workspace)
+  //     const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+  //     await backup(toolCtx, endpoint, wsIds, storage, {
+  //       force: cmd.force,
+  //       include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
+  //       skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
+  //       timeout: 0,
+  //       connectTimeout: parseInt(cmd.timeout) * 1000,
+  //       blobDownloadLimit: parseInt(cmd.blobLimit),
+  //       skipBlobContentTypes: cmd.contentTypes
+  //         .split(';')
+  //         .map((it) => it.trim())
+  //         .filter((it) => it.length > 0)
+  //     })
+  //   }
+  // )
+  // program
+  // .command('backup-find <dirName> <fileId>')
+  // .description('dump workspace transactions and minio resources')
+  // .option('-d, --domain <domain>', 'Check only domain')
+  // .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined }) => {
+  //   const storage = await createFileBackupStorage(dirName)
+  //   await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.domain)
+  // })
+
+  // program
+  // .command('backup-compact <dirName>')
+  // .description('Compact a given backup, will create one snapshot clean unused resources')
+  // .option('-f, --force', 'Force compact.', false)
+  // .action(async (dirName: string, cmd: { force: boolean }) => {
+  //   const storage = await createFileBackupStorage(dirName)
+  //   await compactBackup(toolCtx, storage, cmd.force)
+  // })
+  // program
+  // .command('backup-check <dirName>')
+  // .description('Compact a given backup, will create one snapshot clean unused resources')
+  // .action(async (dirName: string, cmd: any) => {
+  //   const storage = await createFileBackupStorage(dirName)
+  //   await checkBackupIntegrity(toolCtx, storage)
+  // })
 
   program
     .command('backup-restore <dirName> <workspace> [date]')
@@ -822,112 +922,216 @@ export function devTool (
     .option('-c, --recheck', 'Force hash recheck on server', false)
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('--use-storage <useStorage>', 'Use workspace storage adapter from env variable', '')
+    .option(
+      '--history-file <historyFile>',
+      'Store blob send info into file. Will skip already send documents.',
+      undefined
+    )
     .description('dump workspace transactions and minio resources')
     .action(
       async (
         dirName: string,
-        workspace: string,
+        workspaceId: string,
         date,
-        cmd: { merge: boolean, parallel: string, recheck: boolean, include: string, skip: string }
+        cmd: {
+          merge: boolean
+          parallel: string
+          recheck: boolean
+          include: string
+          skip: string
+          useStorage: string
+          historyFile: string
+        }
       ) => {
-        const storage = await createFileBackupStorage(dirName)
-        const wsid = getWorkspaceId(workspace)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-        await restore(toolCtx, endpoint, wsid, storage, {
-          date: parseInt(date ?? '-1'),
-          merge: cmd.merge,
-          parallel: parseInt(cmd.parallel ?? '1'),
-          recheck: cmd.recheck,
-          include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
-          skip: new Set(cmd.skip.split(';'))
+        await withAccountDatabase(async (db) => {
+          const ws = await getWorkspace(db, workspaceId)
+          if (ws === null) {
+            throw new Error(`workspace ${workspaceId} not found`)
+          }
+
+          const workspace = ws.uuid
+          const wsIds = {
+            uuid: ws.uuid,
+            dataId: ws.dataId,
+            url: ws.url
+          }
+          const storage = await createFileBackupStorage(dirName)
+          const storageConfig = cmd.useStorage !== '' ? storageConfigFromEnv(process.env[cmd.useStorage]) : undefined
+
+          const workspaceStorage: StorageAdapter | undefined =
+            storageConfig !== undefined ? buildStorageFromConfig(storageConfig) : undefined
+          await restore(toolCtx, await getWorkspaceTransactorEndpoint(workspace), wsIds, storage, {
+            date: parseInt(date ?? '-1'),
+            merge: cmd.merge,
+            parallel: parseInt(cmd.parallel ?? '1'),
+            recheck: cmd.recheck,
+            include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
+            skip: new Set(cmd.skip.split(';')),
+            storageAdapter: workspaceStorage,
+            historyFile: cmd.historyFile
+          })
+          await workspaceStorage?.close()
         })
       }
     )
 
-  program
-    .command('backup-list <dirName>')
-    .description('list snaphost ids for backup')
-    .action(async (dirName: string, cmd) => {
-      const storage = await createFileBackupStorage(dirName)
-      await backupList(storage)
-    })
+  // program
+  // .command('backup-list <dirName>')
+  // .description('list snaphost ids for backup')
+  // .action(async (dirName: string, cmd) => {
+  //   const storage = await createFileBackupStorage(dirName)
+  //   await backupList(storage)
+  // })
 
-  program
-    .command('backup-s3 <bucketName> <dirName> <workspace>')
-    .description('dump workspace transactions and minio resources')
-    .action(async (bucketName: string, dirName: string, workspace: string, cmd) => {
-      const { dbUrl } = prepareTools()
-      await withStorage(dbUrl, async (adapter) => {
-        const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
-        const wsid = getWorkspaceId(workspace)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-        await backup(toolCtx, endpoint, wsid, storage)
-      })
-    })
+  // program
+  // .command('backup-s3 <bucketName> <dirName> <workspace>')
+  // .description('dump workspace transactions and minio resources')
+  // .action(async (bucketName: string, dirName: string, workspace: string, cmd) => {
+  //   await withStorage(async (adapter) => {
+  //     const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
+  //     const wsid = getWorkspaceId(workspace)
+  //     const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+  //     await backup(toolCtx, endpoint, wsIds, storage)
+  //   })
+  // })
 
-  program
-    .command('backup-s3-compact <bucketName> <dirName>')
-    .description('Compact a given backup to just one snapshot')
-    .option('-f, --force', 'Force compact.', false)
-    .action(async (bucketName: string, dirName: string, cmd: { force: boolean, print: boolean }) => {
-      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
-      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
-      try {
-        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
-        await compactBackup(toolCtx, storage, cmd.force)
-      } catch (err: any) {
-        toolCtx.error('failed to size backup', { err })
-      }
-      await storageAdapter.close()
-    })
+  // program
+  //   .command('backup-s3-clean <bucketName> <days>')
+  //   .description('dump workspace transactions and minio resources')
+  //   .action(async (bucketName: string, days: string, cmd) => {
+  //     const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+  //     const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
 
-  program
-    .command('backup-s3-restore <bucketName> <dirName> <workspace> [date]')
-    .description('dump workspace transactions and minio resources')
-    .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
-      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
-      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
-      try {
-        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
-        const wsid = getWorkspaceId(workspace)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-        await restore(toolCtx, endpoint, wsid, storage, {
-          date: parseInt(date ?? '-1')
-        })
-      } catch (err: any) {
-        toolCtx.error('failed to size backup', { err })
-      }
-      await storageAdapter.close()
-    })
-  program
-    .command('backup-s3-list <bucketName> <dirName>')
-    .description('list snaphost ids for backup')
-    .action(async (bucketName: string, dirName: string, cmd) => {
-      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
-      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
-      try {
-        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
-        await backupList(storage)
-      } catch (err: any) {
-        toolCtx.error('failed to size backup', { err })
-      }
-      await storageAdapter.close()
-    })
+  //     const daysInterval = Date.now() - parseInt(days) * 24 * 60 * 60 * 1000
+  //     try {
+  //       const token = generateToken(systemAccountUuid, undefined, { service: 'tool' })
+  //       const accountClient = getAccountClient(token)
+  //       const workspaces = (await accountClient.listWorkspaces(null, 'active')).filter((it) => {
+  //         const lastBackup = it.backupInfo?.lastBackup ?? 0
+  //         if (lastBackup > daysInterval) {
+  //           // No backup required, interval not elapsed
+  //           return true
+  //         }
 
-  program
-    .command('backup-s3-size <bucketName> <dirName>')
-    .description('list snaphost ids for backup')
-    .action(async (bucketName: string, dirName: string, cmd) => {
-      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
-      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
-      try {
-        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
-        await backupSize(storage)
-      } catch (err: any) {
-        toolCtx.error('failed to size backup', { err })
-      }
-      await storageAdapter.close()
-    })
+  //         if (it.lastVisit == null) {
+  //           return false
+  //         }
+
+  //         return false
+  //       })
+  //       workspaces.sort((a, b) => {
+  //         return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
+  //       })
+
+  //       for (const ws of workspaces) {
+  //         const storage = await createStorageBackupStorage(
+  //           toolCtx,
+  //           storageAdapter,
+  //           getWorkspaceId(bucketName),
+  //           ws.workspace
+  //         )
+  //         await backupRemoveLast(storage, daysInterval)
+  //         const accountClient = getAccountClient(token)
+  //         await accountClient.updateBackupInfo({
+  //           backups: ws.backupInfo?.backups ?? 0,
+  //           backupSize: ws.backupInfo?.backupSize ?? 0,
+  //           blobsSize: ws.backupInfo?.blobsSize ?? 0,
+  //           dataSize: ws.backupInfo?.dataSize ?? 0,
+  //           lastBackup: daysInterval
+  //         })
+  //       }
+  //     } finally {
+  //       await storageAdapter.close()
+  //     }
+  //   })
+
+  // program
+  // .command('backup-clean <dirName> <days>')
+  // .description('dump workspace transactions and minio resources')
+  // .action(async (dirName: string, days: string, cmd) => {
+  //   const daysInterval = Date.now() - parseInt(days) * 24 * 60 * 60 * 1000
+  //   const storage = await createFileBackupStorage(dirName)
+  //   await backupRemoveLast(storage, daysInterval)
+  // })
+
+  // program
+  // .command('backup-s3-compact <bucketName> <dirName>')
+  // .description('Compact a given backup to just one snapshot')
+  // .option('-f, --force', 'Force compact.', false)
+  // .action(async (bucketName: string, dirName: string, cmd: { force: boolean, print: boolean }) => {
+  //   const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+  //   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+  //   try {
+  //     const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+  //     await compactBackup(toolCtx, storage, cmd.force)
+  //   } catch (err: any) {
+  //     toolCtx.error('failed to size backup', { err })
+  //   }
+  //   await storageAdapter.close()
+  // })
+  // program
+  // .command('backup-s3-check <bucketName> <dirName>')
+  // .description('Compact a given backup to just one snapshot')
+  // .action(async (bucketName: string, dirName: string, cmd: any) => {
+  //   const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+  //   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+  //   try {
+  //     const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+  //     await checkBackupIntegrity(toolCtx, storage)
+  //   } catch (err: any) {
+  //     toolCtx.error('failed to size backup', { err })
+  //   }
+  //   await storageAdapter.close()
+  // })
+
+  // program
+  // .command('backup-s3-restore <bucketName> <dirName> <workspace> [date]')
+  // .description('dump workspace transactions and minio resources')
+  // .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
+  //   const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+  //   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+  //   try {
+  //     const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+  //     const wsid = getWorkspaceId(workspace)
+  //     const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+  //     await restore(toolCtx, endpoint, wsid, storage, {
+  //       date: parseInt(date ?? '-1')
+  //     })
+  //   } catch (err: any) {
+  //     toolCtx.error('failed to size backup', { err })
+  //   }
+  //   await storageAdapter.close()
+  // })
+  // program
+  // .command('backup-s3-list <bucketName> <dirName>')
+  // .description('list snaphost ids for backup')
+  // .action(async (bucketName: string, dirName: string, cmd) => {
+  //   const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+  //   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+  //   try {
+  //     const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+  //     await backupList(storage)
+  //   } catch (err: any) {
+  //     toolCtx.error('failed to size backup', { err })
+  //   }
+  //   await storageAdapter.close()
+  // })
+
+  // program
+  // .command('backup-s3-size <bucketName> <dirName>')
+  // .description('list snaphost ids for backup')
+  // .action(async (bucketName: string, dirName: string, cmd) => {
+  //   const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+  //   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+  //   try {
+  //     const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+  //     await backupSize(storage)
+  //   } catch (err: any) {
+  //     toolCtx.error('failed to size backup', { err })
+  //   }
+  //   await storageAdapter.close()
+  // })
 
   program
     .command('backup-s3-download <bucketName> <dirName> <storeIn>')
@@ -935,8 +1139,9 @@ export function devTool (
     .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
       const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
       const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      const backupIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
       try {
-        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, backupIds, dirName)
         await backupDownload(storage, storeIn)
       } catch (err: any) {
         toolCtx.error('failed to size backup', { err })
@@ -944,395 +1149,564 @@ export function devTool (
       await storageAdapter.close()
     })
 
-  program
-    .command('confirm-email <email>')
-    .description('confirm user email')
-    .action(async (email: string, cmd) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const account = await getAccount(db, email)
-        if (account?.confirmed === true) {
-          console.log(`Already confirmed:${email}`)
-        } else {
-          await confirmEmail(db, email)
-        }
-      })
-    })
+  // program
+  //   .command('copy-s3-datalake')
+  //   .description('copy files from s3 to datalake')
+  //   .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+  //   .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
+  //   .option('-s, --skip <number>', 'Number of workspaces to skip', '0')
+  //   .option('-e, --existing', 'Copy existing blobs', false)
+  //   .action(async (cmd: { workspace: string, concurrency: string, existing: boolean, skip: string }) => {
+  //     const params = {
+  //       concurrency: parseInt(cmd.concurrency),
+  //       existing: cmd.existing
+  //     }
+  //     const skip = parseInt(cmd.skip)
 
-  program
-    .command('diff-workspace <workspace>')
-    .description('restore workspace transactions and minio resources from previous dump.')
-    .action(async (workspace: string, cmd) => {
-      const { dbUrl, mongodbUri, txes } = prepareTools()
-      await diffWorkspace(mongodbUri ?? dbUrl, getWorkspaceId(workspace), txes)
-    })
+  //     const storageConfig = storageConfigFromEnv(process.env.STORAGE)
 
-  program
-    .command('clear-telegram-history <workspace>')
-    .description('clear telegram history')
-    .option('-w, --workspace <workspace>', 'target workspace')
-    .action(async (workspace: string, cmd) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      await withStorage(dbUrl, async (adapter) => {
-        await withDatabase(dbUrl, async (db) => {
-          const telegramDB = process.env.TELEGRAM_DATABASE
-          if (telegramDB === undefined) {
-            console.error('please provide TELEGRAM_DATABASE.')
-            process.exit(1)
-          }
+  //     const storages = storageConfig.storages.filter((p) => p.kind === S3_CONFIG_KIND) as S3Config[]
+  //     if (storages.length === 0) {
+  //       throw new Error('S3 storage config is required')
+  //     }
 
-          console.log(`clearing ${workspace} history:`)
-          await clearTelegramHistory(toolCtx, mongodbUri ?? dbUrl, getWorkspaceId(workspace), telegramDB, adapter)
-        })
-      })
-    })
+  //     const datalakeConfig = storageConfig.storages.find((p) => p.kind === DATALAKE_CONFIG_KIND)
+  //     if (datalakeConfig === undefined) {
+  //       throw new Error('Datalake storage config is required')
+  //     }
 
-  program
-    .command('clear-telegram-all-history')
-    .description('clear telegram history')
-    .action(async (cmd) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      await withStorage(dbUrl, async (adapter) => {
-        await withDatabase(dbUrl, async (db) => {
-          const telegramDB = process.env.TELEGRAM_DATABASE
-          if (telegramDB === undefined) {
-            console.error('please provide TELEGRAM_DATABASE.')
-            process.exit(1)
-          }
+  //     toolCtx.info('using datalake', { datalake: datalakeConfig })
 
-          const workspaces = await listWorkspacesPure(db)
+  //     let workspaces: Workspace[] = []
+  //     await withAccountDatabase(async (db) => {
+  //       workspaces = await listWorkspacesPure(db)
+  //       workspaces = workspaces
+  //         .filter((p) => isActiveMode(p.mode) || isArchivingMode(p.mode))
+  //         .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+  //         // .sort((a, b) => b.lastVisit - a.lastVisit)
+  //         .sort((a, b) => {
+  //           if (a.backupInfo !== undefined && b.backupInfo !== undefined) {
+  //             return b.backupInfo.blobsSize - a.backupInfo.blobsSize
+  //           } else if (b.backupInfo !== undefined) {
+  //             return 1
+  //           } else if (a.backupInfo !== undefined) {
+  //             return -1
+  //           } else {
+  //             return b.lastVisit - a.lastVisit
+  //           }
+  //         })
+  //     })
 
-          for (const w of workspaces) {
-            console.log(`clearing ${w.workspace} history:`)
-            await clearTelegramHistory(toolCtx, mongodbUri ?? dbUrl, getWorkspaceId(w.workspace), telegramDB, adapter)
-          }
-        })
-      })
-    })
+  //     const count = workspaces.length
+  //     console.log('found workspaces', count)
 
-  program
-    .command('generate-token <name> <workspace>')
-    .description('generate token')
-    .option('--admin', 'Generate token with admin access', false)
-    .action(async (name: string, workspace: string, opt: { admin: boolean }) => {
-      console.log(generateToken(name, getWorkspaceId(workspace), { ...(opt.admin ? { admin: 'true' } : {}) }))
-    })
-  program
-    .command('decode-token <token>')
-    .description('decode token')
-    .action(async (token) => {
-      console.log(decodeToken(token))
-    })
+  //     let index = 0
+  //     for (const workspace of workspaces) {
+  //       index++
+  //       if (index <= skip) {
+  //         toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+  //         continue
+  //       }
 
-  program
-    .command('clean-workspace <workspace>')
-    .description('clean workspace')
-    .option('--recruit', 'Clean recruit', false)
-    .option('--tracker', 'Clean tracker', false)
-    .option('--removedTx', 'Clean removed transactions', false)
-    .action(async (workspace: string, cmd: { recruit: boolean, tracker: boolean, removedTx: boolean }) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      await withStorage(dbUrl, async (adapter) => {
-        await withDatabase(dbUrl, async (db) => {
-          const wsid = getWorkspaceId(workspace)
-          const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-          await cleanWorkspace(toolCtx, mongodbUri ?? dbUrl, wsid, adapter, getElasticUrl(), endpoint, cmd)
-        })
-      })
-    })
-  program.command('clean-empty-buckets').action(async (cmd: any) => {
-    const { dbUrl } = prepareTools()
-    await withStorage(dbUrl, async (adapter) => {
-      const buckets = await adapter.listBuckets(toolCtx)
-      for (const ws of buckets) {
-        const l = await ws.list()
-        if ((await l.next()) === undefined) {
-          await l.close()
-          // No data, we could delete it.
-          console.log('Clean bucket', ws.name)
-          await ws.delete()
-        } else {
-          await l.close()
-        }
-      }
-    })
-  })
-  program
-    .command('upload-file <workspace> <local> <remote> <contentType>')
-    .action(async (workspace: string, local: string, remote: string, contentType: string, cmd: any) => {
-      const { dbUrl } = prepareTools()
-      await withStorage(dbUrl, async (adapter) => {
-        const wsId: WorkspaceId = {
-          name: workspace
-        }
-        const token = generateToken(systemAccountEmail, wsId)
-        const endpoint = await getTransactorEndpoint(token)
-        const blobClient = new BlobClient(endpoint, token, wsId)
-        const buffer = readFileSync(local)
-        await blobClient.upload(toolCtx, remote, buffer.length, contentType, buffer)
-      })
-    })
+  //       toolCtx.info('processing workspace', {
+  //         workspace: workspace.workspace,
+  //         index,
+  //         count,
+  //         blobsSize: workspace.backupInfo?.blobsSize ?? 0
+  //       })
+  //       const workspaceId = getWorkspaceId(workspace.workspace)
+  //       const token = generateToken(systemAccountEmail, workspaceId)
+  //       const datalake = createDatalakeClient(datalakeConfig as DatalakeConfig, token)
 
-  program
-    .command('download-file <workspace> <remote> <local>')
-    .action(async (workspace: string, remote: string, local: string, cmd: any) => {
-      const { dbUrl } = prepareTools()
-      await withStorage(dbUrl, async (adapter) => {
-        const wsId: WorkspaceId = {
-          name: workspace
-        }
-        const token = generateToken(systemAccountEmail, wsId)
-        const endpoint = await getTransactorEndpoint(token)
-        const blobClient = new BlobClient(endpoint, token, wsId)
-        const wrstream = createWriteStream(local)
-        await blobClient.writeTo(toolCtx, remote, -1, {
-          write: (buffer, cb) => {
-            wrstream.write(buffer, cb)
-          },
-          end: (cb) => {
-            wrstream.end(cb)
-          }
-        })
-      })
-    })
+  //       for (const config of storages) {
+  //         const storage = new S3Service(config)
+  //         await copyToDatalake(toolCtx, workspaceId, config, storage, datalake, params)
+  //       }
+  //     }
+  //   })
 
-  program
-    .command('move-files')
-    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
-    .option('-m, --move <move>', 'When set to true, the files will be moved, otherwise copied', 'false')
-    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '50')
-    .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
-    .option('--disabled', 'Include disabled workspaces', false)
-    .action(
-      async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string, disabled: boolean }) => {
-        const params = {
-          concurrency: parseInt(cmd.concurrency),
-          move: cmd.move === 'true'
-        }
+  // program
+  // .command('restore-wiki-content-mongo')
+  // .description('restore wiki document contents')
+  // .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+  // .option('-d, --dryrun', 'Dry run', false)
+  // .action(async (cmd: { workspace: string, dryrun: boolean }) => {
+  //   const params = {
+  //     dryRun: cmd.dryrun
+  //   }
 
-        const { dbUrl } = prepareTools()
-        await withDatabase(dbUrl, async (db) => {
-          await withStorage(dbUrl, async (adapter) => {
-            try {
-              const exAdapter = adapter as StorageAdapterEx
-              if (exAdapter.adapters === undefined || exAdapter.adapters.size < 2) {
-                throw new Error('bad storage config, at least two storage providers are required')
-              }
+  //   const { version } = prepareTools()
 
-              console.log('moving files to storage provider', exAdapter.defaultAdapter)
+  //   let workspaces: Workspace[] = []
+  //   await withAccountDatabase(async (db) => {
+  //     workspaces = await listWorkspacesPure(db)
+  //     workspaces = workspaces
+  //       .filter((p) => isActiveMode(p.mode))
+  //       .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+  //       .sort((a, b) => b.lastVisit - a.lastVisit)
+  //   })
 
-              let index = 1
-              const workspaces = await listWorkspacesPure(db)
-              workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+  //   console.log('found workspaces', workspaces.length)
 
-              for (const workspace of workspaces) {
-                if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
-                  continue
-                }
-                if (workspace.disabled === true && !cmd.disabled) {
-                  console.log('ignore disabled workspace', workspace.workspace)
-                  continue
-                }
+  //   await withStorage(async (storageAdapter) => {
+  //     const mongodbUri = getMongoDBUrl()
+  //     const client = getMongoClient(mongodbUri)
+  //     const _client = await client.getClient()
 
-                console.log('start', workspace.workspace, index, '/', workspaces.length)
-                await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
-                console.log('done', workspace.workspace)
+  //     try {
+  //       const count = workspaces.length
+  //       let index = 0
+  //       for (const workspace of workspaces) {
+  //         index++
 
-                index += 1
-              }
-            } catch (err: any) {
-              console.error(err)
-            }
-          })
-        })
-      }
-    )
+  //         toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
+  //         if (workspace.version === undefined || !deepEqual(workspace.version, version)) {
+  //           console.log(`upgrade to ${versionToString(version)} is required`)
+  //           continue
+  //         }
 
-  program
-    .command('sync-files')
-    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
-    .option('--disabled', 'Include disabled workspaces', false)
-    .action(async (cmd: { workspace: string, disabled: boolean }) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        await withStorage(dbUrl, async (adapter) => {
-          try {
-            const exAdapter = adapter as StorageAdapterEx
+  //         const workspaceId = getWorkspaceId(workspace.workspace)
+  //         const workspaceDataId = workspace.dataId ?? workspace.uuid
+  //         const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
 
-            console.log('syncing files from storage provider')
+  //         await restoreWikiContentMongo(toolCtx, wsDb, workspaceDataId, storageAdapter, params)
+  //       }
+  //     } finally {
+  //       client.close()
+  //     }
+  //   })
+  // })
 
-            let index = 1
-            const workspaces = await listWorkspacesPure(db)
-            workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+  // program
+  // .command('restore-controlled-content-mongo')
+  // .description('restore controlled document contents')
+  // .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+  // .option('-d, --dryrun', 'Dry run', false)
+  // .option('-f, --force', 'Force update', false)
+  // .action(async (cmd: { workspace: string, dryrun: boolean, force: boolean }) => {
+  //   const params = {
+  //     dryRun: cmd.dryrun
+  //   }
 
-            for (const workspace of workspaces) {
-              if (workspace.disabled === true && !cmd.disabled) {
-                console.log('ignore disabled workspace', workspace.workspace)
-                continue
-              }
+  //   const { version } = prepareTools()
 
-              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
-                continue
-              }
+  //   let workspaces: Workspace[] = []
+  //   await withAccountDatabase(async (db) => {
+  //     workspaces = await listWorkspacesPure(db)
+  //     workspaces = workspaces
+  //       .filter((p) => p.mode !== 'archived')
+  //       .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+  //       .sort((a, b) => b.lastVisit - a.lastVisit)
+  //   })
 
-              try {
-                console.log('start', workspace.workspace, index, '/', workspaces.length)
-                await syncFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter)
-                console.log('done', workspace.workspace)
-              } catch (err) {
-                console.warn('failed to sync files', err)
-              }
+  //   console.log('found workspaces', workspaces.length)
 
-              index += 1
-            }
-          } catch (err: any) {
-            console.error(err)
-          }
-        })
-      })
-    })
+  //   await withStorage(async (storageAdapter) => {
+  //     await withAccountDatabase(async (db) => {
+  //       const mongodbUri = getMongoDBUrl()
+  //       const client = getMongoClient(mongodbUri)
+  //       const _client = await client.getClient()
 
-  program
-    .command('show-lost-files')
-    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
-    .option('--disabled', 'Include disabled workspaces', false)
-    .option('--all', 'Show all files', false)
-    .action(async (cmd: { workspace: string, disabled: boolean, all: boolean }) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        await withStorage(dbUrl, async (adapter) => {
-          const client = getMongoClient(mongodbUri ?? dbUrl)
-          const _client = await client.getClient()
-          try {
-            let index = 1
-            const workspaces = await listWorkspacesPure(db)
-            workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+  //       try {
+  //         const count = workspaces.length
+  //         let index = 0
+  //         for (const workspace of workspaces) {
+  //           index++
 
-            for (const workspace of workspaces) {
-              if (workspace.disabled === true && !cmd.disabled) {
-                console.log('ignore disabled workspace', workspace.workspace)
-                continue
-              }
+  //           toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
 
-              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
-                continue
-              }
+  //           if (!cmd.force && (workspace.version === undefined || !deepEqual(workspace.version, version))) {
+  //             console.log(`upgrade to ${versionToString(version)} is required`)
+  //             continue
+  //           }
 
-              try {
-                console.log('start', workspace.workspace, index, '/', workspaces.length)
-                const workspaceId = getWorkspaceId(workspace.workspace)
-                const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
-                await showLostFiles(toolCtx, workspaceId, wsDb, adapter, { showAll: cmd.all })
-                console.log('done', workspace.workspace)
-              } catch (err) {
-                console.error(err)
-              }
+  //           const workspaceId = getWorkspaceId(workspace.workspace)
+  //           const workspaceDataId = workspace.dataId ?? workspace.uuid
+  //           const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
 
-              index += 1
-            }
-          } catch (err: any) {
-            console.error(err)
-          } finally {
-            client.close()
-          }
-        })
-      })
-    })
+  //           await restoreControlledDocContentMongo(toolCtx, wsDb, workspaceDataId, storageAdapter, params)
+  //         }
+  //       } finally {
+  //         client.close()
+  //       }
+  //     })
+  //   })
+  // })
 
-  program.command('show-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
-    const { dbUrl } = prepareTools()
-    await withDatabase(dbUrl, async (db) => {
-      await withStorage(dbUrl, async (adapter) => {
-        try {
-          const workspaceId = getWorkspaceId(workspace)
-          const token = generateToken(systemAccountEmail, workspaceId)
-          const endpoint = await getTransactorEndpoint(token)
-          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'show' })
-        } catch (err: any) {
-          console.error(err)
-        }
-      })
-    })
-  })
+  // program
+  //   .command('restore-markup-ref-mongo')
+  //   .description('restore markup document content refs')
+  //   .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+  //   .option('-f, --force', 'Force update', false)
+  //   .action(async (cmd: { workspace: string, force: boolean }) => {
+  //     const { txes, version } = prepareTools()
 
-  program.command('restore-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
-    const { dbUrl } = prepareTools()
-    await withDatabase(dbUrl, async (db) => {
-      await withStorage(dbUrl, async (adapter) => {
-        try {
-          const workspaceId = getWorkspaceId(workspace)
-          const token = generateToken(systemAccountEmail, workspaceId)
-          const endpoint = await getTransactorEndpoint(token)
-          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'restore' })
-        } catch (err: any) {
-          console.error(err)
-        }
-      })
-    })
-  })
+  //     const { hierarchy } = await buildModel(toolCtx, txes)
 
-  program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
-    const { dbUrl } = prepareTools()
-    await withStorage(dbUrl, async (adapter) => {
-      await fixMinioBW(toolCtx, getWorkspaceId(workspace), adapter)
-    })
-  })
+  //     let workspaces: Workspace[] = []
+  //     await withAccountDatabase(async (db) => {
+  //       workspaces = await listWorkspacesPure(db)
+  //       workspaces = workspaces
+  //         .filter((p) => isActiveMode(p.mode))
+  //         .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+  //         .sort((a, b) => b.lastVisit - a.lastVisit)
+  //     })
 
-  program
-    .command('clean-removed-transactions <workspace>')
-    .description('clean removed transactions')
-    .action(async (workspace: string, cmd: any) => {
-      const wsid = getWorkspaceId(workspace)
-      const token = generateToken(systemAccountEmail, wsid)
-      const endpoint = await getTransactorEndpoint(token)
-      await cleanRemovedTransactions(wsid, endpoint)
-    })
+  //     console.log('found workspaces', workspaces.length)
 
-  program
-    .command('clean-archived-spaces <workspace>')
-    .description('clean archived spaces')
-    .action(async (workspace: string, cmd: any) => {
-      const wsid = getWorkspaceId(workspace)
-      const token = generateToken(systemAccountEmail, wsid)
-      const endpoint = await getTransactorEndpoint(token)
-      await cleanArchivedSpaces(wsid, endpoint)
-    })
+  //     await withStorage(async (storageAdapter) => {
+  //       const mongodbUri = getMongoDBUrl()
+  //       const client = getMongoClient(mongodbUri)
+  //       const _client = await client.getClient()
 
-  program
-    .command('chunter-fix-comments <workspace>')
-    .description('chunter-fix-comments')
-    .action(async (workspace: string, cmd: any) => {
-      const wsid = getWorkspaceId(workspace)
-      const token = generateToken(systemAccountEmail, wsid)
-      const endpoint = await getTransactorEndpoint(token)
-      await fixCommentDoubleIdCreate(wsid, endpoint)
-    })
+  //       try {
+  //         const count = workspaces.length
+  //         let index = 0
+  //         for (const workspace of workspaces) {
+  //           index++
 
-  program
-    .command('mixin-show-foreign-attributes <workspace>')
-    .description('mixin-show-foreign-attributes')
-    .option('--mixin <mixin>', 'Mixin class', '')
-    .option('--property <property>', 'Property name', '')
-    .option('--detail <detail>', 'Show details', false)
-    .action(async (workspace: string, cmd: { detail: boolean, mixin: string, property: string }) => {
-      const wsid = getWorkspaceId(workspace)
-      const token = generateToken(systemAccountEmail, wsid)
-      const endpoint = await getTransactorEndpoint(token)
-      await showMixinForeignAttributes(wsid, endpoint, cmd)
-    })
+  //           toolCtx.info('processing workspace', {
+  //             workspace: workspace.workspace,
+  //             version: workspace.version,
+  //             index,
+  //             count
+  //           })
 
-  program
-    .command('mixin-fix-foreign-attributes <workspace>')
-    .description('mixin-fix-foreign-attributes')
-    .option('--mixin <mixin>', 'Mixin class', '')
-    .option('--property <property>', 'Property name', '')
-    .action(async (workspace: string, cmd: { mixin: string, property: string }) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      const wsid = getWorkspaceId(workspace)
-      const token = generateToken(systemAccountEmail, wsid)
-      const endpoint = await getTransactorEndpoint(token)
-      await fixMixinForeignAttributes(mongodbUri ?? dbUrl, wsid, endpoint, cmd)
-    })
+  //           if (!cmd.force && (workspace.version === undefined || !deepEqual(workspace.version, version))) {
+  //             console.log(`upgrade to ${versionToString(version)} is required`)
+  //             continue
+  //           }
+
+  //           const workspaceId = getWorkspaceId(workspace.workspace)
+  //           const workspaceDataId = workspace.dataId ?? workspace.uuid
+  //           const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+
+  //           await restoreMarkupRefsMongo(toolCtx, wsDb, workspaceDataId, hierarchy, storageAdapter)
+  //         }
+  //       } finally {
+  //         client.close()
+  //       }
+  //     })
+  //   })
+
+  // program
+  //   .command('confirm-email <email>')
+  //   .description('confirm user email')
+  //   .action(async (email: string, cmd) => {
+  //     await withAccountDatabase(async (db) => {
+  //       const account = await getAccount(db, email)
+  //       if (account?.confirmed === true) {
+  //         console.log(`Already confirmed:${email}`)
+  //       } else {
+  //         await confirmEmail(db, email)
+  //       }
+  //     })
+  //   })
+
+  // program
+  // .command('diff-workspace <workspace>')
+  // .description('restore workspace transactions and minio resources from previous dump.')
+  // .action(async (workspace: string, cmd) => {
+  //   const { dbUrl, txes } = prepareTools()
+  //   await diffWorkspace(dbUrl, workspace, txes)
+  // })
+
+  // program
+  // .command('clear-telegram-history <workspace>')
+  // .description('clear telegram history')
+  // .option('-w, --workspace <workspace>', 'target workspace')
+  // .action(async (workspace: string, cmd) => {
+  //   const { dbUrl } = prepareTools()
+  //   await withStorage(async (adapter) => {
+  //     const telegramDB = process.env.TELEGRAM_DATABASE
+  //     if (telegramDB === undefined) {
+  //       console.error('please provide TELEGRAM_DATABASE.')
+  //       process.exit(1)
+  //     }
+
+  //     console.log(`clearing ${workspace} history:`)
+  //     await clearTelegramHistory(toolCtx, dbUrl, getWorkspaceId(workspace), telegramDB, adapter)
+  //   })
+  // })
+
+  // program
+  // .command('clear-telegram-all-history')
+  // .description('clear telegram history')
+  // .action(async (cmd) => {
+  //   const { dbUrl } = prepareTools()
+  //   await withStorage(async (adapter) => {
+  //     await withAccountDatabase(async (db) => {
+  //       const telegramDB = process.env.TELEGRAM_DATABASE
+  //       if (telegramDB === undefined) {
+  //         console.error('please provide TELEGRAM_DATABASE.')
+  //         process.exit(1)
+  //       }
+
+  //       const workspaces = await listWorkspacesPure(db)
+
+  //       for (const w of workspaces) {
+  //         console.log(`clearing ${w.workspace} history:`)
+  //         await clearTelegramHistory(toolCtx, dbUrl, getWorkspaceId(w.workspace), telegramDB, adapter)
+  //       }
+  //     })
+  //   })
+  // })
+
+  // program
+  // .command('generate-token <name> <workspace>')
+  // .description('generate token')
+  // .option('--admin', 'Generate token with admin access', false)
+  // .action(async (name: string, workspace: string, opt: { admin: boolean }) => {
+  //   console.log(generateToken(name, getWorkspaceId(workspace), { ...(opt.admin ? { admin: 'true' } : {}) }))
+  // })
+  // program
+  // .command('decode-token <token>')
+  // .description('decode token')
+  // .action(async (token) => {
+  //   console.log(decodeToken(token))
+  // })
+
+  // program
+  // .command('clean-workspace <workspace>')
+  // .description('clean workspace')
+  // .option('--recruit', 'Clean recruit', false)
+  // .option('--tracker', 'Clean tracker', false)
+  // .option('--removedTx', 'Clean removed transactions', false)
+  // .action(async (workspace: string, cmd: { recruit: boolean, tracker: boolean, removedTx: boolean }) => {
+  //   const { dbUrl } = prepareTools()
+  //   await withStorage(async (adapter) => {
+  //     const wsid = getWorkspaceId(workspace)
+  //     const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+  //     await cleanWorkspace(toolCtx, dbUrl, wsid, adapter, endpoint, cmd)
+  //   })
+  // })
+  // program
+  // .command('clean-empty-buckets')
+  // .option('--prefix [prefix]', 'Prefix', '')
+  // .action(async (cmd: { prefix: string }) => {
+  //   await withStorage(async (adapter) => {
+  //     const buckets = await adapter.listBuckets(toolCtx)
+  //     for (const ws of buckets) {
+  //       if (ws.name.startsWith(cmd.prefix)) {
+  //         console.log('Checking', ws.name)
+  //         const l = await ws.list()
+  //         const docs = await l.next()
+  //         if (docs.length === 0) {
+  //           await l.close()
+  //           // No data, we could delete it.
+  //           console.log('Clean bucket', ws.name)
+  //           await ws.delete()
+  //         } else {
+  //           await l.close()
+  //         }
+  //       }
+  //     }
+  //   })
+  // })
+  // program
+  // .command('upload-file <workspace> <local> <remote> <contentType>')
+  // .action(async (workspace: string, local: string, remote: string, contentType: string, cmd: any) => {
+  //   const wsId: WorkspaceId = {
+  //     name: workspace
+  //   }
+  //   const token = generateToken(systemAccountEmail, wsId)
+  //   const endpoint = await getTransactorEndpoint(token)
+  //   const blobClient = new BlobClient(endpoint, token, wsId)
+  //   const buffer = readFileSync(local)
+  //   await blobClient.upload(toolCtx, remote, buffer.length, contentType, buffer)
+  // })
+
+  // program
+  // .command('download-file <workspace> <remote> <local>')
+  // .action(async (workspace: string, remote: string, local: string, cmd: any) => {
+  //   const wsId: WorkspaceId = {
+  //     name: workspace
+  //   }
+  //   const token = generateToken(systemAccountEmail, wsId)
+  //   const endpoint = await getTransactorEndpoint(token)
+  //   const blobClient = new BlobClient(endpoint, token, wsId)
+  //   const wrstream = createWriteStream(local)
+  //   await blobClient.writeTo(toolCtx, remote, -1, {
+  //     write: (buffer, cb) => {
+  //       wrstream.write(buffer, cb)
+  //     },
+  //     end: (cb) => {
+  //       wrstream.end(cb)
+  //     }
+  //   })
+  // })
+
+  // program
+  // .command('move-files')
+  // .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+  // .option('-m, --move <move>', 'When set to true, the files will be moved, otherwise copied', 'false')
+  // .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '999999')
+  // .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
+  // .option('--disabled', 'Include disabled workspaces', false)
+  // .action(
+  //   async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string, disabled: boolean }) => {
+  //     const params = {
+  //       concurrency: parseInt(cmd.concurrency),
+  //       move: cmd.move === 'true'
+  //     }
+
+  //     await withAccountDatabase(async (db) => {
+  //       await withStorage(async (adapter) => {
+  //         try {
+  //           const exAdapter = adapter as StorageAdapterEx
+  //           if (exAdapter.adapters === undefined || exAdapter.adapters.length < 2) {
+  //             throw new Error('bad storage config, at least two storage providers are required')
+  //           }
+
+  //           console.log('moving files to storage provider', exAdapter.adapters[0].name)
+
+  //           let index = 1
+  //           const workspaces = await listWorkspacesPure(db)
+  //           workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
+  //           const rateLimit = new RateLimiter(10)
+  //           for (const workspace of workspaces) {
+  //             if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+  //               continue
+  //             }
+  //             if (!isActiveMode(workspace.mode)) {
+  //               console.log('ignore non active workspace', workspace.workspace, workspace.mode)
+  //               continue
+  //             }
+  //             if (workspace.disabled === true && !cmd.disabled) {
+  //               console.log('ignore disabled workspace', workspace.workspace)
+  //               continue
+  //             }
+
+  //             await rateLimit.exec(async () => {
+  //               console.log('start', workspace.workspace, index, '/', workspaces.length)
+  //               await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
+  //               console.log('done', workspace.workspace)
+  //               index += 1
+  //             })
+  //           }
+  //           await rateLimit.waitProcessing()
+  //         } catch (err: any) {
+  //           console.error(err)
+  //         }
+  //       })
+  //     })
+  //   }
+  // )
+
+  // program
+  // .command('show-lost-files-mongo')
+  // .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+  // .option('--disabled', 'Include disabled workspaces', false)
+  // .option('--all', 'Show all files', false)
+  // .action(async (cmd: { workspace: string, disabled: boolean, all: boolean }) => {
+  //   await withAccountDatabase(async (db) => {
+  //     await withStorage(async (adapter) => {
+  //       const mongodbUri = getMongoDBUrl()
+  //       const client = getMongoClient(mongodbUri)
+  //       const _client = await client.getClient()
+  //       try {
+  //         let index = 1
+  //         const workspaces = await listWorkspacesPure(db)
+  //         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
+  //         for (const workspace of workspaces) {
+  //           if (!isActiveMode(workspace.mode)) {
+  //             console.log('ignore non active workspace', workspace.workspace, workspace.mode)
+  //             continue
+  //           }
+  //           if (workspace.disabled === true && !cmd.disabled) {
+  //             console.log('ignore disabled workspace', workspace.workspace)
+  //             continue
+  //           }
+
+  //           if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+  //             continue
+  //           }
+
+  //           try {
+  //             console.log('start', workspace.workspace, index, '/', workspaces.length)
+  //             const workspaceId = getWorkspaceId(workspace.workspace)
+  //             const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+  //             await showLostFiles(toolCtx, workspaceId, wsDb, adapter, { showAll: cmd.all })
+  //             console.log('done', workspace.workspace)
+  //           } catch (err) {
+  //             console.error(err)
+  //           }
+
+  //           index += 1
+  //         }
+  //       } catch (err: any) {
+  //         console.error(err)
+  //       } finally {
+  //         client.close()
+  //       }
+  //     })
+  //   })
+  // })
+
+  // program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
+  // await withStorage(async (adapter) => {
+  //   await fixMinioBW(toolCtx, getWorkspaceId(workspace), adapter)
+  // })
+  // })
+
+  // program
+  // .command('clean-removed-transactions <workspace>')
+  // .description('clean removed transactions')
+  // .action(async (workspace: string, cmd: any) => {
+  //   const wsid = getWorkspaceId(workspace)
+  //   const token = generateToken(systemAccountEmail, wsid)
+  //   const endpoint = await getTransactorEndpoint(token)
+  //   await cleanRemovedTransactions(wsid, endpoint)
+  // })
+
+  // program
+  // .command('clean-archived-spaces <workspace>')
+  // .description('clean archived spaces')
+  // .action(async (workspace: string, cmd: any) => {
+  //   const wsid = getWorkspaceId(workspace)
+  //   const token = generateToken(systemAccountEmail, wsid)
+  //   const endpoint = await getTransactorEndpoint(token)
+  //   await cleanArchivedSpaces(wsid, endpoint)
+  // })
+
+  // program
+  // .command('chunter-fix-comments <workspace>')
+  // .description('chunter-fix-comments')
+  // .action(async (workspace: string, cmd: any) => {
+  //   const wsid = getWorkspaceId(workspace)
+  //   const token = generateToken(systemAccountEmail, wsid)
+  //   const endpoint = await getTransactorEndpoint(token)
+  //   await fixCommentDoubleIdCreate(wsid, endpoint)
+  // })
+
+  // program
+  // .command('mixin-show-foreign-attributes <workspace>')
+  // .description('mixin-show-foreign-attributes')
+  // .option('--mixin <mixin>', 'Mixin class', '')
+  // .option('--property <property>', 'Property name', '')
+  // .option('--detail <detail>', 'Show details', false)
+  // .action(async (workspace: string, cmd: { detail: boolean, mixin: string, property: string }) => {
+  //   const wsid = getWorkspaceId(workspace)
+  //   const token = generateToken(systemAccountEmail, wsid)
+  //   const endpoint = await getTransactorEndpoint(token)
+  //   await showMixinForeignAttributes(wsid, endpoint, cmd)
+  // })
+
+  // program
+  // .command('mixin-fix-foreign-attributes-mongo <workspace>')
+  // .description('mixin-fix-foreign-attributes')
+  // .option('--mixin <mixin>', 'Mixin class', '')
+  // .option('--property <property>', 'Property name', '')
+  // .action(async (workspace: string, cmd: { mixin: string, property: string }) => {
+  //   const mongodbUri = getMongoDBUrl()
+  //   const wsid = getWorkspaceId(workspace)
+  //   const token = generateToken(systemAccountEmail, wsid)
+  //   const endpoint = await getTransactorEndpoint(token)
+  //   FIXME: add dataId
+  //   await fixMixinForeignAttributes(mongodbUri, wsid, endpoint, cmd)
+  // })
 
   program
     .command('configure <workspace>')
@@ -1341,159 +1715,162 @@ export function devTool (
     .option('--disable <disable>', 'Disable plugin configuration', '')
     .option('--list', 'List plugin states', false)
     .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
-      console.log(JSON.stringify(cmd))
-      const wsid = getWorkspaceId(workspace)
-      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-      await changeConfiguration(wsid, endpoint, cmd)
-    })
-
-  program
-    .command('configure-all')
-    .description('configure all spaces')
-    .option('--enable <enable>', 'Enable plugin configuration', '')
-    .option('--disable <disable>', 'Disable plugin configuration', '')
-    .option('--list', 'List plugin states', false)
-    .action(async (cmd: { enable: string, disable: string, list: boolean }) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        console.log('configure all workspaces')
+      await withAccountDatabase(async (db) => {
         console.log(JSON.stringify(cmd))
-        const workspaces = await listWorkspacesRaw(db)
-        for (const ws of workspaces) {
-          console.log('configure', ws.workspaceName ?? ws.workspace)
-          const wsid = getWorkspaceId(ws.workspace)
-          const token = generateToken(systemAccountEmail, wsid)
-          const endpoint = await getTransactorEndpoint(token)
-          await changeConfiguration(wsid, endpoint, cmd)
+        const ws = await getWorkspace(db, workspace)
+        if (ws === null) {
+          throw new Error(`workspace ${workspace} not found`)
         }
+
+        await changeConfiguration(ws.uuid, await getWorkspaceTransactorEndpoint(ws.uuid), cmd)
       })
     })
 
-  program
-    .command('optimize-model <workspace>')
-    .description('optimize model')
-    .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
-      console.log(JSON.stringify(cmd))
-      const wsid = getWorkspaceId(workspace)
-      const token = generateToken(systemAccountEmail, wsid)
-      const endpoint = await getTransactorEndpoint(token)
-      await optimizeModel(wsid, endpoint)
-    })
+  // program
+  // .command('configure-all')
+  // .description('configure all spaces')
+  // .option('--enable <enable>', 'Enable plugin configuration', '')
+  // .option('--disable <disable>', 'Disable plugin configuration', '')
+  // .option('--list', 'List plugin states', false)
+  // .action(async (cmd: { enable: string, disable: string, list: boolean }) => {
+  //   await withAccountDatabase(async (db) => {
+  //     console.log('configure all workspaces')
+  //     console.log(JSON.stringify(cmd))
+  //     const workspaces = await listWorkspacesRaw(db)
+  //     for (const ws of workspaces) {
+  //       console.log('configure', ws.workspaceName ?? ws.workspace)
+  //       const wsid = getWorkspaceId(ws.workspace)
+  //       const token = generateToken(systemAccountEmail, wsid)
+  //       const endpoint = await getTransactorEndpoint(token)
+  //       await changeConfiguration(wsid, endpoint, cmd)
+  //     }
+  //   })
+  // })
 
-  program
-    .command('benchmark')
-    .description('benchmark')
-    .option('--from <from>', 'Min client count', '10')
-    .option('--steps <steps>', 'Step with client count', '10')
-    .option('--sleep <sleep>', 'Random Delay max between operations', '0')
-    .option('--binary <binary>', 'Use binary data transfer', false)
-    .option('--compression <compression>', 'Use protocol compression', false)
-    .option('--write <write>', 'Perform write operations', false)
-    .option('--workspaces <workspaces>', 'Workspaces to test on, comma separated', '')
-    .option('--mode <mode>', 'A benchmark mode. Supported values: `find-all`, `connect-only` ', 'find-all')
-    .action(
-      async (cmd: {
-        from: string
-        steps: string
-        sleep: string
-        workspaces: string
-        binary: string
-        compression: string
-        write: string
-        mode: 'find-all' | 'connect-only'
-      }) => {
-        const { dbUrl } = prepareTools()
-        await withDatabase(dbUrl, async (db) => {
-          console.log(JSON.stringify(cmd))
-          if (!['find-all', 'connect-only'].includes(cmd.mode)) {
-            console.log('wrong mode')
-            return
-          }
+  // program
+  // .command('optimize-model <workspace>')
+  // .description('optimize model')
+  // .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
+  //   console.log(JSON.stringify(cmd))
+  //   const wsid = getWorkspaceId(workspace)
+  //   const token = generateToken(systemAccountEmail, wsid)
+  //   const endpoint = await getTransactorEndpoint(token)
+  //   await optimizeModel(wsid, endpoint)
+  // })
 
-          const allWorkspacesPure = Array.from(await listWorkspacesPure(db))
-          const allWorkspaces = new Map(allWorkspacesPure.map((it) => [it.workspace, it]))
+  // program
+  // .command('benchmark')
+  // .description('benchmark')
+  // .option('--from <from>', 'Min client count', '10')
+  // .option('--steps <steps>', 'Step with client count', '10')
+  // .option('--sleep <sleep>', 'Random Delay max between operations', '0')
+  // .option('--binary <binary>', 'Use binary data transfer', false)
+  // .option('--compression <compression>', 'Use protocol compression', false)
+  // .option('--write <write>', 'Perform write operations', false)
+  // .option('--workspaces <workspaces>', 'Workspaces to test on, comma separated', '')
+  // .option('--mode <mode>', 'A benchmark mode. Supported values: `find-all`, `connect-only` ', 'find-all')
+  // .action(
+  //   async (cmd: {
+  //     from: string
+  //     steps: string
+  //     sleep: string
+  //     workspaces: string
+  //     binary: string
+  //     compression: string
+  //     write: string
+  //     mode: 'find-all' | 'connect-only'
+  //   }) => {
+  //     await withAccountDatabase(async (db) => {
+  //       console.log(JSON.stringify(cmd))
+  //       if (!['find-all', 'connect-only'].includes(cmd.mode)) {
+  //         console.log('wrong mode')
+  //         return
+  //       }
 
-          let workspaces = cmd.workspaces
-            .split(',')
-            .map((it) => it.trim())
-            .filter((it) => it.length > 0)
-            .map((it) => getWorkspaceId(it))
+  //       const allWorkspacesPure = Array.from(await listWorkspacesPure(db))
+  //       const allWorkspaces = new Map(allWorkspacesPure.map((it) => [it.workspace, it]))
 
-          if (cmd.workspaces.length === 0) {
-            workspaces = allWorkspacesPure.map((it) => getWorkspaceId(it.workspace))
-          }
-          const accounts = new Map(Array.from(await listAccounts(db)).map((it) => [it._id.toString(), it.email]))
+  //       let workspaces = cmd.workspaces
+  //         .split(',')
+  //         .map((it) => it.trim())
+  //         .filter((it) => it.length > 0)
+  //         .map((it) => getWorkspaceId(it))
 
-          const accountWorkspaces = new Map<string, string[]>()
-          for (const ws of workspaces) {
-            const wsInfo = allWorkspaces.get(ws.name)
-            if (wsInfo !== undefined) {
-              accountWorkspaces.set(
-                ws.name,
-                wsInfo.accounts.map((it) => accounts.get(it.toString()) as string)
-              )
-            }
-          }
-          await benchmark(workspaces, accountWorkspaces, accountsUrl, {
-            steps: parseInt(cmd.steps),
-            from: parseInt(cmd.from),
-            sleep: parseInt(cmd.sleep),
-            binary: cmd.binary === 'true',
-            compression: cmd.compression === 'true',
-            write: cmd.write === 'true',
-            mode: cmd.mode
-          })
-        })
-      }
-    )
-  program
-    .command('benchmarkWorker')
-    .description('benchmarkWorker')
-    .action(async (cmd: any) => {
-      console.log(JSON.stringify(cmd))
-      benchmarkWorker()
-    })
+  //       if (cmd.workspaces.length === 0) {
+  //         workspaces = allWorkspacesPure.map((it) => getWorkspaceId(it.workspace))
+  //       }
+  //       const accounts = new Map(Array.from(await listAccounts(db)).map((it) => [it._id.toString(), it.email]))
 
-  program
-    .command('stress <transactor>')
-    .description('stress benchmark')
-    .option('--mode <mode>', 'A benchmark mode. Supported values: `wrong`, `connect-disconnect` ', 'wrong')
-    .action(async (transactor: string, cmd: { mode: StressBenchmarkMode }) => {
-      await stressBenchmark(transactor, cmd.mode)
-    })
+  //       const accountWorkspaces = new Map<string, string[]>()
+  //       for (const ws of workspaces) {
+  //         const wsInfo = allWorkspaces.get(ws.name)
+  //         if (wsInfo !== undefined) {
+  //           accountWorkspaces.set(
+  //             ws.name,
+  //             wsInfo.accounts.map((it) => accounts.get(it.toString()) as string)
+  //           )
+  //         }
+  //       }
+  //       await benchmark(workspaces, accountWorkspaces, accountsUrl, {
+  //         steps: parseInt(cmd.steps),
+  //         from: parseInt(cmd.from),
+  //         sleep: parseInt(cmd.sleep),
+  //         binary: cmd.binary === 'true',
+  //         compression: cmd.compression === 'true',
+  //         write: cmd.write === 'true',
+  //         mode: cmd.mode
+  //       })
+  //     })
+  //   }
+  // )
+  // program
+  // .command('benchmarkWorker')
+  // .description('benchmarkWorker')
+  // .action(async (cmd: any) => {
+  //   console.log(JSON.stringify(cmd))
+  //   benchmarkWorker()
+  // })
 
-  program
-    .command('fix-skills <workspace> <step>')
-    .description('fix skills for workspace')
-    .action(async (workspace: string, step: string) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      const wsid = getWorkspaceId(workspace)
-      const token = generateToken(systemAccountEmail, wsid)
-      const endpoint = await getTransactorEndpoint(token)
-      await fixSkills(mongodbUri ?? dbUrl, wsid, endpoint, step)
-    })
+  // program
+  // .command('stress <transactor>')
+  // .description('stress benchmark')
+  // .option('--mode <mode>', 'A benchmark mode. Supported values: `wrong`, `connect-disconnect` ', 'wrong')
+  // .action(async (transactor: string, cmd: { mode: StressBenchmarkMode }) => {
+  //   await stressBenchmark(transactor, cmd.mode)
+  // })
 
-  program
-    .command('restore-ats-types <workspace>')
-    .description('Restore recruiting task types for workspace')
-    .action(async (workspace: string) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      console.log('Restoring recruiting task types in workspace ', workspace, '...')
-      const wsid = getWorkspaceId(workspace)
-      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-      await restoreRecruitingTaskTypes(mongodbUri ?? dbUrl, wsid, endpoint)
-    })
+  // program
+  // .command('fix-skills-mongo <workspace> <step>')
+  // .description('fix skills for workspace')
+  // .action(async (workspace: string, step: string) => {
+  //   const mongodbUri = getMongoDBUrl()
+  //   const wsid = getWorkspaceId(workspace)
+  //   const token = generateToken(systemAccountEmail, wsid)
+  //   const endpoint = await getTransactorEndpoint(token)
+  //   await fixSkills(mongodbUri, wsid, endpoint, step)
+  // })
 
-  program
-    .command('restore-ats-types-2 <workspace>')
-    .description('Restore recruiting task types for workspace 2')
-    .action(async (workspace: string) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      console.log('Restoring recruiting task types in workspace ', workspace, '...')
-      const wsid = getWorkspaceId(workspace)
-      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-      await restoreHrTaskTypesFromUpdates(mongodbUri ?? dbUrl, wsid, endpoint)
-    })
+  // program
+  // .command('restore-ats-types-mongo <workspace>')
+  // .description('Restore recruiting task types for workspace')
+  // .action(async (workspace: string) => {
+  //   const mongodbUri = getMongoDBUrl()
+  //   console.log('Restoring recruiting task types in workspace ', workspace, '...')
+  //   const wsid = getWorkspaceId(workspace)
+  //   const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+  //   await restoreRecruitingTaskTypes(mongodbUri, wsid, endpoint)
+  // })
+
+  // program
+  // .command('restore-ats-types-2-mongo <workspace>')
+  // .description('Restore recruiting task types for workspace 2')
+  // .action(async (workspace: string) => {
+  //   const mongodbUri = getMongoDBUrl()
+  //   console.log('Restoring recruiting task types in workspace ', workspace, '...')
+  //   const wsid = getWorkspaceId(workspace)
+  //   const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+  //   await restoreHrTaskTypesFromUpdates(mongodbUri, wsid, endpoint)
+  // })
 
   program
     .command('change-field <workspace>')
@@ -1503,222 +1880,342 @@ export function devTool (
     .requiredOption('--attribute <attribute>')
     .requiredOption('--type <type>', 'number | string')
     .requiredOption('--value <value>')
-    .requiredOption('--domain <domain>')
     .action(
       async (
         workspace: string,
         cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
       ) => {
-        const { dbUrl, mongodbUri } = prepareTools()
-        const wsid = getWorkspaceId(workspace)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-        await updateField(mongodbUri ?? dbUrl, wsid, endpoint, cmd)
+        await withAccountDatabase(async (db) => {
+          const ws = await getWorkspace(db, workspace)
+          if (ws === null) {
+            throw new Error(`workspace ${workspace} not found`)
+          }
+          await updateField(ws.uuid, await getWorkspaceTransactorEndpoint(ws.uuid), cmd)
+        })
       }
     )
 
   program
-    .command('recreate-elastic-indexes <workspace>')
-    .description('reindex workspace to elastic')
+    .command('fulltext-reindex <workspace>')
+    .description('reindex workspace')
     .action(async (workspace: string) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      const wsid = getWorkspaceId(workspace)
-      await recreateElastic(mongodbUri ?? dbUrl, wsid)
-    })
+      const fulltextUrl = process.env.FULLTEXT_URL
+      if (fulltextUrl === undefined) {
+        console.error('please provide FULLTEXT_URL')
+        process.exit(1)
+      }
 
-  program
-    .command('recreate-all-elastic-indexes')
-    .description('reindex elastic')
-    .action(async () => {
-      const { dbUrl, mongodbUri } = prepareTools()
+      await withAccountDatabase(async (db) => {
+        const ws = await getWorkspace(db, workspace)
 
-      await withDatabase(dbUrl, async (db) => {
-        const workspaces = await listWorkspacesRaw(db)
-        workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-        for (const workspace of workspaces) {
-          const wsid = getWorkspaceId(workspace.workspace)
-          await recreateElastic(mongodbUri ?? dbUrl, wsid)
+        if (ws == null) {
+          throw new Error(`workspace ${workspace} not found`)
         }
+
+        console.log('reindex workspace', workspace)
+        await reindexWorkspace(toolCtx, fulltextUrl, getToolToken(ws?.uuid))
+        console.log('done', workspace)
       })
     })
 
-  program
-    .command('fix-json-markup <workspace>')
-    .description('fixes double converted json markup')
-    .action(async (workspace: string) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      await withStorage(dbUrl, async (adapter) => {
-        const wsid = getWorkspaceId(workspace)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-        await fixJsonMarkup(toolCtx, mongodbUri ?? dbUrl, adapter, wsid, endpoint)
-      })
-    })
+  // program
+  //   .command('fulltext-reindex-all')
+  //   .description('reindex workspaces')
+  //   .action(async () => {
+  //     const fulltextUrl = process.env.FULLTEXT_URL
+  //     if (fulltextUrl === undefined) {
+  //       console.error('please provide FULLTEXT_URL')
+  //       process.exit(1)
+  //     }
 
-  program
-    .command('migrate-markup')
-    .description('migrates collaborative markup to storage')
-    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
-    .option('-c, --concurrency <concurrency>', 'Number of documents being processed concurrently', '10')
-    .action(async (cmd: { workspace: string, concurrency: string }) => {
-      const { dbUrl, mongodbUri, txes } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        await withStorage(dbUrl, async (adapter) => {
-          const workspaces = await listWorkspacesPure(db)
-          const client = getMongoClient(mongodbUri ?? dbUrl)
-          const _client = await client.getClient()
-          let index = 0
-          try {
-            for (const workspace of workspaces) {
-              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
-                continue
-              }
+  //     await withAccountDatabase(async (db) => {
+  //       const workspaces = await listWorkspacesRaw(db)
+  //       workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+  //       for (const workspace of workspaces) {
+  //         const wsid = getWorkspaceId(workspace.workspace)
+  //         const token = generateToken(systemAccountEmail, wsid)
 
-              const wsId = getWorkspaceId(workspace.workspace)
-              console.log('processing workspace', workspace.workspace, index, workspaces.length)
-              const wsUrl: WorkspaceIdWithUrl = {
-                name: workspace.workspace,
-                workspaceName: workspace.workspaceName ?? '',
-                workspaceUrl: workspace.workspaceUrl ?? ''
-              }
+  //         console.log('reindex workspace', workspace)
+  //         await reindexWorkspace(toolCtx, fulltextUrl, token)
+  //         console.log('done', workspace)
+  //       }
+  //     })
+  //   })
 
-              registerServerPlugins()
-              registerStringLoaders()
+  // program
+  //   .command('remove-duplicates-ids-mongo <workspaces>')
+  //   .description('remove duplicates ids for futue migration')
+  //   .action(async (workspaces: string) => {
+  //     const mongodbUri = getMongoDBUrl()
+  //     await withStorage(async (adapter) => {
+  //       await removeDuplicateIds(toolCtx, mongodbUri, adapter, accountsUrl, workspaces)
+  //     })
+  //   })
 
-              const { pipeline } = await getServerPipeline(toolCtx, txes, mongodbUri ?? dbUrl, dbUrl, wsUrl)
+  // program.command('move-to-pg <region>').action(async (region: string) => {
+  //   const { dbUrl } = prepareTools()
+  //   const mongodbUri = getMongoDBUrl()
 
-              await migrateMarkup(toolCtx, adapter, wsId, _client, pipeline, parseInt(cmd.concurrency))
+  //   await withAccountDatabase(async (db) => {
+  //     const workspaces = await listWorkspacesRaw(db)
+  //     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+  //     await moveFromMongoToPG(
+  //       db,
+  //       mongodbUri,
+  //       dbUrl,
+  //       workspaces.filter((p) => p.region !== region),
+  //       region
+  //     )
+  //   })
+  // })
 
-              console.log('...done', workspace.workspace)
-              index++
-            }
-          } finally {
-            client.close()
-          }
-        })
-      })
-    })
+  // program
+  //   .command('move-workspace-to-pg <workspace> <region>')
+  //   .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+  //   .option('-f|--force [force]', 'Force update', false)
+  //   .action(
+  //     async (
+  //       workspace: string,
+  //       region: string,
+  //       cmd: {
+  //         include: string
+  //         force: boolean
+  //       }
+  //     ) => {
+  //       const { dbUrl } = prepareTools()
+  //       const mongodbUri = getMongoDBUrl()
 
-  program
-    .command('remove-duplicates-ids <workspaces>')
-    .description('remove duplicates ids for futue migration')
-    .action(async (workspaces: string) => {
-      const { dbUrl, mongodbUri } = prepareTools()
-      await withStorage(dbUrl, async (adapter) => {
-        await removeDuplicateIds(toolCtx, mongodbUri ?? dbUrl, adapter, accountsUrl, workspaces)
-      })
-    })
+  //       await withAccountDatabase(async (db) => {
+  //         const ws = await getWorkspace(db, workspace)
+  //         if (ws === null) {
+  //           throw new Error(`workspace ${workspace} not found`)
+  //         }
+  //         await updateField(ws.uuid, await getWorkspaceTransactorEndpoint(ws.uuid), cmd)
+  //       })
+  //     }
+  //   )
 
-  program.command('move-to-pg <region>').action(async (region: string) => {
-    const { dbUrl, mongodbUri } = prepareTools()
-    if (mongodbUri === undefined) {
-      throw new Error('mongodbUri is not set')
-    }
+  // program
+  // .command('recreate-elastic-indexes-mongo <workspace>')
+  // .description('reindex workspace to elastic')
+  // .action(async (workspace: string) => {
+  //   const mongodbUri = getMongoDBUrl()
+  //   const wsid = getWorkspaceId(workspace)
+  //   await recreateElastic(mongodbUri, wsid)
+  // })
 
-    await withDatabase(mongodbUri, async (db) => {
-      const workspaces = await listWorkspacesRaw(db)
-      workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-      await moveFromMongoToPG(
-        db,
-        mongodbUri,
-        dbUrl,
-        workspaces.filter((p) => p.region !== region),
-        region
-      )
-    })
-  })
+  // program
+  // .command('recreate-all-elastic-indexes-mongo')
+  // .description('reindex elastic')
+  // .action(async () => {
+  //   const { dbUrl } = prepareTools()
+  //   const mongodbUri = getMongoDBUrl()
 
-  program.command('move-workspace-to-pg <workspace> <region>').action(async (workspace: string, region: string) => {
-    const { dbUrl, mongodbUri } = prepareTools()
-    if (mongodbUri === undefined) {
-      throw new Error('mongodbUri is not set')
-    }
+  //   await withAccountDatabase(async (db) => {
+  //     const workspaces = await listWorkspacesRaw(db)
+  //     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+  //     for (const workspace of workspaces) {
+  //       const wsid = getWorkspaceId(workspace.workspace)
+  //       await recreateElastic(mongodbUri ?? dbUrl, wsid)
+  //     }
+  //   })
+  // })
 
-    await withDatabase(mongodbUri, async (db) => {
-      const workspaceInfo = await getWorkspaceById(db, workspace)
-      if (workspaceInfo === null) {
-        throw new Error(`workspace ${workspace} not found`)
-      }
-      if (workspaceInfo.region === region) {
-        throw new Error(`workspace ${workspace} is already migrated`)
-      }
-      await moveWorkspaceFromMongoToPG(db, mongodbUri, dbUrl, workspaceInfo, region)
-    })
-  })
+  // program
+  // .command('remove-duplicates-ids-mongo <workspaces>')
+  // .description('remove duplicates ids for futue migration')
+  // .action(async (workspaces: string) => {
+  //   const mongodbUri = getMongoDBUrl()
+  //   await withStorage(async (adapter) => {
+  //     await removeDuplicateIds(toolCtx, mongodbUri, adapter, accountsUrl, workspaces)
+  //   })
+  // })
+
+  // program.command('move-to-pg <region>').action(async (region: string) => {
+  // const { dbUrl } = prepareTools()
+  // const mongodbUri = getMongoDBUrl()
+
+  // await withAccountDatabase(async (db) => {
+  //   const workspaces = await listWorkspacesRaw(db)
+  //   workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+  //   await moveFromMongoToPG(
+  //     db,
+  //     mongodbUri,
+  //     dbUrl,
+  //     workspaces.filter((p) => p.region !== region),
+  //     region
+  //   )
+  // })
+  // })
+
+  // program
+  // .command('move-workspace-to-pg <workspace> <region>')
+  // .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+  // .option('-f|--force [force]', 'Force update', false)
+  // .action(
+  //   async (
+  //     workspace: string,
+  //     region: string,
+  //     cmd: {
+  //       include: string
+  //       force: boolean
+  //     }
+  //   ) => {
+  //     const { dbUrl } = prepareTools()
+  //     const mongodbUri = getMongoDBUrl()
+
+  //     await withAccountDatabase(async (db) => {
+  //       const workspaceInfo = await getWorkspaceById(db, workspace)
+  //       if (workspaceInfo === null) {
+  //         throw new Error(`workspace ${workspace} not found`)
+  //       }
+  //       if (workspaceInfo.region === region && !cmd.force) {
+  //         throw new Error(`workspace ${workspace} is already migrated`)
+  //       }
+  //       await moveWorkspaceFromMongoToPG(
+  //         db,
+  //         mongodbUri,
+  //         dbUrl,
+  //         workspaceInfo,
+  //         region,
+  //         cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
+  //         cmd.force
+  //       )
+  //     })
+  //   }
+  // )
 
   program.command('move-account-db-to-pg').action(async () => {
-    const { dbUrl, mongodbUri } = prepareTools()
-
-    if (mongodbUri === undefined) {
-      throw new Error('MONGO_URL is not set')
-    }
+    const { dbUrl } = prepareTools()
+    const mongodbUri = getMongoDBUrl()
 
     if (mongodbUri === dbUrl) {
       throw new Error('MONGO_URL and DB_URL are the same')
     }
 
-    await withDatabase(dbUrl, async (pgDb) => {
-      await withDatabase(mongodbUri, async (mongoDb) => {
+    await withAccountDatabase(async (pgDb) => {
+      await withAccountDatabase(async (mongoDb) => {
         await moveAccountDbFromMongoToPG(toolCtx, mongoDb, pgDb)
-      })
-    })
+      }, mongodbUri)
+    }, dbUrl)
   })
 
-  program
-    .command('perfomance')
-    .option('-p, --parallel', '', false)
-    .action(async (cmd: { parallel: boolean }) => {
-      const { dbUrl, txes, version, migrateOperations } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const email = generateId()
-        const ws = generateId()
-        const wsid = getWorkspaceId(ws)
-        const start = new Date()
-        const measureCtx = new MeasureMetricsContext('create-workspace', {})
-        const wsInfo = await createWorkspaceRecord(measureCtx, db, null, email, ws, ws)
+  // program
+  // .command('perfomance')
+  // .option('-p, --parallel', '', false)
+  // .action(async (cmd: { parallel: boolean }) => {
+  //   const { txes, version, migrateOperations } = prepareTools()
+  //   await withAccountDatabase(async (db) => {
+  //     const email = generateId()
+  //     const ws = generateId()
+  //     const wsid = getWorkspaceId(ws)
+  //     const start = new Date()
+  //     const measureCtx = new MeasureMetricsContext('create-workspace', {})
+  //     const wsInfo = await createWorkspaceRecord(measureCtx, db, null, email, ws, ws)
 
-        // update the record so it's not taken by one of the workers for the next 60 seconds
-        await updateWorkspace(db, wsInfo, {
-          mode: 'creating',
-          progress: 0,
-          lastProcessingTime: Date.now() + 1000 * 60
-        })
+  //     // update the record so it's not taken by one of the workers for the next 60 seconds
+  //     await updateWorkspace(db, wsInfo, {
+  //       mode: 'creating',
+  //       progress: 0,
+  //       lastProcessingTime: Date.now() + 1000 * 60
+  //     })
 
-        await createWorkspace(measureCtx, version, null, wsInfo, txes, migrateOperations)
+  //     await createWorkspace(measureCtx, version, null, wsInfo, txes, migrateOperations, undefined, true)
 
-        await updateWorkspace(db, wsInfo, {
-          mode: 'active',
-          progress: 100,
-          disabled: false,
-          version
-        })
-        await createAcc(toolCtx, db, null, email, '1234', '', '', true)
-        await assignWorkspace(toolCtx, db, null, email, ws, AccountRole.User)
-        console.log('Workspace created in', new Date().getTime() - start.getTime(), 'ms')
-        const token = generateToken(systemAccountEmail, wsid)
-        const endpoint = await getTransactorEndpoint(token, 'external')
-        await generateWorkspaceData(endpoint, ws, cmd.parallel, email)
-        await testFindAll(endpoint, ws, email)
-        await dropWorkspace(toolCtx, db, null, ws)
-      })
-    })
+  //     await updateWorkspace(db, wsInfo, {
+  //       mode: 'active',
+  //       progress: 100,
+  //       disabled: false,
+  //       version
+  //     })
+  //     await createAcc(toolCtx, db, null, email, '1234', '', '', true)
+  //     await assignAccountToWs(toolCtx, db, null, email, ws, AccountRole.User)
+  //     console.log('Workspace created in', new Date().getTime() - start.getTime(), 'ms')
+  //     const token = generateToken(systemAccountEmail, wsid)
+  //     const endpoint = await getTransactorEndpoint(token, 'external')
+  //     await generateWorkspaceData(endpoint, ws, cmd.parallel, email)
+  //     await testFindAll(endpoint, ws, email)
+  //     await dropWorkspace(toolCtx, db, null, ws)
+  //   })
+  // })
 
-  program
-    .command('reset-ws-attempts <name>')
-    .description('Reset workspace creation/upgrade attempts counter')
-    .action(async (workspace) => {
-      const { dbUrl } = prepareTools()
-      await withDatabase(dbUrl, async (db) => {
-        const info = await getWorkspaceById(db, workspace)
-        if (info === null) {
-          throw new Error(`workspace ${workspace} not found`)
-        }
+  // program
+  // .command('reset-ws-attempts <name>')
+  // .description('Reset workspace creation/upgrade attempts counter')
+  // .action(async (workspace) => {
+  //   await withAccountDatabase(async (db) => {
+  //     const info = await getWorkspaceById(db, workspace)
+  //     if (info === null) {
+  //       throw new Error(`workspace ${workspace} not found`)
+  //     }
 
-        await updateWorkspace(db, info, {
-          attempts: 0
-        })
+  //     await updateWorkspace(db, info, {
+  //       attempts: 0
+  //     })
 
-        console.log('Attempts counter for workspace', workspace, 'has been reset')
-      })
-    })
+  //     console.log('Attempts counter for workspace', workspace, 'has been reset')
+  //   })
+  // })
+
+  // program
+  //   .command('add-controlled-doc-rank-mongo')
+  //   .description('add rank to controlled documents')
+  //   .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+  //   .action(async (cmd: { workspace: string }) => {
+  //     const { version } = prepareTools()
+
+  //     let workspaces: Workspace[] = []
+  //     await withAccountDatabase(async (db) => {
+  //       workspaces = await listWorkspacesPure(db)
+  //       workspaces = workspaces
+  //         .filter((p) => isActiveMode(p.mode))
+  //         .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
+  //         .sort((a, b) => b.lastVisit - a.lastVisit)
+  //     })
+
+  //     console.log('found workspaces', workspaces.length)
+
+  //     const mongodbUri = getMongoDBUrl()
+  //     const client = getMongoClient(mongodbUri)
+  //     const _client = await client.getClient()
+
+  //     try {
+  //       const count = workspaces.length
+  //       let index = 0
+  //       for (const workspace of workspaces) {
+  //         index++
+
+  //         toolCtx.info('processing workspace', {
+  //           workspace: workspace.workspace,
+  //           version: workspace.version,
+  //           index,
+  //           count
+  //         })
+
+  //         if (workspace.version === undefined || !deepEqual(workspace.version, version)) {
+  //           console.log(`upgrade to ${versionToString(version)} is required`)
+  //           continue
+  //         }
+  //         const workspaceId = getWorkspaceId(workspace.workspace)
+  //         const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
+
+  //         await addControlledDocumentRank(toolCtx, wsDb, workspaceId)
+  //       }
+  //     } finally {
+  //       client.close()
+  //     }
+  //   })
+
+  // Not needed anymore?
+  // program
+  //   .command('fill-github-users')
+  //   .option('-t, --token <token>', 'Github token to increase the limit of requests to GitHub')
+  //   .description('adds github username info to all accounts')
+  //   .action(async (cmd: { token?: string }) => {
+  //     await withAccountDatabase(async (db) => {
+  //       await fillGithubUsers(toolCtx, db, cmd.token)
+  //     })
+  //   })
 
   extendProgram?.(program)
 

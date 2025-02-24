@@ -33,6 +33,7 @@
     sort: {
       modifiedOn: SortingOrder.Descending
     },
+    showArchived: true,
     limit: 200
   }
 

@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
-import { type TimeZone } from '../../../types'
+import { type TimeZone, capitalizeFirstLetter } from '../../..'
 
 export const DAYS_IN_WEEK = 7
 
@@ -20,11 +20,11 @@ export const MILLISECONDS_IN_MINUTE = 60000
 export const MILLISECONDS_IN_DAY = 86400000
 export const MILLISECONDS_IN_WEEK = DAYS_IN_WEEK * MILLISECONDS_IN_DAY
 
-export function firstDay (date: Date, mondayStart: boolean): Date {
+export function firstDay (date: Date, firstDay: number = 1): Date {
   const firstDayOfMonth = new Date(new Date(date).setHours(0, 0, 0, 0))
   firstDayOfMonth.setDate(1) // First day of month
   const result = new Date(firstDayOfMonth)
-  result.setDate(result.getDate() - result.getDay() + (mondayStart ? 1 : 0))
+  result.setDate(result.getDate() - result.getDay() + firstDay)
   // Check if we need add one more week
   if (result.getTime() > firstDayOfMonth.getTime()) {
     result.setDate(result.getDate() - DAYS_IN_WEEK)
@@ -46,6 +46,17 @@ export function getWeekDayName (weekDay: Date, weekFormat: 'narrow' | 'short' | 
   return new Intl.DateTimeFormat(locale, {
     weekday: weekFormat
   }).format(weekDay)
+}
+
+export function getWeekDayNames (): Map<number, string> {
+  const today: Date = new Date()
+  const offset: number = 0 - today.getDay()
+  const startDate: number = today.setTime(today.getTime() + MILLISECONDS_IN_DAY * offset)
+  const result: Map<number, string> = new Map<number, string>()
+  for (let i = 0; i < 7; i++) {
+    result.set(i, capitalizeFirstLetter(getWeekDayName(new Date(startDate + i * MILLISECONDS_IN_DAY), 'long')))
+  }
+  return result
 }
 
 export function day (firstDay: Date, offset: number): Date {
@@ -92,14 +103,24 @@ export function getMonthName (date: Date, option: 'narrow' | 'short' | 'long' | 
 export type TCellStyle = 'not-selected' | 'selected'
 export interface ICell {
   dayOfWeek: number
-  style: TCellStyle
+  classes: TCellStyle
 }
 
-export function getMonday (d: Date, mondayStart: boolean): Date {
-  d = new Date(new Date(d).setHours(0, 0, 0, 0))
-  const day = d.getDay()
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1) // adjust when day is sunday
-  return new Date(d.setDate(diff))
+export function getLocalWeekStart (): number {
+  const locale = new Intl.Locale(navigator.language)
+  return typeof (locale as any)?.getWeekInfo === 'function'
+    ? (locale as any)?.getWeekInfo()?.firstDay
+    : (locale as any).weekInfo?.firstDay ?? 1
+}
+
+export function hasLocalWeekStart (): boolean {
+  const locale = new Intl.Locale(navigator.language)
+  return typeof (locale as any)?.getWeekInfo === 'function' || (locale as any).weekInfo?.firstDay !== undefined
+}
+
+export function getWeekStart (date: Date = new Date(), firstDay: number = 1): Date {
+  date = new Date(new Date(date).setHours(0, 0, 0, 0))
+  return new Date(date.setDate(date.getDate() - ((date.getDay() - firstDay + 7) % 7)))
 }
 
 export function addZero (value: number): string {

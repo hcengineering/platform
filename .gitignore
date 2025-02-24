@@ -9,7 +9,7 @@ temp/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-tests/sanity/screenshots
+*tests/sanity/screenshots
 
 # Runtime data
 *.pid
@@ -101,6 +101,11 @@ dev/tool/report.csv
 bundle/*
 bundle.js.map
 tests/profiles
-_*
 **/bundle/model.json
 .wrangler
+dump
+**/logs/**
+dev/tool/history.json
+.aider*
+/combined_dependencies
+.tmp

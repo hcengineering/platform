@@ -160,6 +160,17 @@ export async function CanRenameFolder (doc: Folder | Folder[] | undefined): Prom
   return doc !== undefined && !Array.isArray(doc)
 }
 
+export async function CanDeleteFileVersion (
+  doc: WithLookup<FileVersion> | Array<WithLookup<FileVersion>> | undefined
+): Promise<boolean> {
+  if (doc === undefined) {
+    return false
+  }
+
+  const docs = Array.isArray(doc) ? doc : [doc]
+  return docs.every((p) => p.$lookup?.attachedTo !== undefined && p.$lookup?.attachedTo.file !== p._id)
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateDrive,
@@ -200,7 +211,8 @@ export default async (): Promise<Resources> => ({
     FileLinkProvider,
     FolderLinkProvider,
     CanRenameFile,
-    CanRenameFolder
+    CanRenameFolder,
+    CanDeleteFileVersion
   },
   resolver: {
     Location: resolveLocation

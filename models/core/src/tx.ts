@@ -14,7 +14,6 @@
 //
 
 import {
-  type AttachedDoc,
   type Class,
   type Data,
   type Doc,
@@ -28,7 +27,6 @@ import {
   type Space,
   type Tx,
   type TxApplyIf,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxCUD,
   type TxMixin,
@@ -70,12 +68,6 @@ export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
 @Model(core.class.TxCreateDoc, core.class.TxCUD)
 export class TTxCreateDoc<T extends Doc> extends TTxCUD<T> implements TxCreateDoc<T> {
   attributes!: Data<T>
-}
-
-@Model(core.class.TxCollectionCUD, core.class.TxCUD)
-export class TTxCollectionCUD<T extends Doc, P extends AttachedDoc> extends TTxCUD<T> implements TxCollectionCUD<T, P> {
-  collection!: string
-  tx!: TxCUD<P>
 }
 
 @Model(core.class.TxMixin, core.class.TxCUD)

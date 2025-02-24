@@ -13,36 +13,39 @@
 // limitations under the License.
 //
 
+import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import core, {
+  DOMAIN_MODEL_TX,
   DOMAIN_STATUS,
+  type Ref,
+  type Status,
   type TxCreateDoc,
   TxOperations,
   generateId,
-  toIdMap,
-  DOMAIN_TX,
-  type Status,
-  type Ref,
-  AccountRole
+  toIdMap
 } from '@hcengineering/core'
 import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
   type ModelLogger,
   createOrUpdate,
   tryMigrate,
-  tryUpgrade,
-  type MigrateOperation,
-  type MigrationClient,
-  type MigrationUpgradeClient
+  tryUpgrade
 } from '@hcengineering/model'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
-import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import { type IssueStatus, TimeReportDayType, trackerId, type Issue, type Project } from '@hcengineering/tracker'
+import tracker, {
+  type Issue,
+  type IssueStatus,
+  type Project,
+  TimeReportDayType,
+  trackerId
+} from '@hcengineering/tracker'
 
-import tracker from './plugin'
-import contact from '@hcengineering/model-contact'
 import { classicIssueTaskStatuses } from '.'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
@@ -149,7 +152,7 @@ async function passIdentifierToParentInfo (client: MigrationClient): Promise<voi
       if (p === undefined) continue
       parent.identifier = p.identifier
     }
-    await client.update(DOMAIN_TASK, { _id: issue._id }, { $set: { parents: issue.parents } })
+    await client.update(DOMAIN_TASK, { _id: issue._id }, { parents: issue.parents })
   }
 }
 
@@ -163,7 +166,7 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
     const project = projectsMap.get(issue.space)
     if (project === undefined) continue
     const identifier = project.identifier + '-' + issue.number
-    await client.update(DOMAIN_TASK, { _id: issue._id }, { $set: { identifier } })
+    await client.update(DOMAIN_TASK, { _id: issue._id }, { identifier })
   }
 }
 
@@ -200,7 +203,7 @@ async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLog
       const newDefaultIssueStatus = getNewStatus(project.defaultIssueStatus)
 
       if (project.defaultIssueStatus !== newDefaultIssueStatus) {
-        await client.update(DOMAIN_SPACE, { _id: project._id }, { $set: { defaultIssueStatus: newDefaultIssueStatus } })
+        await client.update(DOMAIN_SPACE, { _id: project._id }, { defaultIssueStatus: newDefaultIssueStatus })
       }
 
       const projectUpdateMessages = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
@@ -215,11 +218,7 @@ async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLog
         const newStatusSet = statusSet != null ? getNewStatus(statusSet as Ref<Status>) : statusSet
 
         if (statusSet !== newStatusSet) {
-          await client.update(
-            DOMAIN_ACTIVITY,
-            { _id: updateMessage._id },
-            { $set: { 'attributeUpdates.set.0': newStatusSet } }
-          )
+          await client.update(DOMAIN_ACTIVITY, { _id: updateMessage._id }, { 'attributeUpdates.set.0': newStatusSet })
         }
       }
     }
@@ -280,7 +279,7 @@ async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
       modifiedBy
     }
 
-    await client.create(DOMAIN_TX, tx)
+    await client.create(DOMAIN_MODEL_TX, tx)
   }
 }
 
@@ -291,15 +290,13 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   const newTaskTypeMixin = tracker.mixin.IssueTypeData
 
   await client.update(
-    DOMAIN_TX,
+    DOMAIN_MODEL_TX,
     {
       objectClass: core.class.Attribute,
       'attributes.attributeOf': oldSpaceTypeMixin
     },
     {
-      $set: {
-        'attributes.attributeOf': newSpaceTypeMixin
-      }
+      'attributes.attributeOf': newSpaceTypeMixin
     }
   )
 
@@ -330,48 +327,26 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   )
 }
 
-async function migrateDefaultProjectOwners (client: MigrationClient): Promise<void> {
-  const workspaceOwners = await client.model.findAll(contact.class.PersonAccount, {
-    role: AccountRole.Owner
-  })
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: tracker.project.DefaultProject
-    },
-    {
-      $set: {
-        owners: workspaceOwners.map((it) => it._id)
-      }
-    }
-  )
-}
-
 async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
   await client.update(
-    DOMAIN_TX,
+    DOMAIN_MODEL_TX,
     {
       objectClass: task.class.TaskType,
       'attributes.ofClass': tracker.class.Issue,
       'attributes.statusClass': core.class.Status
     },
     {
-      $set: {
-        'attributes.statusClass': tracker.class.IssueStatus
-      }
+      'attributes.statusClass': tracker.class.IssueStatus
     }
   )
   await client.update(
-    DOMAIN_TX,
+    DOMAIN_MODEL_TX,
     {
       objectClass: core.class.Status,
       'attributes.ofAttribute': tracker.attribute.IssueStatus
     },
     {
-      $set: {
-        objectClass: tracker.class.IssueStatus
-      }
+      objectClass: tracker.class.IssueStatus
     }
   )
 
@@ -382,9 +357,7 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
       ofAttribute: tracker.attribute.IssueStatus
     },
     {
-      $set: {
-        _class: tracker.class.IssueStatus
-      }
+      _class: tracker.class.IssueStatus
     }
   )
 }
@@ -419,10 +392,6 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'migrateDefaultTypeMixins',
         func: migrateDefaultTypeMixins
-      },
-      {
-        state: 'migrateDefaultProjectOwners',
-        func: migrateDefaultProjectOwners
       }
     ])
   },

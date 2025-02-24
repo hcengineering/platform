@@ -50,9 +50,20 @@ function publish (name) {
   }
 }
 
+function fix (name) {
+  const package = packages[name]
+  try {
+    console.log('fixing', name)
+    execSync(`cd ${package.path} && npm pkg fix && cd ../..`, { encoding: 'utf-8' })
+  } catch (err) {
+    console.log(err)
+  }
+}
+
 function main () {
   const args = process.argv
 
+  const doFix = args.includes('--fix')
   const doPublish = args.includes('--publish')
 
   const version = args.reverse().shift()
@@ -82,7 +93,14 @@ function main () {
     const res = JSON.stringify(jsons[packageName], undefined, 2)
     fs.writeFileSync(file, res + '\n')
   }
-  if(doPublish) { 
+  if (doFix) {
+    for (const packageName of packageNames) {
+      if (shouldPublish(packageName)) {
+        fix(packageName)
+      }
+    }
+  }
+  if (doPublish) {
     for (const packageName of packageNames) {
       if (shouldPublish(packageName)) {
         publish(packageName)

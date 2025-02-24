@@ -19,7 +19,13 @@
   import { Project, ProjectType, ProjectTypeDescriptor } from '@hcengineering/task'
   import { AnyComponent, Button, Component, IconAdd, Loading, SearchInput, showPopup, Header } from '@hcengineering/ui'
   import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions } from '@hcengineering/view'
-  import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    FilterButton,
+    getResultOptions,
+    ViewletSelector,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import { selectedTaskTypeStore, selectedTypeStore, taskTypeStore } from '..'
   import task from '../plugin'
   import TypeSelector from './TypeSelector.svelte'
@@ -42,11 +48,24 @@
   let viewlets: WithLookup<Viewlet>[] = []
   let viewOptions: ViewOptions | undefined
 
+  let resultOptions = viewlet?.options
+
+  $: void getResultOptions(viewlet?.options ?? {}, viewlet?.viewOptions?.other, viewOptions).then((p) => {
+    resultOptions = p
+  })
+
   const spacesQ = createQuery()
   let spaces: Project[] = []
-  $: spacesQ.query(task.class.Project, { type: $selectedTypeStore as Ref<ProjectType> }, (result) => {
-    spaces = result
-  })
+  $: spacesQ.query<Project>(
+    task.class.Project,
+    { type: $selectedTypeStore as Ref<ProjectType> },
+    (result) => {
+      spaces = result
+    },
+    {
+      showArchived: resultOptions?.showArchived ?? false
+    }
+  )
   let resultQuery: DocumentQuery<Doc>
   $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}), space: { $in: spaces.map((it) => it._id) } }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
@@ -78,6 +97,7 @@
       bind:viewlet
       bind:preference
       bind:viewlets
+      ignoreFragment
       viewletQuery={{
         attachTo: _class,
         variant: { $exists: false },

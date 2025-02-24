@@ -17,10 +17,12 @@ import core, {
   generateId,
   toFindResult,
   TxProcessor,
+  type WorkspaceIds,
   type BenchmarkDoc,
   type Class,
   type Doc,
   type DocumentQuery,
+  type Domain,
   type FindOptions,
   type FindResult,
   type Hierarchy,
@@ -30,8 +32,7 @@ import core, {
   type Space,
   type Tx,
   type TxCreateDoc,
-  type TxResult,
-  type WorkspaceId
+  type TxResult
 } from '@hcengineering/core'
 import type { DbAdapter } from '../adapter'
 import { DummyDbAdapter } from '../mem'
@@ -90,7 +91,12 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
     return toFindResult<T>(result as T[])
   }
 
-  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
+  getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
+    // Since benchmark coult not be changed.
+    return Promise.resolve('')
+  }
+
+  tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     if (benchData === '') {
       benchData = genData(1024 * 1024)
     }
@@ -102,16 +108,16 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
         if (request?.size != null) {
           const dataSize =
             typeof request.size === 'number' ? request.size : request.size.from + Math.random() * request.size.to
-          return [
+          return Promise.resolve([
             {
               response: benchData.slice(0, dataSize)
             }
-          ]
+          ])
         }
       }
     }
 
-    return [{}]
+    return Promise.resolve([{}])
   }
 }
 /**
@@ -119,9 +125,10 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
  */
 export async function createBenchmarkAdapter (
   ctx: MeasureContext,
+  contextVars: Record<string, any>,
   hierarchy: Hierarchy,
   url: string,
-  workspaceId: WorkspaceId,
+  workspaceId: WorkspaceIds,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   return new BenchmarkDbAdapter()

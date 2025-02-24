@@ -79,4 +79,4 @@ export function initThemeStore (): void {
   )
 }
 
-export const languageStore = derived(themeStore, ($theme) => $theme.language)
+export const languageStore = derived(themeStore, ($theme) => $theme?.language ?? '')

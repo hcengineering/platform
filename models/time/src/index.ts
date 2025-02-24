@@ -53,7 +53,7 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import recruit from '@hcengineering/recruit'
 import tags from '@hcengineering/tags'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import {
   type TodoDoneTester,
   timeId,

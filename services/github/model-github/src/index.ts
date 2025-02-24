@@ -29,7 +29,7 @@ import github from './plugin'
 import {
   DateRangeMode,
   IndexKind,
-  type Account,
+  type PersonId,
   type Class,
   type Data,
   type Doc,
@@ -41,7 +41,7 @@ import {
 } from '@hcengineering/core'
 
 import { type Person } from '@hcengineering/contact'
-import contact, { TContact } from '@hcengineering/model-contact'
+import contact, { TPerson } from '@hcengineering/model-contact'
 import presentation from '@hcengineering/model-presentation'
 import tracker, { TComponent, TIssue, TMilestone, TProject, issuesOptions } from '@hcengineering/model-tracker'
 import view, { classPresenter } from '@hcengineering/model-view'
@@ -95,9 +95,11 @@ export { githubId } from '@hcengineering/github'
 export { githubOperation, githubOperationPreTime } from './migration'
 export { default } from './plugin'
 export const DOMAIN_GITHUB = 'github' as Domain
+export const DOMAIN_GITHUB_SYNC = 'github_sync' as Domain
+export const DOMAIN_GITHUB_USER = 'github_user' as Domain
 export const DOMAIN_GITHUB_COMMENTS = 'github_comments' as Domain
 
-@Model(github.class.DocSyncInfo, core.class.Doc, DOMAIN_GITHUB)
+@Model(github.class.DocSyncInfo, core.class.Doc, DOMAIN_GITHUB_SYNC)
 export class TDocSyncInfo extends TDoc implements DocSyncInfo {
   // _id === objectId
   @Prop(TypeNumber(), getEmbeddedLabel('Github number'))
@@ -152,7 +154,7 @@ export class TDocSyncInfo extends TDoc implements DocSyncInfo {
     deleted!: boolean
 }
 
-@Model(github.class.GithubUserInfo, core.class.Doc, DOMAIN_GITHUB)
+@Model(github.class.GithubUserInfo, core.class.Doc, DOMAIN_GITHUB_USER)
 export class TGithubUserInfo extends TDoc implements GithubUserInfo {
   @Prop(TypeString(), getEmbeddedLabel('ID'))
   @ReadOnly()
@@ -410,7 +412,7 @@ export class TGithubTodo extends TToDO implements GithubTodo {
 
 @Mixin(github.mixin.GithubUser, contact.class.Contact)
 @UX(github.string.GithubUser, github.icon.Github)
-export class TGithubUser extends TContact implements GithubUser {
+export class TGithubUser extends TPerson implements GithubUser {
   @Prop(TypeHyperlink(), getEmbeddedLabel('Github URL'))
   @Index(IndexKind.FullText)
   @ReadOnly()
@@ -432,18 +434,20 @@ export class TGithubComponent extends TComponent implements GithubComponent {
 }
 
 @Mixin(github.mixin.GithubMilestone, tracker.class.Milestone)
-@UX(github.string.GithubIssue)
+@UX(github.string.GithubMilestone)
 export class TGithubMilestone extends TMilestone implements GithubMilestone {
-  @Prop(TypeHyperlink(), getEmbeddedLabel('Github URL'))
+  @Prop(TypeHyperlink(), getEmbeddedLabel('Github Project URL'))
   @Index(IndexKind.FullText)
   @ReadOnly()
     url!: Hyperlink
 
   @Prop(TypeString(), getEmbeddedLabel('NodeID'))
+  @Hidden()
   @ReadOnly()
     projectNodeId!: string
 
   @Prop(TypeNumber(), getEmbeddedLabel('Number'))
+  @Hidden()
   @ReadOnly()
     projectNumber!: number
 
@@ -550,7 +554,7 @@ export class TGithubReviewThread extends TActivityMessage implements GithubRevie
   originalStartLine!: number | null
   path!: string
   startDiffSide!: 'LEFT' | 'RIGHT' | null
-  resolvedBy!: Ref<Account> | null
+  resolvedBy!: PersonId | null
   threadId!: string
 }
 
@@ -949,7 +953,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: github.class.GithubPullRequest,
     components: {
-      input: chunter.component.ChatMessageInput
+      input: { component: chunter.component.ChatMessageInput }
     }
   })
 
@@ -988,7 +992,8 @@ export function createModel (builder: Builder): void {
       label: github.string.PullRequests,
       query: tracker.completion.IssueQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: github.class.GithubPullRequest
+      classToSearch: github.class.GithubPullRequest,
+      priority: 280
     },
     github.completion.PullRequestCategory
   )

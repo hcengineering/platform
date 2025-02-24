@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,20 +14,34 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, IdMap, Markup, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
+  import {
+    Class,
+    Doc,
+    IdMap,
+    Markup,
+    PersonId,
+    RateLimiter,
+    Ref,
+    Space,
+    generateId,
+    toIdMap
+  } from '@hcengineering/core'
   import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,
+    canDisplayLinkPreview,
     createQuery,
     deleteFile,
     draftsStore,
+    fetchLinkPreviewDetails,
     getClient,
     getFileMetadata,
+    isLinkPreviewEnabled,
     uploadFile
   } from '@hcengineering/presentation'
+  import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
-  import { EmptyMarkup } from '@hcengineering/text'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
@@ -70,6 +84,8 @@
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
+  const maxLinkPreviewCount = 3
+  const urlSet = new Set<string>()
 
   let progress = false
 
@@ -88,12 +104,31 @@
         _id: { $in: Array.from(attachments.keys()) }
       },
       (res) => {
-        existingAttachments = res.map((p) => p._id)
+        existingAttachments = res.map((p) => {
+          if (p.type === 'application/link-preview') {
+            urlSet.add(getUrlKey(p.name))
+          }
+          return p._id
+        })
       }
     )
   } else {
     existingAttachments = []
     existingAttachmentsQuery.unsubscribe()
+  }
+
+  function isValidUrl (s: string): boolean {
+    let url: URL
+    try {
+      url = new URL(s)
+    } catch {
+      return false
+    }
+    return url.protocol.startsWith('http')
+  }
+
+  function getUrlKey (s: string): string {
+    return s
   }
 
   $: objectId && updateAttachments(objectId)
@@ -111,6 +146,7 @@
       })
       originalAttachments.clear()
       removedAttachments.clear()
+      urlSet.clear()
       query.unsubscribe()
     } else if (!skipAttachmentsPreload) {
       query.query(
@@ -128,6 +164,7 @@
       newAttachments.clear()
       originalAttachments.clear()
       removedAttachments.clear()
+      urlSet.clear()
       query.unsubscribe()
     }
   }
@@ -150,7 +187,7 @@
         _class: attachment.class.Attachment,
         collection: 'attachments',
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
+        modifiedBy: '' as PersonId,
         space,
         attachedTo: objectId,
         attachedToClass: _class,
@@ -183,26 +220,31 @@
     await tick()
     const list = inputFile.files
     if (list === null || list.length === 0) return
+    const limiter = new RateLimiter(10)
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        await createAttachment(file)
+        await limiter.add(() => createAttachment(file))
       }
     }
+    await limiter.waitProcessing()
     inputFile.value = ''
     progress = false
   }
 
   async function fileDrop (e: DragEvent): Promise<void> {
-    progress = true
     const list = e.dataTransfer?.files
+    const limiter = new RateLimiter(10)
+
     if (list === undefined || list.length === 0) return
+    progress = true
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        await createAttachment(file)
+        await limiter.add(() => createAttachment(file))
       }
     }
+    await limiter.waitProcessing()
     progress = false
   }
 
@@ -215,6 +257,9 @@
   }
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
+    if (attachment.type === 'application/link-preview') {
+      urlSet.delete(getUrlKey(attachment.name))
+    }
     if (originalAttachments.has(attachment._id)) {
       await client.removeCollection(
         attachment._class,
@@ -257,18 +302,19 @@
       return
     }
     saved = true
-    const promises: Promise<any>[] = []
+    const limiter = new RateLimiter(10)
     newAttachments.forEach((p) => {
       const attachment = attachments.get(p)
       if (attachment !== undefined) {
-        promises.push(saveAttachment(attachment))
+        void limiter.add(() => saveAttachment(attachment))
       }
     })
     removedAttachments.forEach((p) => {
-      promises.push(deleteAttachment(p))
+      void limiter.add(() => deleteAttachment(p))
     })
-    await Promise.all(promises)
+    await limiter.waitProcessing()
     newAttachments.clear()
+    urlSet.clear()
     removedAttachments.clear()
     saveDraft()
   }
@@ -280,8 +326,47 @@
     dispatch('message', { message: event.detail, attachments: attachments.size })
   }
 
+  function updateLinkPreview (): void {
+    const hrefs = refContainer.getElementsByTagName('a')
+    const newUrls: string[] = []
+    for (let i = 0; i < hrefs.length; i++) {
+      if (hrefs[i].target !== '_blank' || !isValidUrl(hrefs[i].href) || hrefs[i].rel === '') {
+        continue
+      }
+      const key = getUrlKey(hrefs[i].href)
+      if (urlSet.has(key)) {
+        continue
+      }
+      urlSet.add(key)
+      newUrls.push(hrefs[i].href)
+    }
+    if (newUrls.length > 0) {
+      void loadLinks(newUrls)
+    }
+  }
+
   function onUpdate (event: CustomEvent): void {
+    if (isLinkPreviewEnabled() && !loading && urlSet.size < maxLinkPreviewCount) {
+      updateLinkPreview()
+    }
     dispatch('update', { message: event.detail, attachments: attachments.size })
+  }
+
+  async function loadLinks (urls: string[]): Promise<void> {
+    progress = true
+    for (const url of urls) {
+      try {
+        const meta = await fetchLinkPreviewDetails(url)
+        if (canDisplayLinkPreview(meta) && meta.url !== undefined) {
+          const blob = new Blob([JSON.stringify(meta)])
+          const file = new File([blob], meta.url, { type: 'application/link-preview' })
+          await createAttachment(file)
+        }
+      } catch (err: any) {
+        void setPlatformStatus(unknownError(err))
+      }
+    }
+    progress = false
   }
 
   async function loadFiles (evt: ClipboardEvent): Promise<void> {
@@ -308,15 +393,14 @@
     if (!allowed) {
       return false
     }
-
     const hasFiles = Array.from(evt.clipboardData?.items ?? []).some((i) => i.kind === 'file')
 
-    if (!hasFiles) {
-      return false
+    if (hasFiles) {
+      void loadFiles(evt)
+      return true
     }
 
-    void loadFiles(evt)
-    return true
+    return false
   }
 </script>
 

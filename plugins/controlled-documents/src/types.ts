@@ -5,10 +5,10 @@ import { Attachment } from '@hcengineering/attachment'
 import { ChatMessage } from '@hcengineering/chunter'
 import { Employee } from '@hcengineering/contact'
 import {
-  CollaborativeDoc,
   type AttachedDoc,
   type Class,
   type CollectionSize,
+  type MarkupBlobRef,
   type Doc,
   type Markup,
   type Ref,
@@ -16,7 +16,8 @@ import {
   type TypedSpace,
   type Timestamp,
   SpaceType,
-  SpaceTypeDescriptor
+  SpaceTypeDescriptor,
+  Rank
 } from '@hcengineering/core'
 import { type TagReference } from '@hcengineering/tags'
 import { Request } from '@hcengineering/request'
@@ -91,6 +92,8 @@ export interface ProjectMeta extends Doc {
   // head: Ref<HierarchyDocument>
 
   documents: CollectionSize<ProjectDocument>
+
+  rank: Rank
 }
 
 /**
@@ -122,7 +125,7 @@ export interface Document extends Doc<DocumentSpace> {
   author?: Ref<Employee> // Employee who created/released the document
   owner?: Ref<Employee> // Employee responsible for working on the document
   state: DocumentState
-  content: CollaborativeDoc
+  content: MarkupBlobRef | null
   labels?: CollectionSize<TagReference> // A collection of attached tags(labels)
   abstract?: string
   commentSequence: number // Used to enumerate the comments across revisions of the working copy of the document
@@ -138,7 +141,7 @@ export interface Document extends Doc<DocumentSpace> {
  */
 export interface DocumentSnapshot extends AttachedDoc {
   name?: string
-  content: CollaborativeDoc
+  content: MarkupBlobRef | null
   state?: DocumentState
 }
 
@@ -191,7 +194,8 @@ export enum DocumentState {
   Draft = 'draft',
   Effective = 'effective',
   Archived = 'archived',
-  Deleted = 'deleted'
+  Deleted = 'deleted',
+  Obsolete = 'obsolete'
 }
 
 /**
@@ -235,15 +239,6 @@ export enum ControlledDocumentState {
   Approved = 'approved',
   Rejected = 'rejected',
   ToReview = 'toReview'
-}
-
-/**
- * @public
- * Generic sequence attached to a class for cases when a single increment goes through all instances of the class.
- */
-export interface Sequence extends Doc {
-  attachedTo: Ref<Class<Doc>>
-  sequence: number
 }
 
 /**

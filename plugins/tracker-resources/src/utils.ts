@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { type Contact } from '@hcengineering/contact'
+import { type Person } from '@hcengineering/contact'
 import core, {
   SortingOrder,
   toIdMap,
@@ -30,16 +30,19 @@ import core, {
   type Space,
   type Status,
   type StatusCategory,
-  type TxCollectionCUD,
   type TxCreateDoc,
   type TxOperations,
   type TxResult,
   type TxUpdateDoc
 } from '@hcengineering/core'
 import { type IntlString } from '@hcengineering/platform'
-import { createQuery, getClient } from '@hcengineering/presentation'
-import task, { getStatusIndex, makeRank, type ProjectType } from '@hcengineering/task'
-import { activeProjects as taskActiveProjects, taskTypeStore } from '@hcengineering/task-resources'
+import { createQuery, getClient, onClient } from '@hcengineering/presentation'
+import task, { getStatusIndex, makeRank, type TaskType, type ProjectType } from '@hcengineering/task'
+import {
+  activeProjects as taskActiveProjects,
+  taskTypeStore,
+  typesOfJoinedProjectsStore
+} from '@hcengineering/task-resources'
 import {
   IssuePriority,
   MilestoneStatus,
@@ -50,7 +53,7 @@ import {
   type Milestone,
   type Project
 } from '@hcengineering/tracker'
-import { PaletteColorIndexes, areDatesEqual, isWeekend } from '@hcengineering/ui'
+import { areDatesEqual, isWeekend, PaletteColorIndexes } from '@hcengineering/ui'
 import { type KeyFilter, type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, ListSelectionProvider, statusStore, type SelectDirection } from '@hcengineering/view-resources'
 import { derived, get, writable } from 'svelte/store'
@@ -125,6 +128,16 @@ export const listIssueKanbanStatusOrder = [
   task.statusCategory.Lost
 ] as const
 
+function getTaskTypesStatusIndex (joinedTaskTypes: TaskType[], status: Ref<Status>): number {
+  for (const taskType of joinedTaskTypes) {
+    const indexx = taskType.statuses.indexOf(status)
+    if (indexx >= 0) {
+      return indexx
+    }
+  }
+  return -1
+}
+
 export async function issueStatusSort (
   client: TxOperations,
   value: Array<Ref<IssueStatus>>,
@@ -144,7 +157,12 @@ export async function issueStatusSort (
     )
     type = _space?.$lookup?.type
   }
+  const joinedProjectsTypes = get(typesOfJoinedProjectsStore) ?? []
   const taskTypes = get(taskTypeStore)
+  const joinedTaskTypes = Array.from(taskTypes.values()).filter(
+    (taskType) => joinedProjectsTypes.includes(taskType.parent) && taskType.ofClass === tracker.class.Issue
+  )
+
   const statuses = get(statusStore).byId
   // TODO: How we track category updates.
 
@@ -160,9 +178,10 @@ export async function issueStatusSort (
           const aIndex = getStatusIndex(type, taskTypes, a)
           const bIndex = getStatusIndex(type, taskTypes, b)
           return aIndex - bIndex
-        } else {
-          return (aVal?.name ?? '').localeCompare(bVal?.name ?? '')
         }
+        const aIndex = getTaskTypesStatusIndex(joinedTaskTypes, a)
+        const bIndex = getTaskTypesStatusIndex(joinedTaskTypes, b)
+        return aIndex - bIndex
       }
       return res
     })
@@ -178,9 +197,10 @@ export async function issueStatusSort (
           const aIndex = getStatusIndex(type, taskTypes, a)
           const bIndex = getStatusIndex(type, taskTypes, b)
           return aIndex - bIndex
-        } else if (aVal != null && bVal != null) {
-          return aVal.name.localeCompare(bVal.name)
         }
+        const aIndex = getTaskTypesStatusIndex(joinedTaskTypes, a)
+        const bIndex = getTaskTypesStatusIndex(joinedTaskTypes, b)
+        return aIndex - bIndex
       }
       return res
     })
@@ -340,26 +360,25 @@ export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): v
   }
 }
 
-export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Promise<Array<Ref<Contact>>> {
+export async function getPreviousAssignees (objectId: Ref<Issue> | undefined): Promise<Array<Ref<Person>>> {
   if (objectId === undefined) {
     return []
   }
   const client = getClient()
   const createTx = (
-    await client.findAll<TxCollectionCUD<Issue, Issue>>(core.class.TxCollectionCUD, {
-      'tx.objectId': objectId,
-      'tx._class': core.class.TxCreateDoc
+    await client.findAll<TxCreateDoc<Issue>>(core.class.TxCreateDoc, {
+      objectId
     })
   )[0]
-  const updateTxes = await client.findAll<TxCollectionCUD<Issue, Issue>>(
-    core.class.TxCollectionCUD,
-    { 'tx.objectId': objectId, 'tx._class': core.class.TxUpdateDoc, 'tx.operations.assignee': { $exists: true } },
+  const updateTxes = await client.findAll<TxUpdateDoc<Issue>>(
+    core.class.TxUpdateDoc,
+    { objectId, 'operations.assignee': { $exists: true } },
     { sort: { modifiedOn: -1 } }
   )
-  const set = new Set<Ref<Contact>>()
-  const createAssignee = (createTx?.tx as TxCreateDoc<Issue>)?.attributes?.assignee
+  const set = new Set<Ref<Person>>()
+  const createAssignee = createTx?.attributes?.assignee
   for (const tx of updateTxes) {
-    const assignee = (tx.tx as TxUpdateDoc<Issue>).operations.assignee
+    const assignee = tx.operations.assignee
     if (assignee == null) continue
     set.add(assignee)
   }
@@ -579,36 +598,25 @@ export interface IssueRef {
 export type IssueReverseRevMap = Map<Ref<Doc>, IssueRef[]>
 export const relatedIssues = writable<IssueReverseRevMap>(new Map())
 
-function fillStores (): void {
-  const client = getClient()
-
-  if (client !== undefined) {
-    const relatedIssuesQuery = createQuery(true)
-
-    relatedIssuesQuery.query(
-      tracker.class.Issue,
-      { 'relations._id': { $exists: true } },
-      (res) => {
-        const nMap: IssueReverseRevMap = new Map()
-        for (const r of res) {
-          for (const rr of r.relations ?? []) {
-            nMap.set(rr._id, [...(nMap.get(rr._id) ?? []), { _id: r._id, status: r.status }])
-          }
-        }
-        relatedIssues.set(nMap)
-      },
-      {
-        projection: {
-          relations: 1,
-          status: 1
+const relatedIssuesQuery = createQuery(true)
+onClient(() => {
+  relatedIssuesQuery.query(
+    tracker.class.Issue,
+    { 'relations._id': { $exists: true } },
+    (res) => {
+      const nMap: IssueReverseRevMap = new Map()
+      for (const r of res) {
+        for (const rr of r.relations ?? []) {
+          nMap.set(rr._id, [...(nMap.get(rr._id) ?? []), { _id: r._id, status: r.status }])
         }
       }
-    )
-  } else {
-    setTimeout(() => {
-      fillStores()
-    }, 50)
-  }
-}
-
-fillStores()
+      relatedIssues.set(nMap)
+    },
+    {
+      projection: {
+        relations: 1,
+        status: 1
+      }
+    }
+  )
+})

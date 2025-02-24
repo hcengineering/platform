@@ -1,5 +1,4 @@
 import { test } from '@playwright/test'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
@@ -11,13 +10,11 @@ test.use({
   storageState: PlatformSetting
 })
 test.describe('Relations', () => {
-  let leftSideMenuPage: LeftSideMenuPage
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
 
   test.beforeEach(async ({ page }) => {
-    leftSideMenuPage = new LeftSideMenuPage(page)
     issuesPage = new IssuesPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
@@ -33,7 +30,6 @@ test.describe('Relations', () => {
       title: `Second. Mark as blocked by-${generateId()}`,
       description: 'Second. Mark as blocked by'
     }
-    await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     const firstIssueId = await prepareNewIssueStep(page, firstIssue)
@@ -72,7 +68,6 @@ test.describe('Relations', () => {
       title: `Second. Mark as blocked by-${generateId()}`,
       description: 'Second. Mark as blocked by'
     }
-    await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     const firstIssueId = await prepareNewIssueStep(page, firstIssue)
@@ -112,7 +107,6 @@ test.describe('Relations', () => {
       title: `Second. Reference another issue-${generateId()}`,
       description: 'Second. Reference another issue'
     }
-    await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     const firstIssueId = await prepareNewIssueStep(page, firstIssue)
@@ -150,7 +144,6 @@ test.describe('Relations', () => {
       title: `Second. Remove relation be editing issue details-${generateId()}`,
       description: 'Second. Remove relation be editing issue details'
     }
-    await leftSideMenuPage.clickTracker()
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     await prepareNewIssueStep(page, firstIssue)
     await issuesPage.openIssueByName(firstIssue.title)

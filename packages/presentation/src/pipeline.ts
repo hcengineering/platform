@@ -18,7 +18,7 @@ import {
   type TxResult,
   type WithLookup
 } from '@hcengineering/core'
-import { setPlatformStatus, unknownError, type Resource } from '@hcengineering/platform'
+import platform, { PlatformError, setPlatformStatus, unknownError, type Resource } from '@hcengineering/platform'
 
 /**
  * @public
@@ -112,7 +112,12 @@ export class PresentationPipelineImpl implements PresentationPipeline {
       return this.head !== undefined
         ? await this.head.findAll(_class, query, options)
         : await this.client.findAll(_class, query, options)
-    } catch (err) {
+    } catch (err: any) {
+      if (err instanceof PlatformError) {
+        if (err.status.code === platform.status.ConnectionClosed) {
+          return toFindResult([], -1)
+        }
+      }
       Analytics.handleError(err as Error)
       const status = unknownError(err)
       await setPlatformStatus(status)
@@ -134,6 +139,11 @@ export class PresentationPipelineImpl implements PresentationPipeline {
         ? await this.head.findOne(_class, query, options)
         : await this.client.findOne(_class, query, options)
     } catch (err) {
+      if (err instanceof PlatformError) {
+        if (err.status.code === platform.status.ConnectionClosed) {
+          return
+        }
+      }
       Analytics.handleError(err as Error)
       const status = unknownError(err)
       await setPlatformStatus(status)
@@ -163,6 +173,11 @@ export class PresentationPipelineImpl implements PresentationPipeline {
         return await this.head.tx(tx)
       }
     } catch (err) {
+      if (err instanceof PlatformError) {
+        if (err.status.code === platform.status.ConnectionClosed) {
+          return {}
+        }
+      }
       Analytics.handleError(err as Error)
       const status = unknownError(err)
       await setPlatformStatus(status)

@@ -32,6 +32,7 @@ import { openDoc } from '@hcengineering/view-resources'
 import CreateDocument from './components/CreateDocument.svelte'
 import DocumentIcon from './components/DocumentIcon.svelte'
 import DocumentItem from './components/DocumentItem.svelte'
+import DocumentInlineEditor from './components/DocumentInlineEditor.svelte'
 import DocumentPresenter from './components/DocumentPresenter.svelte'
 import DocumentSearchIcon from './components/DocumentSearchIcon.svelte'
 import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
@@ -136,7 +137,7 @@ export async function lockContent (doc: Document | Document[]): Promise<void> {
 
   const arr = Array.isArray(doc) ? doc : [doc]
   for (const doc of arr) {
-    await client.diffUpdate(doc, { lockedBy: me._id })
+    await client.diffUpdate(doc, { lockedBy: me.primarySocialId })
   }
 }
 
@@ -163,6 +164,7 @@ export default async (): Promise<Resources> => ({
   component: {
     CreateDocument,
     CreateTeamspace,
+    DocumentInlineEditor,
     DocumentPresenter,
     Documents,
     EditDoc,

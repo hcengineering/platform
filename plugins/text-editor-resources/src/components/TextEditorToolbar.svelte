@@ -60,7 +60,6 @@
           const { command } = action.action
 
           if ((editor.commands as any)[command] === undefined) {
-            console.error(`Command ${command} not found`)
             continue
           }
         }
@@ -97,7 +96,7 @@
 
   let selecting = false
 
-  function handleMouseDown (): void {
+  function handleMouseDown (event: MouseEvent): void {
     function handleMouseMove (): void {
       if (editor !== undefined && !editor.state.selection.empty) {
         selecting = true
@@ -112,9 +111,11 @@
       document.removeEventListener('mouseup', handleMouseUp)
     }
 
-    if (editor !== undefined) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
+    if (editor !== undefined && visible && visibleActions.length > 0) {
+      if (event.target !== null && toolbar !== null && !toolbar.contains(event.target as Node)) {
+        document.addEventListener('mousemove', handleMouseMove)
+        document.addEventListener('mouseup', handleMouseUp)
+      }
     }
   }
 

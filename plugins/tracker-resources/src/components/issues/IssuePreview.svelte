@@ -61,6 +61,10 @@
   }
 
   $: void getParent(issue?.attachedTo as Ref<Issue>)
+  $: descriptionKey = {
+    key: 'description',
+    attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'description')
+  }
 </script>
 
 {#if issue}
@@ -92,11 +96,11 @@
     <div class="mt-6 mb-2 overflow-label fs-bold content-dark-color">
       <Label label={tracker.string.Description} />:
     </div>
-    {#if issue.description}
+    {#if descriptionKey}
       <div class="description-container" class:masked={cHeight > limit} style:max-height={`${limit}px`}>
         <div class="description-content" use:resizeObserver={(element) => (cHeight = element.clientHeight)}>
           {#key issue._id}
-            <CollaborativeTextEditor collaborativeDoc={issue.description} field="description" {user} readonly />
+            <CollaborativeTextEditor object={issue} attribute={descriptionKey} {user} readonly />
           {/key}
         </div>
       </div>

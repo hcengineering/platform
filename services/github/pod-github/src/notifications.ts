@@ -1,4 +1,4 @@
-import { Account, Doc, Ref, TxOperations } from '@hcengineering/core'
+import { PersonId, Doc, Ref, TxOperations } from '@hcengineering/core'
 import notification, { DocNotifyContext } from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
 import { PersonSpace } from '@hcengineering/contact'
@@ -7,7 +7,7 @@ import github from '@hcengineering/github'
 export async function createNotification (
   client: TxOperations,
   forDoc: Doc,
-  data: { user: Ref<Account>, space: Ref<PersonSpace>, message: IntlString, props: Record<string, any> }
+  data: { user: PersonId, space: Ref<PersonSpace>, message: IntlString, props: Record<string, any> }
 ): Promise<void> {
   let docNotifyContext = await client.findOne(notification.class.DocNotifyContext, { objectId: forDoc._id })
 
@@ -27,7 +27,7 @@ export async function createNotification (
   const existing = await client.findOne(notification.class.CommonInboxNotification, {
     user: data.user,
     message: data.message,
-    props: data.props
+    ...Object.fromEntries(Object.entries(data.props).map(([k, v]) => [`props.${k}`, v]))
   })
   if (existing !== undefined) {
     await client.update(existing, {
@@ -36,6 +36,8 @@ export async function createNotification (
   } else {
     await client.createDoc(notification.class.CommonInboxNotification, data.space, {
       user: data.user,
+      objectId: forDoc._id,
+      objectClass: forDoc._class,
       icon: github.icon.Github,
       message: data.message,
       props: data.props,

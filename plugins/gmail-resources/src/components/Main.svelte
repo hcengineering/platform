@@ -14,9 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
+  import { Ref } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
@@ -48,11 +49,11 @@
   let currentMessage: SharedMessage | undefined = undefined
 
   let newMessage: boolean = false
-  let allIntegrations: Integration[] = []
-  let integrations: Integration[] = []
+  const allIntegrations: Integration[] = []
+  const integrations: Integration[] = []
   let selectedIntegration: Integration | undefined = undefined
 
-  channel && inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
+  channel && inboxClient.forceReadDoc(channel._id, channel._class)
 
   const dispatch = createEventDispatcher()
 
@@ -82,7 +83,6 @@
   }
 
   const settingsQuery = createQuery()
-  const me = getCurrentAccount()._id
 
   let templateProvider: TemplateDataProvider | undefined
 
@@ -96,18 +96,20 @@
 
   $: templateProvider && selectedIntegration && templateProvider.set(setting.class.Integration, selectedIntegration)
 
+  // TODO: FIXME
   settingsQuery.query(setting.class.Integration, { type: gmail.integrationType.Gmail }, (res) => {
-    allIntegrations = res.filter((p) => !p.disabled && p.value !== '')
-    integrations = allIntegrations.filter((p) => p.createdBy === me || p.shared?.includes(me))
-    selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
+    // allIntegrations = res.filter((p) => !p.disabled && p.value !== '')
+    // integrations = allIntegrations.filter((p) => p.createdBy === me || p.shared?.includes(me))
+    // selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
 
-  $: gmailMessage &&
-    channel &&
-    object &&
-    convertMessage(object, channel, gmailMessage, allIntegrations, $personAccountByIdStore, $employeeByIdStore).then(
-      (p) => (currentMessage = p)
-    )
+  // TODO: FIXME
+  // $: gmailMessage &&
+  //   channel &&
+  //   object &&
+  //   convertMessage(object, channel, gmailMessage, allIntegrations, $personAccountByIdStore, $employeeByIdStore).then(
+  //     (p) => (currentMessage = p)
+  //   )
 </script>
 
 {#if channel && object}

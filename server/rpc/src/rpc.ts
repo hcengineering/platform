@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import type { Account } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Packr } from 'msgpackr'
 
@@ -46,6 +47,10 @@ export interface HelloResponse extends Response<any> {
   binary: boolean
   reconnect?: boolean
   serverVersion: string
+  lastTx?: string
+  lastHash?: string // Last model hash
+  account: Account
+  useCompression?: boolean
 }
 
 function replacer (key: string, value: any): any {
@@ -106,7 +111,13 @@ export class RPCHandler {
         const decoder = new TextDecoder()
         _data = decoder.decode(_data)
       }
-      return JSON.parse(_data.toString(), receiver)
+      try {
+        return JSON.parse(_data.toString(), receiver)
+      } catch (err: any) {
+        if (((err.message as string) ?? '').includes('Unexpected token')) {
+          return this.packr.unpack(new Uint8Array(data))
+        }
+      }
     }
     return this.packr.unpack(new Uint8Array(data))
   }

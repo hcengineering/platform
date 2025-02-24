@@ -48,9 +48,9 @@ export class RepositorySyncMapper implements DocSyncManager {
     if (repositories !== undefined) {
       // We have a list of repositories, so we could create them if they are missing.
       // Need to find all repositories, not only active, so passed repositories are not work.
-      const allRepositories = (
-        await this.provider.liveQuery.queryFind(github.class.GithubIntegrationRepository, {})
-      ).filter((it) => it.attachedTo === integration.integration._id)
+      const allRepositories = await this.provider.liveQuery.findAll(github.class.GithubIntegrationRepository, {
+        attachedTo: integration.integration._id
+      })
 
       const allRepos: GithubIntegrationRepository[] = [...allRepositories]
       for (const repository of repositories) {
@@ -95,7 +95,7 @@ export class RepositorySyncMapper implements DocSyncManager {
           )
           this.ctx.info('Creating repository info document...', {
             url: repository.full_name,
-            workspace: this.provider.getWorkspaceId().name
+            workspace: this.provider.getWorkspaceId()
           })
         }
       }
@@ -126,7 +126,7 @@ export class RepositorySyncMapper implements DocSyncManager {
         )
         this.ctx.info('Creating repository info document...', {
           url: event.repository.url,
-          workspace: this.provider.getWorkspaceId().name
+          workspace: this.provider.getWorkspaceId()
         })
         break
       }
@@ -244,7 +244,7 @@ export class RepositorySyncMapper implements DocSyncManager {
   ): Promise<void> {
     const inst = integration.octokit
     if (inst === undefined || integration.octokit === undefined) {
-      this.ctx.info('no installation found', { workspace: this.provider.getWorkspaceId().name })
+      this.ctx.info('no installation found', { workspace: this.provider.getWorkspaceId() })
       return
     }
 
@@ -253,15 +253,15 @@ export class RepositorySyncMapper implements DocSyncManager {
     }
     this.ctx.info('Checking github installation repositories...', {
       installationId: integration.installationId,
-      workspace: this.provider.getWorkspaceId().name
+      workspace: this.provider.getWorkspaceId()
     })
 
     const iterable = this.app.eachRepository.iterator({ installationId: integration.installationId })
 
     // Need to find all repositories, not only active, so passed repositories are not work.
-    const allRepositories = (
-      await this.provider.liveQuery.queryFind(github.class.GithubIntegrationRepository, {})
-    ).filter((it) => it.attachedTo === integration.integration._id)
+    const allRepositories = await this.provider.liveQuery.findAll(github.class.GithubIntegrationRepository, {
+      attachedTo: integration.integration._id
+    })
 
     let allRepos: GithubIntegrationRepository[] = [...allRepositories]
 
@@ -299,7 +299,7 @@ export class RepositorySyncMapper implements DocSyncManager {
         )
         this.ctx.info('Creating repository info document...', {
           url: repository.url,
-          workspace: this.provider.getWorkspaceId().name
+          workspace: this.provider.getWorkspaceId()
         })
       } else {
         allRepos = allRepos.filter((it) => it._id !== integrationRepo._id)
@@ -315,7 +315,7 @@ export class RepositorySyncMapper implements DocSyncManager {
           this.ctx.info('processing repository diff update...', {
             repository: repository.name,
             ...diff,
-            workspace: this.provider.getWorkspaceId().name
+            workspace: this.provider.getWorkspaceId()
           })
           await this.client.diffUpdate(
             integrationRepo,
@@ -360,7 +360,7 @@ export class RepositorySyncMapper implements DocSyncManager {
      "https://api.github.com/repos/hcengineering/anticrm/issues/comments/1679316918"
      "https://github.com/hcengineering/uberflow/pull/195"
      * */
-    this.ctx.info('handle repository rename', { repo, workspace: this.provider.getWorkspaceId().name })
+    this.ctx.info('handle repository rename', { repo, workspace: this.provider.getWorkspaceId() })
     const update = async (): Promise<void> => {
       while (true) {
         const docs = await this.client.findAll(

@@ -28,6 +28,7 @@
     "Vacation": "Férias",
     "Sick": "Doença",
     "PTO": "Ausência remunerada",
+    "PTOs": "PTOs",
     "Remote": "Remoto",
     "Overtime": "Horas extra",
     "PTO2": "Ausência remunerada/2",
@@ -47,6 +48,7 @@
     "PublicHoliday": "Feriado",
     "Title": "Título",
     "Description": "Descrição",
+    "PublicHolidays": "Public holidays",
     "MarkAsPublicHoliday": "Marcar como feriado",
     "EditPublicHoliday": "Editar feriado",
     "Managers": "Gestores",
@@ -57,6 +59,11 @@
     "RequestUpdated": "Pedido atualizado",
     "RequestRemoved": "Pedido removido",
     "ConfigLabel": "Recursos humanos",
-    "ConfigDescription": "Extensão para gestão da estrutura organizacional e calendário de trabalho dos colaboradors"
+    "ConfigDescription": "Extensão para gestão da estrutura organizacional e calendário de trabalho dos colaboradors",
+    "WorkingDays": "Working days",
+    "ReportedDays": "Reported days",
+    "Tasks": "Tasks",
+    "TPD": "TPD",
+    "EXTRa": "EXTRa"
   }
 }

@@ -4,6 +4,10 @@ import { attachment } from 'allure-js-commons'
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
 export const PlatformUser = process.env.PLATFORM_USER as string
+export const PlatformUserSecond = process.env.PLATFORM_USER_SECOND as string
+export const PlatformUserThird = process.env.PLATFORM_USER_THIRD as string
+export const PlatformUserQara = process.env.PLATFORM_USER_QARA as string
+export const PlatformWs = process.env.PLATFORM_WS as string
 export const PlatformToken = process.env.PLATFORM_TOKEN as string
 export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
@@ -53,6 +57,11 @@ export async function getSecondPage (browser: Browser): Promise<Page> {
   return await userSecondContext.newPage()
 }
 
+export async function getNewPage (browser: Browser): Promise<Page> {
+  const context = await browser.newContext({ storageState: undefined })
+  return await context.newPage()
+}
+
 export function randomString (): string {
   return (Math.random() * 1000000).toString(36).replace('.', '')
 }
@@ -77,4 +86,12 @@ export async function * iterateLocator (locator: Locator): AsyncGenerator<Locato
 
 export async function waitForNetworIdle (page: Page, timeout = 2000): Promise<void> {
   await Promise.race([page.waitForLoadState('networkidle'), new Promise((resolve) => setTimeout(resolve, timeout))])
+}
+
+export async function setTestOptions (page: Page): Promise<void> {
+  await page.evaluate(() => {
+    localStorage.setItem('#platform.notification.timeout', '0')
+    localStorage.setItem('#platform.testing.enabled', 'true')
+    localStorage.setItem('#platform.lazy.loading', 'false')
+  })
 }

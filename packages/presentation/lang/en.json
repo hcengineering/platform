@@ -33,7 +33,12 @@
     "Next": "Next",
     "FailedToPreview": "Failed to preview",
     "ContentType": "Content type",
-    "ContentTypeNotSupported": "Preview is not available for this content type"
+    "ContentTypeNotSupported": "Preview is not available for this content type",
+    "StartDrawing": "Scribble over",
+    "DrawingHistory": "Scribble history",
+    "ColorAdd": "Add color preset",
+    "ColorRemove": "Remove color preset",
+    "ColorReset": "Reset color presets"
   },
   "status": {
     "FileTooLarge": "File too large"

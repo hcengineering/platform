@@ -31,7 +31,7 @@ import {
   type TextEditorActionKind
 } from '@hcengineering/text-editor'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { EditorKitOptions } from '@hcengineering/text-editor-resources'
+import type { EditorKitOptions } from '@hcengineering/text-editor-resources/src/kits/editor-kit'
 import textEditor from './plugin'
 
 export { textEditorOperation } from './migration'
@@ -147,6 +147,42 @@ function createImageAlignmentAction (builder: Builder, align: 'center' | 'left' 
   })
 }
 
+function createTextAlignmentAction (builder: Builder, align: 'center' | 'left' | 'right'): void {
+  let icon: Asset
+  let label: IntlString
+  let index: number
+  switch (align) {
+    case 'left':
+      icon = textEditor.icon.AlignLeft
+      label = textEditor.string.AlignLeft
+      index = 5
+      break
+    case 'center':
+      icon = textEditor.icon.AlignCenter
+      label = textEditor.string.AlignCenter
+      index = 10
+      break
+    case 'right':
+      icon = textEditor.icon.AlignRight
+      label = textEditor.string.AlignRight
+      index = 15
+      break
+  }
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'text',
+    action: {
+      command: 'setTextAlign',
+      params: align
+    },
+    visibilityTester: textEditor.function.IsEditable,
+    icon,
+    label,
+    category: 45,
+    index
+  })
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(TRefInputActionItem, TTextEditorExtensionFactory, TTextEditorAction)
 
@@ -211,6 +247,18 @@ export function createModel (builder: Builder): void {
     index: 20
   })
 
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.SetTextColor,
+    icon: textEditor.icon.TextStyle,
+    visibilityTester: textEditor.function.IsTextStylingEnabled,
+    isActive: {
+      name: 'textStyle'
+    },
+    label: textEditor.string.SetTextColor,
+    category: 20,
+    index: 25
+  })
+
   // Link category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
     action: textEditor.function.FormatLink,
@@ -252,6 +300,11 @@ export function createModel (builder: Builder): void {
     category: 40,
     index: 10
   })
+
+  // Text align category
+  createTextAlignmentAction(builder, 'left')
+  createTextAlignmentAction(builder, 'center')
+  createTextAlignmentAction(builder, 'right')
 
   // Quote category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
@@ -297,14 +350,36 @@ export function createModel (builder: Builder): void {
     index: 10
   })
 
+  // Table cell category
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'table',
+    action: textEditor.function.SetBackgroundColor,
+    icon: textEditor.icon.Brush,
+    visibilityTester: textEditor.function.IsTableToolbarContext,
+    label: textEditor.string.SetCellHighlightColor,
+    category: 65,
+    index: 5
+  })
+
   // Table category
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'table',
+    action: textEditor.function.SelectTable,
+    icon: textEditor.icon.SelectTable,
+    visibilityTester: textEditor.function.IsTableToolbarContext,
+    label: textEditor.string.SelectTable,
+    category: 70,
+    index: 15
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'table',
     action: textEditor.function.OpenTableOptions,
     icon: textEditor.icon.TableProps,
-    visibilityTester: textEditor.function.IsEditableTableActive,
+    visibilityTester: textEditor.function.IsTableToolbarContext,
     label: textEditor.string.TableOptions,
     category: 70,
-    index: 5
+    index: 20
   })
 
   // Image align category
@@ -360,5 +435,17 @@ export function createModel (builder: Builder): void {
     label: textEditor.string.Note,
     category: 110,
     index: 5
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.CreateInlineComment,
+    icon: textEditor.icon.Comment,
+    visibilityTester: textEditor.function.ShouldShowCreateInlineCommentAction,
+    isActive: {
+      name: 'inlineComment'
+    },
+    label: textEditor.string.Comment,
+    category: 110,
+    index: 10
   })
 }

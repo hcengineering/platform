@@ -13,26 +13,77 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createTab, tabsStore } from '../workbench'
+  import { createTab, tabsStore, tabIdStore } from '../workbench'
+  import { WorkbenchTabs } from '../index'
   import WorkbenchTabPresenter from './WorkbenchTabPresenter.svelte'
-  import { IconAdd, ButtonIcon } from '@hcengineering/ui'
+  import {
+    IconAdd,
+    IconMoreH,
+    ButtonIcon,
+    ScrollerBar,
+    deviceOptionsStore as deviceInfo,
+    checkAdaptiveMatching,
+    showPopup
+  } from '@hcengineering/ui'
+
+  export let popup: boolean = false
+
+  let scroller: HTMLElement
+  let element: HTMLButtonElement
+  let pressed: boolean = false
+
+  $: devSize = $deviceInfo.size
+  $: mini = checkAdaptiveMatching(devSize, 'md')
+  $: selectedTab = $tabsStore.find((ts) => ts._id === $tabIdStore)
+
+  const showTabs = (): void => {
+    pressed = true
+    showPopup(WorkbenchTabs, { popup: true }, element, () => {
+      pressed = false
+    })
+  }
 </script>
 
-<div class="root flex-gap-1">
-  {#each $tabsStore as tab (tab._id)}
-    <WorkbenchTabPresenter {tab} />
-  {/each}
-  <div class="ml-1-5 plus-button mr-1">
-    <ButtonIcon icon={IconAdd} size="min" kind="tertiary" on:click={createTab} />
-  </div>
+<div
+  class={popup ? 'selectPopup' : 'flex-row-center flex-gap-2'}
+  style:padding={popup ? '.5rem' : mini ? '.25rem .25rem .25rem 0' : '0 .25rem 0 0'}
+>
+  {#if popup}
+    <div class="scroll">
+      <div class="box flex-gap-1">
+        {#each $tabsStore.filter((ts) => ts._id !== $tabIdStore) as tab (tab._id)}
+          <WorkbenchTabPresenter {tab} />
+        {/each}
+      </div>
+    </div>
+  {:else if !mini}
+    <div class="flex-row-center gap-1 py-1 overflow-x-auto">
+      {#each $tabsStore as tab (tab._id)}
+        <WorkbenchTabPresenter {tab} />
+      {/each}
+    </div>
+  {:else if selectedTab !== undefined}
+    <WorkbenchTabPresenter tab={selectedTab} />
+    {#if $tabsStore.length > 1}
+      <ButtonIcon
+        bind:element
+        icon={IconMoreH}
+        iconProps={{ fill: 'var(--theme-dark-color)' }}
+        size={'extra-small'}
+        kind={'tertiary'}
+        hasMenu
+        {pressed}
+        on:click={showTabs}
+      />
+    {/if}
+  {/if}
+  {#if !popup}
+    <ButtonIcon
+      icon={IconAdd}
+      iconProps={{ fill: 'var(--theme-dark-color)' }}
+      size={'extra-small'}
+      kind={'tertiary'}
+      on:click={createTab}
+    />
+  {/if}
 </div>
-
-<style>
-  .root {
-    display: flex;
-    align-items: center;
-  }
-  .plus-button {
-    height: 0.875rem;
-  }
-</style>

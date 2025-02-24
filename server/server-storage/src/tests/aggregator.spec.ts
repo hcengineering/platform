@@ -1,45 +1,53 @@
-import { MeasureMetricsContext, type MeasureContext, type WorkspaceId } from '@hcengineering/core'
-import type { StorageAdapter } from '@hcengineering/storage'
-import { AggregatorStorageAdapter } from '../aggregator'
-import { MemRawDBAdapter, MemStorageAdapter } from './memAdapters'
+import {
+  MeasureMetricsContext,
+  type WorkspaceDataId,
+  type MeasureContext,
+  type WorkspaceUuid,
+  type WorkspaceIds
+} from '@hcengineering/core'
+import type { NamedStorageAdapter } from '@hcengineering/storage'
+import { FallbackStorageAdapter } from '../fallback'
+import { MemStorageAdapter } from './memAdapters'
 
 describe('aggregator tests', () => {
   function prepare1 (): {
     mem1: MemStorageAdapter
     mem2: MemStorageAdapter
-    aggr: AggregatorStorageAdapter
+    aggr: FallbackStorageAdapter
     testCtx: MeasureContext
-    ws1: WorkspaceId
+    wsIds1: WorkspaceIds
   } {
     const mem1 = new MemStorageAdapter()
 
     const mem2 = new MemStorageAdapter()
-    const adapters = new Map<string, StorageAdapter>()
-    adapters.set('mem1', mem1)
-    adapters.set('mem2', mem2)
-    const blobs = new MemRawDBAdapter()
-    const aggr = new AggregatorStorageAdapter(adapters, 'mem2', blobs)
+    const adapters: NamedStorageAdapter[] = []
+    adapters.push({ name: 'mem2', adapter: mem2 })
+    adapters.push({ name: 'mem1', adapter: mem1 })
+    const aggr = new FallbackStorageAdapter(adapters)
 
     const testCtx = new MeasureMetricsContext('test', {})
-    const ws1: WorkspaceId = { name: 'ws1' }
-    return { mem1, mem2, aggr, ws1, testCtx }
+    const wsIds1 = {
+      uuid: 'ws1-uuid' as WorkspaceUuid,
+      dataId: 'ws1-dataId' as WorkspaceDataId,
+      url: 'ws1-url'
+    }
+    return { mem1, mem2, aggr, wsIds1, testCtx }
   }
+
   it('not reuse existing storage', async () => {
-    const { mem1, aggr, ws1, testCtx } = prepare1()
+    const { mem1, aggr, wsIds1, testCtx } = prepare1()
 
     // Test default provider
-    await mem1.put(testCtx, ws1, 'test', 'data', 'text/plain')
-    await aggr.syncBlobFromStorage(testCtx, ws1, 'test', 'mem1')
+    await mem1.put(testCtx, wsIds1, 'test', 'data', 'text/plain')
 
-    const stat = await aggr.stat(testCtx, ws1, 'test')
+    const stat = await aggr.stat(testCtx, wsIds1, 'test')
     expect(stat?.provider).toEqual('mem1')
 
-    // Test content typed provider
-    await aggr.put(testCtx, ws1, 'test', 'data2', 'text/plain')
-    const stat2 = await aggr.stat(testCtx, ws1, 'test')
+    await aggr.put(testCtx, wsIds1, 'test', 'data2', 'text/plain')
+    const stat2 = await aggr.stat(testCtx, wsIds1, 'test')
     expect(stat2?.provider).toEqual('mem2')
 
-    const dta = Buffer.concat(await aggr.read(testCtx, ws1, 'test')).toString()
+    const dta = Buffer.concat((await aggr.read(testCtx, wsIds1, 'test')) as any).toString()
     expect(dta).toEqual('data2')
   })
 })

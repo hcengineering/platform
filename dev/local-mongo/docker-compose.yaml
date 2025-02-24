@@ -87,7 +87,6 @@ services:
       - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
       - ACCOUNTS_URL=http://localhost:3000
       - UPLOAD_URL=/files      
-      - ELASTIC_URL=http://elastic:9200
       - GMAIL_URL=http://localhost:8088
       - CALENDAR_URL=http://localhost:8095
       - TELEGRAM_URL=http://localhost:8086
@@ -121,7 +120,6 @@ services:
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
-      - ELASTIC_URL=http://elastic:9200
       - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false
@@ -183,23 +181,22 @@ services:
       resources:
         limits:
           memory: 300M
-  analytics:
-    image: hardcoreeng/analytics-collector
-    restart: unless-stopped
-    ports:
-      - 4007:4007
-    environment:
-      - SECRET=secret
-      - PORT=4007
-      - MONGO_URL=mongodb://host.docker.internal:27017
-      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
-      - SERVICE_ID=analytics-collector-service
-      - ACCOUNTS_URL=http://account:3000
-      - SUPPORT_WORKSPACE=support
-    deploy:
-      resources:
-        limits:
-          memory: 300M
+#  analytics:
+#    image: hardcoreeng/analytics-collector
+#    restart: unless-stopped
+#    ports:
+#      - 4007:4007
+#    environment:
+#      - SECRET=secret
+#      - PORT=4007
+#      - MONGO_URL=mongodb://host.docker.internal:27017
+#      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
+#      - SERVICE_ID=analytics-collector-service
+#      - ACCOUNTS_URL=http://account:3000
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 300M
   aiBot:
     image: hardcoreeng/ai-bot
     restart: unless-stopped
@@ -207,7 +204,6 @@ services:
       - SERVER_SECRET=secret
       - MONGO_URL=mongodb://host.docker.internal:27017
       - ACCOUNTS_URL=http://account:3000
-      - SUPPORT_WORKSPACE=support
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
       - PASSWORD=password

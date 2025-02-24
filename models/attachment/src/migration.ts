@@ -19,15 +19,21 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { attachmentId, DOMAIN_ATTACHMENT } from '.'
+import attachment, { attachmentId, DOMAIN_ATTACHMENT } from '.'
 
 export const attachmentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, attachmentId, [
       {
-        state: 'fix-rename-backups',
+        state: 'fix-attachedTo',
         func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_ATTACHMENT, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+          await client.update(
+            DOMAIN_ATTACHMENT,
+            { _class: attachment.class.Attachment, attachedToClass: 'chunter:class:Comment' },
+            {
+              attachedToClass: 'chunter:class:ChatMessage'
+            }
+          )
         }
       }
     ])

@@ -8,6 +8,7 @@ export class CommonPage {
     this.page = page
   }
 
+  appHeader = (): Locator => this.page.locator('.hulyNavPanel-header')
   selectPopupInput = (): Locator => this.page.locator('div.selectPopup input')
   selectPopupInputSearch = (): Locator => this.page.locator('div.popup input.search')
   selectPopupListItem = (name: string): Locator => this.page.locator('div.selectPopup div.list-item', { hasText: name })
@@ -19,7 +20,7 @@ export class CommonPage {
   popupSpanLabel = (point: string): Locator =>
     this.page.locator(`div[class$="opup"] span[class*="label"]:has-text("${point}")`)
 
-  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-wrapper')
 
   selectPopupSpanLines = (item: string): Locator =>
     this.page.locator('div.selectPopup span[class^="lines"]', { hasText: item })
@@ -91,6 +92,12 @@ export class CommonPage {
 
   submitButton = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
   buttonBreadcrumb = (hasText?: string): Locator => this.page.locator('button.hulyBreadcrumb-container', { hasText })
+  appsShowMenuButton = (): Locator => this.page.locator('[id="app-workbench\\:string\\:ShowMenu"]')
+
+  async openNavigator (): Promise<void> {
+    const needOpenNavigator = await this.appsShowMenuButton().isVisible()
+    if (needOpenNavigator) await this.appsShowMenuButton().click()
+  }
 
   async selectMenuItem (page: Page, name: string, fullWordFilter: boolean = false): Promise<void> {
     if (name !== 'first') {
@@ -135,6 +142,7 @@ export class CommonPage {
 
   async pressYesDeletePopup (page: Page): Promise<void> {
     await this.viewStringDeleteObjectButtonPrimary().click()
+    await expect(this.viewStringDeleteObjectButtonPrimary()).not.toBeVisible({ timeout: 1000 })
   }
 
   async addNewTagPopup (page: Page, title: string, description: string): Promise<void> {

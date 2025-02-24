@@ -16,45 +16,51 @@
   import { Markup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
   import {
     AnySvelteComponent,
     Button,
     ButtonKind,
-    handler,
-    registerFocus,
+    checkAdaptiveMatching,
     deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching
+    handler,
+    IconClose,
+    registerFocus
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import { FocusPosition } from '@tiptap/core'
   import { EditorView } from '@tiptap/pm/view'
-  import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
+  import { createEventDispatcher } from 'svelte'
 
-  import { Completion } from '../Completion'
+  import view from '@hcengineering/view'
   import TextEditor from './TextEditor.svelte'
   import { defaultRefActions, getModelRefActions } from './editor/actions'
-  import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
+  import { referenceConfig, ReferenceExtension } from './extension/reference'
   import Send from './icons/Send.svelte'
 
   export let content: Markup = EmptyMarkup
   export let showHeader = false
   export let showActions = true
   export let showSend = true
+  export let showCancel = false
   export let iconSend: Asset | AnySvelteComponent | undefined = undefined
   export let labelSend: IntlString | undefined = undefined
+  export let labelCancel: IntlString | undefined = undefined
   export let kindSend: ButtonKind = 'ghost'
+  export let kindCancel: ButtonKind = 'ghost'
   export let haveAttachment = false
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] = []
   export let loading: boolean = false
   export let focusable: boolean = false
+  export let noborder: boolean = false
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
   export let canEmbedFiles = true
   export let canEmbedImages = true
   export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
+  export let onCancel: (() => void) | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const buttonSize = 'medium'
@@ -134,15 +140,15 @@
       focusManager?.setFocus(idx)
     }
   }
-  const completionPlugin = Completion.configure({
-    ...completionConfig,
+  const completionPlugin = ReferenceExtension.configure({
+    ...referenceConfig,
     showDoc (event: MouseEvent, _id: string, _class: string) {
       dispatch('open-document', { event, _id, _class })
     }
   })
 </script>
 
-<div class="ref-container" class:focusable>
+<div class="ref-container" class:focusable class:noborder>
   {#if showHeader && $$slots.header}
     <div class="header">
       <slot name="header" />
@@ -160,7 +166,7 @@
         if (canSubmit) {
           dispatch('message', ev.detail)
           content = EmptyMarkup
-          editor?.clear()
+          editor?.clear?.()
         }
       }}
       on:blur={() => {
@@ -207,7 +213,34 @@
         {/if}
       </div>
 
-      {#if showSend}
+      {#if showCancel && showSend}
+        <div class="buttons-group {shrinkButtons ? 'xxsmall-gap' : 'xsmall-gap'}">
+          <Button
+            {loading}
+            icon={IconClose}
+            iconProps={{ size: buttonSize }}
+            kind={kindCancel}
+            size={buttonSize}
+            showTooltip={{
+              label: labelCancel ?? view.string.Cancel
+            }}
+            on:click={onCancel}
+          />
+          <Button
+            {loading}
+            disabled={!canSubmit}
+            icon={iconSend ?? Send}
+            iconProps={{ size: buttonSize }}
+            kind={kindSend}
+            size={buttonSize}
+            showTooltip={{
+              label: labelSend ?? textEditor.string.Send
+            }}
+            on:click={submit}
+          />
+        </div>
+      {/if}
+      {#if showSend && !showCancel}
         <Button
           {loading}
           disabled={!canSubmit}
@@ -237,6 +270,10 @@
       &:focus-within {
         border-color: var(--primary-edit-border-color);
       }
+    }
+
+    &.noborder {
+      border: none;
     }
   }
 

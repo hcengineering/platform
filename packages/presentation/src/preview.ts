@@ -2,7 +2,7 @@ import type { Blob, Ref } from '@hcengineering/core'
 import { concatLink } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 
-import { getFileUrl, getCurrentWorkspaceId } from './file'
+import { getFileUrl, getCurrentWorkspaceUuid } from './file'
 import presentation from './plugin'
 
 export interface PreviewConfig {
@@ -16,7 +16,7 @@ export interface VideoMeta {
   hls: string
 }
 
-const defaultImagePreview = (): string => `/files/${getCurrentWorkspaceId()}?file=:blobId&size=:size`
+const defaultImagePreview = (): string => `/files/${getCurrentWorkspaceUuid()}?file=:blobId&size=:size`
 
 /**
  *
@@ -63,31 +63,37 @@ export function getPreviewConfig (): PreviewConfig {
 export async function getBlobRef (
   file: Ref<Blob>,
   name?: string,
-  width?: number
+  width?: number,
+  height?: number
 ): Promise<{
     src: string
     srcset: string
   }> {
   return {
     src: getFileUrl(file, name),
-    srcset: getSrcSet(file, width)
+    srcset: getSrcSet(file, width, height)
   }
 }
 
-export async function getBlobSrcSet (file: Ref<Blob>, width?: number): Promise<string> {
-  return getSrcSet(file, width)
+export async function getBlobSrcSet (file: Ref<Blob>, width?: number, height?: number): Promise<string> {
+  return getSrcSet(file, width, height)
 }
 
-export function getSrcSet (_blob: Ref<Blob>, width?: number): string {
-  return blobToSrcSet(getPreviewConfig(), _blob, width)
+export function getSrcSet (_blob: Ref<Blob>, width?: number, height?: number): string {
+  return blobToSrcSet(getPreviewConfig(), _blob, width, height)
 }
 
-function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | undefined): string {
+function blobToSrcSet (
+  cfg: PreviewConfig,
+  blob: Ref<Blob>,
+  width: number | undefined,
+  height: number | undefined
+): string {
   if (blob.includes('://')) {
     return ''
   }
 
-  let url = cfg.image.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+  let url = cfg.image.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
   const downloadUrl = getFileUrl(blob)
 
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
@@ -98,25 +104,32 @@ function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | unde
   url = url.replaceAll(':blobId', encodeURIComponent(blob))
 
   let result = ''
-  const fu = url
   if (width !== undefined) {
     result +=
-      fu.replaceAll(':size', `${width}`) +
+      formatImageSize(url, width, height ?? width, 1) +
       ' 1x , ' +
-      fu.replaceAll(':size', `${width * 2}`) +
+      formatImageSize(url, width, height ?? width, 2) +
       ' 2x, ' +
-      fu.replaceAll(':size', `${width * 3}`) +
+      formatImageSize(url, width, height ?? width, 3) +
       ' 3x'
   }
 
   return result
 }
 
+function formatImageSize (url: string, width: number, height: number, dpr: number): string {
+  return url
+    .replaceAll(':size', `${width * dpr}`)
+    .replaceAll(':width', `${width}`)
+    .replaceAll(':height', `${height}`)
+    .replaceAll(':dpr', `${dpr}`)
+}
+
 /***
  * @deprecated, please use Blob direct operations.
  */
-export function getFileSrcSet (_blob: Ref<Blob>, width?: number): string {
-  return blobToSrcSet(getPreviewConfig(), _blob, width)
+export function getFileSrcSet (_blob: Ref<Blob>, width?: number, height?: number): string {
+  return blobToSrcSet(getPreviewConfig(), _blob, width, height)
 }
 
 /**
@@ -125,16 +138,22 @@ export function getFileSrcSet (_blob: Ref<Blob>, width?: number): string {
 export async function getVideoMeta (file: string, filename?: string): Promise<VideoMeta | undefined> {
   const cfg = getPreviewConfig()
 
-  const url = cfg.video
-    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+  let url = cfg.video
+    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
     .replaceAll(':blobId', encodeURIComponent(file))
 
   if (url === '') {
     return undefined
   }
 
+  const token = getMetadata(presentation.metadata.Token) ?? ''
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+  if (!url.includes('://')) {
+    url = concatLink(frontUrl ?? '', url)
+  }
+
   try {
-    const response = await fetch(url)
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
     if (response.ok) {
       return (await response.json()) as VideoMeta
     }

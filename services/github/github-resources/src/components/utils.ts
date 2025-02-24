@@ -1,22 +1,21 @@
 import { Analytics } from '@hcengineering/analytics'
-import core, { concatLink, getCurrentAccount, toIdMap, type IdMap } from '@hcengineering/core'
-import { PlatformError, getMetadata, unknownError } from '@hcengineering/platform'
-import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-import { location } from '@hcengineering/ui'
+import { concatLink, getCurrentAccount, toIdMap, type IdMap } from '@hcengineering/core'
 import {
   makeQuery,
   type GithubAuthentication,
   type GithubIntegrationRepository,
   type GithubProject
 } from '@hcengineering/github'
+import { PlatformError, getMetadata, unknownError } from '@hcengineering/platform'
+import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+import { location } from '@hcengineering/ui'
 import { get, writable } from 'svelte/store'
 import github from '../plugin'
 
 export async function onAuthorize (login?: string): Promise<void> {
-  const meId = getCurrentAccount()._id
   const state = btoa(
     JSON.stringify({
-      accountId: meId,
+      accountId: getCurrentAccount().primarySocialId,
       workspace: get(location).path[1],
       token: getMetadata(presentation.metadata.Token),
       op: 'authorize'
@@ -29,28 +28,6 @@ export async function onAuthorize (login?: string): Promise<void> {
   for (const c of config) {
     await client.remove(c)
   }
-  await client.createDoc<GithubAuthentication>(github.class.GithubAuthentication, core.space.Workspace, {
-    attachedTo: meId,
-    login: '',
-    error: null,
-    authRequestTime: Date.now(),
-    createdAt: new Date(),
-    followers: 0,
-    following: 0,
-    nodeId: '',
-    updatedAt: new Date(),
-    url: '',
-    repositories: 0,
-    organizations: { totalCount: 0, nodes: [] },
-    closedIssues: 0,
-    openIssues: 0,
-    mergedPRs: 0,
-    openPRs: 0,
-    closedPRs: 0,
-    repositoryDiscussions: 0,
-    starredRepositories: 0
-  })
-
   Analytics.handleEvent('Authorize github clicked')
 
   const url =
@@ -89,7 +66,7 @@ projectQuery.query(github.mixin.GithubProject, {}, (res) => {
 const authQuery = createQuery(true)
 export const githubAuth = writable<GithubAuthentication | undefined>(undefined)
 authQuery.query(github.class.GithubAuthentication, {}, (res) => {
-  githubAuth.set(res.shift())
+  githubAuth.set(res.find((it) => it.login !== ''))
 })
 
 /**

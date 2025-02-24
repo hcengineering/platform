@@ -17,7 +17,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle  --platform=node > bundle/bundle.js",
+    "bundle": "node ../../../common/scripts/esbuild.js",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/analytics-collector",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/analytics-collector staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/analytics-collector",
@@ -37,7 +37,7 @@
     "@types/node": "~20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "eslint": "^8.54.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "eslint-plugin-import": "^2.26.0",
@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@hcengineering/account": "^0.6.0",
+    "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/analytics-collector": "^0.6.0",
     "@hcengineering/analytics-collector-assets": "^0.6.0",
@@ -101,8 +102,8 @@
     "@hcengineering/workbench-assets": "^0.6.14",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
-    "express": "^4.19.2",
-    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
+    "express": "^4.21.2",
+    "mongodb": "^6.12.0",
     "puppeteer": "^22.6.1"
   }
 }

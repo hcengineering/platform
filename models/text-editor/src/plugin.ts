@@ -25,6 +25,7 @@ export default mergeIds(textEditorId, textEditor, {
   function: {
     FormatLink: '' as Resource<TextActionFunction>,
     OpenTableOptions: '' as Resource<TextActionFunction>,
+    SelectTable: '' as Resource<TextActionFunction>,
     OpenImage: '' as Resource<TextActionFunction>,
     ExpandImage: '' as Resource<TextActionFunction>,
     MoreImageActions: '' as Resource<TextActionFunction>,
@@ -32,8 +33,16 @@ export default mergeIds(textEditorId, textEditor, {
     DownloadImage: '' as Resource<TextActionFunction>,
 
     IsEditableTableActive: '' as Resource<TextActionVisibleFunction>,
+    IsTableToolbarContext: '' as Resource<TextActionVisibleFunction>,
     IsEditableNote: '' as Resource<TextActionVisibleFunction>,
     IsEditable: '' as Resource<TextActionVisibleFunction>,
-    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>
+    IsTextStylingEnabled: '' as Resource<TextActionVisibleFunction>,
+    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>,
+
+    CreateInlineComment: '' as Resource<TextActionFunction>,
+    ShouldShowCreateInlineCommentAction: '' as Resource<TextActionVisibleFunction>,
+
+    SetBackgroundColor: '' as Resource<TextActionFunction>,
+    SetTextColor: '' as Resource<TextActionFunction>
   }
 })

@@ -14,6 +14,8 @@
 //
 import activity from '@hcengineering/activity'
 import {
+  type Account,
+  type Client,
   SortingOrder,
   getCurrentAccount,
   toIdMap,
@@ -31,8 +33,10 @@ import notification, {
   type InboxNotification,
   type InboxNotificationsClient
 } from '@hcengineering/notification'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, onClient } from '@hcengineering/presentation'
+import { includesAny } from '@hcengineering/contact'
 import { derived, get, writable } from 'svelte/store'
+
 import { isActivityNotification } from './utils'
 
 /**
@@ -63,14 +67,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   )
 
   readonly inboxNotificationsByContext = derived(
-    [this.contexts, this.inboxNotifications],
-    ([notifyContexts, inboxNotifications]) => {
-      if (inboxNotifications.length === 0 || notifyContexts.length === 0) {
+    [this.contextById, this.inboxNotifications],
+    ([contextById, inboxNotifications]) => {
+      if (inboxNotifications.length === 0 || contextById.size === 0) {
         return new Map<Ref<DocNotifyContext>, InboxNotification[]>()
       }
 
       return inboxNotifications.reduce((result, notification) => {
-        const notifyContext = notifyContexts.find(({ _id }) => _id === notification.docNotifyContext)
+        const notifyContext = contextById.get(notification.docNotifyContext)
 
         if (notifyContext === undefined) {
           return result
@@ -88,14 +92,15 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   private _contextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
 
   private constructor () {
-    void this.init()
+    onClient(this.init.bind(this))
   }
 
-  private async init (): Promise<void> {
+  private async init (client: Client, account: Account): Promise<void> {
+    const mySocialIds = account.socialIds
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
-        user: getCurrentAccount()._id
+        user: { $in: mySocialIds }
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)
@@ -107,7 +112,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.CommonInboxNotification,
       {
         archived: false,
-        user: getCurrentAccount()._id
+        user: { $in: mySocialIds }
       },
       (result: InboxNotification[]) => {
         result.sort((a, b) => (b.createdOn ?? b.modifiedOn) - (a.createdOn ?? a.modifiedOn))
@@ -119,7 +124,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.ActivityInboxNotification,
       {
         archived: false,
-        user: getCurrentAccount()._id
+        user: { $in: mySocialIds }
       },
       (result: ActivityInboxNotification[]) => {
         this.activityInboxNotifications.set(result)
@@ -148,13 +153,15 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     return InboxNotificationsClientImpl._instance
   }
 
-  async readDoc (client: TxOperations, _id: Ref<Doc>): Promise<void> {
+  async readDoc (_id: Ref<Doc>): Promise<void> {
     const docNotifyContext = this._contextByDoc.get(_id)
 
     if (docNotifyContext === undefined) {
       return
     }
 
+    const client = getClient()
+    const op = client.apply(undefined, 'readDoc', true)
     const inboxNotifications = await client.findAll(
       notification.class.InboxNotification,
       { docNotifyContext: docNotifyContext._id, isViewed: false },
@@ -162,19 +169,21 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     )
 
     for (const notification of inboxNotifications) {
-      await client.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
+      await op.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
     }
-    await client.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
+    await op.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
+    await op.commit()
   }
 
-  async forceReadDoc (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
+  async forceReadDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
     const context = this._contextByDoc.get(_id)
 
     if (context !== undefined) {
-      await this.readDoc(client, _id)
+      await this.readDoc(_id)
       return
     }
 
+    const client = getClient()
     const doc = await client.findOne(_class, { _id })
 
     if (doc === undefined) {
@@ -191,10 +200,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         collaboratorsMixin.space,
         notification.mixin.Collaborators,
         {
-          collaborators: [getCurrentAccount()._id]
+          collaborators: [getCurrentAccount().primarySocialId]
         }
       )
-    } else if (!collaboratorsMixin.collaborators.includes(getCurrentAccount()._id)) {
+    } else if (!includesAny(collaboratorsMixin.collaborators, getCurrentAccount().socialIds)) {
       await client.updateMixin(
         collaboratorsMixin._id,
         collaboratorsMixin._class,
@@ -202,7 +211,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.mixin.Collaborators,
         {
           $push: {
-            collaborators: getCurrentAccount()._id
+            collaborators: getCurrentAccount().primarySocialId
           }
         }
       )
@@ -230,25 +239,28 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   async archiveNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
     const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
     for (const notification of inboxNotifications) {
-      await client.update(notification, { archived: true })
+      await client.update(notification, { archived: true, isViewed: true })
     }
   }
 
   async archiveAllNotifications (): Promise<void> {
-    const ops = getClient().apply(undefined, 'archiveAllNotifications')
+    const ops = getClient().apply(undefined, 'archiveAllNotifications', true)
 
     try {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: { $in: getCurrentAccount().socialIds },
           archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
       const contexts = get(this.contexts) ?? []
       for (const notification of inboxNotifications) {
-        await ops.updateDoc(notification._class, notification.space, notification._id, { archived: true })
+        await ops.updateDoc(notification._class, notification.space, notification._id, {
+          archived: true,
+          isViewed: true
+        })
       }
 
       for (const context of contexts) {
@@ -260,13 +272,13 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async readAllNotifications (): Promise<void> {
-    const ops = getClient().apply(undefined, 'readAllNotifications')
+    const ops = getClient().apply(undefined, 'readAllNotifications', true)
 
     try {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: { $in: getCurrentAccount().socialIds },
           isViewed: false,
           archived: false
         },
@@ -285,13 +297,13 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async unreadAllNotifications (): Promise<void> {
-    const ops = getClient().apply(undefined, 'unreadAllNotifications')
+    const ops = getClient().apply(undefined, 'unreadAllNotifications', true)
 
     try {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id,
+          user: { $in: getCurrentAccount().socialIds },
           isViewed: true,
           archived: false
         },

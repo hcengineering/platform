@@ -15,8 +15,6 @@
 <script lang="ts">
   import { Label } from '@hcengineering/ui'
   import { IntlString } from '@hcengineering/platform'
-  import { Timestamp } from '@hcengineering/core'
-
   export let label: IntlString | undefined
 </script>
 

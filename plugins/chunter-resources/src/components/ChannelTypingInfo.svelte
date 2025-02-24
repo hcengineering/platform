@@ -14,18 +14,19 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import chunter, { TypingInfo } from '@hcengineering/chunter'
-  import { getName, Person } from '@hcengineering/contact'
+  import chunter from '@hcengineering/chunter'
+  import { getName, Person, getCurrentEmployee } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, IdMap } from '@hcengineering/core'
+  import { IdMap } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
+  import { PresenceTyping } from '../types'
 
-  export let typingInfo: TypingInfo[] = []
+  export let typingInfo: PresenceTyping[] = []
 
   const typingDelay = 2000
   const maxTypingPersons = 3
-  const me = getCurrentAccount()
+  const me = getCurrentEmployee()
   const hierarchy = getClient().getHierarchy()
 
   let typingPersonsLabel: string = ''
@@ -34,12 +35,10 @@
 
   $: updateTypingPersons($personByIdStore, typingInfo)
 
-  function updateTypingPersons (personById: IdMap<Person>, typingInfo: TypingInfo[]) {
+  function updateTypingPersons (personById: IdMap<Person>, typingInfo: PresenceTyping[]): void {
     const now = Date.now()
     const personIds = new Set(
-      typingInfo
-        .filter((info) => info.person !== me.person && now - info.lastTyping < typingDelay)
-        .map((info) => info.person)
+      typingInfo.filter((info) => info.person !== me && now - info.lastTyping < typingDelay).map((info) => info.person)
     )
     const names = Array.from(personIds)
       .map((personId) => personById.get(personId))

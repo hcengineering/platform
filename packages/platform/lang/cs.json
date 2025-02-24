@@ -1,0 +1,24 @@
+{
+  "status": {
+    "LoadingPlugin": "Načítání pluginu {plugin}...",
+    "UnknownError": "Neznámá chyba: {message}",
+    "InvalidId": "Neplatné ID: {id}",
+    "BadRequest": "Špatný požadavek",
+    "Forbidden": "Zakázáno",
+    "ExpiredLink": "Tento odkaz na pozvánku vypršel",
+    "Unauthorized": "Neoprávněný přístup",
+    "UnknownMethod": "Neznámá metoda: {method}",
+    "InternalServerError": "Interní chyba serveru",
+    "MaintenanceWarning": "Plánovaná údržba za {time, plural, =1 {méně než minutu} other {# minut}}",
+    "AccountNotFound": "Účet nenalezen",
+    "AccountNotConfirmed": "Účet není potvrzen",
+    "WorkspaceNotFound": "Pracovní prostor nenalezen",
+    "InvalidPassword": "Neplatné heslo",
+    "AccountAlreadyExists": "Účet již existuje",
+    "WorkspaceRateLimit": "Server je zaneprázdněný. Prosím, chvíli počkejte a zkuste to znovu",
+    "AccountAlreadyConfirmed": "Účet již byl potvrzen",
+    "WorkspaceAlreadyExists": "Pracovní prostor již existuje",
+    "InvalidOtp": "Neplatný kód",
+    "InviteNotFound": "Pozvánka s email:{email} nebyla nalezena."
+  }
+}

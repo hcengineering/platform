@@ -1,11 +1,13 @@
 services:
   account:
     environment:
-      - DB_URL=postgresql://postgres:example@postgres:5432
+      - DB_URL=postgresql://root@cockroach:26257/defaultdb?sslmode=disable
   transactor:
     environment:
-      - MONGO_URL=mongodb://mongodb:27018
-      - DB_URL=postgresql://postgres:example@postgres:5432
+      - DB_URL=postgresql://root@cockroach:26257/defaultdb?sslmode=disable
   workspace:
     environment:
-      - DB_URL=postgresql://postgres:example@postgres:5432
+      - DB_URL=postgresql://root@cockroach:26257/defaultdb?sslmode=disable
+  fulltext:
+    environment:
+      - DB_URL=postgresql://root@cockroach:26257/defaultdb?sslmode=disable

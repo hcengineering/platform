@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Employee } from '@hcengineering/contact'
-  import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, AssigneeBox, personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import core, {
-    Account,
+    PersonId,
     Data,
     DocumentUpdate,
     Ref,
@@ -26,7 +26,8 @@
     SortingOrder,
     SpaceType,
     generateId,
-    getCurrentAccount
+    getCurrentAccount,
+    notEmpty
   } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
@@ -69,10 +70,10 @@
   let color = project?.color ?? getColorNumberByText(name)
   let isColorSelected = false
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
-  let members: Ref<Account>[] =
-    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] =
-    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount()._id]
+  let members: PersonId[] =
+    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount().primarySocialId]
+  let owners: PersonId[] =
+    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount().primarySocialId]
   let projectsIdentifiers = new Set<string>()
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
@@ -80,6 +81,7 @@
 
   let typeId: Ref<ProjectType> | undefined = project?.type
   $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
+  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
   let autoJoin = project?.autoJoin ?? typeType?.autoJoin ?? false
 
   const dispatch = createEventDispatcher()
@@ -258,7 +260,6 @@
   }
 
   function chooseIcon (ev: MouseEvent): void {
-    const icons = [tracker.icon.Home, tracker.icon.RedCircle]
     const update = (result: any) => {
       if (result !== undefined && result !== null) {
         icon = result.icon
@@ -266,7 +267,7 @@
         isColorSelected = true
       }
     }
-    showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
+    showPopup(IconPicker, { icon, color }, 'top', update, update)
   }
 
   function close (id?: Ref<Project>): void {
@@ -309,14 +310,14 @@
     rolesQuery.unsubscribe()
   }
 
-  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+  function handleOwnersChanged (newOwners: PersonId[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+  function handleMembersChanged (newMembers: PersonId[]): void {
     membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -331,7 +332,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -538,8 +539,8 @@
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}
           label={tracker.string.Members}
-          includeItems={members}
-          readonly={members.length === 0}
+          includeItems={membersPersons}
+          readonly={membersPersons.length === 0}
           onChange={(refs) => {
             handleRoleAssignmentChanged(role._id, refs)
           }}

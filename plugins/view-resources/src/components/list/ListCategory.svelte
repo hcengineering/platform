@@ -34,10 +34,10 @@
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { fade } from 'svelte/transition'
+  import { showMenu } from '../../actions'
   import { FocusSelection, SelectionFocusProvider, focusStore } from '../../selection'
   import ListHeader from './ListHeader.svelte'
   import ListItem from './ListItem.svelte'
-  import { showMenu } from '../../actions'
 
   export let category: PrimitiveType | AggregateValue
   export let headerComponent: AttributeModel | undefined
@@ -67,7 +67,7 @@
   export let configurationsVersion: number
   export let viewOptions: ViewOptions
   export let newObjectProps: (doc: Doc | undefined) => Record<string, any> | undefined
-  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let dragItem: {
     doc?: Doc
     revert?: () => void
@@ -108,21 +108,42 @@
     }
   }
 
+  function noSearch (query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+    const result = query
+    if ('$search' in result) {
+      delete result.$search
+    }
+    return result
+  }
+
+  $: finalResultQuery =
+    itemProj.length < 20 && resultQuery.$search !== null
+      ? noSearch({
+        ...resultQuery,
+        _id: { $in: itemProj.map((it) => it._id) }
+      })
+      : resultQuery
+
   $: if (lastLevel) {
     void limiter.add(async () => {
-      loading = docsQuery.query(
-        _class,
-        { ...resultQuery, ...docKeys },
-        (res) => {
-          items = res
-          loading = false
-          const focusDoc = items.find((it) => it._id === $focusStore.focus?._id)
-          if (focusDoc) {
-            handleRowFocused(focusDoc)
-          }
-        },
-        { ...resultOptions, limit: limit ?? 200 }
-      )
+      try {
+        loading = docsQuery.query(
+          _class,
+          { ...finalResultQuery, ...docKeys },
+          (res) => {
+            items = res
+            loading = false
+            const focusDoc = items.find((it) => it._id === $focusStore.focus?._id)
+            if (focusDoc) {
+              handleRowFocused(focusDoc)
+            }
+          },
+          { ...resultOptions, limit: limit ?? 200 }
+        )
+      } catch (e) {
+        console.error(e)
+        loading = false
+      }
     })
   } else {
     docsQuery.unsubscribe()

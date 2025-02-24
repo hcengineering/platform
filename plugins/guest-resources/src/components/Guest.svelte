@@ -33,7 +33,7 @@
     getCurrentLocation,
     getLocation,
     navigate,
-    openPanel,
+    showPanel,
     defineSeparators,
     setResolvedLocation,
     deviceOptionsStore as deviceInfo
@@ -55,9 +55,9 @@
     const loc = getCurrentLocation()
     const token = loc.query?.token
     if (token == null) return false
-    const decoded = decodeTokenPayload(token)
+    const { extra } = decodeTokenPayload(token)
 
-    const link = await client.findOne(guest.class.PublicLink, { _id: decoded.linkId })
+    const link = await client.findOne(guest.class.PublicLink, { _id: extra.linkId })
     if (link == null) return false
     restrictionStore.set(link.restrictions)
     const mergedLoc = link.location
@@ -115,7 +115,6 @@
   let currentSpace: Ref<Space> | undefined
   let currentSpecial: string | undefined
   let specialComponent: SpecialNavModel | undefined
-  let asideId: string | undefined
   let currentFragment: string | undefined = ''
 
   let currentApplication: Application | undefined
@@ -124,13 +123,10 @@
 
   function setSpaceSpecial (spaceSpecial: string | undefined): void {
     if (currentSpecial !== undefined && spaceSpecial === currentSpecial) return
-    if (asideId !== undefined && spaceSpecial === asideId) return
     if (spaceSpecial === undefined) return
     specialComponent = getSpecialComponent(spaceSpecial)
     if (specialComponent !== undefined) {
       currentSpecial = spaceSpecial
-    } else if (navigatorModel?.aside !== undefined || currentApplication?.aside !== undefined) {
-      asideId = spaceSpecial
     }
   }
 
@@ -175,10 +171,6 @@
       }
     }
 
-    if (special !== currentSpecial && (navigatorModel?.aside || currentApplication?.aside)) {
-      asideId = special
-    }
-
     if (fragment !== currentFragment) {
       currentFragment = fragment
       if (fragment != null && fragment.trim().length > 0) {
@@ -207,12 +199,13 @@
           provider,
           focus: doc
         })
-        openPanel(
+        showPanel(
           props[0] as AnyComponent,
           _id,
           _class,
           (props[3] ?? undefined) as PopupAlignment,
-          (props[4] ?? undefined) as AnyComponent
+          (props[4] ?? undefined) as AnyComponent,
+          false
         )
       } else {
         closePanel(false)
@@ -249,13 +242,6 @@
     }
   }
 
-  function closeAside (): void {
-    const loc = getLocation()
-    loc.path.length = 4
-    asideId = undefined
-    navigate(loc)
-  }
-
   async function getWindowTitle (loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
     const hierarchy = client.getHierarchy()
@@ -276,7 +262,6 @@
 
   defineSeparators('workbenchGuest', workbenchGuestSeparators)
 
-  let aside: HTMLElement
   let cover: HTMLElement
 </script>
 
@@ -302,15 +287,6 @@
             <SpaceView {currentSpace} {currentView} />
           {/if}
         </div>
-        {#if asideId}
-          {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
-          {#if asideComponent !== undefined}
-            <Separator name={'workbenchGuest'} index={0} />
-            <div class="antiPanel-component antiComponent aside" bind:this={aside}>
-              <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
-            </div>
-          {/if}
-        {/if}
       </div>
     </div>
     <div bind:this={cover} class="cover" />

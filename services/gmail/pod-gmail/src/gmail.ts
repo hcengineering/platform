@@ -22,13 +22,13 @@ import core, {
   MeasureContext,
   Ref,
   Timestamp,
-  TxCollectionCUD,
   TxCreateDoc,
+  TxCUD,
   TxFactory,
   TxOperations,
   TxProcessor,
   TxUpdateDoc,
-  WorkspaceId
+  WorkspaceUuid
 } from '@hcengineering/core'
 import gmail, { type Message, type NewMessage } from '@hcengineering/gmail'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -163,7 +163,7 @@ export class GmailClient {
     private readonly user: User,
     mongo: Db,
     client: Client,
-    private readonly workspaceId: WorkspaceId,
+    private readonly workspaceId: WorkspaceUuid,
     private readonly storageAdapter: StorageAdapter,
     private readonly workspace: WorkspaceClient
   ) {
@@ -182,7 +182,7 @@ export class GmailClient {
     mongo: Db,
     client: Client,
     workspace: WorkspaceClient,
-    workspaceId: WorkspaceId,
+    workspaceId: WorkspaceUuid,
     storageAdapter: StorageAdapter
   ): Promise<GmailClient> {
     const gmailClient = new GmailClient(ctx, credentials, user, mongo, client, workspaceId, storageAdapter, workspace)
@@ -601,8 +601,8 @@ export class GmailClient {
       if (tx !== undefined) {
         const resultMessage =
           current != null
-            ? TxProcessor.updateDoc2Doc(current, tx.tx as TxUpdateDoc<Message>)
-            : TxProcessor.createDoc2Doc(tx.tx as TxCreateDoc<Message>)
+            ? TxProcessor.updateDoc2Doc(current, tx as TxUpdateDoc<Message>)
+            : TxProcessor.createDoc2Doc(tx as TxCreateDoc<Message>)
         await this.client.tx(tx)
         if (attachments.length > 0) {
           const currentAttachemtns: Attachment[] =
@@ -630,7 +630,7 @@ export class GmailClient {
         size: file.size ?? Buffer.from(file.file, 'base64').length,
         lastModified: file.lastModified
       }
-      await this.storageAdapter.put(this.ctx, this.workspaceId, id, file.file, data.type, data.size)
+      await this.storageAdapter.put(this.ctx, this.workspaceId as any, id, file.file, data.type, data.size) // TODO: FIXME
       await this.client.addCollection(
         attachment.class.Attachment,
         message.space,
@@ -704,15 +704,21 @@ export class GmailClient {
     message: AttachedData<Message> & { modifiedOn: Timestamp },
     factory: TxFactory,
     channel: Channel
-  ): TxCollectionCUD<Channel, Message> {
+  ): TxCUD<Message> {
     const tx = factory.createTxCollectionCUD<Channel, Message>(
       channel._class,
       channel._id,
       channel.space,
       'items',
-      factory.createTxCreateDoc<Message>(gmail.class.Message, core.space.Workspace, message as unknown as Data<Message>)
+      factory.createTxCreateDoc<Message>(
+        gmail.class.Message,
+        core.space.Workspace,
+        message as unknown as Data<Message>,
+        undefined,
+        message.modifiedOn
+      ),
+      message.modifiedOn
     )
-    tx.tx.modifiedOn = message.modifiedOn
     return tx
   }
 
@@ -721,7 +727,7 @@ export class GmailClient {
     current: Message,
     factory: TxFactory,
     channel: Channel
-  ): TxCollectionCUD<Channel, Message> | undefined {
+  ): TxCUD<Message> | undefined {
     const operations = diffAttributes(current, message)
     if (Object.keys(operations).length === 0) return undefined
     const tx = factory.createTxCollectionCUD<Channel, Message>(
@@ -816,7 +822,7 @@ export class GmailClient {
   }
 
   private async makeAttachmentPart (attachment: Attachment): Promise<string[]> {
-    const buffer = await this.storageAdapter.read(this.ctx, this.workspaceId, attachment.file)
+    const buffer = await this.storageAdapter.read(this.ctx, this.workspaceId as any, attachment.file) // TODO: FIXME
     const data = arrayBufferToBase64(Buffer.concat(buffer))
     const res: string[] = []
     res.push('--mail\n')

@@ -145,4 +145,12 @@ export function createModel (builder: Builder): void {
       { modifiedOn: 1 }
     ]
   })
+  builder.mixin(bitrix.class.FieldMapping, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
+  builder.mixin(bitrix.class.EntityMapping, core.class.Class, core.mixin.IndexConfiguration, {
+    indexes: [],
+    searchDisabled: true
+  })
 }

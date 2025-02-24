@@ -19,7 +19,7 @@ import {
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
-  type CollaborativeDoc,
+  type MarkupBlobRef,
   type Domain,
   type Markup,
   type Ref,
@@ -29,7 +29,7 @@ import {
   type RolesAssignment,
   type Role,
   type CollectionSize,
-  Account
+  PersonId
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -185,7 +185,7 @@ export class TIssue extends TTask implements Issue {
 
   @Prop(TypeCollaborativeDoc(), tracker.string.Description)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    description!: MarkupBlobRef | null
 
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status, {
     _id: tracker.attribute.IssueStatus,
@@ -422,7 +422,7 @@ export class TProjectTargetPreference extends TPreference implements ProjectTarg
 @Mixin(tracker.mixin.ClassicProjectTypeData, tracker.class.Project)
 @UX(getEmbeddedLabel('Classic project'), tracker.icon.Issues)
 export class TClassicProjectTypeData extends TProject implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 @Mixin(tracker.mixin.IssueTypeData, tracker.class.Issue)

@@ -1,6 +1,7 @@
 // Basic performance metrics suite.
 
 import { MetricsData } from '.'
+import { platformNow } from '../utils'
 import { FullParamsType, Metrics, ParamsType } from './types'
 
 /**
@@ -65,7 +66,7 @@ export function measure (
   fullParams: FullParamsType | (() => FullParamsType) = {},
   endOp?: (spend: number) => void
 ): () => void {
-  const st = Date.now()
+  const st = platformNow()
   return () => {
     updateMeasure(metrics, st, params, fullParams, endOp)
   }
@@ -79,7 +80,7 @@ export function updateMeasure (
   value?: number,
   override?: boolean
 ): void {
-  const ed = Date.now()
+  const ed = platformNow()
 
   const fParams = typeof fullParams === 'function' ? fullParams() : fullParams
   // Update params if required
@@ -104,8 +105,8 @@ export function updateMeasure (
       param.value += value ?? ed - st
       param.operations++
     }
-
-    param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
+    // Do not update top results for params.
+    // param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
   }
   // Update leaf data
   if (override === true) {
@@ -136,7 +137,7 @@ export function childMetrics (root: Metrics, path: string[]): Metrics {
 /**
  * @public
  */
-export function metricsAggregate (m: Metrics, limit: number = -1): Metrics {
+export function metricsAggregate (m: Metrics, limit: number = -1, roundMath: boolean = false): Metrics {
   let ms = aggregateMetrics(m.measurements, limit)
 
   // Use child overage, if there is no top level value specified.
@@ -237,7 +238,7 @@ function toString (name: string, m: Metrics, offset: number, length: number): st
  * @public
  */
 export function metricsToString (metrics: Metrics, name = 'System', length: number): string {
-  return toString(name, metricsAggregate(metrics, 50), 0, length)
+  return toString(name, metricsAggregate(metrics, 50, true), 0, length)
 }
 
 function printMetricsParamsRows (
@@ -287,5 +288,5 @@ function toStringRows (name: string, m: Metrics, offset: number): (number | stri
  * @public
  */
 export function metricsToRows (metrics: Metrics, name = 'System'): (number | string)[][] {
-  return toStringRows(name, metricsAggregate(metrics, 50), 0)
+  return toStringRows(name, metricsAggregate(metrics, 50, true), 0)
 }

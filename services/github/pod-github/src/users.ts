@@ -1,4 +1,4 @@
-import type { Account, Ref } from '@hcengineering/core'
+import type { PersonId } from '@hcengineering/core'
 import type { Collection, FindCursor } from 'mongodb'
 import type { GithubUserRecord } from './types'
 
@@ -31,7 +31,7 @@ export class UserManager {
     return res
   }
 
-  async getAccountByRef (workspace: string, ref: Ref<Account>): Promise<GithubUserRecord | undefined> {
+  async getAccountByRef (workspace: string, ref: PersonId): Promise<GithubUserRecord | undefined> {
     const key = `${workspace}.${ref}`
     let rec = this.refUserCache.get(key)
     if (rec !== undefined) {

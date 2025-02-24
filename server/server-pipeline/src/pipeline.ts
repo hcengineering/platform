@@ -2,18 +2,17 @@
 import {
   DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
-  DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
   Hierarchy,
   ModelDb,
+  systemAccountUuid,
   type Branding,
   type MeasureContext,
   type Tx,
-  type WorkspaceIdWithUrl
+  type WorkspaceIds
 } from '@hcengineering/core'
-import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
   ApplyTxMiddleware,
   BroadcastMiddleware,
@@ -23,6 +22,7 @@ import {
   DBAdapterMiddleware,
   DomainFindMiddleware,
   DomainTxMiddleware,
+  FullTextMiddleware,
   LiveQueryMiddleware,
   LookupMiddleware,
   LowLevelMiddleware,
@@ -37,15 +37,11 @@ import {
   TriggersMiddleware,
   TxMiddleware
 } from '@hcengineering/middleware'
-import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
-import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import {
   createBenchmarkAdapter,
   createInMemoryAdapter,
   createNullAdapter,
   createPipeline,
-  DummyDbAdapter,
-  DummyFullTextAdapter,
   type DbAdapterFactory,
   type DbConfiguration,
   type Middleware,
@@ -54,31 +50,20 @@ import {
   type PipelineContext,
   type PipelineFactory,
   type StorageAdapter,
-  type StorageConfiguration
+  type WorkspaceDestroyAdapter
 } from '@hcengineering/server-core'
-import {
-  createRekoniAdapter,
-  createYDocAdapter,
-  FullTextMiddleware,
-  type FulltextDBConfiguration
-} from '@hcengineering/server-indexer'
-import { buildStorageFromConfig, createStorageDataAdapter, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { createIndexStages } from './indexing'
-
+import { generateToken } from '@hcengineering/server-token'
+import { createStorageDataAdapter } from './blobStorage'
 /**
  * @public
  */
 
 export function getTxAdapterFactory (
   metrics: MeasureContext,
-  dbUrls: string,
-  workspace: WorkspaceIdWithUrl,
+  dbUrl: string,
+  workspace: WorkspaceIds,
   branding: Branding | null,
   opt: {
-    fullTextUrl: string
-    rekoniUrl: string
-    indexProcessing: number // 1000
-    indexParallel: number // 2
     disableTriggers?: boolean
     usePassedCtx?: boolean
 
@@ -86,11 +71,17 @@ export function getTxAdapterFactory (
   },
   extensions?: Partial<DbConfiguration>
 ): DbAdapterFactory {
-  const conf = getConfig(metrics, dbUrls, workspace, branding, metrics, opt, extensions)
+  const conf = getConfig(metrics, dbUrl, metrics, opt, extensions)
   const adapterName = conf.domains[DOMAIN_TX] ?? conf.defaultAdapter
   const adapter = conf.adapters[adapterName]
   return adapter.factory
 }
+
+/**
+ * A pipelice context used by standalong services to hold global variables.
+ * In case of Durable Objects, it should not be shared and individual context should be created.
+ */
+export const sharedPipelineContextVars: Record<string, any> = {}
 
 /**
  * @public
@@ -98,25 +89,25 @@ export function getTxAdapterFactory (
 
 export function createServerPipeline (
   metrics: MeasureContext,
-  dbUrls: string,
+  dbUrl: string,
   model: Tx[],
   opt: {
-    fullTextUrl: string
-    rekoniUrl: string
-    indexProcessing: number // 1000
-    indexParallel: number // 2
+    fulltextUrl?: string
     disableTriggers?: boolean
     usePassedCtx?: boolean
     adapterSecurity?: boolean
 
     externalStorage: StorageAdapter
+
+    extraLogging?: boolean // If passed, will log every request/etc.
+    pipelineContextVars?: Record<string, any>
   },
-  extensions?: Partial<DbConfiguration> & Partial<FulltextDBConfiguration>
+  extensions?: Partial<DbConfiguration>
 ): PipelineFactory {
   return (ctx, workspace, upgrade, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 session', {})
-    const conf = getConfig(metrics, dbUrls, workspace, branding, wsMetrics, opt, extensions)
+    const conf = getConfig(metrics, dbUrl, wsMetrics, opt, extensions)
 
     const middlewares: MiddlewareCreator[] = [
       LookupMiddleware.create,
@@ -127,13 +118,15 @@ export function createServerPipeline (
         SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, context, next),
       SpacePermissionsMiddleware.create,
       ConfigurationMiddleware.create,
-      LowLevelMiddleware.create,
       ContextNameMiddleware.create,
       MarkDerivedEntryMiddleware.create,
       ApplyTxMiddleware.create, // Extract apply
       TxMiddleware.create, // Store tx into transaction domain
       ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),
-      FullTextMiddleware.create(conf, upgrade),
+      ...(opt.fulltextUrl !== undefined
+        ? [FullTextMiddleware.create(opt.fulltextUrl, generateToken(systemAccountUuid, workspace.uuid))]
+        : []),
+      LowLevelMiddleware.create,
       QueryJoinMiddleware.create,
       LiveQueryMiddleware.create,
       DomainFindMiddleware.create,
@@ -151,7 +144,8 @@ export function createServerPipeline (
       branding,
       modelDb,
       hierarchy,
-      storageAdapter: opt.externalStorage
+      storageAdapter: opt.externalStorage,
+      contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars
     }
     return createPipeline(ctx, middlewares, context)
   }
@@ -163,7 +157,7 @@ export function createServerPipeline (
 
 export function createBackupPipeline (
   metrics: MeasureContext,
-  dbUrls: string,
+  dbUrl: string,
   systemTx: Tx[],
   opt: {
     usePassedCtx?: boolean
@@ -175,38 +169,15 @@ export function createBackupPipeline (
   return (ctx, workspace, upgrade, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 backup', {})
-    const conf = getConfig(
-      metrics,
-      dbUrls,
-      workspace,
-      branding,
-      wsMetrics,
-      {
-        ...opt,
-        fullTextUrl: '',
-        indexParallel: 0,
-        indexProcessing: 0,
-        rekoniUrl: '',
-        disableTriggers: true
-      },
-      {
-        adapters: {
-          FullTextBlob: {
-            factory: async () => new DummyDbAdapter(),
-            url: ''
-          }
-        },
-        fulltextAdapter: {
-          factory: async () => new DummyFullTextAdapter(),
-          stages: () => [],
-          url: ''
-        }
-      }
-    )
+    const conf = getConfig(metrics, dbUrl, wsMetrics, {
+      ...opt,
+      disableTriggers: true
+    })
 
     const middlewares: MiddlewareCreator[] = [
       LowLevelMiddleware.create,
       ContextNameMiddleware.create,
+      // ConnectionMgrMiddleware.create,
       DomainFindMiddleware.create,
       DBAdapterInitMiddleware.create,
       ModelMiddleware.create(systemTx),
@@ -220,7 +191,8 @@ export function createBackupPipeline (
       branding,
       modelDb,
       hierarchy,
-      storageAdapter: opt.externalStorage
+      storageAdapter: opt.externalStorage,
+      contextVars: {}
     }
     return createPipeline(ctx, middlewares, context)
   }
@@ -229,93 +201,115 @@ export function createBackupPipeline (
 export async function getServerPipeline (
   ctx: MeasureContext,
   model: Tx[],
-  mongodbUri: string | undefined,
   dbUrl: string,
-  wsUrl: WorkspaceIdWithUrl
-): Promise<{
-    pipeline: Pipeline
-    storageAdapter: StorageAdapter
-  }> {
-  const dbUrls = mongodbUri !== undefined && mongodbUri !== dbUrl ? `${dbUrl};${mongodbUri}` : dbUrl
-
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-
-  if (mongodbUri === undefined) {
-    throw new Error('MONGO_URL is not provided')
+  wsUrl: WorkspaceIds,
+  storageAdapter: StorageAdapter,
+  opt?: {
+    disableTriggers?: boolean
   }
-  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+): Promise<Pipeline> {
+  const pipelineFactory = createServerPipeline(ctx, dbUrl, model, {
+    externalStorage: storageAdapter,
+    usePassedCtx: true,
+    disableTriggers: opt?.disableTriggers ?? false,
+    adapterSecurity: isAdapterSecurity(dbUrl)
+  })
 
-  const pipelineFactory = createServerPipeline(
-    ctx,
-    dbUrls,
-    model,
-    {
-      externalStorage: storageAdapter,
-      fullTextUrl: 'http://localhost:9200',
-      indexParallel: 0,
-      indexProcessing: 0,
-      rekoniUrl: '',
-      usePassedCtx: true,
-      disableTriggers: false
-    },
-    {
-      fulltextAdapter: {
-        factory: async () => new DummyFullTextAdapter(),
-        url: '',
-        stages: (adapter, storage, storageAdapter, contentAdapter) =>
-          createIndexStages(
-            ctx.newChild('stages', {}),
-            wsUrl,
-            null,
-            adapter,
-            storage,
-            storageAdapter,
-            contentAdapter,
-            0,
-            0
-          )
-      }
-    }
-  )
+  return await pipelineFactory(ctx, wsUrl, true, () => {}, null)
+}
 
-  try {
-    return {
-      pipeline: await pipelineFactory(ctx, wsUrl, true, () => {}, null),
-      storageAdapter
+const txAdapterFactories: Record<string, DbAdapterFactory> = {}
+const adapterFactories: Record<string, DbAdapterFactory> = {}
+const destroyFactories: Record<string, (url: string) => WorkspaceDestroyAdapter> = {}
+const adapterSecurityState = new Set<string>()
+
+export function isAdapterSecurity (name: string): boolean {
+  for (const it of adapterSecurityState) {
+    if (name.startsWith(it)) {
+      return true
     }
-  } catch (err: any) {
-    await storageAdapter.close()
-    throw err
   }
+  return false
+}
+export function setAdapterSecurity (name: string, state: boolean): void {
+  if (state) {
+    adapterSecurityState.add(name)
+  } else {
+    adapterSecurityState.delete(name)
+  }
+}
+
+export function registerTxAdapterFactory (name: string, factory: DbAdapterFactory, useAsDefault: boolean = true): void {
+  txAdapterFactories[name] = factory
+  if (useAsDefault) {
+    txAdapterFactories[''] = factory
+  }
+}
+
+export function registerAdapterFactory (name: string, factory: DbAdapterFactory, useAsDefault: boolean = true): void {
+  adapterFactories[name] = factory
+  if (useAsDefault) {
+    adapterFactories[''] = factory
+  }
+}
+
+export function registerDestroyFactory (
+  name: string,
+  factory: (url: string) => WorkspaceDestroyAdapter,
+  useAsDefault: boolean = true
+): void {
+  destroyFactories[name] = factory
+  if (useAsDefault) {
+    destroyFactories[''] = factory
+  }
+}
+
+function matchTxAdapterFactory (dbUrl: string): DbAdapterFactory {
+  for (const [k, v] of Object.entries(txAdapterFactories)) {
+    if (k !== '' && dbUrl.startsWith(k)) {
+      return v
+    }
+  }
+  return txAdapterFactories['']
+}
+
+function matchAdapterFactory (dbUrl: string): DbAdapterFactory {
+  for (const [k, v] of Object.entries(adapterFactories)) {
+    if (k !== '' && dbUrl.startsWith(k)) {
+      return v
+    }
+  }
+  return adapterFactories['']
+}
+
+export function getWorkspaceDestroyAdapter (dbUrl: string): WorkspaceDestroyAdapter {
+  for (const [k, v] of Object.entries(destroyFactories)) {
+    if (dbUrl.startsWith(k)) {
+      return v(dbUrl)
+    }
+  }
+  return destroyFactories[''](dbUrl)
 }
 
 export function getConfig (
   metrics: MeasureContext,
-  dbUrls: string,
-  workspace: WorkspaceIdWithUrl,
-  branding: Branding | null,
+  dbUrl: string,
   ctx: MeasureContext,
   opt: {
-    fullTextUrl: string
-    rekoniUrl: string
-    indexProcessing: number // 1000
-    indexParallel: number // 2
     disableTriggers?: boolean
     usePassedCtx?: boolean
 
     externalStorage: StorageAdapter
   },
-  extensions?: Partial<DbConfiguration & FulltextDBConfiguration>
+  extensions?: Partial<DbConfiguration>
 ): DbConfiguration {
   const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
   const wsMetrics = metricsCtx.newChild('🧲 session', {})
-  const [dbUrl, mongoUrl] = dbUrls.split(';')
-  const conf: DbConfiguration & FulltextDBConfiguration = {
+  const conf: DbConfiguration = {
     domains: {
       [DOMAIN_TX]: 'Tx',
       [DOMAIN_TRANSIENT]: 'InMemory',
       [DOMAIN_BLOB]: 'StorageData',
-      [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
       [DOMAIN_MODEL]: 'Null',
       [DOMAIN_BENCHMARK]: 'Benchmark',
       ...extensions?.domains
@@ -324,11 +318,11 @@ export function getConfig (
     defaultAdapter: extensions?.defaultAdapter ?? 'Main',
     adapters: {
       Tx: {
-        factory: mongoUrl !== undefined ? createPostgresTxAdapter : createMongoTxAdapter,
+        factory: matchTxAdapterFactory(dbUrl),
         url: dbUrl
       },
       Main: {
-        factory: mongoUrl !== undefined ? createPostgresAdapter : createMongoAdapter,
+        factory: matchAdapterFactory(dbUrl),
         url: dbUrl
       },
       Null: {
@@ -341,11 +335,7 @@ export function getConfig (
       },
       StorageData: {
         factory: createStorageDataAdapter,
-        url: mongoUrl ?? dbUrl
-      },
-      FullTextBlob: {
-        factory: createElasticBackupDataAdapter,
-        url: opt.fullTextUrl
+        url: ''
       },
       Benchmark: {
         factory: createBenchmarkAdapter,
@@ -353,37 +343,7 @@ export function getConfig (
       },
       ...extensions?.adapters
     },
-    fulltextAdapter: extensions?.fulltextAdapter ?? {
-      factory: createElasticAdapter,
-      url: opt.fullTextUrl,
-      stages: (adapter, storage, storageAdapter, contentAdapter) =>
-        createIndexStages(
-          wsMetrics.newChild('stages', {}),
-          workspace,
-          branding,
-          adapter,
-          storage,
-          storageAdapter,
-          contentAdapter,
-          opt.indexParallel,
-          opt.indexProcessing
-        )
-    },
-    serviceAdapters: extensions?.serviceAdapters ?? {},
-    contentAdapters: {
-      Rekoni: {
-        factory: createRekoniAdapter,
-        contentType: '*',
-        url: opt.rekoniUrl
-      },
-      YDoc: {
-        factory: createYDocAdapter,
-        contentType: 'application/ydoc',
-        url: ''
-      },
-      ...extensions?.contentAdapters
-    },
-    defaultContentAdapter: extensions?.defaultContentAdapter ?? 'Rekoni'
+    serviceAdapters: extensions?.serviceAdapters ?? {}
   }
   return conf
 }

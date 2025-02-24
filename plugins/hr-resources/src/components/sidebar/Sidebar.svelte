@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
-  import { Scroller, Separator } from '@hcengineering/ui'
+  import { Scroller, Separator, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { TreeNode } from '@hcengineering/view-resources'
   import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
 
@@ -26,34 +26,29 @@
   export let department: Ref<Department>
   export let descendants: Map<Ref<Department>, Department[]>
   export let departmentById: Map<Ref<Department>, Department>
-  export let navFloat: boolean = false
-  export let appsDirection: 'horizontal' | 'vertical' = 'horizontal'
 
   const departments = [hr.ids.Head]
 </script>
 
-<div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} border-left">
+<div
+  class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'} border-left"
+  class:fly={$deviceInfo.navigator.float}
+>
   <div class="antiPanel-wrap__content hulyNavPanel-container">
     <NavHeader label={hr.string.HRApplication} />
 
     <Scroller shrink>
-      <TreeNode
-        _id={'tree-hr'}
-        label={hr.string.Departments}
-        highlighted={department !== undefined}
-        isFold={department !== undefined}
-        noDivider
-      >
-        <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
-      </TreeNode>
+      <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
     </Scroller>
 
     <NavFooter />
   </div>
-  <Separator
-    name={'workbench'}
-    float={navFloat ? 'navigator' : true}
-    index={0}
-    color={'var(--theme-navpanel-border)'}
-  />
+  {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+    <Separator
+      name={'schedule'}
+      float={$deviceInfo.navigator.float ? 'navigator' : true}
+      index={0}
+      color={'var(--theme-navpanel-border)'}
+    />
+  {/if}
 </div>

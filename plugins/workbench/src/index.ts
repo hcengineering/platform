@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountRole, Class, Doc, Mixin, Obj, Ref, Space, Tx } from '@hcengineering/core'
+import type { AccountRole, Class, Doc, Mixin, Obj, PersonId, Ref, Space, Tx } from '@hcengineering/core'
 import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -32,6 +32,8 @@ import { ViewAction } from '@hcengineering/view'
  */
 
 export interface LocationData {
+  objectId?: Ref<Doc>
+  objectClass?: Ref<Class<Doc>>
   name?: string
   nameIntl?: IntlString
   icon?: Asset
@@ -48,7 +50,6 @@ export interface Application extends Doc {
 
   // Also attached ApplicationNavModel will be joined after this one main.
   navigatorModel?: NavigatorModel
-  aside?: AnyComponent
 
   locationResolver?: Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   locationDataResolver?: Resource<(loc: Location) => Promise<LocationData>>
@@ -74,6 +75,7 @@ export interface Widget extends Doc {
 
   component: AnyComponent
   tabComponent?: AnyComponent
+  switcherComponent?: AnyComponent
   headerLabel?: IntlString
 
   closeIfNoTabs?: boolean
@@ -87,13 +89,16 @@ export interface WidgetPreference extends Preference {
 export interface WidgetTab {
   id: string
   name?: string
+  label?: IntlString
   icon?: Asset | AnySvelteComponent
   iconComponent?: AnyComponent
   iconProps?: Record<string, any>
-  widget?: Ref<Widget>
   isPinned?: boolean
   allowedPath?: string
+  objectId?: Ref<Doc>
+  objectClass?: Ref<Class<Doc>>
   data?: Record<string, any>
+  readonly?: boolean
 }
 
 export enum SidebarEvent {
@@ -111,6 +116,7 @@ export interface TxSidebarEvent<T extends Record<string, any> = Record<string, a
 }
 
 export interface WorkbenchTab extends Preference {
+  attachedTo: PersonId
   location: string
   isPinned: boolean
   name?: string
@@ -124,7 +130,6 @@ export interface ApplicationNavModel extends Doc {
 
   spaces?: SpacesNavModel[]
   specials?: SpecialNavModel[]
-  aside?: AnyComponent
 }
 
 /**
@@ -157,7 +162,6 @@ export interface SpacesNavModel {
 export interface NavigatorModel {
   spaces: SpacesNavModel[]
   specials?: SpecialNavModel[]
-  aside?: AnyComponent
 }
 
 /**
@@ -179,6 +183,32 @@ export interface SpecialNavModel {
   notificationsCountProvider?: Resource<
   (inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => number
   >
+  navigationModel?: ParentsNavigationModel
+  queryOptions?: QueryOptions
+}
+
+/**
+ * @public
+ */
+export interface ParentsNavigationModel {
+  navigationComponent: AnyComponent
+  navigationComponentLabel: IntlString
+  navigationComponentIcon?: Asset
+  mainComponentLabel: IntlString
+  mainComponentIcon?: Asset
+  navigationComponentProps?: Record<string, any>
+  syncWithLocationQuery?: boolean
+  createComponent?: AnyComponent
+  createComponentProps?: Record<string, any>
+  createButton?: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface QueryOptions {
+  // If specified should display only documents from the current space
+  filterBySpace?: boolean
 }
 
 /**
@@ -234,7 +264,9 @@ export default plugin(workbenchId, {
     UpgradeDownloadProgress: '' as IntlString,
     OpenInSidebar: '' as IntlString,
     OpenInSidebarNewTab: '' as IntlString,
-    ConfigureWidgets: '' as IntlString
+    ConfigureWidgets: '' as IntlString,
+    WorkspaceIsArchived: '' as IntlString,
+    WorkspaceIsMigrating: '' as IntlString
   },
   icon: {
     Search: '' as Asset
@@ -258,7 +290,9 @@ export default plugin(workbenchId, {
   },
   function: {
     CreateWidgetTab: '' as Resource<(widget: Widget, tab: WidgetTab, newTab: boolean) => Promise<void>>,
-    CloseWidgetTab: '' as Resource<(widget: Widget, tab: string) => Promise<void>>
+    CloseWidgetTab: '' as Resource<(widget: Widget, tab: string) => Promise<void>>,
+    CloseWidget: '' as Resource<(widget: Ref<Widget>) => Promise<void>>,
+    GetSidebarObject: '' as Resource<() => Partial<Pick<Doc, '_id' | '_class'>>>
   },
   actionImpl: {
     Navigate: '' as ViewAction<{

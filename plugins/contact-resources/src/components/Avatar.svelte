@@ -14,7 +14,7 @@
 -->
 <script lang="ts" context="module">
   import contact, { AvatarProvider, getAvatarColorForId, type AvatarInfo } from '@hcengineering/contact'
-  import { Ref, type Data, type WithLookup } from '@hcengineering/core'
+  import { PersonUuid, Ref, type Data, type WithLookup } from '@hcengineering/core'
   import { getClient, sizeToWidth } from '@hcengineering/presentation'
 
   const providers = new Map<string, AvatarProvider | null>()
@@ -31,8 +31,7 @@
 </script>
 
 <script lang="ts">
-  import { getAvatarProviderId, getFirstName, getLastName } from '@hcengineering/contact'
-  import { Account } from '@hcengineering/core'
+  import { getAvatarProviderId, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
   import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
   import {
@@ -45,18 +44,20 @@
     themeStore
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+
   import { loadUsersStatus, statusByUserStore } from '../utils'
   import AvatarInstance from './AvatarInstance.svelte'
 
-  export let person: Data<WithLookup<AvatarInfo>> | undefined = undefined
+  export let person: (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person>, personUuid?: PersonUuid }) | undefined =
+    undefined
   export let name: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
-  export let showStatus: boolean = true
-  export let account: Ref<Account> | undefined = undefined
+  export let showStatus: boolean = false
+  export let adaptiveName: boolean = false
 
   export function pulse (): void {
     avatarInst.pulse()
@@ -126,10 +127,10 @@
     loadUsersStatus()
   })
 
-  $: userStatus = account !== undefined ? $statusByUserStore.get(account) : undefined
+  $: isOnline = person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid)?.online === true
 </script>
 
-{#if showStatus && account}
+{#if showStatus && person}
   <div class="relative">
     <AvatarInstance
       bind:this={avatarInst}
@@ -143,8 +144,9 @@
       {bColor}
       bind:element
       withStatus
+      {adaptiveName}
     />
-    <div class="hulyAvatar-statusMarker {size}" class:online={userStatus?.online} class:offline={!userStatus?.online} />
+    <div class="hulyAvatar-statusMarker {size}" class:online={isOnline} class:offline={!isOnline} />
   </div>
 {:else}
   <AvatarInstance
@@ -158,5 +160,6 @@
     {color}
     {bColor}
     bind:element
+    {adaptiveName}
   />
 {/if}

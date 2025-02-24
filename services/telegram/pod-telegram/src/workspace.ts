@@ -1,15 +1,7 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import contact, {
-  Channel,
-  Employee,
-  Contact as PContact,
-  PersonAccount,
-  getFirstName,
-  getLastName
-} from '@hcengineering/contact'
+import contact, { Channel, Contact as PContact, getFirstName, getLastName } from '@hcengineering/contact'
 import core, {
-  Account,
-  AttachedDoc,
+  PersonId,
   Blob,
   Client,
   Doc,
@@ -17,13 +9,15 @@ import core, {
   MeasureContext,
   Ref,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
+  TxCUD,
   TxFactory,
   TxOperations,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  systemAccountUuid,
+  WorkspaceDataId
 } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
@@ -32,7 +26,6 @@ import telegramP, { NewTelegramMessage } from '@hcengineering/telegram'
 import type { Collection } from 'mongodb'
 import { Api } from 'telegram'
 import { v4 as uuid } from 'uuid'
-import config from './config'
 import { platformToTelegram, telegramToPlatform } from './markup'
 import { MsgQueue } from './queue'
 import type { TelegramConnectionInterface } from './telegram'
@@ -57,7 +50,7 @@ export class WorkspaceWorker {
     private readonly ctx: MeasureContext,
     private readonly client: Client,
     private readonly storageAdapter: StorageAdapter,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceDataId,
     private readonly userStorage: Collection<UserRecord>,
     private readonly lastMsgStorage: Collection<LastMsgRecord>,
     private readonly channelsStorage: Collection<WorkspaceChannel>
@@ -95,10 +88,6 @@ export class WorkspaceWorker {
           await this.txCreateDoc(tx as TxCreateDoc<Doc>)
           return
         }
-        case core.class.TxCollectionCUD: {
-          await this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>)
-          return
-        }
         case core.class.TxUpdateDoc: {
           await this.txUpdateDoc(tx as TxUpdateDoc<Doc>)
           return
@@ -122,10 +111,6 @@ export class WorkspaceWorker {
         console.log(err)
       }
     }
-  }
-
-  private async txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<void> {
-    await this.txHandler(tx.tx)
   }
 
   private async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<void> {
@@ -155,12 +140,12 @@ export class WorkspaceWorker {
   static async create (
     ctx: MeasureContext,
     storageAdapter: StorageAdapter,
-    workspace: string,
+    workspace: WorkspaceDataId,
     userStorage: Collection<UserRecord>,
     lastMsgStorage: Collection<LastMsgRecord>,
     channelsStorage: Collection<WorkspaceChannel>
   ): Promise<WorkspaceWorker> {
-    const token = generateToken(config.SystemEmail, { name: workspace })
+    const token = generateToken(systemAccountUuid, workspace as any, { service: 'telegram' }) // TODO: FIXME
     const client = await createPlatformClient(token)
 
     const worker = new WorkspaceWorker(
@@ -179,53 +164,57 @@ export class WorkspaceWorker {
   // #region Users
 
   async addUser ({ email, phone, conn }: TgUser): Promise<void> {
-    const user = this.client.getModel().getAccountByEmail(email)
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const user = this.client.getModel().getAccountByEmail(email)
 
-    if (user === undefined) {
-      throw Error(`Unable to find user by email: ${email}`)
-    }
+    // if (user === undefined) {
+    //   throw Error(`Unable to find user by email: ${email}`)
+    // }
 
-    const token = conn.getToken()
+    // const token = conn.getToken()
 
-    if (token === undefined) {
-      throw Error('Unable to get telegram token')
-    }
+    // if (token === undefined) {
+    //   throw Error('Unable to get telegram token')
+    // }
 
-    const res = await this.userStorage.insertOne({
-      userId: user._id,
-      email,
-      workspace: this.workspace,
-      phone,
-      token
-    })
+    // const res = await this.userStorage.insertOne({
+    //   userId: user._id,
+    //   email,
+    //   workspace: this.workspace,
+    //   phone,
+    //   token
+    // })
 
-    const rec = await this.userStorage.findOne({ _id: res.insertedId })
+    // const rec = await this.userStorage.findOne({ _id: res.insertedId })
 
-    if (rec === null) {
-      console.error(
-        `Something went wrong, failed to get inserted obj: ${
-          this.userStorage.collectionName
-        }/${res.insertedId.toString()}`
-      )
-      return
-    }
+    // if (rec === null) {
+    //   console.error(
+    //     `Something went wrong, failed to get inserted obj: ${
+    //       this.userStorage.collectionName
+    //     }/${res.insertedId.toString()}`
+    //   )
+    //   return
+    // }
 
-    this.clients.set(phone, { conn })
+    // this.clients.set(phone, { conn })
 
-    void this.gatherMessages(rec)
+    // void this.gatherMessages(rec)
   }
 
   async checkUsers (): Promise<void> {
-    const employees = await this.client.findAll(contact.mixin.Employee, { active: false })
-    const accounts = await this.client.findAll(contact.class.PersonAccount, {
-      person: { $in: employees.map((p) => p._id) }
-    })
-    for (const acc of accounts) {
-      await this.deactivateUser(acc._id)
-    }
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const employees = await this.client.findAll(contact.mixin.Employee, { active: false })
+    // const accounts = await this.client.findAll(contact.class.PersonAccount, {
+    //   person: { $in: employees.map((p) => p._id) }
+    // })
+    // for (const acc of accounts) {
+    //   await this.deactivateUser(acc._id)
+    // }
   }
 
-  private async deactivateUser (acc: Ref<PersonAccount>): Promise<void> {
+  private async deactivateUser (acc: PersonId): Promise<void> {
     const res = await this.userStorage.findOne({ userId: acc, workspace: this.workspace })
 
     if (res !== null) {
@@ -245,13 +234,15 @@ export class WorkspaceWorker {
   }
 
   private async handleEmployeeUpdate (tx: TxUpdateDoc<Doc>): Promise<void> {
-    const ctx = tx as TxUpdateDoc<Employee>
-    if (ctx.operations.active === false) {
-      const acc = await this.client.findOne(contact.class.PersonAccount, { person: ctx.objectId })
-      if (acc !== undefined) {
-        await this.deactivateUser(acc._id)
-      }
-    }
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const ctx = tx as TxUpdateDoc<Employee>
+    // if (ctx.operations.active === false) {
+    //   const acc = await this.client.findOne(contact.class.PersonAccount, { person: ctx.objectId })
+    //   if (acc !== undefined) {
+    //     await this.deactivateUser(acc._id)
+    //   }
+    // }
   }
 
   async removeUser ({ phone }: Pick<TgUser, 'phone'>): Promise<void> {
@@ -287,7 +278,7 @@ export class WorkspaceWorker {
 
     const integration = await this.client.findOne(settingP.class.Integration, {
       type: telegramP.integrationType.Telegram,
-      createdBy: rec.userId as Ref<Account>
+      createdBy: rec.userId as any // TODO: FIXME
     })
 
     if (integration === undefined) {
@@ -539,7 +530,7 @@ export class WorkspaceWorker {
 
   private async sendNewMsgs (record: UserRecord): Promise<void> {
     const newMessages = await this.client.findAll(telegramP.class.NewMessage, {
-      modifiedBy: record.userId as Ref<Account>,
+      modifiedBy: record.userId as any, // TODO: FIXME
       status: 'new'
     })
     for (const message of newMessages) {
@@ -551,27 +542,30 @@ export class WorkspaceWorker {
     }
   }
 
-  private makePlatformMsg (
-    event: Event,
-    record: UserRecord,
-    channel: Channel
-  ): TxCollectionCUD<Channel, TelegramMessage> {
-    const factory = new TxFactory(record.userId as Ref<Account>)
+  private makePlatformMsg (event: Event, record: UserRecord, channel: Channel): TxCUD<TelegramMessage> {
+    const factory = new TxFactory(record.userId as any) // TODO: FIXME
+    const modifiedOn = event.msg.date * 1000
     const tx = factory.createTxCollectionCUD<Channel, TelegramMessage>(
       channel._class,
       channel._id,
       channel.space,
       'items',
-      factory.createTxCreateDoc<TelegramMessage>(telegramP.class.Message, core.space.Workspace, {
-        attachedTo: channel._id,
-        attachedToClass: channel._class,
-        collection: 'items',
-        sendOn: event.msg.date * 1000,
-        content: telegramToPlatform(event.msg),
-        incoming: event.msg.out !== true
-      })
+      factory.createTxCreateDoc<TelegramMessage>(
+        telegramP.class.Message,
+        core.space.Workspace,
+        {
+          attachedTo: channel._id,
+          attachedToClass: channel._class,
+          collection: 'items',
+          sendOn: event.msg.date * 1000,
+          content: telegramToPlatform(event.msg),
+          incoming: event.msg.out !== true
+        },
+        undefined,
+        modifiedOn
+      ),
+      modifiedOn
     )
-    tx.tx.modifiedOn = event.msg.date * 1000
     return tx
   }
 
@@ -644,8 +638,8 @@ export class WorkspaceWorker {
     const attachments = await this.client.findAll(attachment.class.Attachment, { attachedTo: msg._id })
     const res: Buffer[] = []
     for (const attachment of attachments) {
-      const chunks = await this.storageAdapter.read(this.ctx, { name: this.workspace }, attachment.file)
-      const buffer = Buffer.concat(chunks)
+      const chunks = await this.storageAdapter.read(this.ctx, this.workspace as any, attachment.file) // TODO: FIXME <--WorkspaceIds
+      const buffer = Buffer.concat(chunks as unknown as Uint8Array[])
       if (buffer.length > 0) {
         res.push(
           Object.assign(buffer, {
@@ -660,34 +654,40 @@ export class WorkspaceWorker {
   private async makePlatformAttachments (
     event: Event,
     record: UserRecord,
-    createTx: TxCollectionCUD<Channel, TelegramMessage>
+    createTx: TxCUD<TelegramMessage>
   ): Promise<void> {
-    const msg = TxProcessor.createDoc2Doc(createTx.tx as TxCreateDoc<TelegramMessage>)
-    const factory = new TxFactory(record.userId as Ref<Account>)
+    const msg = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<TelegramMessage>)
+    const factory = new TxFactory(record.userId as any) // TODO: FIXME
     const files = await getFiles(event.msg)
     for (const file of files) {
       try {
         const id = uuid()
         file.size = file.size ?? file.file.length
-        await this.storageAdapter.put(this.ctx, { name: this.workspace }, id, file.file, file.type, file.size)
+        await this.storageAdapter.put(this.ctx, this.workspace as any, id, file.file, file.type, file.size) // TODO: FIXME <--WorkspaceIds
+        const modifiedOn = event.msg.date * 1000
         const tx = factory.createTxCollectionCUD<TelegramMessage, Attachment>(
           msg._class,
           msg._id,
           msg.space,
           'attachments',
-          factory.createTxCreateDoc<Attachment>(attachment.class.Attachment, msg.space, {
-            name: file.name,
-            file: id as Ref<Blob>,
-            type: file.type,
-            size: file.size,
-            lastModified: file.lastModified,
-            collection: 'attachments',
-            attachedTo: msg._id,
-            attachedToClass: msg._class
-          })
+          factory.createTxCreateDoc<Attachment>(
+            attachment.class.Attachment,
+            msg.space,
+            {
+              name: file.name,
+              file: id as Ref<Blob>,
+              type: file.type,
+              size: file.size,
+              lastModified: file.lastModified,
+              collection: 'attachments',
+              attachedTo: msg._id,
+              attachedToClass: msg._class
+            },
+            undefined,
+            modifiedOn
+          ),
+          modifiedOn
         )
-        tx.modifiedOn = event.msg.date * 1000
-        tx.tx.modifiedOn = event.msg.date * 1000
         await this.client.tx(tx)
       } catch (e) {
         console.error(e)

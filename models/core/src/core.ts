@@ -14,17 +14,10 @@
 //
 
 import {
-  type Card,
-  type CollaborativeDoc,
-  DOMAIN_BLOB,
-  DOMAIN_CONFIGURATION,
-  DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_MIGRATION,
-  DOMAIN_MODEL,
-  IndexKind,
-  type Account,
+  type PersonId,
   type AnyAttribute,
   type ArrOf,
+  type Association,
   type AttachedDoc,
   type Blob,
   type Class,
@@ -35,12 +28,19 @@ import {
   type Doc,
   type DocIndexState,
   type Domain,
+  DOMAIN_BLOB,
+  DOMAIN_CONFIGURATION,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_MIGRATION,
+  DOMAIN_MODEL,
+  DOMAIN_RELATION,
   type DomainIndexConfiguration,
   type Enum,
   type EnumOf,
   type FieldIndexConfig,
   type FullTextSearchContext,
   type IndexingConfiguration,
+  IndexKind,
   type Interface,
   type MigrationState,
   type Mixin,
@@ -48,11 +48,15 @@ import {
   type PluginConfiguration,
   type Ref,
   type RefTo,
+  type Relation,
   type Space,
+  type Sequence,
   type Timestamp,
+  type TransientConfiguration,
   type Type,
   type TypeAny,
-  type Version
+  type Version,
+  DOMAIN_SEQUENCE
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -62,13 +66,12 @@ import {
   Prop,
   ReadOnly,
   TypeBoolean,
-  TypeCollaborativeDoc,
   TypeFileSize,
   TypeIntlString,
-  TypeRecord,
   TypeRef,
   TypeString,
   TypeTimestamp,
+  TypePersonId,
   UX
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type IntlString, type Plugin } from '@hcengineering/platform'
@@ -100,34 +103,18 @@ export class TDoc extends TObj implements Doc {
   @Index(IndexKind.Indexed)
     modifiedOn!: Timestamp
 
-  @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
+  @Prop(TypePersonId(), core.string.ModifiedBy)
   @Index(IndexKind.Indexed)
-    modifiedBy!: Ref<Account>
+    modifiedBy!: PersonId
 
-  @Prop(TypeRef(core.class.Account), core.string.CreatedBy)
+  @Prop(TypePersonId(), core.string.CreatedBy)
   @Index(IndexKind.Indexed)
-    createdBy!: Ref<Account>
+    createdBy!: PersonId
 
   @Prop(TypeTimestamp(), core.string.CreatedDate)
   @ReadOnly()
   @Index(IndexKind.IndexedDsc)
     createdOn!: Timestamp
-}
-
-@Model(core.class.Card, core.class.Doc)
-@UX(core.string.Object)
-export class TCard extends TDoc implements Card {
-  @Prop(TypeString(), core.string.Name)
-    title!: string
-
-  @Prop(TypeCollaborativeDoc(), core.string.Description)
-    description!: CollaborativeDoc | null
-
-  @Prop(TypeString(), core.string.Id)
-    identifier?: string | undefined
-
-  @Prop(TypeRef(core.class.Card), core.string.AttachedTo)
-    parent?: Ref<Card> | null
 }
 
 @Model(core.class.AttachedDoc, core.class.Doc)
@@ -145,6 +132,28 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
   @Prop(TypeString(), core.string.Collection)
   @Hidden()
     collection!: string
+}
+
+@Model(core.class.Association, core.class.Doc, DOMAIN_MODEL)
+export class TAssociation extends TDoc implements Association {
+  classA!: Ref<Class<Doc>>
+
+  classB!: Ref<Class<Doc>>
+
+  nameA!: string
+
+  nameB!: string
+
+  type!: '1:1' | '1:N' | 'N:N'
+}
+
+@Model(core.class.Relation, core.class.Doc, DOMAIN_RELATION)
+export class TRelation extends TDoc implements Relation {
+  docA!: Ref<Doc<Space>>
+
+  docB!: Ref<Doc<Space>>
+
+  association!: Ref<Association>
 }
 
 @Model(core.class.Blob, core.class.Doc, DOMAIN_BLOB)
@@ -252,6 +261,10 @@ export class TTypeFileSize extends TType {}
 @Model(core.class.TypeMarkup, core.class.Type)
 export class TTypeMarkup extends TType {}
 
+@UX(core.string.PersonId)
+@Model(core.class.TypePersonId, core.class.Type)
+export class TTypePersonId extends TType {}
+
 @UX(core.string.Ref)
 @Model(core.class.RefTo, core.class.Type)
 export class TRefTo extends TType implements RefTo<Doc> {
@@ -329,19 +342,6 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   @Hidden()
     objectClass!: Ref<Class<Doc>>
 
-  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    attachedTo?: Ref<Doc>
-
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    attachedToClass?: Ref<Class<Doc>>
-
-  // Indexable attributes of document.
-  attributes!: Record<string, any>
-
   @Prop(TypeBoolean(), getEmbeddedLabel('Removed'))
   @Hidden()
     removed!: boolean
@@ -349,16 +349,6 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   @Prop(TypeBoolean(), getEmbeddedLabel('NeedIndexing'))
   @Hidden()
     needIndex!: boolean
-
-  // States for different stages
-  @Prop(TypeRecord(), getEmbeddedLabel('Stages'))
-  // @Index(IndexKind.Indexed)
-  @Hidden()
-    stages!: Record<string, boolean>
-
-  @Prop(TypeString(), getEmbeddedLabel('Generation'))
-  @Hidden()
-    generationId?: string
 }
 
 @Model(core.class.FullTextSearchContext, core.class.Doc, DOMAIN_MODEL)
@@ -396,10 +386,21 @@ export class TDomainIndexConfiguration extends TDoc implements DomainIndexConfig
 @Model(core.class.TypeCollaborativeDoc, core.class.Type)
 export class TTypeCollaborativeDoc extends TType {}
 
-@UX(core.string.CollaborativeDocVersion)
-@Model(core.class.TypeCollaborativeDocVersion, core.class.Type)
-export class TTypeCollaborativeDocVersion extends TType {}
-
 @UX(core.string.Rank)
 @Model(core.class.TypeRank, core.class.Type)
 export class TTypeRank extends TType {}
+
+@MMixin(core.mixin.TransientConfiguration, core.class.Class)
+export class TTransientConfiguration extends TClass implements TransientConfiguration {
+  @Prop(TypeBoolean(), core.string.Private)
+    broadcastOnly!: boolean
+}
+
+@Model(core.class.Sequence, core.class.Doc, DOMAIN_SEQUENCE)
+export class TSequence extends TDoc implements Sequence {
+  @Prop(TypeRef(core.class.Class), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+    attachedTo!: Ref<Class<Doc>>
+
+  sequence!: number
+}

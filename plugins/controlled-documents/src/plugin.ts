@@ -6,11 +6,13 @@ import {
   type Type,
   type Space,
   type SpaceTypeDescriptor,
-  type Permission
+  type Permission,
+  Role,
+  Sequence
 } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
-import type { AnyComponent, ResolvedLocation, Location } from '@hcengineering/ui'
+import type { AnyComponent, ResolvedLocation, Location } from '@hcengineering/ui/src/types'
 import { Action } from '@hcengineering/view'
 
 import type {
@@ -37,9 +39,9 @@ import type {
   Project,
   ProjectMeta,
   ProjectDocument,
-  Sequence,
   ControlledDocumentSnapshot
 } from './types'
+import type { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public
@@ -68,8 +70,6 @@ export const documentsPlugin = plugin(documentsId, {
     ControlledDocument: '' as Ref<Class<ControlledDocument>>,
     ChangeControl: '' as Ref<Class<ChangeControl>>,
     DocumentComment: '' as Ref<Class<DocumentComment>>,
-
-    Sequence: '' as Ref<Class<Sequence>>,
 
     DocumentRequest: '' as Ref<Class<DocumentRequest>>,
     DocumentReviewRequest: '' as Ref<Class<DocumentReviewRequest>>,
@@ -105,19 +105,29 @@ export const documentsPlugin = plugin(documentsId, {
     DocumentMetaPresenter: '' as AnyComponent,
     DocumentVersionPresenter: '' as AnyComponent,
     DeleteCategoryPopup: '' as AnyComponent,
-    DocumentIcon: '' as AnyComponent
+    DocumentIcon: '' as AnyComponent,
+    CreateFolder: '' as AnyComponent
   },
   action: {
     ChangeDocumentOwner: '' as Ref<Action<Doc, any>>,
     CreateChildDocument: '' as Ref<Action<Document, any>>,
     CreateChildTemplate: '' as Ref<Action<Document, any>>,
+    CreateChildFolder: '' as Ref<Action<Document, any>>,
+    RenameFolder: '' as Ref<Action<Document, any>>,
+    DeleteFolder: '' as Ref<Action<Document, any>>,
     CreateDocument: '' as Ref<Action<DocumentSpace, any>>,
     CreateTemplate: '' as Ref<Action<DocumentSpace, any>>,
+    CreateFolder: '' as Ref<Action<DocumentSpace, any>>,
     DeleteDocumentCategory: '' as Ref<Action<Doc, any>>,
     DeleteDocument: '' as Ref<Action>,
     ArchiveDocument: '' as Ref<Action>,
+    MakeDocumentObsolete: '' as Ref<Action>,
     EditDocSpace: '' as Ref<Action>,
-    Print: '' as Ref<Action<Doc, { signed: boolean }>>
+    TransferDocument: '' as Ref<Action>,
+    Print: '' as Ref<Action<Doc, { signed: boolean }>>,
+    PrintProjectDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
+    OpenDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
+    OpenDocumentInNewTab: '' as Ref<Action<Doc, { signed: boolean }>>
   },
   function: {
     CanChangeDocumentOwner: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
@@ -128,6 +138,7 @@ export const documentsPlugin = plugin(documentsId, {
     CheckmarkCircle: '' as Asset,
     DocumentApplication: '' as Asset,
     NewDocument: '' as Asset,
+    Folder: '' as Asset,
     Document: '' as Asset,
     Library: '' as Asset,
     StateDraft: '' as Asset,
@@ -192,6 +203,10 @@ export const documentsPlugin = plugin(documentsId, {
     Deleted: '' as IntlString,
     Effective: '' as IntlString,
     Archived: '' as IntlString,
+    Obsolete: '' as IntlString,
+    MakeDocumentObsolete: '' as IntlString,
+    MakeDocumentObsoleteDialog: '' as IntlString,
+    MakeDocumentObsoleteConfirm: '' as IntlString,
     Parent: '' as IntlString,
     Template: '' as IntlString,
     GeneralInfo: '' as IntlString,
@@ -209,6 +224,8 @@ export const documentsPlugin = plugin(documentsId, {
     ChangeOwnerWarning: '' as IntlString,
     CreateDocument: '' as IntlString,
     CreateTemplate: '' as IntlString,
+    CreateFolder: '' as IntlString,
+    RenameFolder: '' as IntlString,
     DeleteCategory: '' as IntlString,
     DeleteCategoryHint: '' as IntlString,
     DeleteCategoryWarning: '' as IntlString,
@@ -225,6 +242,7 @@ export const documentsPlugin = plugin(documentsId, {
     Path: '' as IntlString,
     CreateChildDocument: '' as IntlString,
     CreateChildTemplate: '' as IntlString,
+    CreateChildFolder: '' as IntlString,
     All: '' as IntlString,
     ImpactAnalysis: '' as IntlString,
     ImpactedDocuments: '' as IntlString,
@@ -258,11 +276,17 @@ export const documentsPlugin = plugin(documentsId, {
     DeleteDocumentCategoryPermission: '' as IntlString,
     DeleteDocumentCategoryDescription: '' as IntlString,
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+
+    Transfer: '' as IntlString,
+    TransferWarning: '' as IntlString,
+    TransferDocuments: '' as IntlString,
+    TransferDocumentsHint: '' as IntlString
   },
   ids: {
     NoParent: '' as Ref<DocumentMeta>,
-    NoProject: '' as Ref<Project>
+    NoProject: '' as Ref<Project>,
+    Folder: '' as Ref<HierarchyDocument>
   },
   sequence: {
     Templates: '' as Ref<Sequence>,
@@ -275,6 +299,11 @@ export const documentsPlugin = plugin(documentsId, {
     CM: '' as Ref<DocumentCategory>,
     CA: '' as Ref<DocumentCategory>,
     CC: '' as Ref<DocumentCategory>
+  },
+  role: {
+    QARA: '' as Ref<Role>,
+    Manager: '' as Ref<Role>,
+    QualifiedUser: '' as Ref<Role>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
@@ -295,6 +324,9 @@ export const documentsPlugin = plugin(documentsId, {
   },
   template: {
     ProductChangeControl: '' as Ref<DocumentTemplate>
+  },
+  notification: {
+    CoAuthorsNotification: '' as Ref<NotificationType>
   }
 })
 

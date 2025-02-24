@@ -79,7 +79,7 @@
     "MessageNotificationBody": "{senderName}: {message}",
     "AddCommentPlaceholder": "Добавить комментарий...",
     "Reacted": "Отреагировал(а)",
-    "Docs": "Documents",
+    "Docs": "Документы",
     "NewestFirst": "Сначала новые",
     "ReplyToThread": "Ответить в теме",
     "SentMessage": "Отправил(а) сообщение",
@@ -118,7 +118,7 @@
     "Removed": "Исключил(а)",
     "CreatedChannelOn": "Создал этот канал {date}",
     "ChannelMessages": "Сообщения каналов",
-    "JoinChannel": "Приссоединение к каналу",
+    "JoinChannel": "Присоединение к каналу",
     "YouJoinedChannel": "Вы присоединились к каналу",
     "AndMore": "и еще {count}",
     "IsTyping": "{count, plural, =1 {печатает} other {печатают}}...",
@@ -130,6 +130,7 @@
     "StartConversation": "Начать диалог",
     "ViewingThreadFromArchivedChannel": "Вы просматриваете обсуждение из архивированного канала",
     "ViewingArchivedChannel": "Вы просматриваете архивированный канал",
-    "OpenChatInSidebar": "Открыть чат в боковой панели"
+    "OpenChatInSidebar": "Открыть чат в боковой панели",
+    "ResolveThread": "Пометить завершенным"
   }
 }

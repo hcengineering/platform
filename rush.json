@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.134.0",
+  "rushVersion": "5.149.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -26,7 +26,7 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "8.15.9",
+  "pnpmVersion": "9.15.3",
 
   // "npmVersion": "4.5.0",
   // "yarnVersion": "1.9.4",
@@ -124,7 +124,7 @@
    * LTS schedule: https://nodejs.org/en/about/releases/
    * LTS versions: https://nodejs.org/en/download/releases/
    */
-  "nodeSupportedVersionRange": ">=12.13.0 <13.0.0 || >=14.15.0 <15.0.0 || >=16.0.0",
+  "nodeSupportedVersionRange": ">=20.0.0 <23.0.0",
 
   /**
    * Odd-numbered major versions of Node.js are experimental.  Even-numbered releases
@@ -446,6 +446,21 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/highlight",
+      "projectFolder": "packages/highlight",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/api-client",
+      "projectFolder": "packages/api-client",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/importer",
+      "projectFolder": "packages/importer",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaboration",
       "projectFolder": "server/collaboration",
       "shouldPublish": false
@@ -461,8 +476,18 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/text-core",
+      "projectFolder": "packages/text-core",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/text",
       "projectFolder": "packages/text",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-ydoc",
+      "projectFolder": "packages/text-ydoc",
       "shouldPublish": true
     },
     {
@@ -491,8 +516,28 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/presence",
+      "projectFolder": "plugins/presence",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/presence-resources",
+      "projectFolder": "plugins/presence-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-presence",
+      "projectFolder": "models/presence",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaborator-client",
       "projectFolder": "packages/collaborator-client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/account-client",
+      "projectFolder": "packages/account-client",
       "shouldPublish": true
     },
     {
@@ -826,6 +871,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-stats",
+      "projectFolder": "pods/stats",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-server",
       "projectFolder": "pods/server",
       "shouldPublish": false
@@ -995,11 +1045,11 @@
       "projectFolder": "models/lead",
       "shouldPublish": false
     },
-    {
-      "packageName": "@hcengineering/storybook",
-      "projectFolder": "dev/storybook",
-      "shouldPublish": false
-    },
+    // {
+    //   "packageName": "@hcengineering/storybook",
+    //   "projectFolder": "dev/storybook",
+    //   "shouldPublish": false
+    // },
     {
       "packageName": "@hcengineering/model-gmail",
       "projectFolder": "models/gmail",
@@ -1091,6 +1141,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/tests-ws-sanity",
+      "projectFolder": "ws-tests/sanity",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/qms-tests-sanity",
       "projectFolder": "qms-tests/sanity",
       "shouldPublish": false
@@ -1136,7 +1191,7 @@
       "shouldPublish": false
     },
     {
-    "packageName": "@hcengineering/tags",
+      "packageName": "@hcengineering/tags",
       "projectFolder": "plugins/tags",
       "shouldPublish": true
     },
@@ -1424,6 +1479,26 @@
     {
       "packageName": "@hcengineering/pod-backup",
       "projectFolder": "pods/backup",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-fulltext",
+      "projectFolder": "pods/fulltext",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-fulltext",
+      "projectFolder": "server-plugins/fulltext",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-fulltext-resources",
+      "projectFolder": "server-plugins/fulltext-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-fulltext",
+      "projectFolder": "models/server-fulltext",
       "shouldPublish": false
     },
     {
@@ -1925,7 +2000,7 @@
       "packageName": "@hcengineering/diffview-resources",
       "projectFolder": "plugins/diffview-resources",
       "shouldPublish": false
-    },  
+    },
     {
       "packageName": "@hcengineering/github",
       "projectFolder": "services/github/github",
@@ -2117,8 +2192,133 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/cloud-datalake",
-      "projectFolder": "workers/datalake",
+      "packageName": "@hcengineering/scripts",
+      "projectFolder": "common/scripts",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-test-management",
+      "projectFolder": "models/test-management",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/test-management",
+      "projectFolder": "plugins/test-management",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/test-management-resources",
+      "projectFolder": "plugins/test-management-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/test-management-assets",
+      "projectFolder": "plugins/test-management-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey",
+      "projectFolder": "plugins/survey",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-survey",
+      "projectFolder": "models/survey",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey-assets",
+      "projectFolder": "plugins/survey-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/survey-resources",
+      "projectFolder": "plugins/survey-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-transactor",
+      "projectFolder": "workers/transactor",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card",
+      "projectFolder": "plugins/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-card",
+      "projectFolder": "models/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card-assets",
+      "projectFolder": "plugins/card-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/card-resources",
+      "projectFolder": "plugins/card-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/green",
+      "projectFolder": "pods/green",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-card",
+      "projectFolder": "server-plugins/card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-card-resources",
+      "projectFolder": "server-plugins/card-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-card",
+      "projectFolder": "models/server-card",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail",
+      "projectFolder": "plugins/mail",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/model-mail",
+      "projectFolder": "models/mail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail-assets",
+      "projectFolder": "plugins/mail-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/mail-resources",
+      "projectFolder": "plugins/mail-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/my-space",
+      "projectFolder": "plugins/my-space",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/my-space-assets",
+      "projectFolder": "plugins/my-space-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/my-space-resources",
+      "projectFolder": "plugins/my-space-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-my-space",
+      "projectFolder": "models/my-space",
       "shouldPublish": false
     }
   ]

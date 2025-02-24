@@ -13,12 +13,17 @@
 // limitations under the License.
 //
 
+import { type Ref } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import setting, { settingId } from '@hcengineering/setting'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { type Widget } from '@hcengineering/workbench'
 
 export default mergeIds(settingId, setting, {
+  ids: {
+    SettingsWidget: '' as Ref<Widget>
+  },
   component: {
     EditEnum: '' as AnyComponent,
     ManageSpaceTypes: '' as AnyComponent,
@@ -65,6 +70,7 @@ export default mergeIds(settingId, setting, {
     AddOwner: '' as IntlString,
     User: '' as IntlString,
     Maintainer: '' as IntlString,
+    Guest: '' as IntlString,
     Owner: '' as IntlString,
     OwnerFirstName: '' as IntlString,
     OwnerLastName: '' as IntlString,
@@ -107,6 +113,10 @@ export default mergeIds(settingId, setting, {
     DeleteSpaceType: '' as IntlString,
     DeleteSpaceTypeConfirm: '' as IntlString,
     WorkspaceName: '' as IntlString,
-    Workspace: '' as IntlString
+    Workspace: '' as IntlString,
+    Calendar: '' as IntlString,
+    StartOfTheWeek: '' as IntlString,
+    SystemSetupString: '' as IntlString,
+    DefaultString: '' as IntlString
   }
 })

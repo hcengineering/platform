@@ -19,6 +19,7 @@
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
 
+  export let id: string | undefined = undefined
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
@@ -27,7 +28,7 @@
   export let invisible: boolean = false
 </script>
 
-<div class="antiSection">
+<div class="antiSection" {id}>
   {#if showHeader}
     <div class="antiSection-header" class:high class:invisible>
       {#if icon}

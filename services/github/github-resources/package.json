@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/github": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/presentation": "^0.6.3",
@@ -55,7 +55,7 @@
     "@hcengineering/setting-resources": "^0.6.0",
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/chunter": "^0.6.20",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/panel": "^0.6.23",

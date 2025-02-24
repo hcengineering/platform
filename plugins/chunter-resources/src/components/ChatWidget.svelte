@@ -19,7 +19,6 @@
 
   import ChannelSidebarView from './ChannelSidebarView.svelte'
   import chunter from '../plugin'
-  import ThreadSidebarView from './threads/ThreadSidebarView.svelte'
 
   export let widget: Widget | undefined
   export let tab: ChatWidgetTab | undefined

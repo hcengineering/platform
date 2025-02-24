@@ -6,12 +6,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { RequestStatus } from '@hcengineering/request'
-  import { Label, ModernDialog } from '@hcengineering/ui'
+  import { Label, ModernDialog, showPopup } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
+  import { Employee } from '@hcengineering/contact'
   import { Class, Ref } from '@hcengineering/core'
-  import { UserBoxItems } from '@hcengineering/contact-resources'
-  import { permissionsStore } from '@hcengineering/view-resources'
+  import { UserBoxItems, permissionsStore } from '@hcengineering/contact-resources'
   import documents, {
     ControlledDocument,
     ControlledDocumentState,
@@ -20,10 +19,12 @@
 
   import documentsRes from '../plugin'
   import { sendApprovalRequest, sendReviewRequest } from '../utils'
+  import SignatureDialog from './SignatureDialog.svelte'
 
   export let controlledDoc: ControlledDocument
   export let requestClass: Ref<Class<DocumentRequest>>
   export let readonly: boolean = false
+  export let requireSignature: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -37,20 +38,8 @@
   const permissionId = isReviewRequest ? documents.permission.ReviewDocument : documents.permission.ApproveDocument
   $: permissionsSpace =
     controlledDoc.space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : controlledDoc.space
-  $: permittedAccounts = $permissionsStore.ap[permissionsSpace]?.[permissionId] ?? new Set()
-  let permittedPeople: Array<Ref<Employee>> = []
-
-  $: if (permittedAccounts.size > 0) {
-    void client
-      .findAll(contact.class.PersonAccount, {
-        _id: { $in: Array.from(permittedAccounts) as Array<Ref<PersonAccount>> }
-      })
-      .then((res) => {
-        permittedPeople = res.map((pa) => pa.person) as Array<Ref<Employee>>
-      })
-  } else {
-    permittedPeople = []
-  }
+  $: permittedPeople = $permissionsStore.ap[permissionsSpace]?.[permissionId] ?? new Set()
+  $: permittedEmployees = Array.from(permittedPeople) as Ref<Employee>[]
 
   let docRequest: DocumentRequest | undefined
   let loading = true
@@ -67,13 +56,34 @@
   let users: Ref<Employee>[] = controlledDoc[docField] ?? []
 
   async function submit (): Promise<void> {
-    loading = true
+    const complete = async (): Promise<void> => {
+      loading = true
 
-    await sendRequestFunc?.(client, controlledDoc, users)
+      await sendRequestFunc?.(client, controlledDoc, users)
 
-    loading = false
+      loading = false
 
-    dispatch('close')
+      dispatch('close')
+    }
+
+    if (requireSignature) {
+      showPopup(
+        SignatureDialog,
+        {
+          confirmationTitle: isReviewRequest
+            ? documentsRes.string.ConfirmReviewSubmission
+            : documentsRes.string.ConfirmApprovalSubmission
+        },
+        'center',
+        async (res) => {
+          if (!res) return
+
+          await complete()
+        }
+      )
+    } else {
+      await complete()
+    }
   }
 
   $: canSubmit = docRequest === undefined && users.length > 0
@@ -97,7 +107,7 @@
             readonly}
           docQuery={{
             active: true,
-            _id: { $in: permittedPeople }
+            _id: { $in: permittedEmployees }
           }}
           on:update={({ detail }) => (users = detail)}
         />

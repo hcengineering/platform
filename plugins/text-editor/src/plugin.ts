@@ -57,6 +57,9 @@ export default plugin(textEditorId, {
     CodeBlock: '' as IntlString,
     Note: '' as IntlString,
     ConfigureNote: '' as IntlString,
+    Comment: '' as IntlString,
+    AddComment: '' as IntlString,
+    AddCommentPlaceholder: '' as IntlString,
     Set: '' as IntlString,
     Update: '' as IntlString,
     Remove: '' as IntlString,
@@ -81,19 +84,28 @@ export default plugin(textEditorId, {
     DeleteColumn: '' as IntlString,
     AddRowBefore: '' as IntlString,
     AddRowAfter: '' as IntlString,
+    MergeCells: '' as IntlString,
+    SplitCells: '' as IntlString,
     DeleteRow: '' as IntlString,
     DeleteTable: '' as IntlString,
     Duplicate: '' as IntlString,
     CategoryRow: '' as IntlString,
     CategoryColumn: '' as IntlString,
+    CategoryCell: '' as IntlString,
     Table: '' as IntlString,
-    TableOptions: '' as IntlString,
     Width: '' as IntlString,
     Height: '' as IntlString,
     Unset: '' as IntlString,
     Image: '' as IntlString,
     SeparatorLine: '' as IntlString,
-    TodoList: '' as IntlString
+    TodoList: '' as IntlString,
+    DrawingBoard: '' as IntlString,
+    MermaidDiargram: '' as IntlString,
+
+    TableOptions: '' as IntlString,
+    SelectTable: '' as IntlString,
+    SetCellHighlightColor: '' as IntlString,
+    SetTextColor: '' as IntlString
   },
   icon: {
     Header1: '' as Asset,
@@ -117,6 +129,12 @@ export default plugin(textEditorId, {
     Expand: '' as Asset,
     ScaleOut: '' as Asset,
     Download: '' as Asset,
-    Note: '' as Asset
+    Note: '' as Asset,
+    Comment: '' as Asset,
+    SelectTable: '' as Asset,
+    MergeCells: '' as Asset,
+    SplitCells: '' as Asset,
+    Brush: '' as Asset,
+    TextStyle: '' as Asset
   }
 })

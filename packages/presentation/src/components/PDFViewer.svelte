@@ -15,7 +15,7 @@
 <script lang="ts">
   // import { Doc } from '@hcengineering/core'
   import type { Blob, Ref } from '@hcengineering/core'
-  import { Button, Dialog, Label, Spinner } from '@hcengineering/ui'
+  import { Button, Dialog, EmbeddedPDF, Label, Spinner } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import presentation, { getFileUrl } from '..'
   import ActionContext from './ActionContext.svelte'
@@ -45,22 +45,9 @@
   })
   let download: HTMLAnchorElement
 
-  $: srcRef = file !== undefined ? getFileUrl(file, name) : undefined
+  $: src = file !== undefined ? getFileUrl(file, name) : undefined
 
   $: isImage = contentType !== undefined && contentType.startsWith('image/')
-
-  let frame: HTMLIFrameElement | undefined = undefined
-  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-  $: if (css !== undefined && frame !== undefined && frame !== null) {
-    frame.onload = () => {
-      const head = frame?.contentDocument?.querySelector('head')
-
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (css !== undefined && head !== undefined && head !== null) {
-        head.appendChild(document.createElement('style')).textContent = css
-      }
-    }
-  }
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -85,41 +72,37 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#await srcRef then src}
-      {#if !isLoading && src !== ''}
-        <a class="no-line" href={src} download={name} bind:this={download}>
-          <Button
-            icon={Download}
-            kind={'ghost'}
-            on:click={() => {
-              download.click()
-            }}
-            showTooltip={{ label: presentation.string.Download }}
-          />
-        </a>
-      {/if}
-    {/await}
+    {#if !isLoading && src !== ''}
+      <a class="no-line" href={src} download={name} bind:this={download}>
+        <Button
+          icon={Download}
+          kind={'ghost'}
+          on:click={() => {
+            download.click()
+          }}
+          showTooltip={{ label: presentation.string.Download }}
+        />
+      </a>
+    {/if}
   </svelte:fragment>
 
-  {#await srcRef then src}
-    {#if !isLoading}
-      {#if src === ''}
-        <div class="centered">
-          <Label label={presentation.string.FailedToPreview} />
-        </div>
-      {:else if isImage}
-        <div class="pdfviewer-content img">
-          <img class="img-fit" {src} alt="" />
-        </div>
-      {:else}
-        <iframe bind:this={frame} class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
-      {/if}
-    {:else}
+  {#if !isLoading}
+    {#if src === '' || src === undefined}
       <div class="centered">
-        <Spinner size="medium" />
+        <Label label={presentation.string.FailedToPreview} />
       </div>
+    {:else if isImage}
+      <div class="pdfviewer-content img">
+        <img class="img-fit" {src} alt="" />
+      </div>
+    {:else}
+      <EmbeddedPDF {src} {name} {css} fit />
     {/if}
-  {/await}
+  {:else}
+    <div class="centered">
+      <Spinner size="medium" />
+    </div>
+  {/if}
 </Dialog>
 
 <style lang="scss">

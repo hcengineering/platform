@@ -13,13 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { RoomType } from '@hcengineering/love'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import { currentRoom } from '../stores'
-  import { screenSharing } from '../utils'
+  import { onDestroy, onMount } from 'svelte'
+  import presentation from '@hcengineering/presentation'
+  import { personByIdStore } from '@hcengineering/contact-resources'
+  import { RoomType } from '@hcengineering/love'
+
   import Hall from './Hall.svelte'
-  import RoomComponent from './Room.svelte'
-  import { onMount, onDestroy } from 'svelte'
+  import { getMetadata } from '@hcengineering/platform'
+  import love from '../plugin'
+  import { tryConnect, isConnected, isCurrentInstanceConnected, screenSharing } from '../utils'
+  import { infos, invites, myInfo, myRequests, storePromise, currentRoom } from '../stores'
 
   const localNav: boolean = $deviceInfo.navigator.visible
   const savedNav = localStorage.getItem('love-visibleNav')
@@ -29,12 +33,32 @@
   onDestroy(() => {
     $deviceInfo.navigator.visible = localNav
   })
+
+  onMount(async () => {
+    const wsURL = getMetadata(love.metadata.WebSocketURL)
+
+    if (wsURL === undefined) {
+      return
+    }
+
+    await $storePromise
+    const room = $currentRoom
+
+    if (room === undefined) return
+
+    if (
+      !$isConnected &&
+      !$isCurrentInstanceConnected &&
+      (room.type === RoomType.Video || $screenSharing) &&
+      $myInfo?.sessionId &&
+      $myInfo.sessionId === getMetadata(presentation.metadata.SessionId)
+    ) {
+      const info = $infos.filter((p) => p.room === room._id)
+      await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+    }
+  })
 </script>
 
-<div class="hulyPanels-container" class:left-divider={$screenSharing || $currentRoom?.type === RoomType.Video}>
-  {#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
-    <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom} />
-  {:else}
-    <Hall />
-  {/if}
+<div class="hulyPanels-container">
+  <Hall />
 </div>

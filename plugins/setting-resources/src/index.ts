@@ -24,6 +24,7 @@ import EditEnum from './components/EditEnum.svelte'
 import EnumSetting from './components/EnumSetting.svelte'
 import Integrations from './components/Integrations.svelte'
 import General from './components/General.svelte'
+import Backup from './components/Backup.svelte'
 import Owners from './components/Owners.svelte'
 import Password from './components/Password.svelte'
 import Privacy from './components/Privacy.svelte'
@@ -55,14 +56,27 @@ import EnumTypeEditor from './components/typeEditors/EnumTypeEditor.svelte'
 import HyperlinkTypeEditor from './components/typeEditors/HyperlinkTypeEditor.svelte'
 import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
+import RelationSetting from './components/RelationSetting.svelte'
 import RoleAssignmentEditor from './components/typeEditors/RoleAssignmentEditor.svelte'
 import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
+import SettingsWidget from './components/SettingsWidget.svelte'
+import ClassHierarchy from './components/ClassHierarchy.svelte'
+import CreateAttributePopup from './components/CreateAttributePopup.svelte'
+import CreateRelation from './components/CreateRelation.svelte'
+import EditRelation from './components/EditRelation.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
 export * from './store'
-export { ClassAttributes, ClassAttributesList, ClassSetting, filterDescendants, SpaceTypeGeneralSectionEditor }
+export {
+  ClassAttributes,
+  ClassAttributesList,
+  ClassSetting,
+  filterDescendants,
+  SpaceTypeGeneralSectionEditor,
+  ClassHierarchy
+}
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
   const docs = await getClient().findAll(object._id, {}, { limit: 1 })
@@ -101,12 +115,14 @@ export default async (): Promise<Resources> => ({
     BooleanTypeEditor,
     NumberTypeEditor,
     RefEditor,
+    RelationSetting,
     DateTypeEditor,
     EnumTypeEditor,
     ArrayEditor,
     EditEnum,
     EnumSetting,
     General,
+    Backup,
     Owners,
     CreateMixin,
     InviteSetting,
@@ -121,7 +137,11 @@ export default async (): Promise<Resources> => ({
     SpaceTypePropertiesSectionEditor,
     SpaceTypeRolesSectionEditor,
     RoleEditor,
-    RoleAssignmentEditor
+    RoleAssignmentEditor,
+    SettingsWidget,
+    CreateAttributePopup,
+    CreateRelation,
+    EditRelation
   },
   actionImpl: {
     DeleteMixin

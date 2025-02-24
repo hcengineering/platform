@@ -25,12 +25,13 @@
     Separator
   } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
-  import { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
+  import { ActivityMessage } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
   import { Channel, ObjectChatPanel } from '@hcengineering/chunter'
   import view from '@hcengineering/view'
   import { messageInFocus } from '@hcengineering/activity-resources'
-  import { onMount } from 'svelte'
+  import { Presence } from '@hcengineering/presence-resources'
+  import { includesAny } from '@hcengineering/contact'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
@@ -41,22 +42,22 @@
 
   export let object: Doc
   export let context: DocNotifyContext | undefined
+  export let autofocus = true
   export let embedded: boolean = false
+  export let readonly: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount()._id
+  const acc = getCurrentAccount()
 
   let isThreadOpened = false
   let isAsideShown = false
-
-  let filters: Ref<ActivityMessagesFilter>[] = []
 
   locationStore.subscribe((newLocation) => {
     isThreadOpened = newLocation.path[4] != null
   })
 
-  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? (object as Space).archived : false
+  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? readonly || (object as Space).archived : readonly
   $: showJoinOverlay = shouldShowJoinOverlay(object)
   $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: withAside =
@@ -70,14 +71,14 @@
     if (hierarchy.isDerived(object._class, core.class.Space)) {
       const space = object as Space
 
-      return !space.members.includes(me)
+      return !includesAny(space.members, acc.socialIds)
     }
 
     return false
   }
 
   async function join (): Promise<void> {
-    await client.update(object as Space, { $push: { members: me } })
+    await client.update(object as Space, { $push: { members: acc.primarySocialId } })
   }
 
   defineSeparators('aside', panelSeparators)
@@ -104,13 +105,14 @@
   }
 </script>
 
+<Presence {object} />
+
 <div class="popupPanel">
   <ChannelHeader
     _id={object._id}
     _class={object._class}
     {object}
     {withAside}
-    bind:filters
     canOpen={isDocChat}
     allowClose={embedded}
     {isAsideShown}
@@ -139,12 +141,7 @@
             </div>
           </div>
         {:else}
-          <ChannelComponent
-            {context}
-            {object}
-            {filters}
-            isAsideOpened={(withAside && isAsideShown) || isThreadOpened}
-          />
+          <ChannelComponent {context} {object} {autofocus} />
         {/if}
       {/key}
     </div>

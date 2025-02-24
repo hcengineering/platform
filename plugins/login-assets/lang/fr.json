@@ -19,6 +19,7 @@
     "DoNotHaveAnAccount": "Vous n'avez pas de compte ?",
     "PasswordRepeat": "Répétez le mot de passe",
     "HaveAccount": "Vous avez déjà un compte ?",
+    "LoadingAccount": "Chargement...",
     "SelectWorkspace": "Sélectionner un espace de travail",
     "Copy": "Copier",
     "Copied": "Copié",
@@ -41,7 +42,6 @@
     "AlreadyJoined": "Déjà inscrit ?",
     "ConfirmationSent": "Un message a été envoyé à votre adresse e-mail contenant un lien pour confirmer votre adresse.",
     "ConfirmationSent2": "Veuillez suivre le lien pour compléter votre inscription.",
-    "Slogan": "Un lieu unique pour gérer tout votre travail\nBienvenue sur la plateforme",
     "ContinueWith": "Continuer avec {provider}",
     "HaventReceivedCode": "Vous n'avez pas reçu le code ?",
     "ResendCode": "Renvoyer le code",
@@ -51,11 +51,19 @@
     "CanFindCode": "Vous ne trouvez pas votre code ? Vérifiez votre",
     "LoginWithPassword": "Connexion avec mot de passe",
     "LoginWithCode": "Connexion avec code",
+    "SignUpWithPassword": "Inscrivez-vous avec votre mot de passe",
+    "SignUpWithCode": "Inscrivez-vous avec votre code",
     "FillInProfile": "Remplissez votre profil",
     "SetUpPassword": "Définir votre mot de passe",
     "Next": "Suivant",
     "Skip": "Passer",
     "SignUpCompleted": "Inscription terminée",
-    "StartUsingHuly": "Commencez à utiliser Huly"
+    "StartUsingHuly": "Commencez à utiliser Huly",
+    "PasswordMinLength": "{count, plural, =1 {Le mot de passe doit contenir au moins # caractère} other {Le mot de passe doit contenir au moins # caractères}}",
+    "PasswordMinSpecialChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # caractère spécial} other {Le mot de passe doit contenir au moins # caractères spéciaux}}",
+    "PasswordMinDigits": "{count, plural, =1 {Le mot de passe doit contenir au moins # chiffre} other {Le mot de passe doit contenir au moins # chiffres}}",
+    "PasswordMinUpperChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # lettre majuscule} other {Le mot de passe doit contenir au moins # lettres majuscules}}",
+    "PasswordMinLowerChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # lettre minuscule} other {Le mot de passe doit contenir au moins # lettres minuscules}}",
+    "WorkspaceArchivedDesc": "L'espace de travail est archivé en raison de son inactivité, veuillez nous contacter pour le restaurer..."
   }
 }

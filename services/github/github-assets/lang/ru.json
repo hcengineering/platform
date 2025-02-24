@@ -46,6 +46,7 @@
     "Options": "Опции",
     "Projects": "Проекты ({count})",
     "GithubIssue": "Github тикет",
+    "GithubMilestone": "GitHub Майлстоун (Проект)",
     "OnlyOrganizationError": "Поддерживаются только Аккаунты организации",
     "Mergeable": "Готовность к влитию",
     "IssueRepositoryTarget": "Репозиторий",
@@ -72,6 +73,8 @@
     "AuthenticatedWithGithubRequired": "Пожалуйста авторизуйте Github приложение для действий от вашего имени",
     "Processing": "Происходит авторизация/установка",
     "AutoClose": "Процесс завершен, Вкладка будет автоматически закрыта через {time} секунд.",
+    "RequestFailed": "Запрос не выполнен. Пожалуйста, закройте вкладку и попробуйте снова.",
+    "CloseTab": "Закрыть вкладку",
     "PleaseRetry": "Пожалуйста повторите авторизацию",
     "Updated": "Обновлено",
     "LinkToProject": "Подключить к {title}",
@@ -85,6 +88,7 @@
     "AuthenticationRevokedGithub": "Требуется повторная авторизация для {login} для правильной работы приложения GitHub",
     "UnlinkInstallationTitle": "Удалить приложение Github",
     "UnlinkInstallation": "Вы уверены, что хотите удалить приложение GitHub? Синхронизация будет отключена.",
-    "RemoveInstallation": "Удалить"
+    "RemoveInstallation": "Удалить",
+    "Suspended": "Suspended"
   }
 }

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import core, { Doc, Hierarchy, Ref, Space, TxRemoveDoc } from '@hcengineering/core'
+  import core, { Doc, Hierarchy, Ref, Space, TxRemoveDoc, type Tx } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { addTxListener, contextStore, getClient, reduceCalls } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
@@ -28,8 +28,8 @@
 
   const client = getClient()
 
-  addTxListener((tx) => {
-    if (tx._class === core.class.TxRemoveDoc) {
+  addTxListener((txes: Tx[]) => {
+    for (const tx of txes.filter((it) => it._class === core.class.TxRemoveDoc)) {
       const docId = (tx as TxRemoveDoc<Doc>).objectId
       const provider = ListSelectionProvider.Find(docId)
       if (provider !== undefined) {
@@ -140,6 +140,9 @@
     let elm = evt.target as HTMLElement
     let isContentEditable = false
 
+    const selection = window.getSelection()
+    const haveRangeSelection = !(selection?.isCollapsed ?? true)
+
     while (true) {
       if (elm.isContentEditable) {
         isContentEditable = true
@@ -195,9 +198,20 @@
     let postpone = false
     let nonSequenceAction: Action | undefined
 
+    const checkIsAllowedContentMode = (mode?: 'always' | 'noSelection'): boolean => {
+      if (!isContentEditable) return true
+      switch (mode) {
+        case 'always':
+          return true
+        case 'noSelection':
+          return !haveRangeSelection
+      }
+      return false
+    }
+
     for (const a of currentActions) {
       if (a.keyBinding === undefined || a.keyBinding.length < 1) continue
-      if (isContentEditable && a.allowedForEditableContent !== true) continue
+      if (!checkIsAllowedContentMode(a.allowedForEditableContent)) continue
       const t = lastKey
       if (t !== undefined && a.keyBinding.some((it) => matchKeySequence(evt, it, t))) {
         evt.preventDefault()

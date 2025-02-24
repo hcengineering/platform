@@ -16,6 +16,7 @@
   import { Timestamp } from '@hcengineering/core'
   import DueDatePopup from './DueDatePopup.svelte'
   import { tooltip } from '../../tooltips'
+  import ui from '../../plugin'
   import DatePresenter from './DatePresenter.svelte'
   import { getDaysDifference, getDueDateIconModifier, getFormattedDate } from './internal/DateUtils'
   import { ButtonKind, ButtonSize } from '../../types'
@@ -67,6 +68,7 @@
       : undefined}
   >
     <DatePresenter
+      labelNull={ui.string.DueDate}
       {value}
       {editable}
       {iconModifier}
@@ -75,6 +77,7 @@
       {width}
       {shouldIgnoreOverdue}
       on:change={handleDueDateChanged}
+      on:resize
     />
   </div>
 {/if}

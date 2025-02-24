@@ -21,7 +21,7 @@
     "Major": "Мажорная",
     "Minor": "Минорная",
     "Patch": "Патч",
-    "DocumentApprovals": "Рецензии и утверждения",
+    "ValidationWorkflow": "Процесс валидации",
     "ChangeOwner": "Изменить владельца документа",
     "ChangeOwnerHintBeginning": "Передайте права владельца документа",
     "ChangeOwnerHintEnd": "другому лицу.",
@@ -84,6 +84,8 @@
     "ProvideRejectionReason": "Напишите причину отказа",
     "RejectionReason": "Причина отказа",
     "ConfirmReviewCompletion": "Подтвердите окончание рецензии",
+    "ConfirmApprovalSubmission": "Подтвердите отправку на рецензцию",
+    "ConfirmReviewSubmission": "Подтвердите отправку на утверждение",
     "AddApprovalTitle": "Отправьте ваш документ на утверждение",
     "AddApprovalDescription1": "Для отправки вашего документа на утверждение, он должен удовлетворять следующим требованиям:",
     "AddApprovalDescription2": "иметь статус 'Рабочая копия' или 'Рецензии получены'",
@@ -99,7 +101,7 @@
     "DocumentCodePlaceholder": "ДОК-1",
     "DocumentPrefixPlaceholder": "ДОК",
     "DocumentPrefix": "Префикс документов",
-    "DocumentTemplateCreateLabel": "Шалблон",
+    "DocumentTemplateCreateLabel": "Шаблон",
     "DocumentCategoryCreateLabel": "Категория",
     "CreateDocumentCategory": "Создать категорию документа",
     "DocumentCategoryAlreadyExists": "Категория \"{title}\" уже существует. ",
@@ -128,7 +130,7 @@
     "ModificationDate": "Модифицированно",
     "Modified": "Модифицированно",
     "Owner": "Владелец",
-    "AssignedTo": "Назначано на",
+    "AssignedTo": "Назначено на",
     "Unassigned": "Не назначено",
     "Untitled": "Без названия",
     "Copy": "копия",
@@ -153,7 +155,7 @@
     "Parent": "Родитель",
     "Template": "Шаблон",
     "GeneralInfo": "Общая информация",
-    "InProgress": "В прогресссе",
+    "InProgress": "Выполняется",
 
     "EditDescription": "Редактировать описание",
     "EditGuidance": "Редактировать руководство",
@@ -230,7 +232,7 @@
 
     "EffectiveDocumentLifecycle": "Жизненный цикл эффективного документа",
 
-    "ReasonAndImpact": "Причина & Воздействие",
+    "ReasonAndImpact": "Причина и Воздействие",
     "ImpactAnalysis": "Анализ воздействия",
     "ImpactedDocuments": "Подверженные документы",
 
@@ -293,7 +295,21 @@
     "DeleteDocumentCategoryPermission": "Удалять категорию",
     "DeleteDocumentCategoryDescription": "Предоставляет пользователям разрешение удалять категорию",
     "ConfigLabel": "Управляемые Документы",
-    "ConfigDescription": "Расширение для управления управялемыми документами"
+    "ConfigDescription": "Расширение для управления управляемыми документами",
+
+    "Transfer": "Трансфер",
+    "TransferWarning": "После этого действия некоторые члены команды могут потерять возможность просматривать или редактировать этот документ.",
+    "TransferDocuments": "Трансфер управляемых документов",
+    "TransferDocumentsHint": "Документы, которые будут перенесены в выбранное пространство:",
+
+    "CreateFolder": "Создать новую папку",
+    "RenameFolder": "Переименовать папку",
+    "CreateChildFolder": "Создать подпапку",
+
+    "Obsolete": "Устаревший",
+    "MakeDocumentObsolete": "Пометить как устаревшее",
+    "MakeDocumentObsoleteDialog": "Пометить {count, plural, one {документ как устаревший} other {документы как устаревшие}}",
+    "MakeDocumentObsoleteConfirm": "Вы действительно хотите пометить следующие документы как устаревшие: {titles}?"
   },
   "controlledDocStates": {
     "Empty": "",

@@ -64,6 +64,10 @@ export const documentAllVersionsUpdated = createEvent<ControlledDocument[]>(
 
 export const reviewRequestUpdated = createEvent<DocumentReviewRequest>(generateActionName('reviewRequestUpdated'))
 
+export const reviewRequestHistoryUpdated = createEvent<DocumentReviewRequest[]>(
+  generateActionName('reviewRequestHistoryUpdated')
+)
+
 export const approvalRequestUpdated = createEvent<DocumentApprovalRequest>(generateActionName('approvalRequestUpdated'))
 
 export const editorModeUpdated = createEvent<EditorMode>(generateActionName('editorModeUpdated'))

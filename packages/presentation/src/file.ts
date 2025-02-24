@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { concatLink, type Blob as PlatformBlob, type Ref } from '@hcengineering/core'
+import { concatLink, type Blob as PlatformBlob, type Ref, type WorkspaceUuid } from '@hcengineering/core'
 import { PlatformError, Severity, Status, getMetadata } from '@hcengineering/platform'
 import { v4 as uuid } from 'uuid'
 
@@ -99,8 +99,9 @@ function getFilesUrl (): string {
   return filesUrl.includes('://') ? filesUrl : concatLink(frontUrl, filesUrl)
 }
 
-export function getCurrentWorkspaceId (): string {
-  return getMetadata(plugin.metadata.WorkspaceId) ?? ''
+export function getCurrentWorkspaceUuid (): WorkspaceUuid {
+  const workspaceUuid = getMetadata(plugin.metadata.WorkspaceUuid) ?? ''
+  return workspaceUuid as WorkspaceUuid
 }
 
 /**
@@ -116,7 +117,7 @@ export function generateFileId (): string {
 export function getUploadUrl (): string {
   const template = getMetadata(plugin.metadata.UploadURL) ?? defaultUploadUrl
 
-  return template.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+  return template.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
 }
 
 function getUploadConfig (): UploadConfig {
@@ -138,7 +139,7 @@ function getFileUploadMethod (blob: Blob): { method: FileUploadMethod, url: stri
  * @public
  */
 export function getFileUploadParams (blobId: string, blob: Blob): FileUploadParams {
-  const workspaceId = encodeURIComponent(getCurrentWorkspaceId())
+  const workspaceId = encodeURIComponent(getCurrentWorkspaceUuid())
   const fileId = encodeURIComponent(blobId)
 
   const { method, url: urlTemplate } = getFileUploadMethod(blob)
@@ -166,24 +167,25 @@ export function getFileUrl (file: string, filename?: string): string {
   const template = getFilesUrl()
   return template
     .replaceAll(':filename', encodeURIComponent(filename ?? file))
-    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUuid()))
     .replaceAll(':blobId', encodeURIComponent(file))
 }
 
 /**
  * @public
  */
-export async function uploadFile (file: File): Promise<Ref<PlatformBlob>> {
-  const id = generateFileId()
-  const params = getFileUploadParams(id, file)
+export async function uploadFile (file: File, uuid?: Ref<PlatformBlob>): Promise<Ref<PlatformBlob>> {
+  uuid ??= generateFileId() as Ref<PlatformBlob>
+
+  const params = getFileUploadParams(uuid, file)
 
   if (params.method === 'signed-url') {
-    await uploadFileWithSignedUrl(file, id, params.url)
+    await uploadFileWithSignedUrl(file, uuid, params.url)
   } else {
-    await uploadFileWithFormData(file, id, params.url)
+    await uploadFileWithFormData(file, uuid, params.url)
   }
 
-  return id as Ref<PlatformBlob>
+  return uuid
 }
 
 /**
@@ -199,7 +201,7 @@ export async function deleteFile (id: string): Promise<void> {
     }
   })
 
-  if (resp.status !== 200) {
+  if (!resp.ok) {
     throw new Error('Failed to delete file')
   }
 }
@@ -216,7 +218,7 @@ async function uploadFileWithFormData (file: File, uuid: string, uploadUrl: stri
     body: data
   })
 
-  if (resp.status !== 200) {
+  if (!resp.ok) {
     if (resp.status === 413) {
       throw new PlatformError(new Status(Severity.ERROR, plugin.status.FileTooLarge, {}))
     } else {
@@ -257,8 +259,8 @@ async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: str
       method: 'PUT',
       headers: {
         'Content-Type': file.type,
-        'Content-Length': file.size.toString(),
-        'x-amz-meta-last-modified': file.lastModified.toString()
+        'Content-Length': file.size.toString()
+        // 'x-amz-meta-last-modified': file.lastModified.toString()
       }
     })
 
@@ -281,5 +283,15 @@ async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: str
         Authorization: 'Bearer ' + (getMetadata(plugin.metadata.Token) as string)
       }
     })
+  }
+}
+
+export async function getJsonOrEmpty<T = any> (file: string, name: string): Promise<T | undefined> {
+  try {
+    const fileUrl = getFileUrl(file, name)
+    const resp = await fetch(fileUrl)
+    return (await resp.json()) as T
+  } catch {
+    return undefined
   }
 }

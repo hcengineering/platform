@@ -168,7 +168,7 @@
   <Header
     type={'type-panel'}
     noPrint={!printHeader}
-    {adaptive}
+    adaptive={$deviceInfo.isMobile ? 'disabled' : adaptive}
     {hideBefore}
     {hideSearch}
     {hideActions}
@@ -202,6 +202,7 @@
     </svelte:fragment>
     <svelte:fragment slot="actions">
       <slot name="actions" />
+      <slot name="presence" />
       <slot name="pre-utils" />
       <slot name="utils" />
       {#if useMaxWidth !== undefined}
@@ -261,21 +262,21 @@
   </Header>
   <div class="popupPanel-body {$deviceInfo.isMobile ? 'mobile' : 'main'}" class:asideShown>
     {#if $deviceInfo.isMobile}
-      <Scroller horizontal padding={'.5rem .75rem'}>
-        <div
-          class="popupPanel-body__mobile"
-          use:resizeObserver={(element) => {
-            innerWidth = element.clientWidth
-          }}
-        >
+      <div
+        class="popupPanel-body__mobile"
+        use:resizeObserver={(element) => {
+          innerWidth = element.clientWidth
+        }}
+      >
+        <Scroller horizontal padding={'.5rem .75rem'}>
           {#if $$slots.header && isHeader}
             <div class="popupPanel-body__header mobile bottom-divider" class:max={useMaxWidth}>
               <slot name="header" />
             </div>
           {/if}
           <slot />
-        </div>
-      </Scroller>
+        </Scroller>
+      </div>
     {:else}
       <div
         class="popupPanel-body__main"
@@ -309,6 +310,11 @@
       </div>
     {/if}
   </div>
+  {#if $$slots['panel-footer']}
+    <div class="popupPanel-footer">
+      <slot name="panel-footer" />
+    </div>
+  {/if}
   <div class="popupPanel-pageHeader only-print" id="page-header">
     <slot name="page-header" />
   </div>

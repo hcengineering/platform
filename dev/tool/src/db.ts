@@ -1,29 +1,36 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   type AccountDB,
-  listAccounts,
-  listWorkspacesPure,
-  listInvites,
-  updateWorkspace,
+  type MongoAccountDB,
   type Workspace,
-  type ObjectId,
   getAccount,
-  getWorkspaceById
+  getWorkspaceById,
+  getWorkspaces
 } from '@hcengineering/account'
 import {
+  systemAccountUuid,
   type BackupClient,
   type Client,
-  getWorkspaceId,
-  systemAccountEmail,
   type Doc,
-  type MeasureMetricsContext
+  MeasureMetricsContext,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
-import { convertDoc, createTable, getDBClient, retryTxn, translateDomain } from '@hcengineering/postgres'
+import {
+  convertDoc,
+  createTables,
+  getDBClient,
+  getDocFieldsByDomains,
+  retryTxn,
+  translateDomain
+} from '@hcengineering/postgres'
+import { type DBDoc } from '@hcengineering/postgres/types/utils'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
+import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
-import { type MongoClient } from 'mongodb'
-import { type Pool } from 'pg'
+import { type MongoClient, UUID } from 'mongodb'
+import type postgres from 'postgres'
 
 export async function moveFromMongoToPG (
   accountDb: AccountDB,
@@ -37,7 +44,7 @@ export async function moveFromMongoToPG (
   }
   const client = getMongoClient(mongoUrl)
   const mongo = await client.getClient()
-  const pg = getDBClient(dbUrl)
+  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
   const pgClient = await pg.getClient()
 
   for (let index = 0; index < workspaces.length; index++) {
@@ -46,7 +53,7 @@ export async function moveFromMongoToPG (
       await moveWorkspace(accountDb, mongo, pgClient, ws, region)
       console.log('Move workspace', index, workspaces.length)
     } catch (err) {
-      console.log('Error when move workspace', ws.workspaceName ?? ws.workspace, err)
+      console.log('Error when move workspace', ws.name ?? ws.url, err)
       throw err
     }
   }
@@ -54,73 +61,95 @@ export async function moveFromMongoToPG (
   client.close()
 }
 
-function escapeBackticks (str: string): string {
-  return str.replaceAll("'", "''")
-}
-
 async function moveWorkspace (
   accountDb: AccountDB,
   mongo: MongoClient,
-  pgClient: Pool,
+  pgClient: postgres.Sql,
   ws: Workspace,
-  region: string
+  region: string,
+  include?: Set<string>,
+  force = false
 ): Promise<void> {
   try {
-    const wsId = getWorkspaceId(ws.workspace)
-    const mongoDB = getWorkspaceMongoDB(mongo, wsId)
+    console.log('move workspace', ws.name ?? ws.url)
+    const wsId = ws.uuid
+    // TODO: get workspace mongoDB
+    const mongoDB = getWorkspaceMongoDB(mongo, ws.dataId ?? wsId)
     const collections = await mongoDB.collections()
-    await createTable(
-      pgClient,
-      collections.map((c) => c.collectionName)
-    )
-    const token = generateToken(systemAccountEmail, wsId)
+    let tables = collections.map((c) => c.collectionName)
+    if (include !== undefined) {
+      tables = tables.filter((t) => include.has(t))
+    }
+
+    await createTables(new MeasureMetricsContext('', {}), pgClient, '', tables)
+    const token = generateToken(systemAccountUuid, wsId, { service: 'tool' })
     const endpoint = await getTransactorEndpoint(token, 'external')
     const connection = (await connect(endpoint, wsId, undefined, {
       model: 'upgrade'
     })) as unknown as Client & BackupClient
     for (const collection of collections) {
-      const cursor = collection.find()
       const domain = translateDomain(collection.collectionName)
-      const current = await pgClient.query(`SELECT _id FROM ${domain} WHERE "workspaceId" = $1`, [ws.workspace])
-      const currentIds = new Set(current.rows.map((r) => r._id))
+      if (include !== undefined && !include.has(domain)) {
+        continue
+      }
+      const cursor = collection.find()
+      const current = await pgClient`SELECT _id FROM ${pgClient(domain)} WHERE "workspaceId" = ${ws.uuid}`
+      const currentIds = new Set(current.map((r) => r._id))
       console.log('move domain', domain)
       const docs: Doc[] = []
+      const fields = getDocFieldsByDomains(domain)
+      const filedsWithData = [...fields, 'data']
+      const insertFields: string[] = ['workspaceId']
+      for (const field of filedsWithData) {
+        insertFields.push(field)
+      }
       while (true) {
-        while (docs.length < 50000) {
+        const toRemove: string[] = []
+        while (docs.length < 5000) {
           const doc = (await cursor.next()) as Doc | null
           if (doc === null) break
-          if (currentIds.has(doc._id)) continue
+          if (currentIds.has(doc._id)) {
+            if (force) {
+              toRemove.push(doc._id)
+            } else {
+              continue
+            }
+          }
           docs.push(doc)
+        }
+        while (toRemove.length > 0) {
+          const part = toRemove.splice(0, 100)
+          await retryTxn(pgClient, async (client) => {
+            await client.unsafe(
+              `DELETE FROM ${translateDomain(domain)} WHERE "workspaceId" = '${ws.uuid}' AND _id IN (${part.map((c) => `'${c}'`).join(', ')})`
+            )
+          })
         }
         if (docs.length === 0) break
         while (docs.length > 0) {
-          const part = docs.splice(0, 500)
-          const vals = part
-            .map((doc) => {
-              const d = convertDoc(doc, ws.workspace)
-              return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', ${
-                d.attachedTo != null ? `'${d.attachedTo}'` : 'NULL'
-              }, '${escapeBackticks(JSON.stringify(d.data))}')`
-            })
-            .join(', ')
+          const part = docs.splice(0, 100)
+          const values: DBDoc[] = []
+          for (let i = 0; i < part.length; i++) {
+            const doc = part[i]
+            const d = convertDoc(domain, doc, wsId)
+            values.push(d)
+          }
           try {
             await retryTxn(pgClient, async (client) => {
-              await client.query(
-                `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`
-              )
+              await client`INSERT INTO ${client(translateDomain(domain))} ${client(values, insertFields)}`
             })
           } catch (err) {
-            console.log('error when move doc to', domain, err)
-            continue
+            console.log('Error when insert', domain, err)
           }
         }
       }
     }
-    await updateWorkspace(accountDb, ws, { region })
+    // TODO: FIXME
+    // await updateWorkspace(accountDb, ws, { region })
     await connection.sendForceClose()
     await connection.close()
   } catch (err) {
-    console.log('Error when move workspace', ws.workspaceName ?? ws.workspace, err)
+    console.log('Error when move workspace', ws.name ?? ws.url, err)
     throw err
   }
 }
@@ -130,17 +159,19 @@ export async function moveWorkspaceFromMongoToPG (
   mongoUrl: string,
   dbUrl: string | undefined,
   ws: Workspace,
-  region: string
+  region: string,
+  include?: Set<string>,
+  force?: boolean
 ): Promise<void> {
   if (dbUrl === undefined) {
     throw new Error('dbUrl is required')
   }
   const client = getMongoClient(mongoUrl)
   const mongo = await client.getClient()
-  const pg = getDBClient(dbUrl)
+  const pg = getDBClient(sharedPipelineContextVars, dbUrl)
   const pgClient = await pg.getClient()
 
-  await moveWorkspace(accountDb, mongo, pgClient, ws, region)
+  await moveWorkspace(accountDb, mongo, pgClient, ws, region, include, force)
   pg.close()
   client.close()
 }
@@ -150,98 +181,193 @@ export async function moveAccountDbFromMongoToPG (
   mongoDb: AccountDB,
   pgDb: AccountDB
 ): Promise<void> {
-  // [accountId, workspaceId]
-  const workspaceAssignments: [ObjectId, ObjectId][] = []
-  const accounts = await listAccounts(mongoDb)
-  const workspaces = await listWorkspacesPure(mongoDb)
-  const invites = await listInvites(mongoDb)
+  const mdb = mongoDb as MongoAccountDB
 
-  for (const mongoAccount of accounts) {
-    const pgAccount = {
-      ...mongoAccount,
-      _id: mongoAccount._id.toString()
+  ctx.info('Starting migration of persons...')
+  const personsCursor = mdb.person.findCursor({})
+  try {
+    let personsCount = 0
+    while (await personsCursor.hasNext()) {
+      const person = await personsCursor.next()
+      if (person == null) break
+
+      const exists = await pgDb.person.findOne({ uuid: person.uuid })
+      if (exists == null) {
+        if (person.firstName == null) {
+          person.firstName = 'n/a'
+        }
+
+        if (person.lastName == null) {
+          person.lastName = 'n/a'
+        }
+
+        await pgDb.person.insertOne(person)
+        personsCount++
+        if (personsCount % 100 === 0) {
+          ctx.info(`Migrated ${personsCount} persons...`)
+        }
+      }
     }
-
-    delete (pgAccount as any).workspaces
-
-    if (pgAccount.createdOn == null) {
-      pgAccount.createdOn = Date.now()
-    }
-
-    if (pgAccount.first == null) {
-      pgAccount.first = 'NotSet'
-    }
-
-    if (pgAccount.last == null) {
-      pgAccount.last = 'NotSet'
-    }
-
-    for (const workspaceString of new Set(mongoAccount.workspaces.map((w) => w.toString()))) {
-      workspaceAssignments.push([pgAccount._id, workspaceString])
-    }
-
-    const exists = await getAccount(pgDb, pgAccount.email)
-    if (exists === null) {
-      await pgDb.account.insertOne(pgAccount)
-      ctx.info('Moved account', { email: pgAccount.email })
-    }
+    ctx.info(`Migrated ${personsCount} persons`)
+  } finally {
+    await personsCursor.close()
   }
 
-  for (const mongoWorkspace of workspaces) {
-    const pgWorkspace = {
-      ...mongoWorkspace,
-      _id: mongoWorkspace._id.toString()
+  ctx.info('Starting migration of accounts...')
+  const accountsCursor = mdb.account.findCursor({})
+  try {
+    let accountsCount = 0
+    while (await accountsCursor.hasNext()) {
+      const account = await accountsCursor.next()
+      if (account == null) break
+
+      const exists = await pgDb.account.findOne({ uuid: account.uuid })
+      if (exists == null) {
+        const { hash, salt } = account
+
+        delete account.hash
+        delete account.salt
+
+        await pgDb.account.insertOne(account)
+        if (hash != null && salt != null) {
+          await pgDb.setPassword(account.uuid, hash, salt)
+        }
+        accountsCount++
+        if (accountsCount % 100 === 0) {
+          ctx.info(`Migrated ${accountsCount} accounts...`)
+        }
+      }
     }
+    ctx.info(`Migrated ${accountsCount} accounts`)
+  } finally {
+    await accountsCursor.close()
+  }
 
-    if (pgWorkspace.createdOn == null) {
-      pgWorkspace.createdOn = Date.now()
+  ctx.info('Starting migration of social IDs...')
+  const socialIdsCursor = mdb.socialId.findCursor({})
+  try {
+    let socialIdsCount = 0
+    while (await socialIdsCursor.hasNext()) {
+      const socialId = await socialIdsCursor.next()
+      if (socialId == null) break
+
+      const exists = await pgDb.socialId.findOne({ key: socialId.key })
+      if (exists == null) {
+        delete (socialId as any).key
+
+        await pgDb.socialId.insertOne(socialId)
+        socialIdsCount++
+        if (socialIdsCount % 100 === 0) {
+          ctx.info(`Migrated ${socialIdsCount} social IDs...`)
+        }
+      }
     }
+    ctx.info(`Migrated ${socialIdsCount} social IDs`)
+  } finally {
+    await socialIdsCursor.close()
+  }
 
-    // delete deprecated fields
-    delete (pgWorkspace as any).createProgress
-    delete (pgWorkspace as any).creating
-    delete (pgWorkspace as any).productId
-    delete (pgWorkspace as any).organisation
+  ctx.info('Starting migration of account events...')
+  const accountEventsCursor = mdb.accountEvent.findCursor({})
+  try {
+    let eventsCount = 0
+    while (await accountEventsCursor.hasNext()) {
+      const accountEvent = await accountEventsCursor.next()
+      if (accountEvent == null) break
 
-    // assigned separately
-    delete (pgWorkspace as any).accounts
-
-    const exists = await getWorkspaceById(pgDb, pgWorkspace.workspace)
-    if (exists === null) {
-      await pgDb.workspace.insertOne(pgWorkspace)
-      ctx.info('Moved workspace', {
-        workspace: pgWorkspace.workspace,
-        workspaceName: pgWorkspace.workspaceName,
-        workspaceUrl: pgWorkspace.workspaceUrl
+      const exists = await pgDb.accountEvent.findOne({
+        accountUuid: accountEvent.accountUuid,
+        eventType: accountEvent.eventType,
+        time: accountEvent.time
       })
+      if (exists == null) {
+        await pgDb.accountEvent.insertOne(accountEvent)
+        eventsCount++
+        if (eventsCount % 100 === 0) {
+          ctx.info(`Migrated ${eventsCount} account events...`)
+        }
+      }
     }
+    ctx.info(`Migrated ${eventsCount} account events`)
+  } finally {
+    await accountEventsCursor.close()
   }
 
-  for (const mongoInvite of invites) {
-    const pgInvite = {
-      ...mongoInvite,
-      _id: mongoInvite._id.toString()
-    }
+  ctx.info('Starting migration of workspaces...')
+  const workspacesCursor = mdb.workspace.findCursor({})
+  try {
+    let workspacesCount = 0
+    let membersCount = 0
+    while (await workspacesCursor.hasNext()) {
+      const workspace = await workspacesCursor.next()
+      if (workspace == null) break
 
-    const exists = await pgDb.invite.findOne({ _id: pgInvite._id })
-    if (exists === null) {
-      await pgDb.invite.insertOne(pgInvite)
+      const exists = await pgDb.workspace.findOne({ uuid: workspace.uuid })
+      if (exists != null) continue
+
+      const status = workspace.status
+      if (status == null) continue
+      delete (workspace as any).status
+
+      if (workspace.createdBy === 'N/A') {
+        delete workspace.createdBy
+      }
+
+      if (workspace.billingAccount === 'N/A') {
+        delete workspace.billingAccount
+      }
+
+      if (workspace.createdOn == null) {
+        delete workspace.createdOn
+      }
+
+      await pgDb.createWorkspace(workspace, status)
+      workspacesCount++
+
+      const members = await mdb.getWorkspaceMembers(workspace.uuid)
+      for (const member of members) {
+        const alreadyAssigned = await pgDb.getWorkspaceRole(member.person, workspace.uuid)
+        if (alreadyAssigned != null) continue
+
+        await pgDb.assignWorkspace(member.person, workspace.uuid, member.role)
+        membersCount++
+      }
+
+      if (workspacesCount % 100 === 0) {
+        ctx.info(`Migrated ${workspacesCount} workspaces...`)
+      }
     }
+    ctx.info(`Migrated ${workspacesCount} workspaces with ${membersCount} member assignments`)
+  } finally {
+    await workspacesCursor.close()
   }
 
-  const pgAssignments = (await listAccounts(pgDb)).reduce<Record<ObjectId, ObjectId[]>>((assignments, acc) => {
-    assignments[acc._id] = acc.workspaces
+  ctx.info('Starting migration of invites...')
+  const invitesCursor = mdb.invite.findCursor({})
+  try {
+    let invitesCount = 0
+    while (await invitesCursor.hasNext()) {
+      const invite = await invitesCursor.next()
+      if (invite == null) break
+      if (invite.migratedFrom == null) {
+        invite.migratedFrom = invite.id
+      }
 
-    return assignments
-  }, {})
-  const assignmentsToInsert = workspaceAssignments.filter(
-    ([accountId, workspaceId]) =>
-      pgAssignments[accountId] === undefined || !pgAssignments[accountId].includes(workspaceId)
-  )
+      delete (invite as any).id
 
-  for (const [accountId, workspaceId] of assignmentsToInsert) {
-    await pgDb.assignWorkspace(accountId, workspaceId)
+      const exists = await pgDb.invite.findOne({ migratedFrom: invite.migratedFrom })
+      if (exists == null) {
+        await pgDb.invite.insertOne(invite)
+        invitesCount++
+        if (invitesCount % 100 === 0) {
+          ctx.info(`Migrated ${invitesCount} invites...`)
+        }
+      }
+    }
+    ctx.info(`Migrated ${invitesCount} invites`)
+  } finally {
+    await invitesCursor.close()
   }
 
-  ctx.info('Assignments made', { count: assignmentsToInsert.length })
+  ctx.info('Account database migration completed')
 }

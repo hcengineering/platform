@@ -1,5 +1,6 @@
+import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
 import {
-  Account,
+  PersonId,
   AttachedDoc,
   type Attribute,
   Class,
@@ -10,20 +11,20 @@ import {
   Mixin,
   Ref,
   RefTo,
-  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxMixin,
   TxProcessor,
-  TxUpdateDoc
+  TxUpdateDoc,
+  combineAttributes,
+  ArrOf
 } from '@hcengineering/core'
 import core from '@hcengineering/core/src/component'
-import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
-import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
-import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 import notification from '@hcengineering/notification'
-import { TriggerControl } from '@hcengineering/server-core'
 import { translate } from '@hcengineering/platform'
+import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
+import { TriggerControl } from '@hcengineering/server-core'
+import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 
 function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): string[] {
   if (hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
@@ -77,16 +78,6 @@ function getModifiedAttributes (tx: TxCUD<Doc>, hierarchy: Hierarchy): Record<st
   return {}
 }
 
-function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
-  return Array.from(
-    new Set(
-      attributes.flatMap((attr) =>
-        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
-      )
-    )
-  ).filter((v) => v != null)
-}
-
 export function getDocUpdateAction (control: ActivityControl, tx: TxCUD<Doc>): DocUpdateAction {
   const hierarchy = control.hierarchy
 
@@ -110,16 +101,13 @@ export async function getDocDiff (
   objectCache?: DocObjectCache
 ): Promise<{ doc?: Doc, prevDoc?: Doc }> {
   const hierarchy = control.hierarchy
-  const isAttached = hierarchy.isDerived(_class, core.class.AttachedDoc)
 
   const objectTxes =
     objectCache?.transactions.get(objectId) ??
     (await getAllObjectTransactions(control, _class, [objectId], mixin)).get(objectId) ??
     []
 
-  const createTx = isAttached
-    ? objectTxes.find((tx) => (tx as TxCollectionCUD<Doc, AttachedDoc>).tx?._class === core.class.TxCreateDoc)
-    : objectTxes.find((tx) => tx._class === core.class.TxCreateDoc)
+  const createTx = objectTxes.find((tx) => tx._class === core.class.TxCreateDoc)
 
   if (createTx === undefined) {
     return {}
@@ -128,11 +116,9 @@ export async function getDocDiff (
   let doc: Doc | undefined
   let prevDoc: Doc | undefined
 
-  doc = TxProcessor.createDoc2Doc(TxProcessor.extractTx(createTx) as TxCreateDoc<Doc>)
+  doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
 
-  for (const objectTx of objectTxes) {
-    const actualTx = TxProcessor.extractTx(objectTx) as TxCUD<Doc>
-
+  for (const actualTx of objectTxes) {
     if (actualTx._class === core.class.TxUpdateDoc) {
       prevDoc = hierarchy.clone(doc)
       doc = TxProcessor.updateDoc2Doc(doc, actualTx as TxUpdateDoc<Doc>)
@@ -143,7 +129,7 @@ export async function getDocDiff (
       doc = TxProcessor.updateMixin4Doc(doc, actualTx as TxMixin<Doc, Doc>)
     }
 
-    if (objectTx._id === lastTxId) {
+    if (actualTx._id === lastTxId) {
       break
     }
   }
@@ -164,7 +150,7 @@ async function getCollaboratorsDiff (
   const { hierarchy } = control
   const value = hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? []
 
-  let prevValue: Ref<Account>[] = []
+  let prevValue: PersonId[] = []
 
   if (prevDoc !== undefined && hierarchy.hasMixin(prevDoc, notification.mixin.Collaborators)) {
     prevValue = hierarchy.as(prevDoc, notification.mixin.Collaborators).collaborators ?? []
@@ -229,7 +215,6 @@ export async function getAttributeDiff (
 export async function getTxAttributesUpdates (
   ctx: MeasureContext,
   control: ActivityControl,
-  originTx: TxCUD<Doc>,
   tx: TxCUD<Doc>,
   object: Doc,
   objectCache?: DocObjectCache,
@@ -283,6 +268,8 @@ export async function getTxAttributesUpdates (
 
     if (clazz !== undefined && 'to' in clazz.type) {
       attrClass = clazz.type.to as Ref<Class<Doc>>
+    } else if (clazz !== undefined && hierarchy.isDerived(clazz.type._class, core.class.ArrOf)) {
+      attrClass = (clazz.type as ArrOf<Doc>).of._class
     } else if (clazz !== undefined && 'of' in clazz?.type) {
       attrClass = (clazz.type.of as RefTo<Doc>).to
     }
@@ -302,7 +289,7 @@ export async function getTxAttributesUpdates (
 
     if (hierarchy.isDerived(attrClass, core.class.TypeMarkup) || mixin === notification.mixin.Collaborators) {
       if (docDiff === undefined) {
-        docDiff = await getDocDiff(control, updateObject._class, updateObject._id, originTx._id, mixin, objectCache)
+        docDiff = await getDocDiff(control, updateObject._class, updateObject._id, tx._id, mixin, objectCache)
       }
     }
 

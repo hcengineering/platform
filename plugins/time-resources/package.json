@@ -38,7 +38,7 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/calendar": "^0.6.24",
@@ -64,9 +64,9 @@
     "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/time": "^0.6.0",
     "@hcengineering/rank": "^0.6.4",
-    "@tiptap/extension-task-item": "^2.6.6",
-    "@tiptap/extension-task-list": "^2.6.6",
-    "fast-equals": "^5.0.1",
+    "@tiptap/extension-task-item": "^2.11.3",
+    "@tiptap/extension-task-list": "^2.11.3",
+    "fast-equals": "^5.2.2",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/activity-resources": "^0.6.1",
     "@hcengineering/workbench-resources": "^0.6.1"

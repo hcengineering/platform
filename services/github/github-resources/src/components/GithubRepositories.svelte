@@ -26,6 +26,7 @@
   import ConnectProject from './ConnectProject.svelte'
   import { githubLanguageColors } from './languageColors'
   import { sendGHServiceRequest } from './utils'
+  import { BackgroundColor } from '@hcengineering/text'
 
   export let integration: WithLookup<GithubIntegration>
   export let projects: Project[] = []
@@ -141,145 +142,151 @@
   }
 </script>
 
-<Expandable expanded={true}>
-  <svelte:fragment slot="title">
-    <span class="fs-title flex-row-center flex-between flex-grow flex">
-      <div class="ml-2 mr-2">
-        <img class="svg-large" src={integration.name.replace('github.com', 'avatars.githubusercontent.com')} />
-      </div>
-      {#if integration.name.length > 0}
-        {integration.name}
-        {#if (integration.type ?? '') !== ''}
-          ({integration.type})
-        {/if}
-      {:else}
-        <Label label={github.string.ConnectionPending} />
-      {/if}
-      {#if !integration.alive}
-        <Label label={github.string.Closed} />
-      {/if}
-    </span>
-  </svelte:fragment>
-  <svelte:fragment slot="tools">
-    <Button
-      kind={'dangerous'}
-      label={github.string.RemoveInstallation}
-      on:click={() => {
-        showPopup(MessageBox, {
-          label: github.string.UnlinkInstallationTitle,
-          message: github.string.UnlinkInstallation,
-          params: {},
-          richMessage: true,
-          action: async () => {
-            await sendGHServiceRequest('installation-remove', {
-              installationId: integration.installationId,
-              token: getMetadata(presentation.metadata.Token) ?? ''
-            })
-          }
-        })
-      }}
-    />
-  </svelte:fragment>
-  <div class="flex flex-row-center flex-between m-0-5">
-    <SearchEdit bind:value={search} width={'100%'} />
-  </div>
-  {#each repos.slice(0, limit) as repository}
-    {@const prj = giProjects.find((it) => it.repositories.includes(repository._id))}
-    <div
-      class="repository-card flex-col m-0-5"
-      class:selected={prj !== undefined}
-      class:disabled={prj !== undefined && !repository.enabled}
-    >
-      <div class="flex flex-row-center flex-between">
-        <div class="flex-row-center">
-          <NavLink href={repository.htmlURL}>{repository.name}</NavLink>
-          <div class="ml-2 visibility">
-            {repository.visibility}
-          </div>
-          {#if !repository.enabled && prj !== undefined}
-            <div class="ml-2 visibility">
-              <Label label={github.string.Disabled} />
-            </div>
+<div
+  style:background-color={!integration.alive ? 'var(--primary-button-disabled)' : undefined}
+  style:border-radius="0.5rem"
+  class="p-1"
+>
+  <Expandable expanded={true}>
+    <svelte:fragment slot="title">
+      <span class="fs-title flex-row-center flex-between flex-grow flex">
+        <div class="ml-2 mr-2">
+          <img class="svg-large" src={integration.name.replace('github.com', 'avatars.githubusercontent.com')} />
+        </div>
+        {#if integration.name.length > 0}
+          {integration.name}
+          {#if (integration.type ?? '') !== ''}
+            ({integration.type})
           {/if}
-        </div>
-
-        <div class="flex flex-row-center">
-          {#if prj !== undefined}
-            <div class="mr-2">
-              <Label label={github.string.LinkedWith} />
-            </div>
-            <ObjectPresenter _class={prj._class} objectId={prj._id} value={prj} />
-            <div class="ml-2">
-              <Button
-                kind={'dangerous'}
-                label={github.string.UnlinkFromProject}
-                size={'medium'}
-                on:click={(evt) => {
-                  void onDisconnect(evt, prj, repository)
-                }}
-              />
-            </div>
-            <div class="ml-2">
-              <Button
-                icon={IconMoreV}
-                size={'small'}
-                on:click={(evt) => {
-                  void showMenu(evt, prj, repository)
-                }}
-              />
-            </div>
-          {:else}
-            <ConnectProject {integration} {repository} {projects} />
-          {/if}
-        </div>
-      </div>
-      <div class="mt-2">
-        {repository.description ?? ''}
-      </div>
-
-      <div class="flex flex-row-center mt-4">
-        {#if repository.language != null}
-          <div class="flex-row-center mr-4">
-            <div class="lcolor-pin mr-1" style:background-color={githubLanguageColors[repository.language] ?? ''} />
-            {repository.language}
-          </div>
+        {:else}
+          <Label label={github.string.ConnectionPending} />
         {/if}
-
-        <div class="flex-row-center">
-          <Icon icon={IconColStar} fill={'none'} size={'small'} />
-          <span class="ml-1">{repository.stargazers ?? 0}</span>
-        </div>
-
-        <div class="flex-row-center ml-4">
-          <Icon icon={github.icon.Forks} size={'small'} />
-          <span class="ml-1">{repository.forks ?? 0}</span>
-        </div>
-
-        <div class="flex-row-center ml-4">
-          <Icon icon={tracker.icon.Issue} size={'small'} />
-          <span class="ml-1">{repository.openIssues ?? 0}</span>
-        </div>
-
-        {#if repository.updatedAt !== undefined}
-          <div class="flex-row-center ml-4">
-            <Label label={github.string.Updated} />
-            <span class="ml-2">
-              <TimeSince value={repository.updatedAt} />
-            </span>
-          </div>
+        {#if !integration.alive}
+          <Label label={github.string.Suspended} />
         {/if}
-      </div>
+      </span>
+    </svelte:fragment>
+    <svelte:fragment slot="tools">
+      <Button
+        kind={'dangerous'}
+        label={github.string.RemoveInstallation}
+        on:click={() => {
+          showPopup(MessageBox, {
+            label: github.string.UnlinkInstallationTitle,
+            message: github.string.UnlinkInstallation,
+            params: {},
+            richMessage: true,
+            action: async () => {
+              await sendGHServiceRequest('installation-remove', {
+                installationId: integration.installationId,
+                token: getMetadata(presentation.metadata.Token) ?? ''
+              })
+            }
+          })
+        }}
+      />
+    </svelte:fragment>
+    <div class="flex flex-row-center flex-between m-0-5">
+      <SearchEdit bind:value={search} width={'100%'} />
     </div>
-  {/each}
-  {#if repos.length > limit}
-    <Button
-      label={ui.string.ShowMore}
-      on:click={() => {
-        limit = limit + 10
-      }}
-    />
-  {/if}
-</Expandable>
+    {#each repos.slice(0, limit) as repository}
+      {@const prj = giProjects.find((it) => it.repositories.includes(repository._id))}
+      <div
+        class="repository-card flex-col m-0-5"
+        class:selected={prj !== undefined}
+        class:disabled={prj !== undefined && !repository.enabled}
+      >
+        <div class="flex flex-row-center flex-between">
+          <div class="flex-row-center">
+            <NavLink href={repository.htmlURL}>{repository.name}</NavLink>
+            <div class="ml-2 visibility">
+              {repository.visibility}
+            </div>
+            {#if !repository.enabled && prj !== undefined}
+              <div class="ml-2 visibility">
+                <Label label={github.string.Disabled} />
+              </div>
+            {/if}
+          </div>
+
+          <div class="flex flex-row-center">
+            {#if prj !== undefined}
+              <div class="mr-2">
+                <Label label={github.string.LinkedWith} />
+              </div>
+              <ObjectPresenter _class={prj._class} objectId={prj._id} value={prj} />
+              <div class="ml-2">
+                <Button
+                  kind={'dangerous'}
+                  label={github.string.UnlinkFromProject}
+                  size={'medium'}
+                  on:click={(evt) => {
+                    void onDisconnect(evt, prj, repository)
+                  }}
+                />
+              </div>
+              <div class="ml-2">
+                <Button
+                  icon={IconMoreV}
+                  size={'small'}
+                  on:click={(evt) => {
+                    void showMenu(evt, prj, repository)
+                  }}
+                />
+              </div>
+            {:else}
+              <ConnectProject {integration} {repository} {projects} />
+            {/if}
+          </div>
+        </div>
+        <div class="mt-2">
+          {repository.description ?? ''}
+        </div>
+
+        <div class="flex flex-row-center mt-4">
+          {#if repository.language != null}
+            <div class="flex-row-center mr-4">
+              <div class="lcolor-pin mr-1" style:background-color={githubLanguageColors[repository.language] ?? ''} />
+              {repository.language}
+            </div>
+          {/if}
+
+          <div class="flex-row-center">
+            <Icon icon={IconColStar} fill={'none'} size={'small'} />
+            <span class="ml-1">{repository.stargazers ?? 0}</span>
+          </div>
+
+          <div class="flex-row-center ml-4">
+            <Icon icon={github.icon.Forks} size={'small'} />
+            <span class="ml-1">{repository.forks ?? 0}</span>
+          </div>
+
+          <div class="flex-row-center ml-4">
+            <Icon icon={tracker.icon.Issue} size={'small'} />
+            <span class="ml-1">{repository.openIssues ?? 0}</span>
+          </div>
+
+          {#if repository.updatedAt !== undefined}
+            <div class="flex-row-center ml-4">
+              <Label label={github.string.Updated} />
+              <span class="ml-2">
+                <TimeSince value={repository.updatedAt} />
+              </span>
+            </div>
+          {/if}
+        </div>
+      </div>
+    {/each}
+    {#if repos.length > limit}
+      <Button
+        label={ui.string.ShowMore}
+        on:click={() => {
+          limit = limit + 10
+        }}
+      />
+    {/if}
+  </Expandable>
+</div>
 
 <style lang="scss">
   .bordered {

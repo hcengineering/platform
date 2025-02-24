@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import contact, { Channel, ChannelProvider, Contact, Employee, formatName, PersonAccount } from '@hcengineering/contact'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
+import contact, { Channel, ChannelProvider, Contact, Employee, formatName, Person } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   Class,
   concatLink,
   Doc,
@@ -24,32 +26,29 @@ import {
   FindResult,
   Hierarchy,
   Ref,
-  toWorkspaceString,
   Tx,
   TxCreateDoc,
   TxProcessor
 } from '@hcengineering/core'
-import { TriggerControl } from '@hcengineering/server-core'
 import notification, {
   BaseNotificationType,
   InboxNotification,
   MentionInboxNotification,
   NotificationType
 } from '@hcengineering/notification'
-import telegram, { TelegramMessage, TelegramNotificationRequest } from '@hcengineering/telegram'
-import setting, { Integration } from '@hcengineering/setting'
-import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
-import serverTelegram from '@hcengineering/server-telegram'
+import { TriggerControl } from '@hcengineering/server-core'
+import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import {
-  getTranslatedNotificationContent,
+  getNotificationLink,
   getTextPresenter,
-  getNotificationLink
+  getTranslatedNotificationContent
 } from '@hcengineering/server-notification-resources'
+import serverTelegram from '@hcengineering/server-telegram'
 import { generateToken } from '@hcengineering/server-token'
-import chunter, { ChatMessage } from '@hcengineering/chunter'
-import { markupToHTML } from '@hcengineering/text'
-import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import setting, { Integration } from '@hcengineering/setting'
+import telegram, { TelegramMessage, TelegramNotificationRequest } from '@hcengineering/telegram'
+import { markupToHTML } from '@hcengineering/text-core'
 
 /**
  * @public
@@ -75,23 +74,24 @@ export async function FindMessages (
 /**
  * @public
  */
-export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-
-  const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
-  const channel = (
-    await control.findAll(control.ctx, contact.class.Channel, { _id: message.attachedTo }, { limit: 1 })
-  )[0]
-  if (channel !== undefined) {
-    if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
-      const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
-        lastMessage: message.sendOn
-      })
-      res.push(tx)
+export async function OnMessageCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
+    const channel = (
+      await control.findAll(control.ctx, contact.class.Channel, { _id: message.attachedTo }, { limit: 1 })
+    )[0]
+    if (channel !== undefined) {
+      if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
+        const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
+          lastMessage: message.sendOn
+        })
+        result.push(tx)
+      }
     }
   }
 
-  return res
+  return result
 }
 
 /**
@@ -100,11 +100,12 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
 export function IsIncomingMessageTypeMatch (
   tx: Tx,
   doc: Doc,
-  user: Ref<Account>[],
+  person: Person,
+  user: PersonId[],
   type: NotificationType,
   control: TriggerControl
 ): boolean {
-  const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<TelegramMessage>)
+  const message = TxProcessor.createDoc2Doc(tx as TxCreateDoc<TelegramMessage>)
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
 
@@ -112,34 +113,40 @@ export async function GetCurrentEmployeeTG (
   control: TriggerControl,
   context: Record<string, Doc>
 ): Promise<string | undefined> {
-  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
-    _id: control.txFactory.account as Ref<PersonAccount>
-  })
-  if (account === undefined) return
-  const employee = (
-    await control.findAll(control.ctx, contact.mixin.Employee, { _id: account.person as Ref<Employee> })
-  )[0]
-  if (employee !== undefined) {
-    return await getContactChannel(control, employee, contact.channelProvider.Telegram)
-  }
+  // TODO: FIXME
+  // const account = await control.modelDb.findOne(contact.class.PersonAccount, {
+  //   _id: control.txFactory.account as PersonId
+  // })
+  // if (account === undefined) return
+  // const employee = (
+  //   await control.findAll(control.ctx, contact.mixin.Employee, { _id: account.person as Ref<Employee> })
+  // )[0]
+  // if (employee !== undefined) {
+  //   return await getContactChannel(control, employee, contact.channelProvider.Telegram)
+  // }
+
+  return undefined
 }
 
 export async function GetIntegrationOwnerTG (
   control: TriggerControl,
   context: Record<string, Doc>
 ): Promise<string | undefined> {
-  const value = context[setting.class.Integration] as Integration
-  if (value === undefined) return
-  const account = await control.modelDb.findOne(contact.class.PersonAccount, {
-    _id: value.modifiedBy as Ref<PersonAccount>
-  })
-  if (account === undefined) return
-  const employee = (
-    await control.findAll(control.ctx, contact.mixin.Employee, { _id: account.person as Ref<Employee> })
-  )[0]
-  if (employee !== undefined) {
-    return await getContactChannel(control, employee, contact.channelProvider.Telegram)
-  }
+  // TODO: FIXME
+  // const value = context[setting.class.Integration] as Integration
+  // if (value === undefined) return
+  // const account = await control.modelDb.findOne(contact.class.PersonAccount, {
+  //   _id: value.modifiedBy as PersonId
+  // })
+  // if (account === undefined) return
+  // const employee = (
+  //   await control.findAll(control.ctx, contact.mixin.Employee, { _id: account.person as Ref<Employee> })
+  // )[0]
+  // if (employee !== undefined) {
+  //   return await getContactChannel(control, employee, contact.channelProvider.Telegram)
+  // }
+
+  return undefined
 }
 
 async function getContactChannel (
@@ -245,6 +252,7 @@ function hasAttachments (doc: ActivityMessage | undefined, hierarchy: Hierarchy)
   return false
 }
 
+const telegramNotificationKey = 'telegram.notification.reported'
 const SendTelegramNotifications: NotificationProviderFunc = async (
   control: TriggerControl,
   types: BaseNotificationType[],
@@ -254,51 +262,56 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   sender: SenderInfo,
   message?: ActivityMessage
 ): Promise<Tx[]> => {
-  if (types.length === 0) {
-    return []
-  }
+  // TODO: FIXME
+  // if (types.length === 0) {
+  //   return []
+  // }
 
-  const botUrl = getMetadata(serverTelegram.metadata.BotUrl)
+  // const botUrl = getMetadata(serverTelegram.metadata.BotUrl)
 
-  if (botUrl === undefined || botUrl === '') {
-    control.ctx.error('Please provide telegram bot service url to enable telegram notifications.')
-    return []
-  }
+  // if (botUrl === undefined || botUrl === '') {
+  //   const reported = control.cache.get(telegramNotificationKey)
+  //   if (reported === undefined) {
+  //     control.ctx.error('Please provide telegram bot service url to enable telegram notifications.')
+  //     control.cache.set(telegramNotificationKey, true)
+  //   }
+  //   return []
+  // }
 
-  if (!receiver.person.active) {
-    return []
-  }
+  // if (!receiver.person.active) {
+  //   return []
+  // }
 
-  try {
-    const { title, body, quote, link } = await getTranslatedData(data, doc, control, message)
-    const record: TelegramNotificationRequest = {
-      notificationId: data._id,
-      messageId: message?._id,
-      account: receiver._id,
-      workspace: toWorkspaceString(control.workspace),
-      sender: data.intlParams?.senderName?.toString() ?? formatName(sender.person?.name ?? 'System'),
-      attachments: hasAttachments(message, control.hierarchy),
-      title,
-      quote,
-      body,
-      link
-    }
+  // try {
+  //   const { title, body, quote, link } = await getTranslatedData(data, doc, control, message)
+  //   const record: TelegramNotificationRequest = {
+  //     notificationId: data._id,
+  //     messageId: message?._id,
+  //     account: receiver._id,
+  //     workspace: control.workspace,
+  //     sender: data.intlParams?.senderName?.toString() ?? formatName(sender.person?.name ?? 'System'),
+  //     attachments: hasAttachments(message, control.hierarchy),
+  //     title,
+  //     quote,
+  //     body,
+  //     link
+  //   }
 
-    await fetch(concatLink(botUrl, '/notify'), {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + generateToken(receiver.account.email, control.workspace),
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify([record])
-    })
-  } catch (err) {
-    control.ctx.error('Could not send telegram notification', {
-      err,
-      notificationId: data._id,
-      receiver: receiver.account.email
-    })
-  }
+  //   await fetch(concatLink(botUrl, '/notify'), {
+  //     method: 'POST',
+  //     headers: {
+  //       Authorization: 'Bearer ' + generateToken(receiver.account.email, control.workspace, { service: 'telegram' }),
+  //       'Content-Type': 'application/json'
+  //     },
+  //     body: JSON.stringify([record])
+  //   })
+  // } catch (err) {
+  //   control.ctx.error('Could not send telegram notification', {
+  //     err,
+  //     notificationId: data._id,
+  //     receiver: receiver.account.email
+  //   })
+  // }
 
   return []
 }

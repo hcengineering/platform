@@ -1,5 +1,4 @@
-FROM node:20
-
+FROM hardcoreeng/base
 WORKDIR /usr/src/app
 
 COPY bundle/bundle.js ./

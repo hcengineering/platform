@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { type Blob, type Ref } from '@hcengineering/core'
 import { type Doc as YDoc } from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 
@@ -23,18 +24,19 @@ export interface DatalakeCollabProviderParameters {
   token: string
 
   document: YDoc
+  content: Ref<Blob> | null
 }
 
 export class CloudCollabProvider extends WebsocketProvider implements Provider {
   readonly loaded: Promise<void>
 
-  constructor (params: DatalakeCollabProviderParameters) {
-    const { document, url, name } = params
+  constructor ({ document, url, name, content }: DatalakeCollabProviderParameters) {
+    const params = content != null ? { content } : undefined
 
-    super(url, encodeURIComponent(name), document)
+    super(url, encodeURIComponent(name), document, { params })
 
-    this.loaded = new Promise((resolve) => {
-      this.on('synced', resolve)
+    this.loaded = new Promise<any>((resolve) => {
+      this.on('sync', resolve)
     })
   }
 

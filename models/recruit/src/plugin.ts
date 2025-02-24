@@ -13,13 +13,15 @@
 // limitations under the License.
 //
 
-import type { Status, Client, Doc, Ref } from '@hcengineering/core'
+import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
+import { type ChatMessageViewlet } from '@hcengineering/chunter'
+import type { Client, Doc, Ref, Status } from '@hcengineering/core'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
-import type { IntlString, Resource, Status as OperationStatus } from '@hcengineering/platform'
+import type { IntlString, Status as OperationStatus, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
-import { type TaskTypeDescriptor, type ProjectType } from '@hcengineering/task'
+import { type ProjectType, type TaskTypeDescriptor } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
 import type {
   Action,
@@ -29,8 +31,6 @@ import type {
   ViewQueryAction,
   Viewlet
 } from '@hcengineering/view'
-import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
-import { type ChatMessageViewlet } from '@hcengineering/chunter'
 
 export default mergeIds(recruitId, recruit, {
   action: {
@@ -57,7 +57,6 @@ export default mergeIds(recruitId, recruit, {
     GetObjectLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetTalentId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     HideDoneState: '' as ViewQueryAction,
-    HideArchivedVacancies: '' as ViewQueryAction,
     ApplicantHasEmail: '' as Resource<ViewActionAvailabilityFunction>,
     ParseLinkId: '' as Resource<(id: string) => Promise<Ref<Doc> | undefined>>
   },
@@ -126,9 +125,9 @@ export default mergeIds(recruitId, recruit, {
     VacancyTemplateEditor: '' as AnyComponent,
     ApplicationMatchPresenter: '' as AnyComponent,
 
-    MatchVacancy: '' as AnyComponent,
     NotificationApplicantPresenter: '' as AnyComponent,
-    VacancyEditor: '' as AnyComponent
+    VacancyEditor: '' as AnyComponent,
+    ApplicantNamePresenter: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<ProjectType>

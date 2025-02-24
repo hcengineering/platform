@@ -14,9 +14,12 @@
 //
 
 import core, {
+  Domain,
+  DOMAIN_MODEL,
+  groupByArray,
   TxProcessor,
+  withContext,
   type Doc,
-  type Domain,
   type MeasureContext,
   type SessionData,
   type Tx,
@@ -24,7 +27,13 @@ import core, {
   type TxResult
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import type { DBAdapterManager, Middleware, PipelineContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import type {
+  DbAdapter,
+  DBAdapterManager,
+  Middleware,
+  PipelineContext,
+  TxMiddlewareResult
+} from '@hcengineering/server-core'
 import { BaseMiddleware } from '@hcengineering/server-core'
 
 /**
@@ -34,6 +43,7 @@ import { BaseMiddleware } from '@hcengineering/server-core'
 export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
   adapterManager!: DBAdapterManager
 
+  @withContext('domainTx-middleware')
   static async create (ctx: MeasureContext, context: PipelineContext, next?: Middleware): Promise<Middleware> {
     const middleware = new DomainTxMiddleware(context, next)
     if (context.adapterManager == null) {
@@ -66,30 +76,50 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
   private async routeTx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxResult[]> {
     const result: TxResult[] = []
 
-    const domainGroups = new Map<Domain, TxCUD<Doc>[]>()
+    const adapterGroups = new Map<string, TxCUD<Doc>[]>()
 
-    const routeToAdapter = async (domain: Domain, txes: TxCUD<Doc>[]): Promise<void> => {
+    const routeToAdapter = async (adapter: DbAdapter, txes: TxCUD<Doc>[]): Promise<void> => {
       if (txes.length > 0) {
         // Find all deleted documents
-
-        const adapter = this.adapterManager.getAdapter(domain, true)
-        const toDelete = txes.filter((it) => it._class === core.class.TxRemoveDoc).map((it) => it.objectId)
+        const toDelete = txes.filter((it) => it._class === core.class.TxRemoveDoc)
 
         if (toDelete.length > 0) {
-          const toDeleteDocs = await ctx.with(
-            'adapter-load',
-            { domain },
-            async () => await adapter.load(ctx, domain, toDelete),
-            { count: toDelete.length }
-          )
+          const deleteByDomain = groupByArray(toDelete, (it) => this.context.hierarchy.getDomain(it.objectClass))
 
-          for (const ddoc of toDeleteDocs) {
-            ctx.contextData.removedMap.set(ddoc._id, ddoc)
+          for (const [domain, domainTxes] of deleteByDomain.entries()) {
+            if (domain === DOMAIN_MODEL) {
+              for (const tx of domainTxes) {
+                const ddoc = this.context.modelDb.findObject(tx.objectId)
+                if (ddoc !== undefined) {
+                  ctx.contextData.removedMap.set(ddoc._id, ddoc)
+                }
+              }
+            } else {
+              const todel = await ctx.with(
+                'adapter-load',
+                {},
+                () =>
+                  adapter.load(
+                    ctx,
+                    domain,
+                    domainTxes.map((it) => it.objectId)
+                  ),
+                { count: toDelete.length }
+              )
+
+              for (const ddoc of todel) {
+                ctx.contextData.removedMap.set(ddoc._id, ddoc)
+              }
+            }
           }
         }
 
-        const r = await ctx.with('adapter-tx', { domain }, async (ctx) => await adapter.tx(ctx, ...txes), {
-          txes: txes.length
+        const classes = Array.from(new Set(txes.map((it) => it.objectClass)))
+        const _classes = Array.from(new Set(txes.map((it) => it._class)))
+        const r = await ctx.with('adapter-tx', {}, (ctx) => adapter.tx(ctx, ...txes), {
+          txes: txes.length,
+          classes,
+          _classes
         })
 
         if (Array.isArray(r)) {
@@ -100,24 +130,35 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
       }
     }
 
+    const domains = new Set<Domain>()
     for (const tx of txes) {
-      const txCUD = TxProcessor.extractTx(tx) as TxCUD<Doc>
+      const txCUD = tx as TxCUD<Doc>
       if (!TxProcessor.isExtendsCUD(txCUD._class)) {
         // Skip unsupported tx
         ctx.error('Unsupported transaction', tx)
         continue
       }
       const domain = this.context.hierarchy.getDomain(txCUD.objectClass)
+      domains.add(domain)
+      const adapterName = this.adapterManager.getAdapterName(domain)
 
-      let group = domainGroups.get(domain)
+      let group = adapterGroups.get(adapterName)
       if (group === undefined) {
         group = []
-        domainGroups.set(domain, group)
+        adapterGroups.set(adapterName, group)
       }
       group.push(txCUD)
     }
-    for (const [domain, txes] of domainGroups.entries()) {
-      await routeToAdapter(domain, txes)
+
+    // We need to mark domains to set existing
+    for (const d of domains) {
+      // We need to mark adapter
+      this.adapterManager.getAdapter(d, true)
+    }
+
+    for (const [adapterName, txes] of adapterGroups.entries()) {
+      const adapter = this.adapterManager.getAdapterByName(adapterName, true)
+      await routeToAdapter(adapter, txes)
     }
     return result
   }

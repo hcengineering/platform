@@ -10,14 +10,14 @@
     "UnknownMethod": "Unknown method: {method}",
     "InternalServerError": "Internal server error",
     "MaintenanceWarning": "Maintenance Scheduled in {time, plural, =1 {less than a minute} other {# minutes}}",
-    "AccountNotFound": "Account not found",
+    "AccountNotFound": "Account not found or the provided credentials are incorrect",
     "AccountNotConfirmed": "Account not confirmed",
     "WorkspaceNotFound": "Workspace not found",
-    "InvalidPassword": "Invalid password",
     "AccountAlreadyExists": "Account already exists",
     "WorkspaceRateLimit": "Server is busy, Please wait a bit and try again",
     "AccountAlreadyConfirmed": "Account already confirmed",
     "WorkspaceAlreadyExists": "Workspace already exists",
-    "InvalidOtp": "Invalid code"
+    "InvalidOtp": "Invalid code",
+    "InviteNotFound": "Invitation with email:{email} not found."
   }
 }

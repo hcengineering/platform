@@ -1,6 +1,6 @@
 // Basic performance metrics suite.
 
-import { generateId } from '../utils'
+import { generateId, platformNow, platformNowDiff } from '../utils'
 import { childMetrics, newMetrics, updateMeasure } from './metrics'
 import {
   FullParamsType,
@@ -47,6 +47,8 @@ const consoleLogger = (logParams: Record<string, any>): MeasureLogger => ({
 
 const noParamsLogger = consoleLogger({})
 
+const nullPromise = Promise.resolve()
+
 /**
  * @public
  */
@@ -57,26 +59,12 @@ export class MeasureMetricsContext implements MeasureContext {
   private readonly fullParams: FullParamsType | (() => FullParamsType) = {}
   logger: MeasureLogger
   metrics: Metrics
+  id?: string
 
-  st = Date.now()
+  st = platformNow()
   contextData: object = {}
   private done (value?: number, override?: boolean): void {
-    updateMeasure(
-      this.metrics,
-      this.st,
-      this.params,
-      this.fullParams,
-      (spend) => {
-        this.logger.logOperation(this.name, spend, {
-          ...this.params,
-          ...(typeof this.fullParams === 'function' ? this.fullParams() : this.fullParams),
-          ...this.fullParams,
-          ...(this.logParams ?? {})
-        })
-      },
-      value,
-      override
-    )
+    updateMeasure(this.metrics, this.st, this.params, this.fullParams, (spend) => {}, value, override)
   }
 
   constructor (
@@ -125,6 +113,7 @@ export class MeasureMetricsContext implements MeasureContext {
       this,
       this.logParams
     )
+    result.id = this.id
     result.contextData = this.contextData
     return result
   }
@@ -139,12 +128,15 @@ export class MeasureMetricsContext implements MeasureContext {
     let needFinally = true
     try {
       const value = op(c)
-      if (value != null && value instanceof Promise) {
+      if (value instanceof Promise) {
         needFinally = false
         return value.finally(() => {
           c.end()
         })
       } else {
+        if (value == null) {
+          return nullPromise as Promise<T>
+        }
         return Promise.resolve(value)
       }
     } finally {
@@ -174,10 +166,10 @@ export class MeasureMetricsContext implements MeasureContext {
     op: (ctx: MeasureContext) => T | Promise<T>,
     fullParams?: ParamsType
   ): Promise<T> {
-    const st = Date.now()
+    const st = platformNow()
     const r = this.with(name, params, op, fullParams)
     void r.finally(() => {
-      this.logger.logOperation(name, Date.now() - st, { ...params, ...fullParams })
+      this.logger.logOperation(name, platformNowDiff(st), { ...params, ...fullParams })
     })
     return r
   }
@@ -197,6 +189,75 @@ export class MeasureMetricsContext implements MeasureContext {
   end (): void {
     this.done()
   }
+}
+
+export class NoMetricsContext implements MeasureContext {
+  logger: MeasureLogger
+  id?: string
+
+  contextData: object = {}
+
+  constructor (logger?: MeasureLogger) {
+    this.logger = logger ?? consoleLogger({})
+  }
+
+  measure (name: string, value: number, override?: boolean): void {}
+
+  newChild (
+    name: string,
+    params: ParamsType,
+    fullParams?: FullParamsType | (() => FullParamsType),
+    logger?: MeasureLogger
+  ): MeasureContext {
+    const result = new NoMetricsContext(logger ?? this.logger)
+    result.id = this.id
+    result.contextData = this.contextData
+    return result
+  }
+
+  with<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T | Promise<T>,
+    fullParams?: ParamsType | (() => FullParamsType)
+  ): Promise<T> {
+    const r = op(this.newChild(name, params, fullParams, this.logger))
+    return r instanceof Promise ? r : Promise.resolve(r)
+  }
+
+  withSync<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T,
+    fullParams?: ParamsType | (() => FullParamsType)
+  ): T {
+    const c = this.newChild(name, params, fullParams, this.logger)
+    return op(c)
+  }
+
+  withLog<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T | Promise<T>,
+    fullParams?: ParamsType
+  ): Promise<T> {
+    const r = op(this.newChild(name, params, fullParams, this.logger))
+    return r instanceof Promise ? r : Promise.resolve(r)
+  }
+
+  error (message: string, args?: Record<string, any>): void {
+    this.logger.error(message, { ...args })
+  }
+
+  info (message: string, args?: Record<string, any>): void {
+    this.logger.info(message, { ...args })
+  }
+
+  warn (message: string, args?: Record<string, any>): void {
+    this.logger.warn(message, { ...args })
+  }
+
+  end (): void {}
 }
 
 /**
@@ -223,9 +284,12 @@ export function registerOperationLog (ctx: MeasureContext): { opLogMetrics?: Met
   if (!operationProfiling) {
     return {}
   }
-  const op: OperationLog = { start: Date.now(), ops: [], end: -1 }
+  const op: OperationLog = { start: platformNow(), ops: [], end: -1 }
   let opLogMetrics: Metrics | undefined
-  ctx.id = generateId()
+
+  if (ctx.id === undefined) {
+    ctx.id = 'op_' + generateId()
+  }
   if (ctx.metrics !== undefined) {
     if (ctx.metrics.opLog === undefined) {
       ctx.metrics.opLog = {}
@@ -241,7 +305,7 @@ export function updateOperationLog (opLogMetrics: Metrics | undefined, op: Opera
     return
   }
   if (op !== undefined) {
-    op.end = Date.now()
+    op.end = platformNow()
   }
   // We should keep only longest one entry
   if (opLogMetrics?.opLog !== undefined) {
@@ -288,7 +352,7 @@ export function addOperation<T> (
   if (opLog !== undefined) {
     opEntry = {
       op: name,
-      start: Date.now(),
+      start: performance.now(),
       params: {},
       end: -1
     }
@@ -297,7 +361,7 @@ export function addOperation<T> (
   if (opEntry !== undefined && opLog !== undefined) {
     void result.finally(() => {
       if (opEntry !== undefined && opLog !== undefined) {
-        opEntry.end = Date.now()
+        opEntry.end = performance.now()
         opEntry.params = { ...params, ...(typeof fullParams === 'function' ? fullParams() : fullParams) }
         opLog.ops.push(opEntry)
       }

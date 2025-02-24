@@ -15,18 +15,23 @@
 -->
 <script lang="ts">
   import { DateRangePresenter } from '@hcengineering/ui'
+  import { DateRangeMode } from '@hcengineering/core'
+
   export let value: number | null | undefined
   export let onChange: ((value: number | null) => void) | undefined = undefined
   export let noShift: boolean = false
   export let shouldShowAvatar: boolean = true
   export let accent: boolean = false
   export let inline: boolean = false
+  export let mode: DateRangeMode = DateRangeMode.DATE
+  export let readonly: boolean = false
 </script>
 
-{#if onChange !== undefined}
+{#if onChange !== undefined && !readonly}
   <DateRangePresenter
     {value}
     {noShift}
+    {mode}
     editable
     on:change={(e) => onChange?.(e.detail)}
     {shouldShowAvatar}
@@ -34,5 +39,5 @@
     {inline}
   />
 {:else}
-  <DateRangePresenter {value} {noShift} {shouldShowAvatar} {accent} {inline} />
+  <DateRangePresenter {value} {noShift} {mode} {shouldShowAvatar} {accent} {inline} />
 {/if}

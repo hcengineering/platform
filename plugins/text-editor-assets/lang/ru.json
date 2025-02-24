@@ -39,7 +39,6 @@
     "FullDescription": "Детальное описание",
     "NoFullDescription": "Нет детального описания",
     "EnableDiffMode": "Режим сравнения",
-
     "AddColumnBefore": "Добавить до",
     "AddColumnAfter": "Добавить после",
     "DeleteColumn": "Удалить",
@@ -47,18 +46,28 @@
     "AddRowAfter": "Добавить после",
     "DeleteRow": "Удалить",
     "DeleteTable": "Удалить",
+    "MergeCells": "Объединить ячейки",
+    "SplitCells": "Разделить ячейки",
     "Duplicate": "Дублировать",
-
     "CategoryRow": "Строки",
     "CategoryColumn": "Колонки",
+    "CategoryCell": "Ячейки",
     "Table": "Таблица",
     "InsertTable": "Добавить таблицу",
     "TableOptions": "Настроить таблицу",
+    "SelectTable": "Выделить таблицу",
     "Width": "Ширина",
     "Height": "Высота",
     "Unset": "Убрать",
     "Image": "Изображение",
     "SeparatorLine": "Разделительная линия",
-    "TodoList": "Действие"
+    "TodoList": "Действие",
+    "DrawingBoard": "Доска",
+    "MermaidDiargram": "Диаграмма",
+    "Comment": "Комментарий",
+    "AddComment": "Добавить комментарий",
+    "AddCommentPlaceholder": "Добавьте комментарий...",
+    "SetCellHighlightColor": "Изменить цвет ячеек",
+    "SetTextColor": "Изменить цвет текста"
   }
 }

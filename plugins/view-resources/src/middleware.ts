@@ -124,9 +124,10 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
 
   // TODO: rework notifications to avoid using Account and remove it
   private shouldAggregate (attrClass: Ref<Class<Doc>>, _class: Ref<Class<Doc>>): boolean {
-    if (attrClass !== core.class.Account) {
-      return true
-    }
+    // TODO: FIXME
+    // if (attrClass !== core.class.Account) {
+    //   return true
+    // }
 
     const h = this.client.getHierarchy()
     const skipAccountAggregation = [
@@ -300,8 +301,7 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
   }
 
   private async handleTx (...txes: Tx[]): Promise<void> {
-    for (const tx of txes) {
-      const etx = TxProcessor.extractTx(tx)
+    for (const etx of txes) {
       if (etx._class === core.class.TxApplyIf) {
         const applyIf = etx as TxApplyIf
         void this.handleTx(...applyIf.txes)

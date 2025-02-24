@@ -18,6 +18,7 @@
   import presentation, { SearchResult, reduceCalls, searchFor, type SearchItem } from '@hcengineering/presentation'
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { getReferenceLabel } from './extension/reference'
 
   export let query: string = ''
 
@@ -29,10 +30,11 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  function dispatchItem (item: SearchResultDoc): void {
+  async function handleSelectItem (item: SearchResultDoc): Promise<void> {
+    const label = await getReferenceLabel(item.doc._class, item.doc._id)
     dispatch('close', {
       id: item.id,
-      label: item.shortTitle ?? item.title,
+      label,
       objectclass: item.doc._class
     })
   }
@@ -58,7 +60,7 @@
       key.stopPropagation()
       if (selection < items.length) {
         const searchItem = items[selection]
-        dispatchItem(searchItem.item)
+        void handleSelectItem(searchItem.item)
         return true
       } else {
         return false
@@ -102,7 +104,7 @@
               <div
                 class="ap-menuItem withComp h-8"
                 on:click={() => {
-                  dispatchItem(doc)
+                  void handleSelectItem(doc)
                 }}
               >
                 <SearchResult value={doc} />

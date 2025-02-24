@@ -28,6 +28,7 @@ import { TgContext, ReplyMessage } from './types'
 import { toTelegramFileInfo } from '../utils'
 import { Command, defineCommands } from './commands'
 import { ChannelRecord, MessageRecord, TelegramFileInfo, UserRecord, WorkspaceInfo } from '../types'
+import { WorkspaceUuid } from '@hcengineering/core'
 
 function encodeChannelId (channelId: string): string {
   return `@${channelId}`
@@ -133,7 +134,7 @@ async function handleSelectChannel (
   return [channel.name, await worker.sendMessage(channel, userMessage.message_id, text, file)]
 }
 
-async function showNoChannelsMessage (ctx: Context, worker: PlatformWorker, workspace: string): Promise<void> {
+async function showNoChannelsMessage (ctx: Context, worker: PlatformWorker, workspace: WorkspaceUuid): Promise<void> {
   const ws = await worker.getWorkspaceInfo(workspace)
   await ctx.editMessageText(
     `No channels found in workspace <b>${ws?.name ?? workspace}</b>.\nTo sync channels call /${Command.SyncAllChannels} or /${Command.SyncStarredChannels}`,
@@ -145,12 +146,15 @@ async function createSelectChannelKeyboard (
   ctx: NarrowedContext<TgContext, Update.MessageUpdate>,
   worker: PlatformWorker,
   userRecord: UserRecord,
-  workspace: string
+  workspace: WorkspaceUuid
 ): Promise<void> {
   const channels = await worker.getChannels(userRecord.email, workspace)
 
   if (channels.length === 0) {
-    await showNoChannelsMessage(ctx, worker, workspace)
+    const ws = await worker.getWorkspaceInfo(workspace)
+    await ctx.replyWithHTML(
+      `No channels found in workspace <b>${ws?.name ?? workspace}</b>.\nTo sync channels call /${Command.SyncAllChannels} or /${Command.SyncStarredChannels}`
+    )
     return
   }
 
@@ -172,7 +176,7 @@ async function createSelectChannelKeyboard (
 async function createSelectWorkspaceKeyboard (
   ctx: NarrowedContext<TgContext, Update.MessageUpdate>,
   worker: PlatformWorker,
-  workspaces: string[]
+  workspaces: WorkspaceUuid[]
 ): Promise<void> {
   const info: WorkspaceInfo[] = []
 
@@ -236,7 +240,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
     const userRecord = await worker.getUserRecord(id)
     if (userRecord === undefined) return
 
-    const workspaces = userRecord.workspaces
+    const workspaces = userRecord.workspaces as any // TODO: FIXME
 
     if (workspaces.length === 0) {
       await ctx.reply("You don't have any connected workspaces")
@@ -257,7 +261,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
 
     const newPage = parseInt(page) + 1
 
-    await editChannelKeyboard(ctx, worker, workspace, newPage)
+    await editChannelKeyboard(ctx, worker, workspace as WorkspaceUuid, newPage)
   })
 
   bot.action(/prev_.+_.+/, async (ctx) => {
@@ -268,7 +272,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
 
     const newPage = parseInt(page) - 1
 
-    await editChannelKeyboard(ctx, worker, workspace, newPage)
+    await editChannelKeyboard(ctx, worker, workspace as WorkspaceUuid, newPage)
   })
 
   bot.action(/workspace_.+/, async (ctx) => {
@@ -279,7 +283,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
     ctx.processingKeyboards.add(messageId)
 
     try {
-      const wsId = ctx.match[0].split('_')[1]
+      const wsId = ctx.match[0].split('_')[1] as WorkspaceUuid
       if (wsId == null || wsId === '') return
       const info = await worker.getWorkspaceInfo(wsId)
       if (info === undefined) return
@@ -340,7 +344,7 @@ const getPageChannels = (channels: WithId<ChannelRecord>[], page: number): WithI
 const editChannelKeyboard = async (
   ctx: Context,
   worker: PlatformWorker,
-  workspace: string,
+  workspace: WorkspaceUuid,
   page: number
 ): Promise<void> => {
   const id = ctx.chat?.id

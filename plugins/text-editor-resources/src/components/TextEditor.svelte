@@ -90,6 +90,9 @@
       editor.commands.clearContent(true)
     }
   }
+  export function getEditor (): Editor {
+    return editor
+  }
 
   export function insertText (text: string): void {
     editor?.commands.insertContent(text)
@@ -171,6 +174,8 @@
                   }
                 }
               : false,
+            drawingBoard: false,
+            textAlign: false,
             submit: supportSubmit ? { submit } : false,
             toolbar: {
               element: textToolbarElement,

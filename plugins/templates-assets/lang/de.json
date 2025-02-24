@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "Abbrechen",
+    "Templates": "Textvorlagen",
+    "TemplatesHeader": "TEXTVORLAGEN",
+    "CreateTemplate": "VORLAGE ERSTELLEN",
+    "SaveTemplate": "Vorlage speichern",
+    "EditTemplate": "Vorlage bearbeiten",
+    "ViewTemplate": "Vorlage anzeigen",
+    "Suggested": "VORGESCHLAGEN",
+    "SearchTemplate": "Nach Vorlage suchen",
+    "TemplatePlaceholder": "Neue Vorlage",
+    "Title": "Titel",
+    "Message": "Nachricht",
+    "Field": "Feld",
+    "TemplateCategory": "Vorlagengruppe",
+    "CreateTemplateCategory": "Gruppe erstellen",
+    "Copy": "Kopieren",
+    "Template": "Vorlage"
+  }
+}

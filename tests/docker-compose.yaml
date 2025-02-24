@@ -8,20 +8,21 @@ services:
     ports:
       - 27018:27018
     restart: unless-stopped
-  postgres:
-    image: postgres
-    environment:
-      - POSTGRES_PASSWORD=example
+  cockroach:
+    image: cockroachdb/cockroach:latest-v24.2
     ports:
-      - 5433:5432
+      - '26258:26257'
+    command: start-single-node --insecure
     restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
     expose:
       - 9000
+      - 9001
     ports:
       - 9002:9000
+      - 9003:9001
   elastic:
     image: 'elasticsearch:7.14.2'
     expose:
@@ -43,6 +44,7 @@ services:
     links:
       - mongodb
       - minio
+      - cockroach
     ports:
       - 3003:3003
     volumes:
@@ -55,22 +57,24 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
       - BRANDING_PATH=/var/cfg/branding.json
+      - STATS_URL=http://stats:4901
   workspace:
     image: hardcoreeng/workspace
     links:
       - mongodb
+      - cockroach
       - minio
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
       - SERVER_SECRET=secret
       - DB_URL=mongodb://mongodb:27018
-      - MONGO_URL=mongodb://mongodb:27018
       - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://account:3003
       - BRANDING_PATH=/var/cfg/branding.json
+      - STATS_URL=http://stats:4901
     restart: unless-stopped
   front:
     image: hardcoreeng/front
@@ -89,8 +93,8 @@ services:
     environment:
       - SERVER_PORT=8083
       - SERVER_SECRET=secret
+      - ACCOUNTS_URL_INTERNAL=http://account:3003
       - ACCOUNTS_URL=http://localhost:3003
-      - MONGO_URL=mongodb://mongodb:27018
       - UPLOAD_URL=/files
       - ELASTIC_URL=http://elastic:9200
       - GMAIL_URL=http://localhost:8088
@@ -100,6 +104,8 @@ services:
       - COLLABORATOR_URL=ws://localhost:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - BRANDING_URL=http://localhost:8083/branding-test.json
+      - STATS_URL=http://stats:4901
+      - STATS_API=http://localhost:4901
   transactor:
     image: hardcoreeng/transactor
     pull_policy: never
@@ -108,28 +114,27 @@ services:
       - elastic
       - minio
       - rekoni
+      - cockroach
       - account
     ports:
       - 3334:3334
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
-      - SERVER_PROVIDER=${SERVER_PROVIDER}
       - SERVER_PORT=3334
-      - SERVER_SECRET=secret
-      - ELASTIC_URL=http://elastic:9200
+      - SERVER_SECRET=secret      
       - DB_URL=mongodb://mongodb:27018
-      - MONGO_URL=mongodb://mongodb:27018
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - REKONI_URL=http://rekoni:7
       - FRONT_URL=http://localhost:8083
       - ACCOUNTS_URL=http://account:3003
       - COLLABORATOR_URL=http://collaborator:3079
       - LAST_NAME_FIRST=true
-      - ELASTIC_INDEX_NAME=local_storage_index
       - BRANDING_PATH=/var/cfg/branding.json
+      - FULLTEXT_URL=http://fulltext:4710
+      - STATS_URL=http://stats:4901
+      - ENABLE_COMPRESSION=true
   collaborator:
     image: hardcoreeng/collaborator
     links:
@@ -142,15 +147,43 @@ services:
       - COLLABORATOR_PORT=3079
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3003
-      - MONGO_URL=mongodb://mongodb:27018
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FULLTEXT_URL=http://fulltext:4710
+      - STATS_URL=http://stats:4901
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: on-failure
     ports:
       - 4007:4004
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
+    environment:
+      - STATS_URL=http://stats:4901
+    
+  fulltext:
+    image: hardcoreeng/fulltext
+    restart: unless-stopped
+    links:
+      - elastic
+      - mongodb
+      - cockroach
+      - rekoni
+    ports:
+      - 4710:4710
+    environment:
+      - PORT=4710
+      - SERVER_SECRET=secret
+      - DB_URL=mongodb://mongodb:27018
+      - FULLTEXT_DB_URL=http://elastic:9200
+      - ELASTIC_INDEX_NAME=local_storage_index
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - REKONI_URL=http://rekoni:4007
+      - ACCOUNTS_URL=http://account:3003
+      - STATS_URL=http://stats:4901
+  stats:
+    image: hardcoreeng/stats
+    ports:
+      - 4901:4901
+    environment:
+      - PORT=4901
+      - SERVER_SECRET=secret
+    restart: unless-stopped      

@@ -16,6 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import Label from '../Label.svelte'
   import IconCheck from '../icons/Check.svelte'
+  import Html from '../Html.svelte'
 
   export let langs: any
   export let selected: string
@@ -34,7 +35,7 @@
         dispatch('close', lang.id)
       }}
     >
-      <div class="svg-16px flex-no-shrink text-16px mr-2">{@html lang.logo}</div>
+      <div class="svg-16px flex-no-shrink text-16px mr-2"><Html value={lang.logo} /></div>
       <span class="overflow-label flex-grow"><Label label={lang.label} /></span>
       <div class="ap-check">
         {#if lang.id === selected}

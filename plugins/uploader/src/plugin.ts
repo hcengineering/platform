@@ -15,7 +15,7 @@
 
 import type { IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 
 import type { UploadFilesFn, UploadFilesPopupFn } from './types'
 

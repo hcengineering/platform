@@ -55,8 +55,8 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
         multicolor: false
       }),
       Typography.configure({}),
-      Link.configure({
-        openOnClick: true,
+      Link.extend({ inclusive: false }).configure({
+        openOnClick: false,
         HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
       })
     ]

@@ -139,5 +139,12 @@
     min-width: 0;
     min-height: 0;
     z-index: 10001;
+
+    @media screen and (max-width: 480px) {
+      position: fixed;
+      left: var(--spacing-1);
+      width: calc(100vw - var(--spacing-1) * 2);
+      height: 10rem;
+    }
   }
 </style>

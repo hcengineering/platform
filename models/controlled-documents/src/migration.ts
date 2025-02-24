@@ -2,51 +2,56 @@
 // Copyright @ 2022-2023 Hardcore Engineering Inc.
 //
 
+import attachment, { type Attachment } from '@hcengineering/attachment'
 import {
-  type Data,
-  type Ref,
-  TxOperations,
-  generateId,
-  DOMAIN_TX,
-  makeCollaborativeDoc,
-  MeasureMetricsContext,
+  loadCollabYdoc,
+  saveCollabYdoc,
+  YAbstractType,
+  YXmlElement,
+  yXmlElementClone,
+  YXmlText
+} from '@hcengineering/collaboration'
+import {
+  type ChangeControl,
+  type ControlledDocument,
+  createChangeControl,
+  createDocumentTemplate,
+  type DocumentCategory,
+  type DocumentMeta,
+  documentsId,
+  DocumentState,
+  type ProjectMeta
+} from '@hcengineering/controlled-documents'
+import {
   type Class,
+  type Data,
   type Doc,
-  SortingOrder
+  DOMAIN_SEQUENCE,
+  DOMAIN_TX,
+  generateId,
+  makeDocCollabId,
+  MeasureMetricsContext,
+  type Ref,
+  SortingOrder,
+  toIdMap,
+  TxOperations
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
   createOrUpdate,
-  type MigrateUpdate,
-  type MigrationDocumentQuery,
-  tryMigrate,
-  tryUpgrade,
   type MigrateOperation,
+  type MigrateUpdate,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationDocumentQuery,
+  type MigrationUpgradeClient,
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
+import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import core from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
-import {
-  type ChangeControl,
-  type DocumentCategory,
-  DocumentState,
-  documentsId,
-  createDocumentTemplate,
-  type ControlledDocument,
-  createChangeControl
-} from '@hcengineering/controlled-documents'
-import {
-  loadCollaborativeDoc,
-  saveCollaborativeDoc,
-  YXmlElement,
-  YXmlText,
-  YAbstractType,
-  clone
-} from '@hcengineering/collaboration'
-import attachment, { type Attachment } from '@hcengineering/attachment'
-import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 
+import { makeRank } from '@hcengineering/rank'
 import documents, { DOMAIN_DOCUMENTS } from './index'
 
 async function createTemplatesSpace (tx: TxOperations): Promise<void> {
@@ -111,7 +116,7 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
       impactedDocuments: []
     }
 
-    const seq = await tx.findOne(documents.class.Sequence, {
+    const seq = await tx.findOne(core.class.Sequence, {
       _id: documents.sequence.Templates
     })
 
@@ -143,7 +148,7 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         minor: 1,
         state: DocumentState.Effective,
         commentSequence: 0,
-        content: makeCollaborativeDoc(generateId())
+        content: null
       },
       ccCategory
     )
@@ -157,13 +162,13 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
 }
 
 async function createTemplateSequence (tx: TxOperations): Promise<void> {
-  const templateSeq = await tx.findOne(documents.class.Sequence, {
+  const templateSeq = await tx.findOne(core.class.Sequence, {
     _id: documents.sequence.Templates
   })
 
   if (templateSeq === undefined) {
     await tx.createDoc(
-      documents.class.Sequence,
+      core.class.Sequence,
       documents.space.Documents,
       {
         attachedTo: documents.mixin.DocumentTemplate,
@@ -210,17 +215,19 @@ async function createDocumentCategories (tx: TxOperations): Promise<void> {
     { code: 'CM', title: 'Client Management' }
   ]
 
-  await Promise.all(
-    categories.map((c) =>
-      createOrUpdate(
-        tx,
-        documents.class.DocumentCategory,
-        documents.space.QualityDocuments,
-        { ...c, attachments: 0 },
-        ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>
-      )
+  const catsCache = toIdMap(await tx.findAll(documents.class.DocumentCategory, {}))
+  const ops = tx.apply()
+  for (const c of categories) {
+    await createOrUpdate(
+      ops,
+      documents.class.DocumentCategory,
+      documents.space.QualityDocuments,
+      { ...c, attachments: 0 },
+      ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>,
+      catsCache
     )
-  )
+  }
+  await ops.commit()
 }
 
 async function createTagCategories (tx: TxOperations): Promise<void> {
@@ -262,9 +269,7 @@ async function migrateSpaceTypes (client: MigrationClient): Promise<void> {
       'attributes.descriptor': documents.descriptor.DocumentSpaceType
     },
     {
-      $set: {
-        objectClass: documents.class.DocumentSpaceType
-      }
+      objectClass: documents.class.DocumentSpaceType
     }
   )
 }
@@ -292,9 +297,10 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
 
     // Migrate sections headers + content
     try {
-      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
+      const collabId = makeDocCollabId(document, 'content')
+      const ydoc = await loadCollabYdoc(ctx, storage, client.wsIds, collabId)
       if (ydoc === undefined) {
-        ctx.error('collaborative document content not found', { document: document.title })
+        // no content, ignore
         continue
       }
 
@@ -328,13 +334,17 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
             ...(sectionContent
               .toArray()
               .map((item) =>
-                item instanceof YAbstractType ? (item instanceof YXmlElement ? clone(item) : item.clone()) : item
+                item instanceof YAbstractType
+                  ? item instanceof YXmlElement
+                    ? yXmlElementClone(item)
+                    : item.clone()
+                  : item
               ) as any)
           ])
         }
       })
 
-      await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
+      await saveCollabYdoc(ctx, storage, client.wsIds, collabId, ydoc)
     } catch (err) {
       ctx.error('error collaborative document content migration', { error: err, document: document.title })
     }
@@ -356,6 +366,42 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateProjectMetaRank (client: MigrationClient): Promise<void> {
+  const projectMeta = await client.find<ProjectMeta>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.ProjectMeta,
+    rank: { $exists: false }
+  })
+
+  const docMeta = await client.find<DocumentMeta>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.ProjectDocument,
+    _id: { $in: projectMeta.map((p) => p.meta) }
+  })
+
+  const docMetaById = new Map<Ref<DocumentMeta>, DocumentMeta>()
+  for (const doc of docMeta) {
+    docMetaById.set(doc._id, doc)
+  }
+
+  projectMeta.sort((a, b) => {
+    const docA = docMetaById.get(a.meta)
+    const docB = docMetaById.get(b.meta)
+    return (docA?.title ?? '').localeCompare(docB?.title ?? '', undefined, { numeric: true })
+  })
+
+  let rank = makeRank(undefined, undefined)
+  const operations: { filter: MigrationDocumentQuery<ProjectMeta>, update: MigrateUpdate<ProjectMeta> }[] = []
+
+  for (const doc of projectMeta) {
+    operations.push({
+      filter: { _id: doc._id },
+      update: { rank }
+    })
+    rank = makeRank(rank, undefined)
+  }
+
+  await client.bulk(DOMAIN_DOCUMENTS, operations)
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentsId, [
@@ -366,6 +412,21 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'migrateDocSections',
         func: migrateDocSections
+      },
+      {
+        state: 'migrateProjectMetaRank',
+        func: migrateProjectMetaRank
+      },
+      {
+        state: 'migrateSequnce',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            DOMAIN_DOCUMENTS,
+            { _class: 'documents:class:Sequence' as Ref<Class<Doc>> },
+            { _class: core.class.Sequence }
+          )
+          await client.move(DOMAIN_DOCUMENTS, { _class: core.class.Sequence }, DOMAIN_SEQUENCE)
+        }
       }
     ])
   },

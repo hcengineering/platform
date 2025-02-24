@@ -1,0 +1,24 @@
+{
+  "string": {
+    "Card": "Card",
+    "CardApplication": "Cards",
+    "Cards": "Cards",
+    "Content": "Content",
+    "CreateCard": "Create Card",
+    "CreateMasterTag": "Create Type",
+    "CreateTag": "Create Tag",
+    "MasterTag": "Type",
+    "MasterTags": "Types",
+    "Parent": "Parent",
+    "Tags": "Tags",
+    "Tag": "Tag",
+    "CardLibrary": "Card Library",
+    "MinimizeAll": "Minimize All",
+    "ExpandAll": "Expand All",
+    "DeleteTag": "Delete Tag",
+    "TagRelations": "Tag Relations",
+    "DeleteTagConfirm": "Are you sure you want to delete this tag? All related properties will be deleted",
+    "DeleteMasterTag": "Delete Type",
+    "DeleteMasterTagConfirm": "Are you sure you want to delete this type? All objects related to this type will be deleted"
+  }
+}

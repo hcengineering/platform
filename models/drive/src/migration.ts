@@ -73,11 +73,9 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
         _class: file._class
       },
       {
-        $set: {
-          version: 1,
-          versions: 1,
-          file: fileVersionId
-        },
+        version: 1,
+        versions: 1,
+        file: fileVersionId,
         $unset: {
           metadata: 1
         }
@@ -132,12 +130,6 @@ export const driveOperation: MigrateOperation = {
       {
         state: 'renameFields',
         func: renameFields
-      },
-      {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_DRIVE, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
       }
     ])
   },

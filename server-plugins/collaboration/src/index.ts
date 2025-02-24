@@ -17,8 +17,6 @@ import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { TriggerFunc } from '@hcengineering/server-core'
 
-export * from './fulltext'
-
 /**
  * @public
  */

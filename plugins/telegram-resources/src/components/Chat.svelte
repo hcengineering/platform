@@ -14,11 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   import attachment from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import contact, { Channel, Contact, Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
-  import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import core, { IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
+  import contact, { Channel, Contact, Person, getName as getContactName } from '@hcengineering/contact'
+  import { Avatar } from '@hcengineering/contact-resources'
+  import core, { Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -80,7 +81,6 @@
 
   const messagesQuery = createQuery()
   const settingsQuery = createQuery()
-  const accountId = getCurrentAccount()._id
 
   function updateMessagesQuery (channelId: Ref<Channel>): void {
     messagesQuery.query(
@@ -89,7 +89,7 @@
       (res) => {
         messages = res.reverse()
         if (channel !== undefined) {
-          inboxClient.forceReadDoc(client, channel._id, channel._class)
+          inboxClient.forceReadDoc(channel._id, channel._class)
         }
       },
       {
@@ -106,7 +106,7 @@
 
   settingsQuery.query(
     setting.class.Integration,
-    { type: telegram.integrationType.Telegram, createdBy: accountId },
+    { type: telegram.integrationType.Telegram, createdBy: { $in: getCurrentAccount().socialIds } },
     (res) => {
       integration = res[0]
     }
@@ -133,26 +133,28 @@
     loading = false
   }
 
-  function getName (message: TelegramMessage, accounts: IdMap<PersonAccount>): string {
-    return message.incoming ? object.name : accounts.get(message.modifiedBy as Ref<PersonAccount>)?.name ?? ''
-  }
+  // function getName (message: TelegramMessage, accounts: IdMap<PersonAccount>): string {
+  //   return message.incoming ? object.name : accounts.get(message.modifiedBy as PersonId)?.name ?? ''
+  // }
 
   async function share (): Promise<void> {
-    const selectedMessages = messages.filter((m) => selected.has(m._id as unknown as Ref<SharedTelegramMessage>))
-    await client.addCollection(
-      telegram.class.SharedMessages,
-      object.space,
-      object._id,
-      object._class,
-      'sharedTelegramMessages',
-      {
-        messages: convertMessages(selectedMessages, $personAccountByIdStore)
-      }
-    )
-    if (channel !== undefined) {
-      await inboxClient.forceReadDoc(client, channel._id, channel._class)
-    }
-    clear()
+    // TODO: FIXME
+    throw new Error('Not implemented')
+    // const selectedMessages = messages.filter((m) => selected.has(m._id as unknown as Ref<SharedTelegramMessage>))
+    // await client.addCollection(
+    //   telegram.class.SharedMessages,
+    //   object.space,
+    //   object._id,
+    //   object._class,
+    //   'sharedTelegramMessages',
+    //   {
+    //     messages: convertMessages(selectedMessages, $personAccountByIdStore)
+    //   }
+    // )
+    // if (channel !== undefined) {
+    //   await inboxClient.forceReadDoc(channel._id, channel._class)
+    // }
+    // clear()
   }
 
   function clear (): void {
@@ -161,15 +163,15 @@
     selected = selected
   }
 
-  function convertMessages (messages: TelegramMessage[], accounts: IdMap<PersonAccount>): SharedTelegramMessage[] {
-    return messages.map((m) => {
-      return {
-        ...m,
-        _id: m._id as unknown as Ref<SharedTelegramMessage>,
-        sender: getName(m, accounts)
-      }
-    })
-  }
+  // function convertMessages (messages: TelegramMessage[], accounts: IdMap<PersonAccount>): SharedTelegramMessage[] {
+  //   return messages.map((m) => {
+  //     return {
+  //       ...m,
+  //       _id: m._id as unknown as Ref<SharedTelegramMessage>,
+  //       sender: getName(m, accounts)
+  //     }
+  //   })
+  // }
 
   async function onConnectClose (res: any): Promise<void> {
     if (res?.value) {
@@ -190,29 +192,29 @@
   }
   let loading = false
 
-  function getParticipants (
-    messages: TelegramMessage[],
-    accounts: IdMap<PersonAccount>,
-    object: Contact | undefined,
-    employees: IdMap<Person>
-  ): Contact[] {
-    if (object === undefined || accounts.size === 0) return []
-    const res: IdMap<Contact> = new Map()
-    res.set(object._id, object)
-    const accs = new Set(messages.map((p) => p.modifiedBy))
-    for (const acc of accs) {
-      const account = accounts.get(acc as Ref<PersonAccount>)
-      if (account !== undefined) {
-        const emp = employees.get(account.person)
-        if (emp !== undefined) {
-          res.set(emp._id, emp)
-        }
-      }
-    }
-    return Array.from(res.values())
-  }
+  // function getParticipants (
+  //   messages: TelegramMessage[],
+  //   accounts: IdMap<PersonAccount>,
+  //   object: Contact | undefined,
+  //   employees: IdMap<Person>
+  // ): Contact[] {
+  //   if (object === undefined || accounts.size === 0) return []
+  //   const res: IdMap<Contact> = new Map()
+  //   res.set(object._id, object)
+  //   const accs = new Set(messages.map((p) => p.modifiedBy))
+  //   for (const acc of accs) {
+  //     const account = accounts.get(acc as PersonId)
+  //     if (account !== undefined) {
+  //       const emp = employees.get(account.person)
+  //       if (emp !== undefined) {
+  //         res.set(emp._id, emp)
+  //       }
+  //     }
+  //   }
+  //   return Array.from(res.values())
+  // }
 
-  $: participants = getParticipants(messages, $personAccountByIdStore, object, $personByIdStore)
+  $: participants = [] // getParticipants(messages, $personAccountByIdStore, object, $personByIdStore)
 </script>
 
 {#if object !== undefined}
@@ -270,7 +272,8 @@
 
     <Scroller bottomStart autoscroll>
       {#if messages}
-        <Messages messages={convertMessages(messages, $personAccountByIdStore)} {selectable} bind:selected />
+        <!-- TODO: FIXME -->
+        <!-- <Messages messages={convertMessages(messages, $personAccountByIdStore)} {selectable} bind:selected /> -->
       {/if}
     </Scroller>
 

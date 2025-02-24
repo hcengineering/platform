@@ -23,23 +23,19 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, PersonId, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
-  import { personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Person } from '@hcengineering/contact'
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
-  import {
-    archiveContextNotifications,
-    isActivityNotification,
-    isMentionNotification,
-    unarchiveContextNotifications
-  } from '../utils'
+  import { isActivityNotification, isMentionNotification } from '../utils'
 
   export let value: DocNotifyContext
   export let notifications: WithLookup<DisplayInboxNotification>[]
   export let viewlets: ActivityNotificationViewlet[] = []
+  export let isArchiving = false
   export let archived = false
 
   const maxNotifications = 3
@@ -89,7 +85,7 @@
 
   let groupedNotifications: Array<InboxNotification[]> = []
 
-  $: groupedNotifications = groupNotificationsByUser(notifications, $personAccountByIdStore)
+  $: groupedNotifications = groupNotificationsByUser(notifications, $personRefByPersonIdStore)
 
   function isTextMessage (_class: Ref<Class<Doc>>): boolean {
     return hierarchy.isDerived(_class, chunter.class.ChatMessage)
@@ -105,15 +101,15 @@
 
   function groupNotificationsByUser (
     notifications: WithLookup<InboxNotification>[],
-    personAccountById: IdMap<PersonAccount>
+    personRefByPersonId: Map<PersonId, Ref<Person>>
   ): Array<InboxNotification[]> {
     const result: Array<InboxNotification[]> = []
     let group: InboxNotification[] = []
     let person: Ref<Person> | undefined = undefined
 
     for (const it of notifications) {
-      const account = it.createdBy ?? it.modifiedBy
-      const curPerson = personAccountById.get(account as Ref<PersonAccount>)?.person
+      const pid = it.createdBy ?? it.modifiedBy
+      const curPerson = personRefByPersonId.get(pid)
       const allowGroup = canGroup(it)
 
       if (!allowGroup || curPerson === undefined) {
@@ -174,13 +170,8 @@
     isActionMenuOpened = false
   }
 
-  let archivingPromise: Promise<any> | undefined = undefined
-
   async function checkContext (): Promise<void> {
-    await archivingPromise
-    archivingPromise = archived ? unarchiveContextNotifications(value) : archiveContextNotifications(value)
-    await archivingPromise
-    archivingPromise = undefined
+    dispatch('archive')
   }
 
   // function canShowTooltip (group: InboxNotification[]): boolean {
@@ -231,7 +222,7 @@
 
       <div class="actions clear-mins">
         <div class="flex-center min-w-6">
-          {#if archivingPromise !== undefined}
+          {#if isArchiving}
             <Spinner size="small" />
           {:else}
             <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
@@ -284,7 +275,7 @@
 
       <div class="actions clear-mins">
         <div class="flex-center">
-          {#if archivingPromise !== undefined}
+          {#if isArchiving}
             <Spinner size="small" />
           {:else}
             <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />

@@ -19,7 +19,6 @@ import {
   DOMAIN_MODEL,
   IndexKind,
   type Class,
-  type Doc,
   type Domain,
   type Ref,
   type Status,
@@ -53,6 +52,7 @@ import core, {
   TSpaceTypeDescriptor,
   TTypedSpace
 } from '@hcengineering/model-core'
+import { createPublicLinkAction } from '@hcengineering/model-guest'
 import view, {
   classPresenter,
   createAction,
@@ -70,25 +70,22 @@ import {
   type ProjectTypeClass,
   type ProjectTypeDescriptor,
   type Rank,
-  type Sequence,
   type Task,
   type TaskType,
   type TaskTypeClass,
   type TaskTypeDescriptor,
   type TaskTypeKind
 } from '@hcengineering/task'
-import type { AnyComponent } from '@hcengineering/ui'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
-import { createPublicLinkAction } from '@hcengineering/model-guest'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 
 import task from './plugin'
 
 export { createProjectType, taskId } from '@hcengineering/task'
-export { createSequence, taskOperation, migrateDefaultStatusesBase } from './migration'
+export { createSequence, migrateDefaultStatusesBase, taskOperation } from './migration'
 export { default } from './plugin'
 
 export const DOMAIN_TASK = 'task' as Domain
-export const DOMAIN_KANBAN = 'kanban' as Domain
 
 /**
  * @public
@@ -237,12 +234,6 @@ export class TProjectTypeDescriptor extends TSpaceTypeDescriptor implements Proj
   declare baseClass: Ref<Class<Project>>
 }
 
-@Model(task.class.Sequence, core.class.Doc, DOMAIN_KANBAN)
-export class TSequence extends TDoc implements Sequence {
-  attachedTo!: Ref<Class<Doc>>
-  sequence!: number
-}
-
 /**
  * @public
  */
@@ -259,7 +250,6 @@ export const actionTemplates = template({
 export function createModel (builder: Builder): void {
   builder.createModel(
     TKanbanCard,
-    TSequence,
     TTask,
     TProject,
     TProjectType,
@@ -379,23 +369,6 @@ export function createModel (builder: Builder): void {
       }
     },
     task.action.Move
-  )
-
-  createAction(
-    builder,
-    {
-      label: task.string.Export,
-      action: task.actionImpl.ExportTasks,
-      icon: view.icon.Move,
-      input: 'selection',
-      category: view.category.General,
-      target: task.class.Task,
-      context: {
-        mode: ['context', 'browser'],
-        group: 'tools'
-      }
-    },
-    task.action.ExportTasks
   )
 
   builder.createDoc(
@@ -540,11 +513,6 @@ export function createModel (builder: Builder): void {
         id: 'automations',
         label: setting.string.Automations,
         component: task.component.ProjectTypeAutomationsSectionEditor
-      },
-      {
-        id: 'collections',
-        label: setting.string.Collections,
-        component: task.component.ProjectTypeCollectionsSectionEditor
       }
     ],
     subEditors: {
@@ -564,18 +532,6 @@ export function createModel (builder: Builder): void {
       { milestone: 1 },
       { relations: 1 },
       { priority: 1 }
-    ]
-  })
-  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
-    domain: DOMAIN_KANBAN,
-    disabled: [
-      { space: 1 },
-      { modifiedOn: 1 },
-      { modifiedBy: 1 },
-      { createdBy: 1 },
-      { createdOn: -1 },
-      { _class: 1 },
-      { attachedToClass: 1 }
     ]
   })
 }

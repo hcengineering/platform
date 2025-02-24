@@ -1,101 +1,27 @@
 import {
-  docKey,
-  type Branding,
+  getObjectValue,
   type Class,
   type Doc,
-  type DocIndexState,
   type Hierarchy,
   type Ref,
-  type RefTo,
-  type SearchResultDoc
+  type SearchResultDoc,
+  type Space
 } from '@hcengineering/core'
-import { getResource, type Resource } from '@hcengineering/platform'
+import { getResource } from '@hcengineering/platform'
 
 import plugin, {
-  type ClassSearchConfigProps,
+  type FieldTemplate,
+  type FieldTemplateComponent,
+  type FieldTemplateParam,
   type IndexedDoc,
   type SearchPresenter,
-  type SearchPresenterFunc,
   type SearchScoring
 } from '@hcengineering/server-core'
 
-interface IndexedReader {
-  get: (attribute: string) => any
-  getDoc: (attribute: string) => IndexedReader | undefined
-}
-
-// TODO: Rework to use mongo
-function createIndexedReader (
-  _class: Ref<Class<Doc>>,
-  hierarchy: Hierarchy,
-  doc: DocIndexState,
-  otherDocs?: Record<string, DocIndexState | undefined>,
-  refAttribute?: string
-): IndexedReader {
-  return {
-    get: (attr: string) => {
-      const realAttr = hierarchy.findAttribute(_class, attr)
-      if (realAttr !== undefined) {
-        return doc.attributes[docKey(attr, { _class: realAttr.attributeOf })] ?? (doc as any)[attr]
-      }
-      return undefined
-    },
-    getDoc: (attr: string) => {
-      const realAttr = hierarchy.findAttribute(_class, attr)
-      if (realAttr !== undefined) {
-        const anotherDoc = otherDocs?.[attr]
-        if (anotherDoc !== undefined) {
-          const refAtrr = realAttr.type as RefTo<Doc>
-          return createIndexedReader(refAtrr.to, hierarchy, anotherDoc, otherDocs, docKey(attr, { _class }))
-        }
-      }
-      return undefined
-    }
-  }
-}
-
-async function readAndMapProps (
-  reader: IndexedReader,
-  props: ClassSearchConfigProps[],
-  searchProvider?: {
-    hierarchy: Hierarchy
-    providers: SearchPresenterFunc
-  }
-): Promise<Record<string, any>> {
-  const res: Record<string, any> = {}
-  for (const prop of props) {
-    if (typeof prop === 'string') {
-      res[prop] = reader.get(prop)
-    } else {
-      for (const [propName, rest] of Object.entries(prop)) {
-        if (rest.length > 1) {
-          const val = reader.getDoc(rest[0])?.get(rest[1])
-          const v = Array.isArray(val) ? val[0] : val
-          if (searchProvider !== undefined) {
-            const func =
-              searchProvider.providers !== undefined && Object.keys(searchProvider.providers).includes(propName)
-                ? ((await getResource(searchProvider.providers[propName])) as any)
-                : undefined
-            if (func !== undefined) {
-              res[propName] = func(searchProvider.hierarchy, { _class: res?._class, [propName]: v })
-              continue
-            }
-          }
-          res[propName] = v
-        }
-      }
-    }
-  }
-  return res
-}
-
-function findSearchPresenter (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): SearchPresenter | undefined {
-  const ancestors = hierarchy.getAncestors(_class).reverse()
-  for (const _class of ancestors) {
-    const searchMixin = hierarchy.classHierarchyMixin(_class, plugin.mixin.SearchPresenter)
-    if (searchMixin !== undefined) {
-      return searchMixin
-    }
+export function findSearchPresenter (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): SearchPresenter | undefined {
+  const searchMixin = hierarchy.classHierarchyMixin(_class, plugin.mixin.SearchPresenter)
+  if (searchMixin !== undefined) {
+    return searchMixin
   }
   return undefined
 }
@@ -105,64 +31,81 @@ function findSearchPresenter (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): Se
  */
 export async function updateDocWithPresenter (
   hierarchy: Hierarchy,
-  doc: DocIndexState,
+  doc: Doc,
   elasticDoc: IndexedDoc,
-  refDocs: {
-    parentDoc: DocIndexState | undefined
-    spaceDoc: DocIndexState | undefined
-  },
-  branding: Branding | null
+  parentDoc: Doc | undefined,
+  spaceDoc: Space | undefined,
+  searchPresenter: SearchPresenter
 ): Promise<void> {
-  const searchPresenter = findSearchPresenter(hierarchy, doc.objectClass)
-  if (searchPresenter === undefined) {
-    return
-  }
-
-  const reader = createIndexedReader(doc.objectClass, hierarchy, doc, {
-    space: refDocs.spaceDoc,
-    attachedTo: refDocs.parentDoc
-  })
-
-  const props = [
+  const props: { name: string, config: FieldTemplateComponent | FieldTemplate }[] = [
     {
       name: 'searchTitle',
-      config: searchPresenter.searchConfig.title,
-      provider: searchPresenter.getSearchTitle
+      config: searchPresenter.title
     }
-  ] as any[]
+  ]
 
-  if (searchPresenter.searchConfig.shortTitle !== undefined) {
+  if (searchPresenter.shortTitle !== undefined) {
     props.push({
       name: 'searchShortTitle',
-      config: searchPresenter.searchConfig.shortTitle,
-      provider: searchPresenter.getSearchShortTitle,
-      lastNameFirst: branding?.lastNameFirst
+      config: searchPresenter.shortTitle
     })
   }
 
-  if (searchPresenter.searchConfig.iconConfig !== undefined) {
+  if (searchPresenter.iconConfig !== undefined) {
     props.push({
       name: 'searchIcon',
-      config: searchPresenter.searchConfig.iconConfig
+      config: searchPresenter.iconConfig
     })
+  }
+
+  async function extractParam (f: FieldTemplateParam): Promise<any> {
+    if (f.length === 1) {
+      return getObjectValue(f[0], doc)
+    }
+    switch (f[0]) {
+      case 'func': {
+        const rf = await getResource(f[1])
+        return rf(doc, parentDoc, spaceDoc, hierarchy, f[2])
+      }
+      case 'space':
+        return spaceDoc !== undefined ? getObjectValue(f[1], spaceDoc) : ''
+      case 'parent':
+        return parentDoc !== undefined ? getObjectValue(f[1], parentDoc) : ''
+    }
+  }
+  async function formatTemplate (template: FieldTemplate): Promise<string> {
+    let tValue = ''
+    for (const t of template) {
+      if (typeof t === 'string') {
+        tValue += t
+      } else {
+        tValue += `${await extractParam(t)}`
+      }
+    }
+    return tValue
   }
 
   for (const prop of props) {
-    let value
-    if (prop.config.tmpl !== undefined) {
-      const tmpl = prop.config.tmpl
-      const renderProps = await readAndMapProps(reader, prop.config.props, { hierarchy, providers: prop.provider })
-      value = fillTemplate(tmpl, renderProps)
-    } else if (typeof prop.config === 'string') {
-      value = reader.get(prop.config)
-    } else if (prop.provider !== undefined) {
-      const func = await getResource(Object.values(prop.provider)[0] as Resource<any>)
-      const renderProps = await readAndMapProps(reader, prop.config.props)
-      value = func(hierarchy, { _class: doc.objectClass, ...renderProps })
-    } else if (prop.name === 'searchIcon') {
-      value = await readAndMapProps(reader, prop.config.props)
+    if (!Array.isArray(prop.config)) {
+      if (prop.config.fields !== undefined) {
+        const params: string[] = []
+        for (const f of prop.config.fields) {
+          params.push(await extractParam(f))
+        }
+        elasticDoc[prop.name + '_fields'] = params
+      }
+      if (prop.config.template !== undefined) {
+        elasticDoc[prop.name] = await formatTemplate(prop.config.template)
+      }
+      if (prop.config.extraFields !== undefined) {
+        elasticDoc[prop.name + '_extra'] = []
+        for (const t of prop.config.extraFields) {
+          elasticDoc[prop.name + '_extra'].push(await formatTemplate(t))
+        }
+      }
+    } else {
+      elasticDoc[prop.name] = await formatTemplate(prop.config)
     }
-    elasticDoc[prop.name] = value
   }
 }
 
@@ -170,8 +113,8 @@ export function getScoringConfig (hierarchy: Hierarchy, classes: Ref<Class<Doc>>
   let results: SearchScoring[] = []
   for (const _class of classes) {
     const searchPresenter = findSearchPresenter(hierarchy, _class)
-    if (searchPresenter?.searchConfig.scoring !== undefined) {
-      results = results.concat(searchPresenter?.searchConfig.scoring)
+    if (searchPresenter?.scoring !== undefined) {
+      results = results.concat(searchPresenter?.scoring)
     }
   }
   return results
@@ -185,7 +128,6 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
     id: raw.id,
     title: raw.searchTitle,
     shortTitle: raw.searchShortTitle,
-    iconProps: raw.searchIcon,
     doc: {
       _id: raw.id,
       _class: raw._class[0]
@@ -193,17 +135,52 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
     score: raw._score
   }
 
-  const searchPresenter = findSearchPresenter(hierarchy, doc.doc._class)
-  if (searchPresenter?.searchConfig.icon !== undefined) {
-    doc.icon = searchPresenter.searchConfig.icon
+  function fUpper (name: string): string {
+    return name[0].toUpperCase() + name.slice(1)
   }
-  if (searchPresenter?.searchConfig.iconConfig !== undefined) {
-    doc.iconComponent = searchPresenter.searchConfig.iconConfig.component
+
+  function toProps (comp: FieldTemplateComponent, values: any[]): Record<string, any> {
+    const result: Record<string, any> = {}
+    if (!Array.isArray(comp)) {
+      let pos = 0
+      for (const f of comp.fields ?? []) {
+        if (f.length === 1) {
+          result[f[0]] = values[pos]
+          pos++
+        }
+        if (f.length === 2) {
+          result[f[0] + fUpper(f[1])] = values[pos]
+          pos++
+        }
+      }
+    }
+    return result
+  }
+
+  const searchPresenter = findSearchPresenter(hierarchy, doc.doc._class)
+  if (searchPresenter !== undefined) {
+    if (searchPresenter.searchIcon !== undefined) {
+      doc.icon = searchPresenter.searchIcon
+    }
+    if (searchPresenter.iconConfig !== undefined) {
+      doc.iconComponent = {
+        component: searchPresenter.iconConfig.component,
+        props: toProps(searchPresenter.iconConfig, raw.searchIcon_fields ?? [])
+      }
+    }
+    if (!Array.isArray(searchPresenter.title)) {
+      doc.titleComponent = {
+        component: searchPresenter.title.component,
+        props: toProps(searchPresenter.title, raw.searchTitle_fields ?? [])
+      }
+    }
+    if (searchPresenter.shortTitle !== undefined && !Array.isArray(searchPresenter.shortTitle)) {
+      doc.shortTitleComponent = {
+        component: searchPresenter.shortTitle.component,
+        props: toProps(searchPresenter.shortTitle, raw.searchShortTitle_fields ?? [])
+      }
+    }
   }
 
   return doc
-}
-
-function fillTemplate (tmpl: string, props: Record<string, any>): string {
-  return tmpl.replace(/{(.*?)}/g, (_, key: string) => props[key])
 }

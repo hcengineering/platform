@@ -20,7 +20,7 @@ import {
   AccountRole,
   DOMAIN_MODEL,
   IndexKind,
-  type Account,
+  type PersonId,
   type AttachedDoc,
   type Class,
   type Collection,
@@ -33,7 +33,8 @@ import {
   type Space,
   type Timestamp,
   type Tx,
-  type TxCUD
+  type TxCUD,
+  DOMAIN_TRANSIENT
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -46,6 +47,7 @@ import {
   TypeIntlString,
   TypeMarkup,
   TypeRef,
+  TypePersonId,
   UX,
   type Builder
 } from '@hcengineering/model'
@@ -75,7 +77,6 @@ import {
   type NotificationProvider,
   type NotificationProviderDefaults,
   type NotificationProviderSetting,
-  type NotificationStatus,
   type NotificationTemplate,
   type NotificationType,
   type NotificationTypeSetting,
@@ -92,15 +93,14 @@ export { notificationId, DOMAIN_USER_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_DOC_NOT
 export { notificationOperation } from './migration'
 export { notification as default }
 
-@Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_USER_NOTIFY)
+@Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_TRANSIENT)
 export class TBrowserNotification extends TDoc implements BrowserNotification {
-  senderId?: Ref<Account> | undefined
+  senderId?: PersonId | undefined
   tag!: Ref<Doc<Space>>
   title!: string
   body!: string
   onClickLocation?: Location | undefined
-  user!: Ref<Account>
-  status!: NotificationStatus
+  user!: PersonId
   messageId?: Ref<ActivityMessage>
   messageClass?: Ref<Class<ActivityMessage>>
   objectId!: Ref<Doc>
@@ -109,7 +109,7 @@ export class TBrowserNotification extends TDoc implements BrowserNotification {
 
 @Model(notification.class.PushSubscription, core.class.Doc, DOMAIN_USER_NOTIFY)
 export class TPushSubscription extends TDoc implements PushSubscription {
-  user!: Ref<Account>
+  user!: PersonId
   endpoint!: string
   keys!: PushSubscriptionKeys
 }
@@ -170,9 +170,9 @@ export class TClassCollaborators extends TClass {
 @Mixin(notification.mixin.Collaborators, core.class.Doc)
 @UX(notification.string.Collaborators)
 export class TCollaborators extends TDoc {
-  @Prop(ArrOf(TypeRef(core.class.Account)), notification.string.Collaborators)
+  @Prop(ArrOf(TypePersonId()), notification.string.Collaborators)
   @Index(IndexKind.Indexed)
-    collaborators!: Ref<Account>[]
+    collaborators!: PersonId[]
 }
 
 @Mixin(notification.mixin.NotificationObjectPresenter, core.class.Class)
@@ -192,9 +192,9 @@ export class TNotificationContextPresenter extends TClass implements Notificatio
 
 @Model(notification.class.DocNotifyContext, core.class.Doc, DOMAIN_DOC_NOTIFY)
 export class TDocNotifyContext extends TDoc implements DocNotifyContext {
-  @Prop(TypeRef(core.class.Account), core.string.Account)
+  @Prop(TypePersonId(), core.string.Account)
   @Index(IndexKind.Indexed)
-    user!: Ref<Account>
+    user!: PersonId
 
   @Prop(TypeRef(core.class.Doc), core.string.Object)
   @Index(IndexKind.Indexed)
@@ -229,9 +229,9 @@ export class TInboxNotification extends TDoc implements InboxNotification {
   @Index(IndexKind.Indexed)
     docNotifyContext!: Ref<DocNotifyContext>
 
-  @Prop(TypeRef(core.class.Account), core.string.Account)
+  @Prop(TypePersonId(), core.string.Account)
   @Index(IndexKind.Indexed)
-    user!: Ref<Account>
+    user!: PersonId
 
   @Prop(TypeBoolean(), core.string.Boolean)
   // @Index(IndexKind.Indexed)
@@ -239,6 +239,9 @@ export class TInboxNotification extends TDoc implements InboxNotification {
 
   @Prop(TypeBoolean(), core.string.Boolean)
     archived!: boolean
+
+  objectId!: Ref<Doc>
+  objectClass!: Ref<Class<Doc>>
 
   declare space: Ref<PersonSpace>
 
@@ -368,6 +371,10 @@ export function createModel (builder: Builder): void {
     TNotificationProviderDefaults
   )
 
+  builder.mixin(notification.class.BrowserNotification, core.class.Class, core.mixin.TransientConfiguration, {
+    broadcastOnly: true
+  })
+
   builder.createDoc(
     setting.class.SettingsCategory,
     core.space.Model,
@@ -389,6 +396,7 @@ export function createModel (builder: Builder): void {
     {
       label: notification.string.Inbox,
       icon: notification.icon.Notifications,
+      locationDataResolver: notification.function.LocationDataResolver,
       alias: notificationId,
       hidden: true,
       locationResolver: notification.resolver.Location,

@@ -110,6 +110,22 @@
     "DeleteSpaceTypeConfirm": "Tem certeza de que deseja excluir este tipo de espaço?",
     "WorkspaceName": "Nome do espaço de trabalho",
     "Workspace": "Espaço de trabalho",
-    "OwnerOrMainteinerRequired": "Precisa de ser proprietário ou mantenedor do espaço de trabalho"
+    "OwnerOrMaintainerRequired": "Precisa de ser proprietário ou mantenedor do espaço de trabalho",
+    "Backup": "Backup",
+    "BackupLast": "Último backup",
+    "BackupTotalSnapshots": "Total de Snapshots",
+    "BackupTotalFiles": "Arquivos",
+    "BackupSize": "Tamanho do backup",
+    "BackupLinkInfo": "A URL de um diretório de backup que pode ser baixado recursivamente usando ferramentas como wget ou curl.",
+    "BackupBearerTokenInfo": "É necessário um token bearer para acessar o backup.",
+    "BackupSnapshots": "Snapshots de Backup",
+    "BackupFileDownload": "Baixar Arquivo",
+    "BackupFiles": "Arquivos de Backup",
+    "BackupNoBackup": "Não há backups disponíveis no momento.",
+    "Calendar": "Calendário",
+    "StartOfTheWeek": "Início da semana",
+    "SystemSetupString": "Configuração do sistema ({day})",
+    "DefaultString": "Predefinição ({day})",
+    "AddAttribute": "Adicionar atributo"
   }
 }

@@ -5,7 +5,7 @@ import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity
 import { Attachment } from '@hcengineering/attachment'
 import { Person } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   AnyAttribute,
   AttachedDoc,
   Class,
@@ -35,7 +35,7 @@ export interface DocSyncInfo extends Doc {
   url: string
   objectClass: Ref<Class<Doc>>
 
-  lastGithubUser?: Ref<Account> | null
+  lastGithubUser?: PersonId | null
 
   // If repository is null, then document is not yet synced.
   repository: Ref<GithubIntegrationRepository> | null
@@ -158,7 +158,7 @@ export enum GithubReviewDecisionState {
 }
 
 export interface LastReviewState {
-  user: Ref<Account>
+  user: PersonId
   state: GithubPullRequestReviewState
 }
 /**
@@ -267,7 +267,7 @@ export interface GithubReviewThread extends ActivityMessage {
   originalStartLine: number | null
   path: string
   startDiffSide: 'LEFT' | 'RIGHT' | null
-  resolvedBy: Ref<Account> | null
+  resolvedBy: PersonId | null
 }
 
 export interface GithubReviewComment extends AttachedDoc {
@@ -600,6 +600,7 @@ export default plugin(githubId, {
     AuthenticatedWithGithub: '' as IntlString,
     AuthenticationRevokedGithub: '' as IntlString,
     AuthenticatedWithGithubEmployee: '' as IntlString,
-    AuthenticatedWithGithubRequired: '' as IntlString
+    AuthenticatedWithGithubRequired: '' as IntlString,
+    Suspended: '' as IntlString
   }
 })

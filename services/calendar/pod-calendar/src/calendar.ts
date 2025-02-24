@@ -23,7 +23,7 @@ import calendar, {
 } from '@hcengineering/calendar'
 import { Contact } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   AttachedData,
   Client,
   Data,
@@ -34,7 +34,8 @@ import core, {
   Ref,
   TxOperations,
   TxUpdateDoc,
-  generateId
+  generateId,
+  parseSocialIdString
 } from '@hcengineering/core'
 import setting from '@hcengineering/setting'
 import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
@@ -65,7 +66,6 @@ export class CalendarClient {
   private readonly calendarHistories: Collection<CalendarHistory>
   private readonly histories: Collection<EventHistory>
   private readonly client: TxOperations
-  private me: string | undefined = undefined
   private readonly watches: EventWatch[] = []
   private calendarWatch: Watch | undefined = undefined
   private refreshTimer: NodeJS.Timeout | undefined = undefined
@@ -106,16 +106,15 @@ export class CalendarClient {
     return calendarClient
   }
 
-  static getAutUrl (redirectURL: string, workspace: string, userId: Ref<Account>, token: string): string {
+  static getAuthUrl (redirectURL: string, workspace: string, userId: PersonId, token: string): string {
     const credentials = JSON.parse(config.Credentials)
     const { client_secret, client_id, redirect_uris } = credentials.web // eslint-disable-line
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]) // eslint-disable-line
     const state: State = {
       token,
       redirectURL,
-      workspace,
-      userId,
-      email: ''
+      workspace: workspace as any, // TODO: FIXME
+      userId
     }
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: 'offline',
@@ -128,7 +127,6 @@ export class CalendarClient {
   async authorize (code: string): Promise<string> {
     const token = await this.oAuth2Client.getToken(code)
     await this.setToken(token.tokens)
-    const me = await this.getMe()
     const providedScopes = token.tokens.scope?.split(' ') ?? []
     for (const scope of SCOPES) {
       if (providedScopes.findIndex((p) => p === scope) === -1) {
@@ -140,7 +138,7 @@ export class CalendarClient {
           await this.client.remove(integration)
         }
 
-        const updated = integrations.find((p) => p.disabled && p.value === me)
+        const updated = integrations.find((p) => p.disabled && p.value === this.user.userId)
         if (updated !== undefined) {
           await this.client.update(updated, {
             disabled: true,
@@ -151,7 +149,7 @@ export class CalendarClient {
             type: calendar.integrationType.Calendar,
             disabled: true,
             error: calendar.string.NotAllPermissions,
-            value: me
+            value: this.user.userId
           })
         }
         throw new Error(
@@ -167,7 +165,7 @@ export class CalendarClient {
       type: calendar.integrationType.Calendar
     })
 
-    const updated = integrations.find((p) => p.disabled && p.value === me)
+    const updated = integrations.find((p) => p.disabled && p.value === this.user.userId)
 
     for (const integration of integrations.filter((p) => p.value === '')) {
       await this.client.remove(integration)
@@ -181,14 +179,14 @@ export class CalendarClient {
       await this.client.createDoc(setting.class.Integration, core.space.Workspace, {
         type: calendar.integrationType.Calendar,
         disabled: false,
-        value: me
+        value: this.user.userId
       })
     }
 
-    await this.startSync(me)
+    await this.startSync()
     void this.syncOurEvents()
 
-    return me
+    return this.user.userId
   }
 
   async signout (byError: boolean = false): Promise<void> {
@@ -203,7 +201,7 @@ export class CalendarClient {
     const integration = await this.client.findOne(setting.class.Integration, {
       createdBy: this.user.userId,
       type: calendar.integrationType.Calendar,
-      value: this.user.email
+      value: this.user.userId
     })
     if (integration !== undefined) {
       if (byError) {
@@ -212,19 +210,16 @@ export class CalendarClient {
         await this.client.remove(integration)
       }
     }
-    this.workspace.removeClient(this.user.email)
+    this.workspace.removeClient(this.user.userId)
   }
 
-  async startSync (me?: string): Promise<void> {
+  async startSync (): Promise<void> {
     try {
-      if (me === undefined) {
-        me = await this.getMe()
-      }
-      await this.syncCalendars(me)
-      const calendars = this.workspace.getMyCalendars(me)
+      await this.syncCalendars()
+      const calendars = this.workspace.getMyCalendars(this.user.userId)
       for (const calendar of calendars) {
         if (calendar.externalId !== undefined) {
-          void this.sync(calendar.externalId, me)
+          void this.sync(calendar.externalId)
         }
       }
     } catch (err) {
@@ -233,8 +228,7 @@ export class CalendarClient {
   }
 
   async startSyncCalendar (calendar: ExternalCalendar): Promise<void> {
-    const me = await this.getMe()
-    void this.sync(calendar.externalId, me)
+    void this.sync(calendar.externalId)
   }
 
   async close (): Promise<void> {
@@ -264,23 +258,26 @@ export class CalendarClient {
     this.isClosed = true
   }
 
-  private async getMe (): Promise<string> {
-    if (this.me !== undefined) {
-      return this.me
-    }
+  // TODO: Should not be needed anymore.
+  // this.user.userId should always be a google social id like "google:john.appleseed@gmail.com"
+  // and the value part should be the same as what is returned by getMe()
+  // private async getMe (): Promise<PersonId> {
+  //   if (this.me !== undefined) {
+  //     return this.me
+  //   }
 
-    const info = await google.oauth2({ version: 'v2', auth: this.oAuth2Client }).userinfo.get()
-    this.me = info.data.email ?? ''
-    return this.me
-  }
+  //   const info = await google.oauth2({ version: 'v2', auth: this.oAuth2Client }).userinfo.get()
+  //   const email = info.data.email ?? ''
+  //   this.me = email !== '' ? buildSocialIdString({ type: SocialIdType.GOOGLE, value: email }) : ''
+  //   return this.me
+  // }
 
   // #region Token
 
   private async getCurrentToken (): Promise<Token | null> {
     return await this.tokens.findOne({
       userId: this.user.userId,
-      workspace: this.user.workspace,
-      email: this.me ?? this.user.email
+      workspace: this.user.workspace
     })
   }
 
@@ -288,8 +285,7 @@ export class CalendarClient {
     await this.tokens.updateOne(
       {
         userId: this.user.userId,
-        workspace: this.user.workspace,
-        email: this.me ?? this.user.email
+        workspace: this.user.workspace
       },
       {
         $set: {
@@ -301,9 +297,8 @@ export class CalendarClient {
 
   private async addClient (): Promise<void> {
     try {
-      const me = await this.getMe()
       const controller = CalendarController.getCalendarController()
-      controller.addClient(me, this)
+      controller.addClient(this.user.userId, this)
     } catch (err) {
       console.log('Add client error', this.user.workspace, this.user.userId, err)
     }
@@ -327,7 +322,6 @@ export class CalendarClient {
       } else {
         await this.tokens.insertOne({
           userId: this.user.userId,
-          email: this.me ?? this.user.email,
           workspace: this.user.workspace,
           token: this.user.token,
           ...token
@@ -377,8 +371,8 @@ export class CalendarClient {
         await this.calendar.channels.stop({ requestBody: { id: current.channelId, resourceId: current.resourceId } })
       }
       const channelId = generateId()
-      const me = await this.getMe()
-      const body = { id: channelId, address: config.WATCH_URL, type: 'webhook', token: `user=${me}&mode=calendar` }
+      const email = this.getEmail()
+      const body = { id: channelId, address: config.WATCH_URL, type: 'webhook', token: `user=${email}&mode=calendar` }
       await this.rateLimiter.take(1)
       const res = await this.calendar.calendarList.watch({ requestBody: body })
       if (res.data.expiration != null && res.data.resourceId !== null) {
@@ -396,10 +390,14 @@ export class CalendarClient {
     }
   }
 
-  async syncCalendars (me: string): Promise<void> {
-    const history = await this.getCalendarHistory(me)
+  async syncCalendars (): Promise<void> {
+    const history = await this.getCalendarHistory()
     await this.calendarSync(history?.historyId)
     await this.watchCalendar()
+  }
+
+  private getEmail (): string {
+    return parseSocialIdString(this.user.userId).value
   }
 
   private async calendarSync (syncToken?: string, pageToken?: string): Promise<void> {
@@ -438,9 +436,10 @@ export class CalendarClient {
 
   private async syncCalendar (val: calendar_v3.Schema$CalendarListEntry): Promise<void> {
     if (val.id != null) {
+      const email = this.getEmail()
       const exists = await this.client.findOne(calendar.class.ExternalCalendar, {
         externalId: val.id,
-        externalUser: this.me ?? ''
+        externalUser: email
       })
       if (exists === undefined) {
         const data: Data<ExternalCalendar> = {
@@ -448,7 +447,7 @@ export class CalendarClient {
           visibility: 'freeBusy',
           hidden: false,
           externalId: val.id,
-          externalUser: this.me ?? '',
+          externalUser: email,
           default: false
         }
         if (val.primary === true) {
@@ -476,21 +475,18 @@ export class CalendarClient {
     }
   }
 
-  private async getCalendarHistory (me: string): Promise<CalendarHistory | null> {
+  private async getCalendarHistory (): Promise<CalendarHistory | null> {
     return await this.calendarHistories.findOne({
-      email: me,
       userId: this.user.userId,
       workspace: this.user.workspace
     })
   }
 
   private async setCalendarHistoryId (historyId: string): Promise<void> {
-    const me = await this.getMe()
     await this.calendarHistories.updateOne(
       {
         userId: this.user.userId,
-        workspace: this.user.workspace,
-        email: me
+        workspace: this.user.workspace
       },
       {
         $set: {
@@ -540,12 +536,12 @@ export class CalendarClient {
         this.watches.splice(index, 1)
       }
       const channelId = generateId()
-      const me = await this.getMe()
+      const email = this.getEmail()
       const body = {
         id: channelId,
         address: config.WATCH_URL,
         type: 'webhook',
-        token: `user=${me}&mode=events&calendarId=${calendarId}`
+        token: `user=${email}&mode=events&calendarId=${calendarId}`
       }
       await this.rateLimiter.take(1)
       const res = await this.calendar.events.watch({ calendarId, requestBody: body })
@@ -579,10 +575,9 @@ export class CalendarClient {
   }
 
   private async dummyWatch (calendarId: string): Promise<void> {
-    const me = await this.getMe()
     const timer = setTimeout(
       () => {
-        void this.sync(calendarId, me)
+        void this.sync(calendarId)
       },
       6 * 60 * 60 * 1000
     )
@@ -594,32 +589,29 @@ export class CalendarClient {
     })
   }
 
-  async sync (calendarId: string, me: string): Promise<void> {
+  async sync (calendarId: string): Promise<void> {
     if (this.isClosed) return
     if (this.activeSync[calendarId]) return
     this.activeSync[calendarId] = true
-    await this.syncEvents(calendarId, me)
+    await this.syncEvents(calendarId)
     this.activeSync[calendarId] = false
     await this.watch(calendarId)
   }
 
-  private async getEventHistory (calendarId: string, me: string): Promise<EventHistory | null> {
+  private async getEventHistory (calendarId: string): Promise<EventHistory | null> {
     return await this.histories.findOne({
       calendarId,
-      email: me,
       userId: this.user.userId,
       workspace: this.user.workspace
     })
   }
 
   private async setEventHistoryId (calendarId: string, historyId: string): Promise<void> {
-    const me = await this.getMe()
     await this.histories.updateOne(
       {
         calendarId,
         userId: this.user.userId,
-        workspace: this.user.workspace,
-        email: me
+        workspace: this.user.workspace
       },
       {
         $set: {
@@ -630,8 +622,8 @@ export class CalendarClient {
     )
   }
 
-  private async syncEvents (calendarId: string, me: string): Promise<void> {
-    const history = await this.getEventHistory(calendarId, me)
+  private async syncEvents (calendarId: string): Promise<void> {
+    const history = await this.getEventHistory(calendarId)
     await this.eventsSync(calendarId, history?.historyId)
   }
 
@@ -673,15 +665,12 @@ export class CalendarClient {
   }
 
   private async syncEvent (calendarId: string, event: calendar_v3.Schema$Event, accessRole: string): Promise<void> {
-    console.log('SYNC EVENT CALL', calendarId, JSON.stringify(event))
     if (event.id != null) {
-      const me = await this.getMe()
-      const calendars = this.workspace.getMyCalendars(me)
+      const calendars = this.workspace.getMyCalendars(this.user.userId)
       const _calendar =
         calendars.find((p) => p.externalId === event.organizer?.email) ??
         calendars.find((p) => p.externalId === calendarId) ??
         calendars[0]
-      console.log('Target space', _calendar)
       if (_calendar !== undefined) {
         const exists = (await this.client.findOne(calendar.class.Event, {
           eventId: event.id,
@@ -697,9 +686,7 @@ export class CalendarClient {
   }
 
   private async updateExtEvent (event: calendar_v3.Schema$Event, current: Event): Promise<void> {
-    console.log('UPDATE EVENT', current._id, JSON.stringify(event))
     if (event.status === 'cancelled' && current._class !== calendar.class.ReccuringInstance) {
-      console.log('REMOVE EVENT', current._id)
       await this.client.remove(current)
       return
     }
@@ -715,7 +702,6 @@ export class CalendarClient {
         current as ReccuringInstance
       )
       if (Object.keys(diff).length > 0) {
-        console.log('UPDATE REC INSTANCE DIFF', JSON.stringify(diff), JSON.stringify(current))
         await this.client.update(current, diff)
       }
     } else {
@@ -731,13 +717,11 @@ export class CalendarClient {
           current as ReccuringEvent
         )
         if (Object.keys(diff).length > 0) {
-          console.log('UPDATE REC EVENT DIFF', JSON.stringify(diff), JSON.stringify(current))
           await this.client.update(current, diff)
         }
       } else {
         const diff = this.getDiff(data, current)
         if (Object.keys(diff).length > 0) {
-          console.log('UPDATE EVENT DIFF', JSON.stringify(diff), JSON.stringify(current))
           await this.client.update(current, diff)
         }
       }
@@ -827,7 +811,6 @@ export class CalendarClient {
         }
       )
       await this.saveMixins(event, id)
-      console.log('SAVE INSTANCE', id, JSON.stringify(event))
     } else if (event.status !== 'cancelled') {
       if (event.recurrence != null) {
         const parseRule = parseRecurrenceStrings(event.recurrence)
@@ -847,7 +830,6 @@ export class CalendarClient {
           }
         )
         await this.saveMixins(event, id)
-        console.log('SAVE REC EVENT', id, JSON.stringify(event))
       } else {
         const id = await this.client.addCollection(
           calendar.class.Event,
@@ -858,7 +840,6 @@ export class CalendarClient {
           data
         )
         await this.saveMixins(event, id)
-        console.log('SAVE EVENT', id, JSON.stringify(event))
       }
     }
   }
@@ -1116,11 +1097,10 @@ export class CalendarClient {
   }
 
   async syncOurEvents (): Promise<void> {
-    const me = await this.getMe()
     const events = await this.client.findAll(calendar.class.Event, {
       access: 'owner',
       createdBy: this.user.userId,
-      calendar: { $in: this.workspace.getMyCalendars(me).map((p) => p._id) }
+      calendar: { $in: this.workspace.getMyCalendars(this.user.userId).map((p) => p._id) }
     })
     for (const event of events) {
       await this.syncMyEvent(event)
@@ -1132,7 +1112,8 @@ export class CalendarClient {
     if (event.access === 'owner' || event.access === 'writer') {
       try {
         const space = this.workspace.calendars.byId.get(event.calendar as Ref<ExternalCalendar>)
-        if (space !== undefined && space.externalUser === this.me) {
+        const email = this.getEmail()
+        if (space !== undefined && space.externalUser === email) {
           if (!(await this.update(event, space))) {
             await this.create(event, space)
           }
@@ -1241,8 +1222,9 @@ export class CalendarClient {
     }
     const attendees = this.getAttendees(event)
     if (attendees.length > 0) {
+      const email = this.getEmail()
       res.attendees = attendees.map((p) => {
-        if (p === this.me) {
+        if (p === email) {
           return { email: p, responseStatus: 'accepted', self: true }
         }
         return { email: p }
@@ -1305,9 +1287,10 @@ export class CalendarClient {
 
   private getAttendees (event: Event): string[] {
     const res = new Set<string>()
+    const email = this.getEmail()
     for (const participant of event.participants) {
       const integrations = this.workspace.integrations.byContact.get(participant) ?? []
-      const integration = integrations.find((p) => p === this.me) ?? integrations[0]
+      const integration = integrations.find((p) => p === email) ?? integrations[0]
       if (integration !== undefined && integration !== '') {
         res.add(integration)
       } else {

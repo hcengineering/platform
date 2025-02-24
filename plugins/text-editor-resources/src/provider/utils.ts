@@ -13,13 +13,8 @@
 // limitations under the License.
 //
 
-import { type Ref, type CollaborativeDoc, type Doc, type Class, generateId } from '@hcengineering/core'
-import {
-  type DocumentId,
-  type PlatformDocumentId,
-  formatDocumentId,
-  formatPlatformDocumentId as origFormatPlatformDocumentId
-} from '@hcengineering/collaborator-client'
+import { type Blob, type CollaborativeDoc, type Ref, generateId } from '@hcengineering/core'
+import { encodeDocumentId } from '@hcengineering/collaborator-client'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import textEditor from '@hcengineering/text-editor'
@@ -30,54 +25,30 @@ import { HocuspocusCollabProvider } from './hocuspocus'
 import { IndexeddbProvider } from './indexeddb'
 import { type Provider } from './types'
 
-export function formatCollaborativeDocumentId (collaborativeDoc: CollaborativeDoc): DocumentId {
-  const workspace = getMetadata(presentation.metadata.WorkspaceId) ?? ''
-  return formatDocumentId(workspace, collaborativeDoc)
+function getDocumentId (doc: CollaborativeDoc): string {
+  const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
+  return encodeDocumentId(workspace, doc)
 }
 
-export function formatPlatformDocumentId (
-  objectClass: Ref<Class<Doc>>,
-  objectId: Ref<Doc>,
-  objectAttr: string
-): PlatformDocumentId {
-  return origFormatPlatformDocumentId(objectClass, objectId, objectAttr)
-}
-
-export function createLocalProvider (ydoc: Ydoc, document: CollaborativeDoc): Provider {
-  const documentId = formatCollaborativeDocumentId(document)
+export function createLocalProvider (ydoc: Ydoc, doc: CollaborativeDoc): Provider {
+  const documentId = getDocumentId(doc)
   return new IndexeddbProvider(documentId, ydoc)
 }
 
-export function createRemoteProvider (
-  ydoc: Ydoc,
-  params: {
-    document: CollaborativeDoc
-    initialDocument?: CollaborativeDoc
-    objectClass?: Ref<Class<Doc>>
-    objectId?: Ref<Doc>
-    objectAttr?: string
-  }
-): Provider {
+export function createRemoteProvider (ydoc: Ydoc, doc: CollaborativeDoc, content: Ref<Blob> | null): Provider {
   const collaborator = getMetadata(textEditor.metadata.Collaborator)
 
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorUrl = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 
-  const documentId = formatCollaborativeDocumentId(params.document)
-  const initialContentId =
-    params.initialDocument !== undefined ? formatCollaborativeDocumentId(params.initialDocument) : undefined
-
-  const { objectClass, objectId, objectAttr } = params
-  const platformDocumentId =
-    objectClass !== undefined && objectId !== undefined && objectAttr !== undefined
-      ? formatPlatformDocumentId(objectClass, objectId, objectAttr)
-      : undefined
+  const documentId = getDocumentId(doc)
 
   return collaborator === 'cloud'
     ? new CloudCollabProvider({
       url: collaboratorUrl,
       name: documentId,
       document: ydoc,
+      content,
       token
     })
     : new HocuspocusCollabProvider({
@@ -85,23 +56,17 @@ export function createRemoteProvider (
       name: documentId,
       document: ydoc,
       token,
-      parameters: {
-        initialContentId,
-        platformDocumentId
-      }
+      parameters: { content }
     })
 }
 
-export const createTiptapCollaborationData = (params: {
-  document: CollaborativeDoc
-  initialDocument?: CollaborativeDoc
-  objectClass?: Ref<Class<Doc>>
-  objectId?: Ref<Doc>
-  objectAttr?: string
-}): { provider: Provider, ydoc: Ydoc } => {
+export const createTiptapCollaborationData = (
+  doc: CollaborativeDoc,
+  content: Ref<Blob> | null
+): { provider: Provider, ydoc: Ydoc } => {
   const ydoc: Ydoc = new Ydoc({ guid: generateId() })
   return {
     ydoc,
-    provider: createRemoteProvider(ydoc, params)
+    provider: createRemoteProvider(ydoc, doc, content)
   }
 }

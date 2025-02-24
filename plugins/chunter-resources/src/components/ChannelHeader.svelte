@@ -20,7 +20,6 @@
   import { ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
   import contact from '@hcengineering/contact'
   import view from '@hcengineering/view'
-
   import Header from './Header.svelte'
   import chunter from '../plugin'
   import { getObjectIcon, getChannelName } from '../utils'
@@ -33,6 +32,7 @@
   export let canOpen: boolean = false
   export let withAside: boolean = false
   export let withSearch: boolean = true
+  export let withPresence: boolean = true
   export let isAsideShown: boolean = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let canOpenInSidebar: boolean = false
@@ -43,6 +43,7 @@
 
   let title: string | undefined = undefined
   let description: string | undefined = undefined
+  let realWidth: number
 
   $: void updateDescription(_id, _class, object)
 
@@ -80,12 +81,21 @@
   {withAside}
   {isAsideShown}
   {withSearch}
+  {withPresence}
   {canOpenInSidebar}
   {closeOnEscape}
+  bind:realWidth
   on:aside-toggled
   on:close
 >
   {#if object}
-    <PinnedMessages {_id} {_class} space={object.space} withRefs={(object.references ?? 0) > 0} on:select />
+    <PinnedMessages
+      {_id}
+      {_class}
+      space={object.space}
+      withRefs={(object.references ?? 0) > 0}
+      iconOnly={realWidth < 380}
+      on:select
+    />
   {/if}
 </Header>

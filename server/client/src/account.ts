@@ -12,88 +12,59 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import { type BaseWorkspaceInfo, type Data, type Version, BackupStatus } from '@hcengineering/core'
-import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
+import { getMetadata } from '@hcengineering/platform'
 
 import plugin from './plugin'
 
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
-  workspaceId: string
+  endpoint: string
 }
 export interface LoginInfo {
+  account: string
   token: string
-  endpoint: string
-  confirmed: boolean
-  email: string
 }
 
-export async function listAccountWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const workspaces = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'listWorkspaces',
-        params: [token]
-      })
-    })
-  ).json()
+const connectionErrorCodes = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND']
 
-  return (workspaces.result as BaseWorkspaceInfo[]) ?? []
+export function getAccountClient (token?: string): AccountClient {
+  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
+
+  return getAccountClientRaw(accountsUrl, token)
 }
 
-export async function updateBackupInfo (token: string, info: BackupStatus): Promise<BaseWorkspaceInfo[]> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const workspaces = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'updateBackupInfo',
-        params: [token, info]
-      })
-    })
-  ).json()
+const externalRegions = process.env.EXTERNAL_REGIONS?.split(';') ?? []
 
-  return (workspaces.result as BaseWorkspaceInfo[]) ?? []
-}
-
+/**
+ * Retrieves the transactor endpoint for a given token and kind.
+ *
+ * @param token - The authorization token.
+ * @param kind - The type of endpoint to retrieve. Can be 'internal', 'external', or 'byregion'. Defaults to 'byregion'.
+ * @param timeout - The timeout duration in milliseconds. Defaults to -1 (no timeout).
+ * @returns A promise that resolves to the transactor endpoint URL as a string.
+ * @throws Will throw an error if the request fails or if the timeout is reached.
+ */
 export async function getTransactorEndpoint (
   token: string,
-  kind: 'internal' | 'external' = 'internal',
+  kind: 'internal' | 'external' | 'byregion' = 'byregion',
   timeout: number = -1
 ): Promise<string> {
-  const accountsUrl = getAccoutsUrlOrFail()
+  const accountClient = getAccountClient(token)
   const st = Date.now()
   while (true) {
     try {
-      const workspaceInfo: { result: BaseWorkspaceInfo } = await (
-        await fetch(accountsUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + token
-          },
-          body: JSON.stringify({
-            method: 'selectWorkspace',
-            params: ['', kind]
-          })
-        })
-      ).json()
-      return workspaceInfo.result.endpoint
+      const workspaceInfo = await accountClient.selectWorkspace('', kind, externalRegions)
+      if (workspaceInfo === undefined) {
+        throw new Error('Workspace not found')
+      }
+      return workspaceInfo.endpoint
     } catch (err: any) {
       if (timeout > 0 && st + timeout < Date.now()) {
         // Timeout happened
         throw err
       }
-      if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
+      if (connectionErrorCodes.includes(err?.cause?.code)) {
         await new Promise<void>((resolve) => setTimeout(resolve, 1000))
       } else {
         throw err
@@ -129,8 +100,7 @@ export function withRetryConnUntilTimeout<P extends any[], T> (
   timeoutMs: number = 5000
 ): (...params: P) => Promise<T> {
   const timeout = Date.now() + timeoutMs
-  const shouldFail = (err: any): boolean =>
-    (err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED') || timeout < Date.now()
+  const shouldFail = (err: any): boolean => !connectionErrorCodes.includes(err?.cause?.code) || timeout < Date.now()
 
   return withRetry(f, shouldFail)
 }
@@ -138,153 +108,15 @@ export function withRetryConnUntilTimeout<P extends any[], T> (
 export function withRetryConnUntilSuccess<P extends any[], T> (
   f: (...params: P) => Promise<T>
 ): (...params: P) => Promise<T> {
-  const shouldFail = (err: any): boolean => err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED'
+  const shouldFail = (err: any): boolean => {
+    const res = !connectionErrorCodes.includes(err?.cause?.code)
+
+    if (res) {
+      console.error('Failing withRetryConnUntilSuccess with error cause:', err?.cause)
+    }
+
+    return res
+  }
 
   return withRetry(f, shouldFail)
-}
-
-export async function getPendingWorkspace (
-  token: string,
-  region: string,
-  version: Data<Version>,
-  operation: 'create' | 'upgrade' | 'all'
-): Promise<BaseWorkspaceInfo | undefined> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const workspaces = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'getPendingWorkspace',
-        params: [token, region, version, operation]
-      })
-    })
-  ).json()
-
-  return workspaces.result as BaseWorkspaceInfo
-}
-
-export async function updateWorkspaceInfo (
-  token: string,
-  workspaceId: string,
-  event: 'ping' | 'create-started' | 'upgrade-started' | 'progress' | 'create-done' | 'upgrade-done',
-  version: Data<Version>,
-  progress: number,
-  message?: string
-): Promise<void> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'updateWorkspaceInfo',
-        params: [token, workspaceId, event, version, progress, message]
-      })
-    })
-  ).json()
-}
-
-export async function workerHandshake (
-  token: string,
-  region: string,
-  version: Data<Version>,
-  operation: 'create' | 'upgrade' | 'all'
-): Promise<void> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      method: 'workerHandshake',
-      params: [token, region, version, operation]
-    })
-  })
-}
-
-export async function getWorkspaceInfo (
-  token: string,
-  updateLastAccess = false
-): Promise<BaseWorkspaceInfo | undefined> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const workspaceInfo = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'getWorkspaceInfo',
-        params: updateLastAccess ? [true] : []
-      })
-    })
-  ).json()
-
-  return workspaceInfo.result as BaseWorkspaceInfo | undefined
-}
-
-export async function login (user: string, password: string, workspace: string): Promise<string> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const response = await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      method: 'login',
-      params: [user, password, workspace]
-    })
-  })
-
-  const result = await response.json()
-  return result.result?.token
-}
-
-export async function getUserWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const response = await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + token,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      method: 'getUserWorkspaces',
-      params: []
-    })
-  })
-  const result = await response.json()
-  return (result.result as BaseWorkspaceInfo[]) ?? []
-}
-
-export async function selectWorkspace (token: string, workspace: string): Promise<WorkspaceLoginInfo> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  const response = await fetch(accountsUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token
-    },
-    body: JSON.stringify({
-      method: 'selectWorkspace',
-      params: [workspace, 'external']
-    })
-  })
-  const result = await response.json()
-  return result.result as WorkspaceLoginInfo
-}
-
-function getAccoutsUrlOrFail (): string {
-  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
-  if (accountsUrl == null) {
-    throw new PlatformError(unknownError('No account endpoint specified'))
-  }
-  return accountsUrl
 }

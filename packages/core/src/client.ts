@@ -13,19 +13,17 @@
 // limitations under the License.
 //
 
-import { Plugin } from '@hcengineering/platform'
+import { Analytics } from '@hcengineering/analytics'
 import { BackupClient, DocChunk } from './backup'
-import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref, Timestamp } from './classes'
+import { Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
-import { SearchOptions, SearchQuery, SearchResult, SortingOrder } from './storage'
-import { Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
-import { toFindResult, toIdMap } from './utils'
-
-const transactionThreshold = 500
+import { SearchOptions, SearchQuery, SearchResult } from './storage'
+import { Tx, TxCUD, WorkspaceEvent, type TxWorkspaceEvent } from './tx'
+import { platformNow, platformNowDiff, toFindResult } from './utils'
 
 /**
  * @public
@@ -45,13 +43,6 @@ export interface Client extends Storage, FulltextStorage {
     options?: FindOptions<T>
   ) => Promise<WithLookup<T> | undefined>
   close: () => Promise<void>
-}
-
-/**
- * @public
- */
-export interface AccountClient extends Client {
-  getAccount: () => Promise<Account>
 }
 
 /**
@@ -85,14 +76,15 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   isConnected: () => boolean
 
   close: () => Promise<void>
-  onConnect?: (event: ClientConnectEvent) => Promise<void>
+  onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
 
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
-  getAccount: () => Promise<Account>
+
+  getLastHash?: (ctx: MeasureContext) => Promise<string | undefined>
 }
 
-class ClientImpl implements AccountClient, BackupClient {
+class ClientImpl implements Client, BackupClient {
   notify?: (...tx: Tx[]) => void
   hierarchy!: Hierarchy
   model!: ModelDb
@@ -178,8 +170,12 @@ class ClientImpl implements AccountClient, BackupClient {
     await this.conn.close()
   }
 
-  async loadChunk (domain: Domain, idx?: number, recheck?: boolean): Promise<DocChunk> {
-    return await this.conn.loadChunk(domain, idx, recheck)
+  async loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    return await this.conn.loadChunk(domain, idx)
+  }
+
+  async getDomainHash (domain: Domain): Promise<string> {
+    return await this.conn.getDomainHash(domain)
   }
 
   async closeChunk (idx: number): Promise<void> {
@@ -198,10 +194,6 @@ class ClientImpl implements AccountClient, BackupClient {
     await this.conn.clean(domain, docs)
   }
 
-  async getAccount (): Promise<Account> {
-    return await this.conn.getAccount()
-  }
-
   async sendForceClose (): Promise<void> {
     await this.conn.sendForceClose()
   }
@@ -215,16 +207,18 @@ export interface TxPersistenceStore {
   store: (model: LoadModelResponse) => Promise<void>
 }
 
+export type ModelFilter = (tx: Tx[]) => Tx[]
+
 /**
  * @public
  */
 export async function createClient (
   connect: (txHandler: TxHandler) => Promise<ClientConnection>,
   // If set will build model with only allowed plugins.
-  allowedPlugins?: Plugin[],
+  modelFilter?: ModelFilter,
   txPersistence?: TxPersistenceStore,
   _ctx?: MeasureContext
-): Promise<AccountClient> {
+): Promise<Client> {
   const ctx = _ctx ?? new MeasureMetricsContext('createClient', {})
   let client: ClientImpl | null = null
 
@@ -234,7 +228,7 @@ export async function createClient (
   let hierarchy = new Hierarchy()
   let model = new ModelDb(hierarchy)
 
-  let lastTx: number
+  let lastTx: string | undefined
 
   function txHandler (...tx: Tx[]): void {
     if (tx == null || tx.length === 0) {
@@ -246,17 +240,29 @@ export async function createClient (
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       client.updateFromRemote(...tx)
     }
-    lastTx = tx.reduce((cur, it) => (it.modifiedOn > cur ? it.modifiedOn : cur), 0)
+    for (const t of tx) {
+      if (t._class === core.class.TxWorkspaceEvent && (t as TxWorkspaceEvent).event === WorkspaceEvent.LastTx) {
+        lastTx = (t as TxWorkspaceEvent).params.lastTx
+      }
+    }
   }
-  const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
+  const conn = await ctx.with('connect', {}, () => connect(txHandler))
 
-  const conn = await ctx.with('connect', {}, async () => await connect(txHandler))
-
-  await ctx.with(
-    'load-model',
-    { reload: false },
-    async (ctx) => await loadModel(ctx, conn, allowedPlugins, configs, hierarchy, model, false, txPersistence)
-  )
+  let { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
+  switch (mode) {
+    case 'same':
+    case 'upgrade':
+      ctx.withSync('build-model', {}, (ctx) => {
+        buildModel(ctx, current, modelFilter, hierarchy, model)
+      })
+      break
+    case 'addition':
+      ctx.withSync('build-model', {}, (ctx) => {
+        buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
+      })
+  }
+  current = []
+  addition = []
 
   txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model)
 
@@ -266,120 +272,64 @@ export async function createClient (
   txHandler(...txBuffer)
   txBuffer = undefined
 
-  const oldOnConnect: ((event: ClientConnectEvent) => Promise<void>) | undefined = conn.onConnect
-  conn.onConnect = async (event) => {
+  const oldOnConnect:
+  | ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>)
+  | undefined = conn.onConnect
+  conn.onConnect = async (event, _lastTx, data) => {
     console.log('Client: onConnect', event)
     if (event === ClientConnectEvent.Maintenance) {
-      await oldOnConnect?.(ClientConnectEvent.Maintenance)
+      lastTx = _lastTx
+      await oldOnConnect?.(ClientConnectEvent.Maintenance, _lastTx, data)
       return
     }
     // Find all new transactions and apply
-    const loadModelResponse = await ctx.with(
-      'connect',
-      { reload: true },
-      async (ctx) => await loadModel(ctx, conn, allowedPlugins, configs, hierarchy, model, true, txPersistence)
-    )
+    let { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
 
-    if (event === ClientConnectEvent.Reconnected && loadModelResponse.full) {
-      // We have upgrade procedure and need rebuild all stuff.
-      hierarchy = new Hierarchy()
-      model = new ModelDb(hierarchy)
+    switch (mode) {
+      case 'upgrade':
+        // We have upgrade procedure and need rebuild all stuff.
+        hierarchy = new Hierarchy()
+        model = new ModelDb(hierarchy)
+        ;(client as ClientImpl).setModel(hierarchy, model)
 
-      await ctx.with('build-model', {}, async (ctx) => {
-        await buildModel(ctx, loadModelResponse, allowedPlugins, configs, hierarchy, model)
-      })
-      await oldOnConnect?.(ClientConnectEvent.Upgraded)
-
-      // No need to fetch more stuff since upgrade was happened.
-      return
-    }
-
-    if (event === ClientConnectEvent.Connected) {
-      // No need to do anything here since we connected.
-      await oldOnConnect?.(event)
-      return
-    }
-
-    // We need to look for last {transactionThreshold} transactions and if it is more since lastTx one we receive, we need to perform full refresh.
-    const atxes = await ctx.with(
-      'find-atx',
-      {},
-      async () =>
-        await conn.findAll(
-          core.class.Tx,
-          { modifiedOn: { $gt: lastTx }, objectSpace: { $ne: core.space.Model } },
-          { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
-        )
-    )
-
-    let needFullRefresh = false
-    // if we have attachment document create/delete we need to full refresh, since some derived data could be missing
-    for (const tx of atxes) {
-      if (
-        tx._class === core.class.TxCollectionCUD &&
-        ((tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc ||
-          (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxRemoveDoc)
-      ) {
-        needFullRefresh = true
+        ctx.withSync('build-model', {}, (ctx) => {
+          buildModel(ctx, current, modelFilter, hierarchy, model)
+        })
+        current = []
+        await oldOnConnect?.(ClientConnectEvent.Upgraded, _lastTx, data)
+        // No need to fetch more stuff since upgrade was happened.
         break
-      }
+      case 'addition':
+        ctx.withSync('build-model', {}, (ctx) => {
+          buildModel(ctx, current.concat(addition), modelFilter, hierarchy, model)
+        })
+        break
+    }
+    current = []
+    addition = []
+
+    if (lastTx === undefined) {
+      // No need to do anything here since we connected.
+      await oldOnConnect?.(event, _lastTx, data)
+      lastTx = _lastTx
+      return
     }
 
-    if (atxes.length < transactionThreshold && !needFullRefresh) {
-      console.log('applying input transactions', atxes.length)
-      txHandler(...atxes)
-      await oldOnConnect?.(ClientConnectEvent.Reconnected)
-    } else {
-      // We need to trigger full refresh on queries, etc.
-      await oldOnConnect?.(ClientConnectEvent.Refresh)
+    if (lastTx === _lastTx) {
+      // Same lastTx, no need to refresh
+      await oldOnConnect?.(ClientConnectEvent.Reconnected, _lastTx, data)
+      return
     }
+    lastTx = _lastTx
+    // We need to trigger full refresh on queries, etc.
+    await oldOnConnect?.(ClientConnectEvent.Refresh, lastTx, data)
   }
 
   return client
 }
 
-async function tryLoadModel (
-  ctx: MeasureContext,
-  conn: ClientConnection,
-  reload: boolean,
-  persistence?: TxPersistenceStore
-): Promise<LoadModelResponse> {
-  const current = (await ctx.with('persistence-load', {}, () => persistence?.load())) ?? {
-    full: true,
-    transactions: [],
-    hash: ''
-  }
-
-  const lastTxTime = getLastTxTime(current.transactions)
-  const result = await ctx.with('connection-load-model', { hash: current.hash !== '' }, (ctx) =>
-    conn.loadModel(lastTxTime, current.hash)
-  )
-
-  if (Array.isArray(result)) {
-    // Fallback to old behavior, only for tests
-    return {
-      full: true,
-      transactions: result,
-      hash: ''
-    }
-  }
-
-  // Save concatenated
-  void (await ctx.with('persistence-store', {}, (ctx) =>
-    persistence?.store({
-      ...result,
-      transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
-    })
-  ))
-
-  if (!result.full && !reload) {
-    result.transactions = current.transactions.concat(result.transactions)
-  }
-
-  return result
-}
-
 // Ignore Employee accounts.
+// We may still have them in transactions in old workspaces even with global accounts.
 function isPersonAccount (tx: Tx): boolean {
   return (
     (tx._class === core.class.TxCreateDoc ||
@@ -393,49 +343,69 @@ function isPersonAccount (tx: Tx): boolean {
 async function loadModel (
   ctx: MeasureContext,
   conn: ClientConnection,
-  allowedPlugins: Plugin[] | undefined,
-  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
-  hierarchy: Hierarchy,
-  model: ModelDb,
-  reload = false,
   persistence?: TxPersistenceStore
-): Promise<LoadModelResponse> {
-  const t = Date.now()
+): Promise<{ mode: 'same' | 'addition' | 'upgrade', current: Tx[], addition: Tx[] }> {
+  const t = platformNow()
 
-  const modelResponse = await ctx.with('try-load-model', { reload }, (ctx) =>
-    tryLoadModel(ctx, conn, reload, persistence)
+  const current = (await ctx.with('persistence-load', {}, () => persistence?.load())) ?? {
+    full: true,
+    transactions: [],
+    hash: ''
+  }
+
+  if (conn.getLastHash !== undefined && (await conn.getLastHash(ctx)) === current.hash) {
+    // We have same model hash.
+    return { mode: 'same', current: current.transactions, addition: [] }
+  }
+  const lastTxTime = getLastTxTime(current.transactions)
+  const result = await ctx.with('connection-load-model', { hash: current.hash !== '' }, (ctx) =>
+    conn.loadModel(lastTxTime, current.hash)
   )
 
-  if (reload && modelResponse.full) {
-    return modelResponse
+  if (Array.isArray(result)) {
+    // Fallback to old behavior, only for tests
+    return {
+      mode: 'same',
+      current: result,
+      addition: []
+    }
   }
+
+  // Save concatenated, if have some more of them.
+  void ctx
+    .with('persistence-store', {}, (ctx) =>
+      persistence?.store({
+        ...result,
+        // Store concatinated old + new txes
+        transactions: result.full ? result.transactions : current.transactions.concat(result.transactions)
+      })
+    )
+    .catch((err) => {
+      Analytics.handleError(err)
+    })
 
   if (typeof window !== 'undefined') {
-    console.log(
-      'find' + (modelResponse.full ? 'full model' : 'model diff'),
-      modelResponse.transactions.length,
-      Date.now() - t
-    )
+    console.log('find' + (result.full ? 'full model' : 'model diff'), result.transactions.length, platformNowDiff(t))
   }
-
-  await ctx.with('build-model', {}, (ctx) => buildModel(ctx, modelResponse, allowedPlugins, configs, hierarchy, model))
-  return modelResponse
+  if (result.full) {
+    return { mode: 'upgrade', current: result.transactions, addition: [] }
+  }
+  return { mode: 'addition', current: current.transactions, addition: result.transactions }
 }
 
-async function buildModel (
+function buildModel (
   ctx: MeasureContext,
-  modelResponse: LoadModelResponse,
-  allowedPlugins: Plugin[] | undefined,
-  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
+  transactions: Tx[],
+  modelFilter: ModelFilter | undefined,
   hierarchy: Hierarchy,
   model: ModelDb
-): Promise<void> {
-  let systemTx: Tx[] = []
+): void {
+  const systemTx: Tx[] = []
   const userTx: Tx[] = []
 
-  const atxes = modelResponse.transactions
+  const atxes = transactions
 
-  await ctx.with('split txes', {}, async () => {
+  ctx.withSync('split txes', {}, () => {
     atxes.forEach((tx) =>
       ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
         ? systemTx
@@ -444,24 +414,14 @@ async function buildModel (
     )
   })
 
-  if (allowedPlugins != null) {
-    await ctx.with('fill config system', {}, async () => {
-      fillConfiguration(systemTx, configs)
-    })
-    await ctx.with('fill config user', {}, async () => {
-      fillConfiguration(userTx, configs)
-    })
-    const excludedPlugins = Array.from(configs.values()).filter(
-      (it) => !it.enabled || !allowedPlugins.includes(it.pluginId)
-    )
-    await ctx.with('filter txes', {}, async () => {
-      systemTx = pluginFilterTx(excludedPlugins, configs, systemTx)
-    })
+  userTx.sort(compareTxes)
+
+  let txes = systemTx.concat(userTx)
+  if (modelFilter !== undefined) {
+    txes = modelFilter(txes)
   }
 
-  const txes = systemTx.concat(userTx)
-
-  await ctx.with('build hierarchy', {}, async () => {
+  ctx.withSync('build hierarchy', {}, () => {
     for (const tx of txes) {
       try {
         hierarchy.tx(tx)
@@ -474,7 +434,7 @@ async function buildModel (
       }
     }
   })
-  await ctx.with('build model', {}, async (ctx) => {
+  ctx.withSync('build model', {}, (ctx) => {
     model.addTxes(ctx, txes, false)
   })
 }
@@ -489,59 +449,7 @@ function getLastTxTime (txes: Tx[]): number {
   return lastTxTime
 }
 
-function fillConfiguration (systemTx: Tx[], configs: Map<Ref<PluginConfiguration>, PluginConfiguration>): void {
-  for (const t of systemTx) {
-    if (t._class === core.class.TxCreateDoc) {
-      const ct = t as TxCreateDoc<Doc>
-      if (ct.objectClass === core.class.PluginConfiguration) {
-        configs.set(ct.objectId as Ref<PluginConfiguration>, TxProcessor.createDoc2Doc(ct) as PluginConfiguration)
-      }
-    } else if (t._class === core.class.TxUpdateDoc) {
-      const ut = t as TxUpdateDoc<Doc>
-      if (ut.objectClass === core.class.PluginConfiguration) {
-        const c = configs.get(ut.objectId as Ref<PluginConfiguration>)
-        if (c !== undefined) {
-          TxProcessor.updateDoc2Doc(c, ut)
-        }
-      }
-    }
-  }
-}
-
-function pluginFilterTx (
-  excludedPlugins: PluginConfiguration[],
-  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
-  systemTx: Tx[]
-): Tx[] {
-  const stx = toIdMap(systemTx)
-  const totalExcluded = new Set<Ref<Tx>>()
-  let msg = ''
-  for (const a of excludedPlugins) {
-    for (const c of configs.values()) {
-      if (a.pluginId === c.pluginId) {
-        for (const id of c.transactions) {
-          if (c.classFilter !== undefined) {
-            const filter = new Set(c.classFilter)
-            const tx = stx.get(id as Ref<Tx>)
-            if (
-              tx?._class === core.class.TxCreateDoc ||
-              tx?._class === core.class.TxUpdateDoc ||
-              tx?._class === core.class.TxRemoveDoc
-            ) {
-              const cud = tx as TxCUD<Doc>
-              if (filter.has(cud.objectClass)) {
-                totalExcluded.add(id as Ref<Tx>)
-              }
-            }
-          } else {
-            totalExcluded.add(id as Ref<Tx>)
-          }
-        }
-        msg += ` ${c.pluginId}:${c.transactions.length}`
-      }
-    }
-  }
-  console.log('exclude plugin', msg)
-  systemTx = systemTx.filter((t) => !totalExcluded.has(t._id))
-  return systemTx
+function compareTxes (a: Tx, b: Tx): number {
+  const result = a._id.localeCompare(b._id)
+  return result !== 0 ? result : a.modifiedOn - b.modifiedOn
 }

@@ -16,6 +16,7 @@
 
 import { type Builder, Mixin, Model } from '@hcengineering/model'
 
+import contact from '@hcengineering/contact'
 import core, { type Ref } from '@hcengineering/core'
 import { TClass, TDoc } from '@hcengineering/model-core'
 import { TNotificationType } from '@hcengineering/model-notification'
@@ -88,6 +89,27 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnDocRemove
+    trigger: serverNotification.trigger.OnDocRemove,
+    txMatch: {
+      _class: core.class.TxRemoveDoc
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverNotification.trigger.OnEmployeeDeactivate,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxMixin,
+      mixin: contact.mixin.Employee
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverNotification.trigger.PushNotificationsHandler,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: notification.class.InboxNotification
+    }
   })
 }

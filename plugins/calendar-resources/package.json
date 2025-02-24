@@ -45,7 +45,7 @@
     "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/theme": "^0.6.5",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
@@ -54,7 +54,7 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/workbench": "^0.6.16",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0"
   }

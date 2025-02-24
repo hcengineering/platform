@@ -13,19 +13,108 @@
 // limitations under the License.
 //
 
-import { calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import { type Ref, type Space } from '@hcengineering/core'
+import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
+import { type Doc, MeasureMetricsContext, type PersonId, type Ref, type Space } from '@hcengineering/core'
 import {
   createDefaultSpace,
+  type MigrateUpdate,
+  type MigrationDocumentQuery,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { DOMAIN_CALENDAR } from '.'
+import { DOMAIN_SPACE, getSocialIdByOldAccount } from '@hcengineering/model-core'
+import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
 import calendar from './plugin'
+
+function getCalendarId (socialString: PersonId): Ref<Calendar> {
+  return `${socialString}_calendar` as Ref<Calendar>
+}
+
+async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('calendar migrateAccountsToSocialIds', {})
+  const hierarchy = client.hierarchy
+  const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const eventClasses = hierarchy.getDescendants(calendar.class.Event)
+
+  const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, {
+    _class: calendar.class.Calendar
+  })
+
+  ctx.info('processing internal calendars')
+
+  for (const calendar of calendars) {
+    const id = calendar._id
+    if (!id.endsWith('_calendar')) {
+      ctx.warn('Wrong calendar id format', { calendar: calendar._id })
+      continue
+    }
+
+    const account = id.substring(0, id.length - 9)
+    const socialId = socialIdByAccount[account]
+    if (socialId === undefined) {
+      ctx.warn('no socialId for account', { account })
+      continue
+    }
+
+    await client.delete(DOMAIN_CALENDAR, calendar._id)
+    await client.create(DOMAIN_CALENDAR, {
+      ...calendar,
+      _id: getCalendarId(socialId)
+    })
+  }
+
+  let processedEvents = 0
+  const eventsIterator = await client.traverse<Event>(DOMAIN_EVENT, {
+    _class: { $in: eventClasses }
+  })
+
+  try {
+    while (true) {
+      const events = await eventsIterator.next(200)
+      if (events === null || events.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+      for (const event of events) {
+        const id = event.calendar
+        if (!id.endsWith('_calendar')) {
+          // Nothing to do, in external calendar
+          continue
+        }
+
+        const account = id.substring(0, id.length - 9)
+        const socialId = socialIdByAccount[account]
+        if (socialId === undefined) {
+          ctx.warn('no socialId for account', { account })
+          continue
+        }
+
+        operations.push({
+          filter: { _id: event._id },
+          update: {
+            calendar: getCalendarId(socialId)
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_EVENT, operations)
+      }
+
+      processedEvents += events.length
+      ctx.info('...processed events', { count: processedEvents })
+    }
+
+    ctx.info('finished processing events')
+  } finally {
+    await eventsIterator.close()
+  }
+}
 
 async function migrateCalendars (client: MigrationClient): Promise<void> {
   await client.move(
@@ -136,6 +225,20 @@ export const calendarOperation: MigrateOperation = {
       {
         state: 'migrate_calendars',
         func: migrateCalendars
+      },
+      {
+        state: 'move-events',
+        func: async (client) => {
+          await client.move(
+            DOMAIN_CALENDAR,
+            { _class: { $in: client.hierarchy.getDescendants(calendar.class.Event) } },
+            DOMAIN_EVENT
+          )
+        }
+      },
+      {
+        state: 'accounts-to-social-ids',
+        func: migrateAccountsToSocialIds
       }
     ])
   },

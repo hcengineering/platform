@@ -14,7 +14,7 @@
     "build": "compile",
     "build:watch": "compile",
     "_phase:bundle": "rushx bundle",
-    "bundle": "mkdir -p bundle && node esbuild.js",
+    "bundle": "node esbuild.js",
     "run-local": "cross-env SERVER_SECRET=secret MONGO_URL=mongodb://localhost:27017 COLLABORATOR_URL=ws://localhost:3078 STORAGE_CONFIG=minio|minio?accessKey=minioadmin&secretKey=minioadmin node --nolazy -r ts-node/register ./src/__start.ts",
     "run": "cross-env node -r ts-node/register --max-old-space-size=8000 ./src/__start.ts",
     "format": "format src",
@@ -33,7 +33,7 @@
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
     "ts-node": "^10.8.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "@types/minio": "~7.0.11",
     "@types/node": "~20.11.16",
     "@typescript-eslint/parser": "^6.11.0",
@@ -63,7 +63,7 @@
     "domhandler": "^5.0.3",
     "domutils": "^3.1.0",
     "htmlparser2": "^9.0.0",
-    "mammoth": "^1.6.0",
+    "mammoth": "^1.9.0",
     "docx4js": "^3.2.20",
     "zod": "^3.22.4"
   }

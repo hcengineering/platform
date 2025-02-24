@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
-  import { Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Channel, Person, combineName, getCurrentEmployee, getFirstName, getLastName } from '@hcengineering/contact'
+  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { EditBox, FocusHandler, Scroller, createFocusManager } from '@hcengineering/ui'
@@ -23,12 +23,28 @@
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
   import EditableAvatar from './EditableAvatar.svelte'
+  import Avatar from './Avatar.svelte'
+  import ChannelsDropdown from './ChannelsDropdown.svelte'
+  import { socialIdsByPersonRefStore } from '../utils'
 
   export let object: Person
   export let readonly: boolean = false
-  const client = getClient()
+  export let channels: Channel[] | undefined = undefined
 
-  const account = getCurrentAccount() as PersonAccount
+  const client = getClient()
+  const h = client.getHierarchy()
+
+  const account = getCurrentAccount()
+  const me = getCurrentEmployee()
+  $: owner = me === object._id
+  $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
+
+  function isEditable (owner: boolean, object: Person): boolean {
+    if (owner) return true
+    if (!h.hasMixin(object, contact.mixin.Employee)) return true
+    return hasAccountRole(account, AccountRole.Maintainer) && !h.as(object, contact.mixin.Employee).active
+  }
+  $: editable = !readonly && isEditable(owner, object)
 
   let avatarEditor: EditableAvatar
 
@@ -37,35 +53,35 @@
 
   $: setName(object)
 
-  function setName (object: Person) {
+  function setName (object: Person): void {
     firstName = getFirstName(object.name)
     lastName = getLastName(object.name)
   }
 
   const dispatch = createEventDispatcher()
 
-  function firstNameChange () {
-    client.update(object, {
+  async function firstNameChange (): Promise<void> {
+    await client.update(object, {
       name: combineName(firstName, getLastName(object.name))
     })
   }
 
-  function lastNameChange () {
-    client.update(object, {
+  async function lastNameChange (): Promise<void> {
+    await client.update(object, {
       name: combineName(getFirstName(object.name), lastName)
     })
   }
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { createdBy: account._id, disabled: false }, (res) => {
+  $: settingsQuery.query(setting.class.Integration, { createdBy: { $in: mySocialStrings }, disabled: false }, (res) => {
     integrations = new Set(res.map((p) => p.type))
   })
 
   const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)
 
-  async function onAvatarDone () {
+  async function onAvatarDone (): Promise<void> {
     if (object.avatar != null) {
       await avatarEditor.removeAvatar(object.avatar)
     }
@@ -82,21 +98,24 @@
   <div class="flex-row-stretch flex-grow">
     <div class="flex-no-shrink mr-8">
       {#key object}
-        <EditableAvatar
-          disabled={readonly}
-          person={object}
-          size={'x-large'}
-          name={object.name}
-          bind:this={avatarEditor}
-          on:done={onAvatarDone}
-        />
+        {#if editable}
+          <EditableAvatar
+            person={object}
+            size={'x-large'}
+            name={object.name}
+            bind:this={avatarEditor}
+            on:done={onAvatarDone}
+          />
+        {:else}
+          <Avatar person={object} size={'x-large'} name={object.name} />
+        {/if}
       {/key}
     </div>
     <div class="flex-grow flex-col">
       <div class="name">
         <EditBox
-          disabled={readonly}
           placeholder={contact.string.PersonFirstNamePlaceholder}
+          disabled={!editable}
           bind:value={firstName}
           on:change={firstNameChange}
           focusIndex={1}
@@ -104,7 +123,7 @@
       </div>
       <div class="name">
         <EditBox
-          disabled={readonly}
+          disabled={!editable}
           placeholder={contact.string.PersonLastNamePlaceholder}
           bind:value={lastName}
           on:change={lastNameChange}
@@ -112,14 +131,7 @@
         />
       </div>
       <div class="location">
-        <AttributeEditor
-          maxWidth="20rem"
-          _class={contact.class.Person}
-          {object}
-          editable={!readonly}
-          key="city"
-          focusIndex={3}
-        />
+        <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} {editable} key="city" focusIndex={3} />
       </div>
 
       <div class="separator" />
@@ -130,14 +142,25 @@
         stickedScrollBars
         thinScrollBars
       >
-        <ChannelsEditor
-          attachedTo={object._id}
-          attachedClass={object._class}
-          editable={!readonly}
-          bind:integrations
-          shape={'circle'}
-          focusIndex={10}
-        />
+        {#if channels === undefined}
+          <ChannelsEditor
+            attachedTo={object._id}
+            attachedClass={object._class}
+            {editable}
+            bind:integrations
+            shape={'circle'}
+            focusIndex={10}
+          />
+        {:else}
+          <ChannelsDropdown
+            value={channels}
+            editable={false}
+            kind={'link-bordered'}
+            size={'small'}
+            length={'full'}
+            shape={'circle'}
+          />
+        {/if}
       </Scroller>
     </div>
   </div>

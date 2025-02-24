@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
+import textEditor from '@hcengineering/text-editor'
+import { IconScribble } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { type Editor, type Range } from '@tiptap/core'
-import textEditor from '@hcengineering/text-editor'
 
-import { type CompletionOptions } from '../Completion'
-import MentionList from './MentionList.svelte'
-import { SvelteRenderer } from './node-view'
+import { type InlineCommandsOptions } from './extension/inlineCommands'
 import type { SuggestionKeyDownProps, SuggestionProps } from './extension/suggestion'
 import InlineCommandsList from './InlineCommandsList.svelte'
+import { SvelteRenderer } from './node-view'
 
 export const mInsertTable = [
   {
@@ -86,50 +86,15 @@ export const mInsertTable = [
   }
 ]
 
-/**
- * @public
- */
-export const completionConfig: Partial<CompletionOptions> = {
-  HTMLAttributes: {
-    class: 'reference'
-  },
-  suggestion: {
-    items: async () => {
-      return []
-    },
-    render: () => {
-      let component: any
-
-      return {
-        onStart: (props: SuggestionProps) => {
-          component = new SvelteRenderer(MentionList, {
-            element: document.body,
-            props: {
-              ...props,
-              close: () => {
-                component.destroy()
-              }
-            }
-          })
-        },
-        onUpdate (props: SuggestionProps) {
-          component.updateProps(props)
-        },
-        onKeyDown (props: SuggestionKeyDownProps) {
-          if (props.event.key === 'Escape') {
-            props.event.stopPropagation()
-          }
-          return component.onKeyDown(props)
-        },
-        onExit () {
-          component.destroy()
-        }
-      }
-    }
-  }
-}
-
-const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line', 'todo-list'] as const
+const inlineCommandsIds = [
+  'image',
+  'table',
+  'code-block',
+  'separator-line',
+  'todo-list',
+  'drawing-board',
+  'mermaid'
+] as const
 export type InlineCommandId = (typeof inlineCommandsIds)[number]
 
 /**
@@ -138,7 +103,7 @@ export type InlineCommandId = (typeof inlineCommandsIds)[number]
 export function inlineCommandsConfig (
   handleSelect: (id: string, pos: number, targetItem?: MouseEvent | HTMLElement) => Promise<void>,
   excludedCommands: InlineCommandId[] = []
-): Partial<CompletionOptions> {
+): Partial<InlineCommandsOptions> {
   return {
     suggestion: {
       items: () => {
@@ -147,7 +112,9 @@ export function inlineCommandsConfig (
           { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
           { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
           { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-          { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
+          { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList },
+          { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
+          { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
         ].filter(({ id }) => !excludedCommands.includes(id as InlineCommandId))
       },
       command: ({ editor, range, props }: { editor: Editor, range: Range, props: any }) => {
@@ -170,22 +137,22 @@ export function inlineCommandsConfig (
               props: {
                 ...props,
                 close: () => {
-                  component.destroy()
+                  component?.destroy()
                 }
               }
             })
           },
           onUpdate (props: SuggestionProps) {
-            component.updateProps(props)
+            component?.updateProps(props)
           },
           onKeyDown (props: SuggestionKeyDownProps) {
             if (props.event.key === 'Escape') {
               props.event.stopPropagation()
             }
-            return component.onKeyDown(props)
+            return component?.onKeyDown(props)
           },
           onExit () {
-            component.destroy()
+            component?.destroy()
           }
         }
       }

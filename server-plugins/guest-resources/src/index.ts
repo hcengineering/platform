@@ -22,11 +22,11 @@ import core, {
   TxCreateDoc,
   TxOperations,
   TxProcessor,
-  WorkspaceIdWithUrl,
+  WorkspaceIds,
   concatLink,
   generateId
 } from '@hcengineering/core'
-import guest, { PublicLink, guestAccountEmail, guestId } from '@hcengineering/guest'
+import guest, { PublicLink, guestAccount, guestId } from '@hcengineering/guest'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
@@ -35,41 +35,42 @@ import view from '@hcengineering/view'
 /**
  * @public
  */
-export async function OnPublicLinkCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
+export async function OnPublicLinkCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const createTx = tx as TxCreateDoc<PublicLink>
 
-  const extractedTx = TxProcessor.extractTx(tx)
+    const link = TxProcessor.createDoc2Doc<PublicLink>(createTx)
 
-  const createTx = extractedTx as TxCreateDoc<PublicLink>
+    if (link.url !== '') {
+      continue
+    }
 
-  const link = TxProcessor.createDoc2Doc<PublicLink>(createTx)
+    const resTx = control.txFactory.createTxUpdateDoc(link._class, link.space, link._id, {
+      url: generateUrl(link._id, control.workspace, control.branding?.front)
+    })
 
-  if (link.url !== '') return res
+    result.push(resTx)
+  }
 
-  const resTx = control.txFactory.createTxUpdateDoc(link._class, link.space, link._id, {
-    url: generateUrl(link._id, control.workspace, control.branding?.front)
-  })
-
-  res.push(resTx)
-
-  return res
+  return result
 }
 
-export function getPublicLinkUrl (workspace: WorkspaceIdWithUrl, brandedFront?: string): string {
+export function getPublicLinkUrl (workspace: WorkspaceIds, brandedFront?: string): string {
   const front = brandedFront ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${guestId}/${workspace.workspaceUrl}`
+  const path = `${guestId}/${workspace.url}`
   return concatLink(front, path)
 }
 
-function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceIdWithUrl, brandedFront?: string): string {
-  const token = generateToken(guestAccountEmail, workspace, { linkId, guest: 'true' })
+function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceIds, brandedFront?: string): string {
+  const token = generateToken(guestAccount, workspace.uuid, { linkId, guest: 'true' })
   return `${getPublicLinkUrl(workspace, brandedFront)}?token=${token}`
 }
 
 export async function getPublicLink (
   doc: Doc,
   client: TxOperations,
-  workspace: WorkspaceIdWithUrl,
+  workspace: WorkspaceIds,
   revokable: boolean = true,
   branding: Branding | null
 ): Promise<string> {

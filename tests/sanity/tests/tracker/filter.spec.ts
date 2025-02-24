@@ -236,8 +236,6 @@ test.describe('Tracker filters tests', () => {
   })
 
   test('Status filter', async () => {
-    await leftSideMenuPage.clickTracker()
-
     await issuesPage.linkSidebarAll().click()
     await issuesPage.clickModelSelectorAll()
 
@@ -392,7 +390,7 @@ test.describe('Tracker filters tests', () => {
   })
 
   test('Label filter', async () => {
-    const filterLabel = 'Filter Label'
+    const filterLabel = `Filter Label-${generateId(4)}`
     const labelIssue: NewIssue = {
       title: `Issue for the Label filter-${generateId()}`,
       description: 'Issue for the Label filter',
@@ -400,13 +398,12 @@ test.describe('Tracker filters tests', () => {
       createLabel: true
     }
 
-    await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(labelIssue)
 
     await test.step('Check Label filter for exist Label', async () => {
       await issuesPage.selectFilter('Labels', filterLabel)
-      await issuesPage.inputSearch().press('Escape')
+      await issuesPage.closePopup()
       await issuesPage.checkFilter('Labels', 'is', filterLabel)
       for await (const issue of iterateLocator(issuesPage.issuesList())) {
         await expect(issue.locator('div.compression-bar > div.label-box span.label')).toContainText(filterLabel)

@@ -1,15 +1,19 @@
 //
 
-import { AvatarType, type Contact, type Person, type PersonSpace } from '@hcengineering/contact'
+import { AvatarType, type Contact, type SocialIdentity } from '@hcengineering/contact'
 import {
+  type AccountRole,
+  buildSocialIdString,
   type Class,
   type Doc,
   type Domain,
+  DOMAIN_MODEL_TX,
   DOMAIN_TX,
   generateId,
+  MeasureMetricsContext,
   type Ref,
   type Space,
-  TxOperations
+  type TxCUD
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -23,42 +27,10 @@ import {
   tryUpgrade
 } from '@hcengineering/model'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import core, { getAccountsFromTxes, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
 
 import contact, { contactId, DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
-
-async function createEmployeeEmail (client: TxOperations): Promise<void> {
-  const employees = await client.findAll(contact.mixin.Employee, {})
-  const channels = (
-    await client.findAll(contact.class.Channel, {
-      attachedTo: { $in: employees.map((p) => p._id) }
-    })
-  ).filter((it) => it.provider === contact.channelProvider.Email)
-  const channelsMap = new Map(channels.map((p) => [p.attachedTo, p]))
-  for (const employee of employees) {
-    const acc = client.getModel().getAccountByPersonId(employee._id)
-    if (acc.length === 0) continue
-    const current = channelsMap.get(employee._id)
-    if (current === undefined) {
-      await client.addCollection(
-        contact.class.Channel,
-        contact.space.Contacts,
-        employee._id,
-        contact.mixin.Employee,
-        'channels',
-        {
-          provider: contact.channelProvider.Email,
-          value: acc[0].email.trim()
-        },
-        undefined,
-        employee.modifiedOn
-      )
-    } else if (current.value !== acc[0].email.trim()) {
-      await client.update(current, { value: acc[0].email.trim() }, false, current.modifiedOn)
-    }
-  }
-}
 
 const colorPrefix = 'color://'
 const gravatarPrefix = 'gravatar://'
@@ -113,47 +85,75 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
   )
 }
 
-async function createPersonSpaces (client: MigrationClient): Promise<void> {
-  const spaces = await client.find<PersonSpace>(DOMAIN_SPACE, { _class: contact.class.PersonSpace })
+async function getOldPersonAccounts (
+  client: MigrationClient
+): Promise<Array<{ person: any, email: string, role: AccountRole }>> {
+  const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
 
-  if (spaces.length > 0) {
-    return
-  }
+  return getAccountsFromTxes(accountsTxes)
+}
 
-  const accounts = await client.model.findAll(contact.class.PersonAccount, {})
-  const employees = await client.find(DOMAIN_CONTACT, { [contact.mixin.Employee]: { $exists: true } })
-
-  const newSpaces = new Map<Ref<Person>, PersonSpace>()
-  const now = Date.now()
-
-  for (const account of accounts) {
-    const employee = employees.find(({ _id }) => _id === account.person)
-    if (employee === undefined) continue
-
-    const space = newSpaces.get(account.person)
-
-    if (space !== undefined) {
-      space.members.push(account._id)
-    } else {
-      newSpaces.set(account.person, {
-        _id: generateId(),
-        _class: contact.class.PersonSpace,
-        space: core.space.Space,
-        name: 'Personal space',
-        description: '',
-        private: true,
-        archived: false,
-        members: [account._id],
-        person: account.person,
-        modifiedBy: core.account.System,
-        createdBy: core.account.System,
-        modifiedOn: now,
-        createdOn: now
-      })
+async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact assignWorkspaceRoles', {})
+  ctx.info('assigning workspace roles...')
+  const oldPersonAccounts = await getOldPersonAccounts(client)
+  for (const { person, email, role } of oldPersonAccounts) {
+    // check it's an active employee
+    const personObj = (await client.find(DOMAIN_CONTACT, { _id: person, _class: contact.class.Person }))[0]
+    if (personObj === undefined) {
+      continue
+    }
+    const employee = client.hierarchy.as(personObj, contact.mixin.Employee)
+    if (employee === undefined || !employee.active) {
+      continue
+    }
+    const socialKey = getSocialKeyByOldEmail(email)
+    try {
+      await client.accountClient.updateWorkspaceRoleBySocialId(buildSocialIdString(socialKey), role)
+    } catch (err: any) {
+      ctx.error('Failed to update workspace role', { email, ...socialKey, role, err })
     }
   }
 
-  await client.create(DOMAIN_SPACE, Array.from(newSpaces.values()))
+  ctx.info('finished assigning workspace roles', { users: oldPersonAccounts.length })
+}
+
+async function createSocialIdentities (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('createSocialIdentities', {})
+  ctx.info('processing person accounts ', {})
+
+  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
+  const personAccounts = getAccountsFromTxes(personAccountsTxes)
+
+  for (const pAcc of personAccounts) {
+    const email: string = pAcc.email ?? ''
+    if (email === '') continue
+
+    const socialIdKey = getSocialKeyByOldEmail(email)
+    const socialId: SocialIdentity = {
+      _id: generateId(),
+      _class: contact.class.SocialIdentity,
+      space: contact.space.Contacts,
+      ...socialIdKey,
+      key: buildSocialIdString(socialIdKey),
+      confirmed: false,
+
+      attachedTo: pAcc.person,
+      attachedToClass: contact.class.Person,
+      collection: 'socialIds',
+
+      modifiedOn: Date.now(),
+      createdBy: core.account.ConfigUser,
+      createdOn: Date.now(),
+      modifiedBy: core.account.ConfigUser
+    }
+
+    await client.create(DOMAIN_CHANNEL, socialId)
+  }
 }
 
 export const contactOperation: MigrateOperation = {
@@ -168,7 +168,7 @@ export const contactOperation: MigrateOperation = {
               objectClass: 'contact:class:Employee'
             },
             {
-              $set: { objectClass: contact.mixin.Employee }
+              objectClass: contact.mixin.Employee
             }
           )
 
@@ -178,7 +178,7 @@ export const contactOperation: MigrateOperation = {
               'tx.attributes.srcDocClass': 'contact:class:Employee'
             },
             {
-              $set: { 'tx.attributes.srcDocClass': contact.mixin.Employee }
+              'tx.attributes.srcDocClass': contact.mixin.Employee
             }
           )
 
@@ -188,7 +188,7 @@ export const contactOperation: MigrateOperation = {
               'tx.attributes.srcDocClass': 'contact:class:Employee'
             },
             {
-              $set: { 'tx.attributes.srcDocClass': contact.mixin.Employee }
+              'tx.attributes.srcDocClass': contact.mixin.Employee
             }
           )
 
@@ -199,7 +199,7 @@ export const contactOperation: MigrateOperation = {
               'attributes.type.to': 'contact:class:Employee'
             },
             {
-              $set: { 'attributes.type.to': contact.mixin.Employee }
+              'attributes.type.to': contact.mixin.Employee
             }
           )
           await client.update(
@@ -209,7 +209,7 @@ export const contactOperation: MigrateOperation = {
               'operations.type.to': 'contact:class:Employee'
             },
             {
-              $set: { 'operations.type.to': contact.mixin.Employee }
+              'operations.type.to': contact.mixin.Employee
             }
           )
 
@@ -219,7 +219,7 @@ export const contactOperation: MigrateOperation = {
               'attributes.extends': 'contact:class:Employee'
             },
             {
-              $set: { 'attributes.extends': contact.mixin.Employee }
+              'attributes.extends': contact.mixin.Employee
             }
           )
 
@@ -227,7 +227,7 @@ export const contactOperation: MigrateOperation = {
             await client.update(
               d,
               { attachedToClass: 'contact:class:Employee' },
-              { $set: { attachedToClass: contact.mixin.Employee } }
+              { attachedToClass: contact.mixin.Employee }
             )
           }
           await client.update(
@@ -236,17 +236,17 @@ export const contactOperation: MigrateOperation = {
               _class: activity.class.ActivityReference,
               srcDocClass: 'contact:class:Employee'
             },
-            { $set: { srcDocClass: contact.mixin.Employee } }
+            { srcDocClass: contact.mixin.Employee }
           )
           await client.update(
             'tags' as Domain,
             { targetClass: 'contact:class:Employee' },
-            { $set: { targetClass: contact.mixin.Employee } }
+            { targetClass: contact.mixin.Employee }
           )
           await client.update(
             DOMAIN_VIEW,
             { filterClass: 'contact:class:Employee' },
-            { $set: { filterClass: contact.mixin.Employee } }
+            { filterClass: contact.mixin.Employee }
           )
           await client.update(
             DOMAIN_CONTACT,
@@ -260,9 +260,7 @@ export const contactOperation: MigrateOperation = {
                 displayName: `${contact.mixin.Employee as string}.displayName`,
                 position: `${contact.mixin.Employee as string}.position`
               },
-              $set: {
-                _class: contact.class.Person
-              }
+              _class: contact.class.Person
             }
           )
         }
@@ -298,15 +296,12 @@ export const contactOperation: MigrateOperation = {
         }
       },
       {
-        state: 'create-person-spaces-v1',
-        func: createPersonSpaces
+        state: 'create-social-identities',
+        func: createSocialIdentities
       },
       {
-        state: 'fix-rename-backups',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.update(DOMAIN_CONTACT, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-          await client.update(DOMAIN_CHANNEL, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
-        }
+        state: 'assign-workspace-roles',
+        func: assignWorkspaceRoles
       }
     ])
   },
@@ -316,13 +311,6 @@ export const contactOperation: MigrateOperation = {
         state: 'createSpace-v2',
         func: async (client) => {
           await createDefaultSpace(client, contact.space.Contacts, { name: 'Contacts', description: 'Contacts' })
-        }
-      },
-      {
-        state: 'createEmails',
-        func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createEmployeeEmail(tx)
         }
       }
     ])

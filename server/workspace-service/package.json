@@ -26,7 +26,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "@types/koa-bodyparser": "^4.3.12",
     "@types/koa-router": "^7.4.8",
     "@types/koa": "^2.15.0",
@@ -55,6 +55,10 @@
     "@hcengineering/server-client": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/server-notification": "^0.6.1",
-    "@hcengineering/analytics": "^0.6.0"
+    "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/account-client": "^0.6.0",
+    "@hcengineering/server-backup": "^0.6.0",
+    "@hcengineering/postgres": "^0.6.0",
+    "@hcengineering/mongo": "^0.6.1"
   }
 }

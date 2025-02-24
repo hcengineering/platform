@@ -13,19 +13,17 @@
 // limitations under the License.
 //
 
-import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
-import { WorkspaceId, generateId } from '@hcengineering/core'
+import { Blob, Ref, generateId, type WorkspaceIds } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { onAuthenticatePayload } from '@hocuspocus/server'
 import { ClientFactory, simpleClientFactory } from './platform'
 
 export interface Context {
   connectionId: string
-  workspaceId: WorkspaceId
+  wsIds: WorkspaceIds
   clientFactory: ClientFactory
 
-  initialContentId?: DocumentId
-  platformDocumentId?: PlatformDocumentId
+  content?: Ref<Blob>
 }
 
 interface WithContext {
@@ -36,20 +34,18 @@ export type withContext<T extends WithContext> = Omit<T, 'context'> & {
   context: Context
 }
 
-export function buildContext (data: onAuthenticatePayload): Context {
+export function buildContext (data: onAuthenticatePayload, wsIds: WorkspaceIds): Context {
   const context = data.context as Partial<Context>
 
   const connectionId = context.connectionId ?? generateId()
   const decodedToken = decodeToken(data.token)
 
-  const initialContentId = (data.requestParameters.get('initialContentId') as DocumentId) ?? undefined
-  const platformDocumentId = (data.requestParameters.get('platformDocumentId') as PlatformDocumentId) ?? undefined
+  const content = (data.requestParameters.get('content') as Ref<Blob>) ?? undefined
 
   return {
     connectionId,
-    workspaceId: decodedToken.workspace,
+    wsIds,
     clientFactory: simpleClientFactory(decodedToken),
-    initialContentId,
-    platformDocumentId
+    content
   }
 }

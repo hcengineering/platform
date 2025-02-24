@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label, tooltip, themeStore } from '@hcengineering/ui'
+  import { getEmbeddedLabel, translate } from '@hcengineering/platform'
+  import { themeStore, tooltip } from '@hcengineering/ui'
   import tracker from '../../../plugin'
-  import { translate } from '@hcengineering/platform'
 
   export let id: string | undefined = undefined
   export let kind: 'link' | undefined = undefined
@@ -29,31 +29,32 @@
 
   $: days = Math.floor(value / hoursInWorkingDay)
   $: hours = Math.floor(value % hoursInWorkingDay)
-  $: minutes = Math.floor((value % 1) * 60)
+  $: minutes = Math.round((value % 1) * 60)
 
-  $: Promise.all([
-    days > 0 ? translate(tracker.string.TimeSpendDays, { value: days }, $themeStore.language) : Promise.resolve(false),
-    hours > 0
-      ? translate(tracker.string.TimeSpendHours, { value: hours }, $themeStore.language)
-      : Promise.resolve(false),
-    minutes > 0
-      ? translate(tracker.string.TimeSpendMinutes, { value: minutes }, $themeStore.language)
-      : Promise.resolve(false)
-  ])
-    .then(([days, hours, minutes]) =>
-      [
-        ...(days === false ? [] : [days]),
-        ...(hours === false ? [] : [hours]),
-        ...(minutes === false ? [] : [minutes])
-      ].join(' ')
-    )
-    .then((l) => (l === '' ? translate(tracker.string.TimeSpendHours, { value: 0 }, $themeStore.language) : l))
-    .then((l) => {
-      label = l
-    })
-    .catch((err) => {
-      console.error(err)
-    })
+  $: void getLabel(days, hours, minutes, $themeStore.language)
+
+  async function getLabel (days: number, hours: number, minutes: number, language: string): Promise<void> {
+    try {
+      const res: string[] = []
+      if (days > 0) {
+        const d = await translate(tracker.string.TimeSpendDays, { value: days }, language)
+        res.push(d)
+      }
+      if (hours > 0) {
+        const h = await translate(tracker.string.TimeSpendHours, { value: hours }, language)
+        res.push(h)
+      }
+      if (minutes > 0) {
+        const m = await translate(tracker.string.TimeSpendMinutes, { value: minutes }, language)
+        res.push(m)
+      }
+      if (res.length > 0) {
+        label = res.join(' ')
+      } else {
+        label = await translate(tracker.string.TimeSpendHours, { value: 0 }, language)
+      }
+    } catch {}
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -63,13 +64,7 @@
   class:link={kind === 'link'}
   class:fs-bold={accent}
   on:click
-  use:tooltip={{
-    component: Label,
-    props: {
-      label: tracker.string.TimeSpendHours,
-      params: { value }
-    }
-  }}
+  use:tooltip={{ label: getEmbeddedLabel(label) }}
 >
   {label}
 </span>

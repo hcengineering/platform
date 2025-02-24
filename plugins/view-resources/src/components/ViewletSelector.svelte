@@ -12,6 +12,7 @@
   export let preference: ViewletPreference | undefined = undefined
   export let loading = true
   export let hidden = false
+  export let ignoreFragment = false
 
   const query = createQuery()
 
@@ -29,11 +30,11 @@
     }
   )
 
-  let key = makeViewletKey()
+  let key = makeViewletKey(undefined, ignoreFragment)
 
   onDestroy(
     resolvedLocationStore.subscribe((loc) => {
-      key = makeViewletKey(loc)
+      key = makeViewletKey(loc, ignoreFragment)
     })
   )
 

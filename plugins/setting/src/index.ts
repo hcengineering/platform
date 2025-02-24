@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Account, AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref } from '@hcengineering/core'
-import type { Plugin } from '@hcengineering/platform'
+import type { PersonId, AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref } from '@hcengineering/core'
+import type { Metadata, Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import { AnyComponent } from '@hcengineering/ui'
@@ -36,6 +36,7 @@ export type Handler = Resource<(value: string) => Promise<void>>
 export interface IntegrationType extends Doc {
   label: IntlString
   description: IntlString
+  descriptionComponent?: AnyComponent
   icon: AnyComponent
   allowMultiple: boolean
 
@@ -54,7 +55,7 @@ export interface Integration extends Doc {
   disabled: boolean
   value: string
   error?: IntlString | null
-  shared?: Ref<Account>[]
+  shared?: PersonId[]
 }
 
 /**
@@ -122,6 +123,7 @@ export default plugin(settingId, {
     Password: '' as Ref<Doc>,
     Setting: '' as Ref<Doc>,
     Integrations: '' as Ref<Doc>,
+    Relations: '' as Ref<Doc>,
     Support: '' as Ref<Doc>,
     Privacy: '' as Ref<Doc>,
     Terms: '' as Ref<Doc>,
@@ -131,7 +133,8 @@ export default plugin(settingId, {
     InviteSettings: '' as Ref<Doc>,
     WorkspaceSetting: '' as Ref<Doc>,
     ManageSpaces: '' as Ref<Doc>,
-    Spaces: '' as Ref<Doc>
+    Spaces: '' as Ref<Doc>,
+    Backup: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -163,7 +166,12 @@ export default plugin(settingId, {
     SpaceTypePropertiesSectionEditor: '' as AnyComponent,
     SpaceTypeRolesSectionEditor: '' as AnyComponent,
     RoleEditor: '' as AnyComponent,
-    RoleAssignmentEditor: '' as AnyComponent
+    RoleAssignmentEditor: '' as AnyComponent,
+    RelationSetting: '' as AnyComponent,
+    Backup: '' as AnyComponent,
+    CreateAttributePopup: '' as AnyComponent,
+    CreateRelation: '' as AnyComponent,
+    EditRelation: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -203,7 +211,19 @@ export default plugin(settingId, {
     Collections: '' as IntlString,
     SpaceTypes: '' as IntlString,
     Roles: '' as IntlString,
-    OwnerOrMainteinerRequired: '' as IntlString
+    OwnerOrMaintainerRequired: '' as IntlString,
+    Backup: '' as IntlString,
+    BackupLast: '' as IntlString,
+    BackupTotalSnapshots: '' as IntlString,
+    BackupTotalFiles: '' as IntlString,
+    BackupSize: '' as IntlString,
+    BackupLinkInfo: '' as IntlString,
+    BackupBearerTokenInfo: '' as IntlString,
+    BackupSnapshots: '' as IntlString,
+    BackupFileDownload: '' as IntlString,
+    BackupFiles: '' as IntlString,
+    BackupNoBackup: '' as IntlString,
+    AddAttribute: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
@@ -220,7 +240,8 @@ export default plugin(settingId, {
     Enums: '' as Asset,
     InviteSettings: '' as Asset,
     InviteWorkspace: '' as Asset,
-    Views: '' as Asset
+    Views: '' as Asset,
+    Relations: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>
@@ -230,5 +251,8 @@ export default plugin(settingId, {
     OwnerLastName: '' as Ref<TemplateField>,
     OwnerPosition: '' as Ref<TemplateField>,
     Value: '' as Ref<TemplateField>
+  },
+  metadata: {
+    BackupUrl: '' as Metadata<string>
   }
 })

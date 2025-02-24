@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,14 +14,10 @@
 //
 
 import core, {
-  AccountRole,
-  AttachedDoc,
-  Data,
   Doc,
-  Ref,
-  toWorkspaceString,
+  PersonUuid,
+  systemAccountUuid,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxProcessor,
@@ -29,37 +25,114 @@ import core, {
   UserStatus
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
+import { getPerson, getPersons } from '@hcengineering/server-contact'
+import { aiBotEmailSocialId, AIEventRequest } from '@hcengineering/ai-bot'
+
+import { createAccountRequest, hasAiEndpoint, sendAIEvents } from './utils'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
-import aiBot, { aiBotAccountEmail, AIBotResponseEvent } from '@hcengineering/ai-bot'
-import { AIBotServiceAdapter, serverAiBotId } from '@hcengineering/server-ai-bot'
-import contact, { PersonAccount } from '@hcengineering/contact'
-import { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
-import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
-import { getSupportWorkspaceId } from './utils'
 
-async function processWorkspace (control: TriggerControl): Promise<void> {
-  const adapter = control.serviceAdaptersManager.getAdapter(serverAiBotId) as AIBotServiceAdapter | undefined
+async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl): Promise<Tx[]> {
+  if (!hasAiEndpoint()) {
+    return []
+  }
 
-  if (adapter !== undefined) {
-    await adapter.processWorkspace(control.workspace)
-  } else {
-    console.error('Cannot find server adapter: ', serverAiBotId)
+  if (control.txFactory.account === aiBotEmailSocialId) {
+    return []
+  }
+
+  for (const tx of txes) {
+    if (![core.class.TxCreateDoc, core.class.TxUpdateDoc].includes(tx._class)) {
+      continue
+    }
+
+    if (tx._class === core.class.TxCreateDoc) {
+      const createTx = tx as TxCreateDoc<UserStatus>
+      const status = TxProcessor.createDoc2Doc(createTx)
+      if (status.user === systemAccountUuid) {
+        continue
+      }
+    }
+
+    if (tx._class === core.class.TxUpdateDoc) {
+      const updateTx = tx as TxUpdateDoc<UserStatus>
+      const val = updateTx.operations.online
+      if (val !== true) {
+        continue
+      }
+
+      const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
+      if (status === undefined || status.user === systemAccountUuid) {
+        continue
+      }
+    }
+
+    const aiBotPerson = await getPerson(control, aiBotEmailSocialId)
+
+    if (aiBotPerson === undefined) {
+      await createAccountRequest(control.workspace.uuid, control.ctx)
+      return []
+    }
+  }
+
+  return []
+}
+
+async function OnMessageSend (originTxs: TxCreateDoc<ChatMessage>[], control: TriggerControl): Promise<Tx[]> {
+  if (!hasAiEndpoint()) {
+    return []
+  }
+
+  const { hierarchy } = control
+  const txes = originTxs.filter((it) => it.modifiedBy !== aiBotEmailSocialId)
+
+  if (txes.length === 0) {
+    return []
+  }
+
+  for (const tx of txes) {
+    const message = TxProcessor.createDoc2Doc(tx)
+
+    const isThread = hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
+    const docClass = isThread ? (message as ThreadMessage).objectClass : message.attachedToClass
+
+    if (!hierarchy.isDerived(docClass, chunter.class.DirectMessage)) {
+      continue
+    }
+
+    if (docClass === chunter.class.DirectMessage) {
+      await onBotDirectMessageSend(control, message)
+    }
+  }
+
+  return []
+}
+
+function getMessageData (doc: Doc, message: ChatMessage): AIEventRequest {
+  return {
+    createdOn: message.createdOn ?? message.modifiedOn,
+    objectId: message.attachedTo,
+    objectClass: message.attachedToClass,
+    objectSpace: doc.space,
+    collection: message.collection,
+    messageClass: message._class,
+    messageId: message._id,
+    message: message.message,
+    user: message.createdBy ?? message.modifiedBy
   }
 }
 
-async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
-  const { members } = direct
-
-  if (!members.includes(aiBot.account.AIBot)) {
-    return false
+function getThreadMessageData (message: ThreadMessage): AIEventRequest {
+  return {
+    createdOn: message.createdOn ?? message.modifiedOn,
+    objectId: message.attachedTo,
+    objectClass: message.attachedToClass,
+    objectSpace: message.space,
+    collection: message.collection,
+    messageClass: message._class,
+    message: message.message,
+    messageId: message._id,
+    user: message.createdBy ?? message.modifiedBy
   }
-
-  const personAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
-    _id: { $in: members as Ref<PersonAccount>[] }
-  })
-  const persons = new Set(personAccounts.map((account) => account.person))
-
-  return persons.size === 2
 }
 
 async function getMessageDoc (message: ChatMessage, control: TriggerControl): Promise<Doc | undefined> {
@@ -77,349 +150,44 @@ async function getMessageDoc (message: ChatMessage, control: TriggerControl): Pr
   }
 }
 
-function getMessageData (doc: Doc, message: ChatMessage, email: string): Data<AIBotResponseEvent> {
-  return {
-    objectId: message.attachedTo,
-    objectClass: message.attachedToClass,
-    objectSpace: doc.space,
-    collection: message.collection,
-    messageClass: message._class,
-    messageId: message._id,
-    message: message.message,
-    user: message.createdBy ?? message.modifiedBy,
-    email
-  }
-}
+async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
+  const { members } = direct
 
-function getThreadMessageData (message: ThreadMessage, email: string): Data<AIBotResponseEvent> {
-  return {
-    objectId: message.attachedTo,
-    objectClass: message.attachedToClass,
-    objectSpace: message.space,
-    collection: message.collection,
-    messageClass: message._class,
-    message: message.message,
-    messageId: message._id,
-    user: message.createdBy ?? message.modifiedBy,
-    email
-  }
-}
-
-async function createResponseEvent (
-  message: ChatMessage,
-  control: TriggerControl,
-  data: Data<AIBotResponseEvent>
-): Promise<void> {
-  const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotResponseEvent, message.space, data)
-  await control.apply(control.ctx, [eventTx])
-}
-
-async function getThreadParent (control: TriggerControl, message: ChatMessage): Promise<Ref<ChatMessage> | undefined> {
-  if (!control.hierarchy.isDerived(message.attachedToClass, chunter.class.ChatMessage)) {
-    return undefined
+  if (!members.includes(aiBotEmailSocialId)) {
+    return false
   }
 
-  const parentInfo = (
-    await control.findAll(control.ctx, message.attachedToClass, {
-      _id: message.attachedTo as Ref<ChatMessage>,
-      [aiBot.mixin.TransferredMessage]: { $exists: true }
-    })
-  )[0]
+  const persons = await getPersons(control, members)
 
-  if (parentInfo !== undefined) {
-    return control.hierarchy.as(parentInfo, aiBot.mixin.TransferredMessage).messageId
-  }
+  const uuids = new Set(
+    persons.map((account) => account.personUuid).filter((uuid): uuid is PersonUuid => uuid !== undefined)
+  )
 
-  return message.attachedTo as Ref<ChatMessage>
-}
-
-async function createTransferEvent (
-  control: TriggerControl,
-  message: ChatMessage,
-  account: PersonAccount,
-  data: Data<AIBotResponseEvent>
-): Promise<void> {
-  if (account.role !== AccountRole.Owner) {
-    return
-  }
-
-  const supportWorkspaceId = getSupportWorkspaceId()
-
-  if (supportWorkspaceId === undefined) {
-    return
-  }
-
-  const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
-    messageClass: data.messageClass,
-    message: message.message,
-    collection: data.collection,
-    toWorkspace: supportWorkspaceId,
-    toEmail: account.email,
-    fromWorkspace: toWorkspaceString(control.workspace),
-    fromWorkspaceName: control.workspace.workspaceName,
-    fromWorkspaceUrl: control.workspace.workspaceUrl,
-    messageId: message._id,
-    parentMessageId: await getThreadParent(control, message)
-  })
-
-  await control.apply(control.ctx, [eventTx])
+  return uuids.size === 2
 }
 
 async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
-  const account = control.modelDb.findAllSync(contact.class.PersonAccount, {
-    _id: (message.createdBy ?? message.modifiedBy) as Ref<PersonAccount>
-  })[0]
-
-  if (account === undefined) {
-    return
-  }
-
   const direct = (await getMessageDoc(message, control)) as DirectMessage
-
   if (direct === undefined) {
     return
   }
-
   const isAvailable = await isDirectAvailable(direct, control)
-
   if (!isAvailable) {
     return
   }
-
-  let data: Data<AIBotResponseEvent> | undefined
-
+  let messageEvent: AIEventRequest
   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    data = getThreadMessageData(message as ThreadMessage, account.email)
+    messageEvent = getThreadMessageData(message as ThreadMessage)
   } else {
-    data = getMessageData(direct, message, account.email)
+    messageEvent = getMessageData(direct, message)
   }
-
-  await createResponseEvent(message, control, data)
-  await createTransferEvent(control, message, account, data)
-
-  await processWorkspace(control)
-}
-
-async function onSupportWorkspaceMessage (control: TriggerControl, message: ChatMessage): Promise<void> {
-  const supportWorkspaceId = getSupportWorkspaceId()
-
-  if (supportWorkspaceId === undefined) {
-    return
-  }
-
-  if (toWorkspaceString(control.workspace) !== supportWorkspaceId) {
-    return
-  }
-
-  if (!control.hierarchy.isDerived(message.attachedToClass, analyticsCollector.class.OnboardingChannel)) {
-    return
-  }
-
-  const channel = (await getMessageDoc(message, control)) as OnboardingChannel
-
-  if (channel === undefined) {
-    return
-  }
-
-  const { workspaceId, email } = channel
-  let data: Data<AIBotResponseEvent> | undefined
-  const account = control.modelDb.findAllSync(contact.class.PersonAccount, {
-    _id: (message.createdBy ?? message.modifiedBy) as Ref<PersonAccount>
-  })[0]
-
-  if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    data = getThreadMessageData(message as ThreadMessage, account.email)
-  } else {
-    data = getMessageData(channel, message, account.email)
-  }
-
-  const tx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
-    messageClass: data.messageClass,
-    message: message.message,
-    collection: data.collection,
-    toEmail: email,
-    toWorkspace: workspaceId,
-    fromWorkspace: toWorkspaceString(control.workspace),
-    fromWorkspaceUrl: control.workspace.workspaceUrl,
-    fromWorkspaceName: control.workspace.workspaceName,
-    messageId: message._id,
-    parentMessageId: await getThreadParent(control, message)
-  })
-
-  await control.apply(control.ctx, [tx])
-
-  await processWorkspace(control)
-}
-
-export async function OnMessageSend (
-  originTx: TxCollectionCUD<Doc, AttachedDoc>,
-  control: TriggerControl
-): Promise<Tx[]> {
-  const { hierarchy } = control
-  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<ChatMessage>
-  if (tx._class !== core.class.TxCreateDoc || !hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)) {
-    return []
-  }
-
-  if (tx.modifiedBy === aiBot.account.AIBot || tx.modifiedBy === core.account.System) {
-    return []
-  }
-
-  const isThread = hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
-  const message = TxProcessor.createDoc2Doc(tx)
-
-  const docClass = isThread ? (message as ThreadMessage).objectClass : message.attachedToClass
-
-  if (!hierarchy.isDerived(docClass, chunter.class.ChunterSpace)) {
-    return []
-  }
-
-  if (docClass === chunter.class.DirectMessage) {
-    await onBotDirectMessageSend(control, message)
-  }
-
-  if (docClass === analyticsCollector.class.OnboardingChannel) {
-    await onSupportWorkspaceMessage(control, message)
-  }
-
-  return []
-}
-
-export async function OnMention (tx: TxCreateDoc<MentionInboxNotification>, control: TriggerControl): Promise<Tx[]> {
-  // Note: temporally commented until open ai will be added
-  // if (tx.objectClass !== notification.class.MentionInboxNotification || tx._class !== core.class.TxCreateDoc) {
-  //   return []
-  // }
-  //
-  // const mention = TxProcessor.createDoc2Doc(tx)
-  //
-  // if (mention.user !== aiBot.account.AIBot) {
-  //   return []
-  // }
-  //
-  // if (!control.hierarchy.isDerived(mention.mentionedInClass, chunter.class.ChatMessage)) {
-  //   return []
-  // }
-  //
-  // const message = (
-  //   await control.findAll<ChatMessage>(mention.mentionedInClass, { _id: mention.mentionedIn as Ref<ChatMessage> })
-  // )[0]
-  //
-  // if (message === undefined) {
-  //   return []
-  // }
-  //
-  // await createResponseEvent(message, control)
-
-  return []
-}
-
-export async function OnMessageNotified (
-  tx: TxCreateDoc<ActivityInboxNotification>,
-  control: TriggerControl
-): Promise<Tx[]> {
-  // Note: temporally commented until open ai will be added
-  // if (tx.objectClass !== notification.class.ActivityInboxNotification || tx._class !== core.class.TxCreateDoc) {
-  //   return []
-  // }
-  //
-  // const doc = TxProcessor.createDoc2Doc(tx)
-  //
-  // if (doc.user !== aiBot.account.AIBot) {
-  //   return []
-  // }
-  //
-  // if (!control.hierarchy.isDerived(doc.attachedToClass, chunter.class.ChatMessage)) {
-  //   return []
-  // }
-  //
-  // const personAccount = await control.modelDb.findOne(contact.class.PersonAccount, { email: aiBotAccountEmail })
-  //
-  // if (personAccount === undefined) {
-  //   return []
-  // }
-  //
-  // const message = (
-  //   await control.findAll<ChatMessage>(doc.attachedToClass, { _id: doc.attachedTo as Ref<ChatMessage> })
-  // )[0]
-  //
-  // if (message === undefined) {
-  //   return []
-  // }
-  //
-  // if (isDocMentioned(personAccount.person, message.message)) {
-  //   return await createResponseEvent(message, control)
-  // }
-  //
-  // if (!control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-  //   return []
-  // }
-  //
-  // const thread = message as ThreadMessage
-  // TODO: do we really need to find parent???
-  // const parent = (await control.findAll(thread.attachedToClass, { _id: thread.attachedTo }))[0]
-  //
-  // if (parent === undefined) {
-  //   return []
-  // }
-  //
-  // if (parent.createdBy === aiBot.account.AIBot) {
-  //   return await createResponseEvent(message, control)
-  // }
-
-  return []
-}
-
-export async function OnUserStatus (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const tx = TxProcessor.extractTx(originTx) as TxCUD<UserStatus>
-
-  if (
-    tx.objectClass !== core.class.UserStatus ||
-    ![core.class.TxCreateDoc, core.class.TxUpdateDoc].includes(tx._class)
-  ) {
-    return []
-  }
-
-  if (tx._class === core.class.TxCreateDoc) {
-    const createTx = tx as TxCreateDoc<UserStatus>
-    const status = TxProcessor.createDoc2Doc(createTx)
-    if (status.user === aiBot.account.AIBot || status.user === core.account.System || !status.online) {
-      return []
-    }
-  }
-
-  if (tx._class === core.class.TxUpdateDoc) {
-    const updateTx = tx as TxUpdateDoc<UserStatus>
-    const val = updateTx.operations.online
-    if (val !== true) {
-      return []
-    }
-
-    const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
-    if (status === undefined || status.user === aiBot.account.AIBot || status.user === core.account.System) {
-      return []
-    }
-  }
-
-  const account = control.modelDb.findAllSync(contact.class.PersonAccount, { email: aiBotAccountEmail })[0]
-
-  if (account !== undefined) {
-    return []
-  }
-
-  await processWorkspace(control)
-
-  return []
+  await sendAIEvents([messageEvent], control.workspace.uuid, control.ctx)
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnMessageSend,
-    OnMention,
-    OnMessageNotified,
-    OnUserStatus
+    OnUserStatus,
+    OnMessageSend
   }
 })
-
-export * from './adapter'

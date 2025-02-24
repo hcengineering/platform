@@ -48,7 +48,7 @@
     "@hcengineering/recruit": "^0.6.29",
     "@hcengineering/tags": "^0.6.16",
     "@hcengineering/task": "^0.6.20",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "qs": "~6.11.0"
   },
   "repository": "https://github.com/hcengineering/platform",

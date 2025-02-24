@@ -36,6 +36,7 @@
     ControlledDocument,
     ControlledDocumentState,
     DocumentRequest,
+    DocumentState,
     Project
   } from '@hcengineering/controlled-documents'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -105,13 +106,13 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void notificationClient.then((client) => client.readDoc(getClient(), prev))
+      void notificationClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
     controlledDocumentClosed()
-    void notificationClient.then((client) => client.readDoc(getClient(), _id))
+    void notificationClient.then((client) => client.readDoc(_id))
   })
 
   $: if (_id && _class && project) {
@@ -163,9 +164,15 @@
       return
     }
 
+    const hierarchy = client.getHierarchy()
+
+    const isReviewed = $controlledDocument.controlledState === ControlledDocumentState.Reviewed
+    const isApprovalRequest = hierarchy.isDerived(requestClass, documents.class.DocumentApprovalRequest)
+
     const teamPopupData: TeamPopupData = {
       controlledDoc: $controlledDocument,
-      requestClass
+      requestClass,
+      requireSignature: !(isReviewed && isApprovalRequest)
     }
 
     showPopup(TeamPopup, teamPopupData, 'center')
@@ -274,16 +281,18 @@
   $: canShowSidebar = $editorMode !== 'comparing'
   $: sideBar = canShowSidebar ? $availableRightPanelTabs : []
 
-  $: collaborativeDoc = $controlledDocument?.content
-  $: initialCollaborativeDoc = $controlledDocumentTemplate?.content
-
   $: workspace = $resolvedLocationStore.path[1].toUpperCase()
 
   $: docReference = getDocReference($controlledDocument)
   $: templateReference = getDocReference($controlledDocumentTemplate)
+
+  $: attribute = {
+    key: 'content',
+    attr: client.getHierarchy().getAttribute(documents.class.ControlledDocument, 'content')
+  }
 </script>
 
-{#if $controlledDocument !== null && collaborativeDoc !== undefined}
+{#if $controlledDocument !== null && attribute !== undefined}
   <Panel
     bind:innerWidth
     isHeader={false}
@@ -430,13 +439,7 @@
 
     <svelte:component this={DocumentTemplateFooter} slot="page-footer" {templateReference} />
 
-    <Collaboration
-      {collaborativeDoc}
-      {initialCollaborativeDoc}
-      objectClass={$controlledDocument._class}
-      objectId={$controlledDocument._id}
-      objectAttr="content"
-    >
+    <Collaboration object={$controlledDocument} {attribute}>
       {#if $editorMode === 'comparing'}
         <DocumentDiffViewer />
       {:else}

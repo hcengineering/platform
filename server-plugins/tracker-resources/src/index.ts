@@ -13,17 +13,17 @@
 // limitations under the License.
 //
 
+import chunter, { ChatMessage } from '@hcengineering/chunter'
+import { Person } from '@hcengineering/contact'
 import core, {
-  Account,
   AccountRole,
-  AttachedDoc,
   concatLink,
   Doc,
   DocumentUpdate,
+  PersonId,
   Ref,
   Space,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxProcessor,
@@ -31,15 +31,21 @@ import core, {
   TxUpdateDoc,
   WithLookup
 } from '@hcengineering/core'
-import { getMetadata, IntlString } from '@hcengineering/platform'
-import { Person, PersonAccount } from '@hcengineering/contact'
-import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 import { NotificationContent } from '@hcengineering/notification'
-import { workbenchId } from '@hcengineering/workbench'
-import { stripTags } from '@hcengineering/text'
-import chunter, { ChatMessage } from '@hcengineering/chunter'
+import { getMetadata, IntlString } from '@hcengineering/platform'
+import { getSocialStrings } from '@hcengineering/server-contact'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
+import { stripTags } from '@hcengineering/text-core'
+import tracker, {
+  Component,
+  Issue,
+  IssueParentInfo,
+  TimeSpendReport,
+  trackerId,
+  type Project
+} from '@hcengineering/tracker'
+import { workbenchId } from '@hcengineering/workbench'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
@@ -60,7 +66,7 @@ async function updateSubIssues (
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trackerId}/${issue.identifier}`
+  const path = `${workbenchId}/${control.workspace.url}/${trackerId}/${issue.identifier}`
   const link = concatLink(front, path)
   return `<a href="${link}">${issue.identifier}</a> ${issue.title}`
 }
@@ -82,9 +88,9 @@ export async function issueTextPresenter (doc: Doc): Promise<string> {
   return `${issue.identifier} ${issue.title}`
 }
 
-function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
-  const targetAccount = control.modelDb.getObject(target) as PersonAccount
-  return assignee === targetAccount?.person
+async function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: PersonId): Promise<boolean> {
+  const socialStrings = await getSocialStrings(control, assignee)
+  return socialStrings.includes(target)
 }
 
 /**
@@ -93,7 +99,7 @@ function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: R
 export async function getIssueNotificationContent (
   doc: Doc,
   tx: TxCUD<Doc>,
-  target: Ref<Account>,
+  target: PersonId,
   control: TriggerControl
 ): Promise<NotificationContent> {
   const issue = doc as Issue
@@ -107,44 +113,40 @@ export async function getIssueNotificationContent (
   }
   const intlParamsNotLocalized: Record<string, IntlString> = {}
 
-  if (tx._class === core.class.TxCollectionCUD) {
-    const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
+  if (tx._class === core.class.TxCreateDoc) {
+    if (tx.objectClass === chunter.class.ChatMessage) {
+      const createTx = tx as TxCreateDoc<ChatMessage>
+      const message = createTx.attributes.message
+      const plainTextMessage = stripTags(message, NOTIFICATION_BODY_SIZE)
+      intlParams.message = plainTextMessage
+    }
+  } else if (tx._class === core.class.TxUpdateDoc) {
+    const updateTx = tx as TxUpdateDoc<Issue>
 
-    if (ptx.tx._class === core.class.TxCreateDoc) {
-      if (ptx.tx.objectClass === chunter.class.ChatMessage) {
-        const createTx = ptx.tx as TxCreateDoc<ChatMessage>
-        const message = createTx.attributes.message
-        const plainTextMessage = stripTags(message, NOTIFICATION_BODY_SIZE)
-        intlParams.message = plainTextMessage
-      }
-    } else if (ptx.tx._class === core.class.TxUpdateDoc) {
-      const updateTx = ptx.tx as TxUpdateDoc<Issue>
-
-      if (
-        updateTx.operations.assignee !== null &&
-        updateTx.operations.assignee !== undefined &&
-        isSamePerson(control, updateTx.operations.assignee, target)
-      ) {
-        body = tracker.string.IssueAssigneedToYou
-      } else {
-        const attributes = control.hierarchy.getAllAttributes(doc._class)
-        for (const attrName in updateTx.operations) {
-          if (!Object.prototype.hasOwnProperty.call(updateTx.operations, attrName)) {
-            continue
-          }
-
-          const attr = attributes.get(attrName)
-          if (attr !== null && attr !== undefined) {
-            intlParamsNotLocalized.property = attr.label
-            if (attr.type._class === core.class.TypeString) {
-              body = tracker.string.IssueNotificationChangedProperty
-              intlParams.newValue = (issue as any)[attr.name]?.toString()
-            } else {
-              body = tracker.string.IssueNotificationChanged
-            }
-          }
-          break
+    if (
+      updateTx.operations.assignee !== null &&
+      updateTx.operations.assignee !== undefined &&
+      (await isSamePerson(control, updateTx.operations.assignee, target))
+    ) {
+      body = tracker.string.IssueAssignedToYou
+    } else {
+      const attributes = control.hierarchy.getAllAttributes(doc._class)
+      for (const attrName in updateTx.operations) {
+        if (!Object.prototype.hasOwnProperty.call(updateTx.operations, attrName)) {
+          continue
         }
+
+        const attr = attributes.get(attrName)
+        if (attr !== null && attr !== undefined) {
+          intlParamsNotLocalized.property = attr.label
+          if (attr.type._class === core.class.TypeString) {
+            body = tracker.string.IssueNotificationChangedProperty
+            intlParams.newValue = (issue as any)[attr.name]?.toString()
+          } else {
+            body = tracker.string.IssueNotificationChanged
+          }
+        }
+        break
       }
     }
   }
@@ -157,71 +159,25 @@ export async function getIssueNotificationContent (
   }
 }
 
-/**
- * @public
- */
-export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Component>
+export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  // Fill owner of default space with the very first owner account creating a social identity
+  const account = control.ctx.contextData.account
+  if (account.role !== AccountRole.Owner) return []
 
-  const issues = await control.findAll(control.ctx, tracker.class.Issue, {
-    component: ctx.objectId
-  })
-  if (issues === undefined) return []
-  const res: Tx[] = []
-
-  for (const issue of issues) {
-    const issuePush = {
-      ...issue,
-      component: null
-    }
-    const tx = control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, issuePush)
-    res.push(tx)
-  }
-  return res
-}
-
-/**
- * @public
- */
-export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  let ownerId: Ref<PersonAccount> | undefined
-  if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
-    const createTx = tx as TxCreateDoc<PersonAccount>
-
-    if (createTx.attributes.role === AccountRole.Owner) {
-      ownerId = createTx.objectId
-    }
-  } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
-    const updateTx = tx as TxUpdateDoc<PersonAccount>
-
-    if (updateTx.operations.role === AccountRole.Owner) {
-      ownerId = updateTx.objectId
-    }
-  }
-
-  if (ownerId === undefined) {
-    return []
-  }
-
-  const targetProject = (
-    await control.findAll(control.ctx, tracker.class.Project, {
-      _id: tracker.project.DefaultProject
-    })
+  const defaultSpace = (
+    await control.findAll(control.ctx, tracker.class.Project, { _id: tracker.project.DefaultProject })
   )[0]
 
-  if (targetProject === undefined) {
-    return []
-  }
+  if (defaultSpace === undefined) return []
 
-  if (
-    targetProject.owners === undefined ||
-    targetProject.owners.length === 0 ||
-    targetProject.owners[0] === core.account.System
-  ) {
-    const updTx = control.txFactory.createTxUpdateDoc(tracker.class.Project, targetProject.space, targetProject._id, {
-      owners: [ownerId]
+  const owners = defaultSpace.owners ?? []
+
+  if (owners.length === 0 || (owners.length === 1 && owners[0] === core.account.System)) {
+    const setOwnerTx = control.txFactory.createTxUpdateDoc(defaultSpace._class, defaultSpace.space, defaultSpace._id, {
+      owners: [account.primarySocialId]
     })
-    return [updTx]
+
+    return [setOwnerTx]
   }
 
   return []
@@ -230,85 +186,130 @@ export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): P
 /**
  * @public
  */
-export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-
-  // Check TimeReport operations
-  if (
-    actualTx._class === core.class.TxCreateDoc ||
-    actualTx._class === core.class.TxUpdateDoc ||
-    actualTx._class === core.class.TxRemoveDoc
-  ) {
-    const cud = actualTx as TxCUD<TimeSpendReport>
-    if (cud.objectClass === tracker.class.TimeSpendReport) {
-      return await doTimeReportUpdate(cud, tx, control)
+export async function OnProjectRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const ctx = tx as TxRemoveDoc<Project>
+    const classes = [tracker.class.Issue, tracker.class.Component, tracker.class.Milestone, tracker.class.IssueTemplate]
+    for (const cls of classes) {
+      const docs = await control.findAll(control.ctx, cls, { space: ctx.objectId })
+      for (const doc of docs) {
+        const tx = control.txFactory.createTxRemoveDoc(cls, doc.space, doc._id)
+        result.push(tx)
+      }
     }
   }
-
-  if (actualTx._class === core.class.TxCreateDoc) {
-    const createTx = actualTx as TxCreateDoc<Issue>
-    if (control.hierarchy.isDerived(createTx.objectClass, tracker.class.Issue)) {
-      const issue = TxProcessor.createDoc2Doc(createTx)
-      const res: Tx[] = []
-      updateIssueParentEstimations(issue, res, control, [], issue.parents)
-
-      return res
-    }
+  control.ctx.contextData.broadcast.targets.projectRemove = (it) => {
+    return []
   }
-
-  if (actualTx._class === core.class.TxUpdateDoc) {
-    const updateTx = actualTx as TxUpdateDoc<Issue>
-    if (control.hierarchy.isDerived(updateTx.objectClass, tracker.class.Issue)) {
-      return await doIssueUpdate(updateTx, control, tx as TxCollectionCUD<Issue, AttachedDoc>)
-    }
-  }
-  if (actualTx._class === core.class.TxRemoveDoc) {
-    const removeTx = actualTx as TxRemoveDoc<Issue>
-    if (control.hierarchy.isDerived(removeTx.objectClass, tracker.class.Issue)) {
-      const parentIssue = await control.findAll(control.ctx, tracker.class.Issue, {
-        'childInfo.childId': removeTx.objectId
-      })
-      const res: Tx[] = []
-      const parents: IssueParentInfo[] = parentIssue.map((it) => ({
-        parentId: it._id,
-        parentTitle: it.title,
-        identifier: it.identifier,
-        space: it.space
-      }))
-      updateIssueParentEstimations(
-        {
-          _id: removeTx.objectId,
-          estimation: 0,
-          reportedTime: 0,
-          space: removeTx.space
-        },
-        res,
-        control,
-        parents,
-        []
-      )
-      return res
-    }
-  }
-  return []
+  return result
 }
 
-async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const parentTx = tx as TxCollectionCUD<Issue, TimeSpendReport>
+/**
+ * @public
+ */
+export async function OnComponentRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const ctx = tx as TxRemoveDoc<Component>
+
+    const issues = await control.findAll(control.ctx, tracker.class.Issue, {
+      component: ctx.objectId
+    })
+    if (issues === undefined) {
+      continue
+    }
+    for (const issue of issues) {
+      const issuePush = {
+        ...issue,
+        component: null
+      }
+      const tx = control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, issuePush)
+      result.push(tx)
+    }
+  }
+  return result
+}
+
+/**
+ * @public
+ */
+export async function OnIssueUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const actualTx of txes) {
+    // Check TimeReport operations
+    if (
+      actualTx._class === core.class.TxCreateDoc ||
+      actualTx._class === core.class.TxUpdateDoc ||
+      actualTx._class === core.class.TxRemoveDoc
+    ) {
+      const cud = actualTx as TxCUD<TimeSpendReport>
+      if (cud.objectClass === tracker.class.TimeSpendReport) {
+        result.push(...(await doTimeReportUpdate(cud, control)))
+      }
+    }
+
+    if (actualTx._class === core.class.TxCreateDoc) {
+      const createTx = actualTx as TxCreateDoc<Issue>
+      if (control.hierarchy.isDerived(createTx.objectClass, tracker.class.Issue)) {
+        const issue = TxProcessor.createDoc2Doc(createTx)
+        updateIssueParentEstimations(issue, result, control, [], issue.parents)
+        continue
+      }
+    }
+
+    if (actualTx._class === core.class.TxUpdateDoc) {
+      const updateTx = actualTx as TxUpdateDoc<Issue>
+      if (control.hierarchy.isDerived(updateTx.objectClass, tracker.class.Issue)) {
+        result.push(...(await doIssueUpdate(updateTx, control)))
+        continue
+      }
+    }
+    if (actualTx._class === core.class.TxRemoveDoc) {
+      const removeTx = actualTx as TxRemoveDoc<Issue>
+      if (control.hierarchy.isDerived(removeTx.objectClass, tracker.class.Issue)) {
+        const parentIssue = await control.findAll(control.ctx, tracker.class.Issue, {
+          'childInfo.childId': removeTx.objectId
+        })
+        const parents: IssueParentInfo[] = parentIssue.map((it) => ({
+          parentId: it._id,
+          parentTitle: it.title,
+          identifier: it.identifier,
+          space: it.space
+        }))
+        updateIssueParentEstimations(
+          {
+            _id: removeTx.objectId,
+            estimation: 0,
+            reportedTime: 0,
+            space: removeTx.space
+          },
+          result,
+          control,
+          parents,
+          []
+        )
+      }
+    }
+  }
+  return result
+}
+
+async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: TriggerControl): Promise<Tx[]> {
+  const { attachedTo: attachedToId, attachedToClass } = cud
+  if (attachedToClass === undefined || attachedToId === undefined) {
+    return []
+  }
+  const attachedTo = attachedToId as Ref<Issue>
   switch (cud._class) {
     case core.class.TxCreateDoc: {
       const ccud = cud as TxCreateDoc<TimeSpendReport>
-      const [currentIssue] = await control.findAll(
-        control.ctx,
-        tracker.class.Issue,
-        { _id: parentTx.objectId },
-        { limit: 1 }
-      )
+      const [currentIssue] = await control.findAll(control.ctx, tracker.class.Issue, { _id: attachedTo }, { limit: 1 })
       const res = [
         control.txFactory.createTxUpdateDoc<Issue>(
-          parentTx.objectClass,
-          parentTx.objectSpace,
-          parentTx.objectId,
+          attachedToClass,
+          cud.objectSpace,
+          attachedTo,
           {
             $inc: { reportedTime: ccud.attributes.value }
           },
@@ -325,28 +326,25 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
       const upd = cud as TxUpdateDoc<TimeSpendReport>
       if (upd.operations.value !== undefined) {
         const logTxes = Array.from(
-          await control.findAll(control.ctx, core.class.TxCollectionCUD, {
-            'tx.objectId': cud.objectId
+          await control.findAll(control.ctx, core.class.TxCUD, {
+            objectId: cud.objectId
           })
-        )
-          .filter((it) => it._id !== parentTx._id)
-          // eslint-disable-next-line @typescript-eslint/unbound-method
-          .map(TxProcessor.extractTx)
+        ).filter((it) => it._id !== cud._id)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
 
         const res: Tx[] = []
         const [currentIssue] = await control.findAll(
           control.ctx,
           tracker.class.Issue,
-          { _id: parentTx.objectId },
+          { _id: attachedTo },
           { limit: 1 }
         )
         if (doc !== undefined) {
           res.push(
             control.txFactory.createTxUpdateDoc<Issue>(
-              parentTx.objectClass,
-              parentTx.objectSpace,
-              parentTx.objectId,
+              attachedToClass,
+              cud.objectSpace,
+              attachedTo,
               {
                 $inc: { reportedTime: upd.operations.value - doc.value }
               },
@@ -365,28 +363,25 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
       break
     }
     case core.class.TxRemoveDoc: {
-      if (!control.removedMap.has(parentTx.objectId)) {
+      if (!control.removedMap.has(attachedTo)) {
         const logTxes = Array.from(
-          await control.findAll(control.ctx, core.class.TxCollectionCUD, {
-            'tx.objectId': cud.objectId
+          await control.findAll(control.ctx, core.class.TxCUD, {
+            objectId: cud.objectId
           })
-        )
-          .filter((it) => it._id !== parentTx._id)
-          // eslint-disable-next-line @typescript-eslint/unbound-method
-          .map(TxProcessor.extractTx)
+        ).filter((it) => it._id !== cud._id)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
         if (doc !== undefined) {
           const [currentIssue] = await control.findAll(
             control.ctx,
             tracker.class.Issue,
-            { _id: parentTx.objectId },
+            { _id: attachedTo },
             { limit: 1 }
           )
           const res = [
             control.txFactory.createTxUpdateDoc<Issue>(
-              parentTx.objectClass,
-              parentTx.objectSpace,
-              parentTx.objectId,
+              attachedToClass,
+              cud.objectSpace,
+              attachedTo,
               {
                 $inc: { reportedTime: -1 * doc.value }
               },
@@ -405,11 +400,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
   return []
 }
 
-async function doIssueUpdate (
-  updateTx: TxUpdateDoc<Issue>,
-  control: TriggerControl,
-  tx: TxCollectionCUD<Issue, AttachedDoc>
-): Promise<Tx[]> {
+async function doIssueUpdate (updateTx: TxUpdateDoc<Issue>, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
 
   let currentIssue: WithLookup<Issue> | undefined
@@ -552,8 +543,9 @@ export default async () => ({
     IssueLinkIdProvider: issueLinkIdProvider
   },
   trigger: {
+    OnSocialIdentityCreate,
     OnIssueUpdate,
     OnComponentRemove,
-    OnWorkspaceOwnerAdded
+    OnProjectRemove
   }
 })

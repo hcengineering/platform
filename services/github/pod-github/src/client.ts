@@ -5,7 +5,7 @@
 
 import client, { ClientSocket } from '@hcengineering/client'
 import clientResources from '@hcengineering/client-resources'
-import { Client, ClientConnectEvent } from '@hcengineering/core'
+import { Client, ClientConnectEvent, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import serverToken, { generateToken } from '@hcengineering/server-token'
@@ -16,10 +16,10 @@ import config from './config'
  * @public
  */
 export async function createPlatformClient (
-  workspace: string,
+  workspace: WorkspaceUuid,
   timeout: number,
-  reconnect?: (event: ClientConnectEvent) => void
-): Promise<Client> {
+  reconnect?: (event: ClientConnectEvent, data: any) => Promise<void>
+): Promise<{ client: Client, endpoint: string }> {
   setMetadata(client.metadata.ClientSocketFactory, (url) => {
     return new WebSocket(url, {
       headers: {
@@ -29,20 +29,18 @@ export async function createPlatformClient (
   })
 
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
-  const token = generateToken(
-    config.SystemEmail,
-    {
-      name: workspace
-    },
-    { mode: 'github' }
-  )
+  const token = generateToken(systemAccountUuid, workspace, { service: 'github', mode: 'github' })
+  setMetadata(client.metadata.UseBinaryProtocol, true)
+  setMetadata(client.metadata.UseProtocolCompression, true)
   setMetadata(client.metadata.ConnectionTimeout, timeout)
+  setMetadata(client.metadata.FilterModel, 'client')
   const endpoint = await getTransactorEndpoint(token)
   const connection = await (
     await clientResources()
   ).function.GetClient(token, endpoint, {
-    onConnect: reconnect
+    onConnect: reconnect,
+    useGlobalRPCHandler: true
   })
 
-  return connection
+  return { client: connection, endpoint }
 }

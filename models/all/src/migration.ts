@@ -52,6 +52,9 @@ import { productsOperation } from '@hcengineering/model-products'
 import { requestOperation } from '@hcengineering/model-request'
 import { analyticsCollectorOperation } from '@hcengineering/model-analytics-collector'
 import { workbenchOperation } from '@hcengineering/model-workbench'
+import { testManagementOperation } from '@hcengineering/model-test-management'
+import { surveyOperation } from '@hcengineering/model-survey'
+import { aiBotId, aiBotOperation } from '@hcengineering/model-ai-bot'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -92,5 +95,8 @@ export const migrateOperations: [string, MigrateOperation][] = [
   // We should call notification migration after activityServer and chunter
   ['notification', notificationOperation],
   ['analyticsCollector', analyticsCollectorOperation],
-  ['workbench', workbenchOperation]
+  ['workbench', workbenchOperation],
+  ['testManagement', testManagementOperation],
+  ['survey', surveyOperation],
+  [aiBotId, aiBotOperation]
 ]

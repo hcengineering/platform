@@ -11,7 +11,7 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function checkAccess (doc: Doc): Promise<void> {
   const loc = getCurrentLocation()
   const ws = loc.path[1]
-  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
   const token = tokens[ws]
   const endpoint = getMetadata(presentation.metadata.Endpoint)
   if (token === undefined || endpoint === undefined) return

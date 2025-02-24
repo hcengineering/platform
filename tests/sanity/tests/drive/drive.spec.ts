@@ -53,6 +53,7 @@ test.describe('Drive tests', () => {
   })
 
   test('Archive/unarchive drive, check drive archive status', async () => {
+    await drivesPage.disableHideArchived()
     await drivesPage.archiveDrive(drive)
     await drivesPage.checkIsArchived(drive)
     await drivesPage.unarchiveDrive(drive)

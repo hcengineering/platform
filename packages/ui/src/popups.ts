@@ -149,16 +149,17 @@ export function closePopup (category?: string): void {
     } else {
       for (let i = popups.length - 1; i >= 0; i--) {
         if (popups[i].type !== 'popup') continue
-        if ((popups[i] as CompAndProps).options.fixed !== true) {
-          const isClosing = (popups[i] as CompAndProps).closing ?? false
+        const popi = popups[i] as CompAndProps
+        if (popi.options.fixed !== true) {
+          const isClosing = popi.closing ?? false
           if (popups[i].type === 'popup') {
-            ;(popups[i] as CompAndProps).closing = true
+            popi.closing = true
           }
           if (!isClosing) {
             // To prevent possible recursion, we need to check if we call some code from popup close, to do close.
-            ;(popups[i] as CompAndProps).onClose?.(undefined)
+            popi.onClose?.(undefined)
           }
-          ;(popups[i] as CompAndProps).closing = false
+          popi.closing = false
           popups.splice(i, 1)
           break
         }
@@ -366,10 +367,17 @@ export function fitPopupElement (
       show = false
     } else if (element === 'full' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      newProps.top = `${rect.top + 4}px`
-      newProps.bottom = '4px'
-      newProps.left = '4px'
-      newProps.right = '4px'
+      newProps.top = `${rect.top + 1}px`
+      newProps.bottom = '1px'
+      newProps.left = '1px'
+      newProps.right = '1px'
+      show = true
+    } else if (element === 'full-centered') {
+      const rect = contentPanel !== undefined ? contentPanel.getBoundingClientRect() : { top: 0 }
+      newProps.top = `${Math.max(20, rect.top + 1)}px`
+      newProps.bottom = '.5rem'
+      newProps.left = '.5rem'
+      newProps.right = '.5rem'
       show = true
     } else if (element === 'content' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
@@ -421,7 +429,7 @@ export function fitPopupElement (
   return { props: newProps, showOverlay: show, direction: '' }
 }
 
-export function eventToHTMLElement (evt: MouseEvent): HTMLElement {
+export function eventToHTMLElement (evt: MouseEvent | TouchEvent): HTMLElement {
   return evt.target as HTMLElement
 }
 

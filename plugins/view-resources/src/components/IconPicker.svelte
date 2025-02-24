@@ -19,53 +19,65 @@
     EmojiPopup,
     TabsControl,
     fromCodePoint,
+    Scroller,
     getPlatformColor,
     getPlatformColorDef,
     themeStore
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { iconsLibrary } from '../icons'
   import view from '../plugin'
   import ColorsPopup from './ColorsPopup.svelte'
   import PopupDialog from './PopupDialog.svelte'
 
   export let icon: Metadata<string> | undefined = undefined
-  export let icons: Asset[]
+  export let icons: Asset[] = iconsLibrary
   export let iconWithEmoji: Asset = view.ids.IconWithEmoji
   export let color: number = 0
   export let showColor: boolean = true
+  export let showEmoji: boolean = true
 
   const dispatch = createEventDispatcher()
 
   let _color = color
   let _icon = icon ?? icons[0]
+
+  let model = showEmoji
+    ? [{ label: view.string.IconCategory }, { label: view.string.EmojiCategory }]
+    : [{ label: view.string.IconCategory }]
+  $: model = showEmoji
+    ? [{ label: view.string.IconCategory }, { label: view.string.EmojiCategory }]
+    : [{ label: view.string.IconCategory }]
 </script>
 
 <PopupDialog label={view.string.ChooseIcon} on:changeContent>
-  <div class="float-left-box w-85">
+  <div class="flex-col float-left-box maxWidth">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <TabsControl size={'small'} model={[{ label: view.string.IconCategory }, { label: view.string.EmojiCategory }]}>
+    <TabsControl size={'small'} {model}>
       <svelte:fragment slot="content" let:selected>
         {#if selected === 0}
           <div class="flex-col mt-2">
-            {#if icons.length > 0}
-              <div class="flex">
-                {#each icons as obj}
-                  <div class="float-left">
-                    <Button
-                      icon={obj}
-                      iconProps={showColor ? { fill: getPlatformColor(_color ?? 0, $themeStore.dark) } : undefined}
-                      size="medium"
-                      kind={obj === _icon ? 'primary' : 'ghost'}
-                      on:click={() => {
-                        _icon = obj
-                        dispatch(!showColor ? 'close' : 'update', { icon: _icon, color: _color })
-                      }}
-                    />
-                  </div>
-                {/each}
-              </div>
-            {/if}
+            <Scroller noStretch>
+              {#if icons.length > 0}
+                <div class="pallete">
+                  {#each icons as obj}
+                    <div class="float-left">
+                      <Button
+                        icon={obj}
+                        iconProps={showColor ? { fill: getPlatformColor(_color ?? 0, $themeStore.dark) } : undefined}
+                        size="medium"
+                        kind={obj === _icon ? 'primary' : 'ghost'}
+                        on:click={() => {
+                          _icon = obj
+                          dispatch(!showColor ? 'close' : 'update', { icon: _icon, color: _color })
+                        }}
+                      />
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </Scroller>
             {#if showColor}
               <ColorsPopup
                 selected={getPlatformColorDef(_color, $themeStore.dark).name}
@@ -95,20 +107,16 @@
 </PopupDialog>
 
 <style lang="scss">
-  .color {
-    position: relative;
-    width: 1.75rem;
-    height: 1.75rem;
-    background-color: var(--accent-bg-color);
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    cursor: pointer;
-
-    .dot {
-      position: absolute;
-      content: '';
-      border-radius: 50%;
-      inset: 30%;
-    }
+  .pallete {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+    min-height: 0;
+  }
+  .maxWidth {
+    width: 25rem;
+    height: 30rem;
+    min-width: 0;
+    min-height: 0;
   }
 </style>

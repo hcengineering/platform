@@ -2,7 +2,6 @@ import { coreId } from '@hcengineering/core'
 import { addStringsLoader, platformId } from '@hcengineering/platform'
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
-import { bitrixId } from '@hcengineering/bitrix'
 import { boardId } from '@hcengineering/board'
 import { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
@@ -34,12 +33,12 @@ import { trainingId } from '@hcengineering/training'
 import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import { timeId } from '@hcengineering/time'
+import { surveyId } from '@hcengineering/survey'
 import coreEng from '@hcengineering/core/lang/en.json'
 import loginEng from '@hcengineering/login-assets/lang/en.json'
 import platformEng from '@hcengineering/platform/lang/en.json'
 import activityEn from '@hcengineering/activity-assets/lang/en.json'
 import attachmentEn from '@hcengineering/attachment-assets/lang/en.json'
-import bitrixEn from '@hcengineering/bitrix-assets/lang/en.json'
 import boardEn from '@hcengineering/board-assets/lang/en.json'
 import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
 import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
@@ -70,6 +69,7 @@ import trainingEn from '@hcengineering/training-assets/lang/en.json'
 import viewEn from '@hcengineering/view-assets/lang/en.json'
 import workbenchEn from '@hcengineering/workbench-assets/lang/en.json'
 import timeEn from '@hcengineering/time-assets/lang/en.json'
+import surveyEn from '@hcengineering/survey-assets/lang/en.json'
 
 export function registerStringLoaders (): void {
   addStringsLoader(coreId, async (lang: string) => coreEng)
@@ -100,7 +100,6 @@ export function registerStringLoaders (): void {
   addStringsLoader(preferenceId, async (lang: string) => preferenceEn)
   addStringsLoader(hrId, async (lang: string) => hrEn)
   addStringsLoader(documentId, async (lang: string) => documentEn)
-  addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
   addStringsLoader(requestId, async (lang: string) => requestEn)
   addStringsLoader(loveId, async (lang: string) => loveEn)
   addStringsLoader(driveId, async (lang: string) => driveEn)
@@ -109,4 +108,5 @@ export function registerStringLoaders (): void {
   addStringsLoader(trainingId, async (lang: string) => trainingEn)
   addStringsLoader(githubId, async (lang: string) => githubEn)
   addStringsLoader(timeId, async (lang: string) => timeEn)
+  addStringsLoader(surveyId, async (lang: string) => surveyEn)
 }

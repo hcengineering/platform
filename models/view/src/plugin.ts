@@ -16,7 +16,13 @@
 import { type Blob, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import { type FilterFunction, type ViewAction, type ViewCategoryAction, viewId } from '@hcengineering/view'
+import {
+  type FilterFunction,
+  type ViewAction,
+  type ViewCategoryAction,
+  viewId,
+  type ViewOptionsAction
+} from '@hcengineering/view'
 import { type BlobMetadata, type FileOrBlob, type FilePreviewExtension } from '@hcengineering/presentation/src/types'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
 import view from '@hcengineering/view-resources/src/plugin'
@@ -64,6 +70,7 @@ export default mergeIds(viewId, view, {
     TimestampPresenter: '' as AnyComponent,
     DateEditor: '' as AnyComponent,
     DatePresenter: '' as AnyComponent,
+    DateTimePresenter: '' as AnyComponent,
     TableBrowser: '' as AnyComponent,
     RolePresenter: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
@@ -78,11 +85,12 @@ export default mergeIds(viewId, view, {
     MarkupEditor: '' as AnyComponent,
     MarkupEditorPopup: '' as AnyComponent,
     ListView: '' as AnyComponent,
-    IndexedDocumentPreview: '' as AnyComponent,
     SpaceRefPresenter: '' as AnyComponent,
     EnumPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
     StatusRefPresenter: '' as AnyComponent,
+    PersonArrayEditor: '' as AnyComponent,
+    PersonIdFilterValuePresenter: '' as AnyComponent,
     DateFilterPresenter: '' as AnyComponent,
     StringFilterPresenter: '' as AnyComponent,
     AudioViewer: '' as AnyComponent,
@@ -110,7 +118,8 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString
+    MarkdownFormatting: '' as IntlString,
+    HideArchived: '' as IntlString
   },
   function: {
     FilterArrayAllResult: '' as FilterFunction,
@@ -134,6 +143,7 @@ export default mergeIds(viewId, view, {
     FilterDateNotSpecified: '' as FilterFunction,
     FilterDateCustom: '' as FilterFunction,
     ShowEmptyGroups: '' as ViewCategoryAction,
+    HideArchived: '' as ViewOptionsAction,
     CanDeleteObject: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanEditSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanArchiveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,

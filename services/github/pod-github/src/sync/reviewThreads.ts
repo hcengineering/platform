@@ -1,9 +1,8 @@
 //
 // Copyright © 2023 Hardcore Engineering Inc.
 //
-import { PersonAccount } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   AttachedData,
   Doc,
   DocumentUpdate,
@@ -41,6 +40,7 @@ import { Analytics } from '@hcengineering/analytics'
 import { PullRequestReviewThreadEvent } from '@octokit/webhooks-types'
 import config from '../config'
 import { syncConfig } from './syncConfig'
+import { githubConfiguration } from './configuration'
 
 export type ReviewThreadData = Pick<
 GithubReviewThread,
@@ -88,13 +88,13 @@ export class ReviewThreadSyncManager implements DocSyncManager {
         return
       }
     }
-    this.ctx.info('reviewThreads:handleEvent', { event, workspace: this.provider.getWorkspaceId().name })
+    this.ctx.info('reviewThreads:handleEvent', { event, workspace: this.provider.getWorkspaceId() })
 
     const { project, repository } = await this.provider.getProjectAndRepository(event.repository.node_id)
     if (project === undefined || repository === undefined) {
       this.ctx.info('No project for repository', {
         name: event.repository.name,
-        workspace: this.provider.getWorkspaceId().name
+        workspace: this.provider.getWorkspaceId()
       })
       return
     }
@@ -162,7 +162,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
     return true
   }
 
-  async deleteGithubDocument (container: ContainerFocus, account: Ref<Account>, id: string): Promise<void> {
+  async deleteGithubDocument (container: ContainerFocus, account: PersonId, id: string): Promise<void> {
     // Not supported
   }
 
@@ -329,7 +329,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
     container: ContainerFocus,
     parent: DocSyncInfo,
     review: ReviewThreadExternalData,
-    account: Ref<Account>,
+    account: PersonId,
     derivedClient: TxOperations
   ): Promise<void> {
     const repository = await this.provider.getRepositoryById(info.repository)
@@ -362,8 +362,8 @@ export class ReviewThreadSyncManager implements DocSyncManager {
 
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update  external
-      if (platformUpdate.isResolved !== undefined) {
-        const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
+      if (platformUpdate.isResolved !== undefined && githubConfiguration.ResolveThreadSupported) {
+        const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
         const q = `mutation updateReviewThread($threadID: ID!) {
           ${platformUpdate.isResolved ? 'resolveReviewThread' : 'unresolveReviewThread'} (
             input: {
@@ -400,7 +400,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
     messageData: ReviewThreadData,
     parent: DocSyncInfo,
     review: ReviewThreadExternalData,
-    account: Ref<Account>
+    account: PersonId
   ): Promise<void> {
     const _id: Ref<GithubReviewThread> = info._id as unknown as Ref<GithubReviewThread>
     const value: AttachedData<GithubReviewThread> = {
@@ -437,8 +437,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
       return {}
     }
     const existingReview = existing as GithubReviewThread
-    const okit =
-      (await this.provider.getOctokit(existingReview.modifiedBy as Ref<PersonAccount>)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(existingReview.modifiedBy)) ?? container.container.octokit
 
     // No external version yet, create it.
     // Will be added into pending state.

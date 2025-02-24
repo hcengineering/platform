@@ -24,7 +24,7 @@ import core, {
   type Ref,
   type Role,
   type RolesAssignment,
-  Account,
+  PersonId,
   AccountRole,
   IndexKind,
   SortingOrder
@@ -54,7 +54,7 @@ import {
   TypeTimestamp,
   UX
 } from '@hcengineering/model'
-import { TAttachedDoc, TCard, TType, TTypedSpace } from '@hcengineering/model-core'
+import { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
@@ -81,22 +81,22 @@ export class TDrive extends TTypedSpace implements Drive {}
 @Mixin(drive.mixin.DefaultDriveTypeData, drive.class.Drive)
 @UX(getEmbeddedLabel('Default drive type'))
 export class TDefaultDriveTypeData extends TDrive implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
-@Model(drive.class.Resource, core.class.Card, DOMAIN_DRIVE)
+@Model(drive.class.Resource, core.class.Doc, DOMAIN_DRIVE)
 @UX(drive.string.Resource)
-export class TResource extends TCard implements Resource {
+export class TResource extends TDoc implements Resource {
   declare space: Ref<Drive>
 
   @Prop(TypeString(), drive.string.Name)
   @Index(IndexKind.FullText)
-  declare title: string
+    title!: string
 
   @Prop(TypeRef(drive.class.Resource), drive.string.Parent)
   @Index(IndexKind.Indexed)
   @ReadOnly()
-  declare parent: Ref<Resource>
+    parent!: Ref<Resource>
 
   @Prop(TypeRef(drive.class.Resource), drive.string.Path)
   @ReadOnly()
@@ -268,7 +268,21 @@ function defineDrive (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name', 'description']
       },
-      config: ['', 'members', 'owners', 'private', 'archived']
+      config: ['', 'members', 'owners', 'private', 'archived'],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
+            label: view.string.HideArchived
+          }
+        ]
+      }
     },
     drive.viewlet.DriveTable
   )
@@ -335,7 +349,7 @@ function defineResource (builder: Builder): void {
           key: '',
           presenter: drive.component.ResourcePresenter,
           label: drive.string.Name,
-          sortingKey: 'name'
+          sortingKey: 'title'
         },
         '$lookup.file.size',
         'comments',
@@ -352,7 +366,7 @@ function defineResource (builder: Builder): void {
         }
       } as FindOptions<Resource>,
       configOptions: {
-        hiddenKeys: ['name', 'parent', 'path', 'file', 'versions'],
+        hiddenKeys: ['title', 'parent', 'path', 'file', 'versions'],
         sortable: true
       }
     },
@@ -379,7 +393,7 @@ function defineResource (builder: Builder): void {
       viewOptions: {
         groupBy: [],
         orderBy: [
-          ['name', SortingOrder.Ascending],
+          ['title', SortingOrder.Ascending],
           ['$lookup.file.size', SortingOrder.Ascending],
           ['$lookup.file.modifiedOn', SortingOrder.Descending]
         ],
@@ -390,14 +404,14 @@ function defineResource (builder: Builder): void {
           key: '',
           presenter: drive.component.ResourcePresenter,
           label: drive.string.Name,
-          sortingKey: 'name'
+          sortingKey: 'title'
         },
         '$lookup.file.size',
         '$lookup.file.modifiedOn',
         'createdBy'
       ],
       configOptions: {
-        hiddenKeys: ['name', 'parent', 'path', 'file', 'versions'],
+        hiddenKeys: ['title', 'parent', 'path', 'file', 'versions'],
         sortable: true
       },
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
@@ -444,7 +458,8 @@ function defineFolder (builder: Builder): void {
       label: presentation.string.Search,
       query: drive.completion.FolderQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: drive.class.Folder
+      classToSearch: drive.class.Folder,
+      priority: 700
     },
     drive.completion.FolderCategory
   )
@@ -553,6 +568,25 @@ function defineFileVersion (builder: Builder): void {
     },
     drive.action.RestoreFileVersion
   )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      visibilityTester: drive.function.CanDeleteFileVersion,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.FileVersion,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      }
+    },
+    drive.action.DeleteFileVersion
+  )
 }
 
 function defineFile (builder: Builder): void {
@@ -580,7 +614,7 @@ function defineFile (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: drive.class.File,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   // Search
@@ -594,7 +628,8 @@ function defineFile (builder: Builder): void {
       label: presentation.string.Search,
       query: drive.completion.FileQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: drive.class.File
+      classToSearch: drive.class.File,
+      priority: 600
     },
     drive.completion.FileCategory
   )

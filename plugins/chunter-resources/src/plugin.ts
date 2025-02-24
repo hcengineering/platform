@@ -17,7 +17,7 @@ import chunter, { chunterId } from '@hcengineering/chunter'
 import type { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type ViewAction } from '@hcengineering/view'
 import { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 
@@ -108,6 +108,7 @@ export default mergeIds(chunterId, chunter, {
     ArchiveActivityConfirmationMessage: '' as IntlString,
     JoinChannelHeader: '' as IntlString,
     JoinChannelText: '' as IntlString,
-    LatestMessages: '' as IntlString
+    LatestMessages: '' as IntlString,
+    ResolveThread: '' as IntlString
   }
 })

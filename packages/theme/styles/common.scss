@@ -79,7 +79,7 @@
 .heading-medium-16,
 .heading-bold-16 {
   font-size: 1rem;
-  line-height: 1.125rem;
+  // line-height: 1.125rem;
 }
 .heading-ui-H2 {
   font-size: 1.125rem;
@@ -144,20 +144,69 @@
   min-width: 12.5rem;
   max-width: 22.5rem;
   width: 17.5rem;
-  background-color: var(--theme-navpanel-color);
-}
+  
+  &:not(.second) { background-color: var(--theme-navpanel-color); }
+  &.second.float {
+    background-color: var(--theme-navpanel-color);
+    filter: drop-shadow(2px 0 5px rgba(0, 0, 0, .2));
+    z-index: 460;
+    
+    &:not(.inner) {
+      position: fixed;
+      top: calc(var(--status-bar-height) + 3.5rem + 1px);
+      height: calc(100% - var(--status-bar-height) - 3.5rem - 2px);
+      border-left: 1px solid var(--theme-divider-color);
 
-@media (max-width: 1024px) {
-  .antiPanel-navigator {
+      &.portrait { left: 0; }
+      &.landscape { left: var(--app-panel-width); }
+    }
+
+    &.inner {
+      position: absolute;
+      top: 3.5rem;
+      left: 0;
+      height: calc(100% - 3.5rem);
+    }
+  }
+
+  &.fly:not(.second) {
     position: fixed;
     top: calc(var(--status-bar-height) + 1px);
-    height: calc(100% - var(--status-bar-height) - 1px);
+    height: calc(100% - var(--status-bar-height) - 2px);
     background-color: var(--theme-navpanel-color);
-    filter: drop-shadow(2px 0 1px rgba(0, 0, 0, .2));
     z-index: 450;
+    filter: drop-shadow(2px 0 5px rgba(0, 0, 0, .2));
 
     &.portrait { left: 0; }
     &.landscape { left: var(--app-panel-width); }
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-theme {
+    .mobile-wrapper,
+    .antiPanel-navigator {
+      overflow: hidden;
+      border: 1px solid var(--theme-divider-color);
+      border-radius: var(--medium-BorderRadius);
+    }
+    .antiPanel-navigator {
+      top: var(--status-bar-height);
+      height: calc(100% - var(--status-bar-height) - var(--app-panel-width));
+
+      .antiSeparator { display: none; }
+      &.fly {
+        width: calc(100% - 3.5rem) !important;
+        filter: var(--theme-navpanel-shadow-mobile);
+      }
+      &.second.float.fly {
+        height: calc(100% - var(--status-bar-height) - var(--app-panel-width) - 3.5rem);
+      }
+      &.fly:not(.second) {
+        top: var(--status-bar-height);
+        height: calc(100% - var(--status-bar-height) - var(--app-panel-width));
+      }
+    }
   }
 }
 .antiPanel-component {

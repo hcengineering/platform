@@ -1,14 +1,17 @@
 import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
 import core, {
+  type Account,
   ClientConnectEvent,
   concatLink,
   setCurrentAccount,
   versionToString,
-  type AccountClient,
   type Client,
-  type Version
+  type Version,
+  type Ref,
+  type PersonId
 } from '@hcengineering/core'
+import { setCurrentEmployee, type Employee } from '@hcengineering/contact'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
@@ -32,14 +35,14 @@ export const versionError = writable<string | undefined>(undefined)
 const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
-let _client: AccountClient | undefined
+let _client: Client | undefined
 let _clientSet: boolean = false
 
 export async function connect (title: string): Promise<Client | undefined> {
   const loc = getCurrentLocation()
   const token = loc.query?.token
-  const ws = loc.path[1]
-  if (ws === undefined || token == null) {
+  const wsUrl = loc.path[1]
+  if (wsUrl === undefined || token == null) {
     navigate({
       path: [loginId]
     })
@@ -48,19 +51,24 @@ export async function connect (title: string): Promise<Client | undefined> {
   setMetadata(presentation.metadata.Token, token)
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
-  const workspaceLoginInfo = (await selectWorkspace(ws, token))[1]
+  const workspaceLoginInfo = (await selectWorkspace(wsUrl, token))[1]
   if (workspaceLoginInfo == null) {
+    console.error(
+      `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
+    )
+    // something went wrong with selecting workspace with the selected token
+    clearMetadata(wsUrl)
     navigate({
       path: [loginId]
     })
     return
   }
 
-  setPresentationCookie(token, workspaceLoginInfo.workspaceId)
+  setPresentationCookie(token, workspaceLoginInfo.workspace)
 
   setMetadata(presentation.metadata.Token, token)
-  setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
-  setMetadata(presentation.metadata.WorkspaceId, workspaceLoginInfo.workspaceId)
+  setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   if (_token !== token && _client !== undefined) {
@@ -118,14 +126,14 @@ export async function connect (title: string): Promise<Client | undefined> {
       location.reload()
     },
     onUnauthorized: () => {
-      clearMetadata(ws)
+      clearMetadata(wsUrl)
       navigate({
         path: [loginId],
         query: {}
       })
     },
     // We need to refresh all active live queries and clear old queries.
-    onConnect: (event: ClientConnectEvent, data: any) => {
+    onConnect: async (event: ClientConnectEvent, data: any) => {
       console.log('WorkbenchClient: onConnect', event)
       try {
         if (event === ClientConnectEvent.Connected) {
@@ -180,13 +188,23 @@ export async function connect (title: string): Promise<Client | undefined> {
   })
   console.log('logging in as guest')
   Analytics.handleEvent('GUEST LOGIN')
-  Analytics.setWorkspace(ws)
-  const me = await _client?.getAccount()
+  Analytics.setWorkspace(wsUrl)
+
+  const account = workspaceLoginInfo.account
+
+  const me: Account = {
+    uuid: account,
+    role: workspaceLoginInfo.role,
+    primarySocialId: '' as PersonId,
+    socialIds: []
+  }
+
   if (me !== undefined) {
-    Analytics.setUser(me.email)
-    Analytics.setWorkspace(ws)
+    Analytics.setUser(account)
+    Analytics.setWorkspace(wsUrl)
     console.log('login: employee account', me)
     setCurrentAccount(me)
+    setCurrentEmployee('' as Ref<Employee>)
   }
 
   try {
@@ -216,7 +234,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   versionError.set(undefined)
   // Update window title
-  document.title = [ws, title].filter((it) => it).join(' - ')
+  document.title = [wsUrl, title].filter((it) => it).join(' - ')
   _clientSet = true
   await setClient(_client)
 
@@ -224,20 +242,20 @@ export async function connect (title: string): Promise<Client | undefined> {
 }
 
 function clearMetadata (ws: string): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
   if (tokens !== null) {
     const loc = getCurrentLocation()
     // eslint-disable-next-line
     delete tokens[loc.path[1]]
-    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
   }
-  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceId)
+  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
   if (currentWorkspace !== undefined) {
     setPresentationCookie('', currentWorkspace)
   }
 
   setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
-  setMetadataLocalStorage(login.metadata.LoginEmail, null)
+  setMetadataLocalStorage(login.metadata.LoginAccount, null)
   void closeClient()
 }

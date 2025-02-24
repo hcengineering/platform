@@ -20,7 +20,7 @@
   import { Timestamp } from '@hcengineering/core'
 
   import Tabs from './Tabs.svelte'
-  import { BottomAction, doLoginNavigate, loginWithOtp, OtpLoginSteps, sendOtp } from '../index'
+  import { BottomAction, doLoginNavigate, validateOtpLogin, OtpLoginSteps, loginOtp } from '../index'
   import login from '../plugin'
   import BottomActionComponent from './BottomAction.svelte'
   import StatusControl from './StatusControl.svelte'
@@ -29,6 +29,7 @@
   export let email: string
   export let retryOn: Timestamp
   export let signUpDisabled = false
+  export let loginState: 'login' | 'signup' | 'none' = 'none'
 
   const dispatch = createEventDispatcher()
 
@@ -62,7 +63,7 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const otp = otpData.otp1 + otpData.otp2 + otpData.otp3 + otpData.otp4 + otpData.otp5 + otpData.otp6
-    const [loginStatus, result] = await loginWithOtp(email, otp)
+    const [loginStatus, result] = await validateOtpLogin(email, otp)
     status = loginStatus
 
     await doLoginNavigate(
@@ -195,10 +196,10 @@
 
   async function resendCode (): Promise<void> {
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-    const [otpStatus, result] = await sendOtp(email)
+    const [otpStatus, result] = await loginOtp(email)
     status = otpStatus
 
-    if (result !== undefined && result.sent && otpStatus === OK) {
+    if (result?.sent === true && otpStatus === OK) {
       retryOn = result.retryOn
       clearOtpData()
       if (timer !== undefined) timer.restart(retryOn)
@@ -233,7 +234,7 @@
   style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
 >
   <div class="header">
-    <Tabs loginState="login" {signUpDisabled} />
+    <Tabs {loginState} {signUpDisabled} />
     <div class="description">
       <Label label={login.string.SentTo} />
       <span class="email ml-1">

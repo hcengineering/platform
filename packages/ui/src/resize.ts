@@ -148,7 +148,7 @@ export function saveSeparator (
 }
 
 export const panelSeparators: DefSeparators = [
-  { minSize: 30, size: 'auto', maxSize: 'auto' },
+  { minSize: 20, size: 'auto', maxSize: 'auto' },
   { minSize: 17, size: 25, maxSize: 35, float: 'aside' }
 ]
 
@@ -164,9 +164,14 @@ export const settingsSeparators: DefSeparators = [
   { minSize: 19, size: 30, maxSize: 32, float: 'aside' }
 ]
 
+export const twoPanelsSeparators: DefSeparators = [
+  { minSize: 12.5, size: 17.5, maxSize: 22.5, float: 'navigator' },
+  null
+]
+
 export const mainSeparators: DefSeparators = [
-  { minSize: 30, size: 'auto', maxSize: 'auto' },
-  { minSize: 20, size: 30, maxSize: 80, float: 'sidebar' }
+  { minSize: 20, size: 'auto', maxSize: 'auto' },
+  { minSize: 25, size: 30, maxSize: 80, float: 'sidebar' }
 ]
 
 export const secondNavSeparators: DefSeparators = [{ minSize: 7, size: 7.5, maxSize: 15, float: 'navigator' }, null]

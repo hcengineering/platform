@@ -15,8 +15,9 @@
 //
 -->
 <script lang="ts">
-  import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
+  import { type Doc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { KeyedAttribute } from '@hcengineering/presentation'
   import { AnySvelteComponent, IconSize, registerFocus } from '@hcengineering/ui'
   import { AnyExtension, FocusPosition } from '@tiptap/core'
   import textEditor, { CollaborationUser, TextEditorCommandHandler } from '@hcengineering/text-editor'
@@ -25,14 +26,8 @@
   import { FileAttachFunction } from './extension/types'
   import { EditorKitOptions } from '../kits/editor-kit'
 
-  export let collaborativeDoc: CollaborativeDoc
-  export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
-  export let field: string
-
-  export let objectClass: Ref<Class<Doc>> | undefined = undefined
-  export let objectId: Ref<Doc> | undefined = undefined
-  export let objectSpace: Ref<Space> | undefined = undefined
-  export let objectAttr: string | undefined = undefined
+  export let object: Doc
+  export let attribute: KeyedAttribute
 
   export let user: CollaborationUser
   export let userComponent: AnySvelteComponent | undefined = undefined
@@ -50,6 +45,8 @@
   export let attachFile: FileAttachFunction | undefined = undefined
   export let canShowPopups = true
   export let kitOptions: Partial<EditorKitOptions> = {}
+  export let requestSideSpace: ((width: number) => void) | undefined = undefined
+  export let enableInlineComments: boolean = true
 
   let element: HTMLElement
 
@@ -90,13 +87,8 @@
 <div class="root">
   <CollaborativeTextEditor
     bind:this={collaborativeEditor}
-    {collaborativeDoc}
-    {initialCollaborativeDoc}
-    {field}
-    {objectClass}
-    {objectId}
-    {objectSpace}
-    {objectAttr}
+    {object}
+    {attribute}
     {user}
     {userComponent}
     {readonly}
@@ -109,10 +101,13 @@
     {canShowPopups}
     {editorAttributes}
     {kitOptions}
+    {requestSideSpace}
+    {enableInlineComments}
     on:editor
     on:update
     on:open-document
     on:blur
+    on:loaded
     on:focus={handleFocus}
   />
 </div>

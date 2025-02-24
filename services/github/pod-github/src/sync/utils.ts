@@ -1,6 +1,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  Account,
+  PersonId,
   AnyAttribute,
   AttachedDoc,
   Class,
@@ -127,6 +127,9 @@ export async function getSinceRaw (
 export function gqlp (params: Record<string, string | number | string[] | undefined>): string {
   let result = ''
   let first = true
+  function escape (str: string): string {
+    return str.replace(/"/g, '\\"')
+  }
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined) {
       if (!first) {
@@ -136,9 +139,9 @@ export function gqlp (params: Record<string, string | number | string[] | undefi
       if (typeof v === 'number') {
         result += `${k}: ${v}`
       } else if (Array.isArray(v)) {
-        result += `${k}: [${v.map((it) => `"${it}"`).join(', ')}]`
+        result += `${k}: [${v.map((it) => `"${escape(it)}"`).join(', ')}]`
       } else {
-        result += `${k}: "${v}"`
+        result += `${k}: "${escape(v)}"`
       }
     }
   }
@@ -297,7 +300,7 @@ export async function deleteObjects (
   ctx: MeasureContext,
   client: TxOperations,
   objects: Doc[],
-  account: Ref<Account>
+  account: PersonId
 ): Promise<void> {
   const ops = client.apply()
   for (const object of objects) {

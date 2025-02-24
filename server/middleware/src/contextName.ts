@@ -54,9 +54,9 @@ export class ContextNameMiddleware extends BaseMiddleware implements Middleware 
     const result = await ctx.with(
       measureName !== undefined ? `📶 ${measureName}` : 'client-tx',
       { _class: tx?._class },
-      async (ctx) => {
+      (ctx) => {
         ;({ opLogMetrics, op } = registerOperationLog(ctx))
-        return await this.provideTx(ctx as MeasureContext<SessionData>, txes)
+        return this.provideTx(ctx as MeasureContext<SessionData>, txes)
       }
     )
     updateOperationLog(opLogMetrics, op)

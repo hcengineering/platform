@@ -65,11 +65,12 @@
   --highlight-red-hover: #ff967e;
   --highlight-red-press: #f96f50bd;
 
+  --text-editor-selected-node-background: rgba(43, 81, 144, 0.1);
   --text-editor-selected-node-color: #93CAF3;
 
-  --text-editor-highlighted-node-warning-active-background-color: #F2D7AE;
-  --text-editor-highlighted-node-warning-background-color: #F8EBD7;
-  --text-editor-highlighted-node-warning-border-color: #DE9B35;
+  --text-editor-highlighted-node-warning-active-background-color: rgba(255, 203, 0, .24);
+  --text-editor-highlighted-node-warning-background-color: rgba(255, 203, 0, .12);
+  --text-editor-highlighted-node-warning-border-color: rgba(255, 203, 0, .35);
 
   --text-editor-highlighted-node-add-background-color: #DAEDDC;
   --text-editor-highlighted-node-add-font-color: #1C4220;
@@ -81,6 +82,8 @@
 
   --theme-clockface-sec-arrow: conic-gradient(at 50% -10px, rgba(255, 0, 0, 0), rgba(255, 0, 0, 0) 49%, #F47758 50%, rgba(255, 0, 0, 0) 51%, rgba(255, 0, 0, 0) 100%);
   --theme-clockface-sec-holder: #F47758;
+
+  --drawing-bg-color: #EEEEEE;
 }
 
 /* Dark Theme */
@@ -137,6 +140,7 @@
   --theme-navpanel-border: rgba(255, 255, 255, .1);
   --theme-navpanel-icons-color: #7F7F7F;
   --theme-navpanel-icons-divider: rgba(255, 255, 255, .11);
+  --theme-navpanel-shadow-mobile: drop-shadow(0 0 3px rgba(0, 0, 0, .5));
   --theme-comp-header-color: #1F1F2C;
   --theme-divider-color: rgba(255, 255, 255, .06);
   --theme-bg-divider-color: #282834;
@@ -182,6 +186,8 @@
   --theme-checkbox-disabled: #999;
   --theme-progress-color: #FFFFFF;
   --theme-popup-color: #2A2939;
+  --theme-popup-trans-color: #2A2939ee;
+  --theme-popup-trans-gradient: linear-gradient(to bottom, #2A2939ff, #2A293900);
   --theme-popup-hover: #333240;
   --theme-popup-divider: rgba(255, 255, 255, .09);
   --theme-popup-header: #3A3A47;
@@ -236,6 +242,8 @@
   --theme-lost-color: #eb5757;
   --theme-won-color: #34DB80;
   --theme-caret-color: #fff;
+  --theme-code-color: #DD812B;
+  --theme-code-bg-color: #262F40;
 
   --theme-text-editor-note-anchor-bg-neutral: #2C2C2C; /* Gray, no saturation change needed */
   --theme-text-editor-note-anchor-bg-dangerous: #8F4040;
@@ -246,6 +254,29 @@
   --theme-text-editor-note-anchor-bg-positive-light: #7B9589;
   --theme-text-editor-note-anchor-bg-primary: #688797;
   --theme-text-editor-note-anchor-bg-primary-light: #747C81;
+
+  --text-editor-table-border-color: hsl(220, 6%, 40%);
+  --text-editor-color-picker-outline: rgba(250, 222, 201, 0.3);
+
+  --theme-text-editor-palette-text-gray: rgba(155, 155, 155, 1);
+  --theme-text-editor-palette-text-brown: rgba(186, 133, 111, 1);
+  --theme-text-editor-palette-text-orange: rgba(199, 125, 72, 1);
+  --theme-text-editor-palette-text-yellow: rgba(202, 152, 73, 1);
+  --theme-text-editor-palette-text-green: rgba(82, 158, 114, 1);
+  --theme-text-editor-palette-text-blue: rgba(94, 135, 201, 1);
+  --theme-text-editor-palette-text-purple: rgba(157, 104, 211, 1);
+  --theme-text-editor-palette-text-pink: rgba(209, 87, 150, 1);
+  --theme-text-editor-palette-text-red: rgba(223, 84, 82, 1);
+  
+  --theme-text-editor-palette-bg-gray: rgba(47, 47, 47, 1);
+  --theme-text-editor-palette-bg-brown: rgba(74, 50, 40, 1);
+  --theme-text-editor-palette-bg-orange: rgba(92, 59, 35, 1);
+  --theme-text-editor-palette-bg-yellow: rgba(86, 67, 40, 1);
+  --theme-text-editor-palette-bg-green: rgba(36, 61, 48, 1);
+  --theme-text-editor-palette-bg-blue: rgba(20, 58, 78, 1);
+  --theme-text-editor-palette-bg-purple: rgba(60, 45, 73, 1);
+  --theme-text-editor-palette-bg-pink: rgba(78, 44, 60, 1);
+  --theme-text-editor-palette-bg-red:rgba(82, 46, 42, 1);
 
   --accent-bg-color: #27282b;
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
@@ -309,7 +340,6 @@
 
   --text-editor-toc-default-color: rgba(255, 255, 255, 0.1);
   --text-editor-toc-hovered-color: rgba(255, 255, 255, 0.4);
-  --text-editor-drag-marker-bg-color: #444248;
   --text-editor-table-header-color: rgba(255, 255, 255, 0.06);
 
   --theme-clockface-back: radial-gradient(farthest-corner at 50% 0%, #bbb, #fff 100%);
@@ -319,6 +349,10 @@
   --theme-clockface-min-arrow: conic-gradient(at 50% -10px, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 49%, #2F2F3A 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0) 100%);
   --theme-clockface-arrows-holder: radial-gradient(at top center, #2F2F3A, #555555);
   --theme-clockface-arrows-shadow: 0 0 1px white;
+
+  --theme-link-preview-bg-color: #2B2D41;
+  --theme-link-preview-description-color: #C1C9D6;
+  --theme-link-preview-text-color:#FFFFFF;
 
   --theme-dialog-border-color: rgba(255, 255, 255, 0.1);
   --theme-dialog-background-color: #2a2938;
@@ -396,11 +430,16 @@
   --theme-navpanel-border: rgba(0, 0, 0, .06);
   --theme-navpanel-icons-color: #7F7F7F;
   --theme-navpanel-icons-divider: rgba(0, 0, 0, .1);
+  --theme-navpanel-shadow-mobile: drop-shadow(0 0 2px rgba(0, 0, 0, .2));
   --theme-comp-header-color: #FBFBFC;
   --theme-divider-color: rgba(0, 0, 0, .06);
   --theme-bg-divider-color: #E3E3E5;
   --theme-mention-bg-color: rgba(55, 122, 230, 0.1);
   --theme-mention-focused-bg-color: rgba(55, 122, 230, 0.2);
+
+  --theme-link-preview-bg-color: #E5E8F0;
+  --theme-link-preview-description-color: #5A667E;
+  --theme-link-preview-text-color:#0F121A;
 
   --theme-trans-color: rgba(0, 0, 0, .3);
   --theme-darker-color: rgba(0, 0, 0, .4);
@@ -441,6 +480,8 @@
   --theme-checkbox-disabled: #999;
   --theme-progress-color: rgba(0, 0, 0, .5);
   --theme-popup-color: #FFFFFF;
+  --theme-popup-trans-color: #FFFFFFee;
+  --theme-popup-trans-gradient: linear-gradient(to bottom, #FFFf, #FFF0);
   --theme-popup-hover: #EBEBEB;
   --theme-popup-divider: rgba(0, 0, 0, .09);
   --theme-popup-header: #EBEBEB;
@@ -495,6 +536,8 @@
   --theme-lost-color: #eb5757;  // Dark
   --theme-won-color: #34DB80;  // Dark
   --theme-caret-color: #669AFF;
+  --theme-code-color: #B63F00;
+  --theme-code-bg-color: rgba(0, 0, 0, .05);
 
   --theme-text-editor-note-anchor-bg-neutral: #F3F3F3;
   --theme-text-editor-note-anchor-bg-dangerous: #DF8D8B;
@@ -505,6 +548,29 @@
   --theme-text-editor-note-anchor-bg-positive-light: #DEE9D9;
   --theme-text-editor-note-anchor-bg-primary: #AAC5E9;
   --theme-text-editor-note-anchor-bg-primary-light: #D5E5F5;
+
+  --text-editor-table-border-color: #c9cbcd;
+  --text-editor-color-picker-outline: rgb(227, 226, 224);
+
+  --theme-text-editor-palette-text-gray: rgba(120, 119, 116, 1);
+  --theme-text-editor-palette-text-brown: rgba(159, 107, 83, 1);
+  --theme-text-editor-palette-text-orange: rgba(217, 115, 13, 1);
+  --theme-text-editor-palette-text-yellow: rgba(203, 145, 47, 1);
+  --theme-text-editor-palette-text-green: rgba(68, 131, 97, 1);
+  --theme-text-editor-palette-text-blue: rgba(51, 126, 169, 1);
+  --theme-text-editor-palette-text-purple: rgba(144, 101, 176, 1);
+  --theme-text-editor-palette-text-pink: rgba(193, 76, 138, 1);
+  --theme-text-editor-palette-text-red: rgba(212, 76, 71, 1);
+  
+  --theme-text-editor-palette-bg-gray: rgba(241, 241, 239, 1);
+  --theme-text-editor-palette-bg-brown: rgba(244, 238, 238, 1);
+  --theme-text-editor-palette-bg-orange: rgba(251, 236, 221, 1);
+  --theme-text-editor-palette-bg-yellow: rgba(251, 243, 219, 1);
+  --theme-text-editor-palette-bg-green: rgba(237, 243, 236, 1);
+  --theme-text-editor-palette-bg-blue: rgba(231, 243, 248, 1);
+  --theme-text-editor-palette-bg-purple: rgba(244, 240, 247, 0.8);
+  --theme-text-editor-palette-bg-pink: rgba(249, 238, 243, 0.8);
+  --theme-text-editor-palette-bg-red: rgba(253, 235, 236, 1);
 
   --accent-bg-color: #eff0f2;  // HZ
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;  // Dark
@@ -568,7 +634,6 @@
 
   --text-editor-toc-default-color: rgba(0, 0, 0, 0.1);
   --text-editor-toc-hovered-color: rgba(0, 0, 0, 0.4);
-  --text-editor-drag-marker-bg-color: #444248;
   --text-editor-table-header-color: rgba(0, 0, 0, 0.06);
 
   --theme-clockface-back: radial-gradient(farthest-corner at 50% 0%, #606060, #000 100%);

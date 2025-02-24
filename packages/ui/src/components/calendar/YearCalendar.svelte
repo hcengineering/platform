@@ -17,10 +17,6 @@
   import Scroller from '../Scroller.svelte'
   import { defaultSP } from '../..'
 
-  /**
-   * If passed, calendars will use monday as first day
-   */
-  export let mondayStart = true
   export let selectedDate: Date = new Date()
   export let currentDate: Date = selectedDate
   export let cellHeight: string | undefined = undefined
@@ -42,14 +38,7 @@
     {#each [...Array(12).keys()] as m}
       <div class="antiComponentBox flex-col flex-grow flex-wrap" style:min-width={minWidth}>
         <span class="month-caption">{getMonthName(month(currentDate, m))}</span>
-        <MonthCalendar
-          {cellHeight}
-          weekFormat="narrow"
-          bind:selectedDate
-          currentDate={month(currentDate, m)}
-          {mondayStart}
-          on:change
-        >
+        <MonthCalendar {cellHeight} weekFormat="narrow" bind:selectedDate currentDate={month(currentDate, m)} on:change>
           <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
             <slot name="cell" {date} {today} {selected} {wrongMonth} />
           </svelte:fragment>

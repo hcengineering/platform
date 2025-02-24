@@ -15,6 +15,7 @@
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
   import { getFileUrl, getVideoMeta, type BlobMetadata } from '@hcengineering/presentation'
+  import { onDestroy } from 'svelte'
   import HLS from 'hls.js'
 
   export let value: Ref<Blob>
@@ -23,19 +24,31 @@
   export let fit: boolean = false
 
   let video: HTMLVideoElement
+  let hls: HLS
 
   async function fetchVideoMeta (value: Ref<Blob>, name: string): Promise<void> {
     const src = getFileUrl(value, name)
     const meta = await getVideoMeta(value, name)
     if (meta != null && meta.status === 'ready' && HLS.isSupported()) {
-      const hls = new HLS()
+      hls?.destroy()
+      hls = new HLS({ autoStartLoad: false })
       hls.loadSource(meta.hls)
       hls.attachMedia(video)
+
       video.poster = meta.thumbnail
+      video.onplay = () => {
+        // autoStartLoad disables autoplay, so we need to enable it manually
+        video.onplay = null
+        hls.startLoad()
+      }
     } else {
       video.src = src
     }
   }
+
+  onDestroy(() => {
+    hls?.destroy()
+  })
 
   $: aspectRatio =
     metadata?.originalWidth && metadata?.originalHeight
@@ -57,3 +70,13 @@
 >
   <track kind="captions" label={name} />
 </video>
+
+<style lang="scss">
+  video::-webkit-media-controls {
+    visibility: hidden;
+  }
+
+  video::-webkit-media-controls-enclosure {
+    visibility: visible;
+  }
+</style>

@@ -14,7 +14,7 @@
 //
 
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
-import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -58,7 +58,6 @@ export interface ChatMessage extends ActivityMessage {
   attachments?: number
   editedOn?: Timestamp
   provider?: Ref<SocialChannelProvider>
-  inlineButtons?: number
 }
 
 /**
@@ -84,22 +83,6 @@ export interface ChatSyncInfo extends Doc {
   timestamp: Timestamp
 }
 
-export interface TypingInfo extends Doc {
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-  person: Ref<Person>
-  lastTyping: Timestamp
-}
-
-export type InlineButtonAction = (button: InlineButton, message: Ref<ChatMessage>, channel: Ref<Doc>) => Promise<void>
-
-export interface InlineButton extends AttachedDoc {
-  name: string
-  titleIntl?: IntlString
-  title?: string
-  action: Resource<InlineButtonAction>
-}
-
 export interface ChatWidgetTab extends WidgetTab {
   data: {
     _id?: Ref<Doc>
@@ -107,14 +90,8 @@ export interface ChatWidgetTab extends WidgetTab {
     thread?: Ref<ActivityMessage>
     channelName: string
     selectedMessageId?: Ref<ActivityMessage>
+    props?: Record<string, any>
   }
-}
-
-export type ChunterExtensionPoint = 'aside'
-export interface ChunterExtension extends Doc {
-  ofClass: Ref<Class<Doc>>
-  point: ChunterExtensionPoint
-  component: AnyComponent
 }
 
 /**
@@ -148,7 +125,8 @@ export default plugin(chunterId, {
     ThreadMessagePresenter: '' as AnyComponent,
     ChatMessagePreview: '' as AnyComponent,
     ThreadMessagePreview: '' as AnyComponent,
-    DirectIcon: '' as AnyComponent
+    DirectIcon: '' as AnyComponent,
+    InlineCommentThread: '' as AnyComponent
   },
   activity: {
     MembersChangedMessage: '' as AnyComponent
@@ -160,10 +138,7 @@ export default plugin(chunterId, {
     DirectMessage: '' as Ref<Class<DirectMessage>>,
     ChatMessage: '' as Ref<Class<ChatMessage>>,
     ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>,
-    ChatSyncInfo: '' as Ref<Class<ChatSyncInfo>>,
-    InlineButton: '' as Ref<Class<InlineButton>>,
-    TypingInfo: '' as Ref<Class<TypingInfo>>,
-    ChunterExtension: '' as Ref<Class<ChunterExtension>>
+    ChatSyncInfo: '' as Ref<Class<ChatSyncInfo>>
   },
   mixin: {
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
@@ -252,7 +227,13 @@ export default plugin(chunterId, {
   function: {
     CanTranslateMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     OpenThreadInSidebar: '' as Resource<
-    (_id: Ref<ActivityMessage>, msg?: ActivityMessage, doc?: Doc, selectedId?: Ref<ActivityMessage>) => Promise<void>
+    (
+      _id: Ref<ActivityMessage>,
+      msg?: ActivityMessage,
+      doc?: Doc,
+      selectedId?: Ref<ActivityMessage>,
+      props?: Record<string, any>
+    ) => Promise<void>
     >,
     OpenChannelInSidebar: '' as Resource<
     (

@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { addTxListener, createQuery, getClient, removeTxListener } from '@hcengineering/presentation'
-  import { WidgetPreference, SidebarEvent, TxSidebarEvent, OpenSidebarWidgetParams } from '@hcengineering/workbench'
   import { Tx } from '@hcengineering/core'
+  import { addTxListener, createQuery, getClient, removeTxListener } from '@hcengineering/presentation'
+  import { panelstore } from '@hcengineering/ui'
+  import { OpenSidebarWidgetParams, SidebarEvent, TxSidebarEvent, WidgetPreference } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
 
   import workbench from '../../plugin'
   import { createWidgetTab, openWidget, sidebarStore, SidebarVariant } from '../../sidebar'
-  import SidebarMini from './SidebarMini.svelte'
   import SidebarExpanded from './SidebarExpanded.svelte'
+  import SidebarMini from './SidebarMini.svelte'
 
   const client = getClient()
 
@@ -33,20 +34,21 @@
     preferences = res
   })
 
-  $: size = $sidebarStore.variant === SidebarVariant.MINI ? 'mini' : undefined
+  $: mini = $sidebarStore.variant === SidebarVariant.MINI
+  $: if ((!mini || mini) && $panelstore.panel?.refit !== undefined) $panelstore.panel.refit()
 
-  function txListener (tx: Tx): void {
-    if (tx._class === workbench.class.TxSidebarEvent) {
-      const evt = tx as TxSidebarEvent
-      if (evt.event === SidebarEvent.OpenWidget) {
-        const params = evt.params as OpenSidebarWidgetParams
-        const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: params.widget })[0]
-        if (widget === undefined) return
-        if (params.tab !== undefined) {
-          createWidgetTab(widget, params.tab)
-        } else {
-          openWidget(widget)
-        }
+  function txListener (txes: Tx[]): void {
+    const evt = txes.findLast(
+      (it) => it._class === workbench.class.TxSidebarEvent && evt.event === SidebarEvent.OpenWidget
+    ) as TxSidebarEvent
+    if (evt !== undefined) {
+      const params = evt.params as OpenSidebarWidgetParams
+      const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: params.widget })[0]
+      if (widget === undefined) return
+      if (params.tab !== undefined) {
+        createWidgetTab(widget, params.tab)
+      } else {
+        openWidget(widget)
       }
     }
   }
@@ -59,8 +61,8 @@
   })
 </script>
 
-<div class="antiPanel-component antiComponent root size-{size}" id="sidebar">
-  {#if $sidebarStore.variant === SidebarVariant.MINI}
+<div id="sidebar" class="antiPanel-application vertical sidebar-container" class:mini={mini || $sidebarStore.float}>
+  {#if mini}
     <SidebarMini {widgets} {preferences} />
   {:else if $sidebarStore.variant === SidebarVariant.EXPANDED}
     <SidebarExpanded {widgets} {preferences} />
@@ -68,14 +70,29 @@
 </div>
 
 <style lang="scss">
-  .root {
-    position: relative;
-    background-color: var(--theme-panel-color);
+  .sidebar-container {
+    overflow: hidden;
+    flex-direction: row;
+    min-width: 25rem;
+    border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
 
-    &.size-mini {
-      width: 3.5rem !important;
-      min-width: 3.5rem !important;
-      max-width: 3.5rem !important;
+    &.mini {
+      justify-content: flex-end;
+      width: calc(3.5rem + 1px) !important;
+      min-width: calc(3.5rem + 1px) !important;
+      max-width: calc(3.5rem + 1px) !important;
+    }
+  }
+  @media (max-width: 1024px) {
+    .sidebar-container {
+      width: 100%;
+      border-left-color: transparent;
+    }
+  }
+  @media (max-width: 480px) {
+    :global(.mobile-theme) .sidebar-container {
+      border-right: none;
+      border-bottom-right-radius: 0 !important;
     }
   }
 </style>

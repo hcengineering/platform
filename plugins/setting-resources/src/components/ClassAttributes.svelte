@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, ClassifierKind, Doc, Ref, Space } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -22,26 +22,29 @@
     ButtonIcon,
     IconAdd,
     IconEdit,
-    Label,
-    getEventPositionElement,
-    showPopup,
     IconSettings,
-    ModernButton
+    Label,
+    ModernButton,
+    deviceWidths,
+    getEventPositionElement,
+    resizeObserver,
+    showPopup
   } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
   import settings from '../plugin'
-  import CreateAttribute from './CreateAttribute.svelte'
+  import { clearSettingsStore, settingsStore } from '../store'
   import ClassAttributesList from './ClassAttributesList.svelte'
+  import CreateAttribute from './CreateAttribute.svelte'
   import EditAttribute from './EditAttribute.svelte'
   import EditClassLabel from './EditClassLabel.svelte'
-  import { settingsStore, clearSettingsStore } from '../store'
   import TypesPopup from './typeEditors/TypesPopup.svelte'
-  import { onDestroy } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let ofClass: Ref<Class<Doc>> | undefined = undefined
   export let showHierarchy: boolean = false
   export let showTitle: boolean = !showHierarchy
+  export let showHeader: boolean = true
   export let disabled: boolean = true
   export let attributeMapper:
   | {
@@ -64,12 +67,21 @@
   $: classQuery.query(core.class.Class, { _id: _class }, (res) => {
     clazz = res.shift()
   })
-  function hasCustomAttributes (_class: Ref<Class<Doc>>): boolean {
+
+  const attrQuery = createQuery()
+
+  $: attributes = getCustomAttributes(_class)
+
+  $: attrQuery.query(core.class.Attribute, { attributeOf: _class }, () => {
+    attributes = getCustomAttributes(_class)
+  })
+
+  function getCustomAttributes (_class: Ref<Class<Doc>>): AnyAttribute[] {
     const cl = hierarchy.getClass(_class)
     const attributes = Array.from(
       hierarchy.getAllAttributes(_class, _class === ofClass ? core.class.Doc : cl.extends).values()
     )
-    return attributes.length > 0
+    return attributes
   }
 
   export function createAttribute (ev: MouseEvent): void {
@@ -90,16 +102,18 @@
     showPopup(EditClassLabel, { clazz }, getEventPositionElement(evt))
   }
 
-  const classUpdated = (_clazz: Ref<Class<Doc>>): void => {
+  const classUpdated = (_clazz: Ref<Class<Doc>>, to: Ref<Class<Doc>>): void => {
     selected = undefined
-    classes = client
-      .getHierarchy()
+    const h = client.getHierarchy()
+    const toAncestors = new Set(h.getAncestors(to))
+    classes = h
       .getAncestors(_class)
       .map((it) => client.getHierarchy().getClass(it))
       .filter((it) => {
         return (
           !it.hidden &&
           it.label !== undefined &&
+          !toAncestors.has(it._id) &&
           it._id !== core.class.Doc &&
           it._id !== core.class.AttachedDoc &&
           it._id !== _class
@@ -107,7 +121,7 @@
       })
     clazzHierarchy = client.getHierarchy().getClass(_class)
   }
-  $: classUpdated(_class)
+  $: classUpdated(_class, ofClass ?? core.class.Doc)
 
   settingsStore.subscribe((value) => {
     if ((value.id === undefined && selected !== undefined) || (value.id !== undefined && value.id !== selected?._id)) {
@@ -120,7 +134,7 @@
   }
   const handleSelect = async (event: CustomEvent): Promise<void> => {
     selected = event.detail as AnyAttribute
-    if (selected != null) {
+    if (selected?._id != null) {
       const exist = (await client.findOne(selected.attributeOf, { [selected.name]: { $exists: true } })) !== undefined
       $settingsStore = { id: selected._id, component: EditAttribute, props: { attribute: selected, exist, disabled } }
     }
@@ -136,7 +150,7 @@
       <div class="hulyInput-body">
         <Label label={clazz.label} />
       </div>
-      {#if clazz.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
+      {#if hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
         <div class="ml-2">
           <ActionIcon icon={IconEdit} size="small" action={editLabel} {disabled} />
         </div>
@@ -144,16 +158,26 @@
     </div>
   {/if}
 {/if}
-<div class="hulyTableAttr-container">
+<div
+  class="hulyTableAttr-container"
+  use:resizeObserver={(el) => {
+    if (el.clientWidth < deviceWidths[0] && !el.classList.contains('short')) el.classList.add('short')
+    else if (el.clientWidth >= deviceWidths[0] && el.classList.contains('short')) el.classList.remove('short')
+  }}
+>
   <div class="hulyTableAttr-header font-medium-12" class:withButton={showHierarchy}>
-    {#if showHierarchy}
-      <ModernButton icon={IconSettings} kind={'secondary'} size={'small'} {disabled} hasMenu>
-        <Label label={settings.string.ClassColon} />
-        <ObjectPresenter _class={clazzHierarchy._class} objectId={clazzHierarchy._id} value={clazzHierarchy} />
-      </ModernButton>
+    {#if showHeader}
+      {#if showHierarchy}
+        <ModernButton icon={IconSettings} kind={'secondary'} size={'small'} {disabled} hasMenu>
+          <Label label={settings.string.ClassColon} />
+          <ObjectPresenter _class={clazzHierarchy._class} objectId={clazzHierarchy._id} value={clazzHierarchy} />
+        </ModernButton>
+      {:else}
+        <IconSettings size={'small'} />
+        <span><Label label={settings.string.ClassProperties} /></span>
+      {/if}
     {:else}
-      <IconSettings size={'small'} />
-      <span><Label label={settings.string.ClassProperties} /></span>
+      <div></div>
     {/if}
     <ButtonIcon
       kind={'primary'}
@@ -200,7 +224,7 @@
         </div>
       </div>
     {/each}
-  {:else if hasCustomAttributes(_class)}
+  {:else if attributes.length > 0}
     <div class="hulyTableAttr-content class">
       <ClassAttributesList
         {_class}

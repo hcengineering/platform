@@ -18,7 +18,7 @@
   import OtpForm from './OtpForm.svelte'
   import login from '../plugin'
   import Form from './Form.svelte'
-  import { OtpLoginSteps, sendOtp } from '../index'
+  import { OtpLoginSteps, loginOtp } from '../index'
 
   export let navigateUrl: string | undefined = undefined
   export let signUpDisabled = false
@@ -36,10 +36,10 @@
     i18n: login.string.LogIn,
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-      const [otpStatus, result] = await sendOtp(formData.username)
+      const [otpStatus, result] = await loginOtp(formData.username)
       status = otpStatus
 
-      if (result !== undefined && result.sent && otpStatus === OK) {
+      if (result?.sent === true && otpStatus === OK) {
         step = OtpLoginSteps.Otp
         otpRetryOn = result.retryOn
       }

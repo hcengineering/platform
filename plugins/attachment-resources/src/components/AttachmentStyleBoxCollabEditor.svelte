@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment, { Attachment, BlobMetadata, AttachmentsEvents } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
-  import { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
+  import { Doc, PersonId, Ref, generateId, type Blob } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     FileOrBlob,
@@ -178,7 +178,7 @@
         _class: attachment.class.Attachment,
         collection: 'attachments',
         modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
+        modifiedBy: '' as PersonId,
         space: object.space,
         attachedTo: object._id,
         attachedToClass: object._class,
@@ -333,7 +333,6 @@
         {attachments}
         {readonly}
         {progress}
-        {progressItems}
         {useAttachmentPreview}
         on:remove={async (evt) => {
           if (evt.detail !== undefined) {

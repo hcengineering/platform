@@ -1,6 +1,6 @@
 import { Organization } from '@hcengineering/contact'
 import core, {
-  Account,
+  PersonId,
   Client,
   Data,
   Doc,
@@ -8,8 +8,7 @@ import core, {
   SortingOrder,
   Status,
   TxOperations,
-  generateId,
-  makeCollaborativeDoc
+  generateId
 } from '@hcengineering/core'
 import recruit, { Applicant, Vacancy } from '@hcengineering/recruit'
 import task, { ProjectType, makeRank } from '@hcengineering/task'
@@ -18,7 +17,7 @@ export async function createVacancy (
   rawClient: Client,
   name: string,
   typeId: Ref<ProjectType>,
-  account: Ref<Account>,
+  account: PersonId,
   company?: Ref<Organization>
 ): Promise<Ref<Vacancy>> {
   const client = new TxOperations(rawClient, account)
@@ -27,7 +26,7 @@ export async function createVacancy (
     throw Error(`Failed to find target project type: ${typeId}`)
   }
 
-  const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Vacancy })
+  const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Vacancy })
   if (sequence === undefined) {
     throw new Error('sequence object not found')
   }
@@ -41,7 +40,7 @@ export async function createVacancy (
     {
       name,
       description: type.shortDescription ?? '',
-      fullDescription: makeCollaborativeDoc(id, 'fullDescription'),
+      fullDescription: null,
       private: false,
       archived: false,
       company,
@@ -67,7 +66,7 @@ export async function createApplication (
   if (selectedState === undefined) {
     throw new Error(`Please select initial state:${_space}`)
   }
-  const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
+  const sequence = await client.findOne(core.class.Sequence, { attachedTo: recruit.class.Applicant })
   if (sequence === undefined) {
     throw new Error('sequence object not found')
   }

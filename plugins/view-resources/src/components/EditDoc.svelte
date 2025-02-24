@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
+  import { Class, Doc, Hierarchy, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -34,11 +34,13 @@
   import { DocNavLink, ParentsNavigator, getDocAttrsInfo, getDocLabel, getDocMixins, showMenu, parseLinkId } from '..'
   import { getCollectionCounter } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
+  import RelationsEditor from './RelationsEditor.svelte'
 
   export let _id: Ref<Doc> | string
   export let _class: Ref<Class<Doc>>
   export let embedded: boolean = false
   export let readonly: boolean = false
+  export let selectedAside: boolean | undefined = undefined
 
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> | undefined
@@ -65,7 +67,7 @@
       const prev = lastId
       lastId = _id
       void inboxClient.then(async (client) => {
-        await client.readDoc(pClient, prev)
+        await client.readDoc(prev)
       })
     }
   }
@@ -73,7 +75,7 @@
   onDestroy(async () => {
     await inboxClient.then(async (client) => {
       if (objectId === undefined) return
-      await client.readDoc(pClient, objectId)
+      await client.readDoc(objectId)
     })
   })
 
@@ -85,7 +87,7 @@
       query.query(_class, { _id }, (result) => {
         object = result[0]
         if (object != null) {
-          realObjectClass = object._class
+          realObjectClass = Hierarchy.mixinOrClass(object)
         }
       })
     } else {
@@ -97,7 +99,9 @@
 
   $: if (_class !== oldClass) {
     oldClass = _class
+    realObjectClass = _class
     mainEditor = undefined
+    fieldEditors = []
   }
 
   let keys: KeyedAttribute[] = []
@@ -154,9 +158,24 @@
     return undefined
   }
 
+  function getPanelFooter (
+    _class: Ref<Class<Doc>>,
+    object?: Doc
+  ): { footer: AnyComponent, props?: Record<string, any> } | undefined {
+    if (object !== undefined) {
+      const footer = hierarchy.findClassOrMixinMixin(object, view.mixin.ObjectPanelFooter)
+      if (footer !== undefined) {
+        return { footer: footer.editor, props: footer.props }
+      }
+    }
+
+    return undefined
+  }
+
   let mainEditor: MixinEditor | undefined
 
   $: editorFooter = getEditorFooter(_class, object)
+  $: panelFooter = getPanelFooter(_class, object)
 
   const getEditorOrDefault = reduceCalls(async function (_class: Ref<Class<Doc>>, _id?: Ref<Doc>): Promise<void> {
     if (objectId === undefined) return
@@ -225,6 +244,7 @@
     allowClose={!embedded}
     isAside={true}
     {embedded}
+    {selectedAside}
     bind:content
     bind:panelWidth
     bind:innerWidth
@@ -272,7 +292,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="attributes" let:direction={dir}>
-      {#if headerEditor !== undefined}
+      {#if headerEditor !== undefined && object._id === _id}
         <Component
           is={headerEditor}
           props={{
@@ -334,10 +354,18 @@
       {/if}
     {/each}
 
+    <RelationsEditor {object} {readonly} />
+
     {#if editorFooter}
       <div class="step-tb-6">
         <Component is={editorFooter.footer} props={{ object, _class, ...editorFooter.props, readonly }} />
       </div>
     {/if}
+
+    <svelte:fragment slot="panel-footer">
+      {#if panelFooter}
+        <Component is={panelFooter.footer} props={{ object, _class, ...panelFooter.props, readonly }} />
+      {/if}
+    </svelte:fragment>
   </Panel>
 {/if}

@@ -17,7 +17,7 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Class, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Icon, Label, resizeObserver, Scroller, Spinner, Button, IconAdd } from '@hcengineering/ui'
+  import { Icon, Label, resizeObserver, Scroller, Spinner, ButtonIcon, IconAdd } from '@hcengineering/ui'
   import view, { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
@@ -109,7 +109,7 @@
         {#if loading}
           <Spinner />
         {:else if !readonly}
-          <Button icon={IconAdd} kind={'ghost'} on:click={openFile} />
+          <ButtonIcon icon={IconAdd} kind={'tertiary'} size={'small'} on:click={openFile} />
         {/if}
       </div>
     </div>
@@ -171,7 +171,7 @@
           ...extraConfig,
           'lastModified'
         ]}
-        options={{ sort: { pinned: -1 } }}
+        options={{ sort: { pinned: -1 }, showArchived: true }}
         query={{ ...query, attachedTo: objectId }}
         loadingProps={{ length: attachments ?? 0 }}
         on:content={updateContent}
@@ -193,7 +193,7 @@
         ...extraConfig,
         'lastModified'
       ]}
-      options={{ sort: { pinned: -1 } }}
+      options={{ sort: { pinned: -1 }, showArchived: true }}
       query={{ ...query, attachedTo: objectId }}
       loadingProps={{ length: attachments ?? 0 }}
       on:content={updateContent}

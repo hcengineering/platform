@@ -14,24 +14,28 @@
 // limitations under the License.
 //
 
+import { generateId, type WorkspaceIds } from '@hcengineering/core'
+import { initStatisticsContext, StorageConfiguration } from '@hcengineering/server-core'
+import { buildStorageFromConfig } from '@hcengineering/server-storage'
+import { getClient as getAccountClientRaw, AccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
-import { Token } from '@hcengineering/server-token'
 import { type Server } from 'http'
-import { StorageConfiguration } from '@hcengineering/server-core'
-import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
 
+import { type Branding, type BrandingMap, extractBranding } from './branding'
+import config from './config'
 import { ApiError } from './error'
 import { signPDF } from './sign'
 import { extractToken } from './token'
-import { type Branding, type BrandingMap, extractBranding } from './branding'
-import config from './config'
+
+function getAccountClient (token: string): AccountClient {
+  return getAccountClientRaw(config.AccountsUrl, token)
+}
 
 type AsyncRequestHandler = (
   req: Request,
   res: Response,
-  token: Token,
+  wsIds: WorkspaceIds,
   branding: Branding | null,
   next: NextFunction
 ) => Promise<void>
@@ -44,9 +48,18 @@ const handleRequest = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { token } = extractToken(req.headers, req.query)
+    const { rawToken } = extractToken(req.headers, req.query)
+    const wsLoginInfo = await getAccountClient(rawToken).getLoginInfoByToken()
+    if (!isWorkspaceLoginInfo(wsLoginInfo)) {
+      throw new ApiError(401, "Couldn't find workspace with the provided token")
+    }
+    const wsIds = {
+      uuid: wsLoginInfo.workspace,
+      dataId: wsLoginInfo.workspaceDataId,
+      url: wsLoginInfo.workspaceUrl
+    }
     const branding = extractBranding(brandings, req.headers)
-    await fn(req, res, token, branding, next)
+    await fn(req, res, wsIds, branding, next)
   } catch (err: unknown) {
     next(err)
   }
@@ -58,9 +71,9 @@ const wrapRequest =
     handleRequest(fn, brandings, req, res, next)
   }
 
-export function createServer (dbUrl: string, storageConfig: StorageConfiguration, brandings: BrandingMap): Express {
-  const storageAdapter = buildStorageFromConfig(storageConfig, dbUrl)
-  const measureCtx = new MeasureMetricsContext('sign', {})
+export function createServer (storageConfig: StorageConfiguration, brandings: BrandingMap): Express {
+  const storageAdapter = buildStorageFromConfig(storageConfig)
+  const measureCtx = initStatisticsContext('sign', {})
 
   const app = express()
   app.use(cors())
@@ -68,14 +81,14 @@ export function createServer (dbUrl: string, storageConfig: StorageConfiguration
 
   app.post(
     '/sign',
-    wrapRequest(brandings, async (req, res, token, branding) => {
+    wrapRequest(brandings, async (req, res, wsIds, branding) => {
       const fileId = req.body.fileId as string
 
       if (fileId === undefined) {
         throw new ApiError(400, 'Missing fileId')
       }
 
-      const originalFile = await storageAdapter.read(measureCtx, token.workspace, fileId)
+      const originalFile = await storageAdapter.read(measureCtx, wsIds, fileId)
       const ctx = {
         title: branding?.title ?? 'Huly'
       }
@@ -87,7 +100,7 @@ export function createServer (dbUrl: string, storageConfig: StorageConfiguration
 
       const signedId = `signed-${fileId}-${generateId()}`
 
-      await storageAdapter.put(measureCtx, token.workspace, signedId, signRes, 'application/pdf', signRes.length)
+      await storageAdapter.put(measureCtx, wsIds, signedId, signRes, 'application/pdf', signRes.length)
 
       res.contentType('application/json')
       res.send({ id: signedId })

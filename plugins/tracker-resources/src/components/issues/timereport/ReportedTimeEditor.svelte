@@ -102,13 +102,19 @@
 <style lang="scss">
   .link-container {
     padding: 0px 0.75rem;
-    .add-action {
-      visibility: hidden;
-    }
+    border-radius: 0.375rem;
 
-    &:hover {
+    &:not(.readonly) {
+      cursor: pointer;
+
       .add-action {
-        visibility: visible;
+        visibility: hidden;
+      }
+
+      &:hover {
+        .add-action {
+          visibility: visible;
+        }
       }
     }
   }

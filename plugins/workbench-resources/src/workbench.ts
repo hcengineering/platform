@@ -40,7 +40,7 @@ import { type Asset, type IntlString, getMetadata, getResource, translate } from
 import { parseLinkId } from '@hcengineering/view-resources'
 import notification, { notificationId } from '@hcengineering/notification'
 
-import { workspaceStore } from './utils'
+import { locationWorkspaceStore } from './utils'
 import workbench from './plugin'
 
 export const tabIdStore = writable<Ref<WorkbenchTab> | undefined>()
@@ -54,17 +54,16 @@ let prevTabId: Ref<WorkbenchTab> | undefined
 tabIdStore.subscribe((value) => {
   prevTabIdStore.set(prevTabId)
   prevTabId = value
+  saveTabToLocalStorage(value)
 })
 
-workspaceStore.subscribe((workspace) => {
+locationWorkspaceStore.subscribe((workspace) => {
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 })
 
-tabIdStore.subscribe(saveTabToLocalStorage)
-
 const syncTabLoc = reduceCalls(async (): Promise<void> => {
   const loc = getCurrentLocation()
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   if (workspace == null || workspace === '') return
   const tab = get(currentTabStore)
   if (tab == null) return
@@ -84,11 +83,14 @@ const syncTabLoc = reduceCalls(async (): Promise<void> => {
     if (t.name !== name) return false
 
     const tabLoc = getTabLocation(t)
+    if (tabLoc.path[2] !== loc.path[2]) return false
+    if (tabLoc.path[2] === notificationId) return true
 
-    return tabLoc.path[2] === loc.path[2] && tabLoc.path[3] === loc.path[3]
+    return tabLoc.path[3] === loc.path[3]
   })
 
   if (tab.name !== undefined && name !== tab.name && tab.isPinned) {
+    if (get(tabIdStore) !== tab._id) return
     if (tabByName !== undefined) {
       selectTab(tabByName._id)
       return
@@ -101,10 +103,10 @@ const syncTabLoc = reduceCalls(async (): Promise<void> => {
       space: core.space.Workspace,
       location: url,
       name,
-      attachedTo: me._id,
+      attachedTo: me.primarySocialId,
       isPinned: false,
       modifiedOn: Date.now(),
-      modifiedBy: me._id
+      modifiedBy: me.primarySocialId
     }
     console.log('Creating new tab when pinned location changed', { newLocation: url, pinnedLocation: tab.location })
     await getClient().createDoc(workbench.class.WorkbenchTab, core.space.Workspace, newTab, newTab._id)
@@ -121,23 +123,25 @@ const syncTabLoc = reduceCalls(async (): Promise<void> => {
     //   return
     // }
 
-    await getClient().diffUpdate(tab, { location: url, name })
+    const op = getClient().apply(undefined, undefined, true)
+    await op.diffUpdate(tab, { location: url, name })
+    await op.commit()
   }
 })
 
-locationStore.subscribe((l: Location) => {
+locationStore.subscribe(() => {
   void syncTabLoc()
 })
 
 export function syncWorkbenchTab (): void {
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 }
 
 function getTabIdLocalStorageKey (workspace: string): string | undefined {
   const me = getCurrentAccount()
   if (me == null || workspace === '') return undefined
-  return `workbench.${workspace}.${me.person}.tab`
+  return `workbench.${workspace}.${me.uuid}.tab`
 }
 
 function getTabFromLocalStorage (workspace: string): Ref<WorkbenchTab> | undefined {
@@ -151,7 +155,7 @@ function getTabFromLocalStorage (workspace: string): Ref<WorkbenchTab> | undefin
 }
 
 function saveTabToLocalStorage (_id: Ref<WorkbenchTab> | undefined): void {
-  const workspace = get(workspaceStore)
+  const workspace = get(locationWorkspaceStore)
   if (workspace == null || workspace === '') return
 
   const localStorageKey = getTabIdLocalStorageKey(workspace)
@@ -192,7 +196,6 @@ export async function closeTab (tab: WorkbenchTab): Promise<void> {
 export async function createTab (): Promise<void> {
   const loc = getCurrentLocation()
   const client = getClient()
-  const me = getCurrentAccount()
   let defaultUrl = `${workbenchId}/${loc.path[1]}/${notificationId}`
 
   try {
@@ -207,7 +210,7 @@ export async function createTab (): Promise<void> {
 
   const name = await translate(notification.string.Inbox, {}, get(languageStore))
   const tab = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
-    attachedTo: me._id,
+    attachedTo: getCurrentAccount().primarySocialId,
     location: defaultUrl,
     isPinned: false,
     name

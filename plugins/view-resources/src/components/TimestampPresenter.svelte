@@ -27,7 +27,9 @@
 {#if kind === 'link'}
   <Button {kind} {size} {justify} {width}>
     <svelte:fragment slot="content">
-      <TimeSince {value} />
+      {#if value != null}
+        <TimeSince {value} />
+      {/if}
     </svelte:fragment>
   </Button>
 {:else}

@@ -37,6 +37,7 @@ import { requestId, createModel as requestModel } from '@hcengineering/model-req
 import { aiBotId, createModel as aiBotModel } from '@hcengineering/model-ai-bot'
 import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
+import { serverCardId, createModel as serverCardModel } from '@hcengineering/model-server-card'
 import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
 import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
 import {
@@ -75,6 +76,7 @@ import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/
 import { uploaderId, createModel as uploaderModel } from '@hcengineering/model-uploader'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
+import card, { cardId, createModel as cardModel } from '@hcengineering/model-card'
 import { desktopPreferencesId, createModel as desktopPreferencesModel } from '@hcengineering/model-desktop-preferences'
 
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
@@ -95,10 +97,20 @@ import documents, { documentsId, createModel as documentsModel } from '@hcengine
 import products, { productsId, createModel as productsModel } from '@hcengineering/model-products'
 import { serverProductsId, createModel as serverProductsModel } from '@hcengineering/model-server-products'
 import { serverTrainingId, createModel as serverTrainingModel } from '@hcengineering/model-server-training'
+import testManagement, {
+  testManagementId,
+  createModel as testManagementModel
+} from '@hcengineering/model-test-management'
+import mySpace, { mySpaceId, createModel as mySpaceModel } from '@hcengineering/model-my-space'
+import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
+
 import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
+import { serverFulltextId, createModel as serverFulltextModel } from '@hcengineering/model-server-fulltext'
+import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
+import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
 
 import { type Plugin } from '@hcengineering/platform'
 
@@ -107,7 +119,7 @@ interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' 
 type BuilderConfig = [(b: Builder) => void, Plugin] | [(b: Builder) => void, Plugin, ConfigurablePlugin | undefined]
 
 export function getModelVersion (): Data<Version> {
-  const rawVersion = (process.env.MODEL_VERSION ?? '0.6.0').trim().replace('v', '').split('.')
+  const rawVersion = (process.env.MODEL_VERSION ?? '0.6.0').replace('"', '').trim().replace('v', '').split('.')
   if (rawVersion.length === 3) {
     return {
       major: parseInt(rawVersion[0]),
@@ -136,7 +148,9 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     notification.class.NotificationGroup,
     view.class.Action,
     contact.class.ChannelProvider,
-    setting.class.IntegrationType
+    setting.class.IntegrationType,
+    setting.class.WorkspaceSettingCategory,
+    setting.class.SettingsCategory
   ]
 
   const builders: BuilderConfig[] = [
@@ -249,17 +263,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [uploaderModel, uploaderId],
     [notificationModel, notificationId],
     [preferenceModel, preferenceId],
-    [
-      analyticsCollectorModel,
-      analyticsCollectorId,
-      {
-        label: inventory.string.ConfigLabel,
-        description: inventory.string.ConfigDescription,
-        enabled: true,
-        beta: false,
-        classFilter: defaultFilter
-      }
-    ],
+    [analyticsCollectorModel, analyticsCollectorId],
     [
       hrModel,
       hrId,
@@ -360,6 +364,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     ],
     [printModel, printId],
     [aiBotModel, aiBotId],
+    [
+      cardModel,
+      cardId,
+      {
+        label: card.string.Cards,
+        description: card.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        icon: card.icon.Card,
+        classFilter: defaultFilter
+      }
+    ],
     [driveModel, driveId],
     [
       documentsModel,
@@ -403,6 +419,31 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+    [
+      testManagementModel,
+      testManagementId,
+      {
+        label: testManagement.string.ConfigLabel,
+        description: testManagement.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
+    [surveyModel, surveyId],
+    [presenceModel, presenceId],
+    [
+      mySpaceModel,
+      mySpaceId,
+      {
+        label: mySpace.string.ConfigLabel,
+        description: mySpace.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
+    [mailModel, mailId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
@@ -415,6 +456,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTagsModel, serverTagsId],
     [serverTaskModel, serverTaskId],
     [serverTrackerModel, serverTrackerId],
+    [serverCardModel, serverCardId],
     [serverCalendarModel, serverCalendarId],
     [serverRecruitModel, serverRecruitId],
     [serverGmailModel, serverGmailId],
@@ -434,7 +476,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverProductsModel, serverProductsId],
     [serverTrainingModel, serverTrainingId],
     [serverDocumentsModel, serverDocumentsId],
-    [serverAiBotModel, serverAiBotId]
+    [serverAiBotModel, serverAiBotId],
+    [serverFulltextModel, serverFulltextId]
   ]
 
   for (const [b, id, config] of builders) {

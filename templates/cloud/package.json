@@ -22,7 +22,7 @@
     "@hcengineering/platform-rig": "*"
   },
   "devDependencies": {
-    "wrangler": "^3.80.1",
+    "wrangler": "^3.108.1",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",

@@ -1,5 +1,5 @@
 //
-// Copyright © 2022, 2023 Hardcore Engineering Inc.
+// Copyright © 2022, 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,11 +14,10 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Class, CollaborativeDoc, CollectionSize, Domain, Rank, Role, RolesAssignment } from '@hcengineering/core'
-import { Account, AccountRole, IndexKind, Ref } from '@hcengineering/core'
+import type { CollectionSize, MarkupBlobRef, Domain, Rank, Ref, Role, RolesAssignment } from '@hcengineering/core'
+import { PersonId, AccountRole, IndexKind } from '@hcengineering/core'
 import {
   type Document,
-  type DocumentEmbedding,
   type DocumentSnapshot,
   type SavedDocument,
   type Teamspace,
@@ -32,14 +31,15 @@ import {
   Mixin,
   Model,
   Prop,
+  ReadOnly,
   TypeCollaborativeDoc,
-  TypeCollaborativeDocVersion,
   TypeNumber,
   TypeRef,
   TypeString,
+  TypePersonId,
   UX
 } from '@hcengineering/model'
-import attachment, { TAttachment } from '@hcengineering/model-attachment'
+import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TDoc, TTypedSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
@@ -62,13 +62,6 @@ export { document as default }
 
 export const DOMAIN_DOCUMENT = 'document' as Domain
 
-@Model(document.class.DocumentEmbedding, attachment.class.Attachment)
-@UX(document.string.Embedding)
-export class TDocumentEmbedding extends TAttachment implements DocumentEmbedding {
-  declare attachedTo: Ref<Document>
-  declare attachedToClass: Ref<Class<Document>>
-}
-
 @Model(document.class.Document, core.class.Doc, DOMAIN_DOCUMENT)
 @UX(document.string.Document, document.icon.Document, undefined, 'name', undefined, document.string.Documents)
 export class TDocument extends TDoc implements Document, Todoable {
@@ -77,7 +70,7 @@ export class TDocument extends TDoc implements Document, Todoable {
     title!: string
 
   @Prop(TypeCollaborativeDoc(), document.string.Document)
-    content!: CollaborativeDoc
+    content!: MarkupBlobRef | null
 
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
     parent!: Ref<Document>
@@ -87,11 +80,11 @@ export class TDocument extends TDoc implements Document, Todoable {
   @Hidden()
   declare space: Ref<Teamspace>
 
-  @Prop(TypeRef(core.class.Account), document.string.LockedBy)
+  @Prop(TypePersonId(), document.string.LockedBy)
   @Hidden()
-    lockedBy?: Ref<Account>
+    lockedBy?: PersonId
 
-  @Prop(Collection(document.class.DocumentEmbedding), document.string.Embeddings)
+  @Prop(Collection(attachment.class.Embedding), attachment.string.Embeddings)
     embeddings?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
@@ -137,8 +130,9 @@ export class TDocumentSnapshot extends TDoc implements DocumentSnapshot {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeCollaborativeDocVersion(), document.string.Document)
-    content!: CollaborativeDoc
+  @Prop(TypeCollaborativeDoc(), document.string.Document)
+  @ReadOnly()
+    content!: MarkupBlobRef
 
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
     parent!: Ref<Document>
@@ -157,7 +151,7 @@ export class TTeamspace extends TTypedSpace implements Teamspace {}
 @Mixin(document.mixin.DefaultTeamspaceTypeData, document.class.Teamspace)
 @UX(getEmbeddedLabel('Default teamspace type'), document.icon.Document)
 export class TDefaultTeamspaceTypeData extends TTeamspace implements RolesAssignment {
-  [key: Ref<Role>]: Ref<Account>[]
+  [key: Ref<Role>]: PersonId[]
 }
 
 function defineTeamspace (builder: Builder): void {
@@ -207,7 +201,21 @@ function defineTeamspace (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name', 'description']
       },
-      config: ['', 'members', 'private', 'archived']
+      config: ['', 'members', 'private', 'archived'],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
+            label: view.string.HideArchived
+          }
+        ]
+      }
     },
     document.viewlet.TeamspaceTable
   )
@@ -263,7 +271,7 @@ function defineTeamspace (builder: Builder): void {
 }
 
 function defineDocument (builder: Builder): void {
-  builder.createModel(TDocument, TDocumentSnapshot, TDocumentEmbedding, TSavedDocument, TDefaultTeamspaceTypeData)
+  builder.createModel(TDocument, TDocumentSnapshot, TSavedDocument, TDefaultTeamspaceTypeData)
 
   builder.mixin(document.class.Document, core.class.Class, time.mixin.ItemPresenter, {
     presenter: document.component.DocumentToDoPresenter
@@ -296,6 +304,10 @@ function defineDocument (builder: Builder): void {
 
   builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectIcon, {
     component: document.component.DocumentIcon
+  })
+
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: document.component.DocumentInlineEditor
   })
 
   // Actions
@@ -478,7 +490,7 @@ function defineDocument (builder: Builder): void {
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: document.class.Document,
-    components: { input: chunter.component.ChatMessageInput }
+    components: { input: { component: chunter.component.ChatMessageInput } }
   })
 
   // Search
@@ -492,7 +504,8 @@ function defineDocument (builder: Builder): void {
       label: document.string.SearchDocument,
       query: document.completion.DocumentQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: document.class.Document
+      classToSearch: document.class.Document,
+      priority: 800
     },
     document.completion.DocumentQueryCategory
   )

@@ -15,12 +15,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Label } from '@hcengineering/ui'
-  import { Account, TypedSpace, type Data, type Ref, getCurrentAccount, type Permission } from '@hcengineering/core'
-  import contact, { PersonAccount, type Employee } from '@hcengineering/contact'
+  import { TypedSpace, type Data, type Ref, type Permission } from '@hcengineering/core'
+  import { type Employee, type PermissionsStore, getCurrentEmployee } from '@hcengineering/contact'
   import documents, { type ControlledDocument } from '@hcengineering/controlled-documents'
-  import { UserBoxItems } from '@hcengineering/contact-resources'
-  import { type PermissionsStore, permissionsStore } from '@hcengineering/view-resources'
-  import { createQuery } from '@hcengineering/presentation'
+  import { UserBoxItems, permissionsStore } from '@hcengineering/contact-resources'
 
   export let controlledDoc: Data<ControlledDocument>
   export let space: Ref<TypedSpace>
@@ -29,7 +27,7 @@
   export let canChangeCoAuthors: boolean = true
 
   const dispatch = createEventDispatcher()
-  const currentAccount = getCurrentAccount()
+  const currentEmployee = getCurrentEmployee()
 
   $: reviewers = controlledDoc.reviewers
   $: approvers = controlledDoc.approvers
@@ -37,76 +35,23 @@
 
   $: permissionsSpace = space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : space
 
-  function getPermittedAccounts (
+  function getPermittedPersons (
     permission: Ref<Permission>,
     space: Ref<TypedSpace>,
     permissionsStore: PermissionsStore
-  ): Array<Ref<Account>> {
-    return Array.from(permissionsStore.ap[space]?.[permission] ?? [])
+  ): Ref<Employee>[] {
+    return Array.from(permissionsStore.ap[space]?.[permission] ?? []) as Ref<Employee>[]
   }
 
-  let permittedReviewers: Array<Ref<Employee>> = []
-  $: permittedReviewerAccounts = getPermittedAccounts(
-    documents.permission.ReviewDocument,
-    permissionsSpace,
-    $permissionsStore
-  )
-  const prQuery = createQuery()
-  $: if (permittedReviewerAccounts.length > 0) {
-    prQuery.query(
-      contact.class.PersonAccount,
-      {
-        _id: { $in: Array.from(permittedReviewerAccounts) as Array<Ref<PersonAccount>> }
-      },
-      (res) => {
-        permittedReviewers = res.map((pa) => pa.person) as Array<Ref<Employee>>
-      }
-    )
-  } else {
-    permittedReviewers = []
-  }
+  $: permittedReviewers = getPermittedPersons(documents.permission.ReviewDocument, permissionsSpace, $permissionsStore)
 
-  let permittedApprovers: Array<Ref<Employee>> = []
-  $: permittedApproverAccounts = getPermittedAccounts(
-    documents.permission.ApproveDocument,
-    permissionsSpace,
-    $permissionsStore
-  )
-  const paQuery = createQuery()
-  $: if (permittedApproverAccounts.length > 0) {
-    paQuery.query(
-      contact.class.PersonAccount,
-      {
-        _id: { $in: Array.from(permittedApproverAccounts) as Array<Ref<PersonAccount>> }
-      },
-      (res) => {
-        permittedApprovers = res.map((pa) => pa.person) as Array<Ref<Employee>>
-      }
-    )
-  } else {
-    permittedApprovers = []
-  }
+  $: permittedApprovers = getPermittedPersons(documents.permission.ApproveDocument, permissionsSpace, $permissionsStore)
 
-  let permittedCoAuthors: Array<Ref<Employee>> = []
-  $: permittedCoAuthorAccounts = getPermittedAccounts(
+  $: permittedCoAuthors = getPermittedPersons(
     documents.permission.CoAuthorDocument,
     permissionsSpace,
     $permissionsStore
-  ).filter((acc) => acc !== currentAccount._id)
-  const pcaQuery = createQuery()
-  $: if (permittedCoAuthorAccounts.length > 0) {
-    pcaQuery.query(
-      contact.class.PersonAccount,
-      {
-        _id: { $in: Array.from(permittedCoAuthorAccounts) as Array<Ref<PersonAccount>> }
-      },
-      (res) => {
-        permittedCoAuthors = res.map((pa) => pa.person) as Array<Ref<Employee>>
-      }
-    )
-  } else {
-    permittedCoAuthors = []
-  }
+  ).filter((person) => person !== currentEmployee)
 
   function handleUsersUpdated (type: 'reviewers' | 'approvers' | 'coAuthors', users: Ref<Employee>[]): void {
     dispatch('update', { type, users })

@@ -36,7 +36,7 @@ export class SettingsPage extends CommonPage {
 
   selectIconButton = (): Locator => this.page.locator('button[data-id="btnSelectIcon"]')
   emojiSectionButton = (): Locator => this.page.locator('div.popup div.tab', { hasText: 'Emoji' })
-  emojiIconButton = (hasText: string): Locator => this.page.locator('div.popup div.element', { hasText })
+  emojiIconButton = (hasText: string): Locator => this.page.getByRole('button', { name: hasText }).first()
   taskTypeRow = (value: string): Locator =>
     this.page
       .locator('div.hulyTableAttr-header', { hasText: 'Task types' })
@@ -133,6 +133,6 @@ export class SettingsPage extends CommonPage {
   async changeIcon (): Promise<void> {
     await this.selectIconButton().click()
     await this.emojiSectionButton().click()
-    await this.emojiIconButton('❗').click()
+    await this.emojiIconButton('👀').click()
   }
 }

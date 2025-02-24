@@ -14,38 +14,73 @@
 // limitations under the License.
 //
 
-import { type Branding, type BrandingMap, type Tx, type WorkspaceIdWithUrl } from '@hcengineering/core'
+import { type Account, type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { getMetricsContext } from './metrics'
 
 import { ClientSession, startSessionManager } from '@hcengineering/server'
-import { type Pipeline, type ServerFactory, type Session, type StorageConfiguration } from '@hcengineering/server-core'
+import {
+  type ServerFactory,
+  type Session,
+  type SessionManager,
+  type StorageConfiguration,
+  type Workspace
+} from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
-import { serverAiBotId } from '@hcengineering/server-ai-bot'
-import { createAIBotAdapter } from '@hcengineering/server-ai-bot-resources'
-import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
+import {
+  createServerPipeline,
+  isAdapterSecurity,
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerServerPlugins,
+  registerStringLoaders,
+  registerTxAdapterFactory,
+  setAdapterSecurity,
+  sharedPipelineContextVars
+} from '@hcengineering/server-pipeline'
+import { uncompress } from 'snappy'
 
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  registerGreenDecoder,
+  registerGreenUrl,
+  setDBExtraOptions,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
 
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
 /**
  * @public
  */
 export function start (
-  dbUrls: string,
+  metrics: MeasureContext,
+  dbUrl: string,
   opt: {
-    fullTextUrl: string
+    fulltextUrl: string
     storageConfig: StorageConfiguration
-    rekoniUrl: string
     port: number
     brandingMap: BrandingMap
     serverFactory: ServerFactory
-
-    indexProcessing: number // 1000
-    indexParallel: number // 2
 
     enableCompression?: boolean
 
@@ -55,41 +90,44 @@ export function start (
       start: () => void
       stop: () => Promise<string | undefined>
     }
+
+    mongoUrl?: string
   }
-): () => Promise<void> {
-  const metrics = getMetricsContext()
+): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
+  registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+  registerAdapterFactory('mongodb', createMongoAdapter)
+  registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+  registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+  registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+  setAdapterSecurity('postgresql', true)
+
+  const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
+
+  registerGreenDecoder('snappy', uncompress)
+  registerGreenUrl(process.env.GREEN_URL)
+
+  setDBExtraOptions({
+    prepare: usePrepare // We override defaults
+  })
 
   registerServerPlugins()
 
-  const [mainDbUrl, rawDbUrl] = dbUrls.split(';')
-
-  const externalStorage = buildStorageFromConfig(opt.storageConfig, rawDbUrl ?? mainDbUrl)
+  const externalStorage = buildStorageFromConfig(opt.storageConfig)
 
   const pipelineFactory = createServerPipeline(
     metrics,
-    dbUrls,
+    dbUrl,
     model,
-    { ...opt, externalStorage, adapterSecurity: rawDbUrl !== undefined },
-    {
-      serviceAdapters: {
-        [serverAiBotId]: {
-          factory: createAIBotAdapter,
-          db: '%ai-bot',
-          url: rawDbUrl ?? mainDbUrl
-        }
-      }
-    }
+    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl) },
+    {}
   )
-  const sessionFactory = (
-    token: Token,
-    pipeline: Pipeline,
-    workspaceId: WorkspaceIdWithUrl,
-    branding: Branding | null
-  ): Session => {
-    return new ClientSession(token, pipeline, workspaceId, branding, token.extra?.mode === 'backup')
+  const sessionFactory = (token: Token, workspace: Workspace, account: Account): Session => {
+    return new ClientSession(token, workspace, account, token.extra?.mode === 'backup')
   }
 
-  const onClose = startSessionManager(getMetricsContext(), {
+  const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {
     pipelineFactory,
     sessionFactory,
     port: opt.port,
@@ -100,8 +138,11 @@ export function start (
     externalStorage,
     profiling: opt.profiling
   })
-  return async () => {
-    await externalStorage.close()
-    await onClose()
+  return {
+    shutdown: async () => {
+      await externalStorage.close()
+      await onClose()
+    },
+    sessionManager
   }
 }

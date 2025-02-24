@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,60 +13,23 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, type Mixin, Ref, Space } from '@hcengineering/core'
+import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { ChatMessage } from '@hcengineering/chunter'
 
-export * from './types'
+export * from './rest'
 
 export const aiBotId = 'ai-bot' as Plugin
 
 export const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
-
-export interface AIBotEvent extends Doc {
-  collection: string
-  messageClass: Ref<Class<ChatMessage>>
-  messageId: Ref<ChatMessage>
-  message: string
-}
-
-export interface AIBotResponseEvent extends AIBotEvent {
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-  objectSpace: Ref<Space>
-  user: Ref<Account>
-  email: string
-}
-
-export interface AIBotTransferEvent extends AIBotEvent {
-  toEmail: string
-  toWorkspace: string
-  fromWorkspace: string
-  fromWorkspaceName: string
-  fromWorkspaceUrl: string
-  parentMessageId?: Ref<ChatMessage>
-}
-
-export interface TransferredMessage extends ChatMessage {
-  messageId: Ref<ChatMessage>
-  parentMessageId?: Ref<ChatMessage>
-}
+export const aiBotEmailSocialId = buildSocialIdString({
+  type: SocialIdType.EMAIL,
+  value: aiBotAccountEmail
+})
 
 const aiBot = plugin(aiBotId, {
   metadata: {
     EndpointURL: '' as Metadata<string>
-  },
-  class: {
-    AIBotEvent: '' as Ref<Class<AIBotEvent>>,
-    AIBotTransferEvent: '' as Ref<Class<AIBotTransferEvent>>,
-    AIBotResponseEvent: '' as Ref<Class<AIBotResponseEvent>>
-  },
-  mixin: {
-    TransferredMessage: '' as Ref<Mixin<TransferredMessage>>
-  },
-  account: {
-    AIBot: '' as Ref<Account>
   }
 })
 

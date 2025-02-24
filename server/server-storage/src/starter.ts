@@ -1,9 +1,8 @@
-import { DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
-import { MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
-import { createRawMongoDBAdapter } from '@hcengineering/mongo'
-import { S3Service, type S3Config } from '@hcengineering/s3'
+import { CONFIG_KIND as DATALAKE_CONFIG_KIND, DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
+import { CONFIG_KIND as MINIO_CONFIG_KIND, MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
+import { CONFIG_KIND as S3_CONFIG_KIND, S3Service, type S3Config } from '@hcengineering/s3'
 import { StorageAdapter, StorageConfiguration, type StorageConfig } from '@hcengineering/server-core'
-import { AggregatorStorageAdapter, buildStorage } from './aggregator'
+import { FallbackStorageAdapter, buildStorage } from './fallback'
 
 /*
 
@@ -14,8 +13,6 @@ import { AggregatorStorageAdapter, buildStorage } from './aggregator'
   * kind - an storage kind minior/s3 for now.
   * name - a symbolic name for provider, name could be ommited in case kind will be used as name.
   * uri - an storage URI with encoded parameters.
-  * contentTypes - a comma separated list of content type patterns. Like 'image/*,video/gif' will match all image/* and video/gif formats.
-  So * will be replaced to `.*` for regexp
 
   Last one is used as default one, or one with conrent type matched will be used.
 
@@ -80,19 +77,19 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
 
 export function createStorageFromConfig (config: StorageConfig): StorageAdapter {
   const kind = config.kind
-  if (kind === MinioService.config) {
+  if (kind === MINIO_CONFIG_KIND) {
     const c = config as MinioConfig
     if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
       throw new Error('One of endpoint/accessKey/secretKey values are not specified')
     }
     return new MinioService(c)
-  } else if (kind === S3Service.config) {
+  } else if (kind === S3_CONFIG_KIND) {
     const c = config as S3Config
     if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
       throw new Error('One of endpoint/accessKey/secretKey values are not specified')
     }
     return new S3Service(c)
-  } else if (kind === DatalakeService.config) {
+  } else if (kind === DATALAKE_CONFIG_KIND) {
     const c = config as DatalakeConfig
     if (c.endpoint == null) {
       throw new Error('Endpoint value is not specified')
@@ -103,6 +100,6 @@ export function createStorageFromConfig (config: StorageConfig): StorageAdapter 
   }
 }
 
-export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: string): AggregatorStorageAdapter {
-  return buildStorage(config, createRawMongoDBAdapter(dbUrl), createStorageFromConfig)
+export function buildStorageFromConfig (config: StorageConfiguration): FallbackStorageAdapter {
+  return buildStorage(config, createStorageFromConfig)
 }

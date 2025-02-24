@@ -15,7 +15,7 @@
 
 import { Person } from '@hcengineering/contact'
 import {
-  Account,
+  PersonId,
   AttachedDoc,
   Class,
   Doc,
@@ -31,12 +31,13 @@ import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platfor
 import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
+import type { Action } from '@hcengineering/view'
 
 /**
  * @public
  */
 export interface ActivityMessage extends AttachedDoc {
-  modifiedBy: Ref<Account>
+  modifiedBy: PersonId
   modifiedOn: Timestamp
 
   isPinned?: boolean
@@ -209,7 +210,7 @@ export type ActivityExtensionKind = 'input'
  */
 export interface ActivityExtension extends Doc {
   ofClass: Ref<Class<Doc>>
-  components: Record<ActivityExtensionKind, AnyComponent>
+  components: Record<ActivityExtensionKind, { component: AnyComponent, props?: Record<string, any> }>
 }
 
 /**
@@ -219,7 +220,7 @@ export interface Reaction extends AttachedDoc {
   attachedTo: Ref<ActivityMessage>
   attachedToClass: Ref<Class<ActivityMessage>>
   emoji: string
-  createBy: Ref<Account>
+  createBy: PersonId
 }
 
 /**
@@ -343,5 +344,8 @@ export default plugin(activityId, {
   backreference: {
     // Update list of back references
     Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => Promise<void>>
+  },
+  action: {
+    Reply: '' as Ref<Action>
   }
 })

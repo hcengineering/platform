@@ -16,12 +16,16 @@
 import core, {
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
+  generateId,
   TxProcessor,
+  WorkspaceEvent,
   type Doc,
   type MeasureContext,
+  type SessionData,
   type Tx,
   type TxCUD,
-  type TxResult
+  type TxResult,
+  type TxWorkspaceEvent
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import type { DBAdapterManager, Middleware, PipelineContext, TxMiddlewareResult } from '@hcengineering/server-core'
@@ -62,15 +66,31 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
       txPromise = ctx.with(
         'domain-tx',
         {},
-        async (ctx) => await this.adapterManager.getAdapter(DOMAIN_TX, true).tx(ctx, ...txToStore),
+        (ctx) => this.adapterManager.getAdapter(DOMAIN_TX, true).tx(ctx, ...txToStore),
         {
           count: txToStore.length,
           txes: Array.from(new Set(txToStore.map((it) => it._class)))
         }
       )
+      // We need to remember last Tx Id in context, so it will be used during reconnect to track a requirement for refresh.
+      this.context.lastTx = txToStore[txToStore.length - 1]._id
+      // We need to deliver information to all clients so far.
+      const evt: TxWorkspaceEvent = {
+        _class: core.class.TxWorkspaceEvent,
+        _id: generateId(),
+        event: WorkspaceEvent.LastTx,
+        modifiedBy: core.account.System,
+        modifiedOn: Date.now(),
+        objectSpace: core.space.DerivedTx,
+        space: core.space.DerivedTx,
+        params: {
+          lastTx: this.context.lastTx
+        }
+      }
+      ;(ctx.contextData as SessionData).broadcast.txes.push(evt)
     }
     if (txPromise !== undefined) {
-      return (await Promise.all([txPromise, this.provideTx(ctx, txes)]))[1]
+      await txPromise
     }
     return await this.provideTx(ctx, txes)
   }

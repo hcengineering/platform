@@ -16,7 +16,6 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Ref, type WithLookup } from '@hcengineering/core'
   import { Scroller } from '@hcengineering/ui'
-
   import { AttachmentImageSize } from '../types'
   import AttachmentPreview from './AttachmentPreview.svelte'
 
@@ -27,7 +26,7 @@
 </script>
 
 {#if attachments.length}
-  <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'}>
+  <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'} scrollSnap>
     {#each attachments as attachment}
       <AttachmentPreview
         value={attachment}

@@ -1,7 +1,7 @@
 import login, { loginId } from '@hcengineering/login'
 import { getEmbeddedLabel, getMetadata, setMetadata } from '@hcengineering/platform'
 import presentation, { closeClient, MessageBox, setDownloadProgress } from '@hcengineering/presentation'
-import { settingId } from '@hcengineering/setting'
+import settings, { settingId } from '@hcengineering/setting'
 import {
   closePanel,
   closePopup,
@@ -24,7 +24,6 @@ import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
 import { defineScreenShare } from './screenShare'
 import { IPCMainExposed } from './types'
-import settings from '@hcengineering/setting'
 
 defineScreenShare()
 
@@ -59,16 +58,17 @@ window.addEventListener('DOMContentLoaded', () => {
   })
 
   ipcMain.on('logout', () => {
-    const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+    const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
     if (tokens !== null) {
       const loc = getCurrentLocation()
-      loc.path.splice(1, 1)
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete tokens[loc.path[1]]
+      setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
     }
     setMetadata(presentation.metadata.Token, null)
     setMetadataLocalStorage(login.metadata.LastToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-    setMetadataLocalStorage(login.metadata.LoginEmail, null)
+    setMetadataLocalStorage(login.metadata.LoginAccount, null)
     void closeClient().then(() => {
       navigate({ path: [loginId] })
     })
@@ -105,14 +105,31 @@ window.addEventListener('DOMContentLoaded', () => {
     // We need to obtain current token and endpoint and trigger backup
     const token = getMetadata(presentation.metadata.Token)
     const endpoint = getMetadata(presentation.metadata.Endpoint)
-    const workspace = getMetadata(presentation.metadata.WorkspaceId)
+    const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid)
+    // const workspaceDataId = getMetadata(presentation.metadata.WorkspaceDataId)
+    // const workspaceUrl = getMetadata(presentation.metadata.WorkspaceUrl)
+    // const wsIds = {
+    //   uuid: workspaceUuid,
+    //   dataId: workspaceDataId,
+    //   url: workspaceUrl
+    // }
     if (isOwnerOrMaintainer()) {
-      if (token != null && endpoint != null && workspace != null) {
-        ipcMain.startBackup(token, endpoint, workspace)
+      if (token != null && endpoint != null && workspaceUuid != null) {
+        // ipcMain.startBackup(token, endpoint, wsIds)
+        closePopup()
+        closePanel()
+        const loc = getCurrentResolvedLocation()
+        loc.fragment = undefined
+        loc.query = undefined
+        loc.path[2] = settingId
+        loc.path[3] = 'setting'
+        loc.path[4] = 'backup'
+        loc.path.length = 5
+        navigate(loc)
       }
     } else {
       showPopup(MessageBox, {
-        label: settings.string.OwnerOrMainteinerRequired
+        label: settings.string.OwnerOrMaintainerRequired
       })
     }
   })

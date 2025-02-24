@@ -15,12 +15,12 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import { merge } from 'effector'
-  import { type CollaborativeDoc, type Ref, type Blob, generateId } from '@hcengineering/core'
+  import { type Ref, type Blob, generateId } from '@hcengineering/core'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import documents from '@hcengineering/controlled-documents'
+  import documents, { DocumentState } from '@hcengineering/controlled-documents'
   import { Editor, Heading } from '@hcengineering/text-editor'
   import {
     CollaboratorEditor,
@@ -34,13 +34,13 @@
     highlightUpdateCommand,
     getNodeElement
   } from '@hcengineering/text-editor-resources'
-  import { navigate, EditBox, Scroller } from '@hcengineering/ui'
+  import { navigate, EditBox, Scroller, Label } from '@hcengineering/ui'
   import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
+  import plugin from '../../plugin'
 
   import {
     $areDocumentCommentPopupsOpened as areDocumentCommentPopupsOpened,
     $controlledDocument as controlledDocument,
-    $controlledDocumentTemplate as controlledDocumentTemplate,
     $isEditable as isEditable,
     $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
     $areDocumentCommentPopupsOpened as arePopupsOpened,
@@ -66,16 +66,6 @@
   let isEmpty = true
   let editor: Editor
   let title = $controlledDocument?.title ?? ''
-
-  let collaborativeDoc: CollaborativeDoc | undefined
-  $: if ($controlledDocument !== null) {
-    collaborativeDoc = $controlledDocument.content
-  }
-
-  let initialCollaborativeDoc: CollaborativeDoc | undefined
-  $: if ($controlledDocumentTemplate !== null) {
-    initialCollaborativeDoc = $controlledDocumentTemplate.content
-  }
 
   $: isTemplate =
     $controlledDocument != null && hierarchy.hasMixin($controlledDocument, documents.mixin.DocumentTemplate)
@@ -237,9 +227,14 @@
       })
     ]
   }
+
+  $: attribute = {
+    key: 'content',
+    attr: client.getHierarchy().getAttribute(documents.class.ControlledDocument, 'content')
+  }
 </script>
 
-{#if $controlledDocument && collaborativeDoc}
+{#if $controlledDocument && attribute}
   <DocumentPrintTitlePage />
 
   {#if headings.length > 0}
@@ -254,7 +249,7 @@
       <TableOfContents items={headings} enumerated={true} on:select={(ev) => handleShowHeading(ev.detail)} />
     </div>
     <Scroller>
-      <div class="content">
+      <div class="content relative">
         <DocumentTitle>
           {#if $isEditable}
             <EditBox
@@ -268,19 +263,23 @@
             {$controlledDocument.title}
           {/if}
         </DocumentTitle>
+        {#if $controlledDocument.state === DocumentState.Obsolete}
+          <div class="watermark-container">
+            {#each { length: 24 } as _, i}
+              <div class="watermark"><Label label={plugin.string.Obsolete} /></div>
+            {/each}
+          </div>
+        {/if}
         <CollaboratorEditor
           bind:this={textEditor}
-          objectId={$controlledDocument._id}
-          objectClass={$controlledDocument._class}
-          objectSpace={$controlledDocument.space}
-          {collaborativeDoc}
-          {initialCollaborativeDoc}
+          object={$controlledDocument}
+          {attribute}
           {user}
           readonly={!$isEditable}
-          field="content"
           editorAttributes={{ style: 'padding: 0 2em; margin: 0 -2em;' }}
           overflow="none"
           canShowPopups={!$areDocumentCommentPopupsOpened}
+          enableInlineComments={false}
           onExtensions={handleExtensions}
           kitOptions={{
             note: {
@@ -356,10 +355,38 @@
   }
 
   .content {
-    padding-left: 3.25rem;
+    padding: 0 3.25rem;
   }
 
   .bottomSpacing {
-    padding-bottom: 30vh;
+    padding-bottom: 55vh;
+  }
+
+  .watermark-container {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 35rem;
+    padding-top: 20rem;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .watermark {
+    z-index: 100;
+    margin: auto;
+    height: 4rem;
+    width: 100%;
+    color: var(--theme-divider-color);
+    font-size: 8rem;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>

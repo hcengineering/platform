@@ -1,0 +1,24 @@
+{
+  "string": {
+    "Card": "Cartão",
+    "CardApplication": "Cartões",
+    "Cards": "Cartões",
+    "Content": "Conteúdo",
+    "CreateCard": "Criar Cartão",
+    "CreateMasterTag": "Criar Tipo",
+    "CreateTag": "Criar Tag",
+    "MasterTag": "Tipo",
+    "MasterTags": "Tipos",
+    "Parent": "Principal",
+    "Tags": "Tags",
+    "Tag": "Tag",
+    "CardLibrary": "Biblioteca de Cartões",
+    "MinimizeAll": "Minimizar Tudo",
+    "ExpandAll": "Expandir Tudo",
+    "DeleteTag": "Excluir Tag",
+    "TagRelations": "Relações de Tag",
+    "DeleteTagConfirm": "Tem certeza que deseja excluir esta tag? Todas as propriedades relacionadas serão excluídas",
+    "DeleteMasterTag": "Excluir Tipo",
+    "DeleteMasterTagConfirm": "Tem certeza que deseja excluir este tipo? Todos os objetos relacionados a este tipo serão excluídos"
+  }
+}

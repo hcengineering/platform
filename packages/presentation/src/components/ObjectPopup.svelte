@@ -24,8 +24,8 @@
   import type { IntlString } from '@hcengineering/platform'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation from '..'
-  import { ObjectCreate } from '../types'
+  import presentation, { searchFor, type SearchItem } from '..'
+  import { ObjectCreate, type ObjectSearchCategory } from '../types'
   import { createQuery } from '../utils'
   import DocPopup from './DocPopup.svelte'
 
@@ -43,10 +43,11 @@
   export let selectedObjects: Ref<Doc>[] = []
   export let ignoreObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
-  export let width: 'medium' | 'large' | 'full' = 'medium'
+  export let width: 'medium' | 'large' | 'full' | 'auto' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'large'
 
-  export let searchMode: 'field' | 'fulltext' | 'disabled' = 'field'
+  export let searchMode: 'field' | 'fulltext' | 'disabled' | 'spotlight' = 'field'
+  export let category: Ref<ObjectSearchCategory> | undefined = undefined
   export let searchField: string = 'name'
   export let groupBy = '_class'
 
@@ -55,7 +56,7 @@
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
   export let embedded: boolean = false
   export let loading: boolean = false
-  export let type: 'text' | 'object' = 'text'
+  export let type: 'text' | 'object' | 'presenter' = 'text'
 
   export let filter: (it: Doc) => boolean = () => {
     return true
@@ -74,21 +75,43 @@
   let search: string = ''
   let objects: Doc[] = []
 
+  let extraItems: Ref<Doc>[] = []
+
   const query = createQuery()
 
   $: noSearchField = searchMode === 'disabled'
   $: _idExtra = typeof docQuery?._id === 'object' ? docQuery?._id : {}
+  $: if (searchMode === 'spotlight' && search !== '') {
+    void searchSpotlight(search).then((items) => {
+      extraItems = items.map((it) => it.item.id)
+    })
+  } else {
+    extraItems = []
+  }
+  $: fquery = {
+    ...(docQuery ?? {}),
+    ...(() => {
+      switch (searchMode) {
+        case 'disabled':
+          return { _id: { $nin: ignoreObjects, ..._idExtra } }
+        case 'fulltext':
+          return search !== ''
+            ? { $search: search, _id: { $nin: ignoreObjects, ..._idExtra } }
+            : { _id: { $nin: ignoreObjects, ..._idExtra } }
+        case 'spotlight':
+          return extraItems.length > 0
+            ? { _id: { $in: extraItems, $nin: ignoreObjects } }
+            : { _id: { $nin: ignoreObjects, ..._idExtra } }
+        default:
+          return search !== ''
+            ? { [searchField]: { $like: '%' + search + '%' }, _id: { $nin: ignoreObjects, ..._idExtra } }
+            : { _id: { $nin: ignoreObjects, ..._idExtra } }
+      }
+    })()
+  }
   $: query.query<Doc>(
     _class,
-    {
-      ...(docQuery ?? {}),
-      ...(searchMode !== 'disabled' && search !== ''
-        ? searchMode === 'fulltext'
-          ? { $search: search }
-          : { [searchField]: { $like: '%' + search + '%' } }
-        : {}),
-      _id: { $nin: ignoreObjects, ..._idExtra }
-    },
+    fquery,
     (result) => {
       result.sort(sort)
       if (created.length > 0) {
@@ -100,6 +123,10 @@
     },
     { ...(options ?? {}), limit: 200 }
   )
+
+  async function searchSpotlight (search: string): Promise<SearchItem[]> {
+    return (await searchFor('spotlight', search, category, 50)).items
+  }
 </script>
 
 <DocPopup

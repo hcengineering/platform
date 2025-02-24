@@ -23,6 +23,7 @@ import { devTool } from '.'
 import { addLocation } from '@hcengineering/platform'
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
+import { serverCardId } from '@hcengineering/server-card'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverCollaborationId } from '@hcengineering/server-collaboration'
@@ -59,6 +60,7 @@ addLocation(serverSettingId, () => import('@hcengineering/server-setting-resourc
 addLocation(serverTaskId, () => import('@hcengineering/server-task-resources'))
 addLocation(serverTrackerId, () => import('@hcengineering/server-tracker-resources'))
 addLocation(serverTagsId, () => import('@hcengineering/server-tags-resources'))
+addLocation(serverCardId, () => import('@hcengineering/server-card-resources'))
 addLocation(serverCalendarId, () => import('@hcengineering/server-calendar-resources'))
 addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
 addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))
@@ -72,7 +74,6 @@ addLocation(serverDriveId, () => import('@hcengineering/server-drive-resources')
 addLocation(serverAiBotId, () => import('@hcengineering/server-ai-bot-resources'))
 
 function prepareTools (): {
-  mongodbUri: string | undefined
   dbUrl: string
   txes: Tx[]
   version: Data<Version>
@@ -82,6 +83,24 @@ function prepareTools (): {
   const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
 
   return { ...prepareToolsRaw(builder(enabled, disabled).getTxes()), version: getModelVersion(), migrateOperations }
+}
+
+export function getMongoDBUrl (): string {
+  const url = process.env.MONGO_URL
+  if (url === undefined) {
+    console.error('please provide mongo DB URL')
+    process.exit(1)
+  }
+  return url
+}
+
+export function getAccountDBUrl (): string {
+  const url = process.env.ACCOUNT_DB_URL
+  if (url === undefined) {
+    console.error('please provide mongo ACCOUNT_DB_URL')
+    process.exit(1)
+  }
+  return url
 }
 
 devTool(prepareTools)

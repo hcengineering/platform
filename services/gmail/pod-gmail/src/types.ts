@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Account, Doc, Ref } from '@hcengineering/core'
+import type { PersonId, Doc, WorkspaceUuid } from '@hcengineering/core'
 import type { NextFunction, Request, Response } from 'express'
 import type { Credentials } from 'google-auth-library'
 import type { Channel as PlatformChannel } from '@hcengineering/contact'
@@ -26,8 +26,8 @@ export type History = User & {
 }
 
 export interface User {
-  userId: Ref<Account>
-  workspace: string
+  userId: PersonId
+  workspace: WorkspaceUuid
   token: string
 }
 

@@ -81,8 +81,7 @@
   export let visible: boolean = false
   $: {
     if (_class) {
-      const clazz = hierarchy.getClass(_class)
-      visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+      visible = hierarchy.classHierarchyMixin(_class, view.mixin.ClassFilters) !== undefined
     } else visible = false
   }
 </script>

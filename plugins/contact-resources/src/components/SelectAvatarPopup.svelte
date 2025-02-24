@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-
-  import { AvatarType, buildGravatarId, checkHasGravatar, type AvatarInfo } from '@hcengineering/contact'
+  import MD5 from 'crypto-js/md5'
+  import { AvatarType, checkHasGravatar, type AvatarInfo } from '@hcengineering/contact'
   import type { Ref } from '@hcengineering/core'
   import { Blob as PlatformBlob } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
@@ -37,6 +37,10 @@
   import { getAvatarTypeDropdownItems } from '../utils'
   import AvatarComponent from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
+
+  function buildGravatarId (email: string): string {
+    return MD5(email.trim().toLowerCase()).toString()
+  }
 
   export let selectedAvatarType: AvatarType
   export let selectedAvatar: AvatarInfo['avatar']

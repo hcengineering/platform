@@ -13,19 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Plugin, IntlString } from '@hcengineering/platform'
-import type { Account, Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
-import { Space, ClassifierKind, DOMAIN_MODEL } from '../classes'
-import { createClient, ClientConnection } from '../client'
+import { IntlString, Plugin } from '@hcengineering/platform'
+import { ClientConnectEvent, DocChunk } from '..'
+import type { Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
+import { ClassifierKind, DOMAIN_MODEL, Space } from '../classes'
+import { ClientConnection, createClient } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
-import type { DocumentQuery, FindResult, TxResult, SearchQuery, SearchOptions, SearchResult } from '../storage'
+import type { DocumentQuery, FindResult, SearchOptions, SearchQuery, SearchResult, TxResult } from '../storage'
 import { Tx, TxFactory, TxProcessor } from '../tx'
+import { fillConfiguration, generateId, pluginFilterTx } from '../utils'
 import { connect } from './connection'
 import { genMinModel } from './minmodel'
-import { clone } from '../clone'
+
+function filterPlugin (plugin: Plugin): (txes: Tx[]) => Tx[] {
+  return (txes) => {
+    const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
+    fillConfiguration(txes, configs)
+
+    const excludedPlugins = Array.from(configs.values()).filter((it) => !it.enabled || it.pluginId !== plugin)
+    return pluginFilterTx(excludedPlugins, configs, txes)
+  }
+}
 
 describe('client', () => {
   it('should create client and spaces', async () => {
@@ -92,38 +103,62 @@ describe('client', () => {
         return await transactions.findAll(_class, query)
       }
 
-      return {
-        isConnected: () => true,
-        findAll,
+      return new (class implements ClientConnection {
+        handler?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
 
-        searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
+        set onConnect (
+          handler: ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>) | undefined
+        ) {
+          this.handler = handler
+          void this.handler?.(ClientConnectEvent.Connected, '', {})
+        }
+
+        get onConnect ():
+        | ((event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>)
+        | undefined {
+          return this.handler
+        }
+
+        isConnected = (): boolean => true
+        findAll = findAll
+
+        searchFulltext = async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
           return { docs: [] }
-        },
+        }
 
-        tx: async (tx: Tx): Promise<TxResult> => {
+        tx = async (tx: Tx): Promise<TxResult> => {
           if (tx.objectSpace === core.space.Model) {
             hierarchy.tx(tx)
           }
           const result = await Promise.all([transactions.tx(tx)])
           return result[0]
-        },
-        close: async () => {},
+        }
 
-        loadChunk: async (domain: Domain, idx?: number, recheck?: boolean) => ({
+        close = async (): Promise<void> => {}
+
+        loadChunk = async (domain: Domain, idx?: number): Promise<DocChunk> => ({
           idx: -1,
-          index: -1,
           docs: [],
-          finished: true,
-          digest: ''
-        }),
-        closeChunk: async (idx: number) => {},
-        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async (last: Timestamp) => clone(txes),
-        getAccount: async () => null as unknown as Account,
-        sendForceClose: async () => {}
-      }
+          finished: true
+        })
+
+        async getDomainHash (domain: Domain): Promise<string> {
+          return generateId()
+        }
+
+        async closeChunk (idx: number): Promise<void> {}
+        async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+          return []
+        }
+
+        async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+        async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+        async loadModel (last: Timestamp): Promise<Tx[]> {
+          return txes
+        }
+
+        async sendForceClose (): Promise<void> {}
+      })()
     }
     const spyCreate = jest.spyOn(TxProcessor, 'createDoc2Doc')
     const spyUpdate = jest.spyOn(TxProcessor, 'updateDoc2Doc')
@@ -136,7 +171,10 @@ describe('client', () => {
     }
     const txCreateDoc1 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData1)
     txes.push(txCreateDoc1)
-    const client1 = new TxOperations(await createClient(connectPlugin, ['testPlugin1' as Plugin]), core.account.System)
+    const client1 = new TxOperations(
+      await createClient(connectPlugin, filterPlugin('testPlugin1' as Plugin)),
+      core.account.System
+    )
     const result1 = await client1.findAll(core.class.PluginConfiguration, {})
 
     expect(result1).toHaveLength(1)
@@ -153,7 +191,10 @@ describe('client', () => {
     }
     const txCreateDoc2 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData2)
     txes.push(txCreateDoc2)
-    const client2 = new TxOperations(await createClient(connectPlugin, ['testPlugin1' as Plugin]), core.account.System)
+    const client2 = new TxOperations(
+      await createClient(connectPlugin, filterPlugin('testPlugin1' as Plugin)),
+      core.account.System
+    )
     const result2 = await client2.findAll(core.class.PluginConfiguration, {})
 
     expect(result2).toHaveLength(2)
@@ -176,7 +217,10 @@ describe('client', () => {
       pluginData3
     )
     txes.push(txUpdateDoc)
-    const client3 = new TxOperations(await createClient(connectPlugin, ['testPlugin2' as Plugin]), core.account.System)
+    const client3 = new TxOperations(
+      await createClient(connectPlugin, filterPlugin('testPlugin2' as Plugin)),
+      core.account.System
+    )
     const result3 = await client3.findAll(core.class.PluginConfiguration, {})
 
     expect(result3).toHaveLength(1)

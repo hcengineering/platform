@@ -15,20 +15,20 @@
 
 import analyticsCollector, { AnalyticEvent, OnboardingChannel } from '@hcengineering/analytics-collector'
 import chunter, { Channel, ChatMessage } from '@hcengineering/chunter'
-import contact, { Person } from '@hcengineering/contact'
+import { getPrimarySocialId, type Person } from '@hcengineering/contact'
 import core, {
   Doc,
   generateId,
-  getWorkspaceId,
+  PersonId,
   RateLimiter,
   Ref,
-  systemAccountEmail,
-  toWorkspaceString,
+  systemAccountUuid,
   Tx,
   TxOperations,
   TxProcessor,
   TxUpdateDoc,
-  WorkspaceId
+  WorkspaceInfoWithStatus,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import {
   createGeneralOnboardingChannel,
@@ -36,15 +36,16 @@ import {
 } from '@hcengineering/server-analytics-collector-resources'
 import { generateToken } from '@hcengineering/server-token'
 
-import { WorkspaceInfo } from '@hcengineering/account'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { Collection } from 'mongodb'
-import { getWorkspaceInfo } from './account'
 import { eventToMarkup, getOnboardingMessage } from './format'
-import { Action, MessageActions, OnboardingMessage } from './types'
+import { OnboardingMessage } from './types'
+import config from './config'
 import { WorkspaceClient } from './workspaceClient'
 
 export class SupportWsClient extends WorkspaceClient {
   channelIdByKey = new Map<string, Ref<OnboardingChannel>>()
+  personIdByPerson = new Map<Ref<Person>, PersonId>()
 
   rate = new RateLimiter(1)
 
@@ -65,8 +66,7 @@ export class SupportWsClient extends WorkspaceClient {
 
   private handleTx (client: TxOperations, ...txes: Tx[]): void {
     for (const tx of txes) {
-      const etx = TxProcessor.extractTx(tx)
-      switch (etx._class) {
+      switch (tx._class) {
         case core.class.TxUpdateDoc: {
           this.txUpdateDoc(client, tx as TxUpdateDoc<Doc>)
           break
@@ -91,15 +91,15 @@ export class SupportWsClient extends WorkspaceClient {
 
   private async getOrCreateOnboardingChannel (
     client: TxOperations,
-    workspace: string,
-    email: string,
+    workspace: WorkspaceUuid,
+    personId: PersonId,
     person: Person
   ): Promise<{
       channelId: Ref<OnboardingChannel> | undefined
       isCreated: boolean
-      workspace?: WorkspaceInfo
+      workspace?: WorkspaceInfoWithStatus
     }> {
-    const key = `${email}-${workspace}`
+    const key = `${personId}-${workspace}`
 
     if (this.channelIdByKey.has(key)) {
       return {
@@ -108,9 +108,10 @@ export class SupportWsClient extends WorkspaceClient {
       }
     }
 
-    const info = await getWorkspaceInfo(generateToken(systemAccountEmail, getWorkspaceId(workspace)))
+    const token = generateToken(systemAccountUuid, workspace, { service: 'analytics-collector' })
+    const wsInfo = await getAccountClient(config.AccountsUrl, token).getWorkspaceInfo()
 
-    if (info === undefined) {
+    if (wsInfo === undefined) {
       this.ctx.error('Failed to get workspace info', { workspace })
       return {
         channelId: undefined,
@@ -121,11 +122,11 @@ export class SupportWsClient extends WorkspaceClient {
     const [channel, isCreated] = await getOrCreateOnboardingChannel(
       this.ctx,
       client,
-      email,
+      personId,
       {
         workspaceId: workspace,
-        workspaceName: info?.workspaceName ?? '',
-        workspaceUrl: info?.workspaceUrl ?? ''
+        workspaceName: wsInfo?.name ?? '',
+        workspaceUrl: wsInfo?.url ?? ''
       },
       person
     )
@@ -137,78 +138,46 @@ export class SupportWsClient extends WorkspaceClient {
     return {
       channelId: channel,
       isCreated,
-      workspace: info
+      workspace: wsInfo
     }
   }
 
-  async handleAcceptAction (
-    action: Action,
-    email: string,
-    onboardingMessages: Collection<OnboardingMessage>
-  ): Promise<void> {
-    if (action.channelId !== analyticsCollector.space.GeneralOnboardingChannel) {
-      return
-    }
-    const client = await this.opClient
-    const account = await client.getModel().findOne(contact.class.PersonAccount, { email })
+  async getPersonId (person: Ref<Person>): Promise<PersonId | undefined> {
+    const cachedPersonId = this.personIdByPerson.get(person)
+    const personId = cachedPersonId ?? (await getPrimarySocialId(await this.opClient, person))
 
-    if (account === undefined) {
+    if (personId === undefined) {
+      console.error('Person id not found for person', person)
       return
     }
 
-    if (this.generalChannel === undefined) {
-      return
+    if (cachedPersonId === undefined) {
+      this.personIdByPerson.set(person, personId)
     }
 
-    if (!this.generalChannel.members.includes(account._id)) {
-      return
-    }
-
-    const message = (await onboardingMessages.findOne({ messageId: action.messageId })) ?? undefined
-
-    if (message === undefined) {
-      return
-    }
-
-    await client.updateDoc(analyticsCollector.class.OnboardingChannel, core.space.Space, message.channelId, {
-      $push: { members: account._id }
-    })
-
-    await onboardingMessages.deleteOne({ messageId: action.messageId })
-    await client.removeCollection(
-      chunter.class.InlineButton,
-      analyticsCollector.space.GeneralOnboardingChannel,
-      action._id,
-      action.messageId,
-      chunter.class.ChatMessage,
-      'inlineButtons'
-    )
-  }
-
-  async processAction (action: Action, email: string, onboardingMessages: Collection<OnboardingMessage>): Promise<void> {
-    switch (action.name) {
-      case MessageActions.Accept:
-        await this.handleAcceptAction(action, email, onboardingMessages)
-        break
-      default:
-    }
+    return personId
   }
 
   async processEvents (
     events: AnalyticEvent[],
-    email: string,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     person: Person,
     onboardingMessages: Collection<OnboardingMessage>
   ): Promise<void> {
     const client = await this.opClient
     const op = client.apply(undefined, 'processEvents')
-    const wsString = toWorkspaceString(workspace)
+    const wsString = workspace
+    const personId = await this.getPersonId(person._id)
+
+    if (personId === undefined) {
+      return
+    }
+
     const {
       channelId,
       isCreated,
       workspace: workspaceInfo
-    } = await this.getOrCreateOnboardingChannel(op, wsString, email, person)
+    } = await this.getOrCreateOnboardingChannel(op, wsString, personId, person)
 
     if (channelId === undefined) {
       return
@@ -222,21 +191,8 @@ export class SupportWsClient extends WorkspaceClient {
         analyticsCollector.space.GeneralOnboardingChannel,
         chunter.class.Channel,
         'messages',
-        { message: getOnboardingMessage(email, workspaceInfo?.workspaceUrl ?? wsString, person.name) },
+        { message: getOnboardingMessage(personId, workspaceInfo?.url ?? wsString, person.name) },
         messageId
-      )
-
-      await op.addCollection(
-        chunter.class.InlineButton,
-        analyticsCollector.space.GeneralOnboardingChannel,
-        messageId,
-        chunter.class.ChatMessage,
-        'inlineButtons',
-        {
-          name: MessageActions.Accept,
-          title: 'Accept',
-          action: analyticsCollector.function.AnalyticsCollectorInlineAction
-        }
       )
 
       await onboardingMessages.insertOne({ messageId, channelId })
@@ -268,20 +224,18 @@ export class SupportWsClient extends WorkspaceClient {
 
   async pushEvents (
     events: AnalyticEvent[],
-    email: string,
-    workspace: WorkspaceId,
+    workspace: WorkspaceUuid,
     person: Person,
     onboardingMessages: Collection<OnboardingMessage>
   ): Promise<void> {
-    const wsString = toWorkspaceString(workspace)
-    const channelKey = `${email}-${wsString}`
+    const channelKey = `${person._id}-${workspace}`
 
     if (this.channelIdByKey.has(channelKey)) {
-      await this.processEvents(events, email, workspace, person, onboardingMessages)
+      await this.processEvents(events, workspace, person, onboardingMessages)
     } else {
       // If we dont have OnboardingChannel we should call it sync to prevent multiple channels for the same user and workspace
       await this.rate.add(async () => {
-        await this.processEvents(events, email, workspace, person, onboardingMessages)
+        await this.processEvents(events, workspace, person, onboardingMessages)
       })
     }
   }

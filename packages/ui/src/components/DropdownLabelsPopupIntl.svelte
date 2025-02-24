@@ -17,7 +17,7 @@
   import type { DropdownIntlItem } from '../types'
   import IconCheck from './icons/Check.svelte'
   import Label from './Label.svelte'
-  import { resizeObserver } from '..'
+  import { Icon, resizeObserver } from '..'
 
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
@@ -55,7 +55,12 @@
             dispatch('close', item.id)
           }}
         >
-          <div class="flex-grow caption-color nowrap"><Label label={item.label} params={item.params ?? params} /></div>
+          <div class="flex-grow caption-color nowrap flex-presenter flex-gap-2">
+            {#if item.icon}
+              <Icon size="small" icon={item.icon} iconProps={item.iconProps} />
+            {/if}
+            <Label label={item.label} params={item.params ?? params} />
+          </div>
           <div class="check">
             {#if item.id === selected}<IconCheck size={'small'} />{/if}
           </div>

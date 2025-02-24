@@ -43,7 +43,7 @@
     "@hcengineering/analytics": "^0.6.0",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "@sentry/node": "^7.103.0"
+    "@sentry/node": "^8.52.1"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

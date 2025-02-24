@@ -39,16 +39,13 @@
   },
   "dependencies": {
     "@hcengineering/ui": "^0.6.15",
-    "svelte": "^4.2.12",
+    "svelte": "^4.2.19",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/calendar": "^0.6.24"
-  },
-  "repository": "https://github.com/hcenginneing/anticrm",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "@hcengineering/calendar": "^0.6.24",
+    "@hcengineering/presence": "^0.6.0"
   }
 }

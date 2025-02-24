@@ -24,7 +24,8 @@
     Ref,
     SortingOrder,
     TxOperations,
-    getObjectValue
+    getObjectValue,
+    mergeQueries
   } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { createQuery, getClient, reduceCalls, updateAttribute } from '@hcengineering/presentation'
@@ -39,13 +40,14 @@
     mouseAttractor,
     resizeObserver
   } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey, BuildModelOptions } from '@hcengineering/view'
+  import { AttributeModel, BuildModelKey, BuildModelOptions, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import { showMenu } from '../actions'
   import view from '../plugin'
   import { LoadingProps, buildConfigLookup, buildModel, restrictionStore } from '../utils'
   import IconUpDown from './icons/UpDown.svelte'
+  import { getResultOptions, getResultQuery } from '../viewOptions'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -59,6 +61,8 @@
   export let tableId: string | undefined = undefined
   export let readonly = false
   export let showFooter = false
+  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
+  export let viewOptions: ViewOptions | undefined = undefined
 
   export let totalQuery: DocumentQuery<Doc> | undefined = undefined
 
@@ -117,6 +121,8 @@
       : { ...(options?.sort ?? {}), [sortKey]: sortOrder }
   }
 
+  let resultOptions = options
+
   const update = reduceCalls(async function (
     _class: Ref<Class<Doc>>,
     query: DocumentQuery<Doc>,
@@ -124,11 +130,13 @@
     sortOrder: SortingOrder,
     lookup: Lookup<Doc>,
     limit: number,
-    options?: FindOptions<Doc>
+    options: FindOptions<Doc> | undefined
   ) {
+    const p = await getResultQuery(hierarchy, query, viewOptionsConfig, viewOptions)
+    const resultQuery = mergeQueries(p, query)
     loading += q.query(
       _class,
-      query,
+      resultQuery,
       (result) => {
         if (sortingFunction !== undefined) {
           const sf = sortingFunction
@@ -144,7 +152,11 @@
       ? 1
       : 0
   })
-  $: void update(_class, query, _sortKey, sortOrder, lookup, limit, options)
+  $: void update(_class, query, _sortKey, sortOrder, lookup, limit, resultOptions)
+
+  $: void getResultOptions(options, viewOptionsConfig, viewOptions).then((p) => {
+    resultOptions = p
+  })
 
   $: dispatch('content', objects)
 
@@ -158,7 +170,7 @@
         gtotal = total
       }
     },
-    { limit: 1, ...options, sort: getSort(_sortKey), lookup, total: true }
+    { limit: 1, ...resultOptions, sort: getSort(_sortKey), lookup, total: true }
   )
 
   const totalQueryQ = createQuery()
@@ -170,6 +182,7 @@
         gtotal = result.total === -1 ? 0 : result.total
       },
       {
+        ...resultOptions,
         lookup,
         limit: 1,
         total: true
@@ -203,6 +216,7 @@
   }
 
   $: checkedSet = new Set<Ref<Doc>>(checked.map((it) => it._id))
+  $: allItemsSelected = objects?.length === checkedSet.size && objects?.length > 0
 
   export function check (docs: Doc[], value: boolean) {
     if (!enableChecking) return
@@ -237,13 +251,14 @@
   }
 
   const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean) => {
-    const readonlyParams = readonly
-      ? {
-          readonly: true,
-          editable: false,
-          disabled: true
-        }
-      : {}
+    const readonlyParams =
+      readonly || (attribute?.attribute?.readonly ?? false)
+        ? {
+            readonly: true,
+            editable: false,
+            disabled: true
+          }
+        : {}
     if (attribute.collectionAttr) {
       return { object, ...attribute.props, ...readonlyParams }
     }
@@ -262,7 +277,7 @@
     return getObjectValue(attribute.key, object)
   }
 
-  function onChange (value: any, doc: Doc, key: string, attribute: AnyAttribute) {
+  function onChange (value: any, doc: Doc, key: string, attribute: AnyAttribute): void {
     updateAttribute(client, doc, _class, { key, attr: attribute }, value)
   }
 
@@ -333,8 +348,8 @@
               {#if enableChecking && objects?.length > 0}
                 <div class="antiTable-cells__checkCell" class:checkall={checkedSet.size > 0}>
                   <CheckBox
-                    symbol={'minus'}
-                    checked={objects?.length === checkedSet.size && objects?.length > 0}
+                    symbol={allItemsSelected ? 'check' : 'minus'}
+                    checked={checkedSet.size > 0}
                     on:value={(event) => {
                       check(objects, event.detail)
                     }}
@@ -437,6 +452,7 @@
                       this={attribute.presenter}
                       value={getValue(attribute, object)}
                       onChange={getOnChange(object, attribute)}
+                      label={attribute.label}
                       {...joinProps(attribute, object, readonly || $restrictionStore.readonly)}
                     />
                   </div>

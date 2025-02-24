@@ -1,0 +1,24 @@
+{
+  "status": {
+    "LoadingPlugin": "Plugin {plugin} wird geladen...",
+    "UnknownError": "Unbekannter Fehler: {message}",
+    "InvalidId": "Ungültige ID: {id}",
+    "BadRequest": "Fehlerhafte Anfrage",
+    "Forbidden": "Zugriff verweigert",
+    "ExpiredLink": "Dieser Einladungslink ist abgelaufen",
+    "Unauthorized": "Nicht autorisiert",
+    "UnknownMethod": "Unbekannte Methode: {method}",
+    "InternalServerError": "Interner Serverfehler",
+    "MaintenanceWarning": "Wartung geplant in {time, plural, =1 {weniger als einer Minute} other {# Minuten}}",
+    "AccountNotFound": "Konto nicht gefunden",
+    "AccountNotConfirmed": "Konto nicht bestätigt",
+    "WorkspaceNotFound": "Arbeitsbereich nicht gefunden",
+    "InvalidPassword": "Ungültiges Passwort",
+    "AccountAlreadyExists": "Konto existiert bereits",
+    "WorkspaceRateLimit": "Server ist ausgelastet, bitte warten Sie einen Moment und versuchen Sie es erneut",
+    "AccountAlreadyConfirmed": "Konto wurde bereits bestätigt",
+    "WorkspaceAlreadyExists": "Arbeitsbereich existiert bereits",
+    "InvalidOtp": "Ungültiger Code",
+    "InviteNotFound": "Einladung mit E-Mail: {email} nicht gefunden."
+  }
+}

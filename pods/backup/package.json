@@ -14,10 +14,11 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "get-model": "mkdir -p bundle && esbuild src/get-model.ts --bundle --keep-names --platform=node --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.VERSION=$(node ../../common/scripts/show_tag.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error && node ./bundle/bundle.js > ./bundle/model.json",
-    "bundle": "mkdir -p bundle && rushx get-model && esbuild src/index.ts --keep-names --bundle --platform=node --external:*.node --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
+    "get-model": "node ../../common/scripts/esbuild.js --entry=src/get-model.ts --keep-names=true --bundle=true --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION  && node ./bundle/bundle.js > ./bundle/model.json",
+    "bundle": "rushx get-model && node ../../common/scripts/esbuild.js --entry=src/index.ts --keep-names=true --bundle=true --sourcemap=external --external=*.node",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/backup",
     "docker:tbuild": "docker build -t hardcoreeng/backup . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/backup",
+    "docker:abuild": "docker build -t hardcoreeng/backup . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/backup",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/backup staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/backup",
     "run-local": "cross-env ACCOUNTS_URL=http://localhost:3000/ SECRET=secret MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost BUCKET_NAME=backups INTERVAL=30 ts-node src/index.ts",
@@ -37,7 +38,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.24.2",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
@@ -59,6 +60,8 @@
     "dotenv": "~16.0.0",
     "@hcengineering/backup-service": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/analytics-service": "^0.6.0"
+    "@hcengineering/analytics-service": "^0.6.0",
+    "@hcengineering/mongo": "^0.6.1",
+    "@hcengineering/postgres": "^0.6.0"
   }
 }

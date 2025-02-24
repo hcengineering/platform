@@ -40,12 +40,14 @@
     "@types/js-yaml": "^4.0.9"
   },
   "dependencies": {
-    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
+    "mongodb": "^6.12.0",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/client-resources": "^0.6.27",
     "@hcengineering/client": "^0.6.18",
+    "@hcengineering/account-client": "^0.6.0",
+    "@hcengineering/importer": "^0.6.1",
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/rank": "^0.6.4",
     "uuid": "^8.3.2",
@@ -57,7 +59,7 @@
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/collaboration": "^0.6.0",
     "@hcengineering/minio": "^0.6.0",
-    "fast-equals": "^5.0.1",
+    "fast-equals": "^5.2.2",
     "@hcengineering/text": "^0.6.5",
     "js-yaml": "^4.1.0"
   }

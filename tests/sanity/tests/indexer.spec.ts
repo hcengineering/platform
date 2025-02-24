@@ -180,17 +180,14 @@ test.describe('Fulltext index', () => {
   })
 
   test.describe('Issues', () => {
-    let leftSideMenuPage: LeftSideMenuPage
     let issuesPage: IssuesPage
     let spotlight: SpotlightPopup
     let issuesDetailsPage: IssuesDetailsPage
 
     test.beforeEach(async ({ page }) => {
-      leftSideMenuPage = new LeftSideMenuPage(page)
       issuesPage = new IssuesPage(page)
       spotlight = new SpotlightPopup(page)
       issuesDetailsPage = new IssuesDetailsPage(page)
-      await leftSideMenuPage.clickTracker()
     })
 
     test('Search created issue', async ({ page }) => {
@@ -333,12 +330,10 @@ test.describe('Fulltext index', () => {
       const loginPage = new LoginPage(page)
       const signUpPage = new SignUpPage(page)
       const selectWorkspacePage = new SelectWorkspacePage(page)
-      const leftSideMenuPage = new LeftSideMenuPage(page)
       const issuesPage = new IssuesPage(page)
       const spotlight = new SpotlightPopup(page)
 
       await test.step('create issue', async () => {
-        await leftSideMenuPage.clickTracker()
         await issuesPage.createNewIssue(newIssue)
       })
 
@@ -360,13 +355,12 @@ test.describe('Fulltext index', () => {
 
         await loginPage.goto()
         await loginPage.clickSignUp()
-        await signUpPage.signUp(newUser)
+        await signUpPage.signUpPwd(newUser)
 
         await selectWorkspacePage.createWorkspace(newWorkspaceName)
       })
 
       await test.step('search by title', async () => {
-        await leftSideMenuPage.clickTracker()
         await spotlight.open()
         await spotlight.fillSearchInput(titleId)
         await spotlight.checkSearchResult(newIssue.title, 0)

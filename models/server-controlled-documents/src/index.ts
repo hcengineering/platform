@@ -9,10 +9,19 @@ import documents, { DocumentState } from '@hcengineering/controlled-documents'
 import serverDocuments from '@hcengineering/server-controlled-documents'
 import contact from '@hcengineering/contact'
 import serverNotification from '@hcengineering/server-notification'
+import notification from '@hcengineering/notification'
 
 export { serverDocumentsId } from '@hcengineering/server-controlled-documents/src/index'
 
 export function createModel (builder: Builder): void {
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverDocuments.trigger.OnSocialIdentityCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.SocialIdentity
+    }
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverDocuments.trigger.OnDocDeleted,
     txMatch: {
@@ -33,11 +42,10 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverDocuments.trigger.OnDocApprovalRequestApproved,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      objectClass: documents.class.ControlledDocument,
-      'tx._class': core.class.TxUpdateDoc,
-      'tx.objectClass': documents.class.DocumentApprovalRequest,
-      'tx.operations.status': RequestStatus.Completed
+      _class: core.class.TxUpdateDoc,
+      attachedToClass: documents.class.ControlledDocument,
+      objectClass: documents.class.DocumentApprovalRequest,
+      'operations.status': RequestStatus.Completed
     }
   })
 
@@ -50,24 +58,23 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverDocuments.trigger.OnWorkspaceOwnerAdded,
-    txMatch: {
-      objectClass: contact.class.PersonAccount
-    }
-  })
-
   builder.mixin(documents.class.DocumentMeta, core.class.Class, serverCore.mixin.SearchPresenter, {
-    searchConfig: {
-      iconConfig: {
-        component: documents.component.DocumentIcon,
-        props: []
-      },
-      title: 'title'
-    }
+    iconConfig: {
+      component: documents.component.DocumentIcon
+    },
+    title: [['title']]
   })
 
   builder.mixin(documents.class.ControlledDocument, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverDocuments.function.ControlledDocumentTextPresenter
   })
+
+  builder.mixin(
+    documents.notification.CoAuthorsNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverDocuments.function.CoAuthorsTypeMatch
+    }
+  )
 }

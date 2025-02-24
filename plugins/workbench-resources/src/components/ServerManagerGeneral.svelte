@@ -1,5 +1,5 @@
 <script lang="ts">
-  import core, { RateLimiter, concatLink, metricsAggregate, type Metrics } from '@hcengineering/core'
+  import core, { RateLimiter, concatLink, metricsAggregate, platformNow, type Metrics } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
   import presentation, { getClient, isAdminUser, uiContext } from '@hcengineering/presentation'
@@ -75,8 +75,8 @@
     const rate = new RateLimiter(commandsToSendParallel)
     const client = getClient()
 
-    const doOp = async () => {
-      const st = Date.now()
+    const doOp = async (): Promise<void> => {
+      const st = platformNow()
       active++
       await client.createDoc(core.class.BenchmarkDoc, core.space.Configuration, {
         source: genData(dataSize),
@@ -86,7 +86,7 @@
         }
       })
       active--
-      const ed = Date.now()
+      const ed = platformNow()
 
       if (ed - st > maxTime) {
         maxTime = ed - st
@@ -132,12 +132,12 @@
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    fetchStats(0)
+    void fetchStats(0)
   }
 
   let metrics: Metrics | undefined
 
-  function update (tick: number) {
+  function update (tick: number): void {
     metrics = metricsAggregate(uiContext.metrics)
   }
 
@@ -183,8 +183,8 @@
     </div>
     <div class="flex-col p-1">
       <div class="flex-row-center p-1">
-        Command benchmark {avgTime / opss}
-        {maxTime} - {active}
+        Command benchmark {Math.round((avgTime / opss) * 100) / 100}
+        {Math.round(maxTime * 100) / 100} - {active}
       </div>
       <div class="flex-row-center p-1">
         <div class="flex-row-center p-1">
@@ -213,9 +213,9 @@
       <div class="p-3">2.</div>
       <Button
         icon={IconArrowRight}
-        label={getEmbeddedLabel('Reboot server')}
+        label={getEmbeddedLabel('Reboot workspace')}
         on:click={() => {
-          void fetch(endpoint + `/api/v1/manage?token=${token}&operation=reboot`, {
+          void fetch(endpoint + `/api/v1/manage?token=${token}&operation=force-close`, {
             method: 'PUT'
           })
         }}
@@ -230,7 +230,7 @@
             void fetch(endpoint + `/api/v1/manage?token=${token}&operation=profile-start`, {
               method: 'PUT'
             })
-            fetchStats(0)
+            void fetchStats(0)
           }}
         />
       {:else}
@@ -241,7 +241,7 @@
 {/if}
 
 {#if metrics}
-  <MetricsInfo {metrics} />
+  <MetricsInfo {metrics} sortOrder={'avg'} />
 {/if}
 
 <style lang="scss">

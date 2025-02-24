@@ -72,14 +72,6 @@ export interface KanbanCard extends Class<Doc> {
   card: AnyComponent
 }
 
-/**
- * @public
- */
-export interface Sequence extends Doc {
-  attachedTo: Ref<Class<Doc>>
-  sequence: number
-}
-
 export interface ProjectStatus extends IconProps {
   _id: Ref<Status>
   taskType: Ref<TaskType>
@@ -102,6 +94,8 @@ export interface TaskTypeDescriptor extends Doc {
   // If specified, will allow to be created by users, system type overwise
   allowCreate: boolean
   statusCategoriesFunc?: Resource<(project: ProjectType) => Ref<StatusCategory>[]>
+
+  openTasks?: Resource<(value: TaskType) => Promise<void>>
 }
 
 /**
@@ -245,7 +239,6 @@ const task = plugin(taskId, {
     Identifier: '' as IntlString
   },
   class: {
-    Sequence: '' as Ref<Class<Sequence>>,
     ProjectTypeDescriptor: '' as Ref<Class<ProjectTypeDescriptor>>,
     ProjectType: '' as Ref<Class<ProjectType>>,
     Project: '' as Ref<Class<Project>>,

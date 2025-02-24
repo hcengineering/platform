@@ -16,47 +16,78 @@
 import { Analytics } from '@hcengineering/analytics'
 import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
 import { startBackup } from '@hcengineering/backup-service'
-import { MeasureMetricsContext, metricsToString, newMetrics, type Tx } from '@hcengineering/core'
-import { type PipelineFactory } from '@hcengineering/server-core'
-import { createBackupPipeline, getConfig } from '@hcengineering/server-pipeline'
-import { writeFile } from 'fs/promises'
+import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
+import { initStatisticsContext, type PipelineFactory } from '@hcengineering/server-core'
+import {
+  createBackupPipeline,
+  getConfig,
+  registerAdapterFactory,
+  registerDestroyFactory,
+  registerTxAdapterFactory,
+  setAdapterSecurity,
+  sharedPipelineContextVars
+} from '@hcengineering/server-pipeline'
 import { join } from 'path'
 
+import {
+  createMongoAdapter,
+  createMongoDestroyAdapter,
+  createMongoTxAdapter,
+  shutdownMongo
+} from '@hcengineering/mongo'
+import {
+  createPostgreeDestroyAdapter,
+  createPostgresAdapter,
+  createPostgresTxAdapter,
+  setDBExtraOptions,
+  shutdownPostgres
+} from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
-const metricsContext = new MeasureMetricsContext(
-  'backup',
-  {},
-  {},
-  newMetrics(),
-  new SplitLogger('backup-service', {
-    root: join(process.cwd(), 'logs'),
-    enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+// Register close on process exit.
+process.on('exit', () => {
+  shutdownPostgres(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
   })
-)
+  shutdownMongo(sharedPipelineContextVars).catch((err) => {
+    console.error(err)
+  })
+})
+
+const metricsContext = initStatisticsContext('backup', {
+  factory: () =>
+    new MeasureMetricsContext(
+      'backup',
+      {},
+      {},
+      newMetrics(),
+      new SplitLogger('backup', {
+        root: join(process.cwd(), 'logs'),
+        enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+      })
+    )
+})
 
 const sentryDSN = process.env.SENTRY_DSN
 
 configureAnalytics(sentryDSN, {})
 Analytics.setTag('application', 'backup-service')
 
-let oldMetricsValue = ''
+const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
 
-const intTimer = setInterval(() => {
-  const val = metricsToString(metricsContext.metrics, 'Backup', 140)
-  if (val !== oldMetricsValue) {
-    oldMetricsValue = val
-    void writeFile('metrics.txt', val).catch((err) => {
-      console.error(err)
-    })
-  }
-}, 30000)
+setDBExtraOptions({
+  prepare: usePrepare // We override defaults
+})
 
-const onClose = (): void => {
-  clearInterval(intTimer)
-  metricsContext.info('Closed')
-}
+registerTxAdapterFactory('mongodb', createMongoTxAdapter)
+registerAdapterFactory('mongodb', createMongoAdapter)
+registerDestroyFactory('mongodb', createMongoDestroyAdapter)
+
+registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
+registerAdapterFactory('postgresql', createPostgresAdapter, true)
+registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+setAdapterSecurity('postgresql', true)
 
 startBackup(
   metricsContext,
@@ -67,17 +98,11 @@ startBackup(
     })
     return factory
   },
-  (ctx, dbUrls, workspace, branding, externalStorage) => {
-    return getConfig(ctx, dbUrls, workspace, branding, ctx, {
+  (ctx, dbUrl, workspace, branding, externalStorage) => {
+    return getConfig(ctx, dbUrl, ctx, {
       externalStorage,
-      fullTextUrl: '',
-      indexParallel: 0,
-      indexProcessing: 0,
-      rekoniUrl: '',
       disableTriggers: true
     })
-  }
+  },
+  sharedPipelineContextVars
 )
-
-process.on('SIGINT', onClose)
-process.on('SIGTERM', onClose)

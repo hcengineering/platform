@@ -15,7 +15,7 @@ on:
       - v*
       - s*
   pull_request:
-    branches: [develop, main]
+    branches: [develop, staging, staging-new, main]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -40,8 +40,10 @@ env:
     rush.json
     .prettierrc
     tools
+    workers
+    ws-tests
   PublishTempFolder: publish_artifacts
-  MODEL_VERSION_MODE: ${{ startsWith(github.ref, 'refs/tags/s') && 'tagTime' || 'file' }}
+  INIT_SCRIPTS_BRANCH: 'unified-init-scripts'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -81,13 +83,13 @@ jobs:
         run: node common/scripts/install-run-rush.js model-version
 
       - name: Building...
-        run: node common/scripts/install-run-rush.js build -p 20
+        run: node common/scripts/install-run-rush.js build
 
       - name: Bundle...
-        run: node common/scripts/install-run-rush.js bundle -p 20
+        run: node common/scripts/install-run-rush.js bundle
 
       - name: Validate...
-        run: node common/scripts/install-run-rush.js validate -p 20
+        run: node common/scripts/install-run-rush.js validate
 
       - name: Cache build results
         uses: actions/cache@v4
@@ -154,7 +156,7 @@ jobs:
           [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
           echo '================================================================'
       - name: Formatting...
-        run: node common/scripts/install-run-rush.js fast-format
+        run: node common/scripts/install-run-rush.js fast-format --branch ${{ github.base_ref || 'develop' }}
       - name: Check files formatting
         run: |
           echo '================================================================'
@@ -191,7 +193,7 @@ jobs:
       - name: Testing...
         run: node common/scripts/install-run-rush.js test
         env:
-          DB_URL: 'postgresql://postgres:example@localhost:5433'
+          DB_URL: 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
           ELASTIC_URL: 'http://localhost:9201'
           MONGO_URL: 'mongodb://localhost:27018'
   uitest:
@@ -223,7 +225,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
       - name: Prepare server
@@ -260,10 +262,8 @@ jobs:
         run: |
           cd ./tests/sanity
           mkdir logs
-          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
-          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
-          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
-          docker logs $(docker ps | grep collaborator | cut -f 1 -d ' ') > logs/collaborator.log
+          cd logs
+          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -340,7 +340,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
       - name: Prepare server
@@ -361,9 +361,8 @@ jobs:
         run: |
           cd ./tests/sanity
           mkdir logs
-          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
-          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
-          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
+          cd logs
+          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -405,12 +404,12 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
       - name: Configure /etc/hosts
         run: |
-            sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
       - name: Prepare server
         run: |
           cd ./qms-tests
@@ -429,50 +428,90 @@ jobs:
         run: |
           cd ./qms-tests/sanity
           mkdir logs
-          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
-          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
-          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
+          cd logs
+          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-results-qms
           path: ./qms-tests/sanity/playwright-report/
-      # - name: Get Allure history
-      #   uses: actions/checkout@v4
-      #   if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-      #   continue-on-error: true
-      #   with:
-      #     ref: gh-pages
-      #     path: gh-pages
-      # - name: Generates Allure Report
-      #   uses: simple-elf/allure-report-action@master
-      #   if: always()
-      #   id: allure-report
-      #   with:
-      #     allure_results: ./qms-tests/sanity/allure-results/
-      #     gh_pages: gh-pages
-      #     allure_report: allure-report
-      #     allure_history: allure-history
-      # - name: Upload allure test results
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: allure-report-qms
-      #     path: ./allure-report/
-      # - name: Deploy report to Github Pages
-      #   if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-      #   uses: peaceiris/actions-gh-pages@v4
-      #   with:
-      #     PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     PUBLISH_BRANCH: gh-pages
-      #     PUBLISH_DIR: allure-history
       - name: Upload Logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: docker-logs-qms
           path: ./qms-tests/sanity/logs
+  uitest-workspaces:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - name: Cache node modules
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-platform
+        with:
+          path: |
+            common/temp
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
+
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Build sanity-tests suite
+        run: node common/scripts/install-run-rush.js build -t @hcengineering/tests-sanity
+
+      - name: Docker Build
+        run: node common/scripts/install-run-rush.js docker
+        env:
+          DOCKER_CLI_HINTS: false
+      - name: Configure /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+      - name: Prepare server
+        run: |
+          cd ./ws-tests
+          export DO_CLEAN=true
+          ./prepare.sh
+      - name: Install Playwright
+        run: |
+          cd ./ws-tests/sanity
+          node ../../common/scripts/install-run-rushx.js ci
+      - name: Run UI tests
+        run: |
+          cd ./ws-tests/sanity
+          node ../../common/scripts/install-run-rushx.js uitest
+      - name: 'Store docker logs'
+        if: always()
+        run: |
+          cd ./ws-tests/sanity
+          mkdir logs
+          cd logs
+          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-ws
+          path: ./ws-tests/sanity/playwright-report/
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs-ws
+          path: ./ws-tests/sanity/logs
   docker-build:
     needs: [build, test, svelte-check, uitest]
     runs-on: ubuntu-latest
@@ -493,9 +532,20 @@ jobs:
         with:
           fetch-depth: 0
           filter: tree:0
+
+      - name: Checkout init repository
+        run: |
+          wget https://github.com/hcengineering/init/archive/refs/heads/${{env.INIT_SCRIPTS_BRANCH}}.zip
+          unzip ${{env.INIT_SCRIPTS_BRANCH}}.zip -d pods/workspace
+          mv pods/workspace/init-${{env.INIT_SCRIPTS_BRANCH}} pods/workspace/init
+          rm -rf ${{env.INIT_SCRIPTS_BRANCH}}.zip
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
       - name: Cache node modules
         uses: actions/cache@v4
         env:
@@ -518,6 +568,14 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+      - name: Docker build love-agent
+        run: |
+          cd ./services/ai-bot/love-agent
+          pnpm install && pnpm build
+          pnpm docker:build -v
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       - name: Login to Docker Hub
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         uses: docker/login-action@v3
@@ -532,6 +590,12 @@ jobs:
         run: |
           echo Pushing release of tag ${{ github.ref }}
           node common/scripts/install-run-rush.js docker:push -v
+      - name: Docker push love-agent
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        run: |
+          echo Pushing love-agent release of tag ${{ github.ref }}
+          cd ./services/ai-bot/love-agent
+          pnpm docker:push
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
@@ -565,7 +629,7 @@ jobs:
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
       - name: Package
-        run: node common/scripts/install-run-rush.js package --to desktop  -p 20 -v
+        run: node common/scripts/install-run-rush.js package --to desktop -v
       - name: Package JSON
         run: |
           cd desktop-package
@@ -602,7 +666,7 @@ jobs:
           node ../common/scripts/install-run-rushx.js dist --linux --windows --x64
           node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
           ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
-      - name: Publish distribution assets
+      - name: Publish distribution assets and version
         uses: ryand56/r2-upload-action@latest
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
@@ -611,29 +675,23 @@ jobs:
           r2-bucket: desktop-distro
           source-dir: desktop-package/${{ env.PublishTempFolder}}
           destination-dir: ./
-      - name: Publish distribution version
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: |
-          ./desktop-package/scripts/publish-version.sh
       - name: Upload MacOS
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Huly-MacOS-x64
           path: ./desktop-package/deploy/Huly-macos-*-x64.dmg
       - name: Upload MacOS arm64
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Huly-MacOS-arm64
           path: ./desktop-package/deploy/Huly-macos-*-arm64.dmg
       - name: Upload Windows
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Huly-Windows
           path: ./desktop-package/deploy/Huly-windows-*.zip
       - name: Upload Linux
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Huly-Linux
           path: ./desktop-package/deploy/Huly-linux-*.zip

@@ -20,7 +20,6 @@ import {
   type Ref,
   type Tx,
   type TxRemoveDoc,
-  TxProcessor,
   DocumentQuery,
   FindOptions,
   FindResult
@@ -30,18 +29,25 @@ import type { TriggerControl } from '@hcengineering/server-core'
 
 /** @public */
 export async function OnFileVersionDelete (
-  tx: Tx,
+  txes: Tx[],
   { removedMap, ctx, storageAdapter, workspace }: TriggerControl
 ): Promise<Tx[]> {
-  const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<FileVersion>
+  const result: Tx[] = []
+  const toDelete: string[] = []
+  for (const tx of txes) {
+    const rmTx = tx as TxRemoveDoc<FileVersion>
 
-  // Obtain document being deleted.
-  const version = removedMap.get(rmTx.objectId) as FileVersion
-  if (version !== undefined) {
-    await storageAdapter.remove(ctx, workspace, [version.file])
+    // Obtain document being deleted.
+    const version = removedMap.get(rmTx.objectId) as FileVersion
+    if (version !== undefined) {
+      toDelete.push(version.file)
+    }
+  }
+  if (toDelete.length > 0) {
+    await storageAdapter.remove(ctx, workspace, toDelete)
   }
 
-  return []
+  return result
 }
 
 /** @public */

@@ -13,18 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   getGravatarUrl,
   getName,
   type AvatarInfo,
   type Channel,
   type Contact,
-  type Person,
-  type PersonAccount
+  type Person
 } from '@hcengineering/contact'
 import {
-  DocManager,
+  AccountRole,
+  SocialIdType,
   type Class,
   type Client,
   type Data,
@@ -77,7 +77,6 @@ import CreateGuest from './components/CreateGuest.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
 import CreatePerson from './components/CreatePerson.svelte'
 import DeleteConfirmationPopup from './components/DeleteConfirmationPopup.svelte'
-import EditEmployee from './components/EditEmployee.svelte'
 import EditMember from './components/EditMember.svelte'
 import EditOrganization from './components/EditOrganization.svelte'
 import EditOrganizationPanel from './components/EditOrganizationPanel.svelte'
@@ -98,9 +97,7 @@ import MembersPresenter from './components/MembersPresenter.svelte'
 import MergePersons from './components/MergePersons.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
 import OrganizationPresenter from './components/OrganizationPresenter.svelte'
-import PersonAccountFilterValuePresenter from './components/PersonAccountFilterValuePresenter.svelte'
-import PersonAccountPresenter from './components/PersonAccountPresenter.svelte'
-import PersonAccountRefPresenter from './components/PersonAccountRefPresenter.svelte'
+import PersonFilterValuePresenter from './components/PersonFilterValuePresenter.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonIcon from './components/PersonIcon.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
@@ -123,8 +120,10 @@ import NameChangedActivityMessage from './components/activity/NameChangedActivit
 import IconAddMember from './components/icons/AddMember.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
+import ContactNamePresenter from './components/ContactNamePresenter.svelte'
 
-import { get, writable } from 'svelte/store'
+import { get } from 'svelte/store'
+import { canResendInvitation } from './visibilityTester'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -144,12 +143,14 @@ import {
   getCurrentEmployeePosition,
   getPersonTooltip,
   grouppingPersonManager,
+  permissionsStore,
   resolveLocation,
   resolveLocationData
 } from './utils'
 
 export * from './utils'
-export { employeeByIdStore, employeesStore } from './utils'
+export { employeeByIdStore } from './utils'
+export * from './assignee'
 export {
   AccountArrayEditor,
   AccountBox,
@@ -183,8 +184,6 @@ export {
   MembersBox,
   MembersPresenter,
   OrganizationPresenter,
-  PersonAccountPresenter,
-  PersonAccountRefPresenter,
   PersonIcon,
   PersonPresenter,
   PersonRefPresenter,
@@ -265,41 +264,50 @@ async function doContactQuery<T extends Contact> (
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
-async function kickEmployee (doc: Person): Promise<void> {
+async function resendInvite (doc: Person): Promise<void> {
   const client = getClient()
-
-  const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
-  const accounts = client.getModel().getAccountByPersonId(doc._id)
-  if (accounts.length === 0) {
-    await client.update(employee, { active: false })
-  } else {
-    showPopup(MessageBox, {
-      label: contact.string.KickEmployee,
-      message: contact.string.KickEmployeeDescr,
-      action: async () => {
-        const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-        for (const i of accounts) {
-          await leaveWorkspace(i.email)
-        }
-      }
-    })
+  const emailSocialId = await client.findOne(contact.class.SocialIdentity, {
+    attachedTo: doc._id,
+    type: SocialIdType.EMAIL
+  })
+  if (emailSocialId == null) {
+    console.error('Cannot find email social id for person', doc._id)
+    return
   }
+
+  showPopup(MessageBox, {
+    label: contact.string.ResendInvite,
+    message: contact.string.ResendInviteDescr,
+    action: async () => {
+      const _resendInvite = await getResource(login.function.ResendInvite)
+      await _resendInvite(emailSocialId?.value, AccountRole.User)
+    }
+  })
 }
+
+async function kickEmployee (doc: Person): Promise<void> {
+  showPopup(MessageBox, {
+    label: contact.string.KickEmployee,
+    message: contact.string.KickEmployeeDescr,
+    action: async () => {
+      const client = getClient()
+
+      const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
+      await client.update(employee, { active: false })
+
+      if (doc.personUuid != null) {
+        const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
+        await leaveWorkspace(doc.personUuid)
+      }
+    }
+  })
+}
+
 async function openChannelURL (doc: Channel): Promise<void> {
   const url = parseURL(doc.value)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     window.open(url)
   }
-}
-
-function filterPerson (doc: PersonAccount, target: PersonAccount): boolean {
-  return doc.person === target.person && doc._id !== target._id
-}
-
-export const personStore = writable<DocManager<PersonAccount>>(new DocManager([]))
-
-function setStore (manager: DocManager<PersonAccount>): void {
-  personStore.set(manager)
 }
 
 export interface PersonLabelTooltip {
@@ -325,7 +333,8 @@ function getPersonColor (person: Data<WithLookup<AvatarInfo>>, name: string): Co
 export default async (): Promise<Resources> => ({
   actionImpl: {
     KickEmployee: kickEmployee,
-    OpenChannel: openChannelURL
+    OpenChannel: openChannelURL,
+    ResendInvite: resendInvite
   },
   activity: {
     NameChangedActivityMessage
@@ -345,12 +354,10 @@ export default async (): Promise<Resources> => ({
     CollaborationUserAvatar,
     CreateOrganization,
     EditPerson,
-    EditEmployee,
     EditOrganization,
     SocialEditor,
     Contacts,
     ContactsTabs,
-    PersonAccountPresenter,
     EmployeePresenter,
     EmployeeRefPresenter,
     Members,
@@ -374,13 +381,13 @@ export default async (): Promise<Resources> => ({
     UserBoxItems,
     EmployeeFilter,
     EmployeeFilterValuePresenter,
-    PersonAccountFilterValuePresenter,
+    PersonFilterValuePresenter,
     DeleteConfirmationPopup,
-    PersonAccountRefPresenter,
     PersonIcon,
     EditOrganizationPanel,
     ChannelIcon,
-    SpaceMembersEditor
+    SpaceMembersEditor,
+    ContactNamePresenter
   },
   completion: {
     EmployeeQuery: async (
@@ -441,8 +448,7 @@ export default async (): Promise<Resources> => ({
     PersonTooltipProvider: getPersonTooltip,
     ChannelTitleProvider: channelTitleProvider,
     ChannelIdentifierProvider: channelIdentifierProvider,
-    SetPersonStore: setStore,
-    PersonFilterFunction: filterPerson
+    CanResendInvitation: canResendInvitation
   },
   resolver: {
     Location: resolveLocation,
@@ -452,5 +458,8 @@ export default async (): Promise<Resources> => ({
     // eslint-disable-next-line @typescript-eslint/unbound-method
     CreatePersonAggregationManager: AggregationManager.create,
     GrouppingPersonManager: grouppingPersonManager
+  },
+  store: {
+    Permissions: permissionsStore
   }
 })

@@ -28,6 +28,7 @@
   export let bColor: string | undefined = undefined
   export let withStatus: boolean = false
   export let element: HTMLElement
+  export let adaptiveName: boolean = false
 
   export function pulse (): void {
     if (element === undefined) return
@@ -51,7 +52,7 @@
   $: hasImg = url != null && !imgError
 </script>
 
-{#if size === 'full' && !url && displayName && displayName !== ''}
+{#if (size === 'full' || adaptiveName) && !url && displayName && displayName !== ''}
   <div
     bind:this={element}
     class="hulyAvatar-container hulyAvatarSize-{size} {variant}"

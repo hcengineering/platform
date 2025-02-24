@@ -22,7 +22,9 @@
     Location,
     Header,
     Breadcrumbs,
-    getCurrentLocation
+    getCurrentLocation,
+    Separator,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
@@ -52,6 +54,7 @@
   $: if ($sidebarStore.widget === undefined) {
     sidebarStore.update((s) => ({ ...s, variant: SidebarVariant.MINI }))
   }
+  $: float = $sidebarStore.float
 
   function closeWrongTabs (loc: Location): void {
     if (widget === undefined) return
@@ -96,8 +99,11 @@
   }
 </script>
 
-<div class="root">
-  <div class="content">
+<div class="sidebar-wrap__content{float ? ` float apps-${$deviceInfo.navigator.direction}` : ''}">
+  {#if float && !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
+    <Separator name={'main'} index={0} color={'var(--theme-navpanel-border)'} float={'sidebar'} />
+  {/if}
+  <div class="sidebar-content">
     {#if widget?.component}
       <div class="component" use:resizeObserver={resize}>
         {#if widget.headerLabel}
@@ -143,37 +149,60 @@
       }}
     />
   {/if}
-  <WidgetsBar {widgets} {preferences} selected={widgetId} />
 </div>
+<WidgetsBar {widgets} {preferences} selected={widgetId} />
 
 <style lang="scss">
-  .root {
+  .sidebar-wrap__content,
+  .sidebar-content {
     display: flex;
-    flex: 1;
     height: 100%;
-    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
   }
-
-  .content {
-    display: flex;
-    flex-direction: column;
-
-    border-top: 1px solid var(--theme-divider-color);
-    overflow: auto;
-
-    flex: 1;
+  .sidebar-wrap__content {
     width: calc(100% - 3.5rem);
-    height: 100%;
-    background: var(--theme-panel-color);
-    border-right: 1px solid var(--global-ui-BorderColor);
+    background-color: var(--theme-panel-color);
+    border-top: 1px solid transparent; // var(--theme-divider-color);
+    border-right: 1px solid var(--theme-divider-color);
+    border-left: none;
+
+    &.float {
+      position: absolute;
+      top: 0;
+      right: 3.5rem;
+      border-top-color: var(--theme-divider-color);
+      border-bottom: 1px solid var(--theme-divider-color);
+      z-index: 440;
+      filter: drop-shadow(-2px 0 5px rgba(0, 0, 0, 0.2));
+
+      :global(.mobile-theme) & {
+        overflow: hidden;
+        border: 1px solid var(--theme-divider-color);
+        border-radius: var(--medium-BorderRadius);
+        filter: var(--theme-navpanel-shadow-mobile);
+
+        &.apps-horizontal {
+          height: calc(100% - var(--app-panel-width));
+        }
+        :global(.antiSeparator) {
+          display: none;
+        }
+      }
+    }
+  }
+  .sidebar-content {
+    overflow: auto;
+    flex-direction: column;
+    width: 100%;
   }
 
   .component {
     position: relative;
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex-grow: 1;
     overflow: hidden;
-    border-bottom: 1px solid transparent;
+    background-color: var(--theme-panel-color);
   }
 </style>

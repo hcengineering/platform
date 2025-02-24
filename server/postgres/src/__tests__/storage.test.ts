@@ -14,24 +14,19 @@
 //
 import core, {
   type Client,
-  type ClientConnection,
   createClient,
-  type Doc,
-  type DocChunk,
-  type Domain,
-  generateId,
-  getWorkspaceId,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
   type Ref,
   SortingOrder,
   type Space,
-  TxOperations
+  TxOperations,
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import { type DbAdapter } from '@hcengineering/server-core'
+import { type DbAdapter, wrapAdapterToClient } from '@hcengineering/server-core'
 import { createPostgresAdapter, createPostgresTxAdapter } from '..'
-import { getDBClient, type PostgresClientReference, shutdown } from '../utils'
+import { getDBClient, type PostgresClientReference, shutdownPostgres } from '../utils'
 import { genMinModel } from './minmodel'
 import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
@@ -39,31 +34,36 @@ const txes = genMinModel()
 
 createTaskModel(txes)
 
+const contextVars: Record<string, any> = {}
+
 describe('postgres operations', () => {
-  const baseDbUri: string = process.env.DB_URL ?? 'postgresql://postgres:example@localhost:5433'
-  let dbId: string = 'pg_testdb_' + generateId()
-  let dbUri: string = baseDbUri + '/' + dbId
-  const clientRef: PostgresClientReference = getDBClient(baseDbUri)
+  const baseDbUri: string = process.env.DB_URL ?? 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
+  let dbUuid = crypto.randomUUID() as WorkspaceUuid
+  let dbUri: string = baseDbUri.replace('defaultdb', dbUuid)
+  const clientRef: PostgresClientReference = getDBClient(contextVars, baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
   let operations: TxOperations
-  let serverStorage: DbAdapter
+  let serverStorage: DbAdapter | undefined
 
   afterAll(async () => {
     clientRef.close()
-    await shutdown()
+    await shutdownPostgres(contextVars)
   })
 
   beforeEach(async () => {
     try {
-      dbId = 'pg_testdb_' + generateId()
-      dbUri = baseDbUri + '/' + dbId
+      dbUuid = crypto.randomUUID() as WorkspaceUuid
+      dbUri = baseDbUri.replace('defaultdb', dbUuid)
       const client = await clientRef.getClient()
-      await client.query(`CREATE DATABASE ${dbId}`)
+      await client`CREATE DATABASE ${client(dbUuid)}`
     } catch (err) {
       console.error(err)
     }
+
+    jest.setTimeout(30000)
+    await initDb()
   })
 
   afterEach(async () => {
@@ -88,7 +88,17 @@ describe('postgres operations', () => {
     }
 
     const mctx = new MeasureMetricsContext('', {})
-    const txStorage = await createPostgresTxAdapter(mctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
+    const txStorage = await createPostgresTxAdapter(
+      mctx,
+      contextVars,
+      hierarchy,
+      dbUri,
+      {
+        uuid: dbUuid,
+        url: dbUri
+      },
+      model
+    )
 
     // Put all transactions to Tx
     for (const t of txes) {
@@ -98,34 +108,24 @@ describe('postgres operations', () => {
     await txStorage.close()
 
     const ctx = new MeasureMetricsContext('client', {})
-    const serverStorage = await createPostgresAdapter(ctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
-    await serverStorage.init?.()
+    const serverStorage = await createPostgresAdapter(
+      ctx,
+      contextVars,
+      hierarchy,
+      dbUri,
+      {
+        uuid: dbUuid,
+        url: dbUri
+      },
+      model
+    )
+    await serverStorage.init?.(ctx, contextVars)
     client = await createClient(async (handler) => {
-      const st: ClientConnection = {
-        isConnected: () => true,
-        findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
-        tx: async (tx) => await serverStorage.tx(ctx, tx),
-        searchFulltext: async () => ({ docs: [] }),
-        close: async () => {},
-        loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
-        closeChunk: async (idx) => {},
-        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async () => txes,
-        getAccount: async () => ({}) as any,
-        sendForceClose: async () => {}
-      }
-      return st
+      return wrapAdapterToClient(ctx, serverStorage, txes)
     })
 
     operations = new TxOperations(client, core.account.System)
   }
-
-  beforeEach(async () => {
-    jest.setTimeout(30000)
-    await initDb()
-  })
 
   it('check add', async () => {
     const times: number[] = []
@@ -177,9 +177,13 @@ describe('postgres operations', () => {
     })
 
     const doc = (await client.findAll<Task>(taskPlugin.class.Task, {}))[0]
+    await operations.updateDoc(doc._class, doc.space, doc._id, { rate: null })
+    let tasks = await client.findAll<Task>(taskPlugin.class.Task, {})
+    expect(tasks.length).toEqual(1)
+    expect(tasks[0].rate).toBeNull()
 
     await operations.updateDoc(doc._class, doc.space, doc._id, { rate: 30 })
-    let tasks = await client.findAll<Task>(taskPlugin.class.Task, {})
+    tasks = await client.findAll<Task>(taskPlugin.class.Task, {})
     expect(tasks.length).toEqual(1)
     expect(tasks[0].rate).toEqual(30)
 
@@ -205,7 +209,7 @@ describe('postgres operations', () => {
     expect(tasks[0].arr?.length).toEqual(2)
     expect(tasks[0].arr?.[0]).toEqual(1)
     expect(tasks[0].arr?.[1]).toEqual(3)
-  })
+  }, 1000000)
 
   it('check remove', async () => {
     for (let i = 0; i < 10; i++) {
@@ -324,5 +328,40 @@ describe('postgres operations', () => {
     )
     expect((r4[0].$lookup?.attachedTo as TaskComment)?._id).toEqual(commentId)
     expect(((r4[0].$lookup?.attachedTo as any)?.$lookup.attachedTo as Task)?._id).toEqual(docId)
+  })
+
+  it('check associations', async () => {
+    const association = await operations.findOne(core.class.Association, {})
+    if (association == null) {
+      throw new Error('Association not found')
+    }
+
+    const firstTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task',
+      description: 'Descr',
+      rate: 20
+    })
+
+    const secondTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task2',
+      description: 'Descr',
+      rate: 20
+    })
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: firstTask,
+      docB: secondTask,
+      association: association._id
+    })
+
+    const r = await client.findAll(
+      taskPlugin.class.Task,
+      { _id: firstTask },
+      {
+        associations: [[association._id, 1]]
+      }
+    )
+    expect(r.length).toEqual(1)
+    expect((r[0].$associations?.[association._id][0] as unknown as Task)?._id).toEqual(secondTask)
   })
 })

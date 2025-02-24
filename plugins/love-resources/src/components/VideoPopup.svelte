@@ -13,9 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
+  import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { Ref } from '@hcengineering/core'
+  import { RoomType, Room as TypeRoom } from '@hcengineering/love'
+  import { MessageBox } from '@hcengineering/presentation'
   import { ActionIcon, Scroller, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { RoomType, Room as TypeRoom } from '@hcengineering/love'
   import {
     LocalParticipant,
     LocalTrackPublication,
@@ -28,13 +32,17 @@
     TrackPublication
   } from 'livekit-client'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
+
   import love from '../plugin'
   import { currentRoom, infos, myInfo, myOffice } from '../stores'
   import {
     awaitConnect,
+    isCamAllowed,
     isCameraEnabled,
     isConnected,
+    isMicAllowed,
     isMicEnabled,
+    isShareWithSound,
     isSharingEnabled,
     leaveRoom,
     lk,
@@ -44,8 +52,6 @@
     setShare
   } from '../utils'
   import ParticipantView from './ParticipantView.svelte'
-  import { Ref } from '@hcengineering/core'
-  import { MessageBox } from '@hcengineering/presentation'
 
   export let isDock: boolean = false
   export let room: Ref<TypeRoom>
@@ -57,7 +63,10 @@
     muted: boolean
     mirror: boolean
     connecting: boolean
+    isAgent: boolean
   }
+
+  $: aiPersonId = $personRefByPersonIdStore.get(aiBotEmailSocialId)
 
   const dispatch = createEventDispatcher()
 
@@ -126,13 +135,14 @@
         name: participant.name ?? '',
         muted: !participant.isMicrophoneEnabled,
         mirror: participant.isLocal,
-        connecting: false
+        connecting: false,
+        isAgent: participant.isAgent
       })
     }
     participants = participants
     participantElements.length = participants.length
     await tick()
-    participantElements[index].appendChild(element)
+    participantElements[index]?.appendChild(element)
   }
 
   function attachParticipant (participant: Participant): void {
@@ -149,7 +159,8 @@
       name: participant.name ?? '',
       muted: !participant.isMicrophoneEnabled,
       mirror: participant.isLocal,
-      connecting: false
+      connecting: false,
+      isAgent: participant.isAgent
     }
     participants.push(value)
     participants = participants
@@ -227,7 +238,8 @@
           name: info.name,
           muted: true,
           mirror: false,
-          connecting: true
+          connecting: true,
+          isAgent: info.person === aiPersonId
         }
         participants.push(value)
       }
@@ -278,7 +290,9 @@
 
   async function changeShare (): Promise<void> {
     if (!$isConnected) return
-    await setShare(!$isSharingEnabled)
+    const newValue = !$isSharingEnabled
+    const audio = newValue && $isShareWithSound
+    await setShare(newValue, audio)
   }
 
   $: dispatchFit($isSharingEnabled)
@@ -291,6 +305,12 @@
       }
     }, 10)
   }
+
+  function getActiveParticipants (participants: ParticipantData[]): ParticipantData[] {
+    return participants.filter((p) => !p.isAgent || $infos.some(({ person }) => person === p._id))
+  }
+
+  $: activeParticipants = getActiveParticipants(participants)
 </script>
 
 <div class="antiPopup videoPopup-container" class:isDock>
@@ -298,17 +318,21 @@
     <div class="flex-row-center flex-gap-2">
       <ActionIcon
         icon={!$isConnected ? love.icon.Mic : $isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
-        label={$isMicEnabled ? love.string.Mute : love.string.UnMute}
+        label={!$isMicAllowed ? love.string.MicPermission : $isMicEnabled ? love.string.Mute : love.string.UnMute}
         size={'small'}
         action={changeMute}
-        disabled={!$isConnected}
+        disabled={!$isConnected || !$isMicAllowed}
       />
       <ActionIcon
         icon={!$isConnected ? love.icon.Cam : $isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
-        label={$isCameraEnabled ? love.string.StopVideo : love.string.StartVideo}
+        label={!$isCamAllowed
+          ? love.string.CamPermission
+          : $isCameraEnabled
+            ? love.string.StopVideo
+            : love.string.StartVideo}
         size={'small'}
         action={changeCam}
-        disabled={!$isConnected || !allowCam}
+        disabled={!$isConnected || !allowCam || !$isCamAllowed}
       />
       {#if $isConnected}
         <ActionIcon
@@ -345,12 +369,21 @@
   <div class="screenContainer" class:hidden={!$screenSharing || $isSharingEnabled}>
     <video class="screen" bind:this={screen}></video>
   </div>
-  <Scroller bind:divScroll noStretch padding={'0 .5rem'} gap={'flex-gap-2'} onResize={dispatchFit} stickedScrollBars>
-    {#each participants as participant, i (participant._id)}
-      <div class="video">
-        <ParticipantView bind:this={participantElements[i]} {...participant} small />
-      </div>
-    {/each}
+  <Scroller
+    bind:divScroll
+    noStretch
+    padding={'0 .5rem'}
+    containerName={'videoPopupСontainer'}
+    onResize={dispatchFit}
+    stickedScrollBars
+  >
+    <div class="videoGrid">
+      {#each activeParticipants as participant, i (participant._id)}
+        <div class="video">
+          <ParticipantView bind:this={participantElements[i]} {...participant} small />
+        </div>
+      {/each}
+    </div>
   </Scroller>
   <div class="antiNav-space" />
 </div>
@@ -373,7 +406,6 @@
       border: none;
       box-shadow: none;
     }
-
     .header {
       display: flex;
       justify-content: space-between;
@@ -395,6 +427,9 @@
     max-height: 100%;
     border-radius: 0.75rem;
 
+    &.hidden {
+      display: none;
+    }
     .screen {
       object-fit: contain;
       max-width: 100%;
@@ -402,7 +437,21 @@
       border-radius: 0.75rem;
     }
   }
-  .hidden {
-    display: none;
+
+  .videoGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-flow: row;
+    gap: var(--spacing-1);
+  }
+  @container videoPopupСontainer (max-width: 60rem) {
+    .videoGrid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @container videoPopupСontainer (max-width: 30rem) {
+    .videoGrid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

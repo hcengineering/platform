@@ -15,7 +15,7 @@
 //
 
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import templates, { templatesId } from '@hcengineering/templates'
 
 export default mergeIds(templatesId, templates, {

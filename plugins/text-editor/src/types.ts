@@ -1,7 +1,6 @@
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
-import { type Class, type Space, type Account, type Doc, type Markup, type Ref } from '@hcengineering/core'
+import { type Class, type Space, type PersonId, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui/src/types'
-import { type RelativePosition } from 'yjs'
 import { type AnyExtension, type Content, type Editor, type SingleCommands } from '@tiptap/core'
 import { type ParseOptions } from '@tiptap/pm/model'
 
@@ -109,6 +108,7 @@ export interface ActionContext {
   objectId?: Ref<Doc>
   objectClass?: Ref<Class<Doc>>
   objectSpace?: Ref<Space>
+  tag?: string
 }
 
 /**
@@ -121,9 +121,8 @@ export interface TextEditorCommandHandler {
 
 /** @public */
 export interface CollaborationUser {
-  id: Ref<Account>
+  id: PersonId
   name: string
-  email: string
   color: number
 }
 
@@ -131,8 +130,8 @@ export interface CollaborationUser {
 export interface AwarenessState {
   user: CollaborationUser
   cursor?: {
-    anchor: RelativePosition
-    head: RelativePosition
+    anchor: any
+    head: any
   } | null
   lastUpdate?: number
 }
@@ -186,7 +185,7 @@ export interface ActiveDescriptor {
   params?: any
 }
 
-export type TextEditorActionKind = 'text' | 'image'
+export type TextEditorActionKind = 'text' | 'image' | 'table'
 
 /**
  * Defines a text action for text action editor

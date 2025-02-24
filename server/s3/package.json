@@ -38,8 +38,9 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/storage": "^0.6.0",
-    "@aws-sdk/client-s3": "^3.575.0",
-    "@aws-sdk/s3-request-presigner": "^3.582.0",
-    "@aws-sdk/lib-storage": "^3.583.0"
+    "@aws-sdk/client-s3": "^3.738.0",
+    "@aws-sdk/s3-request-presigner": "^3.738.0",
+    "@aws-sdk/lib-storage": "^3.738.0",
+    "@smithy/node-http-handler": "^4.0.2"
   }
 }

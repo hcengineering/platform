@@ -11,6 +11,9 @@
     "InviteSubject": "Convite para {ws}",
     "OtpText": "Confirme o seu endereço de email para aceder a {app}!\n\nO seu código de confirmação está abaixo - introduza-o na janela onde começou a iniciar sessão para {app}.\n\n{code}\n\nSe não solicitou este email, não há motivo para preocupação - pode ignorá-lo com segurança.",
     "OtpHTML": "<h3>Confirme o seu endereço de email para aceder a {app}!</h3><p>O seu código de confirmação está abaixo - introduza-o na janela onde começou a iniciar sessão para {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Se não solicitou este email, não há motivo para preocupação - pode ignorá-lo com segurança.</p>",
-    "OtpSubject": "Código de confirmação {app}: {code}"
+    "OtpSubject": "Código de confirmação {app}: {code}",
+    "ResendInviteText": "Você foi reinvitado para {ws}. Por favor, use o link a seguir para se juntar: {link}. O link de reinvitação é válido por {expHours} horas.",
+    "ResendInviteHTML": "<p>Você foi reinvitado para {ws}. Para se juntar, clique no link abaixo: <a href={link}>Entrar</a></p><p>Se o link de convite acima não funcionar, cole o seguinte link na barra de URL do seu navegador: {link}</p><p>O link de reinvitação é válido por {expHours} horas.</p>",
+    "ResendInviteSubject": "Reconvite para {ws}"
   }
 }

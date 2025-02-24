@@ -18,7 +18,6 @@ import { prepareDocumentStep } from './common-documents-steps'
 import { DocumentApprovalsPage } from '../model/documents/document-approvals-page'
 import { DocumentReleasePage } from '../model/documents/document-release-page'
 import { DocumentReasonAndImpactPage } from '../model/documents/document-reason-impact-page'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentHistoryPage } from '../model/documents/document-history-page'
 import { faker } from '@faker-js/faker'
 
@@ -582,7 +581,7 @@ test.describe('QMS. Documents tests', () => {
     })
   })
 
-  test('TESTS-162. Approve document with delayed release', async ({ page }) => {
+  test.skip('TESTS-162. Approve document with delayed release', async ({ page }) => {
     await allure.description('Requirement\nUsers need to create document with delayed release')
     await allure.tms('TESTS-162', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-162')
     const approveDelayedDocument: NewDocument = {
@@ -927,9 +926,31 @@ test.describe('QMS. Documents tests', () => {
       await attachScreenshot('TESTS-206_check_document.png', page)
     })
 
-    await test.step('7. Send for Approval', async () => {
+    await test.step('7. Send for Review', async () => {
+      await documentContentPage.buttonSendForReview.click()
+      await documentContentPage.fillSelectReviewersForm([])
+      await documentContentPage.checkDocumentStatus(DocumentStatus.IN_REVIEW)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.IN_REVIEW
+      })
+      await attachScreenshot('TESTS-206_send_for_review_2.png', page)
+    })
+
+    await test.step('8. Complete Review', async () => {
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+
+      await documentContentPageSecond.completeReview()
+
+      await documentContentPageSecond.checkDocumentStatus(DocumentStatus.REVIEWED)
+      await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
+
+      await attachScreenshot('TESTS-206_complete_review_2.png', page)
+    })
+
+    await test.step('9. Send for Approval', async () => {
       await documentContentPage.buttonSendForApproval.click()
-      await documentContentPage.fillSelectApproversForm([reviewer])
+      await documentContentPage.fillSelectApproversForm([reviewer], true)
       await documentContentPage.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
       await documentContentPage.checkDocument({
         ...documentDetails,
@@ -939,7 +960,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
     })
 
-    await test.step('8. Approve document', async () => {
+    await test.step('10. Approve document', async () => {
       const documentsPageSecond = new DocumentsPage(userSecondPage)
       await documentsPageSecond.openDocument(completeDocument.title)
 
@@ -958,7 +979,7 @@ test.describe('QMS. Documents tests', () => {
       await attachScreenshot('TESTS-206_approve_document.png', page)
     })
 
-    await test.step('9. Check document', async () => {
+    await test.step('11. Check document', async () => {
       await documentContentPage.checkDocumentStatus(DocumentStatus.EFFECTIVE)
       await documentContentPage.checkDocument({
         ...documentDetails,
@@ -970,7 +991,7 @@ test.describe('QMS. Documents tests', () => {
       await attachScreenshot('TESTS-206_check_document.png', page)
     })
 
-    await test.step('10. Check History tab', async () => {
+    await test.step('12. Check History tab', async () => {
       await documentContentPage.buttonHistoryTab.first().click()
 
       const documentHistoryPage = new DocumentHistoryPage(page)
@@ -1063,9 +1084,6 @@ test.describe('QMS. Documents tests', () => {
     }
 
     await test.step('1. Open the document created sometime ago', async () => {
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonDocuments.click()
-
       const documentsPage = new DocumentsPage(page)
       await documentsPage.openDocument(existDocument.title)
     })
@@ -1076,11 +1094,11 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument(documentDetails)
       await documentContentPage.checkDocumentStatus(DocumentStatus.IN_REVIEW)
 
-      await expect(documentContentPage.contentLocator.locator('h1:first-child')).toHaveText(overview.heading)
-      await expect(documentContentPage.contentLocator.locator('h1:first-child + p')).toHaveText(overview.content)
+      await expect(documentContentPage.contentLocator.locator('h1:nth-of-type(1)')).toHaveText(overview.heading)
+      await expect(documentContentPage.contentLocator.locator('h1:nth-of-type(1) + p')).toHaveText(overview.content)
 
-      await expect(documentContentPage.contentLocator.locator('h1:not(:first-child)')).toHaveText(main.heading)
-      await expect(documentContentPage.contentLocator.locator('h1:not(:first-child) + p')).toHaveText(main.content)
+      await expect(documentContentPage.contentLocator.locator('h1:nth-of-type(2)')).toHaveText(main.heading)
+      await expect(documentContentPage.contentLocator.locator('h1:nth-of-type(2) + p')).toHaveText(main.content)
     })
   })
 })

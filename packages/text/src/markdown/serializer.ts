@@ -1,8 +1,8 @@
+import { MarkupMark, MarkupNode, MarkupNodeType } from '@hcengineering/text-core'
 import { generateHTML } from '@tiptap/html'
+import { defaultExtensions } from '../extensions'
 import { isInSet, markEq } from './marks'
 import { messageContent, nodeAttrs } from './node'
-import { MarkupMark, MarkupNode, MarkupNodeType } from '../markup/model'
-import { defaultExtensions } from '../extensions'
 
 type FirstDelim = (i: number, attrs?: Record<string, any>, parentAttrs?: Record<string, any>) => string
 interface IState {
@@ -140,7 +140,22 @@ export const storeNodes: Record<string, NodeProcessor> = {
 
   image: (state, node) => {
     const attrs = nodeAttrs(node)
-    if (attrs['file-id'] != null) {
+    if (attrs.token != null && attrs['file-id'] != null) {
+      // Convert image to token format
+      state.write(
+        '![' +
+          state.esc(`${attrs.alt ?? ''}`) +
+          '](' +
+          (state.imageUrl +
+            `${attrs['file-id']}` +
+            `?file=${attrs['file-id']}` +
+            (attrs.width != null ? '&width=' + state.esc(`${attrs.width}`) : '') +
+            (attrs.height != null ? '&height=' + state.esc(`${attrs.height}`) : '') +
+            (attrs.token != null ? '&token=' + state.esc(`${attrs.token}`) : '')) +
+          (attrs.title != null ? ' ' + state.quote(`${attrs.title}`) : '') +
+          ')'
+      )
+    } else if (attrs['file-id'] != null) {
       // Convert image to fileid format
       state.write(
         '![' +
@@ -451,7 +466,11 @@ export class MarkdownState implements IState {
 
     for (let i = 0; i < len; i++) {
       const mark = state.marks[i]
-      if (!this.marks[mark.type].mixable) break
+      const mm = this.marks[mark.type]
+      if (mm == null) {
+        break
+      }
+      if (!mm.mixable) break
       this.reorderMixableMark(state, mark, i, len)
     }
   }
@@ -720,6 +739,9 @@ export class MarkdownState implements IState {
     let value = mark.attrs?.marker
     if (value === undefined) {
       const info = this.marks[mark.type]
+      if (info == null) {
+        throw new Error(`No info for mark ${mark.type}`)
+      }
       value = open ? info.open : info.close
     }
     return typeof value === 'string' ? value : value(this, mark, parent, index) ?? ''

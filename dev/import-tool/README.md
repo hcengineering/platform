@@ -1,80 +1,25 @@
-## How to Import Documents from Notion
+# Huly Import Tool
 
-To import Notion documents:
+Tool for importing data into Huly workspace.
 
-1. Export documents from Notion as *Markdown & CSV*
-2. Extract the exported archive
-3. 1. If you want your docs to be imported along with Notion teamspaces, use this command:
+## Recommended Import Method
 
+### Unified Format Import
+The recommended way to import data into Huly is using our [Unified Import Format](./docs/huly/README.md). This format provides a straightforward way to migrate data from any system by converting it into an intermediate, human-readable structure.
 
-```
-rushx run-local import-notion-with-teamspaces ${dir} \
---user ${user} \
---password ${password} \
---workspace ${workspace}
-```
+See the [complete guide](./docs/huly/README.md) and [example workspace](./docs/huly/example-workspace) to get started.
 
-3.  2. If you want the docs to be imported to a new teamspace, use this command:
+### Why Use Unified Format?
+- Simple, human-readable format using YAML and Markdown
+- Flexible structure that can represent data from any system
+- Easy to validate and fix data before import
+- Can be generated automatically by script or prepared manually
 
-```
-rushx run-local import-notion-to-teamspace {dir} \
---user ${user} \
---password ${password} \
---workspace ${workspace} \
---teamspace ${teamspace}
-```
+## Direct Import Options
 
-* *dir* - path to the root of the extracted archive
-* *user* - your username or email
-* *password* - password
-* *workspace* - workspace url where the documents should be imported to
-* *teamspace* - teamspace to be created for newly imported docs
+We also support direct import from some platforms:
 
+1. **Notion**: see [Import from Notion Guide](./docs/notion/README.md)
+2. **ClickUp**: see [Import from ClickUp Guide](./docs/clickup/README.md)
 
-### Examples
-
-#### For local run:
-When importing Notion workspace with teamspaces
-```
-rushx run-local import-notion-with-teamspaces /home/john/extracted-notion-docs \
---user john.doe@gmail.com \  
---password qwe1234 \       
---workspace ws1
-```
-When importing Notion workspace without teamspaces or a page with subpages
-```
-rushx run-local import-notion-to-teamspace /home/john/extracted-notion-docs \
---user john.doe@gmail.com \
---password qwe1234 \
---workspace ws1 \
---teamspace imported
-```
-
-#### For cloud deployment:
-##### Here is an example for those who's using huly.app cloud:
-1. Go to the root folder of the extracted archive with exported data.
-2. Run import command as follow:
-
-* To import Notion workspace with teamspaces
-```
-docker run \
-  -e FRONT_URL="https://huly.app" \
-  -v $(pwd):/data \
-  hardcoreeng/import-tool:latest \
-  -- bundle.js import-notion-with-teamspaces /data \
---user jane.doe@gmail.com \
---password 4321qwe \
---workspace ws1
-```
-* To import Notion workspace without teamspaces or a page with subpages.
-```
-docker run \
-  -e FRONT_URL="https://huly.app" \
-  -v $(pwd):/data \
-  hardcoreeng/import-tool:latest \
-  -- bundle.js import-notion-to-teamspace /data \
---user jane.doe@gmail.com \
---password 4321qwe \
---workspace ws1 \
---teamspace notion
-```
+These direct imports are suitable for simple migrations, but for complex cases or systems not listed above, please use the Unified Format.

@@ -60,10 +60,17 @@ function getTableCellBorders (
   const { width, height } = tableMap
   const cellIndex = tableMap.map.indexOf(cell)
 
+  const rect = tableMap.findCell(cell)
+  const cellW = rect.right - rect.left
+  const cellH = rect.bottom - rect.top
+
+  const testRight = cellW
+  const testBottom = width * cellH
+
   const topCell = cellIndex >= width ? tableMap.map[cellIndex - width] : undefined
-  const bottomCell = cellIndex < width * height - width ? tableMap.map[cellIndex + width] : undefined
-  const leftCell = cellIndex % width !== 0 ? tableMap.map[cellIndex - 1] : undefined
-  const rightCell = cellIndex % width !== width - 1 ? tableMap.map[cellIndex + 1] : undefined
+  const bottomCell = cellIndex < width * height - testBottom ? tableMap.map[cellIndex + testBottom] : undefined
+  const leftCell = cellIndex % width > 0 ? tableMap.map[cellIndex - 1] : undefined
+  const rightCell = cellIndex % width < width - testRight ? tableMap.map[cellIndex + testRight] : undefined
 
   return {
     top: topCell === undefined || !selection.includes(topCell),

@@ -16,16 +16,18 @@
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import chunter, { ChatMessage, ChunterEvents, ThreadMessage, TypingInfo } from '@hcengineering/chunter'
-  import { Class, Doc, generateId, Ref, type CommitResult, getCurrentAccount } from '@hcengineering/core'
+  import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
+  import { Class, Doc, generateId, Ref, type CommitResult } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
   import { ThrottledCaller } from '@hcengineering/ui'
   import { getSpace } from '@hcengineering/activity-resources'
-  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentEmployee } from '@hcengineering/contact'
+  import { presenceByObjectId, updateMyPresence } from '@hcengineering/presence-resources'
 
+  import { type PresenceTyping } from '../../types'
   import { getChannelSpace } from '../../utils'
   import ChannelTypingInfo from '../ChannelTypingInfo.svelte'
 
@@ -75,15 +77,9 @@
     createdMessageQuery.unsubscribe()
   }
 
-  const typingInfoQuery = createQuery()
-  let typingInfo: TypingInfo[] = []
-  $: if (withTypingInfo) {
-    typingInfoQuery.query(chunter.class.TypingInfo, { objectId: object._id, space: getSpace(object) }, (res) => {
-      typingInfo = res
-    })
-  } else {
-    typingInfoQuery.unsubscribe()
-  }
+  let typingInfo: PresenceTyping[] = []
+  $: presence = $presenceByObjectId.get(object._id) ?? []
+  $: typingInfo = presence.map((p) => p.presence.typing).filter((p) => p !== undefined)
 
   function clear (): void {
     currentMessage = getDefault()
@@ -106,34 +102,23 @@
     }
   }
 
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
   const throttle = new ThrottledCaller(500)
 
   async function deleteTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
-    const myTypingInfo = typingInfo.find((info) => info.person === me.person)
-    if (myTypingInfo === undefined) return
-    await client.remove(myTypingInfo)
+    const room = { objectId: object._id, objectClass: object._class }
+    updateMyPresence(room, { typing: undefined })
   }
 
   async function updateTypingInfo (): Promise<void> {
     if (!withTypingInfo) return
-    const myTypingInfo = typingInfo.find((info) => info.person === me.person)
 
-    if (myTypingInfo === undefined) {
-      await client.createDoc(chunter.class.TypingInfo, getSpace(object), {
-        objectId: object._id,
-        objectClass: object._class,
-        person: me.person,
-        lastTyping: Date.now()
-      })
-    } else {
-      throttle.call(() => {
-        void client.update(myTypingInfo, {
-          lastTyping: Date.now()
-        })
-      })
-    }
+    throttle.call(() => {
+      const room = { objectId: object._id, objectClass: object._class }
+      const typing = { person: me, lastTyping: Date.now() }
+      updateMyPresence(room, { typing })
+    })
   }
 
   function onUpdate (event: CustomEvent): void {

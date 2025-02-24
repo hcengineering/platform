@@ -47,7 +47,7 @@ function getSequenceId (doc: Vacancy | Applicant, control: TriggerControl): stri
 export async function vacancyHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const vacancy = doc as Vacancy
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${recruitId}/${getSequenceId(vacancy, control)}`
+  const path = `${workbenchId}/${control.workspace.url}/${recruitId}/${getSequenceId(vacancy, control)}`
   const link = concatLink(front, path)
   return `<a href="${link}">${vacancy.name}</a>`
 }
@@ -67,7 +67,7 @@ export async function applicationHTMLPresenter (doc: Doc, control: TriggerContro
   const applicant = doc as Applicant
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const id = getSequenceId(applicant, control)
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${recruitId}/${id}`
+  const path = `${workbenchId}/${control.workspace.url}/${recruitId}/${id}`
   const link = concatLink(front, path)
   return `<a href="${link}">${id}</a>`
 }
@@ -84,23 +84,23 @@ export async function applicationTextPresenter (doc: Doc, control: TriggerContro
 /**
  * @public
  */
-export async function OnRecruitUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  const cud = actualTx as TxCUD<Doc>
-  if (!control.hierarchy.isDerived(cud.objectClass, recruit.class.Vacancy)) {
-    return []
-  }
+export async function OnRecruitUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const actualTx = tx as TxCUD<Doc>
+    if (!control.hierarchy.isDerived(actualTx.objectClass, recruit.class.Vacancy)) {
+      continue
+    }
 
-  const res: Tx[] = []
-
-  if (actualTx._class === core.class.TxCreateDoc) {
-    handleVacancyCreate(control, cud, actualTx, res)
-  } else if (actualTx._class === core.class.TxUpdateDoc) {
-    await handleVacancyUpdate(control, cud, res)
-  } else if (actualTx._class === core.class.TxRemoveDoc) {
-    await handleVacancyRemove(control, cud, actualTx)
+    if (actualTx._class === core.class.TxCreateDoc) {
+      handleVacancyCreate(control, actualTx, result)
+    } else if (actualTx._class === core.class.TxUpdateDoc) {
+      await handleVacancyUpdate(control, actualTx, result)
+    } else if (actualTx._class === core.class.TxRemoveDoc) {
+      handleVacancyRemove(control, actualTx, result)
+    }
   }
-  return res
+  return result
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -156,16 +156,13 @@ async function handleVacancyUpdate (control: TriggerControl, cud: TxCUD<Doc>, re
   }
 }
 
-async function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, actualTx: Tx): Promise<void> {
-  const removeTx = actualTx as TxRemoveDoc<Vacancy>
+function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, res: Tx[]): void {
+  const removeTx = cud as TxRemoveDoc<Vacancy>
   // It could be null or new value
-  const txes = (
-    await control.findAll(control.ctx, core.class.TxCUD, {
-      objectId: removeTx.objectId
-    })
-  ).filter((it) => it._id !== removeTx._id)
-  const vacancy = TxProcessor.buildDoc2Doc(txes) as Vacancy
-  const res: Tx[] = []
+  const vacancy = control.removedMap.get(removeTx.objectId) as Vacancy
+  if (vacancy === undefined) {
+    return
+  }
   if (vacancy.company != null) {
     // We have old value
     res.push(
@@ -182,8 +179,8 @@ async function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, ac
   }
 }
 
-function handleVacancyCreate (control: TriggerControl, cud: TxCUD<Doc>, actualTx: Tx, res: Tx[]): void {
-  const createTx = actualTx as TxCreateDoc<Vacancy>
+function handleVacancyCreate (control: TriggerControl, cud: TxCUD<Doc>, res: Tx[]): void {
+  const createTx = cud as TxCreateDoc<Vacancy>
   const vacancy = TxProcessor.createDoc2Doc(createTx)
   if (vacancy.company !== undefined) {
     res.push(

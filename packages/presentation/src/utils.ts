@@ -21,6 +21,7 @@ import core, {
   TxProcessor,
   getCurrentAccount,
   reduceCalls,
+  type Account,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -45,7 +46,8 @@ import core, {
   type TxCUD,
   type TxResult,
   type TypeAny,
-  type WithLookup
+  type WithLookup,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
@@ -53,7 +55,7 @@ import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteCo
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
-import { get, writable, type Writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
@@ -63,15 +65,16 @@ export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ
 let rawLiveQuery: LQ
-let client: TxOperations & Client & OptimisticTxes
+let client: TxOperations & Client
 let pipeline: PresentationPipeline
 
-const txListeners: Array<(...tx: Tx[]) => void> = []
+export type TxListener = (tx: Tx[]) => void
+const txListeners: TxListener[] = []
 
 /**
  * @public
  */
-export function addTxListener (l: (tx: Tx) => void): void {
+export function addTxListener (l: TxListener): void {
   txListeners.push(l)
 }
 
@@ -82,44 +85,37 @@ export function getRawLiveQuery (): LQ {
 /**
  * @public
  */
-export function removeTxListener (l: (tx: Tx) => void): void {
+export function removeTxListener (l: TxListener): void {
   const pos = txListeners.findIndex((it) => it === l)
   if (pos !== -1) {
     txListeners.splice(pos, 1)
   }
 }
 
-export interface OptimisticTxes {
-  pendingCreatedDocs: Writable<Record<Ref<Doc>, boolean>>
-}
-
 export const uiContext = new MeasureMetricsContext('client-ui', {})
 
-class UIClient extends TxOperations implements Client, OptimisticTxes {
+export const pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
+
+class UIClient extends TxOperations implements Client {
   hook = getMetadata(plugin.metadata.ClientHook)
   constructor (
     client: Client,
     private readonly liveQuery: Client
   ) {
-    super(client, getCurrentAccount()._id)
+    super(client, getCurrentAccount().primarySocialId)
   }
 
   protected pendingTxes = new Set<Ref<Tx>>()
-  protected _pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
-
-  get pendingCreatedDocs (): typeof this._pendingCreatedDocs {
-    return this._pendingCreatedDocs
-  }
 
   async doNotify (...tx: Tx[]): Promise<void> {
-    const pending = get(this._pendingCreatedDocs)
+    const pending = get(pendingCreatedDocs)
     let pendingUpdated = false
     tx.forEach((t) => {
       if (this.pendingTxes.has(t._id)) {
         this.pendingTxes.delete(t._id)
 
         // Only CUD tx can be pending now
-        const innerTx = TxProcessor.extractTx(t) as TxCUD<Doc>
+        const innerTx = t as TxCUD<Doc>
 
         if (innerTx._class === core.class.TxCreateDoc) {
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -129,7 +125,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
       }
     })
     if (pendingUpdated) {
-      this._pendingCreatedDocs.set(pending)
+      pendingCreatedDocs.set(pending)
     }
 
     // We still want to notify about all transactions because there might be queries created after
@@ -147,7 +143,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
       await rawLiveQuery.tx(...tx)
 
       txListeners.forEach((it) => {
-        it(...tx)
+        it(tx)
       })
     } catch (err: any) {
       Analytics.handleError(err)
@@ -206,7 +202,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
       return
     }
 
-    const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    const innerTx = tx as TxCUD<Doc>
     // Can pre-build some configuration later from the model if this will be too slow.
     const instantTxes = this.getHierarchy().classHierarchyMixin(innerTx.objectClass, plugin.mixin.InstantTransactions)
     if (instantTxes?.txClasses.includes(innerTx._class) !== true) {
@@ -214,9 +210,9 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
     }
 
     if (innerTx._class === core.class.TxCreateDoc) {
-      const pending = get(this._pendingCreatedDocs)
+      const pending = get(pendingCreatedDocs)
       pending[innerTx.objectId] = true
-      this._pendingCreatedDocs.set(pending)
+      pendingCreatedDocs.set(pending)
     }
 
     this.pendingTxes.add(tx._id)
@@ -231,19 +227,62 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
   }
 }
 
+const hierarchyProxy = new Proxy(
+  {},
+  {
+    get (target, p, receiver) {
+      const h = client.getHierarchy()
+      return Reflect.get(h, p)
+    }
+  }
+) as TxOperations & Client
+
+// We need a proxy to handle all the calls to the proper client.
+const clientProxy = new Proxy(
+  {},
+  {
+    get (target, p, receiver) {
+      if (p === 'getHierarchy') {
+        return () => hierarchyProxy
+      }
+      return Reflect.get(client, p)
+    }
+  }
+) as TxOperations & Client
 /**
  * @public
  */
-export function getClient (): TxOperations & Client & OptimisticTxes {
-  return client
+export function getClient (): TxOperations & Client {
+  return clientProxy
+}
+
+export type OnClientListener = (client: Client, account: Account) => void | Promise<void>
+const onClientListeners: OnClientListener[] = []
+
+export function onClient (l: OnClientListener): void {
+  onClientListeners.push(l)
+  if (client !== undefined) {
+    setTimeout(() => {
+      void l(client, getCurrentAccount())
+    })
+  }
 }
 
 let txQueue: Tx[] = []
+
+export type RefreshListener = () => void
+
+const refreshListeners = new Set<RefreshListener>()
+
+export function addRefreshListener (r: RefreshListener): void {
+  refreshListeners.add(r)
+}
 
 /**
  * @public
  */
 export async function setClient (_client: Client): Promise<void> {
+  pendingCreatedDocs.set({})
   if (liveQuery !== undefined) {
     await liveQuery.close()
   }
@@ -282,6 +321,10 @@ export async function setClient (_client: Client): Promise<void> {
   if (needRefresh || globalQueries.length > 0) {
     await refreshClient(true)
   }
+  const acc = getCurrentAccount()
+  onClientListeners.forEach((l) => {
+    void l(_client, acc)
+  })
 }
 /**
  * @public
@@ -291,6 +334,9 @@ export async function refreshClient (clean: boolean): Promise<void> {
     await liveQuery?.refreshConnect(clean)
     for (const q of globalQueries) {
       q.refreshClient()
+    }
+    for (const listener of refreshListeners.values()) {
+      listener()
     }
   }
 }
@@ -460,6 +506,11 @@ export function getCurrentWorkspaceUrl (): string {
   return wsId
 }
 
+export function remToPx (rem: number): number {
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+  return rem * fontSize
+}
+
 export function sizeToWidth (size: string): number | undefined {
   let width: number | undefined
   switch (size) {
@@ -469,22 +520,22 @@ export function sizeToWidth (size: string): number | undefined {
     case 'x-small':
     case 'smaller':
     case 'small':
-      width = 32
+      width = 2
       break
     case 'medium':
-      width = 64
+      width = 2.5
       break
     case 'large':
-      width = 256
+      width = 4.5
       break
     case 'x-large':
-      width = 512
+      width = 7.5
       break
     case '2x-large':
-      width = 1024
+      width = 10
       break
   }
-  return width
+  return width !== undefined ? remToPx(width) : undefined
 }
 
 /**
@@ -508,6 +559,23 @@ export async function getBlobURL (blob: Blob): Promise<string> {
 /**
  * @public
  */
+export function copyTextToClipboardOldBrowser (text: string): void {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.classList.add('hulyClipboardArea')
+  document.body.appendChild(textarea)
+  textarea.select()
+  try {
+    document.execCommand('copy')
+  } catch (err) {
+    console.error(err)
+  }
+  document.body.removeChild(textarea)
+}
+
+/**
+ * @public
+ */
 export async function copyTextToClipboard (text: string | Promise<string>): Promise<void> {
   try {
     // Safari specific behavior
@@ -518,7 +586,9 @@ export async function copyTextToClipboard (text: string | Promise<string>): Prom
     await navigator.clipboard.write([clipboardItem])
   } catch {
     // Fallback to default clipboard API implementation
-    await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
+    if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
+    } else copyTextToClipboardOldBrowser(text instanceof Promise ? await text : text)
   }
 }
 
@@ -626,7 +696,7 @@ export async function getAttributeEditor (
 
 function filterKeys (hierarchy: Hierarchy, keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
   const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
-  keys = keys.filter((k) => !docKeys.has(k.key))
+  keys = keys.filter((k) => !docKeys.has(k.key) || k.attr.editor !== undefined)
   keys = keys.filter((k) => !ignoreKeys.includes(k.key))
   return keys
 }
@@ -657,6 +727,20 @@ export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): bo
 /**
  * @public
  */
+export function isMarkupAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+  return hierarchy.isDerived(key.attr.type._class, core.class.TypeMarkup)
+}
+
+/**
+ * @public
+ */
+export function isCollabAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+  return hierarchy.isDerived(key.attr.type._class, core.class.TypeCollaborativeDoc)
+}
+
+/**
+ * @public
+ */
 export function decodeTokenPayload (token: string): any {
   try {
     return JSON.parse(atob(token.split('.')[1]))
@@ -667,7 +751,8 @@ export function decodeTokenPayload (token: string): any {
 }
 
 export function isAdminUser (): boolean {
-  return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
+  const decodedToken = decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '')
+  return decodedToken.extra?.admin === 'true'
 }
 
 export function isSpace (space: Doc): space is Space {
@@ -675,18 +760,20 @@ export function isSpace (space: Doc): space is Space {
 }
 
 export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
-  return getClient().getHierarchy().isDerived(_class, core.class.Space)
+  return client.getHierarchy().isDerived(_class, core.class.Space)
 }
 
-export function setPresentationCookie (token: string, workspaceId: string): void {
+export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUuid): void {
   function setToken (path: string): void {
-    document.cookie =
+    const res =
       encodeURIComponent(plugin.metadata.Token.replaceAll(':', '-')) +
       '=' +
       encodeURIComponent(token) +
       `; path=${path}`
+    console.log('setting cookie', res)
+    document.cookie = res
   }
-  setToken('/files/' + workspaceId)
+  setToken('/files/' + workspaceUuid)
 }
 
 export const upgradeDownloadProgress = writable(-1)
@@ -705,7 +792,7 @@ export async function loadServerConfig (url: string): Promise<any> {
 
   do {
     try {
-      res = await fetch(url)
+      res = await fetch(url, { keepalive: true })
       break
     } catch (e: any) {
       retries--
