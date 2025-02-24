@@ -37,7 +37,6 @@ import setting from '@hcengineering/setting'
 import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
 import type { Collection, Db } from 'mongodb'
-import { CalendarController } from './calendarController'
 import type { CalendarHistory, DummyWatch, EventHistory, Token, User } from './types'
 import { encodeReccuring, isToken, parseRecurrenceStrings } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
@@ -105,7 +104,7 @@ export class CalendarClient {
     const calendarClient = new CalendarClient(user, mongo, client, workspace)
     if (isToken(user)) {
       await calendarClient.googleClient.init(user)
-      await calendarClient.addClient()
+      calendarClient.updateTimer()
     }
     return calendarClient
   }
@@ -139,7 +138,7 @@ export class CalendarClient {
       }
       throw new Error('Not all scopes provided')
     }
-    await this.addClient()
+    this.updateTimer()
 
     const integrations = await this.client.findAll(setting.class.Integration, {
       createdBy: this.user.userId,
@@ -226,17 +225,6 @@ export class CalendarClient {
       clearTimeout(watch.timer)
     }
     this.isClosed = true
-  }
-
-  private async addClient (): Promise<void> {
-    try {
-      const me = await this.googleClient.getMe()
-      const controller = CalendarController.getCalendarController()
-      controller.addClient(me, this)
-      this.updateTimer()
-    } catch (err) {
-      console.error('Add client error', this.user.workspace, this.user.userId, err)
-    }
   }
 
   // #region Calendars
