@@ -168,27 +168,27 @@ describe.skip('rest-server', () => {
   // })
 
   it.skip('add space', async () => {
-  //   const conn = await connect()
-  //   const tx: TxCreateDoc<Space> = {
-  //     _class: core.class.TxCreateDoc,
-  //     space: core.space.Tx,
-  //     _id: generateId(),
-  //     objectSpace: core.space.Model,
-  //     modifiedBy: 'user1@site.com' as PersonId,
-  //     modifiedOn: Date.now(),
-  //     attributes: {
-  //       name: 'Sp3',
-  //       description: '',
-  //       private: false,
-  //       archived: false,
-  //       members: [],
-  //       autoJoin: false
-  //     },
-  //     objectClass: core.class.Space,
-  //     objectId: generateId()
-  //   }
-  //   await conn.tx(tx)
-  //   const spaces = await conn.findAll(core.class.Space, {})
-  //   expect(spaces.length).toBe(3)
+    //   const conn = await connect()
+    //   const tx: TxCreateDoc<Space> = {
+    //     _class: core.class.TxCreateDoc,
+    //     space: core.space.Tx,
+    //     _id: generateId(),
+    //     objectSpace: core.space.Model,
+    //     modifiedBy: 'user1@site.com' as PersonId,
+    //     modifiedOn: Date.now(),
+    //     attributes: {
+    //       name: 'Sp3',
+    //       description: '',
+    //       private: false,
+    //       archived: false,
+    //       members: [],
+    //       autoJoin: false
+    //     },
+    //     objectClass: core.class.Space,
+    //     objectId: generateId()
+    //   }
+    //   await conn.tx(tx)
+    //   const spaces = await conn.findAll(core.class.Space, {})
+    //   expect(spaces.length).toBe(3)
   })
 })
