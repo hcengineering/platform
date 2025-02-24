@@ -23,10 +23,12 @@ import {
   type Domain,
   type FindOptions,
   type FindResult,
+  type LoadModelResponse,
   type MeasureContext,
   type Ref,
   type SearchOptions,
   type SearchQuery,
+  type SearchResult,
   type SessionData,
   type Timestamp,
   type Tx,
@@ -106,6 +108,11 @@ export class ClientSession implements Session {
     await ctx.sendResponse(ctx.requestId, result)
   }
 
+  async loadModelRaw (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<LoadModelResponse | Tx[]> {
+    this.includeSessionContext(ctx.ctx, ctx.pipeline)
+    return await ctx.ctx.with('load-model', {}, (_ctx) => ctx.pipeline.loadModel(_ctx, lastModelTx, hash))
+  }
+
   async getAccount (ctx: ClientSessionCtx): Promise<void> {
     await ctx.sendResponse(ctx.requestId, this.getRawAccount(ctx.pipeline))
   }
@@ -161,6 +168,12 @@ export class ClientSession implements Session {
     this.lastRequest = Date.now()
     this.includeSessionContext(ctx.ctx, ctx.pipeline)
     await ctx.sendResponse(ctx.requestId, await ctx.pipeline.searchFulltext(ctx.ctx, query, options))
+  }
+
+  async searchFulltextRaw (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    this.lastRequest = Date.now()
+    this.includeSessionContext(ctx.ctx, ctx.pipeline)
+    return await ctx.pipeline.searchFulltext(ctx.ctx, query, options)
   }
 
   async txRaw (

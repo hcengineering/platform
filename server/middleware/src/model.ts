@@ -14,12 +14,19 @@
 //
 
 import core, {
+  type Class,
   type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
   type LoadModelResponse,
   type MeasureContext,
+  type Ref,
+  type SessionData,
   type Timestamp,
   type Tx,
   type TxCUD,
+  DOMAIN_MODEL,
   DOMAIN_TX,
   withContext
 } from '@hcengineering/core'
@@ -76,6 +83,19 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
   async getUserTx (ctx: MeasureContext, txAdapter: TxAdapter): Promise<Tx[]> {
     const allUserTxes = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
     return allUserTxes.filter((it) => isUserTx(it))
+  }
+
+  findAll<T extends Doc>(
+    ctx: MeasureContext<SessionData>,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    const d = this.context.hierarchy.findDomain(_class)
+    if (d === DOMAIN_MODEL) {
+      return this.context.modelDb.findAll(_class, query, options)
+    }
+    return this.provideFindAll(ctx, _class, query, options)
   }
 
   async init (ctx: MeasureContext): Promise<void> {
