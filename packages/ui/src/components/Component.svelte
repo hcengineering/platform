@@ -73,7 +73,7 @@
           .then((res) => {
             if (current === counter) {
               Ctor = res
-              _props = props
+              _props = filterDefaultUndefined(props, props)
               loading = false
             }
           })
@@ -85,11 +85,11 @@
       } else {
         loading = false
         Ctor = component
-        _props = props
+        _props = filterDefaultUndefined(props, props)
       }
     } else {
       Ctor = _is
-      _props = props
+      _props = filterDefaultUndefined(props, props)
     }
   }
 
