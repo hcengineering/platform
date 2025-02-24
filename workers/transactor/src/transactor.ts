@@ -494,7 +494,7 @@ export class Transactor extends DurableObject<Env> {
     const opContext = this.sessionManager.createOpContext(
       this.measureCtx,
       pipeline,
-      { method: '', params: '' },
+      undefined,
       session,
       cs,
       this.workspace

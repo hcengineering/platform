@@ -4009,7 +4009,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/api-client@file:projects/api-client.tgz':
-    resolution: {integrity: sha512-lFsfqbx6XIWKo8wq95O25j0RYJ9pUMgtb3T/tVUKfWG36NUuImICpStaQRmcm6MPYq7Gtb0KKuOXyQJg3y/80w==, tarball: file:projects/api-client.tgz}
+    resolution: {integrity: sha512-SMKCkubeb8nE1zsYu0fsutpc9LJKiNOG0bn9NP+FxlSU4NGb8++EpZfb650lGYdvg2MljvrQD+kqYQDt1IRd1A==, tarball: file:projects/api-client.tgz}
     version: 0.0.0
 
   '@rush-temp/attachment-assets@file:projects/attachment-assets.tgz':
@@ -4477,7 +4477,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-presence@file:projects/model-presence.tgz':
-    resolution: {integrity: sha512-bE9NfhmtkeenHePBuorhYSQloGaNnGqtlw2i8ObXBD2ecu21ArwfbrJdHnQiy+Qtq8rs3j+rcCV/BcWpJSBJYQ==, tarball: file:projects/model-presence.tgz}
+    resolution: {integrity: sha512-qmASNpTrKWs0Gu44tU9AQk5a95g8DXoO3wkLRh4ySUYquv6msXXRYs0RbtPg0AV0qqoBmkvDlQowaoN8O1eG+Q==, tarball: file:projects/model-presence.tgz}
     version: 0.0.0
 
   '@rush-temp/model-presentation@file:projects/model-presentation.tgz':
@@ -4845,7 +4845,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/presence@file:projects/presence.tgz':
-    resolution: {integrity: sha512-UAKP+9sJPe3sFFYkuaoRLl5OGmzjdjb35+WCRBenMndS9HljrLekTZp2DL9F1XiyBa4OkB38vYYy2OoobeXx6Q==, tarball: file:projects/presence.tgz}
+    resolution: {integrity: sha512-omWUs5nB6Ialj+zdl2/frK7kgnBKNKdnsOK4kckybnR+MUscznChTAs5LtdSpmRvOG0uJeAlR1jHHui0STlBUg==, tarball: file:projects/presence.tgz}
     version: 0.0.0
 
   '@rush-temp/presentation@file:projects/presentation.tgz':
@@ -5245,7 +5245,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-ws@file:projects/server-ws.tgz':
-    resolution: {integrity: sha512-5g3NGK0JdwcpXIRpsGN75fiev+4fpwl4V33V5rwzrLZzHUNE7CAzTtc/cFRxK5cZIVRwaaTNCYi+WCEfoFI7Tg==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-Sev25LbpscG4MEnofW4g16Wsd4CzBMuFd1WqiVKwCOBPQEFxrH6zQ9wt20gHcjKacPZfn4GMFWuHew0H/ThuqQ==, tarball: file:projects/server-ws.tgz}
     version: 0.0.0
 
   '@rush-temp/server@file:projects/server.tgz':
@@ -5373,7 +5373,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-editor-resources@file:projects/text-editor-resources.tgz':
-    resolution: {integrity: sha512-PkvG582CT0XfnKC+4uNE1ZnwUgT9ywmfDmVr5vgcXti04Ntx1rB9VzTqnNDFI/A7h5dFAeEbR8s08gzgO6fdrw==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-EOKVWvCnTrXtst6yszXjgYSe1Hi0pCnMvNVw34jFBOQfLgMrUi1pk2IN6HVwFXFa5hSEEoR3C3Bh/Ga8quvrqQ==, tarball: file:projects/text-editor-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor@file:projects/text-editor.tgz':
@@ -5433,7 +5433,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ui@file:projects/ui.tgz':
-    resolution: {integrity: sha512-THkZLcaBxS58m9cqY59M3XZMTKNmmjb4CWSnh3nv8pzI0uuMHhZ9ldjS6zrzOLQJRlVB7XWuJBT/J5F9oLFs+w==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-RoUDfXdl8E3vT/wG4bVrY9FsfUPeqG9Bck6lQsnKj9kk/Q6gG7a4xl3qEkwk+qLU6qH6QD7lkUiaEbm4PXh5MA==, tarball: file:projects/ui.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader-assets@file:projects/uploader-assets.tgz':
@@ -8410,9 +8410,6 @@ packages:
 
   emoji-regex@9.2.2:
     resolution: {integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==}
-
-  emojibase-regex@16.0.0:
-    resolution: {integrity: sha512-ZMp31BkzBWNW+T73of6NURL6nXQa5GkfKneOkr3cEwBDVllbW/2nuva7NO0J3RjaQ07+SZQNgPTGZ4JlIhmM2Q==}
 
   emojibase@16.0.0:
     resolution: {integrity: sha512-Nw2m7JLIO4Ou2X/yZPRNscHQXVbbr6SErjkJ7EooG7MbR3yDZszCv9KTizsXFc7yZl0n3WF+qUKIC/Lw6H9xaQ==}
@@ -16462,6 +16459,7 @@ snapshots:
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
+      '@types/snappyjs': 0.7.1
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
@@ -16473,6 +16471,7 @@ snapshots:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       prettier: 3.2.5
       simplytyped: 3.3.0(typescript@5.6.2)
+      snappyjs: 0.7.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
       typescript: 5.6.2
@@ -26152,7 +26151,6 @@ snapshots:
       date-fns-tz: 2.0.0(date-fns@2.30.0)
       dompurify: 3.1.6
       emojibase: 16.0.0
-      emojibase-regex: 16.0.0
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -30201,8 +30199,6 @@ snapshots:
   emoji-regex@8.0.0: {}
 
   emoji-regex@9.2.2: {}
-
-  emojibase-regex@16.0.0: {}
 
   emojibase@16.0.0: {}
 

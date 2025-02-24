@@ -720,6 +720,7 @@ export interface SessionManager {
     requestId: Request<any>['id'],
     service: Session,
     ws: ConnectionSocket,
+    workspace: WorkspaceUuid
   ) => ClientSessionCtx
 
   handleRPC: <S extends Session>(
