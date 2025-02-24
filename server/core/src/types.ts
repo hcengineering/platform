@@ -565,6 +565,16 @@ export interface Session {
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions) => Promise<void>
   tx: (ctx: ClientSessionCtx, tx: Tx) => Promise<void>
+
+  txRaw: (
+    ctx: ClientSessionCtx,
+    tx: Tx
+  ) => Promise<{
+    result: TxResult
+    broadcastPromise: Promise<void>
+    asyncsPromise: Promise<void> | undefined
+  }>
+
   loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number) => Promise<void>
 
   getDomainHash: (ctx: ClientSessionCtx, domain: Domain) => Promise<void>
@@ -701,6 +711,22 @@ export interface SessionManager {
     ws: ConnectionSocket,
     request: Request<any>,
     workspace: string // wsId, toWorkspaceString()
+  ) => Promise<void>
+
+  createOpContext: (
+    ctx: MeasureContext,
+    pipeline: Pipeline,
+    requestId: Request<any>['id'],
+    service: Session,
+    ws: ConnectionSocket,
+    workspace: WorkspaceId
+  ) => ClientSessionCtx
+
+  handleRPC: <S extends Session>(
+    requestCtx: MeasureContext,
+    service: S,
+    ws: ConnectionSocket,
+    operation: (ctx: ClientSessionCtx) => Promise<void>
   ) => Promise<void>
 }
 

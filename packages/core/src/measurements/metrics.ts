@@ -233,11 +233,37 @@ function toString (name: string, m: Metrics, offset: number, length: number): st
   return r
 }
 
+function toJson (m: Metrics): any {
+  const obj: any = {
+    $total: m.value,
+    $ops: m.operations
+  }
+  if (m.operations > 1) {
+    obj.avg = Math.round((m.value / (m.operations > 0 ? m.operations : 1)) * 100) / 100
+  }
+  if (Object.keys(m.params).length > 0) {
+    obj.params = m.params
+  }
+  for (const [k, v] of Object.entries(m.measurements ?? {})) {
+    obj[
+      `${k} ${v.value} ${v.operations} ${
+        v.operations > 1 ? Math.round((v.value / (v.operations > 0 ? m.operations : 1)) * 100) / 100 : ''
+      }`
+    ] = toJson(v)
+  }
+
+  return obj
+}
+
 /**
  * @public
  */
 export function metricsToString (metrics: Metrics, name = 'System', length: number): string {
   return toString(name, metricsAggregate(metrics, 50), 0, length)
+}
+
+export function metricsToJson (metrics: Metrics): any {
+  return toJson(metricsAggregate(metrics))
 }
 
 function printMetricsParamsRows (

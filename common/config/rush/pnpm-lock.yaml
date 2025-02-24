@@ -3861,7 +3861,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/api-client@file:projects/api-client.tgz':
-    resolution: {integrity: sha512-tyhf+5DHkF+HpWZlimhdgls3Gp3L7PR0UHYEu0YH7e0UmOoZSuvAVbRbwY/6UnVG1am+xQnrs0xiZ93AHIsgBA==, tarball: file:projects/api-client.tgz}
+    resolution: {integrity: sha512-gq68pTrBheqcmVrkbiqYY+6p80DQHIsJvC1nIvhRfwrj3eR1ir5fVsW5t2Gs8fvN/Um8nH0MnkTUGavVrPWIdw==, tarball: file:projects/api-client.tgz}
     version: 0.0.0
 
   '@rush-temp/attachment-assets@file:projects/attachment-assets.tgz':
@@ -5065,7 +5065,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-ws@file:projects/server-ws.tgz':
-    resolution: {integrity: sha512-9PP7kE8LXoZ+7r6OwLp26KT+JFAQtSwg5QP/awwXjcsV2t3yphDYKbdAJuVG5xlLfHW52Xn4NRbr0wFhfwS0sg==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-3jjoKDZ0NAs4XRajHH6n4EgS00GwQY0Zga1JlG8XIeSPjAGphGUYbCaHQuJbcddPAYRdT632gK+119U4RvGSxw==, tarball: file:projects/server-ws.tgz}
     version: 0.0.0
 
   '@rush-temp/server@file:projects/server.tgz':
@@ -16130,6 +16130,7 @@ snapshots:
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
+      '@types/snappyjs': 0.7.1
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
@@ -16141,6 +16142,7 @@ snapshots:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       prettier: 3.2.5
       simplytyped: 3.3.0(typescript@5.6.2)
+      snappyjs: 0.7.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
       typescript: 5.6.2

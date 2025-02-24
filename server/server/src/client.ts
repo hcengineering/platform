@@ -30,7 +30,8 @@ import {
   type SessionData,
   type Timestamp,
   type Tx,
-  type TxCUD
+  type TxCUD,
+  type TxResult
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
@@ -162,7 +163,14 @@ export class ClientSession implements Session {
     await ctx.sendResponse(ctx.requestId, await ctx.pipeline.searchFulltext(ctx.ctx, query, options))
   }
 
-  async tx (ctx: ClientSessionCtx, tx: Tx): Promise<void> {
+  async txRaw (
+    ctx: ClientSessionCtx,
+    tx: Tx
+  ): Promise<{
+      result: TxResult
+      broadcastPromise: Promise<void>
+      asyncsPromise: Promise<void> | undefined
+    }> {
     this.lastRequest = Date.now()
     this.total.tx++
     this.current.tx++
@@ -171,31 +179,45 @@ export class ClientSession implements Session {
     let cid = 'client_' + generateId()
     ctx.ctx.id = cid
     let onEnd = useReserveContext ? ctx.pipeline.context.adapterManager?.reserveContext?.(cid) : undefined
+    let result: TxResult
     try {
-      const result = await ctx.pipeline.tx(ctx.ctx, [tx])
-
-      // Send result immideately
-      await ctx.sendResponse(ctx.requestId, result)
-
-      // We need to broadcast all collected transactions
-      await ctx.pipeline.handleBroadcast(ctx.ctx)
+      result = await ctx.pipeline.tx(ctx.ctx, [tx])
     } finally {
       onEnd?.()
     }
+    // Send result immideately
+    await ctx.sendResponse(ctx.requestId, result)
+
+    // We need to broadcast all collected transactions
+    const broadcastPromise = ctx.pipeline.handleBroadcast(ctx.ctx)
 
     // ok we could perform async requests if any
     const asyncs = (ctx.ctx.contextData as SessionData).asyncRequests ?? []
+    let asyncsPromise: Promise<void> | undefined
     if (asyncs.length > 0) {
       cid = 'client_async_' + generateId()
       ctx.ctx.id = cid
       onEnd = useReserveContext ? ctx.pipeline.context.adapterManager?.reserveContext?.(cid) : undefined
-      try {
-        for (const r of (ctx.ctx.contextData as SessionData).asyncRequests ?? []) {
-          await r()
+      const handleAyncs = async (): Promise<void> => {
+        try {
+          for (const r of (ctx.ctx.contextData as SessionData).asyncRequests ?? []) {
+            await r()
+          }
+        } finally {
+          onEnd?.()
         }
-      } finally {
-        onEnd?.()
       }
+      asyncsPromise = handleAyncs()
+    }
+
+    return { result, broadcastPromise, asyncsPromise }
+  }
+
+  async tx (ctx: ClientSessionCtx, tx: Tx): Promise<void> {
+    const { broadcastPromise, asyncsPromise } = await this.txRaw(ctx, tx)
+    await broadcastPromise
+    if (asyncsPromise !== undefined) {
+      await asyncsPromise
     }
   }
 
