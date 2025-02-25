@@ -55,6 +55,7 @@ func FromEnv() (*Config, error) {
 	return &result, nil
 }
 
+// Endpoint returns upload address
 func (c *Config) Endpoint() *url.URL {
 	var scheme = "https"
 	if c.Insecure {
