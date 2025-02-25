@@ -2,7 +2,7 @@
   "name": "@hcengineering/mail-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
-  "author": "Anticrm Platform Contributors",
+  "author": "Hardcore Engineering Inc.",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile ui",
@@ -43,6 +43,7 @@
     "@hcengineering/mail": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/presentation": "^0.6.3",
+    "@hcengineering/card": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/contact-resources": "^0.6.0",
