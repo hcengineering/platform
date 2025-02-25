@@ -818,7 +818,7 @@ export interface ViewOptionsModel {
  */
 export interface IconProps {
   icon?: Asset
-  color?: number
+  color?: number | number[]
 }
 
 export type AttributeCategory = 'attribute' | 'inplace' | 'collection' | 'array' | 'object'

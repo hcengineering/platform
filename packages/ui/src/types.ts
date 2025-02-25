@@ -262,7 +262,7 @@ export type IconSize =
   | '2x-large'
   | 'full'
 export interface IconProps {
-  icon?: number
+  icon?: number | number[]
   size?: IconSize
   fill?: string
   filled?: boolean

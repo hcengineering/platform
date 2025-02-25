@@ -101,7 +101,7 @@
       }  
     }
 
-    &:not(.disabled, :disabled):hover {
+    &:not(.disabled, :disabled, .noHover):hover {
       background-color: var(--theme-popup-hover); // var(--global-popover-hover-BackgroundColor);
       cursor: pointer;
     }
@@ -109,6 +109,9 @@
     &:disabled {
       cursor: default;
       .hulyPopup-row__label { opacity: .5; }
+    }
+    &.noHover {
+      cursor: default;
     }
   }
   .hulyPopup-group {
