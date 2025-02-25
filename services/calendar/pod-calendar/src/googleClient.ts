@@ -41,7 +41,7 @@ export class GoogleClient {
 
   private refreshTimer: NodeJS.Timeout | undefined = undefined
 
-  readonly rateLimiter = new RateLimiter(1000, 500)
+  readonly rateLimiter = new RateLimiter(100, 30)
 
   constructor (
     private readonly user: User,
@@ -214,7 +214,9 @@ export class GoogleClient {
       })
       if (current != null) {
         await this.rateLimiter.take(1)
-        await this.calendar.channels.stop({ requestBody: { id: current.channelId, resourceId: current.resourceId } })
+        try {
+          await this.calendar.channels.stop({ requestBody: { id: current.channelId, resourceId: current.resourceId } })
+        } catch {}
       }
       const channelId = generateId()
       const me = await this.getMe()
@@ -230,9 +232,11 @@ export class GoogleClient {
               calendarId: null
             },
             {
-              channelId,
-              expired: Number.parseInt(res.data.expiration),
-              resourceId: res.data.resourceId ?? ''
+              $set: {
+                channelId,
+                expired: Number.parseInt(res.data.expiration),
+                resourceId: res.data.resourceId ?? ''
+              }
             }
           )
         } else {
@@ -246,8 +250,8 @@ export class GoogleClient {
           })
         }
       }
-    } catch (err) {
-      console.error('Calendar watch error', err)
+    } catch (err: any) {
+      console.error('Calendar watch error', err.message)
     }
   }
 
@@ -260,9 +264,11 @@ export class GoogleClient {
       })
       if (current != null) {
         await this.rateLimiter.take(1)
-        await this.calendar.channels.stop({
-          requestBody: { id: current.channelId, resourceId: current.resourceId }
-        })
+        try {
+          await this.calendar.channels.stop({
+            requestBody: { id: current.channelId, resourceId: current.resourceId }
+          })
+        } catch {}
       }
       const channelId = generateId()
       const me = await this.getMe()
@@ -283,9 +289,11 @@ export class GoogleClient {
               calendarId
             },
             {
-              channelId,
-              expired: Number.parseInt(res.data.expiration),
-              resourceId: res.data.resourceId ?? ''
+              $set: {
+                channelId,
+                expired: Number.parseInt(res.data.expiration),
+                resourceId: res.data.resourceId ?? ''
+              }
             }
           )
         } else {
@@ -304,7 +312,7 @@ export class GoogleClient {
       if (err?.errors?.[0]?.reason === 'pushNotSupportedForRequestedResource') {
         return false
       } else {
-        console.error('Watch error', err)
+        console.error('Watch error', err.message)
         await this.checkError(err)
         return false
       }

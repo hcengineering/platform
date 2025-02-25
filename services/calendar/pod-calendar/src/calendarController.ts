@@ -68,10 +68,12 @@ export class CalendarController {
     const limiter = new RateLimiter(config.InitLimit)
     const token = generateToken(systemAccountEmail, { name: '' })
     const ids = [...groups.keys()]
-    console.log('start workspaces', ids)
     const infos = await getWorkspacesInfo(token, ids)
-    console.log('infos', infos)
-    for (const info of infos) {
+    infos.sort((a, b) => b.lastVisit - a.lastVisit)
+
+    let progress = 0
+    for (let i = 0; i < infos.length; i++) {
+      const info = infos[i]
       const tokens = groups.get(info.workspaceId)
       if (tokens === undefined) {
         console.log('no tokens for workspace', info.workspaceId)
@@ -89,10 +91,14 @@ export class CalendarController {
         continue
       }
       await limiter.add(async () => {
-        console.log('start workspace', info.workspaceId)
         const workspace = await this.startWorkspace(info.workspaceId, tokens)
         await workspace.sync()
       })
+      const newProgress = Math.round((i * 100) / infos.length)
+      if (newProgress > progress) {
+        progress = newProgress
+        console.log(`starting workspaces ${progress}%`)
+      }
     }
   }
 
@@ -104,7 +110,7 @@ export class CalendarController {
           console.warn('init client hang', token.workspace, token.userId)
         }, 60000)
         console.log('init client', token.workspace, token.userId)
-        await workspaceClient.createCalendarClient(token)
+        await workspaceClient.createCalendarClient(token, true)
         clearTimeout(timeout)
       } catch (err) {
         console.error(`Couldn't create client for ${workspace} ${token.userId} ${token.email}`)
@@ -195,6 +201,9 @@ export class CalendarController {
     }
     try {
       const client = WorkspaceClient.create(this.mongo, workspace, this)
+      if (this.workspaces.has(workspace)) {
+        console.error('Workspace already exists', workspace)
+      }
       this.workspaces.set(workspace, client)
       const res = await client
       this.workspaces.set(workspace, res)

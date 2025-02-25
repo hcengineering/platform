@@ -82,8 +82,7 @@ export class WatchClient {
       await this.rateLimiter.take(1)
       const res = await this.calendar.calendarList.watch({ requestBody: body })
       if (res.data.expiration != null && res.data.resourceId !== null) {
-        // eslint-disable-next-line
-        this.watches.updateOne(
+        await this.watches.updateOne(
           {
             userId: current.userId,
             workspace: current.workspace,
@@ -116,8 +115,7 @@ export class WatchClient {
       await this.rateLimiter.take(1)
       const res = await this.calendar.events.watch({ calendarId: current.calendarId, requestBody: body })
       if (res.data.expiration != null && res.data.resourceId != null) {
-        // eslint-disable-next-line
-        this.watches.updateOne(
+        await this.watches.updateOne(
           {
             userId: current.userId,
             workspace: current.workspace,
@@ -181,7 +179,6 @@ export class WatchController {
       },
       1000 * 60 * 60 * 24
     )
-    void this.checkAll()
   }
 
   async checkAll (): Promise<void> {
