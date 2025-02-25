@@ -15,11 +15,12 @@
 <script lang="ts">
   export let src: string
   export let name: string = ''
+  export let preload = true
 
   let video: HTMLVideoElement
 </script>
 
-<video bind:this={video} {src} width="100%" height="100%" controls>
+<video bind:this={video} {src} width="100%" height="100%" preload={preload ? 'auto' : 'none'} controls>
   <track kind="captions" label={name} />
 </video>
 

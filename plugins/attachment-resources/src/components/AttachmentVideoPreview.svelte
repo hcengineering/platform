@@ -19,6 +19,7 @@
   import { HlsVideo, Video } from '@hcengineering/ui'
 
   export let value: WithLookup<Attachment>
+  export let preload = true
 
   const maxSizeRem = 20
   const baseSizeRem = 12
@@ -64,9 +65,9 @@
     {@const src = getFileUrl(value.file, value.name)}
 
     {#if meta && meta.status === 'ready'}
-      <HlsVideo {src} hlsSrc={meta.hls} hlsThumbnail={meta.thumbnail} name={value.name} />
+      <HlsVideo {src} {preload} hlsSrc={meta.hls} hlsThumbnail={meta.thumbnail} name={value.name} />
     {:else}
-      <Video {src} name={value.name} />
+      <Video {src} {preload} name={value.name} />
     {/if}
   {/await}
 </div>
