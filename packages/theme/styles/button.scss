@@ -13,8 +13,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--spacing-2_5);
-    height: var(--spacing-2_5);
+    min-width: var(--spacing-2_5);
+    min-height: var(--spacing-2_5);
   }
   span { white-space: nowrap; }
 

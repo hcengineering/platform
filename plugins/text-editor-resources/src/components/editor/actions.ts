@@ -28,7 +28,7 @@ export const defaultRefActions: RefAction[] = [
             return
           }
 
-          editorHandler.insertText(emoji)
+          editorHandler.insertText(emoji.emoji)
           editorHandler.focus()
         },
         () => {}

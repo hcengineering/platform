@@ -51,7 +51,7 @@
   export let category: Ref<StatusCategory> | undefined = status?.category
   export let value: string
   export let valuePattern: string | undefined = ''
-  export let color: number | undefined = undefined
+  export let color: number | number[] | undefined = undefined
   export let icons: Asset[]
   export let iconWithEmoji: Asset = view.ids.IconWithEmoji
   export let icon: Asset | undefined
@@ -418,7 +418,7 @@
           <IconWithEmoji icon={color ?? 0} size={'medium'} />
         {/if}
       </div>
-      <div class="hulyTableAttr-content" class:mb-2={selected === 1}>
+      <div class="hulyTableAttr-content">
         {#if selected === 0}
           <ColorsPopup
             selected={getPlatformColorDef(color ?? 0, $themeStore.dark).name}
@@ -434,11 +434,12 @@
         {:else}
           <EmojiPopup
             embedded
-            selected={fromCodePoint(color ?? 0)}
+            selected={Array.isArray(color) ? fromCodePoint(...color) : color ? fromCodePoint(color) : undefined}
             disabled={readonly}
+            kind={'default'}
             on:close={(evt) => {
               if (readonly) return
-              color = evt.detail.codePointAt(0)
+              color = evt.detail.codes
               icon = iconWithEmoji
             }}
           />

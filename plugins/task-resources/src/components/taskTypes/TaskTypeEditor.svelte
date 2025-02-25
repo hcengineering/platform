@@ -44,7 +44,7 @@
   export let objectId: Ref<TaskType>
   export let name: string | undefined
   export let icon: Asset | undefined
-  export let color: number | undefined
+  export let color: number | number[] | undefined
   export let readonly: boolean = true
 
   const client = getClient()
@@ -189,7 +189,7 @@
                 {#if !readonly}
                   <ButtonIcon
                     icon={TaskTypeIcon}
-                    iconProps={{ value: taskType }}
+                    iconProps={{ value: taskType, size: 'medium' }}
                     size={'large'}
                     kind={'secondary'}
                     dataId={'btnSelectIcon'}

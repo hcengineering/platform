@@ -7,7 +7,8 @@ import {
   getCurrentResolvedLocation,
   getEventPositionElement,
   showPopup,
-  type Location
+  type Location,
+  type Emojis
 } from '@hcengineering/ui'
 import { type AttributeModel } from '@hcengineering/view'
 import { get } from 'svelte/store'
@@ -60,8 +61,8 @@ export async function addReactionAction (
 
   closePopup()
 
-  showPopup(EmojiPopup, {}, element, (emoji: string) => {
-    void updateDocReactions(reactions, message, emoji)
+  showPopup(EmojiPopup, {}, element, (emoji: Emojis) => {
+    if (emoji?.emoji !== undefined) void updateDocReactions(reactions, message, emoji.emoji)
     params?.onClose?.()
   })
   params?.onOpen?.()

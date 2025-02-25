@@ -62,12 +62,13 @@
   function chooseIcon (): void {
     const { icon, color } = object
     const icons = [document.icon.Document, document.icon.Teamspace]
-    showPopup(IconPicker, { icon, color, icons }, 'top', (result) => {
+    const update = (result: any): void => {
       if (result !== undefined && result !== null) {
         object.icon = result.icon
         object.color = result.color
       }
-    })
+    }
+    showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
   }
 
   function getTitle (value: string): string {
@@ -130,7 +131,7 @@
         noFocus
         icon={object.icon === view.ids.IconWithEmoji ? IconWithEmoji : object.icon ?? document.icon.Document}
         iconProps={object.icon === view.ids.IconWithEmoji
-          ? { icon: object.color }
+          ? { icon: object.color, size: 'medium' }
           : {
               fill:
                 object.color !== undefined ? getPlatformColorDef(object.color, $themeStore.dark).icon : 'currentColor'

@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { Reaction } from '@hcengineering/activity'
   import { Doc, getCurrentAccount, PersonId } from '@hcengineering/core'
-  import { EmojiPopup, IconAdd, showPopup, tooltip } from '@hcengineering/ui'
+  import { EmojiPopup, IconAdd, showPopup, tooltip, type Emojis } from '@hcengineering/ui'
   import { includesAny } from '@hcengineering/contact'
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
@@ -30,6 +30,7 @@
   const me = getCurrentAccount()
 
   let reactionsAccounts = new Map<string, PersonId[]>()
+  let opened: boolean = false
 
   $: {
     reactionsAccounts.clear()
@@ -53,82 +54,95 @@
     if (readonly) return
     ev.preventDefault()
     ev.stopPropagation()
-    showPopup(EmojiPopup, {}, ev.target as HTMLElement, async (emoji: string) => {
-      await updateDocReactions(reactions, object, emoji)
+    opened = true
+    showPopup(EmojiPopup, {}, ev.target as HTMLElement, async (emoji: Emojis) => {
+      if (emoji?.emoji !== undefined) await updateDocReactions(reactions, object, emoji.emoji)
+      opened = false
     })
   }
 </script>
 
-<div class="container">
+<div class="hulyReactions-container">
   {#each [...reactionsAccounts] as [emoji, accounts]}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
-      class="item border-radius-1"
+      class="hulyReactions-button"
       class:highlight={includesAny(accounts, me.socialIds)}
       class:cursor-pointer={!readonly}
       use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
       on:click={getClickHandler(emoji)}
     >
-      <div class="flex-row-center">
-        {emoji}
-        <div class="caption-color counter">{accounts.length}</div>
-      </div>
+      <span class="emoji">{emoji}</span>
+      <span class="counter">{accounts.length}</span>
     </div>
   {/each}
   {#if object && reactionsAccounts.size > 0 && !readonly}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="item flex-row-center border-radius-1" class:withoutBackground={true} on:click={openEmojiPalette}>
+    <div class="hulyReactions-button withoutBackground" class:opened on:click={openEmojiPalette}>
       <IconAdd size="small" />
     </div>
   {/if}
 </div>
 
 <style lang="scss">
-  .container {
+  .hulyReactions-container {
     display: flex;
     flex-wrap: wrap;
-    user-select: none;
     column-gap: 0.125rem;
     row-gap: 0.25rem;
-  }
+    min-width: 0;
+    min-height: 0;
+    user-select: none;
 
-  .counter {
-    font-size: 0.75rem;
-    color: var(--global-secondary-TextColor);
-    margin-left: 0.25rem;
-  }
-
-  .item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.625rem;
-    height: 1.5rem;
-    background: var(--button-disabled-BackgroundColor);
-    border: none;
-    cursor: pointer;
-
-    &.highlight {
-      background: var(--global-ui-highlight-BackgroundColor);
-      border: 1px solid var(--global-accent-BackgroundColor);
+    .counter {
+      font-size: 0.75rem;
+      color: var(--global-secondary-TextColor);
+      margin-left: 0.25rem;
     }
 
-    &:hover {
-      background: var(--global-ui-highlight-BackgroundColor);
-      border: 1px solid var(--global-popover-ShadowColor);
+    .hulyReactions-button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 0 0.375rem;
+      min-height: 1.5rem;
+      color: var(--theme-caption-color);
+      background: var(--button-disabled-BackgroundColor);
+      border: 1px solid var(--button-secondary-BorderColor);
+      border-radius: 0.75rem;
+      cursor: pointer;
 
-      &.highlight {
-        border: 1px solid var(--global-accent-BackgroundColor);
+      .emoji {
+        font-size: 1rem;
       }
-    }
-
-    &.withoutBackground {
-      background: transparent;
+      &.highlight {
+        background: var(--global-ui-highlight-BackgroundColor);
+        border-color: var(--global-accent-BackgroundColor);
+      }
 
       &:hover {
         background: var(--global-ui-highlight-BackgroundColor);
+        border-color: var(--button-menu-active-BorderColor);
+
+        &.highlight {
+          border-color: var(--global-focus-BorderColor);
+        }
+      }
+
+      &.withoutBackground {
+        padding: 0;
+        width: 1.5rem;
+        background: transparent;
+        border-color: transparent;
+
+        &.opened,
+        &:hover {
+          background: var(--global-ui-highlight-BackgroundColor);
+          border-color: var(--button-secondary-BorderColor);
+        }
       }
     }
   }

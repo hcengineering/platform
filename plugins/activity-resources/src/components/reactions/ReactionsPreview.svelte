@@ -16,7 +16,7 @@
 <script lang="ts">
   import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { EmojiPopup, showPopup } from '@hcengineering/ui'
+  import { EmojiPopup, showPopup, type Emojis } from '@hcengineering/ui'
   import { SortingOrder } from '@hcengineering/core'
 
   import { updateDocReactions } from '../../utils'
@@ -65,8 +65,8 @@
 
     e.stopPropagation()
     e.preventDefault()
-    showPopup(EmojiPopup, {}, e.target as HTMLElement, (emoji: string) => {
-      void updateDocReactions(reactions, message, emoji)
+    showPopup(EmojiPopup, {}, e.target as HTMLElement, (emoji: Emojis) => {
+      if (emoji?.emoji !== undefined) void updateDocReactions(reactions, message, emoji.emoji)
     })
   }
 </script>
