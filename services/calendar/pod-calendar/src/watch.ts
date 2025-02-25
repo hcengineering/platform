@@ -147,7 +147,6 @@ export class WatchController {
   private constructor (private readonly mongo: Db) {
     this.watches = mongo.collection<WatchBase>('watch')
     this.tokens = mongo.collection<Token>('tokens')
-    console.log('watch started')
   }
 
   static get (mongo: Db): WatchController {
@@ -179,6 +178,7 @@ export class WatchController {
       },
       1000 * 60 * 60 * 24
     )
+    void this.checkAll()
   }
 
   async checkAll (): Promise<void> {

@@ -94,7 +94,7 @@ export class CalendarClient {
     clearTimeout(this.inactiveTimer)
     this.inactiveTimer = setTimeout(() => {
       this.closeByTimer()
-    }, 60 * 1000)
+    }, 30 * 1000)
   }
 
   static async create (
@@ -450,6 +450,7 @@ export class CalendarClient {
       if (res.data.nextSyncToken != null) {
         await this.setEventHistoryId(calendarId, res.data.nextSyncToken)
       }
+      // if resync
     } catch (err: any) {
       if (err?.response?.status === 410) {
         await this.eventsSync(calendarId)

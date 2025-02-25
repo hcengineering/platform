@@ -171,7 +171,7 @@ export class WorkspaceClient {
       if (this.clients.size > 0) return
       void this.close()
       this.serviceController.removeWorkspace(this.workspace)
-    }, 15000)
+    }, 20000)
   }
 
   private getCalendarClient (email: string): CalendarClient | Promise<CalendarClient> | undefined {
@@ -238,7 +238,7 @@ export class WorkspaceClient {
     }
     const limiter = new RateLimiter(config.InitLimit)
     for (let client of this.clients.values()) {
-      void limiter.add(async () => {
+      await limiter.add(async () => {
         if (client instanceof Promise) {
           client = await client
         }
@@ -275,9 +275,9 @@ export class WorkspaceClient {
   async pushEvent (event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
     const client = await this.getCalendarClientByCalendar(event.calendar as Ref<ExternalCalendar>, true)
     if (client === undefined) {
-      console.warn('Client not found', event.calendar, this.workspace)
       return
     }
+    // if client synced our events just call resync
     if (event.access === 'owner' || event.access === 'writer') {
       if (type === 'delete') {
         await client.removeEvent(event)

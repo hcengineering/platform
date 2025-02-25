@@ -41,9 +41,10 @@ export const main = async (): Promise<void> => {
 
   const db = await getDB()
   const calendarController = CalendarController.getCalendarController(db)
-  await calendarController.startAll()
   const watchController = WatchController.get(db)
-  watchController.startCheck()
+  void calendarController.startAll().then(() => {
+    watchController.startCheck()
+  })
   const endpoints: Endpoint[] = [
     {
       endpoint: '/signin',

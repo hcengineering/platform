@@ -29,6 +29,8 @@ export class CalendarController {
   WorkspaceClient | Promise<WorkspaceClient>
   >()
 
+  private readonly syncedWorkspaces = new Set<string>()
+
   private readonly tokens: Collection<Token>
 
   protected static _instance: CalendarController
@@ -93,6 +95,7 @@ export class CalendarController {
       await limiter.add(async () => {
         const workspace = await this.startWorkspace(info.workspaceId, tokens)
         await workspace.sync()
+        this.syncedWorkspaces.add(info.workspaceId)
       })
       const newProgress = Math.round((i * 100) / infos.length)
       if (newProgress > progress) {
@@ -122,7 +125,8 @@ export class CalendarController {
   async push (email: string, mode: 'events' | 'calendar', calendarId?: string): Promise<void> {
     const tokens = await this.tokens.find({ email, access_token: { $exists: true } }).toArray()
     const token = generateToken(systemAccountEmail, { name: '' })
-    const workspaces = [...new Set(tokens.map((p) => p.workspace))]
+    const workspaces = [...new Set(tokens.map((p) => p.workspace).filter((p) => this.syncedWorkspaces.has(p)))]
+    if (workspaces.length === 0) return
     const infos = await getWorkspacesInfo(token, workspaces)
     for (const token of tokens) {
       const info = infos.find((p) => p.workspaceId === token.workspace)
@@ -148,8 +152,10 @@ export class CalendarController {
   }
 
   async pushEvent (workspace: string, event: Event, type: 'create' | 'update' | 'delete'): Promise<void> {
-    const workspaceController = await this.getWorkspaceClient(workspace)
-    await workspaceController.pushEvent(event, type)
+    if (this.syncedWorkspaces.has(workspace)) {
+      const workspaceController = await this.getWorkspaceClient(workspace)
+      await workspaceController.pushEvent(event, type)
+    }
   }
 
   async getUserId (email: string, workspace: string): Promise<Ref<Account>> {
