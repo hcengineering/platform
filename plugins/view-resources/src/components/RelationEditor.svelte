@@ -31,8 +31,8 @@
         if (result != null) {
           const client = getClient()
           await client.createDoc(core.class.Relation, core.space.Workspace, {
-            docA: direction === 'A' ? object._id : result._id,
-            docB: direction === 'A' ? result._id : object._id,
+            docA: direction === 'B' ? object._id : result._id,
+            docB: direction === 'B' ? result._id : object._id,
             association: association._id
           })
         }
@@ -76,13 +76,19 @@
     )
   } else {
     preferenceQuery.unsubscribe()
+    preference = undefined
   }
 
-  $: config = preference?.config ?? viewlet?.config
+  $: selectedConfig = preference?.config ?? viewlet?.config
+  $: config = selectedConfig?.filter((p) =>
+    typeof p === 'string'
+      ? !p.includes('$lookup') && !p.startsWith('@')
+      : !p.key.includes('$lookup') && !p.key.startsWith('@')
+  )
 
   async function onContextMenu (ev: MouseEvent, doc: Doc): Promise<void> {
     const q =
-      direction === 'A'
+      direction === 'B'
         ? { docA: object._id, docB: doc._id, association: association._id }
         : { docA: doc._id, docB: object._id, association: association._id }
     const relation = await client.findOne(core.class.Relation, q)
@@ -90,12 +96,20 @@
       showMenu(ev, { object: relation, includedActions: [view.action.Delete] })
     }
   }
+
+  function isAllowedToCreate (association: Association, docs: Doc[], direction: 'A' | 'B'): boolean {
+    if (docs.length === 0 || association.type === 'N:N') return true
+    if (association.type === '1:1') return false
+    return direction === 'B'
+  }
+
+  $: allowToCreate = isAllowedToCreate(association, docs, direction)
 </script>
 
 <Section {label}>
   <svelte:fragment slot="header">
     <div class="buttons-group xsmall-gap">
-      {#if !readonly}
+      {#if !readonly && allowToCreate}
         <Button id={core.string.AddRelation} icon={IconAdd} kind={'ghost'} on:click={add} />
       {/if}
     </div>
