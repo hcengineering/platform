@@ -119,12 +119,17 @@ export const getFrequentlyEmojis = (): EmojiWithGroup[] | undefined => {
     const parsedEmojis = JSON.parse(frequentlyEmojis)
     if (!Array.isArray(parsedEmojis)) return undefined
 
-    return parsedEmojis
-      .map((pe) => {
-        const map = getEmoji(pe.hexcode)
-        return map?.parent ?? map?.emoji
-      })
-      .filter((f) => f !== undefined) as EmojiWithGroup[]
+    const res: EmojiWithGroup[] = []
+
+    for (const val of parsedEmojis) {
+      const map = getEmoji(val.hexcode)
+      const emoji = map?.parent ?? map?.emoji
+      if (emoji !== undefined) {
+        res.push(emoji)
+      }
+    }
+
+    return res
   } catch (e) {
     console.error(e)
     return undefined

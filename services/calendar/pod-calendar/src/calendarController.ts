@@ -14,7 +14,16 @@
 //
 
 import { Event } from '@hcengineering/calendar'
-import { PersonId, PersonUuid, RateLimiter, WorkspaceUuid, isActiveMode, isDeletingMode, parseSocialIdString, systemAccountUuid } from '@hcengineering/core'
+import {
+  PersonId,
+  PersonUuid,
+  RateLimiter,
+  WorkspaceUuid,
+  isActiveMode,
+  isDeletingMode,
+  parseSocialIdString,
+  systemAccountUuid
+} from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { Collection, type Db } from 'mongodb'
 import { type CalendarClient } from './calendar'
@@ -24,7 +33,11 @@ import { WorkspaceClient } from './workspaceClient'
 import { getAccountClient } from '@hcengineering/server-client'
 
 export class CalendarController {
-  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient | Promise<WorkspaceClient>> = new Map<WorkspaceUuid, WorkspaceClient | Promise<WorkspaceClient>>()
+  private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient | Promise<WorkspaceClient>> = new Map<
+  WorkspaceUuid,
+  WorkspaceClient | Promise<WorkspaceClient>
+  >()
+
   private readonly tokens: Collection<Token>
 
   protected static _instance: CalendarController

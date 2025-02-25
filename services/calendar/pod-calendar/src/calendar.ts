@@ -887,7 +887,6 @@ export class CalendarClient {
   }
 
   async syncMyEvent (event: Event): Promise<void> {
-    const me = await this.googleClient.getMe()
     if (event.access === 'owner' || event.access === 'writer') {
       try {
         const space = this.workspace.calendars.byId.get(event.calendar as Ref<ExternalCalendar>)

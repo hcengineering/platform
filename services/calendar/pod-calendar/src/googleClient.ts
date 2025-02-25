@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { generateId, PersonId } from '@hcengineering/core'
 import type { Credentials, OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
-import { ProjectCredentials, State, Token, User, Watch, WatchBase } from './types'
-import config from './config'
-import { encode64 } from './base64'
-import { Account, generateId, PersonId, Ref } from '@hcengineering/core'
 import { Collection, Db } from 'mongodb'
-import { RateLimiter } from './rateLimiter'
+import { encode64 } from './base64'
 import { CalendarClient } from './calendar'
+import config from './config'
+import { RateLimiter } from './rateLimiter'
+import { ProjectCredentials, State, Token, User, Watch, WatchBase } from './types'
 
 export const DUMMY_RESOURCE = 'Dummy'
 
