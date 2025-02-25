@@ -15,7 +15,11 @@ export class WatchClient {
   private readonly user: Token
   private me: string = ''
 
-  private constructor (mongo: Db, token: Token, private readonly rateLimiter: RateLimiter) {
+  private constructor (
+    mongo: Db,
+    token: Token,
+    private readonly rateLimiter: RateLimiter
+  ) {
     this.user = token
     this.watches = mongo.collection<WatchBase>('watch')
     const credentials = JSON.parse(config.Credentials)
@@ -161,7 +165,7 @@ export class WatchController {
     await this.watches.deleteMany({ userId: user.userId, workspae: user.workspace })
     const token = this.tokens.findOne({ user: user.userId, workspace: user.workspace })
     if (token == null) return
-    const watchClient = await WatchClient.Create(this.mongo, user)
+    const watchClient = await WatchClient.Create(this.mongo, user, this.rateLimiter)
     await watchClient.unsubscribe(allWatches)
   }
 
