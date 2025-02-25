@@ -16,8 +16,8 @@
   import type { Attachment } from '@hcengineering/attachment'
 
   import type { BlobType, WithLookup } from '@hcengineering/core'
-  import { getFileUrl } from '@hcengineering/presentation'
-  import AttachmentPresenter from './AttachmentPresenter.svelte'
+  import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
+  import { HlsVideo, Video } from '@hcengineering/ui'
 
   export let value: WithLookup<Attachment> | BlobType
   export let preload = true
@@ -55,18 +55,26 @@
 
     return { width, height }
   }
+
+  function toStyle (size: 'auto' | number): string {
+    return size === 'auto' ? 'auto' : `${size}px`
+  }
 </script>
 
-<video controls width={dimensions.width} height={dimensions.height} preload={preload ? 'auto' : 'none'}>
-  <source src={getFileUrl(value.file, value.name)} />
-  <track kind="captions" label={value.name} />
-  <div class="container">
-    <AttachmentPresenter {value} />
-  </div>
-</video>
+<div class="container" style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
+  {#await getVideoMeta(value.file, value.name) then meta}
+    {@const src = getFileUrl(value.file, value.name)}
+
+    {#if meta && meta.status === 'ready'}
+      <HlsVideo {src} {preload} hlsSrc={meta.hls} hlsThumbnail={meta.thumbnail} name={value.name} />
+    {:else}
+      <Video {src} {preload} name={value.name} />
+    {/if}
+  {/await}
+</div>
 
 <style lang="scss">
-  video {
+  .container {
     max-width: 20rem;
     max-height: 20rem;
     min-width: 4rem;

@@ -13,36 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
-  import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
-  import { onDestroy } from 'svelte'
-  import HLS from 'hls.js'
+  import { type Blob, type Ref } from '@hcengineering/core'
+  import { getFileUrl, getVideoMeta, type BlobMetadata } from '@hcengineering/presentation'
+  import { HlsVideo, Video } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
-
-  let video: HTMLVideoElement
-  let hls: HLS
-
-  async function fetchVideoMeta (value: Ref<Blob>, name: string): Promise<void> {
-    const src = getFileUrl(value, name)
-    const meta = await getVideoMeta(value, name)
-    if (meta != null && meta.status === 'ready' && HLS.isSupported()) {
-      hls?.destroy()
-      hls = new HLS()
-      hls.loadSource(meta.hls)
-      hls.attachMedia(video)
-      video.poster = meta.thumbnail
-    } else {
-      video.src = src
-    }
-  }
-
-  onDestroy(() => {
-    hls?.destroy()
-  })
 
   $: aspectRatio =
     metadata?.originalWidth && metadata?.originalHeight
@@ -50,17 +28,20 @@
       : '16 / 9'
   $: maxWidth = metadata?.originalWidth ? `min(${metadata.originalWidth}px, 100%)` : undefined
   $: maxHeight = metadata?.originalHeight ? `min(${metadata.originalHeight}px, 80vh)` : undefined
-  $: void fetchVideoMeta(value, name)
 </script>
 
-<video
-  bind:this={video}
-  width="100%"
+<div
   style:aspect-ratio={aspectRatio}
   style:max-width={fit ? '100%' : maxWidth}
   style:max-height={fit ? '100%' : maxHeight}
-  controls
-  preload={'auto'}
 >
-  <track kind="captions" label={name} />
-</video>
+  {#await getVideoMeta(value, name) then meta}
+    {@const src = getFileUrl(value, name)}
+
+    {#if meta && meta.status === 'ready'}
+      <HlsVideo {src} {name} hlsSrc={meta.hls} hlsThumbnail={meta.thumbnail} />
+    {:else}
+      <Video {src} {name} />
+    {/if}
+  {/await}
+</div>
