@@ -877,9 +877,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
               }
             }
           } else if (column.startsWith('assoc_')) {
+            if (row[column] == null) continue
             const keys = column.split('_')
             const key = keys[keys.length - 1]
-            associations[key] = row[column]
+            const associationDomain = keys[1]
+            const associationSchema = getSchema(associationDomain)
+            const parsed = row[column].map((p: any) => parseDoc(p, associationSchema))
+            associations[key] = parsed
           } else {
             joinIndex = undefined
             if (!map.has(row._id)) {
@@ -1434,17 +1438,18 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       const isReverse = association[1] === -1
       const _class = isReverse ? assoc.classA : assoc.classB
+      const tagetDomain = translateDomain(this.hierarchy.getDomain(_class))
       const keyA = isReverse ? 'docB' : 'docA'
       const keyB = isReverse ? 'docA' : 'docB'
       const wsId = vars.add(this.workspaceId, '::uuid')
       res.push(
         `(SELECT jsonb_agg(assoc.*) 
-          FROM ${translateDomain(this.hierarchy.getDomain(_class))} AS assoc 
+          FROM ${tagetDomain} AS assoc 
           JOIN ${translateDomain(DOMAIN_RELATION)} as relation 
           ON relation."${keyB}" = assoc."_id" 
           AND relation."workspaceId" = ${wsId}
           WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" 
-          AND assoc."workspaceId" = ${wsId}) AS assoc_${association[0]}`
+          AND assoc."workspaceId" = ${wsId}) AS assoc_${tagetDomain}_${association[0]}`
       )
     }
     return res
