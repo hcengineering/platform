@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
+import chunter from '@hcengineering/chunter'
+import contact, { Person, pickPrimarySocialId } from '@hcengineering/contact'
 import core, {
   concatLink,
   Doc,
@@ -20,7 +22,6 @@ import core, {
   MeasureContext,
   PersonId,
   Ref,
-  SocialIdType,
   TxCreateDoc,
   TxCUD,
   TxOperations,
@@ -28,7 +29,6 @@ import core, {
   TxUpdateDoc,
   WorkspaceUuid
 } from '@hcengineering/core'
-import contact, { Person } from '@hcengineering/contact'
 import love, {
   getFreeRoomPlace,
   MeetingMinutes,
@@ -39,7 +39,6 @@ import love, {
   TranscriptionStatus
 } from '@hcengineering/love'
 import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text'
-import chunter from '@hcengineering/chunter'
 
 import config from '../config'
 
@@ -174,16 +173,18 @@ export class LoveController {
   }
 
   async getSocialId (person: Ref<Person>): Promise<PersonId | undefined> {
-    const socialId =
-      this.socialIdByPerson.get(person) ??
-      (
-        await this.client.findOne(contact.class.SocialIdentity, {
-          attachedTo: person,
-          attachedToClass: contact.class.Person,
-          type: SocialIdType.HULY
-        })
-      )?.key
+    if (!this.socialIdByPerson.has(person)) {
+      const identities = await this.client.findAll(contact.class.SocialIdentity, {
+        attachedTo: person,
+        attachedToClass: contact.class.Person
+      })
+      if (identities.length > 0) {
+        const id = pickPrimarySocialId(identities.map((si) => si.key))
+        this.socialIdByPerson.set(person, id)
+      }
+    }
 
+    const socialId = this.socialIdByPerson.get(person)
     if (socialId === undefined) {
       return
     }
