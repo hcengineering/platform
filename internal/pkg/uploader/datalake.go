@@ -18,7 +18,6 @@ import (
 	"context"
 	"io"
 	"mime/multipart"
-	"net/url"
 	"os"
 	"path/filepath"
 
@@ -38,7 +37,7 @@ type DatalakeStorage struct {
 // NewDatalakeStorage creates a new datalake client
 func NewDatalakeStorage(baseURL, workspace, token string) Storage {
 	return &DatalakeStorage{
-		baseURL:   "https://" + baseURL,
+		baseURL:   baseURL,
 		token:     token,
 		workspace: workspace,
 	}
@@ -116,6 +115,7 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error
 
 	client := fasthttp.Client{}
 	if err := client.Do(req, res); err != nil {
+		logger.Error("failed to del", zap.Error(err))
 		return errors.Wrapf(err, "delete failed")
 	}
 
@@ -126,5 +126,5 @@ func (d *DatalakeStorage) DeleteFile(ctx context.Context, fileName string) error
 
 func getObjectKey(s string) string {
 	var _, objectKey = filepath.Split(s)
-	return url.QueryEscape(objectKey)
+	return objectKey
 }

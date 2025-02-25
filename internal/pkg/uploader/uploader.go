@@ -18,11 +18,13 @@ import (
 	"context"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/tus/tusd/v2/pkg/handler"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/huly-stream/internal/pkg/config"
@@ -31,40 +33,39 @@ import (
 )
 
 type uploader struct {
-	ctx                        context.Context
-	cancel                     context.CancelFunc
-	baseDir                    string
-	uploadID                   string
-	masterFiles                sync.Map
-	postponeDuration           time.Duration
-	sentFiles                  sync.Map
-	storage                    Storage
-	contexts                   sync.Map
-	retryCount                 int
-	removeLocalContentOnUpload bool
-	eventBufferCount           uint
-	isMasterFileFunc           func(s string) bool
+	done             chan struct{}
+	wg               sync.WaitGroup
+	ctx              context.Context
+	cancel           context.CancelFunc
+	baseDir          string
+	uploadID         string
+	postponeDuration time.Duration
+	sentFiles        sync.Map
+	storage          Storage
+	contexts         sync.Map
+	retryCount       int
+	eventBufferCount uint
+}
+
+func (u *uploader) retry(action func() error) {
+	for range u.retryCount {
+		if err := action(); err == nil {
+			return
+		}
+	}
 }
 
 // Rollback deletes all delivered files and also deletes all local content by uploadID
 func (u *uploader) Rollback() {
-	log.FromContext(u.ctx).Debug("cancel")
+	logger := log.FromContext(u.ctx).With(zap.String("uploader", "Rollback"))
+	logger.Debug("starting")
 	defer u.cancel()
+
+	u.wg.Wait()
+
 	u.sentFiles.Range(func(key, value any) bool {
-		log.FromContext(u.ctx).Debug("deleting remote file", zap.String("key", key.(string)))
-		for range u.retryCount {
-			var err = u.storage.DeleteFile(u.ctx, key.(string))
-			if err == nil {
-				break
-			}
-			log.FromContext(u.ctx).Debug("can not delete file", zap.Error(err))
-		}
-		return true
-	})
-	if !u.removeLocalContentOnUpload {
-		return
-	}
-	u.sentFiles.Range(func(key, value any) bool {
+		logger.Debug("deleting remote file", zap.String("key", key.(string)))
+		u.retry(func() error { return u.storage.DeleteFile(u.ctx, key.(string)) })
 		log.FromContext(u.ctx).Debug("deleting local file", zap.String("key", key.(string)))
 		_ = os.Remove(key.(string))
 		return true
@@ -72,77 +73,68 @@ func (u *uploader) Rollback() {
 }
 
 func (u *uploader) Terminate() {
-	log.FromContext(u.ctx).Debug("terminate")
+	logger := log.FromContext(u.ctx).With(zap.String("uploader", "Terminate"))
+	logger.Debug("starting")
 	defer u.cancel()
-	u.masterFiles.Range(func(key, value any) bool {
-		log.FromContext(u.ctx).Debug("uploading master file", zap.String("key", key.(string)))
-		for range u.retryCount {
-			var uploadErr = u.storage.UploadFile(u.ctx, key.(string))
-			if uploadErr == nil {
-				break
-			}
-			log.FromContext(u.ctx).Debug("can not upload file", zap.Error(uploadErr))
-		}
-		return true
-	})
-	if !u.removeLocalContentOnUpload {
-		return
-	}
-	u.masterFiles.Range(func(key, value any) bool {
-		log.FromContext(u.ctx).Debug("deleting local master file", zap.String("key", key.(string)))
-		_ = os.Remove(key.(string))
-		return true
-	})
+
+	u.wg.Wait()
+
 	u.sentFiles.Range(func(key, value any) bool {
-		log.FromContext(u.ctx).Debug("deleting local file", zap.String("key", key.(string)))
 		_ = os.Remove(key.(string))
 		return true
 	})
 }
 
 func (u *uploader) Serve() error {
-	var logger = log.FromContext(u.ctx)
-	logger = logger.With(zap.String("uploader", u.uploadID), zap.String("dir", u.baseDir))
+	var logger = log.FromContext(u.ctx).With(zap.String("uploader", u.uploadID), zap.String("dir", u.baseDir))
 	var watcher, err = fsnotify.NewBufferedWatcher(u.eventBufferCount)
+	defer close(u.done)
+
 	if err != nil {
 		logger.Error("can not start watcher")
 		return err
 	}
+
+	_ = os.MkdirAll(u.baseDir, os.ModePerm)
+	initFiles, _ := os.ReadDir(u.baseDir)
+	for _, f := range initFiles {
+		var name = filepath.Join(u.baseDir, f.Name())
+		u.postpone(name, func() {
+			logger.Debug("started uploading", zap.String("eventName", name))
+			u.retry(func() error { return u.storage.UploadFile(u.ctx, name) })
+			logger.Debug("added to sentFiles", zap.String("eventName", name))
+			u.sentFiles.Store(name, struct{}{})
+		})
+	}
+
 	if err := watcher.Add(u.baseDir); err != nil {
 		return err
 	}
+
 	defer func() {
 		_ = watcher.Close()
 	}()
 
-	logger.Debug("uploader initialized and started to watch")
+	logger.Debug("uploader has initialized and started watching")
+	defer logger.Debug("done")
 
 	for {
 		select {
 		case <-u.ctx.Done():
-			logger.Debug("done")
 			return u.ctx.Err()
 		case event, ok := <-watcher.Events:
-			if !strings.Contains(event.Name, u.uploadID) {
-				continue
-			}
 			if !ok {
 				return u.ctx.Err()
 			}
-			if u.isMasterFileFunc(event.Name) {
-				u.masterFiles.Store(event.Name, struct{}{})
-				logger.Debug("found master file", zap.String("eventName", event.Name))
+			if strings.HasSuffix(event.Name, "tmp") {
+				continue
+			}
+			if !strings.Contains(event.Name, u.uploadID) {
 				continue
 			}
 			u.postpone(event.Name, func() {
-				logger.Debug("started to upload", zap.String("eventName", event.Name))
-				for range u.retryCount {
-					var uploadErr = u.storage.UploadFile(u.ctx, event.Name)
-					if uploadErr == nil {
-						break
-					}
-					logger.Error("can not upload file", zap.Error(uploadErr))
-				}
+				logger.Debug("started uploading", zap.String("eventName", event.Name))
+				u.retry(func() error { return u.storage.UploadFile(u.ctx, event.Name) })
 				logger.Debug("added to sentFiles", zap.String("eventName", event.Name))
 				u.sentFiles.Store(event.Name, struct{}{})
 			})
@@ -169,37 +161,35 @@ type Storage interface {
 }
 
 // New creates a new instance of Uplaoder
-func New(ctx context.Context, conf config.Config, uploadID string, metadata map[string]string) (Uploader, error) {
-	var uploaderCtx, uploaderCancel = context.WithCancel(ctx)
+func New(ctx context.Context, baseDir string, endpointURL *url.URL, uploadInfo handler.FileInfo) (Uploader, error) {
+	var uploaderCtx, uploadCancel = context.WithCancel(context.Background())
+	uploaderCtx = log.WithLoggerFields(uploaderCtx)
+
 	var storage Storage
 	var err error
 
-	if conf.EndpointURL != nil {
-		storage, err = NewStorageByURL(ctx, conf.EndpointURL, metadata)
-		if err != nil {
-			uploaderCancel()
-			return nil, err
-		}
+	storage, err = NewStorageByURL(ctx, endpointURL, uploadInfo.MetaData)
+	if err != nil {
+		uploadCancel()
+		return nil, err
 	}
 
 	return &uploader{
-		ctx:                        uploaderCtx,
-		cancel:                     uploaderCancel,
-		uploadID:                   uploadID,
-		removeLocalContentOnUpload: conf.RemoveContentOnUpload,
-		postponeDuration:           time.Second * 2,
-		storage:                    storage,
-		retryCount:                 5,
-		baseDir:                    conf.OutputDir,
-		eventBufferCount:           100,
-		isMasterFileFunc: func(s string) bool {
-			return strings.HasSuffix(s, "m3u8")
-		},
+		ctx:              uploaderCtx,
+		cancel:           uploadCancel,
+		done:             make(chan struct{}),
+		uploadID:         uploadInfo.ID,
+		postponeDuration: time.Second * 2,
+		storage:          storage,
+		retryCount:       5,
+		baseDir:          filepath.Join(baseDir, uploadInfo.ID),
+		eventBufferCount: 100,
 	}, nil
 }
 
 // NewStorageByURL creates a new storage basd on the type from the url scheme, for example "datalake://my-datalake-endpoint"
 func NewStorageByURL(ctx context.Context, u *url.URL, headers map[string]string) (Storage, error) {
+	c, _ := config.FromEnv()
 	switch u.Scheme {
 	case "tus":
 		return nil, errors.New("not imlemented yet")
@@ -210,9 +200,9 @@ func NewStorageByURL(ctx context.Context, u *url.URL, headers map[string]string)
 		if headers["token"] == "" {
 			return nil, errors.New("missed auth token in the client's metadata")
 		}
-		return NewDatalakeStorage(u.Hostname(), headers["workspace"], headers["token"]), nil
+		return NewDatalakeStorage(c.Endpoint().String(), headers["workspace"], headers["token"]), nil
 	case "s3":
-		return NewS3(ctx, u.Hostname()), nil
+		return NewS3(ctx, c.Endpoint().String()), nil
 	default:
 		return nil, errors.New("unknown scheme")
 	}

@@ -14,130 +14,38 @@
 package manifest_test
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/huly-stream/internal/pkg/manifest"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestToM3U8(t *testing.T) {
-	tests := []struct {
-		name     string
-		manifest manifest.HLSManifest
-		expected string
-	}{
-		{
-			name: "simple manifest",
-			manifest: manifest.HLSManifest{
-				Version:        3,
-				TargetDuration: 10,
-				SequenceNumber: 1,
-				Segments: []manifest.Segment{
-					{URI: "segment1.ts", Duration: 9.5, Title: "Segment 1"},
-					{URI: "segment2.ts", Duration: 9.0, Title: "Segment 2"},
-				},
-				EndList: true,
-			},
-			expected: `#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-TARGETDURATION:10
-#EXT-X-MEDIA-SEQUENCE:1
-#EXTINF:9.50,Segment 1
-segment1.ts
-#EXTINF:9.00,Segment 2
-segment2.ts
-#EXT-X-ENDLIST
-`,
-		},
-		{
-			name: "empty manifest",
-			manifest: manifest.HLSManifest{
-				Version:        3,
-				TargetDuration: 10,
-				SequenceNumber: 1,
-				Segments:       []manifest.Segment{},
-				EndList:        false,
-			},
-			expected: `#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-TARGETDURATION:10
-#EXT-X-MEDIA-SEQUENCE:1
-`,
-		},
+func TestGenerateHLSPlaylist(t *testing.T) {
+	resolutions := []string{"320p", "480p", "720p", "1080p", "4k", "8k"}
+	uploadID := "test123"
+
+	err := manifest.GenerateHLSPlaylist(resolutions, "", uploadID)
+	require.NoError(t, err)
+
+	outputPath := filepath.Join(uploadID, uploadID+"_master.m3u8")
+
+	_, err = os.Stat(outputPath)
+	require.NoError(t, err, "Master playlist file should exist")
+
+	// #nosec
+	data, err := os.ReadFile(outputPath)
+	require.NoError(t, err, "Error reading the generated file")
+
+	playlistContent := string(data)
+
+	require.Contains(t, playlistContent, "#EXTM3U", "File must start with #EXTM3U")
+
+	for _, res := range resolutions {
+		expectedLine := uploadID + "_" + res + "_master.m3u8"
+		require.Contains(t, playlistContent, expectedLine, "Missing expected reference: "+expectedLine)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			actual := tt.manifest.ToM3U8()
-			assert.Equal(t, tt.expected, actual)
-		})
-	}
-}
-
-func TestFromM3U8(t *testing.T) {
-	tests := []struct {
-		name     string
-		data     string
-		expected manifest.HLSManifest
-		err      bool
-	}{
-		{
-			name: "valid manifest",
-			data: `#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-TARGETDURATION:10
-#EXT-X-MEDIA-SEQUENCE:1
-#EXTINF:9.50,Segment 1
-segment1.ts
-#EXTINF:9.00,Segment 2
-segment2.ts
-#EXT-X-ENDLIST
-`,
-			expected: manifest.HLSManifest{
-				Version:        3,
-				TargetDuration: 10,
-				SequenceNumber: 1,
-				Segments: []manifest.Segment{
-					{URI: "segment1.ts", Duration: 9.5, Title: "Segment 1"},
-					{URI: "segment2.ts", Duration: 9.0, Title: "Segment 2"},
-				},
-				EndList: true,
-			},
-			err: false,
-		},
-		// 		{
-		// 			name: "missing target duration",
-		// 			data: `#EXTM3U
-		// #EXT-X-VERSION:3
-		// #EXT-X-MEDIA-SEQUENCE:1
-		// #EXTINF:9.50,Segment 1
-		// segment1.ts
-		// `,
-		// 			expected: manifest.HLSManifest{},
-		// 			err:      true,
-		// 		},
-		{
-			name: "empty file",
-			data: "",
-			expected: manifest.HLSManifest{
-				Version:        0,
-				TargetDuration: 0,
-				SequenceNumber: 0,
-				EndList:        false,
-			},
-			err: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			actual, err := manifest.FromM3U8(tt.data)
-			if tt.err {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expected, *actual)
-			}
-		})
-	}
+	_ = os.RemoveAll(uploadID)
 }

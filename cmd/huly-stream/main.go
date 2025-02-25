@@ -32,7 +32,7 @@ import (
 	tusd "github.com/tus/tusd/v2/pkg/handler"
 )
 
-const basePath = "/transcoding"
+const basePath = "/recording"
 
 func main() {
 	var ctx, cancel = signal.NotifyContext(
@@ -43,20 +43,18 @@ func main() {
 		syscall.SIGQUIT,
 	)
 	defer cancel()
-
 	ctx = log.WithLoggerFields(ctx)
 
 	var logger = log.FromContext(ctx)
 	var conf = must(config.FromEnv())
-
 	logger.Sugar().Debugf("provided config is %v", conf)
 
-	mustNoError(os.MkdirAll(conf.OutputDir, os.ModePerm))
+	logger.Sugar().Info(conf.Endpoint())
 
+	mustNoError(os.MkdirAll(conf.OutputDir, os.ModePerm))
 	if conf.PprofEnabled {
 		go pprof.ListenAndServe(ctx, "localhost:6060")
 	}
-
 	scheduler := transcoding.NewScheduler(ctx, conf)
 
 	tusComposer := tusd.NewStoreComposer()
@@ -71,10 +69,12 @@ func main() {
 		Logger:        slog.New(slog.NewTextHandler(discardTextHandler{}, nil)),
 	}))
 
-	http.Handle("/transcoding/", http.StripPrefix("/transcoding/", handler))
-	http.Handle("/transcoding", http.StripPrefix("/transcoding", handler))
+	http.Handle("/recording/", http.StripPrefix("/recording/", handler))
+	http.Handle("/recording", http.StripPrefix("/recording", handler))
 
 	go func() {
+		logger.Info("started to listen")
+		defer logger.Info("server has finished")
 		// #nosec
 		var err = http.ListenAndServe(conf.ServeURL, nil)
 		if err != nil {

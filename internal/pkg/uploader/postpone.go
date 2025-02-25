@@ -19,6 +19,7 @@ import (
 )
 
 func (u *uploader) postpone(id string, action func()) {
+	u.wg.Add(1)
 	var ctx, cancel = context.WithCancel(context.Background())
 	var startCh = time.After(u.postponeDuration)
 
@@ -28,6 +29,7 @@ func (u *uploader) postpone(id string, action func()) {
 	u.contexts.Store(id, &cancel)
 
 	go func() {
+		u.wg.Done()
 		defer cancel()
 		select {
 		case <-ctx.Done():
