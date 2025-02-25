@@ -49,11 +49,12 @@ func main() {
 	var conf = must(config.FromEnv())
 	logger.Sugar().Debugf("provided config is %v", conf)
 
+	logger.Sugar().Info(conf.Endpoint())
+
 	mustNoError(os.MkdirAll(conf.OutputDir, os.ModePerm))
 	if conf.PprofEnabled {
 		go pprof.ListenAndServe(ctx, "localhost:6060")
 	}
-
 	scheduler := transcoding.NewScheduler(ctx, conf)
 
 	tusComposer := tusd.NewStoreComposer()

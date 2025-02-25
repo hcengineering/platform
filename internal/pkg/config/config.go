@@ -54,3 +54,14 @@ func FromEnv() (*Config, error) {
 
 	return &result, nil
 }
+
+func (c *Config) Endpoint() *url.URL {
+	var scheme = "https"
+	if c.Insecure {
+		scheme = "http"
+	}
+	return &url.URL{
+		Scheme: scheme,
+		Host:   c.EndpointURL.Host,
+	}
+}

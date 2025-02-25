@@ -37,7 +37,7 @@ type DatalakeStorage struct {
 // NewDatalakeStorage creates a new datalake client
 func NewDatalakeStorage(baseURL, workspace, token string) Storage {
 	return &DatalakeStorage{
-		baseURL:   "https://" + baseURL,
+		baseURL:   baseURL,
 		token:     token,
 		workspace: workspace,
 	}

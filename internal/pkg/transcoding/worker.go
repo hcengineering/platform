@@ -113,11 +113,9 @@ func (s *Scheduler) AsConcatableUpload(upload handler.Upload) handler.Concatable
 func (w *Worker) start(ctx context.Context, options *Options) error {
 	defer w.logger.Debug("start done")
 	w.reader = w.writer.Transpile()
-
 	if err := manifest.GenerateHLSPlaylist(append(options.ScalingLevels, options.Level), options.OuputDir, options.UploadID); err != nil {
 		return err
 	}
-
 	w.wg.Add(1)
 	go func() {
 		defer w.wg.Done()

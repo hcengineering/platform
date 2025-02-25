@@ -56,8 +56,8 @@ func NewS3(ctx context.Context, endpoint string) Storage {
 	}
 
 	var s3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
-		endpoint = "https://" + endpoint
 		o.BaseEndpoint = &endpoint
+		o.UsePathStyle = true
 	})
 
 	return &S3Storage{
