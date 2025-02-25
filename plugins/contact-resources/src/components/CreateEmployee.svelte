@@ -72,7 +72,7 @@
 
       await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
       await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
-        active: false
+        active: true
       })
 
       const mail = email.trim().toLowerCase()
