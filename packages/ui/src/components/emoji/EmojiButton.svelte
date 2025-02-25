@@ -55,7 +55,7 @@
     align-items: center;
     flex-shrink: 0;
     line-height: 150%;
-    color: var(--theme-content-color);
+    border: 1px solid transparent;
 
     &:not(.preview) {
       margin: 0.125rem;
@@ -78,13 +78,16 @@
       pointer-events: none;
     }
     &:enabled:hover {
-      color: var(--theme-caption-color);
       background-color: var(--theme-popup-hover);
     }
 
     &.selected {
-      background-color: var(--theme-popup-header);
-      border: 1px solid var(--theme-popup-divider);
+      border-color: var(--button-primary-BorderColor);
+      background-color: var(--button-primary-BackgroundColor);
+
+      &:not(.disabled, :disabled):hover {
+        background-color: var(--button-primary-hover-BackgroundColor);
+      }
     }
 
     :global(.mobile-theme) & {

@@ -240,17 +240,17 @@ export const CadetGreyColor = '#95A2B3'
 /**
  * @public
  */
-export function getPlatformColor (hash: number, darkTheme: boolean): string {
+export function getPlatformColor (hash: number | number[], darkTheme: boolean): string {
   const palette = darkTheme ? darkPalette : whitePalette
-  return (palette[Math.abs(hash) % palette.length] ?? palette[0]).color
+  return (palette[Math.abs(Array.isArray(hash) ? hash[0] : hash) % palette.length] ?? palette[0]).color
 }
 
 /**
  * @public
  */
-export function getPlatformColorDef (hash: number, darkTheme: boolean): ColorDefinition {
+export function getPlatformColorDef (hash: number | number[], darkTheme: boolean): ColorDefinition {
   const palette = darkTheme ? darkPalette : whitePalette
-  return palette[Math.abs(hash) % palette.length] ?? palette[0]
+  return palette[Math.abs(Array.isArray(hash) ? hash[0] : hash) % palette.length] ?? palette[0]
 }
 
 /**

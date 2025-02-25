@@ -144,7 +144,7 @@
         : {
             fill:
               selected?.color !== undefined
-                ? getPlatformColorDef(selected?.color, $themeStore.dark).icon
+                ? getPlatformColorDef(selected?.color ?? 0, $themeStore.dark).icon
                 : getPlatformColorForTextDef(selected?.name ?? '', $themeStore.dark).icon
           }}
     {size}

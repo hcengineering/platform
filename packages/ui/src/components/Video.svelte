@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,24 +11,30 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-import type { IntlString } from '@hcengineering/platform'
-import type { AnySvelteComponent } from '../..'
-import type { Emoji } from 'emojibase'
+-->
+<script lang="ts">
+  export let src: string
+  export let name: string = ''
+  export let preload = true
 
-export type EmojiWithGroup = Emoji & { key: string }
-export type Emojis = Emoji | EmojiWithGroup
+  let video: HTMLVideoElement
+</script>
 
-export interface EmojiCategory {
-  id: string
-  label: IntlString
-  icon: AnySvelteComponent
-  categories?: string[] | string
-  emojisString?: string[]
-  emojis?: EmojiWithGroup[]
-}
+<video bind:this={video} {src} width="100%" height="100%" preload={preload ? 'auto' : 'none'} controls>
+  <track kind="captions" label={name} />
+</video>
 
-export interface EmojiHierarchy {
-  emoji: EmojiWithGroup
-  parent?: EmojiWithGroup
-}
+<style lang="scss">
+  video {
+    border-radius: inherit;
+    object-fit: contain;
+  }
+
+  video::-webkit-media-controls {
+    visibility: hidden;
+  }
+
+  video::-webkit-media-controls-enclosure {
+    visibility: visible;
+  }
+</style>

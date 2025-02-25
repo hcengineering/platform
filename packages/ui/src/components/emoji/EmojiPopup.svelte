@@ -4,6 +4,7 @@
   // Licensed under the Eclipse Public License v2.0 (SPDX: EPL-2.0).
   //
   import { createEventDispatcher, onMount, onDestroy } from 'svelte'
+  import type { Emoji } from 'emojibase'
   import {
     Label,
     Scroller,
@@ -13,7 +14,8 @@
     showPopup,
     eventToHTMLElement,
     ButtonBase,
-    closeTooltip
+    closeTooltip,
+    Spinner
   } from '../../'
   import plugin from '../../plugin'
   import {
@@ -38,6 +40,7 @@
   export let embedded = false
   export let selected: string | undefined
   export let disabled: boolean = false
+  export let kind: 'default' | 'fade' = 'fade'
 
   const dispatch = createEventDispatcher()
   closeTooltip()
@@ -58,62 +61,63 @@
     }
   ]
   let timer: any = null
+  const isMobile = $deviceInfo.isMobile
 
-  emojiCategories.forEach((em, index) => {
-    if (em.id === 'frequently-used') {
-      emojiCategories[index].emojis = getFrequentlyEmojis()
-    }
-    if (em.emojisString !== undefined && Array.isArray(em.emojisString) && em.emojis === undefined) {
-      const tempEmojis: string[] = em.emojisString
-      const emojis: EmojiWithGroup[] = []
-      tempEmojis.forEach((te) => {
-        const e = $emojiStore.find((es) => es.hexcode === te)
-        if (e !== undefined) emojis.push(e)
-      })
-      emojiCategories[index].emojis = emojis
-    }
-  })
-  let emojisCat = emojiCategories.filter(
-    (em) => em.categories !== undefined || (Array.isArray(em.emojis) && em.emojis.length > 0)
-  )
-
+  let loading: boolean = true
+  let emojisCat = emojiCategories
   let currentCategory = emojisCat[0]
+  $: emojiTabs = emojisCat
+    .map((ec) => {
+      if (ec.categories !== undefined || ec.emojisString !== undefined || ec.emojis !== undefined) {
+        return { id: ec.id, label: ec.label, icon: ec.icon }
+      } else return undefined
+    })
+    .filter((f) => f !== undefined) as EmojiCategory[]
+  $: categoryTabs = searching ? ([...searchCategory, ...emojiTabs] as EmojiCategory[]) : emojiTabs
 
-  function handleScrollToCategory (categoryId: string) {
+  function handleScrollToCategory (categoryId: string): void {
     if (searching && categoryId !== searchCategory[0].id) $searchEmoji = ''
-
-    setTimeout(() => {
-      const labelElement = document.getElementById(categoryId)
-      if (labelElement) {
-        const emojisElement = labelElement.nextElementSibling as HTMLElement
-        scrollElement.scroll(0, emojisElement.offsetTop - $deviceInfo.fontSize * 1.75)
-      }
-    }, 0)
+    if (isMobile) {
+      const tempCat = emojiTabs.find((ct) => ct?.id === categoryId)
+      if (tempCat === undefined) return
+      currentCategory = tempCat
+      outputGroups = updateGroups(searching, emojisCat)
+    } else {
+      setTimeout(() => {
+        const labelElement = document.getElementById(categoryId)
+        if (labelElement) {
+          const emojisElement = labelElement.nextElementSibling as HTMLElement
+          scrollElement.scroll(0, emojisElement.offsetTop - $deviceInfo.fontSize * 1.75)
+        }
+      })
+    }
   }
 
-  function handleCategoryScrolled () {
+  function handleCategoryScrolled (): void {
+    if (isMobile) return
     const selectedCategory = emojisCat.find((category) => {
       const labelElement = document.getElementById(category.id)
-
-      if (!labelElement) {
-        return false
-      }
-
+      if (labelElement == null) return false
       const emojisElement = labelElement.nextElementSibling as HTMLElement
 
       return emojisElement.offsetTop + emojisElement.offsetHeight - emojiRowHeightPx > scrollElement.scrollTop
     })
+    if (selectedCategory !== undefined) currentCategory = selectedCategory
+  }
 
-    if (selectedCategory) {
-      currentCategory = selectedCategory
-    }
+  const sendEmoji = (emoji: Emoji | EmojiWithGroup): void => {
+    selected = emoji.emoji
+    addFrequentlyEmojis(emoji.hexcode)
+    dispatch('close', {
+      emoji: emoji.emoji,
+      codes: emoji.hexcode.split('-').map((hc) => parseInt(hc, 16))
+    })
   }
 
   const selectedEmoji = (event: CustomEvent<{ detail: EmojiWithGroup }>): void => {
     if (event.detail === undefined || typeof event.detail !== 'object') return
     const detail = event.detail as unknown as EmojiWithGroup
-    addFrequentlyEmojis(detail.hexcode)
-    dispatch('close', detail.emoji)
+    sendEmoji(detail)
   }
 
   function openContextMenu (event: TouchEvent | MouseEvent, _emoji: EmojiWithGroup, remove: boolean): void {
@@ -124,20 +128,27 @@
 
     clearTimer()
     shownContext = true
-    showPopup(ActionsPopup, { emoji, remove }, eventToHTMLElement(event), (result) => {
-      if (result === 'remove') {
-        removeFrequentlyEmojis(emoji.hexcode)
-        const index = emojisCat.findIndex((ec) => ec.id === 'frequently-used')
-        if (index > -1) emojisCat[index].emojis = getFrequentlyEmojis()
-        emojisCat = emojisCat.filter(
-          (em) => em.categories !== undefined || (Array.isArray(em.emojis) && em.emojis.length > 0)
-        )
-      } else if (result !== undefined) {
-        addFrequentlyEmojis(result.hexcode)
-        dispatch('close', result.emoji)
+    showPopup(
+      ActionsPopup,
+      { emoji, remove },
+      eventToHTMLElement(event),
+      (result: 'remove' | Emoji | EmojiWithGroup) => {
+        if (result === 'remove') {
+          removeFrequentlyEmojis(emoji.hexcode)
+          const index = emojisCat.findIndex((ec) => ec.id === 'frequently-used')
+          if (index > -1) emojisCat[index].emojis = getFrequentlyEmojis()
+          emojisCat = emojisCat.filter(
+            (em) => em.categories !== undefined || (Array.isArray(em.emojis) && em.emojis.length > 0)
+          )
+          if (currentCategory.emojis?.length === 0) {
+            currentCategory = emojisCat.find((ec) => ec.emojis !== undefined && ec.emojis.length > 0) ?? emojisCat[0]
+          }
+        } else if (result !== undefined) {
+          sendEmoji(result)
+        }
+        shownContext = false
       }
-      shownContext = false
-    })
+    )
   }
   function handleContextMenu (event: MouseEvent, emoji: EmojiWithGroup, remove: boolean): void {
     event.preventDefault()
@@ -174,41 +185,71 @@
     })
   }
 
-  let hidden: boolean = false
+  let hidden: boolean = true
   const checkScroll = (event: Event): void => {
     if (timer != null) clearTimer()
     const target = event.target as HTMLElement
     if (target == null) return
     hidden = target.scrollHeight - target.scrollTop - target.clientHeight < 5
   }
+
+  const initEmoji = (): void => {
+    emojiCategories.forEach((em, index) => {
+      if (em.id === 'frequently-used') {
+        emojiCategories[index].emojis = getFrequentlyEmojis()
+      }
+      if (em.emojisString !== undefined && Array.isArray(em.emojisString) && em.emojis === undefined) {
+        const tempEmojis: string[] = em.emojisString
+        const emojis: EmojiWithGroup[] = []
+        tempEmojis.forEach((te) => {
+          const e = $emojiStore.find((es) => es.hexcode === te)
+          if (e !== undefined) emojis.push(e)
+        })
+        emojiCategories[index].emojis = emojis
+      }
+    })
+    emojisCat = emojiCategories.filter(
+      (em) => em.categories !== undefined || (Array.isArray(em.emojis) && em.emojis.length > 0)
+    )
+    currentCategory = emojisCat.find((ec) => ec.emojis !== undefined) ?? emojisCat[0]
+    loading = false
+  }
+
   onMount(() => {
     if (scrollElement !== undefined) scrollElement.addEventListener('scroll', checkScroll)
+    setTimeout(initEmoji)
   })
   onDestroy(() => {
     if (scrollElement !== undefined) scrollElement.removeEventListener('scroll', checkScroll)
   })
+
+  const updateGroups = (s: boolean, ec: EmojiCategory[]): EmojiCategory[] => {
+    return s ? searchCategory : isMobile ? ec.filter((e) => e.id === currentCategory.id) : ec
+  }
+  $: outputGroups = updateGroups(searching, emojisCat)
 </script>
 
-<div class="hulyPopupEmoji-container" class:embedded>
+<div class="hulyPopupEmoji-container kind-{kind}" class:embedded class:loading>
   <div class="hulyPopupEmoji-header__tabs-wrapper">
     <div class="hulyPopupEmoji-header__tabs">
-      {#each searching ? searchCategory.concat(emojisCat) : emojisCat as category}
+      {#each categoryTabs as category (category.id)}
         <button
           class="hulyPopupEmoji-header__tab"
           class:selected={(searching && searchCategory[0].id === category.id) ||
             (!searching && currentCategory.id === category.id)}
+          disabled={loading}
+          data-id={category.id}
           use:tooltip={{ label: category.label }}
           on:click={() => {
             handleScrollToCategory(category.id)
           }}
         >
-          <svelte:component this={category.icon} size={$deviceInfo.isMobile ? 'large' : 'x-large'} />
+          <svelte:component this={category.icon} size={isMobile ? 'large' : 'x-large'} />
         </button>
       {/each}
       <div
         style:left={`${
-          (searching ? 0 : emojisCat.findIndex((ec) => ec.id === currentCategory.id)) *
-          ($deviceInfo.isMobile ? 2 : 2.25)
+          (searching ? 0 : emojisCat.findIndex((ec) => ec.id === currentCategory.id)) * (isMobile ? 1.875 : 2.125)
         }rem`}
         class="hulyPopupEmoji-header__tab-cursor"
       />
@@ -239,38 +280,43 @@
     </ButtonBase>
   </div>
   <Scroller bind:divScroll={scrollElement} checkForHeaders noStretch on:scrolledCategories={handleCategoryScrolled}>
-    {#each searching ? searchCategory : emojisCat as group}
-      {@const canRemove = group.id === 'frequently-used'}
-      {@const emojisGroup = searching
-        ? $resultEmojis
-        : Array.isArray(group.emojis)
-          ? group.emojis
-          : $resultEmojis.filter((re) => re.key === group.id)}
-      <div class="hulyPopupEmoji-group">
-        <div id={group.id} class="hulyPopupEmoji-group__header categoryHeader">
-          <Label label={searching && $resultEmojis.length === 0 ? plugin.string.NoResults : group.label} />
+    {#if loading}
+      <div class="flex-center w-full h-full min-h-full clear-mins flex-grow"><Spinner /></div>
+    {:else}
+      {#each outputGroups as group (group.id)}
+        {@const canRemove = group.id === 'frequently-used'}
+        {@const emojisGroup = searching
+          ? $resultEmojis
+          : Array.isArray(group.emojis)
+            ? group.emojis
+            : $resultEmojis.filter((re) => re.key === group.id)}
+        <div class="hulyPopupEmoji-group">
+          <div id={group.id} class="hulyPopupEmoji-group__header categoryHeader">
+            <Label label={searching && $resultEmojis.length === 0 ? plugin.string.NoResults : group.label} />
+          </div>
+          <div class="hulyPopupEmoji-group__palette">
+            {#each emojisGroup as emoji}
+              <EmojiButton
+                {emoji}
+                selected={emoji.emoji === selected}
+                {disabled}
+                {skinTone}
+                on:select={selectedEmoji}
+                on:touchstart={(event) => {
+                  clampedContextMenu(event, emoji, canRemove)
+                }}
+                on:contextmenu={(event) => {
+                  handleContextMenu(event, emoji, canRemove)
+                }}
+              />
+            {/each}
+            <div class="clear-mins flex-grow" />
+          </div>
         </div>
-        <div class="hulyPopupEmoji-group__palette">
-          {#each emojisGroup as emoji}
-            <EmojiButton
-              {emoji}
-              selected={emoji.emoji === selected}
-              {disabled}
-              {skinTone}
-              on:select={selectedEmoji}
-              on:touchstart={(event) => {
-                clampedContextMenu(event, emoji, canRemove)
-              }}
-              on:contextmenu={(event) => {
-                handleContextMenu(event, emoji, canRemove)
-              }}
-            />
-          {/each}
-        </div>
-      </div>
-    {/each}
+      {/each}
+    {/if}
   </Scroller>
-  {#if !hidden}<div class="hulyPopupEmoji-footer" />{/if}
+  {#if !hidden && kind === 'fade'}<div class="hulyPopupEmoji-footer" />{/if}
 </div>
 
 <style lang="scss">
@@ -282,14 +328,21 @@
     padding-bottom: 0.75rem;
     width: 100%;
     height: 100%;
-    min-height: 0;
     min-width: 0;
+    min-height: 28.5rem;
+    max-height: 28.5rem;
     user-select: none;
 
+    :global(.mobile-theme) & {
+      min-width: 0;
+      max-width: calc(100vw - 2rem);
+      min-height: 0;
+      max-height: calc(100% - 4rem);
+    }
+
     &:not(.embedded) {
-      max-width: 28.625rem;
-      min-height: 28.5rem;
-      max-height: 28.5rem;
+      min-width: 25.5rem;
+      max-width: 25.5rem;
       background: var(--theme-popup-color); // var(--global-popover-BackgroundColor);
       border: 1px solid var(--theme-popup-divider); // var(--global-popover-BorderColor);
       border-radius: var(--small-BorderRadius);
@@ -297,13 +350,8 @@
         var(--global-popover-ShadowSpread) var(--global-popover-ShadowColor);
 
       :global(.mobile-theme) & {
-        max-width: calc(100vw - 2rem);
-        max-height: calc(100vw - 2rem);
-
-        .hulyPopupEmoji-header__tabs-wrapper {
-          overflow-x: auto;
-          min-width: 0;
-        }
+        max-width: 100%;
+        max-height: 100%;
       }
     }
 
@@ -319,14 +367,14 @@
     }
 
     .hulyPopupEmoji-header__tabs-wrapper {
-      width: 100%;
+      overflow-x: auto;
       padding: 0.25rem 0.75rem;
+      width: 100%;
       border-bottom: 1px solid var(--theme-popup-divider);
     }
     .hulyPopupEmoji-header__tabs {
       position: relative;
-      gap: 0.25rem;
-      margin: 0.25rem 0;
+      gap: 0.125rem;
       width: 100%;
     }
     .hulyPopupEmoji-header__tab {
@@ -334,8 +382,13 @@
       width: 2rem;
       height: 2rem;
       color: var(--theme-halfcontent-color);
-      transition: color 0.1s linear;
+      transition: color 0.15s ease-in;
+      transition: left 0.15s ease-in;
 
+      &:disabled,
+      &.disabled {
+        color: var(--theme-darker-color);
+      }
       :global(.mobile-theme) & {
         width: 1.75rem;
         height: 1.75rem;
@@ -345,24 +398,26 @@
         transition: transform 0.15s ease-in-out;
       }
 
-      &.selected {
-        color: var(--theme-caption-color);
+      &:not(:disabled, .disabled) {
+        &.selected {
+          color: var(--theme-caption-color);
 
-        :global(svg) {
-          transform: scale(1);
+          :global(svg) {
+            transform: scale(1);
+          }
         }
-      }
-      &:enabled:hover {
-        color: var(--theme-content-color);
+        &:hover {
+          color: var(--theme-content-color);
+        }
       }
     }
     .hulyPopupEmoji-header__tab-cursor {
       position: absolute;
-      bottom: calc(-0.5rem - 1px);
+      bottom: -0.25rem;
       width: 2rem;
-      height: 0.25rem;
-      background-color: var(--global-focus-BorderColor);
-      transition: left 0.15s ease-in-out;
+      height: 0.125rem;
+      background-color: var(--theme-tablist-plain-color);
+      transition: left 0.15s ease-in;
 
       :global(.mobile-theme) & {
         width: 1.75rem;
@@ -412,9 +467,10 @@
       }
       &__palette {
         display: flex;
+        justify-content: space-between;
         flex-wrap: wrap;
         flex-shrink: 0;
-        margin-left: 0.75rem;
+        margin-inline: 0.75rem;
         font-size: 1.25rem;
       }
     }
@@ -432,6 +488,25 @@
       transform: translateX(-50%) rotate(180deg);
       z-index: 1;
       pointer-events: none;
+    }
+
+    &.kind-default {
+      .hulyPopupEmoji-group__header {
+        background: var(--theme-popup-header);
+
+        &::before {
+          content: none;
+        }
+      }
+    }
+
+    &.loading {
+      .hulyPopupEmoji-header__tab {
+        color: var(--theme-trans-color);
+      }
+      :global(.scroll) {
+        justify-content: center;
+      }
     }
   }
 </style>
