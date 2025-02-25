@@ -74,7 +74,6 @@ export function parseRecurrenceStrings (recurrenceStrings: string[]): ReccuringD
       }
     }
   }
-  console.log('parseRecurrenceStrings', recurrenceStrings, JSON.stringify(res))
   return res
 }
 

@@ -14,9 +14,12 @@ export class WatchClient {
   private readonly calendar: calendar_v3.Calendar
   private readonly user: Token
   private me: string = ''
-  readonly rateLimiter = new RateLimiter(1000, 500)
 
-  private constructor (mongo: Db, token: Token) {
+  private constructor (
+    mongo: Db,
+    token: Token,
+    private readonly rateLimiter: RateLimiter
+  ) {
     this.user = token
     this.watches = mongo.collection<WatchBase>('watch')
     const credentials = JSON.parse(config.Credentials)
@@ -25,8 +28,8 @@ export class WatchClient {
     this.calendar = google.calendar({ version: 'v3', auth: this.oAuth2Client })
   }
 
-  static async Create (mongo: Db, token: Token): Promise<WatchClient> {
-    const watchClient = new WatchClient(mongo, token)
+  static async Create (mongo: Db, token: Token, rateLimiter: RateLimiter): Promise<WatchClient> {
+    const watchClient = new WatchClient(mongo, token, rateLimiter)
     await watchClient.init(token)
     return watchClient
   }
@@ -82,8 +85,7 @@ export class WatchClient {
       await this.rateLimiter.take(1)
       const res = await this.calendar.calendarList.watch({ requestBody: body })
       if (res.data.expiration != null && res.data.resourceId !== null) {
-        // eslint-disable-next-line
-        this.watches.updateOne(
+        await this.watches.updateOne(
           {
             userId: current.userId,
             workspace: current.workspace,
@@ -116,8 +118,7 @@ export class WatchClient {
       await this.rateLimiter.take(1)
       const res = await this.calendar.events.watch({ calendarId: current.calendarId, requestBody: body })
       if (res.data.expiration != null && res.data.resourceId != null) {
-        // eslint-disable-next-line
-        this.watches.updateOne(
+        await this.watches.updateOne(
           {
             userId: current.userId,
             workspace: current.workspace,
@@ -142,6 +143,7 @@ export class WatchClient {
 export class WatchController {
   private readonly watches: Collection<Watch>
   private readonly tokens: Collection<Token>
+  readonly rateLimiter = new RateLimiter(1000, 500)
 
   private timer: NodeJS.Timeout | undefined = undefined
   protected static _instance: WatchController
@@ -149,7 +151,6 @@ export class WatchController {
   private constructor (private readonly mongo: Db) {
     this.watches = mongo.collection<WatchBase>('watch')
     this.tokens = mongo.collection<Token>('tokens')
-    console.log('watch started')
   }
 
   static get (mongo: Db): WatchController {
@@ -164,7 +165,7 @@ export class WatchController {
     await this.watches.deleteMany({ userId: user.userId, workspae: user.workspace })
     const token = this.tokens.findOne({ user: user.userId, workspace: user.workspace })
     if (token == null) return
-    const watchClient = await WatchClient.Create(this.mongo, user)
+    const watchClient = await WatchClient.Create(this.mongo, user, this.rateLimiter)
     await watchClient.unsubscribe(allWatches)
   }
 
@@ -221,7 +222,7 @@ export class WatchController {
           await this.watches.deleteMany({ userId, workspace })
           continue
         }
-        const watchClient = await WatchClient.Create(this.mongo, token)
+        const watchClient = await WatchClient.Create(this.mongo, token, this.rateLimiter)
         await watchClient.subscribe(group)
       } catch {}
     }

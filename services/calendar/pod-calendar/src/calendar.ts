@@ -52,8 +52,8 @@ export class CalendarClient {
   private readonly systemTxOp: TxOperations
   private readonly activeSync: Record<string, boolean> = {}
   private readonly dummyWatches: DummyWatch[] = []
-  // to do< find!!!!
-  private readonly googleClient
+  private readonly googleClient: GoogleClient
+  private stayAlive: boolean
 
   private inactiveTimer: NodeJS.Timeout
 
@@ -63,8 +63,10 @@ export class CalendarClient {
     private readonly user: User,
     private readonly mongo: Db,
     client: Client,
-    private readonly workspace: WorkspaceClient
+    private readonly workspace: WorkspaceClient,
+    stayAlive: boolean = false
   ) {
+    this.stayAlive = stayAlive
     this.client = new TxOperations(client, this.user.userId)
     this.systemTxOp = new TxOperations(client, core.account.System)
     this.googleClient = new GoogleClient(user, mongo, this)
@@ -92,16 +94,17 @@ export class CalendarClient {
     clearTimeout(this.inactiveTimer)
     this.inactiveTimer = setTimeout(() => {
       this.closeByTimer()
-    }, 60 * 1000)
+    }, 30 * 1000)
   }
 
   static async create (
     user: User | Token,
     mongo: Db,
     client: Client,
-    workspace: WorkspaceClient
+    workspace: WorkspaceClient,
+    stayAlive: boolean = false
   ): Promise<CalendarClient> {
-    const calendarClient = new CalendarClient(user, mongo, client, workspace)
+    const calendarClient = new CalendarClient(user, mongo, client, workspace, stayAlive)
     if (isToken(user)) {
       await calendarClient.googleClient.init(user)
       calendarClient.updateTimer()
@@ -109,10 +112,23 @@ export class CalendarClient {
     return calendarClient
   }
 
+  async release (): Promise<void> {
+    this.stayAlive = false
+    this.updateTimer()
+  }
+
   async authorize (code: string): Promise<string> {
     this.updateTimer()
     const me = await this.googleClient.authorize(code)
     if (me === undefined) {
+      const alreadyExistsIntegration = await this.client.findOne(setting.class.Integration, {
+        type: calendar.integrationType.Calendar,
+        disabled: false,
+        value: me
+      })
+      if (alreadyExistsIntegration !== undefined) {
+        throw new Error('Client already exist')
+      }
       const integrations = await this.client.findAll(setting.class.Integration, {
         createdBy: this.user.userId,
         type: calendar.integrationType.Calendar
@@ -215,6 +231,11 @@ export class CalendarClient {
   }
 
   private closeByTimer (): void {
+    if (this.stayAlive) {
+      console.log("Couldn't close calendar client, stay alive", this.user.workspace, this.user.userId)
+      this.updateTimer()
+      return
+    }
     this.close()
     this.workspace.removeClient(this.user.email)
   }
@@ -429,13 +450,14 @@ export class CalendarClient {
       if (res.data.nextSyncToken != null) {
         await this.setEventHistoryId(calendarId, res.data.nextSyncToken)
       }
+      // if resync
     } catch (err: any) {
       if (err?.response?.status === 410) {
         await this.eventsSync(calendarId)
         return
       }
       await this.googleClient.checkError(err)
-      console.error('Event sync error', this.user.workspace, this.user.userId, err)
+      console.error('Event sync error', this.user.workspace, this.user.userId, err.message)
     }
   }
 
@@ -820,8 +842,7 @@ export class CalendarClient {
       }
     } catch (err: any) {
       await this.googleClient.checkError(err)
-      // eslint-disable-next-line
-      throw new Error(`Create event error, ${this.user.workspace}, ${this.user.userId}, ${event._id}, ${err?.message}`)
+      console.error(`Create event error, ${this.user.workspace}, ${this.user.userId}, ${event._id}, ${err?.message}`)
     }
   }
 
@@ -836,12 +857,14 @@ export class CalendarClient {
         if (current?.data !== undefined) {
           if (current.data.organizer?.self === true) {
             const ev = this.applyUpdate(current.data, event, me)
-            await this.googleClient.rateLimiter.take(1)
-            await this.calendar.events.update({
-              calendarId,
-              eventId: event.eventId,
-              requestBody: ev
-            })
+            if (ev !== undefined) {
+              await this.googleClient.rateLimiter.take(1)
+              await this.calendar.events.update({
+                calendarId,
+                eventId: event.eventId,
+                requestBody: ev
+              })
+            }
           }
         }
       } catch (err: any) {
@@ -875,8 +898,8 @@ export class CalendarClient {
       if (_calendar !== undefined) {
         await this.remove(event.eventId, _calendar.externalId)
       }
-    } catch (err) {
-      console.error('Remove event error', this.user.workspace, this.user.userId, err)
+    } catch (err: any) {
+      console.error('Remove event error', this.user.workspace, this.user.userId, err.message)
     }
   }
 
@@ -935,12 +958,14 @@ export class CalendarClient {
         const current = await this.calendar.events.get({ calendarId, eventId: event.eventId })
         if (current !== undefined) {
           const ev = this.applyUpdate(current.data, event, me)
-          await this.googleClient.rateLimiter.take(1)
-          await this.calendar.events.update({
-            calendarId,
-            eventId: event.eventId,
-            requestBody: ev
-          })
+          if (ev !== undefined) {
+            await this.googleClient.rateLimiter.take(1)
+            await this.calendar.events.update({
+              calendarId,
+              eventId: event.eventId,
+              requestBody: ev
+            })
+          }
         }
         return true
       } catch (err: any) {
@@ -1033,46 +1058,69 @@ export class CalendarClient {
     return res
   }
 
-  private applyUpdate (event: calendar_v3.Schema$Event, current: Event, me: string): calendar_v3.Schema$Event {
+  private applyUpdate (
+    event: calendar_v3.Schema$Event,
+    current: Event,
+    me: string
+  ): calendar_v3.Schema$Event | undefined {
+    let res: boolean = false
     if (current.title !== event.summary) {
       event.summary = current.title
+      res = true
     }
     if (current.visibility !== undefined) {
       const newVisibility = current.visibility === 'public' ? 'public' : 'private'
       if (newVisibility !== event.visibility) {
         event.visibility = newVisibility
+        res = true
       }
-      if (current.visibility === 'freeBusy') {
+      if (current.visibility === 'freeBusy' && event?.extendedProperties?.private?.visibility !== 'freeBusy') {
         event.extendedProperties = {
           ...event.extendedProperties,
           private: {
             visibility: 'freeBusy'
           }
         }
+        res = true
       }
     }
     const description = htmlToMarkup(event.description ?? '')
     if (current.description !== description) {
+      res = true
       event.description = description
     }
     if (current.location !== event.location) {
+      res = true
       event.location = current.location
     }
     const attendees = this.getAttendees(current, me)
     if (attendees.length > 0 && event.attendees !== undefined) {
       for (const attendee of attendees) {
         if (event.attendees.findIndex((p) => p.email === attendee) === -1) {
+          res = true
           event.attendees.push({ email: attendee })
         }
       }
     }
-    event.start = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
-    event.end = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
+    const newStart = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
+    if (!deepEqual(newStart, event.start)) {
+      res = true
+      event.start = newStart
+    }
+    const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
+    if (!deepEqual(newEnd, event.end)) {
+      res = true
+      event.end = newEnd
+    }
     if (current._class === calendar.class.ReccuringEvent) {
       const rec = current as ReccuringEvent
-      event.recurrence = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
+      const newRec = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
+      if (!deepEqual(newRec, event.recurrence)) {
+        res = true
+        event.recurrence = newRec
+      }
     }
-    return event
+    return res ? event : undefined
   }
 
   private getAttendees (event: Event, me: string): string[] {
