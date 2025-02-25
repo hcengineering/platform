@@ -444,7 +444,7 @@
       <Button
         icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? tracker.icon.Home}
         iconProps={icon === view.ids.IconWithEmoji
-          ? { icon: color }
+          ? { icon: color, size: 'medium' }
           : {
               fill:
                 color !== undefined

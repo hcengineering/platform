@@ -25,7 +25,7 @@
       {@const label = skinTones.get(index)}
       <button
         class="hulyPopup-row withKeys"
-        {disabled}
+        class:noHover={disabled}
         on:click={() => {
           if (disabled) return undefined
           dispatch('close', index)

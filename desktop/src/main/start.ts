@@ -14,7 +14,7 @@
 //
 
 import { config as dotenvConfig } from 'dotenv'
-import { BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, shell, systemPreferences } from 'electron'
+import { BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, session, shell, systemPreferences } from 'electron'
 import contextMenu from 'electron-context-menu'
 import log from 'electron-log'
 import Store from 'electron-store'
@@ -124,6 +124,38 @@ function hookOpenWindow (window: BrowserWindow): void {
   })
 }
 
+function setupCookieHandler (config: Config): void {
+  const urls = [
+    config.ACCOUNTS_URL,
+    config.ACCOUNTS_URL + '*'
+  ]
+
+  session.defaultSession.webRequest.onHeadersReceived({ urls }, handleSetCookie)
+  session.fromPartition(sessionPartition).webRequest.onHeadersReceived({ urls }, handleSetCookie)
+}
+
+function handleSetCookie (details: Electron.OnHeadersReceivedListenerDetails, callback: (headersReceivedResponse: Electron.HeadersReceivedResponse) => void): void {
+  if (details.responseHeaders !== undefined) {
+    for (const header in details.responseHeaders) {
+      if (header.toLowerCase() === 'set-cookie') {
+        const cookies = details.responseHeaders[header]
+        details.responseHeaders[header] = cookies.map((cookie) => {
+          if (!cookie.includes('SameSite=')) {
+            if (details.url.startsWith('https://') && !cookie.includes('; Secure')) {
+              cookie += '; Secure'
+            }
+            cookie += '; SameSite=None'
+          }
+          return cookie
+        })
+      }
+    }
+  }
+
+  // eslint-disable-next-line n/no-callback-literal
+  callback({ responseHeaders: { ...details.responseHeaders } })
+}
+
 function handleAuthRedirects (window: BrowserWindow): void {
   window.webContents.on('will-redirect', (event) => {
     if (event?.url.startsWith(`${FRONT_URL}/login/auth`)) {
@@ -225,6 +257,8 @@ ipcMain.on('set-title', (event, title) => {
 
 ipcMain.on('set-combined-config', (event, config: Config) => {
   log.info('Config set: ', config)
+
+  setupCookieHandler(config)
 
   const updatesUrl = process.env.DESKTOP_UPDATES_URL ?? config.DESKTOP_UPDATES_URL ?? 'https://dist.huly.io'
   const updatesChannel = process.env.DESKTOP_UPDATES_CHANNEL ?? config.DESKTOP_UPDATES_CHANNEL ?? 'huly'
