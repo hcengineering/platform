@@ -49,12 +49,17 @@ export function createModel (builder: Builder): void {
 }
 
 function createMailTag (builder: Builder): void {
-  builder.createDoc(card.class.MasterTag, core.space.Model, {
-    extends: card.class.Card,
-    label: getEmbeddedLabel(mailTag),
-    kind: ClassifierKind.CLASS,
-    icon: card.icon.MasterTag
-  }, mail.class.MailThread)
+  builder.createDoc(
+    card.class.MasterTag,
+    core.space.Model,
+    {
+      extends: card.class.Card,
+      label: getEmbeddedLabel(mailTag),
+      kind: ClassifierKind.CLASS,
+      icon: card.icon.MasterTag
+    },
+    mail.class.MailThread
+  )
   builder.mixin(mail.class.MailThread, core.class.Mixin, setting.mixin.Editable, {
     value: false
   })

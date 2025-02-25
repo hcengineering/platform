@@ -16,5 +16,4 @@ import { mergeIds } from '@hcengineering/platform'
 import { mailId } from '@hcengineering/mail'
 import mail from '@hcengineering/mail-resources/src/plugin'
 
-export default mergeIds(mailId, mail, {
-})
+export default mergeIds(mailId, mail, {})
