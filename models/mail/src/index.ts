@@ -44,19 +44,8 @@ export class TMailRoute extends TDoc implements MailRoute {
 export function createModel (builder: Builder): void {
   builder.createModel(TMailRoute)
 
-  defineMailCard(builder)
-}
-
-function defineMailCard (builder: Builder): void {
   createMailTag(builder)
-
-  builder.mixin(mail.class.MailThread, core.class.Class, view.mixin.ObjectEditor, {
-    editor: mail.component.MailThread
-  })
-
-  builder.mixin(mail.class.MailThread, core.class.Class, view.mixin.ObjectPanel, {
-    component: mail.component.MailThread
-  })
+  createMailViewlet(builder)
 }
 
 function createMailTag (builder: Builder): void {
@@ -70,10 +59,16 @@ function createMailTag (builder: Builder): void {
     value: false
   })
   builder.mixin(mail.class.MailThread, core.class.Mixin, setting.mixin.UserMixin, {})
-  createViewlet(builder)
+  builder.mixin(mail.class.MailThread, core.class.Class, view.mixin.ObjectEditor, {
+    editor: mail.component.MailThread
+  })
+
+  builder.mixin(mail.class.MailThread, core.class.Class, view.mixin.ObjectPanel, {
+    component: mail.component.MailThread
+  })
 }
 
-function createViewlet (builder: Builder): void {
+function createMailViewlet (builder: Builder): void {
   builder.createDoc<Viewlet>(
     view.class.Viewlet,
     core.space.Model,
