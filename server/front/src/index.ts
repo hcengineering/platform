@@ -178,8 +178,8 @@ async function getFile (
       etag: stat.etag,
       'last-modified': new Date(stat.modifiedOn).toISOString(),
       'cache-control': cacheControlValue,
-      Connection: 'keep-alive',
-      'Keep-Alive': 'timeout=5'
+      connection: 'keep-alive',
+      'keep-alive': 'timeout=5, max=1000'
     })
     res.end()
     return
@@ -191,8 +191,8 @@ async function getFile (
       etag: stat.etag,
       'last-modified': new Date(stat.modifiedOn).toISOString(),
       'cache-control': cacheControlValue,
-      Connection: 'keep-alive',
-      'Keep-Alive': 'timeout=5'
+      connection: 'keep-alive',
+      'keep-alive': 'timeout=5, max=1000'
     })
     res.end()
     return
@@ -211,8 +211,8 @@ async function getFile (
           Etag: stat.etag,
           'Last-Modified': new Date(stat.modifiedOn).toISOString(),
           'Cache-Control': cacheControlValue,
-          Connection: 'keep-alive',
-          'Keep-Alive': 'timeout=5'
+          connection: 'keep-alive',
+          'keep-alive': 'timeout=5, max=1000'
         })
 
         dataStream.pipe(res)
@@ -442,6 +442,7 @@ export function start (
           if (req.method === 'HEAD') {
             res.writeHead(200, {
               'accept-ranges': 'bytes',
+              connection: 'keep-alive',
               'Keep-Alive': 'timeout=5',
               'content-length': blobInfo.size,
               'content-security-policy': "default-src 'none';",

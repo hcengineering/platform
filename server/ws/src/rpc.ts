@@ -26,6 +26,7 @@ const sendError = (res: ExpressResponse, code: number, data: any): void => {
   res.writeHead(code, {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
     'keep-alive': 'timeout=5, max=1000'
   })
   res.end(JSON.stringify(data))
@@ -35,6 +36,7 @@ async function sendJson (req: Request, res: ExpressResponse, result: any): Promi
   const headers: OutgoingHttpHeaders = {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
     'keep-alive': 'timeout=5, max=1000'
   }
   let body: any = JSON.stringify(result)
@@ -173,7 +175,9 @@ function createClosingSocket (rawToken: string, rpcSessions: Map<string, RPCClie
     close: () => {
       rpcSessions.delete(rawToken)
     },
-    send: (ctx, msg, binary, compression) => {},
+    send: async (ctx, msg, binary, compression) => {},
+    isBackpressure: () => false,
+    backpressure: async (ctx) => {},
     sendPong: () => {},
     data: () => ({}),
     readRequest: (buffer, binary) => ({ method: '', params: [], id: -1, time: Date.now() }),

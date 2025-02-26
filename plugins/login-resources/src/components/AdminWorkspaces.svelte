@@ -12,13 +12,14 @@
     type BaseWorkspaceInfo
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { isAdminUser, MessageBox } from '@hcengineering/presentation'
+  import { copyTextToClipboard, isAdminUser, MessageBox } from '@hcengineering/presentation'
   import {
     Button,
     ButtonMenu,
     CheckBox,
     Expandable,
     IconArrowRight,
+    IconCopy,
     IconOpen,
     IconStart,
     IconStop,
@@ -383,14 +384,21 @@
                   <div class="flex fs-title cursor-pointer focused-button bordered" id={`${workspace.workspace}`}>
                     <div class="flex p-2">
                       <span class="label overflow-label flex-row-center" style:width={'12rem'}>
-                        {wsName}
-                        <div class="ml-1">
+                        <div class="mr-1">
                           <Button
                             icon={IconOpen}
                             size={'small'}
                             on:click={() => select(workspace.workspaceUrl ?? workspace.workspace)}
                           />
                         </div>
+                        <div class="mr-1">
+                          <Button
+                            icon={IconCopy}
+                            size={'small'}
+                            on:click={() => copyTextToClipboard(workspace.workspace)}
+                          />
+                        </div>
+                        {wsName}
                       </span>
                       <div class="ml-1" style:width={'12rem'}>
                         {workspace.createdBy}

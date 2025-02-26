@@ -91,7 +91,7 @@
         "FRONT_URL": "http://localhost:8083",
         "ACCOUNTS_URL": "http://localhost:3003",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
-        "MODEL_VERSION": "0.6.435",
+        "MODEL_VERSION": "0.6.436",
         "STATS_URL": "http://host.docker.internal:4901"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
