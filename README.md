@@ -22,13 +22,20 @@ This project offers a convenient method to host Huly using `docker`, designed fo
 
 ![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg 'Repobeats analytics image')
 
-## Table of Content
+## API Client
+
+If you want to interact with Huly programmatically, check out our [API Client](./packages/api-client/README.md) documentation. The API client provides a typed interface for all Huly operations and can be used to build integrations and custom applications.
+
+You can find API usage examples in the [Huly examples](https://github.com/hcengineering/huly-examples) repository.
+
+## Table of Contents
 
 - [Huly Platform](#huly-platform)
   - [About](#about)
   - [Self-Hosting](#self-hosting)
   - [Activity](#activity)
-  - [Table of Content](#table-of-content)
+  - [API Client](#api-client)
+  - [Table of Contents](#table-of-contents)
   - [Pre-requisites](#pre-requisites)
   - [Verification](#verification)
   - [Fast start](#fast-start)
