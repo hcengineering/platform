@@ -191,9 +191,7 @@ jobs:
           cd ./tests
           ./prepare-tests.sh
       - name: Testing...
-        run: | 
-          node common/scripts/install-run-rush.js validate --to @hcengineering/api-tests
-          node common/scripts/install-run-rush.js test
+        run: node common/scripts/install-run-rush.js test
         env:
           DB_URL: 'postgresql://postgres:example@localhost:5433'
           ELASTIC_URL: 'http://localhost:9201'
@@ -490,6 +488,7 @@ jobs:
       - name: Run API tests
         run: |
           cd ./ws-tests/api-tests
+          node common/scripts/install-run-rush.js validate --to @hcengineering/api-tests
           node ../../common/scripts/install-run-rushx.js api-test --verbose
       - name: Install Playwright
         run: |
