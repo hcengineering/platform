@@ -16,7 +16,6 @@
 import { AccountRole } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import view, { type Viewlet } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import mail from '@hcengineering/mail'
 import { mySpaceId } from '@hcengineering/my-space'
@@ -61,24 +60,5 @@ export function createModel (builder: Builder): void {
       }
     },
     mySpace.app.MySpace
-  )
-
-  builder.createDoc<Viewlet>(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: mail.class.MailThread,
-      descriptor: view.viewlet.Table,
-      config: [
-        { key: 'createdBy', label: mail.string.From, displayProps: { fixed: 'left', key: 'app' } },
-        '',
-        { key: 'modifiedOn', label: mail.string.Date, displayProps: { key: 'modified', fixed: 'right' } }
-      ],
-      configOptions: {
-        hiddenKeys: ['name'],
-        sortable: true
-      }
-    },
-    mySpace.viewlet.TableMail
   )
 }

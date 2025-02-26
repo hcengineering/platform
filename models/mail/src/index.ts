@@ -13,59 +13,57 @@
 // limitations under the License.
 //
 
-import activity from '@hcengineering/activity'
-import core, { IndexKind } from '@hcengineering/core'
-import { type Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
-import contact from '@hcengineering/model-contact'
-import view from '@hcengineering/model-view'
-import { TChunterSpace, TChatMessage } from '@hcengineering/model-chunter'
+import core, { ClassifierKind, IndexKind } from '@hcengineering/core'
+import { type Builder, Index, Model, Prop, TypeString } from '@hcengineering/model'
+import { TDoc } from '@hcengineering/model-core'
 
-import chunter from '@hcengineering/chunter'
-import mail, { type MailThread, type MailMessage } from '@hcengineering/mail'
+import view, { type Viewlet } from '@hcengineering/model-view'
+import card from '@hcengineering/card'
+import { getEmbeddedLabel } from '@hcengineering/platform'
+import setting from '@hcengineering/setting'
+
+import { type MailRoute } from '@hcengineering/mail'
+import mail from './plugin'
+
+const mailTag = 'Mail'
 
 export { mailId } from '@hcengineering/mail'
 export { default } from './plugin'
 
-@Model(mail.class.MailThread, chunter.class.ChunterSpace)
-@UX(mail.string.MailThread, contact.icon.Person, undefined, undefined, undefined, mail.string.MailThread)
-export class TMailThread extends TChunterSpace implements MailThread {
-  @Prop(TypeString(), mail.string.Subject)
-  @Index(IndexKind.FullText)
-    subject!: string
-
-  @Prop(TypeString(), mail.string.MailThreadId)
-  @Index(IndexKind.Indexed)
-    mailThreadId!: string
-
-  @Prop(TypeString(), mail.string.From)
-  @Index(IndexKind.FullText)
-    from!: string
-
-  @Prop(TypeString(), mail.string.To)
-  @Index(IndexKind.FullText)
-    to!: string
-
-  @Prop(TypeString(), mail.string.MailPreview)
-    preview!: string
-}
-
-@Model(mail.class.MailMessage, chunter.class.ChatMessage)
-@UX(mail.string.MailMessage, undefined, undefined, undefined, undefined, mail.string.MailMessages)
-export class TMailMessage extends TChatMessage implements MailMessage {
+@Model(mail.class.MailRoute, core.class.Doc)
+export class TMailRoute extends TDoc implements MailRoute {
   @Prop(TypeString(), mail.string.MailId)
   @Index(IndexKind.Indexed)
     mailId!: string
+
+  @Prop(TypeString(), mail.string.MailThreadId)
+  @Index(IndexKind.Indexed)
+    threadId!: string
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TMailThread, TMailMessage)
+  builder.createModel(TMailRoute)
 
-  builder.mixin(mail.class.MailThread, core.class.Class, activity.mixin.ActivityDoc, {})
+  createMailTag(builder)
+  createMailViewlet(builder)
+}
 
-  builder.mixin(mail.class.MailThread, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: mail.component.MailThreadPresenter
+function createMailTag (builder: Builder): void {
+  builder.createDoc(
+    card.class.MasterTag,
+    core.space.Model,
+    {
+      extends: card.class.Card,
+      label: getEmbeddedLabel(mailTag),
+      kind: ClassifierKind.CLASS,
+      icon: card.icon.MasterTag
+    },
+    mail.class.MailThread
+  )
+  builder.mixin(mail.class.MailThread, core.class.Mixin, setting.mixin.Editable, {
+    value: false
   })
-
+  builder.mixin(mail.class.MailThread, core.class.Mixin, setting.mixin.UserMixin, {})
   builder.mixin(mail.class.MailThread, core.class.Class, view.mixin.ObjectEditor, {
     editor: mail.component.MailThread
   })
@@ -73,4 +71,25 @@ export function createModel (builder: Builder): void {
   builder.mixin(mail.class.MailThread, core.class.Class, view.mixin.ObjectPanel, {
     component: mail.component.MailThread
   })
+}
+
+function createMailViewlet (builder: Builder): void {
+  builder.createDoc<Viewlet>(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: mail.class.MailThread,
+      descriptor: view.viewlet.Table,
+      config: [
+        { key: 'createdBy', displayProps: { fixed: 'left', key: 'app' } },
+        '',
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right' } }
+      ],
+      configOptions: {
+        hiddenKeys: ['name'],
+        sortable: true
+      }
+    },
+    mail.viewlet.TableMail
+  )
 }

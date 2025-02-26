@@ -13,10 +13,4 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
-import { mySpaceId } from '@hcengineering/my-space'
-import mySpace from '@hcengineering/my-space-resources/src/plugin'
-
-export default mergeIds(mySpaceId, mySpace, {
-  component: {}
-})
+export { default } from '@hcengineering/my-space-resources/src/plugin'
