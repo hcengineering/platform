@@ -381,7 +381,7 @@ export async function getAllEmployeesPrimarySocialStrings (client: Client): Prom
 export async function ensureEmployee (
   ctx: MeasureContext,
   me: Account,
-  client: Client,
+  client: Pick<Client, 'findOne' | 'findAll' | 'tx'>,
   socialIds: SocialId[],
   getGlobalPerson: () => Promise<GlobalPerson | undefined>
 ): Promise<Ref<Employee> | null> {
@@ -441,7 +441,7 @@ export async function ensureEmployee (
 
     if (
       employee === undefined ||
-      !client.getHierarchy().hasMixin(employee, contact.mixin.Employee) ||
+      !Hierarchy.hasMixin(employee, contact.mixin.Employee) ||
       !employee.active
     ) {
       await ctx.with('create-employee', {}, async () => {

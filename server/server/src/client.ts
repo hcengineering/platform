@@ -23,12 +23,14 @@ import {
   type Domain,
   type FindOptions,
   type FindResult,
+  type LoadModelResponse,
   type MeasureContext,
   type PersonId,
   type PersonUuid,
   type Ref,
   type SearchOptions,
   type SearchQuery,
+  type SearchResult,
   type SessionData,
   type Timestamp,
   type Tx,
@@ -115,6 +117,11 @@ export class ClientSession implements Session {
     await ctx.sendResponse(ctx.requestId, result)
   }
 
+  async loadModelRaw (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<LoadModelResponse | Tx[]> {
+    this.includeSessionContext(ctx)
+    return await ctx.ctx.with('load-model', {}, (_ctx) => ctx.pipeline.loadModel(_ctx, lastModelTx, hash))
+  }
+
   includeSessionContext (ctx: ClientSessionCtx): void {
     const dataId = this.workspace.workspaceDataId ?? (this.workspace.workspaceUuid as unknown as WorkspaceDataId)
     const contextData = new SessionDataImpl(
@@ -163,6 +170,12 @@ export class ClientSession implements Session {
     this.lastRequest = Date.now()
     this.includeSessionContext(ctx)
     await ctx.sendResponse(ctx.requestId, await ctx.pipeline.searchFulltext(ctx.ctx, query, options))
+  }
+
+  async searchFulltextRaw (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    this.lastRequest = Date.now()
+    this.includeSessionContext(ctx)
+    return await ctx.pipeline.searchFulltext(ctx.ctx, query, options)
   }
 
   async txRaw (
