@@ -25,7 +25,8 @@ import {
   type WorkspaceMemberInfo,
   WorkspaceMode,
   concatLink,
-  type WorkspaceUserOperation
+  type WorkspaceUserOperation,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, RegionInfo, WorkspaceOperation } from './types'
@@ -70,6 +71,7 @@ export interface AccountClient {
   ) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
   getWorkspaceInfo: (updateLastVisit?: boolean) => Promise<WorkspaceInfoWithStatus>
+  getWorkspacesInfo: (workspaces: WorkspaceUuid[]) => Promise<WorkspaceInfoWithStatus[]>
   getRegionInfo: () => Promise<RegionInfo[]>
   createWorkspace: (name: string, region?: string) => Promise<WorkspaceLoginInfo>
   signUpOtp: (email: string, first: string, last: string) => Promise<OtpInfo>
@@ -357,6 +359,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'checkJoin' as const,
       params: { inviteId }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async getWorkspacesInfo (ids: WorkspaceUuid[]): Promise<WorkspaceInfoWithStatus[]> {
+    const request = {
+      method: 'getWorkspacesInfo' as const,
+      params: { ids }
     }
 
     return await this.rpc(request)
