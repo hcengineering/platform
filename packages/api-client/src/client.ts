@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import client, { clientId } from '@hcengineering/client'
 import {
   type Account,
   type Class,
@@ -26,18 +27,17 @@ import {
   type ModelDb,
   type Ref,
   type Space,
-  type WithLookup,
   type TxResult,
-  DocumentUpdate,
-  TxOperations,
-  AttachedDoc,
+  type WithLookup,
   AttachedData,
+  AttachedDoc,
+  DocumentUpdate,
   Mixin,
-  MixinUpdate,
   MixinData,
+  MixinUpdate,
+  TxOperations,
   generateId
 } from '@hcengineering/core'
-import client, { clientId } from '@hcengineering/client'
 import { addLocation, getResource } from '@hcengineering/platform'
 
 import { login, selectWorkspace } from './account'
@@ -49,7 +49,7 @@ import {
   MarkupContent,
   createMarkupOperations
 } from './markup'
-import { type PlatformClient, type ConnectOptions, WithMarkup } from './types'
+import { type ConnectOptions, type PlatformClient, WithMarkup } from './types'
 
 /**
  * Create platform client
@@ -278,11 +278,17 @@ class PlatformClientImpl implements PlatformClient {
   }
 }
 
-async function getWorkspaceToken (
+export interface WorkspaceToken {
+  endpoint: string
+  token: string
+  workspaceId: string
+}
+
+export async function getWorkspaceToken (
   url: string,
   options: ConnectOptions,
   config?: ServerConfig
-): Promise<{ endpoint: string, token: string, workspaceId: string }> {
+): Promise<WorkspaceToken> {
   config ??= await loadServerConfig(url)
 
   let token: string

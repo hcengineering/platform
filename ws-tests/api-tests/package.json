@@ -1,6 +1,6 @@
 {
-  "name": "@hcengineering/server-ws",
-  "version": "0.6.11",
+  "name": "@hcengineering/api-tests",
+  "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -10,10 +10,11 @@
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
-    "test": "jest --passWithNoTests --silent --forceExit",
+    "test": "echo 'run api-test' for API-tests",
+    "api-test": "jest --passWithNoTests --silent --forceExit",
     "format": "format src",
     "_phase:build": "compile transpile src",
-    "_phase:test": "jest --passWithNoTests --silent --forceExit",
+    "_phase:test": "echo 'run api-test' for API-tests",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },
@@ -44,17 +45,15 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/rpc": "^0.6.5",
-    "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/server": "^0.6.4",
     "bufferutil": "^4.0.8",
-    "cors": "^2.8.5",
-    "express": "^4.21.2",
     "utf-8-validate": "^6.0.4",
     "ws": "^8.18.0",
-    "body-parser": "^1.20.2",
-    "snappy": "^7.2.2",
+    "snappyjs": "^0.7.0",
     "@hcengineering/api-client": "^0.6.0",
-    "morgan": "^1.10.0"
+    "@hcengineering/tracker": "^0.6.24",
+    "@hcengineering/task": "^0.6.20",
+    "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/chunter": "^0.6.20"
   }
 }

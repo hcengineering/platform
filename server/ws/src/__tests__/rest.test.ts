@@ -15,7 +15,7 @@
 
 import { generateToken } from '@hcengineering/server-token'
 
-import { createRestClient, type RestClient } from '@hcengineering/api-client'
+import { createRestClient, createRestTxOperations, type RestClient } from '@hcengineering/api-client'
 import core, {
   generateId,
   getWorkspaceId,
@@ -34,12 +34,13 @@ import core, {
   type Space,
   type Tx,
   type TxCreateDoc,
+  type TxOperations,
   type TxResult
 } from '@hcengineering/core'
 import { ClientSession, startSessionManager, type TSessionManager } from '@hcengineering/server'
 import { createDummyStorageAdapter, type SessionManager, type WorkspaceLoginInfo } from '@hcengineering/server-core'
 import { startHttpServer } from '../server_http'
-import { genMinModel } from './minmodel'
+import { genMinModel, test } from './minmodel'
 
 describe('rest-server', () => {
   async function getModelDb (): Promise<{ modelDb: ModelDb, hierarchy: Hierarchy, txes: Tx[] }> {
@@ -57,7 +58,7 @@ describe('rest-server', () => {
 
   let shutdown: () => Promise<void>
   let sessionManager: SessionManager
-  const port: number = 3330
+  const port: number = 11000
 
   beforeAll(async () => {
     ;({ shutdown, sessionManager } = startSessionManager(new MeasureMetricsContext('test', {}), {
@@ -153,6 +154,11 @@ describe('rest-server', () => {
     return await createRestClient(`http://localhost:${port}`, 'test-ws', token)
   }
 
+  async function connectTx (): Promise<TxOperations> {
+    const token: string = generateToken('user1@site.com', getWorkspaceId('test-ws'))
+    return await createRestTxOperations(`http://localhost:${port}`, 'test-ws', token)
+  }
+
   it('get account', async () => {
     const conn = await connect()
     const account = await conn.getAccount()
@@ -221,5 +227,14 @@ describe('rest-server', () => {
     await conn.tx(tx)
     const spaces = await conn.findAll(core.class.Space, {})
     expect(spaces.length).toBe(3)
+  })
+
+  it('check-model-operations', async () => {
+    const conn = await connectTx()
+    const h = conn.getHierarchy()
+    const domains = h.domains()
+    expect(domains.length).toBe(2)
+
+    expect(h.isDerived(test.class.TestComment, core.class.AttachedDoc)).toBe(true)
   })
 })

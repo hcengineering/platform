@@ -30,6 +30,8 @@ export function createMongoDestroyAdapter (url: string): WorkspaceDestroyAdapter
           const db = getWorkspaceMongoDB(dbClient, workspace)
           await db.dropDatabase()
         })
+      } catch (err) {
+        console.error('Failed to delete workspace', err)
       } finally {
         client.close()
       }

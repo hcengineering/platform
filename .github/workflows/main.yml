@@ -485,6 +485,11 @@ jobs:
           cd ./ws-tests
           export DO_CLEAN=true
           ./prepare.sh
+      - name: Run API tests
+        run: |
+          cd ./ws-tests/api-tests
+          node ../../common/scripts/install-run-rush.js validate --to @hcengineering/api-tests
+          node ../../common/scripts/install-run-rushx.js api-test --verbose
       - name: Install Playwright
         run: |
           cd ./ws-tests/sanity

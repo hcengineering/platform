@@ -547,6 +547,8 @@ export interface Session {
   getUser: () => string
 
   loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>
+
+  loadModelRaw: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<LoadModelResponse | Tx[]>
   getAccount: (ctx: ClientSessionCtx) => Promise<void>
 
   getRawAccount: (pipeline: Pipeline) => Account
@@ -564,6 +566,7 @@ export interface Session {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions) => Promise<void>
+  searchFulltextRaw: (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
   tx: (ctx: ClientSessionCtx, tx: Tx) => Promise<void>
 
   txRaw: (

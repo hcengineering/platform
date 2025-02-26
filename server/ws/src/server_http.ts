@@ -49,6 +49,7 @@ import { compress } from 'snappy'
 import 'utf-8-validate'
 import { registerRPC } from './rpc'
 import { retrieveJson } from './utils'
+import morgan from 'morgan'
 
 import { setImmediate } from 'timers/promises'
 
@@ -81,6 +82,21 @@ export function startHttpServer (
 
   const app = express()
   app.use(cors())
+
+  const childLogger = ctx.logger.childLogger?.('requests', {
+    enableConsole: 'true'
+  })
+  const requests = ctx.newChild('requests', {}, {}, childLogger)
+
+  class MyStream {
+    write (text: string): void {
+      requests.info(text)
+    }
+  }
+
+  const myStream = new MyStream()
+
+  app.use(morgan('short', { stream: myStream }))
 
   const getUsers = (): any => Array.from(sessions.sessions.entries()).map(([k, v]) => v.session.getUser())
 
