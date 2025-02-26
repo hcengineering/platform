@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/api-tests",
-  "version": "0.6.11",
+  "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
