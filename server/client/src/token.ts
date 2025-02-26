@@ -35,7 +35,7 @@ const extractAuthorizationToken = (authorization?: string): Token | null => {
 
 export function extractToken (headers: IncomingHttpHeaders): Token | undefined {
   try {
-    const token = extractCookieToken(headers.cookie) ?? extractAuthorizationToken(headers.authorization)
+    const token = extractAuthorizationToken(headers.authorization) ?? extractCookieToken(headers.cookie)
 
     return token ?? undefined
   } catch {
