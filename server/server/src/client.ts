@@ -234,7 +234,7 @@ export class ClientSession implements Session {
         }
       }
       const bevent = createBroadcastEvent(Array.from(classes))
-      socket.send(
+      void socket.send(
         ctx,
         {
           result: [bevent]
@@ -243,7 +243,7 @@ export class ClientSession implements Session {
         this.useCompression
       )
     } else {
-      socket.send(ctx, { result: tx }, this.binaryMode, this.useCompression)
+      void socket.send(ctx, { result: tx }, this.binaryMode, this.useCompression)
     }
   }
 

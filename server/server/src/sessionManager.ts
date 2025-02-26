@@ -237,7 +237,7 @@ export class TSessionManager implements SessionManager {
             // And ping other wize
             s[1].session.lastPing = now
             if (s[1].socket.checkState()) {
-              s[1].socket.send(
+              void s[1].socket.send(
                 workspace.context,
                 { result: pingConst },
                 s[1].session.binaryMode,
@@ -504,7 +504,7 @@ export class TSessionManager implements SessionManager {
     }
 
     if (this.timeMinutes > 0) {
-      ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
+      void ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
     }
     return { session, context: workspace.context, workspaceId: wsString }
   }
@@ -884,7 +884,7 @@ export class TSessionManager implements SessionManager {
   }
 
   private sendUpgrade (ctx: MeasureContext, webSocket: ConnectionSocket, binary: boolean, compression: boolean): void {
-    webSocket.send(
+    void webSocket.send(
       ctx,
       {
         result: {
@@ -951,6 +951,7 @@ export class TSessionManager implements SessionManager {
 
   createOpContext (
     ctx: MeasureContext,
+    sendCtx: MeasureContext,
     pipeline: Pipeline,
     requestId: Request<any>['id'],
     service: Session,
@@ -962,7 +963,7 @@ export class TSessionManager implements SessionManager {
       pipeline,
       requestId,
       sendResponse: (reqId, msg) =>
-        sendResponse(ctx, service, ws, {
+        sendResponse(sendCtx, service, ws, {
           id: reqId,
           result: msg,
           time: Date.now() - st,
@@ -973,7 +974,7 @@ export class TSessionManager implements SessionManager {
         ws.sendPong()
       },
       sendError: (reqId, msg, error: Status) =>
-        sendResponse(ctx, service, ws, {
+        sendResponse(sendCtx, service, ws, {
           id: reqId,
           result: msg,
           error,
@@ -1004,7 +1005,7 @@ export class TSessionManager implements SessionManager {
           requestCtx.measure('msg-receive-delta', delta)
         }
         if (service.workspace.closing !== undefined) {
-          ws.send(
+          await ws.send(
             ctx,
             {
               id: request.id,
@@ -1033,7 +1034,7 @@ export class TSessionManager implements SessionManager {
             id: request.id,
             result: done
           }
-          ws.send(ctx, forceCloseResponse, service.binaryMode, service.useCompression)
+          await ws.send(ctx, forceCloseResponse, service.binaryMode, service.useCompression)
           return
         }
 
@@ -1054,16 +1055,20 @@ export class TSessionManager implements SessionManager {
         try {
           const params = [...request.params]
 
+          if (ws.isBackpressure()) {
+            await ws.backpressure(ctx)
+          }
+
           await ctx.with('🧨 process', {}, (callTx) =>
-            f.apply(service, [this.createOpContext(callTx, pipeline, request.id, service, ws), ...params])
+            f.apply(service, [this.createOpContext(callTx, userCtx, pipeline, request.id, service, ws), ...params])
           )
         } catch (err: any) {
           Analytics.handleError(err)
           if (LOGGING_ENABLED) {
             this.ctx.error('error handle request', { error: err, request })
           }
-          ws.send(
-            ctx,
+          await ws.send(
+            userCtx,
             {
               id: request.id,
               error: unknownError(err),
@@ -1108,15 +1113,15 @@ export class TSessionManager implements SessionManager {
           service.workspace.pipeline instanceof Promise ? await service.workspace.pipeline : service.workspace.pipeline
 
         try {
-          const uctx = this.createOpContext(ctx, pipeline, reqId, service, ws)
+          const uctx = this.createOpContext(ctx, userCtx, pipeline, reqId, service, ws)
           await operation(uctx)
         } catch (err: any) {
           Analytics.handleError(err)
           if (LOGGING_ENABLED) {
             this.ctx.error('error handle request', { error: err })
           }
-          ws.send(
-            ctx,
+          await ws.send(
+            userCtx,
             {
               id: reqId,
               error: unknownError(err),
@@ -1174,7 +1179,7 @@ export class TSessionManager implements SessionManager {
         account: service.getRawAccount(pipeline),
         useCompression: service.useCompression
       }
-      ws.send(requestCtx, helloResponse, false, false)
+      await ws.send(requestCtx, helloResponse, false, false)
 
       // We do not need to wait for set-status, just return session to client
       const _workspace = service.workspace
