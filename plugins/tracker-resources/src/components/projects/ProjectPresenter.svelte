@@ -52,7 +52,7 @@
       />
     </div>
     <span class="label no-underline nowrap" class:fs-bold={accent}>
-      {#if openIssues && (isAdminUser() || value.members.includes(getCurrentAccount()._id))}
+      {#if openIssues && (isAdminUser() || value.members?.includes(getCurrentAccount()._id))}
         <NavLink space={value._id} special={'issues'} noUnderline={false}>
           {value.name}
         </NavLink>
