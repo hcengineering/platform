@@ -16,12 +16,12 @@
   import { IconSize } from '../types'
   import { fromCodePoint } from '../utils'
 
-  export let icon: number
+  export let icon: number | number[]
   export let size: IconSize
 
   let value: string = ''
   $: try {
-    value = fromCodePoint(icon)
+    value = Array.isArray(icon) ? fromCodePoint(...icon) : fromCodePoint(icon)
   } catch (err) {}
 </script>
 
@@ -49,7 +49,7 @@
   .emoji-small {
     width: 1rem;
     height: 1rem;
-    font-size: 0.8125rem;
+    font-size: 1rem;
   }
   .emoji-medium {
     width: 1.25rem;

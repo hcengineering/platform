@@ -20,7 +20,7 @@
   import products from '../../plugin'
 
   export let icon: Asset
-  export let color: number | undefined
+  export let color: number | number[] | undefined
 
   let iconValue: IconProps
 

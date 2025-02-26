@@ -40,7 +40,6 @@ import platform, {
 } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import {
-  fetchMetadataLocalStorage,
   getCurrentLocation,
   locationStorageKeyId,
   locationToUrl,
@@ -48,7 +47,7 @@ import {
   setMetadataLocalStorage,
   type Location
 } from '@hcengineering/ui'
-import { workbenchId } from '@hcengineering/workbench'
+import { workbenchId, logIn } from '@hcengineering/workbench'
 
 import { LoginEvents } from './analytics'
 import { type Pages } from './index'
@@ -70,7 +69,9 @@ function getAccountClient (token: string | undefined | null = getMetadata(presen
  */
 export async function doLogin (email: string, password: string): Promise<[Status, LoginInfo | null]> {
   try {
-    const loginInfo = await getAccountClient(null).login(email, password)
+    const accountClient = getAccountClient(null)
+
+    const loginInfo = await accountClient.login(email, password)
 
     Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: true })
     Analytics.setUser(email)
@@ -188,7 +189,7 @@ function getWorkspaceSize (it: Pick<WorkspaceInfoWithStatus, 'backupInfo'>): num
 
 export async function getWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
   const token = getMetadata(presentation.metadata.Token)
-  if (token === undefined) {
+  if (token == null) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
     loc.path.length = 2
@@ -280,7 +281,7 @@ export async function getAllWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
 }
 
 export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo | null> {
-  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
+  const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
     if (doNavigate) {
       const loc = getCurrentLocation()
@@ -288,8 +289,6 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
       loc.path.length = 2
       navigate(loc)
     }
-
-    return null
   }
 
   try {
@@ -308,7 +307,7 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
 }
 
 export async function getRegionInfo (doNavigate: boolean = true): Promise<RegionInfo[] | null> {
-  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
+  const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
     if (doNavigate) {
       const loc = getCurrentLocation()
@@ -338,27 +337,21 @@ export async function selectWorkspace (
   workspaceUrl: string,
   token?: string | null | undefined
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
-  const actualToken =
-    token ??
-    getMetadata(presentation.metadata.Token) ??
-    fetchMetadataLocalStorage(login.metadata.LastToken) ??
-    undefined
-
-  if (actualToken == null) {
-    const loc = getCurrentLocation()
-    loc.path[0] = 'login'
-    loc.path[1] = 'login'
-    loc.path.length = 2
-    navigate(loc)
-    return [unknownStatus('Please login'), null]
-  }
+  const actualToken = token ?? getMetadata(presentation.metadata.Token) ?? undefined
 
   try {
     const loginInfo = await getAccountClient(actualToken).selectWorkspace(workspaceUrl)
 
     return [OK, loginInfo]
   } catch (err: any) {
-    if (err instanceof PlatformError) {
+    if (err instanceof PlatformError && err.status.code === platform.status.Unauthorized) {
+      const loc = getCurrentLocation()
+      loc.path[0] = 'login'
+      loc.path[1] = 'login'
+      loc.path.length = 2
+      navigate(loc)
+      return [unknownStatus('Please login'), null]
+    } else if (err instanceof PlatformError) {
       Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspaceUrl, ok: false })
       await handleStatusError('Select workspace error', err.status)
 
@@ -421,14 +414,12 @@ export async function getPerson (): Promise<[Status, Person | null]> {
 }
 
 export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
-  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
-  tokens[loginInfo.workspaceUrl] = loginInfo.token
-
   setMetadata(presentation.metadata.Token, loginInfo.token)
-  setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
-  setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
+  setMetadata(presentation.metadata.WorkspaceUuid, loginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceDataId, loginInfo.workspaceDataId)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, loginInfo.endpoint)
   setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
+  setMetadataLocalStorage(login.metadata.LastAccount, loginInfo.account)
 }
 
 export function navigateToWorkspace (
@@ -441,9 +432,6 @@ export function navigateToWorkspace (
     return
   }
 
-  setMetadata(presentation.metadata.Token, loginInfo.token)
-  setMetadata(presentation.metadata.WorkspaceUuid, loginInfo.workspace)
-  setMetadata(presentation.metadata.WorkspaceDataId, loginInfo.workspaceDataId)
   setLoginInfo(loginInfo)
 
   if (navigateUrl !== undefined) {
@@ -466,12 +454,11 @@ export function navigateToWorkspace (
 }
 
 export async function checkJoined (inviteId: string): Promise<[Status, WorkspaceLoginInfo | null]> {
-  let token = getMetadata(presentation.metadata.Token)
+  const token = getMetadata(presentation.metadata.Token)
 
   if (token == null) {
-    const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
-    token = Object.values(tokens)[0]
-    if (token == null) {
+    const loginInfo = await getAccountClient().getLoginInfoByToken()
+    if (loginInfo.token == null) {
       return [unknownStatus('Please login'), null]
     }
   }
@@ -549,7 +536,7 @@ export async function join (
   inviteId: string
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
   try {
-    const workspaceLoginInfo = await getAccountClient(null).join(email, password, inviteId)
+    const workspaceLoginInfo = await getAccountClient().join(email, password, inviteId)
 
     Analytics.handleEvent('Join')
     Analytics.setUser(email)
@@ -576,7 +563,7 @@ export async function signUpJoin (
   inviteId: string
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
   try {
-    const workspaceLoginInfo = await getAccountClient(null).signUpJoin(email, password, first, last, inviteId)
+    const workspaceLoginInfo = await getAccountClient().signUpJoin(email, password, first, last, inviteId)
 
     Analytics.handleEvent('Signup Join')
     Analytics.setUser(email)
@@ -741,19 +728,34 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
   if (joinedWS.length === 0) {
     goTo('createWorkspace', clearQuery)
   } else if (joinedWS.length === 1) {
-    const result = (await selectWorkspace(joinedWS[0].uuid, null))[1]
+    const result = (await selectWorkspace(joinedWS[0].url, null))[1]
     if (result != null) {
       setMetadata(presentation.metadata.Token, result.token)
       setMetadata(presentation.metadata.WorkspaceUuid, result.workspace)
       setMetadata(presentation.metadata.WorkspaceDataId, result.workspaceDataId)
 
-      setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setLoginInfo(result)
 
       navigateToWorkspace(joinedWS[0].uuid, result, undefined, clearQuery)
     }
   } else {
     goTo('selectWorkspace', clearQuery)
+  }
+}
+
+export async function getLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | null> {
+  try {
+    return await getAccountClient().getLoginInfoByToken()
+  } catch (err: any) {
+    if (err instanceof PlatformError) {
+      if (err.status.code === platform.status.Unauthorized) {
+        return null
+      }
+    } else {
+      Analytics.handleError(err)
+    }
+
+    throw err
   }
 }
 
@@ -838,9 +840,7 @@ export async function doLoginNavigate (
   navigateUrl?: string
 ): Promise<void> {
   if (result != null) {
-    setMetadata(presentation.metadata.Token, result.token)
-    setMetadataLocalStorage(login.metadata.LastToken, result.token)
-    setMetadataLocalStorage(login.metadata.LoginAccount, result.account)
+    await logIn(result)
 
     if (navigateUrl !== undefined) {
       try {

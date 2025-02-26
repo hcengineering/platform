@@ -49,7 +49,7 @@
 
   $: if (iconSize) {
     actualIconSize = iconSize
-  } else if (type === 'type-button' && !hasMenu) {
+  } else if (type === 'type-button' && !hasMenu && iconProps?.size === undefined) {
     actualIconSize = 'medium'
   }
   $: iconOnly = title === undefined && label === undefined && $$slots.default === undefined && icon !== undefined

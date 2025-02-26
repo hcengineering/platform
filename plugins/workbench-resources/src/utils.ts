@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import type {
   Account,
   Class,
@@ -25,12 +26,11 @@ import type {
   WorkspaceInfoWithStatus
 } from '@hcengineering/core'
 import core, { hasAccountRole } from '@hcengineering/core'
-import login, { loginId } from '@hcengineering/login'
-import { getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, getClient } from '@hcengineering/presentation'
+import login from '@hcengineering/login'
+import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import presentation, { closeClient, getClient, setPresentationCookie } from '@hcengineering/presentation'
 import {
   closePanel,
-  fetchMetadataLocalStorage,
   getCurrentLocation,
   type Location,
   location,
@@ -206,19 +206,29 @@ export async function buildNavModel (
   return newNavModel
 }
 
-export function signOut (): void {
-  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokensV2)
-  if (tokens !== null) {
-    const loc = getCurrentLocation()
-    const l = loc.path[1]
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete tokens[l]
-    setMetadataLocalStorage(login.metadata.LoginTokensV2, tokens)
+export async function logIn (loginInfo: { account: string, token?: string }): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  await getAccountClient(accountsUrl, loginInfo.token).setCookie()
+
+  setMetadata(presentation.metadata.Token, loginInfo.token)
+  setMetadataLocalStorage(login.metadata.LastAccount, loginInfo.account)
+  setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
+}
+
+export async function logOut (): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  await getAccountClient(accountsUrl).deleteCookie()
+
+  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceUuid)
+  if (currentWorkspace !== undefined) {
+    setPresentationCookie('', currentWorkspace)
   }
+
   setMetadata(presentation.metadata.Token, null)
-  setMetadataLocalStorage(login.metadata.LastToken, null)
+  setMetadata(presentation.metadata.WorkspaceUuid, null)
+  setMetadata(presentation.metadata.WorkspaceDataId, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginAccount, null)
+
   void closeClient()
-  navigate({ path: [loginId] })
 }

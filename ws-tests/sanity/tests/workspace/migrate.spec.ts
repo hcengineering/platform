@@ -61,10 +61,15 @@ test.describe('Workspace Migration tests', () => {
     const page2 = adminSecondPage.page
 
     await test.step('Migrate workspace', async () => {
+      const page = adminSecondPage.page
       // login as admin
       const loginPage2 = new LoginPage(adminSecondPage.page)
       await loginPage2.goto()
       await loginPage2.login('admin', '1234')
+      await page.waitForURL((url) => {
+        console.log(url.pathname)
+        return url.pathname.startsWith('/login/selectWorkspace') || url.pathname.startsWith('/workbench/')
+      })
 
       const adminPage = new AdminPage(page2)
       await adminPage.gotoAdmin()

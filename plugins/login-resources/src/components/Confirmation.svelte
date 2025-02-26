@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import presentation from '@hcengineering/presentation'
-  import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
-  import { getCurrentLocation, setMetadataLocalStorage } from '@hcengineering/ui'
+  import { OK, Severity, Status } from '@hcengineering/platform'
+  import { getCurrentLocation } from '@hcengineering/ui'
+  import { logIn } from '@hcengineering/workbench'
 
   import login from '../plugin'
   import { afterConfirm, confirm, goTo } from '../utils'
@@ -33,10 +33,7 @@
     status = loginStatus
 
     if (result !== undefined) {
-      setMetadata(presentation.metadata.Token, result.token)
-      setMetadataLocalStorage(login.metadata.LastToken, result.token)
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+      await logIn(result)
       await afterConfirm()
     } else {
       goTo('login')

@@ -22,11 +22,11 @@ export class ApiEndpoint {
     return headers
   }
 
-  private async loginAndGetToken (username: string, password: string): Promise<string> {
+  private async loginAndGetToken (email: string, password: string): Promise<string> {
     const loginUrl = this.baseUrl
     const loginPayload = {
       method: 'login',
-      params: [username, password]
+      params: { email, password }
     }
     const headers = {
       'Content-Type': 'application/json',
@@ -54,30 +54,30 @@ export class ApiEndpoint {
     const url = this.baseUrl
     const payload = {
       method: 'createWorkspace',
-      params: [workspaceName]
+      params: { workspaceName }
     }
     const headers = this.getDefaultHeaders(token)
     const response = await this.request.post(url, { data: payload, headers })
     return (await response.json()).result
   }
 
-  async createAccount (username: string, password: string, firstName: string, lastName: string): Promise<any> {
+  async createAccount (email: string, password: string, firstName: string, lastName: string): Promise<any> {
     const url = this.baseUrl
     const payload = {
       method: 'signUp',
-      params: [username, password, firstName, lastName]
+      params: { email, password, firstName, lastName }
     }
     const headers = this.getDefaultHeaders()
     const response = await this.request.post(url, { data: payload, headers })
     return await response.json()
   }
 
-  async leaveWorkspace (email: string, username: string, password: string): Promise<any> {
+  async leaveWorkspace (account: string, username: string, password: string): Promise<any> {
     const token = await this.loginAndGetToken(username, password)
     const url = this.baseUrl
     const payload = {
       method: 'leaveWorkspace',
-      params: [email]
+      params: { account }
     }
     const headers = this.getDefaultHeaders(token)
     const response = await this.request.post(url, { data: payload, headers })

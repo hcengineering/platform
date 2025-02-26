@@ -1,9 +1,9 @@
 import client from '@hcengineering/client'
-import { type Doc } from '@hcengineering/core'
+import { type Doc, AccountRole } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import { getMetadata, getResource } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
-import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@hcengineering/ui'
+import { getCurrentLocation, navigate } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { getObjectLinkFragment } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
@@ -11,10 +11,15 @@ import { workbenchId } from '@hcengineering/workbench'
 export async function checkAccess (doc: Doc): Promise<void> {
   const loc = getCurrentLocation()
   const ws = loc.path[1]
-  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokensV2) ?? {}
-  const token = tokens[ws]
+
+  const selectWorkspace = await getResource(login.function.SelectWorkspace)
+  const wsLoginInfo = (await selectWorkspace(ws, null))[1]
+  if (wsLoginInfo === undefined || wsLoginInfo.role === AccountRole.DocGuest) return
+
+  const token = wsLoginInfo.token
   const endpoint = getMetadata(presentation.metadata.Endpoint)
   if (token === undefined || endpoint === undefined) return
+
   const clientFactory = await getResource(client.function.GetClient)
   const _client = await clientFactory(token, endpoint)
 
@@ -28,7 +33,7 @@ export async function checkAccess (doc: Doc): Promise<void> {
     loc.path[0] = workbenchId
     loc.path[1] = ws
     // We have access, let's set correct tokens and redirect)
-    setMetadata(presentation.metadata.Token, token)
+    // setMetadata(presentation.metadata.Token, token)
     navigate(loc)
   }
 }

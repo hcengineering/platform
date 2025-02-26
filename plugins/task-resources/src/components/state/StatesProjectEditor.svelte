@@ -237,7 +237,7 @@
             _class={state._class}
             objectId={state._id}
             value={state}
-            props={{ projectType: type._id, taskType: taskType._id, kind: 'table-attrs' }}
+            props={{ projectType: type._id, taskType: taskType._id, kind: 'table-attrs', size: 'medium' }}
           />
           <div class="hulyTableAttr-content__row-arrow">
             <IconOpenedArrow size={'small'} />
