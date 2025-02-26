@@ -14,7 +14,7 @@
     "api-test": "jest --passWithNoTests --silent --forceExit",
     "format": "format src",
     "_phase:build": "compile transpile src",
-    "_phase:test": "jest --passWithNoTests --silent --forceExit",
+    "_phase:test": "echo 'run api-test' for API-tests",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },
