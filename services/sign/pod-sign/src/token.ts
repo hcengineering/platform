@@ -51,9 +51,9 @@ const extractRawQueryToken = (queryParams: any): string | null => {
 export const extractToken = (headers: IncomingHttpHeaders, queryParams: any): { token: Token, rawToken: string } => {
   try {
     const rawToken =
-      extractRawCookieToken(headers.cookie) ??
       extractRawAuthorizationToken(headers.authorization) ??
-      extractRawQueryToken(queryParams)
+      extractRawQueryToken(queryParams) ??
+      extractRawCookieToken(headers.cookie)
 
     if (rawToken === null) {
       throw new ApiError(401)
