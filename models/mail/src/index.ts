@@ -81,9 +81,9 @@ function createMailViewlet (builder: Builder): void {
       attachTo: mail.class.MailThread,
       descriptor: view.viewlet.Table,
       config: [
-        { key: 'createdBy', label: mail.string.From, displayProps: { fixed: 'left', key: 'app' } },
+        { key: 'createdBy', displayProps: { fixed: 'left', key: 'app' } },
         '',
-        { key: 'modifiedOn', label: mail.string.Date, displayProps: { key: 'modified', fixed: 'right' } }
+        { key: 'modifiedOn', displayProps: { key: 'modified', fixed: 'right' } }
       ],
       configOptions: {
         hiddenKeys: ['name'],
