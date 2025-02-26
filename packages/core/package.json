@@ -2,21 +2,40 @@
   "name": "@hcengineering/core",
   "version": "0.6.32",
   "main": "lib/index.js",
+  "module": "esm/index.js",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./esm/index.js"
+    },
+    "./lang/*.json": {
+      "require": "./lang/*.json",
+      "import": "./lang/*.json"
+    },
+    "./lang": {
+      "require": "./lang",
+      "import": "./lang"
+    }
+  },
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "files": [
     "lib/**/*",
+    "esm/**/*",
     "types/**/*",
-    "tsconfig.json"
+    "lang/**/*",
+    "tsconfig.json",
+    "tsconfig.esm.json"
   ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "compile",
+    "build": "compile && compile esm",
     "build:watch": "compile",
     "test": "jest --passWithNoTests --silent",
     "format": "format src",
-    "_phase:build": "compile transpile src",
+    "_phase:build": "compile transpile src && compile transpile-esm src",
     "_phase:test": "jest --passWithNoTests --silent",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"

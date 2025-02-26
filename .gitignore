@@ -1,5 +1,6 @@
 .heft/
 lib/
+esm/
 _api-extractor-temp/
 temp/
 .idea

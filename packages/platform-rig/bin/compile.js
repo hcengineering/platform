@@ -140,10 +140,35 @@ switch (args[0]) {
     })
     break
   }
+  case 'transpile-esm': {
+    const filesToTranspile = collectFiles(join(process.cwd(), args[1]))
+    let st = performance.now()
+    const before = {}
+    const after = {}
+    collectFileStats('esm', before)
+
+    performESBuild(filesToTranspile, 'esm', 'esm')
+    .then(() => {
+      console.log("ESM Transpile time: ", Math.round((performance.now() - st) * 100) / 100)
+      collectFileStats('esm', after)
+      cleanNonModified(before, after)
+    })
+    break
+  }
   case 'validate': {
     let st = performance.now()
     validateTSC(st).then(() => {
       console.log("Validate time: ", Math.round((performance.now() - st) * 100) / 100)
+    })
+    break
+  }
+  case 'esm': {
+    let st = performance.now()
+    const filesToTranspile = collectFiles(join(process.cwd(), 'src'))
+    Promise.all([
+      performESBuild(filesToTranspile, 'esm', 'esm'),
+    ]).then(() => {
+      console.log("ESM Build time: ", Math.round((performance.now() - st) * 100) / 100)
     })
     break
   }
@@ -162,16 +187,19 @@ switch (args[0]) {
     break
   }
 }
-async function performESBuild(filesToTranspile) {
+async function performESBuild(filesToTranspile, format = 'cjs', outdir = 'lib') {
+  const tsconfig = format === 'esm' ? 'tsconfig.esm.json' : 'tsconfig.json';
+
   await esbuild.build({
     entryPoints: filesToTranspile,
     bundle: false,
     minify: false,
-    outdir: 'lib',
+    outdir,
     keepNames: true,
     sourcemap: 'linked',
     allowOverwrite: true,
-    format: 'cjs',
+    format,
+    tsconfig,
     color: true,
     plugins: [
       copy({
@@ -180,7 +208,7 @@ async function performESBuild(filesToTranspile) {
         resolveFrom: 'cwd',
         assets: {
           from: [args[1] + '/**/*.json'],
-          to: ['./lib'],
+          to: [`./${outdir}`],
         },
         watch: false
       })
