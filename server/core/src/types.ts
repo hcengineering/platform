@@ -599,13 +599,15 @@ export interface ConnectionSocket {
   id: string
   isClosed: boolean
   close: () => void
-  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => void
+  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<void>
 
   sendPong: () => void
   data: () => Record<string, any>
 
   readRequest: (buffer: Buffer, binary: boolean) => Request<any>
 
+  isBackpressure: () => boolean // In bytes
+  backpressure: (ctx: MeasureContext) => Promise<void>
   checkState: () => boolean
 }
 
@@ -716,6 +718,7 @@ export interface SessionManager {
 
   createOpContext: (
     ctx: MeasureContext,
+    sendCtx: MeasureContext,
     pipeline: Pipeline,
     requestId: Request<any>['id'],
     service: Session,
