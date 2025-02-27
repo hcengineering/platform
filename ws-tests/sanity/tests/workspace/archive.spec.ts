@@ -98,7 +98,7 @@ test.describe('Workspace Archive tests', () => {
     await test.step('Check workspace is active again', async () => {
       await page.reload()
 
-      await selectWorkspacePage.selectWorkspace(workspaceInfo.workspaceName)
+      await selectWorkspacePage.selectWorkspace(workspaceName)
 
       const issuesDetailsPage = new IssuesDetailsPage(page)
       await issuesDetailsPage.checkIssue(newIssue)

@@ -37,9 +37,11 @@ export class LoginPage {
     await (await this.page.goto(`${PlatformURI}/login/admin`))?.finished()
   }
 
-  async clickSignUp (): Promise<void> {
+  async clickSignUp (usePassword: boolean = true): Promise<void> {
     await this.linkSignUp().click()
-    await this.signUpWithPassword().click()
+    if (usePassword) {
+      await this.signUpWithPassword().click()
+    }
   }
 
   async clickOnRecover (): Promise<void> {
