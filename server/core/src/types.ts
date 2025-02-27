@@ -556,7 +556,6 @@ export interface Session {
 
   loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>
   loadModelRaw: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<LoadModelResponse | Tx[]>
-
   getRawAccount: () => Account
   findAll: <T extends Doc>(
     ctx: ClientSessionCtx,
@@ -717,6 +716,12 @@ export interface SessionManager {
     request: Request<any>,
     workspace: WorkspaceUuid
   ) => Promise<void>
+  handleRPC: <S extends Session>(
+    requestCtx: MeasureContext,
+    service: S,
+    ws: ConnectionSocket,
+    operation: (ctx: ClientSessionCtx) => Promise<void>
+  ) => Promise<void>
 
   createOpContext: (
     ctx: MeasureContext,
@@ -726,13 +731,6 @@ export interface SessionManager {
     service: Session,
     ws: ConnectionSocket
   ) => ClientSessionCtx
-
-  handleRPC: <S extends Session>(
-    requestCtx: MeasureContext,
-    service: S,
-    ws: ConnectionSocket,
-    operation: (ctx: ClientSessionCtx) => Promise<void>
-  ) => Promise<void>
 }
 
 /**

@@ -58,11 +58,11 @@ import os from 'os'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 
 import 'bufferutil'
+import morgan from 'morgan'
 import { compress } from 'snappy'
 import 'utf-8-validate'
 import { registerRPC } from './rpc'
 import { retrieveJson } from './utils'
-import morgan from 'morgan'
 
 import { setImmediate } from 'timers/promises'
 
@@ -387,8 +387,6 @@ export function startHttpServer (
       }
     })
   )
-
-  registerRPC(app, sessions, ctx, pipelineFactory)
 
   registerRPC(app, sessions, ctx, pipelineFactory)
 

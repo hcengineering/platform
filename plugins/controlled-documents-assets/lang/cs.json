@@ -300,7 +300,9 @@
     "Obsolete": "Zastaralé",
     "MakeDocumentObsolete": "Označit jako zastaralé",
     "MakeDocumentObsoleteDialog": "Označit {count, plural, one {dokument jako zastaralý} other {dokumenty jako zastaralé}}",
-    "MakeDocumentObsoleteConfirm": "Opravdu chcete označit následující dokumenty jako zastaralé: {titles}?"
+    "MakeDocumentObsoleteConfirm": "Opravdu chcete označit následující dokumenty jako zastaralé: {titles}?",
+
+    "LatestVersionHint": "nejnovější"
   },
   "controlledDocStates": {
     "Empty": "",

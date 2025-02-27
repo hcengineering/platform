@@ -1,25 +1,26 @@
 //
 // Copyright © 2023-2024 Hardcore Engineering Inc.
 //
+import { Person, pickPrimarySocialId, type Employee } from '@hcengineering/contact'
 import core, {
+  AccountRole,
+  combineAttributes,
   DocumentQuery,
+  includesAny,
+  PersonId,
   Ref,
   SortingOrder,
   Tx,
+  TxCreateDoc,
   TxFactory,
   TxUpdateDoc,
-  type Timestamp,
-  type RolesAssignment,
-  AccountRole,
-  type TxCUD,
   type Doc,
-  PersonId,
-  combineAttributes,
-  includesAny,
-  TxCreateDoc
+  type RolesAssignment,
+  type Timestamp,
+  type TxCUD
 } from '@hcengineering/core'
-import { Person, pickPrimarySocialId, type Employee } from '@hcengineering/contact'
-import { getSocialStrings, getEmployees, getSocialStringsByPersons } from '@hcengineering/server-contact'
+import { NotificationType } from '@hcengineering/notification'
+import { getEmployees, getSocialStrings, getSocialStringsByPersons } from '@hcengineering/server-contact'
 import { TriggerControl } from '@hcengineering/server-core'
 
 import documents, {
@@ -36,7 +37,6 @@ import documents, {
 } from '@hcengineering/controlled-documents'
 import { RequestStatus } from '@hcengineering/request'
 import training, { TrainingState, type TrainingRequest } from '@hcengineering/training'
-import { NotificationType } from '@hcengineering/notification'
 
 async function getDocs (
   control: TriggerControl,

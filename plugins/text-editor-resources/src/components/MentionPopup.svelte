@@ -18,7 +18,7 @@
   import presentation, { SearchResult, reduceCalls, searchFor, type SearchItem } from '@hcengineering/presentation'
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getReferenceLabel } from './extension/reference'
+  import { getReferenceLabel, getReferenceObject } from './extension/reference'
 
   export let query: string = ''
 
@@ -31,11 +31,12 @@
   let selection = 0
 
   async function handleSelectItem (item: SearchResultDoc): Promise<void> {
-    const label = await getReferenceLabel(item.doc._class, item.doc._id)
+    const obj = (await getReferenceObject(item.doc._class, item.doc._id)) ?? item.doc
+    const label = await getReferenceLabel(obj._class, obj._id)
     dispatch('close', {
-      id: item.id,
+      id: obj._id,
       label,
-      objectclass: item.doc._class
+      objectclass: obj._class
     })
   }
 

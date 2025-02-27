@@ -64,6 +64,7 @@
     "PasswordMinDigits": "{count, plural, =1 {Le mot de passe doit contenir au moins # chiffre} other {Le mot de passe doit contenir au moins # chiffres}}",
     "PasswordMinUpperChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # lettre majuscule} other {Le mot de passe doit contenir au moins # lettres majuscules}}",
     "PasswordMinLowerChars": "{count, plural, =1 {Le mot de passe doit contenir au moins # lettre minuscule} other {Le mot de passe doit contenir au moins # lettres minuscules}}",
-    "WorkspaceArchivedDesc": "L'espace de travail est archivé en raison de son inactivité, veuillez nous contacter pour le restaurer..."
+    "WorkspaceArchivedDesc": "L'espace de travail est archivé en raison de son inactivité.",
+    "RestoreArchivedWorkspace": "Restaurer"
   }
 }

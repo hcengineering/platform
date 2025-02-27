@@ -188,7 +188,14 @@ export class TSessionManager implements SessionManager {
       if (this.ticks % (60 * ticksPerSecond) === workspace.tickHash) {
         try {
           // update account lastVisit every minute per every workspace.∏
-          void this.getWorkspaceInfo(workspace.token).catch(() => {
+          let connected: boolean = false
+          for (const val of workspace.sessions.values()) {
+            if (val.session.getUser() !== systemAccountUuid) {
+              connected = true
+              break
+            }
+          }
+          void this.getWorkspaceInfo(workspace.token, connected).catch(() => {
             // Ignore
           })
         } catch (err: any) {
@@ -296,9 +303,9 @@ export class TSessionManager implements SessionManager {
     return this.sessionFactory(token, workspace, account)
   }
 
-  async getWorkspaceInfo (token: string): Promise<WorkspaceInfoWithStatus | undefined> {
+  async getWorkspaceInfo (token: string, updateLastVisit = true): Promise<WorkspaceInfoWithStatus | undefined> {
     try {
-      return await getAccountClient(this.accountsUrl, token).getWorkspaceInfo(true)
+      return await getAccountClient(this.accountsUrl, token).getWorkspaceInfo(updateLastVisit)
     } catch (err: any) {
       if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
         return undefined

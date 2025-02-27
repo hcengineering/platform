@@ -309,7 +309,9 @@
 
     "CreateFolder": "Create new folder",
     "RenameFolder": "Rename folder",
-    "CreateChildFolder": "Create child folder"
+    "CreateChildFolder": "Create child folder",
+
+    "LatestVersionHint": "latest"
   },
   "controlledDocStates": {
     "Empty": "",

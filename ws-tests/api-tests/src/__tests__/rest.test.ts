@@ -21,14 +21,20 @@ import {
   type RestClient,
   type WorkspaceToken
 } from '@hcengineering/api-client'
-import core, { generateId, MeasureMetricsContext, pickPrimarySocialId, type SocialId, type Space, type TxCreateDoc, type TxOperations } from '@hcengineering/core'
+import core, {
+  generateId,
+  MeasureMetricsContext,
+  pickPrimarySocialId,
+  type SocialId,
+  type Space,
+  type TxCreateDoc,
+  type TxOperations
+} from '@hcengineering/core'
 
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 
 import chunter from '@hcengineering/chunter'
 import contact, { ensureEmployee } from '@hcengineering/contact'
-
-jest.setTimeout(5000000)
 
 describe('rest-api-server', () => {
   const testCtx = new MeasureMetricsContext('test', {})
@@ -39,17 +45,25 @@ describe('rest-api-server', () => {
   beforeAll(async () => {
     const config = await loadServerConfig('http://localhost:8083')
 
-    apiWorkspace1 = await getWorkspaceToken('http://localhost:8083', {
-      email: 'user1',
-      password: '1234',
-      workspace: wsName
-    }, config)
+    apiWorkspace1 = await getWorkspaceToken(
+      'http://localhost:8083',
+      {
+        email: 'user1',
+        password: '1234',
+        workspace: wsName
+      },
+      config
+    )
 
-    apiWorkspace2 = await getWorkspaceToken('http://localhost:8083', {
-      email: 'user1',
-      password: '1234',
-      workspace: wsName + '-cr'
-    }, config)
+    apiWorkspace2 = await getWorkspaceToken(
+      'http://localhost:8083',
+      {
+        email: 'user1',
+        password: '1234',
+        workspace: wsName + '-cr'
+      },
+      config
+    )
 
     const account = getAccountClient(config.ACCOUNTS_URL, apiWorkspace1.token)
     const person = await account.getPerson()
@@ -58,19 +72,31 @@ describe('rest-api-server', () => {
 
     // Ensure employee is created
 
-    await ensureEmployee(testCtx, {
-      uuid: apiWorkspace1.info.account,
-      role: apiWorkspace1.info.role,
-      primarySocialId: pickPrimarySocialId(socialIds).key,
-      socialIds: socialIds.map((si) => si.key)
-    }, connect(), socialIds, async () => person)
+    await ensureEmployee(
+      testCtx,
+      {
+        uuid: apiWorkspace1.info.account,
+        role: apiWorkspace1.info.role,
+        primarySocialId: pickPrimarySocialId(socialIds).key,
+        socialIds: socialIds.map((si) => si.key)
+      },
+      connect(),
+      socialIds,
+      async () => person
+    )
 
-    await ensureEmployee(testCtx, {
-      uuid: apiWorkspace2.info.account,
-      role: apiWorkspace2.info.role,
-      primarySocialId: pickPrimarySocialId(socialIds).key,
-      socialIds: socialIds.map((si) => si.key)
-    }, connect(apiWorkspace2), socialIds, async () => person)
+    await ensureEmployee(
+      testCtx,
+      {
+        uuid: apiWorkspace2.info.account,
+        role: apiWorkspace2.info.role,
+        primarySocialId: pickPrimarySocialId(socialIds).key,
+        socialIds: socialIds.map((si) => si.key)
+      },
+      connect(apiWorkspace2),
+      socialIds,
+      async () => person
+    )
   })
 
   function connect (ws?: WorkspaceToken): RestClient {

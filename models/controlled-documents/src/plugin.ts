@@ -53,6 +53,12 @@ export default mergeIds(documentsId, documents, {
     DocumentIdentifierProvider: '' as Resource<
       <T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>
     >,
+    ControlledDocumentReferenceObjectProvider: '' as Resource<
+      <T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<Doc>
+    >,
+    ProjectDocumentReferenceObjectProvider: '' as Resource<
+      <T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<Doc>
+    >,
     Comment: '' as Resource<TextActionFunction>,
     IsCommentVisible: '' as Resource<TextActionVisibleFunction>
   },
