@@ -41,7 +41,7 @@ export class GoogleClient {
 
   private refreshTimer: NodeJS.Timeout | undefined = undefined
 
-  readonly rateLimiter = new RateLimiter(100, 30)
+  readonly rateLimiter = new RateLimiter(60 * 1000, 600)
 
   constructor (
     private readonly user: User,

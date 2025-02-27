@@ -29,6 +29,8 @@ export class CalendarController {
   WorkspaceClient | Promise<WorkspaceClient>
   >()
 
+  private readonly workspacesByEmail = new Map<string, string[]>()
+
   private readonly syncedWorkspaces = new Set<string>()
 
   private readonly tokens: Collection<Token>
@@ -95,6 +97,7 @@ export class CalendarController {
       await limiter.add(async () => {
         const workspace = await this.startWorkspace(info.workspaceId, tokens)
         await workspace.sync()
+        await workspace.close()
         this.syncedWorkspaces.add(info.workspaceId)
       })
       const newProgress = Math.round((i * 100) / infos.length)
@@ -114,6 +117,9 @@ export class CalendarController {
         }, 60000)
         console.log('init client', token.workspace, token.userId)
         await workspaceClient.createCalendarClient(token, true)
+        const arr = this.workspacesByEmail.get(token.email) ?? []
+        arr.push(token.workspace)
+        this.workspacesByEmail.set(token.email, arr)
         clearTimeout(timeout)
       } catch (err) {
         console.error(`Couldn't create client for ${workspace} ${token.userId} ${token.email}`)
@@ -123,30 +129,25 @@ export class CalendarController {
   }
 
   async push (email: string, mode: 'events' | 'calendar', calendarId?: string): Promise<void> {
-    const tokens = await this.tokens.find({ email, access_token: { $exists: true } }).toArray()
-    const token = generateToken(systemAccountEmail, { name: '' })
-    const workspaces = [...new Set(tokens.map((p) => p.workspace).filter((p) => this.syncedWorkspaces.has(p)))]
+    const workspaces = this.workspacesByEmail.get(email)?.filter((p) => this.syncedWorkspaces.has(p)) ?? []
     if (workspaces.length === 0) return
-    const infos = await getWorkspacesInfo(token, workspaces)
-    for (const token of tokens) {
-      const info = infos.find((p) => p.workspaceId === token.workspace)
-      if (info === undefined) {
-        continue
+    for (const workspace of workspaces) {
+      const workspaceClient = await this.getWorkspaceClient(workspace)
+      let calendar = workspaceClient.getCalendarClient(email)
+      if (calendar !== undefined) {
+        if (calendar instanceof Promise) {
+          calendar = await calendar
+        }
+      } else {
+        const token = await this.tokens.findOne({ email, workspace, access_token: { $exists: true } })
+        if (token == null) continue
+        calendar = await workspaceClient.createCalendarClient(token)
       }
-      if (isDeletingMode(info.mode)) {
-        await this.tokens.deleteOne({ userId: token.userId, workspace: token.workspace })
-        continue
-      }
-      if (!isActiveMode(info.mode)) {
-        continue
-      }
-      const workspace = await this.getWorkspaceClient(token.workspace)
-      const calendarClient = await workspace.createCalendarClient(token)
       if (mode === 'calendar') {
-        await calendarClient.syncCalendars(email)
+        await calendar.syncCalendars(email)
       }
       if (mode === 'events' && calendarId !== undefined) {
-        await calendarClient.sync(calendarId, email)
+        await calendar.sync(calendarId, email)
       }
     }
   }
