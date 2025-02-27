@@ -53,7 +53,7 @@ export interface HelloResponse extends Response<any> {
   useCompression?: boolean
 }
 
-function replacer (key: string, value: any): any {
+export function rpcJSONReplacer (key: string, value: any): any {
   if (Array.isArray(value) && ((value as any).total !== undefined || (value as any).lookupMap !== undefined)) {
     return {
       dataType: 'TotalArray',
@@ -66,7 +66,7 @@ function replacer (key: string, value: any): any {
   }
 }
 
-function receiver (key: string, value: any): any {
+export function rpcJSONReceiver (key: string, value: any): any {
   if (typeof value === 'object' && value !== null) {
     if (value.dataType === 'TotalArray') {
       return Object.assign(value.value, { total: value.total, lookupMap: value.lookupMap })
@@ -99,7 +99,7 @@ export class RPCHandler {
   packr = new Packr({ structuredClone: true, bundleStrings: true, copyBuffers: false })
   protoSerialize (object: object, binary: boolean): any {
     if (!binary) {
-      return JSON.stringify(object, replacer)
+      return JSON.stringify(object, rpcJSONReplacer)
     }
     return new Uint8Array(this.packr.pack(object))
   }
@@ -112,7 +112,7 @@ export class RPCHandler {
         _data = decoder.decode(_data)
       }
       try {
-        return JSON.parse(_data.toString(), receiver)
+        return JSON.parse(_data.toString(), rpcJSONReceiver)
       } catch (err: any) {
         if (((err.message as string) ?? '').includes('Unexpected token')) {
           return this.packr.unpack(new Uint8Array(data))
@@ -129,7 +129,7 @@ export class RPCHandler {
    */
   serialize (object: Request<any> | Response<any>, binary: boolean): any {
     if ((object as any).result !== undefined) {
-      ;(object as any).result = replacer('result', (object as any).result)
+      ;(object as any).result = rpcJSONReplacer('result', (object as any).result)
     }
     return this.protoSerialize(object, binary)
   }
@@ -142,7 +142,7 @@ export class RPCHandler {
   readResponse<D>(response: any, binary: boolean): Response<D> {
     const data = this.protoDeserialize(response, binary)
     if (data.result !== undefined) {
-      data.result = receiver('result', data.result)
+      data.result = rpcJSONReceiver('result', data.result)
     }
     return data
   }

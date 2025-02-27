@@ -42,7 +42,7 @@
   function isEditable (owner: boolean, object: Person): boolean {
     if (owner) return true
     if (!h.hasMixin(object, contact.mixin.Employee)) return true
-    return hasAccountRole(account, AccountRole.Maintainer) && !h.as(object, contact.mixin.Employee).active
+    return hasAccountRole(account, AccountRole.Maintainer)
   }
   $: editable = !readonly && isEditable(owner, object)
 

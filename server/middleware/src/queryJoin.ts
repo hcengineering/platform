@@ -17,19 +17,23 @@ import {
   type Class,
   type Doc,
   DocumentQuery,
-  FindOptions,
+  type Domain,
   FindResult,
+  type LoadModelResponse,
   type MeasureContext,
-  Ref
+  Ref,
+  type SearchOptions,
+  type SearchQuery,
+  type SearchResult,
+  type SessionData,
+  type Timestamp,
+  type Tx
 } from '@hcengineering/core'
-import { BaseMiddleware, Middleware, ServerFindOptions, type PipelineContext } from '@hcengineering/server-core'
-import { deepEqual } from 'fast-equals'
+import { BaseMiddleware, Middleware, type PipelineContext, ServerFindOptions } from '@hcengineering/server-core'
 
 interface Query {
-  _class: Ref<Class<Doc>>
-  query: DocumentQuery<Doc>
-  result: FindResult<Doc> | Promise<FindResult<Doc>> | undefined
-  options?: FindOptions<Doc>
+  key: string
+  result: object | Promise<object> | undefined
   callbacks: number
   max: number
 }
@@ -37,27 +41,20 @@ interface Query {
  * @public
  */
 export class QueryJoiner {
-  private readonly queries: Map<Ref<Class<Doc>>, Query[]> = new Map<Ref<Class<Doc>>, Query[]>()
+  private readonly queries: Map<string, Query> = new Map<string, Query>()
 
-  constructor (readonly _findAll: Middleware['findAll']) {}
-
-  async findAll<T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: ServerFindOptions<T>
-  ): Promise<FindResult<T>> {
+  async query<T>(ctx: MeasureContext, key: string, retrieve: (ctx: MeasureContext) => Promise<T>): Promise<T> {
     // Will find a query or add + 1 to callbacks
-    const q = this.findQuery(_class, query, options) ?? this.createQuery(_class, query, options)
+    const q = this.getQuery(key)
     try {
       if (q.result === undefined) {
-        q.result = this._findAll(ctx, _class, query, options)
+        q.result = retrieve(ctx)
       }
       if (q.result instanceof Promise) {
         q.result = await q.result
       }
 
-      return q.result as FindResult<T>
+      return q.result as T
     } finally {
       q.callbacks--
 
@@ -65,46 +62,27 @@ export class QueryJoiner {
     }
   }
 
-  private findQuery<T extends Doc>(
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Query | undefined {
-    const queries = this.queries.get(_class)
-    if (queries === undefined) return
-    for (const q of queries) {
-      if (!deepEqual(query, q.query) || !deepEqual(options, q.options)) {
-        continue
+  private getQuery (key: string): Query {
+    const query = this.queries.get(key)
+    if (query === undefined) {
+      const q: Query = {
+        key,
+        result: undefined,
+        callbacks: 1,
+        max: 1
       }
-      q.callbacks++
-      q.max++
+      this.queries.set(key, q)
       return q
     }
-  }
 
-  private createQuery<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Query {
-    const queries = this.queries.get(_class) ?? []
-    const q: Query = {
-      _class,
-      query,
-      result: undefined,
-      options: options as FindOptions<Doc>,
-      callbacks: 1,
-      max: 1
-    }
-
-    queries.push(q)
-    this.queries.set(_class, queries)
-    return q
+    query.callbacks++
+    query.max++
+    return query
   }
 
   private removeFromQueue (q: Query): void {
     if (q.callbacks === 0) {
-      const queries = this.queries.get(q._class) ?? []
-      this.queries.set(
-        q._class,
-        queries.filter((it) => it !== q)
-      )
+      this.queries.delete(q.key)
     }
   }
 }
@@ -117,8 +95,16 @@ export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
 
   private constructor (context: PipelineContext, next?: Middleware) {
     super(context, next)
-    this.joiner = new QueryJoiner((ctx, _class, query, options) => {
-      return this.provideFindAll(ctx, _class, query, options)
+    this.joiner = new QueryJoiner()
+  }
+
+  loadModel (
+    ctx: MeasureContext<SessionData>,
+    lastModelTx: Timestamp,
+    hash?: string
+  ): Promise<Tx[] | LoadModelResponse> {
+    return this.joiner.query(ctx, `model-${lastModelTx}${hash ?? ''}`, async (ctx) => {
+      return await this.provideLoadModel(ctx, lastModelTx, hash)
     })
   }
 
@@ -136,7 +122,31 @@ export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
-    // Will find a query or add + 1 to callbacks
-    return this.joiner.findAll(ctx, _class, query, options)
+    const opt = { ...options }
+    delete opt.ctx
+    return this.joiner.query(
+      ctx,
+      `findAll-${_class}-${JSON.stringify(query)}-${JSON.stringify(options)}`,
+      async (ctx) => {
+        return await this.provideFindAll(ctx, _class, query, options)
+      }
+    )
+  }
+
+  groupBy<T, P extends Doc>(
+    ctx: MeasureContext<SessionData>,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<P>
+  ): Promise<Map<T, number>> {
+    return this.joiner.query(ctx, `groupBy-${domain}-${field}-${JSON.stringify(query ?? {})})`, async (ctx) => {
+      return await this.provideGroupBy(ctx, domain, field, query)
+    })
+  }
+
+  searchFulltext (ctx: MeasureContext<SessionData>, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return this.joiner.query(ctx, `searchFulltext-${JSON.stringify(query)}-${JSON.stringify(options)}`, async (ctx) => {
+      return await this.provideSearchFulltext(ctx, query, options)
+    })
   }
 }

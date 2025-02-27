@@ -64,6 +64,7 @@
     "PasswordMinDigits": "{count, plural, =1 {La password deve contenere almeno # numero} other {La password deve contenere almeno # numeri}}",
     "PasswordMinUpperChars": "{count, plural, =1 {La password deve contenere almeno # lettera maiuscola} other {La password deve contenere almeno # lettere maiuscole}}",
     "PasswordMinLowerChars": "{count, plural, =1 {La password deve contenere almeno # lettera minuscola} other {La password deve contenere almeno # lettere minuscole}}",
-    "WorkspaceArchivedDesc": "Il workspace è stato archiviato perché inutilizzato. Si prega di contattarci per ripristinarlo..."
+    "WorkspaceArchivedDesc": "Il workspace è stato archiviato perché inutilizzato.",
+    "RestoreArchivedWorkspace": "Un archiviato workspace"
   }
 }

@@ -138,6 +138,9 @@ export async function benchmark (
         }
       }
     })
+    worker.on('error', (err) => {
+      console.error('worker error', err)
+    })
   })
 
   const m = newMetrics()
@@ -150,6 +153,9 @@ export async function benchmark (
     moment: number
     mem: number
     memTotal: number
+    memRSS: number
+    memFree: number
+    memArrays: number
     cpu: number
     requestTime: number
     operations: number
@@ -161,6 +167,9 @@ export async function benchmark (
     moment: 'Moment Time',
     mem: 'Mem',
     memTotal: 'Mem total',
+    memRSS: 'Mem RSS',
+    memFree: 'Mem Free',
+    memArrays: 'Mem Arrays',
     cpu: 'CPU',
     requestTime: 'Request time',
     operations: 'OPS',
@@ -173,6 +182,9 @@ export async function benchmark (
   let cpu: number = 0
   let memUsed: number = 0
   let memTotal: number = 0
+  let memRSS: number = 0
+  const memFree: number = 0
+  let memArrays: number = 0
   let elapsed = 0
   let requestTime: number = 0
   let operations = 0
@@ -207,6 +219,7 @@ export async function benchmark (
         }
       }
       if (!found) {
+        console.log('no measurements found for path', path, p)
         return null
       }
     }
@@ -214,47 +227,60 @@ export async function benchmark (
   }
 
   let timer: any
+  let p: Promise<void> | undefined
   if (isMainThread && monitorConnection !== undefined) {
     timer = setInterval(() => {
       const st = platformNow()
 
       try {
-        const fetchUrl = endpoint.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
-        void fetch(fetchUrl)
-          .then((res) => {
-            void res
-              .json()
-              .then((json) => {
-                memUsed = json.statistics.memoryUsed
-                memTotal = json.statistics.memoryTotal
-                cpu = json.statistics.cpuUsage
-                // operations = 0
-                requestTime = 0
-                // transfer = 0
-                const r = extract(
-                  json.metrics as Metrics,
-                  '🧲 session',
-                  'client',
-                  'handleRequest',
-                  'process',
-                  'find-all'
-                )
-                operations = (r?.operations ?? 0) - oldOperations
-                oldOperations = r?.operations ?? 0
-
-                requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
-
-                const tr = extract(json.metrics as Metrics, '🧲 session', '#send-data')
-                transfer = (tr?.value ?? 0) - oldTransfer
-                oldTransfer = tr?.value ?? 0
-              })
-              .catch((err) => {
-                console.log(err)
-              })
+        const fetchUrl = endpoint.replace('ws:/', 'http:/') + '/api/v1/statistics'
+        if (p === undefined) {
+          p = fetch(fetchUrl, {
+            headers: {
+              Authorization: 'Bearer ' + token
+            },
+            keepalive: true
           })
-          .catch((err) => {
-            console.log(err)
-          })
+            .then((res) => {
+              void res
+                .json()
+                .then((json) => {
+                  memUsed = json.statistics.memoryUsed
+                  memTotal = json.statistics.memoryTotal
+                  memRSS = json.statistics.memoryRSS
+                  memArrays = json.statistics.memoryArrayBuffers
+                  cpu = json.statistics.cpuUsage
+                  // operations = 0
+                  requestTime = 0
+                  // transfer = 0
+                  const r = extract(
+                    json.metrics as Metrics,
+                    '🧲 session',
+                    'client',
+                    'handleRequest',
+                    'process',
+                    'find-all'
+                  )
+                  operations = (r?.operations ?? 0) - oldOperations
+                  oldOperations = r?.operations ?? 0
+
+                  requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
+
+                  const tr = extract(json.metrics as Metrics, '🧲 session', 'client', '#send-data')
+                  transfer = (tr?.value ?? 0) - oldTransfer
+                  oldTransfer = tr?.value ?? 0
+                  p = undefined
+                })
+                .catch((err) => {
+                  console.log(err)
+                  p = undefined
+                })
+            })
+            .catch((err) => {
+              console.log(err)
+              p = undefined
+            })
+        }
       } catch (err) {
         console.log(err)
       }
@@ -288,7 +314,10 @@ export async function benchmark (
           moment,
           average: Math.round(opTime / (ops + 1)),
           mem: memUsed,
+          memRSS,
           memTotal,
+          memFree,
+          memArrays,
           cpu,
           requestTime,
           operations,
@@ -363,7 +392,9 @@ export function benchmarkWorker (): void {
   if (!isMainThread) {
     parentPort?.on('message', (msg: StartMessage) => {
       console.log('starting worker', msg.workId)
-      void perform(msg)
+      void perform(msg).catch((err) => {
+        console.error('failed to perform', err)
+      })
     })
   }
 

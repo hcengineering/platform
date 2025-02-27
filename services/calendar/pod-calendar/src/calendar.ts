@@ -64,7 +64,8 @@ export class CalendarClient {
     private readonly user: User,
     private readonly mongo: Db,
     client: Client,
-    private readonly workspace: WorkspaceClient
+    private readonly workspace: WorkspaceClient,
+    stayAlive: boolean = false
   ) {
     this.client = new TxOperations(client, this.user.userId)
     this.systemTxOp = new TxOperations(client, core.account.System)
@@ -100,7 +101,8 @@ export class CalendarClient {
     user: User | Token,
     mongo: Db,
     client: Client,
-    workspace: WorkspaceClient
+    workspace: WorkspaceClient,
+    stayAlive: boolean = false
   ): Promise<CalendarClient> {
     const calendarClient = new CalendarClient(user, mongo, client, workspace)
     if (isToken(user)) {
@@ -423,6 +425,7 @@ export class CalendarClient {
       if (res.data.nextSyncToken != null) {
         await this.setEventHistoryId(calendarId, res.data.nextSyncToken)
       }
+      // if resync
     } catch (err: any) {
       if (err?.response?.status === 410) {
         await this.eventsSync(calendarId)
@@ -458,7 +461,7 @@ export class CalendarClient {
   private async updateExtEvent (event: calendar_v3.Schema$Event, current: Event): Promise<void> {
     this.updateTimer()
     if (event.status === 'cancelled' && current._class !== calendar.class.ReccuringInstance) {
-      await this.client.remove(current)
+      await this.systemTxOp.remove(current)
       return
     }
     const data: Partial<AttachedData<Event>> = await this.parseUpdateData(event)
@@ -473,7 +476,7 @@ export class CalendarClient {
         current as ReccuringInstance
       )
       if (Object.keys(diff).length > 0) {
-        await this.client.update(current, diff)
+        await this.systemTxOp.update(current, diff)
       }
     } else {
       if (event.recurrence != null) {
@@ -488,12 +491,12 @@ export class CalendarClient {
           current as ReccuringEvent
         )
         if (Object.keys(diff).length > 0) {
-          await this.client.update(current, diff)
+          await this.systemTxOp.update(current, diff)
         }
       } else {
         const diff = this.getDiff(data, current)
         if (Object.keys(diff).length > 0) {
-          await this.client.update(current, diff)
+          await this.systemTxOp.update(current, diff)
         }
       }
     }
@@ -1026,46 +1029,69 @@ export class CalendarClient {
     return res
   }
 
-  private applyUpdate (event: calendar_v3.Schema$Event, current: Event, me: string): calendar_v3.Schema$Event {
+  private applyUpdate (
+    event: calendar_v3.Schema$Event,
+    current: Event,
+    me: string
+  ): calendar_v3.Schema$Event | undefined {
+    let res: boolean = false
     if (current.title !== event.summary) {
       event.summary = current.title
+      res = true
     }
     if (current.visibility !== undefined) {
       const newVisibility = current.visibility === 'public' ? 'public' : 'private'
       if (newVisibility !== event.visibility) {
         event.visibility = newVisibility
+        res = true
       }
-      if (current.visibility === 'freeBusy') {
+      if (current.visibility === 'freeBusy' && event?.extendedProperties?.private?.visibility !== 'freeBusy') {
         event.extendedProperties = {
           ...event.extendedProperties,
           private: {
             visibility: 'freeBusy'
           }
         }
+        res = true
       }
     }
     const description = htmlToMarkup(event.description ?? '')
     if (current.description !== description) {
+      res = true
       event.description = description
     }
     if (current.location !== event.location) {
+      res = true
       event.location = current.location
     }
     const attendees = this.getAttendees(current, me)
     if (attendees.length > 0 && event.attendees !== undefined) {
       for (const attendee of attendees) {
         if (event.attendees.findIndex((p) => p.email === attendee) === -1) {
+          res = true
           event.attendees.push({ email: attendee })
         }
       }
     }
-    event.start = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
-    event.end = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
+    const newStart = convertDate(current.date, event.start?.date !== undefined, getTimezone(current))
+    if (!deepEqual(newStart, event.start)) {
+      res = true
+      event.start = newStart
+    }
+    const newEnd = convertDate(current.dueDate, event.end?.date !== undefined, getTimezone(current))
+    if (!deepEqual(newEnd, event.end)) {
+      res = true
+      event.end = newEnd
+    }
     if (current._class === calendar.class.ReccuringEvent) {
       const rec = current as ReccuringEvent
-      event.recurrence = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
+      const newRec = encodeReccuring(rec.rules, rec.rdate, rec.exdate)
+      if (!deepEqual(newRec, event.recurrence)) {
+        res = true
+        event.recurrence = newRec
+      }
     }
-    return event
+    return res ? event : undefined
   }
 
   private getAttendees (event: Event, me: string): string[] {

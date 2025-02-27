@@ -85,6 +85,5 @@ export function sendResponse (
   socket: ConnectionSocket,
   resp: Response<any>
 ): Promise<void> {
-  socket.send(ctx, resp, session.binaryMode, session.useCompression)
-  return Promise.resolve()
+  return socket.send(ctx, resp, session.binaryMode, session.useCompression)
 }

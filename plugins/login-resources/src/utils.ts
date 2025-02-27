@@ -13,19 +13,19 @@
 // limitations under the License.
 //
 
+import type { AccountClient, LoginInfo, OtpInfo, RegionInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
+import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
   concatLink,
-  type Person,
+  parseSocialIdString,
   type Doc,
+  type Person,
   type Ref,
   type WorkspaceInfoWithStatus,
-  type WorkspaceUserOperation,
-  parseSocialIdString
+  type WorkspaceUserOperation
 } from '@hcengineering/core'
-import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, AccountClient, RegionInfo } from '@hcengineering/account-client'
-import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { loginId } from '@hcengineering/login'
 import platform, {
   OK,
@@ -47,7 +47,7 @@ import {
   setMetadataLocalStorage,
   type Location
 } from '@hcengineering/ui'
-import { workbenchId, logIn } from '@hcengineering/workbench'
+import { logIn, workbenchId } from '@hcengineering/workbench'
 
 import { LoginEvents } from './analytics'
 import { type Pages } from './index'
@@ -387,6 +387,15 @@ export async function fetchWorkspace (): Promise<[Status, WorkspaceInfoWithStatu
 
       return [unknownError(err), null]
     }
+  }
+}
+
+export async function unArchive (workspaceId: string, token: string): Promise<boolean> {
+  try {
+    return await getAccountClient(token).performWorkspaceOperation(workspaceId, 'unarchive')
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return false
   }
 }
 
