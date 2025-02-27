@@ -362,9 +362,7 @@ export function startHttpServer (
     })
   )
 
-  registerRPC(app, sessions, ctx, pipelineFactory)
-
-  registerRPC(app, sessions, ctx, pipelineFactory)
+  registerRPC(app, sessions, ctx, pipelineFactory, communicationApiFactory)
 
   app.put('/api/v1/broadcast', (req, res) => {
     try {

@@ -1,6 +1,7 @@
 import type { Class, Doc, MeasureContext, Ref } from '@hcengineering/core'
 import type {
   ClientSessionCtx,
+  CommunicationApiFactory,
   ConnectionSocket,
   PipelineFactory,
   Session,
@@ -70,7 +71,8 @@ export function registerRPC (
   app: Express,
   sessions: SessionManager,
   ctx: MeasureContext,
-  pipelineFactory: PipelineFactory
+  pipelineFactory: PipelineFactory,
+  communicationApiFactory: CommunicationApiFactory
 ): void {
   const rpcSessions = new Map<string, RPCClientInfo>()
 
@@ -102,7 +104,7 @@ export function registerRPC (
 
     if (transactorRpc === undefined) {
       const cs: ConnectionSocket = createClosingSocket(token, rpcSessions)
-      const s = await sessions.addSession(ctx, cs, decodedToken, token, pipelineFactory, token)
+      const s = await sessions.addSession(ctx, cs, decodedToken, token, pipelineFactory, communicationApiFactory, token)
       if (!('session' in s)) {
         sendError(res, 401, {
           message: 'Failed to create session',

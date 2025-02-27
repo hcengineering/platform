@@ -1159,7 +1159,10 @@ export class TSessionManager implements SessionManager {
           const params = [...request.params]
 
           await ctx.with('🧨 process', {}, (callTx) =>
-            f.apply(service, [this.createOpContext(callTx, pipeline, communicationApi, request.id, service, ws), ...params])
+            f.apply(service, [
+              this.createOpContext(callTx, pipeline, communicationApi, request.id, service, ws),
+              ...params
+            ])
           )
         } catch (err: any) {
           Analytics.handleError(err)

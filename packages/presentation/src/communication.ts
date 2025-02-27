@@ -1,57 +1,68 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 import {
-  type Attachment,
   type CardID,
-  type ContextID,
+  type FindMessagesGroupsParams,
   type FindMessagesParams,
   type FindNotificationContextParams,
   type FindNotificationsParams,
   type Message,
   type MessageID,
+  type MessagesGroup,
   type Notification,
   type NotificationContext,
-  type NotificationContextUpdate,
-  type Reaction,
   type RichText,
   type SocialID
 } from '@hcengineering/communication-types'
 import {
-  type BroadcastEvent,
   type CreateAttachmentEvent,
   type CreateMessageEvent,
   type CreateMessageResult,
-  type CreateNotificationContextEvent,
-  type CreateNotificationContextResult,
-  type CreateNotificationEvent,
   type CreatePatchEvent,
   type CreateReactionEvent,
-  type Event,
   type EventResult,
-  EventType,
   type RemoveAttachmentEvent,
   type RemoveMessageEvent,
-  type RemoveNotificationContextEvent,
-  type RemoveNotificationEvent,
   type RemoveReactionEvent,
-  type UpdateNotificationContextEvent
+  type RequestEvent,
+  RequestEventType,
+  type ResponseEvent,
+  type CreateThreadEvent
 } from '@hcengineering/communication-sdk-types'
 import {
   type Client as PlatformClient,
   type ClientConnection as PlatformConnection,
-  getCurrentAccount
+  getCurrentAccount,
+  SocialIdType
 } from '@hcengineering/core'
 import {
-  initLiveQueries,
   createMessagesQuery,
-  createNotificationsQuery
+  createNotificationsQuery,
+  initLiveQueries
 } from '@hcengineering/communication-client-query'
+
+import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 
 export { createMessagesQuery, createNotificationsQuery }
 
 interface Connection extends PlatformConnection {
   findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
+  findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
   findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
-  sendEvent: (event: Event) => Promise<EventResult>
+  sendEvent: (event: RequestEvent) => Promise<EventResult>
   unsubscribeQuery: (id: number) => Promise<void>
 }
 
@@ -69,30 +80,42 @@ export async function setCommunicationClient (platformClient: PlatformClient): P
     return
   }
   client = new Client(connection as unknown as Connection)
-  initLiveQueries(client)
+  initLiveQueries(client, getCurrentWorkspaceUuid(), getFilesUrl())
 }
 
 class Client {
-  onEvent: (event: BroadcastEvent) => void = () => {}
+  onEvent: (event: ResponseEvent) => void = () => {}
 
   constructor (private readonly connection: Connection) {
     connection.pushHandler((...events: any[]) => {
       for (const event of events) {
         if (event != null && 'type' in event) {
-          this.onEvent(event as BroadcastEvent)
+          this.onEvent(event as ResponseEvent)
         }
       }
     })
   }
 
   private getSocialId (): SocialID {
-    // TODO: get correct social id
-    return getCurrentAccount().primarySocialId
+    const id = getCurrentAccount().socialIds.find((it) => it.startsWith(SocialIdType.HULY))
+    if (id == null) throw new Error('Huly social id not found')
+    return id
+  }
+
+  async createThread (card: CardID, message: MessageID, thread: CardID): Promise<void> {
+    const event: CreateThreadEvent = {
+      type: RequestEventType.CreateThread,
+      card,
+      message,
+      thread
+    }
+
+    await this.connection.sendEvent(event)
   }
 
   async createMessage (card: CardID, content: RichText): Promise<MessageID> {
     const event: CreateMessageEvent = {
-      type: EventType.CreateMessage,
+      type: RequestEventType.CreateMessage,
       card,
       content,
       creator: this.getSocialId()
@@ -103,16 +126,16 @@ class Client {
 
   async removeMessage (card: CardID, message: MessageID): Promise<void> {
     const event: RemoveMessageEvent = {
-      type: EventType.RemoveMessage,
+      type: RequestEventType.RemoveMessage,
       card,
       message
     }
     await this.connection.sendEvent(event)
   }
 
-  async createPatch (card: CardID, message: MessageID, content: RichText): Promise<void> {
+  async updateMessage (card: CardID, message: MessageID, content: RichText): Promise<void> {
     const event: CreatePatchEvent = {
-      type: EventType.CreatePatch,
+      type: RequestEventType.CreatePatch,
       card,
       message,
       content,
@@ -123,7 +146,7 @@ class Client {
 
   async createReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
     const event: CreateReactionEvent = {
-      type: EventType.CreateReaction,
+      type: RequestEventType.CreateReaction,
       card,
       message,
       reaction,
@@ -134,7 +157,7 @@ class Client {
 
   async removeReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
     const event: RemoveReactionEvent = {
-      type: EventType.RemoveReaction,
+      type: RequestEventType.RemoveReaction,
       card,
       message,
       reaction,
@@ -145,7 +168,7 @@ class Client {
 
   async createAttachment (card: CardID, message: MessageID, attachment: CardID): Promise<void> {
     const event: CreateAttachmentEvent = {
-      type: EventType.CreateAttachment,
+      type: RequestEventType.CreateAttachment,
       card,
       message,
       attachment,
@@ -156,7 +179,7 @@ class Client {
 
   async removeAttachment (card: CardID, message: MessageID, attachment: CardID): Promise<void> {
     const event: RemoveAttachmentEvent = {
-      type: EventType.RemoveAttachment,
+      type: RequestEventType.RemoveAttachment,
       card,
       message,
       attachment
@@ -164,86 +187,12 @@ class Client {
     await this.connection.sendEvent(event)
   }
 
-  async createNotification (message: MessageID, context: ContextID): Promise<void> {
-    const event: CreateNotificationEvent = {
-      type: EventType.CreateNotification,
-      message,
-      context
-    }
-    await this.connection.sendEvent(event)
-  }
-
-  async removeNotification (message: MessageID, context: ContextID): Promise<void> {
-    const event: RemoveNotificationEvent = {
-      type: EventType.RemoveNotification,
-      message,
-      context
-    }
-    await this.connection.sendEvent(event)
-  }
-
-  async createNotificationContext (card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID> {
-    const event: CreateNotificationContextEvent = {
-      type: EventType.CreateNotificationContext,
-      card,
-      lastView,
-      lastUpdate
-    }
-    const result = await this.connection.sendEvent(event)
-    return (result as CreateNotificationContextResult).id
-  }
-
-  async removeNotificationContext (context: ContextID): Promise<void> {
-    const event: RemoveNotificationContextEvent = {
-      type: EventType.RemoveNotificationContext,
-      context
-    }
-    await this.connection.sendEvent(event)
-  }
-
-  async updateNotificationContext (context: ContextID, update: NotificationContextUpdate): Promise<void> {
-    const event: UpdateNotificationContextEvent = {
-      type: EventType.UpdateNotificationContext,
-      context,
-      update
-    }
-    await this.connection.sendEvent(event)
-  }
-
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
-    const rawMessages = await this.connection.findMessages(params, queryId)
-    return rawMessages.map((it: any) => this.toMessage(it))
+    return await this.connection.findMessages(params, queryId)
   }
 
-  private toMessage (raw: any): Message {
-    return {
-      id: raw.id,
-      card: raw.card,
-      content: raw.content,
-      creator: raw.creator,
-      created: new Date(raw.created),
-      edited: new Date(raw.edited),
-      reactions: raw.reactions.map((it: any) => this.toReaction(it)),
-      attachments: raw.attachments.map((it: any) => this.toAttachment(it))
-    }
-  }
-
-  private toAttachment (raw: any): Attachment {
-    return {
-      message: raw.message,
-      card: raw.card,
-      creator: raw.creator,
-      created: new Date(raw.created)
-    }
-  }
-
-  private toReaction (raw: any): Reaction {
-    return {
-      message: raw.message,
-      reaction: raw.reaction,
-      creator: raw.creator,
-      created: new Date(raw.created)
-    }
+  async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+    return await this.connection.findMessagesGroups(params)
   }
 
   async findNotificationContexts (
