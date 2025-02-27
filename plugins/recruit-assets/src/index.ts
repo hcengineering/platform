@@ -15,8 +15,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import recruit from '@hcengineering/recruit'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(recruit.icon, {
   RecruitApplication: `${icons}#recruitment`,
   Vacancy: `${icons}#vacancy`,

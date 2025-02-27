@@ -15,8 +15,8 @@
 
 import products from '@hcengineering/products'
 import { loadMetadata } from '@hcengineering/platform'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(products.icon, {
   Product: `${icons}#product`,
   ProductVersion: `${icons}#productVersion`,

@@ -15,8 +15,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import mySpace from '@hcengineering/my-space'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(mySpace.icon, {
   MySpace: `${icons}#browser`,
   Mail: `${icons}#email`

@@ -15,8 +15,8 @@
 
 import document from '@hcengineering/document'
 import { loadMetadata } from '@hcengineering/platform'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(document.icon, {
   DocumentApplication: `${icons}#documentapplication`,
   Document: `${icons}#document`,

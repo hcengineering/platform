@@ -15,8 +15,8 @@
 
 import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
 import survey, { surveyId } from '@hcengineering/survey'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(survey.icon, {
   Application: `${icons}#application`,
   Info: `${icons}#info`,

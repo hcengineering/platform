@@ -15,8 +15,8 @@
 //
 import { loadMetadata } from '@hcengineering/platform'
 import textEditor from '@hcengineering/text-editor'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(textEditor.icon, {
   Header1: `${icons}#header1`,
   Header2: `${icons}#header2`,

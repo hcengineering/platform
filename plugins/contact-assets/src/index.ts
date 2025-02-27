@@ -15,8 +15,8 @@
 
 import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
 import contact, { contactId } from '@hcengineering/contact'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(contact.icon, {
   ContactApplication: `${icons}#contactapplication`,
   Phone: `${icons}#phone`,

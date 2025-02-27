@@ -15,8 +15,8 @@
 
 import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
 import guest, { guestId } from '@hcengineering/guest'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(guest.icon, {
   Link: `${icons}#link`
 })

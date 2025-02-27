@@ -4,8 +4,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import training from '@hcengineering/training'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(training.icon, {
   Cancel: `${icons}#cancel`,
   Duplicate: `${icons}#duplicate`,

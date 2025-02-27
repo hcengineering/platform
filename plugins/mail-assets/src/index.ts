@@ -15,8 +15,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import mail from '@hcengineering/mail'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(mail.icon, {
   NewMail: `${icons}#new-mail`,
   Inbox: `${icons}#inbox`,

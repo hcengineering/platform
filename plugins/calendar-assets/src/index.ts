@@ -15,8 +15,9 @@
 
 import calendar from '@hcengineering/calendar'
 import { loadMetadata } from '@hcengineering/platform'
+import icons from '../assets/icons.svg'
+import permission from '../assets/permission.png'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(calendar.icon, {
   Calendar: `${icons}#calendar`,
   CalendarView: `${icons}#calendarView`,
@@ -32,8 +33,6 @@ loadMetadata(calendar.icon, {
   Public: `${icons}#public`,
   Hidden: `${icons}#eyeCrossed`
 })
-
-const permission = require('../assets/permission.png') as string // eslint-disable-line
 
 loadMetadata(calendar.image, {
   Permissions: permission

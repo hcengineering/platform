@@ -4,8 +4,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import github from '@hcengineering/github'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(github.icon, {
   Github: `${icons}#github`,
   GithubRepository: `${icons}#repository`,

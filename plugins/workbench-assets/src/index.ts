@@ -15,8 +15,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import workbench from '@hcengineering/workbench'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(workbench.icon, {
   Search: `${icons}#search`
 })

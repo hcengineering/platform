@@ -15,8 +15,8 @@
 
 import testManagement from '@hcengineering/test-management'
 import { loadMetadata } from '@hcengineering/platform'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(testManagement.icon, {
   TestCase: `${icons}#testCase`,
   TestManagementApplication: `${icons}#testManagementApplication`,

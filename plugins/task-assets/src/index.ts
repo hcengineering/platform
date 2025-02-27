@@ -15,8 +15,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import task from '@hcengineering/task'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(task.icon, {
   Task: `${icons}#task`,
   Kanban: `${icons}#kanban`,

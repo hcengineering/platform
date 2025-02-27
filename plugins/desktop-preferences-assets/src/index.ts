@@ -15,8 +15,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import desktopPreferences from '@hcengineering/desktop-preferences'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(desktopPreferences.icon, {
   NotificationMessage: `${icons}#notificationMessage`
 })

@@ -15,8 +15,9 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import love from '@hcengineering/love'
+import icons from '../assets/icons.svg'
+import Knock from '../assets/knock.wav'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(love.icon, {
   Love: `${icons}#office`,
   SharingEnabled: `${icons}#shareOn`,
@@ -40,5 +41,5 @@ loadMetadata(love.icon, {
   Kick: `${icons}#kick`
 })
 loadMetadata(love.sound, {
-  Knock: require('../assets/knock.wav')
+  Knock
 })

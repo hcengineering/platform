@@ -16,8 +16,8 @@
 import { loadMetadata } from '@hcengineering/platform'
 import core from '@hcengineering/core'
 import view from '@hcengineering/view'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(view.icon, {
   Table: `${icons}#table`,
   List: `${icons}#list`,

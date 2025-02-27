@@ -13,8 +13,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import card from '@hcengineering/card'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(card.icon, {
   MasterTags: `${icons}#masterTags`,
   MasterTag: `${icons}#masterTag`,

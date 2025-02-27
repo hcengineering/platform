@@ -15,8 +15,8 @@
 
 import bitrix from '@hcengineering/bitrix'
 import { loadMetadata } from '@hcengineering/platform'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(bitrix.icon, {
   Bitrix: `${icons}#bitrix`
 })

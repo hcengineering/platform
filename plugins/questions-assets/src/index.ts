@@ -4,8 +4,8 @@
 
 import { loadMetadata } from '@hcengineering/platform'
 import questions from '@hcengineering/questions'
+import icons from '../assets/icons.svg'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(questions.icon, {
   ArrowDown: `${icons}#arrow-down`,
   ArrowUp: `${icons}#arrow-up`,
