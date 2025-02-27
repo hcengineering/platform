@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
+import dotenv from 'dotenv'
+dotenv.config()
+
 // eslint-disable-next-line
-require('dotenv').config()
-// eslint-disable-next-line
-const { main } = require('./main')
+import { main } from './main'
 void main()

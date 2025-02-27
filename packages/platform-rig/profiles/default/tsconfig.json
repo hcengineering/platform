@@ -6,6 +6,7 @@
     "strict": true,
     "sourceMap": true,
     "resolveJsonModule": true,
+    "moduleResolution": "node",
     "types": ["jest"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,

@@ -14,7 +14,9 @@
 //
 
 // eslint-disable-next-line
-require('dotenv').config()
+import dotenv from 'dotenv'
+dotenv.config()
+
 // eslint-disable-next-line
 import { startServer } from './server'
 void startServer()
