@@ -174,7 +174,7 @@ export class WorkspaceClient {
     }, 20000)
   }
 
-  private getCalendarClient (email: string): CalendarClient | Promise<CalendarClient> | undefined {
+  getCalendarClient (email: string): CalendarClient | Promise<CalendarClient> | undefined {
     return this.clients.get(email)
   }
 
@@ -246,6 +246,7 @@ export class WorkspaceClient {
         await client.release()
       })
     }
+    await limiter.waitProcessing()
   }
 
   // #region Events

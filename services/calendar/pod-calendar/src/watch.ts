@@ -143,7 +143,7 @@ export class WatchClient {
 export class WatchController {
   private readonly watches: Collection<Watch>
   private readonly tokens: Collection<Token>
-  readonly rateLimiter = new RateLimiter(1000, 500)
+  readonly rateLimiter = new RateLimiter(60 * 1000, 600)
 
   private timer: NodeJS.Timeout | undefined = undefined
   protected static _instance: WatchController
