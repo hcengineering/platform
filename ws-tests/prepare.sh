@@ -22,3 +22,8 @@ fi
 ./tool.sh create-account admin -f Super -l Admin -p 1234
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234
+
+./tool.sh create-workspace api-tests email:user1
+./tool-europe.sh create-workspace api-tests-cr email:user1 --region 'europe'
+./tool.sh assign-workspace user1 api-tests
+./tool.sh assign-workspace user1 api-tests-cr

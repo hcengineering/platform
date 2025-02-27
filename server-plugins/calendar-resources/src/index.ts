@@ -16,6 +16,7 @@ import calendar, { Calendar, Event, ExternalCalendar } from '@hcengineering/cale
 import contactPlugin, { Employee, Person, SocialIdentity, pickPrimarySocialId } from '@hcengineering/contact'
 import core, {
   Class,
+  concatLink,
   Data,
   Doc,
   DocumentQuery,
@@ -26,6 +27,7 @@ import core, {
   buildSocialIdString,
   parseSocialIdString,
   Ref,
+  systemAccountUuid,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -34,10 +36,12 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
+import serverCalendar from '@hcengineering/server-calendar'
+import { getMetadata, getResource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { getPerson, getSocialStrings } from '@hcengineering/server-contact'
 import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
+import { generateToken } from '@hcengineering/server-token'
 
 /**
  * @public
@@ -193,6 +197,9 @@ async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl):
   if (Object.keys(otherOps).length === 0) return []
   const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: ctx.objectId }, { limit: 1 }))[0]
   if (event === undefined) return []
+  if (ctx.modifiedBy !== core.account.System) {
+    void sendEventToService(event, 'update', control)
+  }
   if (event.access !== 'owner') return []
   const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
   const res: Tx[] = []
@@ -268,8 +275,43 @@ async function eventForNewParticipants (
   return res
 }
 
+async function sendEventToService (
+  event: Event,
+  type: 'create' | 'update' | 'delete',
+  control: TriggerControl
+): Promise<void> {
+  const url = getMetadata(serverCalendar.metadata.EndpointURL) ?? ''
+
+  if (url === '') {
+    return
+  }
+
+  const workspace = control.workspace.uuid
+
+  try {
+    await fetch(concatLink(url, '/event'), {
+      method: 'POST',
+      keepalive: true,
+      headers: {
+        Authorization: 'Bearer ' + generateToken(systemAccountUuid, workspace),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        event,
+        workspace,
+        type
+      })
+    })
+  } catch (err) {
+    control.ctx.error('Could not send calendar event to service', { err })
+  }
+}
+
 async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl): Promise<Tx[]> {
   const event = TxProcessor.createDoc2Doc(ctx)
+  if (ctx.modifiedBy !== core.account.System) {
+    void sendEventToService(event, 'create', control)
+  }
   if (event.access !== 'owner') return []
   const res: Tx[] = []
   const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
@@ -309,6 +351,9 @@ async function onRemoveEvent (ctx: TxRemoveDoc<Event>, control: TriggerControl):
   const removed = control.removedMap.get(ctx.objectId) as Event
   const res: Tx[] = []
   if (removed !== undefined) {
+    if (ctx.modifiedBy !== core.account.System) {
+      void sendEventToService(removed, 'delete', control)
+    }
     if (removed.access !== 'owner') return []
     const current = await control.findAll(control.ctx, calendar.class.Event, { eventId: removed.eventId })
     for (const cur of current) {

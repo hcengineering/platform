@@ -201,7 +201,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   router.get('/api/v1/statistics', (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? extractToken(req.headers)
       const payload = decodeToken(token)
       const admin = payload.extra?.admin === 'true'
       const data: Record<string, any> = {
@@ -209,8 +209,11 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
         statistics: {}
       }
       data.statistics.totalClients = 0
-      data.statistics.memoryUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100
-      data.statistics.memoryTotal = Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) / 100
+      const mem = process.memoryUsage()
+      data.statistics.memoryUsed = Math.round((mem.heapUsed / 1024 / 1024) * 100) / 100
+      data.statistics.memoryTotal = Math.round((mem.heapTotal / 1024 / 1024) * 100) / 100
+      data.statistics.memoryRSS = Math.round((mem.rss / 1024 / 1024) * 100) / 100
+      data.statistics.memoryArrayBuffers = Math.round((mem.arrayBuffers / 1024 / 1024) * 100) / 100
       data.statistics.cpuUsage = Math.round(os.loadavg()[0] * 100) / 100
       data.statistics.freeMem = Math.round((os.freemem() / 1024 / 1024) * 100) / 100
       data.statistics.totalMem = Math.round((os.totalmem() / 1024 / 1024) * 100) / 100

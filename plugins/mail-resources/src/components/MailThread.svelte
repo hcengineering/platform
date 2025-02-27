@@ -20,23 +20,21 @@
 
   import { getResource } from '@hcengineering/platform'
   import { ActionContext, getClient } from '@hcengineering/presentation'
-  import { type Class, type Ref } from '@hcengineering/core'
-  import mail, { MailThread, MailMessage } from '@hcengineering/mail'
+  import { Class, type Ref } from '@hcengineering/core'
+  import { type Card } from '@hcengineering/card'
+  import mail from '@hcengineering/mail'
+  import chunter, { ChatMessage } from '@hcengineering/chunter'
   import { Panel } from '@hcengineering/panel'
-  import { type AnySvelteComponent, Button, Component, Loading, showPopup } from '@hcengineering/ui'
-  import chunter from '@hcengineering/chunter'
+  import { type AnySvelteComponent, Component, Loading } from '@hcengineering/ui'
   import view, { type ObjectPresenter } from '@hcengineering/view'
 
-  import { getReplySubject } from '../messageUtils'
+  export let _id: Ref<Card>
+  export let _class: Ref<Class<Card>> = mail.class.MailThread
+  export let object: Card | undefined
 
-  export let _id: Ref<MailThread>
-  export let _class: Ref<Class<MailThread>>
-
-  const messageClass = mail.class.MailMessage
-  let messages: MailMessage[] = []
+  const messageClass = chunter.class.ChatMessage
+  let messages: ChatMessage[] = []
   let isLoading = true
-
-  let object: MailThread | undefined
 
   const dispatch = createEventDispatcher()
 
@@ -78,16 +76,10 @@
   }
 
   async function findThread (): Promise<void> {
+    if (object !== undefined && object?._id === _id) {
+      return
+    }
     object = await client.findOne(_class, { _id })
-  }
-
-  async function reply (): Promise<void> {
-    showPopup(mail.component.CreateMail, {
-      to: object?.from,
-      from: object?.to,
-      subject: getReplySubject(object?.subject ?? ''),
-      mailThreadId: object?.mailThreadId
-    })
   }
 
   onMount(() => dispatch('open', { ignoreKeys: [] }))
@@ -97,7 +89,7 @@
   <ActionContext context={{ mode: 'editor' }} />
   <Panel
     {object}
-    title={object.subject}
+    title={object.title}
     isHeader={false}
     isAside={false}
     isSub={false}
@@ -106,9 +98,6 @@
     on:open
     on:close={() => dispatch('close')}
   >
-    <svelte:fragment slot="utils">
-      <Button disabled={isLoading} label={mail.string.Reply} kind={'primary'} on:click={reply} />
-    </svelte:fragment>
     {#if isLoading}
       <Loading />
     {:else if messagePresenter !== undefined}

@@ -456,6 +456,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/api-tests",
+      "projectFolder": "ws-tests/api-tests",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/importer",
       "projectFolder": "packages/importer",
       "shouldPublish": false

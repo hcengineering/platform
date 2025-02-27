@@ -80,9 +80,9 @@ const extractQueryToken = (queryParams: any): string | null => {
 const extractToken = (headers: IncomingHttpHeaders, queryParams: any): string => {
   try {
     const token =
-      extractCookieToken(headers.cookie) ??
       extractAuthorizationToken(headers.authorization) ??
-      extractQueryToken(queryParams)
+      extractQueryToken(queryParams) ??
+      extractCookieToken(headers.cookie)
 
     if (token === null) {
       throw new ApiError(401)

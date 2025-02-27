@@ -64,6 +64,7 @@
     "PasswordMinDigits": "{count, plural, =1 {Password must contain at least # number} other {Password must contain at least # numbers}}",
     "PasswordMinUpperChars": "{count, plural, =1 {Password must contain at least # uppercase letter} other {Password must contain at least # uppercase letters}}",
     "PasswordMinLowerChars": "{count, plural, =1 {Password must contain at least # lowercase letter} other {Password must contain at least # lowercase letters}}",
-    "WorkspaceArchivedDesc": "Workspace is archived because of being unused, Please contact us to restore..."
+    "WorkspaceArchivedDesc": "Workspace is archived because of being unused.",
+    "RestoreArchivedWorkspace": "Unarchive"
   }
 }

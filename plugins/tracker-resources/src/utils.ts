@@ -39,6 +39,7 @@ import { type IntlString } from '@hcengineering/platform'
 import { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import task, { getStatusIndex, makeRank, type TaskType, type ProjectType } from '@hcengineering/task'
 import {
+  selectedTaskTypeStore,
   activeProjects as taskActiveProjects,
   taskTypeStore,
   typesOfJoinedProjectsStore
@@ -162,6 +163,8 @@ export async function issueStatusSort (
   const joinedTaskTypes = Array.from(taskTypes.values()).filter(
     (taskType) => joinedProjectsTypes.includes(taskType.parent) && taskType.ofClass === tracker.class.Issue
   )
+  const taskTypeId = get(selectedTaskTypeStore) ?? (joinedTaskTypes.length === 1 ? joinedTaskTypes[0]?._id : undefined)
+  const taskType = taskTypeId !== undefined ? taskTypes.get(taskTypeId) : undefined
 
   const statuses = get(statusStore).byId
   // TODO: How we track category updates.
@@ -174,6 +177,11 @@ export async function issueStatusSort (
         listIssueKanbanStatusOrder.indexOf(aVal?.category as Ref<StatusCategory>) -
         listIssueKanbanStatusOrder.indexOf(bVal?.category as Ref<StatusCategory>)
       if (res === 0) {
+        if (taskType != null) {
+          const aIndex = taskType.statuses.findIndex((p) => p === a)
+          const bIndex = taskType.statuses.findIndex((p) => p === b)
+          return aIndex - bIndex
+        }
         if (type != null) {
           const aIndex = getStatusIndex(type, taskTypes, a)
           const bIndex = getStatusIndex(type, taskTypes, b)
@@ -193,6 +201,11 @@ export async function issueStatusSort (
         listIssueStatusOrder.indexOf(aVal?.category as Ref<StatusCategory>) -
         listIssueStatusOrder.indexOf(bVal?.category as Ref<StatusCategory>)
       if (res === 0) {
+        if (taskType != null) {
+          const aIndex = taskType.statuses.findIndex((p) => p === a)
+          const bIndex = taskType.statuses.findIndex((p) => p === b)
+          return aIndex - bIndex
+        }
         if (type != null) {
           const aIndex = getStatusIndex(type, taskTypes, a)
           const bIndex = getStatusIndex(type, taskTypes, b)

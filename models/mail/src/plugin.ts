@@ -12,4 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-export { default } from '@hcengineering/mail'
+import { mergeIds } from '@hcengineering/platform'
+import { mailId } from '@hcengineering/mail'
+import mail from '@hcengineering/mail-resources/src/plugin'
+
+export default mergeIds(mailId, mail, {})

@@ -44,6 +44,7 @@ import core, {
   clone,
   generateId,
   shouldShowArchived,
+  systemAccountUuid,
   toFindResult,
   type PersonUuid,
   type SessionData
@@ -345,8 +346,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const users = new Set(
       socialStrings.map((s) => socialStringsToUsers.get(s)).filter((u) => u !== undefined) as string[]
     )
-    // Do we need to add system account to targets?
-    // res.push(systemAccountUuid)
+    // We need to add system account for targets for integrations to work properly
+    users.add(systemAccountUuid)
     return Array.from(users)
   }
 

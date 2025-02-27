@@ -46,6 +46,7 @@ import { startHttpServer } from '../server_http'
 import { genMinModel } from './minmodel'
 
 describe('server', () => {
+  const port = 10000
   const handler = new RPCHandler()
   async function getModelDb (): Promise<{ modelDb: ModelDb, hierarchy: Hierarchy }> {
     const txes = genMinModel()
@@ -96,7 +97,7 @@ describe('server', () => {
       }
     },
     sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
-    port: 3335,
+    port,
     brandingMap: {},
     serverFactory: startHttpServer,
     accountsUrl: '',
@@ -105,7 +106,7 @@ describe('server', () => {
 
   function connect (): WebSocket {
     const token: string = generateToken('' as PersonUuid, 'latest' as WorkspaceUuid)
-    return new WebSocket(`ws://localhost:3335/${token}`)
+    return new WebSocket(`ws://localhost:${port}/${token}`)
   }
 
   afterAll(async () => {
@@ -123,7 +124,7 @@ describe('server', () => {
   })
 
   it('should not connect to server without token', (done) => {
-    const conn = new WebSocket('ws://localhost:3335/xyz')
+    const conn = new WebSocket(`ws://localhost:${port}/xyz`)
     conn.on('error', () => {
       conn.close(1000)
     })
@@ -207,7 +208,7 @@ describe('server', () => {
         }
       },
       sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
-      port: 3336,
+      port: port + 1,
       brandingMap: {},
       serverFactory: startHttpServer,
       accountsUrl: '',
@@ -215,7 +216,7 @@ describe('server', () => {
     })
 
     async function findClose (token: string, timeoutPromise: Promise<void>, code: number): Promise<string> {
-      const newConn = new WebSocket(`ws://localhost:3336/${token}?sessionId=s1`)
+      const newConn = new WebSocket(`ws://localhost:${port + 1}/${token}?sessionId=s1`)
 
       await Promise.race([
         timeoutPromise,

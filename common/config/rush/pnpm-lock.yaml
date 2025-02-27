@@ -109,6 +109,9 @@ importers:
       '@rush-temp/api-client':
         specifier: file:./projects/api-client.tgz
         version: file:projects/api-client.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(esbuild@0.24.2)(utf-8-validate@6.0.4)
+      '@rush-temp/api-tests':
+        specifier: file:./projects/api-tests.tgz
+        version: file:projects/api-tests.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/attachment':
         specifier: file:./projects/attachment.tgz
         version: file:projects/attachment.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -4012,6 +4015,10 @@ packages:
     resolution: {integrity: sha512-SMKCkubeb8nE1zsYu0fsutpc9LJKiNOG0bn9NP+FxlSU4NGb8++EpZfb650lGYdvg2MljvrQD+kqYQDt1IRd1A==, tarball: file:projects/api-client.tgz}
     version: 0.0.0
 
+  '@rush-temp/api-tests@file:projects/api-tests.tgz':
+    resolution: {integrity: sha512-gleyNro85I24sFWGaNjqqz1AF2c8sugQ4vZX/UD/OVu+It6mI96P2Zd8pDl9FqPaIUvtYng8ePj0ThjwI5uGFw==, tarball: file:projects/api-tests.tgz}
+    version: 0.0.0
+
   '@rush-temp/attachment-assets@file:projects/attachment-assets.tgz':
     resolution: {integrity: sha512-C4ZvrB9y7H0bh1vbkqmKw9tIrwFAHUG7P6kPI+tjRPRKQNGAn61eiVSTpM8BCGNY/mFC5b+uMy0us0UaqvPy+A==, tarball: file:projects/attachment-assets.tgz}
     version: 0.0.0
@@ -4353,11 +4360,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/mail-resources@file:projects/mail-resources.tgz':
-    resolution: {integrity: sha512-MArPZYwi2jollp/LHmrsx6wqyZzX/2XwjptpOg/10kADjpwo6wShL95ABMx5sCZo3+8paGXU1PipjnikbpNc0w==, tarball: file:projects/mail-resources.tgz}
+    resolution: {integrity: sha512-495MjItvq3ep8/hMbrw8ITDPZQ8oNC+5h1ZLTU0uCLUAOVgu1BFVpRtBZ8nFAIxK2Aks5JpKg9No2070QDjDaQ==, tarball: file:projects/mail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/mail@file:projects/mail.tgz':
-    resolution: {integrity: sha512-0UzQEN733mDUZKfsGvNq8ikfsbVjQgTFOzP7/+buwIfWgeZBqVCoCDJrk90ZQ38yp8dMgdWZ+OymfTZ4WNlb7g==, tarball: file:projects/mail.tgz}
+    resolution: {integrity: sha512-Ld099uwXEeUid9s0GYHmgUKkctWnDc6D+yppNRmJhnf7VWtInqIPM2S3vl1kQi7pj0LwUY8ZKQ8B6m7Wxgj1Pw==, tarball: file:projects/mail.tgz}
     version: 0.0.0
 
   '@rush-temp/middleware@file:projects/middleware.tgz':
@@ -4461,7 +4468,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-mail@file:projects/model-mail.tgz':
-    resolution: {integrity: sha512-/GxdWziahn6TAFJ4/9V7YPatdGo68lWecWkOyMVdBtPFl9VcPsxYKt3cqWz9qk2G6UxV2k2bmI0qt8kg1anxUA==, tarball: file:projects/model-mail.tgz}
+    resolution: {integrity: sha512-ZJ0BKaCme1heHlFvWPZO419uFncRPU832X/ce17INounlmwjTR8O/V6DBbeSn+VPJnhVq9LIZurd7REYrP+bjA==, tarball: file:projects/model-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/model-my-space@file:projects/model-my-space.tgz':
@@ -4769,7 +4776,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-calendar@file:projects/pod-calendar.tgz':
-    resolution: {integrity: sha512-gUk3jshnHJ0CUucxZ1Stk8oQ2DTdSVfJzFHIl/EBUISbRv/YySoXesQCnqfn1kVpqOBZdIvI/N4NRAL/yREbWw==, tarball: file:projects/pod-calendar.tgz}
+    resolution: {integrity: sha512-ZZGuUNNBPQ8AuNUoq5jWopHtN7BExJBYPaEv+CULuyunTRzYli3xe/AKDM6pYQ/gR4ePMrPjnqcOeC3MBCeXUA==, tarball: file:projects/pod-calendar.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-collaborator@file:projects/pod-collaborator.tgz':
@@ -4801,7 +4808,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
-    resolution: {integrity: sha512-U7wNYw+h8a6hEV6fwXYJFStTk5noW4LAsL1G4JCJjyQ7PVzlmXZqGncFe+bq5EqgYgbOewZ2tR+T8rB8HWi9Cw==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-MJ5TQobQy4kv67qy7qpQgz056fhaZw8Zs/NaXniFafG/xjstgWeIJCXNHDkKvdBm+wT6EdHgNLIN3BaRpMSDsA==, tarball: file:projects/pod-server.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-ses@file:projects/pod-ses.tgz':
@@ -4989,7 +4996,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-calendar-resources@file:projects/server-calendar-resources.tgz':
-    resolution: {integrity: sha512-92TFFDbAxCmUu4V3IaNDOLhbEEqTCB5dRohzpV1nzmroO8r+JneZjdV1j8OPHJF65ml0uqciDFPOct+kMzx5fg==, tarball: file:projects/server-calendar-resources.tgz}
+    resolution: {integrity: sha512-DMDh8Zn9OPu/Sg3ChbNu6iCcoVhvlqqd61hCTSpSlxxRJ+IdKQGlsKexccEgB87IgiYqAgM5AQMK05WaOaR+oQ==, tarball: file:projects/server-calendar-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-calendar@file:projects/server-calendar.tgz':
@@ -5245,7 +5252,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-ws@file:projects/server-ws.tgz':
-    resolution: {integrity: sha512-Sev25LbpscG4MEnofW4g16Wsd4CzBMuFd1WqiVKwCOBPQEFxrH6zQ9wt20gHcjKacPZfn4GMFWuHew0H/ThuqQ==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-0Jjc3+GOrp80rAP/J2kmp3AXBYF9fHOmISUbnmAorBQaj/I+H2vLmUSGBOunFFmRoU4RBfF2pWNjw3PvVjE9oA==, tarball: file:projects/server-ws.tgz}
     version: 0.0.0
 
   '@rush-temp/server@file:projects/server.tgz':
@@ -5433,7 +5440,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ui@file:projects/ui.tgz':
-    resolution: {integrity: sha512-RoUDfXdl8E3vT/wG4bVrY9FsfUPeqG9Bck6lQsnKj9kk/Q6gG7a4xl3qEkwk+qLU6qH6QD7lkUiaEbm4PXh5MA==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-Qnk2xLA3fSpGq0eNpEGm8DWiuRkDbF0B86v+GDmHbRmNOs9uxIy1sUEEPUIgNx1wmlHPrMh+vP+2v+VFzeUYUQ==, tarball: file:projects/ui.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader-assets@file:projects/uploader-assets.tgz':
@@ -5453,7 +5460,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/view-resources@file:projects/view-resources.tgz':
-    resolution: {integrity: sha512-QbVy5YO1NViW1f65Z7SqHS8XPq5IBtsy1uwVYZK6La5zBXjjJA3BgN960sYc1eWUoKIz3naElQUKzXMC1lYK9w==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-7AFAEQlszTmRCzi9xfKegIhjzl76W8lLW4/LLygoH7a8JZPqoJhP1/l99QhNwa0tpUsXFTMg1EYMucFMrXhMdQ==, tarball: file:projects/view-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/view@file:projects/view.tgz':
@@ -16490,6 +16497,41 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@rush-temp/api-tests@file:projects/api-tests.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/body-parser': 1.19.5
+      '@types/compression': 1.7.5
+      '@types/cors': 2.8.17
+      '@types/express': 4.17.21
+      '@types/jest': 29.5.12
+      '@types/morgan': 1.9.9
+      '@types/node': 20.11.19
+      '@types/ws': 8.5.11
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      bufferutil: 4.0.8
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      snappyjs: 0.7.0
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      typescript: 5.7.3
+      utf-8-validate: 6.0.4
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
   '@rush-temp/attachment-assets@file:projects/attachment-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
@@ -24623,6 +24665,7 @@ snapshots:
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
+      '@types/morgan': 1.9.9
       '@types/node': 20.11.19
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
@@ -24637,6 +24680,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      morgan: 1.10.0
       prettier: 3.2.5
       snappy: 7.2.2
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
@@ -26324,7 +26368,6 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       fast-equals: 5.2.2
-      hls.js: 1.5.20
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)

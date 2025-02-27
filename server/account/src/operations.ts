@@ -16,6 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
+  buildSocialIdString,
   concatLink,
   Data,
   isActiveMode,
@@ -27,13 +28,12 @@ import {
   type BackupStatus,
   type Branding,
   type Person,
-  type PersonUuid,
+  type PersonId,
   type PersonInfo,
+  type PersonUuid,
   type WorkspaceMemberInfo,
   type WorkspaceMode,
-  type WorkspaceUuid,
-  type PersonId,
-  buildSocialIdString
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, {
   getMetadata,
@@ -45,6 +45,7 @@ import platform, {
 } from '@hcengineering/platform'
 import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
+import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
 import type {
   AccountDB,
@@ -72,6 +73,8 @@ import {
   getEmailSocialId,
   getEndpoint,
   getFrontUrl,
+  getInviteEmail,
+  getPersonName,
   getRegions,
   getRolePower,
   getSesUrl,
@@ -84,18 +87,15 @@ import {
   GUEST_ACCOUNT,
   isOtpValid,
   selectWorkspace,
+  sendEmail,
   sendEmailConfirmation,
   sendOtp,
   setPassword,
   signUpByEmail,
-  verifyPassword,
-  wrap,
   verifyAllowedServices,
-  getPersonName,
-  sendEmail,
-  getInviteEmail
+  verifyPassword,
+  wrap
 } from './utils'
-import { isAdminEmail } from './admin'
 
 // Move to config?
 const processingTimeoutMs = 30 * 1000
@@ -910,6 +910,35 @@ export async function getUserWorkspaces (
   )
 }
 
+/**
+ * @public
+ */
+export async function getWorkspacesInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  ids: WorkspaceUuid[]
+): Promise<WorkspaceInfoWithStatus[]> {
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  if (account !== systemAccountUuid) {
+    ctx.error('getWorkspaceInfos with wrong user', { account, token })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  const workspaces: WorkspaceInfoWithStatus[] = []
+  for (const id of ids) {
+    const ws = await getWorkspaceInfoWithStatusById(db, id)
+    if (ws !== null) {
+      workspaces.push(ws)
+    }
+  }
+
+  workspaces.sort((a, b) => (b.status.lastVisit ?? 0) - (a.status.lastVisit ?? 0))
+
+  return workspaces
+}
+
 export async function getWorkspaceInfo (
   ctx: MeasureContext,
   db: AccountDB,
@@ -984,10 +1013,12 @@ export async function performWorkspaceOperation (
   }
 ): Promise<boolean> {
   const { workspaceId, event, params } = parameters
-  const { extra } = decodeTokenVerbose(ctx, token)
+  const { extra, workspace } = decodeTokenVerbose(ctx, token)
 
   if (extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    if (event !== 'unarchive' || workspaceId !== workspace) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
   }
 
   const workspaceUuids = Array.isArray(workspaceId) ? workspaceId : [workspaceId]
@@ -1651,6 +1682,7 @@ export type AccountMethods =
   | 'getRegionInfo'
   | 'getUserWorkspaces'
   | 'getWorkspaceInfo'
+  | 'getWorkspacesInfo'
   | 'listWorkspaces'
   | 'getLoginInfoByToken'
   | 'getSocialIds'
@@ -1700,6 +1732,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getRegionInfo: wrap(getRegionInfo),
     getUserWorkspaces: wrap(getUserWorkspaces),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
+    getWorkspacesInfo: wrap(getWorkspacesInfo),
     getLoginInfoByToken: wrap(getLoginInfoByToken),
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),

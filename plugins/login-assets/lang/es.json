@@ -64,6 +64,7 @@
     "PasswordMinDigits": "{count, plural, =1 {La contraseña debe contener al menos # número} other {La contraseña debe contener al menos # números}}",
     "PasswordMinUpperChars": "{count, plural, =1 {La contraseña debe contener al menos # letra mayúscula} other {La contraseña debe contener al menos # letras mayúsculas}}",
     "PasswordMinLowerChars": "{count, plural, =1 {La contraseña debe contener al menos # letra minúscula} other {La contraseña debe contener al menos # letras minúsculas}}",
-    "WorkspaceArchivedDesc": "El espacio de trabajo está archivado por no estar en uso, por favor contáctenos para restaurarlo..."
+    "WorkspaceArchivedDesc": "El espacio de trabajo está archivado por no estar en uso.",
+    "RestoreArchivedWorkspace": "Restaurar"
   }
 }

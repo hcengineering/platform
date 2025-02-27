@@ -89,6 +89,7 @@ import {
   type ViewletDescriptor,
   type ViewletPreference,
   type ObjectIdentifier,
+  type ReferenceObjectProvider,
   type ObjectIcon,
   type ObjectTooltip,
   type AttrPresenter,
@@ -251,6 +252,11 @@ export class TObjectTitle extends TClass implements ObjectTitle {
 @Mixin(view.mixin.ObjectIdentifier, core.class.Class)
 export class TObjectIdentifier extends TClass implements ObjectIdentifier {
   provider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
+}
+
+@Mixin(view.mixin.ReferenceObjectProvider, core.class.Class)
+export class TReferenceObjectProvider extends TClass implements ReferenceObjectProvider {
+  provider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<Doc | undefined>>
 }
 
 @Mixin(view.mixin.ObjectTooltip, core.class.Class)
@@ -465,6 +471,7 @@ export function createModel (builder: Builder): void {
     TAggregation,
     TGroupping,
     TObjectIdentifier,
+    TReferenceObjectProvider,
     TObjectTooltip,
     TObjectIcon,
     TAttrPresenter,

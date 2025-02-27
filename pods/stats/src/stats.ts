@@ -19,7 +19,7 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 
-const serviceTimeout = 30000
+const serviceTimeout = 5 * 60000
 
 interface ServiceStatisticsEx extends ServiceStatistics {
   lastUpdate: number // Last updated

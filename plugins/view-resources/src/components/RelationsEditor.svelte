@@ -52,7 +52,7 @@
     (res) => {
       relationsA = res?.[0]?.$associations ?? {}
     },
-    { associations: associationsA.map((a) => [a._id, 1]) }
+    { associations: associationsA.map((a) => [a._id, -1]) }
   )
 
   const queryB = createQuery()
@@ -62,7 +62,7 @@
     (res) => {
       relationsB = res?.[0]?.$associations ?? {}
     },
-    { associations: associationsB.map((a) => [a._id, -1]) }
+    { associations: associationsB.map((a) => [a._id, 1]) }
   )
 </script>
 

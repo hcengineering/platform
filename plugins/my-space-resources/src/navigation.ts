@@ -19,7 +19,7 @@ import { getPanelURI, type Location, type ResolvedLocation } from '@hcengineerin
 import view, { type ObjectPanel } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import contact, { type Employee, getCurrentEmployee } from '@hcengineering/contact'
-import mail, { type MailThread } from '@hcengineering/mail'
+import mail from '@hcengineering/mail'
 import { mySpaceId } from '@hcengineering/my-space'
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
@@ -28,7 +28,7 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   if (loc.path[3] === 'mail') {
-    const threadId = loc.path[5] as Ref<MailThread>
+    const threadId = loc.path[5] as Ref<Doc>
     return await generateMailLocation(loc, threadId)
   }
 
@@ -42,7 +42,7 @@ function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id'>): st
   return getPanelURI(component, object._id, object._class, 'content')
 }
 
-async function generateMailLocation (loc: Location, id: Ref<MailThread>): Promise<ResolvedLocation | undefined> {
+async function generateMailLocation (loc: Location, id: Ref<Doc>): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
   const employee = getCurrentEmployee()

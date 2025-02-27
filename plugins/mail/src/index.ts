@@ -13,21 +13,14 @@
 // limitations under the License.
 //
 
-import type { Class, Ref } from '@hcengineering/core'
+import type { Class, Doc, Ref } from '@hcengineering/core'
 import { Asset, IntlString, type Plugin, plugin } from '@hcengineering/platform'
-import type { ChunterSpace, ChatMessage } from '@hcengineering/chunter'
 import type { AnyComponent } from '@hcengineering/ui'
+import type { MasterTag } from '@hcengineering/card'
 
-export interface MailThread extends ChunterSpace {
-  subject: string
-  mailThreadId: string
-  from: string
-  to: string
-  preview: string
-}
-
-export interface MailMessage extends ChatMessage {
+export interface MailRoute extends Doc {
   mailId: string
+  threadId: string
 }
 
 /**
@@ -37,8 +30,8 @@ export const mailId = 'mail' as Plugin
 
 export default plugin(mailId, {
   class: {
-    MailThread: '' as Ref<Class<MailThread>>,
-    MailMessage: '' as Ref<Class<MailMessage>>
+    MailThread: '' as Ref<MasterTag>,
+    MailRoute: '' as Ref<Class<MailRoute>>
   },
   component: {
     CreateMail: '' as AnyComponent,

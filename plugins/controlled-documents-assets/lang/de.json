@@ -307,7 +307,9 @@
     "Obsolete": "Veraltet",
     "MakeDocumentObsolete": "Als veraltet markieren",
     "MakeDocumentObsoleteDialog": "{count, plural, one {Dokument als veraltet markieren} other {Dokumente als veraltet markieren}}",
-    "MakeDocumentObsoleteConfirm": "Möchten Sie die folgenden Dokumente wirklich als veraltet markieren: {titles}?"
+    "MakeDocumentObsoleteConfirm": "Möchten Sie die folgenden Dokumente wirklich als veraltet markieren: {titles}?",
+
+    "LatestVersionHint": "neueste"
   },
   "controlledDocStates": {
     "Empty": "",

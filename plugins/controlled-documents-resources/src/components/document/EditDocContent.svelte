@@ -49,10 +49,12 @@
     $documentComments as documentComments,
     documentCommentsDisplayRequested,
     documentCommentsHighlightUpdated,
-    documentCommentsLocationNavigateRequested
+    documentCommentsLocationNavigateRequested,
+    $documentReleasedVersions as documentReleasedVersions
   } from '../../stores/editors/document'
   import DocumentTitle from './DocumentTitle.svelte'
   import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
+  import { syncDocumentMetaTitle } from '../../utils'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -111,14 +113,17 @@
     unsubscribeNavigateToLocation()
   })
 
-  const handleUpdateTitle = () => {
+  const handleUpdateTitle = async () => {
     if (!$controlledDocument || !title) {
       return
     }
     const titleTrimmed = title.trim()
 
     if (titleTrimmed.length > 0 && titleTrimmed !== $controlledDocument.title) {
-      client.update($controlledDocument, { title: titleTrimmed })
+      await client.update($controlledDocument, { title: titleTrimmed })
+      if ($documentReleasedVersions.length === 0 && $controlledDocument.state === DocumentState.Draft) {
+        await syncDocumentMetaTitle(client, $controlledDocument.attachedTo, $controlledDocument.code, titleTrimmed)
+      }
     }
   }
 

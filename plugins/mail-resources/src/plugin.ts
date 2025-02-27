@@ -13,10 +13,16 @@
 // limitations under the License.
 //
 
+import type { Ref } from '@hcengineering/core'
+import type { Viewlet } from '@hcengineering/view'
+
 import { mergeIds } from '@hcengineering/platform'
 
 import mail, { mailId } from '@hcengineering/mail'
 
 export default mergeIds(mailId, mail, {
-  string: {}
+  string: {},
+  viewlet: {
+    TableMail: '' as Ref<Viewlet>
+  }
 })

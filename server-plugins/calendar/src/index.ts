@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Plugin, Resource } from '@hcengineering/platform'
+import type { Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
 import { Presenter } from '@hcengineering/server-notification'
@@ -28,6 +28,9 @@ export const serverCalendarId = 'server-calendar' as Plugin
  * @public
  */
 export default plugin(serverCalendarId, {
+  metadata: {
+    EndpointURL: '' as Metadata<string>
+  },
   function: {
     ReminderHTMLPresenter: '' as Resource<Presenter>,
     ReminderTextPresenter: '' as Resource<Presenter>,
