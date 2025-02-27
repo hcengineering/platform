@@ -55,7 +55,9 @@ import core, {
   type TypedSpace,
   type UserStatus,
   type WithLookup,
-  type PersonUuid
+  type PersonUuid,
+  type AccountUuid,
+  notEmpty
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { type IntlString, getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
@@ -373,6 +375,10 @@ export const personRefByPersonIdStore = derived(socialIdsStore, (socialIds) => {
   return new Map(mapped)
 })
 /**
+ * [AccountUuid => Ref<Person>] mapping
+ */
+export const personRefByAccountUuidStore = writable<Map<AccountUuid, Ref<Employee>>>(new Map())
+/**
  * [PersonId (social string) => Person] mapping
  */
 export const personByPersonIdStore = derived(
@@ -386,7 +392,25 @@ export const personByPersonIdStore = derived(
         }
         return [personId, person] as const
       })
-      .filter((it) => it !== undefined) as Array<readonly [PersonId, WithLookup<Person>]>
+      .filter(notEmpty)
+    return new Map(mapped)
+  }
+)
+/**
+ * [AccountUuid => Person] mapping
+ */
+export const employeeByAccountStore = derived(
+  [personRefByAccountUuidStore, employeeByIdStore],
+  ([personRefByAccount, employeeById]) => {
+    const mapped = Array.from(personRefByAccount.entries())
+      .map(([account, employeeRef]) => {
+        const employee = employeeById.get(employeeRef)
+        if (employee === undefined) {
+          return undefined
+        }
+        return [account, employee] as const
+      })
+      .filter(notEmpty)
     return new Map(mapped)
   }
 )
@@ -430,6 +454,11 @@ onClient(() => {
 
     // We may need to extend this later with guests and github users
     personByIdStore.set(toIdMap(res))
+    personRefByAccountUuidStore.set(
+      new Map(
+        res.filter((p) => p.active && p.personUuid != null).map((p) => [p.personUuid as AccountUuid, p._id] as const)
+      )
+    )
   })
 
   siQuery.query(contact.class.SocialIdentity, {}, (res) => {

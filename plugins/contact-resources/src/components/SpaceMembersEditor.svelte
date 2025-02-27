@@ -18,7 +18,6 @@
   import { Button, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import AccountArrayEditor from './AccountArrayEditor.svelte'
-  import { includesAny } from '@hcengineering/contact'
 
   export let label: IntlString
   export let value: PersonId[]
@@ -28,16 +27,15 @@
   export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
 
-  const myPrimaryId = getCurrentAccount().primarySocialId
-  const mySocialStrings = getCurrentAccount().socialIds
+  const myAcc = getCurrentAccount().uuid
 
-  $: joined = includesAny(value, mySocialStrings)
+  $: joined = value.includes(myAcc)
 
   function join (): void {
-    if (includesAny(value, mySocialStrings)) return
+    if (value.includes(myAcc)) return
     if (onChange === undefined) return
 
-    onChange([...value, myPrimaryId])
+    onChange([...value, myAcc])
   }
 </script>
 

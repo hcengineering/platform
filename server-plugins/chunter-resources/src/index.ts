@@ -16,7 +16,7 @@
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 import chunter, { Channel, ChatMessage, chunterId, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
 import contact, { Person } from '@hcengineering/contact'
-import { getPerson, getSocialStrings } from '@hcengineering/server-contact'
+import { getAccountBySocialId, getPerson } from '@hcengineering/server-contact'
 import core, {
   PersonId,
   Class,
@@ -35,7 +35,8 @@ import core, {
   TxUpdateDoc,
   UserStatus,
   type MeasureContext,
-  combineAttributes
+  combineAttributes,
+  AccountUuid
 } from '@hcengineering/core'
 import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
@@ -172,10 +173,15 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   }
   const isChannel = hierarchy.isDerived(targetDoc._class, chunter.class.Channel)
   const res: Tx[] = []
+  const account = await getAccountBySocialId(control, message.modifiedBy)
+
+  if (account == null) {
+    return []
+  }
 
   if (hierarchy.hasMixin(targetDoc, notification.mixin.Collaborators)) {
     const collaboratorsMixin = hierarchy.as(targetDoc, notification.mixin.Collaborators)
-    if (!collaboratorsMixin.collaborators.includes(message.modifiedBy)) {
+    if (!collaboratorsMixin.collaborators.includes(account)) {
       res.push(
         control.txFactory.createTxMixin(
           targetDoc._id,
@@ -184,7 +190,7 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
           notification.mixin.Collaborators,
           {
             $push: {
-              collaborators: message.modifiedBy
+              collaborators: account
             }
           }
         )
@@ -192,14 +198,14 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
     }
   } else {
     const collaborators = await getDocCollaborators(ctx, targetDoc, mixin, control)
-    if (!collaborators.includes(message.modifiedBy)) {
-      collaborators.push(message.modifiedBy)
+    if (!collaborators.includes(account)) {
+      collaborators.push(account)
     }
     res.push(getMixinTx(tx, control, collaborators))
   }
 
-  if (isChannel && !(targetDoc as Channel).members.includes(message.modifiedBy)) {
-    res.push(...joinChannel(control, targetDoc as Channel, message.modifiedBy))
+  if (isChannel && !(targetDoc as Channel).members.includes(account)) {
+    res.push(...joinChannel(control, targetDoc as Channel, account))
   }
 
   return res
@@ -221,7 +227,7 @@ async function ChatNotificationsHandler (txes: TxCUD<Doc>[], control: TriggerCon
   return result
 }
 
-function joinChannel (control: TriggerControl, channel: Channel, user: PersonId): Tx[] {
+function joinChannel (control: TriggerControl, channel: Channel, user: AccountUuid): Tx[] {
   if (channel.members.includes(user)) {
     return []
   }
@@ -409,9 +415,8 @@ export async function syncChat (control: TriggerControl, status: UserStatus, dat
   const shouldSync = syncInfo === undefined || date - syncInfo.timestamp > updateChatInfoDelay
   if (!shouldSync) return
 
-  const socialIds = await getSocialStrings(control, person._id)
   const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
-    user: { $in: socialIds },
+    user: status.user,
     hidden: false,
     isPinned: false
   })

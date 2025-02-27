@@ -16,12 +16,12 @@
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, { PUSH_NOTIFICATION_TITLE_SIZE } from '@hcengineering/server-notification'
 import {
+  AccountUuid,
   Class,
   concatLink,
   Data,
   Doc,
   Hierarchy,
-  PersonId,
   Ref,
   Tx,
   TxCreateDoc,
@@ -44,17 +44,16 @@ import contact, {
   type AvatarInfo,
   getAvatarProviderId,
   getGravatarUrl,
-  pickPrimarySocialId,
   Person,
   PersonSpace
 } from '@hcengineering/contact'
 import { AvailableProvidersCache, AvailableProvidersCacheKey, getTranslatedNotificationContent } from './index'
-import { getAllSocialStringsByPersonId, getPerson } from '@hcengineering/server-contact'
+import { getPerson } from '@hcengineering/server-contact'
 
 async function createPushFromInbox (
   control: TriggerControl,
   n: InboxNotification,
-  receiver: PersonId[],
+  receiver: AccountUuid,
   receiverSpace: Ref<PersonSpace>,
   subscriptions: PushSubscription[],
   senderPerson?: Person
@@ -91,9 +90,8 @@ async function createPushFromInbox (
   await createPushNotification(control, receiver, title, body, n._id, subscriptions, senderPerson, path)
 
   const messageInfo = getMessageInfo(n, control.hierarchy)
-  const primarySocialString = pickPrimarySocialId(receiver)
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiverSpace, {
-    user: primarySocialString,
+    user: receiver,
     title,
     body,
     senderId: n.createdBy ?? n.modifiedBy,
@@ -149,7 +147,7 @@ function getMessageInfo (
 
 export async function createPushNotification (
   control: TriggerControl,
-  target: PersonId[],
+  target: AccountUuid,
   title: string,
   body: string,
   _id: string,
@@ -161,7 +159,7 @@ export async function createPushNotification (
   // TODO: Remove auth token after migration to new services
   const authToken: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
   if (pushURL === undefined || pushURL === '') return
-  const userSubscriptions = subscriptions.filter((it) => target.includes(it.user))
+  const userSubscriptions = subscriptions.filter((it) => it.user === target)
   const data: PushData = {
     title,
     body
@@ -194,7 +192,7 @@ async function sendPushToSubscription (
   pushURL: string,
   sesAuth: string | undefined,
   control: TriggerControl,
-  targetUser: PersonId[],
+  targetUser: AccountUuid,
   subscriptions: PushSubscription[],
   data: PushData
 ): Promise<void> {
@@ -256,8 +254,7 @@ export async function PushNotificationsHandler (
 
   for (const inboxNotification of all) {
     const { user } = inboxNotification
-    const userSocialStrings = await getAllSocialStringsByPersonId(control, [user])
-    const userSubscriptions = subscriptions.filter((it) => userSocialStrings.includes(it.user))
+    const userSubscriptions = subscriptions.filter((it) => it.user === user)
     if (userSubscriptions.length === 0) continue
 
     const senderSocialString = inboxNotification.createdBy ?? inboxNotification.modifiedBy
@@ -265,7 +262,7 @@ export async function PushNotificationsHandler (
     const tx = await createPushFromInbox(
       control,
       inboxNotification,
-      userSocialStrings,
+      user,
       inboxNotification.space,
       userSubscriptions,
       senderPerson

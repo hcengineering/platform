@@ -14,18 +14,18 @@
 -->
 <script lang="ts">
   import { Contact, Employee, getCurrentEmployee, getName, Person } from '@hcengineering/contact'
-  import { AccountUuid, Ref } from '@hcengineering/core'
+  import { PersonId, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import contact from '../plugin'
-  import { personRefByAccountUuidStore } from '../utils'
+  import { personRefByPersonIdStore, primarySocialIdByPersonRefStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
-  export let value: AccountUuid[]
-  export let onChange: ((refs: AccountUuid[]) => void | Promise<void>) | undefined
+  export let value: PersonId[]
+  export let onChange: ((refs: PersonId[]) => void | Promise<void>) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -41,7 +41,7 @@
 
   $: valueByPersonRef = new Map(
     value.map((p) => {
-      const person = $personRefByAccountUuidStore.get(p)
+      const person = $personRefByPersonIdStore.get(p)
 
       if (person === undefined) {
         console.error('Person not found for social id', p)
@@ -56,9 +56,25 @@
       clearTimeout(timer)
     }
     update = async () => {
-      const newAccounts = evt.detail.map((p) => valueByPersonRef.get(p))
+      const newPersons = evt.detail
+      const newSocialIds: PersonId[] = []
+      for (const person of newPersons) {
+        const socialId = valueByPersonRef.get(person)
+        if (socialId !== undefined) {
+          newSocialIds.push(socialId)
+        } else {
+          const primaryId = $primarySocialIdByPersonRefStore.get(person)
 
-      void onChange?.(newAccounts)
+          if (primaryId === undefined) {
+            console.error('Primary social id not found for person', person)
+            continue
+          }
+
+          newSocialIds.push(primaryId)
+        }
+      }
+
+      void onChange?.(newSocialIds)
       if (timer !== null) {
         clearTimeout(timer)
       }
@@ -73,7 +89,7 @@
     void update?.()
   })
 
-  $: employees = value.map((p) => $personRefByAccountUuidStore.get(p)).filter((p) => p !== undefined) as Ref<Employee>[]
+  $: employees = value.map((p) => $personRefByPersonIdStore.get(p)).filter((p) => p !== undefined) as Ref<Employee>[]
   $: docQuery =
     excludeItems.length === 0 && includeItems.length === 0
       ? {}

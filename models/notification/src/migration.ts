@@ -18,6 +18,7 @@ import contact, { type PersonSpace } from '@hcengineering/contact'
 import core, {
   DOMAIN_TX,
   MeasureMetricsContext,
+  type PersonId,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -41,7 +42,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
-import { DOMAIN_SPACE, getSocialIdByOldAccount } from '@hcengineering/model-core'
+import { DOMAIN_SPACE, getSocialIdByOldAccount, getUniqueAccounts } from '@hcengineering/model-core'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
 
 export async function removeNotifications (
@@ -386,7 +387,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 
       for (const doc of docs) {
         const oldUser = doc.user
-        const newUser = socialIdByAccount[oldUser] ?? oldUser
+        const newUser: any = socialIdByAccount[oldUser] ?? oldUser
 
         if (newUser !== oldUser) {
           operations.push({
@@ -409,6 +410,59 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
     await dncIterator.close()
   }
   ctx.info('finished processing doc notify contexts ', {})
+}
+
+async function migrateCollabsToAccounts (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('notification migrateCollabsToAccounts', {})
+  const hierarchy = client.hierarchy
+
+  ctx.info('processing collaborators ', {})
+  for (const domain of client.hierarchy.domains()) {
+    ctx.info('processing domain ', { domain })
+    let processed = 0
+    const iterator = await client.traverse(domain, {})
+
+    try {
+      while (true) {
+        const docs = await iterator.next(200)
+        if (docs === null || docs.length === 0) {
+          break
+        }
+
+        const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+        for (const doc of docs) {
+          const mixin = hierarchy.as(doc, notification.mixin.Collaborators)
+          const oldCollaborators = mixin.collaborators as unknown as PersonId[]
+
+          if (oldCollaborators === undefined || oldCollaborators.length === 0) continue
+
+          const newCollaborators = await getUniqueAccounts(client, oldCollaborators)
+
+          operations.push({
+            filter: { _id: doc._id },
+            update: {
+              [`${notification.mixin.Collaborators}`]: {
+                collaborators: newCollaborators
+              }
+            }
+          })
+        }
+
+        if (operations.length > 0) {
+          await client.bulk(domain, operations)
+        }
+
+        processed += docs.length
+        ctx.info('...processed', { count: processed })
+      }
+
+      ctx.info('finished processing domain ', { domain, processed })
+    } finally {
+      await iterator.close()
+    }
+  }
+  ctx.info('finished processing collaborators ', {})
 }
 
 export async function migrateSettings (client: MigrationClient): Promise<void> {
@@ -664,6 +718,10 @@ export const notificationOperation: MigrateOperation = {
       {
         state: 'accounts-to-social-ids',
         func: migrateAccountsToSocialIds
+      },
+      {
+        state: 'migrate-collabs-to-accounts',
+        func: migrateCollabsToAccounts
       }
     ])
   },

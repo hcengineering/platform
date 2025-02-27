@@ -1,4 +1,4 @@
-import { PersonId, Doc, Ref, TxOperations } from '@hcengineering/core'
+import { Doc, Ref, TxOperations, AccountUuid } from '@hcengineering/core'
 import notification, { DocNotifyContext } from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
 import { PersonSpace } from '@hcengineering/contact'
@@ -7,7 +7,7 @@ import github from '@hcengineering/github'
 export async function createNotification (
   client: TxOperations,
   forDoc: Doc,
-  data: { user: PersonId, space: Ref<PersonSpace>, message: IntlString, props: Record<string, any> }
+  data: { user: AccountUuid, space: Ref<PersonSpace>, message: IntlString, props: Record<string, any> }
 ): Promise<void> {
   let docNotifyContext = await client.findOne(notification.class.DocNotifyContext, { objectId: forDoc._id })
 

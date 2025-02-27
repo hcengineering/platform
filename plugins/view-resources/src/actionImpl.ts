@@ -40,7 +40,7 @@ import {
   selectionLimit
 } from './selection'
 import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
-import contact, { includesAny } from '@hcengineering/contact'
+import contact from '@hcengineering/contact'
 import { locationToUrl } from '@hcengineering/ui'
 import { get } from 'svelte/store'
 
@@ -162,10 +162,10 @@ async function Leave (object: Space | Space[]): Promise<void> {
   const client = getClient()
   const promises: Array<Promise<TxResult>> = []
   const objs = Array.isArray(object) ? object : [object]
-  const mySocialIds = getCurrentAccount().socialIds
+  const myAccount = getCurrentAccount().uuid
   for (const obj of objs) {
-    if (includesAny(obj.members, mySocialIds)) {
-      promises.push(client.update(obj, { $pull: { members: { $in: mySocialIds } } }))
+    if (obj.members.includes(myAccount)) {
+      promises.push(client.update(obj, { $pull: { members: myAccount } }))
     }
   }
   await Promise.all(promises)
@@ -175,10 +175,10 @@ async function Join (object: Space | Space[]): Promise<void> {
   const client = getClient()
   const promises: Array<Promise<TxResult>> = []
   const objs = Array.isArray(object) ? object : [object]
-  const myAcc = getCurrentAccount()
+  const myAccount = getCurrentAccount().uuid
   for (const obj of objs) {
-    if (!includesAny(obj.members, myAcc.socialIds)) {
-      promises.push(client.update(obj, { $push: { members: myAcc.primarySocialId } }))
+    if (obj.members.includes(myAccount)) {
+      promises.push(client.update(obj, { $push: { members: myAccount } }))
     }
   }
   await Promise.all(promises)

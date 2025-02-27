@@ -29,7 +29,9 @@ import {
   Ref,
   SocialId,
   TxFactory,
-  Person as GlobalPerson
+  Person as GlobalPerson,
+  AccountUuid,
+  notEmpty
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
@@ -372,10 +374,22 @@ export async function getSocialStringsByEmployee (client: Client): Promise<Recor
   return socialStringsByPerson
 }
 
+export async function getAllAccounts (client: Client): Promise<AccountUuid[]> {
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+
+  return employees.map((it) => it.personUuid).filter(notEmpty)
+}
+
 export async function getAllEmployeesPrimarySocialStrings (client: Client): Promise<PersonId[]> {
   const socialStringsByPerson = getSocialStringsByEmployee(client)
 
   return Object.values(socialStringsByPerson).map((it) => pickPrimarySocialId(it))
+}
+
+export async function getAllUserAccounts (client: Client): Promise<AccountUuid[]> {
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+
+  return employees.map((it) => it.personUuid).filter(notEmpty)
 }
 
 export async function ensureEmployee (

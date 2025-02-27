@@ -47,7 +47,8 @@ import core, {
   TxCUD,
   TxOperations,
   type WorkspaceUuid,
-  type WorkspaceIds
+  type WorkspaceIds,
+  AccountUuid
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
@@ -89,7 +90,7 @@ export class WorkspaceClient {
     readonly transactorUrl: string,
     readonly token: string,
     readonly wsIds: WorkspaceIds,
-    readonly personUuid: PersonUuid,
+    readonly personUuid: AccountUuid,
     readonly socialIds: SocialId[],
     readonly ctx: MeasureContext,
     readonly openai: OpenAI | undefined,
@@ -336,7 +337,13 @@ export class WorkspaceClient {
 
     void this.pushHistory(promptText, prompt.role, promptTokens, personUuid, objectId, objectClass)
 
-    const chatCompletion = await createChatCompletionWithTools(this, this.openai, prompt, user, history)
+    const chatCompletion = await createChatCompletionWithTools(
+      this,
+      this.openai,
+      prompt,
+      personUuid as AccountUuid,
+      history
+    )
     const response = chatCompletion?.completion
 
     if (response == null) {

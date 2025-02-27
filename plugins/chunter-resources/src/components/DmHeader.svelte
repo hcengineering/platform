@@ -15,7 +15,7 @@
 <script lang="ts">
   import { DirectMessage } from '@hcengineering/chunter'
   import contact, { getCurrentEmployee } from '@hcengineering/contact'
-  import { CombineAvatars, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { CombineAvatars, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import type { Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { SearchEdit } from '@hcengineering/ui'
@@ -41,7 +41,7 @@
     dm = result[0]
   })
   $: dmPersons =
-    dm !== undefined ? dm.members.map((m) => $personRefByPersonIdStore.get(m)).filter((p) => p !== undefined) : []
+    dm !== undefined ? dm.members.map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty) : []
   $: dmPersonsToDisplay = dmPersons.length === 1 ? dmPersons : dmPersons.filter((p) => p !== me)
 
   async function onSpaceEdit (): Promise<void> {

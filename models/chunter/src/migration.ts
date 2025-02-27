@@ -15,14 +15,14 @@
 
 import { chunterId, type ThreadMessage } from '@hcengineering/chunter'
 import core, {
-  type PersonId,
   TxOperations,
   type Class,
   type Doc,
   type Domain,
   type Ref,
   type Space,
-  DOMAIN_TX
+  DOMAIN_TX,
+  notEmpty
 } from '@hcengineering/core'
 import {
   tryMigrate,
@@ -33,12 +33,7 @@ import {
 } from '@hcengineering/model'
 import activity, { migrateMessagesSpace, DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
-import {
-  getAllEmployeesPrimarySocialStrings,
-  pickPrimarySocialId,
-  getSocialStringsByEmployee,
-  includesAny
-} from '@hcengineering/contact'
+import contact, { getAllAccounts } from '@hcengineering/contact'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 import { type DocUpdateMessage } from '@hcengineering/activity'
 
@@ -54,27 +49,24 @@ export async function createDocNotifyContexts (
   objectClass: Ref<Class<Doc>>,
   objectSpace: Ref<Space>
 ): Promise<void> {
-  const socialStringsByEmployee = getSocialStringsByEmployee(tx)
-  const allSocialStrings = Object.values(socialStringsByEmployee).flat()
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+  const accounts = employees.map((it) => it.personUuid).filter(notEmpty)
 
   const docNotifyContexts = await client.findAll(notification.class.DocNotifyContext, {
-    user: { $in: allSocialStrings },
+    user: { $in: accounts },
     objectId
   })
+  const existingDNCUsers = new Set(docNotifyContexts.map((it) => it.user))
 
-  for (const userSocialStrings of Object.values(socialStringsByEmployee)) {
-    const docNotifyContext = docNotifyContexts.find((it) => userSocialStrings.includes(it.user))
-
-    if (docNotifyContext === undefined) {
-      await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-        user: pickPrimarySocialId(userSocialStrings),
-        objectId,
-        objectClass,
-        objectSpace,
-        hidden: false,
-        isPinned: false
-      })
-    }
+  for (const account of accounts.filter((it) => !existingDNCUsers.has(it))) {
+    await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+      user: account,
+      objectId,
+      objectClass,
+      objectSpace,
+      hidden: false,
+      isPinned: false
+    })
   }
 }
 
@@ -102,7 +94,7 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
           topic: 'General Channel',
           private: false,
           archived: false,
-          members: await getAllEmployeesPrimarySocialStrings(tx),
+          members: await getAllAccounts(tx),
           autoJoin: true
         },
         chunter.space.General
@@ -114,12 +106,12 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
 }
 
 async function joinEmployees (current: Space, tx: TxOperations): Promise<void> {
-  const byEmployee = await getSocialStringsByEmployee(tx)
-  const newMembers: PersonId[] = [...current.members]
+  const allAccounts = await getAllAccounts(tx)
+  const newMembers = [...current.members]
 
-  for (const socialStrings of Object.values(byEmployee)) {
-    if (!includesAny(newMembers, socialStrings)) {
-      newMembers.push(pickPrimarySocialId(socialStrings))
+  for (const account of allAccounts) {
+    if (!newMembers.includes(account)) {
+      newMembers.push(account)
     }
   }
 
@@ -152,7 +144,7 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
           topic: 'Random Talks',
           private: false,
           archived: false,
-          members: await getAllEmployeesPrimarySocialStrings(tx),
+          members: await getAllAccounts(tx),
           autoJoin: true
         },
         chunter.space.Random

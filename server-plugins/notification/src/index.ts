@@ -16,7 +16,7 @@
 
 import { ActivityMessage } from '@hcengineering/activity'
 import { Employee, Person, PersonSpace } from '@hcengineering/contact'
-import { PersonId, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
+import { PersonId, Class, Doc, Mixin, Ref, Tx, TxCUD, AccountUuid } from '@hcengineering/core'
 import {
   BaseNotificationType,
   InboxNotification,
@@ -96,6 +96,7 @@ export interface ReceiverInfo {
   socialStrings: PersonId[]
 
   space: Ref<PersonSpace>
+  account: AccountUuid
   employee: Employee
 }
 

@@ -47,7 +47,8 @@ import core, {
   type Status,
   type Timestamp,
   type TxOperations,
-  type PersonId
+  type PersonId,
+  type AccountUuid
 } from '@hcengineering/core'
 import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
 import task, {
@@ -102,8 +103,8 @@ export interface ImportSpace<T extends ImportDoc> {
   archived?: boolean
   description?: string
   emoji?: string
-  owners?: PersonId[]
-  members?: PersonId[]
+  owners?: AccountUuid[]
+  members?: AccountUuid[]
   docs: T[]
 }
 export interface ImportDoc {
@@ -175,9 +176,9 @@ export interface ImportDrawing {
 export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate // todo: rename
 export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
   class: Ref<Class<DocumentSpace>>
-  qualified?: PersonId
-  manager?: PersonId
-  qara?: PersonId
+  qualified?: AccountUuid
+  manager?: AccountUuid
+  qara?: AccountUuid
 }
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {

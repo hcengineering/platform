@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { PersonId, reduceCalls, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
+  import core, { AccountUuid, reduceCalls, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import {
     ButtonIcon,
@@ -28,7 +28,7 @@
     TextArea,
     Toggle
   } from '@hcengineering/ui'
-  import { deleteObjects, iconsLibrary } from '@hcengineering/view-resources'
+  import { deleteObjects } from '@hcengineering/view-resources'
 
   import settingRes from '../../../plugin'
 
@@ -70,13 +70,13 @@
     await client.update(type, { [field]: value })
   }
 
-  const changeMembers = reduceCalls(async function changeMembers (members: PersonId[]): Promise<void> {
+  const changeMembers = reduceCalls(async function changeMembers (members: AccountUuid[]): Promise<void> {
     if (disabled || type === undefined) {
       return
     }
 
-    const push = new Set<PersonId>(members)
-    const pull = new Set<PersonId>()
+    const push = new Set<AccountUuid>(members)
+    const pull = new Set<AccountUuid>()
     for (const member of (type.members ?? []).filter((it, idx, arr) => arr.indexOf(it) === idx)) {
       if (!push.has(member)) {
         pull.add(member)

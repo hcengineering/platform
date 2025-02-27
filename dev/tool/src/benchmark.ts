@@ -33,7 +33,8 @@ import core, {
   SocialIdType,
   type PersonUuid,
   platformNow,
-  platformNowDiff
+  platformNowDiff,
+  type AccountUuid
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
@@ -579,24 +580,25 @@ export async function generateWorkspaceData (
   try {
     const emailSocialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
     const person = await getPersonBySocialId(client, emailSocialString)
-    if (person == null) {
+    const account = person?.personUuid as AccountUuid
+    if (account == null) {
       throw new Error('User not found')
     }
-    const employees: PersonId[] = [emailSocialString]
+    const accounts: AccountUuid[] = [account]
     const start = platformNow()
     for (let i = 0; i < 100; i++) {
-      const socialString = await generateEmployee(client)
-      employees.push(socialString)
+      const acc = await generateEmployee(client)
+      accounts.push(acc)
     }
     if (parallel) {
       const promises: Promise<void>[] = []
       for (let i = 0; i < 10; i++) {
-        promises.push(generateVacancy(client, employees))
+        promises.push(generateVacancy(client, accounts))
       }
       await Promise.all(promises)
     } else {
       for (let i = 0; i < 10; i++) {
-        await generateVacancy(client, employees)
+        await generateVacancy(client, accounts)
       }
     }
     console.log('Generate', platformNowDiff(start))
@@ -605,8 +607,8 @@ export async function generateWorkspaceData (
   }
 }
 
-export async function generateEmployee (client: TxOperations): Promise<PersonId> {
-  const personUuid = generateId() as unknown as PersonUuid // TODO: will it work or need to actually be a UUID?
+export async function generateEmployee (client: TxOperations): Promise<AccountUuid> {
+  const personUuid = generateId() as unknown as AccountUuid // TODO: will it work or need to actually be a UUID?
   const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
     name: generateId().toString(),
     city: '',
@@ -634,10 +636,10 @@ export async function generateEmployee (client: TxOperations): Promise<PersonId>
     }
   )
 
-  return socialString
+  return personUuid
 }
 
-async function generateVacancy (client: TxOperations, members: PersonId[]): Promise<void> {
+async function generateVacancy (client: TxOperations, members: AccountUuid[]): Promise<void> {
   // generate vacancies
   const _id = generateId<Vacancy>()
   await client.createDoc(

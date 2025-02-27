@@ -1,4 +1,4 @@
-import { MarkupBlobRef, PersonId, Ref } from '@hcengineering/core'
+import { AccountUuid, MarkupBlobRef, Ref } from '@hcengineering/core'
 import document, { Document, getFirstRank, Teamspace } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
 import { parseMessageMarkdown } from '@hcengineering/text'
@@ -83,7 +83,7 @@ async function pdfToMarkdown (
 
 async function saveFile (
   workspaceClient: WorkspaceClient,
-  user: PersonId | undefined,
+  user: AccountUuid | undefined,
   args: { fileId: string, folder: string | undefined, parent: string | undefined, name: string }
 ): Promise<string> {
   console.log('Save file', args)
@@ -130,7 +130,7 @@ function getTeamspace (
 
 async function getFoldersForDocuments (
   workspaceClient: WorkspaceClient,
-  user: PersonId | undefined,
+  user: AccountUuid | undefined,
   args: Record<string, any>
 ): Promise<string> {
   const client = await workspaceClient.opClient
@@ -162,7 +162,7 @@ type PredefinedToolFunction<T extends object | string> = Omit<
 T extends string ? RunnableFunctionWithoutParse : RunnableFunctionWithParse<any>,
 'function'
 >
-type ToolFunc = (workspaceClient: WorkspaceClient, user: PersonId | undefined, args: any) => Promise<string> | string
+type ToolFunc = (workspaceClient: WorkspaceClient, user: AccountUuid | undefined, args: any) => Promise<string> | string
 
 const tools: [PredefinedTool<any>, ToolFunc][] = []
 
@@ -224,7 +224,7 @@ registerTool<object>(
 
 export function getTools (
   workspaceClient: WorkspaceClient,
-  user: PersonId | undefined
+  user: AccountUuid | undefined
 ): RunnableTools<BaseFunctionsArgs> {
   const result: (RunnableToolFunctionWithoutParse | RunnableToolFunctionWithParse<any>)[] = []
   for (const tool of tools) {
