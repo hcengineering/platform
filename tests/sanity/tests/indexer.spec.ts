@@ -355,7 +355,7 @@ test.describe('Fulltext index', () => {
 
         await loginPage.goto()
         await loginPage.clickSignUp()
-        await signUpPage.signUpPwd(newUser)
+        await signUpPage.signUp(newUser)
 
         await selectWorkspacePage.createWorkspace(newWorkspaceName)
       })

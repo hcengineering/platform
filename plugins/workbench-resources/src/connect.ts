@@ -1,22 +1,23 @@
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
+import { ensureEmployee, setCurrentEmployee } from '@hcengineering/contact'
 import core, {
   ClientConnectEvent,
   concatLink,
   isWorkspaceCreating,
   metricsToString,
+  pickPrimarySocialId,
   setCurrentAccount,
   versionToString,
-  type SocialId,
   type Account,
   type Client,
+  type Person as GlobalPerson,
   type MeasureMetricsContext,
-  type Version,
-  pickPrimarySocialId,
-  type Person as GlobalPerson
+  type SocialId,
+  type Version
 } from '@hcengineering/core'
-import { setCurrentEmployee, ensureEmployee } from '@hcengineering/contact'
-import login, { loginId } from '@hcengineering/login'
+import login, { loginId, type Pages } from '@hcengineering/login'
 import { broadcastEvent, getMetadata, getResource, OK, setMetadata, translateCB } from '@hcengineering/platform'
 import presentation, {
   loadServerConfig,
@@ -36,8 +37,7 @@ import {
   setMetadataLocalStorage,
   themeStore
 } from '@hcengineering/ui'
-import { getClient as getAccountClient } from '@hcengineering/account-client'
-import { writable, get } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 
 import plugin from './plugin'
 import { logOut, workspaceCreating } from './utils'
@@ -229,13 +229,15 @@ export async function connect (title: string): Promise<Client | undefined> {
         },
         onArchived: () => {
           translateCB(plugin.string.WorkspaceIsArchived, {}, get(themeStore).language, (r) => {
-            versionError.set(r)
-            setTimeout(() => {
-              location.reload()
-            }, 5000)
+            const selectWorkspace: Pages = 'selectWorkspace'
+            navigate({
+              path: [loginId, selectWorkspace],
+              query: {}
+            })
           })
         },
         onMigration: () => {
+          // TODO: Rework maitenance mode as well
           translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
             versionError.set(r)
             setTimeout(() => {

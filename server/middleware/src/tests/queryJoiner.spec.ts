@@ -12,14 +12,13 @@ describe('test query joiner', () => {
       })
       return toFindResult([])
     }
-    const joiner = new QueryJoiner(findT)
+    const joiner = new QueryJoiner()
     const ctx = new MeasureMetricsContext('test', {})
 
-    const p1 = joiner.findAll(ctx, core.class.Class, {})
-    const p2 = joiner.findAll(ctx, core.class.Class, {})
+    const p1 = joiner.query(ctx, core.class.Class, (ctx) => findT(ctx, core.class.Class, {}))
+    const p2 = joiner.query(ctx, core.class.Class, (ctx) => findT(ctx, core.class.Class, {}))
     await Promise.all([p1, p2])
     expect(count).toBe(1)
-    expect((joiner as any).queries.size).toBe(1)
-    expect((joiner as any).queries.get(core.class.Class).length).toBe(0)
+    expect((joiner as any).queries.size).toBe(0)
   })
 })

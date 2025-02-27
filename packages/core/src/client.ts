@@ -402,7 +402,7 @@ async function loadModel (
   return { mode: 'addition', current: current.transactions, addition: result.transactions }
 }
 
-function buildModel (
+export function buildModel (
   ctx: MeasureContext,
   transactions: Tx[],
   modelFilter: ModelFilter | undefined,

@@ -83,8 +83,7 @@ test.describe('contact tests', () => {
     await contractPage.fillEmailInput(mail)
     await contractPage.clickCreateButton()
     await contractPage.waitForFormAntiCardDetached()
-    // employee already inactive
-    // await contractPage.kickEmployee(first, last)
+    await contractPage.kickEmployee(first, last)
     // In non refactored code, the last assert just checks if the employee does exist, not if it has inactive status
     await contractPage.expectKickEmployeeShowsInactiveStatus(first, last)
   })

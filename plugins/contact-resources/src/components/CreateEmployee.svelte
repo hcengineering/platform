@@ -90,7 +90,7 @@
       const employeeRef = (existingPerson?._id as Ref<Employee>) ?? id
 
       await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
-        active: false
+        active: true
       })
 
       await client.addCollection(

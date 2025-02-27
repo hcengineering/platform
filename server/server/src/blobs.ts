@@ -42,6 +42,8 @@ export async function getFile (
             res.writeHead(200, {
               'Content-Type': stat.contentType,
               Etag: stat.etag,
+              connection: 'keep-alive',
+              'keep-alive': 'timeout=5, max=1000',
               'Last-Modified': new Date(stat.modifiedOn).toISOString(),
               'Cache-Control': cacheControlNoCache
             })
@@ -118,7 +120,9 @@ export async function getFileRange (
   if (start >= size) {
     res.cork(() => {
       res.writeHead(416, {
-        'Content-Range': `bytes */${size}`
+        'Content-Range': `bytes */${size}`,
+        connection: 'keep-alive',
+        'keep-alive': 'timeout=5, max=1000'
       })
       res.end()
     })
@@ -139,9 +143,10 @@ export async function getFileRange (
         await new Promise<void>((resolve, reject) => {
           res.cork(() => {
             res.writeHead(206, {
-              Connection: 'keep-alive',
               'Content-Range': `bytes ${start}-${end}/${size}`,
               'Accept-Ranges': 'bytes',
+              connection: 'keep-alive',
+              'keep-alive': 'timeout=5, max=1000',
               // 'Content-Length': end - start + 1,
               'Content-Type': stat.contentType,
               Etag: stat.etag,

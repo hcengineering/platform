@@ -344,9 +344,29 @@ export async function getReferenceLabel<T extends Doc> (
   return label
 }
 
+export async function getReferenceObject<T extends Doc> (
+  objectclass: Ref<Class<T>>,
+  id: Ref<T>,
+  doc?: T
+): Promise<Doc | undefined> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const referenceObjectProvider = hierarchy.classHierarchyMixin(
+    objectclass as Ref<Class<Doc>>,
+    view.mixin.ReferenceObjectProvider
+  )
+  const referenceObjectProviderFn =
+    referenceObjectProvider !== undefined ? await getResource(referenceObjectProvider.provider) : undefined
+
+  return await referenceObjectProviderFn?.(client, id, doc)
+}
+
 export async function getReferenceFromUrl (urlString: string): Promise<ReferenceNodeProps | undefined> {
-  const target = await getTargetObjectFromUrl(urlString)
+  let target = await getTargetObjectFromUrl(urlString)
   if (target === undefined) return
+
+  target = (await getReferenceObject(target._class, target._id)) ?? target
 
   const label = await getReferenceLabel(target._class, target._id)
   if (label === '') return

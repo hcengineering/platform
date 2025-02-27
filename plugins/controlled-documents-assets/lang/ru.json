@@ -309,7 +309,9 @@
     "Obsolete": "Устаревший",
     "MakeDocumentObsolete": "Пометить как устаревшее",
     "MakeDocumentObsoleteDialog": "Пометить {count, plural, one {документ как устаревший} other {документы как устаревшие}}",
-    "MakeDocumentObsoleteConfirm": "Вы действительно хотите пометить следующие документы как устаревшие: {titles}?"
+    "MakeDocumentObsoleteConfirm": "Вы действительно хотите пометить следующие документы как устаревшие: {titles}?",
+
+    "LatestVersionHint": "последняя"
   },
   "controlledDocStates": {
     "Empty": "",
