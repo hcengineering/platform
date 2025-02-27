@@ -2,7 +2,7 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "target": "esnext",
-    "module": "commonjs",
+    "module": "esnext",
     "sourceMap": true,
     "declaration": true,
     "rootDir": "./src",

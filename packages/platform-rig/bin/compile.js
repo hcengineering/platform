@@ -171,7 +171,7 @@ async function performESBuild(filesToTranspile) {
     keepNames: true,
     sourcemap: 'linked',
     allowOverwrite: true,
-    format: 'cjs',
+    format: 'esm',
     color: true,
     plugins: [
       copy({
