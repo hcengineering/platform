@@ -2412,6 +2412,11 @@
       "packageName": "@hcengineering/model-chat",
       "projectFolder": "models/chat",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-msg2file",
+      "projectFolder": "services/msg2file",
+      "shouldPublish": false
     }
   ]
 }

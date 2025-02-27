@@ -425,6 +425,15 @@ services:
       - STATS_URL=http://huly.local:4900
 #      - LOVE_ENDPOINT=http://huly.local:8096
 #      - OPENAI_API_KEY=token
+  msg2file:
+    image: hardcoreeng/msg2file
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    restart: unless-stopped
+    environment:
+      - ACCOUNTS_URL=http://huly.local:3000
+      - SECRET=secret
+      - SERVICE_ID=msg2file-service
 #  telegram-bot:
 #    image: hardcoreeng/telegram-bot
 #   extra_hosts:
