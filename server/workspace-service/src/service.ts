@@ -525,7 +525,7 @@ export class WorkspaceWorker {
       case 'migration-clean': {
         // We should remove DB, not storages.
         await sendEvent('migrate-clean-started', 0)
-        await this.sendTransactorMaitenance(token, { name: workspace.uuid })
+        await this.sendTransactorMaitenance(token, workspace.uuid)
 
         const sz = workspace.backupInfo?.backupSize ?? 0
         if (sz <= dbCleanTreshold) {
