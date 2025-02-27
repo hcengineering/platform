@@ -44,7 +44,7 @@ test.describe.skip('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
     await loginPage.clickSignUp()
-    await signUpPage.signUpPwd(newUser)
+    await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await leftSideMenuPage.clickTracker()
     await issuesPage.checkIssuesCount('Hello and Welcome to Huly! 🌟', 1)
@@ -67,7 +67,7 @@ test.describe.skip('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
     await loginPage.clickSignUp()
-    await signUpPage.signUpPwd(newUser)
+    await signUpPage.signUp(newUser)
 
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
@@ -106,7 +106,7 @@ test.describe.skip('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
     await loginPage.clickSignUp()
-    await signUpPage.signUpPwd(newUser)
+    await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await leftSideMenuPage.clickNotification()
     await notificationPage.clickOnNotification('HI-1')
@@ -122,8 +122,8 @@ test.describe.skip('Workspace tests', () => {
     }
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
-    await loginPage.linkSignUp().click()
-    await signUpPage.signUpPwd(newUser)
+    await loginPage.clickSignUp()
+    await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await leftSideMenuPage.buttonTracker().click()
     await userProfilePage.openProfileMenu()
@@ -144,8 +144,8 @@ test.describe.skip('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     const newWorkspaceName2 = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
-    await loginPage.linkSignUp().click()
-    await signUpPage.signUpPwd(newUser)
+    await loginPage.clickSignUp()
+    await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await api.createWorkspaceWithLogin(newWorkspaceName2, newUser.email, '1234')
     await userProfilePage.openProfileMenu()
@@ -166,8 +166,8 @@ test.describe.skip('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
     const newWorkspaceName2 = `New Workspace Name - ${generateId(2)}`
     await loginPage.goto()
-    await loginPage.linkSignUp().click()
-    await signUpPage.signUpPwd(newUser)
+    await loginPage.clickSignUp()
+    await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await userProfilePage.openProfileMenu()
     await userProfilePage.clickSettings()
