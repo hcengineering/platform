@@ -1780,8 +1780,9 @@ export function devTool (
       await withAccountDatabase(async (db) => {
         console.log('configure all workspaces')
         console.log(JSON.stringify(cmd))
-        const workspaces = await listWorkspacesRaw(db)
+        const workspaces = (await listWorkspacesRaw(db)).sort((a, b) => b.lastVisit - a.lastVisit)
         for (const ws of workspaces) {
+          if (!isActiveMode(ws.mode)) continue
           console.log('configure', ws.workspaceName ?? ws.workspace)
           const wsid = getWorkspaceId(ws.workspace)
           const token = generateToken(systemAccountEmail, wsid)
