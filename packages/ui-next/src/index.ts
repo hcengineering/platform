@@ -13,14 +13,21 @@
 // limitations under the License.
 //
 
-import uiNext from './plugin'
+import uiNext, { uiNextId } from './plugin'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { type SvelteComponent } from 'svelte'
 
 export * from './types'
-
-export { default as NavItem } from './components/NavItem.svelte'
-export { default as Section } from './components/Section.svelte'
-export { default as NavigationList } from './components/NavigationList.svelte'
-
+export { uiNextId }
 export default uiNext
+
+export { default as Avatar } from './components/Avatar.svelte'
+export { default as Icon } from './components/Icon.svelte'
+export { default as Label } from './components/Label.svelte'
+export { default as Message } from './components/message/Message.svelte'
+export { default as MessageInput } from './components/message/MessageInput.svelte'
+export { default as MessagesGroup } from './components/message/MessagesGroup.svelte'
+export { default as NavItem } from './components/NavItem.svelte'
+export { default as NavigationList } from './components/NavigationList.svelte'
+export { default as Section } from './components/Section.svelte'
+export { default as Divider } from './components/Divider.svelte'

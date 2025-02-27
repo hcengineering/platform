@@ -66,6 +66,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/ui-next": "^0.6.0",
     "@hcengineering/theme": "^0.6.5",
     "@hcengineering/login": "^0.6.12",
     "@hcengineering/login-assets": "^0.6.0",

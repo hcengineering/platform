@@ -1,0 +1,24 @@
+{
+  "string": {
+    "Attach": "附加",
+    "Cancel": "取消",
+    "Edit": "编辑",
+    "Edited": "已编辑",
+    "Emoji": "表情",
+    "HoursAgo": "{hours, plural, =0 {不到一小时前} =1 {一小时前} other {#小时前}}",
+    "JustNow": "刚刚",
+    "LastReply": "最后回复",
+    "Mention": "提及",
+    "MinutesAgo": "{minutes, plural, =0 {不到一分钟前} =1 {一分钟前} other {#分钟前}}",
+    "MonthAt": "{month} 于 {time}",
+    "RepliesCount": "{count} 条回复",
+    "Reply": "回复",
+    "Send": "发送",
+    "ShowFormatting": "显示格式",
+    "Today": "今天",
+    "WeekdayAt": "{weekday} 于 {time}",
+    "YearAt": "{year} 于 {time}",
+    "Yesterday": "昨天",
+    "YesterdayAt": "昨天 于 {time}"
+  }
+}

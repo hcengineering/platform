@@ -16,9 +16,14 @@
 import { type Resources } from '@hcengineering/platform'
 
 import ChatApplication from './components/ChatApplication.svelte'
+import ChatWidget from './components/ChatWidget.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
-    ChatApplication
+    ChatApplication,
+    ChatWidget
+  },
+  function: {
+    CloseChatWidgetTab: () => {}
   }
 })

@@ -12,3 +12,60 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { EmojiPopup, showPopup } from '@hcengineering/ui'
+
+import IconAt from './components/icons/IconAt.svelte'
+import IconEmoji from './components/icons/IconEmoji.svelte'
+import IconPlus from './components/icons/IconPlus.svelte'
+import IconTextFont from './components/icons/IconTextFont.svelte'
+import { type TextInputAction } from './types'
+import uiNext from './plugin'
+
+export const defaultMessageInputActions: TextInputAction[] = [
+  {
+    label: uiNext.string.Attach,
+    icon: IconPlus,
+    action: (_element, editorHandler) => {
+      // TODO: implement
+    },
+    order: 1000
+  },
+  {
+    label: uiNext.string.ShowFormatting,
+    icon: IconTextFont,
+    action: (_element, editorHandler) => {
+      // TODO: implement
+    },
+    order: 2000
+  },
+  {
+    label: uiNext.string.Emoji,
+    icon: IconEmoji,
+    action: (element, editorHandler) => {
+      showPopup(
+        EmojiPopup,
+        {},
+        element,
+        (emoji) => {
+          if (emoji === null || emoji === undefined) {
+            return
+          }
+
+          editorHandler.insertText(emoji)
+          editorHandler.focus()
+        },
+        () => {}
+      )
+    },
+    order: 3000
+  },
+  {
+    label: uiNext.string.Mention,
+    icon: IconAt,
+    action: (_element, editorHandler) => {
+      editorHandler.insertText('@')
+      editorHandler.focus()
+    },
+    order: 4000
+  }
+]

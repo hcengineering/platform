@@ -15,16 +15,16 @@
 
 <script lang="ts">
   import cardPlugin, { Card } from '@hcengineering/card'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { NavigationList, NavigationSection } from '@hcengineering/ui-next'
   import { languageStore, Scroller } from '@hcengineering/ui'
 
-  import { cardsToChatSections, navigatorStateStore, toggleSection } from '../navigator'
+  import { cardsToChatSections, NavigatorState, navigatorStateStore, toggleSection } from '../navigator'
+  import { Ref } from '@hcengineering/core'
 
   export let card: Card | undefined = undefined
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   const query = createQuery()

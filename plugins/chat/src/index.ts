@@ -14,10 +14,9 @@
 //
 
 import { Ref } from '@hcengineering/core'
-import { plugin, IntlString, type Plugin, Asset } from '@hcengineering/platform'
+import { plugin, IntlString, type Plugin, Asset, Resource } from '@hcengineering/platform'
 import { MasterTag } from '@hcengineering/card'
-
-export * from './types'
+import { Widget, WidgetTab } from '@hcengineering/workbench'
 
 export const chatId = 'chat' as Plugin
 
@@ -27,18 +26,25 @@ const chat = plugin(chatId, {
     Channels: '' as IntlString,
     Chat: '' as IntlString,
     Description: '' as IntlString,
+    MessageIn: '' as IntlString,
     Thread: '' as IntlString,
     Threads: '' as IntlString,
     Title: '' as IntlString
   },
   icon: {
+    Channel: '' as Asset,
     ChatBubble: '' as Asset,
-    Thread: '' as Asset,
-    Channel: '' as Asset
+    Thread: '' as Asset
   },
   masterTag: {
     Channel: '' as Ref<MasterTag>,
     Thread: '' as Ref<MasterTag>
+  },
+  ids: {
+    ChatWidget: '' as Ref<Widget>
+  },
+  function: {
+    CloseChatWidgetTab: '' as Resource<(tab: WidgetTab) => Promise<void>>
   }
 })
 

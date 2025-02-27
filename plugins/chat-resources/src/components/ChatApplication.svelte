@@ -80,7 +80,7 @@
   onDestroy(() => ($deviceInfo.replacedPanel = undefined))
 </script>
 
-<div class="hulyPanels-container chat">
+<div class="hulyPanels-container chat next-colors">
   {#if $deviceInfo.navigator.visible}
     <div
       class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
@@ -106,7 +106,9 @@
   {/if}
   <div bind:this={replacedPanelElement} class="hulyComponent chat__panel">
     {#if card}
-      <ChatPanel />
+      {#key card._id}
+        <ChatPanel {card} />
+      {/key}
     {/if}
   </div>
 </div>
@@ -126,5 +128,6 @@
   .chat__panel {
     background: var(--next-panel-color-background);
     border-color: var(--next-panel-color-border);
+    position: relative;
   }
 </style>

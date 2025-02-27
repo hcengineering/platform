@@ -21,6 +21,7 @@ import { chatId } from '@hcengineering/chat'
 import card from '@hcengineering/card'
 import setting from '@hcengineering/setting'
 import { createCardTableViewlet } from '@hcengineering/model-card'
+import { WidgetType } from '@hcengineering/workbench'
 
 import chat from './plugin'
 
@@ -41,6 +42,18 @@ export function createModel (builder: Builder): void {
       component: chat.component.ChatApplication
     },
     chat.app.Chat
+  )
+
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: chat.string.Chat,
+      type: WidgetType.Flexible,
+      icon: chat.icon.ChatBubble,
+      component: chat.component.ChatWidget
+    },
+    chat.ids.ChatWidget
   )
 
   builder.createDoc(

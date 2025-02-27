@@ -13,8 +13,11 @@
 // limitations under the License.
 //
 
+import { type Data, type Markup, type Ref } from '@hcengineering/core'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
+import { type Person, type AvatarInfo } from '@hcengineering/contact'
+import { type TextEditorHandler } from '@hcengineering/text-editor'
 
 export interface NavigationSection {
   id: string
@@ -29,5 +32,69 @@ export interface NavigationSectionItem {
   icon: IconComponent
 }
 
+export interface MessageType {
+  id: string | number
+  text: Markup
+  authorName: string
+  author?: Ref<Person>
+  avatar: Data<AvatarInfo> | undefined
+  date: Date
+  edited?: Date
+  reactions: ReactionType[]
+  repliesCount?: number
+  lastReplyDate?: Date
+}
+
+export interface ReactionType {
+  id: string
+  emoji: string
+  count: number
+  selected?: boolean
+  persons: Array<Ref<Person>>
+}
+
 export type IconSize = 'x-small' | 'small' | 'medium' | 'large'
 export type IconComponent = Asset | ComponentType
+
+export enum AvatarSize {
+  XSmall = 'x-small',
+  Small = 'small',
+  Regular = 'regular',
+  Medium = 'medium',
+  Large = 'large',
+  XLarge = 'x-large',
+  XXLarge = 'xx-large',
+  XXXLarge = 'xxx-large'
+}
+
+export enum AvatarShape {
+  Circle = 'circle'
+}
+
+export enum ButtonVariant {
+  Default = 'default',
+  Ghost = 'ghost'
+}
+
+export enum ButtonType {
+  Submit = 'submit',
+  Reset = 'reset',
+  Button = 'button'
+}
+
+export enum ButtonSize {
+  Auto = 'auto',
+  Small = 'small',
+  Medium = 'medium',
+  Large = 'large'
+}
+
+export type TextInputActionFn = (element: HTMLElement, editor: TextEditorHandler, event?: MouseEvent) => void
+
+export interface TextInputAction {
+  label: IntlString
+  icon: IconComponent
+  action: TextInputActionFn
+  order: number
+  disabled?: boolean
+}

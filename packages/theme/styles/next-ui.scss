@@ -23,7 +23,6 @@
   height: 1.5rem;
 }
 
-
 .next-label-overflow {
   white-space: nowrap;
   word-break: break-all;
@@ -31,3 +30,27 @@
   overflow: hidden;
   min-width: 0;
 }
+
+.next-text-editor-view {
+  color: var(--next-text-color-primary);
+  margin: 0;
+  p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: var(--next-text-color-tertiary);
+    pointer-events: none;
+    height: 0;
+  }
+
+  &:focus-within p.is-editor-empty:first-child::before {
+    color: var(--next-text-color-tertiary);
+  }
+}
+
+
+.next-colors {
+  p.contrast {
+    color: var(--next-text-color-primary) !important;
+  }
+}
+

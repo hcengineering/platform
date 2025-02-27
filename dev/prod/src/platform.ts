@@ -62,6 +62,7 @@ import { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import { trainingId } from '@hcengineering/training'
 import uiPlugin from '@hcengineering/ui'
+import {uiNextId} from '@hcengineering/ui-next'
 import { uploaderId } from '@hcengineering/uploader'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
@@ -248,6 +249,7 @@ function configureI18n(): void {
     async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`)
   )
   addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
+  addStringsLoader(uiNextId, async (lang: string) => await import(`@hcengineering/ui-next/lang/${lang}.json`))
   addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
   addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
   addStringsLoader(

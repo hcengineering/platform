@@ -63,14 +63,6 @@ import platform, {
 import { uncompress } from 'snappyjs'
 
 import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
-import { EventResult } from '@hcengineering/communication-sdk-types'
-import {
-  FindMessagesParams,
-  FindNotificationContextParams,
-  FindNotificationsParams,
-  Message,
-  NotificationContext
-} from '@hcengineering/communication-types'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -859,29 +851,6 @@ class Connection implements ClientConnection {
 
   sendForceClose (): Promise<void> {
     return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false, overrideId: -2, once: true })
-  }
-
-  async sendEvent (event: Event): Promise<EventResult> {
-    return await this.sendRequest({ method: 'event', params: [event] })
-  }
-
-  async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
-    return await this.sendRequest({ method: 'findMessages', params: [params, queryId] })
-  }
-
-  async findNotificationContexts (
-    params: FindNotificationContextParams,
-    queryId?: number
-  ): Promise<NotificationContext[]> {
-    return await this.sendRequest({ method: 'findNotificationContexts', params: [params, queryId] })
-  }
-
-  async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
-    return await this.sendRequest({ method: 'findNotifications', params: [params, queryId] })
-  }
-
-  async unsubscribeQuery (id: number): Promise<void> {
-    await this.sendRequest({ method: 'unsubscribeQuery', params: [id] })
   }
 }
 

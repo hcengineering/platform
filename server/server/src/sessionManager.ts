@@ -1212,9 +1212,10 @@ export class TSessionManager implements SessionManager {
 
         const pipeline =
           service.workspace.pipeline instanceof Promise ? await service.workspace.pipeline : service.workspace.pipeline
-        const communicationApi = service.workspace.communicationApi instanceof Promise
-          ? await service.workspace.communicationApi
-          : service.workspace.communicationApi
+        const communicationApi =
+          service.workspace.communicationApi instanceof Promise
+            ? await service.workspace.communicationApi
+            : service.workspace.communicationApi
         try {
           const uctx = this.createOpContext(ctx, pipeline, communicationApi, reqId, service, ws)
           await operation(uctx)

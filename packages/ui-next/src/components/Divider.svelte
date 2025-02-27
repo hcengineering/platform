@@ -1,5 +1,5 @@
-//
-// Copyright © 2024 Hardcore Engineering Inc.
+<!--
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,9 +11,13 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<div class="divider" />
 
-import { Card } from '@hcengineering/card'
-
-export interface Thread extends Card {}
-export interface Channel extends Card {}
+<style lang="scss">
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--next-divider-color);
+  }
+</style>

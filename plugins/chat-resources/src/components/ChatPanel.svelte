@@ -12,3 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
+<script lang="ts">
+  import { Card } from '@hcengineering/card'
+
+  import ChatHeader from './ChatHeader.svelte'
+  import ChatBody from './ChatBody.svelte'
+  import ChatFooter from './ChatFooter.svelte'
+
+  export let card: Card
+
+  let footerHeight: number | undefined = undefined
+</script>
+
+<ChatHeader {card} />
+<ChatBody {card} {footerHeight} />
+<ChatFooter {card} bind:height={footerHeight} />
+
+<style lang="scss">
+</style>

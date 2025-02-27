@@ -54,14 +54,12 @@
 
 /* Dark Theme */
 .theme-dark {
-  /*TODO: correct color*/
-  --next-background-color: #1B1C1F;
-  --next-border-color: #303136;
+  --next-background-color: var(--next-surface-color-bg-1);
+  --next-border-color: var(--next-divider-color);
 
   //Panel
-  /*TODO: correct color*/
-  --next-panel-color-background: #25262A;
-  --next-panel-color-border: #36373D;
+  --next-panel-color-background: var(--next-surface-color-bg-2);
+  --next-panel-color-border: var(--next-divider-color);
 
   //Surface
   --next-surface-color-bg-1: var(--color-global-charcoal-black);
@@ -87,6 +85,13 @@
   --next-label-color-secondary: var(--color-huly-off-white-85);
   --next-label-color-tertiary: var(--color-huly-off-white-50);
 
+  //Reaction
+  --next-reaction-counter-rest-color-background: var(--color-huly-off-white-5);
+  --next-reaction-counter-rest-color-foreground: var(--color-huly-off-white-85);
+  --next-reaction-counter-rest-color-label: var(--color-huly-off-white-100);
+  --next-reaction-counter-hover-color-background: var(--color-huly-off-white-10);
+  --next-reaction-counter-selected-color-background: var(--color-global-royal-blue);
+
   //ButtonMenu background
   --next-button-menu-ghost-background-color-rest: var(--color-global-white-0);
   --next-button-menu-ghost-background-color-hover: var(--color-huly-off-white-10);
@@ -98,19 +103,21 @@
   --next-button-menu-ghost-foreground-color-hover: var(--color-huly-off-white-100);
   --next-button-menu-ghost-foreground-color-active: var(--color-huly-off-white-100);
   --next-button-menu-ghost-foreground-color-disabled: var(--color-huly-off-white-25);
+
+  //MessageInput
+  --next-message-input-color-background: var(--color-global-dark-gray);
+  --next-message-input-color-stroke: var(--color-global-charcoal-black);
 }
 
 
 /* Light Theme */
 .theme-light {
-  /*TODO: correct color*/
-  --next-background-color: #F1F1F1;
-  --next-border-color: #D5D5D7;
+  --next-background-color: var(--next-surface-color-bg-1);
+  --next-border-color: var(--next-divider-color);
 
   //Panel
-  /*TODO: correct color*/
-  --next-panel-color-background: #FFFFFF;
-  --next-panel-color-border: #D5D5D7;
+  --next-panel-color-background: var(--next-surface-color-bg-2);
+  --next-panel-color-border: var(--next-divider-color);
 
   //Surface
   --next-surface-color-bg-1: var(--color-global-white-100);
@@ -136,6 +143,13 @@
   --next-label-color-secondary: var(--color-huly-dark-grey-85);
   --next-label-color-tertiary: var(--color-huly-dark-grey-50);
 
+  //Reaction
+  --next-reaction-counter-rest-color-background: var(--color-huly-dark-grey-5);
+  --next-reaction-counter-rest-color-foreground: var(--color-huly-dark-grey-85);
+  --next-reaction-counter-rest-color-label: var(--color-huly-dark-grey-100);
+  --next-reaction-counter-hover-color-background: var(--color-huly-dark-grey-10);
+  --next-reaction-counter-selected-color-background: var(--color-global-royal-blue);
+
   //ButtonMenu background
   --next-button-menu-ghost-background-color-rest: var(--color-global-white-0);
   --next-button-menu-ghost-background-color-hover: var(--color-huly-dark-grey-10);
@@ -147,4 +161,8 @@
   --next-button-menu-ghost-foreground-color-hover: var(--color-huly-dark-grey-100);
   --next-button-menu-ghost-foreground-color-active: var(--color-huly-dark-grey-100);
   --next-button-menu-ghost-foreground-color-disabled: var(--color-huly-dark-grey-25);
+
+  //MessageInput
+  --next-message-input-color-background: var(--color-global-light-gray);
+  --next-message-input-color-stroke: var(--color-global-white-100);
 }

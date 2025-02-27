@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Channel": "Канал",
+    "Channels": "Каналы",
+    "Chat": "Чат",
+    "Description": "Описание",
+    "MessageIn": "Сообщение в #{title}",
+    "Thread": "Тред",
+    "Threads": "Треды",
+    "Title": "Название"
+  }
+}

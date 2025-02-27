@@ -18,7 +18,7 @@
   import { IconSize, IconComponent } from '../types'
 
   export let icon: IconComponent
-  export let size: IconSize
+  export let size: IconSize = 'small'
 
   function isAsset (icon: IconComponent): boolean {
     return typeof icon === 'string'

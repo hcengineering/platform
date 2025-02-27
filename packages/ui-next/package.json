@@ -40,9 +40,17 @@
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/presentation": "^0.6.3",
+    "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/theme": "^0.6.5",
+    "@hcengineering/ui": "^0.6.15",
+    "@tiptap/core": "^2.11.3",
+    "@tiptap/pm": "^2.11.3",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.19"
   },

@@ -17,6 +17,13 @@ import { type Card } from '@hcengineering/card'
 import type { Ref } from '@hcengineering/core'
 import { navigate, type Location, getCurrentResolvedLocation } from '@hcengineering/ui'
 import { chatId } from '@hcengineering/chat'
+import { getClient } from '@hcengineering/presentation'
+import { type Message } from '@hcengineering/communication-types'
+import workbench from '@hcengineering/workbench'
+import { openWidget } from '@hcengineering/workbench-resources'
+
+import chat from './plugin'
+import { type ChatWidgetData } from './types'
 
 // Url: /chat/{cardId}/{threadId}?message={messageId}
 
@@ -37,4 +44,20 @@ export function navigateToCard (_id: Ref<Card>): void {
   delete loc.query?.message
 
   navigate(loc)
+}
+
+export async function openThreadInSidebar (card: Ref<Card>, message: Message): Promise<void> {
+  const client = getClient()
+
+  const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: chat.ids.ChatWidget })[0]
+  if (widget === undefined) return
+
+  const data: ChatWidgetData = {
+    id: `${card}-${message.id}`,
+    name: 'Thread',
+    message: message.id,
+    card
+  }
+
+  openWidget(widget, data)
 }

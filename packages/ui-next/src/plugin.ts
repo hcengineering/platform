@@ -13,13 +13,35 @@
 // limitations under the License.
 //
 
-import type { Plugin } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
+import { addLocation, type IntlString, type Plugin, plugin } from '@hcengineering/platform'
 
 export const uiNextId = 'ui-next' as Plugin
 
 export const uiNext = plugin(uiNextId, {
-  string: {}
+  string: {
+    Attach: '' as IntlString,
+    Cancel: '' as IntlString,
+    Edit: '' as IntlString,
+    Edited: '' as IntlString,
+    Emoji: '' as IntlString,
+    HoursAgo: '' as IntlString,
+    JustNow: '' as IntlString,
+    LastReply: '' as IntlString,
+    Mention: '' as IntlString,
+    MinutesAgo: '' as IntlString,
+    MonthAt: '' as IntlString,
+    RepliesCount: '' as IntlString,
+    Reply: '' as IntlString,
+    Send: '' as IntlString,
+    ShowFormatting: '' as IntlString,
+    Today: '' as IntlString,
+    WeekdayAt: '' as IntlString,
+    YearAt: '' as IntlString,
+    Yesterday: '' as IntlString,
+    YesterdayAt: '' as IntlString
+  }
 })
+
+addLocation(uiNextId, async () => ({ default: async () => ({}) }))
 
 export default uiNext

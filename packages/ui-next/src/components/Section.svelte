@@ -17,12 +17,14 @@
   import { IntlString } from '@hcengineering/platform'
 
   import Label from './Label.svelte'
-  import ArrowChevronRight from './icons/ArrowChevronRight.svelte'
-  import ArrowChevronDown from './icons/ArrowChevronDown.svelte'
+  import IconArrowChevronRight from './icons/IconArrowChevronRight.svelte'
+  import IconArrowChevronDown from './icons/IconArrowChevronDown.svelte'
   import { createEventDispatcher } from 'svelte'
+  import Divider from './Divider.svelte'
 
   export let id: string
   export let title: IntlString
+  export let withHeaderDivider = false
   export let expanded = true
 
   const dispatch = createEventDispatcher()
@@ -44,12 +46,14 @@
     </div>
     <div class="section__arrow">
       {#if _expanded}
-        <ArrowChevronDown />
+        <IconArrowChevronDown />
       {:else}
-        <ArrowChevronRight />
+        <IconArrowChevronRight />
       {/if}
     </div>
-    <div class="section__divider" />
+    {#if withHeaderDivider}
+      <Divider />
+    {/if}
   </div>
 
   <div class="section__content">
@@ -87,12 +91,6 @@
   .section__arrow {
     color: var(--next-label-color-secondary);
     min-width: 1rem;
-  }
-
-  .section__divider {
-    flex: 1;
-    height: 1px;
-    background: var(--next-divider-color);
   }
 
   .section__content {
