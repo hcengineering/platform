@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getClient as getAccountClient, type WorkspaceLoginInfo } from '@hcengineering/account-client'
+import { type WorkspaceLoginInfo, getClient as getAccountClient } from '@hcengineering/account-client'
 import client, { clientId } from '@hcengineering/client'
 import {
   type Class,
@@ -291,7 +291,7 @@ class PlatformClientImpl implements PlatformClient {
 export interface WorkspaceToken {
   endpoint: string
   token: string
-  workspaceId: string
+  workspaceId: WorkspaceUuid
   info: WorkspaceLoginInfo
 }
 
