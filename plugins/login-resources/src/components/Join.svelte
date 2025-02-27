@@ -60,7 +60,7 @@
   let status = OK
 
   $: action = {
-    i18n: login.string.Join,
+    i18n: page === 'login' ? login.string.Join : login.string.SignUp,
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
@@ -96,10 +96,14 @@
     }
   }
 
-  $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : undefined
-  $: secondaryButtonAction = () => {
-    page = 'signUp'
-  }
+  $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : login.string.Join
+  $: secondaryButtonAction = page === 'login'
+    ? () => {
+        page = 'signUp'
+      }
+    : () => {
+        page = 'login'
+      }
 
   onMount(() => {
     void check()

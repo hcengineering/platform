@@ -15,6 +15,7 @@ export class SignInJoinPage extends CommonPage {
   buttonJoin = (): Locator => this.page.locator('button', { hasText: 'Join' })
 
   async join (data: Pick<SignUpData, 'email' | 'password'>): Promise<void> {
+    await this.buttonJoin().click()
     await this.inputEmail().fill(data.email)
     await this.inputPassword().fill(data.password)
     expect(await this.buttonJoin().isEnabled()).toBe(true)
