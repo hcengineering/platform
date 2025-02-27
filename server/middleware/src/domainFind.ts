@@ -18,6 +18,7 @@ import {
   type Doc,
   type DocumentQuery,
   type Domain,
+  type FindOptions,
   type FindResult,
   type MeasureContext,
   type Ref,
@@ -44,6 +45,11 @@ export class DomainFindMiddleware extends BaseMiddleware implements Middleware {
     return middleware
   }
 
+  toPrintableOptions (options?: ServerFindOptions<Doc>): FindOptions<Doc> {
+    const { ctx, allowedSpaces, associations, ...opt } = options ?? {}
+    return opt
+  }
+
   findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
@@ -65,7 +71,7 @@ export class DomainFindMiddleware extends BaseMiddleware implements Middleware {
       (ctx) => {
         return this.adapterManager.getAdapter(domain, false).findAll(ctx, _class, query, options)
       },
-      { _class, query, options }
+      { _class, query, options: this.toPrintableOptions(options) }
     )
   }
 

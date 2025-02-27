@@ -1013,10 +1013,12 @@ export async function performWorkspaceOperation (
   }
 ): Promise<boolean> {
   const { workspaceId, event, params } = parameters
-  const { extra } = decodeTokenVerbose(ctx, token)
+  const { extra, workspace } = decodeTokenVerbose(ctx, token)
 
   if (extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    if (event !== 'unarchive' || workspaceId !== workspace) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
   }
 
   const workspaceUuids = Array.isArray(workspaceId) ? workspaceId : [workspaceId]

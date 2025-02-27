@@ -57,12 +57,20 @@ export abstract class BaseMiddleware implements Middleware {
     return this.provideFindAll(ctx, _class, query, options)
   }
 
-  loadModel (
+  provideLoadModel (
     ctx: MeasureContext<SessionData>,
     lastModelTx: Timestamp,
     hash?: string
   ): Promise<Tx[] | LoadModelResponse> {
     return this.next?.loadModel(ctx, lastModelTx, hash) ?? emptyModelResult
+  }
+
+  loadModel (
+    ctx: MeasureContext<SessionData>,
+    lastModelTx: Timestamp,
+    hash?: string
+  ): Promise<Tx[] | LoadModelResponse> {
+    return this.provideLoadModel(ctx, lastModelTx, hash)
   }
 
   provideGroupBy<T, P extends Doc>(

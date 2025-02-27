@@ -166,7 +166,7 @@ export async function createControlledDocMetadata (
     space,
     {
       documents: 0,
-      title: `${prefix}-${seqNumber} ${specTitle}`
+      title: `${specCode} ${specTitle}`
     },
     metaId
   )

@@ -14,33 +14,39 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WorkspaceInfoWithStatus, isArchivingMode } from '@hcengineering/core'
+  import {
+    WorkspaceInfoWithStatus,
+    isActiveMode,
+    isArchivingMode,
+    isRestoringMode,
+    isUpgradingMode
+  } from '@hcengineering/core'
   import { LoginInfo } from '@hcengineering/login'
   import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, { MessageBox, NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
   import {
-    ticker,
     Button,
     Label,
     Scroller,
     SearchEdit,
     Spinner,
     deviceOptionsStore as deviceInfo,
-    showPopup
+    showPopup,
+    ticker
   } from '@hcengineering/ui'
   import { logOut } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
 
   import login from '../plugin'
   import {
-    fetchWorkspace,
     getAccount,
+    getAccountDisplayName,
     getHref,
     getWorkspaces,
     goTo,
     navigateToWorkspace,
     selectWorkspace,
-    getAccountDisplayName
+    unArchive
   } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
@@ -79,20 +85,29 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const [loginStatus, result] = await selectWorkspace(workspaceUrl)
-    if (result != null) {
-      const [, wsResult] = await fetchWorkspace()
 
-      if (isArchivingMode(wsResult?.mode)) {
-        showPopup(MessageBox, {
-          label: login.string.SelectWorkspace,
-          message: login.string.WorkspaceArchivedDesc,
-          canSubmit: false,
-          params: {},
-          action: async () => {}
-        })
-        status = loginStatus
-        return
-      }
+    const ws = workspaces.find((it) => it.uuid === result?.workspace)
+    if (ws != null && isArchivingMode(ws?.mode) && result?.workspace !== undefined) {
+      showPopup(MessageBox, {
+        label: login.string.SelectWorkspace,
+        message: login.string.WorkspaceArchivedDesc,
+        canSubmit: true,
+        params: {},
+        okLabel: login.string.RestoreArchivedWorkspace,
+        action: async () => {
+          if (await unArchive(ws.uuid, result.token)) {
+            workspaces = await getWorkspaces()
+            let info = workspaces.find((it) => it.uuid === ws.uuid)
+            while (isRestoringMode(info?.mode) || isUpgradingMode(info?.mode)) {
+              await new Promise<void>((resolve) => setTimeout(resolve, 5000))
+              workspaces = await getWorkspaces()
+              info = workspaces.find((it) => it.uuid === ws.uuid)
+            }
+          }
+        }
+      })
+      status = loginStatus
+      return
     }
     status = loginStatus
 
@@ -168,7 +183,7 @@
                 {#if isArchivingMode(workspace.mode)}
                   - <Label label={presentation.string.Archived} />
                 {/if}
-                {#if workspace.mode !== 'active' && workspace.mode !== 'archived'}
+                {#if !isActiveMode(workspace.mode) && !isArchivingMode(workspace.mode)}
                   ({workspace.processingProgress}%)
                 {/if}
               </span>

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { type WorkspaceLoginInfo, getClient as getAccountClient } from '@hcengineering/account-client'
 import client, { clientId } from '@hcengineering/client'
 import {
   type Class,
@@ -288,11 +288,18 @@ class PlatformClientImpl implements PlatformClient {
   }
 }
 
-async function getWorkspaceToken (
+export interface WorkspaceToken {
+  endpoint: string
+  token: string
+  workspaceId: WorkspaceUuid
+  info: WorkspaceLoginInfo
+}
+
+export async function getWorkspaceToken (
   url: string,
   options: ConnectOptions,
   config?: ServerConfig
-): Promise<{ endpoint: string, token: string, workspaceId: string }> {
+): Promise<WorkspaceToken> {
   config ??= await loadServerConfig(url)
 
   let token: string | undefined
@@ -314,5 +321,5 @@ async function getWorkspaceToken (
     throw new Error('Workspace not found')
   }
 
-  return { endpoint: ws.endpoint, token: ws.token, workspaceId: ws.workspace }
+  return { endpoint: ws.endpoint, token: ws.token, workspaceId: ws.workspace, info: ws }
 }

@@ -267,7 +267,9 @@
     "Obsolete": "Obsolète",
     "MakeDocumentObsolete": "Marquer comme obsolète",
     "MakeDocumentObsoleteDialog": "Marquer {count, plural, one {le document comme obsolète} other {les documents comme obsolètes}}",
-    "MakeDocumentObsoleteConfirm": "Voulez-vous vraiment marquer les documents suivants comme obsolètes : {titles} ?"
+    "MakeDocumentObsoleteConfirm": "Voulez-vous vraiment marquer les documents suivants comme obsolètes : {titles} ?",
+
+    "LatestVersionHint": "dernier"
   },
   "controlledDocStates": {
     "Empty": "",

@@ -68,6 +68,8 @@ import {
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
 
+const dbCleanTreshold = 256 // Cleanup workspaces if less 256mb
+
 export interface WorkspaceOptions {
   errorHandler: (workspace: WorkspaceInfoWithStatus, error: any) => Promise<void>
   force: boolean
@@ -395,18 +397,18 @@ export class WorkspaceWorker {
   /**
    * If onlyDrop is true, will drop workspace from database, overwize remove only indexes and do full reindex.
    */
-  async doCleanup (ctx: MeasureContext, workspace: WorkspaceInfoWithStatus, onlyDrop: boolean): Promise<void> {
+  async doCleanup (ctx: MeasureContext, workspace: WorkspaceInfoWithStatus, cleanIndexes: boolean): Promise<void> {
     const { dbUrl } = prepareTools([])
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
     await adapter.deleteWorkspace(ctx, sharedPipelineContextVars, workspace.uuid, workspace.dataId)
 
-    await this.doReindexFulltext(ctx, workspace, onlyDrop)
+    await this.doReindexFulltext(ctx, workspace, cleanIndexes)
   }
 
   private async doReindexFulltext (
     ctx: MeasureContext,
     workspace: WorkspaceInfoWithStatus,
-    onlyDrop: boolean
+    cleanIndexes: boolean
   ): Promise<void> {
     if (this.fulltextUrl !== undefined) {
       const token = generateToken(systemAccountUuid, workspace.uuid, { service: 'workspace' })
@@ -417,7 +419,7 @@ export class WorkspaceWorker {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ token, onlyDrop })
+          body: JSON.stringify({ token, onlyDrop: cleanIndexes })
         })
         if (!res.ok) {
           throw new Error(`HTTP Error ${res.status} ${res.statusText}`)
@@ -524,11 +526,15 @@ export class WorkspaceWorker {
         // We should remove DB, not storages.
         await sendEvent('migrate-clean-started', 0)
         await this.sendTransactorMaitenance(token, workspace.uuid)
-        try {
-          await this.doCleanup(ctx, workspace, false)
-        } catch (err: any) {
-          Analytics.handleError(err)
-          return
+
+        const sz = workspace.backupInfo?.backupSize ?? 0
+        if (sz <= dbCleanTreshold) {
+          try {
+            await this.doCleanup(ctx, workspace, false)
+          } catch (err: any) {
+            Analytics.handleError(err)
+            return
+          }
         }
         await sendEvent('migrate-clean-done', 0)
         break
