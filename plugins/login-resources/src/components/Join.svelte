@@ -28,7 +28,7 @@
 
   const location = getCurrentLocation()
   Analytics.handleEvent('invite_link_activated')
-  let page = 'login'
+  let page = 'signUp'
 
   $: fields =
     page === 'login'
@@ -96,19 +96,6 @@
     }
   }
 
-  const signUpAction: BottomAction = {
-    caption: login.string.DoNotHaveAnAccount,
-    i18n: login.string.SignUp,
-    func: () => (page = 'signUp')
-  }
-
-  const loginJoinAction: BottomAction = {
-    caption: login.string.HaveAccount,
-    i18n: login.string.LogIn,
-    func: () => (page = 'login')
-  }
-
-  $: bottom = page === 'login' ? [signUpAction] : [loginJoinAction]
   $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : undefined
   $: secondaryButtonAction = () => {
     page = 'signUp'
@@ -150,6 +137,6 @@
   {action}
   {secondaryButtonLabel}
   {secondaryButtonAction}
-  bottomActions={[...bottom, loginAction, recoveryAction]}
+  bottomActions={[loginAction, recoveryAction]}
   withProviders
 />
