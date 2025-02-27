@@ -1,18 +1,19 @@
 import {
-  type Attachment,
   type CardID,
   type ContextID,
+  type FindMessagesGroupsParams,
   type FindMessagesParams,
   type FindNotificationContextParams,
   type FindNotificationsParams,
   type Message,
   type MessageID,
+  type MessagesGroup,
   type Notification,
   type NotificationContext,
   type NotificationContextUpdate,
-  type Reaction,
   type RichText,
-  type SocialID
+  type SocialID,
+  type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
   RequestEventType,
@@ -35,6 +36,7 @@ import {
   type ResponseEvent,
   type UpdateNotificationContextEvent
 } from '@hcengineering/communication-sdk-types'
+import { initLiveQueries } from '@hcengineering/communication-client-query'
 
 import { WebSocketConnection } from './connection'
 
@@ -75,7 +77,7 @@ class WsClient implements Client {
     await this.sendEvent(event)
   }
 
-  async createPatch(card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
+  async updateMessage(card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
     const event: CreatePatchEvent = {
       type: RequestEventType.CreatePatch,
       card,
@@ -130,39 +132,11 @@ class WsClient implements Client {
   }
 
   async findMessages(params: FindMessagesParams, queryId?: number): Promise<Message[]> {
-    const rawMessages = await this.ws.send('findMessages', [params, queryId])
-    return rawMessages.map((it: any) => this.toMessage(it))
+    return await this.ws.send('findMessages', [params, queryId])
   }
 
-  toMessage(raw: any): Message {
-    return {
-      id: raw.id,
-      card: raw.card,
-      content: raw.content,
-      creator: raw.creator,
-      created: new Date(raw.created),
-      edited: new Date(raw.edited),
-      reactions: raw.reactions.map((it: any) => this.toReaction(it)),
-      attachments: raw.attachments.map((it: any) => this.toAttachment(it))
-    }
-  }
-
-  toAttachment(raw: any): Attachment {
-    return {
-      message: raw.message,
-      card: raw.card,
-      creator: raw.creator,
-      created: new Date(raw.created)
-    }
-  }
-
-  toReaction(raw: any): Reaction {
-    return {
-      message: raw.message,
-      reaction: raw.reaction,
-      creator: raw.creator,
-      created: new Date(raw.created)
-    }
+  async findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+    return await this.ws.send('findMessagesGroups', [params])
   }
 
   async createNotification(message: MessageID, context: ContextID): Promise<void> {
@@ -229,12 +203,23 @@ class WsClient implements Client {
   private async sendEvent(event: RequestEvent): Promise<EventResult> {
     return await this.ws.send('event', [event])
   }
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createThread(card: CardID, message: MessageID, thread: CardID, created: Date): Promise<void> {
+    //TODO: implement
+  }
 
   close() {
     void this.ws.close()
   }
 }
 
-export async function getWebsocketClient(url: string, token: string): Promise<Client> {
-  return new WsClient(url, token)
+export async function getWebsocketClient(
+  url: string,
+  token: string,
+  workspace: WorkspaceID,
+  filesUrl: string
+): Promise<Client> {
+  const client = new WsClient(url, token)
+  initLiveQueries(client, workspace, filesUrl)
+  return client
 }

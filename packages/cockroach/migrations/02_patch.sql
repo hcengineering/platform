@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS communication.patch
     workspace_id UUID         NOT NULL,
     card_id      VARCHAR(255) NOT NULL,
     message_id   INT8         NOT NULL,
+    type         VARCHAR(255) NOT NULL,
     content      TEXT         NOT NULL,
     creator      VARCHAR(255) NOT NULL,
     created      TIMESTAMPTZ  NOT NULL,
@@ -11,4 +12,4 @@ CREATE TABLE IF NOT EXISTS communication.patch
     PRIMARY KEY (id)
 );
 
-CREATE INDEX idx_patch_message_id ON communication.patch (message_id);
+CREATE INDEX IF NOT EXISTS idx_patch_workspace_card_message ON communication.patch (workspace_id, card_id, message_id);

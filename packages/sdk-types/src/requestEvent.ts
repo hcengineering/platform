@@ -5,24 +5,35 @@ import type {
   NotificationContextUpdate,
   RichText,
   SocialID,
-  MessagesGroup
+  MessagesGroup,
+  BlobID
 } from '@hcengineering/communication-types'
 
 export enum RequestEventType {
   CreateMessage = 'createMessage',
   RemoveMessage = 'removeMessage',
   RemoveMessages = 'removeMessages',
+
   CreatePatch = 'createPatch',
+  RemovePatches = 'removePatches',
+
   CreateReaction = 'createReaction',
   RemoveReaction = 'removeReaction',
+
   CreateAttachment = 'createAttachment',
   RemoveAttachment = 'removeAttachment',
+
+  CreateThread = 'createThread',
+
+  CreateMessagesGroup = 'createMessagesGroup',
+  RemoveMessagesGroup = 'removeMessagesGroup',
+
   CreateNotification = 'createNotification',
   RemoveNotification = 'removeNotification',
+
   CreateNotificationContext = 'createNotificationContext',
   RemoveNotificationContext = 'removeNotificationContext',
-  UpdateNotificationContext = 'updateNotificationContext',
-  CreateMessagesGroup = 'createMessagesGroup'
+  UpdateNotificationContext = 'updateNotificationContext'
 }
 
 export type RequestEvent =
@@ -30,6 +41,7 @@ export type RequestEvent =
   | RemoveMessageEvent
   | RemoveMessagesEvent
   | CreatePatchEvent
+  | RemovePatchesEvent
   | CreateReactionEvent
   | RemoveReactionEvent
   | CreateAttachmentEvent
@@ -40,6 +52,8 @@ export type RequestEvent =
   | RemoveNotificationContextEvent
   | UpdateNotificationContextEvent
   | CreateMessagesGroupEvent
+  | RemoveMessagesGroupEvent
+  | CreateThreadEvent
 
 export interface CreateMessageEvent {
   type: RequestEventType.CreateMessage
@@ -57,8 +71,8 @@ export interface RemoveMessageEvent {
 export interface RemoveMessagesEvent {
   type: RequestEventType.RemoveMessages
   card: CardID
-  messages: MessageID[]
-  silent?: boolean
+  fromId: MessageID
+  toId: MessageID
 }
 
 export interface CreatePatchEvent {
@@ -67,6 +81,13 @@ export interface CreatePatchEvent {
   message: MessageID
   content: RichText
   creator: SocialID
+}
+
+export interface RemovePatchesEvent {
+  type: RequestEventType.RemovePatches
+  card: CardID
+  fromId: MessageID
+  toId: MessageID
 }
 
 export interface CreateReactionEvent {
@@ -98,6 +119,13 @@ export interface RemoveAttachmentEvent {
   card: CardID
   message: MessageID
   attachment: CardID
+}
+
+export interface CreateThreadEvent {
+  type: RequestEventType.CreateThread
+  card: CardID
+  message: MessageID
+  thread: CardID
 }
 
 export interface CreateNotificationEvent {
@@ -133,6 +161,12 @@ export interface UpdateNotificationContextEvent {
 export interface CreateMessagesGroupEvent {
   type: RequestEventType.CreateMessagesGroup
   group: MessagesGroup
+}
+
+export interface RemoveMessagesGroupEvent {
+  type: RequestEventType.RemoveMessagesGroup
+  card: CardID
+  blobId: BlobID
 }
 
 export type EventResult = CreateMessageResult | CreateNotificationContextResult | {}

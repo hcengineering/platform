@@ -25,11 +25,11 @@ export class QueryResult<T> {
     return this.head
   }
 
-  setHead(head: boolean) {
+  setHead(head: boolean): void {
     this.head = head
   }
 
-  setTail(tail: boolean) {
+  setTail(tail: boolean): void {
     this.tail = tail
   }
 
@@ -47,7 +47,7 @@ export class QueryResult<T> {
     return object
   }
 
-  deleteAll() {
+  deleteAll(): void {
     this.objectById.clear()
   }
 
@@ -71,12 +71,12 @@ export class QueryResult<T> {
     return Array.from(this.objectById.values())[this.objectById.size - 1]
   }
 
-  prepend(objects: T[]) {
+  prepend(objects: T[]): void {
     const current = Array.from(this.objectById.entries())
     this.objectById = new Map([...objects.map<[ID, T]>((object) => [this.getId(object), object]), ...current])
   }
 
-  append(objects: T[]) {
+  append(objects: T[]): void {
     for (const object of objects) {
       this.objectById.set(this.getId(object), object)
     }

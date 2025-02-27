@@ -44,7 +44,7 @@ class BaseQuery<P extends Record<string, any>, C extends QueryCallback<any>> {
     }
   }
 
-  private needUpdate(params: FindMessagesParams, callback: MessagesQueryCallback): boolean {
+  private needUpdate(params: P, callback: C): boolean {
     if (!deepEqual(params, this.oldQuery)) return true
     if (!deepEqual(callback.toString(), this.oldCallback?.toString())) return true
     return false

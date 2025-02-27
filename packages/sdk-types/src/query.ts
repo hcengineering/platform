@@ -4,7 +4,13 @@ import type { Client } from './client'
 
 export type QueryClient = Pick<
   Client,
-  'onEvent' | 'findMessages' | 'findNotificationContexts' | 'findNotifications' | 'unsubscribeQuery' | 'close'
+  | 'onEvent'
+  | 'findMessages'
+  | 'findMessagesGroups'
+  | 'findNotificationContexts'
+  | 'findNotifications'
+  | 'unsubscribeQuery'
+  | 'close'
 >
 
 export type QueryCallback<T> = (window: Window<T>) => void

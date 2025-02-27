@@ -15,7 +15,7 @@ import type {
   ServerApi
 } from '@hcengineering/communication-sdk-types'
 
-import { Manager, type BroadcastSessionsFunc } from './manager.ts'
+import { Manager, type BroadcastSessionsFunc } from './manager'
 
 export class Api implements ServerApi {
   private readonly manager: Manager
@@ -26,7 +26,7 @@ export class Api implements ServerApi {
     private readonly db: DbAdapter,
     private readonly broadcast: BroadcastSessionsFunc
   ) {
-    this.manager = new Manager(this.ctx, db, this.workspace, broadcast)
+    this.manager = new Manager(this.ctx, this.db, this.workspace, this.broadcast)
   }
 
   static async create(
@@ -35,7 +35,7 @@ export class Api implements ServerApi {
     dbUrl: string,
     broadcast: BroadcastSessionsFunc
   ): Promise<Api> {
-    const db = await createDbAdapter(dbUrl, workspace)
+    const db = await createDbAdapter(dbUrl, workspace, ctx, { withLogs: true })
     return new Api(ctx, workspace, db, broadcast)
   }
 

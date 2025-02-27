@@ -1,4 +1,4 @@
-//Full copy from @hcengineering/postgres
+// Full copy from @hcengineering/postgres
 import postgres from 'postgres'
 import { v4 as uuid } from 'uuid'
 
@@ -86,10 +86,9 @@ export function connect(connectionString: string, database?: string): PostgresCl
         application_name: 'communication'
       },
       database,
-      max: 10,
-      transform: {
-        undefined: null
-      },
+      max: 5,
+      fetch_types: false,
+      prepare: true,
       ...extraOptions
     })
 

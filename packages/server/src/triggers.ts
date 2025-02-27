@@ -1,12 +1,12 @@
 import {
-  ResponseEventType,
-  type DbAdapter,
   type MessageCreatedEvent,
-  type NotificationContextCreatedEvent,
-  type NotificationCreatedEvent,
-  type ResponseEvent
+  type DbAdapter,
+  type ResponseEvent,
+  ResponseEventType,
+  type MessageRemovedEvent,
+  type ConnectionInfo
 } from '@hcengineering/communication-sdk-types'
-import type { NotificationContext, ContextID, CardID, WorkspaceID } from '@hcengineering/communication-types'
+import { type WorkspaceID, PatchType, type Patch } from '@hcengineering/communication-types'
 
 export class Triggers {
   constructor(
@@ -14,103 +14,65 @@ export class Triggers {
     private readonly workspace: WorkspaceID
   ) {}
 
-  async process(event: ResponseEvent): Promise<ResponseEvent[]> {
+  async process(event: ResponseEvent, info: ConnectionInfo): Promise<ResponseEvent[]> {
     switch (event.type) {
       case ResponseEventType.MessageCreated:
-        return this.createNotifications(event)
+        return await this.onMessageCreated(event)
+      case ResponseEventType.MessageRemoved:
+        return await this.onMessageRemoved(event, info)
     }
-
     return []
   }
 
-  private async createNotifications(event: MessageCreatedEvent): Promise<ResponseEvent[]> {
-    const card = event.message.card as any as CardID
-    const subscribedPersonalWorkspaces = [
-      'cd0aba36-1c4f-4170-95f2-27a12a5415f7',
-      'cd0aba36-1c4f-4170-95f2-27a12a5415f8'
-    ] as WorkspaceID[]
+  async onMessageRemoved(event: MessageRemovedEvent, info: ConnectionInfo): Promise<ResponseEvent[]> {
+    const { card } = event
+    const thread = await this.db.findThread(card)
+    if (thread === undefined) return []
 
-    const res: ResponseEvent[] = []
-    const contexts = await this.db.findContexts({ card }, [], this.workspace)
+    const date = new Date()
+    const socialId = info.socialIds[0]
 
-    res.push(...(await this.updateNotificationContexts(event.message.created, contexts)))
-
-    for (const personalWorkspace of subscribedPersonalWorkspaces) {
-      const existsContext = contexts.find(
-        (it) => it.card === card && it.personalWorkspace === personalWorkspace && this.workspace === it.workspace
-      )
-      const contextId = await this.getOrCreateContextId(
-        personalWorkspace,
-        card,
-        res,
-        event.message.created,
-        existsContext
-      )
-
-      await this.db.createNotification(event.message.id, contextId)
-
-      const resultEvent: NotificationCreatedEvent = {
-        type: ResponseEventType.NotificationCreated,
-        personalWorkspace,
-        notification: {
-          context: contextId,
-          message: event.message,
-          read: false,
-          archived: false
-        }
-      }
-      res.push(resultEvent)
+    const patch: Patch = {
+      message: thread.message,
+      type: PatchType.removeReply,
+      content: thread.thread,
+      creator: socialId,
+      created: date
     }
+    await this.db.updateThread(thread.thread, date, 'decrement')
+    await this.db.createPatch(thread.card, patch.message, patch.type, patch.content, patch.creator, patch.created)
 
-    return res
+    return [
+      {
+        type: ResponseEventType.PatchCreated,
+        card: thread.card,
+        patch
+      }
+    ]
   }
 
-  private async getOrCreateContextId(
-    personalWorkspace: WorkspaceID,
-    card: CardID,
-    res: ResponseEvent[],
-    lastUpdate: Date,
-    context?: NotificationContext
-  ): Promise<ContextID> {
-    if (context !== undefined) {
-      return context.id
-    } else {
-      const contextId = await this.db.createContext(personalWorkspace, card, undefined, lastUpdate)
-      const newContext = {
-        id: contextId,
-        card,
-        workspace: this.workspace,
-        personalWorkspace
-      }
-      const resultEvent: NotificationContextCreatedEvent = {
-        type: ResponseEventType.NotificationContextCreated,
-        context: newContext
-      }
+  async onMessageCreated(event: MessageCreatedEvent): Promise<ResponseEvent[]> {
+    const { message } = event
+    const thread = await this.db.findThread(message.card)
+    if (thread === undefined) return []
 
-      res.push(resultEvent)
-
-      return contextId
+    const date = new Date()
+    const patch: Patch = {
+      message: thread.message,
+      type: PatchType.addReply,
+      content: thread.thread,
+      creator: message.creator,
+      created: date
     }
-  }
+    await this.db.updateThread(thread.thread, date, 'increment')
+    await this.db.createPatch(thread.card, patch.message, patch.type, patch.content, patch.creator, patch.created)
 
-  private async updateNotificationContexts(
-    lastUpdate: Date,
-    contexts: NotificationContext[]
-  ): Promise<ResponseEvent[]> {
-    const res: ResponseEvent[] = []
-    for (const context of contexts) {
-      if (context.lastUpdate === undefined || context.lastUpdate < lastUpdate) {
-        await this.db.updateContext(context.id, { lastUpdate })
-        res.push({
-          type: ResponseEventType.NotificationContextUpdated,
-          personalWorkspace: context.personalWorkspace,
-          context: context.id,
-          update: {
-            lastUpdate
-          }
-        })
+    return [
+      {
+        type: ResponseEventType.PatchCreated,
+        card: thread.card,
+        patch
       }
-    }
-    return res
+    ]
   }
 }

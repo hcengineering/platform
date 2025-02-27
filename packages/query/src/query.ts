@@ -1,11 +1,11 @@
-import { Direction, type ID, SortOrder } from '@hcengineering/communication-types'
+import { SortingOrder, type ID } from '@hcengineering/communication-types'
 import { type ResponseEvent, type QueryCallback, type QueryClient } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from './result'
-import { defaultQueryParams, type FindParams, type Query, type QueryId } from './types'
+import { defaultQueryParams, type FindParams, type PagedQuery, type QueryId } from './types'
 import { WindowImpl } from './window'
 
-export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
+export class BaseQuery<T, P extends FindParams> implements PagedQuery<T, P> {
   protected result: QueryResult<T> | Promise<QueryResult<T>>
   private forward: Promise<T[]> | T[] = []
   private backward: Promise<T[]> | T[] = []
@@ -24,20 +24,18 @@ export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
       const limit = this.params.limit ?? defaultQueryParams.limit
       const findParams = {
         ...this.params,
-        excluded: this.params.excluded ?? defaultQueryParams.excluded,
-        direction: this.params.direction ?? defaultQueryParams.direction,
-        sort: this.params.sort ?? defaultQueryParams.sort,
+        sort: this.params.order ?? defaultQueryParams.order,
         limit: limit + 1
       }
 
       const findPromise = this.find(findParams)
       this.result = findPromise.then((res) => {
-        const isTail = params.from ? res.length <= limit : params.sort === SortOrder.Desc
-        const isHead = params.from === undefined && params.sort === SortOrder.Asc
+        const isTail = false
+        const isHead = false
         if (!isTail) {
           res.pop()
         }
-        const qResult = new QueryResult(res, this.getObjectId)
+        const qResult = new QueryResult(res, (x) => this.getObjectId(x))
         qResult.setTail(isTail)
         qResult.setHead(isHead)
 
@@ -55,25 +53,25 @@ export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async find(params: FindParams): Promise<T[]> {
-    /*Implement in subclass*/
+    /* Implement in subclass */
     return [] as T[]
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected getObjectId(object: T): ID {
-    /*Implement in subclass*/
+    /* Implement in subclass */
     return '' as ID
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected getObjectDate(object: T): Date {
-    /*Implement in subclass*/
-    return new Date(0) as Date
+    /* Implement in subclass */
+    return new Date(0)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async onEvent(event: ResponseEvent): Promise<void> {
-    /*Implement in subclass*/
+    /* Implement in subclass */
   }
 
   setCallback(callback: QueryCallback<T>): void {
@@ -99,7 +97,7 @@ export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
     this.callback(window)
   }
 
-  async loadForward() {
+  async requestLoadNextPage(): Promise<void> {
     if (this.result instanceof Promise) {
       this.result = await this.result
     }
@@ -117,9 +115,8 @@ export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
       ...this.params,
       from: this.getObjectDate(last),
       excluded: true,
-      direction: Direction.Forward,
       limit: limit + 1,
-      sort: SortOrder.Asc
+      order: SortingOrder.Ascending
     }
 
     const forward = this.find(findParams)
@@ -139,7 +136,7 @@ export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
     })
   }
 
-  async loadBackward() {
+  async requestLoadPrevPage(): Promise<void> {
     if (this.result instanceof Promise) {
       this.result = await this.result
     }
@@ -149,17 +146,15 @@ export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
 
     if (this.result.isHead()) return
 
-    const first = this.params.sort === SortOrder.Asc ? this.result.getFirst() : this.result.getLast()
+    const first = this.params.order === SortingOrder.Ascending ? this.result.getFirst() : this.result.getLast()
     if (first === undefined) return
 
     const limit = this.params.limit ?? defaultQueryParams.limit
     const findParams: FindParams = {
       ...this.params,
       from: this.getObjectDate(first),
-      excluded: true,
-      direction: Direction.Backward,
       limit: limit + 1,
-      sort: SortOrder.Desc
+      order: SortingOrder.Descending
     }
 
     const backward = this.find(findParams)
@@ -172,7 +167,7 @@ export class BaseQuery<T, P extends FindParams> implements Query<T, P> {
         res.pop()
       }
 
-      if (this.params.sort === SortOrder.Asc) {
+      if (this.params.order === SortingOrder.Ascending) {
         const reversed = res.reverse()
         this.result.prepend(reversed)
       } else {

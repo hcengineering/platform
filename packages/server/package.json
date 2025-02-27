@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-server",
-  "version": "0.1.9",
+  "version": "0.1.47",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",

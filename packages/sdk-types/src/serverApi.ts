@@ -13,6 +13,7 @@ export interface ConnectionInfo {
   sessionId: string
   personalWorkspace: WorkspaceID
   socialIds: SocialID[]
+  isSystem: boolean
 }
 
 export interface ServerApi {

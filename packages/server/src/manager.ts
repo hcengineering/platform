@@ -18,17 +18,17 @@ import type {
   MessagesGroup,
   WorkspaceID
 } from '@hcengineering/communication-types'
-
-import { Triggers } from './triggers.ts'
-import { EventProcessor } from './eventProcessor.ts'
 import type { MeasureContext } from '@hcengineering/core'
+
+import { Triggers } from './triggers'
+import { EventProcessor } from './eventProcessor'
 
 type QueryId = number | string
 type QueryType = 'message' | 'notification' | 'context'
 
 export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
 
-type SessionInfo = {
+interface SessionInfo {
   personalWorkspace: string
   messageQueries: Map<QueryId, FindMessagesParams>
   notificationQueries: Map<QueryId, FindNotificationsParams>
@@ -36,8 +36,8 @@ type SessionInfo = {
 }
 
 export class Manager {
-  private dataBySessionId: Map<string, SessionInfo> = new Map()
-  private triggers: Triggers
+  private readonly dataBySessionId = new Map<string, SessionInfo>()
+  private readonly triggers: Triggers
   private readonly eventProcessor: EventProcessor
 
   constructor(
@@ -58,17 +58,16 @@ export class Manager {
     return result
   }
 
-  async findMessagesGroups(info: ConnectionInfo, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+  async findMessagesGroups(_: ConnectionInfo, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
     return await this.db.findMessagesGroups(params)
   }
 
   async event(info: ConnectionInfo, event: RequestEvent): Promise<EventResult> {
-    const { result, responseEvent } = await this.eventProcessor.process(
-      { personalWorkspace: info.personalWorkspace, socialIds: info.socialIds },
-      event
-    )
+    const eventResult = await this.eventProcessor.process(info, event)
+
+    const { result, responseEvent } = eventResult
     if (responseEvent !== undefined) {
-      void this.next(responseEvent)
+      void this.next(info, responseEvent)
     }
     return result
   }
@@ -86,7 +85,7 @@ export class Manager {
     }
 
     if (type === 'message') {
-      data.messageQueries.set(queryId, params)
+      data.messageQueries.set(queryId, params as FindMessagesParams)
     } else if (type === 'notification') {
       data.notificationQueries.set(queryId, params)
     } else if (type === 'context') {
@@ -107,10 +106,10 @@ export class Manager {
     this.dataBySessionId.delete(sessionId)
   }
 
-  async next(event: ResponseEvent): Promise<void> {
+  async next(info: ConnectionInfo, event: ResponseEvent): Promise<void> {
     await this.responseEvent(event)
-    const derived = await this.triggers.process(event)
-    await Promise.all(derived.map((it) => this.next(it)))
+    const derived = await this.triggers.process(event, info)
+    await Promise.all(derived.map((it) => this.next(info, it)))
   }
 
   private async responseEvent(event: ResponseEvent): Promise<void> {
@@ -143,8 +142,6 @@ export class Manager {
           { card: event.card, id: event.message },
           Array.from(info.messageQueries.values())
         )
-      case ResponseEventType.MessagesRemoved:
-        return this.matchMessagesQuery({ card: event.card }, Array.from(info.messageQueries.values()))
       case ResponseEventType.ReactionCreated:
         return this.matchMessagesQuery(
           { card: event.card, id: event.reaction.message },
@@ -163,6 +160,11 @@ export class Manager {
       case ResponseEventType.AttachmentRemoved:
         return this.matchMessagesQuery(
           { card: event.card, id: event.message },
+          Array.from(info.messageQueries.values())
+        )
+      case ResponseEventType.ThreadCreated:
+        return this.matchMessagesQuery(
+          { card: event.thread.card, id: event.thread.message },
           Array.from(info.messageQueries.values())
         )
       case ResponseEventType.NotificationCreated:

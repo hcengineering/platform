@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-client-ws",
-  "version": "0.1.9",
+  "version": "0.1.47",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@hcengineering/communication-types": "workspace:*",
+    "@hcengineering/communication-client-query": "workspace:*",
     "@hcengineering/communication-sdk-types": "workspace:*",
     "@msgpack/msgpack": "^3.0.0-beta2"
   },

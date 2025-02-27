@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-sdk-types",
-  "version": "0.1.9",
+  "version": "0.1.47",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./types/index.d.ts",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hcengineering/communication.git",
+    "url": "git+https://github.com/hcengineering/communication.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"

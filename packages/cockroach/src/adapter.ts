@@ -1,73 +1,88 @@
+import type { ParameterOrJSON, Row } from 'postgres'
 import type postgres from 'postgres'
 import {
-  type Message,
-  type FindMessagesParams,
+  type BlobID,
   type CardID,
+  type ContextID,
+  type FindMessagesGroupsParams,
+  type FindMessagesParams,
+  type FindNotificationContextParams,
+  type FindNotificationsParams,
+  type Message,
+  type MessageID,
+  type MessagesGroup,
+  type Notification,
+  type NotificationContext,
+  type NotificationContextUpdate,
+  type PatchType,
   type RichText,
   type SocialID,
-  type MessageID,
-  type ContextID,
-  type NotificationContextUpdate,
-  type FindNotificationContextParams,
-  type NotificationContext,
-  type FindNotificationsParams,
-  type Notification,
-  type BlobID,
-  type MessagesGroup,
-  type FindMessagesGroupsParams,
-  type WorkspaceID
+  type WorkspaceID,
+  type Thread
 } from '@hcengineering/communication-types'
 import type { DbAdapter } from '@hcengineering/communication-sdk-types'
+import { retry } from '@hcengineering/communication-shared'
 
 import { MessagesDb } from './db/message'
 import { NotificationsDb } from './db/notification'
 import { connect, type PostgresClientReference } from './connection'
+import { type Options, type Logger, type SqlClient } from './types'
 
 export class CockroachAdapter implements DbAdapter {
   private readonly message: MessagesDb
   private readonly notification: NotificationsDb
 
   constructor(
-    private readonly db: PostgresClientReference,
-    private readonly sqlClient: postgres.Sql,
-    private readonly workspace: WorkspaceID
+    private readonly sql: SqlClient,
+    private readonly workspace: WorkspaceID,
+    private readonly logger?: Logger,
+    private readonly options?: Options
   ) {
-    this.message = new MessagesDb(this.sqlClient, this.workspace)
-    this.notification = new NotificationsDb(this.sqlClient, this.workspace)
+    this.message = new MessagesDb(this.sql, this.workspace, logger, options)
+    this.notification = new NotificationsDb(this.sql, this.workspace, logger, options)
   }
 
   async createMessage(card: CardID, content: RichText, creator: SocialID, created: Date): Promise<MessageID> {
     return await this.message.createMessage(card, content, creator, created)
   }
 
+  async removeMessage(card: CardID, message: MessageID, socialIds?: SocialID[]): Promise<void> {
+    await this.message.removeMessage(card, message, socialIds)
+  }
+
+  async removeMessages(card: CardID, fromId: MessageID, toId: MessageID): Promise<void> {
+    await this.message.removeMessages(card, fromId, toId)
+  }
+
   async createPatch(
     card: CardID,
     message: MessageID,
+    type: PatchType,
     content: RichText,
     creator: SocialID,
     created: Date
   ): Promise<void> {
-    return await this.message.createPatch(card, message, content, creator, created)
+    await this.message.createPatch(card, message, type, content, creator, created)
   }
 
-  async removeMessage(card: CardID, message: MessageID): Promise<MessageID | undefined> {
-    return await this.message.removeMessage(card, message)
-  }
-
-  async removeMessages(card: CardID, ids: MessageID[]): Promise<MessageID[]> {
-    return await this.message.removeMessages(card, ids)
+  async removePatches(card: CardID, fromId: MessageID, toId: MessageID): Promise<void> {
+    await this.message.removePatches(card, fromId, toId)
   }
 
   async createMessagesGroup(
     card: CardID,
     blobId: BlobID,
-    from_id: MessageID,
-    to_id: MessageID,
-    from_date: Date,
-    to_date: Date,
+    fromDate: Date,
+    toDate: Date,
+    fromId: MessageID,
+    toId: MessageID,
     count: number
   ): Promise<void> {
-    return await this.message.createMessagesGroup(card, blobId, from_id, to_id, from_date, to_date, count)
+    await this.message.createMessagesGroup(card, blobId, fromDate, toDate, fromId, toId, count)
+  }
+
+  async removeMessagesGroup(card: CardID, blobId: BlobID): Promise<void> {
+    await this.message.removeMessagesGroup(card, blobId)
   }
 
   async createReaction(
@@ -77,35 +92,35 @@ export class CockroachAdapter implements DbAdapter {
     creator: SocialID,
     created: Date
   ): Promise<void> {
-    return await this.message.createReaction(card, message, reaction, creator, created)
+    await this.message.createReaction(card, message, reaction, creator, created)
   }
 
   async removeReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
-    return await this.message.removeReaction(card, message, reaction, creator)
+    await this.message.removeReaction(card, message, reaction, creator, new Date())
   }
 
   async createAttachment(message: MessageID, attachment: CardID, creator: SocialID, created: Date): Promise<void> {
-    return await this.message.createAttachment(message, attachment, creator, created)
+    await this.message.createAttachment(message, attachment, creator, created)
   }
 
   async removeAttachment(message: MessageID, attachment: CardID): Promise<void> {
-    return await this.message.removeAttachment(message, attachment)
+    await this.message.removeAttachment(message, attachment)
   }
 
-  async findMessages(params: FindMessagesParams): Promise<Message[]> {
-    return await this.message.find(params)
+  async createThread(card: CardID, message: MessageID, thread: CardID, created: Date): Promise<void> {
+    await this.message.createThread(card, message, thread, created)
   }
 
-  async findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    return await this.message.findGroups(params)
+  async updateThread(thread: CardID, lastReply: Date, op: 'increment' | 'decrement'): Promise<void> {
+    await this.message.updateThread(thread, lastReply, op)
   }
 
   async createNotification(message: MessageID, context: ContextID): Promise<void> {
-    return await this.notification.createNotification(message, context)
+    await this.notification.createNotification(message, context)
   }
 
   async removeNotification(message: MessageID, context: ContextID): Promise<void> {
-    return await this.notification.removeNotification(message, context)
+    await this.notification.removeNotification(message, context)
   }
 
   async createContext(
@@ -118,11 +133,24 @@ export class CockroachAdapter implements DbAdapter {
   }
 
   async updateContext(context: ContextID, update: NotificationContextUpdate): Promise<void> {
-    return await this.notification.updateContext(context, update)
+    await this.notification.updateContext(context, update)
   }
 
   async removeContext(context: ContextID): Promise<void> {
-    return await this.notification.removeContext(context)
+    await this.notification.removeContext(context)
+  }
+
+  // Finds
+  async findMessages(params: FindMessagesParams): Promise<Message[]> {
+    return await this.message.find(params)
+  }
+
+  async findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+    return await this.message.findMessagesGroups(params)
+  }
+
+  async findThread(thread: CardID): Promise<Thread | undefined> {
+    return await this.message.findThread(thread)
   }
 
   async findContexts(
@@ -142,13 +170,92 @@ export class CockroachAdapter implements DbAdapter {
   }
 
   close(): void {
-    this.db.close()
+    this.sql.close()
   }
 }
 
-export async function createDbAdapter(connectionString: string, workspace: WorkspaceID): Promise<DbAdapter> {
-  const db = connect(connectionString)
-  const sqlClient = await db.getClient()
+export async function createDbAdapter(
+  connectionString: string,
+  workspace: WorkspaceID,
+  logger?: Logger,
+  options?: Options
+): Promise<DbAdapter> {
+  const greenUrl = process.env.GREEN_URL ?? ''
+  if (greenUrl !== '') {
+    const client = new GreenClient(greenUrl)
+    return new CockroachAdapter(client, workspace, logger, options)
+  } else {
+    const connection = connect(connectionString)
+    const sql = await connection.getClient()
+    const client = new CockroachClient(connection, sql)
 
-  return new CockroachAdapter(db, sqlClient, workspace)
+    return new CockroachAdapter(client, workspace, logger, options)
+  }
+}
+
+class GreenClient implements SqlClient {
+  private readonly url: string
+  private readonly token: string
+  constructor(endpoint: string) {
+    const url = new URL(endpoint)
+    this.token = url.searchParams.get('token') ?? 'secret'
+
+    const compression = url.searchParams.get('compression') ?? ''
+
+    const newHost = url.host
+    const newPathname = url.pathname
+    const newSearchParams = new URLSearchParams()
+
+    if (compression !== '') {
+      newSearchParams.set('compression', compression)
+    }
+
+    this.url = `${url.protocol}//${newHost}${newPathname}${newSearchParams.size > 0 ? '?' + newSearchParams.toString() : ''}`
+  }
+
+  async execute<T extends any[] = (Row & Iterable<Row>)[]>(query: string, params?: ParameterOrJSON<any>[]): Promise<T> {
+    return await retry(() => this.fetch<T>(query, params), { retries: 5 })
+  }
+
+  private async fetch<T extends any[] = (Row & Iterable<Row>)[]>(
+    query: string,
+    params?: ParameterOrJSON<any>[]
+  ): Promise<T> {
+    const url = this.url.endsWith('/') ? this.url + 'api/v1/sql' : this.url + '/api/v1/sql'
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + this.token,
+        Connection: 'keep-alive'
+      },
+      body: JSON.stringify({ query, params }, (_, value) => (typeof value === 'bigint' ? value.toString() : value))
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to execute sql: ${response.status} ${response.statusText}`)
+    }
+
+    return await response.json()
+  }
+
+  close(): void {
+    // do nothing
+  }
+}
+
+class CockroachClient implements SqlClient {
+  constructor(
+    private readonly db: PostgresClientReference,
+    private readonly sql: postgres.Sql
+  ) {}
+
+  async execute<T extends any[] = (Row & Iterable<Row>)[]>(query: string, params?: ParameterOrJSON<any>[]): Promise<T> {
+    return await this.sql.unsafe<T>(query, params)
+  }
+
+  close(): void {
+    this.db.close()
+  }
 }

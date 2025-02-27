@@ -1,6 +1,6 @@
 {
-  "name": "@hcengineering/communication-core",
-  "version": "0.1.9",
+  "name": "@hcengineering/communication-shared",
+  "version": "0.1.47",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
@@ -10,13 +10,15 @@
     "types/**/*.d.ts"
   ],
   "devDependencies": {
-    "@types/bun": "^1.1.14"
+    "@types/bun": "^1.1.14",
+    "@types/js-yaml": "^4.0.9"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@hcengineering/communication-types": "workspace:*"
+    "@hcengineering/communication-types": "workspace:*",
+    "js-yaml": "^4.1.0"
   },
   "repository": {
     "type": "git",

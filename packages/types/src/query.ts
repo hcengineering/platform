@@ -1,15 +1,15 @@
+import { SortingOrder } from '@hcengineering/core'
+
 import type { BlobID, CardID, MessageID } from './message'
 import type { ContextID } from './notification'
 
-export enum SortOrder {
-  Asc = 1,
-  Desc = -1
-}
+export { SortingOrder }
 
-export enum Direction {
-  Backward = 1,
-  Forward = -1
-}
+export type ComparisonOperator = 'less' | 'lessOrEqual' | 'greater' | 'greaterOrEqual' | 'notEqual'
+
+type Exclusive<T> = {
+  [K in keyof T]: Record<K, T[K]> & Partial<Record<Exclude<keyof T, K>, never>>
+}[keyof T]
 
 export interface Window<T> {
   getResult(): T[]
@@ -22,16 +22,14 @@ export interface Window<T> {
 }
 
 interface FindParams {
-  from?: Date
-  excluded?: boolean
-  direction?: Direction
-  sort?: SortOrder
+  order?: SortingOrder
   limit?: number
 }
 
 export interface FindMessagesParams extends FindParams {
   id?: MessageID
-  card?: CardID
+  card: CardID
+  created?: Exclusive<Record<ComparisonOperator, Date>> | Date
 }
 
 export interface FindNotificationsParams extends FindParams {
@@ -39,6 +37,7 @@ export interface FindNotificationsParams extends FindParams {
   message?: MessageID
   read?: boolean
   archived?: boolean
+  created?: Exclusive<Record<ComparisonOperator, Date>> | Date
 }
 
 export interface FindNotificationContextParams extends FindParams {
@@ -46,20 +45,10 @@ export interface FindNotificationContextParams extends FindParams {
   card?: CardID
 }
 
-export type ComparisonOperator = 'less' | 'lessOrEqual' | 'greater' | 'greaterOrEqual' | 'notEqual'
-
-type Exclusive<T> = {
-  [K in keyof T]: Record<K, T[K]> & Partial<Record<Exclude<keyof T, K>, never>>
-}[keyof T]
-
-export interface FindMessagesGroupsParams {
+export interface FindMessagesGroupsParams extends FindParams {
   card?: CardID
   blobId?: BlobID
-  fromId?: Exclusive<Record<ComparisonOperator, MessageID>> | MessageID
-  toId?: Exclusive<Record<ComparisonOperator, MessageID>> | MessageID
-  fromDate?: Exclusive<Record<ComparisonOperator, Date>> | Date
-  toDate?: Exclusive<Record<ComparisonOperator, Date>> | Date
-  limit?: number
-  sortBy?: 'fromId' | 'toId' | 'fromDate' | 'toDate'
-  sort?: SortOrder
+  fromDate?: Partial<Record<ComparisonOperator, Date>> | Date
+  toDate?: Partial<Record<ComparisonOperator, Date>> | Date
+  orderBy?: 'fromDate' | 'toDate'
 }

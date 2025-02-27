@@ -1,4 +1,8 @@
-import { type FindMessagesParams, type FindNotificationsParams } from '@hcengineering/communication-types'
+import {
+  type FindMessagesParams,
+  type FindNotificationsParams,
+  type WorkspaceID
+} from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 import type {
   MessagesQueryCallback,
@@ -7,7 +11,7 @@ import type {
   QueryClient
 } from '@hcengineering/communication-sdk-types'
 
-import type { Query, QueryId } from './types'
+import type { FindParams, PagedQuery, QueryId } from './types'
 import { MessagesQuery } from './messages/query'
 import { NotificationQuery } from './notifications/query'
 
@@ -18,14 +22,15 @@ interface CreateQueryResult {
 const maxQueriesCache = 10
 
 export class LiveQueries {
-  private readonly client: QueryClient
-  private readonly queries = new Map<QueryId, Query>()
+  private readonly queries = new Map<QueryId, PagedQuery>()
   private readonly unsubscribed = new Set<QueryId>()
   private counter: number = 0
 
-  constructor(client: QueryClient) {
-    this.client = client
-  }
+  constructor(
+    private readonly client: QueryClient,
+    private readonly workspace: WorkspaceID,
+    private readonly filesUrl: string
+  ) {}
 
   async onEvent(event: ResponseEvent): Promise<void> {
     for (const q of this.queries.values()) {
@@ -66,11 +71,11 @@ export class LiveQueries {
         return exists
       } else {
         const result = exists.copyResult()
-        return new MessagesQuery(this.client, id, params, callback, result)
+        return new MessagesQuery(this.client, this.workspace, this.filesUrl, id, params, callback, result)
       }
     }
 
-    return new MessagesQuery(this.client, id, params, callback)
+    return new MessagesQuery(this.client, this.workspace, this.filesUrl, id, params, callback)
   }
 
   private createNotificationQuery(
@@ -103,7 +108,7 @@ export class LiveQueries {
     }
   }
 
-  private findNotificationQuery(params: FindMessagesParams): NotificationQuery | undefined {
+  private findNotificationQuery(params: FindNotificationsParams): NotificationQuery | undefined {
     for (const query of this.queries.values()) {
       if (query instanceof NotificationQuery) {
         if (!this.queryCompare(params, query.params)) continue
@@ -112,7 +117,7 @@ export class LiveQueries {
     }
   }
 
-  private queryCompare(q1: FindMessagesParams, q2: FindMessagesParams): boolean {
+  private queryCompare(q1: FindParams, q2: FindParams): boolean {
     if (Object.keys(q1).length !== Object.keys(q2).length) {
       return false
     }
@@ -136,7 +141,7 @@ export class LiveQueries {
     this.unsubscribed.delete(id)
   }
 
-  private unsubscribeQuery(query: Query): void {
+  private unsubscribeQuery(query: PagedQuery): void {
     this.unsubscribed.add(query.id)
     query.removeCallback()
     if (this.unsubscribed.size > maxQueriesCache) {

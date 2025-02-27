@@ -3,10 +3,10 @@ import {
     type MessageID,
     type CardID,
     type FindMessagesParams,
-    SortOrder,
+    SortingOrder,
     type SocialID,
     type RichText,
-    Direction, type Reaction, type Attachment
+     type Reaction, type Attachment
 } from '@hcengineering/communication-types'
 
 import {BaseDb} from './base.ts'
@@ -124,7 +124,7 @@ export class MessagesDb extends BaseDb {
 
         const where = this.buildMessageWhere(workspace, params)
         const groupBy = `GROUP BY m.id`
-        const orderBy = params.sort ? `ORDER BY m.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}` : ''
+        const orderBy = params.order ? `ORDER BY m.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
         const limit = params.limit ? ` LIMIT ${params.limit}` : ''
         const sql = [select, where, groupBy, orderBy, limit].join(' ')
 
@@ -143,19 +143,20 @@ export class MessagesDb extends BaseDb {
             where.push(`m.id = '${params.id}'`)
         }
 
-        if (params.from != null) {
-            const exclude = params.excluded ?? false
-            const direction = params.direction ?? Direction.Forward
-            const getOperator = () => {
-                if (exclude) {
-                    return direction === Direction.Forward ? '>' : '<'
-                } else {
-                    return direction === Direction.Forward ? '>=' : '<='
-                }
-            }
-
-            where.push(`m.created ${getOperator()} ${params.from}`)
-        }
+        //TODO: FIX ME
+        // if (params.from != null) {
+        //     const exclude = params.excluded ?? false
+        //     const direction = params.direction ?? Direction.Forward
+        //     const getOperator = () => {
+        //         if (exclude) {
+        //             return direction === Direction.Forward ? '>' : '<'
+        //         } else {
+        //             return direction === Direction.Forward ? '>=' : '<='
+        //         }
+        //     }
+        //
+        //     where.push(`m.created ${getOperator()} ${params.from}`)
+        // }
 
         return `WHERE ${where.join(' AND ')}`
     }

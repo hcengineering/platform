@@ -3,7 +3,7 @@ import {
     type ContextID,
     type CardID,
     type NotificationContext,
-    type FindNotificationContextParams, SortOrder,
+    type FindNotificationContextParams, SortingOrder,
     type FindNotificationsParams, type Notification,
     type NotificationContextUpdate
 } from '@hcengineering/communication-types'
@@ -130,7 +130,7 @@ export class NotificationsDb extends BaseDb {
         `;
         const where = this.buildNotificationWhere(params, personalWorkspace, workspace)
         const groupBy = `GROUP BY n.message_id, n.context_id, m.id, nc.card_id, nc.archived_from, nc.last_view, nc.last_update`;
-        const orderBy = `ORDER BY m.created ${params.sort === SortOrder.Asc ? 'ASC' : 'DESC'}`
+        const orderBy = `ORDER BY m.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}`
         const limit = params.limit ? ` LIMIT ${params.limit}` : ''
         const sql = [select, where, groupBy, orderBy, limit].join(' ')
 

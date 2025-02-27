@@ -1,39 +1,33 @@
 import {
   type Message,
   type SocialID,
-  SortOrder,
+  SortingOrder,
   type CardID,
   type Window,
   type WorkspaceID
 } from '@hcengineering/communication-types'
-import { getWebsocketClient } from '@hcengineering/communication-client-ws'
-import { getSqliteClient } from '@hcengineering/communication-client-sqlite'
-import { createMessagesQuery, initLiveQueries } from '@hcengineering/communication-client-query'
+import { getWebsocketClient, createMessagesQuery } from '@hcengineering/communication-client-ws'
 
 const card = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6' as CardID
 const workspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f6' as WorkspaceID
-const personalWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f5' as WorkspaceID
+// const personalWorkspace = 'cd0aba36-1c4f-4170-95f2-27a12a5415f5' as WorkspaceID
 const creator1 = 'email:vasya@huly.com' as SocialID
 
-async function getClient(type: 'ws' | 'sqlite') {
-  if (type === 'ws') {
-    const platformUrl = 'ws://localhost:8090'
-    const token = 'token'
-    return await getWebsocketClient(platformUrl, token)
-  }
-
-  return await getSqliteClient(workspace, personalWorkspace)
-}
-
 export async function example() {
-  const client = await getClient('sqlite')
-  initLiveQueries(client)
+  const platformUrl = 'ws://localhost:8090'
+  const token = 'token'
+  const client = await getWebsocketClient(
+    platformUrl,
+    token,
+    workspace,
+    'http://localhost:4022/blob/:workspace/:blobId/:filename'
+  )
 
   const query1 = createMessagesQuery()
 
   let window: Window<Message> | undefined = undefined
 
-  query1.query({ card, sort: SortOrder.Desc }, (res) => {
+  query1.query({ card, order: SortingOrder.Descending }, (res) => {
     window = res
     const r = window.getResult()
     r.reverse()
@@ -51,7 +45,7 @@ export async function example() {
   })
 
   async function editMessage(message: Message) {
-    await client.createPatch(card, message.id, message.content + '_1_', creator1)
+    await client.updateMessage(card, message.id, message.content + '_1_', creator1)
   }
 
   async function deleteMessage(message: Message) {
