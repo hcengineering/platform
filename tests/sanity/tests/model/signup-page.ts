@@ -17,7 +17,6 @@ export class SignUpPage extends CommonPage {
   inputNewPassword = (): Locator => this.page.locator('//div[text()="Password"]/../input')
   inputRepeatPassword = (): Locator => this.page.locator('//div[text()="Repeat password"]/../input')
   buttonSignUp = (): Locator => this.page.locator('button', { hasText: 'Sign Up' })
-  buttonJoin = (): Locator => this.page.locator('button', { hasText: 'Join' })
 
   async enterFirstName (firstName: string): Promise<void> {
     await this.inputFirstName().fill(firstName)
@@ -43,25 +42,14 @@ export class SignUpPage extends CommonPage {
     await this.buttonSignUp().click()
   }
 
-  async signUpPwd (data: SignUpData, mode: 'join' | 'signup' = 'signup'): Promise<void> {
-    const isOtp = await this.signUpPasswordBtn().isVisible()
-    if (isOtp) {
-      await this.signUpPasswordBtn().click()
-    }
+  async signUp (data: SignUpData): Promise<void> {
     await this.enterFirstName(data.firstName)
     await this.enterLastName(data.lastName)
     await this.enterEmail(data.email)
     await this.enterPassword(data.password)
     await this.enterRepeatPassword(data.password)
-    switch (mode) {
-      case 'join':
-        expect(await this.buttonJoin().isEnabled()).toBe(true)
-        await this.buttonJoin().click()
-        break
-      case 'signup':
-        expect(await this.buttonSignUp().isEnabled()).toBe(true)
-        await this.buttonSignUp().click()
-    }
+    expect(await this.buttonSignUp().isEnabled()).toBe(true)
+    await this.buttonSignUp().click()
   }
 
   async checkIfSignUpButtonIsDisabled (): Promise<void> {

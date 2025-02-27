@@ -35,7 +35,6 @@
   import {
     fetchWorkspace,
     getAccount,
-    getHref,
     getWorkspaces,
     goTo,
     navigateToWorkspace,
@@ -43,9 +42,6 @@
     getAccountDisplayName
   } from '../utils'
   import StatusControl from './StatusControl.svelte'
-
-  export let navigateUrl: string | undefined = undefined
-
   let workspaces: WorkspaceInfoWithStatus[] = []
   let status = OK
   let accountPromise: Promise<LoginInfo | null>

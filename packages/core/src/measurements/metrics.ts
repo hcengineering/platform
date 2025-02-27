@@ -267,6 +267,10 @@ export function metricsToJson (metrics: Metrics): any {
   return toJson(metricsAggregate(metrics))
 }
 
+export function metricsToJson (metrics: Metrics): any {
+  return toJson(metricsAggregate(metrics))
+}
+
 function printMetricsParamsRows (
   params: Record<string, Record<string, MetricsData>>,
   offset: number

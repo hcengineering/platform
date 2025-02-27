@@ -30,7 +30,6 @@ import documents, {
   DocumentApprovalRequest,
   DocumentState,
   DocumentTemplate,
-  getDocumentId,
   getEffectiveDocUpdate,
   type DocumentRequest,
   type DocumentTraining
@@ -80,7 +79,7 @@ function archiveDocs (docs: ControlledDocument[], txFactory: TxFactory): Tx[] {
 function updateMeta (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
   return [
     txFactory.createTxUpdateDoc(doc.attachedToClass, doc.space, doc.attachedTo, {
-      title: `${getDocumentId(doc)} ${doc.title}`
+      title: `${doc.code} ${doc.title}`
     })
   ]
 }

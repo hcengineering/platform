@@ -9,6 +9,7 @@ import core, {
   BrandingMap,
   Client,
   ClientConnectEvent,
+  ClientWorkspaceInfo,
   DocumentUpdate,
   isActiveMode,
   isDeletingMode,

@@ -101,6 +101,19 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
     return this.provideFindAll(ctx, _class, query, options)
   }
 
+  findAll<T extends Doc>(
+    ctx: MeasureContext<SessionData>,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    const d = this.context.hierarchy.findDomain(_class)
+    if (d === DOMAIN_MODEL) {
+      return this.context.modelDb.findAll(_class, query, options)
+    }
+    return this.provideFindAll(ctx, _class, query, options)
+  }
+
   async init (ctx: MeasureContext): Promise<void> {
     if (this.context.adapterManager == null) {
       throw new PlatformError(unknownError('Adapter manager should be configured'))
