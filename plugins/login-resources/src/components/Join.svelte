@@ -97,13 +97,14 @@
   }
 
   $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : login.string.Join
-  $: secondaryButtonAction = page === 'login'
-    ? () => {
-        page = 'signUp'
-      }
-    : () => {
-        page = 'login'
-      }
+  $: secondaryButtonAction =
+    page === 'login'
+      ? () => {
+          page = 'signUp'
+        }
+      : () => {
+          page = 'login'
+        }
 
   onMount(() => {
     void check()
