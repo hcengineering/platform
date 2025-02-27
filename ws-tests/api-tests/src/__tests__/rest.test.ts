@@ -44,9 +44,9 @@ describe('rest-api-server', () => {
     })
   })
 
-  async function connect (ws?: WorkspaceToken): Promise<RestClient> {
+  function connect (ws?: WorkspaceToken): RestClient {
     const tok = ws ?? apiWorkspace1
-    return await createRestClient(tok.endpoint, tok.workspaceId, tok.token)
+    return createRestClient(tok.endpoint, tok.workspaceId, tok.token)
   }
 
   async function connectTx (ws?: WorkspaceToken): Promise<TxOperations> {
@@ -55,7 +55,7 @@ describe('rest-api-server', () => {
   }
 
   it('get account', async () => {
-    const conn = await connect()
+    const conn = connect()
     const account = await conn.getAccount()
 
     expect(account.email).toBe('user1')
@@ -69,7 +69,7 @@ describe('rest-api-server', () => {
   })
 
   it('find spaces', async () => {
-    const conn = await connect()
+    const conn = connect()
     const spaces = await conn.findAll(core.class.Space, {})
     expect(spaces.length).toBeGreaterThanOrEqual(20)
     const personSpace = spaces.find((it) => it.name === 'Pesonal space' && it.private)
@@ -77,12 +77,12 @@ describe('rest-api-server', () => {
   })
 
   it('find spaces limit', async () => {
-    const conn = await connect()
+    const conn = connect()
     const spaces = await conn.findAll(core.class.Space, {}, { limit: 5 })
     expect(spaces.length).toBe(5)
   })
   it('find spaces by-name', async () => {
-    const conn = await connect()
+    const conn = connect()
     const spaces = await conn.findAll(
       contact.class.PersonSpace,
       { name: 'Personal space' },
@@ -98,24 +98,24 @@ describe('rest-api-server', () => {
   })
 
   it('find channels', async () => {
-    const conn = await connect()
+    const conn = connect()
     const spaces = await conn.findAll(chunter.class.Channel, {})
     expect(spaces.length).toBeGreaterThanOrEqual(2)
     expect(spaces.find((it) => it._id === 'chunter:space:General')).not.toBeNull()
   })
 
   it('find avg', async () => {
-    const conn = await connect()
+    const conn = connect()
     await checkFindPerformance(conn) // 5ms max per operation
   })
 
   it('find avg-europe', async () => {
-    const conn = await connect(apiWorkspace2)
+    const conn = connect(apiWorkspace2)
     await checkFindPerformance(conn) // 5ms max per operation
   })
 
   it('add space', async () => {
-    const conn = await connect()
+    const conn = connect()
     const account = await conn.getAccount()
     const spaceName = generateId()
     const tx: TxCreateDoc<Space> = {
@@ -142,7 +142,7 @@ describe('rest-api-server', () => {
   })
 
   it('get-model', async () => {
-    const conn = await connect()
+    const conn = connect()
     const { hierarchy, model } = await conn.getModel()
 
     const dsc = hierarchy.getDescendants(core.class.Space)
