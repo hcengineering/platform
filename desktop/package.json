@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/desktop",
-  "version": "0.6.444",
+  "version": "0.6.435",
   "main": "dist/main/electron.js",
   "template": "@hcengineering/webpack-package",
   "scripts": {
