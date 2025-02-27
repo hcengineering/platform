@@ -97,7 +97,7 @@ describe('server', () => {
       }
     },
     sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
-    port: 3335,
+    port,
     brandingMap: {},
     serverFactory: startHttpServer,
     accountsUrl: '',
@@ -106,7 +106,7 @@ describe('server', () => {
 
   function connect (): WebSocket {
     const token: string = generateToken('' as PersonUuid, 'latest' as WorkspaceUuid)
-    return new WebSocket(`ws://localhost:3335/${token}`)
+    return new WebSocket(`ws://localhost:${port}/${token}`)
   }
 
   afterAll(async () => {
@@ -208,7 +208,7 @@ describe('server', () => {
         }
       },
       sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
-      port: 3336,
+      port: port + 1,
       brandingMap: {},
       serverFactory: startHttpServer,
       accountsUrl: '',
