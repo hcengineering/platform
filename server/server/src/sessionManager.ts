@@ -1029,7 +1029,6 @@ export class TSessionManager implements SessionManager {
     pipeline: Pipeline,
     communicationApi: CommunicationApi,
     requestId: Request<any>['id'],
-    request: Request<any>,
     service: Session,
     ws: ConnectionSocket
   ): ClientSessionCtx {

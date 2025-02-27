@@ -40,7 +40,7 @@ import {
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import { uncompress } from 'snappy'
-import { Api as CommunicationApi } from '@hcengineering/communication-server-core'
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
 
 import {
   createMongoAdapter,
