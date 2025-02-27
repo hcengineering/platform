@@ -14,7 +14,7 @@ export class SelectWorkspacePage extends CommonPage {
   buttonCreateWorkspace = (): Locator => this.page.locator('button > span', { hasText: 'Create workspace' })
   buttonWorkspaceName = (): Locator => this.page.locator('input')
   buttonCreateNewWorkspace = (): Locator => this.page.locator('div.form-row button')
-  workspaceButtonByName = (workspace: string): Locator => this.buttonWorkspace().filter({ hasText: workspace })
+  workspaceButtonByName = (workspace: string): Locator => this.buttonWorkspace().filter({ hasText: workspace }).first()
   createAnotherWorkspace = (): Locator => this.page.getByRole('link', { name: 'Create workspace' })
   workspaceLogo = (): Locator => this.page.getByText('N', { exact: true })
   workspaceList = (workspaceName: string): Locator => this.page.getByRole('button', { name: workspaceName })
