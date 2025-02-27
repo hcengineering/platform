@@ -298,6 +298,7 @@ services:
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4010
+      - MSG2FILE_URL=http://huly.local:9087
     restart: unless-stopped
   green:
     image: hardcoreeng/green
@@ -427,11 +428,15 @@ services:
 #      - OPENAI_API_KEY=token
   msg2file:
     image: hardcoreeng/msg2file
+    ports:
+      - 9087:9087
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
     environment:
       - ACCOUNTS_URL=http://huly.local:3000
+      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
+      - PORT=9087
       - SECRET=secret
       - SERVICE_ID=msg2file-service
 #  telegram-bot:

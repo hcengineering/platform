@@ -15,6 +15,10 @@
 
 interface Config {
   AccountsURL: string
+  DbUrl: string
+  MaxSyncAttempts: number
+  MessagesPerFile: number
+  Port: number
   Secret: string
   ServiceID: string
 }
@@ -23,9 +27,13 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 
 const config: Config = (() => {
   const params: Partial<Config> = {
-    AccountsURL: process.env.ACCOUNTS_URL ?? '',
-    Secret: process.env.SECRET ?? '',
-    ServiceID: process.env.SERVICE_ID ?? ''
+    AccountsURL: process.env.ACCOUNTS_URL,
+    DbUrl: process.env.DB_URL,
+    MaxSyncAttempts: parseNumber(process.env.MAX_SYNC_ATTEMPTS) ?? 3,
+    MessagesPerFile: parseNumber(process.env.MESSAGES_PER_FILE) ?? 500,
+    Port: parseNumber(process.env.PORT),
+    Secret: process.env.SECRET ?? 'secret',
+    ServiceID: process.env.SERVICE_ID ?? 'msg2file-service'
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
