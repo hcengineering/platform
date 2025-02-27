@@ -26,7 +26,7 @@ export interface AvatarUrlInfo {
 
 const providers = new Map<Ref<AvatarProvider>, AvatarProvider | null>()
 
-async function getAvatarProvider (
+export async function getAvatarProvider (
   client: TxOperations,
   providerId: Ref<AvatarProvider>
 ): Promise<AvatarProvider | undefined> {

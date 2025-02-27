@@ -14,20 +14,20 @@
 -->
 
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
-  import { Asset } from '@hcengineering/platform'
-  import { getBlobURL, reduceCalls, getClient, sizeToWidth } from '@hcengineering/presentation'
+  import { AvatarProvider, getAvatarProviderId, Person } from '@hcengineering/contact'
+  import { Asset, getResource } from '@hcengineering/platform'
+  import { getBlobURL, reduceCalls, sizeToWidth } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     ColorDefinition,
     IconSize,
-    getPlatformColor,
-    themeStore,
     getPlatformAvatarColorByName,
-    getPlatformAvatarColorForTextDef
+    getPlatformAvatarColorForTextDef,
+    getPlatformColor,
+    themeStore
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
-  import { type AvatarInfo, getAvatarUrlInfo, getAvatarDisplayName, getAvatarColorForId } from '@hcengineering/contact'
+  import { type AvatarInfo, getAvatarDisplayName, getAvatarColorForId, getAvatarProvider } from '@hcengineering/contact'
   import { PersonUuid, Ref, type Data, type WithLookup } from '@hcengineering/core'
 
   import { loadUsersStatus, statusByUserStore } from '../utils'
@@ -51,6 +51,7 @@
   let url: string | undefined
   let srcSet: string | undefined
 
+  let avatarProvider: AvatarProvider | undefined
   let color: ColorDefinition | undefined = undefined
   let element: HTMLElement
   let avatarInst: AvatarInstance
@@ -64,26 +65,33 @@
     direct?: Blob,
     name?: string | null
   ) {
-    const client = getClient()
-    const directUrl = direct !== undefined ? await getBlobURL(direct) : undefined
-
-    if (directUrl !== undefined) {
-      url = directUrl
+    const width = sizeToWidth(size)
+    if (direct !== undefined) {
+      const blobURL = await getBlobURL(direct)
+      url = blobURL
+      avatarProvider = undefined
       srcSet = undefined
-      color = undefined
-    } else {
-      ;({ url, srcSet, color } = await getAvatarUrlInfo(client, avatar, sizeToWidth(size), name))
+    } else if (avatar != null) {
+      const avatarProviderId = getAvatarProviderId(avatar.avatarType)
+      avatarProvider = avatarProviderId !== undefined ? await getAvatarProvider(avatarProviderId) : undefined
 
-      if (url === undefined && color === undefined && name != null) {
-        if (avatar != null) {
-          color = getPlatformAvatarColorByName(
-            avatar.avatarProps?.color ?? getAvatarColorForId(displayName),
-            $themeStore.dark
-          )
-        } else {
-          color = getPlatformAvatarColorForTextDef(name, $themeStore.dark)
-        }
+      if (avatarProvider === undefined) {
+        url = undefined
+        color = getPlatformAvatarColorByName(
+          avatar.avatarProps?.color ?? getAvatarColorForId(displayName),
+          $themeStore.dark
+        )
+      } else {
+        const getUrlHandler = await getResource(avatarProvider.getUrl)
+        ;({ url, srcSet, color } = await getUrlHandler(avatar, displayName, width))
       }
+    } else if (name != null) {
+      color = getPlatformAvatarColorForTextDef(name, $themeStore.dark)
+      url = undefined
+      avatarProvider = undefined
+    } else {
+      url = undefined
+      avatarProvider = undefined
     }
   })
   $: void update(size, person, direct, name)
