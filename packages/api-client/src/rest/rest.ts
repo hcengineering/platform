@@ -39,7 +39,7 @@ import { PlatformError, unknownError } from '@hcengineering/platform'
 import type { RestClient } from './types'
 import { extractJson, withRetry } from './utils'
 
-export async function createRestClient (endpoint: string, workspaceId: string, token: string): Promise<RestClient> {
+export function createRestClient (endpoint: string, workspaceId: string, token: string): RestClient {
   return new RestClientImpl(endpoint, workspaceId, token)
 }
 

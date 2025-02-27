@@ -149,9 +149,9 @@ describe('rest-server', () => {
     await shutdown()
   })
 
-  async function connect (): Promise<RestClient> {
+  function connect (): RestClient {
     const token: string = generateToken('user1@site.com', getWorkspaceId('test-ws'))
-    return await createRestClient(`http://localhost:${port}`, 'test-ws', token)
+    return createRestClient(`http://localhost:${port}`, 'test-ws', token)
   }
 
   async function connectTx (): Promise<TxOperations> {
@@ -160,7 +160,7 @@ describe('rest-server', () => {
   }
 
   it('get account', async () => {
-    const conn = await connect()
+    const conn = connect()
     const account = await conn.getAccount()
 
     expect(account.email).toBe('user1@site.com')
@@ -175,7 +175,7 @@ describe('rest-server', () => {
   })
 
   it('find spaces', async () => {
-    const conn = await connect()
+    const conn = connect()
     const spaces = await conn.findAll(core.class.Space, {})
     expect(spaces.length).toBe(2)
     expect(spaces[0].name).toBe('Sp1')
@@ -183,7 +183,7 @@ describe('rest-server', () => {
   })
 
   it('find avg', async () => {
-    const conn = await connect()
+    const conn = connect()
     let ops = 0
     let total = 0
     const attempts = 1000
@@ -204,7 +204,7 @@ describe('rest-server', () => {
   })
 
   it('add space', async () => {
-    const conn = await connect()
+    const conn = connect()
     const account = await conn.getAccount()
     const tx: TxCreateDoc<Space> = {
       _class: core.class.TxCreateDoc,
