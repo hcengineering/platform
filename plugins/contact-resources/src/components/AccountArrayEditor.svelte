@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Contact, Employee, getCurrentEmployee, getName, Person } from '@hcengineering/contact'
-  import { AccountUuid, Ref } from '@hcengineering/core'
+  import { AccountUuid, notEmpty, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
@@ -56,7 +56,7 @@
       clearTimeout(timer)
     }
     update = async () => {
-      const newAccounts = evt.detail.map((p) => valueByPersonRef.get(p))
+      const newAccounts = evt.detail.map((p) => valueByPersonRef.get(p)).filter(notEmpty)
 
       void onChange?.(newAccounts)
       if (timer !== null) {

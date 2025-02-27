@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonId, AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountUuid, AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Button, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import AccountArrayEditor from './AccountArrayEditor.svelte'
 
   export let label: IntlString
-  export let value: PersonId[]
-  export let onChange: ((refs: PersonId[]) => void) | undefined
+  export let value: AccountUuid[]
+  export let onChange: ((refs: AccountUuid[]) => void) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'

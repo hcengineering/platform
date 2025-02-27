@@ -217,10 +217,9 @@
 
   let vacancy: Vacancy | undefined
   const acc = getCurrentAccount()
-  const socialIds = acc.socialIds
 
   $: if (_space) {
-    spaceQuery.query(recruit.class.Vacancy, { _id: _space, members: { $in: socialIds } }, (res) => {
+    spaceQuery.query(recruit.class.Vacancy, { _id: _space, members: acc.uuid }, (res) => {
       vacancy = res.shift()
     })
   }
@@ -329,7 +328,7 @@
         _class={recruit.class.Vacancy}
         spaceQuery={{
           archived: false,
-          members: { $in: socialIds },
+          members: acc.uuid,
           ...($selectedTypeStore !== undefined ? { type: $selectedTypeStore } : {})
         }}
         spaceOptions={orgOptions}

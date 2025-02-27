@@ -16,7 +16,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
-  import contact, { Channel, Contact, getName as getContactName, includesAny } from '@hcengineering/contact'
+  import contact, { Channel, Contact, getName as getContactName } from '@hcengineering/contact'
   import core, { generateId, getCurrentAccount, Markup, Ref, toIdMap } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -69,7 +69,8 @@
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
   const attachmentParentId = generateId()
-  const mySocialIds = getCurrentAccount().socialIds
+  const account = getCurrentAccount()
+  const mySocialIds = account.socialIds
 
   let subject: string = ''
   let content: Markup = EmptyMarkup
@@ -220,7 +221,7 @@
     integrations = res.filter(
       (p) =>
         (p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ||
-        (includesAny(p.shared ?? [], mySocialIds) && p.value !== '')
+        ((p.shared ?? []).includes(account.uuid) && p.value !== '')
     )
     selectedIntegration =
       integrations.find((p) => p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ?? integrations[0]

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
+import core, { type AccountUuid, MeasureMetricsContext, type PersonId, type Ref, type Space } from '@hcengineering/core'
 import {
   migrateSpace,
   type MigrateUpdate,
@@ -24,13 +24,20 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import setting, { type Integration, settingId } from '@hcengineering/setting'
-import { getSocialIdByOldAccount } from '@hcengineering/model-core'
+import { getSocialIdByOldAccount, getUniqueAccounts, getUniqueAccountsFromOldAccounts } from '@hcengineering/model-core'
 
 import { DOMAIN_SETTING } from '.'
 
-async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('setting migrateAccountsToSocialIds', {})
+/**
+ * Migrates old accounts to new accounts
+ * Should be applied to prodcution directly without applying migrateSocialIdsToAccountUuids
+ * @param client
+ * @returns
+ */
+async function migrateAccounts (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('setting migrateAccounts', {})
   const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const accountUuidByOldAccount = new Map<string, AccountUuid | null>()
 
   ctx.info('processing setting integration shared ', {})
   const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })
@@ -50,7 +57,64 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 
         if (integration.shared === undefined || integration.shared.length === 0) continue
 
-        const newShared = integration.shared.map((s) => socialIdByAccount[s] ?? s)
+        const newShared = await getUniqueAccountsFromOldAccounts(
+          client,
+          integration.shared,
+          socialIdByAccount,
+          accountUuidByOldAccount
+        )
+
+        operations.push({
+          filter: { _id: integration._id },
+          update: {
+            shared: newShared
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_SETTING, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  ctx.info('finished processing setting integration shared ', {})
+}
+
+/**
+ * Migrates social ids to new accounts where needed.
+ * Should only be applied to staging where old accounts have already been migrated to social ids.
+ * REMOVE IT BEFORE MERGING TO PRODUCTION
+ * @param client
+ * @returns
+ */
+async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('setting migrateAccounts', {})
+  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+
+  ctx.info('processing setting integration shared ', {})
+  const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Integration>, update: MigrateUpdate<Integration> }[] = []
+
+      for (const doc of docs) {
+        const integration = doc as Integration
+
+        if (integration.shared === undefined || integration.shared.length === 0) continue
+
+        const newShared = await getUniqueAccounts(client, integration.shared as unknown as PersonId[], accountUuidBySocialId)
 
         operations.push({
           filter: { _id: integration._id },
@@ -84,7 +148,12 @@ export const settingOperation: MigrateOperation = {
       },
       {
         state: 'accounts-to-social-ids',
-        func: migrateAccountsToSocialIds
+        func: migrateAccounts
+      },
+      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
+      {
+        state: 'migrate-social-ids-to-account-uuids',
+        func: migrateSocialIdsToAccountUuids
       }
     ])
   },

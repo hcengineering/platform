@@ -13,18 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { getCurrentAccount, PersonId, Ref, notEmpty } from '@hcengineering/core'
+  import core, { getCurrentAccount, Ref, notEmpty, AccountUuid } from '@hcengineering/core'
   import presentation from '@hcengineering/presentation'
   import { Label, showPopup, tooltip } from '@hcengineering/ui'
 
   import { Channel, ChunterSpace, ObjectChatPanel } from '@hcengineering/chunter'
-  import { Person } from '@hcengineering/contact'
+  import { Employee, Person } from '@hcengineering/contact'
   import {
     EmployeeBox,
     personRefByPersonIdStore,
-    primarySocialIdByPersonRefStore,
-    socialIdsByPersonRefStore,
-    SelectUsersPopup
+    personRefByAccountUuidStore,
+    SelectUsersPopup,
+    employeeByIdStore
   } from '@hcengineering/contact-resources'
 
   import ChannelMembers from '../ChannelMembers.svelte'
@@ -52,18 +52,11 @@
       return
     }
 
-    members = new Set(object.members.map((personId) => $personRefByPersonIdStore.get(personId)).filter(notEmpty))
+    members = new Set(object.members.map((account) => $personRefByAccountUuidStore.get(account)).filter(notEmpty))
   }
 
-  function personsToPrimaryIds (persons: Ref<Person>[]): PersonId[] {
-    return persons.map((person) => $primarySocialIdByPersonRefStore.get(person)).filter(notEmpty)
-  }
-
-  function personsToAllSocialIds (persons: Ref<Person>[]): PersonId[] {
-    return persons
-      .map((person) => $socialIdsByPersonRefStore.get(person)?.map((si) => si.key) ?? [])
-      .flat()
-      .filter((s) => s !== undefined)
+  function getAccountsByPersons (persons: Ref<Person>[]): AccountUuid[] {
+    return persons.map((person) => $employeeByIdStore.get(person as Ref<Employee>)?.personUuid).filter(notEmpty)
   }
 
   async function changeMembers (personRefs: Ref<Person>[], object?: Channel): Promise<void> {
@@ -72,13 +65,11 @@
     }
 
     const personsToLeave = Array.from(members).filter((_id) => !personRefs.includes(_id))
-    const allSocialStringsToLeave = personsToAllSocialIds(personsToLeave)
-    const socialStringsToLeave = object.members.filter((s) => allSocialStringsToLeave.includes(s))
-
+    const accountsToLeave = getAccountsByPersons(personsToLeave)
     const personsToJoin = personRefs.filter((_id) => !members.has(_id))
-    const socialStringsToJoin = personsToPrimaryIds(personsToJoin)
+    const accountsToJoin = getAccountsByPersons(personsToJoin)
 
-    await Promise.all([leaveChannel(object, socialStringsToLeave), joinChannel(object, socialStringsToJoin)])
+    await Promise.all([leaveChannel(object, accountsToLeave), joinChannel(object, accountsToJoin)])
   }
 
   async function removeMember (ev: CustomEvent): Promise<void> {
@@ -92,10 +83,9 @@
       return
     }
 
-    const allSocialStringsToLeave = personsToAllSocialIds([personId])
-    const socialStringsToLeave = object.members.filter((s) => allSocialStringsToLeave.includes(s))
+    const accountsToLeave = getAccountsByPersons([personId])
 
-    await leaveChannel(object, socialStringsToLeave)
+    await leaveChannel(object, accountsToLeave)
   }
 
   function openSelectUsersPopup (): void {

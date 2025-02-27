@@ -6,7 +6,7 @@
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import UsersPopup from './UsersPopup.svelte'
-  import { personRefByPersonIdStore, personByIdStore, primarySocialIdByPersonRefStore } from '../utils'
+  import { personRefByAccountUuidStore, personByIdStore, primarySocialIdByPersonRefStore } from '../utils'
 
   export let value: Space
   const dispatch = createEventDispatcher()
@@ -14,11 +14,11 @@
 
   let membersToAdd: Ref<Person>[] = []
   const channelMembers: Ref<Person>[] = value.members
-    .map((pid) => {
-      const personRef = $personRefByPersonIdStore.get(pid)
+    .map((acc) => {
+      const personRef = $personRefByAccountUuidStore.get(acc)
 
       if (personRef === undefined) {
-        console.error(`Person with social id ${pid} not found`)
+        console.error(`Person with social id ${acc} not found`)
         return undefined
       }
 

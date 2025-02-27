@@ -15,8 +15,7 @@
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import { Employee, getCurrentEmployee } from '@hcengineering/contact'
-  import contact from '@hcengineering/contact-resources/src/plugin'
-  import { DocumentQuery, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { DocumentQuery, Ref } from '@hcengineering/core'
   import { Department, Request, RequestType, Staff, fromTzDate } from '@hcengineering/hr'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tracker, { Issue } from '@hcengineering/tracker'

@@ -55,7 +55,6 @@ import core, {
   type TypedSpace,
   type UserStatus,
   type WithLookup,
-  type PersonUuid,
   type AccountUuid,
   notEmpty
 } from '@hcengineering/core'
@@ -438,7 +437,7 @@ export const primarySocialIdByPersonIdStore = derived(socialIdsByPersonIdStore, 
 })
 
 export const channelProviders = writable<ChannelProvider[]>([])
-export const statusByUserStore = writable<Map<PersonUuid, UserStatus>>(new Map())
+export const statusByUserStore = writable<Map<AccountUuid, UserStatus>>(new Map())
 
 const providerQuery = createQuery(true)
 const employeesQuery = createQuery(true)
@@ -470,7 +469,7 @@ const userStatusesQuery = createQuery(true)
 
 export function loadUsersStatus (): void {
   userStatusesQuery.query(core.class.UserStatus, {}, (res) => {
-    statusByUserStore.set(new Map(res.map((it) => [it.user, it] as [PersonUuid, UserStatus])))
+    statusByUserStore.set(new Map(res.map((it) => [it.user, it])))
   })
 }
 

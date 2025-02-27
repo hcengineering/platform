@@ -87,7 +87,10 @@ export {
   getSocialIdByOldAccount,
   getAccountsFromTxes,
   getSocialKeyByOldEmail,
-  getUniqueAccounts
+  getAccountUuidBySocialId,
+  getUniqueAccounts,
+  getAccountUuidByOldAccount,
+  getUniqueAccountsFromOldAccounts
 } from './migration'
 export * from './security'
 export * from './status'

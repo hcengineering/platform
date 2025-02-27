@@ -21,11 +21,13 @@ import {
 } from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import core, {
+  type AccountUuid,
   type Class,
   type Doc,
   type Domain,
   groupByArray,
   MeasureMetricsContext,
+  type PersonId,
   type Ref,
   type Space
 } from '@hcengineering/core'
@@ -39,7 +41,11 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { htmlToMarkup } from '@hcengineering/text'
-import { getSocialIdByOldAccount } from '@hcengineering/model-core'
+import {
+  getAccountUuidByOldAccount,
+  getAccountUuidBySocialId,
+  getSocialIdByOldAccount
+} from '@hcengineering/model-core'
 
 import { activityId, DOMAIN_ACTIVITY, DOMAIN_REACTION, DOMAIN_USER_MENTION } from './index'
 import activity from './plugin'
@@ -240,31 +246,51 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   ctx.info('finished processing activity reactions ', {})
 }
 
+/**
+ * Migrates old accounts to new accounts/social ids.
+ * Should be applied to prodcution directly without applying migrateSocialIdsInDocUpdates
+ * @param client
+ * @returns
+ */
 async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('migrateAccountsInDocUpdates migrateAccountsToSocialIds', {})
+  const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
   const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
   ctx.info('processing activity doc updates ', {})
 
-  function migrateField<P extends keyof DocAttributeUpdates> (
+  function getUpdatedClass (attrKey: string): string {
+    return ['members', 'owners', 'user'].includes(attrKey) ? core.class.TypeAccountUuid : core.class.TypePersonId
+  }
+
+  async function getUpdatedVal (oldVal: string, attrKey: string): Promise<any> {
+    if (['members', 'owners', 'user'].includes(attrKey)) {
+      return (await getAccountUuidByOldAccount(client, oldVal, socialIdByAccount, accountUuidBySocialId)) ?? oldVal
+    } else {
+      return socialIdByAccount[oldVal] ?? oldVal
+    }
+  }
+
+  async function migrateField<P extends keyof DocAttributeUpdates> (
     au: DocAttributeUpdates,
     update: MigrateUpdate<DocUpdateMessage>['attributeUpdates'],
     field: P
-  ): void {
+  ): Promise<void> {
     const oldValue = au?.[field]
     if (oldValue == null) return
 
     let changed = false
     let newValue: any
     if (Array.isArray(oldValue)) {
-      newValue = (oldValue as string[]).map((a) => {
-        const newA = a != null ? socialIdByAccount[a] ?? a : a
+      newValue = []
+      for (const a of oldValue as any[]) {
+        const newA = a != null ? await getUpdatedVal(a, au.attrKey) : a
         if (newA !== a) {
           changed = true
         }
-        return newA
-      })
+        newValue.push(newA)
+      }
     } else {
-      newValue = socialIdByAccount[oldValue] ?? oldValue
+      newValue = await getUpdatedVal(oldValue, au.attrKey)
       if (newValue !== oldValue) {
         changed = true
       }
@@ -301,12 +327,113 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
         if (dum.attributeUpdates == null) continue
         const update: any = { attributeUpdates: { ...dum.attributeUpdates } }
 
-        migrateField(dum.attributeUpdates, update.attributeUpdates, 'added')
-        migrateField(dum.attributeUpdates, update.attributeUpdates, 'prevValue')
-        migrateField(dum.attributeUpdates, update.attributeUpdates, 'removed')
-        migrateField(dum.attributeUpdates, update.attributeUpdates, 'set')
+        await migrateField(dum.attributeUpdates, update.attributeUpdates, 'added')
+        await migrateField(dum.attributeUpdates, update.attributeUpdates, 'prevValue')
+        await migrateField(dum.attributeUpdates, update.attributeUpdates, 'removed')
+        await migrateField(dum.attributeUpdates, update.attributeUpdates, 'set')
 
-        update.attributeUpdates.attrClass = core.class.TypePersonId
+        update.attributeUpdates.attrClass = getUpdatedClass(dum.attributeUpdates.attrKey)
+
+        operations.push({
+          filter: { _id: dum._id },
+          update
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_ACTIVITY, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+
+  ctx.info('finished processing activity doc updates ', {})
+}
+
+/**
+ * Migrates social ids to new accounts where needed.
+ * Should only be applied to staging where old accounts have already been migrated to social ids.
+ * REMOVE IT BEFORE MERGING TO PRODUCTION
+ * @param client
+ * @returns
+ */
+async function migrateSocialIdsInDocUpdates (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('activity migrateSocialIdsInDocUpdates', {})
+  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  ctx.info('processing activity doc updates ', {})
+
+  async function getUpdatedVal (oldVal: string): Promise<any> {
+    return (await getAccountUuidBySocialId(client, oldVal as PersonId, accountUuidBySocialId)) ?? oldVal
+  }
+
+  async function migrateField<P extends keyof DocAttributeUpdates> (
+    au: DocAttributeUpdates,
+    update: MigrateUpdate<DocUpdateMessage>['attributeUpdates'],
+    field: P
+  ): Promise<void> {
+    const oldValue = au?.[field]
+    if (oldValue == null) return
+
+    let changed = false
+    let newValue: any
+    if (Array.isArray(oldValue)) {
+      newValue = []
+      for (const a of oldValue as any[]) {
+        const newA = a != null ? await getUpdatedVal(a) : a
+        if (newA !== a) {
+          changed = true
+        }
+        newValue.push(newA)
+      }
+    } else {
+      newValue = await getUpdatedVal(oldValue)
+      if (newValue !== oldValue) {
+        changed = true
+      }
+    }
+
+    if (changed) {
+      if (update == null) throw new Error('update is null')
+
+      update[field] = newValue
+    }
+  }
+
+  const iterator = await client.traverse(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    action: 'update',
+    'attributeUpdates.attrClass': 'core:class:Account',
+    'attributeUpdates.attrKey': { $in: ['members', 'owners', 'user'] }
+  })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: {
+        filter: MigrationDocumentQuery<DocUpdateMessage>
+        update: MigrateUpdate<DocUpdateMessage>
+      }[] = []
+
+      for (const doc of docs) {
+        const dum = doc as DocUpdateMessage
+        if (dum.attributeUpdates == null) continue
+        const update: any = { attributeUpdates: { ...dum.attributeUpdates } }
+
+        await migrateField(dum.attributeUpdates, update.attributeUpdates, 'added')
+        await migrateField(dum.attributeUpdates, update.attributeUpdates, 'prevValue')
+        await migrateField(dum.attributeUpdates, update.attributeUpdates, 'removed')
+        await migrateField(dum.attributeUpdates, update.attributeUpdates, 'set')
+
+        update.attributeUpdates.attrClass = core.class.TypeAccountUuid
 
         operations.push({
           filter: { _id: dum._id },
@@ -378,6 +505,11 @@ export const activityOperation: MigrateOperation = {
       {
         state: 'accounts-in-doc-updates-v2',
         func: migrateAccountsInDocUpdates
+      },
+      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
+      {
+        state: 'social-ids-in-doc-updates',
+        func: migrateSocialIdsInDocUpdates
       }
     ])
   },

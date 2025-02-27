@@ -52,7 +52,7 @@
         !adminUser
           ? {
               ...(classes.length === 1 ? {} : { _class: { $in: classes } }),
-              members: { $in: getCurrentAccount().socialIds }
+              members: getCurrentAccount().uuid
             }
           : { ...(classes.length === 1 ? {} : { _class: { $in: classes } }) },
         (result) => {
