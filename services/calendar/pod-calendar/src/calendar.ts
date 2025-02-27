@@ -487,7 +487,7 @@ export class CalendarClient {
   private async updateExtEvent (event: calendar_v3.Schema$Event, current: Event): Promise<void> {
     this.updateTimer()
     if (event.status === 'cancelled' && current._class !== calendar.class.ReccuringInstance) {
-      await this.client.remove(current)
+      await this.systemTxOp.remove(current)
       return
     }
     const data: Partial<AttachedData<Event>> = await this.parseUpdateData(event)
@@ -502,7 +502,7 @@ export class CalendarClient {
         current as ReccuringInstance
       )
       if (Object.keys(diff).length > 0) {
-        await this.client.update(current, diff)
+        await this.systemTxOp.update(current, diff)
       }
     } else {
       if (event.recurrence != null) {
@@ -517,12 +517,12 @@ export class CalendarClient {
           current as ReccuringEvent
         )
         if (Object.keys(diff).length > 0) {
-          await this.client.update(current, diff)
+          await this.systemTxOp.update(current, diff)
         }
       } else {
         const diff = this.getDiff(data, current)
         if (Object.keys(diff).length > 0) {
-          await this.client.update(current, diff)
+          await this.systemTxOp.update(current, diff)
         }
       }
     }
