@@ -1657,6 +1657,43 @@ export async function assignWorkspace (
   }
 }
 
+export async function ensurePerson (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    socialType: SocialIdType
+    socialValue: string
+    firstName: string
+    lastName: string
+  }
+): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['schedule'], extra)
+
+  const { socialType, socialValue, firstName, lastName } = params
+
+  if (
+    !Object.values(SocialIdType).includes(socialType) ||
+    firstName.length === 0 ||
+    lastName.length === 0 ||
+    socialValue.length === 0
+  ) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const socialId = await db.socialId.findOne({ type: socialType, value: socialValue })
+  if (socialId != null) {
+    return { uuid: socialId.personUuid, socialId: socialId.key }
+  }
+
+  const personUuid = await db.person.insertOne({ firstName, lastName })
+  const newSocialId = await db.socialId.insertOne({ type: socialType, value: socialValue, personUuid })
+
+  return { uuid: personUuid, socialId: newSocialId }
+}
+
 export type AccountMethods =
   | 'login'
   | 'loginOtp'
@@ -1698,6 +1735,7 @@ export type AccountMethods =
   | 'findPerson'
   | 'performWorkspaceOperation'
   | 'updateWorkspaceRoleBySocialId'
+  | 'ensurePerson'
 
 /**
  * @public
@@ -1748,7 +1786,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     assignWorkspace: wrap(assignWorkspace),
     listWorkspaces: wrap(listWorkspaces),
     performWorkspaceOperation: wrap(performWorkspaceOperation),
-    updateWorkspaceRoleBySocialId: wrap(updateWorkspaceRoleBySocialId)
+    updateWorkspaceRoleBySocialId: wrap(updateWorkspaceRoleBySocialId),
+    ensurePerson: wrap(ensurePerson)
   }
 }
 

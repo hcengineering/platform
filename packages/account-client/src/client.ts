@@ -26,7 +26,9 @@ import {
   WorkspaceMode,
   concatLink,
   type WorkspaceUserOperation,
-  WorkspaceUuid
+  type WorkspaceUuid,
+  type PersonId,
+  type SocialIdType
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, RegionInfo, WorkspaceOperation } from './types'
@@ -109,6 +111,12 @@ export interface AccountClient {
   assignWorkspace: (email: string, workspaceUuid: string, role: AccountRole) => Promise<void>
   updateBackupInfo: (info: BackupStatus) => Promise<void>
   updateWorkspaceRoleBySocialId: (socialKey: string, targetRole: AccountRole) => Promise<void>
+  ensurePerson: (
+    socialType: SocialIdType,
+    socialValue: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<{ uuid: PersonUuid, socialId: PersonId }>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -588,6 +596,20 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async ensurePerson (
+    socialType: SocialIdType,
+    socialValue: string,
+    firstName: string,
+    lastName: string
+  ): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
+    const request = {
+      method: 'ensurePerson' as const,
+      params: { socialType, socialValue, firstName, lastName }
+    }
+
+    return await this.rpc(request)
   }
 
   async setCookie (): Promise<void> {
