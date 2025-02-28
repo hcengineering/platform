@@ -1,5 +1,4 @@
-import { AttachedDoc, Class, Doc, Mixin, Ref, SortingOrder, TxCUD, TxMixin, TxUpdateDoc } from '@hcengineering/core'
-import core from '@hcengineering/core/src/component'
+import core, { AttachedDoc, Class, Doc, Mixin, Ref, SortingOrder, TxCUD, TxMixin, TxUpdateDoc } from '@hcengineering/core'
 import { DocObjectCache, type ActivityControl } from './types'
 
 export async function getAllObjectTransactions (
