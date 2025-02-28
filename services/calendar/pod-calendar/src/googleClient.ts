@@ -212,42 +212,46 @@ export class GoogleClient {
         workspace: this.user.workspace,
         calendarId: null
       })
-      if (current != null) {
-        await this.rateLimiter.take(1)
-        try {
-          await this.calendar.channels.stop({ requestBody: { id: current.channelId, resourceId: current.resourceId } })
-        } catch {}
-      }
-      const channelId = generateId()
-      const me = await this.getMe()
-      const body = { id: channelId, address: config.WATCH_URL, type: 'webhook', token: `user=${me}&mode=calendar` }
-      await this.rateLimiter.take(1)
-      const res = await this.calendar.calendarList.watch({ requestBody: body })
-      if (res.data.expiration != null && res.data.resourceId !== null) {
+      if (current == null || current.expired < Date.now() + 24 * 60 * 60 * 1000) {
         if (current != null) {
-          await this.watches.updateOne(
-            {
-              userId: this.user.userId,
-              workspace: this.user.workspace,
-              calendarId: null
-            },
-            {
-              $set: {
-                channelId,
-                expired: Number.parseInt(res.data.expiration),
-                resourceId: res.data.resourceId ?? ''
+          await this.rateLimiter.take(1)
+          try {
+            await this.calendar.channels.stop({
+              requestBody: { id: current.channelId, resourceId: current.resourceId }
+            })
+          } catch {}
+        }
+        const channelId = generateId()
+        const me = await this.getMe()
+        const body = { id: channelId, address: config.WATCH_URL, type: 'webhook', token: `user=${me}&mode=calendar` }
+        await this.rateLimiter.take(1)
+        const res = await this.calendar.calendarList.watch({ requestBody: body })
+        if (res.data.expiration != null && res.data.resourceId !== null) {
+          if (current != null) {
+            await this.watches.updateOne(
+              {
+                userId: this.user.userId,
+                workspace: this.user.workspace,
+                calendarId: null
+              },
+              {
+                $set: {
+                  channelId,
+                  expired: Number.parseInt(res.data.expiration),
+                  resourceId: res.data.resourceId ?? ''
+                }
               }
-            }
-          )
-        } else {
-          await this.watches.insertOne({
-            calendarId: null,
-            channelId,
-            expired: Number.parseInt(res.data.expiration),
-            resourceId: res.data.resourceId ?? '',
-            userId: this.user.userId,
-            workspace: this.user.workspace
-          })
+            )
+          } else {
+            await this.watches.insertOne({
+              calendarId: null,
+              channelId,
+              expired: Number.parseInt(res.data.expiration),
+              resourceId: res.data.resourceId ?? '',
+              userId: this.user.userId,
+              workspace: this.user.workspace
+            })
+          }
         }
       }
     } catch (err: any) {
@@ -262,49 +266,51 @@ export class GoogleClient {
         workspace: this.user.workspace,
         calendarId
       })
-      if (current != null) {
-        await this.rateLimiter.take(1)
-        try {
-          await this.calendar.channels.stop({
-            requestBody: { id: current.channelId, resourceId: current.resourceId }
-          })
-        } catch {}
-      }
-      const channelId = generateId()
-      const me = await this.getMe()
-      const body = {
-        id: channelId,
-        address: config.WATCH_URL,
-        type: 'webhook',
-        token: `user=${me}&mode=events&calendarId=${calendarId}`
-      }
-      await this.rateLimiter.take(1)
-      const res = await this.calendar.events.watch({ calendarId, requestBody: body })
-      if (res.data.expiration != null && res.data.resourceId != null) {
+      if (current == null || current.expired < Date.now() + 24 * 60 * 60 * 1000) {
         if (current != null) {
-          await this.watches.updateOne(
-            {
-              userId: this.user.userId,
-              workspace: this.user.workspace,
-              calendarId
-            },
-            {
-              $set: {
-                channelId,
-                expired: Number.parseInt(res.data.expiration),
-                resourceId: res.data.resourceId ?? ''
+          await this.rateLimiter.take(1)
+          try {
+            await this.calendar.channels.stop({
+              requestBody: { id: current.channelId, resourceId: current.resourceId }
+            })
+          } catch {}
+        }
+        const channelId = generateId()
+        const me = await this.getMe()
+        const body = {
+          id: channelId,
+          address: config.WATCH_URL,
+          type: 'webhook',
+          token: `user=${me}&mode=events&calendarId=${calendarId}`
+        }
+        await this.rateLimiter.take(1)
+        const res = await this.calendar.events.watch({ calendarId, requestBody: body })
+        if (res.data.expiration != null && res.data.resourceId != null) {
+          if (current != null) {
+            await this.watches.updateOne(
+              {
+                userId: this.user.userId,
+                workspace: this.user.workspace,
+                calendarId
+              },
+              {
+                $set: {
+                  channelId,
+                  expired: Number.parseInt(res.data.expiration),
+                  resourceId: res.data.resourceId ?? ''
+                }
               }
-            }
-          )
-        } else {
-          await this.watches.insertOne({
-            calendarId,
-            channelId,
-            expired: Number.parseInt(res.data.expiration),
-            resourceId: res.data.resourceId ?? '',
-            userId: this.user.userId,
-            workspace: this.user.workspace
-          })
+            )
+          } else {
+            await this.watches.insertOne({
+              calendarId,
+              channelId,
+              expired: Number.parseInt(res.data.expiration),
+              resourceId: res.data.resourceId ?? '',
+              userId: this.user.userId,
+              workspace: this.user.workspace
+            })
+          }
         }
       }
       return true
@@ -312,7 +318,7 @@ export class GoogleClient {
       if (err?.errors?.[0]?.reason === 'pushNotSupportedForRequestedResource') {
         return false
       } else {
-        console.error('Watch error', err.message)
+        console.error('Watch error', err)
         await this.checkError(err)
         return false
       }
