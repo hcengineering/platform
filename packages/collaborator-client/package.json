@@ -2,6 +2,13 @@
   "name": "@hcengineering/collaborator-client",
   "version": "0.6.4",
   "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./lib/index.js"
+    }
+  },
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "files": [
