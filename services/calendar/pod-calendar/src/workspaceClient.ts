@@ -116,6 +116,7 @@ export class WorkspaceClient {
       throw new Error('Client already exist')
     }
     this.clients.set(email, newClient)
+    this.serviceController.pushWorkspaceByEmail(email, user.workspace)
     return newClient
   }
 

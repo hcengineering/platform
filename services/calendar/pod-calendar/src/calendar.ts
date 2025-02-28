@@ -241,6 +241,7 @@ export class CalendarClient {
   }
 
   close (): void {
+    clearTimeout(this.inactiveTimer)
     this.googleClient.close()
     for (const watch of this.dummyWatches) {
       clearTimeout(watch.timer)

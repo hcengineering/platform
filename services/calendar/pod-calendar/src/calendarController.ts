@@ -108,6 +108,12 @@ export class CalendarController {
     }
   }
 
+  pushWorkspaceByEmail (email: string, workspace: string): void {
+    const arr = this.workspacesByEmail.get(email) ?? []
+    arr.push(workspace)
+    this.workspacesByEmail.set(email, arr)
+  }
+
   async startWorkspace (workspace: string, tokens: Token[]): Promise<WorkspaceClient> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
     for (const token of tokens) {
@@ -117,9 +123,7 @@ export class CalendarController {
         }, 60000)
         console.log('init client', token.workspace, token.userId)
         await workspaceClient.createCalendarClient(token, true)
-        const arr = this.workspacesByEmail.get(token.email) ?? []
-        arr.push(token.workspace)
-        this.workspacesByEmail.set(token.email, arr)
+        this.pushWorkspaceByEmail(token.email, token.workspace)
         clearTimeout(timeout)
       } catch (err) {
         console.error(`Couldn't create client for ${workspace} ${token.userId} ${token.email}`)
