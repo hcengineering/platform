@@ -2,21 +2,6 @@
   "name": "@hcengineering/core",
   "version": "0.6.32",
   "main": "lib/index.js",
-  "exports": {
-    ".": {
-      "types": "./types/index.d.ts",
-      "require": "./lib/index.js",
-      "import": "./lib/index.js"
-    },
-    "./lang/*.json": {
-      "require": "./lang/*.json",
-      "import": "./lang/*.json"
-    },
-    "./lang": {
-      "require": "./lang",
-      "import": "./lang"
-    }
-  },
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "files": [
@@ -60,5 +45,20 @@
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./lib/index.js"
+    },
+    "./lang/*.json": {
+      "require": "./lang/*.json",
+      "import": "./lang/*.json"
+    },
+    "./lang": {
+      "require": "./lang",
+      "import": "./lang"
+    }
   }
 }

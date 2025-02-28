@@ -2,13 +2,6 @@
   "name": "@hcengineering/rpc",
   "version": "0.6.5",
   "main": "lib/index.js",
-  "exports": {
-    ".": {
-      "types": "./types/index.d.ts",
-      "require": "./lib/index.js",
-      "import": "./lib/index.js"
-    }
-  },
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "files": [
@@ -52,5 +45,12 @@
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./lib/index.js"
+    }
   }
 }
