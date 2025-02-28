@@ -32,14 +32,14 @@ export async function createClient (
 ): Promise<Client> {
   // We need to override default factory with 'ws' one.
   // eslint-disable-next-line
-  const WebSocket = require('ws')
+  const WebSocket = await import('ws')
 
   setMetadata(client.metadata.UseBinaryProtocol, true)
   setMetadata(client.metadata.UseProtocolCompression, true)
   setMetadata(client.metadata.ConnectionTimeout, connectTimeout)
 
   setMetadata(client.metadata.ClientSocketFactory, (url) => {
-    const socket = new WebSocket(url, {
+    const socket: any = new WebSocket.WebSocket(url, {
       headers: {
         'User-Agent': getMetadata(plugin.metadata.UserAgent) ?? 'Anticrm Client'
       }
