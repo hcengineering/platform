@@ -22,10 +22,10 @@ export const NodeWebSocketFactory: ClientSocketFactory = (url: string): ClientSo
   let WebSocket: any = undefined
 
   import('ws')
-    .then(ws => {
+    .then((ws) => {
       WebSocket = ws.WebSocket
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('Failed to load ws module', err)
     })
 
