@@ -141,7 +141,7 @@ export class Transactor extends DurableObject<Env> {
     const storage = createDummyStorageAdapter()
 
     this.pipelineFactory = async (ctx, ws, upgrade, broadcast, branding) => {
-      const pipeline = createServerPipeline(this.measureCtx, dbUrl, model, {
+      const pipeline = createServerPipeline(this.measureCtx, dbUrl, model as any, {
         externalStorage: storage,
         adapterSecurity: isAdapterSecurity(dbUrl),
         disableTriggers: false,

@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//
+import core from './component'
+
 export * from './classes'
 export * from './client'
 export * from './collaboration'
-export { coreId, systemAccountUuid, systemAccount, default } from './component'
+export { coreId, systemAccountUuid, systemAccount } from './component'
 export * from './hierarchy'
 export * from './measurements'
 export * from './memdb'
@@ -34,3 +35,5 @@ export * from './clone'
 export * from './common'
 export * from './time'
 export * from './benchmark'
+
+export default core
