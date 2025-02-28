@@ -64,13 +64,6 @@ function createMailTag (builder: Builder): void {
     value: false
   })
   builder.mixin(mail.class.MailThread, core.class.Mixin, setting.mixin.UserMixin, {})
-  builder.mixin(mail.class.MailThread, core.class.Class, view.mixin.ObjectEditor, {
-    editor: mail.component.MailThread
-  })
-
-  builder.mixin(mail.class.MailThread, core.class.Class, view.mixin.ObjectPanel, {
-    component: mail.component.MailThread
-  })
 }
 
 function createMailViewlet (builder: Builder): void {
