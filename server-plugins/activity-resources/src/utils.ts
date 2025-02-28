@@ -1,5 +1,5 @@
 import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
-import {
+import core, {
   PersonId,
   AttachedDoc,
   type Attribute,
@@ -19,7 +19,6 @@ import {
   combineAttributes,
   ArrOf
 } from '@hcengineering/core'
-import core from '@hcengineering/core/src/component'
 import notification from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
 import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
