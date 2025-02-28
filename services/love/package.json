@@ -33,7 +33,7 @@
     "@tsconfig/node16": "^1.0.4",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.13.5",
     "@types/ws": "^8.5.11",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@hcengineering/platform-rig": "^0.6.0",
@@ -42,7 +42,7 @@
     "@types/jest": "^29.5.5",
     "@types/uuid": "^8.3.1",
     "@typescript-eslint/parser": "^6.11.0",
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.25.0",
     "eslint": "^8.54.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "eslint-plugin-import": "^2.26.0",
@@ -51,7 +51,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "prettier": "^3.1.0",
     "ts-node": "^10.8.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "@hcengineering/attachment": "^0.6.14",

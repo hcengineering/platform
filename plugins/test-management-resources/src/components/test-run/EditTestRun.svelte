@@ -51,8 +51,6 @@
     }
   }
 
-  let content: HTMLElement
-
   $: if (oldLabel !== object?.name) {
     oldLabel = object?.name
     rawLabel = object?.name
@@ -98,7 +96,6 @@
         bind:this={descriptionBox}
         identifier={object?._id}
         placeholder={testManagement.string.DescriptionPlaceholder}
-        boundary={content}
       />
     </div>
 

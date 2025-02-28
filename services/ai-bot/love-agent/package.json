@@ -20,7 +20,7 @@
     "format": "prettier --write src/**/*.ts && pnpm lint:fix"
   },
   "devDependencies": {
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.13.5",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
     "esbuild": "^0.20.2",

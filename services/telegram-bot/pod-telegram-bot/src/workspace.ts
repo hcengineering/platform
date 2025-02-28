@@ -13,8 +13,11 @@
 // limitations under the License.
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { ActivityMessage } from '@hcengineering/activity'
+import attachment, { Attachment } from '@hcengineering/attachment'
+import chunter, { ChatMessage, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
+import { Person } from '@hcengineering/contact'
 import core, {
-  PersonId,
   Blob,
   Class,
   Client,
@@ -23,21 +26,17 @@ import core, {
   Hierarchy,
   Markup,
   MeasureContext,
+  PersonId,
   Ref,
   Space,
   systemAccountUuid,
   TxFactory,
   WorkspaceUuid
 } from '@hcengineering/core'
-import { generateToken } from '@hcengineering/server-token'
-import notification, { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
-import chunter, { ChatMessage, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
-import contact, { Person } from '@hcengineering/contact'
+import { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
-import activity, { ActivityMessage } from '@hcengineering/activity'
-import attachment, { Attachment } from '@hcengineering/attachment'
 import { StorageAdapter } from '@hcengineering/server-core'
-import { isEmptyMarkup } from '@hcengineering/text'
+import { generateToken } from '@hcengineering/server-token'
 
 import { ChannelRecord, MessageRecord, PlatformFileInfo, TelegramFileInfo } from './types'
 
@@ -335,8 +334,7 @@ export class WorkspaceClient {
     const res: PlatformFileInfo[] = []
     for (const attachment of attachments) {
       if (attachment.type === 'application/link-preview') continue
-      const chunks = await this.storageAdapter.read(this.ctx, this.workspace as any, attachment.file) // TODO: FIXME
-      const buffer = Buffer.concat(chunks)
+      const buffer = await this.storageAdapter.read(this.ctx, this.workspace as any, attachment.file) // TODO: FIXME
       if (buffer.length > 0) {
         res.push({
           buffer,

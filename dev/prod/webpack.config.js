@@ -202,10 +202,11 @@ module.exports = [
           use: {
             loader: 'esbuild-loader',
             options: {
-              target: 'es2021',
+              target: 'es2022',
               keepNames: true,
               minify: prod,
-              sourcemap: !prod
+              sourcemap: !prod,
+              
             }
           }
         }
@@ -264,7 +265,9 @@ module.exports = [
     optimization: prod
       ? {
           minimize: true,
-          minimizer: [new EsbuildPlugin({ target: 'es2021' })],
+          minimizer: [new EsbuildPlugin({ 
+            target: 'es2022'
+          })],
           splitChunks: {
             chunks: 'all'
           }
@@ -283,7 +286,7 @@ module.exports = [
           test: /\.ts?$/,
           loader: 'esbuild-loader',
           options: {
-            target: 'es2021',
+            target: 'es2022',
             keepNames: true,
             minify: prod,
             sourcemap: true

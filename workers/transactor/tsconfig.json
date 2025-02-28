@@ -1,11 +1,11 @@
 {
-	"extends": "./node_modules/@hcengineering/platform-rig/profiles/default/tsconfig.json",
+	"extends": "./node_modules/@hcengineering/platform-rig/profiles/node/tsconfig.json",
 
 	"compilerOptions": {
 		"rootDir": "./src",
 		"outDir": "./lib",
 		"declarationDir": "./types",
 		"tsBuildInfoFile": ".build/build.tsbuildinfo",
-		"types": ["@cloudflare/workers-types", "jest"]
+		"types": ["@cloudflare/workers-types", "jest", "node"]
 	}
 }

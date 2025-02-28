@@ -48,7 +48,7 @@
     }
   }
   const targetClass = getTargetClass()
-  $: isState = targetClass === core.class.Status ?? false
+  $: isState = targetClass === core.class.Status
   const dispatch = createEventDispatcher()
 
   async function getCountStates (ids: Array<Ref<Doc>>): Promise<number> {

@@ -86,7 +86,7 @@ export class MemStorageAdapter implements StorageAdapter {
       buffer.push(stream)
     } else if (typeof stream === 'string') {
       buffer.push(Buffer.from(stream))
-    } else {
+    } else if (stream instanceof Readable) {
       await new Promise<void>((resolve, reject) => {
         stream.on('end', () => {
           resolve()
@@ -100,7 +100,7 @@ export class MemStorageAdapter implements StorageAdapter {
         })
       })
     }
-    const data = Buffer.concat(buffer as any)
+    const data = Buffer.concat(buffer)
     const dataId = getDataId(wsIds)
     const dta = {
       _class: core.class.Blob,
@@ -123,12 +123,12 @@ export class MemStorageAdapter implements StorageAdapter {
     }
   }
 
-  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer> {
     const content = this.files.get(getDataId(wsIds) + '/' + objectName)?.content
     if (content === undefined) {
       throw new Error('NoSuchKey')
     }
-    return [content]
+    return content
   }
 
   partial (

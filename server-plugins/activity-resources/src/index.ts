@@ -14,32 +14,32 @@
 //
 
 import activity, {
-  ActivityMessage,
-  ActivityMessageControl,
-  DocAttributeUpdates,
-  DocUpdateMessage,
-  Reaction
+  type ActivityMessage,
+  type ActivityMessageControl,
+  type DocAttributeUpdates,
+  type DocUpdateMessage,
+  type Reaction
 } from '@hcengineering/activity'
 import core, {
-  PersonId,
-  AttachedDoc,
-  Class,
-  Collection,
-  Data,
-  Doc,
-  Hierarchy,
+  type PersonId,
+  type AttachedDoc,
+  type Class,
+  type Collection,
+  type Data,
+  type Doc,
+  type Hierarchy,
   matchQuery,
-  MeasureContext,
-  Ref,
-  Space,
-  Tx,
-  TxCreateDoc,
-  TxCUD,
+  type MeasureContext,
+  type Ref,
+  type Space,
+  type Tx,
+  type TxCreateDoc,
+  type TxCUD,
   TxProcessor
 } from '@hcengineering/core'
-import notification, { NotificationContent } from '@hcengineering/notification'
+import notification, { type NotificationContent } from '@hcengineering/notification'
 import { getResource, translate } from '@hcengineering/platform'
-import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
+import { type ActivityControl, type DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
 import {
   createCollabDocInfo,

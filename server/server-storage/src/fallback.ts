@@ -215,7 +215,7 @@ export class FallbackStorageAdapter implements StorageAdapter, StorageAdapterEx 
   }
 
   @withContext('fallback-read', {})
-  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer> {
     for (const { adapter } of this.adapters) {
       try {
         return await adapter.read(ctx, wsIds, objectName)

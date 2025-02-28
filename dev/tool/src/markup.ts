@@ -279,8 +279,7 @@ export async function restoreControlledDocContentForDoc (
       }
 
       const data = await storageAdapter.read(ctx, wsIds, currentYdocId)
-      const buffer = Buffer.concat(data as any)
-      await storageAdapter.put(ctx, wsIds, ydocId, buffer, 'application/ydoc', buffer.length)
+      await storageAdapter.put(ctx, wsIds, ydocId, data, 'application/ydoc', data.length)
     } catch (err: any) {
       console.error('failed to restore content for', doc._class, doc._id, err)
       return false
@@ -339,7 +338,7 @@ export async function restoreMarkupRefsMongo (
 
           try {
             const buffer = await storageAdapter.read(ctx, wsIds, ydocId)
-            const ydoc = yDocFromBuffer(Buffer.concat(buffer as any))
+            const ydoc = yDocFromBuffer(buffer)
 
             const jsonId = await saveCollabJson(ctx, storageAdapter, wsIds, collabId, ydoc)
             await collection.updateOne({ _id: doc._id }, { $set: { [attributeName]: jsonId } })

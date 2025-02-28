@@ -37,8 +37,6 @@
 
   let descriptionBox: AttachmentStyleBoxCollabEditor
 
-  let content: HTMLElement
-
   $: descriptionKey = hierarchy.getAttribute(testManagement.class.TestResult, 'description')
 
   onMount(() => dispatch('open', { ignoreKeys: [] }))
@@ -57,7 +55,6 @@
       bind:this={descriptionBox}
       identifier={object?._id}
       placeholder={testManagement.string.DescriptionPlaceholder}
-      boundary={content}
     />
   </div>
   {#if !withoutActivity}
@@ -67,8 +64,7 @@
         props={{
           object,
           showCommenInput: true,
-          focusIndex: 1000,
-          boundary: content
+          focusIndex: 1000
         }}
       />
     </div>

@@ -106,7 +106,7 @@
         id: s._id,
         component: StatusPresenter,
         props: { value: s, size: 'small' },
-        isSelected: selectedStatus?._id === s._id ?? false
+        isSelected: selectedStatus?._id === s._id
       }
     }) ?? []
   const handleStatusEditorOpened = (event: MouseEvent) => {

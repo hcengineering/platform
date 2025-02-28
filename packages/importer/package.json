@@ -31,11 +31,11 @@
     "eslint-plugin-n": "^15.4.0",
     "eslint-plugin-promise": "^6.1.1",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.3",
+    "typescript": "^5.7.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.13.5",
     "@types/mime-types": "~2.1.1",
     "@types/csvtojson": "^2.0.0",
     "@types/js-yaml": "^4.0.9"

@@ -92,8 +92,7 @@
     }
   )
   const countSorting = (a: Doc, b: Doc) =>
-    (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) -
-      (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0) ?? 0
+    (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) - (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0)
 
   let visibleCategories: TagCategory[] = []
 </script>

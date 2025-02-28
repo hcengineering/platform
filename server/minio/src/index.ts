@@ -14,6 +14,7 @@
 //
 
 import { Client, type BucketItem, type BucketStream } from 'minio'
+import { Buffer } from 'node:buffer'
 
 import core, {
   withContext,
@@ -329,7 +330,7 @@ export class MinioService implements StorageAdapter {
   }
 
   @withContext('read')
-  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer> {
     const data = await this.client.getObject(this.getBucketId(wsIds), this.getDocumentKey(wsIds, objectName))
     const chunks: Buffer[] = []
 
@@ -337,8 +338,7 @@ export class MinioService implements StorageAdapter {
       data.on('readable', () => {
         let chunk
         while ((chunk = data.read()) !== null) {
-          const b = chunk as Buffer
-          chunks.push(b)
+          chunks.push(chunk)
         }
       })
 
@@ -350,7 +350,7 @@ export class MinioService implements StorageAdapter {
         reject(err)
       })
     })
-    return chunks
+    return Buffer.concat(chunks)
   }
 
   @withContext('partial')

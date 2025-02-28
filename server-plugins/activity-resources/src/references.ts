@@ -13,34 +13,34 @@
 // limitations under the License.
 //
 
-import activity, { ActivityMessage, ActivityReference, UserMentionInfo } from '@hcengineering/activity'
-import contact, { Employee, Person, pickPrimarySocialId, includesAny } from '@hcengineering/contact'
+import activity, { type ActivityMessage, type ActivityReference, type UserMentionInfo } from '@hcengineering/activity'
+import contact, { type Employee, type Person, pickPrimarySocialId, includesAny } from '@hcengineering/contact'
 import core, {
-  PersonId,
-  Blob,
-  Class,
-  Data,
-  Doc,
+  type PersonId,
+  type Blob,
+  type Class,
+  type Data,
+  type Doc,
   generateId,
   buildSocialIdString,
   parseSocialIdString,
-  Hierarchy,
-  Markup,
-  Ref,
-  Space,
-  Tx,
-  TxCreateDoc,
-  TxCUD,
+  type Hierarchy,
+  type Markup,
+  type Ref,
+  type Space,
+  type Tx,
+  type TxCreateDoc,
+  type TxCUD,
   TxFactory,
-  TxMixin,
+  type TxMixin,
   TxProcessor,
-  TxRemoveDoc,
-  TxUpdateDoc,
-  Type,
+  type TxRemoveDoc,
+  type TxUpdateDoc,
+  type Type,
   type MeasureContext
 } from '@hcengineering/core'
-import notification, { CommonInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
-import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
+import notification, { type CommonInboxNotification, type MentionInboxNotification } from '@hcengineering/notification'
+import { type StorageAdapter, type TriggerControl } from '@hcengineering/server-core'
 import {
   applyNotificationProviders,
   getCommonNotificationTxes,
@@ -48,7 +48,7 @@ import {
   getNotificationProviderControl,
   getPushCollaboratorTx,
   isShouldNotifyTx,
-  NotifyResult,
+  type NotifyResult,
   shouldNotifyCommon,
   toReceiverInfo,
   type NotificationProviderControl
@@ -401,8 +401,7 @@ async function getCreateReferencesTxes (
       const blobId = (createdDoc as any)[attr.name] as Ref<Blob>
       if (blobId != null) {
         try {
-          const buffer = await storage.read(ctx, control.workspace, blobId)
-          const markup = Buffer.concat(buffer as any).toString()
+          const markup = (await storage.read(ctx, control.workspace, blobId)).toString()
           const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
           refs.push(...attrReferences)
         } catch {
@@ -448,8 +447,7 @@ async function getUpdateReferencesTxes (
       try {
         const blobId = (updatedDoc as any)[attr.name] as Ref<Blob>
         if (blobId != null) {
-          const buffer = await storage.read(ctx, control.workspace, blobId)
-          const markup = Buffer.concat(buffer as any).toString()
+          const markup = (await storage.read(ctx, control.workspace, blobId)).toString()
           const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, markup)
           references.push(...attrReferences)
         }

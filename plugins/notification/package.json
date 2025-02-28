@@ -36,7 +36,7 @@
     "prettier": "^3.1.0",
     "sass": "^1.53.0",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",

@@ -1,29 +1,29 @@
-import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
+import { type ActivityMessageControl, type DocAttributeUpdates, type DocUpdateAction } from '@hcengineering/activity'
 import {
-  PersonId,
-  AttachedDoc,
+  type PersonId,
+  type AttachedDoc,
   type Attribute,
-  Class,
-  Collection,
-  Doc,
-  Hierarchy,
-  MeasureContext,
-  Mixin,
-  Ref,
-  RefTo,
-  TxCreateDoc,
-  TxCUD,
-  TxMixin,
+  type Class,
+  type Collection,
+  type Doc,
+  type Hierarchy,
+  type MeasureContext,
+  type Mixin,
+  type Ref,
+  type RefTo,
+  type TxCreateDoc,
+  type TxCUD,
+  type TxMixin,
   TxProcessor,
-  TxUpdateDoc,
+  type TxUpdateDoc,
   combineAttributes,
-  ArrOf
+  type ArrOf
 } from '@hcengineering/core'
 import core from '@hcengineering/core/src/component'
 import notification from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
-import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
-import { TriggerControl } from '@hcengineering/server-core'
+import { type ActivityControl, type DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
+import { type TriggerControl } from '@hcengineering/server-core'
 import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 
 function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): string[] {

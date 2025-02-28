@@ -823,7 +823,7 @@ export class GmailClient {
 
   private async makeAttachmentPart (attachment: Attachment): Promise<string[]> {
     const buffer = await this.storageAdapter.read(this.ctx, this.workspaceId as any, attachment.file) // TODO: FIXME
-    const data = arrayBufferToBase64(Buffer.concat(buffer))
+    const data = arrayBufferToBase64(buffer)
     const res: string[] = []
     res.push('--mail\n')
     res.push(`Content-Type: ${attachment.type}\n`)

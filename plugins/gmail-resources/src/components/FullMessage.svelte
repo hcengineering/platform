@@ -24,13 +24,10 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import core, { Ref } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
 
   export let currentMessage: SharedMessage
   export let newMessage: boolean
-
-  let editor: HTMLDivElement
-  $: if (editor) editor.innerHTML = currentMessage.content
 
   const dispatch = createEventDispatcher()
   const hasError = (currentMessage as unknown as NewMessage)?.status === 'error'

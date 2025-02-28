@@ -21,6 +21,6 @@ export function decode64 (str: string): string {
   return Buffer.from(str, 'base64').toString('utf8')
 }
 
-export function arrayBufferToBase64 (buffer: ArrayBuffer): string {
-  return Buffer.from(buffer).toString('base64')
+export function arrayBufferToBase64 (buffer: Buffer): string {
+  return buffer.toString('base64')
 }

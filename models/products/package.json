@@ -25,12 +25,12 @@
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^8.8.0",
-    "@types/node": "~20.11.16",
+    "@types/node": "^22.13.5",
     "ts-node": "^10.8.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "@hcengineering/attachment": "^0.6.14",

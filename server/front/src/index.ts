@@ -508,13 +508,13 @@ export function start (
           const range = req.headers.range
           if (range !== undefined) {
             await ctx.with('file-range', { workspace: wsIds.uuid }, (ctx) =>
-              getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, wsIds, res)
+              getFileRange(ctx, blobInfo, range, config.storageAdapter, wsIds, res)
             )
           } else {
             await ctx.with(
               'file',
               { workspace: wsIds.uuid },
-              (ctx) => getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, wsIds, req, res),
+              (ctx) => getFile(ctx, blobInfo, config.storageAdapter, wsIds, req, res),
               { uuid }
             )
           }
@@ -675,13 +675,13 @@ export function start (
           }
           const id = uuid()
           const contentType = response.headers['content-type'] ?? 'application/octet-stream'
-          const data: Uint8Array[] = []
+          const data: Buffer[] = []
           response
             .on('data', function (chunk) {
               data.push(chunk)
             })
             .on('end', function () {
-              const buffer = Buffer.concat(data as unknown as Uint8Array[])
+              const buffer = Buffer.concat(data)
               config.storageAdapter
                 .put(ctx, workspaceDataId, id, buffer, contentType, buffer.length)
                 .then(async () => {
@@ -757,13 +757,13 @@ export function start (
         }
         const id = uuid()
         const contentType = response.headers['content-type']
-        const data: Uint8Array[] = []
+        const data: Buffer[] = []
         response
           .on('data', function (chunk) {
             data.push(chunk)
           })
           .on('end', function () {
-            const buffer = Buffer.concat(data as unknown as Uint8Array[])
+            const buffer = Buffer.concat(data)
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             config.storageAdapter
               .put(ctx, workspaceDataId, id, buffer, contentType ?? 'application/octet-stream', buffer.length)

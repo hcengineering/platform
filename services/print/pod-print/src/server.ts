@@ -215,7 +215,7 @@ export function createServer (
           throw new ApiError(404, `File ${file} not found`)
         }
 
-        const htmlRes = await convertToHtml(Buffer.concat(originalFile as any))
+        const htmlRes = await convertToHtml(originalFile)
 
         if (htmlRes === undefined) {
           throw new ApiError(400, 'Failed to convert')

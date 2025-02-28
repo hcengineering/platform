@@ -1,13 +1,14 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import contact, { Channel, Contact as PContact, getFirstName, getLastName } from '@hcengineering/contact'
+import contact, { Channel, getFirstName, getLastName, Contact as PContact } from '@hcengineering/contact'
 import core, {
-  PersonId,
   Blob,
   Client,
   Doc,
   Hierarchy,
   MeasureContext,
+  PersonId,
   Ref,
+  systemAccountUuid,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -16,7 +17,6 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  systemAccountUuid,
   WorkspaceDataId
 } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
@@ -638,8 +638,7 @@ export class WorkspaceWorker {
     const attachments = await this.client.findAll(attachment.class.Attachment, { attachedTo: msg._id })
     const res: Buffer[] = []
     for (const attachment of attachments) {
-      const chunks = await this.storageAdapter.read(this.ctx, this.workspace as any, attachment.file) // TODO: FIXME <--WorkspaceIds
-      const buffer = Buffer.concat(chunks as unknown as Uint8Array[])
+      const buffer = await this.storageAdapter.read(this.ctx, this.workspace as any, attachment.file) // TODO: FIXME <--WorkspaceIds
       if (buffer.length > 0) {
         res.push(
           Object.assign(buffer, {

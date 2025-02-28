@@ -13,9 +13,8 @@
 // limitations under the License.
 //
 
-import { type WorkspaceIds, type MeasureContext } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceIds } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { Buffer } from 'node:buffer'
 
 // Will use temporary file to store huge content into
 export class BlobClient {
@@ -94,7 +93,7 @@ export class BlobClient {
             const chunks: Buffer[] = []
             const readable = await this.opt.storageAdapter.partial(ctx, this.workspace, name, written, chunkSize)
             await new Promise<void>((resolve) => {
-              readable.on('data', (chunk) => {
+              readable.on('data', (chunk: any) => {
                 chunks.push(chunk)
               })
               readable.on('end', () => {

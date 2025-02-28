@@ -16,12 +16,11 @@ export async function createRekoniAdapter (url: string): Promise<ContentTextAdap
     ): Promise<string> => {
       const token = generateToken(systemAccountUuid, workspace, { service: 'rekoni' })
       try {
-        // Node doesn't support Readable with fetch.
-        const chunks: any[] = []
+        const chunks: Buffer[] = []
         let len = 0
         await new Promise<void>((resolve, reject) => {
           doc.on('data', (chunk) => {
-            len += (chunk as Buffer).length
+            len += chunk.length
             chunks.push(chunk)
             if (len > 30 * 1024 * 1024) {
               reject(new Error('file to big for content processing'))

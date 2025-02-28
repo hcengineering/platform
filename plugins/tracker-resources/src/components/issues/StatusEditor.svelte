@@ -124,7 +124,7 @@
       id: s._id,
       component: StatusPresenter,
       props: { value: s, size: 'small', space: value.space },
-      isSelected: selectedStatus?._id === s._id ?? false
+      isSelected: selectedStatus?._id === s._id
     }
   })
   $: smallgap = size === 'inline' || size === 'small'

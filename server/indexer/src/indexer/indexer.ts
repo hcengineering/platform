@@ -807,7 +807,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     if (value !== undefined && value !== '') {
       try {
         const readable = await this.storageAdapter?.read(ctx, this.workspace, value)
-        const markup = Buffer.concat(readable as any).toString()
+        const markup = readable.toString()
         let textContent = markupToText(markup)
         textContent = textContent
           .split(/ +|\t+|\f+/)
@@ -907,9 +907,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     indexedDoc: IndexedDoc
   ): Promise<void> {
     if (docInfo !== undefined) {
-      let textContent = Buffer.concat(
-        (await this.storageAdapter?.read(ctx, this.workspace, docInfo._id)) as any
-      ).toString()
+      let textContent = (await this.storageAdapter?.read(ctx, this.workspace, docInfo._id)).toString()
 
       textContent = textContent
         .split(/ +|\t+|\f+/)

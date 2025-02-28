@@ -33,7 +33,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "@hcengineering/platform-rig": "^0.6.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "@hcengineering/contact": "^0.6.24",
