@@ -207,7 +207,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.employeeDropdown = page.locator('div:nth-child(4) > button').first()
     this.kickEmployee = page.getByRole('button', { name: 'Kick employee' })
     this.confirmKickEmployee = page.getByRole('button', { name: 'Ok' })
-    this.openTeam = page.getByText('Team')
+    this.openTeam = page.getByText('Team', { exact: true })
     this.privateToggle = page.locator('#teamspace-private span')
     this.inputTeamspaceName = page.getByPlaceholder('New teamspace')
     this.teamspaceArrow = page.locator('.w-full > button:nth-child(2)')
