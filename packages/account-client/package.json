@@ -46,5 +46,12 @@
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./lib/index.js"
+    }
   }
 }

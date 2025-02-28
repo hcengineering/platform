@@ -139,6 +139,8 @@ class AccountClientImpl implements AccountClient {
       throw new Error('Accounts url not specified')
     }
 
+    const isBrowser = typeof window !== 'undefined'
+
     this.request = {
       keepalive: true,
       headers: {
@@ -148,7 +150,7 @@ class AccountClientImpl implements AccountClient {
               Authorization: 'Bearer ' + this.token
             })
       },
-      credentials: 'include'
+      ...(isBrowser ? { credentials: 'include' } : {})
     }
   }
 
