@@ -11,6 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// <reference path="../../../common/types/assets.d.ts" />
+
 import { loadMetadata } from '@hcengineering/platform'
 import card from '@hcengineering/card'
 import icons from '../assets/icons.svg'

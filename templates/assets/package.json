@@ -34,8 +34,7 @@
     ".eslintrc.js",
     "tsconfig.json",
     "config/rig.json",
-    "jest.config.js",
-    "assets.d.ts"
+    "jest.config.js"
   ],
   "#clean": ["@types/heft-jest", "@rushstack/heft"]
 }

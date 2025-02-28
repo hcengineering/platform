@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+/// <reference path="../../../common/types/assets.d.ts" />
+
 import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
 import survey, { surveyId } from '@hcengineering/survey'
 import icons from '../assets/icons.svg'

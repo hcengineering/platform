@@ -11,7 +11,8 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+
+/// <reference path="../../../common/types/assets.d.ts" />
 
 import bitrix from '@hcengineering/bitrix'
 import { loadMetadata } from '@hcengineering/platform'

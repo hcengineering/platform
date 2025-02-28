@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+/// <reference path="../../../common/types/assets.d.ts" />
+
 import { loadMetadata } from '@hcengineering/platform'
 import love from '@hcengineering/love'
 import icons from '../assets/icons.svg'

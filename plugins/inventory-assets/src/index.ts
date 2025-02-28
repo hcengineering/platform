@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+/// <reference path="../../../common/types/assets.d.ts" />
+
 import inventory from '@hcengineering/inventory'
 import { loadMetadata } from '@hcengineering/platform'
 import icons from '../assets/icons.svg'

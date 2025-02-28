@@ -2,6 +2,8 @@
 // Copyright @ 2024 Hardcore Engineering Inc.
 //
 
+/// <reference path="../../../common/types/assets.d.ts" />
+
 import { loadMetadata } from '@hcengineering/platform'
 import questions from '@hcengineering/questions'
 import icons from '../assets/icons.svg'
