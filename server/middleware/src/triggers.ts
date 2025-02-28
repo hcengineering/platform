@@ -43,11 +43,12 @@ import type {
   PipelineContext,
   ServerFindOptions,
   ServiceAdaptersManager,
+  SessionFindAll,
   StorageAdapter,
   TriggerControl,
   TxMiddlewareResult
 } from '@hcengineering/server-core'
-import serverCore, { BaseMiddleware, SessionDataImpl, SessionFindAll, Triggers } from '@hcengineering/server-core'
+import serverCore, { BaseMiddleware, SessionDataImpl, Triggers } from '@hcengineering/server-core'
 import { filterBroadcastOnly } from './utils'
 
 /**

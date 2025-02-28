@@ -51,7 +51,7 @@ import {
   LOGGING_ENABLED,
   pingConst,
   Pipeline,
-  PipelineFactory,
+  type PipelineFactory,
   ServerFactory,
   SessionManager,
   StorageAdapter,
