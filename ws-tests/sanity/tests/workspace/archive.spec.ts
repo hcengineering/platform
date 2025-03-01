@@ -27,15 +27,16 @@ test.describe('Workspace Archive tests', () => {
 
   test('New workspace with date, archive, unarchive', async ({ page, browser, request }) => {
     const api: ApiEndpoint = new ApiEndpoint(request)
-    const workspaceInfo = await api.createWorkspaceWithLogin(generateId(), 'user1', '1234')
+    const wsId = generateId(5)
+    const workspaceInfo = await api.createWorkspaceWithLogin(wsId, 'user1', '1234')
 
     const newIssue: NewIssue = {
-      title: `Issue with all parameters and attachments-${generateId()}`,
+      title: `Issue with all parameters and attachments-${wsId}`,
       description: 'Created issue with all parameters and attachments description',
       status: 'In Progress',
       priority: 'Urgent',
       createLabel: true,
-      labels: `CREATE-ISSUE-${generateId()}`,
+      labels: `CREATE-ISSUE-${wsId}`,
       component: 'No component',
       estimation: '2',
       milestone: 'No Milestone',
@@ -45,7 +46,7 @@ test.describe('Workspace Archive tests', () => {
       await loginPage.goto()
       await loginPage.login('user1', '1234')
 
-      await selectWorkspacePage.selectWorkspace(workspaceInfo.workspaceName)
+      await selectWorkspacePage.selectWorkspace(wsId)
 
       await trackerNavigationMenuPage.openIssuesForProject('Default')
       await issuesPage.clickModelSelectorAll()
@@ -94,9 +95,11 @@ test.describe('Workspace Archive tests', () => {
     await test.step('Check workspace is active again', async () => {
       await page.reload()
 
-      await selectWorkspacePage.selectWorkspace(workspaceInfo.workspaceName)
+      await selectWorkspacePage.selectWorkspace(wsId)
 
       const issuesDetailsPage = new IssuesDetailsPage(page)
+      // Should be restored from previos remembered location.
+      // await issuesPage.openIssueByName(newIssue.title)
       await issuesDetailsPage.checkIssue(newIssue)
     })
   })

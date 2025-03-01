@@ -16,18 +16,24 @@
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, Notifications, location } from '@hcengineering/ui'
   import { upgradeDownloadProgress } from '@hcengineering/presentation'
-  import { connect, versionError } from '../connect'
+  import { connect, versionError, invalidError } from '../connect'
 
   import { guestId } from '@hcengineering/guest'
   import workbench from '@hcengineering/workbench'
   import Guest from './Guest.svelte'
+  import plugin from '../plugin'
 </script>
 
 {#if $location.path[0] === guestId}
   {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
     <Loading />
   {:then client}
-    {#if $versionError}
+    {#if $invalidError}
+      {invalidError}
+      <div class="version-wrapper">
+        <h1><Label label={plugin.string.LinkWasRevoked} /></h1>
+      </div>
+    {:else if $versionError}
       <div class="version-wrapper">
         <div class="antiPopup version-popup">
           <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
@@ -52,14 +58,19 @@
 <style lang="scss">
   .version-wrapper {
     height: 100%;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  .please-update {
+    margin-bottom: 1rem;
   }
   .version-popup {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    flex-grow: 1;
   }
 </style>

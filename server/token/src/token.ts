@@ -19,8 +19,13 @@ const getSecret = (): string => {
 /**
  * @public
  */
-export function generateToken (email: string, workspace: WorkspaceId, extra?: Record<string, string>): string {
-  return encode({ ...(extra ?? {}), email, workspace: workspace.name }, getSecret())
+export function generateToken (
+  email: string,
+  workspace: WorkspaceId,
+  extra?: Record<string, string>,
+  secret?: string
+): string {
+  return encode({ ...(extra ?? {}), email, workspace: workspace.name }, secret ?? getSecret())
 }
 
 /**
