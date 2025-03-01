@@ -14,6 +14,7 @@
 package uploader
 
 import (
+	"context"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -26,9 +27,9 @@ func Test_Postpone(t *testing.T) {
 		postponeDuration: time.Second / 4,
 	}
 	var counter atomic.Int32
-	u.postpone("1", func() { counter.Add(1) })
+	u.postpone("1", func(context.Context) { counter.Add(1) })
 	time.Sleep(time.Second / 8)
-	u.postpone("1", func() { counter.Add(1) })
+	u.postpone("1", func(context.Context) { counter.Add(1) })
 	time.Sleep(time.Second / 2)
 	require.Equal(t, int32(1), counter.Load())
 	time.Sleep(time.Second / 2)
@@ -38,7 +39,7 @@ func Test_Postpone(t *testing.T) {
 func Test_WithoutPostpone(t *testing.T) {
 	var counter atomic.Int32
 	var u uploader
-	u.postpone("1", func() { counter.Add(1) })
+	u.postpone("1", func(context.Context) { counter.Add(1) })
 	time.Sleep(time.Second / 10)
 	require.Equal(t, int32(1), counter.Load())
 }

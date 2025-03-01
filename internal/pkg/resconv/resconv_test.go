@@ -29,10 +29,11 @@ func Test_Resconv_ShouldReturnCorrectPrefix(t *testing.T) {
 		{res: "640:480", expected: "480p"},
 		{res: "1280:720", expected: "720p"},
 		{res: "1920:1080", expected: "1080p"},
-		{res: "2560:1440", expected: "2k"},
-		{res: "3840:2160", expected: "4k"},
-		{res: "5120:2880", expected: "5k"},
-		{res: "9000:4000", expected: "8k"},
+		{res: "2880:1800", expected: "1440p"},
+		{res: "2560:1440", expected: "1440p"},
+		{res: "3840:2160", expected: "2160p"},
+		{res: "5120:2880", expected: "2160p"},
+		{res: "9000:4000", expected: "4320p"},
 	}
 
 	for _, tt := range tests {

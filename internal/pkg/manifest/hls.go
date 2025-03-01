@@ -53,11 +53,6 @@ func GenerateHLSPlaylist(levels []string, outputPath, uploadID string) error {
 		if err != nil {
 			return err
 		}
-
-		_, err = file.WriteString("#EXT-X-ENDLIST")
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
