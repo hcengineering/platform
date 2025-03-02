@@ -450,32 +450,6 @@ export async function ensureEmployee (
     await client.tx(updatePersonTx)
   }
 
-  if (me.role !== AccountRole.Guest) {
-    const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
-
-    if (employee === undefined || !Hierarchy.hasMixin(employee, contact.mixin.Employee) || !employee.active) {
-      await ctx.with('create-employee', {}, async () => {
-        if (personRef === undefined) {
-          // something went wrong
-          console.error('Person not found')
-          return null
-        }
-
-        const createEmployeeTx = txFactory.createTxMixin(
-          personRef,
-          contact.class.Person,
-          contact.space.Contacts,
-          contact.mixin.Employee,
-          {
-            active: true
-          }
-        )
-
-        await client.tx(createEmployeeTx)
-      })
-    }
-  }
-
   const existingIdentifiers = await client.findAll(contact.class.SocialIdentity, {
     attachedTo: personRef,
     attachedToClass: contact.class.Person
@@ -508,6 +482,34 @@ export async function ensureEmployee (
         )
 
         await client.tx(createSocialIdTx)
+      })
+    }
+  }
+
+  // NOTE: it is important to create Employee after Person and SocialIdentities are ensured so all the triggers applied
+  // on Employee creation will be able to properly map things
+  if (me.role !== AccountRole.Guest) {
+    const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
+
+    if (employee === undefined || !Hierarchy.hasMixin(employee, contact.mixin.Employee) || !employee.active) {
+      await ctx.with('create-employee', {}, async () => {
+        if (personRef === undefined) {
+          // something went wrong
+          console.error('Person not found')
+          return null
+        }
+
+        const createEmployeeTx = txFactory.createTxMixin(
+          personRef,
+          contact.class.Person,
+          contact.space.Contacts,
+          contact.mixin.Employee,
+          {
+            active: true
+          }
+        )
+
+        await client.tx(createEmployeeTx)
       })
     }
   }

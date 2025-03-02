@@ -21,6 +21,8 @@ services:
     restart: unless-stopped
   cockroach:
     image: cockroachdb/cockroach:latest-v24.2
+    extra_hosts:
+      - 'huly.local:host-gateway'
     ports:
       - '26257:26257'
       - '8089:8080'

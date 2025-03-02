@@ -114,7 +114,11 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
 
         if (integration.shared === undefined || integration.shared.length === 0) continue
 
-        const newShared = await getUniqueAccounts(client, integration.shared as unknown as PersonId[], accountUuidBySocialId)
+        const newShared = await getUniqueAccounts(
+          client,
+          integration.shared as unknown as PersonId[],
+          accountUuidBySocialId
+        )
 
         operations.push({
           filter: { _id: integration._id },

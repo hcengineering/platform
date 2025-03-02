@@ -782,7 +782,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? "data ->> 'objectSpace'" : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const archivedCheck = showArchived ? '' : ' AND sec.archived = false'
-        const q = `(sec.members && (${vars.addArray(acc.socialIds)}) OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})${archivedCheck}`
+        const q = `(sec.members @> '{"${acc.uuid}"}' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})${archivedCheck}`
         return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND ${q}`
       }
     }

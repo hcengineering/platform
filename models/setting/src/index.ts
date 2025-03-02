@@ -15,7 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { AccountRole, DOMAIN_MODEL, type PersonId, type Blob, type Domain, type Ref, AccountUuid } from '@hcengineering/core'
+import { AccountRole, DOMAIN_MODEL, type Blob, type Domain, type Ref, type AccountUuid } from '@hcengineering/core'
 import { Mixin, Model, type Builder, UX } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'

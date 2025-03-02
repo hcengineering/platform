@@ -116,10 +116,9 @@ async function fillAccountUuids (client: MigrationClient): Promise<void> {
         }
 
         const socialIdentity = (
-          await client.find<SocialIdentity>(DOMAIN_CONTACT, {
+          await client.find<SocialIdentity>(DOMAIN_CHANNEL, {
             _class: contact.class.SocialIdentity,
-            attachedTo: person._id,
-            verifiedOn: { $gt: 0 }
+            attachedTo: person._id
           })
         )[0]
         if (socialIdentity == null) continue

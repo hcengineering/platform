@@ -566,6 +566,9 @@ export async function getAccountUuidBySocialId (
 
   if (!cached) {
     const personUuid = await client.accountClient.findPerson(socialId)
+    if (personUuid === undefined) {
+      console.log('Could not find person for', socialId)
+    }
 
     accountUuidBySocialId.set(socialId, (personUuid as AccountUuid | undefined) ?? null)
   }
@@ -580,9 +583,7 @@ export async function getUniqueAccounts (
 ): Promise<AccountUuid[]> {
   const accounts = new Set<AccountUuid>()
   for (const person of persons) {
-    const newAccount =
-      (await getAccountUuidBySocialId(client, person as unknown as PersonId, accountUuidBySocialId)) ??
-      (person as unknown as AccountUuid)
+    const newAccount = await getAccountUuidBySocialId(client, person as unknown as PersonId, accountUuidBySocialId)
     if (newAccount != null) {
       accounts.add(newAccount)
     }

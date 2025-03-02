@@ -161,8 +161,9 @@ export async function getDmPersons (client: Client, space: Space): Promise<Perso
   if (space === undefined) {
     return []
   }
+  const myAcc = getCurrentAccount().uuid
 
-  const accounts = space.members.length > 0 ? space.members : [getCurrentAccount().uuid]
+  const accounts = space.members.length > 0 ? space.members.filter((m) => m !== myAcc) : [myAcc]
 
   return await client.findAll(contact.class.Person, {
     personUuid: { $in: accounts }

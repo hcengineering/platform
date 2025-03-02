@@ -1059,7 +1059,7 @@ export class TSessionManager implements SessionManager {
     return userCtx
       .with('🧭 handleRequest', {}, async (ctx) => {
         if (request.time != null) {
-          const delta = Date.now() - request.time
+          const delta = platformNow() - request.time
           requestCtx.measure('msg-receive-delta', delta)
         }
         if (service.workspace.closing !== undefined) {

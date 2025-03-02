@@ -406,7 +406,7 @@ async function migrateSocialIdsInDocUpdates (client: MigrationClient): Promise<v
   const iterator = await client.traverse(DOMAIN_ACTIVITY, {
     _class: activity.class.DocUpdateMessage,
     action: 'update',
-    'attributeUpdates.attrClass': 'core:class:Account',
+    'attributeUpdates.attrClass': 'core:class:TypePersonId',
     'attributeUpdates.attrKey': { $in: ['members', 'owners', 'user'] }
   })
 
