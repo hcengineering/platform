@@ -113,6 +113,7 @@ export default mergeIds(settingId, setting, {
     DeleteSpaceType: '' as IntlString,
     DeleteSpaceTypeConfirm: '' as IntlString,
     WorkspaceName: '' as IntlString,
-    Workspace: '' as IntlString
+    Workspace: '' as IntlString,
+    WorkspaceNamePattern: '' as IntlString
   }
 })

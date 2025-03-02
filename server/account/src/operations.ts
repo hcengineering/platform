@@ -2502,7 +2502,7 @@ export async function sendInvite (
 ): Promise<void> {
   const tokenData = decodeToken(ctx, token)
   const currentAccount = await getAccount(db, tokenData.email)
-  if (currentAccount === null) {
+  if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: tokenData.email }))
   }
 
@@ -2513,9 +2513,12 @@ export async function sendInvite (
     )
   }
 
-  // TODO: Why we not send invite if user has account???
-  // const account = await getAccount(db, email)
-  // if (account !== null) return
+  if (Date.now() - (currentAccount.lastWorkspace ?? 0) < 60 * 1000) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: tokenData.workspace.name })
+    )
+  }
+  await db.account.updateOne({ _id: currentAccount._id }, { lastWorkspace: Date.now() })
 
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
@@ -2532,7 +2535,8 @@ export async function sendInvite (
   const inviteId = await getInviteLink(ctx, db, branding, token, exp, email, 1)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  const ws = workspace.workspaceName ?? workspace.workspace
+  const ws = (workspace.workspaceName ?? workspace.workspace).slice(0, 40)
+
   const lang = branding?.language
   const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours }, lang)
   const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours }, lang)
@@ -2590,6 +2594,13 @@ export async function resendInvite (
     await db.invite.updateOne({ _id: db.getObjectId(inviteId) }, { exp: newExp })
   }
 
+  if (Date.now() - (currentAccount.lastWorkspace ?? 0) < 60 * 1000) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspace.name })
+    )
+  }
+  await db.account.updateOne({ _id: currentAccount._id }, { lastWorkspace: Date.now() })
+
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
     throw new Error('Please provide email service url')
@@ -2600,7 +2611,7 @@ export async function resendInvite (
   }
 
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
-  const ws = wsPromise.workspaceName ?? wsPromise.workspace
+  const ws = (wsPromise.workspaceName ?? wsPromise.workspace).slice(0, 40)
   const lang = branding?.language
   const text = await translate(accountPlugin.string.ResendInviteText, { link, ws, expHours }, lang)
   const html = await translate(accountPlugin.string.ResendInviteHTML, { link, ws, expHours }, lang)

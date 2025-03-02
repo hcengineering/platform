@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref, Blob } from '@hcengineering/core'
+  import core from '@hcengineering/core'
   import {
     Breadcrumb,
     Header,
@@ -34,7 +34,7 @@
 
   import setting from '../plugin'
   import { rpcAccount } from '../utils'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { getClient, MessageBox } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
   import { AvatarType } from '@hcengineering/contact'
 
@@ -42,6 +42,15 @@
   let isEditingName = false
   let oldName: string
   let name: string = ''
+
+  const disabledSet = ['\n', '<', '>', '/', '\\']
+
+  $: editNameDisabled =
+    isEditingName &&
+    (name.trim().length > 40 ||
+      name.trim() === oldName ||
+      name.trim() === '' ||
+      disabledSet.some((it) => name.includes(it)))
 
   void loadWorkspaceName()
 
@@ -70,8 +79,6 @@
     isEditingName = false
   }
 
-  $: editNameDisabled = isEditingName && (name.trim() === oldName || name.trim() === '')
-
   async function handleDelete (): Promise<void> {
     showPopup(MessageBox, {
       label: setting.string.DeleteWorkspace,
@@ -89,7 +96,7 @@
   let workspaceSettings: WorkspaceSetting | undefined = undefined
 
   const client = getClient()
-  client.findOne(setting.class.WorkspaceSetting, {}).then((r) => {
+  void client.findOne(setting.class.WorkspaceSetting, {}).then((r) => {
     workspaceSettings = r
   })
 
@@ -157,6 +164,9 @@
             {#if isEditingName}
               <Button icon={IconClose} kind="ghost" size="small" on:click={handleCancelEditName} />
             {/if}
+          </div>
+          <div>
+            <Label label={setting.string.WorkspaceNamePattern} />
           </div>
           <div class="delete mt-6">
             <Button icon={IconDelete} kind="dangerous" label={setting.string.DeleteWorkspace} on:click={handleDelete} />

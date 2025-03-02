@@ -122,6 +122,7 @@
     "BackupFileDownload": "Descargar archivo",
     "BackupFiles": "Archivos de copia de seguridad",
     "BackupNoBackup": "No hay copias de seguridad disponibles actualmente.",
-    "AddAttribute": "Añadir atributo"
+    "AddAttribute": "Añadir atributo",
+    "WorkspaceNamePattern": "El nombre debe tener 40 caracteres o menos, no esté vacío y no puede contener caracteres especiales (<, >, /)"
   }
 }

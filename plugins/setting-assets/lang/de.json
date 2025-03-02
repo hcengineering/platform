@@ -131,6 +131,7 @@
     "BackupFileDownload": "Datei herunterladen",
     "BackupFiles": "Sicherungsdateien",
     "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar.",
-    "AddAttribute": "Attribut hinzufügen"
+    "AddAttribute": "Attribut hinzufügen",
+    "WorkspaceNamePattern": "Name muss 40 Zeichen oder weniger sein, nicht leer sein und keine Sonderzeichen (<, >, /) enthalten"
   }
 }
