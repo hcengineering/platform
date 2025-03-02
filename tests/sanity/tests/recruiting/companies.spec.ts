@@ -4,6 +4,7 @@ import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { CompaniesPage } from '../model/recruiting/companies-page'
 import { NewCompany } from '../model/recruiting/types'
 import { CompanyDetailsPage } from '../model/recruiting/company-details-page'
+import { DEFAULT_USER } from '../tracker/tracker.utils'
 
 test.use({
   storageState: PlatformSetting
@@ -85,5 +86,37 @@ test.describe('Companies tests', () => {
     await companyDetailsPage.deleteEntity()
     await navigationMenuPage.clickButtonCompanies()
     await companiesPage.checkCompanyNotExist(deleteCompany.name)
+  })
+
+  test('Filtering companies', async ({ page }) => {
+    const firstCompany: NewCompany = {
+      name: `Company for filtering one-${generateId()}`
+    }
+    const secondCompany: NewCompany = {
+      name: `Company for filtering two-${generateId()}`
+    }
+    await test.step('Create companies', async () => {
+      await navigationMenuPage.clickButtonCompanies()
+      await companiesPage.createNewCompany(firstCompany)
+      await companiesPage.checkCompanyExist(firstCompany.name)
+      await companiesPage.createNewCompany(secondCompany)
+      await companiesPage.checkCompanyExist(secondCompany.name)
+    })
+    await test.step('Filtering by creator', async () => {
+      await companiesPage.selectFilter('Created by', DEFAULT_USER)
+      await companiesPage.pressEscape()
+      await companiesPage.checkCompanyExist(firstCompany.name)
+      await companiesPage.checkCompanyExist(secondCompany.name)
+    })
+    await test.step('Filtering by name', async () => {
+      await companiesPage.selectFilter('Name', firstCompany.name, companiesPage.addFilterButton())
+      await companiesPage.checkCompanyExist(firstCompany.name)
+      await companiesPage.checkCompanyNotExist(secondCompany.name)
+    })
+    await test.step('Remove name filter', async () => {
+      await companiesPage.removeFilterOption('Name')
+      await companiesPage.checkCompanyExist(firstCompany.name)
+      await companiesPage.checkCompanyExist(secondCompany.name)
+    })
   })
 })
