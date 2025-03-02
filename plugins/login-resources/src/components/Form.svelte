@@ -45,8 +45,10 @@
   export let withProviders: boolean = false
   export let subtitle: string | undefined = undefined
   export let signUpDisabled = false
+  export let disabled = false
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
+    if (disabled) return true
     if (ignoreInitialValidation) return true
     for (const field of fields) {
       const v = object[field.name]
@@ -150,6 +152,7 @@
           label={field.i18n}
           name={field.id}
           password={field.password}
+          {disabled}
           bind:value={object[field.name]}
           on:input={() => validate($themeStore.language)}
           on:blur={() => {
@@ -171,7 +174,7 @@
         size={'x-large'}
         width="100%"
         loading={inAction}
-        disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}
+        disabled={disabled || (status.severity !== Severity.OK && status.severity !== Severity.ERROR)}
         on:click={(e) => {
           e.preventDefault()
           performAction(action)

@@ -64,6 +64,7 @@
     "PasswordMinUpperChars": "{count, plural, =1 {Password must contain at least # uppercase letter} other {Password must contain at least # uppercase letters}}",
     "PasswordMinLowerChars": "{count, plural, =1 {Password must contain at least # lowercase letter} other {Password must contain at least # lowercase letters}}",
     "WorkspaceArchivedDesc": "Workspace is archived because of being unused.",
-    "RestoreArchivedWorkspace": "Unarchive"
+    "RestoreArchivedWorkspace": "Unarchive",
+    "DisabledEmailSignup": "Sign up by email is temporary unavailable. Please use Google/GitHub sign up instead."
   }
 }

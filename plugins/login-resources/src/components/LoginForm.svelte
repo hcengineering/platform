@@ -23,7 +23,7 @@
   export let navigateUrl: string | undefined = undefined
   export let signUpDisabled = false
 
-  let method: LoginMethods = LoginMethods.Otp
+  let method: LoginMethods = LoginMethods.Password
 
   function changeMethod (event: CustomEvent<LoginMethods>): void {
     method = event.detail
@@ -36,12 +36,12 @@
     }
   }
 
-  const loginWithCodeAction: BottomAction = {
-    i18n: login.string.LoginWithCode,
-    func: () => {
-      method = LoginMethods.Otp
-    }
-  }
+    // const loginWithCodeAction: BottomAction = {
+    //   i18n: login.string.LoginWithCode,
+    //   func: () => {
+    //     method = LoginMethods.Otp
+    //   }
+    // }
 </script>
 
 {#if method === LoginMethods.Otp}
@@ -51,9 +51,9 @@
   </div>
 {:else}
   <LoginPasswordForm {navigateUrl} {signUpDisabled} on:change={changeMethod} />
-  <div class="action">
+  <!-- <div class="action">
     <BottomActionComponent action={loginWithCodeAction} />
-  </div>
+  </div> -->
 {/if}
 
 <style lang="scss">

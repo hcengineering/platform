@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
+  import platform, { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import { setMetadataLocalStorage } from '@hcengineering/ui'
   import login from '../plugin'
@@ -26,17 +26,17 @@
   export let signUpDisabled = false
 
   const fields: Array<Field> = [
-    { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
-    { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
-    { id: 'email', name: 'username', i18n: login.string.Email },
-    {
-      id: 'new-password',
-      name: 'password',
-      i18n: login.string.Password,
-      password: true,
-      rules: getPasswordValidationRules()
-    },
-    { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
+    // { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
+    // { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
+    // { id: 'email', name: 'username', i18n: login.string.Email },
+    // {
+    //   id: 'new-password',
+    //   name: 'password',
+    //   i18n: login.string.Password,
+    //   password: true,
+    //   rules: getPasswordValidationRules()
+    // },
+    // { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
   ]
 
   const object = {
@@ -47,7 +47,7 @@
     password2: ''
   }
 
-  let status: Status<any> = OK
+  const status = new Status<any>(Severity.WARNING, login.string.DisabledEmailSignup, {})
 
   if (signUpDisabled) {
     goTo('login')
@@ -56,19 +56,16 @@
   const action = {
     i18n: login.string.SignUp,
     func: async () => {
-      status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-
-      const [loginStatus, result] = await signUp(object.username, object.password, object.first, object.last)
-
-      status = loginStatus
-
-      if (result !== undefined) {
-        setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LastToken, result.token)
-        goTo('confirmationSend')
-      }
+      // status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+      // const [loginStatus, result] = await signUp(object.username, object.password, object.first, object.last)
+      // status = loginStatus
+      // if (result !== undefined) {
+      //   setMetadata(presentation.metadata.Token, result.token)
+      //   setMetadataLocalStorage(login.metadata.LastToken, result.token)
+      //   goTo('confirmationSend')
+      // }
     }
   }
 </script>
 
-<Form caption={login.string.SignUp} {status} {fields} {object} {action} withProviders />
+<Form caption={login.string.SignUp} {status} {fields} {object} {action} withProviders disabled />
