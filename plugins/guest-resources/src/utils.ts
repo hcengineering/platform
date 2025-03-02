@@ -1,4 +1,8 @@
-import { type AccountClient, type WorkspaceLoginInfo, getClient as getAccountClientRaw } from '@hcengineering/account-client'
+import {
+  type AccountClient,
+  type WorkspaceLoginInfo,
+  getClient as getAccountClientRaw
+} from '@hcengineering/account-client'
 import client from '@hcengineering/client'
 import { type Doc, AccountRole } from '@hcengineering/core'
 import login from '@hcengineering/login'
