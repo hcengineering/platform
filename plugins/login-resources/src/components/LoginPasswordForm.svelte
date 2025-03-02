@@ -17,7 +17,7 @@
 
   import { doLogin, doLoginNavigate } from '../utils'
   import Form from './Form.svelte'
-  import { recoveryAction } from '../actions'
+  // import { recoveryAction } from '../actions'
   import login from '../plugin'
 
   export let navigateUrl: string | undefined = undefined
@@ -64,7 +64,6 @@
   {object}
   {action}
   {signUpDisabled}
-  bottomActions={[recoveryAction]}
   ignoreInitialValidation
   withProviders
 />
