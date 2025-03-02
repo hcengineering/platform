@@ -131,6 +131,7 @@
     "BackupFileDownload": "Scarica file",
     "BackupFiles": "File di backup",
     "BackupNoBackup": "Non sono attualmente disponibili backup.",
-    "AddAttribute": "Aggiungi attributo"
+    "AddAttribute": "Aggiungi attributo",
+    "WorkspaceNamePattern": "Il nome deve essere di 40 caratteri o meno, non vuoto e non può contenere caratteri speciali (<, >, /)"
   }
 }
