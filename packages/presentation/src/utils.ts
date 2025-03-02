@@ -737,7 +737,14 @@ export function isCollabAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolea
  */
 export function decodeTokenPayload (token: string): any {
   try {
-    return JSON.parse(atob(token.split('.')[1]))
+    if (token === '') {
+      return {}
+    }
+    const tsplit = token.split('.')
+    if (tsplit.length < 2) {
+      return {}
+    }
+    return JSON.parse(atob(tsplit[1]))
   } catch (err: any) {
     console.error(err)
     return {}

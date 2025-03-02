@@ -28,6 +28,7 @@
     closePopup,
     fetchMetadataLocalStorage,
     getCurrentLocation,
+    isSameSegments,
     locationStorageKeyId,
     locationToUrl,
     navigate,
@@ -57,11 +58,19 @@
       e.preventDefault()
       closePopup()
       closePopup()
-      if (ws !== getCurrentLocation().path[1]) {
-        const last = localStorage.getItem(`${locationStorageKeyId}_${ws}`)
-        if (last !== null) {
-          navigate(JSON.parse(last))
-        } else navigate({ path: [workbenchId, ws] })
+      const current = getCurrentLocation()
+      if (ws !== current.path[1]) {
+        let last: Location | undefined
+        try {
+          last = JSON.parse(localStorage.getItem(`${locationStorageKeyId}_${ws}`) ?? '')
+        } catch (err: any) {
+          // Ignore
+        }
+        if (last != null && isSameSegments(last, current, 2)) {
+          navigate(last)
+        } else {
+          navigate({ path: [workbenchId, ws] })
+        }
       }
     }
   }
@@ -147,7 +156,7 @@
         {/if}
       </div>
       <div class="p-2 ml-2 mb-4 select-text flex-col bordered">
-        {decodeTokenPayload(getMetadata(presentation.metadata.Token) ?? '').workspace}
+        {decodeTokenPayload(getMetadata(presentation.metadata.Token) ?? '').workspace ?? ''}
       </div>
     {/if}
     <div class="ap-scroll">

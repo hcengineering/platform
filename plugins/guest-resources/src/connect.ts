@@ -9,7 +9,7 @@ import core, {
   type Client,
   type Version
 } from '@hcengineering/core'
-import login, { loginId } from '@hcengineering/login'
+import login from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
   closeClient,
@@ -23,12 +23,13 @@ import {
   desktopPlatform,
   fetchMetadataLocalStorage,
   getCurrentLocation,
-  navigate,
   setMetadataLocalStorage
 } from '@hcengineering/ui'
 import { writable, get } from 'svelte/store'
 
 export const versionError = writable<string | undefined>(undefined)
+
+export const invalidError = writable<boolean>(false)
 const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
@@ -40,19 +41,16 @@ export async function connect (title: string): Promise<Client | undefined> {
   const token = loc.query?.token
   const ws = loc.path[1]
   if (ws === undefined || token == null) {
-    navigate({
-      path: [loginId]
-    })
+    invalidError.set(true)
     return
   }
-  setMetadata(presentation.metadata.Token, token)
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
   const workspaceLoginInfo = (await selectWorkspace(ws, token))[1]
   if (workspaceLoginInfo == null) {
-    navigate({
-      path: [loginId]
-    })
+    // We just need to show guist link is revoked or invalid.
+    invalidError.set(true)
+    clearMetadata(ws)
     return
   }
 
@@ -119,10 +117,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     },
     onUnauthorized: () => {
       clearMetadata(ws)
-      navigate({
-        path: [loginId],
-        query: {}
-      })
+      invalidError.set(true)
     },
     // We need to refresh all active live queries and clear old queries.
     onConnect: async (event: ClientConnectEvent, data: any) => {
@@ -214,6 +209,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
 
+  invalidError.set(false)
   versionError.set(undefined)
   // Update window title
   document.title = [ws, title].filter((it) => it).join(' - ')
