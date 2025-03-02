@@ -32,11 +32,12 @@ const getSecret = (): string => {
 export function generateToken (
   accountUuid: PersonUuid,
   workspaceUuid?: WorkspaceUuid,
-  extra?: Record<string, string>
+  extra?: Record<string, string>,
+  secret?: string
 ): string {
   return encode(
     { ...(extra !== undefined ? { extra } : {}), account: accountUuid, workspace: workspaceUuid },
-    getSecret()
+    secret ?? getSecret()
   )
 }
 

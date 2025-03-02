@@ -41,6 +41,7 @@ import platform, {
 import presentation from '@hcengineering/presentation'
 import {
   getCurrentLocation,
+  isSameSegments,
   locationStorageKeyId,
   locationToUrl,
   navigate,
@@ -297,6 +298,21 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
     if (err instanceof PlatformError) {
       await handleStatusError('Get account error', err.status)
 
+      if (err.status.code === platform.status.Unauthorized) {
+        setMetadata(presentation.metadata.Token, null)
+        setMetadata(presentation.metadata.Workspace, null)
+        setMetadata(presentation.metadata.WorkspaceId, null)
+        setMetadataLocalStorage(login.metadata.LastToken, null)
+        setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
+        setMetadataLocalStorage(login.metadata.LoginEmail, null)
+  
+        const loc = getCurrentLocation()
+        loc.path[1] = 'login'
+        loc.path.length = 2
+        navigate(loc)
+        return
+      }
+
       return null
     } else {
       Analytics.handleError(err)
@@ -454,11 +470,18 @@ export function navigateToWorkspace (
       // Json parse error could be ignored
     }
   }
-  const last = localStorage.getItem(`${locationStorageKeyId}_${workspaceUrl}`)
-  if (last !== null) {
-    navigate(JSON.parse(last), replace)
+  const newLoc: Location = { path: [workbenchId, workspaceUrl] }
+  let last: Location | undefined
+  try {
+    last = JSON.parse(localStorage.getItem(`${locationStorageKeyId}_${workspace}`) ?? '')
+  } catch (err: any) {
+    // Ignore
+  }
+  if (last != null && isSameSegments(last, newLoc, 2)) {
+    // If last location in our workspace path, use it.
+    navigate(last, replace)
   } else {
-    navigate({ path: [workbenchId, workspaceUrl] }, replace)
+    navigate(newLoc, replace)
   }
 }
 

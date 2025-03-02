@@ -26,6 +26,8 @@ import { logOut } from '@hcengineering/workbench'
 import { writable, get } from 'svelte/store'
 
 export const versionError = writable<string | undefined>(undefined)
+
+export const invalidError = writable<boolean>(false)
 const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
@@ -37,9 +39,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   const token = loc.query?.token
   const wsUrl = loc.path[1]
   if (wsUrl === undefined || token == null) {
-    navigate({
-      path: [loginId]
-    })
+    invalidError.set(true)
     return
   }
 
@@ -51,7 +51,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     )
     // something went wrong with selecting workspace with the selected token
     await logOut()
-    navigate({ path: [loginId] })
+    invalidError.set(true)
     return
   }
 
@@ -118,10 +118,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     },
     onUnauthorized: () => {
       void logOut().then(() => {
-        navigate({
-          path: [loginId],
-          query: {}
-        })
+        invalidError.set(true)
       })
     },
     // We need to refresh all active live queries and clear old queries.
@@ -224,6 +221,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
 
+  invalidError.set(false)
   versionError.set(undefined)
   // Update window title
   document.title = [wsUrl, title].filter((it) => it).join(' - ')
