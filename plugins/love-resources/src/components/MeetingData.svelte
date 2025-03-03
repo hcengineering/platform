@@ -34,9 +34,13 @@
 </script>
 
 <div class="flex-row-center gap-1-5 mt-1">
-  <CheckBox bind:checked={isMeeting} kind={'primary'} on:value={(ev) => {
-    changeIsMeeting(ev.detail)
-  }}/>
+  <CheckBox
+    bind:checked={isMeeting}
+    kind={'primary'}
+    on:value={(ev) => {
+      changeIsMeeting(ev.detail)
+    }}
+  />
   <Button
     label={love.string.CreateMeeting}
     kind={'ghost'}
