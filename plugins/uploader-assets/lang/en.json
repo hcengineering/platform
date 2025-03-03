@@ -1,13 +1,13 @@
 {
   "string": {
-    "Cancel": "Cancel",
-    "Retry": "Retry",
-    "UploadingTo": "Uploading {files, plural, =1 {# file} other {# files}} to"
+    "Cancel": "İptal",
+    "Retry": "Tekrar Dene",
+    "UploadingTo": "{files, plural, =1 {# dosya} other {# dosya}} yükleniyor"
   },
   "status": {
-    "Error": "Error",
-    "Waiting": "Waiting",
-    "Uploading": "Uploading",
-    "Completed": "Completed"
+    "Error": "Hata",
+    "Waiting": "Bekliyor",
+    "Uploading": "Yükleniyor",
+    "Completed": "Tamamlandı"
   }
 }

@@ -1,21 +1,21 @@
 {
   "string": {
-    "Cancel": "Cancel",
-    "Templates": "Text Templates",
-    "TemplatesHeader": "TEXT TEMPLATES",
-    "CreateTemplate": "CREATE TEMPLATE",
-    "SaveTemplate": "Save template",
-    "EditTemplate": "Edit template",
-    "ViewTemplate": "View template",
-    "Suggested": "SUGGESTED",
-    "SearchTemplate": "search for template",
-    "TemplatePlaceholder": "New template",
-    "Title": "Title",
-    "Message": "Message",
-    "Field": "Field",
-    "TemplateCategory": "Template group",
-    "CreateTemplateCategory": "Create group",
-    "Copy": "Copy",
-    "Template": "Template"
+    "Cancel": "İptal",
+    "Templates": "Metin Şablonları",
+    "TemplatesHeader": "METİN ŞABLONLARI",
+    "CreateTemplate": "ŞABLON OLUŞTUR",
+    "SaveTemplate": "Şablonu Kaydet",
+    "EditTemplate": "Şablonu Düzenle",
+    "ViewTemplate": "Şablonu Görüntüle",
+    "Suggested": "ÖNERİLEN",
+    "SearchTemplate": "şablon ara",
+    "TemplatePlaceholder": "Yeni şablon",
+    "Title": "Başlık",
+    "Message": "Mesaj",
+    "Field": "Alan",
+    "TemplateCategory": "Şablon grubu",
+    "CreateTemplateCategory": "Grup oluştur",
+    "Copy": "Kopyala",
+    "Template": "Şablon"
   }
 }

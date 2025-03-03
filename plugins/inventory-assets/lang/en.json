@@ -1,25 +1,25 @@
 {
   "status": {
-    "CategoryRequired": "Category required",
-    "NameRequired": "Name required"
+    "CategoryRequired": "Kategori gerekli",
+    "NameRequired": "İsim gerekli"
   },
   "string": {
-    "Categories": "Categories",
-    "Category": "Category",
-    "CategoryCreateLabel": "Category",
-    "CreateCategory": "Create category",
-    "CreateSubcategory": "Create subcategory",
-    "Inventory": "Inventory",
-    "ProductCreateLabel": "Product",
-    "CreateProduct": "Create product",
-    "Products": "Products",
-    "Product": "Product",
-    "Variant": "Variant",
+    "Categories": "Kategoriler",
+    "Category": "Kategori",
+    "CategoryCreateLabel": "Kategori",
+    "CreateCategory": "Kategori Oluştur",
+    "CreateSubcategory": "Alt Kategori Oluştur",
+    "Inventory": "Envanter",
+    "ProductCreateLabel": "Ürün",
+    "CreateProduct": "Ürün Oluştur",
+    "Products": "Ürünler",
+    "Product": "Ürün",
+    "Variant": "Varyant",
     "SKU": "SKU",
-    "Variants": "Variants",
-    "NoVariantsForProduct": "There are no variants for this product.",
-    "CreateVariant": "Create variant",
-    "ConfigLabel": "Inventory",
-    "ConfigDescription": "Extension to manage extensions"
+    "Variants": "Varyantlar",
+    "NoVariantsForProduct": "Bu ürün için varyant bulunmamaktadır.",
+    "CreateVariant": "Varyant Oluştur",
+    "ConfigLabel": "Envanter",
+    "ConfigDescription": "Eklentileri yönetmek için uzantı"
   }
 }

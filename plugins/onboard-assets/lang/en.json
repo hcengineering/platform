@@ -1,19 +1,19 @@
 {
   "status": {
-    "RequiredField": "Required field {field}",
-    "FieldsDoNotMatch": "{field} don't match {field2}",
-    "ConnectingToServer": "Connecting to server...."
+    "RequiredField": "{field} alanı zorunludur",
+    "FieldsDoNotMatch": "{field} ile {field2} eşleşmiyor",
+    "ConnectingToServer": "Sunucuya bağlanılıyor...."
   },
   "string": {
-    "CreateWorkspace": "Create workspace",
-    "LastName": "Last name",
-    "FirstName": "First name",
-    "Workspace": "Workspace name",
-    "FillInProfile": "Fill in your profile",
-    "SetUpPassword": "Set up your password",
-    "Next": "Next",
-    "Skip": "Skip",
-    "SignUpCompleted": "Sign up completed",
-    "StartUsingHuly": "Start using Huly"
+    "CreateWorkspace": "Çalışma alanı oluştur",
+    "LastName": "Soyadı",
+    "FirstName": "Adı",
+    "Workspace": "Çalışma alanı adı",
+    "FillInProfile": "Profilinizi doldurun",
+    "SetUpPassword": "Şifrenizi oluşturun",
+    "Next": "İleri",
+    "Skip": "Atla",
+    "SignUpCompleted": "Kayıt tamamlandı",
+    "StartUsingHuly": "Kubik'i kullanmaya başla"
   }
 }

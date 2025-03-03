@@ -1,14 +1,14 @@
 {
   "string": {
-    "ViewMode": "View mode",
-    "Unified": "Unified",
-    "Split": "Split",
-    "Viewed": "Viewed",
-    "ShowDiff": "Show diff",
-    "NoChanges": "File diff has no changes",
-    "LargeDiffsAreHidden": "Large diffs are not rendered by default.",
-    "FileIsTooLarge": "File is too large to be displayed.",
-    "FileWasRenamed": "File was renamed without changes.",
-    "FileWasDeleted": "File was deleted."
+    "ViewMode": "Görünüm modu",
+    "Unified": "Birleşik",
+    "Split": "Bölünmüş",
+    "Viewed": "Görüntülendi",
+    "ShowDiff": "Farkı göster",
+    "NoChanges": "Dosya farkında değişiklik yok",
+    "LargeDiffsAreHidden": "Büyük farklar varsayılan olarak gizlenir.",
+    "FileIsTooLarge": "Dosya görüntülenemeyecek kadar büyük.",
+    "FileWasRenamed": "Dosya değişiklik olmadan yeniden adlandırıldı.",
+    "FileWasDeleted": "Dosya silindi."
   }
 }

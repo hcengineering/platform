@@ -1,10 +1,10 @@
 {
   "string": {
-    "CreatePublicLink": "Create public link",
-    "PublicLink": "Public link",
-    "Revoke": "Revoke",
-    "RevokeConfirmation": "This will cause previously shared link to stop working. Are you sure you want to revoke this public link?",
-    "LinkWasRevoked": "Public link was revoked",
-    "Copy": "Copy"
+    "CreatePublicLink": "Herkese Açık Bağlantı Oluştur",
+    "PublicLink": "Herkese Açık Bağlantı",
+    "Revoke": "İptal Et",
+    "RevokeConfirmation": "Bu işlem, daha önce paylaşılan bağlantının çalışmasını durduracaktır. Bu herkese açık bağlantıyı iptal etmek istediğinizden emin misiniz?",
+    "LinkWasRevoked": "Herkese açık bağlantı iptal edildi",
+    "Copy": "Kopyala"
   }
 }
