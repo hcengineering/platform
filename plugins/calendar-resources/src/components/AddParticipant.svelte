@@ -203,6 +203,7 @@
         bind:value
         placeholder={phTranslate}
         {style}
+        class="search"
         on:input={(ev) => {
           computeSize(ev.target)
         }}

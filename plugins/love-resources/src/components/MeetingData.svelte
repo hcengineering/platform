@@ -22,19 +22,21 @@
 
   export let state: Writable<Record<string, any>>
 
-  function changeRoom (val: Ref<Room>) {
+  function changeRoom (val: Ref<Room>): void {
     $state.room = val
   }
 
-  function changeIsMeeting () {
-    $state.isMeeting = isMeeting
+  function changeIsMeeting (val: boolean): void {
+    $state.isMeeting = val
   }
 
   let isMeeting = false
 </script>
 
 <div class="flex-row-center gap-1-5 mt-1">
-  <CheckBox bind:checked={isMeeting} kind={'primary'} on:value={changeIsMeeting} />
+  <CheckBox bind:checked={isMeeting} kind={'primary'} on:value={(ev) => {
+    changeIsMeeting(ev.detail)
+  }}/>
   <Button
     label={love.string.CreateMeeting}
     kind={'ghost'}
@@ -42,7 +44,7 @@
     justify={'left'}
     on:click={() => {
       isMeeting = !isMeeting
-      changeIsMeeting()
+      changeIsMeeting(isMeeting)
     }}
   />
 </div>
