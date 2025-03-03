@@ -36,9 +36,7 @@ import {
   type Tx,
   type TxCUD,
   type TxResult,
-  type WorkspaceDataId,
-  WorkspaceUuid,
-  systemAccountUuid
+  type WorkspaceDataId
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
@@ -374,10 +372,8 @@ export class ClientSession implements Session {
 
   private getCommunicationCtx (): CommunicationCtx {
     return {
-      socialIds: this.account.socialIds,
       sessionId: this.sessionId,
-      personalWorkspace: '' as WorkspaceUuid, // TODO: add personal workspace
-      isSystem: this.account.uuid === systemAccountUuid
+      account: this.account
     }
   }
 }
