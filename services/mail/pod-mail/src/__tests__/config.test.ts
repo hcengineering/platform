@@ -37,7 +37,6 @@ describe('Config', () => {
     process.env.SMTP_HOST = 'smtp.example.com'
     process.env.SMTP_PORT = '587'
     process.env.SMTP_USERNAME = 'user'
-    // SMTP_PASSWORD is optional
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const loadedConfig = require('../config').default
@@ -73,6 +72,8 @@ describe('Config', () => {
     delete process.env.SES_ACCESS_KEY
     delete process.env.SMTP_HOST
 
-    expect(() => require('../config')).toThrow('Missing env variables for email transfer, please specify SES or SMTP configuration')
+    expect(() => require('../config')).toThrow(
+      'Missing env variables for email transfer, please specify SES or SMTP configuration'
+    )
   })
 })
