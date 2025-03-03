@@ -15,11 +15,6 @@
 
 import { NextFunction, Request, Response } from 'express'
 
-export enum Transport {
-  SES = 'ses',
-  SMTP = 'smtp'
-}
-
 export interface Receivers {
   to: string[]
   cc?: string[]
@@ -30,7 +25,6 @@ export interface Message {
   text: string
   subject: string
   html?: string
-  transport?: Transport | undefined
 }
 
 export type RequestType = 'get' | 'post'

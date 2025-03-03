@@ -16,7 +16,6 @@ import nodemailer, { type Transporter } from 'nodemailer'
 import aws from '@aws-sdk/client-ses'
 
 import type { Config, SmtpConfig, SesConfig } from './config'
-import { Transport } from './types'
 
 function smtp (config: SmtpConfig): Transporter {
   const auth =
@@ -48,11 +47,11 @@ function ses (config: SesConfig): Transporter {
 }
 
 export function getDefaultTransport (config: Config): Transporter {
-  if (config.defaultTransport === Transport.SES && config.sesConfig !== undefined) {
-    return ses(config.sesConfig)
-  }
   if (config.smtpConfig !== undefined) {
     return smtp(config.smtpConfig)
+  }
+  if (config.sesConfig !== undefined) {
+    return ses(config.sesConfig)
   }
   throw new Error('No transport protocol is configured')
 }

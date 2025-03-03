@@ -14,13 +14,10 @@
 //
 import { config as dotenvConfig } from 'dotenv'
 
-import { Transport } from './types'
-
 dotenvConfig()
 
 export interface Config {
   port: number
-  defaultTransport: Transport
   sesConfig?: SesConfig
   smtpConfig?: SmtpConfig
 }
@@ -111,7 +108,6 @@ const config: Config = (() => {
   }
   const params: Config = {
     port,
-    defaultTransport: process.env[envMap.DefaultProtocol] === Transport.SES ? Transport.SES : Transport.SMTP,
     sesConfig: buildSesConfig(),
     smtpConfig: buildSmtpConfig()
   }
