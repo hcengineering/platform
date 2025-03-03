@@ -177,7 +177,7 @@ async function Join (object: Space | Space[]): Promise<void> {
   const objs = Array.isArray(object) ? object : [object]
   const myAccount = getCurrentAccount().uuid
   for (const obj of objs) {
-    if (obj.members.includes(myAccount)) {
+    if (!obj.members.includes(myAccount)) {
       promises.push(client.update(obj, { $push: { members: myAccount } }))
     }
   }
