@@ -15,7 +15,7 @@
 import type { Asset, IntlString, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { BenchmarkDoc } from './benchmark'
-import { AccountRole, Mixin, Version, type Rank } from '.'
+import { AccountRole } from './classes'
 import type {
   Account,
   AnyAttribute,
@@ -38,10 +38,12 @@ import type {
   Interface,
   MarkupBlobRef,
   MigrationState,
+  Mixin,
   Obj,
   Permission,
   PersonId,
   PluginConfiguration,
+  Rank,
   Ref,
   RefTo,
   RelatedDocument,
@@ -58,7 +60,8 @@ import type {
   TypeAny,
   TypedSpace,
   UserStatus,
-  PersonUuid
+  PersonUuid,
+  Version
 } from './classes'
 import { Status, StatusCategory } from './status'
 import type {

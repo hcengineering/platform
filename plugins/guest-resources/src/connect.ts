@@ -1,18 +1,18 @@
 import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
+import { setCurrentEmployee, type Employee } from '@hcengineering/contact'
 import core, {
-  type Account,
   ClientConnectEvent,
   concatLink,
   setCurrentAccount,
   versionToString,
+  type Account,
   type Client,
-  type Version,
+  type PersonId,
   type Ref,
-  type PersonId
+  type Version
 } from '@hcengineering/core'
-import { setCurrentEmployee, type Employee } from '@hcengineering/contact'
-import login, { loginId } from '@hcengineering/login'
+import login from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
   loadServerConfig,
@@ -21,11 +21,13 @@ import presentation, {
   setPresentationCookie,
   upgradeDownloadProgress
 } from '@hcengineering/presentation'
-import { desktopPlatform, getCurrentLocation, navigate } from '@hcengineering/ui'
+import { desktopPlatform, getCurrentLocation } from '@hcengineering/ui'
 import { logOut } from '@hcengineering/workbench'
-import { writable, get } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 
 export const versionError = writable<string | undefined>(undefined)
+
+export const invalidError = writable<boolean>(false)
 const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
@@ -37,9 +39,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   const token = loc.query?.token
   const wsUrl = loc.path[1]
   if (wsUrl === undefined || token == null) {
-    navigate({
-      path: [loginId]
-    })
+    invalidError.set(true)
     return
   }
 
@@ -51,7 +51,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     )
     // something went wrong with selecting workspace with the selected token
     await logOut()
-    navigate({ path: [loginId] })
+    invalidError.set(true)
     return
   }
 
@@ -118,10 +118,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     },
     onUnauthorized: () => {
       void logOut().then(() => {
-        navigate({
-          path: [loginId],
-          query: {}
-        })
+        invalidError.set(true)
       })
     },
     // We need to refresh all active live queries and clear old queries.
@@ -224,6 +221,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
 
+  invalidError.set(false)
   versionError.set(undefined)
   // Update window title
   document.title = [wsUrl, title].filter((it) => it).join(' - ')

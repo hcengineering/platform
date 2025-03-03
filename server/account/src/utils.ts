@@ -1193,7 +1193,7 @@ export async function getInviteEmail (
 ): Promise<EmailInfo> {
   const front = getFrontUrl(branding)
   const link = concatLink(front, `/login/join?inviteId=${inviteId}`)
-  const ws = workspace.name !== '' ? workspace.name : workspace.url
+  const ws = (workspace.name !== '' ? workspace.name : workspace.url).replace(/[<>/]/g, '').slice(0, 40)
   const lang = branding?.language
 
   return {
