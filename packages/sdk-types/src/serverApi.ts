@@ -17,19 +17,15 @@ import type {
   FindMessagesGroupsParams,
   FindMessagesParams,
   Message,
-  MessagesGroup,
-  SocialID,
-  WorkspaceID
+  MessagesGroup
 } from '@hcengineering/communication-types'
+import type { Account } from '@hcengineering/core'
 
 import type { EventResult, RequestEvent } from './requestEvent.ts'
 
 export interface ConnectionInfo {
   sessionId: string
-  personalWorkspace: WorkspaceID
-  socialIds: SocialID[]
-  //TODO: AccountUUID
-  account: string
+  account: Account
 }
 
 export interface ServerApi {

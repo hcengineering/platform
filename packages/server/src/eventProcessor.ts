@@ -61,7 +61,7 @@ import {
   type RemoveMessagesGroupEvent,
   type MessagesGroupCreatedEvent
 } from '@hcengineering/communication-sdk-types'
-import { systemAccountUuid } from '@hcengineering/core'
+import { systemAccountUuid, type Account } from '@hcengineering/core'
 
 export interface Result {
   responseEvent?: ResponseEvent
@@ -114,7 +114,7 @@ export class EventProcessor {
   }
 
   private async createMessage(event: CreateMessageEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info, event.creator)
+    this.checkCreator(info.account, event.creator)
 
     const created = new Date()
     const id = await this.db.createMessage(event.card, event.content, event.creator, created)
@@ -138,7 +138,7 @@ export class EventProcessor {
   }
 
   private async createPatch(event: CreatePatchEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info, event.creator)
+    this.checkCreator(info.account, event.creator)
     const created = new Date()
     await this.db.createPatch(event.card, event.message, PatchType.update, event.content, event.creator, created)
 
@@ -161,7 +161,7 @@ export class EventProcessor {
   }
 
   private async removeMessage(event: RemoveMessageEvent, info: ConnectionInfo): Promise<Result> {
-    const socialIds = systemAccountUuid === info.account ? undefined : info.socialIds
+    const socialIds = systemAccountUuid === info.account.uuid ? undefined : info.account.socialIds
     await this.db.removeMessage(event.card, event.message, socialIds)
 
     const responseEvent: MessageRemovedEvent = {
@@ -177,7 +177,7 @@ export class EventProcessor {
   }
 
   private async removeMessages(event: RemoveMessagesEvent, info: ConnectionInfo): Promise<Result> {
-    if (systemAccountUuid !== info.account) {
+    if (systemAccountUuid !== info.account.uuid) {
       throw new Error('Forbidden')
     }
     await this.db.removeMessages(event.card, event.fromId, event.toId)
@@ -188,7 +188,7 @@ export class EventProcessor {
   }
 
   private async removePatches(event: RemovePatchesEvent, info: ConnectionInfo): Promise<Result> {
-    if (systemAccountUuid !== info.account) {
+    if (systemAccountUuid !== info.account.uuid) {
       throw new Error('Forbidden')
     }
     await this.db.removePatches(event.card, event.fromId, event.toId)
@@ -199,7 +199,7 @@ export class EventProcessor {
   }
 
   private async createReaction(event: CreateReactionEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info, event.creator)
+    this.checkCreator(info.account, event.creator)
     const created = new Date()
     await this.db.createReaction(event.card, event.message, event.reaction, event.creator, created)
 
@@ -221,7 +221,7 @@ export class EventProcessor {
   }
 
   private async removeReaction(event: RemoveReactionEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info, event.creator)
+    this.checkCreator(info.account, event.creator)
     await this.db.removeReaction(event.card, event.message, event.reaction, event.creator)
     const responseEvent: ReactionRemovedEvent = {
       type: ResponseEventType.ReactionRemoved,
@@ -237,7 +237,7 @@ export class EventProcessor {
   }
 
   private async createAttachment(event: CreateAttachmentEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info, event.creator)
+    this.checkCreator(info.account, event.creator)
     const created = new Date()
     await this.db.createAttachment(event.message, event.card, event.creator, created)
 
@@ -283,12 +283,15 @@ export class EventProcessor {
     }
   }
 
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async removeNotification(event: RemoveNotificationEvent, info: ConnectionInfo): Promise<Result> {
     await this.db.removeNotification(event.message, event.context)
 
     const responseEvent: NotificationRemovedEvent = {
       type: ResponseEventType.NotificationRemoved,
-      personalWorkspace: info.personalWorkspace,
+      // personalWorkspace: info.personalWorkspace,
+      // TODO: add personal workspace
+      personalWorkspace: '' as WorkspaceID,
       message: event.message,
       context: event.context
     }
@@ -300,15 +303,18 @@ export class EventProcessor {
 
   private async createNotificationContext(
     event: CreateNotificationContextEvent,
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     info: ConnectionInfo
   ): Promise<Result> {
-    const id = await this.db.createContext(info.personalWorkspace, event.card, event.lastView, event.lastUpdate)
+    // TODO: add personal workspace
+    const personalWorkspace = '' as WorkspaceID
+    const id = await this.db.createContext(personalWorkspace, event.card, event.lastView, event.lastUpdate)
     const responseEvent: NotificationContextCreatedEvent = {
       type: ResponseEventType.NotificationContextCreated,
       context: {
         id,
         workspace: this.workspace,
-        personalWorkspace: info.personalWorkspace,
+        personalWorkspace,
         card: event.card,
         lastView: event.lastView,
         lastUpdate: event.lastUpdate
@@ -322,12 +328,15 @@ export class EventProcessor {
 
   private async removeNotificationContext(
     event: RemoveNotificationContextEvent,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     info: ConnectionInfo
   ): Promise<Result> {
     await this.db.removeContext(event.context)
     const responseEvent: NotificationContextRemovedEvent = {
       type: ResponseEventType.NotificationContextRemoved,
-      personalWorkspace: info.personalWorkspace,
+      // personalWorkspace: info.personalWorkspace,
+      // TODO: add personal workspace
+      personalWorkspace: '' as WorkspaceID,
       context: event.context
     }
     return {
@@ -336,12 +345,15 @@ export class EventProcessor {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async updateNotificationContext(event: UpdateNotificationContextEvent, info: ConnectionInfo): Promise<Result> {
     await this.db.updateContext(event.context, event.update)
 
     const responseEvent: NotificationContextUpdatedEvent = {
       type: ResponseEventType.NotificationContextUpdated,
-      personalWorkspace: info.personalWorkspace,
+      // personalWorkspace: info.personalWorkspace,
+      // TODO: add personal workspace
+      personalWorkspace: '' as WorkspaceID,
       context: event.context,
       update: event.update
     }
@@ -352,7 +364,7 @@ export class EventProcessor {
   }
 
   async createMessagesGroup(event: CreateMessagesGroupEvent, info: ConnectionInfo): Promise<Result> {
-    if (systemAccountUuid !== info.account) {
+    if (systemAccountUuid !== info.account.uuid) {
       throw new Error('Forbidden')
     }
     const { fromDate, toDate, count, fromId, toId, card, blobId } = event.group
@@ -377,7 +389,7 @@ export class EventProcessor {
   }
 
   async removeMessagesGroup(event: RemoveMessagesGroupEvent, info: ConnectionInfo): Promise<Result> {
-    if (systemAccountUuid !== info.account) {
+    if (systemAccountUuid !== info.account.uuid) {
       throw new Error('Forbidden')
     }
     await this.db.removeMessagesGroup(event.card, event.blobId)
@@ -408,8 +420,8 @@ export class EventProcessor {
     }
   }
 
-  private checkCreator(info: ConnectionInfo, creator: SocialID): void {
-    if (!info.socialIds.includes(creator) && systemAccountUuid !== info.account) {
+  private checkCreator(account: Account, creator: SocialID): void {
+    if (!account.socialIds.includes(creator) && systemAccountUuid !== account.uuid) {
       throw new Error('Forbidden')
     }
   }

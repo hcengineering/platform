@@ -16,7 +16,7 @@
     },
     "packages/client-query": {
       "name": "@hcengineering/communication-client-query",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-query": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -32,7 +32,7 @@
     },
     "packages/client-sqlite": {
       "name": "@hcengineering/communication-client-sqlite",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-sqlite-wasm": "workspace:*",
@@ -48,7 +48,7 @@
     },
     "packages/client-ws": {
       "name": "@hcengineering/communication-client-ws",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-client-query": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -64,7 +64,7 @@
     },
     "packages/cockroach": {
       "name": "@hcengineering/communication-cockroach",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -81,7 +81,7 @@
     },
     "packages/examples": {
       "name": "@hcengineering/communication-examples",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-client-ws": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -95,7 +95,7 @@
     },
     "packages/query": {
       "name": "@hcengineering/communication-query",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -112,9 +112,10 @@
     },
     "packages/sdk-types": {
       "name": "@hcengineering/communication-sdk-types",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-types": "workspace:*",
+        "@hcengineering/core": "0.7.15",
       },
       "devDependencies": {
         "@types/bun": "^1.1.14",
@@ -125,13 +126,13 @@
     },
     "packages/server": {
       "name": "@hcengineering/communication-server",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-cockroach": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
-        "@hcengineering/core": "0.7.2",
-        "@hcengineering/server-token": "0.7.2",
+        "@hcengineering/core": "0.7.15",
+        "@hcengineering/server-token": "0.7.15",
       },
       "devDependencies": {
         "@types/bun": "^1.1.14",
@@ -145,7 +146,7 @@
     },
     "packages/shared": {
       "name": "@hcengineering/communication-shared",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-types": "workspace:*",
         "js-yaml": "^4.1.0",
@@ -160,7 +161,7 @@
     },
     "packages/sqlite-wasm": {
       "name": "@hcengineering/communication-sqlite-wasm",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -177,10 +178,10 @@
     },
     "packages/types": {
       "name": "@hcengineering/communication-types",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "dependencies": {
-        "@hcengineering/card": "0.7.2",
-        "@hcengineering/core": "0.7.2",
+        "@hcengineering/card": "0.7.15",
+        "@hcengineering/core": "0.7.15",
       },
       "devDependencies": {
         "@types/bun": "^1.1.14",
@@ -221,9 +222,9 @@
 
     "@formatjs/intl-localematcher": ["@formatjs/intl-localematcher@0.6.0", "", { "dependencies": { "tslib": "2" } }, "sha512-4rB4g+3hESy1bHSBG3tDFaMY2CH67iT7yne1e+0CLTsGLDcmoEWWpJjjpWVaYgYfYuohIRuo0E+N536gd2ZHZA=="],
 
-    "@hcengineering/analytics": ["@hcengineering/analytics@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/analytics/0.7.2/6169c108c11d7903a30eca0e09dfc79facdc1170", { "dependencies": { "@hcengineering/platform": "^0.7.2" } }, "sha512-2+6O2f3yrrtho0SXVSTd44t2RFOdeR6v9IXimYhyvy+vQaj6i5W2i5rGNyxjS7wZj7u/ft/LwcusbL+yvR7rQA=="],
+    "@hcengineering/analytics": ["@hcengineering/analytics@0.7.15", "https://npm.pkg.github.com/download/@hcengineering/analytics/0.7.15/46f0006d8f4ba8ec04105770e6418251def15296", { "dependencies": { "@hcengineering/platform": "^0.7.15" } }, "sha512-U+tswirTFX0z7Sr51zfOEXbtrtfnf2xLzWTIrPip929g+oULJjCKMqoh+3HHVCF4HFm97x0P3qaRtW2hLgxyAQ=="],
 
-    "@hcengineering/card": ["@hcengineering/card@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/card/0.7.2/f4f615f288a91cc875a6c20d75f8383010328003", { "dependencies": { "@hcengineering/core": "^0.7.2", "@hcengineering/platform": "^0.7.2", "@hcengineering/ui": "^0.7.2" } }, "sha512-e1H1Q6ncH+wyXXD9nLNjADd+6TFaPBuWywuP2gLPYubHPlJyeB7KVCIt81H+3axKTTDLCMjKqWpBXKHawcK5pQ=="],
+    "@hcengineering/card": ["@hcengineering/card@0.7.15", "https://npm.pkg.github.com/download/@hcengineering/card/0.7.15/70ba947306289e9ec1719ec4670abb5abadd9a74", { "dependencies": { "@hcengineering/core": "^0.7.15", "@hcengineering/platform": "^0.7.15", "@hcengineering/ui": "^0.7.15" } }, "sha512-xIM9UwFqhyjD9EJs0egn4kf3Q9Br8+spYHkzNl+5IPdL5d5itDIuy5HS9ng6XZ1BXApauo8MTl1DcaqJMneNbw=="],
 
     "@hcengineering/communication-client-query": ["@hcengineering/communication-client-query@workspace:packages/client-query"],
 
@@ -247,15 +248,15 @@
 
     "@hcengineering/communication-types": ["@hcengineering/communication-types@workspace:packages/types"],
 
-    "@hcengineering/core": ["@hcengineering/core@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/core/0.7.2/4c8d66ef6468b2ed9d4d43857b11a78f6e71d48f", { "dependencies": { "@hcengineering/analytics": "^0.7.2", "@hcengineering/platform": "^0.7.2", "fast-equals": "^5.2.2" } }, "sha512-K8wg4c3hkn98wo/C+lS9z3QD35lIgUc0APpzOE0La6XFeV06H4Iztgvd4xR/IgVGRX3tFbyycsJcSgQXj/Z/Kw=="],
+    "@hcengineering/core": ["@hcengineering/core@0.7.15", "https://npm.pkg.github.com/download/@hcengineering/core/0.7.15/785cb20f9adc4a3a3c2179a0ae38316f4b4f933f", { "dependencies": { "@hcengineering/analytics": "^0.7.15", "@hcengineering/platform": "^0.7.15", "fast-equals": "^5.2.2" } }, "sha512-YhRRdtcSuNSQUdh4TO5u3u/w/vE7fcildc51wnL7Erw7VZ1rVANEx9a3mScnViVH89xw0oAcfDAm/AbH5+EZcQ=="],
 
-    "@hcengineering/platform": ["@hcengineering/platform@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/platform/0.7.2/854c94ef4607aba2306ec92a32f41cce30139de5", { "dependencies": { "intl-messageformat": "^10.7.14" } }, "sha512-RtUWhC0MPjFABojyOSGoOCLZGPVKiZkfZB9n+7Mwbc7tBznVQKeXBBOVUq6QpC50cLyx7ce8WVJBNVIpggwaeQ=="],
+    "@hcengineering/platform": ["@hcengineering/platform@0.7.15", "https://npm.pkg.github.com/download/@hcengineering/platform/0.7.15/3e6c41c4abfd6425be49d9b31afef627dcafa4cb", { "dependencies": { "intl-messageformat": "^10.7.14" } }, "sha512-zv6afaQVu/T0MXrWch8JaxdVjLSUHDpIx3jgY1JE5xSy+FN8bjC30FR/RGavuMtm4z25rFsZQRPfr4qmZYZirQ=="],
 
-    "@hcengineering/server-token": ["@hcengineering/server-token@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/server-token/0.7.2/2bf94b717348f9ce7256fd3a3fec39869c044e4e", { "dependencies": { "@hcengineering/core": "^0.7.2", "@hcengineering/platform": "^0.7.2", "jwt-simple": "^0.5.6" } }, "sha512-WcGkUOhJJvRZZbPYSIuG0S57r5f1sgrQEm+kz8D2Ki4C+RMEwWYjRCYyZhWiE9QxbetBJtcwneKI+jfpDItvag=="],
+    "@hcengineering/server-token": ["@hcengineering/server-token@0.7.15", "https://npm.pkg.github.com/download/@hcengineering/server-token/0.7.15/5443096926f96919ed8ed748e90e3474137519ec", { "dependencies": { "@hcengineering/core": "^0.7.15", "@hcengineering/platform": "^0.7.15", "jwt-simple": "^0.5.6" } }, "sha512-XEh0nDSSxMn34a9AHeXIgRh6iO025hKmGNXLZlXnm4kRIYODzMLhigds2H/RvmUjznfUTm9Bpy3EFLq9WFmzWg=="],
 
-    "@hcengineering/theme": ["@hcengineering/theme@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/theme/0.7.2/a6f832fd9ddbb3e5683f361e54d8bb4f3e096be8", { "dependencies": { "@hcengineering/analytics": "^0.7.2", "@hcengineering/platform": "^0.7.2", "svelte": "^4.2.19" } }, "sha512-Sqrt6ETmBKGk8SiSD/gvfitqP1GUaSpfiGy4I7xaAgXuyeWENni+YJ9x4C+9yTWT7caRnKu5WKbv/zN1PpWuqg=="],
+    "@hcengineering/theme": ["@hcengineering/theme@0.7.15", "https://npm.pkg.github.com/download/@hcengineering/theme/0.7.15/f02e70ea8421f0cd3e5b52c34ee69488d361b3e6", { "dependencies": { "@hcengineering/analytics": "^0.7.15", "@hcengineering/platform": "^0.7.15", "svelte": "^4.2.19" } }, "sha512-d+rX4Jp4J4YELBi763M5Zfe+3x5gyQjV1NcuP1GIvSCe9tXNboKEp5X2SPdqFlP1sBfE5sgVECIAtmZkhMAqcQ=="],
 
-    "@hcengineering/ui": ["@hcengineering/ui@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/ui/0.7.2/40ec34d2d251af4ad2b8a26aa89c12894cbe5eda", { "dependencies": { "@hcengineering/analytics": "^0.7.2", "@hcengineering/core": "^0.7.2", "@hcengineering/platform": "^0.7.2", "@hcengineering/theme": "^0.7.2", "autolinker": "4.0.0", "date-fns": "^2.30.0", "date-fns-tz": "^2.0.0", "dompurify": "^3.1.6", "emoji-regex": "^10.1.0", "fast-equals": "^5.2.2", "svelte": "^4.2.19" } }, "sha512-5t6JFO65Tm6iZqveEvBjfTM8DDZ9ca9uBXj7GbtfTD/1K8WC1Yf3REsNDW2I9DFYzxKPBayx9M4TRrJBseHlWg=="],
+    "@hcengineering/ui": ["@hcengineering/ui@0.7.15", "https://npm.pkg.github.com/download/@hcengineering/ui/0.7.15/8462766246888da93d3f51e19e0b11d7c40312f6", { "dependencies": { "@hcengineering/analytics": "^0.7.15", "@hcengineering/core": "^0.7.15", "@hcengineering/platform": "^0.7.15", "@hcengineering/theme": "^0.7.15", "autolinker": "4.0.0", "date-fns": "^2.30.0", "date-fns-tz": "^2.0.0", "dompurify": "^3.1.6", "emojibase": "^16.0.0", "fast-equals": "^5.2.2", "hls.js": "^1.5.20", "svelte": "^4.2.19" } }, "sha512-OkllPX5wH3eJ3WSEzr+PJ0H8H2ZyXWGNHdUmwQSPW6UTZqAYia9WtCVO3sxR7SMtZtjAnKPitRycSG4Q/z8GVA=="],
 
     "@humanfs/core": ["@humanfs/core@0.19.1", "", {}, "sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA=="],
 
@@ -393,7 +394,7 @@
 
     "dompurify": ["dompurify@3.2.4", "", { "optionalDependencies": { "@types/trusted-types": "^2.0.7" } }, "sha512-ysFSFEDVduQpyhzAob/kkuJjf5zWkZD8/A9ywSp1byueyuCfHamrCBa14/Oc2iiB0e51B+NpxSl5gmzn+Ms/mg=="],
 
-    "emoji-regex": ["emoji-regex@10.4.0", "", {}, "sha512-EC+0oUMY1Rqm4O6LLrgjtYDvcVYTy7chDnM4Q7030tP4Kwj3u/pR6gP9ygnp2CJMK5Gq+9Q2oqmrFJAz01DXjw=="],
+    "emojibase": ["emojibase@16.0.0", "", {}, "sha512-Nw2m7JLIO4Ou2X/yZPRNscHQXVbbr6SErjkJ7EooG7MbR3yDZszCv9KTizsXFc7yZl0n3WF+qUKIC/Lw6H9xaQ=="],
 
     "escape-string-regexp": ["escape-string-regexp@4.0.0", "", {}, "sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA=="],
 
@@ -450,6 +451,8 @@
     "graphemer": ["graphemer@1.4.0", "", {}, "sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag=="],
 
     "has-flag": ["has-flag@4.0.0", "", {}, "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="],
+
+    "hls.js": ["hls.js@1.5.20", "", {}, "sha512-uu0VXUK52JhihhnN/MVVo1lvqNNuhoxkonqgO3IpjvQiGpJBdIXMGkofjQb/j9zvV7a1SW8U9g1FslWx/1HOiQ=="],
 
     "ignore": ["ignore@5.3.2", "", {}, "sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g=="],
 

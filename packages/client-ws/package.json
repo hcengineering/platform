@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-client-ws",
-  "version": "0.1.60",
+  "version": "0.1.61",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",

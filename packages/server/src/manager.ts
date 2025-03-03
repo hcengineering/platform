@@ -45,7 +45,6 @@ type QueryType = 'message' | 'notification' | 'context'
 export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
 
 interface SessionInfo {
-  personalWorkspace: string
   messageQueries: Map<QueryId, FindMessagesParams>
   notificationQueries: Map<QueryId, FindNotificationsParams>
   contextQueries: Map<QueryId, FindNotificationContextParams>
@@ -90,9 +89,8 @@ export class Manager {
   }
 
   subscribeQuery(info: ConnectionInfo, type: QueryType, queryId: number, params: Record<string, any>): void {
-    const { sessionId, personalWorkspace } = info
+    const { sessionId } = info
     const data = this.dataBySessionId.get(sessionId) ?? {
-      personalWorkspace,
       messageQueries: new Map(),
       notificationQueries: new Map(),
       contextQueries: new Map()
@@ -189,21 +187,26 @@ export class Manager {
           Array.from(info.messageQueries.values())
         )
       case ResponseEventType.NotificationCreated:
-        return (
-          info.personalWorkspace === event.personalWorkspace &&
-          this.matchNotificationQuery(event, Array.from(info.notificationQueries.values()))
-        )
+        // return (
+        //   info.personalWorkspace === event.personalWorkspace &&
+        //   this.matchNotificationQuery(event, Array.from(info.notificationQueries.values()))
+        // )
+        return false
       case ResponseEventType.NotificationRemoved:
-        return info.personalWorkspace === event.personalWorkspace && info.notificationQueries.size > 0
+        // return info.personalWorkspace === event.personalWorkspace && info.notificationQueries.size > 0
+        return false
       case ResponseEventType.NotificationContextCreated:
-        return (
-          info.personalWorkspace === event.context.personalWorkspace &&
-          this.matchContextQuery(event, Array.from(info.contextQueries.values()))
-        )
+        // return (
+        //   info.personalWorkspace === event.context.personalWorkspace &&
+        //   this.matchContextQuery(event, Array.from(info.contextQueries.values()))
+        // )
+        return false
       case ResponseEventType.NotificationContextRemoved:
-        return info.personalWorkspace === event.personalWorkspace && info.contextQueries.size > 0
+        // return info.personalWorkspace === event.personalWorkspace && info.contextQueries.size > 0
+        return false
       case ResponseEventType.NotificationContextUpdated:
-        return info.personalWorkspace === event.personalWorkspace && info.contextQueries.size > 0
+        // return info.personalWorkspace === event.personalWorkspace && info.contextQueries.size > 0
+        return false
       case ResponseEventType.MessagesGroupCreated:
         return false
     }

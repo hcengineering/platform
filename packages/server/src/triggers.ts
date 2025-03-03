@@ -69,7 +69,7 @@ export class Triggers {
     if (thread === undefined) return []
 
     const date = new Date()
-    const socialId = info.socialIds[0]
+    const socialId = info.account.primarySocialId
 
     const patch: Patch = {
       message: thread.message,
