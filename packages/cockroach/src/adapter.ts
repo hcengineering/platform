@@ -42,6 +42,7 @@ import { MessagesDb } from './db/message'
 import { NotificationsDb } from './db/notification'
 import { connect, type PostgresClientReference } from './connection'
 import { type Options, type Logger, type SqlClient } from './types'
+import { injectVars } from './utils.ts'
 
 export class CockroachAdapter implements DbAdapter {
   private readonly message: MessagesDb
@@ -267,7 +268,8 @@ class CockroachClient implements SqlClient {
   ) {}
 
   async execute<T extends any[] = (Row & Iterable<Row>)[]>(query: string, params?: ParameterOrJSON<any>[]): Promise<T> {
-    return await this.sql.unsafe<T>(query, params)
+    const sql = params !== undefined && params.length > 0 ? injectVars(query, params) : query
+    return await this.sql.unsafe<T>(sql)
   }
 
   close(): void {

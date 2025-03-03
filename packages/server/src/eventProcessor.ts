@@ -58,7 +58,8 @@ import {
   type CreateThreadEvent,
   type ConnectionInfo,
   type RemovePatchesEvent,
-  type RemoveMessagesGroupEvent
+  type RemoveMessagesGroupEvent,
+  type MessagesGroupCreatedEvent
 } from '@hcengineering/communication-sdk-types'
 
 export interface Result {
@@ -356,8 +357,20 @@ export class EventProcessor {
     const { fromDate, toDate, count, fromId, toId, card, blobId } = event.group
     await this.db.createMessagesGroup(card, blobId, fromDate, toDate, fromId, toId, count)
 
+    const responseEvent: MessagesGroupCreatedEvent = {
+      type: ResponseEventType.MessagesGroupCreated,
+      group: {
+        card,
+        blobId,
+        fromDate,
+        toDate,
+        fromId,
+        toId,
+        count
+      }
+    }
     return {
-      responseEvent: undefined,
+      responseEvent,
       result: {}
     }
   }

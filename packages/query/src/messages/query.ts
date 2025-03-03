@@ -134,6 +134,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
         .then(() => this.notify())
         .catch((error) => {
           console.error('Failed to load messages', error)
+          void this.notify()
         })
     }
   }
@@ -146,6 +147,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
         .then(() => this.notify())
         .catch((error) => {
           console.error('Failed to load messages', error)
+          void this.notify()
         })
     }
   }
@@ -567,7 +569,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
     const messageId = BigInt(patch.message)
     const group = this.groupsBuffer.find((it) => BigInt(it.fromId) <= messageId && BigInt(it.toId) >= messageId)
 
-    if (group != null) {
+    if (group != null  && group.patches != null) {
       group.patches.push(patch)
     }
 

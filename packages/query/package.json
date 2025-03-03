@@ -1,14 +1,18 @@
 {
   "name": "@hcengineering/communication-query",
-  "version": "0.1.47",
+  "version": "0.1.59",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
-  "type": "module",
   "files": [
     "dist/index.js",
+    "dist/index.cjs",
     "types/**/*.d.ts"
   ],
+  "scripts": {
+    "bundle": "bun run bundle:browser",
+    "bundle:browser": "bun build src/index.ts --outdir dist --target browser"
+  },
   "devDependencies": {
     "@types/bun": "^1.1.14",
     "@types/crypto-js": "^4.2.2"

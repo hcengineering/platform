@@ -37,6 +37,7 @@ import type { MeasureContext } from '@hcengineering/core'
 
 import { Triggers } from './triggers'
 import { EventProcessor } from './eventProcessor'
+import type { Metadata } from './metadata.ts'
 
 type QueryId = number | string
 type QueryType = 'message' | 'notification' | 'context'
@@ -57,12 +58,13 @@ export class Manager {
 
   constructor(
     private readonly ctx: MeasureContext,
+    private readonly metadata: Metadata,
     private readonly db: DbAdapter,
     private readonly workspace: WorkspaceID,
     private readonly broadcast: BroadcastSessionsFunc
   ) {
     this.eventProcessor = new EventProcessor(db, this.workspace)
-    this.triggers = new Triggers(db, this.workspace)
+    this.triggers = new Triggers(this.metadata, db, this.workspace)
   }
 
   async findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: number): Promise<Message[]> {
@@ -136,7 +138,11 @@ export class Manager {
     }
 
     if (sessionIds.length > 0) {
-      this.broadcast(this.ctx, sessionIds, event)
+      try {
+        this.broadcast(this.ctx, sessionIds, event)
+      } catch (e) {
+        console.error(e)
+      }
     }
   }
 
@@ -198,6 +204,8 @@ export class Manager {
         return info.personalWorkspace === event.personalWorkspace && info.contextQueries.size > 0
       case ResponseEventType.NotificationContextUpdated:
         return info.personalWorkspace === event.personalWorkspace && info.contextQueries.size > 0
+      case ResponseEventType.MessagesGroupCreated:
+        return false
     }
   }
 

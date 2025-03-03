@@ -1,14 +1,19 @@
 {
   "name": "@hcengineering/communication-shared",
-  "version": "0.1.47",
-  "main": "dist/index.js",
+  "version": "0.1.59",
+  "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
-  "type": "module",
   "files": [
     "dist/index.js",
+    "dist/index.cjs",
     "types/**/*.d.ts"
   ],
+  "scripts": {
+    "bundle": "bun run bundle:browser && bun run bundle:node",
+    "bundle:browser": "bun build src/index.ts --outdir dist --target browser",
+    "bundle:node": "bun build src/index.ts --target node --format cjs --outfile dist/index.cjs"
+  },
   "devDependencies": {
     "@types/bun": "^1.1.14",
     "@types/js-yaml": "^4.0.9"

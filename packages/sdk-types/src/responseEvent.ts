@@ -25,7 +25,8 @@ import type {
   Reaction,
   SocialID,
   Notification,
-  Thread
+  Thread,
+  MessagesGroup
 } from '@hcengineering/communication-types'
 
 export enum ResponseEventType {
@@ -37,6 +38,7 @@ export enum ResponseEventType {
   AttachmentCreated = 'attachmentCreated',
   AttachmentRemoved = 'attachmentRemoved',
   ThreadCreated = 'threadCreated',
+  MessagesGroupCreated = 'messagesGroupCreated',
   NotificationCreated = 'notificationCreated',
   NotificationRemoved = 'notificationRemoved',
   NotificationContextCreated = 'notificationContextCreated',
@@ -58,6 +60,7 @@ export type ResponseEvent =
   | NotificationContextRemovedEvent
   | NotificationContextUpdatedEvent
   | ThreadCreatedEvent
+  | MessagesGroupCreatedEvent
 
 export interface MessageCreatedEvent {
   type: ResponseEventType.MessageCreated
@@ -101,6 +104,11 @@ export interface AttachmentRemovedEvent {
   card: CardID
   message: MessageID
   attachment: CardID
+}
+
+export interface MessagesGroupCreatedEvent {
+  type: ResponseEventType.MessagesGroupCreated
+  group: MessagesGroup
 }
 
 export interface ThreadCreatedEvent {

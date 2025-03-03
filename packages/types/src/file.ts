@@ -42,7 +42,6 @@ export interface FileThread {
   thread: CardID
   repliesCount: number
   lastReply: Date
-  replied: SocialID[]
 }
 
 export interface ParsedFile {

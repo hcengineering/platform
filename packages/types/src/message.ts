@@ -46,7 +46,7 @@ export interface MessagesGroup {
   fromDate: Date
   toDate: Date
   count: number
-  patches: Patch[]
+  patches?: Patch[]
 }
 
 export interface Patch {

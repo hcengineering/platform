@@ -1,10 +1,9 @@
 {
   "name": "@hcengineering/communication",
-  "type": "module",
   "workspaces": ["packages/*"],
   "scripts": {
     "publish": "sh scripts/publish.sh",
-    "build": "sh scripts/build.sh && tsc --noEmit",
+    "bundle": "sh scripts/bundle.sh && tsc --noEmit",
     "lint": "eslint packages/**/src/*.ts",
     "format": "prettier --write packages/**/src/*.ts && bun run lint"
   },
@@ -15,7 +14,7 @@
     "eslint": "^9.21.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.3",
-    "prettier": "^3.5.2",
+    "prettier": "^3.5.3",
     "typescript-eslint": "^8.25.0"
   }
 }

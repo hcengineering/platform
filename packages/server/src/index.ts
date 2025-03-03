@@ -31,17 +31,19 @@ import type {
 } from '@hcengineering/communication-sdk-types'
 
 import { Manager, type BroadcastSessionsFunc } from './manager'
+import { getMetadata, type Metadata } from './metadata'
 
 export class Api implements ServerApi {
   private readonly manager: Manager
 
   private constructor(
     private readonly ctx: MeasureContext,
+    protected readonly metadata: Metadata,
     private readonly workspace: WorkspaceID,
     private readonly db: DbAdapter,
     private readonly broadcast: BroadcastSessionsFunc
   ) {
-    this.manager = new Manager(this.ctx, this.db, this.workspace, this.broadcast)
+    this.manager = new Manager(this.ctx, this.metadata, this.db, this.workspace, this.broadcast)
   }
 
   static async create(
@@ -51,7 +53,8 @@ export class Api implements ServerApi {
     broadcast: BroadcastSessionsFunc
   ): Promise<Api> {
     const db = await createDbAdapter(dbUrl, workspace, ctx, { withLogs: true })
-    return new Api(ctx, workspace, db, broadcast)
+    const metadata = getMetadata()
+    return new Api(ctx, metadata, workspace, db, broadcast)
   }
 
   async findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: number): Promise<Message[]> {

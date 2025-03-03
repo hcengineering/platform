@@ -33,26 +33,7 @@ export async function loadGroupFile(
   const url = getFileUrl(workspace, filesUrl, group.blobId)
 
   const file = await retry(() => fetchFile(url), options)
-  const [metadata, messages] = yaml.loadAll(file) as [FileMetadata, FileMessage[]]
-
-  return {
-    metadata,
-    messages: messages.map((message) => ({
-      id: message.id,
-      card: metadata.card,
-      content: message.content,
-      edited: message.edited,
-      creator: message.creator,
-      created: message.created,
-      attachments: [],
-      reactions: message.reactions.map((reaction) => ({
-        message: message.id,
-        reaction: reaction.reaction,
-        creator: reaction.creator,
-        created: reaction.created
-      }))
-    }))
-  }
+  return parseYaml(file)
 }
 
 async function fetchFile(url: string): Promise<string> {
@@ -60,6 +41,10 @@ async function fetchFile(url: string): Promise<string> {
 
   if (!res.ok) {
     throw new Error(`Failed to fetch file: ${res.statusText}`)
+  }
+
+  if (res.body == null) {
+    throw new Error('Missing response body')
   }
 
   return await res.text()
@@ -70,4 +55,36 @@ function getFileUrl(workspace: WorkspaceID, urlTemplate: string, file: string): 
     .replaceAll(':filename', encodeURIComponent(file))
     .replaceAll(':workspace', encodeURIComponent(workspace))
     .replaceAll(':blobId', encodeURIComponent(file))
+}
+
+export function parseYaml(data: string): ParsedFile {
+  const [metadata, messages] = yaml.loadAll(data) as [FileMetadata, FileMessage[]]
+
+  return {
+    metadata,
+    messages: messages.map((message) => ({
+      id: message.id,
+      card: metadata.card,
+      content: message.content,
+      edited: message.edited,
+      creator: message.creator,
+      created: message.created,
+      thread: message.thread
+        ? {
+            card: metadata.card,
+            message: message.id,
+            thread: message.thread.thread,
+            repliesCount: message.thread.repliesCount,
+            lastReply: message.thread.lastReply
+          }
+        : undefined,
+      attachments: [],
+      reactions: message.reactions.map((reaction) => ({
+        message: message.id,
+        reaction: reaction.reaction,
+        creator: reaction.creator,
+        created: reaction.created
+      }))
+    }))
+  }
 }

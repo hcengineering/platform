@@ -10,13 +10,13 @@
         "eslint": "^9.21.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-prettier": "^5.2.3",
-        "prettier": "^3.5.2",
+        "prettier": "^3.5.3",
         "typescript-eslint": "^8.25.0",
       },
     },
     "packages/client-query": {
       "name": "@hcengineering/communication-client-query",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-query": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -32,7 +32,7 @@
     },
     "packages/client-sqlite": {
       "name": "@hcengineering/communication-client-sqlite",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-sqlite-wasm": "workspace:*",
@@ -48,7 +48,7 @@
     },
     "packages/client-ws": {
       "name": "@hcengineering/communication-client-ws",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-client-query": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -64,7 +64,7 @@
     },
     "packages/cockroach": {
       "name": "@hcengineering/communication-cockroach",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -81,7 +81,7 @@
     },
     "packages/examples": {
       "name": "@hcengineering/communication-examples",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-client-ws": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -95,7 +95,7 @@
     },
     "packages/query": {
       "name": "@hcengineering/communication-query",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -112,7 +112,7 @@
     },
     "packages/sdk-types": {
       "name": "@hcengineering/communication-sdk-types",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-types": "workspace:*",
       },
@@ -125,12 +125,13 @@
     },
     "packages/server": {
       "name": "@hcengineering/communication-server",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-cockroach": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
         "@hcengineering/core": "0.7.2",
+        "@hcengineering/server-token": "0.7.2",
       },
       "devDependencies": {
         "@types/bun": "^1.1.14",
@@ -144,7 +145,7 @@
     },
     "packages/shared": {
       "name": "@hcengineering/communication-shared",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-types": "workspace:*",
         "js-yaml": "^4.1.0",
@@ -159,7 +160,7 @@
     },
     "packages/sqlite-wasm": {
       "name": "@hcengineering/communication-sqlite-wasm",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -176,7 +177,7 @@
     },
     "packages/types": {
       "name": "@hcengineering/communication-types",
-      "version": "0.1.47",
+      "version": "0.1.59",
       "dependencies": {
         "@hcengineering/card": "0.7.2",
         "@hcengineering/core": "0.7.2",
@@ -249,6 +250,8 @@
     "@hcengineering/core": ["@hcengineering/core@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/core/0.7.2/4c8d66ef6468b2ed9d4d43857b11a78f6e71d48f", { "dependencies": { "@hcengineering/analytics": "^0.7.2", "@hcengineering/platform": "^0.7.2", "fast-equals": "^5.2.2" } }, "sha512-K8wg4c3hkn98wo/C+lS9z3QD35lIgUc0APpzOE0La6XFeV06H4Iztgvd4xR/IgVGRX3tFbyycsJcSgQXj/Z/Kw=="],
 
     "@hcengineering/platform": ["@hcengineering/platform@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/platform/0.7.2/854c94ef4607aba2306ec92a32f41cce30139de5", { "dependencies": { "intl-messageformat": "^10.7.14" } }, "sha512-RtUWhC0MPjFABojyOSGoOCLZGPVKiZkfZB9n+7Mwbc7tBznVQKeXBBOVUq6QpC50cLyx7ce8WVJBNVIpggwaeQ=="],
+
+    "@hcengineering/server-token": ["@hcengineering/server-token@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/server-token/0.7.2/2bf94b717348f9ce7256fd3a3fec39869c044e4e", { "dependencies": { "@hcengineering/core": "^0.7.2", "@hcengineering/platform": "^0.7.2", "jwt-simple": "^0.5.6" } }, "sha512-WcGkUOhJJvRZZbPYSIuG0S57r5f1sgrQEm+kz8D2Ki4C+RMEwWYjRCYyZhWiE9QxbetBJtcwneKI+jfpDItvag=="],
 
     "@hcengineering/theme": ["@hcengineering/theme@0.7.2", "https://npm.pkg.github.com/download/@hcengineering/theme/0.7.2/a6f832fd9ddbb3e5683f361e54d8bb4f3e096be8", { "dependencies": { "@hcengineering/analytics": "^0.7.2", "@hcengineering/platform": "^0.7.2", "svelte": "^4.2.19" } }, "sha512-Sqrt6ETmBKGk8SiSD/gvfitqP1GUaSpfiGy4I7xaAgXuyeWENni+YJ9x4C+9yTWT7caRnKu5WKbv/zN1PpWuqg=="],
 
@@ -476,6 +479,8 @@
 
     "json-stable-stringify-without-jsonify": ["json-stable-stringify-without-jsonify@1.0.1", "", {}, "sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw=="],
 
+    "jwt-simple": ["jwt-simple@0.5.6", "", {}, "sha512-40aUybvhH9t2h71ncA1/1SbtTNCVZHgsTsTgqPUxGWDmUDrXyDf2wMNQKEbdBjbf4AI+fQhbECNTV6lWxQKUzg=="],
+
     "keyv": ["keyv@4.5.4", "", { "dependencies": { "json-buffer": "3.0.1" } }, "sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw=="],
 
     "levn": ["levn@0.4.1", "", { "dependencies": { "prelude-ls": "^1.2.1", "type-check": "~0.4.0" } }, "sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ=="],
@@ -522,7 +527,7 @@
 
     "prelude-ls": ["prelude-ls@1.2.1", "", {}, "sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g=="],
 
-    "prettier": ["prettier@3.5.2", "", { "bin": { "prettier": "bin/prettier.cjs" } }, "sha512-lc6npv5PH7hVqozBR7lkBNOGXV9vMwROAPlumdBkX0wTbbzPu/U1hk5yL8p2pt4Xoc+2mkT8t/sow2YrV/M5qg=="],
+    "prettier": ["prettier@3.5.3", "", { "bin": { "prettier": "bin/prettier.cjs" } }, "sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw=="],
 
     "prettier-linter-helpers": ["prettier-linter-helpers@1.0.0", "", { "dependencies": { "fast-diff": "^1.1.2" } }, "sha512-GbK2cP9nraSSUF9N2XwUwqfzlAFlMNYYl+ShE/V+H8a9uNl/oUqB1w2EL54Jh0OlyRSd8RfWYJ3coVS4TROP2w=="],
 
