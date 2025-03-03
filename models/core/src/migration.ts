@@ -583,7 +583,9 @@ export async function getUniqueAccounts (
 ): Promise<AccountUuid[]> {
   const accounts = new Set<AccountUuid>()
   for (const person of persons) {
-    const newAccount = await getAccountUuidBySocialId(client, person as unknown as PersonId, accountUuidBySocialId)
+    const newAccount =
+      (await getAccountUuidBySocialId(client, person as unknown as PersonId, accountUuidBySocialId)) ??
+      (person as unknown as AccountUuid)
     if (newAccount != null) {
       accounts.add(newAccount)
     }
@@ -617,7 +619,7 @@ export async function getAccountUuidByOldAccount (
 
     const personUuid = await client.accountClient.findPerson(socialId)
 
-    accountUuidByOldAccount.set(socialId, (personUuid as AccountUuid | undefined) ?? null)
+    accountUuidByOldAccount.set(oldAccount, (personUuid as AccountUuid | undefined) ?? null)
   }
 
   return accountUuidByOldAccount.get(oldAccount) ?? null
