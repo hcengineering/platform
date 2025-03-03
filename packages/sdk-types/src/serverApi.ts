@@ -28,7 +28,8 @@ export interface ConnectionInfo {
   sessionId: string
   personalWorkspace: WorkspaceID
   socialIds: SocialID[]
-  isSystem: boolean
+  //TODO: AccountUUID
+  account: string
 }
 
 export interface ServerApi {
@@ -37,8 +38,8 @@ export interface ServerApi {
 
   event(info: ConnectionInfo, event: RequestEvent): Promise<EventResult>
 
-  closeSession(sessionId: string): Promise<void>
   unsubscribeQuery(info: ConnectionInfo, id: number): Promise<void>
 
+  closeSession(sessionId: string): Promise<void>
   close(): Promise<void>
 }

@@ -61,6 +61,7 @@ import {
   type RemoveMessagesGroupEvent,
   type MessagesGroupCreatedEvent
 } from '@hcengineering/communication-sdk-types'
+import { systemAccountUuid } from '@hcengineering/core'
 
 export interface Result {
   responseEvent?: ResponseEvent
@@ -160,7 +161,7 @@ export class EventProcessor {
   }
 
   private async removeMessage(event: RemoveMessageEvent, info: ConnectionInfo): Promise<Result> {
-    const socialIds = info.isSystem ? undefined : info.socialIds
+    const socialIds = systemAccountUuid === info.account ? undefined : info.socialIds
     await this.db.removeMessage(event.card, event.message, socialIds)
 
     const responseEvent: MessageRemovedEvent = {
@@ -176,7 +177,7 @@ export class EventProcessor {
   }
 
   private async removeMessages(event: RemoveMessagesEvent, info: ConnectionInfo): Promise<Result> {
-    if (!info.isSystem) {
+    if (systemAccountUuid !== info.account) {
       throw new Error('Forbidden')
     }
     await this.db.removeMessages(event.card, event.fromId, event.toId)
@@ -187,7 +188,7 @@ export class EventProcessor {
   }
 
   private async removePatches(event: RemovePatchesEvent, info: ConnectionInfo): Promise<Result> {
-    if (!info.isSystem) {
+    if (systemAccountUuid !== info.account) {
       throw new Error('Forbidden')
     }
     await this.db.removePatches(event.card, event.fromId, event.toId)
@@ -351,7 +352,7 @@ export class EventProcessor {
   }
 
   async createMessagesGroup(event: CreateMessagesGroupEvent, info: ConnectionInfo): Promise<Result> {
-    if (!info.isSystem) {
+    if (systemAccountUuid !== info.account) {
       throw new Error('Forbidden')
     }
     const { fromDate, toDate, count, fromId, toId, card, blobId } = event.group
@@ -376,7 +377,7 @@ export class EventProcessor {
   }
 
   async removeMessagesGroup(event: RemoveMessagesGroupEvent, info: ConnectionInfo): Promise<Result> {
-    if (!info.isSystem) {
+    if (systemAccountUuid !== info.account) {
       throw new Error('Forbidden')
     }
     await this.db.removeMessagesGroup(event.card, event.blobId)
@@ -408,7 +409,7 @@ export class EventProcessor {
   }
 
   private checkCreator(info: ConnectionInfo, creator: SocialID): void {
-    if (!info.socialIds.includes(creator) && !info.isSystem) {
+    if (!info.socialIds.includes(creator) && systemAccountUuid !== info.account) {
       throw new Error('Forbidden')
     }
   }
