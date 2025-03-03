@@ -26,7 +26,6 @@ function smtp (config: SmtpConfig): Transporter {
           pass: config.Password
         }
       : undefined
-  console.log('auth', auth)
   return nodemailer.createTransport({
     host: config.Host,
     port: config.Port,

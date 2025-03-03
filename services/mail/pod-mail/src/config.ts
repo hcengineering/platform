@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { config as dotenvConfig } from 'dotenv'
+
 import { Transport } from './types'
+
+dotenvConfig()
 
 export interface Config {
   port: number
