@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import type { PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 
 export function decodeTokenPayload (token: string): any {
@@ -27,12 +28,14 @@ export function decodeTokenPayload (token: string): any {
 describe('generate-tokens', () => {
   it('should generate tokens', async () => {
     const extra: Record<string, any> = { confirmed: 'true' }
-    const token = generateToken('mike@some.host', { name: '' }, extra, 'secret')
+    const token = generateToken('mike@some.host' as PersonUuid, '' as WorkspaceUuid, extra, 'secret')
     console.log(token)
     const decodedPayload = decodeTokenPayload(token)
     expect(decodedPayload).toEqual({
-      confirmed: 'true',
-      email: 'mike@some.host',
+      extra: {
+        confirmed: 'true'
+      },
+      account: 'mike@some.host',
       workspace: ''
     })
     expect(decodedPayload.admin).not.toBe('true')

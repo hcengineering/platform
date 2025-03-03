@@ -413,10 +413,13 @@ export async function createInviteLink (
 }
 
 // TODO: Temporary solution to prevent spam using sendInvite
-const invitesSend = new Map<string, {
+const invitesSend = new Map<
+string,
+{
   lastSend: number
   totalSend: number
-}>()
+}
+>()
 
 export async function sendInvite (
   ctx: MeasureContext,
@@ -460,7 +463,7 @@ function checkRateLimit (email: string, workspaceName: string): void {
   if (lastInvites !== undefined) {
     lastInvites.totalSend++
     lastInvites.lastSend = now
-    if (lastInvites.totalSend > 5 && (now - lastInvites.lastSend) < 60 * 1000) {
+    if (lastInvites.totalSend > 5 && now - lastInvites.lastSend < 60 * 1000) {
       // Less 60 seconds between invites
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })

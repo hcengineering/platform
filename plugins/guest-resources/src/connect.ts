@@ -1,18 +1,18 @@
 import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
+import { setCurrentEmployee, type Employee } from '@hcengineering/contact'
 import core, {
-  type Account,
   ClientConnectEvent,
   concatLink,
   setCurrentAccount,
   versionToString,
+  type Account,
   type Client,
-  type Version,
+  type PersonId,
   type Ref,
-  type PersonId
+  type Version
 } from '@hcengineering/core'
-import { setCurrentEmployee, type Employee } from '@hcengineering/contact'
-import login, { loginId } from '@hcengineering/login'
+import login from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
   loadServerConfig,
@@ -21,9 +21,9 @@ import presentation, {
   setPresentationCookie,
   upgradeDownloadProgress
 } from '@hcengineering/presentation'
-import { desktopPlatform, getCurrentLocation, navigate } from '@hcengineering/ui'
+import { desktopPlatform, getCurrentLocation } from '@hcengineering/ui'
 import { logOut } from '@hcengineering/workbench'
-import { writable, get } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 
 export const versionError = writable<string | undefined>(undefined)
 
