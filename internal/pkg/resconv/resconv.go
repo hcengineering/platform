@@ -22,7 +22,7 @@ import (
 	"strings"
 )
 
-const defaultLevel = "320p"
+const defaultLevel = "360p"
 
 var prefixes = []struct {
 	pixels int

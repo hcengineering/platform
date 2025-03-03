@@ -40,7 +40,7 @@ func (u *uploader) postpone(fileName string, action func(ctx context.Context)) {
 			return
 		case <-startCh:
 			action(ctx)
-			if u.ctx.Err() == nil {
+			if ctx.Err() == nil {
 				u.contexts.CompareAndDelete(fileName, &cancel)
 			}
 		}

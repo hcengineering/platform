@@ -25,7 +25,8 @@ func Test_Resconv_ShouldReturnCorrectPrefix(t *testing.T) {
 		res      string
 		expected string
 	}{
-		{res: "320:240", expected: "320p"},
+		{res: "320:240", expected: "360p"},
+		{res: "320:360", expected: "360p"},
 		{res: "640:480", expected: "480p"},
 		{res: "1280:720", expected: "720p"},
 		{res: "1920:1080", expected: "1080p"},
