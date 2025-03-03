@@ -1,21 +1,21 @@
 {
   "localhost:8080": {
     "key": "huly-dev",
-    "title": "Huly",
+    "title": "Kubik",
     "protocol": "http",
     "language": "en",
     "lastNameFirst": "true"
   },
   "localhost:8087": {
     "key": "huly",
-    "title": "Huly",
+    "title": "Kubik",
     "protocol": "http",
     "language": "en",
     "lastNameFirst": "true"
   },
   "host.docker.internal:8087": {
     "key": "huly-docker",
-    "title": "Huly",
+    "title": "Kubik",
     "protocol": "http",
     "language": "en",
     "lastNameFirst": "true"
@@ -34,7 +34,7 @@
   },
   "host.docker.internal:8088": {
     "key": "tracex-docker",
-    "title": "Huly",
+    "title": "Kubik",
     "protocol": "http",
     "language": "en",
     "lastNameFirst": "true"

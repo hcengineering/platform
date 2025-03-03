@@ -102,7 +102,7 @@ services:
       # - WS_LIVENESS_DAYS=1
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
-      # - DISABLE_SIGNUP=true
+      - DISABLE_SIGNUP=true
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding
     restart: unless-stopped
@@ -248,7 +248,7 @@ services:
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://host.docker.internal:8087/branding.json
-      # - DISABLE_SIGNUP=true
+      - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor:
     image: hardcoreeng/transactor
@@ -502,7 +502,7 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://host.docker.internal:4900
-#      - LOVE_ENDPOINT=http://host.docker.internal:8096
+      - LOVE_ENDPOINT=http://host.docker.internal:8096
 #      - OPENAI_API_KEY=token
 #  telegram-bot:
 #    image: hardcoreeng/telegram-bot

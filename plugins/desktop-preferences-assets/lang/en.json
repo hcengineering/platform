@@ -1,11 +1,11 @@
 {
   "string": {
-    "ShowNotifications": "Show notifications",
-    "PlaySound": "Play sound",
-    "BounceAppIcon": "Bounce app's icon (mac only)",
-    "ShowBadge": "Show a badge on app's icon",
-    "SoundAndAppearance": "Sound and appearance",
-    "HaveGotANotification": "You have got a notification",
-    "TotalNotificationsCount": "You have {count, plural, =1 {# notifcation} other {# notifcations}} total"
+    "ShowNotifications": "Bildirimleri göster",
+    "PlaySound": "Ses çal",
+    "BounceAppIcon": "Uygulama ikonunu zıplat (sadece Mac)",
+    "ShowBadge": "Uygulama ikonunda rozet göster",
+    "SoundAndAppearance": "Ses ve görünüm",
+    "HaveGotANotification": "Bir bildirim aldınız",
+    "TotalNotificationsCount": "Toplam {count, plural, =1 {# bildiriminiz var} other {# bildiriminiz var}}"
   }
 }
