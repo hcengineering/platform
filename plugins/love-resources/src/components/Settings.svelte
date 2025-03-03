@@ -69,7 +69,7 @@
       <div class="flex-row-center flex-gap-4">
         <Label label={love.string.StartWithMutedMic} />
         <Toggle
-          on={!$myPreferences?.micEnabled ?? false}
+          on={!($myPreferences?.micEnabled ?? false)}
           on:change={(e) => {
             saveMicPreference($myPreferences, e.detail)
           }}
@@ -78,7 +78,7 @@
       <div class="flex-row-center flex-gap-4">
         <Label label={love.string.StartWithoutVideo} />
         <Toggle
-          on={!$myPreferences?.camEnabled ?? false}
+          on={!($myPreferences?.camEnabled ?? false)}
           on:change={(e) => {
             saveCamPreference($myPreferences, e.detail)
           }}

@@ -167,7 +167,9 @@ export class IssuesPage extends CommonTrackerPage {
   appleseedJohnButton = (): Locator => this.page.locator('button.menu-item:has-text("Appleseed John")')
   estimationEditor = (): Locator => this.page.locator('#estimation-editor')
   dueDateButton = (): Locator => this.page.locator('button:has-text("Due date")')
-  specificDay = (day: string): Locator => this.page.locator(`.date-popup-container div.day >> text=${day}`).first()
+  specificDay = (day: string): Locator =>
+    this.page.locator(`.date-popup-container div.day:not(.wrongMonth) >> text=${day}`).first()
+
   inputTextPlaceholder = (): Locator => this.page.getByPlaceholder('Type text...')
   confirmInput = (): Locator => this.page.locator('.selectPopup button')
 

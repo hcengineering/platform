@@ -127,8 +127,18 @@ import { preferenceId } from '@hcengineering/preference'
 
 function configureI18n (): void {
   // Add localization
-  addStringsLoader(platformId, async (lang: string) => await import(`@hcengineering/platform/lang/${lang}.json`))
-  addStringsLoader(coreId, async (lang: string) => await import(`@hcengineering/core/lang/${lang}.json`))
+  addStringsLoader(platformId, async (lang: string) => await import(
+    /* webpackInclude: /\.json$/ */
+    /* webpackMode: "lazy" */
+    /* webpackChunkName: "lang-[request]" */
+    `@hcengineering/platform/lang/${lang}.json`
+  ))
+  addStringsLoader(coreId, async (lang: string) => await import(
+    /* webpackInclude: /\.json$/ */
+    /* webpackMode: "lazy" */
+    /* webpackChunkName: "lang-[request]" */
+    `@hcengineering/core/lang/${lang}.json`
+  ))
   addStringsLoader(
     presentationId,
     async (lang: string) => await import(`@hcengineering/presentation/lang/${lang}.json`)

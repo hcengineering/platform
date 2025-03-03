@@ -40,8 +40,8 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/client": "^0.6.18",
-    "@hcengineering/communication-sdk-types": "^0.1.47",
-    "@hcengineering/communication-types": "^0.1.47",
+    "@hcengineering/communication-sdk-types": "^0.1.61",
+    "@hcengineering/communication-types": "^0.1.61",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/rpc": "^0.6.5",
@@ -50,5 +50,12 @@
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./lib/index.js"
+    }
   }
 }

@@ -234,6 +234,10 @@ export const setTreeCollapsed = (_id: any, collapsed: boolean, prefix?: string):
   collapsed ? localStorage.setItem(key, COLLAPSED) : localStorage.removeItem(key)
 }
 
+export function isSameSegments (a: PlatformLocation, b: PlatformLocation, len = 2): boolean {
+  return a.path.slice(0, len).every((segment, index) => segment === b.path[index])
+}
+
 export function restoreLocation (loc: PlatformLocation, app: Plugin): void {
   const last = localStorage.getItem(`${locationStorageKeyId}_${app}`)
 

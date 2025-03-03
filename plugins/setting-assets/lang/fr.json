@@ -135,6 +135,7 @@
     "StartOfTheWeek": "Début de semaine",
     "SystemSetupString": "Configuration du système ({day})",
     "DefaultString": "Par défaut ({day})",
-    "AddAttribute": "Ajouter un attribut"
+    "AddAttribute": "Ajouter un attribut",
+    "WorkspaceNamePattern": "Le nom doit comporter 40 caractères ou moins, ne doit pas être vide et ne doit pas contenir de caractères spéciaux (<, >, /)" 
   }
 }
