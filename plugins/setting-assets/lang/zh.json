@@ -135,6 +135,7 @@
     "StartOfTheWeek": "本周开始",
     "SystemSetupString": "系统设置({day})",
     "DefaultString": "违约({day})",
-    "AddAttribute": "添加属性"
+    "AddAttribute": "添加属性",
+    "WorkspaceNamePattern": "名称必须为 40 个字符或更少，不能为空，不能包含特殊字符（<、>、/）"
   }
 }

@@ -135,6 +135,7 @@
     "StartOfTheWeek": "Začátek týdne",
     "SystemSetupString": "Nastavení systému ({day})",
     "DefaultString": "Výchozí ({day})",
-    "AddAttribute": "Přidat atribut"
+    "AddAttribute": "Přidat atribut",
+    "WorkspaceNamePattern": "Název musí být 40 znaků nebo méně, není prázdný a nesmí obsahovat speciální znaky (<, >, /)"
   }
 }

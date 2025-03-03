@@ -26,25 +26,22 @@
     Popup,
     PopupAlignment,
     ResolvedLocation,
-    Separator,
     TooltipInstance,
     areLocationsEqual,
     closePanel,
-    getCurrentLocation,
-    getLocation,
-    navigate,
-    showPanel,
     defineSeparators,
+    deviceOptionsStore as deviceInfo,
+    getCurrentLocation,
     setResolvedLocation,
-    deviceOptionsStore as deviceInfo
+    showPanel
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ListSelectionProvider, parseLinkId, restrictionStore, updateFocus } from '@hcengineering/view-resources'
   import workbench, { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { SpaceView, buildNavModel } from '@hcengineering/workbench-resources'
+  import { workbenchGuestSeparators } from '..'
   import guest from '../plugin'
   import { checkAccess } from '../utils'
-  import { workbenchGuestSeparators } from '..'
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
   $deviceInfo.navigator.visible = false

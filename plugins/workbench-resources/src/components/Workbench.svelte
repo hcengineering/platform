@@ -78,7 +78,8 @@
     showPopup,
     TooltipInstance,
     workbenchSeparators,
-    resizeObserver
+    resizeObserver,
+    isSameSegments
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -429,9 +430,12 @@
       const last = localStorage.getItem(`${locationStorageKeyId}_${loc.path[1]}`)
       if (last != null) {
         const lastValue = JSON.parse(last)
-        navigateDone = navigate(lastValue)
-        if (navigateDone) {
-          return
+
+        if (isSameSegments(lastValue, loc, 2)) {
+          navigateDone = navigate(lastValue)
+          if (navigateDone) {
+            return
+          }
         }
       }
       if (app === undefined && !navigateDone) {

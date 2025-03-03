@@ -132,8 +132,6 @@
       throw err
     }
   }
-  $: isAdmin = isAdminUser()
-
   let search: string = ''
 </script>
 
@@ -151,7 +149,7 @@
   <div class="status">
     <StatusControl {status} />
   </div>
-  {#if isAdmin}
+  {#if workspaces.length > 10}
     <div class="ml-2 mr-2 mb-2 flex-grow">
       <SearchEdit bind:value={search} width={'100%'} />
     </div>
@@ -188,24 +186,7 @@
                 {/if}
               </span>
               <span class="text-xs flex-row-center flex-center">
-                {#if isAdmin}
-                  {workspace.url}
-                  {#if workspace.region !== undefined}
-                    at ({workspace.region})
-                  {/if}
-                {/if}
                 <div class="text-sm">
-                  {#if isAdmin}
-                    {#if workspace.backupInfo != null}
-                      {@const sz = workspace.backupInfo.dataSize + workspace.backupInfo.blobsSize}
-                      {@const szGb = Math.round((sz * 100) / 1024) / 100}
-                      {#if szGb > 0}
-                        - {Math.round((sz * 100) / 1024) / 100}Gb -
-                      {:else}
-                        - {Math.round(sz)}Mb -
-                      {/if}
-                    {/if}
-                  {/if}
                   ({lastUsageDays} days)
                 </div>
               </span>

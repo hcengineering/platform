@@ -15,7 +15,7 @@
 
 import { type Builder } from '@hcengineering/model'
 import serverCore from '@hcengineering/server-core'
-import core from '@hcengineering/core/src/component'
+import core from '@hcengineering/core'
 import serverActivity from '@hcengineering/server-activity'
 import serverNotification from '@hcengineering/server-notification'
 import activity from '@hcengineering/activity'

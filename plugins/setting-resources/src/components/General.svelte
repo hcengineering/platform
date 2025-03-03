@@ -52,6 +52,14 @@
   let name: string = ''
 
   const accountClient = getAccountClient()
+  const disabledSet = ['\n', '<', '>', '/', '\\']
+
+  $: editNameDisabled =
+    isEditingName &&
+    (name.trim().length > 40 ||
+      name.trim() === oldName ||
+      name.trim() === '' ||
+      disabledSet.some((it) => name.includes(it)))
 
   void loadWorkspaceName()
 
@@ -80,8 +88,6 @@
     isEditingName = false
   }
 
-  $: editNameDisabled = isEditingName && (name.trim() === oldName || name.trim() === '')
-
   async function handleDelete (): Promise<void> {
     showPopup(MessageBox, {
       label: setting.string.DeleteWorkspace,
@@ -99,7 +105,7 @@
   let workspaceSettings: WorkspaceSetting | undefined = undefined
 
   const client = getClient()
-  client.findOne(setting.class.WorkspaceSetting, {}).then((r) => {
+  void client.findOne(setting.class.WorkspaceSetting, {}).then((r) => {
     workspaceSettings = r
   })
 

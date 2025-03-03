@@ -342,6 +342,8 @@ export async function createWorkspace (
   const { workspaceName, region } = params
   const { account } = decodeTokenVerbose(ctx, token)
 
+  checkRateLimit(account, workspaceName)
+
   ctx.info('Creating workspace record', { workspaceName, account, region })
 
   // Any confirmed social ID will do
@@ -410,6 +412,15 @@ export async function createInviteLink (
   })
 }
 
+// TODO: Temporary solution to prevent spam using sendInvite
+const invitesSend = new Map<
+string,
+{
+  lastSend: number
+  totalSend: number
+}
+>()
+
 export async function sendInvite (
   ctx: MeasureContext,
   db: AccountDB,
@@ -433,6 +444,8 @@ export async function sendInvite (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
+  checkRateLimit(account, workspaceUuid)
+
   const expHours = 48
   const exp = expHours * 60 * 60 * 1000
 
@@ -442,6 +455,34 @@ export async function sendInvite (
   await sendEmail(inviteEmail)
 
   ctx.info('Invite has been sent', { to: inviteEmail.to, workspaceUuid: workspace.uuid, workspaceName: workspace.name })
+}
+
+function checkRateLimit (email: string, workspaceName: string): void {
+  const now = Date.now()
+  const lastInvites = invitesSend.get(email)
+  if (lastInvites !== undefined) {
+    lastInvites.totalSend++
+    lastInvites.lastSend = now
+    if (lastInvites.totalSend > 5 && now - lastInvites.lastSend < 60 * 1000) {
+      // Less 60 seconds between invites
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
+      )
+    }
+    invitesSend.delete(email)
+  } else {
+    invitesSend.set(email, {
+      lastSend: now,
+      totalSend: 1
+    })
+  }
+
+  // We need to cleanup map
+  for (const [k, vv] of invitesSend.entries()) {
+    if (vv.lastSend < now - 60 * 1000) {
+      invitesSend.delete(k)
+    }
+  }
 }
 
 export async function resendInvite (
@@ -462,6 +503,8 @@ export async function resendInvite (
   if (workspace == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
+
+  checkRateLimit(account, workspaceUuid)
 
   const expHours = 48
   const newExp = Date.now() + expHours * 60 * 60 * 1000
@@ -1657,6 +1700,43 @@ export async function assignWorkspace (
   }
 }
 
+export async function ensurePerson (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    socialType: SocialIdType
+    socialValue: string
+    firstName: string
+    lastName: string
+  }
+): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['schedule'], extra)
+
+  const { socialType, socialValue, firstName, lastName } = params
+
+  if (
+    !Object.values(SocialIdType).includes(socialType) ||
+    firstName.length === 0 ||
+    lastName.length === 0 ||
+    socialValue.length === 0
+  ) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const socialId = await db.socialId.findOne({ type: socialType, value: socialValue })
+  if (socialId != null) {
+    return { uuid: socialId.personUuid, socialId: socialId.key }
+  }
+
+  const personUuid = await db.person.insertOne({ firstName, lastName })
+  const newSocialId = await db.socialId.insertOne({ type: socialType, value: socialValue, personUuid })
+
+  return { uuid: personUuid, socialId: newSocialId }
+}
+
 export type AccountMethods =
   | 'login'
   | 'loginOtp'
@@ -1698,6 +1778,7 @@ export type AccountMethods =
   | 'findPerson'
   | 'performWorkspaceOperation'
   | 'updateWorkspaceRoleBySocialId'
+  | 'ensurePerson'
 
 /**
  * @public
@@ -1748,7 +1829,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     assignWorkspace: wrap(assignWorkspace),
     listWorkspaces: wrap(listWorkspaces),
     performWorkspaceOperation: wrap(performWorkspaceOperation),
-    updateWorkspaceRoleBySocialId: wrap(updateWorkspaceRoleBySocialId)
+    updateWorkspaceRoleBySocialId: wrap(updateWorkspaceRoleBySocialId),
+    ensurePerson: wrap(ensurePerson)
   }
 }
 
