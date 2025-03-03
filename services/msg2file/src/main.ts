@@ -18,10 +18,12 @@ import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
 import cron from 'node-cron'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 
 import config from './config'
 import { job } from './worker'
 import { startServer } from './server'
+import { getDb } from './db'
 
 export const main = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
@@ -29,14 +31,13 @@ export const main = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
   const ctx = initStatisticsContext('msg2file', {})
-  const server = startServer(ctx)
+  const storage = buildStorageFromConfig(storageConfigFromEnv())
+  const db = await getDb()
+  const server = startServer(ctx, db)
 
   const task = cron.schedule('0 0 * * *', () => {
-    void job(ctx)
+    void job(ctx, storage, db)
   })
-
-  // TODO: remove this
-  void job(ctx)
 
   const shutdown = (): void => {
     task.stop()

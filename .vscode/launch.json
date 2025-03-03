@@ -805,14 +805,17 @@
       "args": ["src/index.ts"],
       "env": {
         "ACCOUNTS_URL": "http://localhost:3000",
+        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
+        "PORT": "9087",
         "SECRET": "secret",
-        "SERVICE_ID": "msg2file-service"
+        "SERVICE_ID": "msg2file-service",
+        "STORAGE_CONFIG": "datalake,datalake|http://localhost:4022"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "outputCapture": "std",
-      "cwd": "${workspaceRoot}/dev/import-tool"
+      "cwd": "${workspaceRoot}/services/msg2file"
     }
   ]
 }

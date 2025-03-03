@@ -439,6 +439,7 @@ services:
       - PORT=9087
       - SECRET=secret
       - SERVICE_ID=msg2file-service
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
 #  telegram-bot:
 #    image: hardcoreeng/telegram-bot
 #   extra_hosts:

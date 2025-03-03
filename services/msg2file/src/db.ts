@@ -22,6 +22,7 @@ export interface SyncRecord {
   workspace: WorkspaceID
   card: CardID
   attempt: number
+  created: Date
 }
 
 export async function getDb (): Promise<PostgresDB> {
@@ -54,6 +55,7 @@ export class PostgresDB {
             workspace UUID         NOT NULL,
             card      VARCHAR(255) NOT NULL,
             attempt   INT          NOT NULL,
+            created   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
             PRIMARY KEY (workspace, card)
         );
     `
@@ -61,13 +63,15 @@ export class PostgresDB {
     await client.unsafe(sql)
   }
 
-  async getRecords (limit: number): Promise<SyncRecord[]> {
+  async getRecords (limit: number, date: Date): Promise<SyncRecord[]> {
     const sql = `
         SELECT workspace, card
         FROM ${this.table}
+        WHERE created < $1::timestamptz
+        ORDER BY created 
         LIMIT ${limit};`
 
-    const result = await this.client.unsafe(sql)
+    const result = await this.client.unsafe(sql, [date])
 
     return result.map((raw) => ({
       workspace: raw.workspace,

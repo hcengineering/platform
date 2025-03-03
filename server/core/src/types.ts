@@ -49,7 +49,17 @@ import type { LiveQuery } from '@hcengineering/query'
 import type { ReqId, Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
-import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
+import {
+  type FindMessagesGroupsParams,
+  type MessagesGroup,
+  type FindMessagesParams,
+  type Message
+} from '@hcengineering/communication-types'
+import {
+  type RequestEvent as CommunicationEvent,
+  type ServerApi as CommunicationApi,
+  type EventResult
+} from '@hcengineering/communication-sdk-types'
 
 import type { DbAdapter, DomainHelper } from './adapter'
 import type { StatisticsElement } from './stats'
@@ -603,6 +613,10 @@ export interface Session {
   clean: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 
   includeSessionContext: (ctx: ClientSessionCtx) => void
+
+  eventRaw: (ctx: ClientSessionCtx, event: CommunicationEvent) => Promise<EventResult>
+  findMessagesRaw: (ctx: ClientSessionCtx, params: FindMessagesParams) => Promise<Message[]>
+  findMessagesGroupsRaw: (ctx: ClientSessionCtx, params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
 }
 
 /**

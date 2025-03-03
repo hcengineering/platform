@@ -23,13 +23,14 @@ import { CardID } from '@hcengineering/communication-types'
 
 import config from './config'
 import { register } from './worker'
+import { PostgresDB } from './db'
 
-export function startServer (ctx: MeasureContext): Server {
-  const app = createServer(ctx)
+export function startServer (ctx: MeasureContext, db: PostgresDB): Server {
+  const app = createServer(ctx, db)
   const port = config.Port
 
   return app.listen(port, (): void => {
-    console.log(`Msg2file service has been started at :${port}`)
+    ctx.info(`Msg2file service has been started at :${port}`)
   })
 }
 
@@ -56,7 +57,7 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   void handleRequest(fn, req, res, next)
 }
 
-function createServer (ctx: MeasureContext): Express {
+function createServer (ctx: MeasureContext, db: PostgresDB): Express {
   const app = express()
   app.use(cors())
   app.use(express.json())
@@ -72,7 +73,7 @@ function createServer (ctx: MeasureContext): Express {
       }
 
       ctx.info('Register card', { workspace, card })
-      await register(workspace, card as CardID)
+      await register(workspace, card as CardID, db)
       res.status(200)
       res.json({})
     })
