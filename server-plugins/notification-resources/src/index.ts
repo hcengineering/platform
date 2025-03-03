@@ -65,7 +65,8 @@ import {
   getEmployeeByAcc,
   getPrimarySocialIdsByAccounts,
   getAccountBySocialId,
-  getSocialIdsByAccounts
+  getSocialIdsByAccounts,
+  getEmployeesBySocialIds
 } from '@hcengineering/server-contact'
 import serverNotification, {
   NOTIFICATION_BODY_SIZE,
@@ -284,6 +285,9 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
     }
   } else if (attr.type._class === core.class.TypeAccountUuid) {
     return [value]
+  } else if (attr.type._class === core.class.TypePersonId) {
+    const acc = await getAccountBySocialId(control, value)
+    return acc == null ? [] : [acc]
   } else if (attr.type._class === core.class.ArrOf) {
     const arrOf = (attr.type as ArrOf<RefTo<Doc>>).of
 
@@ -299,6 +303,13 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
       }
     } else if (arrOf._class === core.class.TypeAccountUuid) {
       return Array.isArray(value) ? value : [value]
+    } else if (arrOf._class === core.class.TypePersonId) {
+      const socialIds = Array.isArray(value) ? value : [value]
+      const personsBySocialIds = await getEmployeesBySocialIds(control, socialIds)
+
+      return Object.values(personsBySocialIds)
+        .map((p) => p?.personUuid)
+        .filter(notEmpty)
     }
   }
   return []
