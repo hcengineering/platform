@@ -22,7 +22,7 @@
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/ses staging",
     "docker:abuild": "docker build -t hardcoreeng/ses . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/ses",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/ses",
-    "run-local": "cross-env SMTP_HOST=smtp.postmarkapp.com SMTP_PORT=25 SMTP_USERNAME=PM-T-outbound-ccrAUdmVVdRZPtZB2bZb68 SMTP_PASSWORD=9FlesFSK3vfvRtL1LLNyS-5uDkLJpgdtNTfI ts-node src/index.ts",
+    "run-local": "cross-env PORT=8087 ts-node src/index.ts",
     "format": "format src",
     "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent",
