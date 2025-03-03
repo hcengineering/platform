@@ -1,6 +1,6 @@
 {
   "localhost:8080": {
-    "title": "Huly",
+    "title": "Kubik",
     "languages": "en,ru,pt,es,zh,fr,de",
     "defaultLanguage": "en",
     "defaultApplication": "tracker",
@@ -29,7 +29,7 @@
     ]
   },
   "localhost:8087": {
-    "title": "Huly",
+    "title": "Kubik",
     "languages": "en,ru,pt,es,zh,fr,de",
     "defaultLanguage": "en",
     "defaultApplication": "tracker",
