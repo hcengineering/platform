@@ -48,8 +48,6 @@
   export let requestSideSpace: ((width: number) => void) | undefined = undefined
   export let enableInlineComments: boolean = true
 
-  let element: HTMLElement
-
   let collaborativeEditor: CollaborativeTextEditor
 
   export function commands (): TextEditorCommandHandler | undefined {
@@ -68,7 +66,7 @@
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
       focus()
-      return element !== null
+      return true
     },
     isFocus: () => isFocused(),
     canBlur: () => false
