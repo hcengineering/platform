@@ -101,16 +101,17 @@ const buildSmtpConfig = (): SmtpConfig | undefined => {
 }
 
 const config: Config = (() => {
+  const port = parseNumber(process.env[envMap.Port])
+  if (port === undefined) {
+    throw Error('Missing env variable: Port')
+  }
   const params: Config = {
-    port: parseNumber(process.env[envMap.Port]) ?? 8097,
+    port,
     defaultTransport: process.env[envMap.DefaultProtocol] === Transport.SES ? Transport.SES : Transport.SMTP,
     sesConfig: buildSesConfig(),
     smtpConfig: buildSmtpConfig()
   }
 
-  if (params.port === undefined) {
-    throw Error('Missing env variable: Port')
-  }
   if (params.sesConfig === undefined && params.smtpConfig === undefined) {
     throw Error('Missing env variables for email transfer, please specify SES or SMTP configuration')
   }

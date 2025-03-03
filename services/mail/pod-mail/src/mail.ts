@@ -26,8 +26,6 @@ export class MailClient {
   }
 
   async sendMessage (message: Message, receivers: Receivers, from?: string): Promise<void> {
-    console.log('send email to', receivers.to)
-    console.log('from', from)
     const mailOptions: SendMailOptions = {
       from,
       to: receivers.to,
@@ -44,8 +42,12 @@ export class MailClient {
       mailOptions.html = message.html
     }
 
-    const result = await this.transporter.sendMail(mailOptions)
-    console.log('Mail has been sent')
-    console.log(result)
+    this.transporter.sendMail(mailOptions, (err, info) => {
+      if (err !== null) {
+        console.error('Failed to send email: ', err.message)
+      } else {
+        console.log(`Email request ${info?.messageId} sent: ${info?.response}`)
+      }
+    })
   }
 }
