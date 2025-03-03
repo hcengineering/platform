@@ -22,41 +22,38 @@ import (
 	"strings"
 )
 
-const defaultLevel = "320p"
+const defaultLevel = "360p"
 
 var prefixes = []struct {
 	pixels int
 	label  string
 }{
-	{pixels: 640 * 480, label: "320p"},
+	{pixels: 640 * 360, label: "360p"},
 	{pixels: 1280 * 720, label: "480p"},
 	{pixels: 1920 * 1080, label: "720p"},
 	{pixels: 2560 * 1440, label: "1080p"},
-	{pixels: 3840 * 2160, label: "2k"},
-	{pixels: 5120 * 2880, label: "4k"},
-	{pixels: 7680 * 4320, label: "5k"},
+	{pixels: 3840 * 2160, label: "1440p"},
+	{pixels: 7680 * 4320, label: "2160p"},
 }
 
 var bandwidthMap = map[string]int{
-	"320p":  300000,
 	"360p":  500000,
 	"480p":  2000000,
 	"720p":  5000000,
 	"1080p": 8000000,
 	"1440p": 16000000,
-	"4k":    25000000,
-	"8k":    50000000,
+	"2160p": 25000000,
+	"4320p": 50000000,
 }
 
 var resolutions = map[string]string{
-	"320p":  "480:240",
+	"360p":  "640:360",
 	"480p":  "640:480",
 	"720p":  "1280:720",
 	"1080p": "1920:1080",
-	"2k":    "2048:1080",
-	"4k":    "3840:2160",
-	"5k":    "5120:2880",
-	"8k":    "7680:4320",
+	"1440p": "2560:1440",
+	"2160p": "3840:2160",
+	"4320p": "7680:4320",
 }
 
 // SubLevels returns sublevels for the resolution
@@ -85,8 +82,8 @@ func SubLevels(resolution string) (res []string) {
 
 // Resolution returns default resolution based on the level
 func Resolution(level string) string {
-	if v, ok := resolutions[level]; ok {
-		return v
+	if res, ok := resolutions[level]; ok {
+		return res
 	}
 	return Resolution(defaultLevel)
 }
@@ -98,7 +95,7 @@ func Level(resolution string) string {
 		return pixels < prefixes[i].pixels
 	})
 	if idx == len(prefixes) {
-		return "8k"
+		return "4320p"
 	}
 
 	return prefixes[idx].label

@@ -41,10 +41,9 @@ type S3Storage struct {
 }
 
 // NewS3 creates a new S3 storage
-func NewS3(ctx context.Context, endpoint string) Storage {
+func NewS3(ctx context.Context, endpoint, bucketName string) Storage {
 	var accessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
 	var accessKeySecret = os.Getenv("AWS_SECRET_ACCESS_KEY")
-	var bucketName = os.Getenv("AWS_BUCKET_NAME")
 	var logger = log.FromContext(ctx).With(zap.String("s3", "storage"))
 
 	cfg, err := config.LoadDefaultConfig(ctx,
@@ -68,9 +67,6 @@ func NewS3(ctx context.Context, endpoint string) Storage {
 }
 
 func getContentType(objectKey string) string {
-	if strings.HasSuffix(objectKey, ".txt") {
-		return "txt"
-	}
 	if strings.HasSuffix(objectKey, ".ts") {
 		return "video/mp2t"
 	}

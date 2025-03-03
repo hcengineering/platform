@@ -34,7 +34,7 @@ import (
 
 type uploader struct {
 	done             chan struct{}
-	wg               sync.WaitGroup
+	waitJobs         sync.WaitGroup
 	ctx              context.Context
 	cancel           context.CancelFunc
 	baseDir          string
@@ -48,10 +48,13 @@ type uploader struct {
 }
 
 func (u *uploader) retry(action func() error) {
+	var delay = time.Millisecond * 50
 	for range u.retryCount {
 		if err := action(); err == nil {
 			return
 		}
+		time.Sleep(delay)
+		delay *= 2
 	}
 }
 
@@ -59,30 +62,41 @@ func (u *uploader) retry(action func() error) {
 func (u *uploader) Rollback() {
 	logger := log.FromContext(u.ctx).With(zap.String("uploader", "Rollback"))
 	logger.Debug("starting")
-	defer u.cancel()
+	defer logger.Debug("done")
 
-	u.wg.Wait()
-
-	u.sentFiles.Range(func(key, value any) bool {
-		logger.Debug("deleting remote file", zap.String("key", key.(string)))
-		u.retry(func() error { return u.storage.DeleteFile(u.ctx, key.(string)) })
-		log.FromContext(u.ctx).Debug("deleting local file", zap.String("key", key.(string)))
-		_ = os.Remove(key.(string))
-		return true
+	u.postpone("", func(ctx context.Context) {
+		u.sentFiles.Range(func(key, value any) bool {
+			logger.Debug("deleting remote file", zap.String("key", key.(string)))
+			u.retry(func() error { return u.storage.DeleteFile(ctx, key.(string)) })
+			return true
+		})
 	})
+
+	u.Terminate()
 }
 
+// Terminate deletes
 func (u *uploader) Terminate() {
 	logger := log.FromContext(u.ctx).With(zap.String("uploader", "Terminate"))
 	logger.Debug("starting")
-	defer u.cancel()
 
-	u.wg.Wait()
+	go func() {
+		defer logger.Debug("done")
+		u.waitJobs.Wait()
+		u.cancel()
+	}()
+}
 
-	u.sentFiles.Range(func(key, value any) bool {
-		_ = os.Remove(key.(string))
-		return true
+func (u *uploader) uploadAndDelte(fileName string) {
+	u.postpone(fileName+"-del", func(context.Context) {})
+	u.postpone(fileName, func(ctx context.Context) {
+		u.retry(func() error { return u.storage.UploadFile(ctx, fileName) })
+		u.postpone(fileName+"-del", func(context.Context) {
+			_ = os.Remove(fileName)
+		})
 	})
+
+	u.sentFiles.Store(fileName, struct{}{})
 }
 
 func (u *uploader) Serve() error {
@@ -98,13 +112,8 @@ func (u *uploader) Serve() error {
 	_ = os.MkdirAll(u.baseDir, os.ModePerm)
 	initFiles, _ := os.ReadDir(u.baseDir)
 	for _, f := range initFiles {
-		var name = filepath.Join(u.baseDir, f.Name())
-		u.postpone(name, func() {
-			logger.Debug("started uploading", zap.String("eventName", name))
-			u.retry(func() error { return u.storage.UploadFile(u.ctx, name) })
-			logger.Debug("added to sentFiles", zap.String("eventName", name))
-			u.sentFiles.Store(name, struct{}{})
-		})
+		var filePath = filepath.Join(u.baseDir, f.Name())
+		u.uploadAndDelte(filePath)
 	}
 
 	if err := watcher.Add(u.baseDir); err != nil {
@@ -132,12 +141,7 @@ func (u *uploader) Serve() error {
 			if !strings.Contains(event.Name, u.uploadID) {
 				continue
 			}
-			u.postpone(event.Name, func() {
-				logger.Debug("started uploading", zap.String("eventName", event.Name))
-				u.retry(func() error { return u.storage.UploadFile(u.ctx, event.Name) })
-				logger.Debug("added to sentFiles", zap.String("eventName", event.Name))
-				u.sentFiles.Store(event.Name, struct{}{})
-			})
+			u.uploadAndDelte(event.Name)
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return u.ctx.Err()
@@ -168,7 +172,7 @@ func New(ctx context.Context, baseDir string, endpointURL *url.URL, uploadInfo h
 	var storage Storage
 	var err error
 
-	storage, err = NewStorageByURL(ctx, endpointURL, uploadInfo.MetaData)
+	storage, err = NewStorageByURL(uploaderCtx, endpointURL, uploadInfo.MetaData)
 	if err != nil {
 		uploadCancel()
 		return nil, err
@@ -181,7 +185,7 @@ func New(ctx context.Context, baseDir string, endpointURL *url.URL, uploadInfo h
 		uploadID:         uploadInfo.ID,
 		postponeDuration: time.Second * 2,
 		storage:          storage,
-		retryCount:       5,
+		retryCount:       10,
 		baseDir:          filepath.Join(baseDir, uploadInfo.ID),
 		eventBufferCount: 100,
 	}, nil
@@ -189,20 +193,21 @@ func New(ctx context.Context, baseDir string, endpointURL *url.URL, uploadInfo h
 
 // NewStorageByURL creates a new storage basd on the type from the url scheme, for example "datalake://my-datalake-endpoint"
 func NewStorageByURL(ctx context.Context, u *url.URL, headers map[string]string) (Storage, error) {
+	var workspace = headers["workspace"]
+	if workspace == "" {
+		return nil, errors.New("missed workspace in the client's metadata")
+	}
 	c, _ := config.FromEnv()
 	switch u.Scheme {
 	case "tus":
 		return nil, errors.New("not imlemented yet")
 	case "datalake":
-		if headers["workspace"] == "" {
-			return nil, errors.New("missed workspace in the client's metadata")
-		}
 		if headers["token"] == "" {
 			return nil, errors.New("missed auth token in the client's metadata")
 		}
-		return NewDatalakeStorage(c.Endpoint().String(), headers["workspace"], headers["token"]), nil
+		return NewDatalakeStorage(c.Endpoint().String(), workspace, headers["token"]), nil
 	case "s3":
-		return NewS3(ctx, c.Endpoint().String()), nil
+		return NewS3(ctx, c.Endpoint().String(), workspace), nil
 	default:
 		return nil, errors.New("unknown scheme")
 	}

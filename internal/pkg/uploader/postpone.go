@@ -16,27 +16,33 @@ package uploader
 import (
 	"context"
 	"time"
+
+	"github.com/huly-stream/internal/pkg/log"
+	"go.uber.org/zap"
 )
 
-func (u *uploader) postpone(id string, action func()) {
-	u.wg.Add(1)
+func (u *uploader) postpone(fileName string, action func(ctx context.Context)) {
+	u.waitJobs.Add(1)
 	var ctx, cancel = context.WithCancel(context.Background())
+	ctx = log.WithLoggerFields(ctx, zap.String("pospone", "action"))
 	var startCh = time.After(u.postponeDuration)
 
-	if v, ok := u.contexts.Load(id); ok {
+	if v, ok := u.contexts.Load(fileName); ok {
 		(*v.(*context.CancelFunc))()
 	}
-	u.contexts.Store(id, &cancel)
+	u.contexts.Store(fileName, &cancel)
 
 	go func() {
-		u.wg.Done()
+		u.waitJobs.Done()
 		defer cancel()
 		select {
 		case <-ctx.Done():
 			return
 		case <-startCh:
-			action()
-			u.contexts.CompareAndDelete(id, &cancel)
+			action(ctx)
+			if ctx.Err() == nil {
+				u.contexts.CompareAndDelete(fileName, &cancel)
+			}
 		}
 	}()
 }
