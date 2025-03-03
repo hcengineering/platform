@@ -32,8 +32,7 @@ import core, {
   TxProcessor,
   TxUpdateDoc,
   toIdMap,
-  Space,
-  includesAny
+  Space
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
@@ -272,7 +271,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
 
     if (
       !hierarchy.isDerived(objectSpace._class, core.class.SystemSpace) &&
-      !includesAny(objectSpace.members, currentAcc.socialIds)
+      !objectSpace.members.includes(currentAcc.uuid)
     ) {
       continue
     }
