@@ -27,15 +27,16 @@
   export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
 
-  const myAcc = getCurrentAccount().uuid
+  const myAcc = getCurrentAccount()
+  const myAccUuid = myAcc.uuid
 
-  $: joined = value.includes(myAcc)
+  $: joined = value.includes(myAccUuid)
 
   function join (): void {
-    if (value.includes(myAcc)) return
+    if (value.includes(myAccUuid)) return
     if (onChange === undefined) return
 
-    onChange([...value, myAcc])
+    onChange([...value, myAccUuid])
   }
 </script>
 
@@ -46,7 +47,7 @@
     {label}
     {value}
     {onChange}
-    readonly={readonly || !hasAccountRole(getCurrentAccount(), AccountRole.User)}
+    readonly={readonly || !hasAccountRole(myAcc, AccountRole.User)}
     {kind}
     {size}
     {width}

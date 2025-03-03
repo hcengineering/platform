@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { Contact, Employee, getCurrentEmployee, getName, Person } from '@hcengineering/contact'
-  import { AccountUuid, notEmpty, Ref } from '@hcengineering/core'
+  import { AccountUuid, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import contact from '../plugin'
-  import { personRefByAccountUuidStore } from '../utils'
+  import { employeeByIdStore, personRefByAccountUuidStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
@@ -56,7 +56,20 @@
       clearTimeout(timer)
     }
     update = async () => {
-      const newAccounts = evt.detail.map((p) => valueByPersonRef.get(p)).filter(notEmpty)
+      const newPersons = evt.detail
+      const newAccounts: AccountUuid[] = []
+
+      for (const person of newPersons) {
+        const acc = valueByPersonRef.get(person)
+        if (acc !== undefined) {
+          newAccounts.push(acc)
+        } else {
+          const employee = $employeeByIdStore.get(person)
+          if (employee?.personUuid == null) continue
+
+          newAccounts.push(employee.personUuid)
+        }
+      }
 
       void onChange?.(newAccounts)
       if (timer !== null) {
