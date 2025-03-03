@@ -27,6 +27,7 @@ export const main = async (): Promise<void> => {
       endpoint: '/send',
       type: 'post',
       handler: async (req, res) => {
+        // Skip auth check, since service should be internal
         const text = req.body?.text
         if (text === undefined) {
           res.status(400).send({ err: "'text' is missing" })
