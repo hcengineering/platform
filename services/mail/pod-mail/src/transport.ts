@@ -46,7 +46,7 @@ function ses (config: SesConfig): Transporter {
   })
 }
 
-export function getDefaultTransport (config: Config): Transporter {
+export function getTransport (config: Config): Transporter {
   if (config.smtpConfig !== undefined) {
     return smtp(config.smtpConfig)
   }

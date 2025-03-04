@@ -16,13 +16,13 @@ import { type SendMailOptions, type Transporter } from 'nodemailer'
 
 import config from './config'
 import { Message, Receivers } from './types'
-import { getDefaultTransport } from './transport'
+import { getTransport } from './transport'
 
 export class MailClient {
   private readonly transporter: Transporter
 
   constructor () {
-    this.transporter = getDefaultTransport(config)
+    this.transporter = getTransport(config)
   }
 
   async sendMessage (message: Message, receivers: Receivers, from?: string): Promise<void> {
