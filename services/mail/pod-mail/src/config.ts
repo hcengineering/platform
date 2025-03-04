@@ -18,6 +18,7 @@ dotenvConfig()
 
 export interface Config {
   port: number
+  source?: string
   sesConfig?: SesConfig
   smtpConfig?: SmtpConfig
 }
@@ -37,6 +38,7 @@ export interface SmtpConfig {
 
 const envMap = {
   Port: 'PORT',
+  Source: 'SOURCE',
   DefaultProtocol: 'DEFAULT_PROTOCOL',
   SesAccessKey: 'SES_ACCESS_KEY',
   SesSecretKey: 'SES_SECRET_KEY',
@@ -106,6 +108,7 @@ const config: Config = (() => {
   }
   const params: Config = {
     port,
+    source: process.env[envMap.Source],
     sesConfig: isSesConfig ? buildSesConfig() : undefined,
     smtpConfig: isSmtpConfig ? buildSmtpConfig() : undefined
   }

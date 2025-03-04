@@ -27,7 +27,7 @@ export class MailClient {
 
   async sendMessage (message: Message, receivers: Receivers, from?: string): Promise<void> {
     const mailOptions: SendMailOptions = {
-      from,
+      from: from ?? config.source,
       to: receivers.to,
       text: message.text,
       subject: message.subject
