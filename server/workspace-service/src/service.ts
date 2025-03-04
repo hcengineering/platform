@@ -15,6 +15,7 @@
 import {
   type BaseWorkspaceInfo,
   type BrandingMap,
+  DOMAIN_BLOB,
   type Data,
   type MeasureContext,
   type Tx,
@@ -69,8 +70,6 @@ import {
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
-
-const dbCleanTreshold = 256 // Cleanup workspaces if less 256mb
 
 export interface WorkspaceOptions {
   errorHandler: (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
@@ -498,8 +497,7 @@ export class WorkspaceWorker {
         await sendEvent('migrate-clean-started', 0)
         await this.sendTransactorMaitenance(token, { name: workspace.workspace })
 
-        const sz = workspace.backupInfo?.backupSize ?? 0
-        if (sz <= dbCleanTreshold) {
+        if (process.env.MIGRATION_CLEANUP === 'true') {
           try {
             await this.doCleanup(ctx, workspace, false)
           } catch (err: any) {
@@ -651,7 +649,7 @@ export class WorkspaceWorker {
         opt.backup.bucketName,
         pipelineFactory,
         workspaceStorageAdapter,
-        ['blob'],
+        [DOMAIN_BLOB],
         true,
         (_p: number) => {
           if (progress !== Math.round(_p)) {
