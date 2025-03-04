@@ -13,8 +13,6 @@
 // limitations under the License.
 //
 
-import { Transport } from '../types'
-
 describe('Config', () => {
   const originalEnv = process.env
 
@@ -28,7 +26,7 @@ describe('Config', () => {
   })
 
   test('should throw an error if PORT is missing', () => {
-    delete process.env.PORT
+    process.env.PORT = undefined
     expect(() => require('../config')).toThrow('Missing env variable: Port')
   })
 
@@ -42,7 +40,6 @@ describe('Config', () => {
     const loadedConfig = require('../config').default
 
     expect(loadedConfig.port).toBe(1025)
-    expect(loadedConfig.defaultTransport).toBe(Transport.SMTP)
     expect(loadedConfig.smtpConfig).toEqual({
       Host: 'smtp.example.com',
       Port: 587,
@@ -52,6 +49,7 @@ describe('Config', () => {
   })
 
   test('should load SES config if all required env variables are set', () => {
+    process.env.SMTP_HOST = undefined
     process.env.PORT = '1025'
     process.env.SES_ACCESS_KEY = 'access_key'
     process.env.SES_SECRET_KEY = 'secret_key'
@@ -69,11 +67,21 @@ describe('Config', () => {
 
   test('should throw an error if both SES and SMTP configs are missing', () => {
     process.env.PORT = '1025'
-    delete process.env.SES_ACCESS_KEY
-    delete process.env.SMTP_HOST
+    process.env.SES_ACCESS_KEY = undefined
+    process.env.SMTP_HOST = undefined
 
     expect(() => require('../config')).toThrow(
-      'Missing env variables for email transfer, please specify SES or SMTP configuration'
+      'Please specify SES or SMTP configuration'
+    )
+  })
+
+  test('should throw an error if both SES and SMTP are configured', () => {
+    process.env.PORT = '1025'
+    process.env.SES_ACCESS_KEY = 'access_key'
+    process.env.SMTP_HOST = 'smtp.example.com'
+
+    expect(() => require('../config')).toThrow(
+      'Both SMTP and SES configuration are specified, please specify only one'
     )
   })
 })

@@ -25,6 +25,14 @@ SES settings:
 
 ### Running the Service
 
+Add .env file to the root of the project with the following content to add integration with fake SMTP server:
+```
+PORT=8097
+SMTP_HOST="mail.smtpbucket.com"
+SMTP_PORT=8025 
+```
+To use the real SMTP server it is required to register an account in some email service provider and specify settings and credentials for it.
+
 Start the service locally using:
 ```bash
 rushx run-local

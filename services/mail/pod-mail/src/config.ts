@@ -50,7 +50,7 @@ const envMap = {
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 const isEmpty = (str: string | undefined): boolean => str === undefined || str.trim().length === 0
 
-const buildSesConfig = (): SesConfig | undefined => {
+const buildSesConfig = (): SesConfig => {
   const accessKey = process.env[envMap.SesAccessKey]
   const secretKey = process.env[envMap.SesSecretKey]
   const region = process.env[envMap.SesRegion]
@@ -61,12 +61,7 @@ const buildSesConfig = (): SesConfig | undefined => {
       isEmpty(secretKey) && 'SES_SECRET_KEY',
       isEmpty(region) && 'SES_REGION'
     ].filter(Boolean)
-    if (missingKeys.length === 3) {
-      console.log('SES is not enabled')
-    } else {
-      throw Error(`Missing env variables for SES configuration: ${missingKeys.join(', ')}`)
-    }
-    return undefined
+    throw Error(`Missing env variables for SES configuration: ${missingKeys.join(', ')}`)
   }
 
   return {
@@ -76,7 +71,7 @@ const buildSesConfig = (): SesConfig | undefined => {
   }
 }
 
-const buildSmtpConfig = (): SmtpConfig | undefined => {
+const buildSmtpConfig = (): SmtpConfig => {
   const host = process.env[envMap.SmtpHost]
   const port = parseNumber(process.env[envMap.SmtpPort])
   const username = process.env[envMap.SmtpUsername]
@@ -85,12 +80,7 @@ const buildSmtpConfig = (): SmtpConfig | undefined => {
   if (isEmpty(host) || port === undefined) {
     const missingKeys = [isEmpty(host) && 'SMTP_HOST', port === undefined && 'SMTP_PORT'].filter(Boolean)
 
-    if (missingKeys.length === 2) {
-      console.log('SMTP is not enabled')
-    } else {
-      throw Error(`Missing env variables for SMTP configuration: ${missingKeys.join(', ')}`)
-    }
-    return undefined
+    throw Error(`Missing env variables for SMTP configuration: ${missingKeys.join(', ')}`)
   }
 
   return {
@@ -106,14 +96,18 @@ const config: Config = (() => {
   if (port === undefined) {
     throw Error('Missing env variable: Port')
   }
+  const isSmtpConfig = !isEmpty(process.env[envMap.SmtpHost])
+  const isSesConfig = !isEmpty(process.env[envMap.SesAccessKey])
+  if (isSmtpConfig && isSesConfig) {
+    throw Error('Both SMTP and SES configuration are specified, please specify only one')
+  }
+  if (!isSmtpConfig && !isSesConfig) {
+    throw Error('Please specify SES or SMTP configuration')
+  }
   const params: Config = {
     port,
-    sesConfig: buildSesConfig(),
-    smtpConfig: buildSmtpConfig()
-  }
-
-  if (params.sesConfig === undefined && params.smtpConfig === undefined) {
-    throw Error('Missing env variables for email transfer, please specify SES or SMTP configuration')
+    sesConfig: isSesConfig ? buildSesConfig() : undefined,
+    smtpConfig: isSmtpConfig ? buildSmtpConfig() : undefined
   }
 
   return params
