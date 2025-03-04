@@ -583,9 +583,11 @@ export async function getUniqueAccounts (
 ): Promise<AccountUuid[]> {
   const accounts = new Set<AccountUuid>()
   for (const person of persons) {
-    const newAccount =
-      (await getAccountUuidBySocialId(client, person as unknown as PersonId, accountUuidBySocialId)) ??
-      (person as unknown as AccountUuid)
+    let newAccount = await getAccountUuidBySocialId(client, person as unknown as PersonId, accountUuidBySocialId)
+
+    if (newAccount == null && isUuid(person)) {
+      newAccount = person as unknown as AccountUuid
+    }
     if (newAccount != null) {
       accounts.add(newAccount)
     }
@@ -625,6 +627,11 @@ export async function getAccountUuidByOldAccount (
   return accountUuidByOldAccount.get(oldAccount) ?? null
 }
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+function isUuid (val: string): boolean {
+  return uuidRegex.test(val)
+}
+
 export async function getUniqueAccountsFromOldAccounts (
   client: MigrationClient,
   oldAccounts: string[],
@@ -633,9 +640,12 @@ export async function getUniqueAccountsFromOldAccounts (
 ): Promise<AccountUuid[]> {
   const accounts = new Set<AccountUuid>()
   for (const oldAcc of oldAccounts) {
-    const newAccount =
-      (await getAccountUuidByOldAccount(client, oldAcc, socialIdByOldAccount, accountUuidByOldAccount)) ??
-      (oldAcc as unknown as AccountUuid)
+    let newAccount = await getAccountUuidByOldAccount(client, oldAcc, socialIdByOldAccount, accountUuidByOldAccount)
+
+    if (newAccount == null && isUuid(oldAcc)) {
+      newAccount = oldAcc as unknown as AccountUuid
+    }
+
     if (newAccount != null) {
       accounts.add(newAccount)
     }
