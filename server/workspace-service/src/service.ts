@@ -15,6 +15,7 @@
 import {
   type BaseWorkspaceInfo,
   type BrandingMap,
+  DOMAIN_BLOB,
   type Data,
   type MeasureContext,
   type Tx,
@@ -651,7 +652,7 @@ export class WorkspaceWorker {
         opt.backup.bucketName,
         pipelineFactory,
         workspaceStorageAdapter,
-        ['blob'],
+        [DOMAIN_BLOB],
         true,
         (_p: number) => {
           if (progress !== Math.round(_p)) {
