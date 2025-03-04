@@ -157,7 +157,8 @@ export async function createPushNotification (
   senderAvatar?: Data<AvatarInfo>,
   path?: string[]
 ): Promise<void> {
-  const pushURL: string | undefined = getMetadata(serverNotification.metadata.SesUrl)
+  const pushURL: string | undefined = getMetadata(serverNotification.metadata.WebPushUrl)
+  // TODO: Remove auth token after migration to new services
   const authToken: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
   if (pushURL === undefined || pushURL === '') return
   const userSubscriptions = subscriptions.filter((it) => target.includes(it.user))
