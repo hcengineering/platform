@@ -1946,94 +1946,100 @@ export async function restore (
               break
             }
             ctx.info('processing', { storageFile: sf, processed, workspace: workspaceId.name })
+            try {
+              const readStream = await storage.load(sf)
+              const ex = extract()
 
-            const readStream = await storage.load(sf)
-            const ex = extract()
-
-            ex.on('entry', (headers, stream, next) => {
-              const name = headers.name ?? ''
-              processed++
-              // We found blob data
-              if (requiredDocs.has(name as Ref<Doc>)) {
-                const chunks: Buffer[] = []
-                stream.on('data', (chunk) => {
-                  chunks.push(chunk)
-                })
-                stream.on('end', () => {
-                  const bf = Buffer.concat(chunks as any)
-                  const d = blobs.get(name)
-                  if (d === undefined) {
-                    blobs.set(name, { doc: undefined, buffer: bf })
-                    next()
-                  } else {
-                    blobs.delete(name)
-                    const blob = d?.doc as Blob
-                    ;(blob as any)['%hash%'] = changeset.get(blob._id)
-                    let sz = blob.size
-                    if (Number.isNaN(sz) || sz !== bf.length) {
-                      sz = bf.length
-                    }
-                    void sendBlob(blob, bf, next)
-                  }
-                })
-              } else if (name.endsWith('.json') && requiredDocs.has(name.substring(0, name.length - 5) as Ref<Doc>)) {
-                const chunks: Buffer[] = []
-                const bname = name.substring(0, name.length - 5)
-                stream.on('data', (chunk) => {
-                  chunks.push(chunk)
-                })
-                stream.on('end', () => {
-                  const bf = Buffer.concat(chunks as any)
-                  let doc: Doc
-                  try {
-                    doc = JSON.parse(bf.toString()) as Doc
-                  } catch (err) {
-                    ctx.warn('failed to parse blob metadata', { name, workspace: workspaceId.name, err })
-                    next()
-                    return
-                  }
-
-                  if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
-                    const data = migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
-                    const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
+              ex.on('entry', (headers, stream, next) => {
+                const name = headers.name ?? ''
+                processed++
+                // We found blob data
+                if (requiredDocs.has(name as Ref<Doc>)) {
+                  const chunks: Buffer[] = []
+                  stream.on('data', (chunk) => {
+                    chunks.push(chunk)
+                  })
+                  stream.on('end', () => {
+                    const bf = Buffer.concat(chunks as any)
+                    const d = blobs.get(name)
                     if (d === undefined) {
-                      blobs.set(bname, { doc, buffer: undefined })
+                      blobs.set(name, { doc: undefined, buffer: bf })
                       next()
                     } else {
-                      blobs.delete(bname)
-                      const blob = doc as Blob
-                      void sendBlob(blob, d instanceof Buffer ? d : (d.buffer as Buffer), next)
+                      blobs.delete(name)
+                      const blob = d?.doc as Blob
+                      ;(blob as any)['%hash%'] = changeset.get(blob._id)
+                      let sz = blob.size
+                      if (Number.isNaN(sz) || sz !== bf.length) {
+                        sz = bf.length
+                      }
+                      void sendBlob(blob, bf, next)
                     }
-                  } else {
-                    ;(doc as any)['%hash%'] = changeset.get(doc._id)
-                    void sendChunk(doc, bf.length).finally(() => {
-                      requiredDocs.delete(doc._id)
+                  })
+                } else if (name.endsWith('.json') && requiredDocs.has(name.substring(0, name.length - 5) as Ref<Doc>)) {
+                  const chunks: Buffer[] = []
+                  const bname = name.substring(0, name.length - 5)
+                  stream.on('data', (chunk) => {
+                    chunks.push(chunk)
+                  })
+                  stream.on('end', () => {
+                    const bf = Buffer.concat(chunks as any)
+                    let doc: Doc
+                    try {
+                      doc = JSON.parse(bf.toString()) as Doc
+                    } catch (err) {
+                      ctx.warn('failed to parse blob metadata', { name, workspace: workspaceId.name, err })
                       next()
-                    })
-                  }
-                })
-              } else {
-                next()
-              }
-              stream.resume() // just auto drain the stream
-            })
+                      return
+                    }
 
-            await blobUploader.waitProcessing()
-
-            const endPromise = new Promise((resolve) => {
-              ex.on('finish', () => {
-                resolve(null)
+                    if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
+                      const data = migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
+                      const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
+                      if (d === undefined) {
+                        blobs.set(bname, { doc, buffer: undefined })
+                        next()
+                      } else {
+                        blobs.delete(bname)
+                        const blob = doc as Blob
+                        void sendBlob(blob, d instanceof Buffer ? d : (d.buffer as Buffer), next)
+                      }
+                    } else {
+                      ;(doc as any)['%hash%'] = changeset.get(doc._id)
+                      void sendChunk(doc, bf.length).finally(() => {
+                        requiredDocs.delete(doc._id)
+                        next()
+                      })
+                    }
+                  })
+                } else {
+                  next()
+                }
+                stream.resume() // just auto drain the stream
               })
-            })
-            const unzip = createGunzip({ level: defaultLevel })
 
-            readStream.on('end', () => {
-              readStream.destroy()
-            })
-            readStream.pipe(unzip)
-            unzip.pipe(ex)
+              await blobUploader.waitProcessing()
 
-            await endPromise
+              const unzip = createGunzip({ level: defaultLevel })
+
+              const endPromise = new Promise((resolve, reject) => {
+                ex.on('finish', () => {
+                  resolve(null)
+                })
+
+                readStream.on('end', () => {
+                  readStream.destroy()
+                })
+                readStream.pipe(unzip).on('error', (err) => {
+                  reject(err)
+                })
+                unzip.pipe(ex)
+              })
+
+              await endPromise
+            } catch (err: any) {
+              ctx.error('failed to processing', { storageFile: sf, processed, workspace: workspaceId.name })
+            }
           }
         }
       }

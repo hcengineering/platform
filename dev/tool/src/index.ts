@@ -704,63 +704,75 @@ export function devTool (
     .option('-t|--timeout [timeout]', 'Timeout in days', '60')
     .option('-r|--region [region]', 'Timeout in days', '')
     .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+    .option('-s|--skip [skip]', 'A command separated list of workspaces to skip', '')
     .option('-d|--dry [dry]', 'Dry run', false)
-    .action(async (cmd: { timeout: string, workspace: string, region: string, dry: boolean, account: string }) => {
-      const { txes, dbUrl } = prepareTools()
+    .action(
+      async (cmd: {
+        timeout: string
+        workspace: string
+        region: string
+        dry: boolean
+        account: string
+        skip: string
+      }) => {
+        const { txes, dbUrl } = prepareTools()
 
-      const bucketName = process.env.BUCKET_NAME
-      if (bucketName === '' || bucketName == null) {
-        console.error('please provide butket name env')
-        process.exit(1)
-      }
-
-      const token = generateToken(systemAccountEmail, getWorkspaceId(''))
-      const workspaces = (await listAccountWorkspaces(token, cmd.region))
-        .sort((a, b) => {
-          const bsize = b.backupInfo?.backupSize ?? 0
-          const asize = a.backupInfo?.backupSize ?? 0
-          return bsize - asize
-        })
-        .filter((it) => cmd.workspace === '' || cmd.workspace === it.workspace)
-
-      for (const ws of workspaces) {
-        const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
-
-        toolCtx.warn('--- restoring workspace', {
-          url: ws.workspaceUrl,
-          id: ws.workspace,
-          lastVisitDays,
-          backupSize: ws.backupInfo?.blobsSize ?? 0,
-          mode: ws.mode
-        })
-        if (cmd.dry) {
-          continue
+        const bucketName = process.env.BUCKET_NAME
+        if (bucketName === '' || bucketName == null) {
+          console.error('please provide butket name env')
+          process.exit(1)
         }
-        try {
-          const st = Date.now()
-          await backupRestore(
-            toolCtx,
-            dbUrl,
-            bucketName,
-            ws,
-            (dbUrl, storageAdapter) => {
-              const factory: PipelineFactory = createBackupPipeline(toolCtx, dbUrl, txes, {
-                externalStorage: storageAdapter,
-                usePassedCtx: true
-              })
-              return factory
-            },
-            [DOMAIN_BLOB]
-          )
-          const ed = Date.now()
-          toolCtx.warn('--- restoring complete', {
-            time: ed - st
+
+        const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
+
+        const token = generateToken(systemAccountEmail, getWorkspaceId(''))
+        const workspaces = (await listAccountWorkspaces(token, cmd.region))
+          .sort((a, b) => {
+            const bsize = b.backupInfo?.backupSize ?? 0
+            const asize = a.backupInfo?.backupSize ?? 0
+            return bsize - asize
           })
-        } catch (err: any) {
-          toolCtx.error('REstore of f workspace failedarchive workspace', { workspace: ws.workspace })
+          .filter((it) => (cmd.workspace === '' || cmd.workspace === it.workspace) && !skipWorkspaces.has(it.workspace))
+
+        for (const ws of workspaces) {
+          const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+
+          toolCtx.warn('--- restoring workspace', {
+            url: ws.workspaceUrl,
+            id: ws.workspace,
+            lastVisitDays,
+            backupSize: ws.backupInfo?.blobsSize ?? 0,
+            mode: ws.mode
+          })
+          if (cmd.dry) {
+            continue
+          }
+          try {
+            const st = Date.now()
+            await backupRestore(
+              toolCtx,
+              dbUrl,
+              bucketName,
+              ws,
+              (dbUrl, storageAdapter) => {
+                const factory: PipelineFactory = createBackupPipeline(toolCtx, dbUrl, txes, {
+                  externalStorage: storageAdapter,
+                  usePassedCtx: true
+                })
+                return factory
+              },
+              [DOMAIN_BLOB]
+            )
+            const ed = Date.now()
+            toolCtx.warn('--- restoring complete', {
+              time: ed - st
+            })
+          } catch (err: any) {
+            toolCtx.error('REstore of f workspace failedarchive workspace', { workspace: ws.workspace })
+          }
         }
       }
-    })
+    )
 
   program
     .command('backup-all')
