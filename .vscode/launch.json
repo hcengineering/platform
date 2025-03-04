@@ -498,6 +498,26 @@
       "protocol": "inspector"
     },
     {
+      "name": "Debug restore-all tool",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "restore-all"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        // "DB_URL": "mongodb://localhost:27017",
+        "DB_URL": "postgresql://root@host.docker.internal:26258/defaultdb?sslmode=disable",
+        "SERVER_SECRET": "secret",
+        "BUCKET_NAME":"dev-backups"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/tool",
+      "protocol": "inspector"
+    },
+    {
       "name": "Debug Github integration",
       "type": "node",
       "request": "launch",
