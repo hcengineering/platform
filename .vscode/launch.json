@@ -359,15 +359,14 @@
       "name": "Debug backup tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "backup", "../../../hardware/dump/githubcr", "w-haiodo-githubcr-67403799-de2a46aa46-beb3b2"],
+      "args": ["src/__start.ts", "backup", "../../../hardware/dump/felix", "felix", "--full"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
         "SERVER_SECRET": "secret",
-        "MONGO_URL": "mongodb://localhost:27017",
-        "ACCOUNTS_URL": "http://localhost:3000",
-        "TELEGRAM_DATABASE": "telegram-service"
+        "MONGO_URL": "mongodb://localhost:27018",
+        "ACCOUNTS_URL": "http://localhost:3003"
       },
       "smartStep": true,
       "sourceMapRenames": true,

@@ -665,6 +665,7 @@ export function devTool (
                   cmd.region,
                   5000, // 5 gigabytes per blob
                   sharedPipelineContextVars,
+                  true,
                   async (storage, workspaceStorage) => {
                     if (cmd.remove) {
                       await updateArchiveInfo(toolCtx, db, ws.workspace, true)
@@ -778,8 +779,9 @@ export function devTool (
     .command('backup-all')
     .description('Backup all workspaces...')
     .option('--region [region]', 'Force backup of selected workspace', '')
+    .option('--full', 'Full recheck', false)
     .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
-    .action(async (cmd: { workspace: string, region: string }) => {
+    .action(async (cmd: { workspace: string, region: string, full: boolean }) => {
       const { txes } = prepareTools()
       await withAccountDatabase(async (db) => {
         const workspaces = (await listWorkspacesPure(db))
@@ -810,7 +812,8 @@ export function devTool (
                 },
                 cmd.region,
                 100,
-                sharedPipelineContextVars
+                sharedPipelineContextVars,
+                cmd.full
               )
             ) {
               processed++
@@ -998,6 +1001,7 @@ export function devTool (
     .description('dump workspace transactions and minio resources')
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('--full', 'Full recheck', false)
     .option(
       '-ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to skip download if size >= limit',
@@ -1017,6 +1021,7 @@ export function devTool (
           include: string
           blobLimit: string
           contentTypes: string
+          full: boolean
         }
       ) => {
         const storage = await createFileBackupStorage(dirName)
@@ -1032,7 +1037,8 @@ export function devTool (
           skipBlobContentTypes: cmd.contentTypes
             .split(';')
             .map((it) => it.trim())
-            .filter((it) => it.length > 0)
+            .filter((it) => it.length > 0),
+          fullVerify: cmd.full
         })
       }
     )
@@ -1059,6 +1065,71 @@ export function devTool (
     .action(async (dirName: string, cmd: any) => {
       const storage = await createFileBackupStorage(dirName)
       await checkBackupIntegrity(toolCtx, storage)
+    })
+
+  program
+    .command('backup-check-all')
+    .description('Check Backup integrity')
+    .option('-r|--region [region]', 'Timeout in days', '')
+    .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+    .option('-s|--skip [skip]', 'A command separated list of workspaces to skip', '')
+    .option('-d|--dry [dry]', 'Dry run', false)
+    .action(async (cmd: { timeout: string, workspace: string, region: string, dry: boolean, skip: string }) => {
+      const bucketName = process.env.BUCKET_NAME
+      if (bucketName === '' || bucketName == null) {
+        console.error('please provide butket name env')
+        process.exit(1)
+      }
+
+      const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
+
+      const token = generateToken(systemAccountEmail, getWorkspaceId(''))
+      const workspaces = (await listAccountWorkspaces(token, cmd.region))
+        .sort((a, b) => {
+          const bsize = b.backupInfo?.backupSize ?? 0
+          const asize = a.backupInfo?.backupSize ?? 0
+          return bsize - asize
+        })
+        .filter((it) => (cmd.workspace === '' || cmd.workspace === it.workspace) && !skipWorkspaces.has(it.workspace))
+
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      for (const ws of workspaces) {
+        const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+
+        toolCtx.warn('--- checking workspace backup', {
+          url: ws.workspaceUrl,
+          id: ws.workspace,
+          lastVisitDays,
+          backupSize: ws.backupInfo?.blobsSize ?? 0,
+          mode: ws.mode
+        })
+        if (cmd.dry) {
+          continue
+        }
+        try {
+          const st = Date.now()
+
+          try {
+            const storage = await createStorageBackupStorage(
+              toolCtx,
+              storageAdapter,
+              getWorkspaceId(bucketName),
+              ws.workspace
+            )
+            await checkBackupIntegrity(toolCtx, storage)
+          } catch (err: any) {
+            toolCtx.error('failed to size backup', { err })
+          }
+          const ed = Date.now()
+          toolCtx.warn('--- check complete', {
+            time: ed - st
+          })
+        } catch (err: any) {
+          toolCtx.error('REstore of f workspace failedarchive workspace', { workspace: ws.workspace })
+        }
+      }
+      await storageAdapter.close()
     })
 
   program
