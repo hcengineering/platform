@@ -70,9 +70,7 @@ describe('Config', () => {
     process.env.SES_ACCESS_KEY = undefined
     process.env.SMTP_HOST = undefined
 
-    expect(() => require('../config')).toThrow(
-      'Please specify SES or SMTP configuration'
-    )
+    expect(() => require('../config')).toThrow('Please specify SES or SMTP configuration')
   })
 
   test('should throw an error if both SES and SMTP are configured', () => {
@@ -80,8 +78,6 @@ describe('Config', () => {
     process.env.SES_ACCESS_KEY = 'access_key'
     process.env.SMTP_HOST = 'smtp.example.com'
 
-    expect(() => require('../config')).toThrow(
-      'Both SMTP and SES configuration are specified, please specify only one'
-    )
+    expect(() => require('../config')).toThrow('Both SMTP and SES configuration are specified, please specify only one')
   })
 })
