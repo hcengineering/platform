@@ -16,3 +16,5 @@
 
 ./tool.sh configure sanity-ws-qms --enable=*
 ./tool.sh configure sanity-ws-qms --list
+
+./tool.sh change-field sanity-ws-qms --objectId 65a04887e1043543cd5f21a5 --objectClass contact:class:Person --attribute contact:mixin:Employee.active --value false --type boolean

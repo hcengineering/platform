@@ -70,6 +70,15 @@ export async function diffWorkspace (mongoUrl: string, dbName: string, rawTxes: 
   }
 }
 
+function setByPath (obj: Record<string, any>, path: string[], value: any): Record<string, any> {
+  let current = obj
+  for (let i = 0; i < path.length - 1; i++) {
+    current = current[path[i]] = current[path[i]] ?? {}
+  }
+  current[path[path.length - 1]] = value
+  return obj
+}
+
 export async function updateField (
   workspaceId: WorkspaceUuid,
   transactorUrl: string,
@@ -85,9 +94,10 @@ export async function updateField (
       console.error('Document not found')
       process.exit(1)
     }
-    let valueToPut: string | number = cmd.value
+    let valueToPut: string | number | boolean = cmd.value
     if (cmd.type === 'number') valueToPut = parseFloat(valueToPut)
-    ;(doc as any)[cmd.attribute] = valueToPut
+    if (cmd.type === 'boolean') valueToPut = cmd.value === 'true'
+    setByPath(doc, cmd.attribute.split('.'), valueToPut)
 
     await connection.upload(connection.getHierarchy().getDomain(doc?._class), [doc])
   } finally {
