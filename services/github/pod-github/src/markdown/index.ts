@@ -13,17 +13,10 @@
 // limitations under the License.
 //
 
-import {
-  MarkupNode,
-  jsonToMarkup,
-  markupToJSON,
-  MarkdownParser,
-  storeNodes,
-  storeMarks,
-  MarkdownState
-} from '@hcengineering/text'
-import { GithubKit } from './extensions'
-import { hasHulyLink, hasHulyLinkText } from '../sync/guest'
+import { MarkupNode, jsonToMarkup, markupToJSON } from '@hcengineering/text'
+import { MarkdownParser, storeNodes, storeMarks, MarkdownState } from '@hcengineering/text-markdown'
+// import { GithubKit } from './extensions'
+// import { hasHulyLink, hasHulyLinkText, stripGuestLink } from '../sync/guest'
 
 /**
  * @public
@@ -34,16 +27,17 @@ export function parseMessageMarkdown (
   imageUrl: string,
   guestUrl: string
 ): MarkupNode {
-  const extensions = [
-    GithubKit.configure({
-      sub: {
-        hasHulyText: hasHulyLinkText,
-        hasHulyLink: (href) => hasHulyLink(href, guestUrl)
-      }
-    })
-  ]
-  const parser = new MarkdownParser(extensions, refUrl, imageUrl)
-  return parser.parse(message ?? '')
+  // const extensions = [
+  //   GithubKit.configure({
+  //     sub: {
+  //       hasHulyText: hasHulyLinkText,
+  //       hasHulyLink: (href) => hasHulyLink(href, guestUrl)
+  //     }
+  //   })
+  // ]
+  const parser = new MarkdownParser(refUrl, imageUrl)
+  const json = parser.parse(message ?? '')
+  return json
 }
 
 /**

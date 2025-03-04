@@ -27,7 +27,7 @@ import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
-import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
+import { htmlToMarkup, markupToJSON, jsonToHTML } from '@hcengineering/text'
 import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { encodingForModel } from 'js-tiktoken'
 import OpenAI from 'openai'
@@ -195,7 +195,7 @@ export class AIControl {
     if (this.openai === undefined) {
       return undefined
     }
-    const html = markupToHTML(req.text)
+    const html = jsonToHTML(markupToJSON(req.text))
     const result = await translateHtml(this.openai, html, req.lang)
     const text = result !== undefined ? htmlToMarkup(result) : req.text
     return {

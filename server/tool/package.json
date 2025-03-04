@@ -61,6 +61,7 @@
     "@hcengineering/minio": "^0.6.0",
     "fast-equals": "^5.2.2",
     "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-markdown": "^0.6.0",
     "js-yaml": "^4.1.0"
   }
 }

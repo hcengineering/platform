@@ -45,7 +45,8 @@ import {
   getDocCollaborators,
   getMixinTx
 } from '@hcengineering/server-notification-resources'
-import { markupToHTML, markupToText, stripTags } from '@hcengineering/text-core'
+import { markupToText, stripTags } from '@hcengineering/text-core'
+import { jsonToHTML, markupToJSON } from '@hcengineering/text'
 import { workbenchId } from '@hcengineering/workbench'
 
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
@@ -84,7 +85,7 @@ export async function ChatMessageTextPresenter (doc: ChatMessage): Promise<strin
 }
 
 export async function ChatMessageHtmlPresenter (doc: ChatMessage): Promise<string> {
-  return markupToHTML(doc.message)
+  return jsonToHTML(markupToJSON(doc.message))
 }
 
 /**

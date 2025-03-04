@@ -57,7 +57,8 @@ import task, {
   type TaskType,
   type TaskTypeWithFactory
 } from '@hcengineering/task'
-import { jsonToMarkup, parseMessageMarkdown } from '@hcengineering/text'
+import { jsonToMarkup } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import tracker, {
   type Issue,
   type IssueParentInfo,
@@ -644,7 +645,7 @@ export class WorkspaceImporter {
   }
 
   async createComment (issueId: Ref<Issue>, comment: ImportComment, projectId: Ref<Project>): Promise<void> {
-    const json = parseMessageMarkdown(comment.text ?? '', 'image://')
+    const json = markdownToMarkup(comment.text ?? '')
     const processedJson = this.preprocessor.process(json, issueId, projectId)
     const markup = jsonToMarkup(processedJson)
 
@@ -760,7 +761,7 @@ export class WorkspaceImporter {
     content: string,
     spaceId: Ref<Space>
   ): Promise<Ref<PlatformBlob>> {
-    const json = parseMessageMarkdown(content ?? '', 'image://')
+    const json = markdownToMarkup(content ?? '')
     const processedJson = this.preprocessor.process(json, id, spaceId)
 
     const markup = jsonToMarkup(processedJson)

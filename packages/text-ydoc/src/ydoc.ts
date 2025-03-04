@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,63 +14,40 @@
 //
 
 import { generateId, Markup } from '@hcengineering/core'
-import { Extensions, getSchema } from '@tiptap/core'
-import { Node, Schema } from '@tiptap/pm/model'
-import { prosemirrorJSONToYDoc, prosemirrorToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror'
-import {
-  Doc as YDoc,
-  XmlElement as YXmlElement,
-  XmlFragment as YXmlFragment,
-  XmlText as YXmlText,
-  applyUpdate,
-  encodeStateAsUpdate
-} from 'yjs'
-import { defaultExtensions, jsonToMarkup, markupToJSON, markupToPmNode, type MarkupNode } from '@hcengineering/text'
-
-const defaultSchema = getSchema(defaultExtensions)
+import { jsonToMarkup, MarkupMarkType, MarkupNodeType, markupToJSON, type MarkupNode } from '@hcengineering/text'
+import { Doc as YDoc, XmlElement as YXmlElement, XmlFragment as YXmlFragment, XmlText as YXmlText } from 'yjs'
 
 /**
- * @public
- */
-export function markupToYDoc (markup: Markup, field: string, schema?: Schema, extensions?: Extensions): YDoc {
-  const node = markupToPmNode(markup, schema, extensions)
-  return prosemirrorToYDoc(node, field)
-}
-
-/**
- * Convert markup to Y.Doc without using ProseMirror schema
+ * Convert Markup to Y.Doc
  *
  * @public
  */
-export function markupToYDocNoSchema (markup: Markup, field: string): YDoc {
-  return jsonToYDocNoSchema(markupToJSON(markup), field)
+export function markupToYDoc (markup: Markup, field: string): YDoc {
+  return jsonToYDoc(markupToJSON(markup), field)
 }
 
 /**
- * Convert ProseMirror JSON to Y.Doc without using ProseMirror schema
+ * Convert Markup JSON to Y.Doc
  *
  * @public
  */
-export function jsonToYDocNoSchema (json: MarkupNode, field: string): YDoc {
+export function jsonToYDoc (json: MarkupNode, field: string): YDoc {
   const ydoc = new YDoc({ guid: generateId() })
   const fragment = ydoc.getXmlFragment(field)
 
   const nodes = json.type === 'doc' ? json.content ?? [] : [json]
-  nodes.map((p) => nodeToYXmlElement(fragment, p))
+  nodes.map((p) => nodeToXmlElement(fragment, p))
 
   return ydoc
 }
 
-/**
- * Convert ProseMirror JSON Node representation to YXmlElement
- * */
-function nodeToYXmlElement (parent: YXmlFragment, node: MarkupNode): YXmlElement | YXmlText {
+function nodeToXmlElement (parent: YXmlFragment, node: MarkupNode): YXmlElement | YXmlText {
   const elem = node.type === 'text' ? new YXmlText() : new YXmlElement(node.type)
   parent.push([elem])
 
   if (elem instanceof YXmlElement) {
     if (node.content !== undefined && node.content.length > 0) {
-      node.content.map((p) => nodeToYXmlElement(elem, p))
+      node.content.map((p) => nodeToXmlElement(elem, p))
     }
   } else {
     // https://github.com/yjs/y-prosemirror/blob/master/src/plugins/sync-plugin.js#L777
@@ -98,73 +75,59 @@ function nodeToYXmlElement (parent: YXmlFragment, node: MarkupNode): YXmlElement
 }
 
 /**
+ * Convert Y.Doc to Markup
+ *
  * @public
  */
 export function yDocToMarkup (ydoc: YDoc, field: string): Markup {
-  const json = yDocToProsemirrorJSON(ydoc, field)
-  return jsonToMarkup(json as MarkupNode)
+  const fragment = ydoc.getXmlFragment(field)
+  const json = xmlFragmentToNode(fragment)
+  return jsonToMarkup({ type: MarkupNodeType.doc, content: json })
 }
 
-/**
- * Get ProseMirror nodes from Y.Doc content
- *
- * @public
- */
-export function yDocContentToNodes (content: ArrayBuffer, schema?: Schema, extensions?: Extensions): Node[] {
-  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
+function xmlFragmentToNode (fragment: YXmlFragment): MarkupNode[] {
+  const result: MarkupNode[] = []
 
-  const nodes: Node[] = []
+  for (let i = 0; i < fragment.length; i++) {
+    const item = fragment.get(i)
+    if (item instanceof YXmlElement) {
+      const node: MarkupNode = {
+        type: item.nodeName as MarkupNodeType
+      }
 
-  try {
-    const ydoc = new YDoc({
-      gc: false,
-      guid: generateId()
-    })
-    const uint8arr = new Uint8Array(content)
-    applyUpdate(ydoc, uint8arr)
+      // Handle attributes
+      const attrs = item.getAttributes()
+      if (Object.keys(attrs).length > 0) {
+        node.attrs = attrs
+      }
 
-    for (const field of ydoc.share.keys()) {
-      try {
-        const body = yDocToProsemirrorJSON(ydoc, field)
-        nodes.push(schema.nodeFromJSON(body))
-      } catch {}
+      // Handle content
+      if (item.length > 0) {
+        node.content = xmlFragmentToNode(item)
+      }
+
+      result.push(node)
+    } else if (item instanceof YXmlText) {
+      // Handle text with marks
+      const delta = item.toDelta()
+      for (const op of delta) {
+        const textNode: MarkupNode = {
+          type: MarkupNodeType.text,
+          text: op.insert
+        }
+
+        // Convert attributes to marks
+        if (op.attributes != null) {
+          textNode.marks = Object.entries(op.attributes).map(([type, attrs]) => ({
+            type: type as MarkupMarkType,
+            attrs: attrs as Record<string, any>
+          }))
+        }
+
+        result.push(textNode)
+      }
     }
-  } catch (err: any) {
-    console.error(err)
   }
 
-  return nodes
-}
-
-/**
- * Update Y.Doc content
- *
- * @public
- */
-export function updateYDocContent (
-  content: ArrayBuffer,
-  updateFn: (body: Record<string, any>) => Record<string, any>,
-  schema?: Schema,
-  extensions?: Extensions
-): YDoc | undefined {
-  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
-
-  try {
-    const ydoc = new YDoc({ guid: generateId(), gc: false })
-    const res = new YDoc({ guid: generateId(), gc: false })
-    const uint8arr = new Uint8Array(content)
-    applyUpdate(ydoc, uint8arr)
-
-    for (const field of ydoc.share.keys()) {
-      const body = yDocToProsemirrorJSON(ydoc, field)
-      const updated = updateFn(body)
-      const yDoc = prosemirrorJSONToYDoc(schema, updated, field)
-      const update = encodeStateAsUpdate(yDoc)
-      applyUpdate(res, update)
-    }
-
-    return res
-  } catch (err: any) {
-    console.error(err)
-  }
+  return result
 }

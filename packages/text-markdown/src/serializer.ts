@@ -1,8 +1,23 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { MarkupMark, MarkupNode, MarkupNodeType } from '@hcengineering/text-core'
-import { generateHTML } from '@tiptap/html'
-import { defaultExtensions } from '../extensions'
+import { markupToHtml } from '@hcengineering/text-html'
+
 import { isInSet, markEq } from './marks'
-import { messageContent, nodeAttrs } from './node'
+import { nodeContent, nodeAttrs } from './node'
 
 type FirstDelim = (i: number, attrs?: Record<string, any>, parentAttrs?: Record<string, any>) => string
 interface IState {
@@ -44,14 +59,14 @@ function backticksFor (side: boolean): string {
 }
 
 function isPlainURL (link: MarkupMark, parent: MarkupNode, index: number): boolean {
-  if (link.attrs.title !== undefined || !/^\w+:/.test(link.attrs.href)) return false
+  if (link.attrs?.title !== undefined || !/^\w+:/.test(link.attrs?.href)) return false
   const content = parent.content?.[index]
   if (content === undefined) {
     return false
   }
   if (
     content.type !== MarkupNodeType.text ||
-    content.text !== link.attrs.href ||
+    content.text !== link.attrs?.href ||
     content.marks?.[content.marks.length - 1] !== link
   ) {
     return false
@@ -110,7 +125,7 @@ export const storeNodes: Record<string, NodeProcessor> = {
     if (nodeAttrs(node).order !== undefined) {
       start = Number(nodeAttrs(node).order)
     }
-    const maxW = String(start + messageContent(node).length - 1).length
+    const maxW = String(start + nodeContent(node).length - 1).length
     const space = state.repeat(' ', maxW + 2)
     state.renderList(node, space, (i: number) => {
       const nStr = String(start + i)
@@ -218,7 +233,7 @@ export const storeNodes: Record<string, NodeProcessor> = {
     state.write('-->')
   },
   hardBreak: (state, node, parent, index) => {
-    const content = messageContent(parent)
+    const content = nodeContent(parent)
     for (let i = index + 1; i < content.length; i++) {
       if (content[i].type !== node.type) {
         state.write('\\\n')
@@ -231,8 +246,7 @@ export const storeNodes: Record<string, NodeProcessor> = {
     state.text(node.text ?? '')
   },
   table: (state, node) => {
-    const html = generateHTML(node, defaultExtensions)
-    state.write('<table><tbody>' + html + '</tbody></table>')
+    state.write(markupToHtml(node, {}))
     state.closeBlock(node)
   }
 }
@@ -291,7 +305,7 @@ export const storeMarks: Record<string, MarkProcessor> = {
   link: {
     open: (state, mark, parent, index) => {
       if (state.renderAHref === true) {
-        return `<a href="${encodeURI(mark.attrs.href)}">`
+        return `<a href="${encodeURI(mark.attrs?.href)}">`
       } else {
         state.inAutolink = isPlainURL(mark, parent, index)
         return state.inAutolink ? '<' : '['
@@ -307,8 +321,8 @@ export const storeMarks: Record<string, MarkProcessor> = {
           ? '>'
           : '](' +
               // eslint-disable-next-line
-              (mark.attrs.href as string).replace(/[\(\)"]/g, '\\$&') +
-              (mark.attrs.title !== undefined ? ` "${(mark.attrs.title as string).replace(/"/g, '\\"')}"` : '') +
+              (mark.attrs?.href as string).replace(/[\(\)"]/g, '\\$&') +
+              (mark.attrs?.title !== undefined ? ` "${(mark.attrs?.title as string).replace(/"/g, '\\"')}"` : '') +
               ')'
       }
     },
@@ -444,7 +458,7 @@ export class MarkdownState implements IState {
   // :: (Node)
   // Render the contents of `parent` as block nodes.
   renderContent (parent: MarkupNode): void {
-    messageContent(parent).forEach((node: MarkupNode, i: number) => {
+    nodeContent(parent).forEach((node: MarkupNode, i: number) => {
       this.render(node, parent, i)
     })
   }
@@ -656,7 +670,7 @@ export class MarkdownState implements IState {
   // Render the contents of `parent` as inline content.
   renderInline (parent: MarkupNode): void {
     const state: InlineState = { active: [], trailing: '', parent, marks: [] }
-    messageContent(parent).forEach((nde, index) => {
+    nodeContent(parent).forEach((nde, index) => {
       state.node = nde
       this.renderNodeInline(state, index)
     })
@@ -677,7 +691,7 @@ export class MarkdownState implements IState {
     const prevTight = this.inTightList
     this.inTightList = isTight
 
-    messageContent(node).forEach((child, i) => {
+    nodeContent(node).forEach((child, i) => {
       this.renderListItem(node, child, i, isTight, delim, firstDelim)
     })
     this.inTightList = prevTight
@@ -748,7 +762,7 @@ export class MarkdownState implements IState {
   }
 }
 
-function makeQuery (obj: Record<string, string | number | boolean | undefined>): string {
+function makeQuery (obj: Record<string, string | number | boolean | null | undefined>): string {
   return Object.keys(obj)
     .filter((it) => it[1] != null)
     .map(function (k) {

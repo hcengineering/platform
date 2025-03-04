@@ -218,7 +218,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
       const sourcePath = this.getSourcePath(id)
       if (sourcePath == null) return
 
-      const href = decodeURI(mark.attrs.href)
+      const href = decodeURI(mark.attrs?.href ?? '')
       const fullPath = path.resolve(path.dirname(sourcePath), href)
 
       if (this.refMetaByPath.has(fullPath)) {

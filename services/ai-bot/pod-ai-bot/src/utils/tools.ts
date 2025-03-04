@@ -1,7 +1,7 @@
 import { MarkupBlobRef, PersonId, Ref } from '@hcengineering/core'
 import document, { Document, getFirstRank, Teamspace } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
-import { parseMessageMarkdown } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import {
   BaseFunctionsArgs,
   RunnableFunctionWithoutParse,
@@ -91,7 +91,7 @@ async function saveFile (
   if (content === undefined) {
     return 'Error while converting pdf to markdown'
   }
-  const converted = JSON.stringify(parseMessageMarkdown(content, 'image://'))
+  const converted = JSON.stringify(markdownToMarkup(content))
 
   const client = await workspaceClient.opClient
   const fileId = uuid()

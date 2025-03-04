@@ -63,7 +63,8 @@ import { createChatCompletionWithTools, requestSummary } from '../utils/openai'
 import { connectPlatform } from '../utils/platform'
 import { LoveController } from './love'
 import { DbStorage } from '../storage'
-import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
+import { jsonToMarkup, markupToText } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { countTokens } from '@hcengineering/openai'
 import { getAccountClient } from '@hcengineering/server-client'
 import { getGlobalPerson } from '../utils/account'
@@ -347,8 +348,7 @@ export class WorkspaceClient {
 
     void this.pushHistory(response, 'assistant', responseTokens, personUuid, objectId, objectClass)
 
-    const parser = new MarkdownParser([], '', '')
-    const parseResponse = jsonToMarkup(parser.parse(response))
+    const parseResponse = jsonToMarkup(markdownToMarkup(response, { refUrl: '', imageUrl: '' }))
 
     if (messageClass === chunter.class.ChatMessage) {
       await op.addCollection<Doc, ChatMessage>(

@@ -3,7 +3,7 @@
 //
 
 import { Branding, generateUuid, PersonUuid, TxOperations, WorkspaceIds, WorkspaceUuid } from '@hcengineering/core'
-import { MarkupMarkType, MarkupNode, MarkupNodeType, traverseMarkupNode } from '@hcengineering/text'
+import { MarkupMarkType, MarkupNode, MarkupNodeType, traverseNode } from '@hcengineering/text'
 import { getPublicLink } from '@hcengineering/server-guest-resources'
 import { Task } from '@hcengineering/task'
 import { generateToken } from '@hcengineering/server-token'
@@ -23,9 +23,9 @@ export function hasHulyLink (href: string, guestLink: string): boolean {
 export async function stripGuestLink (markdown: MarkupNode): Promise<void> {
   const toRemove: MarkupNode[] = []
 
-  traverseMarkupNode(markdown, (node) => {
+  traverseNode(markdown, (node) => {
     if (node.content === undefined) {
-      return
+      return false
     }
     const oldLength = node.content.length
     node.content = node.content.filter((it) => it.type !== MarkupNodeType.subLink)
@@ -35,14 +35,18 @@ export async function stripGuestLink (markdown: MarkupNode): Promise<void> {
     if (node.content.length !== oldLength && node.type === MarkupNodeType.paragraph) {
       toRemove.push(node)
     }
+
+    return true
   })
 
   // traverse nodes once again and remove empty parent node
-  traverseMarkupNode(markdown, (node) => {
+  traverseNode(markdown, (node) => {
     if (node.content === undefined) {
-      return
+      return false
     }
     node.content = node.content.filter((it) => !toRemove.includes(it))
+
+    return true
   })
 }
 export async function appendGuestLink (
