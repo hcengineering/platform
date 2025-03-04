@@ -2,7 +2,7 @@
   import core, { Association, Doc, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, Scroller, Section, showPopup } from '@hcengineering/ui'
   import { showMenu } from '../actions'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import DocTable from './DocTable.svelte'
@@ -116,16 +116,18 @@
   </svelte:fragment>
 
   <svelte:fragment slot="content">
-    <div class="antiSection-empty solid flex-col mt-3">
-      {#if docs?.length > 0 && config != null}
+    {#if docs?.length > 0 && config != null}
+      <Scroller horizontal>
         <DocTable objects={docs} {_class} {config} {onContextMenu} />
-      {:else if !readonly}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <span class="over-underline content-color" on:click={add}>
-          <Label label={core.string.AddRelation} />
-        </span>
-      {/if}
+      </Scroller>
+    {:else if !readonly}
+      <div class="antiSection-empty solid clear-mins mt-3">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <span class="over-underline content-color" on:click={add}>
+        <Label label={core.string.AddRelation} />
+      </span>
     </div>
+    {/if}
   </svelte:fragment>
 </Section>

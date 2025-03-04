@@ -85,6 +85,7 @@
     is={getComponent(selected)}
     props={{
       type: type?.of,
+      nested: true,
       editable,
       kind,
       size
