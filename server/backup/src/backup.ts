@@ -1083,6 +1083,7 @@ export async function backup (
                 const dsame = deepEqual(dData, sData)
                 if (!dsame) {
                   needRetrieve.push(localDoc._id)
+                  changes.updated.set(localDoc._id, same.get(localDoc._id) ?? '')
                   // Docs are not same
                   if (needRetrieve.length > 200) {
                     needRetrieveChunks.push(needRetrieve)
