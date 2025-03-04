@@ -164,9 +164,10 @@ export async function createPushNotification (
   senderAvatar?: Data<AvatarInfo>,
   path?: string[]
 ): Promise<void> {
-  const sesURL: string | undefined = getMetadata(serverNotification.metadata.SesUrl)
-  const sesAuth: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
-  if (sesURL === undefined || sesURL === '') return
+  const pushURL: string | undefined = getMetadata(serverNotification.metadata.WebPushUrl)
+  // TODO: Remove auth token after migration to new services
+  const authToken: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
+  if (pushURL === undefined || pushURL === '') return
   const userSubscriptions = subscriptions.filter((it) => it.user === target)
   const data: PushData = {
     title,
@@ -193,11 +194,11 @@ export async function createPushNotification (
     }
   }
 
-  void sendPushToSubscription(sesURL, sesAuth, control, target, userSubscriptions, data)
+  void sendPushToSubscription(pushURL, authToken, control, target, userSubscriptions, data)
 }
 
 async function sendPushToSubscription (
-  sesURL: string,
+  pushURL: string,
   sesAuth: string | undefined,
   control: TriggerControl,
   targetUser: Ref<Account>,
@@ -207,7 +208,7 @@ async function sendPushToSubscription (
   try {
     const result: Ref<PushSubscription>[] = (
       await (
-        await fetch(concatLink(sesURL, '/web-push'), {
+        await fetch(concatLink(pushURL, '/web-push'), {
           method: 'post',
           keepalive: true,
           headers: {

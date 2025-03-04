@@ -152,6 +152,7 @@ export default plugin(serverNotificationId, {
   metadata: {
     SesUrl: '' as Metadata<string>,
     SesAuthToken: '' as Metadata<string>,
+    WebPushUrl: '' as Metadata<string>,
     InboxOnlyNotifications: '' as Metadata<boolean>
   },
   class: {
