@@ -451,7 +451,7 @@ export async function doRestoreWorkspace (
       restore(ctx, '', getWorkspaceId(ws.workspace), storage, {
         date: -1,
         skip: new Set(skipDomains),
-        recheck: true,
+        recheck: false, // Do not need to recheck
         storageAdapter: workspaceStorageAdapter,
         cleanIndexState,
         getConnection: async () => {

@@ -149,7 +149,7 @@ export async function backupRestore (
       restore(ctx, '', getWorkspaceId(workspace.workspace), storage, {
         date: -1,
         skip: new Set(skipDomains),
-        recheck: true,
+        recheck: false,
         storageAdapter: workspaceStorage,
         getConnection: async () => {
           return wrapPipeline(ctx, await pipelineFactory(ctx, wsUrl, true, () => {}, null), wsUrl)
