@@ -20,8 +20,8 @@ import {
 } from '@hcengineering/model'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import workbench, { type WorkbenchTab } from '@hcengineering/workbench'
-import core, { DOMAIN_TX, MeasureMetricsContext } from '@hcengineering/core'
-import { getSocialIdByOldAccount } from '@hcengineering/model-core'
+import core, { type AccountUuid, DOMAIN_TX, MeasureMetricsContext, type PersonId } from '@hcengineering/core'
+import { getAccountUuidBySocialId, getSocialIdByOldAccount } from '@hcengineering/model-core'
 
 import { workbenchId } from '.'
 
@@ -35,12 +35,31 @@ async function migrateTabsToSocialIds (client: MigrationClient): Promise<void> {
   const socialIdByAccount = await getSocialIdByOldAccount(client)
   const tabs = await client.find<WorkbenchTab>(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
   for (const tab of tabs) {
-    const newAttachedTo = socialIdByAccount[tab.attachedTo]
+    const newAttachedTo: any = socialIdByAccount[tab.attachedTo]
     if (newAttachedTo != null && newAttachedTo !== tab.attachedTo) {
       await client.update(DOMAIN_PREFERENCE, { _id: tab._id }, { attachedTo: newAttachedTo })
     }
   }
   ctx.info('migrating workbench tabs to social ids completed...')
+}
+
+async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('workbench migrateSocialIdsToGlobalAccounts', {})
+  ctx.info('migrating workbench tabs to global accounts...')
+  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+
+  const tabs = await client.find<WorkbenchTab>(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
+  for (const tab of tabs) {
+    const newAttachedTo = await getAccountUuidBySocialId(
+      client,
+      tab.attachedTo as unknown as PersonId,
+      accountUuidBySocialId
+    )
+    if (newAttachedTo != null && newAttachedTo !== tab.attachedTo) {
+      await client.update(DOMAIN_PREFERENCE, { _id: tab._id }, { attachedTo: newAttachedTo })
+    }
+  }
+  ctx.info('migrating workbench tabs to global accounts completed...')
 }
 
 export const workbenchOperation: MigrateOperation = {
@@ -64,6 +83,10 @@ export const workbenchOperation: MigrateOperation = {
       {
         state: 'tabs-accounts-to-social-ids',
         func: migrateTabsToSocialIds
+      },
+      {
+        state: 'tabs-social-ids-to-global-accounts',
+        func: migrateSocialIdsToGlobalAccounts
       }
     ])
   },
