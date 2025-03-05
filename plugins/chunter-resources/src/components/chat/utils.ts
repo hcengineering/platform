@@ -12,21 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import attachment, { type SavedAttachments } from '@hcengineering/attachment'
+
 import { type DirectMessage } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
-import core, {
-  AccountRole,
-  getCurrentAccount,
-  hasAccountRole,
-  SortingOrder,
-  type UserStatus,
-  type WithLookup,
-  type AccountUuid
-} from '@hcengineering/core'
+import { AccountRole, getCurrentAccount, hasAccountRole, type UserStatus, type AccountUuid } from '@hcengineering/core'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { createQuery, getClient, MessageBox, onClient } from '@hcengineering/presentation'
+import { getClient, MessageBox } from '@hcengineering/presentation'
 import { type Action, showPopup } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
@@ -41,7 +33,6 @@ interface NavigatorState {
   collapsedSections: string[]
 }
 
-export const savedAttachmentsStore = writable<Array<WithLookup<SavedAttachments>>>([])
 export const navigatorStateStore = writable<NavigatorState>(restoreNavigatorState())
 
 function restoreNavigatorState (): NavigatorState {
@@ -350,20 +341,6 @@ function archiveActivityChannels (contexts: DocNotifyContext[]): void {
     },
     'top'
   )
-}
-
-const savedAttachmentsQuery = createQuery(true)
-export function loadSavedAttachments (): void {
-  onClient(() => {
-    savedAttachmentsQuery.query(
-      attachment.class.SavedAttachments,
-      { space: core.space.Workspace },
-      (res) => {
-        savedAttachmentsStore.set(res.filter(({ $lookup }) => $lookup?.attachedTo !== undefined))
-      },
-      { lookup: { attachedTo: attachment.class.Attachment }, sort: { modifiedOn: SortingOrder.Descending } }
-    )
-  })
 }
 
 export async function hideActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
