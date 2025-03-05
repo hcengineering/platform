@@ -13,6 +13,9 @@
 // limitations under the License.
 //
 
+import { type SendMailOptions } from 'nodemailer'
+import { Request, Response } from 'express'
+
 import config from './config'
 import { createServer, listen } from './server'
 import { MailClient } from './mail'
@@ -27,34 +30,7 @@ export const main = async (): Promise<void> => {
       endpoint: '/send',
       type: 'post',
       handler: async (req, res) => {
-        // Skip auth check, since service should be internal
-        const text = req.body?.text
-        if (text === undefined) {
-          res.status(400).send({ err: "'text' is missing" })
-          return
-        }
-        const subject = req.body?.subject
-        if (subject === undefined) {
-          res.status(400).send({ err: "'subject' is missing" })
-          return
-        }
-        const html = req.body?.html
-        const to = req.body?.to
-        if (to === undefined) {
-          res.status(400).send({ err: "'to' is missing" })
-          return
-        }
-        const receivers = {
-          to: Array.isArray(to) ? to : [to]
-        }
-        const from = req.body?.from
-        try {
-          await client.sendMessage({ text, subject, html }, receivers, from)
-        } catch (err) {
-          console.log(err)
-        }
-
-        res.send()
+        await handleSendMail(client, req, res)
       }
     }
   ]
@@ -75,4 +51,28 @@ export const main = async (): Promise<void> => {
   process.on('unhandledRejection', (e) => {
     console.error(e)
   })
+}
+
+export async function handleSendMail (client: MailClient, req: Request, res: Response): Promise<void> {
+  // Skip auth check, since service should be internal
+  const message: SendMailOptions = req.body
+  if (message?.text === undefined) {
+    res.status(400).send({ err: "'text' is missing" })
+    return
+  }
+  if (message?.subject === undefined) {
+    res.status(400).send({ err: "'subject' is missing" })
+    return
+  }
+  if (message?.to === undefined) {
+    res.status(400).send({ err: "'to' is missing" })
+    return
+  }
+  try {
+    await client.sendMessage(message)
+  } catch (err) {
+    console.log(err)
+  }
+
+  res.send()
 }
