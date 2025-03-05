@@ -15,18 +15,6 @@
 
 import { NextFunction, Request, Response } from 'express'
 
-export interface Receivers {
-  to: string[]
-  cc?: string[]
-  bcc?: string[]
-}
-
-export interface Message {
-  text: string
-  subject: string
-  html?: string
-}
-
 export type RequestType = 'get' | 'post'
 
 export type RequestHandler = (req: Request, res: Response, next?: NextFunction) => Promise<void>

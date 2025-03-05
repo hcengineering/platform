@@ -53,6 +53,32 @@ Send an email message.
 - `subject`: Required. String containing the email subject.
 - `html`: Optional. String containing HTML message body.
 - `from`: Optional. Sender's email address.
+- `attachments`: Optional. Array of objects, each object can have the following fields:
+  - `filename`: Filename to be reported as the name of the attached file. Use of unicode is allowed.
+  - `contentType`: Optional. Content type for the attachment, if not set will be derived from the filename property.
+  - `content`: String, Buffer, or a Stream contents for the attachment.
+  - `href`: Optional. An URL to the file (data URIs are allowed as well).
+  - `contentDisposition`: Optional. Content disposition type for the attachment, defaults to ‘attachment’.
+  - `cid`: Optional. Content id for using inline images in HTML message source.
+  - `encoding`: Optional. If set and content is a string, then encodes the content to a Buffer using the specified encoding. Example values: ‘base64’, ‘hex’, ‘binary’ etc. Useful if you want to use binary attachments in a JSON formatted email object.
+  - `raw`: An optional special value that overrides the entire contents of the current MIME node, including MIME headers. Useful if you want to prepare node contents yourself.
+
+Request body example:
+```
+{
+	"subject": "Test SMTP",
+	"text": "My text",
+	"from": "test1@example.com",
+	"to": "test2@example.com",
+	"attachments": [
+		{
+		  "filename": "test.txt",
+		  "content": "Hello world",
+		  "contentType": "text/plain"
+		}	
+	]
+}
+```
 
 #### Response
 
