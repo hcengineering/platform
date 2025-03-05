@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { AnyAttribute, Tx, TxCreateDoc, TxProcessor, TxRemoveDoc } from '@hcengineering/core'
-import card, { MasterTag } from '@hcengineering/card'
+import core, { AnyAttribute, Class, Doc, Ref, Tx, TxCreateDoc, TxProcessor, TxRemoveDoc } from '@hcengineering/core'
+import card, { DOMAIN_CARD, MasterTag } from '@hcengineering/card'
 import view from '@hcengineering/view'
 import { TriggerControl } from '@hcengineering/server-core'
 
@@ -86,7 +86,7 @@ async function OnMasterTagRemove (ctx: TxRemoveDoc<MasterTag>[], control: Trigge
   const res: Tx[] = []
   // should remove objects if masterTag
   if (removedTag._class === card.class.MasterTag) {
-    const cards = await control.findAll(control.ctx, removeTx.objectId, {})
+    const cards = await control.lowLevel.rawFindAll(DOMAIN_CARD, { _class: removedTag._id as Ref<Class<Doc>> })
     for (const card of cards) {
       res.push(control.txFactory.createTxRemoveDoc(card._class, card.space, card._id))
     }
@@ -95,6 +95,21 @@ async function OnMasterTagRemove (ctx: TxRemoveDoc<MasterTag>[], control: Trigge
   for (const des of desc) {
     if (des === removeTx.objectId) continue
     res.push(control.txFactory.createTxRemoveDoc(card.class.MasterTag, core.space.Model, des))
+  }
+  const removedRelation = new Set()
+  const relationsA = control.modelDb.findAllSync(core.class.Association, {
+    classA: removeTx.objectId
+  })
+  for (const rel of relationsA) {
+    removedRelation.add(rel._id)
+    res.push(control.txFactory.createTxRemoveDoc(core.class.Association, core.space.Model, rel._id))
+  }
+  const relationsB = control.modelDb.findAllSync(core.class.Association, {
+    classB: removeTx.objectId
+  })
+  for (const rel of relationsB) {
+    if (removedRelation.has(rel._id)) continue
+    res.push(control.txFactory.createTxRemoveDoc(core.class.Association, core.space.Model, rel._id))
   }
 
   return res

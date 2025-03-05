@@ -34,12 +34,18 @@
   const query = createQuery()
 
   query.query(core.class.Association, {}, (res) => {
+    console.log(res)
     associations = res
   })
 
   function getClassLabel (_class: Ref<Class<Doc>>): IntlString {
-    const _classLabel = hierarchy.getClass(_class)
-    return _classLabel.label
+    try {
+      const _classLabel = hierarchy.getClass(_class)
+      return _classLabel.label
+    } catch (err) {
+      console.error(err)
+      return core.string.Class
+    }
   }
 
   function addRelation (): void {

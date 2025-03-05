@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import activity from '@hcengineering/activity'
-import { CardEvents, cardId, type Card, type MasterTag, type Tag } from '@hcengineering/card'
+import { CardEvents, cardId, DOMAIN_CARD, type Card, type MasterTag, type Tag } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
 import core, {
@@ -20,7 +20,6 @@ import core, {
   DOMAIN_MODEL,
   IndexKind,
   type CollectionSize,
-  type Domain,
   type MarkupBlobRef,
   type Rank,
   type Ref
@@ -47,8 +46,6 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 import card from './plugin'
 
 export { cardId } from '@hcengineering/card'
-
-const DOMAIN_CARD = 'card' as Domain
 
 @Model(card.class.MasterTag, core.class.Class)
 export class TMasterTag extends TClass implements MasterTag {}
