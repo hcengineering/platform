@@ -681,13 +681,15 @@ export class PostgresAccountDB implements AccountDB {
 
       /* ======= S O C I A L   I D S ======= */
       CREATE TABLE IF NOT EXISTS global_account.social_id (
+          id INT8 NOT NULL DEFAULT unique_rowid(),
           type global_account.social_id_type NOT NULL,
           value STRING NOT NULL,
           key STRING AS (CONCAT(type::STRING, ':', value)) STORED,
           person_uuid UUID NOT NULL,
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           verified_on BIGINT,
-          CONSTRAINT social_id_pk PRIMARY KEY (type, value),
+          CONSTRAINT social_id_pk PRIMARY KEY (id),
+          CONSTRAINT social_id_tv_key_unique UNIQUE (type, value),
           CONSTRAINT social_id_key_unique UNIQUE (key),
           INDEX social_id_account_idx (person_uuid),
           CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES global_account.person(uuid)

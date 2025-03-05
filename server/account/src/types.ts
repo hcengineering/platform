@@ -41,10 +41,13 @@ export enum Location {
 
 // AccountRole in core
 // Person in core
+
 export interface SocialId {
+  // generated ID so the actual social ID can be detached from a person w/o losing the ID in the linked database records
+  id: string // bigint should be represented as string as it exceeds JS safe integer limit
   type: SocialIdType
   value: string
-  key: PersonId // Calculated from type and value
+  key: PersonId // Value calculated based on type and value properties - may be removed later if appears redundant
   personUuid: PersonUuid
   createdOn?: Timestamp
   verifiedOn?: Timestamp
@@ -180,7 +183,7 @@ export type Sort<T> = {
 }
 
 export type Query<T> = {
-  [P in keyof T]?: T[P] | QueryOperator<T[P]>
+  [P in keyof T]?: T[P] | QueryOperator<T[P]> | null
 }
 
 export interface QueryOperator<T> {
