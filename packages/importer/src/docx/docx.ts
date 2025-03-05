@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { defaultExtensions, htmlToJSON, MarkupNode, serializeMessage } from '@hcengineering/text'
+import { MarkupNode, htmlToJSON } from '@hcengineering/text'
+import { markupToMarkdown } from '@hcengineering/text-markdown'
 import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import * as yaml from 'js-yaml'
 import { basename, dirname, extname, join, relative } from 'path'
@@ -73,7 +74,7 @@ export class DocumentConverter {
 
   async processDocument (path: string, root: string): Promise<void> {
     const htmlString = await this.options.htmlConverter(path)
-    const markup = htmlToJSON(htmlString, defaultExtensions)
+    const markup = htmlToJSON(htmlString)
 
     let document: DocumentState = {
       name: fileNameNoExt(path),
@@ -105,7 +106,7 @@ export class DocumentConverter {
 }
 
 function compileMarkdown (file: DocumentState): string {
-  const markdown = serializeMessage(file.markup, 'ref://', '')
+  const markdown = markupToMarkdown(file.markup, { refUrl: 'ref://', imageUrl: '' })
 
   const headerYaml = yaml.dump(file.header)
   const headerString = '---\n' + headerYaml + '---\n'

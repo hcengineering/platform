@@ -24,7 +24,8 @@
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { StyledTextEditor } from '@hcengineering/text-editor-resources'
-  import { EmptyMarkup, isEmptyMarkup, markupToHTML } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
+  import { markupToHtml } from '@hcengineering/text-html'
   import {
     Button,
     EditBox,
@@ -83,7 +84,7 @@
       const target = contacts.find((p) => p._id === channel.attachedTo)
       if (target === undefined) continue
       templateProvider.set(contact.class.Contact, target)
-      const htmlContent = markupToHTML(content)
+      const htmlContent = markupToHtml(markupToJSON(content))
       const message = await templateProvider.fillTemplate(htmlContent)
       const id = await client.createDoc(plugin.class.NewMessage, core.space.Workspace, {
         subject,
