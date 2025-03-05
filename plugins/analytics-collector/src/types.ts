@@ -14,7 +14,7 @@
 //
 
 import { Channel } from '@hcengineering/chunter'
-import type { PersonId, WorkspaceUuid } from '@hcengineering/core'
+import type { AccountUuid, WorkspaceUuid } from '@hcengineering/core'
 
 export enum AnalyticEventType {
   SetUser = 'setUser',
@@ -34,7 +34,7 @@ export interface OnboardingChannel extends Channel {
   workspaceId: WorkspaceUuid
   workspaceName: string
   workspaceUrl: string
-  socialString: PersonId
+  account: AccountUuid
   userName: string
   disableAIReplies: boolean
   showAIReplies: boolean

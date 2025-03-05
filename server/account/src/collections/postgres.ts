@@ -108,7 +108,7 @@ implements DbCollection<T> {
 
     for (const key of Object.keys(query)) {
       const qKey = query[key]
-      const operator = typeof qKey === 'object' ? Object.keys(qKey)[0] : ''
+      const operator = qKey != null && typeof qKey === 'object' ? Object.keys(qKey)[0] : ''
       const snakeKey = toSnakeCase(key)
       switch (operator) {
         case '$in': {

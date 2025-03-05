@@ -695,6 +695,7 @@ describe('account utils', () => {
 
       describe('sendOtp', () => {
         const mockSocialId = {
+          id: '333444555',
           personUuid: '123456-uuid' as PersonUuid,
           type: SocialIdType.EMAIL,
           value: 'test@example.com',
@@ -739,6 +740,7 @@ describe('account utils', () => {
 
         test('should throw error for unsupported social id type', async () => {
           const invalidSocialId = {
+            id: '999888777',
             personUuid: '123456-uuid' as PersonUuid,
             type: 'INVALID' as SocialIdType,
             value: 'test',
