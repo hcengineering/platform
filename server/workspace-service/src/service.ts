@@ -583,7 +583,7 @@ export class WorkspaceWorker {
         50000,
         ['blob'],
         sharedPipelineContextVars,
-        true,
+        true, // Do a full check
         (_p: number) => {
           if (progress !== Math.round(_p)) {
             progress = Math.round(_p)
