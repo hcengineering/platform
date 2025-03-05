@@ -265,6 +265,10 @@ export class TTypeMarkup extends TType {}
 @Model(core.class.TypePersonId, core.class.Type)
 export class TTypePersonId extends TType {}
 
+@UX(core.string.AccountId)
+@Model(core.class.TypeAccountUuid, core.class.Type)
+export class TTypeAccountUuid extends TType {}
+
 @UX(core.string.Ref)
 @Model(core.class.RefTo, core.class.Type)
 export class TRefTo extends TType implements RefTo<Doc> {

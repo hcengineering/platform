@@ -16,7 +16,7 @@
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import task, { Project } from '@hcengineering/task'
-  import { Label, Separator, Scroller, NavItem, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { Separator, Scroller, NavItem, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { ObjectPresenter, TreeNode } from '@hcengineering/view-resources'
   import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
   import time from '../../plugin'
@@ -30,7 +30,7 @@
     task.class.Project,
     {
       archived: false,
-      members: { $in: getCurrentAccount().socialIds }
+      members: getCurrentAccount().uuid
     },
     (result) => {
       projects = result

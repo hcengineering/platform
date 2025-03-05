@@ -26,7 +26,6 @@
   export let currentFragment: string | undefined
 
   const myAcc = getCurrentAccount()
-  const socialStrings = myAcc.socialIds
 
   const query = createQuery()
 
@@ -34,7 +33,7 @@
   let hasDrive = false
   query.query(
     drive.class.Drive,
-    { archived: false, members: { $in: socialStrings } },
+    { archived: false, members: myAcc.uuid },
     (res) => {
       hasDrive = res.length > 0
       loading = false

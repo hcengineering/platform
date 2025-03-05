@@ -27,7 +27,7 @@ export async function createBoard (
     description,
     private: false,
     archived: false,
-    members: [getCurrentAccount().primarySocialId],
+    members: [getCurrentAccount().uuid],
     type
   })
 

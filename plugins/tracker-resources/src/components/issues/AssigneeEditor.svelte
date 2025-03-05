@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee, Person } from '@hcengineering/contact'
-  import { AssigneeBox, AssigneePopup, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { AssigneeBox, AssigneePopup, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import { AssigneeCategory } from '@hcengineering/contact-resources/src/assignee'
   import { Doc, DocumentQuery, notEmpty, Ref, Space } from '@hcengineering/core'
   import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
@@ -123,7 +123,7 @@
         }
 
         const allMembers = projects.map((p) => p.members).flat()
-        const allPersonsSet = new Set(allMembers.map((p) => $personRefByPersonIdStore.get(p)).filter(notEmpty))
+        const allPersonsSet = new Set(allMembers.map((p) => $personRefByAccountUuidStore.get(p)).filter(notEmpty))
 
         return Array.from(allPersonsSet)
       }

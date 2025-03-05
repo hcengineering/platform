@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 import core, {
-  PersonId,
   Class,
   Doc,
   Permission,
@@ -32,7 +31,8 @@ import core, {
   TxUpdateDoc,
   TypedSpace,
   type MeasureContext,
-  type SessionData
+  type SessionData,
+  type AccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
@@ -45,7 +45,7 @@ import { BaseMiddleware } from '@hcengineering/server-core'
 export class SpacePermissionsMiddleware extends BaseMiddleware implements Middleware {
   private whitelistSpaces = new Set<Ref<Space>>()
   private assignmentBySpace: Record<Ref<Space>, RolesAssignment> = {}
-  private permissionsBySpace: Record<Ref<Space>, Record<PersonId, Set<Ref<Permission>>>> = {}
+  private permissionsBySpace: Record<Ref<Space>, Record<AccountUuid, Set<Ref<Permission>>>> = {}
   private typeBySpace: Record<Ref<Space>, Ref<SpaceType>> = {}
   wasInit: Promise<void> | boolean = false
 
@@ -86,7 +86,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
 
   private setPermissions (spaceId: Ref<Space>, roles: Role[], assignment: RolesAssignment): void {
     for (const role of roles) {
-      const roleMembers: PersonId[] = assignment[role._id] ?? []
+      const roleMembers: AccountUuid[] = assignment[role._id] ?? []
 
       for (const member of roleMembers) {
         if (this.permissionsBySpace[spaceId][member] === undefined) {
@@ -147,10 +147,9 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
    */
   private checkPermission (ctx: MeasureContext<SessionData>, space: Ref<TypedSpace>, id: Ref<Permission>): boolean {
     const account = ctx.contextData.account
-    const socialStrings = account.socialIds
-    const permissions = socialStrings.map((si) => this.permissionsBySpace[space]?.[si] ?? null)
+    const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? null
 
-    return permissions.some((ps) => ps !== null && ps.has(id))
+    return permissions !== null && permissions.has(id)
   }
 
   private throwForbidden (): void {

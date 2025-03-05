@@ -22,12 +22,12 @@ import {
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
-import { MeasureContext, PersonUuid, Ref, SocialId, type WorkspaceIds, type WorkspaceUuid } from '@hcengineering/core'
+import { AccountUuid, MeasureContext, Ref, SocialId, type WorkspaceIds, type WorkspaceUuid } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
-import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
+import { htmlToMarkup, markupToJSON, jsonToHTML } from '@hcengineering/text'
 import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { encodingForModel } from 'js-tiktoken'
 import OpenAI from 'openai'
@@ -53,7 +53,7 @@ export class AIControl {
   private readonly openaiEncoding = encodingForModel(config.OpenAIModel)
 
   constructor (
-    readonly personUuid: PersonUuid,
+    readonly personUuid: AccountUuid,
     readonly socialIds: SocialId[],
     private readonly storage: DbStorage,
     private readonly ctx: MeasureContext
@@ -195,7 +195,7 @@ export class AIControl {
     if (this.openai === undefined) {
       return undefined
     }
-    const html = markupToHTML(req.text)
+    const html = jsonToHTML(markupToJSON(req.text))
     const result = await translateHtml(this.openai, html, req.lang)
     const text = result !== undefined ? htmlToMarkup(result) : req.text
     return {

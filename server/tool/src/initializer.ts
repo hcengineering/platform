@@ -21,7 +21,8 @@ import { ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
 import { StorageFileUploader, UnifiedFormatImporter } from '@hcengineering/importer'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { jsonToMarkup, parseMessageMarkdown } from '@hcengineering/text'
+import { jsonToMarkup } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { pickPrimarySocialId } from '@hcengineering/contact'
 import { v4 as uuid } from 'uuid'
 import path from 'path'
@@ -256,7 +257,7 @@ export class WorkspaceInitializer {
   }
 
   private parseMarkdown (text: string): string {
-    const json = parseMessageMarkdown(text ?? '', this.imageUrl)
+    const json = markdownToMarkup(text ?? '', { imageUrl: this.imageUrl })
     return JSON.stringify(json)
   }
 
@@ -320,7 +321,7 @@ export class WorkspaceInitializer {
   ): Promise<string> {
     const doc = makeCollabId(objectClass, objectId, objectAttr)
 
-    const json = parseMessageMarkdown(data ?? '', this.imageUrl)
+    const json = markdownToMarkup(data ?? '', { imageUrl: this.imageUrl })
     const markup = jsonToMarkup(json)
 
     return await saveCollabJson(this.ctx, this.storageAdapter, this.wsIds, doc, markup)

@@ -1713,7 +1713,7 @@ export async function ensurePerson (
   }
 ): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['schedule'], extra)
+  verifyAllowedServices(['schedule', 'mail'], extra)
 
   const { socialType, socialValue, firstName, lastName } = params
 

@@ -16,7 +16,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
-  import contact, { Channel, Contact, getName as getContactName, includesAny } from '@hcengineering/contact'
+  import contact, { Channel, Contact, getName as getContactName } from '@hcengineering/contact'
   import core, { generateId, getCurrentAccount, Markup, Ref, toIdMap } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -24,7 +24,8 @@
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { StyledTextEditor } from '@hcengineering/text-editor-resources'
-  import { EmptyMarkup, isEmptyMarkup, markupToHTML } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
+  import { markupToHtml } from '@hcengineering/text-html'
   import {
     Button,
     EditBox,
@@ -69,7 +70,8 @@
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
   const attachmentParentId = generateId()
-  const mySocialIds = getCurrentAccount().socialIds
+  const account = getCurrentAccount()
+  const mySocialIds = account.socialIds
 
   let subject: string = ''
   let content: Markup = EmptyMarkup
@@ -83,7 +85,7 @@
       const target = contacts.find((p) => p._id === channel.attachedTo)
       if (target === undefined) continue
       templateProvider.set(contact.class.Contact, target)
-      const htmlContent = markupToHTML(content)
+      const htmlContent = markupToHtml(markupToJSON(content))
       const message = await templateProvider.fillTemplate(htmlContent)
       const id = await client.createDoc(plugin.class.NewMessage, core.space.Workspace, {
         subject,
@@ -220,7 +222,7 @@
     integrations = res.filter(
       (p) =>
         (p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ||
-        (includesAny(p.shared ?? [], mySocialIds) && p.value !== '')
+        ((p.shared ?? []).includes(account.uuid) && p.value !== '')
     )
     selectedIntegration =
       integrations.find((p) => p.createdBy !== undefined && mySocialIds.includes(p.createdBy)) ?? integrations[0]

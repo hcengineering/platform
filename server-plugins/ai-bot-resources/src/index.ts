@@ -15,7 +15,6 @@
 
 import core, {
   Doc,
-  PersonUuid,
   systemAccountUuid,
   Tx,
   TxCreateDoc,
@@ -25,7 +24,7 @@ import core, {
   UserStatus
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
-import { getPerson, getPersons } from '@hcengineering/server-contact'
+import { getAccountBySocialId, getPerson } from '@hcengineering/server-contact'
 import { aiBotEmailSocialId, AIEventRequest } from '@hcengineering/ai-bot'
 
 import { createAccountRequest, hasAiEndpoint, sendAIEvents } from './utils'
@@ -36,7 +35,9 @@ async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl)
     return []
   }
 
-  if (control.txFactory.account === aiBotEmailSocialId) {
+  const account = await getAccountBySocialId(control, aiBotEmailSocialId)
+
+  if (control.ctx.contextData.account.uuid === account) {
     return []
   }
 
@@ -152,18 +153,17 @@ async function getMessageDoc (message: ChatMessage, control: TriggerControl): Pr
 
 async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
   const { members } = direct
+  const account = await getAccountBySocialId(control, aiBotEmailSocialId)
 
-  if (!members.includes(aiBotEmailSocialId)) {
+  if (account == null) {
     return false
   }
 
-  const persons = await getPersons(control, members)
+  if (!members.includes(account)) {
+    return false
+  }
 
-  const uuids = new Set(
-    persons.map((account) => account.personUuid).filter((uuid): uuid is PersonUuid => uuid !== undefined)
-  )
-
-  return uuids.size === 2
+  return members.length === 2
 }
 
 async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {

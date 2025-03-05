@@ -13,21 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountArrayEditor, personRefByPersonIdStore } from '@hcengineering/contact-resources'
-  import { PersonId, TypedSpace, notEmpty } from '@hcengineering/core'
+  import { AccountArrayEditor, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { type AccountUuid, TypedSpace, notEmpty } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
 
   export let object: TypedSpace | undefined
   export let label: IntlString
-  export let value: PersonId[]
-  export let onChange: ((refs: PersonId[]) => void) | undefined
+  export let value: AccountUuid[]
+  export let onChange: ((refs: AccountUuid[]) => void) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
 
-  $: persons = (object?.members ?? []).map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
+  $: persons = (object?.members ?? []).map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
 </script>
 
 {#if object !== undefined}

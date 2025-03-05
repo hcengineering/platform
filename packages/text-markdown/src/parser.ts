@@ -1,12 +1,26 @@
-import { Extensions } from '@tiptap/core'
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+import { Attrs, MarkupMark, MarkupMarkType, MarkupNode, MarkupNodeType } from '@hcengineering/text-core'
+import { htmlToMarkup } from '@hcengineering/text-html'
 import MarkdownIt, { type Token } from 'markdown-it'
 import type { RuleCore } from 'markdown-it/lib/parser_core'
 import type StateCore from 'markdown-it/lib/rules_core/state_core'
 
-import { Attrs, AttrValue, MarkupMark, MarkupMarkType, MarkupNode, MarkupNodeType } from '@hcengineering/text-core'
-import { htmlToJSON } from '../markup/utils'
 import { addToSet, removeFromSet, sameSet } from './marks'
-import { messageContent } from './node'
+import { nodeContent } from './node'
 
 interface ParsingBlockRule {
   block: MarkupNodeType
@@ -40,7 +54,7 @@ type HandlerRecord = (state: MarkdownParseState, tok: Token) => void
 type HandlersRecord = Record<string, HandlerRecord>
 
 // ****************************************************************
-// Mark down parser
+// Markdown parser
 // ****************************************************************
 function isText (a: MarkupNode, b: MarkupNode): boolean {
   return (a.type === MarkupNodeType.text || a.type === MarkupNodeType.reference) && b.type === MarkupNodeType.text
@@ -98,7 +112,6 @@ class MarkdownParseState {
     return false
   }
 
-  // : (string)
   // Adds the given text to the current position in the document,
   // using the current marks as styling.
   addText (text?: string): void {
@@ -122,22 +135,11 @@ class MarkdownParseState {
     }
   }
 
-  addAttr (key: string, value: AttrValue): void {
-    const top = this.top()
-    if (top === undefined) {
-      return
-    }
-
-    top.attrs[key] = value
-  }
-
-  // : (Mark)
   // Adds the given mark to the set of active marks.
   openMark (mark: MarkupMark): void {
     this.marks = addToSet(mark, this.marks)
   }
 
-  // : (Mark)
   // Removes the given mark from the set of active marks.
   closeMark (mark: MarkupMarkType): void {
     this.marks = removeFromSet(mark, this.marks)
@@ -172,7 +174,6 @@ class MarkdownParseState {
     }
   }
 
-  // : (NodeType, ?Object, ?[Node]) → ?Node
   // Add a node at the current position.
   addNode (type: MarkupNodeType, attrs: Attrs, content: MarkupNode[] = []): MarkupNode {
     const node: MarkupNode = { type, content }
@@ -187,13 +188,11 @@ class MarkdownParseState {
     return node
   }
 
-  // : (NodeType, ?Object)
   // Wrap subsequent content in a node of the given type.
   openNode (type: MarkupNodeType, attrs: Attrs): void {
     this.stack.push({ type, attrs, content: [] })
   }
 
-  // : () → ?Node
   // Close and return the node that is currently on top of the stack.
   closeNode (): MarkupNode {
     if (this.marks.length > 0) this.marks = []
@@ -297,7 +296,7 @@ function tokenHandlers (
   tokensMark: Record<string, ParsingMarkRule>,
   specialRules: Record<string, ParsingSpecialRule>,
   ignoreRules: Record<string, ParsingIgnoreRule>,
-  extensions: Extensions
+  htmlParser: HtmlParser
 ): HandlersRecord {
   const handlers: HandlersRecord = {}
 
@@ -319,15 +318,15 @@ function tokenHandlers (
 
   handlers.html_inline = (state: MarkdownParseState, tok: Token) => {
     try {
-      const model = htmlToJSON(tok.content, extensions)
-      if (model.content !== undefined) {
+      const markup = htmlParser(tok.content)
+      if (markup.content !== undefined) {
         // unwrap content from wrapping paragraph
         const shouldUnwrap =
-          model.content.length === 1 &&
-          model.content[0].type === MarkupNodeType.paragraph &&
+          markup.content.length === 1 &&
+          markup.content[0].type === MarkupNodeType.paragraph &&
           state.top()?.type === MarkupNodeType.paragraph
 
-        const content = messageContent(shouldUnwrap ? model.content[0] : model)
+        const content = nodeContent(shouldUnwrap ? markup.content[0] : markup)
         for (const c of content) {
           state.push(c)
         }
@@ -339,8 +338,8 @@ function tokenHandlers (
   }
   handlers.html_block = (state: MarkdownParseState, tok: Token) => {
     try {
-      const model = htmlToJSON(tok.content, extensions)
-      const content = messageContent(model)
+      const model = htmlParser(tok.content)
+      const content = nodeContent(model)
       for (const c of content) {
         state.push(c)
       }
@@ -463,7 +462,7 @@ const tokensBlock: Record<string, ParsingBlockRule> = {
     noCloseToken: true
   },
   sub: {
-    block: MarkupNodeType.code_block,
+    block: MarkupNodeType.subLink,
     getAttrs: (tok: Token) => {
       return { language: tok.info ?? '' }
     },
@@ -614,26 +613,32 @@ interface TaskListStateCore extends StateCore {
 const startsWithTodoMarkdown = (token: Token): boolean => /^\[[xX \u00A0]\][ \u00A0]/.test(token.content)
 const isCheckedTodoItem = (token: Token): boolean => /^\[[xX]\][ \u00A0]/.test(token.content)
 
+export type HtmlParser = (html: string) => MarkupNode
+
+export interface MarkdownParserOptions {
+  refUrl: string
+  imageUrl: string
+  htmlParser?: HtmlParser
+}
+
 export class MarkdownParser {
   tokenizer: MarkdownIt
   tokenHandlers: Record<string, (state: MarkdownParseState, tok: Token) => void>
+  htmlParser: HtmlParser
 
-  constructor (
-    readonly extensions: Extensions,
-    readonly refUrl: string,
-    readonly imageUrl: string
-  ) {
+  constructor (private readonly options: MarkdownParserOptions) {
     this.tokenizer = MarkdownIt('default', {
       html: true
     })
     this.tokenizer.core.ruler.after('inline', 'task_list', this.listRule)
     this.tokenizer.core.ruler.after('inline', 'html_comment', this.htmlCommentRule)
 
-    this.tokenHandlers = tokenHandlers(tokensBlock, tokensNode, tokensMark, specialRule, ignoreRule, extensions)
+    this.htmlParser = options.htmlParser ?? htmlToMarkup
+    this.tokenHandlers = tokenHandlers(tokensBlock, tokensNode, tokensMark, specialRule, ignoreRule, this.htmlParser)
   }
 
   parse (text: string): MarkupNode {
-    const state = new MarkdownParseState(this.tokenHandlers, this.refUrl, this.imageUrl)
+    const state = new MarkdownParseState(this.tokenHandlers, this.options.refUrl, this.options.imageUrl)
     let doc: MarkupNode
 
     const tokens = this.tokenizer.parse(text, {})

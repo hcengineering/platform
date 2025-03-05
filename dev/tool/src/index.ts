@@ -25,7 +25,7 @@ import accountPlugin, {
   type AccountDB
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
-import { createFileBackupStorage, createStorageBackupStorage, restore } from '@hcengineering/server-backup'
+import { backup, createFileBackupStorage, createStorageBackupStorage, restore } from '@hcengineering/server-backup'
 import serverClientPlugin, { getAccountClient } from '@hcengineering/server-client'
 import {
   registerAdapterFactory,
@@ -852,49 +852,60 @@ export function devTool (
   //   })
   // })
 
-  // program
-  // .command('backup <dirName> <workspace>')
-  // .description('dump workspace transactions and minio resources')
-  // .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
-  // .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
-  // .option(
-  //   '-ct, --contentTypes <contentTypes>',
-  //   'A list of ; separated content types for blobs to skip download if size >= limit',
-  //   ''
-  // )
-  // .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
-  // .option('-f, --force', 'Force backup', false)
-  // .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
-  // .action(
-  //   async (
-  //     dirName: string,
-  //     workspace: string,
-  //     cmd: {
-  //       skip: string
-  //       force: boolean
-  //       timeout: string
-  //       include: string
-  //       blobLimit: string
-  //       contentTypes: string
-  //     }
-  //   ) => {
-  //     const storage = await createFileBackupStorage(dirName)
-  //     const wsid = getWorkspaceId(workspace)
-  //     const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-  //     await backup(toolCtx, endpoint, wsIds, storage, {
-  //       force: cmd.force,
-  //       include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
-  //       skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
-  //       timeout: 0,
-  //       connectTimeout: parseInt(cmd.timeout) * 1000,
-  //       blobDownloadLimit: parseInt(cmd.blobLimit),
-  //       skipBlobContentTypes: cmd.contentTypes
-  //         .split(';')
-  //         .map((it) => it.trim())
-  //         .filter((it) => it.length > 0)
-  //     })
-  //   }
-  // )
+  program
+    .command('backup <dirName> <workspace>')
+    .description('dump workspace transactions and minio resources')
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option(
+      '-ct, --contentTypes <contentTypes>',
+      'A list of ; separated content types for blobs to skip download if size >= limit',
+      ''
+    )
+    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
+    .option('-f, --force', 'Force backup', false)
+    .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
+    .action(
+      async (
+        dirName: string,
+        workspace: string,
+        cmd: {
+          skip: string
+          force: boolean
+          timeout: string
+          include: string
+          blobLimit: string
+          contentTypes: string
+        }
+      ) => {
+        const storage = await createFileBackupStorage(dirName)
+        await withAccountDatabase(async (db) => {
+          const ws = await getWorkspace(db, workspace)
+          if (ws === null) {
+            throw new Error(`workspace ${workspace} not found`)
+          }
+          const wsIds = {
+            uuid: ws.uuid,
+            dataId: ws.dataId,
+            url: ws.url
+          }
+          const endpoint = await getWorkspaceTransactorEndpoint(ws.uuid)
+
+          await backup(toolCtx, endpoint, wsIds, storage, {
+            force: cmd.force,
+            include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
+            skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
+            timeout: 0,
+            connectTimeout: parseInt(cmd.timeout) * 1000,
+            blobDownloadLimit: parseInt(cmd.blobLimit),
+            skipBlobContentTypes: cmd.contentTypes
+              .split(';')
+              .map((it) => it.trim())
+              .filter((it) => it.length > 0)
+          })
+        })
+      }
+    )
   // program
   // .command('backup-find <dirName> <fileId>')
   // .description('dump workspace transactions and minio resources')

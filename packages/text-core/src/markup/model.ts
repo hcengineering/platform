@@ -55,10 +55,10 @@ export enum MarkupMarkType {
 /** @public */
 export interface MarkupMark {
   type: MarkupMarkType
-  attrs: Record<string, any> // A map of attributes
+  attrs?: Record<string, any> // A map of attributes
 }
 
-export type AttrValue = string | number | boolean
+export type AttrValue = string | number | boolean | null | undefined
 export type Attrs = Record<string, AttrValue>
 
 /** @public */
