@@ -22,6 +22,7 @@ jest.mock('../mail', () => ({
     sendMessage: jest.fn()
   }))
 }))
+jest.mock('../config', () => ({}))
 
 describe('handleSendMail', () => {
   let req: Request
