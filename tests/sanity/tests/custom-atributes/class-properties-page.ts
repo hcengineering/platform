@@ -19,13 +19,13 @@ export class ClassProperties {
   }
 
   url = (): Locator => this.page.getByRole('button', { name: 'URL' })
-  string = (): Locator => this.page.getByRole('button', { name: 'String' })
-  boolean = (): Locator => this.page.getByRole('button', { name: 'Boolean' })
+  string = (): Locator => this.page.getByRole('button', { name: 'Text' })
+  boolean = (): Locator => this.page.getByRole('button', { name: 'Checkbox' })
   number = (): Locator => this.page.getByRole('button', { name: 'Number' })
   date = (): Locator => this.page.getByRole('button', { name: 'Date' })
-  ref = (): Locator => this.page.getByRole('button', { name: 'Ref' })
-  array = (): Locator => this.page.getByRole('button', { name: 'Array' })
-  enum = (): Locator => this.page.getByRole('button', { name: 'Enum', exact: true })
+  ref = (): Locator => this.page.getByRole('button', { name: 'Reference' })
+  array = (): Locator => this.page.getByRole('button', { name: 'Multi-Select' })
+  enum = (): Locator => this.page.getByRole('button', { name: 'Select', exact: true })
 
   addedCustomAttribute = (attribute: string): Locator => this.page.getByRole('button', { name: attribute })
   inputName = (): Locator => this.page.getByPlaceholder('Name')

@@ -122,12 +122,12 @@
       </Scroller>
     {:else if !readonly}
       <div class="antiSection-empty solid clear-mins mt-3">
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <span class="over-underline content-color" on:click={add}>
-        <Label label={core.string.AddRelation} />
-      </span>
-    </div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span class="over-underline content-color" on:click={add}>
+          <Label label={core.string.AddRelation} />
+        </span>
+      </div>
     {/if}
   </svelte:fragment>
 </Section>
