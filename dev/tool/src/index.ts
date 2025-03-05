@@ -787,7 +787,12 @@ export function devTool (
       const skipped = new Set(cmd.skip.split(',').map((it) => it.trim()))
       await withAccountDatabase(async (db) => {
         const workspaces = (await listWorkspacesPure(db))
-          .sort((a, b) => a.lastVisit - b.lastVisit)
+          .sort((a, b) => {
+            const bsize = b.backupInfo?.backupSize ?? 0
+            const asize = a.backupInfo?.backupSize ?? 0
+            return bsize - asize
+          })
+          .filter((it) => isActiveMode(it.mode))
           .filter((it) => (cmd.workspace === '' || cmd.workspace === it.workspace) && !skipped.has(it.workspace))
 
         let processed = 0

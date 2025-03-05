@@ -450,7 +450,7 @@ export class WorkspaceWorker {
         await sendEvent('archiving-backup-started', 0)
 
         await this.sendTransactorMaitenance(token, { name: workspace.workspace })
-        if (await this.doBackup(ctx, workspace, opt)) {
+        if (await this.doBackup(ctx, workspace, opt, true)) {
           await sendEvent('archiving-backup-done', 100)
         }
         break
@@ -487,7 +487,7 @@ export class WorkspaceWorker {
       case 'migration-backup':
         await sendEvent('migrate-backup-started', 0)
         await this.sendTransactorMaitenance(token, { name: workspace.workspace })
-        if (await this.doBackup(ctx, workspace, opt)) {
+        if (await this.doBackup(ctx, workspace, opt, false)) {
           await sendEvent('migrate-backup-done', 100)
         }
         break
@@ -522,7 +522,12 @@ export class WorkspaceWorker {
     }
   }
 
-  private async doBackup (ctx: MeasureContext, workspace: BaseWorkspaceInfo, opt: WorkspaceOptions): Promise<boolean> {
+  private async doBackup (
+    ctx: MeasureContext,
+    workspace: BaseWorkspaceInfo,
+    opt: WorkspaceOptions,
+    doFullCheck: boolean
+  ): Promise<boolean> {
     if (opt.backup === undefined) {
       return false
     }
@@ -583,7 +588,7 @@ export class WorkspaceWorker {
         50000,
         ['blob'],
         sharedPipelineContextVars,
-        true, // Do a full check
+        doFullCheck, // Do full check based on config, do not do for migration, it is to slow, will perform before migration.
         (_p: number) => {
           if (progress !== Math.round(_p)) {
             progress = Math.round(_p)
