@@ -15,7 +15,7 @@
 <script lang="ts">
   import { SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Scroller } from '@hcengineering/ui'
+  import { Scroller, Loading, Lazy } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { socialIdsByPersonRefStore } from '@hcengineering/contact-resources'
@@ -26,21 +26,35 @@
   import chunter from '../../plugin'
   import Header from '../Header.svelte'
   import { openMessageFromSpecial } from '../../navigation'
+  import BlankView from '../BlankView.svelte'
+  import LoadingHistory from '../LoadingHistory.svelte'
 
   const threadsQuery = createQuery()
   const me = getCurrentEmployee()
   $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
 
   let threads: ActivityMessage[] = []
+  let isLoading = true
+
+  let divScroll: HTMLElement | undefined | null = undefined
+
+  let limit = 100
+  let hasNextPage = true
 
   $: threadsQuery.query(
-    activity.class.ActivityMessage,
+    chunter.class.ChatMessage,
     {
-      replies: { $exists: true },
+      replies: { $gte: 1 },
       [`${notification.mixin.Collaborators}.collaborators`]: { $in: mySocialStrings }
     },
     (res) => {
-      threads = res.filter(({ replies }) => (replies ?? 0) > 0)
+      if (res.length <= limit) {
+        hasNextPage = false
+      } else {
+        res.pop()
+      }
+      threads = res
+      isLoading = false
     },
     {
       sort: { modifiedOn: SortingOrder.Descending },
@@ -49,15 +63,50 @@
           attachments: attachment.class.Attachment,
           reactions: activity.class.Reaction
         }
-      }
+      },
+      limit: limit + 1
     }
   )
+
+  function handleScroll (): void {
+    if (divScroll != null && hasNextPage && threads.length === limit) {
+      const isAtBottom = divScroll.scrollTop + divScroll.clientHeight >= divScroll.scrollHeight - 400
+      if (isAtBottom) {
+        limit += 100
+      }
+    }
+  }
 </script>
 
 <Header icon={chunter.icon.Thread} intlLabel={chunter.string.Threads} titleKind={'breadcrumbs'} />
 
-<Scroller padding="0.75rem 0.5rem">
-  {#each threads as thread}
-    <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} withShowMore={false} />
-  {/each}
+<Scroller bind:divScroll padding="0.75rem 0.5rem" noStretch={threads.length > 0} onScroll={handleScroll}>
+  {#if isLoading}
+    <Loading />
+  {:else if threads.length === 0}
+    <BlankView icon={chunter.icon.Thread} header={chunter.string.NoThreadsYet} />
+  {:else}
+    {#each threads as thread}
+      <div class="container">
+        <Lazy>
+          <ActivityMessagePresenter
+            value={thread}
+            onClick={() => openMessageFromSpecial(thread)}
+            withShowMore={false}
+          />
+        </Lazy>
+      </div>
+    {/each}
+    {#if hasNextPage}
+      <LoadingHistory isLoading={threads.length < limit} />
+    {/if}
+  {/if}
 </Scroller>
+
+<style lang="scss">
+  .container {
+    display: flex;
+    flex-direction: column;
+    min-height: 3.75rem;
+  }
+</style>
