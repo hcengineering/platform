@@ -295,7 +295,8 @@ function tokenHandlers (
   tokensNode: Record<string, ParsingNodeRule>,
   tokensMark: Record<string, ParsingMarkRule>,
   specialRules: Record<string, ParsingSpecialRule>,
-  ignoreRules: Record<string, ParsingIgnoreRule>
+  ignoreRules: Record<string, ParsingIgnoreRule>,
+  htmlParser: HtmlParser
 ): HandlersRecord {
   const handlers: HandlersRecord = {}
 
@@ -317,7 +318,7 @@ function tokenHandlers (
 
   handlers.html_inline = (state: MarkdownParseState, tok: Token) => {
     try {
-      const markup = htmlToMarkup(tok.content, {})
+      const markup = htmlParser(tok.content)
       if (markup.content !== undefined) {
         // unwrap content from wrapping paragraph
         const shouldUnwrap =
@@ -337,7 +338,7 @@ function tokenHandlers (
   }
   handlers.html_block = (state: MarkdownParseState, tok: Token) => {
     try {
-      const model = htmlToMarkup(tok.content, {})
+      const model = htmlParser(tok.content)
       const content = nodeContent(model)
       for (const c of content) {
         state.push(c)
@@ -612,25 +613,32 @@ interface TaskListStateCore extends StateCore {
 const startsWithTodoMarkdown = (token: Token): boolean => /^\[[xX \u00A0]\][ \u00A0]/.test(token.content)
 const isCheckedTodoItem = (token: Token): boolean => /^\[[xX]\][ \u00A0]/.test(token.content)
 
+export type HtmlParser = (html: string) => MarkupNode
+
+export interface MarkdownParserOptions {
+  refUrl: string
+  imageUrl: string
+  htmlParser?: HtmlParser
+}
+
 export class MarkdownParser {
   tokenizer: MarkdownIt
   tokenHandlers: Record<string, (state: MarkdownParseState, tok: Token) => void>
+  htmlParser: HtmlParser
 
-  constructor (
-    readonly refUrl: string,
-    readonly imageUrl: string
-  ) {
+  constructor (private readonly options: MarkdownParserOptions) {
     this.tokenizer = MarkdownIt('default', {
       html: true
     })
     this.tokenizer.core.ruler.after('inline', 'task_list', this.listRule)
     this.tokenizer.core.ruler.after('inline', 'html_comment', this.htmlCommentRule)
 
-    this.tokenHandlers = tokenHandlers(tokensBlock, tokensNode, tokensMark, specialRule, ignoreRule)
+    this.htmlParser = options.htmlParser ?? htmlToMarkup
+    this.tokenHandlers = tokenHandlers(tokensBlock, tokensNode, tokensMark, specialRule, ignoreRule, this.htmlParser)
   }
 
   parse (text: string): MarkupNode {
-    const state = new MarkdownParseState(this.tokenHandlers, this.refUrl, this.imageUrl)
+    const state = new MarkdownParseState(this.tokenHandlers, this.options.refUrl, this.options.imageUrl)
     let doc: MarkupNode
 
     const tokens = this.tokenizer.parse(text, {})

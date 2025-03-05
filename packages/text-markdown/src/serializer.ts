@@ -36,6 +36,7 @@ interface IState {
   quote: (str: string) => string
   repeat: (str: string, n: number) => string
   markString: (mark: MarkupMark, open: boolean, parent: MarkupNode, index: number) => string
+  renderHtml: (node: MarkupNode) => string
   refUrl: string
   imageUrl: string
   inAutolink?: boolean
@@ -246,7 +247,7 @@ export const storeNodes: Record<string, NodeProcessor> = {
     state.text(node.text ?? '')
   },
   table: (state, node) => {
-    state.write(markupToHtml(node, {}))
+    state.write(state.renderHtml(node))
     state.closeBlock(node)
   }
 }
@@ -343,10 +344,13 @@ export const storeMarks: Record<string, MarkProcessor> = {
   }
 }
 
+export type HtmlWriter = (markup: MarkupNode) => string
+
 export interface StateOptions {
   tightLists: boolean
   refUrl: string
   imageUrl: string
+  htmlWriter?: HtmlWriter
 }
 export class MarkdownState implements IState {
   nodes: Record<string, NodeProcessor>
@@ -359,6 +363,7 @@ export class MarkdownState implements IState {
   options: StateOptions
   refUrl: string
   imageUrl: string
+  htmlWriter: HtmlWriter
 
   constructor (
     nodes = storeNodes,
@@ -372,6 +377,7 @@ export class MarkdownState implements IState {
     this.inTightList = false
     this.refUrl = options.refUrl
     this.imageUrl = options.imageUrl
+    this.htmlWriter = options.htmlWriter ?? markupToHtml
 
     this.options = options
   }
@@ -395,6 +401,10 @@ export class MarkdownState implements IState {
     for (let i = 1; i < size; i++) {
       this.out += delimMin + '\n'
     }
+  }
+
+  renderHtml (node: MarkupNode): string {
+    return this.htmlWriter(node)
   }
 
   wrapBlock (delim: string, firstDelim: string | null, node: MarkupNode, f: () => void): void {

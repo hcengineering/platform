@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { MarkupNode, jsonToMarkup, markupToJSON } from '@hcengineering/text'
+import { MarkupNode, jsonToMarkup, markupToJSON, htmlToJSON } from '@hcengineering/text'
 import { MarkdownParser, storeNodes, storeMarks, MarkdownState } from '@hcengineering/text-markdown'
-// import { GithubKit } from './extensions'
-// import { hasHulyLink, hasHulyLinkText, stripGuestLink } from '../sync/guest'
+import { GithubKit } from './extensions'
+import { hasHulyLink, hasHulyLinkText } from '../sync/guest'
 
 /**
  * @public
@@ -27,15 +27,18 @@ export function parseMessageMarkdown (
   imageUrl: string,
   guestUrl: string
 ): MarkupNode {
-  // const extensions = [
-  //   GithubKit.configure({
-  //     sub: {
-  //       hasHulyText: hasHulyLinkText,
-  //       hasHulyLink: (href) => hasHulyLink(href, guestUrl)
-  //     }
-  //   })
-  // ]
-  const parser = new MarkdownParser(refUrl, imageUrl)
+  const extensions = [
+    GithubKit.configure({
+      sub: {
+        hasHulyText: hasHulyLinkText,
+        hasHulyLink: (href) => hasHulyLink(href, guestUrl)
+      }
+    })
+  ]
+  const htmlParser = (html: string): MarkupNode => {
+    return htmlToJSON(html, extensions)
+  }
+  const parser = new MarkdownParser({ refUrl, imageUrl, htmlParser })
   const json = parser.parse(message ?? '')
   return json
 }

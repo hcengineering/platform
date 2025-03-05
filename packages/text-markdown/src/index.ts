@@ -42,6 +42,6 @@ export function markdownToMarkup (markdown: string, options?: MarkdownOptions): 
   const refUrl = options?.refUrl ?? 'ref://'
   const imageUrl = options?.imageUrl ?? 'image://'
 
-  const parser = new MarkdownParser(refUrl, imageUrl)
+  const parser = new MarkdownParser({ refUrl, imageUrl })
   return parser.parse(markdown ?? '')
 }
