@@ -20,24 +20,28 @@ import activity, {
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import { isReactionMessage } from '@hcengineering/activity-resources'
+import aiBot, { type PersonMessage } from '@hcengineering/ai-bot'
+import { summarizeMessages as aiSummarizeMessages, translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
-import contact, { getName, getCurrentEmployee, type Employee, type Person } from '@hcengineering/contact'
+import contact, { getCurrentEmployee, getName, type Employee, type Person } from '@hcengineering/contact'
 import {
-  PersonIcon,
   employeeByAccountStore,
   employeeByIdStore,
+  personByPersonIdStore,
+  PersonIcon,
   personRefByAccountUuidStore
 } from '@hcengineering/contact-resources'
 import core, {
   getCurrentAccount,
+  notEmpty,
+  SortingOrder,
+  type AccountUuid,
   type Class,
   type Client,
   type Doc,
   type Ref,
   type Space,
-  type Timestamp,
-  type AccountUuid,
-  notEmpty
+  type Timestamp
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import {
@@ -45,14 +49,14 @@ import {
   isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
-import { translate, type Asset, getMetadata } from '@hcengineering/platform'
+import { getMetadata, translate, type Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { type AnySvelteComponent, languageStore } from '@hcengineering/ui'
+import { languageStore, type AnySvelteComponent } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
-import aiBot from '@hcengineering/ai-bot'
-import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 
+import { markupToJSON } from '@hcengineering/text'
+import { markupToMarkdown } from '@hcengineering/text-markdown'
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
 import { openChannelInSidebar, resetChunterLocIfEqual } from './navigation'
@@ -529,6 +533,73 @@ export async function showOriginalMessage (message: ChatMessage): Promise<void> 
 export async function canTranslateMessage (): Promise<boolean> {
   const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
   return url !== ''
+}
+
+export async function summarizeMessages (doc: Doc): Promise<void> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const messages = await client.findAll(
+    chunter.class.ChatMessage,
+    {
+      attachedTo: doc._id,
+      collection: { $in: ['messages', 'transcription'] }
+    },
+    {
+      sort: { createdOn: SortingOrder.Ascending },
+      limit: 5000
+    }
+  )
+
+  const personByPersonId = get(personByPersonIdStore)
+  const messagesToSummarize: PersonMessage[] = []
+
+  for (const m of messages) {
+    const author = m.createdBy
+    if (author === undefined) continue
+
+    const person = personByPersonId.get(author)
+    if (person === undefined) continue
+
+    const personName = getName(hierarchy, person)
+    const text = markupToMarkdown(markupToJSON(m.message))
+
+    const lastPiece = messagesToSummarize[messagesToSummarize.length - 1]
+    if (lastPiece?.personRef === person._id) {
+      lastPiece.text += (m.collection === 'transcription' ? ' ' : '\n') + text
+    } else {
+      messagesToSummarize.push({
+        personRef: person._id,
+        personName,
+        time: m.createdOn ?? 0,
+        text
+      })
+    }
+  }
+
+  await aiSummarizeMessages(messagesToSummarize, get(languageStore), doc._id, doc._class)
+}
+
+export async function canSummarizeMessages (doc: Doc): Promise<boolean> {
+  if (doc?._id === undefined) return false
+
+  const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
+  if (url === '') return false
+
+  const client = getClient()
+  const messages = await client.findAll(
+    chunter.class.ChatMessage,
+    {
+      attachedTo: doc._id,
+      // include regular messages to enable elsewhere
+      collection: 'transcription'
+    },
+    {
+      limit: 1
+    }
+  )
+
+  return messages.length > 0
 }
 
 export async function startConversationAction (docs?: Employee | Employee[]): Promise<void> {

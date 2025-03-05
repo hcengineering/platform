@@ -13,32 +13,44 @@
 // limitations under the License.
 //
 
+import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import {
   AIEventRequest,
   ConnectMeetingRequest,
   DisconnectMeetingRequest,
   IdentityResponse,
   PostTranscriptRequest,
+  SummarizeMessagesRequest,
+  SummarizeMessagesResponse,
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
-import { AccountUuid, MeasureContext, Ref, SocialId, type WorkspaceIds, type WorkspaceUuid } from '@hcengineering/core'
+import core, {
+  AccountUuid,
+  MeasureContext,
+  Ref,
+  SocialId,
+  SortingOrder,
+  type WorkspaceIds,
+  type WorkspaceUuid
+} from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
-import { htmlToMarkup, markupToJSON, jsonToHTML } from '@hcengineering/text'
-import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import { htmlToMarkup, jsonToHTML, jsonToMarkup, markupToJSON } from '@hcengineering/text'
 import { encodingForModel } from 'js-tiktoken'
 import OpenAI from 'openai'
 
+import chunter from '@hcengineering/chunter'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import config from './config'
 import { DbStorage } from './storage'
-import { WorkspaceClient } from './workspace/workspaceClient'
-import { translateHtml } from './utils/openai'
 import { tryAssignToWorkspace } from './utils/account'
+import { summarizeMessages, translateHtml } from './utils/openai'
+import { WorkspaceClient } from './workspace/workspaceClient'
 
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
 
@@ -200,6 +212,60 @@ export class AIControl {
     const text = result !== undefined ? htmlToMarkup(result) : req.text
     return {
       text,
+      lang: req.lang
+    }
+  }
+
+  async summarizeMessages (
+    workspace: WorkspaceUuid,
+    req: SummarizeMessagesRequest
+  ): Promise<SummarizeMessagesResponse | undefined> {
+    if (this.openai === undefined) return
+
+    const summary = await summarizeMessages(this.openai, req.messages, req.lang)
+    if (summary === undefined) return
+
+    const summaryMarkup = jsonToMarkup(markdownToMarkup(summary))
+
+    const pushMessage = async (): Promise<boolean> => {
+      if (req.responseTarget === undefined || req.responseTargetClass === undefined) return false
+
+      const wsClient = await this.getWorkspaceClient(workspace)
+      if (wsClient?.opClient === undefined || wsClient?.client === undefined) return false
+
+      const target = await wsClient.client.findOne(req.responseTargetClass, { _id: req.responseTarget })
+      if (target === undefined) return false
+
+      const lastMessage = await wsClient.client.findOne(
+        chunter.class.ChatMessage,
+        {
+          attachedTo: target._id,
+          collection: { $in: ['messages', 'transcription', 'summary'] }
+        },
+        {
+          sort: { createdOn: SortingOrder.Descending },
+          limit: 1
+        }
+      )
+
+      const client = await wsClient.opClient
+      const op = client.apply(undefined, 'AISummarizeMessagesRequestEvent')
+
+      if (lastMessage?.collection === 'summary' && lastMessage.createdBy === client.user) {
+        await op.update(lastMessage, { message: summaryMarkup, editedOn: Date.now() })
+      } else {
+        await op.addCollection(chunter.class.ChatMessage, core.space.Workspace, target._id, target._class, 'summary', {
+          message: summaryMarkup
+        })
+      }
+      await op.commit()
+      return true
+    }
+
+    await pushMessage()
+
+    return {
+      text: summaryMarkup,
       lang: req.lang
     }
   }
