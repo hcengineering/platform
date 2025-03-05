@@ -267,8 +267,8 @@ export async function signUpOtp (
     // There's no person linked to this email, so we need to create a new one
     personUuid = await db.person.insertOne({ firstName, lastName })
     const newSocialId = { type: SocialIdType.EMAIL, value: normalizedEmail, personUuid }
-    const emailSocialIdKey = await db.socialId.insertOne(newSocialId)
-    emailSocialId = { ...newSocialId, key: emailSocialIdKey }
+    const emailSocialIdId = await db.socialId.insertOne(newSocialId)
+    emailSocialId = { ...newSocialId, id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
   }
 
   return await sendOtp(ctx, db, branding, emailSocialId)
