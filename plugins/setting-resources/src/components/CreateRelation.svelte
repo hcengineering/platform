@@ -57,18 +57,22 @@
       if (added.has(_id) || ignore.has(_id)) continue
       const _class = hierarchy.getClass(_id)
       if (_class.label === undefined) continue
-      if (viewlets.has(hierarchy.getBaseClass(_id))) {
-        added.add(_id)
-        const descendants = hierarchy.getDescendants(_id)
-        const toAdd: Class<Doc>[] = []
-        for (const desc of descendants) {
-          if (added.has(desc) || ignore.has(desc)) continue
-          const _class = hierarchy.getClass(desc)
-          if (_class.label === undefined) continue
-          added.add(desc)
-          toAdd.push(_class)
+      try {
+        if (viewlets.has(hierarchy.getBaseClass(_id))) {
+          added.add(_id)
+          const descendants = hierarchy.getDescendants(_id)
+          const toAdd: Class<Doc>[] = []
+          for (const desc of descendants) {
+            if (added.has(desc) || ignore.has(desc)) continue
+            const _class = hierarchy.getClass(desc)
+            if (_class.label === undefined) continue
+            added.add(desc)
+            toAdd.push(_class)
+          }
+          base.set(_id, toAdd)
         }
-        base.set(_id, toAdd)
+      } catch (err) {
+        ignore.add(_id)
       }
     }
     const result: [DropdownIntlItem, DropdownIntlItem[]][] = []

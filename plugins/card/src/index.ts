@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Class, Mixin, Doc, Ref, MarkupBlobRef, Rank } from '@hcengineering/core'
+import { Class, Mixin, Doc, Ref, MarkupBlobRef, Rank, Domain } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -41,6 +41,8 @@ export interface MasterTagEditorSection extends Doc {
  * @public
  */
 export const cardId = 'card' as Plugin
+
+export const DOMAIN_CARD = 'card' as Domain
 
 /**
  * @public

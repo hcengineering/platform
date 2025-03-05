@@ -19,7 +19,7 @@ export class ClassProperties {
   }
 
   url = (): Locator => this.page.getByRole('button', { name: 'URL' })
-  string = (): Locator => this.page.getByRole('button', { name: 'Text' })
+  string = (): Locator => this.page.getByRole('button', { name: 'Text', exact: true })
   boolean = (): Locator => this.page.getByRole('button', { name: 'Checkbox' })
   number = (): Locator => this.page.getByRole('button', { name: 'Number' })
   date = (): Locator => this.page.getByRole('button', { name: 'Date' })

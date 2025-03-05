@@ -46,7 +46,7 @@ export function createModel (builder: Builder): void {
     isAsync: true,
     txMatch: {
       _class: core.class.TxRemoveDoc,
-      objectClass: card.class.MasterTag
+      objectClass: { $in: [card.class.MasterTag, card.class.Tag] }
     }
   })
 
