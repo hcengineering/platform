@@ -947,6 +947,10 @@ export function createModel (builder: Builder): void {
     component: view.component.ValueFilter
   })
 
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
   builder.createDoc(
     view.class.FilterMode,
     core.space.Model,
@@ -1187,6 +1191,10 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringFilterPresenter
   })
 
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.StringFilterPresenter
+  })
+
   classPresenter(builder, core.class.EnumOf, view.component.EnumPresenter, view.component.EnumEditor)
 
   createAction(
@@ -1238,6 +1246,15 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilterPresenter, {
+    presenter: view.component.PersonIdFilterValuePresenter
+  })
+
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.PersonIdPresenter,
+    arrayPresenter: view.component.PersonArrayEditor
+  })
+
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilterPresenter, {
     presenter: view.component.PersonIdFilterValuePresenter
   })
 }

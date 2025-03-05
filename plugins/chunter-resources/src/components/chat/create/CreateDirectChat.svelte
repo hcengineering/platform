@@ -16,8 +16,8 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   import { Employee } from '@hcengineering/contact'
-  import { PersonId, Ref, notEmpty } from '@hcengineering/core'
-  import { primarySocialIdByPersonRefStore, SelectUsersPopup } from '@hcengineering/contact-resources'
+  import { AccountUuid, Ref, notEmpty } from '@hcengineering/core'
+  import { employeeByIdStore, SelectUsersPopup } from '@hcengineering/contact-resources'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Modal, showPopup } from '@hcengineering/ui'
 
@@ -33,13 +33,13 @@
   let dmName = ''
   let hidden = true
 
-  $: primaryPersonIds = employeeIds.map((e) => $primarySocialIdByPersonRefStore.get(e)).filter(notEmpty)
-  $: void loadDmName(primaryPersonIds).then((r) => {
+  $: accounts = employeeIds.map((e) => $employeeByIdStore.get(e)?.personUuid).filter(notEmpty)
+  $: void loadDmName(accounts).then((r) => {
     dmName = r
   })
 
-  async function loadDmName (personIds: PersonId[]): Promise<string> {
-    return await buildDmName(client, personIds)
+  async function loadDmName (accs: AccountUuid[]): Promise<string> {
+    return await buildDmName(client, accs)
   }
 
   async function createDirectMessage (): Promise<void> {

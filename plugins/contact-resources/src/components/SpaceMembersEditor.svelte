@@ -13,31 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonId, AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountUuid, AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Button, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import AccountArrayEditor from './AccountArrayEditor.svelte'
-  import { includesAny } from '@hcengineering/contact'
 
   export let label: IntlString
-  export let value: PersonId[]
-  export let onChange: ((refs: PersonId[]) => void) | undefined
+  export let value: AccountUuid[]
+  export let onChange: ((refs: AccountUuid[]) => void) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
 
-  const myPrimaryId = getCurrentAccount().primarySocialId
-  const mySocialStrings = getCurrentAccount().socialIds
+  const myAcc = getCurrentAccount()
+  const myAccUuid = myAcc.uuid
 
-  $: joined = includesAny(value, mySocialStrings)
+  $: joined = value.includes(myAccUuid)
 
   function join (): void {
-    if (includesAny(value, mySocialStrings)) return
+    if (value.includes(myAccUuid)) return
     if (onChange === undefined) return
 
-    onChange([...value, myPrimaryId])
+    onChange([...value, myAccUuid])
   }
 </script>
 
@@ -48,7 +47,7 @@
     {label}
     {value}
     {onChange}
-    readonly={readonly || !hasAccountRole(getCurrentAccount(), AccountRole.User)}
+    readonly={readonly || !hasAccountRole(myAcc, AccountRole.User)}
     {kind}
     {size}
     {width}

@@ -28,10 +28,10 @@ import {
   MarkupMarkType,
   type MarkupNode,
   MarkupNodeType,
-  parseMessageMarkdown,
   traverseNode,
   traverseNodeMarks
 } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 
 import { type Attachment } from '@hcengineering/attachment'
 import attachment from '@hcengineering/model-attachment'
@@ -436,7 +436,7 @@ async function importPageDocument (
   documentMetaMap?: Map<string, DocumentMetadata>
 ): Promise<void> {
   const md = data.toString() ?? ''
-  const json = parseMessageMarkdown(md ?? '', 'image://')
+  const json = markdownToMarkup(md ?? '')
   if (documentMetaMap !== undefined) {
     preProcessMarkdown(json, documentMetaMap, fileUploader)
   }
@@ -487,7 +487,7 @@ function preProcessMarkdown (
     } else {
       traverseNodeMarks(node, (mark) => {
         if (mark.type === MarkupMarkType.link) {
-          const href = mark.attrs.href
+          const href = mark.attrs?.href ?? ''
           switch (getLinkType(href)) {
             case NOTION_MD_LINK_TYPES.UNKNOWN:
             case NOTION_MD_LINK_TYPES.EXTERNAL_LINK: {

@@ -16,7 +16,7 @@
 import { countTokens } from '@hcengineering/openai'
 import { Tiktoken } from 'js-tiktoken'
 import OpenAI from 'openai'
-import { PersonId } from '@hcengineering/core'
+import { AccountUuid } from '@hcengineering/core'
 
 import config from '../config'
 import { HistoryRecord } from '../types'
@@ -73,7 +73,7 @@ export async function createChatCompletionWithTools (
   workspaceClient: WorkspaceClient,
   client: OpenAI,
   message: OpenAI.ChatCompletionMessageParam,
-  user?: PersonId,
+  user?: AccountUuid,
   history: OpenAI.ChatCompletionMessageParam[] = [],
   skipCache = true
 ): Promise<

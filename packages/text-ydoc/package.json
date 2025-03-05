@@ -35,17 +35,14 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
-    "@types/markdown-it": "~13.0.0",
-    "jest-environment-jsdom": "^29.7.0"
+    "jest-environment-jsdom": "^29.7.0",
+    "fast-equals": "^5.2.2",
+    "y-prosemirror": "^1.2.15"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/text": "^0.6.5",
-    "@tiptap/core": "^2.11.3",
-    "@tiptap/pm": "^2.11.3",
-    "fast-equals": "^5.2.2",
-    "yjs": "^13.6.23",
-    "y-prosemirror": "^1.2.15"
+    "yjs": "^13.6.23"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

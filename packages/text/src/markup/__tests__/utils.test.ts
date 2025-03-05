@@ -28,23 +28,11 @@ import {
   markupToJSON,
   nodeDoc,
   nodeParagraph,
-  nodeText,
-  markupToHTML
+  nodeText
 } from '@hcengineering/text-core'
 import { Editor, getSchema } from '@tiptap/core'
 import { ServerKit } from '../../kits/server-kit'
-import {
-  getMarkup,
-  htmlToJSON,
-  htmlToMarkup,
-  htmlToPmNode,
-  jsonToHTML,
-  jsonToText,
-  markupToPmNode,
-  pmNodeToHTML,
-  pmNodeToJSON,
-  pmNodeToMarkup
-} from '../utils'
+import { getMarkup, htmlToJSON, htmlToMarkup, jsonToHTML, jsonToPmNode, jsonToText, pmNodeToJSON } from '../utils'
 
 // mock tiptap functions
 jest.mock('@tiptap/html', () => ({
@@ -253,29 +241,6 @@ describe('isEmptyNode', () => {
   })
 })
 
-describe('pmNodeToMarkup', () => {
-  it('converts ProseMirrorNode to Markup', () => {
-    const schema = getSchema(extensions)
-    const node = schema.node('paragraph', {}, [schema.text('Hello, world!')])
-
-    expect(pmNodeToMarkup(node)).toEqual(
-      '{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Hello, world!"}]}'
-    )
-  })
-})
-
-describe('markupToPmNode', () => {
-  it('converts markup to ProseMirrorNode', () => {
-    const markup = '{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"Hello, world!"}]}'
-    const node = markupToPmNode(markup)
-
-    expect(node.type.name).toEqual('paragraph')
-    expect(node.content.childCount).toEqual(1)
-    expect(node.content.child(0).type.name).toEqual('text')
-    expect(node.content.child(0).text).toEqual('Hello, world!')
-  })
-})
-
 describe('markupToJSON', () => {
   it('with empty content', async () => {
     expect(markupToJSON('')).toEqual({ type: 'doc', content: [{ type: 'paragraph', content: [] }] })
@@ -328,7 +293,7 @@ describe('pmNodeToJSON', () => {
 describe('jsonToPmNode', () => {
   it('converts json to ProseMirrorNode', () => {
     const markup = '{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}'
-    const node = markupToPmNode(markup)
+    const node = jsonToPmNode(markupToJSON(markup))
 
     expect(node.type.name).toEqual('paragraph')
     expect(node.content.childCount).toEqual(1)
@@ -345,14 +310,6 @@ describe('htmlToMarkup', () => {
   })
 })
 
-describe('markupToHTML', () => {
-  it('converts markup to HTML', () => {
-    const markup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-    const expectedHtml = '<p>hello</p>'
-    expect(markupToHTML(markup)).toEqual(expectedHtml)
-  })
-})
-
 describe('htmlToJSON', () => {
   it('converts HTML to JSON', () => {
     const html = '<p>hello</p>'
@@ -366,28 +323,6 @@ describe('jsonToHTML', () => {
     const json = nodeDoc(nodeParagraph(nodeText('hello')))
     const html = '<p>hello</p>'
     expect(jsonToHTML(json)).toEqual(html)
-  })
-})
-
-describe('pmNodeToHTML', () => {
-  it('converts ProseMirrorNode to HTML', () => {
-    const schema = getSchema(extensions)
-    const node = schema.node('paragraph', {}, [schema.text('hello')])
-
-    expect(pmNodeToHTML(node)).toEqual('<p>hello</p>')
-  })
-})
-
-describe('htmlToPmNode', () => {
-  it('converts html to ProseMirrorNode', () => {
-    const node = htmlToPmNode('<p>hello</p>')
-
-    expect(node.type.name).toEqual('doc')
-    expect(node.content.childCount).toEqual(1)
-    expect(node.content.child(0).type.name).toEqual('paragraph')
-    expect(node.content.child(0).childCount).toEqual(1)
-    expect(node.content.child(0).child(0).type.name).toEqual('text')
-    expect(node.content.child(0).child(0).text).toEqual('hello')
   })
 })
 

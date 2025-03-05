@@ -14,7 +14,7 @@
 -->
 <script lang="ts" context="module">
   import contact, { AvatarProvider, getAvatarColorForId, type AvatarInfo } from '@hcengineering/contact'
-  import { PersonUuid, Ref, type Data, type WithLookup } from '@hcengineering/core'
+  import { AccountUuid, PersonUuid, Ref, type Data, type WithLookup } from '@hcengineering/core'
   import { getClient, sizeToWidth } from '@hcengineering/presentation'
 
   const providers = new Map<string, AvatarProvider | null>()
@@ -127,7 +127,8 @@
     loadUsersStatus()
   })
 
-  $: isOnline = person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid)?.online === true
+  $: isOnline =
+    person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid as AccountUuid)?.online === true
 </script>
 
 {#if showStatus && person}

@@ -486,6 +486,16 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/text-markdown",
+      "projectFolder": "packages/text-markdown",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-html",
+      "projectFolder": "packages/text-html",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/text",
       "projectFolder": "packages/text",
       "shouldPublish": true

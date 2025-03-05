@@ -18,7 +18,7 @@ export const serverDocumentsId = 'server-documents' as Plugin
  */
 export default plugin(serverDocumentsId, {
   trigger: {
-    OnSocialIdentityCreate: '' as Resource<TriggerFunc>,
+    OnEmployeeCreate: '' as Resource<TriggerFunc>,
     OnDocDeleted: '' as Resource<TriggerFunc>,
     OnDocPlannedEffectiveDateChanged: '' as Resource<TriggerFunc>,
     OnDocApprovalRequestApproved: '' as Resource<TriggerFunc>,

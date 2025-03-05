@@ -27,7 +27,8 @@ import core, {
   TxUpdateDoc,
   UserStatus,
   combineAttributes,
-  type PersonUuid
+  type PersonUuid,
+  type AccountUuid
 } from '@hcengineering/core'
 import love, {
   Invite,
@@ -125,7 +126,7 @@ async function createUserInfo (user: PersonUuid, control: TriggerControl): Promi
   return [ptx]
 }
 
-async function removeUserInfo (user: PersonUuid, control: TriggerControl): Promise<Tx[]> {
+async function removeUserInfo (user: AccountUuid, control: TriggerControl): Promise<Tx[]> {
   const person = (await control.findAll(control.ctx, contact.class.Person, { personUuid: user }))[0]
   if (person === undefined) return []
 
@@ -331,11 +332,19 @@ export async function OnKnock (txes: Tx[], control: TriggerControl): Promise<Tx[
               const body = await translate(love.string.IsKnocking, {
                 name: formatName(from.name, control.branding?.lastNameFirst)
               })
+              const employee = await control.findAll(
+                control.ctx,
+                contact.mixin.Employee,
+                { _id: user as Ref<Employee> },
+                { limit: 1 }
+              )
+              const account = employee[0]?.personUuid
+              if (account === undefined) continue
 
               const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
-                user: { $in: socialStrings }
+                user: account
               })
-              await createPushNotification(control, socialStrings, title, body, request._id, subscriptions, from, path)
+              await createPushNotification(control, account, title, body, request._id, subscriptions, from, path)
             }
           }
         }
@@ -352,7 +361,12 @@ export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx
       const invite = TxProcessor.createDoc2Doc(actualTx)
       if (invite.status === RequestStatus.Pending) {
         const target = (
-          await control.findAll(control.ctx, contact.mixin.Employee, { _id: invite.target as Ref<Employee> })
+          await control.findAll(
+            control.ctx,
+            contact.mixin.Employee,
+            { _id: invite.target as Ref<Employee> },
+            { limit: 1 }
+          )
         )[0]
         if (target === undefined) {
           continue
@@ -381,10 +395,12 @@ export async function OnInvite (txes: Tx[], control: TriggerControl): Promise<Tx
                 name: formatName(from.name, control.branding?.lastNameFirst)
               })
               : await translate(love.string.InivitingLabel, {})
+          const account = target?.personUuid
+          if (account === undefined) continue
           const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
-            user: { $in: socialStrings }
+            user: account
           })
-          await createPushNotification(control, socialStrings, title, body, invite._id, subscriptions, from, path)
+          await createPushNotification(control, account, title, body, invite._id, subscriptions, from, path)
         }
       }
     }
