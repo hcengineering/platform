@@ -665,7 +665,7 @@ export function devTool (
                   cmd.region,
                   5000, // 5 gigabytes per blob
                   sharedPipelineContextVars,
-                  true,
+                  true, // Do full check
                   async (storage, workspaceStorage) => {
                     if (cmd.remove) {
                       await updateArchiveInfo(toolCtx, db, ws.workspace, true)
@@ -781,12 +781,14 @@ export function devTool (
     .option('--region [region]', 'Force backup of selected workspace', '')
     .option('--full', 'Full recheck', false)
     .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
-    .action(async (cmd: { workspace: string, region: string, full: boolean }) => {
+    .option('-s|--skip [skip]', 'A command separated list of workspaces to skip', '')
+    .action(async (cmd: { workspace: string, region: string, full: boolean, skip: string }) => {
       const { txes } = prepareTools()
+      const skipped = new Set(cmd.skip.split(',').map((it) => it.trim()))
       await withAccountDatabase(async (db) => {
         const workspaces = (await listWorkspacesPure(db))
           .sort((a, b) => a.lastVisit - b.lastVisit)
-          .filter((it) => cmd.workspace === '' || cmd.workspace === it.workspace)
+          .filter((it) => (cmd.workspace === '' || cmd.workspace === it.workspace) && !skipped.has(it.workspace))
 
         let processed = 0
 
@@ -819,7 +821,11 @@ export function devTool (
               processed++
             }
           } catch (err: any) {
-            toolCtx.error('Failed to backup workspace', { workspace: ws.workspace })
+            toolCtx.error('Failed to backup workspace', {
+              workspace: ws.workspace,
+              err: err.message,
+              errStack: err.stack
+            })
           }
         }
         console.log('Processed workspaces', processed)
