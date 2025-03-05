@@ -103,7 +103,7 @@ const syncTabLoc = reduceCalls(async (): Promise<void> => {
       space: core.space.Workspace,
       location: url,
       name,
-      attachedTo: me.primarySocialId,
+      attachedTo: me.uuid,
       isPinned: false,
       modifiedOn: Date.now(),
       modifiedBy: me.primarySocialId
@@ -210,7 +210,7 @@ export async function createTab (): Promise<void> {
 
   const name = await translate(notification.string.Inbox, {}, get(languageStore))
   const tab = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
-    attachedTo: getCurrentAccount().primarySocialId,
+    attachedTo: getCurrentAccount().uuid,
     location: defaultUrl,
     isPinned: false,
     name
