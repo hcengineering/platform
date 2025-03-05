@@ -66,17 +66,17 @@ Send an email message.
 Request body example:
 ```
 {
-	"subject": "Test SMTP",
-	"text": "My text",
-	"from": "test1@example.com",
-	"to": "test2@example.com",
-	"attachments": [
-		{
-		  "filename": "test.txt",
-		  "content": "Hello world",
-		  "contentType": "text/plain"
-		}	
-	]
+  "subject": "Test SMTP",
+  "text": "My text",
+  "from": "test1@example.com",
+  "to": "test2@example.com",
+  "attachments": [
+    {
+      "filename": "test.txt",
+      "content": "Hello world",
+      "contentType": "text/plain"
+    }	
+  ]
 }
 ```
 
