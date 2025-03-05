@@ -25,7 +25,15 @@ import accountPlugin, {
   type AccountDB
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
-import { backup, createFileBackupStorage, createStorageBackupStorage, restore } from '@hcengineering/server-backup'
+import {
+  backup,
+  backupFind,
+  checkBackupIntegrity,
+  compactBackup,
+  createFileBackupStorage,
+  createStorageBackupStorage,
+  restore
+} from '@hcengineering/server-backup'
 import serverClientPlugin, { getAccountClient } from '@hcengineering/server-client'
 import {
   registerAdapterFactory,
@@ -36,7 +44,7 @@ import {
   setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
-import serverToken from '@hcengineering/server-token'
+import serverToken, { generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
@@ -47,12 +55,15 @@ import {
   AccountRole,
   MeasureMetricsContext,
   metricsToString,
-  type PersonId,
-  type WorkspaceUuid,
+  systemAccountUuid,
   type Data,
+  type Doc,
+  type PersonId,
+  type Ref,
   type Tx,
   type Version,
-  type WorkspaceDataId
+  type WorkspaceDataId,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import {
@@ -76,8 +87,8 @@ import { getAccountDBUrl, getMongoDBUrl } from './__start'
 import { changeConfiguration } from './configuration'
 import { reindexWorkspace } from './fulltext'
 
-import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 import { moveAccountDbFromMongoToPG } from './db'
+import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -958,30 +969,30 @@ export function devTool (
         })
       }
     )
-  // program
-  // .command('backup-find <dirName> <fileId>')
-  // .description('dump workspace transactions and minio resources')
-  // .option('-d, --domain <domain>', 'Check only domain')
-  // .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined }) => {
-  //   const storage = await createFileBackupStorage(dirName)
-  //   await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.domain)
-  // })
+  program
+    .command('backup-find <dirName> <fileId>')
+    .description('dump workspace transactions and minio resources')
+    .option('-d, --domain <domain>', 'Check only domain')
+    .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined }) => {
+      const storage = await createFileBackupStorage(dirName)
+      await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.domain)
+    })
 
-  // program
-  // .command('backup-compact <dirName>')
-  // .description('Compact a given backup, will create one snapshot clean unused resources')
-  // .option('-f, --force', 'Force compact.', false)
-  // .action(async (dirName: string, cmd: { force: boolean }) => {
-  //   const storage = await createFileBackupStorage(dirName)
-  //   await compactBackup(toolCtx, storage, cmd.force)
-  // })
-  // program
-  // .command('backup-check <dirName>')
-  // .description('Compact a given backup, will create one snapshot clean unused resources')
-  // .action(async (dirName: string, cmd: any) => {
-  //   const storage = await createFileBackupStorage(dirName)
-  //   await checkBackupIntegrity(toolCtx, storage)
-  // })
+  program
+    .command('backup-compact <dirName>')
+    .description('Compact a given backup, will create one snapshot clean unused resources')
+    .option('-f, --force', 'Force compact.', false)
+    .action(async (dirName: string, cmd: { force: boolean }) => {
+      const storage = await createFileBackupStorage(dirName)
+      await compactBackup(toolCtx, storage, cmd.force)
+    })
+  program
+    .command('backup-check <dirName>')
+    .description('Compact a given backup, will create one snapshot clean unused resources')
+    .action(async (dirName: string, cmd: any) => {
+      const storage = await createFileBackupStorage(dirName)
+      await checkBackupIntegrity(toolCtx, storage)
+    })
 
   program
     .command('backup-check-all')
@@ -999,23 +1010,23 @@ export function devTool (
 
       const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
 
-      const token = generateToken(systemAccountEmail, getWorkspaceId(''))
-      const workspaces = (await listAccountWorkspaces(token, cmd.region))
+      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid)
+      const workspaces = (await getAccountClient(token).listWorkspaces(cmd.region))
         .sort((a, b) => {
           const bsize = b.backupInfo?.backupSize ?? 0
           const asize = a.backupInfo?.backupSize ?? 0
           return bsize - asize
         })
-        .filter((it) => (cmd.workspace === '' || cmd.workspace === it.workspace) && !skipWorkspaces.has(it.workspace))
+        .filter((it) => (cmd.workspace === '' || cmd.workspace === it.url) && !skipWorkspaces.has(it.url))
 
       const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
       const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
       for (const ws of workspaces) {
-        const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+        const lastVisitDays = Math.floor((Date.now() - (ws.lastVisit ?? 0)) / 1000 / 3600 / 24)
 
         toolCtx.warn('--- checking workspace backup', {
-          url: ws.workspaceUrl,
-          id: ws.workspace,
+          url: ws.url,
+          id: ws.uuid,
           lastVisitDays,
           backupSize: ws.backupInfo?.blobsSize ?? 0,
           mode: ws.mode
@@ -1030,8 +1041,12 @@ export function devTool (
             const storage = await createStorageBackupStorage(
               toolCtx,
               storageAdapter,
-              getWorkspaceId(bucketName),
-              ws.workspace
+              {
+                uuid: 'backup' as WorkspaceUuid,
+                url: 'backup',
+                dataId: bucketName as WorkspaceDataId
+              },
+              ws.dataId ?? ws.uuid
             )
             await checkBackupIntegrity(toolCtx, storage)
           } catch (err: any) {
@@ -1042,7 +1057,7 @@ export function devTool (
             time: ed - st
           })
         } catch (err: any) {
-          toolCtx.error('REstore of f workspace failedarchive workspace', { workspace: ws.workspace })
+          toolCtx.error('Restore of f workspace failedarchive workspace', { workspace: ws.url })
         }
       }
       await storageAdapter.close()

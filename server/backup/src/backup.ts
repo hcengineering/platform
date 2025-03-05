@@ -2062,7 +2062,7 @@ export async function restore (
             if (docsToAdd.size === 0) {
               break
             }
-            ctx.info('processing', { storageFile: sf, processed, workspace: workspaceId.name })
+            ctx.info('processing', { storageFile: sf, processed, workspace: wsIds.url })
             try {
               const readStream = await storage.load(sf)
               const ex = extract()
@@ -2107,7 +2107,7 @@ export async function restore (
                     try {
                       doc = JSON.parse(bf.toString()) as Doc
                     } catch (err) {
-                      ctx.warn('failed to parse blob metadata', { name, workspace: workspaceId.name, err })
+                      ctx.warn('failed to parse blob metadata', { name, workspace: wsIds.url, err })
                       next()
                       return
                     }
@@ -2165,7 +2165,7 @@ export async function restore (
 
               await endPromise
             } catch (err: any) {
-              ctx.error('failed to processing', { storageFile: sf, processed, workspace: workspaceId.name })
+              ctx.error('failed to processing', { storageFile: sf, processed, workspace: wsIds.url })
             }
           }
         }

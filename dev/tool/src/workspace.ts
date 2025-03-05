@@ -16,15 +16,16 @@
 
 import core, {
   DOMAIN_TX,
-  getWorkspaceId,
   type BackupClient,
-  type BaseWorkspaceInfo,
   type Class,
   type Client as CoreClient,
   type Doc,
   type MeasureContext,
   type Ref,
   type Tx,
+  type WorkspaceDataId,
+  type WorkspaceIds,
+  type WorkspaceInfoWithStatus,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
@@ -120,7 +121,7 @@ export async function backupRestore (
   ctx: MeasureContext,
   dbURL: string,
   bucketName: string,
-  workspace: BaseWorkspaceInfo,
+  workspace: WorkspaceInfoWithStatus,
   pipelineFactoryFactory: (mongoUrl: string, storage: StorageAdapter) => PipelineFactory,
   skipDomains: string[]
 ): Promise<boolean> {
@@ -144,17 +145,20 @@ export async function backupRestore (
     const storage = await createStorageBackupStorage(
       ctx,
       storageAdapter,
-      getWorkspaceId(bucketName),
-      workspace.workspace
+      {
+        uuid: 'backup' as WorkspaceUuid,
+        url: bucketName,
+        dataId: bucketName as WorkspaceDataId
+      },
+      workspace.dataId ?? workspace.uuid
     )
-    const wsUrl: WorkspaceIdWithUrl = {
-      name: workspace.workspace,
+    const wsUrl: WorkspaceIds = {
       uuid: workspace.uuid,
-      workspaceName: workspace.workspaceName ?? '',
-      workspaceUrl: workspace.workspaceUrl ?? ''
+      dataId: workspace.dataId,
+      url: workspace.url
     }
-    const result: boolean = await ctx.with('restore', { workspace: workspace.workspace }, (ctx) =>
-      restore(ctx, '', getWorkspaceId(workspace.workspace), storage, {
+    const result: boolean = await ctx.with('restore', { workspace: workspace.url }, (ctx) =>
+      restore(ctx, '', wsUrl, storage, {
         date: -1,
         skip: new Set(skipDomains),
         recheck: false,
