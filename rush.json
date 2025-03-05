@@ -2325,6 +2325,11 @@
       "packageName": "@hcengineering/model-my-space",
       "projectFolder": "models/my-space",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-mail",
+      "projectFolder": "services/mail/pod-mail",
+      "shouldPublish": false
     }
   ]
 }
