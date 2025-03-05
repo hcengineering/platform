@@ -29,7 +29,8 @@ import {
   type Blob,
   type MarkupBlobRef,
   type Data,
-  type WithLookup
+  type WithLookup,
+  AccountUuid
 } from '@hcengineering/core'
 import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -172,6 +173,7 @@ export interface Employee extends Person {
   active: boolean
   statuses?: number
   position?: string | null
+  personUuid?: AccountUuid
 }
 
 /**
@@ -224,6 +226,7 @@ export const contactPlugin = plugin(contactId, {
     ChannelPresenter: '' as AnyComponent,
     SpaceMembers: '' as AnyComponent,
     DeleteConfirmationPopup: '' as AnyComponent,
+    PersonIdArrayEditor: '' as AnyComponent,
     AccountArrayEditor: '' as AnyComponent,
     PersonIcon: '' as AnyComponent,
     EditOrganizationPanel: '' as AnyComponent,

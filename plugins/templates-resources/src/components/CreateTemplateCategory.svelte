@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { getCurrentAccount } from '@hcengineering/core'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
-  import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@hcengineering/ui'
+  import { EditBox, Grid, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import templates from '../plugin'
 
@@ -37,7 +37,7 @@
       description,
       private: isPrivate,
       archived: false,
-      members: [getCurrentAccount().primarySocialId]
+      members: [getCurrentAccount().uuid]
     })
   }
 </script>

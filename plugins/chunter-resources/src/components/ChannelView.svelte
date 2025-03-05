@@ -31,7 +31,6 @@
   import view from '@hcengineering/view'
   import { messageInFocus } from '@hcengineering/activity-resources'
   import { Presence } from '@hcengineering/presence-resources'
-  import { includesAny } from '@hcengineering/contact'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
@@ -71,14 +70,14 @@
     if (hierarchy.isDerived(object._class, core.class.Space)) {
       const space = object as Space
 
-      return !includesAny(space.members, acc.socialIds)
+      return !space.members.includes(acc.uuid)
     }
 
     return false
   }
 
   async function join (): Promise<void> {
-    await client.update(object as Space, { $push: { members: acc.primarySocialId } })
+    await client.update(object as Space, { $push: { members: acc.uuid } })
   }
 
   defineSeparators('aside', panelSeparators)

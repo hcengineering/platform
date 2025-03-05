@@ -14,6 +14,7 @@
 //
 
 import {
+  AccountUuid,
   generateId,
   TxProcessor,
   type Account,
@@ -26,7 +27,6 @@ import {
   type LoadModelResponse,
   type MeasureContext,
   type PersonId,
-  type PersonUuid,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -86,7 +86,7 @@ export class ClientSession implements Session {
     this.isAdmin = this.token.extra?.admin === 'true'
   }
 
-  getUser (): PersonUuid {
+  getUser (): AccountUuid {
     return this.token.account
   }
 

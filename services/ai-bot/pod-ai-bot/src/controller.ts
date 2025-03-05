@@ -22,7 +22,7 @@ import {
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
-import { MeasureContext, PersonUuid, Ref, SocialId, type WorkspaceIds, type WorkspaceUuid } from '@hcengineering/core'
+import { AccountUuid, MeasureContext, Ref, SocialId, type WorkspaceIds, type WorkspaceUuid } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getAccountClient } from '@hcengineering/server-client'
@@ -53,7 +53,7 @@ export class AIControl {
   private readonly openaiEncoding = encodingForModel(config.OpenAIModel)
 
   constructor (
-    readonly personUuid: PersonUuid,
+    readonly personUuid: AccountUuid,
     readonly socialIds: SocialId[],
     private readonly storage: DbStorage,
     private readonly ctx: MeasureContext

@@ -14,8 +14,9 @@
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Attachment } from '@hcengineering/attachment'
-import contact, { Employee, type Person } from '@hcengineering/contact'
+import contact, { Employee, SocialIdentity, type Person } from '@hcengineering/contact'
 import {
+  AccountUuid,
   buildSocialIdString,
   type Class,
   type Doc,
@@ -341,6 +342,7 @@ export class UnifiedFormatImporter {
 
   private personsByName = new Map<string, Ref<Person>>()
   private employeesByName = new Map<string, Ref<Employee>>()
+  private accountsByEmail = new Map<string, AccountUuid>()
 
   constructor (
     private readonly client: TxOperations,
@@ -352,6 +354,7 @@ export class UnifiedFormatImporter {
 
   private async initCaches (): Promise<void> {
     await this.cachePersonsByNames()
+    await this.cacheAccountsByEmails()
     await this.cacheEmployeesByName()
   }
 
@@ -611,6 +614,14 @@ export class UnifiedFormatImporter {
     return buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
   }
 
+  private findAccountByEmail (email: string): AccountUuid {
+    const account = this.accountsByEmail.get(email)
+    if (account === undefined) {
+      throw new Error(`Account not found: ${email}`)
+    }
+    return account
+  }
+
   private findEmployeeByName (name: string): Ref<Employee> {
     const employee = this.employeesByName.get(name)
     if (employee === undefined) {
@@ -793,9 +804,9 @@ export class UnifiedFormatImporter {
       defaultIssueStatus:
         projectHeader.defaultIssueStatus !== undefined ? { name: projectHeader.defaultIssueStatus } : undefined,
       owners:
-        projectHeader.owners !== undefined ? projectHeader.owners.map((email) => this.getSocialIdByEmail(email)) : [],
+        projectHeader.owners !== undefined ? projectHeader.owners.map((email) => this.findAccountByEmail(email)) : [],
       members:
-        projectHeader.members !== undefined ? projectHeader.members.map((email) => this.getSocialIdByEmail(email)) : [],
+        projectHeader.members !== undefined ? projectHeader.members.map((email) => this.findAccountByEmail(email)) : [],
       docs: []
     }
   }
@@ -809,9 +820,9 @@ export class UnifiedFormatImporter {
       archived: spaceHeader.archived ?? false,
       description: spaceHeader.description,
       emoji: spaceHeader.emoji,
-      owners: spaceHeader.owners !== undefined ? spaceHeader.owners.map((email) => this.getSocialIdByEmail(email)) : [],
+      owners: spaceHeader.owners !== undefined ? spaceHeader.owners.map((email) => this.findAccountByEmail(email)) : [],
       members:
-        spaceHeader.members !== undefined ? spaceHeader.members.map((email) => this.getSocialIdByEmail(email)) : [],
+        spaceHeader.members !== undefined ? spaceHeader.members.map((email) => this.findAccountByEmail(email)) : [],
       docs: []
     }
   }
@@ -823,11 +834,11 @@ export class UnifiedFormatImporter {
       private: spaceHeader.private ?? false,
       archived: spaceHeader.archived ?? false,
       description: spaceHeader.description,
-      owners: spaceHeader.owners?.map((email) => this.getSocialIdByEmail(email)) ?? [],
-      members: spaceHeader.members?.map((email) => this.getSocialIdByEmail(email)) ?? [],
-      qualified: spaceHeader.qualified !== undefined ? this.getSocialIdByEmail(spaceHeader.qualified) : undefined,
-      manager: spaceHeader.manager !== undefined ? this.getSocialIdByEmail(spaceHeader.manager) : undefined,
-      qara: spaceHeader.qara !== undefined ? this.getSocialIdByEmail(spaceHeader.qara) : undefined,
+      owners: spaceHeader.owners?.map((email) => this.findAccountByEmail(email)) ?? [],
+      members: spaceHeader.members?.map((email) => this.findAccountByEmail(email)) ?? [],
+      qualified: spaceHeader.qualified !== undefined ? this.findAccountByEmail(spaceHeader.qualified) : undefined,
+      manager: spaceHeader.manager !== undefined ? this.findAccountByEmail(spaceHeader.manager) : undefined,
+      qara: spaceHeader.qara !== undefined ? this.findAccountByEmail(spaceHeader.qara) : undefined,
       docs: []
     }
   }
@@ -938,6 +949,24 @@ export class UnifiedFormatImporter {
     const content = fs.readFileSync(filePath, 'utf8')
     const match = content.match(/^---\n[\s\S]*?\n---\n(.*)$/s)
     return match != null ? match[1] : content
+  }
+
+  private async cacheAccountsByEmails (): Promise<void> {
+    const employees = await this.client.findAll(
+      contact.mixin.Employee,
+      { active: true },
+      { lookup: { _id: { socialIds: contact.class.SocialIdentity } } }
+    )
+
+    this.accountsByEmail = employees.reduce((map, employee) => {
+      employee.$lookup?.socialIds?.forEach((socialId) => {
+        if ((socialId as SocialIdentity).type === SocialIdType.EMAIL) {
+          map.set((socialId as SocialIdentity).value, employee.personUuid)
+        }
+      })
+
+      return map
+    }, new Map())
   }
 
   private async cachePersonsByNames (): Promise<void> {

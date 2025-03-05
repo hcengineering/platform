@@ -3,9 +3,9 @@
 //
 import { get } from 'svelte/store'
 import { type Employee } from '@hcengineering/contact'
-import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
+import { personRefByAccountUuidStore } from '@hcengineering/contact-resources'
 import type { Training, TrainingRequest } from '@hcengineering/training'
-import core, { type AttachedData, type Ref, type Role, type RolesAssignment } from '@hcengineering/core'
+import core, { notEmpty, type AttachedData, type Ref, type Role, type RolesAssignment } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { navigate } from '@hcengineering/ui'
 import training from '../plugin'
@@ -49,17 +49,17 @@ export async function createTrainingRequest (
     }
 
     const mixin = client.getHierarchy().as(space, spaceType.targetClass) as unknown as RolesAssignment
-    const personRefByPersonId = get(personRefByPersonIdStore)
+    const personRefByAccountUuid = get(personRefByAccountUuidStore)
     const employeeRefs = new Set(
       roles
         .map((roleId) => mixin[roleId] ?? [])
         .flat()
-        .map((pid) => personRefByPersonId.get(pid))
-        .filter((p) => p !== undefined)
+        .map((acc) => personRefByAccountUuid.get(acc))
+        .filter(notEmpty)
     )
 
     for (const employeeRef of employeeRefs) {
-      traineesMap.set(employeeRef as Ref<Employee>, true)
+      traineesMap.set(employeeRef, true)
     }
 
     attachedData.trainees = [...traineesMap.keys()]
