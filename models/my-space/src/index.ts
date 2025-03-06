@@ -36,7 +36,6 @@ export function createModel (builder: Builder): void {
       alias: mySpaceId,
       accessLevel: AccountRole.User,
       hidden: false,
-      locationResolver: mySpace.resolver.Location,
       navigatorModel: {
         spaces: [],
         specials: [
@@ -52,9 +51,7 @@ export function createModel (builder: Builder): void {
               createLabel: mail.string.CreateMail,
               createComponent: mail.component.CreateMail
             },
-            queryOptions: {
-              filterBySpace: true
-            }
+            queryBuilder: mySpace.functions.BuildQuery
           }
         ]
       }
