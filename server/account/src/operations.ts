@@ -2570,7 +2570,7 @@ async function checkSendRateLimit (currentAccount: Account, workspace: string, d
   if (timePassed < 60 * 1000 && sendOps > 5) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace }))
   }
-  if (sendOps > 5 && timePassed < sendOps * 60 * 1000) {
+  if (sendOps > 5 && timePassed > sendOps * 60 * 1000) {
     sendOps = 1
   }
   await db.account.updateOne({ _id: currentAccount._id }, { lastWorkspace: Date.now(), sendOperations: sendOps })
