@@ -22,7 +22,7 @@
   import { onDestroy } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
 
-  export let currentSpace: Ref<Class<Doc>> = card.class.Card
+  export let currentSpace: Ref<Class<Doc>>
 
   $: _class = currentSpace
 

@@ -13,10 +13,22 @@
 // limitations under the License.
 //
 
-import core, { AnyAttribute, Class, Doc, Ref, Tx, TxCreateDoc, TxProcessor, TxRemoveDoc } from '@hcengineering/core'
-import card, { DOMAIN_CARD, MasterTag } from '@hcengineering/card'
-import view from '@hcengineering/view'
+import card, { Card, DOMAIN_CARD, MasterTag, Tag } from '@hcengineering/card'
+import core, {
+  AnyAttribute,
+  Class,
+  Data,
+  Doc,
+  Ref,
+  Tx,
+  TxCreateDoc,
+  TxProcessor,
+  TxRemoveDoc,
+  TxUpdateDoc
+} from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
+import view from '@hcengineering/view'
+import setting from '@hcengineering/setting'
 
 async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerControl): Promise<Tx[]> {
   const attr = TxProcessor.createDoc2Doc(ctx[0])
@@ -79,7 +91,7 @@ async function OnAttributeRemove (ctx: TxRemoveDoc<AnyAttribute>[], control: Tri
   return []
 }
 
-async function OnMasterTagRemove (ctx: TxRemoveDoc<MasterTag>[], control: TriggerControl): Promise<Tx[]> {
+async function OnMasterTagRemove (ctx: TxRemoveDoc<MasterTag | Tag>[], control: TriggerControl): Promise<Tx[]> {
   const removeTx = ctx[0]
   const removedTag = control.removedMap.get(removeTx.objectId)
   if (removedTag === undefined) return []
@@ -90,6 +102,18 @@ async function OnMasterTagRemove (ctx: TxRemoveDoc<MasterTag>[], control: Trigge
     for (const card of cards) {
       res.push(control.txFactory.createTxRemoveDoc(card._class, card.space, card._id))
     }
+  }
+  const viewlets = await control.findAll(control.ctx, view.class.Viewlet, {
+    attachTo: removeTx.objectId
+  })
+  for (const viewlet of viewlets) {
+    res.push(control.txFactory.createTxRemoveDoc(viewlet._class, viewlet.space, viewlet._id))
+  }
+  const attributes = control.modelDb.findAllSync(core.class.Attribute, {
+    attributeOf: removeTx.objectId
+  })
+  for (const attribute of attributes) {
+    res.push(control.txFactory.createTxRemoveDoc(attribute._class, attribute.space, attribute._id))
   }
   const desc = control.hierarchy.getDescendants(removeTx.objectId)
   for (const des of desc) {
@@ -115,11 +139,142 @@ async function OnMasterTagRemove (ctx: TxRemoveDoc<MasterTag>[], control: Trigge
   return res
 }
 
+function extractObjectProps<T extends Doc> (doc: T): Data<T> {
+  const data: any = {}
+  for (const key in doc) {
+    if (key === '_id') {
+      continue
+    }
+    data[key] = doc[key]
+  }
+  return data as Data<T>
+}
+
+async function OnMasterTagCreate (ctx: TxCreateDoc<MasterTag | Tag>[], control: TriggerControl): Promise<Tx[]> {
+  const createTx = ctx[0]
+  const tag = TxProcessor.createDoc2Doc(createTx)
+  const res: Tx[] = []
+  res.push(
+    control.txFactory.createTxMixin(createTx.objectId, core.class.Mixin, core.space.Model, setting.mixin.Editable, {
+      value: true
+    })
+  )
+  res.push(
+    control.txFactory.createTxMixin(createTx.objectId, core.class.Mixin, core.space.Model, setting.mixin.UserMixin, {})
+  )
+  const viewlets = await control.findAll(control.ctx, view.class.Viewlet, { attachTo: tag.extends })
+  for (const viewlet of viewlets) {
+    const base = extractObjectProps(viewlet)
+    res.push(
+      control.txFactory.createTxCreateDoc(view.class.Viewlet, core.space.Model, {
+        ...base,
+        attachTo: createTx.objectId
+      })
+    )
+  }
+
+  return res
+}
+
+async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl): Promise<Tx[]> {
+  const removeTx = ctx[0]
+  const removedCard = control.removedMap.get(removeTx.objectId) as Card
+  if (removedCard === undefined) return []
+  const res: Tx[] = []
+  const cards = await control.findAll(control.ctx, card.class.Card, { parent: removedCard._id })
+  for (const card of cards) {
+    res.push(control.txFactory.createTxRemoveDoc(card._class, card.space, card._id))
+  }
+  if (removedCard.parent != null) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(card.class.Card, core.space.Workspace, removedCard.parent, {
+        $inc: {
+          children: -1
+        }
+      })
+    )
+  }
+
+  return res
+}
+
+async function OnCardParentChange (ctx: TxUpdateDoc<Card>[], control: TriggerControl): Promise<Tx[]> {
+  const updateTx = ctx[0]
+  if (updateTx.operations.parent === undefined) return []
+  const newParent = updateTx.operations.parent
+  const doc = (await control.findAll(control.ctx, card.class.Card, { _id: updateTx.objectId }))[0]
+  if (doc === undefined) return []
+  const oldParent = doc.parentInfo[doc.parentInfo.length - 1]?._id
+  const res: Tx[] = []
+  if (oldParent != null) {
+    const parent = (await control.findAll(control.ctx, card.class.Card, { _id: oldParent }))[0]
+    if (parent !== undefined) {
+      res.push(
+        control.txFactory.createTxUpdateDoc(parent._class, parent.space, parent._id, {
+          $inc: {
+            children: -1
+          }
+        })
+      )
+    }
+  }
+  if (newParent != null) {
+    const parent = (await control.findAll(control.ctx, card.class.Card, { _id: newParent }))[0]
+    if (parent !== undefined) {
+      res.push(
+        control.txFactory.createTxUpdateDoc(parent._class, parent.space, parent._id, {
+          $inc: {
+            children: 1
+          }
+        })
+      )
+      res.push(
+        control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+          parentInfo: [
+            ...parent.parentInfo,
+            {
+              _id: parent._id,
+              _class: parent._class,
+              title: parent.title
+            }
+          ]
+        })
+      )
+    }
+  }
+
+  return res
+}
+
+async function OnCardCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl): Promise<Tx[]> {
+  const createTx = ctx[0]
+  const doc = TxProcessor.createDoc2Doc(createTx)
+  const res: Tx[] = []
+  if (doc.parent != null) {
+    const parent = (await control.findAll(control.ctx, card.class.Card, { _id: doc.parent }))[0]
+    if (parent !== undefined) {
+      res.push(
+        control.txFactory.createTxUpdateDoc(parent._class, parent.space, parent._id, {
+          $inc: {
+            children: 1
+          }
+        })
+      )
+    }
+  }
+
+  return res
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     OnAttribute,
     OnAttributeRemove,
-    OnMasterTagRemove
+    OnMasterTagCreate,
+    OnMasterTagRemove,
+    OnCardRemove,
+    OnCardCreate,
+    OnCardParentChange
   }
 })

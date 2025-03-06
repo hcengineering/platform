@@ -784,15 +784,15 @@ class Connection implements ClientConnection {
     // We need to revert deleted query simple values.
     // We need to get rid of simple query parameters matched in documents
     for (const doc of result) {
-      if (doc._class == null) {
-        doc._class = _class
-      }
       for (const [k, v] of Object.entries(query)) {
         if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
           if (doc[k] == null) {
             doc[k] = v
           }
         }
+      }
+      if (doc._class == null) {
+        doc._class = _class
       }
     }
 

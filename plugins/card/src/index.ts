@@ -26,8 +26,16 @@ export interface Card extends Doc {
   _class: Ref<MasterTag>
   title: string
   content: MarkupBlobRef
+  children?: number
+  parentInfo: ParentInfo[]
   parent?: Ref<Card> | null
   rank: Rank
+}
+
+export interface ParentInfo {
+  _id: Ref<Card>
+  _class: Ref<MasterTag>
+  title: string
 }
 
 export interface MasterTagEditorSection extends Doc {
