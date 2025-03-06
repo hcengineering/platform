@@ -85,6 +85,20 @@
     "FreeBusy": "Zaneprázdněný/volný",
     "DefaultVisibility": "Výchozí viditelnost",
     "NotAllPermissions": "Ne všechna oprávnění byla udělena",
-    "GooglePrivacy": "Použití a přenos informací přijatých od Google API do jakékoli jiné aplikace bude v souladu s <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">zásadami ochrany osobních údajů Google API</a>, včetně požadavků na omezené použití."
+    "GooglePrivacy": "Použití a přenos informací přijatých od Google API do jakékoli jiné aplikace bude v souladu s <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">zásadami ochrany osobních údajů Google API</a>, včetně požadavků na omezené použití.",
+    "Value": "{value}",
+    "Schedule": "Veřejný rozvrh",
+    "ScheduleNew": "Přidat rozvrh",
+    "ScheduleDeleteConfirm": "Plán bude smazán. Potvrdit?",
+    "ScheduleShareLink": "Sdílet odkaz",
+    "ScheduleSharedLinkMessage": "Sdílením tohoto odkazu umožníte ostatním zarezervovat si s vámi schůzku:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkCopy": "Kopírovat odkaz",
+    "ScheduleAvailability": "Dostupnost",
+    "ScheduleUnavailable": "Nedostupné",
+    "ScheduleTitlePlaceholder": "Název plánu",
+    "ScheduleAddPeriod": "Přidat období",
+    "ScheduleRemovePeriod": "Odebrat období",
+    "MeetingDuration": "Trvání schůzky",
+    "MeetingInterval": "Pauza mezi schůzkami"
   }
 }

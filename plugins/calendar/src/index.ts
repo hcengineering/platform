@@ -221,11 +221,11 @@ const calendarPlugin = plugin(calendarId, {
     Busy: '' as IntlString,
     Private: '' as IntlString,
     NotAllPermissions: '' as IntlString,
+    Value: '' as IntlString,
     Schedule: '' as IntlString,
     ScheduleNew: '' as IntlString,
     ScheduleDeleteConfirm: '' as IntlString,
     ScheduleShareLink: '' as IntlString,
-    ScheduleSharedLinkTitle: '' as IntlString,
     ScheduleSharedLinkMessage: '' as IntlString,
     ScheduleSharedLinkCopy: '' as IntlString,
     ScheduleAvailability: '' as IntlString,
@@ -234,8 +234,7 @@ const calendarPlugin = plugin(calendarId, {
     ScheduleTitlePlaceholder: '' as IntlString,
     ScheduleUnavailable: '' as IntlString,
     MeetingDuration: '' as IntlString,
-    MeetingInterval: '' as IntlString,
-    MeetingIntervalNone: '' as IntlString
+    MeetingInterval: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler

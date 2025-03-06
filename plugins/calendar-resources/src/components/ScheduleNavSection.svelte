@@ -17,7 +17,7 @@
 <script lang="ts">
   import { Schedule } from '@hcengineering/calendar'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { createQuery, getClient, getCurrentWorkspaceId, MessageBox } from '@hcengineering/presentation'
+  import { createQuery, getClient, getCurrentWorkspaceUrl, MessageBox } from '@hcengineering/presentation'
   import { Action, ButtonIcon, IconAdd, IconDelete, IconShare, NavItem, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { TreeElement } from '@hcengineering/view-resources'
@@ -62,7 +62,8 @@
     showPopup(
       MessageBox,
       {
-        label: view.string.DeleteObject,
+        label: calendar.string.Value,
+        labelProps: { value: schedule.title },
         message: calendar.string.ScheduleDeleteConfirm,
         params: { title: schedule.title },
         richMessage: true,
@@ -77,14 +78,15 @@
   }
 
   function shareLink (schedule: Schedule): void {
-    const ws = getCurrentWorkspaceId()
+    const ws = getCurrentWorkspaceUrl()
     const link = `${scheduleUrl}/${ws}/${schedule._id}`
     showPopup(
       MessageBox,
       {
-        label: calendar.string.ScheduleSharedLinkTitle,
+        label: calendar.string.Value,
+        labelProps: { value: schedule.title },
         message: calendar.string.ScheduleSharedLinkMessage,
-        params: { link, title: schedule.title },
+        params: { link },
         richMessage: true,
         okLabel: calendar.string.ScheduleSharedLinkCopy,
         canSubmit: false,
@@ -102,39 +104,48 @@
     _id="schedules-section"
     label={calendar.string.Schedule}
     actions={getScheduleListActions}
-    isFold={schedules.length > 0}
     parent
   >
-    {#each schedules as schedule}
+    {#if schedules.length === 0}
       <NavItem
-        title={schedule.title}
-        icon={calendar.icon.Calendar}
-        type={'type-object'}
-        on:click={() => {
-          showPopup(ScheduleEditor, { schedule }, undefined)
-        }}
-      >
-        <svelte:fragment slot="actions">
-          <ButtonIcon
-            icon={IconShare}
-            size={'extra-small'}
-            kind={'tertiary'}
-            tooltip={{ label: calendar.string.ScheduleShareLink, direction: 'top' }}
-            on:click={() => {
-              shareLink(schedule)
-            }}
-          />
-          <ButtonIcon
-            icon={IconDelete}
-            size={'extra-small'}
-            kind={'tertiary'}
-            tooltip={{ label: view.string.Delete, direction: 'top' }}
-            on:click={() => {
-              deleteSchedule(schedule)
-            }}
-          />
-        </svelte:fragment>
-      </NavItem>
-    {/each}
+      label={calendar.string.ScheduleNew}
+      icon={IconAdd}
+      type={'type-object'}
+      on:click={() => {
+        showPopup(ScheduleEditor, {}, undefined)
+      }} />
+    {:else}
+      {#each schedules as schedule}
+        <NavItem
+          title={schedule.title}
+          icon={calendar.icon.Calendar}
+          type={'type-object'}
+          on:click={() => {
+            showPopup(ScheduleEditor, { schedule }, undefined)
+          }}
+        >
+          <svelte:fragment slot="actions">
+            <ButtonIcon
+              icon={IconShare}
+              size={'extra-small'}
+              kind={'tertiary'}
+              tooltip={{ label: calendar.string.ScheduleShareLink, direction: 'top' }}
+              on:click={() => {
+                shareLink(schedule)
+              }}
+            />
+            <ButtonIcon
+              icon={IconDelete}
+              size={'extra-small'}
+              kind={'tertiary'}
+              tooltip={{ label: view.string.Delete, direction: 'top' }}
+              on:click={() => {
+                deleteSchedule(schedule)
+              }}
+            />
+          </svelte:fragment>
+        </NavItem>
+      {/each}
+    {/if}
   </TreeElement>
 {/if}

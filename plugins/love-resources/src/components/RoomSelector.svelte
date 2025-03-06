@@ -92,7 +92,6 @@
           })
       }
     }
-    console.log('Make room item end')
     return item
   }
 

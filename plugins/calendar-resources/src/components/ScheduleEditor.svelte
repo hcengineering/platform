@@ -228,7 +228,7 @@
       {
         value: intervalVariants.map((interval, i) => ({
           id: i,
-          label: i === 0 ? calendar.string.MeetingIntervalNone : undefined,
+          label: i === 0 ? ui.string.None : undefined,
           text: i > 0 ? interval.text : undefined,
           isSelected: interval.msec === meetingInterval
         }))
@@ -317,7 +317,7 @@
           <Button
             focusIndex={10005}
             iconRight={IconDropdown}
-            label={meetingInterval === 0 ? calendar.string.MeetingIntervalNone : ui.string.TimeTooltip}
+            label={meetingInterval === 0 ? ui.string.None : ui.string.TimeTooltip}
             labelParams={{ value: formattedMeetingInterval }}
             on:click={showIntervalVariants}
           />
