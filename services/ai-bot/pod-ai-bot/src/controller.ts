@@ -256,7 +256,7 @@ export class AIControl {
       if (m.createdBy !== undefined) personIds.add(m.createdBy)
     }
     const identities = await client.findAll(contact.class.SocialIdentity, { key: { $in: Array.from(personIds) } })
-    const contacts = await client.findAll(contact.class.Contact, { _id: { $in: identities.map(i => i.attachedTo) } })
+    const contacts = await client.findAll(contact.class.Contact, { _id: { $in: identities.map((i) => i.attachedTo) } })
     const contactById = toIdMap(contacts)
     const contactByPersonId = new Map<PersonId, Contact>()
     for (const identity of identities) {
