@@ -13,12 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SortingOrder } from '@hcengineering/core'
+  import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Scroller, Loading, Lazy } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { getCurrentEmployee } from '@hcengineering/contact'
-  import { socialIdsByPersonRefStore } from '@hcengineering/contact-resources'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
   import notification from '@hcengineering/notification'
   import attachment from '@hcengineering/attachment'
@@ -30,8 +28,6 @@
   import LoadingHistory from '../LoadingHistory.svelte'
 
   const threadsQuery = createQuery()
-  const me = getCurrentEmployee()
-  $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
 
   let threads: ActivityMessage[] = []
   let isLoading = true
@@ -45,7 +41,7 @@
     chunter.class.ChatMessage,
     {
       replies: { $gte: 1 },
-      [`${notification.mixin.Collaborators}.collaborators`]: { $in: mySocialStrings }
+      [`${notification.mixin.Collaborators}.collaborators`]: getCurrentAccount().uuid
     },
     (res) => {
       if (res.length <= limit) {
