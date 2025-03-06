@@ -15,14 +15,7 @@
 
 <script lang="ts">
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import {
-    Button,
-    IconClose,
-    Label,
-    ProgressCircle,
-    Scroller,
-    tooltip
-  } from '@hcengineering/ui'
+  import { Button, IconClose, Label, ProgressCircle, Scroller, tooltip } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
 
@@ -53,7 +46,7 @@
   }
 
   function handleCancelAll (): void {
-    upload?.files.forEach(element => {
+    upload?.files.forEach((element) => {
       if (element.cancel !== undefined) {
         element.cancel()
       }
@@ -76,7 +69,6 @@
   onMount(() => {
     return uploads.subscribe(updateState)
   })
-
 </script>
 
 <div class="antiPopup upload-popup">
@@ -108,63 +100,63 @@
   <Scroller>
     <div class="upload-popup__content flex-col flex-no-shrink flex-gap-4">
       {#if upload}
-      {#each upload.files as [_, file] }
-        {#if file.progress}
-          <div class="upload-file-row flex-row-center justify-start flex-gap-4">
-            <div class="upload-file-row__status w-4">
-              {#if file.error}
-                <IconError size={'small'} fill={'var(--negative-button-default)'} />
-              {:else if file.finished}
-                <IconCompleted size={'small'} fill={'var(--positive-button-default)'} />
-              {:else}
-                <ProgressCircle value={file.progress} size={'small'} primary />
-              {/if}
-            </div>
-
-            <div class="upload-file-row__content flex-col flex-gap-1">
-              <div class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(file.name) }}>{file.name}</div>
-              <div class="flex-row-center flex-gap-2 text-sm">
+        {#each [...upload.files.values()] as file}
+          {#if file.progress}
+            <div class="upload-file-row flex-row-center justify-start flex-gap-4">
+              <div class="upload-file-row__status w-4">
                 {#if file.error}
-                  <Label label={uploader.status.Error} />
-                  <span class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(error) }}>{error}</span>
-                {:else if file.progress > 0}
-                  {#if file.finished}
-                    <Label label={uploader.status.Completed} />
-                  {:else}
-                    <Label label={uploader.status.Uploading} />
-                    <span>file.progress</span>
+                  <IconError size={'small'} fill={'var(--negative-button-default)'} />
+                {:else if file.finished}
+                  <IconCompleted size={'small'} fill={'var(--positive-button-default)'} />
+                {:else}
+                  <ProgressCircle value={file.progress} size={'small'} primary />
+                {/if}
+              </div>
+
+              <div class="upload-file-row__content flex-col flex-gap-1">
+                <div class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(file.name) }}>{file.name}</div>
+                <div class="flex-row-center flex-gap-2 text-sm">
+                  {#if file.error}
+                    <Label label={uploader.status.Error} />
+                    <span class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(file.error) }}>{file.error}</span>
+                  {:else if file.progress > 0}
+                    {#if file.finished}
+                      <Label label={uploader.status.Completed} />
+                    {:else}
+                      <Label label={uploader.status.Uploading} />
+                      <span>file.progress</span>
                     {/if}
                   {/if}
+                </div>
+              </div>
+
+              <div class="upload-file-row__tools flex-row-center">
+                {#if file.error}
+                  <Button
+                    kind={'icon'}
+                    icon={IconRetry}
+                    iconProps={{ size: 'small' }}
+                    showTooltip={{ label: uploader.string.Retry }}
+                    on:click={() => {
+                      handleRetryFile(file)
+                    }}
+                  />
+                {/if}
+                {#if !file.finished}
+                  <Button
+                    kind={'icon'}
+                    icon={IconClose}
+                    iconProps={{ size: 'small' }}
+                    showTooltip={{ label: uploader.string.Cancel }}
+                    on:click={() => {
+                      handleCancelFile(file)
+                    }}
+                  />
+                {/if}
               </div>
             </div>
-
-            <div class="upload-file-row__tools flex-row-center">
-              {#if file.error}
-                <Button
-                  kind={'icon'}
-                  icon={IconRetry}
-                  iconProps={{ size: 'small' }}
-                  showTooltip={{ label: uploader.string.Retry }}
-                  on:click={() => {
-                    handleRetryFile(file)
-                  }}
-                />
-              {/if}
-              {#if !file.finished}
-                <Button
-                  kind={'icon'}
-                  icon={IconClose}
-                  iconProps={{ size: 'small' }}
-                  showTooltip={{ label: uploader.string.Cancel }}
-                  on:click={() => {
-                    handleCancelFile(file)
-                  }}
-                />
-              {/if}
-            </div>
-          </div>
-        {/if}
-      {/each}
+          {/if}
+        {/each}
       {/if}
     </div>
   </Scroller>

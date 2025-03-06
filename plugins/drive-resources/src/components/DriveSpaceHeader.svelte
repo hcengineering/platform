@@ -20,7 +20,12 @@
   import { FileUploadOptions, getUploadHandlers, UploadHandler } from '@hcengineering/uploader'
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
-  import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup, getUploadOptionsByFragment } from '../utils'
+  import {
+    showCreateDrivePopup,
+    showCreateFolderPopup,
+    uploadFilesToDrivePopup,
+    getUploadOptionsByFragment
+  } from '../utils'
   import { getResource } from '@hcengineering/platform'
   import { onMount } from 'svelte'
 

@@ -70,6 +70,6 @@ export class TusUploader extends Uploader {
   }
 
   public async cancel (): Promise<void> {
-    return this.upload.abort()
+    await this.upload.abort()
   }
 }

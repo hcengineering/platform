@@ -81,7 +81,12 @@ export async function uploadFiles (files: File[] | FileList, options: FileUpload
   if (items.length === 0) {
     return
   }
-  const upload: Upload = { uuid: generateFileId(), progress: 0, target: options?.showProgress?.target, files: new Map<string, FileUpload>() }
+  const upload: Upload = {
+    uuid: generateFileId(),
+    progress: 0,
+    target: options?.showProgress?.target,
+    files: new Map<string, FileUpload>()
+  }
 
   const limiter = new RateLimiter(options.maxNumberOfFiles ?? 10)
   for (let i = 0; i < files.length; i++) {
@@ -140,7 +145,7 @@ export async function uploadFile (
         const prev = fileUpload.progress
         const percentComplete = (event.loaded / event.total) * 100
         fileUpload.progress = percentComplete
-        upload.progress += (fileUpload.progress - prev)
+        upload.progress += fileUpload.progress - prev
         updateUploads()
       }
     }

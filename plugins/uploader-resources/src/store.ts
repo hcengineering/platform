@@ -51,7 +51,7 @@ export function trackUpload (upload: Upload): void {
 
 /** @public */
 export function updateUploads (): void {
-  uploads.update(m => m)
+  uploads.update((m) => m)
 }
 
 /** @public */
