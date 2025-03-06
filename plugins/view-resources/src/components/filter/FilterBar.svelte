@@ -37,8 +37,6 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  let maxIndex = 1
-
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
     updateFilter(e)
@@ -52,7 +50,7 @@
         _class,
         target,
         space,
-        index: ++maxIndex,
+        index: $filterStore.map((it) => it.index).reduce((a, b) => Math.max(a, b), 0) + 1,
         onChange
       },
       target
