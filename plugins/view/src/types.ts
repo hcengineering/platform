@@ -37,7 +37,8 @@ import {
   Tx,
   TxOperations,
   Type,
-  UXObject
+  UXObject,
+  AccountUuid
 } from '@hcengineering/core'
 import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
@@ -112,7 +113,7 @@ export interface FilteredView extends Doc {
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
   sharable?: boolean
-  users: PersonId[]
+  users: AccountUuid[]
   createdBy: PersonId
   attachedTo: string
 }
