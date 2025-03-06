@@ -116,7 +116,7 @@
     availabilityEditOffset = offset.getTime()
     if (schedule === undefined) {
       for (let i = 0; i < 7; i++) {
-        availability[i] = (i > 0 && i < 6) ? [defaultAvailability()] : []
+        availability[i] = i > 0 && i < 6 ? [defaultAvailability()] : []
       }
     } else {
       for (let i = 0; i < 7; i++) {

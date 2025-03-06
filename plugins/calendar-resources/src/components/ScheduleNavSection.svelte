@@ -100,20 +100,16 @@
 </script>
 
 {#if scheduleUrl !== undefined}
-  <TreeElement
-    _id="schedules-section"
-    label={calendar.string.Schedule}
-    actions={getScheduleListActions}
-    parent
-  >
+  <TreeElement _id="schedules-section" label={calendar.string.Schedule} actions={getScheduleListActions} parent>
     {#if schedules.length === 0}
       <NavItem
-      label={calendar.string.ScheduleNew}
-      icon={IconAdd}
-      type={'type-object'}
-      on:click={() => {
-        showPopup(ScheduleEditor, {}, undefined)
-      }} />
+        label={calendar.string.ScheduleNew}
+        icon={IconAdd}
+        type={'type-object'}
+        on:click={() => {
+          showPopup(ScheduleEditor, {}, undefined)
+        }}
+      />
     {:else}
       {#each schedules as schedule}
         <NavItem
