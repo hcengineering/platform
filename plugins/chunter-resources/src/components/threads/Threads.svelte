@@ -38,7 +38,7 @@
   let hasNextPage = true
 
   $: threadsQuery.query(
-    chunter.class.ChatMessage,
+    activity.class.ActivityMessage,
     {
       replies: { $gte: 1 },
       [`${notification.mixin.Collaborators}.collaborators`]: getCurrentAccount().uuid
