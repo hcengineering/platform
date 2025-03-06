@@ -2,7 +2,7 @@
   "name": "@hcengineering/recorder-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
-  "author": "Hardcore Engineering Inc.",
+  "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile ui",

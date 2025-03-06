@@ -144,7 +144,6 @@
       })
     }
   }
-
 </script>
 
 <video bind:this={video} width="100%" height="100%" class="plyr" preload={preload ? 'auto' : 'none'} controls>

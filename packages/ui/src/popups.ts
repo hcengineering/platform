@@ -91,7 +91,6 @@ export function showPopup (
     category: string
     overlay: boolean
     fixed?: boolean
-    ignoreEvents?: boolean
     refId?: string
   } = {
     category: 'popup',

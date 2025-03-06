@@ -45,7 +45,6 @@
     close={popup.close}
     {contentPanel}
     overlay={popup.options.overlay}
-    ignoreEvents={popup.options.ignoreEvents}
     {popup}
   />
 {/each}

@@ -19,7 +19,7 @@
 
 {#if $uploads.size > 0}
   <div class="flex-row-center flex-gap-2">
-    {#each $uploads as [v]}
+    {#each $uploads as [_, v]}
       <FileUploadStatusBar upload={v} />
     {/each}
   </div>

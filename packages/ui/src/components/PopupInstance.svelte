@@ -25,7 +25,6 @@
   export let onClose: ((result: any) => void) | undefined
   export let onUpdate: ((result: any) => void) | undefined
   export let overlay: boolean
-  export let ignoreEvents: boolean
   export let zIndex: number
   export let top: boolean
   export let close: () => void
@@ -36,7 +35,6 @@
   // since they could be used, and any show will update them
   // So special update callback should be used.
   let initialProps: Record<string, any> = props
-  const pointerEvents = ignoreEvents ? 'none' : 'auto'
 
   $: popup.update = (props) => {
     initialProps = Object.assign(initialProps, props)

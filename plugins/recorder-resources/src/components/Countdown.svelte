@@ -44,7 +44,7 @@
   <div class="countdown">
     {count}
     <span class="countdown-info-text">
-      <Label label = {plugin.string.ClickToSkip}/>
+      <Label label={plugin.string.ClickToSkip} />
     </span>
   </div>
 </div>

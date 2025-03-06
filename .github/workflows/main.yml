@@ -123,7 +123,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
       - name: Checking svelte sources...
-        run: node common/scripts/install-run-rush.js svelte-check
+        run: node common/scripts/install-run-rush.js svelte-check -v
   formatting:
     needs: build
     runs-on: ubuntu-latest
