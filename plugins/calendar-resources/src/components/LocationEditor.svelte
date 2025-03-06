@@ -4,6 +4,7 @@
 
   export let value: string | undefined
   export let focusIndex = 1
+  export let readOnly: boolean = false
 
   function isLink (value?: string | null): boolean {
     if (value == null) return false
@@ -22,8 +23,16 @@
 
 <div class="flex-row-center flex-gap-1 container flex-no-shrink">
   <Icon icon={calendar.icon.Location} size={'small'} />
-  <div class="flex-row-center">
-    <EditBox bind:value placeholder={calendar.string.Location} kind={'ghost'} {focusIndex} fullSize focusable />
+  <div class="flex-row-center" style="flex: 1">
+    <EditBox
+      bind:value
+      placeholder={calendar.string.Location}
+      kind={'ghost'}
+      {focusIndex}
+      fullSize
+      focusable
+      disabled={readOnly}
+    />
     {#if isLink(value)}
       <div class="tool">
         <Button focusIndex={4} kind={'ghost'} size={'small'} icon={IconArrowRight} on:click={open} />

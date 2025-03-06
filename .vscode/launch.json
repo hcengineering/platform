@@ -397,15 +397,14 @@
       "name": "Debug backup tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "backup", "../../../hardware/dump/githubcr", "w-haiodo-githubcr-67403799-de2a46aa46-beb3b2"],
+      "args": ["src/__start.ts", "backup", "../../../hardware/dump/felix", "felix", "--full"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
         "SERVER_SECRET": "secret",
-        "MONGO_URL": "mongodb://localhost:27017",
-        "ACCOUNTS_URL": "http://localhost:3000",
-        "TELEGRAM_DATABASE": "telegram-service"
+        "MONGO_URL": "mongodb://localhost:27018",
+        "ACCOUNTS_URL": "http://localhost:3003"
       },
       "smartStep": true,
       "sourceMapRenames": true,
@@ -528,6 +527,26 @@
         "SERVER_SECRET": "secret",
         "SECRET": "secret",
         "BUCKET_NAME":"backups"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/tool",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug restore-all tool",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "restore-all"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        // "DB_URL": "mongodb://localhost:27017",
+        "DB_URL": "postgresql://root@host.docker.internal:26258/defaultdb?sslmode=disable",
+        "SERVER_SECRET": "secret",
+        "BUCKET_NAME":"dev-backups"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,

@@ -13,6 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getCurrentEmployee, formatName } from '@hcengineering/contact'
+  import { personByIdStore } from '@hcengineering/contact-resources'
+  import { translate } from '@hcengineering/platform'
   import { Ref } from '@hcengineering/core'
   import love, { isOffice, Room } from '@hcengineering/love'
   import { Dropdown, Icon } from '@hcengineering/ui'
@@ -25,18 +28,75 @@
 
   const dispatch = createEventDispatcher()
 
+  $: currentPersonId = getCurrentEmployee()
+
   $: items = $rooms
-    .filter((p) => !isOffice(p) && p._id !== love.ids.Reception)
-    .map((p) => {
-      return {
-        _id: p._id,
-        label: p.name
+    .filter((room) => {
+      if (room._id === love.ids.Reception) {
+        return false
       }
+      if (isOffice(room)) {
+        return room.person === currentPersonId
+      }
+      return true
     })
+    .map((room) => makeRoomItem(room, false))
 
-  $: selected = value !== undefined ? items.find((p) => p._id === value) : undefined
+  $: selectedRoom = $rooms.find((p) => p._id === value)
+  $: selected = selectedRoom !== undefined ? makeRoomItem(selectedRoom, true) : undefined
 
-  function change (id: Ref<Room>) {
+  function makeRoomItem (room: Room, forSelected: boolean): { _id: string, label: string } {
+    const item = { _id: room._id, label: room.name }
+    if (isOffice(room)) {
+      if (room.person === currentPersonId) {
+        translate(love.string.MyOffice, {})
+          .then((res) => {
+            item.label = res
+            if (forSelected) {
+              selected = { ...item }
+            } else {
+              items = [...items]
+            }
+          })
+          .catch((err) => {
+            console.error(err)
+          })
+      } else if (room.person !== null) {
+        const person = $personByIdStore.get(room.person)
+        if (person !== undefined) {
+          translate(love.string.Office, {})
+            .then((res) => {
+              item.label = `${res} (${formatName(person.name)})`
+              if (forSelected) {
+                selected = { ...item }
+              } else {
+                items = [...items]
+              }
+            })
+            .catch((err) => {
+              console.error(err)
+            })
+        }
+      } else {
+        translate(love.string.Office, {})
+          .then((res) => {
+            item.label = res
+            if (forSelected) {
+              selected = { ...item }
+            } else {
+              items = [...items]
+            }
+          })
+          .catch((err) => {
+            console.error(err)
+          })
+      }
+    }
+    console.log('Make room item end')
+    return item
+  }
+
+  function change (id: Ref<Room>): void {
     if (value !== id) {
       dispatch('change', id)
       value = id

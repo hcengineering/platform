@@ -34,7 +34,8 @@
     class="hulyPopupEmoji-button"
     class:preview
     class:selected
-    class:skins={_emoji?.skins !== undefined}
+    class:skins={_emoji?.skins !== undefined && _emoji.skins.length === 5}
+    class:constructor={_emoji?.skins !== undefined && _emoji.skins.length > 5}
     data-skins={getSkinsCount(_emoji)}
     {disabled}
     on:touchstart
@@ -98,6 +99,23 @@
     }
 
     &.skins:not(.preview) {
+      position: relative;
+      border: 1px dashed var(--theme-button-border);
+
+      &:hover {
+        &::after {
+          content: '';
+          position: absolute;
+          top: -0.375rem;
+          right: -0.375rem;
+          width: 1rem;
+          height: 1rem;
+          border-radius: 50%;
+          background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!-- Generator: Adobe Illustrator 28.4.1, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3E%3Csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 8 8' style='enable-background:new 0 0 8 8;' xml:space='preserve'%3E%3Cg%3E%3Ccircle fill='%23FFC92C' cx='5.3' cy='1.3' r='1.3' /%3E%3Ccircle fill='%23BF8F68' cx='2.7' cy='6' r='1.3' /%3E%3Ccircle fill='%23E0BB95' cx='5.3' cy='6' r='1.3' /%3E%3Ccircle fill='%239B643D' cx='1.3' cy='3.6' r='1.3' /%3E%3Ccircle fill='%23594539' cx='2.7' cy='1.3' r='1.3' /%3E%3Ccircle fill='%23FADCBC' cx='6.7' cy='3.6' r='1.3' /%3E%3C/g%3E%3C/svg%3E%0A");
+        }
+      }
+    }
+    &.constructor:not(.preview) {
       position: relative;
       border: 1px dashed var(--theme-button-border);
 

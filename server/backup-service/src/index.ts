@@ -94,7 +94,7 @@ export async function backupWorkspace (
   region: string,
   downloadLimit: number,
   contextVars: Record<string, any>,
-
+  fullCheck: boolean = false,
   onFinish?: (backupStorage: StorageAdapter, workspaceStorage: StorageAdapter) => Promise<void>
 ): Promise<boolean> {
   const config = _config()
@@ -129,7 +129,8 @@ export async function backupWorkspace (
       region,
       downloadLimit,
       [],
-      contextVars
+      contextVars,
+      fullCheck
     )
     if (result && onFinish !== undefined) {
       await onFinish(storageAdapter, workspaceStorageAdapter)

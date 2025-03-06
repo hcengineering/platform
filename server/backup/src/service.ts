@@ -74,7 +74,8 @@ class BackupWorker {
     ) => DbConfiguration,
     readonly region: string,
     readonly contextVars: Record<string, any>,
-    readonly skipDomains: string[] = []
+    readonly skipDomains: string[] = [],
+    readonly fullCheck: boolean = false
   ) {}
 
   canceled = false
@@ -285,6 +286,7 @@ class BackupWorker {
           connectTimeout: 5 * 60 * 1000, // 5 minutes to,
           blobDownloadLimit: this.downloadLimit,
           skipBlobContentTypes: [],
+          fullVerify: this.fullCheck,
           storageAdapter: this.workspaceStorageAdapter,
           getLastTx: async (): Promise<Tx | undefined> => {
             const config = this.getConfig(ctx, wsIds, null, this.workspaceStorageAdapter)
@@ -408,6 +410,7 @@ export async function doBackupWorkspace (
   downloadLimit: number,
   skipDomains: string[],
   contextVars: Record<string, any>,
+  fullCheck: boolean = false,
   notify?: (progress: number) => Promise<void>
 ): Promise<boolean> {
   const backupWorker = new BackupWorker(
@@ -418,7 +421,8 @@ export async function doBackupWorkspace (
     getConfig,
     region,
     contextVars,
-    skipDomains
+    skipDomains,
+    fullCheck
   )
   backupWorker.downloadLimit = downloadLimit
   const result = await backupWorker.doBackup(ctx, workspace, notify)
@@ -449,7 +453,7 @@ export async function doRestoreWorkspace (
       restore(ctx, '', wsIds, storage, {
         date: -1,
         skip: new Set(skipDomains),
-        recheck: true,
+        recheck: false, // Do not need to recheck
         storageAdapter: workspaceStorageAdapter,
         cleanIndexState,
         getConnection: async () => {
