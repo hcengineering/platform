@@ -170,9 +170,20 @@ export async function resolveParents (object: Resource): Promise<Doc[]> {
   return parents.reverse()
 }
 
+export async function getUploadOptionsByFragment (space: Ref<Drive>, fragment: string): Promise<FileUploadOptions> {
+  const [, _id, _class] = decodeURIComponent(fragment).split('|')
+  if (_class === drive.class.Folder) {
+    return await getUploadOptions(space, _id as Ref<Folder>)
+  }
+  if (_class === drive.class.File) {
+    const res = await getClient().findOne(drive.class.File, { _id: _id as Ref<File> })
+    return await getUploadOptions(res?.space as Ref<Drive>, res?.parent as Ref<Folder>)
+  }
+  return await getUploadOptions(space, drive.ids.Root)
+}
+
 export async function getUploadOptions (space: Ref<Drive>, parent: Ref<Folder>): Promise<FileUploadOptions> {
   const onFileUploaded = await fileUploadCallback(space, parent)
-  console.log(space, parent)
   const target =
     parent !== drive.ids.Root
       ? { objectId: parent, objectClass: drive.class.Folder }

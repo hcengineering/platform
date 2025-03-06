@@ -43,8 +43,3 @@ const recordPlugin = plugin(recorderId, {
 })
 
 export default recordPlugin
-
-export * from './recorder'
-export * from './uploader'
-export * from './screen-recorder'
-export * from './stream'

@@ -59,6 +59,7 @@
     "@uppy/xhr-upload": "^3.6.8",
     "install": "^0.13.0",
     "stream-browserify": "^3.0.0",
-    "svelte": "^4.2.19"
+    "svelte": "^4.2.19",
+    "tus-js-client": "^4.3.1"
   }
 }

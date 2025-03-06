@@ -14,40 +14,48 @@
 //
 
 import { type FileUploadTarget } from '@hcengineering/uploader'
-import { type Writable, writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 
 /** @public */
-export interface Upload {
-  progress: number
+export interface FileUpload {
   error?: string
   retry?: () => Promise<void>
   cancel?: () => void
+  progress: number
   name: string
-  uuid: string
   finished: boolean
-  target?: FileUploadTarget
 }
 
 /** @public */
-export const uploads = writable(new Map<string, Writable<Upload>>())
+export interface Upload {
+  uuid: string
+  progress: number
+  files: Map<string, FileUpload>
+  target?: FileUploadTarget
+  error?: string
+}
 
-export function updateUpload (upload: Upload): void {
+/** @public */
+export const uploads = writable(new Map<string, Upload>())
+
+/** @public */
+export function trackUpload (upload: Upload): void {
   if (upload.target === undefined) {
     return
   }
   uploads.update((m) => {
-    let u = m.get(upload.uuid)
-    if (u === undefined) {
-      u = writable(upload)
-    } else {
-      return m
-    }
-    u.set(upload)
-    m.set(upload.uuid, u)
+    m.set(upload.uuid, upload)
     return m
   })
 }
-export function deleteUpload (upload: Upload): void {
+
+/** @public */
+export function updateUploads (): void {
+  uploads.update(m => m)
+}
+
+/** @public */
+export function untrackUpload (upload: Upload): void {
   if (upload.target === undefined) {
     return
   }

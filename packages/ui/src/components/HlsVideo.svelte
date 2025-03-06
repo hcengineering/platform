@@ -47,14 +47,14 @@
         maxTimeToFirstByteMs: Infinity,
         maxLoadTimeMs: 1000 * 60,
         timeoutRetry: {
-          maxNumRetry: 10,
-          retryDelayMs: 250,
-          maxRetryDelayMs: 500
+          maxNumRetry: 20,
+          retryDelayMs: 100,
+          maxRetryDelayMs: 250
         },
         errorRetry: {
-          maxNumRetry: 10,
-          retryDelayMs: 250,
-          maxRetryDelayMs: 500,
+          maxNumRetry: 20,
+          retryDelayMs: 100,
+          maxRetryDelayMs: 250,
           shouldRetry: (retryConfig, retryCount) => retryCount < (retryConfig?.maxNumRetry ?? 10)
         }
       }

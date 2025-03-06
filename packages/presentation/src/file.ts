@@ -128,7 +128,7 @@ function getFileUploadMethod (blob: Blob): { method: FileUploadMethod, url: stri
   const config = getUploadConfig()
 
   const signedUrl = config['signed-url']
-  if (signedUrl !== undefined) {
+  if (signedUrl !== undefined && signedUrl.size < blob.size) {
     return { method: 'signed-url', url: signedUrl.url }
   }
 

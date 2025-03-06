@@ -1,3 +1,4 @@
+//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -10,9 +11,10 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 import * as tus from 'tus-js-client'
-import { ChunkReader } from './stream'
+import type { ChunkReader } from './stream'
 
 interface IMap<T> {
   [index: string]: T
@@ -61,13 +63,13 @@ export class TusUploader extends Uploader {
     this.upload.start()
   }
 
-  public wait (): Promise<void> {
-    return new Promise((resolve) => {
+  public async wait (): Promise<void> {
+    await new Promise<void>((resolve) => {
       this.waiter = resolve
     })
   }
 
-  public cancel (): Promise<void> {
+  public async cancel (): Promise<void> {
     return this.upload.abort()
   }
 }

@@ -24,7 +24,7 @@
   let videoElement: HTMLVideoElement
   let stream: MediaStream | null = null
 
-  const stopCamera = () => {
+  const stopCamera = (): void => {
     if (stream === null) {
       return
     }
@@ -36,18 +36,18 @@
     showCamera = false
   }
 
-  const startCamera = async () => {
+  const startCamera = async (): void => {
     stopCamera()
     showCamera = true
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      stream = await navigator.mediaDevices.getUserMedia({ video: { getUserMedia: { ideal: 30 } } })
       videoElement.srcObject = stream
     } catch (err) {
       console.log(err)
     }
   }
 
-  onDestroy(async () => {
+  onDestroy(async (): void => {
     stopCamera()
   })
 </script>
@@ -83,7 +83,7 @@
           startCamera()
         }}
       >
-        <Camera size="small" />
+        <Camera size="medium" />
       </span>
     </div>
   {/if}
@@ -107,7 +107,7 @@
     align-items: center;
     gap: 0.5rem;
     background: var(--theme-recorder-panel-bg);
-    padding-left: 0.35rem;
+    padding-left: 0.25rem;
     border-radius: 0.5rem;
     transition:
       max-width 0.4s ease-in-out,

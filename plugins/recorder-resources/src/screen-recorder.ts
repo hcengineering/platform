@@ -1,3 +1,4 @@
+//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -10,9 +11,10 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 import { Recorder } from './recorder'
-import { TusUploader, Uploader, Options } from './uploader'
+import { TusUploader, type Uploader, type Options } from './uploader'
 
 export class ScreenRecorder {
   private readonly recorder: Recorder

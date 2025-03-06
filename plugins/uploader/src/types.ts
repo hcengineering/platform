@@ -53,7 +53,6 @@ export interface FileUploadProgressOptions {
 
 /** @public */
 export interface FileUploadOptions {
-  // Uppy options
   maxFileSize?: number
   maxNumberOfFiles?: number
   allowedFileTypes?: string[] | null

@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<!-- <script lang="ts">
+
+<script lang="ts">
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import {
     Button,
@@ -20,107 +21,79 @@
     Label,
     ProgressCircle,
     Scroller,
-    humanReadableFileSize as filesize,
     tooltip
   } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
-  import type { UppyFile, State as UppyState } from '@uppy/core'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   import IconCompleted from './icons/Completed.svelte'
   import IconError from './icons/Error.svelte'
   import IconRetry from './icons/Retry.svelte'
 
   import uploader from '../plugin'
-  import { type FileUpload } from '../store'
+  import { uploads, type Upload, type FileUpload } from '../store'
 
-  export let upload: FileUpload
+  export let uploadId: string
 
   const dispatch = createEventDispatcher()
+  let upload: Upload | undefined = undefined
 
-  let state: UppyState<any, any> = upload.uppy.getState()
-
-  $: state = upload.uppy.getState()
-  $: files = Object.values(state.files)
-  $: capabilities = state.capabilities ?? {}
-  $: individualCancellation = 'individualCancellation' in capabilities && capabilities.individualCancellation
-
-  function updateState (): void {
-    state = upload.uppy.getState()
-  }
-
-  function handleComplete (): void {
-    if (upload.uppy.getState().error === undefined) {
+  function updateState (state: Map<string, Upload>): void {
+    upload = state.get(uploadId)
+    if (upload === undefined) {
+      dispatch('close')
+      return
+    }
+    if (upload.progress === 100 && upload.error === undefined) {
       dispatch('close')
     }
-  }
-
-  function handleFileRemoved (): void {
-    state = upload.uppy.getState()
-    const files = upload.uppy.getFiles()
-    if (files.length === 0) {
+    if (upload.files.size === 0) {
       dispatch('close')
     }
   }
 
   function handleCancelAll (): void {
-    upload.uppy.cancelAll()
+    upload?.files.forEach(element => {
+      if (element.cancel !== undefined) {
+        element.cancel()
+      }
+    })
   }
 
-  function handleCancelFile (file: UppyFile<any, any>): void {
-    upload.uppy.removeFile(file.id)
+  function handleCancelFile (file: FileUpload): void {
+    if (file.cancel === undefined) {
+      return
+    }
+    file.cancel()
   }
 
-  function handleRetryFile (file: UppyFile<any, any>): void {
-    void upload.uppy.retryUpload(file.id)
+  function handleRetryFile (file: FileUpload): void {
+    if (file.retry === undefined) {
+      return
+    }
+    void file.retry()
   }
-
   onMount(() => {
-    upload.uppy.on('complete', handleComplete)
-    upload.uppy.on('file-removed', handleFileRemoved)
-    upload.uppy.on('upload-error', updateState)
-    upload.uppy.on('upload-progress', updateState)
-    upload.uppy.on('upload-success', updateState)
+    return uploads.subscribe(updateState)
   })
 
-  onDestroy(() => {
-    upload.uppy.off('complete', handleComplete)
-    upload.uppy.off('file-removed', handleFileRemoved)
-    upload.uppy.off('upload-error', updateState)
-    upload.uppy.off('upload-progress', updateState)
-    upload.uppy.off('upload-success', updateState)
-  })
-
-  function getFileError (file: UppyFile<any, any>): string | undefined {
-    return 'error' in file ? (file.error as string) : undefined
-  }
-
-  function getFilePercentage (file: UppyFile<any, any>): number {
-    return file.progress != null
-      ? file.progress.uploadComplete
-        ? 100
-        : file.progress.uploadStarted != null
-          ? file.progress.percentage ?? 50
-          : 0
-      : 0
-  }
 </script>
 
 <div class="antiPopup upload-popup">
   <div class="upload-popup__header flex-row-center flex-gap-1">
     <div class="label overflow-label">
-      <Label label={uploader.string.UploadingTo} params={{ files: files.length }} />
+      <Label label={uploader.string.UploadingTo} params={{ files: upload?.files.size }} />
     </div>
     <div class="flex flex-grow overflow-label">
       <ObjectPresenter
-        objectId={upload.target.objectId}
-        _class={upload.target.objectClass}
+        objectId={upload?.target?.objectId}
+        _class={upload?.target?.objectClass}
         shouldShowAvatar={false}
         accent
         noUnderline
       />
     </div>
-    {#if state.error}
+    {#if upload?.error}
       <Button
         kind={'icon'}
         icon={IconClose}
@@ -134,53 +107,39 @@
   </div>
   <Scroller>
     <div class="upload-popup__content flex-col flex-no-shrink flex-gap-4">
-      {#each files as file}
+      {#if upload}
+      {#each upload.files as [_, file] }
         {#if file.progress}
-          {@const error = getFileError(file)}
-          {@const percentage = getFilePercentage(file)}
-
           <div class="upload-file-row flex-row-center justify-start flex-gap-4">
             <div class="upload-file-row__status w-4">
-              {#if error}
+              {#if file.error}
                 <IconError size={'small'} fill={'var(--negative-button-default)'} />
-              {:else if file.progress.uploadComplete}
+              {:else if file.finished}
                 <IconCompleted size={'small'} fill={'var(--positive-button-default)'} />
               {:else}
-                <ProgressCircle value={percentage} size={'small'} primary />
+                <ProgressCircle value={file.progress} size={'small'} primary />
               {/if}
             </div>
 
             <div class="upload-file-row__content flex-col flex-gap-1">
               <div class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(file.name) }}>{file.name}</div>
               <div class="flex-row-center flex-gap-2 text-sm">
-                {#if error}
+                {#if file.error}
                   <Label label={uploader.status.Error} />
                   <span class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(error) }}>{error}</span>
-                {:else if file.progress.uploadStarted != null}
-                  {#if file.progress.uploadComplete}
+                {:else if file.progress > 0}
+                  {#if file.finished}
                     <Label label={uploader.status.Completed} />
-                    {#if file.progress.bytesTotal}
-                      <span>{filesize(file.progress.bytesTotal)}</span>
-                    {/if}
                   {:else}
                     <Label label={uploader.status.Uploading} />
-                    {#if file.progress.bytesTotal}
-                      <span>{filesize(file.progress.bytesUploaded)} / {filesize(file.progress.bytesTotal)}</span>
-                    {:else}
-                      <span>{filesize(file.progress.bytesUploaded)}}</span>
+                    <span>file.progress</span>
                     {/if}
                   {/if}
-                {:else}
-                  <Label label={uploader.status.Waiting} />
-                  {#if file.progress.bytesTotal}
-                    <span>{filesize(file.progress.bytesTotal)}</span>
-                  {/if}
-                {/if}
               </div>
             </div>
 
             <div class="upload-file-row__tools flex-row-center">
-              {#if error}
+              {#if file.error}
                 <Button
                   kind={'icon'}
                   icon={IconRetry}
@@ -191,7 +150,7 @@
                   }}
                 />
               {/if}
-              {#if !file.progress.uploadComplete && individualCancellation}
+              {#if !file.finished}
                 <Button
                   kind={'icon'}
                   icon={IconClose}
@@ -206,6 +165,7 @@
           </div>
         {/if}
       {/each}
+      {/if}
     </div>
   </Scroller>
 </div>
@@ -236,4 +196,4 @@
       flex-shrink: 0;
     }
   }
-</style> -->
+</style>

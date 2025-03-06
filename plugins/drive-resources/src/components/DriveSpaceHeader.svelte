@@ -19,8 +19,8 @@
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
   import { FileUploadOptions, getUploadHandlers, UploadHandler } from '@hcengineering/uploader'
   import drive from '../plugin'
-  import { getFolderIdFromFragment, findFolderIdFromFragment } from '../navigation'
-  import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup, getUploadOptions } from '../utils'
+  import { getFolderIdFromFragment } from '../navigation'
+  import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup, getUploadOptionsByFragment } from '../utils'
   import { getResource } from '@hcengineering/platform'
   import { onMount } from 'svelte'
 
@@ -63,11 +63,7 @@
     } else if (res === drive.string.CreateFolder) {
       await handleCreateFolder()
     } else if (typeof res === 'string' && currentSpace !== undefined) {
-      const findRes = await findFolderIdFromFragment(currentFragment ?? '')
-      const opts = await getUploadOptions(
-        (findRes.space as Ref<Drive>) ?? currentSpace,
-        findRes.folder ?? drive.ids.Root
-      )
+      const opts = await getUploadOptionsByFragment(currentSpace, currentFragment ?? '')
       const uploadFn = actionWithExtensionMap.get(res)
       if (uploadFn === undefined) {
         return

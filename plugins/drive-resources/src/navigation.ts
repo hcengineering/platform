@@ -27,25 +27,7 @@ export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id
   return getPanelURI(component, object._id, object._class, 'content')
 }
 
-// TODO: must be reworked
-interface findResult {
-  folder?: Ref<Folder>
-  space?: string
-}
-
-export async function findFolderIdFromFragment (fragment: string): Promise<findResult> {
-  const [, _id, _class] = decodeURIComponent(fragment).split('|')
-  if (_class === drive.class.Folder) {
-    return { folder: _id as Ref<Folder> }
-  }
-  if (_class === drive.class.File) {
-    const res = await getClient().findOne(drive.class.File, { _id: _id as Ref<File> })
-    return { folder: res?.parent, space: res?.space as string }
-  }
-  return { folder: drive.ids.Root }
-}
-
-export function getFolderIdFromFragment (fragment: string): Ref<Folder> | undefined {
+export function getFolderIdFromFragment (fragment: string): Ref<Folder> {
   const [, _id, _class] = decodeURIComponent(fragment).split('|')
   return _class === drive.class.Folder ? (_id as Ref<Folder>) : drive.ids.Root
 }

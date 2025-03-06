@@ -57,7 +57,7 @@
     }
     50% {
       background-position: 100% 50%;
-      transform: scale(1.05);
+      transform: scale(1.01);
     }
     100% {
       background-position: 0% 50%;
@@ -94,7 +94,7 @@
     width: 17.5em;
     height: 17.5rem;
     border-radius: 50%;
-    background: linear-gradient(-45deg, rgba(255, 140, 0, 0.6) 70%, rgba(48, 136, 194, 0.7) 30%);
+    background: linear-gradient(-45deg, #ff8c0099 70%, #3088c2b3 30%);
     filter: blur(1.5rem);
     animation: gradient 1s infinite ease;
     z-index: 1;

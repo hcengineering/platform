@@ -20,12 +20,13 @@
 
   import IconError from './icons/Error.svelte'
   import FileUploadStatusPopup from './FileUploadStatusPopup.svelte'
-  import { type Writable } from 'svelte/store'
 
-  export let upload: Writable<Upload>
+  export let upload: Upload
+
+  $: console.log(upload.progress / Math.max(upload.files.size, 1))
 
   function handleClick (ev: MouseEvent): void {
-    // showPopup(FileUploadStatusPopup, { upload }, ev.currentTarget as HTMLElement)
+    showPopup(FileUploadStatusPopup, { uploadId: upload.uuid }, ev.currentTarget as HTMLElement)
   }
 </script>
 
@@ -33,16 +34,16 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="container flex-row-center flex-gap-2 active"
-  class:error={$upload.error}
+  class:error={upload.error}
   on:click={handleClick}
-  use:tooltip={$upload.error !== undefined ? { label: getEmbeddedLabel($upload.error) } : undefined}
+  use:tooltip={upload.error !== undefined ? { label: getEmbeddedLabel(upload.error) } : undefined}
 >
-  {#if $upload.error}
+  {#if upload.error}
     <IconError size={'small'} fill={'var(--negative-button-default)'} />
   {:else}
-    <ProgressCircle value={$upload.progress} size={'small'} primary />
+    <ProgressCircle value={(upload.progress / Math.max(upload.files.size, 1))} size={'small'} primary />
   {/if}
-  <span>{$upload.progress.toFixed(1)}%</span>
+  <span>{(upload.progress / Math.max(upload.files.size, 1)).toFixed(1)}%</span>
 </div>
 
 <style lang="scss">

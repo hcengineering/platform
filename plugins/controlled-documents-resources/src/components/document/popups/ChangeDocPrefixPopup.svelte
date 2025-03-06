@@ -79,7 +79,7 @@
       <div class="text-base font-medium primary-text-color pb-2">
         <Label label={documentsRes.string.ChangePrefix} />
       </div>
-      <div class="flex-column center flex-gap-8 pt-6">
+      <div class="flex-column flex-gap-8 pt-6">
         <EditBox
           autoFocus
           placeholder={documentsRes.string.DocumentPrefixPlaceholder}

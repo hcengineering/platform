@@ -1,3 +1,4 @@
+//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -10,6 +11,7 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 export interface ChunkReadResult {
   done: boolean
@@ -21,16 +23,16 @@ export class ChunkReader {
   private done: boolean = false
   private awaitingResolve: ((val: ChunkReadResult | PromiseLike<ChunkReadResult>) => void) | null = null
 
-  public read (): Promise<ChunkReadResult> {
+  public async read (): Promise<ChunkReadResult> {
     if (this.done && this.chunks.length === 0) {
-      return Promise.resolve({ done: true, value: undefined })
+      return { done: true, value: undefined }
     }
     if (this.chunks.length === 0) {
-      return new Promise((resolve) => {
+      return await new Promise<ChunkReadResult>((resolve) => {
         this.awaitingResolve = resolve
       })
     }
-    return Promise.resolve({ done: false, value: this.chunks.shift() })
+    return { done: false, value: this.chunks.shift() }
   }
 
   public push (blob: Blob): void {

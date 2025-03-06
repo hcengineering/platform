@@ -21,7 +21,7 @@ import {
   type UploadHandlerDefinition
 } from '@hcengineering/uploader'
 import { type Ref, type Blob, RateLimiter } from '@hcengineering/core'
-import { type Upload, updateUpload, deleteUpload } from './store'
+import { type FileUpload, type Upload, trackUpload, untrackUpload, updateUploads } from './store'
 import uploader from './plugin'
 import { generateFileId, getFileUploadParams, getClient } from '@hcengineering/presentation'
 
@@ -40,7 +40,7 @@ export async function uploadXHRFolders (options: FileUploadOptions): Promise<voi
   await uploadXHR(true, options)
 }
 
-async function uploadXHR (folders: boolean, options: FileUploadOptions): Promise<void> {
+export async function uploadXHR (folders: boolean, options: FileUploadOptions): Promise<void> {
   const input = document.createElement('input')
   input.type = 'file'
   input.webkitdirectory = folders
@@ -81,6 +81,7 @@ export async function uploadFiles (files: File[] | FileList, options: FileUpload
   if (items.length === 0) {
     return
   }
+  const upload: Upload = { uuid: generateFileId(), progress: 0, target: options?.showProgress?.target, files: new Map<string, FileUpload>() }
 
   const limiter = new RateLimiter(options.maxNumberOfFiles ?? 10)
   for (let i = 0; i < files.length; i++) {
@@ -88,34 +89,44 @@ export async function uploadFiles (files: File[] | FileList, options: FileUpload
     const { relativePath } = data
     const uuid = data.name
     void limiter.add(async () => {
-      await uploadFile(data, { name: files[i].name, uuid, relativePath }, options)
+      await uploadFile(data, { name: files[i].name, uuid, relativePath }, upload, options)
     })
   }
 
   await limiter.waitProcessing()
+  untrackUpload(upload)
 }
 
-async function uploadFile (
+export async function uploadFile (
   file: FileWithPath,
   metadata: Record<string, any>,
-  options: FileUploadOptions
+  upload: Upload,
+  options: FileUploadOptions,
+  xhr = new XMLHttpRequest()
 ): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
-    const upload: Upload = {
+  await new Promise<void>((resolve) => {
+    const fileUpload: FileUpload = {
       name: metadata.name,
-      uuid: metadata.uuid,
       finished: false,
-      progress: 0,
-      target: options.showProgress?.target
+      progress: 0
     }
-    upload.retry = async () => {
-      await uploadFile(file, metadata, options)
+    fileUpload.retry = async () => {
+      if (fileUpload.cancel !== undefined) {
+        fileUpload.cancel()
+      }
+      await uploadFile(file, metadata, upload, options)
     }
-    upload.cancel = () => {
+
+    fileUpload.cancel = () => {
       xhr.abort()
+      upload.files.delete(metadata.uuid ?? file.name)
+      upload.progress -= fileUpload.progress
+      resolve()
+      updateUploads()
     }
-    updateUpload(upload)
+
+    upload.files.set(metadata.uuid ?? file.name, fileUpload)
+    trackUpload(upload)
 
     const uploadParams = getFileUploadParams(file.name, file)
     xhr.open('POST', uploadParams.url, true)
@@ -126,9 +137,11 @@ async function uploadFile (
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) {
+        const prev = fileUpload.progress
         const percentComplete = (event.loaded / event.total) * 100
-        upload.progress = percentComplete
-        updateUpload(upload)
+        fileUpload.progress = percentComplete
+        upload.progress += (fileUpload.progress - prev)
+        updateUploads()
       }
     }
 
@@ -138,10 +151,8 @@ async function uploadFile (
         const { onFileUploaded } = options
         if (uuid !== undefined && onFileUploaded !== undefined) {
           try {
-            // Ww cannot just run async code here since onFileUploaded is using a path to create a tree of folders, so in case of async running, we can get duplicated trees.
-            // TODO: fix drive folders uploading
-            await callbackLimiter.exec(async () => {
-              await onFileUploaded({
+            void callbackLimiter.exec(async () => {
+              void onFileUploaded({
                 uuid,
                 name: metadata.name,
                 file,
@@ -149,38 +160,34 @@ async function uploadFile (
                 metadata
               })
             })
-            upload.finished = true
+            fileUpload.finished = true
           } catch (error) {
-            upload.error = error as string
+            fileUpload.error = error as string
           }
         } else {
-          upload.error = 'missed metadata uuid'
+          fileUpload.error = 'missed metadata uuid'
         }
         resolve()
       } else {
-        upload.error = `upload failed with status ${xhr.status}: ${xhr.statusText}`
-        reject(new Error(upload.error))
+        fileUpload.error = `upload failed with status ${xhr.status}: ${xhr.statusText}`
+        resolve()
       }
-      updateUpload(upload)
-      deleteUpload(upload)
+      updateUploads()
     }
 
     xhr.onerror = () => {
-      upload.error = `upload failed with status ${xhr.status}: ${xhr.statusText}`
-      updateUpload(upload)
-      deleteUpload(upload)
+      fileUpload.error = `upload failed with status ${xhr.status}: ${xhr.statusText}`
+      resolve()
     }
 
     xhr.ontimeout = () => {
-      upload.error = 'upload timeout'
-      updateUpload(upload)
-      deleteUpload(upload)
+      fileUpload.error = 'upload timeout'
+      resolve()
     }
 
     if (uploadParams.method === 'form-data') {
       const formData = new FormData()
       formData.append('file', file)
-
       Object.entries(metadata).forEach(([key, value]) => {
         if (value === undefined) {
           return

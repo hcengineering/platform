@@ -21,7 +21,7 @@
   import Pause from './icons/Pause.svelte'
   import Expand from './icons/Expand.svelte'
   import Collapse from './icons/Collapse.svelte'
-  import { ScreenRecorder } from '@hcengineering/recorder'
+  import { ScreenRecorder } from '../screen-recorder'
   import { createEventDispatcher } from 'svelte'
   import { showPopup, Label } from '@hcengineering/ui'
   import Countdown from './Countdown.svelte'
@@ -187,11 +187,6 @@
 {/if}
 
 <style lang="scss">
-  .record-container {
-    display: flex;
-    gap: 0.5rem;
-  }
-
   .control-button {
     padding: 0.5rem 0.5rem;
     gap: 0.25rem;
@@ -248,9 +243,9 @@
     text-align: center;
   }
 
-  .recording.collapsed .control-panel:not(.expand-toggle) {
-    opacity: 0;
-    transform: scale(0.8);
-    pointer-events: none;
-  }
+  // .recording.collapsed .control-panel:not(.expand-toggle) {
+  //   opacity: 0;
+  //   transform: scale(0.8);
+  //   pointer-events: none;
+  // }
 </style>
