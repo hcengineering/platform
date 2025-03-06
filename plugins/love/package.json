@@ -48,5 +48,12 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/workbench": "^0.6.16"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "require": "./lib/index.js",
+      "import": "./lib/index.js"
+    }
   }
 }
