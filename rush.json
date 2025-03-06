@@ -2280,6 +2280,11 @@
       "packageName": "@hcengineering/model-server-card",
       "projectFolder": "models/server-card",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-mail",
+      "projectFolder": "services/mail/pod-mail",
+      "shouldPublish": false
     }
   ]
 }
