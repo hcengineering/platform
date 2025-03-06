@@ -1030,7 +1030,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const nested = Array.isArray(value) ? value[1] : undefined
       const domain = translateDomain(this.hierarchy.getDomain(_class))
       const tkey = domain === DOMAIN_MODEL ? key : this.transformKey(baseDomain, clazz, key)
-      const as = `lookup_${domain}_${parentKey !== undefined ? parentKey + '_lookup_' + key : key}`
+      const as = `lookup_${domain}_${parentKey !== undefined ? parentKey + '_lookup_' + key : key}`.toLowerCase()
       res.push({
         isReverse: false,
         table: domain,
@@ -1070,7 +1070,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const desc = this.hierarchy
         .getDescendants(this.hierarchy.getBaseClass(_class))
         .filter((it) => !this.hierarchy.isMixin(it))
-      const as = `reverse_lookup_${domain}_${parent !== undefined ? parent + '_lookup_' + key : key}`
+      const as = `reverse_lookup_${domain}_${parent !== undefined ? parent + '_lookup_' + key : key}`.toLowerCase()
       result.push({
         isReverse: true,
         table: domain,
