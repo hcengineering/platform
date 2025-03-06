@@ -131,6 +131,7 @@
     "ViewingThreadFromArchivedChannel": "你正在查看已归档频道的线程",
     "ViewingArchivedChannel": "你正在查看已归档频道",
     "OpenChatInSidebar": "在侧边栏中打开聊天",
-    "NoThreadsYet": "还没有线程。"
+    "NoThreadsYet": "还没有线程。",
+    "SummarizeMessages": "总结讨论"
   }
 }

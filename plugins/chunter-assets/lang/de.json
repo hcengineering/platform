@@ -132,6 +132,7 @@
     "ViewingArchivedChannel": "Sie sehen einen archivierten Kanal",
     "OpenChatInSidebar": "Chat in Seitenleiste öffnen",
     "ResolveThread": "Thread abschließen",
-    "NoThreadsYet": "Es gibt noch keine Threads."
+    "NoThreadsYet": "Es gibt noch keine Threads.",
+    "SummarizeMessages": "Diskussion zusammenfassen"
   }
 }

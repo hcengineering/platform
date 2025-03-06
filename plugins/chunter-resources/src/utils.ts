@@ -20,24 +20,26 @@ import activity, {
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import { isReactionMessage } from '@hcengineering/activity-resources'
+import aiBot from '@hcengineering/ai-bot'
+import { summarizeMessages as aiSummarizeMessages, translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
-import contact, { getName, getCurrentEmployee, type Employee, type Person } from '@hcengineering/contact'
+import contact, { getCurrentEmployee, getName, type Employee, type Person } from '@hcengineering/contact'
 import {
-  PersonIcon,
   employeeByAccountStore,
   employeeByIdStore,
+  PersonIcon,
   personRefByAccountUuidStore
 } from '@hcengineering/contact-resources'
 import core, {
   getCurrentAccount,
+  notEmpty,
+  type AccountUuid,
   type Class,
   type Client,
   type Doc,
   type Ref,
   type Space,
-  type Timestamp,
-  type AccountUuid,
-  notEmpty
+  type Timestamp
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import {
@@ -45,19 +47,18 @@ import {
   isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
-import { translate, type Asset, getMetadata } from '@hcengineering/platform'
+import { getMetadata, translate, type Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { type AnySvelteComponent, languageStore } from '@hcengineering/ui'
+import { languageStore, type AnySvelteComponent } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
-import aiBot from '@hcengineering/ai-bot'
-import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
 import { openChannelInSidebar, resetChunterLocIfEqual } from './navigation'
 import chunter from './plugin'
 import { shownTranslatedMessagesStore, translatedMessagesStore, translatingMessagesStore } from './stores'
+import love, { type MeetingMinutes } from '@hcengineering/love'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -529,6 +530,24 @@ export async function showOriginalMessage (message: ChatMessage): Promise<void> 
 export async function canTranslateMessage (): Promise<boolean> {
   const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
   return url !== ''
+}
+
+export async function summarizeMessages (doc: Doc): Promise<void> {
+  await aiSummarizeMessages(get(languageStore), doc._id, doc._class)
+}
+
+export async function canSummarizeMessages (doc: Doc): Promise<boolean> {
+  if (doc?._id === undefined) return false
+
+  const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
+  if (url === '') return false
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  if (!hierarchy.isDerived(doc._class, love.class.MeetingMinutes)) return false
+
+  return ((doc as MeetingMinutes).transcription ?? 0) > 0
 }
 
 export async function startConversationAction (docs?: Employee | Employee[]): Promise<void> {
