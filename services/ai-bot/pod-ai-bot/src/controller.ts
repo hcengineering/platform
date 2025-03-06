@@ -19,6 +19,7 @@ import {
   ConnectMeetingRequest,
   DisconnectMeetingRequest,
   IdentityResponse,
+  PersonMessage,
   PostTranscriptRequest,
   SummarizeMessagesRequest,
   SummarizeMessagesResponse,
@@ -28,9 +29,11 @@ import {
 import core, {
   AccountUuid,
   MeasureContext,
+  PersonId,
   Ref,
   SocialId,
   SortingOrder,
+  toIdMap,
   type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
@@ -45,12 +48,13 @@ import OpenAI from 'openai'
 import chunter from '@hcengineering/chunter'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { markdownToMarkup } from '@hcengineering/text-markdown'
+import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import config from './config'
 import { DbStorage } from './storage'
 import { tryAssignToWorkspace } from './utils/account'
 import { summarizeMessages, translateHtml } from './utils/openai'
 import { WorkspaceClient } from './workspace/workspaceClient'
+import contact, { Contact, getName } from '@hcengineering/contact'
 
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
 
@@ -221,48 +225,97 @@ export class AIControl {
     req: SummarizeMessagesRequest
   ): Promise<SummarizeMessagesResponse | undefined> {
     if (this.openai === undefined) return
+    if (req.target === undefined || req.targetClass === undefined) return
 
-    const summary = await summarizeMessages(this.openai, req.messages, req.lang)
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    const opClient = await wsClient.opClient
+    if (opClient === undefined) return
+
+    const client = wsClient.client
+    if (client === undefined) return
+
+    const target = await client.findOne(req.targetClass, { _id: req.target })
+    if (target === undefined) return
+
+    const messages = await client.findAll(
+      chunter.class.ChatMessage,
+      {
+        attachedTo: target._id,
+        collection: { $in: ['messages', 'transcription'] }
+      },
+      {
+        sort: { createdOn: SortingOrder.Ascending },
+        limit: 5000
+      }
+    )
+
+    const personIds = new Set<PersonId>()
+    for (const m of messages) {
+      if (m.createdBy !== undefined) personIds.add(m.createdBy)
+    }
+    const identities = await client.findAll(contact.class.SocialIdentity, { key: { $in: Array.from(personIds) } })
+    const contacts = await client.findAll(contact.class.Contact, { _id: { $in: identities.map(i => i.attachedTo) } })
+    const contactById = toIdMap(contacts)
+    const contactByPersonId = new Map<PersonId, Contact>()
+    for (const identity of identities) {
+      const contact = contactById.get(identity.attachedTo)
+      if (contact !== undefined) contactByPersonId.set(identity.key, contact)
+    }
+
+    const messagesToSummarize: PersonMessage[] = []
+
+    for (const m of messages) {
+      const author = m.createdBy
+      if (author === undefined) continue
+
+      const contact = contactByPersonId.get(author)
+      if (contact === undefined) continue
+
+      const personName = getName(client.getHierarchy(), contact)
+      const text = markupToMarkdown(markupToJSON(m.message))
+
+      const lastPiece = messagesToSummarize[messagesToSummarize.length - 1]
+      if (lastPiece?.personRef === contact._id) {
+        lastPiece.text += (m.collection === 'transcription' ? ' ' : '\n') + text
+      } else {
+        messagesToSummarize.push({
+          personRef: contact._id,
+          personName,
+          time: m.createdOn ?? 0,
+          text
+        })
+      }
+    }
+
+    const summary = await summarizeMessages(this.openai, messagesToSummarize, req.lang)
     if (summary === undefined) return
 
     const summaryMarkup = jsonToMarkup(markdownToMarkup(summary))
 
-    const pushMessage = async (): Promise<boolean> => {
-      if (req.responseTarget === undefined || req.responseTargetClass === undefined) return false
-
-      const wsClient = await this.getWorkspaceClient(workspace)
-      if (wsClient?.opClient === undefined || wsClient?.client === undefined) return false
-
-      const target = await wsClient.client.findOne(req.responseTargetClass, { _id: req.responseTarget })
-      if (target === undefined) return false
-
-      const lastMessage = await wsClient.client.findOne(
-        chunter.class.ChatMessage,
-        {
-          attachedTo: target._id,
-          collection: { $in: ['messages', 'transcription', 'summary'] }
-        },
-        {
-          sort: { createdOn: SortingOrder.Descending },
-          limit: 1
-        }
-      )
-
-      const client = await wsClient.opClient
-      const op = client.apply(undefined, 'AISummarizeMessagesRequestEvent')
-
-      if (lastMessage?.collection === 'summary' && lastMessage.createdBy === client.user) {
-        await op.update(lastMessage, { message: summaryMarkup, editedOn: Date.now() })
-      } else {
-        await op.addCollection(chunter.class.ChatMessage, core.space.Workspace, target._id, target._class, 'summary', {
-          message: summaryMarkup
-        })
+    const lastMessage = await client.findOne(
+      chunter.class.ChatMessage,
+      {
+        attachedTo: target._id,
+        collection: { $in: ['messages', 'transcription', 'summary'] }
+      },
+      {
+        sort: { createdOn: SortingOrder.Descending },
+        limit: 1
       }
-      await op.commit()
-      return true
-    }
+    )
 
-    await pushMessage()
+    const op = opClient.apply(undefined, 'AISummarizeMessagesRequestEvent')
+
+    if (lastMessage?.collection === 'summary' && lastMessage.createdBy === opClient.user) {
+      await op.update(lastMessage, { message: summaryMarkup, editedOn: Date.now() })
+    } else {
+      await op.addCollection(chunter.class.ChatMessage, core.space.Workspace, target._id, target._class, 'summary', {
+        message: summaryMarkup
+      })
+    }
+    await op.commit()
 
     return {
       text: summaryMarkup,

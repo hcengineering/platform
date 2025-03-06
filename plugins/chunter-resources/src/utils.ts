@@ -20,21 +20,19 @@ import activity, {
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import { isReactionMessage } from '@hcengineering/activity-resources'
-import aiBot, { type PersonMessage } from '@hcengineering/ai-bot'
+import aiBot from '@hcengineering/ai-bot'
 import { summarizeMessages as aiSummarizeMessages, translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, { getCurrentEmployee, getName, type Employee, type Person } from '@hcengineering/contact'
 import {
   employeeByAccountStore,
   employeeByIdStore,
-  personByPersonIdStore,
   PersonIcon,
   personRefByAccountUuidStore
 } from '@hcengineering/contact-resources'
 import core, {
   getCurrentAccount,
   notEmpty,
-  SortingOrder,
   type AccountUuid,
   type Class,
   type Client,
@@ -55,13 +53,12 @@ import { languageStore, type AnySvelteComponent } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
 
-import { markupToJSON } from '@hcengineering/text'
-import { markupToMarkdown } from '@hcengineering/text-markdown'
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
 import { openChannelInSidebar, resetChunterLocIfEqual } from './navigation'
 import chunter from './plugin'
 import { shownTranslatedMessagesStore, translatedMessagesStore, translatingMessagesStore } from './stores'
+import love, { type MeetingMinutes } from '@hcengineering/love'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -536,48 +533,7 @@ export async function canTranslateMessage (): Promise<boolean> {
 }
 
 export async function summarizeMessages (doc: Doc): Promise<void> {
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  const messages = await client.findAll(
-    chunter.class.ChatMessage,
-    {
-      attachedTo: doc._id,
-      collection: { $in: ['messages', 'transcription'] }
-    },
-    {
-      sort: { createdOn: SortingOrder.Ascending },
-      limit: 5000
-    }
-  )
-
-  const personByPersonId = get(personByPersonIdStore)
-  const messagesToSummarize: PersonMessage[] = []
-
-  for (const m of messages) {
-    const author = m.createdBy
-    if (author === undefined) continue
-
-    const person = personByPersonId.get(author)
-    if (person === undefined) continue
-
-    const personName = getName(hierarchy, person)
-    const text = markupToMarkdown(markupToJSON(m.message))
-
-    const lastPiece = messagesToSummarize[messagesToSummarize.length - 1]
-    if (lastPiece?.personRef === person._id) {
-      lastPiece.text += (m.collection === 'transcription' ? ' ' : '\n') + text
-    } else {
-      messagesToSummarize.push({
-        personRef: person._id,
-        personName,
-        time: m.createdOn ?? 0,
-        text
-      })
-    }
-  }
-
-  await aiSummarizeMessages(messagesToSummarize, get(languageStore), doc._id, doc._class)
+  await aiSummarizeMessages(get(languageStore), doc._id, doc._class)
 }
 
 export async function canSummarizeMessages (doc: Doc): Promise<boolean> {
@@ -587,19 +543,11 @@ export async function canSummarizeMessages (doc: Doc): Promise<boolean> {
   if (url === '') return false
 
   const client = getClient()
-  const messages = await client.findAll(
-    chunter.class.ChatMessage,
-    {
-      attachedTo: doc._id,
-      // include regular messages to enable elsewhere
-      collection: 'transcription'
-    },
-    {
-      limit: 1
-    }
-  )
+  const hierarchy = client.getHierarchy()
 
-  return messages.length > 0
+  if (!hierarchy.isDerived(doc._class, love.class.MeetingMinutes)) return false
+
+  return ((doc as MeetingMinutes).transcription ?? 0) > 0
 }
 
 export async function startConversationAction (docs?: Employee | Employee[]): Promise<void> {

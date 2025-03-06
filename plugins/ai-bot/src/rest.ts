@@ -44,11 +44,10 @@ export interface PersonMessage {
 }
 
 export interface SummarizeMessagesRequest {
-  messages: PersonMessage[]
   lang: string
 
-  responseTarget?: Ref<Doc>
-  responseTargetClass?: Ref<Class<Doc>>
+  target: Ref<Doc>
+  targetClass: Ref<Class<Doc>>
 }
 
 export interface SummarizeMessagesResponse {

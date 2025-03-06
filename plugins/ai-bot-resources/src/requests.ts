@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 import {
-  type PersonMessage,
   type ConnectMeetingRequest,
   type DisconnectMeetingRequest,
   type SummarizeMessagesRequest,
@@ -58,10 +57,9 @@ export async function translate (text: Markup, lang: string): Promise<TranslateR
 }
 
 export async function summarizeMessages (
-  messages: PersonMessage[],
   lang: string,
-  responseTarget?: Ref<Doc>,
-  responseTargetClass?: Ref<Class<Doc>>
+  target: Ref<Doc>,
+  targetClass: Ref<Class<Doc>>
 ): Promise<SummarizeMessagesResponse | undefined> {
   const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
   const token = getMetadata(presentation.metadata.Token) ?? ''
@@ -72,9 +70,8 @@ export async function summarizeMessages (
 
   try {
     const req: SummarizeMessagesRequest = {
-      messages,
-      responseTarget,
-      responseTargetClass,
+      target,
+      targetClass,
       lang
     }
     const resp = await fetch(concatLink(url, '/summarize'), {
