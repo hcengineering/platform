@@ -215,6 +215,7 @@
     </div>
     <div class="ml-2">
       <Button
+        {disabled}
         focusIndex={2}
         kind={'ghost'}
         size={'small'}

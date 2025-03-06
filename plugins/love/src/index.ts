@@ -200,6 +200,7 @@ const love = plugin(loveId, {
   },
   string: {
     Office: '' as IntlString,
+    MyOffice: '' as IntlString,
     Room: '' as IntlString,
     IsKnocking: '' as IntlString,
     KnockingLabel: '' as IntlString,
