@@ -556,6 +556,30 @@ export function convertArrayParams (parameters?: ParameterOrJSON<any>[]): any[] 
   })
 }
 
+export function filterProjection<T extends Doc> (data: any, projection: Projection<T> | undefined): any {
+  for (const key in data) {
+    if (!Object.prototype.hasOwnProperty.call(projection, key) || (projection as any)[key] === 0) {
+      // check nested projections in case of object
+      let value = data[key]
+      if (typeof value === 'object' && !Array.isArray(value) && value != null) {
+        // We need to filter projection for nested objects
+        const innerP = Object.entries(projection as any)
+          .filter((it) => it[0].startsWith(key))
+          .map((it) => [it[0].substring(key.length + 1), it[1]])
+        if (innerP.length > 0) {
+          value = filterProjection(value, Object.fromEntries(innerP))
+          data[key] = value
+          continue
+        }
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete data[key]
+    }
+  }
+  return data
+}
+
 export function parseDocWithProjection<T extends Doc> (
   doc: DBDoc,
   domain: string,
@@ -577,16 +601,12 @@ export function parseDocWithProjection<T extends Doc> (
       ;(rest as any)[key] = decodeArray((rest as any)[key])
     }
   }
+  let resultData = data
   if (projection !== undefined) {
-    for (const key in data) {
-      if (!Object.prototype.hasOwnProperty.call(projection, key) || (projection as any)[key] === 0) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete data[key]
-      }
-    }
+    resultData = filterProjection(data, projection)
   }
   const res = {
-    ...data,
+    ...resultData,
     ...rest
   } as any as T
 
