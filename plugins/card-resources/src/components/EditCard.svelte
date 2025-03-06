@@ -40,6 +40,7 @@
   import CardPresenter from './CardPresenter.svelte'
   import ContentEditor from './ContentEditor.svelte'
   import TagsEditor from './TagsEditor.svelte'
+  import Childs from './Childs.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -254,6 +255,7 @@
       </div>
     </div>
 
+    <Childs object={doc} {readonly} />
     <RelationsEditor object={doc} {readonly} />
 
     <svelte:fragment slot="utils">

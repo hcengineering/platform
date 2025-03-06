@@ -56,7 +56,8 @@
     const data: Data<Card> = {
       title,
       rank: makeRank(lastOne?.rank, undefined),
-      content: '' as MarkupBlobRef
+      content: '' as MarkupBlobRef,
+      parentInfo: []
     }
 
     const filledData = fillDefaults(hierarchy, data, _class)
@@ -85,7 +86,7 @@
       <Button
         icon={IconAdd}
         label={card.string.CreateCard}
-        disabled={allClasses.length === 0 || _class === undefined}
+        disabled={allClasses.length === 0 || _class === undefined || _class === card.class.Card}
         justify={'left'}
         width={'100%'}
         kind={'primary'}
