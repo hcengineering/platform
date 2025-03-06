@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,48 +14,45 @@
 //
 
 import { type FileUploadTarget } from '@hcengineering/uploader'
-
-import { type Uppy } from '@uppy/core'
 import { type Writable, writable } from 'svelte/store'
 
 /** @public */
-export interface FileUpload {
-  target: FileUploadTarget
-  uppy: Uppy
+export interface Upload {
+  progress: number
+  error?: string
+  retry?: () => Promise<void>
+  cancel?: () => void
+  name: string
+  uuid: string
+  finished: boolean
+  target?: FileUploadTarget
 }
 
 /** @public */
-export const uploads: Writable<FileUpload[]> = writable([])
+export const uploads = writable(new Map<string, Writable<Upload>>())
 
-/** @public */
-export function dockFileUpload (target: FileUploadTarget, uppy: Uppy): void {
-  uploads.update((instances) => {
-    instances.push({ target, uppy })
-    return instances
-  })
-
-  uppy.on('complete', () => {
-    undockFileUploadIfCompleted(target, uppy)
-  })
-
-  uppy.on('file-removed', () => {
-    undockFileUploadIfCompleted(target, uppy)
-  })
-}
-
-function undockFileUploadIfCompleted (target: FileUploadTarget, uppy: Uppy): void {
-  const files = uppy.getFiles()
-  const incompleted = files.filter((p) => p.progress?.uploadComplete !== true)
-  if (incompleted.length === 0) {
-    undockFileUpload(target, uppy)
+export function updateUpload (upload: Upload): void {
+  if (upload.target === undefined) {
+    return
   }
+  uploads.update((m) => {
+    let u = m.get(upload.uuid)
+    if (u === undefined) {
+      u = writable(upload)
+    } else {
+      return m
+    }
+    u.set(upload)
+    m.set(upload.uuid, u)
+    return m
+  })
 }
-
-function undockFileUpload (target: FileUploadTarget, uppy: Uppy): void {
-  uppy.cancelAll()
-  uppy.close()
-
-  uploads.update((instances) => {
-    return instances.filter((instance) => instance.uppy !== uppy)
+export function deleteUpload (upload: Upload): void {
+  if (upload.target === undefined) {
+    return
+  }
+  uploads.update((m) => {
+    m.delete(upload.uuid)
+    return m
   })
 }

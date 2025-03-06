@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,6 +18,7 @@ import drive, {
   type Drive,
   type FileVersion,
   type Folder,
+  type File,
   type Resource,
   createFile,
   createFolder,
@@ -25,13 +26,15 @@ import drive, {
 } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
+import { type AnySvelteComponent, navigate, showPopup } from '@hcengineering/ui'
 import {
   type FileUploadCallback,
   getDataTransferFiles,
   showFilesUploadPopup,
+  type FileUploadOptions,
   uploadFiles
 } from '@hcengineering/uploader'
+import { getFileLink, getFolderLink } from './navigation'
 import { openDoc } from '@hcengineering/view-resources'
 
 import CreateDrive from './components/CreateDrive.svelte'
@@ -167,11 +170,9 @@ export async function resolveParents (object: Resource): Promise<Doc[]> {
   return parents.reverse()
 }
 
-export async function uploadFilesToDrive (dt: DataTransfer, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
-  const files = await getDataTransferFiles(dt)
-
+export async function getUploadOptions (space: Ref<Drive>, parent: Ref<Folder>): Promise<FileUploadOptions> {
   const onFileUploaded = await fileUploadCallback(space, parent)
-
+  console.log(space, parent)
   const target =
     parent !== drive.ids.Root
       ? { objectId: parent, objectClass: drive.class.Folder }
@@ -183,6 +184,13 @@ export async function uploadFilesToDrive (dt: DataTransfer, space: Ref<Drive>, p
       target
     }
   }
+
+  return options
+}
+
+export async function uploadFilesToDrive (dt: DataTransfer, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+  const files = await getDataTransferFiles(dt)
+  const options = await getUploadOptions(space, parent)
 
   await uploadFiles(files, options)
 }
@@ -219,7 +227,6 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
     if (path == null || path.length === 0) {
       return parent
     }
-
     const segments = path.split('/').filter((p) => p.length > 0)
     if (segments.length <= 1) {
       return parent
@@ -244,7 +251,7 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
     return current
   }
 
-  const callback: FileUploadCallback = async ({ uuid, name, file, path, metadata }) => {
+  const callback: FileUploadCallback = async ({ uuid, name, file, path, metadata, navigateOnUpload }) => {
     const folder = await findParent(path)
     try {
       const data = {
@@ -256,7 +263,13 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
         metadata
       }
 
-      await createFile(client, space, folder, data)
+      const createdFile = await createFile(client, space, folder, data)
+
+      if (navigateOnUpload ?? false) {
+        navigate(getFolderLink(folder))
+        navigate(getFileLink(createdFile))
+      }
+
       Analytics.handleEvent(DriveEvents.FileUploaded, { ok: true, type: file.type, size: file.size, name })
     } catch (err) {
       void setPlatformStatus(unknownError(err))

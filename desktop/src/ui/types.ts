@@ -38,7 +38,7 @@ export interface Config {
   UPLOAD_CONFIG: string
   UPLOAD_URL: string
   VERSION?: string
-
+  STREAM_URL?: string
   BACKUP_URL?: string
 }
 

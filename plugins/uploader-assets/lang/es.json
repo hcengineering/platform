@@ -2,6 +2,8 @@
   "string": {
     "Cancel": "Cancelar",
     "Retry": "Reintentar",
+    "UploadFiles": "Subir Archivos",
+    "UploadFolders": "Subir Carpetas",
     "UploadingTo": "Cargando {files, plural, =1 {# archivo} other {# archivos}} a"
   },
   "status": {

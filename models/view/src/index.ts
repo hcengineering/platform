@@ -644,7 +644,7 @@ export function createModel (builder: Builder): void {
     presentation.class.FilePreviewExtension,
     core.space.Model,
     {
-      contentType: ['video/*'],
+      contentType: ['video/*', 'application/x-mpegURL'],
       alignment: 'centered',
       component: view.component.VideoViewer,
       metadataProvider: view.function.BlobVideoMetadata,

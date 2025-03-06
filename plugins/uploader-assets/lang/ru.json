@@ -2,6 +2,8 @@
   "string": {
     "Cancel": "Отмена",
     "Retry": "Повторить",
+    "UploadFiles": "Загрузить Файлы",
+    "UploadFolders": "Загрузить Папки",
     "UploadingTo": "Загрузка {files, plural, one {# файл} few {# файла} other {# файлов}} в"
   },
   "status": {

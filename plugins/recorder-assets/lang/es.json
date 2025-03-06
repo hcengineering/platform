@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Cancel": "Cancelar",
+    "Pause": "Pausar",
+    "Stop": "Detener",
+    "Resume": "Reanudar",
+    "Record": "Grabar",
+    "ClickToSkip": "Haz clic para saltar"
+  }
+}

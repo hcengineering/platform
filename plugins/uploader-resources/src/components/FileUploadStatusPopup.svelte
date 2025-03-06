@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
+<!-- <script lang="ts">
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import {
     Button,
@@ -236,4 +236,4 @@
       flex-shrink: 0;
     }
   }
-</style>
+</style> -->

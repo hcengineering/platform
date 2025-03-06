@@ -478,6 +478,9 @@ importers:
       '@rush-temp/model-questions':
         specifier: file:./projects/model-questions.tgz
         version: file:projects/model-questions.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/model-recorder':
+        specifier: file:./projects/model-recorder.tgz
+        version: file:projects/model-recorder.tgz
       '@rush-temp/model-recruit':
         specifier: file:./projects/model-recruit.tgz
         version: file:projects/model-recruit.tgz
@@ -787,6 +790,15 @@ importers:
       '@rush-temp/rank':
         specifier: file:./projects/rank.tgz
         version: file:projects/rank.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/recorder':
+        specifier: file:./projects/recorder.tgz
+        version: file:projects/recorder.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/recorder-assets':
+        specifier: file:./projects/recorder-assets.tgz
+        version: file:projects/recorder-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      '@rush-temp/recorder-resources':
+        specifier: file:./projects/recorder-resources.tgz
+        version: file:projects/recorder-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/recruit':
         specifier: file:./projects/recruit.tgz
         version: file:projects/recruit.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -1197,7 +1209,7 @@ importers:
         version: file:projects/uploader-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/uploader-resources':
         specifier: file:./projects/uploader-resources.tgz
-        version: file:projects/uploader-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+        version: file:projects/uploader-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/view':
         specifier: file:./projects/view.tgz
         version: file:projects/view.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -1430,7 +1442,7 @@ importers:
         specifier: ~2.6.2
         version: 2.6.11
       '@types/nodemailer':
-        specifier: ~6.4.17
+        specifier: ^6.4.17
         version: 6.4.17
       '@types/otp-generator':
         specifier: ^4.0.2
@@ -1747,6 +1759,9 @@ importers:
       image-size:
         specifier: ^1.1.1
         version: 1.1.1
+      install:
+        specifier: ^0.13.0
+        version: 0.13.0
       intl-messageformat:
         specifier: ^10.7.14
         version: 10.7.14
@@ -1847,7 +1862,7 @@ importers:
         specifier: ~2.0.0
         version: 2.0.0(webpack@5.97.1)
       nodemailer:
-        specifier: ~6.10.0
+        specifier: ^6.10.0
         version: 6.10.0
       octokit:
         specifier: ^3.1.1
@@ -1879,6 +1894,9 @@ importers:
       pdfjs-dist:
         specifier: 2.12.313
         version: 2.12.313
+      plyr:
+        specifier: ^3.7.8
+        version: 3.7.8
       png-chunks-extract:
         specifier: ^1.0.0
         version: 1.0.0
@@ -1915,6 +1933,9 @@ importers:
       querystringify:
         specifier: ^2.2.0
         version: 2.2.0
+      readable-stream:
+        specifier: ^4.7.0
+        version: 4.7.0
       rfc6902:
         specifier: ^5.0.1
         version: 5.1.1
@@ -1945,6 +1966,9 @@ importers:
       snappyjs:
         specifier: ^0.7.0
         version: 0.7.0
+      stream-browserify:
+        specifier: ^3.0.0
+        version: 3.0.0
       style-loader:
         specifier: ^3.3.1
         version: 3.3.4(webpack@5.97.1)
@@ -1996,6 +2020,9 @@ importers:
       ts-standard:
         specifier: ^12.0.2
         version: 12.0.2(typescript@5.3.3)
+      tus-js-client:
+        specifier: ^4.3.1
+        version: 4.3.1
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -4151,7 +4178,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/contact@file:projects/contact.tgz':
-    resolution: {integrity: sha512-+QCS1ZJvdStvQoBY8jt91ycyK4CK+W9C0txRhys5R/BCdzPkhdgl8OTZn6k60Fes0T0zKl5ceX3plOJXVtu+Hw==, tarball: file:projects/contact.tgz}
+    resolution: {integrity: sha512-79dZ9DTczWnB5eBmX1XH8d/mw8RjbGeCK+ryNpym3Bh3kykq7RwuTeTRvIlPTzk+vkCCXzb34A/zSdaslTyfnw==, tarball: file:projects/contact.tgz}
     version: 0.0.0
 
   '@rush-temp/controlled-documents-assets@file:projects/controlled-documents-assets.tgz':
@@ -4191,7 +4218,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-YKF8wyv3wcfxqTNHRQncoFfZt3HiJdnUYv7ZA35uqIAdY7Ib3qEhHH8JMBehGeBwMnXX576RBpeZAU0OYxS8ng==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-ZSDFIhn34YGiDYX+OVV9FiQIvrLNBxDCtfIwaqAXXuxgP4EMENkw7JeTNfMSkPKBKaj97zFGB+v230TCLco6OQ==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4263,7 +4290,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/gmail-resources@file:projects/gmail-resources.tgz':
-    resolution: {integrity: sha512-8Ijh0L+0qJQSIbHoRSoixnPHcIyimYwGRJReuFv4+EQ5TzpAH2T39rfCo+XKcQ+DUlCphWLpEWPNJY8dEvLYNQ==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-v/JBcpleTQ5KH/YzZP83RDAKE8c4NCcMJ7GGwCUCwywsca4Cm7bwmbwZnIPRQesgYRn9nXX3iuPLFfZw5A3XbA==, tarball: file:projects/gmail-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/gmail@file:projects/gmail.tgz':
@@ -4399,7 +4426,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-all@file:projects/model-all.tgz':
-    resolution: {integrity: sha512-Bo2UPIQp6MhS9V5sv9yJDdjxcjTy7u+2+QoGnGBweuD35Mwzy3MQIKnmf6XRLbvHTSkHno6ZKBMiZfWQReLgIw==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-xreYvLf9OTVOFsuwlhA8pxZ79pVbfDbdhwPzlaNrIMe4Wk+6wGTPFx2BRbU4Zo6s1F6AsRpPgUV5kffhm1hicw==, tarball: file:projects/model-all.tgz}
     version: 0.0.0
 
   '@rush-temp/model-analytics-collector@file:projects/model-analytics-collector.tgz':
@@ -4516,6 +4543,10 @@ packages:
 
   '@rush-temp/model-questions@file:projects/model-questions.tgz':
     resolution: {integrity: sha512-3pgtRVzwhWKpyPDRIvE2PS66G91ydElnV3ytOTY/9lzeONv97xUsBRnXQuEV9niYkCbLK+LBg3faX8F0cXjznA==, tarball: file:projects/model-questions.tgz}
+    version: 0.0.0
+
+  '@rush-temp/model-recorder@file:projects/model-recorder.tgz':
+    resolution: {integrity: sha512-iW+azvEH9YhoQBgoN15P33yORkMvVszSQhc7q1XISGszGRkN/yiAquT9H5YWxi3juLwz1Diysy3H/aFtcl0cIA==, tarball: file:projects/model-recorder.tgz}
     version: 0.0.0
 
   '@rush-temp/model-recruit@file:projects/model-recruit.tgz':
@@ -4779,7 +4810,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-ai-bot@file:projects/pod-ai-bot.tgz':
-    resolution: {integrity: sha512-XZBQM9sEPJVQyE/PPrSKZ7cH3k2UBx5PJU41K+kRxLbjF1nyRgDTO88PMdZk2wcUJXuj9TNIo1rtLn7cwXtgYA==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-sv9r+DDafpUyjHUabAnULCjQC2xnZ8t4AfhIhvXBM6vl500IrhBVkeAGcNeIk0WYepfAnRn4mQVM3yX+0e0Ygw==, tarball: file:projects/pod-ai-bot.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-analytics-collector@file:projects/pod-analytics-collector.tgz':
@@ -4819,7 +4850,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
-    resolution: {integrity: sha512-XO6I8SkpJ2CFVPWBZFflMCDjKbH1uQpKXhS/DPdGmneb8u+8PB3QbYRZT5R01+GPZIvIcLw11q5Q4psD60nDOQ==, tarball: file:projects/pod-mail.tgz}
+    resolution: {integrity: sha512-QEDa4s87Zyvys2mg7RVFvzkCiKyMAEampey02avzJp9UJkyebgpEFTmjg5IuKvK1iHGsR6kVfruxAo75nxDvQA==, tarball: file:projects/pod-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-print@file:projects/pod-print.tgz':
@@ -4891,7 +4922,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
-    resolution: {integrity: sha512-0fwdwfrUoXhanhn42lMUJOjDQmkbEur1NnpK4S8nitU/Bg8eyUil9ihjGj3hhVfSdwP7RAPk1iPNeRaAMCAnwQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-RA/fXY3PLx4bGk+6OpcZI5OEEaNljKd1LHHurdXOHcRZRuP8dHxglT2fVkd8M1/5dAcVigSbB9vyUiOxOgAvIQ==, tarball: file:projects/prod.tgz}
     version: 0.0.0
 
   '@rush-temp/products-assets@file:projects/products-assets.tgz':
@@ -4932,6 +4963,18 @@ packages:
 
   '@rush-temp/rank@file:projects/rank.tgz':
     resolution: {integrity: sha512-Jhh5V/hVbN56iXu/kua+SnQWF184g6l8k6l2QdjzuusVS0QksUBxL6eBsmfhFbgE1eJPwKPOfLB7trrCkguVJA==, tarball: file:projects/rank.tgz}
+    version: 0.0.0
+
+  '@rush-temp/recorder-assets@file:projects/recorder-assets.tgz':
+    resolution: {integrity: sha512-UWAc8Bf3x0eZizIb94gfHeOnULJh/2UDHaLf07TKr+BtnrFFwZu6xFK9j35a01/TVWpWHzV5NfiHeuPup0pY5g==, tarball: file:projects/recorder-assets.tgz}
+    version: 0.0.0
+
+  '@rush-temp/recorder-resources@file:projects/recorder-resources.tgz':
+    resolution: {integrity: sha512-uV3jjpWxwu5C/EqcsDJ8fFyUw5q0dDSudeudo8kNk0ROsdIH/s1id5/ncdfzlJVrZHaO0iQGjw/jVaHG8r9WuQ==, tarball: file:projects/recorder-resources.tgz}
+    version: 0.0.0
+
+  '@rush-temp/recorder@file:projects/recorder.tgz':
+    resolution: {integrity: sha512-vth2EZ1eZjV91sZVk3POK0QGcb6uoyMX7K2tiJcLWeIABOMfs4vaviuekXGqggE8awr51zxI8I7y+/SfYxEGoA==, tarball: file:projects/recorder.tgz}
     version: 0.0.0
 
   '@rush-temp/recruit-assets@file:projects/recruit-assets.tgz':
@@ -4979,7 +5022,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-activity-resources@file:projects/server-activity-resources.tgz':
-    resolution: {integrity: sha512-pzbXI3TbbMXYv/qVmx97uHJD8IOrI7glY8HsD1Np0PAGqzGpWBOm1j6oHKjO/WvfXPCvbmBRBvir22/+IdeXKA==, tarball: file:projects/server-activity-resources.tgz}
+    resolution: {integrity: sha512-WOpRUTKDfLgj6GTJOX+gFiv1Tcxi9zFIn9sCJJcWTEfxEL9Oor5/i7fBMNWi5eqGYCbwMdO72tyFDeZwjsmAnw==, tarball: file:projects/server-activity-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-activity@file:projects/server-activity.tgz':
@@ -5183,7 +5226,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-request-resources@file:projects/server-request-resources.tgz':
-    resolution: {integrity: sha512-BkX6HJqGiWR+KAfAZTc2NkZrxQUOZkDx8NcgleXkIbTO9mIqBT/969djDhd6PVKL6/AoCJN8fYrwk3EKXAVTGQ==, tarball: file:projects/server-request-resources.tgz}
+    resolution: {integrity: sha512-wqKC7mAPiNor/rkUO38Z1hTe5/FSs4tPDPCxkM73tDxvr9ISf8vSyUt569SdyZaW2tL2zZNb6/Euvh2zci9Cuw==, tarball: file:projects/server-request-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-request@file:projects/server-request.tgz':
@@ -5219,7 +5262,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-telegram-resources@file:projects/server-telegram-resources.tgz':
-    resolution: {integrity: sha512-2zGK/gI0mG8ZvEUYDK0lt8m525blawYUmk64vMfYF0K7hkOmKaE+aSECh6UJozxuxURpyNNzi/9R0SNnMyfXKw==, tarball: file:projects/server-telegram-resources.tgz}
+    resolution: {integrity: sha512-VsEVxoPM/hyelQa9/rQFzo+vbS8ixxU4RvVWdM0ae9HJuaEyszX4y9GheG/SDMa0NzCtyOOLf9KqL3ohGpkWRg==, tarball: file:projects/server-telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-telegram@file:projects/server-telegram.tgz':
@@ -5467,7 +5510,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ui@file:projects/ui.tgz':
-    resolution: {integrity: sha512-Qnk2xLA3fSpGq0eNpEGm8DWiuRkDbF0B86v+GDmHbRmNOs9uxIy1sUEEPUIgNx1wmlHPrMh+vP+2v+VFzeUYUQ==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-0U0x2FrKQNlJteRKEqKkDhZNC/qOWO/rL3qK8cuqdYR7Gz5kCaQBnRRHYWGDTVtUKcyYrUN+2RTaB/OG5pgYhA==, tarball: file:projects/ui.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader-assets@file:projects/uploader-assets.tgz':
@@ -5475,7 +5518,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/uploader-resources@file:projects/uploader-resources.tgz':
-    resolution: {integrity: sha512-EA2G2N+t47PFyJIPyMvVE20IbrXZL/Dh5LRe8VpKa+NeuzJ1NHFzR6IQ0kBevltFv9a9pXv9naN3HxiQvQvaMw==, tarball: file:projects/uploader-resources.tgz}
+    resolution: {integrity: sha512-gsRiOemRCAlhK0K5xzASMWgbIQpVAY8cYqKCms/N4rCDUDVtJL/jTKixLhjZDfUdSe+J537cRsHoP+xm19JrUQ==, tarball: file:projects/uploader-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader@file:projects/uploader.tgz':
@@ -7602,6 +7645,9 @@ packages:
   colorspace@1.1.4:
     resolution: {integrity: sha512-BgvKJiuVu1igBUF2kEjRCZXol6wiiGbY5ipL/oVPwm0BL9sIpMIzM8IK7vwuxIIzOXMV3Ey5w+vxhm0rR/TN8w==}
 
+  combine-errors@3.0.3:
+    resolution: {integrity: sha512-C8ikRNRMygCwaTx+Ek3Yr+OuZzgZjduCOfSQBjbM8V3MfgcjSTeto/GXP6PAwKvJz/v15b7GHZvx5rOlczFw/Q==}
+
   combined-stream@1.0.8:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
@@ -7714,6 +7760,9 @@ packages:
     engines: {node: '>= 14.15.0'}
     peerDependencies:
       webpack: ^5.1.0
+
+  core-js@3.41.0:
+    resolution: {integrity: sha512-SJ4/EHwS36QMJd6h/Rg+GyR4A5xE0FSI3eZ+iBVpfqf1x0eTSg1smWLHrA+2jQThZSh97fmSgFSU8B61nxosxA==}
 
   core-util-is@1.0.2:
     resolution: {integrity: sha512-3lqz5YjWTYnW6dlDa5TLaTCcShfar1e40rmcJVwCBJC6mWlFuj0eCHIElmG1g5kyuJ/GD+8Wn4FFCcz4gJPfaQ==}
@@ -7845,6 +7894,12 @@ packages:
     resolution: {integrity: sha512-lUWFxGKyhraKCW8Qghz6Z0f2l/PqB1W3AO0HKJzGIQ5JRSlR651ekJDiGJbBT4sRNNv5ddnSGVEnsxP9XRCVpQ==}
     engines: {node: '>=4.0.0'}
     hasBin: true
+
+  custom-error-instance@2.1.1:
+    resolution: {integrity: sha512-p6JFxJc3M4OTD2li2qaHkDCw9SfMw82Ldr6OC9Je1aXiGfhx2W8p3GaoeaGrPJTUN9NirTM/KTxHWMUdR1rsUg==}
+
+  custom-event-polyfill@1.0.7:
+    resolution: {integrity: sha512-TDDkd5DkaZxZFM8p+1I3yAlvM3rSr1wbrOliG4yJiwinMZN8z/iGL7BTlDkrJcYTmgUSb4ywVCc3ZaUtOtC76w==}
 
   cytoscape-cose-bilkent@4.1.0:
     resolution: {integrity: sha512-wgQlVIUJF13Quxiv5e1gstZ08rnZj2XaLHGoFMYXz7SkNfCDOOteKBE6SYRfA9WxxI/iBc3ajfDoc6hb/MRAHQ==}
@@ -9659,6 +9714,10 @@ packages:
   ini@1.3.8:
     resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
 
+  install@0.13.0:
+    resolution: {integrity: sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==}
+    engines: {node: '>= 0.10'}
+
   internal-slot@1.0.7:
     resolution: {integrity: sha512-NGnrKwXzSms2qUUih/ILZ5JBqNTSa1+ZmP6flaIp6KmSElgE9qdndzS3cqjrDovwFdmwsGsLdeFgB6suw+1e9g==}
     engines: {node: '>= 0.4'}
@@ -10139,6 +10198,9 @@ packages:
   jpeg-js@0.4.4:
     resolution: {integrity: sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg==}
 
+  js-base64@3.7.7:
+    resolution: {integrity: sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==}
+
   js-tiktoken@1.0.14:
     resolution: {integrity: sha512-Pk3l3WOgM9joguZY2k52+jH82RtABRgB5RdGFZNUGbOKGMVlNmafcPA3b0ITcCZPu1L9UclP1tne6aw7ZI4Myg==}
 
@@ -10443,6 +10505,9 @@ packages:
     resolution: {integrity: sha512-xXqpXoINfFhgua9xiqD8fPFHgkoq1mmmpE92WlDbm9rNRd/EbRb+Gqf908T2DMfuHjjJlksiK2RbHVOdD/MqSw==}
     engines: {node: '>=8.9.0'}
 
+  loadjs@4.3.0:
+    resolution: {integrity: sha512-vNX4ZZLJBeDEOBvdr2v/F+0aN5oMuPu7JTqrMwp+DtgK+AryOlpy6Xtm2/HpNr+azEa828oQjOtWsB6iDtSfSQ==}
+
   local-pkg@0.5.1:
     resolution: {integrity: sha512-9rrA30MRRP3gBD3HTGnC6cDFpaE1kVDWxWgqWJUN0RvDNAo+Nz/9GxB+nHOH0ifbVFy0hSA1V6vFDvnx54lTEQ==}
     engines: {node: '>=14'}
@@ -10468,6 +10533,24 @@ packages:
 
   lodash-es@4.17.21:
     resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
+
+  lodash._baseiteratee@4.7.0:
+    resolution: {integrity: sha512-nqB9M+wITz0BX/Q2xg6fQ8mLkyfF7MU7eE+MNBNjTHFKeKaZAPEzEg+E8LWxKWf1DQVflNEn9N49yAuqKh2mWQ==}
+
+  lodash._basetostring@4.12.0:
+    resolution: {integrity: sha512-SwcRIbyxnN6CFEEK4K1y+zuApvWdpQdBHM/swxP962s8HIxPO3alBH5t3m/dl+f4CMUug6sJb7Pww8d13/9WSw==}
+
+  lodash._baseuniq@4.6.0:
+    resolution: {integrity: sha512-Ja1YevpHZctlI5beLA7oc5KNDhGcPixFhcqSiORHNsp/1QTv7amAXzw+gu4YOvErqVlMVyIJGgtzeepCnnur0A==}
+
+  lodash._createset@4.0.3:
+    resolution: {integrity: sha512-GTkC6YMprrJZCYU3zcqZj+jkXkrXzq3IPBcF/fIPpNEAB4hZEtXU8zp/RwKOvZl43NUmwDbyRk3+ZTbeRdEBXA==}
+
+  lodash._root@3.0.1:
+    resolution: {integrity: sha512-O0pWuFSK6x4EXhM1dhZ8gchNtG7JMqBtrHdoUFUWXD7dJnNSUze1GuyQr5sOs0aCvgGeI3o/OJW8f4ca7FDxmQ==}
+
+  lodash._stringtopath@4.8.0:
+    resolution: {integrity: sha512-SXL66C731p0xPDC5LZg4wI5H+dJo/EO4KTqOMwLYCH3+FmmfAKJEZCm6ohGpI+T1xwsDsJCfL4OnhorllvlTPQ==}
 
   lodash.assignin@4.2.0:
     resolution: {integrity: sha512-yX/rx6d/UTVh7sSVWVSIMjfnz95evAgDFdb1ZozC35I9mSFCkmzptOzevxjgbQUsc78NR44LVHWjsoMQXy9FDg==}
@@ -10537,6 +10620,12 @@ packages:
 
   lodash.some@4.6.0:
     resolution: {integrity: sha512-j7MJE+TuT51q9ggt4fSgVqro163BEFjAt3u97IqU+JA2DkWl80nFTrowzLpZ/BnpN7rrl0JA/593NAdd8p/scQ==}
+
+  lodash.throttle@4.1.1:
+    resolution: {integrity: sha512-wIkUCfVKpVsWo3JSZlc+8MB5it+2AN5W8J7YVMST30UrvcQNZ1Okbj+rbVniijTWE6FGYy4XJq/rHkas8qJMLQ==}
+
+  lodash.uniqby@4.5.0:
+    resolution: {integrity: sha512-IRt7cfTtHy6f1aRVA5n7kT8rgN3N1nH6MOWLcHfpWG2SH19E3JksLK38MktLxZDhlAjCP9jpIXkOnRXlu6oByQ==}
 
   lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
@@ -11542,6 +11631,9 @@ packages:
     resolution: {integrity: sha512-uysumyrvkUX0rX/dEVqt8gC3sTBzd4zoWfLeS29nb53imdaXVvLINYXTI2GNqzaMuvacNx4uJQ8+b3zXR0pkgQ==}
     engines: {node: '>=10.4.0'}
 
+  plyr@3.7.8:
+    resolution: {integrity: sha512-yG/EHDobwbB/uP+4Bm6eUpJ93f8xxHjjk2dYcD1Oqpe1EcuQl5tzzw9Oq+uVAzd2lkM11qZfydSiyIpiB8pgdA==}
+
   png-chunks-extract@1.0.0:
     resolution: {integrity: sha512-ZiVwF5EJ0DNZyzAqld8BP1qyJBaGOFaq9zl579qfbkcmOwWLLO4I9L8i2O4j3HkI6/35i0nKG2n+dZplxiT89Q==}
 
@@ -11743,6 +11835,9 @@ packages:
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
 
+  proper-lockfile@4.1.2:
+    resolution: {integrity: sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==}
+
   prosemirror-changeset@2.2.1:
     resolution: {integrity: sha512-J7msc6wbxB4ekDFj+n9gTW/jav/p53kdlivvuppHsrZXCaQdVgRghoZbSS3kwrRyAstRVQ4/+u5k7YfLgkkQvQ==}
 
@@ -11904,6 +11999,9 @@ packages:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
 
+  rangetouch@2.0.1:
+    resolution: {integrity: sha512-sln+pNSc8NGaHoLzwNBssFSf/rSYkqeBXzX1AtJlkJiUaVSJSbRAWJk+4omsXkN+EJalzkZhWQ3th1m0FpR5xA==}
+
   raw-body@2.5.2:
     resolution: {integrity: sha512-8zGqypfENjCIqGhgXToC8aB2r7YrBX+AQAfIPs/Mlk+BtPTztOvTS01NRW/3Eh60J+a48lt8qsCzirQ6loCVfA==}
     engines: {node: '>= 0.8'}
@@ -11928,6 +12026,10 @@ packages:
   readable-stream@3.6.2:
     resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
     engines: {node: '>= 6'}
+
+  readable-stream@4.7.0:
+    resolution: {integrity: sha512-oIGGmcpTLwPga8Bn6/Z75SVaH1z5dUut2ibSyAMVhmUggWpmDn2dapB0n7f8nwaSiRtepAsfJyfXIO5DCVAODg==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   readable-web-to-node-stream@3.0.2:
     resolution: {integrity: sha512-ePeK6cc1EcKLEhJFt/AebMCLL+GgSKhuygrZ/GLaKZYEecIgIECf4UaUuaByiGtzckwR4ain9VzUh95T1exYGw==}
@@ -13011,6 +13113,10 @@ packages:
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
+  tus-js-client@4.3.1:
+    resolution: {integrity: sha512-ZLeYmjrkaU1fUsKbIi8JML52uAocjEZtBx4DKjRrqzrZa0O4MYwT6db+oqePlspV+FxXJAyFBc/L5gwUi2OFsg==}
+    engines: {node: '>=18'}
+
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -13178,6 +13284,9 @@ packages:
 
   url-parse@1.5.10:
     resolution: {integrity: sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==}
+
+  url-polyfill@1.1.13:
+    resolution: {integrity: sha512-tXzkojrv2SujumYthZ/WjF7jaSfNhSXlYMpE5AYdL2I3D7DCeo+mch8KtW2rUuKjDg+3VXODXHVgipt8yGY/eQ==}
 
   url-template@2.0.8:
     resolution: {integrity: sha512-XdVKMF4SJ0nP/O7XIPB0JwAEuT9lDIYnNsK8yGVe43y0AWoKeJNdv3ZNWh7ksJ6KqQFjOO6ox/VEitLnaVNufw==}
@@ -17502,7 +17611,6 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       prettier: 3.2.5
-      svelte: 4.2.19
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -19863,6 +19971,20 @@ snapshots:
       - supports-color
       - ts-node
 
+  '@rush-temp/model-recorder@file:projects/model-recorder.tgz':
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - supports-color
+
   '@rush-temp/model-recruit@file:projects/model-recruit.tgz':
     dependencies:
       '@anticrm/skillset': 0.6.0
@@ -21535,7 +21657,6 @@ snapshots:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@types/nodemailer': 6.4.17
-      '@types/web-push': 3.6.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
       cors: 2.8.5
@@ -21555,7 +21676,6 @@ snapshots:
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.7.3)
       typescript: 5.7.3
-      web-push: 3.6.7
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -22212,6 +22332,7 @@ snapshots:
       postcss-load-config: 4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       postcss-loader: 7.3.4(postcss@8.4.35)(typescript@5.3.3)(webpack@5.97.1)
       posthog-js: 1.122.0
+      readable-stream: 4.7.0
       sass-loader: 13.3.3(sass@1.71.1)(webpack@5.97.1)
       style-loader: 3.3.4(webpack@5.97.1)
       svelte: 4.2.19
@@ -22534,6 +22655,108 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/recorder-assets@file:projects/recorder-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+
+  '@rush-temp/recorder-resources@file:projects/recorder-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      '@uppy/core': 3.13.1
+      '@uppy/dashboard': 3.9.1(@uppy/core@3.13.1)
+      '@uppy/drag-drop': 3.1.1(@uppy/core@3.13.1)
+      '@uppy/locales': 4.0.3
+      '@uppy/progress-bar': 3.1.1(@uppy/core@3.13.1)
+      '@uppy/screen-capture': 3.2.0(@uppy/core@3.13.1)
+      '@uppy/status-bar': 3.3.3(@uppy/core@3.13.1)
+      '@uppy/webcam': 3.4.2(@uppy/core@3.13.1)
+      '@uppy/xhr-upload': 3.6.8(@uppy/core@3.13.1)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      install: 0.13.0
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
+      sass: 1.71.1
+      stream-browserify: 3.0.0
+      svelte: 4.2.19
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
+      svelte-loader: 3.2.0(svelte@4.2.19)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.7.3)
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+
+  '@rush-temp/recorder@file:projects/recorder.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      tus-js-client: 4.3.1
+      typescript: 5.7.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -26322,6 +26545,7 @@ snapshots:
       fast-equals: 5.2.2
       hls.js: 1.5.20
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      plyr: 3.7.8
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
@@ -26375,30 +26599,24 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/uploader-resources@file:projects/uploader-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+  '@rush-temp/uploader-resources@file:projects/uploader-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
+      '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      '@uppy/core': 3.13.1
-      '@uppy/dashboard': 3.9.1(@uppy/core@3.13.1)
-      '@uppy/drag-drop': 3.1.1(@uppy/core@3.13.1)
-      '@uppy/locales': 4.0.3
-      '@uppy/progress-bar': 3.1.1(@uppy/core@3.13.1)
-      '@uppy/screen-capture': 3.2.0(@uppy/core@3.13.1)
-      '@uppy/status-bar': 3.3.3(@uppy/core@3.13.1)
-      '@uppy/webcam': 3.4.2(@uppy/core@3.13.1)
-      '@uppy/xhr-upload': 3.6.8(@uppy/core@3.13.1)
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      install: 0.13.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
+      stream-browserify: 3.0.0
       svelte: 4.2.19
       svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)
       svelte-eslint-parser: 0.33.1(svelte@4.2.19)
@@ -26409,7 +26627,6 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
-      - '@types/node'
       - babel-jest
       - babel-plugin-macros
       - coffeescript
@@ -29458,6 +29675,11 @@ snapshots:
       color: 3.2.1
       text-hex: 1.0.0
 
+  combine-errors@3.0.3:
+    dependencies:
+      custom-error-instance: 2.1.1
+      lodash.uniqby: 4.5.0
+
   combined-stream@1.0.8:
     dependencies:
       delayed-stream: 1.0.0
@@ -29566,6 +29788,8 @@ snapshots:
       schema-utils: 4.2.0
       serialize-javascript: 6.0.2
       webpack: 5.97.1(esbuild@0.24.2)(webpack-cli@5.1.4)
+
+  core-js@3.41.0: {}
 
   core-util-is@1.0.2:
     optional: true
@@ -29722,6 +29946,10 @@ snapshots:
       bluebird: 3.7.2
       lodash: 4.17.21
       strip-bom: 2.0.0
+
+  custom-error-instance@2.1.1: {}
+
+  custom-event-polyfill@1.0.7: {}
 
   cytoscape-cose-bilkent@4.1.0(cytoscape@3.30.4):
     dependencies:
@@ -31996,6 +32224,8 @@ snapshots:
 
   ini@1.3.8: {}
 
+  install@0.13.0: {}
+
   internal-slot@1.0.7:
     dependencies:
       es-errors: 1.3.0
@@ -32637,6 +32867,8 @@ snapshots:
 
   jpeg-js@0.4.4: {}
 
+  js-base64@3.7.7: {}
+
   js-tiktoken@1.0.14:
     dependencies:
       base64-js: 1.5.1
@@ -33042,6 +33274,8 @@ snapshots:
       emojis-list: 3.0.0
       json5: 2.2.3
 
+  loadjs@4.3.0: {}
+
   local-pkg@0.5.1:
     dependencies:
       mlly: 1.7.3
@@ -33067,6 +33301,25 @@ snapshots:
       p-locate: 6.0.0
 
   lodash-es@4.17.21: {}
+
+  lodash._baseiteratee@4.7.0:
+    dependencies:
+      lodash._stringtopath: 4.8.0
+
+  lodash._basetostring@4.12.0: {}
+
+  lodash._baseuniq@4.6.0:
+    dependencies:
+      lodash._createset: 4.0.3
+      lodash._root: 3.0.1
+
+  lodash._createset@4.0.3: {}
+
+  lodash._root@3.0.1: {}
+
+  lodash._stringtopath@4.8.0:
+    dependencies:
+      lodash._basetostring: 4.12.0
 
   lodash.assignin@4.2.0: {}
 
@@ -33113,6 +33366,13 @@ snapshots:
   lodash.reject@4.6.0: {}
 
   lodash.some@4.6.0: {}
+
+  lodash.throttle@4.1.1: {}
+
+  lodash.uniqby@4.5.0:
+    dependencies:
+      lodash._baseiteratee: 4.7.0
+      lodash._baseuniq: 4.6.0
 
   lodash@4.17.21: {}
 
@@ -34152,6 +34412,14 @@ snapshots:
       base64-js: 1.5.1
       xmlbuilder: 15.1.1
 
+  plyr@3.7.8:
+    dependencies:
+      core-js: 3.41.0
+      custom-event-polyfill: 1.0.7
+      loadjs: 4.3.0
+      rangetouch: 2.0.1
+      url-polyfill: 1.1.13
+
   png-chunks-extract@1.0.0:
     dependencies:
       crc-32: 0.3.0
@@ -34328,6 +34596,12 @@ snapshots:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
+
+  proper-lockfile@4.1.2:
+    dependencies:
+      graceful-fs: 4.2.11
+      retry: 0.12.0
+      signal-exit: 3.0.7
 
   prosemirror-changeset@2.2.1:
     dependencies:
@@ -34546,6 +34820,8 @@ snapshots:
 
   range-parser@1.2.1: {}
 
+  rangetouch@2.0.1: {}
+
   raw-body@2.5.2:
     dependencies:
       bytes: 3.1.2
@@ -34585,6 +34861,14 @@ snapshots:
       inherits: 2.0.4
       string_decoder: 1.3.0
       util-deprecate: 1.0.2
+
+  readable-stream@4.7.0:
+    dependencies:
+      abort-controller: 3.0.0
+      buffer: 6.0.3
+      events: 3.3.0
+      process: 0.11.10
+      string_decoder: 1.3.0
 
   readable-web-to-node-stream@3.0.2:
     dependencies:
@@ -35527,6 +35811,21 @@ snapshots:
       sass: 1.71.1
       typescript: 5.6.2
 
+  svelte-preprocess@5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.7.3):
+    dependencies:
+      '@types/pug': 2.0.10
+      detect-indent: 6.1.0
+      magic-string: 0.30.7
+      sorcery: 0.11.0
+      strip-indent: 3.0.0
+      svelte: 4.2.19
+    optionalDependencies:
+      '@babel/core': 7.23.9
+      postcss: 8.4.35
+      postcss-load-config: 4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      sass: 1.71.1
+      typescript: 5.7.3
+
   svelte@4.2.19:
     dependencies:
       '@ampproject/remapping': 2.2.1
@@ -35968,6 +36267,16 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
+  tus-js-client@4.3.1:
+    dependencies:
+      buffer-from: 1.1.2
+      combine-errors: 3.0.3
+      is-stream: 2.0.1
+      js-base64: 3.7.7
+      lodash.throttle: 4.1.1
+      proper-lockfile: 4.1.2
+      url-parse: 1.5.10
+
   type-check@0.4.0:
     dependencies:
       prelude-ls: 1.2.1
@@ -36138,6 +36447,8 @@ snapshots:
     dependencies:
       querystringify: 2.2.0
       requires-port: 1.0.0
+
+  url-polyfill@1.1.13: {}
 
   url-template@2.0.8: {}
 

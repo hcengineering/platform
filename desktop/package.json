@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/desktop",
-  "version": "0.6.435",
+  "version": "0.6.405",
   "main": "dist/main/electron.js",
   "template": "@hcengineering/webpack-package",
   "scripts": {
@@ -184,6 +184,9 @@
     "@hcengineering/guest-resources": "^0.6.0",
     "@hcengineering/presence": "^0.6.0",
     "@hcengineering/presence-resources": "^0.6.0",
+    "@hcengineering/recorder": "^0.6.0",
+    "@hcengineering/recorder-assets": "^0.6.0",
+    "@hcengineering/recorder-resources": "^0.6.0",
     "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/uploader-assets": "^0.6.0",
     "@hcengineering/uploader-resources": "^0.6.0",

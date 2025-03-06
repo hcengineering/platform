@@ -531,6 +531,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/recorder",
+      "projectFolder": "plugins/recorder",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/recorder-resources",
+      "projectFolder": "plugins/recorder-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/recorder-assets",
+      "projectFolder": "plugins/recorder-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-recorder",
+      "projectFolder": "models/recorder",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/presence",
       "projectFolder": "plugins/presence",
       "shouldPublish": false
