@@ -67,7 +67,6 @@
     "svelte": "^4.2.19",
     "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/text-editor": "^0.6.0",
-    "@hcengineering/text-markdown": "^0.6.0",
     "@hcengineering/love": "^0.6.0"
   }
 }
