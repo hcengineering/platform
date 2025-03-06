@@ -130,6 +130,7 @@
     "StartConversation": "Iniciar conversación",
     "ViewingThreadFromArchivedChannel": "Estás viendo un hilo de un canal archivado",
     "ViewingArchivedChannel": "Estás viendo un canal archivado",
-    "OpenChatInSidebar": "Abrir chat en la barra lateral"
+    "OpenChatInSidebar": "Abrir chat en la barra lateral",
+    "NoThreadsYet": "No hay hilos todavía."
   }
 }
