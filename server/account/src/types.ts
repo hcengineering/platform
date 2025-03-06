@@ -43,6 +43,7 @@ export interface Account {
   admin?: boolean
   confirmed?: boolean
   lastWorkspace?: number
+  sendOperations?: number
   createdOn: number
   lastVisit: number
   githubId?: string

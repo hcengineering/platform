@@ -2488,6 +2488,16 @@ export async function leaveWorkspace (
   ctx.info('Account removed from workspace', { email, workspace })
 }
 
+export function sanitizeEmail (email: string): string {
+  if (email == null || typeof email !== 'string') return ''
+  const sanitizedEmail = email
+    .trim()
+    .replace(/[<>/\\@{}()[\]'"`]/g, '') // Remove special chars and quotes
+    .replace(/^(http|ssh|ftp|https|mailto|javascript|data|file):?\/?\/?\s*/i, '') // Remove potentially dangerous protocols
+    .slice(0, 40)
+  return sanitizedEmail
+}
+
 /**
  * @public
  */
@@ -2512,13 +2522,7 @@ export async function sendInvite (
       new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: tokenData.workspace.name })
     )
   }
-
-  if (Date.now() - (currentAccount.lastWorkspace ?? 0) < 60 * 1000) {
-    throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: tokenData.workspace.name })
-    )
-  }
-  await db.account.updateOne({ _id: currentAccount._id }, { lastWorkspace: Date.now() })
+  await checkSendRateLimit(currentAccount, tokenData.workspace.name, db)
 
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
@@ -2535,7 +2539,7 @@ export async function sendInvite (
   const inviteId = await getInviteLink(ctx, db, branding, token, exp, email, 1)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  const ws = (workspace.workspaceName ?? workspace.workspace).slice(0, 40)
+  const ws = sanitizeEmail(workspace.workspaceName ?? workspace.workspaceUrl ?? workspace.workspace)
 
   const lang = branding?.language
   const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours }, lang)
@@ -2556,6 +2560,20 @@ export async function sendInvite (
     })
   })
   ctx.info('Invite sent', { email, workspace, link })
+}
+
+async function checkSendRateLimit (currentAccount: Account, workspace: string, db: AccountDB): Promise<void> {
+  let sendOps = (currentAccount.sendOperations ?? 0) + 1
+
+  const timePassed = Date.now() - (currentAccount.lastWorkspace ?? 0)
+
+  if (timePassed < 60 * 1000 && sendOps > 5) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace }))
+  }
+  if (sendOps > 5 && timePassed < sendOps * 60 * 1000) {
+    sendOps = 1
+  }
+  await db.account.updateOne({ _id: currentAccount._id }, { lastWorkspace: Date.now(), sendOperations: sendOps })
 }
 
 /**
@@ -2594,12 +2612,7 @@ export async function resendInvite (
     await db.invite.updateOne({ _id: db.getObjectId(inviteId) }, { exp: newExp })
   }
 
-  if (Date.now() - (currentAccount.lastWorkspace ?? 0) < 60 * 1000) {
-    throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspace.name })
-    )
-  }
-  await db.account.updateOne({ _id: currentAccount._id }, { lastWorkspace: Date.now() })
+  await checkSendRateLimit(currentAccount, workspace.name, db)
 
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
@@ -2611,7 +2624,7 @@ export async function resendInvite (
   }
 
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
-  const ws = (wsPromise.workspaceName ?? wsPromise.workspace).slice(0, 40)
+  const ws = sanitizeEmail(wsPromise.workspaceName ?? wsPromise.workspaceUrl ?? wsPromise.workspace)
   const lang = branding?.language
   const text = await translate(accountPlugin.string.ResendInviteText, { link, ws, expHours }, lang)
   const html = await translate(accountPlugin.string.ResendInviteHTML, { link, ws, expHours }, lang)
