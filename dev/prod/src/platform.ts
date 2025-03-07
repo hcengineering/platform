@@ -175,6 +175,7 @@ export interface Config {
   TRANSACTOR_OVERRIDE?: string
   BACKUP_URL?: string
   STREAM_URL?: string
+  PUBLIC_SCHEDULE_URL?: string
 }
 
 export interface Branding {
@@ -427,6 +428,7 @@ export async function configurePlatform() {
   setMetadata(telegram.metadata.BotUrl, config.TELEGRAM_BOT_URL)
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
+  setMetadata(calendar.metadata.PublicScheduleURL, config.PUBLIC_SCHEDULE_URL)
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
   setMetadata(analyticsCollector.metadata.EndpointURL, config.ANALYTICS_COLLECTOR_URL)
   setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)
