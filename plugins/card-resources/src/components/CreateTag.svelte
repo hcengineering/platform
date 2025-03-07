@@ -39,32 +39,11 @@
       kind: isMasterTag ? ClassifierKind.CLASS : ClassifierKind.MIXIN,
       icon: isMasterTag ? card.icon.MasterTag : card.icon.Tag
     }
-    const baseViewlet = client.getModel().getObject(card.viewlet.CardTable)
-    const base = extractObjectProps(baseViewlet)
-    const id = generateId<Class<MasterTag>>()
-    const ops = client.apply('tag')
-    await ops.createDoc(_class, core.space.Model, data, id)
-    await ops.createMixin(id, core.class.Mixin, core.space.Model, setting.mixin.Editable, {
-      value: true
-    })
-    await ops.createMixin(id, core.class.Mixin, core.space.Model, setting.mixin.UserMixin, {})
-    await ops.createDoc(view.class.Viewlet, core.space.Model, {
-      ...base,
-      attachTo: id
-    })
-    await ops.commit()
-    dispatch('close')
-  }
 
-  function extractObjectProps<T extends Doc> (doc: T): Data<T> {
-    const data: any = {}
-    for (const key in doc) {
-      if (key === '_id') {
-        continue
-      }
-      data[key] = doc[key]
-    }
-    return data as Data<T>
+    const id = generateId<Class<MasterTag>>()
+    await client.createDoc(_class, core.space.Model, data, id)
+
+    dispatch('close')
   }
 </script>
 

@@ -51,7 +51,7 @@
   $: canSave = !!channelName
 
   async function save (): Promise<void> {
-    const primaryPersonId = getCurrentAccount().primarySocialId
+    const myAcc = getCurrentAccount().uuid
     const employee = getCurrentEmployee()
     const space = await client.findOne(contact.class.PersonSpace, { person: employee }, { projection: { _id: 1 } })
     if (!space) return
@@ -61,9 +61,9 @@
       description: '',
       private: selectedVisibilityId === 'private',
       archived: false,
-      members: [primaryPersonId],
+      members: [myAcc],
       topic: description,
-      owners: [primaryPersonId]
+      owners: [myAcc]
     })
 
     openChannel(channelId, chunter.class.Channel)

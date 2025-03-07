@@ -41,7 +41,7 @@
         result.push(cls)
       }
     }
-    return result
+    return result.sort((a, b) => a.label.localeCompare(b.label))
   }
 
   function fillDescendants (classes: MasterTag[]): void {

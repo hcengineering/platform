@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Class, Mixin, Doc, Ref, MarkupBlobRef, Rank } from '@hcengineering/core'
+import { Class, Mixin, Doc, Ref, MarkupBlobRef, Rank, Domain } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -26,8 +26,16 @@ export interface Card extends Doc {
   _class: Ref<MasterTag>
   title: string
   content: MarkupBlobRef
+  children?: number
+  parentInfo: ParentInfo[]
   parent?: Ref<Card> | null
   rank: Rank
+}
+
+export interface ParentInfo {
+  _id: Ref<Card>
+  _class: Ref<MasterTag>
+  title: string
 }
 
 export interface MasterTagEditorSection extends Doc {
@@ -41,6 +49,8 @@ export interface MasterTagEditorSection extends Doc {
  * @public
  */
 export const cardId = 'card' as Plugin
+
+export const DOMAIN_CARD = 'card' as Domain
 
 /**
  * @public

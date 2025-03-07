@@ -134,6 +134,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     width: 1rem;
     height: 1rem;
   }

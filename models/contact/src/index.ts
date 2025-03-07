@@ -46,7 +46,8 @@ import {
   type Timestamp,
   type SocialIdType,
   type PersonUuid,
-  type PersonId
+  type PersonId,
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   Collection as CollectionType,
@@ -234,6 +235,11 @@ export class TEmployee extends TPerson implements Employee {
   @Hidden()
     active!: boolean
 
+  @Prop(TypeString(), contact.string.Role)
+  @ReadOnly()
+  @Hidden()
+    role?: 'USER' | 'GUEST'
+
   @Prop(CollectionType(contact.class.Status), contact.string.Status)
   @Hidden()
     statuses?: number
@@ -241,6 +247,8 @@ export class TEmployee extends TPerson implements Employee {
   @Prop(TypeString(), contact.string.Position)
   @Hidden()
     position?: string | null
+
+  declare personUuid?: AccountUuid
 }
 
 @Model(contact.class.ContactsTab, core.class.Doc, DOMAIN_MODEL)
@@ -782,6 +790,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: contact.component.PersonIdArrayEditor
+  })
+
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.ArrayEditor, {
     inlineEditor: contact.component.AccountArrayEditor
   })
 

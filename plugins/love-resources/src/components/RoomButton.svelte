@@ -17,6 +17,7 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
   import { ParticipantInfo } from '@hcengineering/love'
+  import { formatName } from '@hcengineering/contact'
   import ParticipantsList from './ParticipantsList.svelte'
 
   export let label: string
@@ -61,7 +62,7 @@
     <div class="hulyStatusBarButton-icons">
       {#each participants as participant (participant._id)}
         <div
-          use:tooltip={{ label: getEmbeddedLabel(participant.name), direction: 'bottom' }}
+          use:tooltip={{ label: getEmbeddedLabel(formatName(participant.name)), direction: 'bottom' }}
           on:click={participant.onclick}
         >
           <Avatar

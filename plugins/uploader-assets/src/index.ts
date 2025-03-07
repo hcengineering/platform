@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,3 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
+import uploader from '@hcengineering/uploader'
+import { loadMetadata } from '@hcengineering/platform'
+
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+
+loadMetadata(uploader.icon, {
+  UploadFilesIcon: `${icons}#file`,
+  UploadFoldersIcon: `${icons}#folder`
+})

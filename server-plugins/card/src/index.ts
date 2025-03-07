@@ -29,6 +29,10 @@ export default plugin(serverCardId, {
   trigger: {
     OnAttribute: '' as Resource<TriggerFunc>,
     OnAttributeRemove: '' as Resource<TriggerFunc>,
-    OnMasterTagRemove: '' as Resource<TriggerFunc>
+    OnMasterTagCreate: '' as Resource<TriggerFunc>,
+    OnMasterTagRemove: '' as Resource<TriggerFunc>,
+    OnCardCreate: '' as Resource<TriggerFunc>,
+    OnCardParentChange: '' as Resource<TriggerFunc>,
+    OnCardRemove: '' as Resource<TriggerFunc>
   }
 })

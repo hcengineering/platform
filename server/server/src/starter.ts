@@ -7,6 +7,7 @@ export interface ServerEnv {
   filesUrl: string | undefined
   sesUrl: string | undefined
   sesAuthToken: string | undefined
+  webPushUrl: string | undefined
   accountsUrl: string
   serverPort: number
   enableCompression: boolean
@@ -46,6 +47,7 @@ export function serverConfigFromEnv (): ServerEnv {
   const filesUrl = process.env.FILES_URL
   const sesUrl = process.env.SES_URL
   const sesAuthToken = process.env.SES_AUTH_TOKEN
+  const webPushUrl = process.env.WEB_PUSH_URL
 
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -64,6 +66,7 @@ export function serverConfigFromEnv (): ServerEnv {
     filesUrl,
     sesUrl,
     sesAuthToken,
+    webPushUrl,
     accountsUrl,
     serverPort,
     enableCompression,

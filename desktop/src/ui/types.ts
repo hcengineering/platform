@@ -38,8 +38,9 @@ export interface Config {
   UPLOAD_CONFIG: string
   UPLOAD_URL: string
   VERSION?: string
-
+  STREAM_URL?: string
   BACKUP_URL?: string
+  PUBLIC_SCHEDULE_URL?: string
 }
 
 export interface Branding {

@@ -76,6 +76,16 @@ if (require('electron-squirrel-startup') === true) {
 
 console.log('Running Huly', process.env.MODEL_VERSION, process.env.VERSION, isMac, isDev, process.env.NODE_ENV)
 
+// Fix screen-sharing thumbnails being missing sometimes
+// See https://github.com/electron/electron/issues/44504
+const disabledFeatures = [
+  'ThumbnailCapturerMac:capture_mode/sc_screenshot_manager',
+  'ScreenCaptureKitPickerScreen',
+  'ScreenCaptureKitStreamPickerSonoma'
+]
+
+app.commandLine.appendSwitch('disable-features', disabledFeatures.join(','))
+
 function hookOpenWindow (window: BrowserWindow): void {
   window.webContents.setWindowOpenHandler(({ url }) => {
     console.log('opening window', url)

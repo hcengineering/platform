@@ -33,7 +33,8 @@ import core, {
   TxCUD,
   TxMixin,
   TxUpdateDoc,
-  type MeasureContext
+  type MeasureContext,
+  AccountUuid
 } from '@hcengineering/core'
 import notification, {
   BaseNotificationType,
@@ -494,6 +495,7 @@ export async function getUsersInfo (
           person,
           socialStrings,
           space: space?._id,
+          account: employee?.personUuid,
           employee
         }
       ]
@@ -511,13 +513,14 @@ export function toReceiverInfo (hierarchy: Hierarchy, info?: SenderInfo | Receiv
   if (!isEmployee) return undefined
 
   const employee = hierarchy.as(info.person, contact.mixin.Employee)
-  if (!employee.active) return undefined
+  if (!employee.active || employee.personUuid == null) return undefined
 
   return {
     _id: info._id,
     person: employee,
     space: info.space,
     socialStrings: info.socialStrings,
+    account: employee.personUuid,
     employee
   }
 }
@@ -527,7 +530,7 @@ export function createPushCollaboratorsTx (
   objectId: Ref<Doc>,
   objectClass: Ref<Class<Doc>>,
   space: Ref<Space>,
-  collaborators: PersonId[]
+  collaborators: AccountUuid[]
 ): TxMixin<Doc, Collaborators> {
   return control.txFactory.createTxMixin(objectId, objectClass, space, notification.mixin.Collaborators, {
     $push: {
@@ -544,7 +547,7 @@ export function createPullCollaboratorsTx (
   objectId: Ref<Doc>,
   objectClass: Ref<Class<Doc>>,
   space: Ref<Space>,
-  collaborators: PersonId[]
+  collaborators: AccountUuid[]
 ): TxMixin<Doc, Collaborators> {
   return control.txFactory.createTxMixin(objectId, objectClass, space, notification.mixin.Collaborators, {
     $pull: { collaborators: { $in: collaborators } }

@@ -53,7 +53,6 @@ export default mergeIds(loveId, love, {
     StopVideo: '' as IntlString,
     Floors: '' as IntlString,
     Floor: '' as IntlString,
-    MyOffice: '' as IntlString,
     EditOffice: '' as IntlString,
     FinalizeEditing: '' as IntlString,
     ChangeFloor: '' as IntlString,

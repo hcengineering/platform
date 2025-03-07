@@ -17,7 +17,6 @@
   import contact, { Organization } from '@hcengineering/contact'
   import { AccountArrayEditor, UserBox } from '@hcengineering/contact-resources'
   import core, {
-    PersonId,
     AttachedData,
     Data,
     Ref,
@@ -27,7 +26,8 @@
     fillDefaults,
     generateId,
     getCurrentAccount,
-    makeCollabId
+    makeCollabId,
+    AccountUuid
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import {
@@ -73,7 +73,7 @@
   let issueTemplates: IssueTemplate[] = []
   let fullDescription: string = ''
 
-  let members = [getCurrentAccount().primarySocialId]
+  let members = [getCurrentAccount().uuid]
   let membersChanged: boolean = false
 
   $: setDefaultMembers(typeType)
@@ -249,7 +249,7 @@
       company,
       members,
       autoJoin: typeType.autoJoin ?? false,
-      owners: [getCurrentAccount().primarySocialId],
+      owners: [getCurrentAccount().uuid],
       type: typeId
     }
 
@@ -323,7 +323,7 @@
     )
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: AccountUuid[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }

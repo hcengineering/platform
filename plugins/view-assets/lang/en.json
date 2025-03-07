@@ -127,6 +127,8 @@
     "Join": "Join",
     "Copied": "Copied",
     "Title": "Title",
-    "HideArchived": "Hide archived"
+    "HideArchived": "Hide archived",
+    "RemoveRelation": "Remove relation",
+    "RemoveRelationConfirmation": "Do you want to remove relation?"
   }
 }

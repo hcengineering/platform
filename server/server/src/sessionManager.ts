@@ -38,11 +38,11 @@ import core, {
   buildSocialIdString,
   type PersonId,
   type WorkspaceDataId,
-  type PersonUuid,
   Data,
   Version,
   platformNow,
-  platformNowDiff
+  platformNowDiff,
+  AccountUuid
 } from '@hcengineering/core'
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { unknownError, type Status } from '@hcengineering/platform'
@@ -1071,13 +1071,13 @@ export class TSessionManager implements SessionManager {
   }
 
   // TODO: cache this map and update when sessions created/closed
-  getActiveSocialStringsToUsersMap (workspace: WorkspaceUuid): Map<PersonId, PersonUuid> {
+  getActiveSocialStringsToUsersMap (workspace: WorkspaceUuid): Map<PersonId, AccountUuid> {
     const ws = this.workspaces.get(workspace)
     if (ws === undefined) {
       return new Map()
     }
 
-    const res = new Map<PersonId, PersonUuid>()
+    const res = new Map<PersonId, AccountUuid>()
     for (const s of ws.sessions.values()) {
       const sessionAccount = s.session.getUser()
       if (sessionAccount === systemAccountUuid) {
@@ -1107,7 +1107,7 @@ export class TSessionManager implements SessionManager {
     return userCtx
       .with('🧭 handleRequest', {}, async (ctx) => {
         if (request.time != null) {
-          const delta = Date.now() - request.time
+          const delta = platformNow() - request.time
           requestCtx.measure('msg-receive-delta', delta)
         }
         if (service.workspace.closing !== undefined) {
@@ -1246,6 +1246,7 @@ export class TSessionManager implements SessionManager {
             service.binaryMode,
             service.useCompression
           )
+          throw err
         }
       })
       .finally(() => {

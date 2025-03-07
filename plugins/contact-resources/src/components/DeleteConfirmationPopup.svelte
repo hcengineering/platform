@@ -22,11 +22,14 @@
   import { createEventDispatcher } from 'svelte'
   import { personRefByPersonIdStore } from '../utils'
   import { PersonRefPresenter } from '..'
+  import { IntlString } from '@hcengineering/platform'
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void | Promise<void>
   export let skipCheck: boolean = false
   export let canDeleteExtra: boolean = true
+  export let confirmation: IntlString | undefined = undefined
+
   const me = getCurrentEmployee()
   const objectArray = Array.isArray(object) ? object : [object]
   const dispatch = createEventDispatcher()
@@ -57,7 +60,7 @@
   <div class="flex-grow flex-col">
     {#if canDelete}
       <div class="mb-2">
-        <Label label={view.string.DeleteObjectConfirm} params={{ count: objectArray.length }} />
+        <Label label={confirmation ?? view.string.DeleteObjectConfirm} params={{ count: objectArray.length }} />
         <div class="mt-2">
           {#if objectArray.length === 1}
             <ObjectPresenter _class={objectArray[0]._class} objectId={objectArray[0]._id} value={objectArray[0]} />

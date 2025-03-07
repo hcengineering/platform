@@ -204,10 +204,11 @@ async function verifyDigest (
   storage: BackupStorage,
   snapshots: BackupSnapshot[],
   domain: Domain
-): Promise<boolean> {
+): Promise<{ modified: boolean, modifiedFiles: string[] }> {
   ctx = ctx.newChild('verify digest', { domain, count: snapshots.length })
   ctx.info('verify-digest', { domain, count: snapshots.length })
   let modified = false
+  const modifiedFiles: string[] = []
   for (const s of snapshots) {
     const d = s.domains[domain]
     if (d === undefined) {
@@ -246,35 +247,13 @@ async function verifyDigest (
                   blobs.set(bname, { doc, buffer: undefined })
                 } else {
                   blobs.delete(bname)
-                  validDocs.add(bname as Ref<Doc>)
                 }
-              } else {
-                validDocs.add(bname as Ref<Doc>)
               }
+              validDocs.add(bname as Ref<Doc>)
               next()
             })
           } else {
-            const chunks: Buffer[] = []
-            stream.on('data', (chunk) => {
-              chunks.push(chunk)
-            })
-            stream.on('end', () => {
-              const bf = Buffer.concat(chunks as any)
-              const d = blobs.get(name)
-              if (d === undefined) {
-                blobs.set(name, { doc: undefined, buffer: bf })
-              } else {
-                blobs.delete(name)
-                const doc = d?.doc as Blob
-                let sz = doc.size
-                if (Number.isNaN(sz) || sz !== bf.length) {
-                  sz = bf.length
-                }
-
-                validDocs.add(name as Ref<Doc>)
-              }
-              next()
-            })
+            next()
           }
           stream.resume() // just auto drain the stream
         })
@@ -310,71 +289,96 @@ async function verifyDigest (
     if (storageToRemove.size > 0) {
       modified = true
       d.storage = (d.storage ?? []).filter((it) => !storageToRemove.has(it))
+      modifiedFiles.push(...Array.from(storageToRemove))
+      for (const sf of storageToRemove) {
+        await storage.delete(sf)
+      }
     }
+    let mfiles: string[] = []
+    ;({ modified, modifiedFiles: mfiles } = await updateDigest(d, ctx, storage, validDocs, modified, domain))
+    modifiedFiles.push(...mfiles)
+  }
+  ctx.end()
+  return { modified, modifiedFiles }
+}
 
-    // if (d?.snapshot !== undefined) {
-    // Will not check old format
-    // }
-    const digestToRemove = new Set<string>()
-    for (const snapshot of d?.snapshots ?? []) {
+async function updateDigest (
+  d: DomainData,
+  ctx: MeasureContext<any>,
+  storage: BackupStorage,
+  validDocs: Set<Ref<Doc>>,
+  modified: boolean,
+  domain: Domain
+): Promise<{ modified: boolean, modifiedFiles: string[] }> {
+  const digestToRemove = new Set<string>()
+  const modifiedFiles: string[] = []
+  for (const snapshot of d?.snapshots ?? []) {
+    try {
+      ctx.info('checking', { snapshot })
+      const changes: Snapshot = {
+        added: new Map(),
+        removed: [],
+        updated: new Map()
+      }
+      let lmodified = false
       try {
-        ctx.info('checking', { snapshot })
-        const changes: Snapshot = {
-          added: new Map(),
-          removed: [],
-          updated: new Map()
+        const dataBlob = gunzipSync(new Uint8Array(await storage.loadFile(snapshot)))
+          .toString()
+          .split('\n')
+        const addedCount = parseInt(dataBlob.shift() ?? '0')
+        const added = dataBlob.splice(0, addedCount)
+        for (const it of added) {
+          const [k, v] = it.split(';')
+          if (validDocs.has(k as any)) {
+            changes.added.set(k as Ref<Doc>, v)
+          } else {
+            lmodified = true
+          }
         }
-        let lmodified = false
-        try {
-          const dataBlob = gunzipSync(new Uint8Array(await storage.loadFile(snapshot)))
-            .toString()
-            .split('\n')
-          const addedCount = parseInt(dataBlob.shift() ?? '0')
-          const added = dataBlob.splice(0, addedCount)
-          for (const it of added) {
-            const [k, v] = it.split(';')
-            if (validDocs.has(k as any)) {
-              changes.added.set(k as Ref<Doc>, v)
-            } else {
-              lmodified = true
-            }
-          }
 
-          const updatedCount = parseInt(dataBlob.shift() ?? '0')
-          const updated = dataBlob.splice(0, updatedCount)
-          for (const it of updated) {
-            const [k, v] = it.split(';')
-            if (validDocs.has(k as any)) {
-              changes.updated.set(k as Ref<Doc>, v)
-            } else {
-              lmodified = true
-            }
+        const updatedCount = parseInt(dataBlob.shift() ?? '0')
+        const updated = dataBlob.splice(0, updatedCount)
+        for (const it of updated) {
+          const [k, v] = it.split(';')
+          if (validDocs.has(k as any)) {
+            changes.updated.set(k as Ref<Doc>, v)
+          } else {
+            lmodified = true
           }
+        }
 
-          const removedCount = parseInt(dataBlob.shift() ?? '0')
-          const removed = dataBlob.splice(0, removedCount)
-          changes.removed = removed as Ref<Doc>[]
-        } catch (err: any) {
-          ctx.warn('failed during processing of snapshot file, it will be skipped', { snapshot })
+        const removedCount = parseInt(dataBlob.shift() ?? '0')
+        const removed = dataBlob.splice(0, removedCount)
+        changes.removed = removed as Ref<Doc>[]
+        if (addedCount === 0 && removedCount === 0 && updatedCount === 0) {
+          // Empty digest, need to clean
           digestToRemove.add(snapshot)
-          modified = true
+          lmodified = true
         }
+      } catch (err: any) {
+        ctx.warn('failed during processing of snapshot file, it will be skipped', { snapshot })
+        digestToRemove.add(snapshot)
+        modified = true
+      }
 
-        if (lmodified) {
-          modified = true
+      if (lmodified) {
+        modified = true
+        if (digestToRemove.has(snapshot)) {
+          await storage.delete(snapshot) // No need for digest, lets' remove it
+        } else {
           // Store changes without missing files
           await writeChanges(storage, snapshot, changes)
         }
-      } catch (err: any) {
-        digestToRemove.add(snapshot)
-        ctx.error('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
-        modified = true
       }
+    } catch (err: any) {
+      digestToRemove.add(snapshot)
+      modifiedFiles.push(snapshot)
+      ctx.error('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
+      modified = true
     }
-    d.snapshots = (d.snapshots ?? []).filter((it) => !digestToRemove.has(it))
   }
-  ctx.end()
-  return modified
+  d.snapshots = (d.snapshots ?? []).filter((it) => !digestToRemove.has(it))
+  return { modified, modifiedFiles }
 }
 
 async function write (chunk: any, stream: Writable): Promise<void> {
@@ -683,6 +687,7 @@ export async function backup (
     isCanceled?: () => boolean
     progress?: (progress: number) => Promise<void>
     token?: string
+    fullVerify?: boolean
   } = {
     force: false,
     timeout: 0,
@@ -758,11 +763,13 @@ export async function backup (
       backupInfo.domainHashes = {}
     }
 
+    const fullCheck = options.fullVerify === true
+
     let lastTx: Tx | undefined
 
     let lastTxChecked = false
     // Skip backup if there is no transaction changes.
-    if (options.getLastTx !== undefined) {
+    if (options.getLastTx !== undefined && !fullCheck) {
       lastTx = await options.getLastTx()
       if (lastTx !== undefined) {
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
@@ -788,7 +795,7 @@ export async function backup (
         ? await options.getConnection()
         : ((await createClient(transactorUrl, token, undefined, options.connectTimeout)) as CoreClient & BackupClient)
 
-    if (!lastTxChecked) {
+    if (!lastTxChecked && !fullCheck) {
       lastTx = await connection.findOne(
         core.class.Tx,
         { objectSpace: { $ne: core.space.Model } },
@@ -834,6 +841,8 @@ export async function backup (
 
     backupInfo.lastTxId = '' // Clear until full backup will be complete
 
+    const recheckSizes: string[] = []
+
     const snapshot: BackupSnapshot = {
       date: Date.now(),
       domains: {}
@@ -871,7 +880,8 @@ export async function backup (
       ctx: MeasureContext,
       domain: Domain,
       digest: Map<Ref<Doc>, string>,
-      changes: Snapshot
+      changes: Snapshot,
+      same: Map<Ref<Doc>, string>
     ): Promise<{ changed: number, needRetrieveChunks: Ref<Doc>[][] }> {
       let idx: number | undefined
       let processed = 0
@@ -924,7 +934,11 @@ export async function backup (
             const serverDocHash = doTrimHash(hash) as string
             const currentHash = doTrimHash(digest.get(id as Ref<Doc>) ?? oldHash.get(id as Ref<Doc>))
             if (currentHash !== undefined) {
+              const oldD = digest.get(id as Ref<Doc>)
               if (digest.delete(id as Ref<Doc>)) {
+                if (oldD !== undefined) {
+                  same.set(id as Ref<Doc>, oldD)
+                }
                 oldHash.set(id as Ref<Doc>, currentHash)
               }
               if (currentHash !== serverDocHash) {
@@ -1015,12 +1029,13 @@ export async function backup (
       }
 
       const dHash = await connection.getDomainHash(domain)
-      if (backupInfo.domainHashes[domain] === dHash) {
+      if (backupInfo.domainHashes[domain] === dHash && !fullCheck) {
         ctx.info('no changes in domain', { domain })
         return
       }
       // Cumulative digest
       const digest = await ctx.with('load-digest', {}, (ctx) => loadDigest(ctx, storage, backupInfo.snapshots, domain))
+      const same = new Map<Ref<Doc>, string>()
 
       let _pack: Pack | undefined
       let _packClose = async (): Promise<void> => {}
@@ -1030,10 +1045,82 @@ export async function backup (
         await progress(0)
       }
       let { changed, needRetrieveChunks } = await ctx.with('load-chunks', { domain }, (ctx) =>
-        loadChangesFromServer(ctx, domain, digest, changes)
+        loadChangesFromServer(ctx, domain, digest, changes, same)
       )
       processedChanges.removed = Array.from(digest.keys())
       digest.clear()
+
+      if (options.fullVerify === true && domain !== DOMAIN_BLOB && same.size > 0) {
+        // We need to verify existing documents are correct
+        const rsnapshots = Array.from(backupInfo.snapshots).reverse()
+        // We need to load all documents locally and from server and compare
+        for (const s of rsnapshots) {
+          const d = s.domains[domain]
+          if (d == null) {
+            continue
+          }
+          let needRetrieve: Ref<Doc>[] = []
+          const batchSize = 200
+          const { modified, modifiedFiles } = await verifyDocsFromSnapshot(
+            ctx,
+            domain,
+            d,
+            s,
+            storage,
+            same,
+            async (docs) => {
+              const serverDocs = await connection.loadDocs(
+                domain,
+                docs.map((it) => it._id)
+              )
+              const smap = toIdMap(serverDocs)
+              for (const localDoc of docs) {
+                if (TxProcessor.isExtendsCUD(localDoc._class)) {
+                  const tx = localDoc as TxCUD<Doc>
+                  if (tx.objectSpace == null) {
+                    tx.objectSpace = core.space.Workspace
+                  }
+                }
+                const serverDoc = smap.get(localDoc._id)
+                if (serverDoc === undefined) {
+                  // We do not have a doc on server already, ignore it.
+                } else {
+                  const { '%hash%': _h1, ...dData } = localDoc as any
+                  const { '%hash%': _h2, ...sData } = serverDoc as any
+
+                  const dsame = deepEqual(dData, sData)
+                  if (!dsame) {
+                    needRetrieve.push(localDoc._id)
+                    changes.updated.set(localDoc._id, same.get(localDoc._id) ?? '')
+                    // Docs are not same
+                    if (needRetrieve.length > 200) {
+                      needRetrieveChunks.push(needRetrieve)
+                      needRetrieve = []
+                    }
+                  }
+                }
+              }
+            },
+            batchSize
+          )
+          if (modified) {
+            changed++
+            recheckSizes.push(...modifiedFiles)
+          }
+          if (needRetrieve.length > 0) {
+            needRetrieveChunks.push(needRetrieve)
+            needRetrieve = []
+          }
+        }
+        // We need to retrieve all documents from same not matched
+        const sameArray: Ref<Doc>[] = Array.from(same.keys())
+        while (sameArray.length > 0) {
+          const docs = sameArray.splice(0, 200)
+          needRetrieveChunks.push(docs)
+        }
+      } else {
+        same.clear()
+      }
 
       if (progress !== undefined) {
         await progress(10)
@@ -1068,8 +1155,10 @@ export async function backup (
           docs = await ctx.with('<<<< load-docs', {}, async () => await connection.loadDocs(domain, needRetrieve))
           lastSize = docs.reduce((p, it) => p + estimateDocSize(it), 0)
           if (docs.length !== needRetrieve.length) {
-            const nr = new Set(docs.map((it) => it._id))
-            ctx.error('failed to retrieve all documents', { missing: needRetrieve.filter((it) => !nr.has(it)) })
+            ctx.error('failed to retrieve all documents', {
+              docsLen: docs.length,
+              needRetrieve: needRetrieve.length
+            })
           }
           ops++
         } catch (err: any) {
@@ -1281,19 +1370,21 @@ export async function backup (
         changed++
       }
 
-      if (changed > 0 || backupInfo.domainHashes[domain] !== dHash) {
+      if (changed > 0 || (domain !== DOMAIN_BLOB && backupInfo.domainHashes[domain] !== dHash)) {
         // Store domain hash, to be used on next time.
         backupInfo.domainHashes[domain] = dHash
 
-        snapshot.domains[domain] = domainInfo
         domainInfo.added += processedChanges.added.size
         domainInfo.updated += processedChanges.updated.size
         domainInfo.removed += processedChanges.removed.length
+        if (domainInfo.added + domainInfo.updated + domainInfo.removed > 0) {
+          snapshot.domains[domain] = domainInfo
 
-        const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${snapshotIndex}.snp.gz`)
-        snapshotIndex++
-        domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
-        await writeChanges(storage, snapshotFile, processedChanges)
+          const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${snapshotIndex}.snp.gz`)
+          snapshotIndex++
+          domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
+          await writeChanges(storage, snapshotFile, processedChanges)
+        }
 
         processedChanges.added.clear()
         processedChanges.removed = []
@@ -1338,50 +1429,12 @@ export async function backup (
     }
     result.result = true
 
-    const sizeFile = 'backup.size.gz'
-
-    let sizeInfo: Record<string, number> = {}
-
-    if (await storage.exists(sizeFile)) {
-      sizeInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(sizeFile))).toString())
-    }
-    let processed = 0
-
     if (!canceled()) {
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
 
-    const addFileSize = async (file: string | undefined | null): Promise<void> => {
-      if (file != null) {
-        const sz = sizeInfo[file]
-        const fileSize = sz ?? (await storage.stat(file))
-        if (sz === undefined) {
-          sizeInfo[file] = fileSize
-          processed++
-          if (processed % 10 === 0) {
-            ctx.info('Calculate size processed', { processed, size: Math.round(result.backupSize / (1024 * 1024)) })
-          }
-        }
-        result.backupSize += fileSize
-      }
-    }
-
-    // Let's calculate data size for backup
-    for (const sn of backupInfo.snapshots) {
-      for (const [, d] of Object.entries(sn.domains)) {
-        await addFileSize(d.snapshot)
-        for (const snp of d.snapshots ?? []) {
-          await addFileSize(snp)
-        }
-        for (const snp of d.storage ?? []) {
-          await addFileSize(snp)
-        }
-      }
-    }
-    await addFileSize(infoFile)
-
-    await storage.writeFile(sizeFile, gzipSync(JSON.stringify(sizeInfo, undefined, 2), { level: defaultLevel }))
+    await rebuildSizeInfo(storage, recheckSizes, ctx, result, backupInfo, infoFile)
 
     return result
   } catch (err: any) {
@@ -1400,6 +1453,60 @@ export async function backup (
       clearInterval(timer)
     }
   }
+}
+
+async function rebuildSizeInfo (
+  storage: BackupStorage,
+  recheckSizes: string[],
+  ctx: MeasureContext<any>,
+  result: BackupResult,
+  backupInfo: BackupInfo,
+  infoFile: string
+): Promise<void> {
+  const sizeFile = 'backup.size.gz'
+
+  let sizeInfo: Record<string, number> = {}
+
+  if (await storage.exists(sizeFile)) {
+    sizeInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(sizeFile))).toString())
+  }
+  let processed = 0
+
+  for (const file of recheckSizes) {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete sizeInfo[file]
+  }
+
+  const addFileSize = async (file: string | undefined | null): Promise<void> => {
+    if (file != null) {
+      const sz = sizeInfo[file]
+      const fileSize = sz ?? (await storage.stat(file))
+      if (sz === undefined) {
+        sizeInfo[file] = fileSize
+        processed++
+        if (processed % 10 === 0) {
+          ctx.info('Calculate size processed', { processed, size: Math.round(result.backupSize / (1024 * 1024)) })
+        }
+      }
+      result.backupSize += fileSize
+    }
+  }
+
+  // Let's calculate data size for backup
+  for (const sn of backupInfo.snapshots) {
+    for (const [, d] of Object.entries(sn.domains)) {
+      await addFileSize(d.snapshot)
+      for (const snp of d.snapshots ?? []) {
+        await addFileSize(snp)
+      }
+      for (const snp of d.storage ?? []) {
+        await addFileSize(snp)
+      }
+    }
+  }
+  await addFileSize(infoFile)
+
+  await storage.writeFile(sizeFile, gzipSync(JSON.stringify(sizeInfo, undefined, 2), { level: defaultLevel }))
 }
 
 /**
@@ -1955,95 +2062,111 @@ export async function restore (
             if (docsToAdd.size === 0) {
               break
             }
-            ctx.info('processing', { storageFile: sf, processed, workspace: workspaceId })
+            ctx.info('processing', { storageFile: sf, processed, workspace: wsIds.url })
+            try {
+              const readStream = await storage.load(sf)
+              const ex = extract()
 
-            const readStream = await storage.load(sf)
-            const ex = extract()
-
-            ex.on('entry', (headers, stream, next) => {
-              const name = headers.name ?? ''
-              processed++
-              // We found blob data
-              if (requiredDocs.has(name as Ref<Doc>)) {
-                const chunks: Buffer[] = []
-                stream.on('data', (chunk) => {
-                  chunks.push(chunk)
-                })
-                stream.on('end', () => {
-                  const bf = Buffer.concat(chunks as any)
-                  const d = blobs.get(name)
-                  if (d === undefined) {
-                    blobs.set(name, { doc: undefined, buffer: bf })
-                    next()
-                  } else {
-                    blobs.delete(name)
-                    const blob = d?.doc as Blob
-                    ;(blob as any)['%hash%'] = changeset.get(blob._id)
-                    let sz = blob.size
-                    if (Number.isNaN(sz) || sz !== bf.length) {
-                      sz = bf.length
-                    }
-                    void sendBlob(blob, bf, next)
-                  }
-                })
-              } else if (name.endsWith('.json') && requiredDocs.has(name.substring(0, name.length - 5) as Ref<Doc>)) {
-                const chunks: Buffer[] = []
-                const bname = name.substring(0, name.length - 5)
-                stream.on('data', (chunk) => {
-                  chunks.push(chunk)
-                })
-                stream.on('end', () => {
-                  const bf = Buffer.concat(chunks as any)
-                  let doc: Doc
-                  try {
-                    doc = JSON.parse(bf.toString()) as Doc
-                  } catch (err) {
-                    ctx.warn('failed to parse blob metadata', { name, workspace: workspaceId, err })
-                    next()
-                    return
-                  }
-
-                  if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
-                    const data = migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
-                    const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
+              ex.on('entry', (headers, stream, next) => {
+                const name = headers.name ?? ''
+                processed++
+                // We found blob data
+                if (requiredDocs.has(name as Ref<Doc>)) {
+                  const chunks: Buffer[] = []
+                  stream.on('data', (chunk) => {
+                    chunks.push(chunk)
+                  })
+                  stream.on('end', () => {
+                    const bf = Buffer.concat(chunks as any)
+                    const d = blobs.get(name)
                     if (d === undefined) {
-                      blobs.set(bname, { doc, buffer: undefined })
+                      blobs.set(name, { doc: undefined, buffer: bf })
                       next()
                     } else {
-                      blobs.delete(bname)
-                      const blob = doc as Blob
-                      void sendBlob(blob, d instanceof Buffer ? d : (d.buffer as Buffer), next)
+                      blobs.delete(name)
+                      const blob = d?.doc as Blob
+                      ;(blob as any)['%hash%'] = changeset.get(blob._id)
+                      let sz = blob.size
+                      if (Number.isNaN(sz) || sz !== bf.length) {
+                        sz = bf.length
+                      }
+                      void sendBlob(blob, bf, next).catch((err) => {
+                        ctx.error('failed to send blob', { err })
+                      })
                     }
-                  } else {
-                    ;(doc as any)['%hash%'] = changeset.get(doc._id)
-                    void sendChunk(doc, bf.length).finally(() => {
-                      requiredDocs.delete(doc._id)
+                  })
+                } else if (name.endsWith('.json') && requiredDocs.has(name.substring(0, name.length - 5) as Ref<Doc>)) {
+                  const chunks: Buffer[] = []
+                  const bname = name.substring(0, name.length - 5)
+                  stream.on('data', (chunk) => {
+                    chunks.push(chunk)
+                  })
+                  stream.on('end', () => {
+                    const bf = Buffer.concat(chunks as any)
+                    let doc: Doc
+                    try {
+                      doc = JSON.parse(bf.toString()) as Doc
+                    } catch (err) {
+                      ctx.warn('failed to parse blob metadata', { name, workspace: wsIds.url, err })
                       next()
-                    })
-                  }
-                })
-              } else {
-                next()
-              }
-              stream.resume() // just auto drain the stream
-            })
+                      return
+                    }
 
-            await blobUploader.waitProcessing()
-
-            const endPromise = new Promise((resolve) => {
-              ex.on('finish', () => {
-                resolve(null)
+                    if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
+                      const data = migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
+                      const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
+                      if (d === undefined) {
+                        blobs.set(bname, { doc, buffer: undefined })
+                        next()
+                      } else {
+                        blobs.delete(bname)
+                        const blob = doc as Blob
+                        const buff = d instanceof Buffer ? d : d.buffer
+                        if (buff != null) {
+                          void sendBlob(blob, d instanceof Buffer ? d : (d.buffer as Buffer), next).catch((err) => {
+                            ctx.error('failed to send blob', { err })
+                          })
+                        } else {
+                          next()
+                        }
+                      }
+                    } else {
+                      ;(doc as any)['%hash%'] = changeset.get(doc._id)
+                      void sendChunk(doc, bf.length).finally(() => {
+                        requiredDocs.delete(doc._id)
+                        next()
+                      })
+                    }
+                  })
+                } else {
+                  next()
+                }
+                stream.resume() // just auto drain the stream
               })
-            })
-            const unzip = createGunzip({ level: defaultLevel })
 
-            readStream.on('end', () => {
-              readStream.destroy()
-            })
-            readStream.pipe(unzip)
-            unzip.pipe(ex)
+              await blobUploader.waitProcessing()
 
-            await endPromise
+              const unzip = createGunzip({ level: defaultLevel })
+
+              const endPromise = new Promise((resolve, reject) => {
+                ex.on('finish', () => {
+                  resolve(null)
+                })
+
+                readStream.on('end', () => {
+                  readStream.destroy()
+                })
+                readStream.pipe(unzip).on('error', (err) => {
+                  readStream.destroy()
+                  reject(err)
+                })
+                unzip.pipe(ex)
+              })
+
+              await endPromise
+            } catch (err: any) {
+              ctx.error('failed to processing', { storageFile: sf, processed, workspace: wsIds.url })
+            }
           }
         }
       }
@@ -2144,6 +2267,124 @@ export async function restore (
     }
   }
   return true
+}
+
+async function verifyDocsFromSnapshot (
+  ctx: MeasureContext,
+  domain: Domain,
+  d: DomainData,
+  s: BackupSnapshot,
+  storage: BackupStorage,
+  digest: Map<Ref<Doc>, string>,
+  verify: (docs: Doc[]) => Promise<void>,
+  chunkSize: number
+): Promise<{ modified: boolean, modifiedFiles: string[] }> {
+  let result: Doc[] = []
+  const storageToRemove = new Set<string>()
+  const validDocs = new Set<Ref<Doc>>()
+  const modifiedFiles: string[] = []
+  if (digest.size > 0) {
+    const sDigest = await loadDigest(ctx, storage, [s], domain)
+    const requiredDocs = new Map(Array.from(sDigest.entries()).filter(([it]) => digest.has(it)))
+
+    if (requiredDocs.size > 0) {
+      ctx.info('updating', { domain, requiredDocs: requiredDocs.size })
+      // We have required documents here.
+      for (const sf of d.storage ?? []) {
+        if (digest.size === 0) {
+          break
+        }
+        try {
+          const readStream = await storage.load(sf)
+          const ex = extract()
+
+          ex.on('entry', (headers, stream, next) => {
+            const name = headers.name ?? ''
+            // We found blob data
+            const rdoc = name.substring(0, name.length - 5) as Ref<Doc>
+            if (name.endsWith('.json') && requiredDocs.has(rdoc)) {
+              const chunks: Buffer[] = []
+              const bname = name.substring(0, name.length - 5)
+              stream.on('data', (chunk) => {
+                chunks.push(chunk)
+              })
+              stream.on('end', () => {
+                const bf = Buffer.concat(chunks as any)
+                let doc: Doc
+                try {
+                  doc = JSON.parse(bf.toString()) as Doc
+                } catch (err) {
+                  next()
+                  return
+                }
+
+                if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
+                  // Skip blob
+                  validDocs.add(bname as Ref<Doc>)
+                } else {
+                  ;(doc as any)['%hash%'] = digest.get(rdoc)
+                  digest.delete(rdoc)
+                  result.push(doc)
+                  validDocs.add(bname as Ref<Doc>)
+
+                  if (result.length > chunkSize) {
+                    void verify(result).then(() => {
+                      result = []
+                      next()
+                    })
+                  } else {
+                    next()
+                  }
+                }
+              })
+            } else {
+              next()
+            }
+            stream.resume() // just auto drain the stream
+          })
+
+          const unzip = createGunzip({ level: defaultLevel })
+
+          const endPromise = new Promise((resolve, reject) => {
+            ex.on('finish', () => {
+              resolve(null)
+            })
+
+            readStream.on('end', () => {
+              readStream.destroy()
+            })
+            readStream.pipe(unzip).on('error', (err) => {
+              readStream.destroy()
+              storageToRemove.add(sf)
+              reject(err)
+            })
+            unzip.pipe(ex)
+          })
+
+          await endPromise
+          if (result.length > 0) {
+            await verify(result)
+          }
+        } catch (err: any) {
+          storageToRemove.add(sf)
+          ctx.error('failed to processing', { storageFile: sf })
+        }
+      }
+    }
+  }
+  let modified = false
+  if (storageToRemove.size > 0) {
+    modifiedFiles.push(...Array.from(storageToRemove))
+    d.storage = (d.storage ?? []).filter((it) => !storageToRemove.has(it))
+    for (const sf of storageToRemove) {
+      await storage.delete(sf)
+    }
+    modified = true
+  }
+  let smodifiedFiles: string[] = []
+  ;({ modified, modifiedFiles: smodifiedFiles } = await updateDigest(d, ctx, storage, validDocs, modified, domain))
+  modifiedFiles.push(...smodifiedFiles)
+  return { modified, modifiedFiles }
 }
 
 /**
@@ -2429,15 +2670,18 @@ export async function compactBackup (
       }
 
       if (changed > 0) {
-        snapshot.domains[domain] = domainInfo
         domainInfo.added += processedChanges.added.size
         domainInfo.updated += processedChanges.updated.size
         domainInfo.removed += processedChanges.removed.length
 
-        const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${snapshotIndex}.snp.gz`)
-        snapshotIndex++
-        domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
-        await writeChanges(storage, snapshotFile, processedChanges)
+        if (domainInfo.added + domainInfo.updated + domainInfo.removed > 0) {
+          snapshot.domains[domain] = domainInfo
+
+          const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${snapshotIndex}.snp.gz`)
+          snapshotIndex++
+          domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
+          await writeChanges(storage, snapshotFile, processedChanges)
+        }
 
         processedChanges.added.clear()
         processedChanges.removed = []
@@ -2492,7 +2736,7 @@ function migradeBlobData (blob: Blob, etag: string): string {
  * @public
  */
 export async function checkBackupIntegrity (ctx: MeasureContext, storage: BackupStorage): Promise<void> {
-  console.log('starting backup compaction')
+  console.log('check backup integrity')
   try {
     let backupInfo: BackupInfo
 
@@ -2511,6 +2755,8 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
       return
     }
 
+    const recheckSizes: string[] = []
+
     const domains: Domain[] = []
     for (const sn of backupInfo.snapshots) {
       for (const d of Object.keys(sn.domains)) {
@@ -2523,13 +2769,23 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
 
     for (const domain of domains) {
       console.log('checking domain...', domain)
-      if (await verifyDigest(ctx, storage, backupInfo.snapshots, domain)) {
+      const { modified: mm, modifiedFiles } = await verifyDigest(ctx, storage, backupInfo.snapshots, domain)
+      if (mm) {
+        recheckSizes.push(...modifiedFiles)
         modified = true
       }
     }
     if (modified) {
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
+
+    const bresult: BackupResult = {
+      backupSize: 0,
+      blobsSize: 0,
+      dataSize: 0,
+      result: true
+    }
+    await rebuildSizeInfo(storage, recheckSizes, ctx, bresult, backupInfo, infoFile)
   } catch (err: any) {
     console.error(err)
   } finally {

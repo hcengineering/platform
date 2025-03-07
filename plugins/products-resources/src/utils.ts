@@ -20,7 +20,6 @@ import core, {
   checkPermission,
   getCurrentAccount
 } from '@hcengineering/core'
-import { includesAny } from '@hcengineering/contact'
 import { getClient } from '@hcengineering/presentation'
 import { type KeyFilter } from '@hcengineering/view'
 import documents from '@hcengineering/controlled-documents'
@@ -47,7 +46,7 @@ export async function canEditProduct (doc?: Product): Promise<boolean> {
     return false
   }
 
-  if (includesAny(doc.owners ?? [], getCurrentAccount().socialIds)) {
+  if ((doc.owners ?? []).includes(getCurrentAccount().uuid)) {
     return true
   }
 

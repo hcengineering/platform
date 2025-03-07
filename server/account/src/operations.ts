@@ -94,7 +94,8 @@ import {
   signUpByEmail,
   verifyAllowedServices,
   verifyPassword,
-  wrap
+  wrap,
+  getWorkspaceRole
 } from './utils'
 
 // Move to config?
@@ -1229,7 +1230,7 @@ export async function getLoginInfoByToken (
       }
     }
 
-    const role = isSystem ? AccountRole.Owner : await db.getWorkspaceRole(accountUuid, workspace.uuid)
+    const role = await getWorkspaceRole(db, accountUuid, workspace.uuid)
 
     if (role == null) {
       // User might have been removed from the workspace
@@ -1340,7 +1341,7 @@ export async function getWorkspaceMembers (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
   }
 
-  const accRole = await db.getWorkspaceRole(account, workspace)
+  const accRole = await getWorkspaceRole(db, account, workspace)
 
   if (accRole == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1713,7 +1714,7 @@ export async function ensurePerson (
   }
 ): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['schedule'], extra)
+  verifyAllowedServices(['schedule', 'mail'], extra)
 
   const { socialType, socialValue, firstName, lastName } = params
 

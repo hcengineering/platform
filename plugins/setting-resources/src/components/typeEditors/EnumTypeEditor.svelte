@@ -26,6 +26,7 @@
   export let type: EnumOf | undefined
   export let editable: boolean = true
   export let value: Enum | undefined
+  export let nested: boolean = false
   export let defaultValue: string | undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -66,7 +67,9 @@
     {#if editable}
       <EnumSelect label={core.string.Enum} bind:value {create} {kind} {size} />
     {:else if value}
-      {value.name}
+      <div>
+        {value.name}
+      </div>
     {/if}
     {#if value}
       <Button
@@ -79,7 +82,7 @@
     {/if}
   </div>
 </div>
-{#if value && type}
+{#if value && type && !nested}
   <div class="hulyModal-content__settingsSet-line">
     <span class="label">
       <Label label={setting.string.DefaultValue} />

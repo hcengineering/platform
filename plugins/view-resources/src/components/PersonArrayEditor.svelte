@@ -27,7 +27,7 @@
 </script>
 
 <Component
-  is={contact.component.AccountArrayEditor}
+  is={contact.component.PersonIdArrayEditor}
   props={{
     label,
     value,

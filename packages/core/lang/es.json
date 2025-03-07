@@ -16,17 +16,17 @@
     "Archived": "Archivado",
     "ClassLabel": "Tipo",
     "ClassPropertyLabel": "Etiqueta",
-    "String": "Cadena de texto",
+    "String": "Texto",
     "Markup": "Marcado",
     "Number": "Número",
-    "Boolean": "Booleano",
+    "Boolean": "Casilla de verificación",
     "Timestamp": "Marca de tiempo",
     "Date": "Fecha",
     "IntlString": "Cadena de texto internacionalizada",
-    "Ref": "Ref.",
+    "Ref": "Referencia",
     "Collection": "Colección",
-    "Array": "Arreglo",
-    "Enum": "Enum.",
+    "Array": "Selección múltiple",
+    "Enum": "Selección",
     "Members": "Miembros",
     "Hyperlink": "Enlace",
     "MarkupBlobRef": "Colaborativo",
@@ -59,6 +59,7 @@
     "Relation": "Relación",
     "Relations": "Relaciones",
     "AddRelation": "Añadir relación",
-    "PersonId": "Id. de persona"
+    "PersonId": "Id. de persona",
+    "AccountId": "Cuenta"
   }
 }
