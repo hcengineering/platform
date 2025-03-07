@@ -60,7 +60,8 @@
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
-        "STATS_URL": "http://huly.local:4900"
+        "STATS_URL": "http://huly.local:4900",
+        "STREAM_URL": "http://huly.local:1080/recording"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
