@@ -46,6 +46,8 @@
   const dispatch = createEventDispatcher()
 
   let matched = false
+  let newValue = ''
+
   $: matched = values.includes(newValue.trim())
 
   async function save (): Promise<void> {
@@ -63,18 +65,20 @@
     dispatch('close')
   }
 
-  function add () {
+  function add (): void {
     newValue = newValue.trim()
-    if (!newValue.length) return
+    if (newValue.length === 0) return
     if (matched) return
     values.push(newValue)
     values = values
     newValue = ''
   }
-  function remove (value: string) {
+
+  function remove (value: string): void {
     values = values.filter((p) => p !== value)
   }
-  const handleKeydown = (evt: KeyboardEvent) => {
+
+  const handleKeydown = (evt: KeyboardEvent): void => {
     if (evt.key === 'Enter') {
       add()
     }
@@ -85,7 +89,6 @@
     }
   }
 
-  let newValue = ''
   let newItem: boolean = false
   let opened: boolean = false
   let inputFile: HTMLInputElement
@@ -105,7 +108,7 @@
     processText(text)
   }
 
-  function fileSelected () {
+  function fileSelected (): void {
     const list = inputFile.files
     if (list === null || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
@@ -117,7 +120,7 @@
     inputFile.value = ''
   }
 
-  function fileDrop (e: DragEvent) {
+  function fileDrop (e: DragEvent): void {
     dragover = false
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
@@ -146,28 +149,6 @@
   }
 
   let dragover = false
-  const selection: number = 0
-
-  // $: filtered = newValue.length > 0 ? values.filter((it) => it.includes(newValue)) : values
-
-  // function onDelete () {
-  //   showPopup(
-  //     MessageBox,
-  //     {
-  //       label: view.string.DeleteObject,
-  //       message: view.string.DeleteObjectConfirm,
-  //       params: { count: filtered.length }
-  //     },
-  //     'top',
-  //     (result?: boolean) => {
-  //       if (result === true) {
-  //         values = values.filter((it) => !filtered.includes(it))
-  //         newValue = ''
-  //       }
-  //     }
-  //   )
-  // }
-
   const items: (DropdownIntlItem & { action: () => void })[] = [
     {
       id: 'import',
@@ -197,7 +178,7 @@
     }
   }
 
-  async function showConfirmationDialog (): Promise<void> {
+  function showConfirmationDialog (): void {
     const isEnumEmpty = values.length === 0
 
     if (isEnumEmpty) {
@@ -237,9 +218,7 @@
   okLabel={presentation.string.Save}
   okAction={save}
   canSave={name.trim().length > 0 && values.length > 0}
-  onCancel={() => {
-    showConfirmationDialog()
-  }}
+  onCancel={showConfirmationDialog}
 >
   <div class="flex-col">
     <ModernEditbox bind:value={name} label={setting.string.EnumTitle} kind={'ghost'} size={'large'} width={'100%'} />
@@ -289,7 +268,9 @@
         <div class="hulyTableAttr-content options">
           <EnumValuesList
             bind:values
-            disableMouseOver={newItem}
+            on:update={(e) => {
+              values = e.detail
+            }}
             on:remove={(e) => {
               remove(e.detail)
             }}
@@ -307,7 +288,7 @@
                   on:keydown={handleKeydown}
                   on:blur={() => {
                     newValue = newValue.trim()
-                    if (!newValue.length) return
+                    if (newValue.length === 0) return
                     add()
                     newItem = false
                   }}
