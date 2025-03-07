@@ -112,9 +112,14 @@ export class ClientSession implements Session {
   }
 
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
-    this.includeSessionContext(ctx)
-    const result = await ctx.ctx.with('load-model', {}, () => ctx.pipeline.loadModel(ctx.ctx, lastModelTx, hash))
-    await ctx.sendResponse(ctx.requestId, result)
+    try {
+      this.includeSessionContext(ctx)
+      const result = await ctx.ctx.with('load-model', {}, () => ctx.pipeline.loadModel(ctx.ctx, lastModelTx, hash))
+      await ctx.sendResponse(ctx.requestId, result)
+    } catch (err) {
+      await ctx.sendError(ctx.requestId, 'Failed to loadModel', unknownError(err))
+      ctx.ctx.error('failed to loadModel', { err })
+    }
   }
 
   async loadModelRaw (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<LoadModelResponse | Tx[]> {
@@ -163,13 +168,23 @@ export class ClientSession implements Session {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<void> {
-    await ctx.sendResponse(ctx.requestId, await this.findAllRaw(ctx, _class, query, options))
+    try {
+      await ctx.sendResponse(ctx.requestId, await this.findAllRaw(ctx, _class, query, options))
+    } catch (err) {
+      await ctx.sendError(ctx.requestId, 'Failed to findAll', unknownError(err))
+      ctx.ctx.error('failed to findAll', { err })
+    }
   }
 
   async searchFulltext (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<void> {
-    this.lastRequest = Date.now()
-    this.includeSessionContext(ctx)
-    await ctx.sendResponse(ctx.requestId, await ctx.pipeline.searchFulltext(ctx.ctx, query, options))
+    try {
+      this.lastRequest = Date.now()
+      this.includeSessionContext(ctx)
+      await ctx.sendResponse(ctx.requestId, await ctx.pipeline.searchFulltext(ctx.ctx, query, options))
+    } catch (err) {
+      await ctx.sendError(ctx.requestId, 'Failed to searchFulltext', unknownError(err))
+      ctx.ctx.error('failed to searchFulltext', { err })
+    }
   }
 
   async searchFulltextRaw (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -229,10 +244,15 @@ export class ClientSession implements Session {
   }
 
   async tx (ctx: ClientSessionCtx, tx: Tx): Promise<void> {
-    const { broadcastPromise, asyncsPromise } = await this.txRaw(ctx, tx)
-    await broadcastPromise
-    if (asyncsPromise !== undefined) {
-      await asyncsPromise
+    try {
+      const { broadcastPromise, asyncsPromise } = await this.txRaw(ctx, tx)
+      await broadcastPromise
+      if (asyncsPromise !== undefined) {
+        await asyncsPromise
+      }
+    } catch (err) {
+      await ctx.sendError(ctx.requestId, 'Failed to tx', unknownError(err))
+      ctx.ctx.error('failed to tx', { err })
     }
   }
 
@@ -296,9 +316,14 @@ export class ClientSession implements Session {
   }
 
   async closeChunk (ctx: ClientSessionCtx, idx: number): Promise<void> {
-    this.lastRequest = Date.now()
-    await this.getOps(ctx.pipeline).closeChunk(ctx.ctx, idx)
-    await ctx.sendResponse(ctx.requestId, {})
+    try {
+      this.lastRequest = Date.now()
+      await this.getOps(ctx.pipeline).closeChunk(ctx.ctx, idx)
+      await ctx.sendResponse(ctx.requestId, {})
+    } catch (err: any) {
+      await ctx.sendError(ctx.requestId, 'Failed to closeChunk', unknownError(err))
+      ctx.ctx.error('failed to closeChunk', { err })
+    }
   }
 
   async loadDocs (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
