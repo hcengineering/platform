@@ -162,15 +162,17 @@ async function OnMasterTagCreate (ctx: TxCreateDoc<MasterTag | Tag>[], control: 
   res.push(
     control.txFactory.createTxMixin(createTx.objectId, core.class.Mixin, core.space.Model, setting.mixin.UserMixin, {})
   )
-  const viewlets = await control.findAll(control.ctx, view.class.Viewlet, { attachTo: tag.extends })
-  for (const viewlet of viewlets) {
-    const base = extractObjectProps(viewlet)
-    res.push(
-      control.txFactory.createTxCreateDoc(view.class.Viewlet, core.space.Model, {
-        ...base,
-        attachTo: createTx.objectId
-      })
-    )
+  if (tag._class === card.class.MasterTag) {
+    const viewlets = await control.findAll(control.ctx, view.class.Viewlet, { attachTo: tag.extends })
+    for (const viewlet of viewlets) {
+      const base = extractObjectProps(viewlet)
+      res.push(
+        control.txFactory.createTxCreateDoc(view.class.Viewlet, core.space.Model, {
+          ...base,
+          attachTo: createTx.objectId
+        })
+      )
+    }
   }
 
   return res
