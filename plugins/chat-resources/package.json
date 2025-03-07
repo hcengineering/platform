@@ -49,6 +49,7 @@
     "@hcengineering/presence-resources": "^0.6.0",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-markdown": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/ui-next": "^0.6.0",
     "@hcengineering/view": "^0.6.13",

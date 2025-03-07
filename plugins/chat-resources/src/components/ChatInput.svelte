@@ -17,22 +17,23 @@
   import { MessageInput } from '@hcengineering/ui-next'
   import { getCommunicationClient } from '@hcengineering/presentation'
   import { Markup } from '@hcengineering/core'
-  import { markupToMarkdown } from '@hcengineering/text'
+  import { markupToMarkdown } from '@hcengineering/text-markdown'
+  import { markupToJSON } from '@hcengineering/text'
+  import { Card } from '@hcengineering/card'
 
   import chat from '../plugin'
-  import { Card } from '@hcengineering/card'
 
   export let card: Card
 
   const communicationClient = getCommunicationClient()
 
   async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
-    const markdown = await markupToMarkdown(event.detail)
+    const markdown = markupToMarkdown(markupToJSON(event.detail))
     await communicationClient.createMessage(card._id, markdown)
   }
 </script>
 
-<MessageInput placeholder={chat.string.MessageIn} placeholderParams={{ title: card.title }} on:submit={handleSubmit} />
+<MessageInput on:submit={handleSubmit} placeholder={chat.string.MessageIn} placeholderParams={{ title: card.title }} />
 
 <style lang="scss">
 </style>
