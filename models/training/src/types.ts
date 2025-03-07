@@ -37,7 +37,7 @@ import core, {
   type TypedSpace,
   RolesAssignment,
   Role,
-  PersonId
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -262,5 +262,5 @@ export class TTrainingAttempt extends TAttachedDoc implements TrainingAttempt {
 @Mixin(training.mixin.TrainingsTypeData, core.class.TypedSpace)
 @UX(getEmbeddedLabel('Default Trainings'), training.icon.TrainingApplication)
 export class TTrainingsTypeData extends TTypedSpace implements RolesAssignment {
-  [key: Ref<Role>]: PersonId[]
+  [key: Ref<Role>]: AccountUuid[]
 }

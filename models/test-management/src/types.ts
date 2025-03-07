@@ -43,7 +43,7 @@ import {
   type CollectionSize,
   type MarkupBlobRef,
   type Class,
-  type PersonId
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   Mixin,
@@ -107,7 +107,7 @@ export class TTestProject extends TTypedSpace implements TestProject {
 @Mixin(testManagement.mixin.DefaultProjectTypeData, testManagement.class.TestProject)
 @UX(getEmbeddedLabel('Default project'), testManagement.icon.TestProject)
 export class TDefaultProjectTypeData extends TTestProject implements RolesAssignment {
-  [key: Ref<Role>]: PersonId[]
+  [key: Ref<Role>]: AccountUuid[]
 }
 
 /**

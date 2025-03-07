@@ -14,7 +14,7 @@
 //
 import chunter, { Channel } from '@hcengineering/chunter'
 import core, { MeasureContext, PersonId, Ref, TxOperations, type WorkspaceUuid } from '@hcengineering/core'
-import { getAllEmployeesPrimarySocialStrings, getAllSocialStringsByPersonId, Person } from '@hcengineering/contact'
+import { getAllUserAccounts, getAllSocialStringsByPersonId, Person } from '@hcengineering/contact'
 import analyticsCollector, { getOnboardingChannelName, OnboardingChannel } from '@hcengineering/analytics-collector'
 import { translate } from '@hcengineering/platform'
 
@@ -31,6 +31,7 @@ export async function getOrCreateOnboardingChannel (
   workspace: WorkspaceInfo,
   person?: Person
 ): Promise<[Ref<OnboardingChannel> | undefined, boolean]> {
+  // TODO: FIXME
   const personIds = await getAllSocialStringsByPersonId(client, socialString)
   const channel = await client.findOne(analyticsCollector.class.OnboardingChannel, {
     workspaceId: workspace.workspaceId,
@@ -80,7 +81,7 @@ export async function createGeneralOnboardingChannel (
 
   ctx.info('Creating general onboarding channel')
 
-  const primarySocialIds = await getAllEmployeesPrimarySocialStrings(client)
+  const userAccounts = await getAllUserAccounts(client)
   await client.createDoc(
     chunter.class.Channel,
     core.space.Space,
@@ -89,7 +90,7 @@ export async function createGeneralOnboardingChannel (
       topic: '',
       description: '',
       private: false,
-      members: primarySocialIds,
+      members: userAccounts,
       autoJoin: true,
       archived: false
     },

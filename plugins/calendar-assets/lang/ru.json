@@ -85,6 +85,20 @@
     "FreeBusy": "Скрыть детали",
     "DefaultVisibility": "Видимость по умолчанию",
     "NotAllPermissions": "Были предоставлены не все разрешения",
-    "GooglePrivacy": "Использование и передача информации, полученной Huly от Google API, будет соответствовать <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Политике использования данных пользователей Google API</a>, включая требования ограниченного использования."
+    "GooglePrivacy": "Использование и передача информации, полученной Huly от Google API, будет соответствовать <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Политике использования данных пользователей Google API</a>, включая требования ограниченного использования.",
+    "Value": "{value}",
+    "Schedule": "Публичное расписание",
+    "ScheduleNew": "Добавить расписание",
+    "ScheduleDeleteConfirm": "Расписание будет удалено. Подтвердить?",
+    "ScheduleShareLink": "Поделиться ссылкой",
+    "ScheduleSharedLinkMessage": "Поделитесь этой ссылкой, чтобы другие могли записаться на встречу с вами:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkCopy": "Копировать ссылку",
+    "ScheduleAvailability": "Доступность",
+    "ScheduleUnavailable": "Недоступно",
+    "ScheduleTitlePlaceholder": "Название расписания",
+    "ScheduleAddPeriod": "Добавить период",
+    "ScheduleRemovePeriod": "Удалить период",
+    "MeetingDuration": "Длительность встречи",
+    "MeetingInterval": "Перерыв между встречами"
   }
 }

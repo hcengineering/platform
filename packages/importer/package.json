@@ -55,6 +55,7 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-markdown": "^0.6.0",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/view": "^0.6.13",
     "commander": "^8.1.0",

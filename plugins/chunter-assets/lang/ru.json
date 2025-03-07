@@ -131,6 +131,8 @@
     "ViewingThreadFromArchivedChannel": "Вы просматриваете обсуждение из архивированного канала",
     "ViewingArchivedChannel": "Вы просматриваете архивированный канал",
     "OpenChatInSidebar": "Открыть чат в боковой панели",
-    "ResolveThread": "Пометить завершенным"
+    "ResolveThread": "Пометить завершенным",
+    "NoThreadsYet": "Пока нет обсуждений.",
+    "SummarizeMessages": "Подвести итоги обсуждения"
   }
 }

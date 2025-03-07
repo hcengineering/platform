@@ -70,7 +70,7 @@ export interface Obj {
 }
 
 export interface Account {
-  uuid: PersonUuid
+  uuid: AccountUuid
   role: AccountRole
   primarySocialId: PersonId
   socialIds: PersonId[]
@@ -81,6 +81,13 @@ export interface Account {
  * Global person UUID.
  */
 export type PersonUuid = string & { __personUuid: true }
+
+/**
+ * @public
+ * Global person account UUID.
+ * The same UUID as PersonUuid but for when account exists.
+ */
+export type AccountUuid = PersonUuid & { __accountUuid: true }
 
 /**
  * @public
@@ -431,9 +438,9 @@ export interface Space extends Doc {
   name: string
   description: string
   private: boolean
-  members: Arr<PersonId>
+  members: AccountUuid[]
   archived: boolean
-  owners?: PersonId[]
+  owners?: AccountUuid[]
   autoJoin?: boolean
 }
 
@@ -474,7 +481,7 @@ export interface SpaceType extends Doc {
   name: string
   shortDescription?: string
   descriptor: Ref<SpaceTypeDescriptor>
-  members?: PersonId[] // this members will be added automatically to new space, also change this fiield will affect existing spaces
+  members?: AccountUuid[] // this members will be added automatically to new space, also change this fiield will affect existing spaces
   autoJoin?: boolean // if true, all new users will be added to space automatically
   targetClass: Ref<Class<Space>> // A dynamic mixin for Spaces to hold custom attributes and roles assignment of the space type
   roles: CollectionSize<Role>
@@ -493,7 +500,7 @@ export interface Role extends AttachedDoc<SpaceType, 'roles'> {
  * @public
  * Defines assignment of employees to a role within a space
  */
-export type RolesAssignment = Record<Ref<Role>, PersonId[] | undefined>
+export type RolesAssignment = Record<Ref<Role>, AccountUuid[] | undefined>
 
 /**
  * @public
@@ -548,7 +555,7 @@ export interface PersonInfo extends BasePerson {
 // TODO: move to contact
 export interface UserStatus extends Doc {
   online: boolean
-  user: PersonUuid
+  user: AccountUuid
 }
 
 /**

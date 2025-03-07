@@ -14,9 +14,8 @@
 -->
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
-  import { AccountArrayEditor, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import core, {
-    PersonId,
     Data,
     DocumentUpdate,
     RolesAssignment,
@@ -26,7 +25,8 @@
     generateId,
     getCurrentAccount,
     WithLookup,
-    notEmpty
+    notEmpty,
+    AccountUuid
   } from '@hcengineering/core'
   import document, { Teamspace, DocumentEvents } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
@@ -64,14 +64,14 @@
   let icon: Asset | undefined = teamspace?.icon ?? undefined
   let color = teamspace?.color ?? getColorNumberByText(name)
   let isColorSelected = false
-  let members: PersonId[] =
-    teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount().primarySocialId]
-  let owners: PersonId[] =
-    teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount().primarySocialId]
+  let members: AccountUuid[] =
+    teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount().uuid]
+  let owners: AccountUuid[] =
+    teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount().uuid]
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined
-  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
+  $: membersPersons = members.map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
 
   let typeId: Ref<SpaceType> | undefined = teamspace?.type ?? document.spaceType.DefaultTeamspaceType
   let spaceType: WithLookup<SpaceType> | undefined
@@ -236,14 +236,14 @@
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
-  function handleOwnersChanged (newOwners: PersonId[]): void {
+  function handleOwnersChanged (newOwners: AccountUuid[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: PersonId[]): void {
+  function handleMembersChanged (newMembers: AccountUuid[]): void {
     membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -258,7 +258,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: AccountUuid[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }

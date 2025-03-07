@@ -278,6 +278,8 @@ export async function startIndexer (
   )
   const fulltextAdapter = await opt.config.fulltextAdapter.factory(opt.config.fulltextAdapter.url)
 
+  await fulltextAdapter.initMapping(ctx)
+
   const shutdownInterval = setInterval(() => {
     for (const [k, v] of [...indexers.entries()]) {
       if (v instanceof Promise) {

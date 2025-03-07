@@ -144,7 +144,7 @@
       position: fixed;
       left: var(--spacing-1);
       width: calc(100vw - var(--spacing-1) * 2);
-      height: 10rem;
+      max-height: calc(100svh - 2rem);
     }
   }
 </style>

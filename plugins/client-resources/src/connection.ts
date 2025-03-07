@@ -16,53 +16,53 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import client, {
+  type ClientFactoryOptions,
   ClientSocket,
   ClientSocketReadyState,
   pingConst,
-  pongConst,
-  type ClientFactoryOptions
+  pongConst
 } from '@hcengineering/client'
 import core, {
   Account,
   Class,
   ClientConnectEvent,
   ClientConnection,
-  Handler,
+  clone,
   Doc,
   DocChunk,
   DocumentQuery,
   Domain,
   FindOptions,
   FindResult,
+  generateId,
+  Handler,
   LoadModelResponse,
+  type MeasureContext,
   MeasureMetricsContext,
+  type PersonUuid,
   Ref,
   SearchOptions,
   SearchQuery,
   SearchResult,
   Timestamp,
+  toFindResult,
   Tx,
   TxApplyIf,
   TxHandler,
   TxResult,
-  clone,
-  generateId,
-  toFindResult,
-  type MeasureContext,
-  type PersonUuid,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, {
+  broadcastEvent,
+  getMetadata,
   PlatformError,
   Severity,
   Status,
-  UNAUTHORIZED,
-  broadcastEvent,
-  getMetadata
+  UNAUTHORIZED
 } from '@hcengineering/platform'
 import { uncompress } from 'snappyjs'
 
-import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
+import { HelloRequest, HelloResponse, ReqId, type Response, RPCHandler } from '@hcengineering/rpc'
 import { EventResult } from '@hcengineering/communication-sdk-types'
 import {
   FindMessagesGroupsParams,
@@ -803,15 +803,15 @@ class Connection implements ClientConnection {
     // We need to revert deleted query simple values.
     // We need to get rid of simple query parameters matched in documents
     for (const doc of result) {
-      if (doc._class == null) {
-        doc._class = _class
-      }
       for (const [k, v] of Object.entries(query)) {
         if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
           if (doc[k] == null) {
             doc[k] = v
           }
         }
+      }
+      if (doc._class == null) {
+        doc._class = _class
       }
     }
 

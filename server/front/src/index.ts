@@ -268,6 +268,7 @@ export function start (
     linkPreviewUrl?: string
     pushPublicKey?: string
     disableSignUp?: string
+    streamUrl?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -334,6 +335,7 @@ export function start (
       CALENDAR_URL: config.calendarUrl,
       COLLABORATOR: config.collaborator,
       LINK_PREVIEW_URL: config.linkPreviewUrl,
+      STREAM_URL: config.streamUrl,
       COLLABORATOR_URL: config.collaboratorUrl,
       BRANDING_URL: config.brandingUrl,
       PREVIEW_CONFIG: config.previewConfig,

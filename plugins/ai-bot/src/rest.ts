@@ -15,7 +15,7 @@
 
 import { Class, Doc, Markup, PersonId, Ref, Space, Timestamp } from '@hcengineering/core'
 import { Room, RoomLanguage } from '@hcengineering/love'
-import { Person } from '@hcengineering/contact'
+import { Contact, Person } from '@hcengineering/contact'
 import { ChatMessage } from '@hcengineering/chunter'
 
 export interface AIEventRequest {
@@ -31,6 +31,26 @@ export interface AIEventRequest {
 }
 
 export interface TranslateRequest {
+  text: Markup
+  lang: string
+}
+
+export interface PersonMessage {
+  personRef: Ref<Contact>
+  personName: string
+
+  time: Timestamp
+  text: string
+}
+
+export interface SummarizeMessagesRequest {
+  lang: string
+
+  target: Ref<Doc>
+  targetClass: Ref<Class<Doc>>
+}
+
+export interface SummarizeMessagesResponse {
   text: Markup
   lang: string
 }

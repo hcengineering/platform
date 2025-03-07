@@ -69,6 +69,7 @@
     "CreateEmployee": "Dipendente",
     "Inactive": "Inattivo",
     "Active": "Attivo",
+    "Role": "Ruolo",
     "Birthday": "Compleanno",
     "UseImage": "Foto allegata",
     "UseGravatar": "Gravatar",

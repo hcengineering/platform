@@ -24,7 +24,8 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { EmptyMarkup, isEmptyMarkup, markupToHTML } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
+  import { markupToHtml } from '@hcengineering/text-html'
   import { StyledTextEditor } from '@hcengineering/text-editor-resources'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -71,7 +72,7 @@
       core.space.Workspace,
       {
         ...obj,
-        content: markupToHTML(content),
+        content: markupToHtml(markupToJSON(content)),
         attachments: attachments.length,
         from: selectedIntegration.createdBy,
         copy: copy

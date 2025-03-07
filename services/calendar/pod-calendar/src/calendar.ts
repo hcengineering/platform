@@ -35,7 +35,7 @@ import core, {
   parseSocialIdString
 } from '@hcengineering/core'
 import setting from '@hcengineering/setting'
-import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
+import { htmlToMarkup, jsonToHTML, markupToJSON } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
 import { calendar_v3 } from 'googleapis'
 import type { Collection, Db } from 'mongodb'
@@ -972,7 +972,7 @@ export class CalendarClient {
       start: convertDate(event.date, event.allDay, getTimezone(event)),
       end: convertDate(event.dueDate, event.allDay, getTimezone(event)),
       id: event.eventId,
-      description: markupToHTML(event.description),
+      description: jsonToHTML(markupToJSON(event.description)),
       summary: event.title
     }
     if (event.location != null) {

@@ -19,6 +19,7 @@
 
   export let value: Ref<Blob>
   export let name: string
+  export let contentType: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
 
@@ -35,13 +36,18 @@
   style:max-width={fit ? '100%' : maxWidth}
   style:max-height={fit ? '100%' : maxHeight}
 >
-  {#await getVideoMeta(value, name) then meta}
+  {#if contentType.toLowerCase().endsWith('x-mpegurl')}
     {@const src = getFileUrl(value, name)}
-
-    {#if meta && meta.status === 'ready'}
-      <HlsVideo {src} {name} hlsSrc={meta.hls} hlsThumbnail={meta.thumbnail} />
-    {:else}
-      <Video {src} {name} />
-    {/if}
-  {/await}
+    <HlsVideo {src} hlsSrc={src} preload={true} />
+  {:else}
+    {#await getVideoMeta(value, name) then meta}
+      {#if meta !== undefined && meta.status === 'ready'}
+        {@const src = getFileUrl(value, name)}
+        <HlsVideo {src} {name} hlsSrc={meta.hls} hlsThumbnail={meta.thumbnail} preload={false} />
+      {:else}
+        {@const src = getFileUrl(value, name)}
+        <Video {src} {name} />
+      {/if}
+    {/await}
+  {/if}
 </div>

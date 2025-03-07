@@ -28,7 +28,6 @@ import {
   toIdMap,
   type TxOperations
 } from '@hcengineering/core'
-import { includesAny } from '@hcengineering/contact'
 import { type Resources, type Status, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Component, type Issue, type Milestone, type Project } from '@hcengineering/tracker'
@@ -514,7 +513,7 @@ export default async (): Promise<Resources> => ({
     ) => await getAllStates(query, onUpdate, queryId, attr, false),
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
-    IsProjectJoined: async (project: Project) => includesAny(project.members, getCurrentAccount().socialIds),
+    IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount().uuid),
     GetIssueStatusCategories: getIssueStatusCategories,
     SetComponentStore: setStore,
     ComponentFilterFunction: filterComponents,

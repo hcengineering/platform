@@ -97,7 +97,7 @@
       {/if}
     </svelte:fragment>
 
-    <div class="flex-col flex-grow flex-no-shrink">
+    <div class="flex-col flex-grow flex-no-shrink mb-6">
       {#if preview}
         {#if poll !== undefined}
           <div class="antiSection-empty solid mb-8">

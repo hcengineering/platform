@@ -46,6 +46,7 @@ import PreviewPopupActions from './components/PreviewPopupActions.svelte'
 import DrawingPresenter from './components/DrawingPresenter.svelte'
 
 export * from './types'
+export * from './stores'
 
 export {
   AccordionEditor,

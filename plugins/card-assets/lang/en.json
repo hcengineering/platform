@@ -19,6 +19,10 @@
     "TagRelations": "Tag Relations",
     "DeleteTagConfirm": "Are you sure you want to delete this tag? All related properties will be deleted",
     "DeleteMasterTag": "Delete Type",
-    "DeleteMasterTagConfirm": "Are you sure you want to delete this type? All objects related to this type will be deleted"
+    "DeleteMasterTagConfirm": "Are you sure you want to delete this type? All objects related to this type will be deleted",
+    "UnsetParent": "Unset parent",
+    "SetParent": "Set parent",
+    "CreateChild": "Create child",
+    "Children": "Children"
   }
 }

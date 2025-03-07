@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { markupToYDocNoSchema, yDocToMarkup } from '@hcengineering/text-ydoc'
+import { markupToYDoc, yDocToMarkup } from '@hcengineering/text-ydoc'
 import { Transformer } from '@hocuspocus/transformer'
 import { Doc } from 'yjs'
 
@@ -37,7 +37,7 @@ export class MarkupTransformer implements Transformer {
 
   toYdoc (document: any, fieldName: string): Doc {
     if (typeof document === 'string' && document !== '') {
-      return markupToYDocNoSchema(document, fieldName)
+      return markupToYDoc(document, fieldName)
     }
 
     return new Doc()

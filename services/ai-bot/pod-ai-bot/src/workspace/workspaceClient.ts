@@ -47,7 +47,8 @@ import core, {
   TxCUD,
   TxOperations,
   type WorkspaceUuid,
-  type WorkspaceIds
+  type WorkspaceIds,
+  AccountUuid
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
@@ -63,7 +64,8 @@ import { createChatCompletionWithTools, requestSummary } from '../utils/openai'
 import { connectPlatform } from '../utils/platform'
 import { LoveController } from './love'
 import { DbStorage } from '../storage'
-import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
+import { jsonToMarkup, markupToText } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { countTokens } from '@hcengineering/openai'
 import { getAccountClient } from '@hcengineering/server-client'
 import { getGlobalPerson } from '../utils/account'
@@ -89,7 +91,7 @@ export class WorkspaceClient {
     readonly transactorUrl: string,
     readonly token: string,
     readonly wsIds: WorkspaceIds,
-    readonly personUuid: PersonUuid,
+    readonly personUuid: AccountUuid,
     readonly socialIds: SocialId[],
     readonly ctx: MeasureContext,
     readonly openai: OpenAI | undefined,
@@ -336,7 +338,13 @@ export class WorkspaceClient {
 
     void this.pushHistory(promptText, prompt.role, promptTokens, personUuid, objectId, objectClass)
 
-    const chatCompletion = await createChatCompletionWithTools(this, this.openai, prompt, user, history)
+    const chatCompletion = await createChatCompletionWithTools(
+      this,
+      this.openai,
+      prompt,
+      personUuid as AccountUuid,
+      history
+    )
     const response = chatCompletion?.completion
 
     if (response == null) {
@@ -347,8 +355,7 @@ export class WorkspaceClient {
 
     void this.pushHistory(response, 'assistant', responseTokens, personUuid, objectId, objectClass)
 
-    const parser = new MarkdownParser([], '', '')
-    const parseResponse = jsonToMarkup(parser.parse(response))
+    const parseResponse = jsonToMarkup(markdownToMarkup(response, { refUrl: '', imageUrl: '' }))
 
     if (messageClass === chunter.class.ChatMessage) {
       await op.addCollection<Doc, ChatMessage>(

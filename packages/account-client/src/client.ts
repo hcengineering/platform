@@ -64,13 +64,7 @@ export interface AccountClient {
     inviteId: string
   ) => Promise<WorkspaceLoginInfo>
   join: (email: string, password: string, inviteId: string) => Promise<WorkspaceLoginInfo>
-  createInviteLink: (
-    exp: number,
-    emailMask: string,
-    limit: number,
-    role: AccountRole,
-    personId?: any
-  ) => Promise<string>
+  createInviteLink: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
   getWorkspaceInfo: (updateLastVisit?: boolean) => Promise<WorkspaceInfoWithStatus>
   getWorkspacesInfo: (workspaces: WorkspaceUuid[]) => Promise<WorkspaceInfoWithStatus[]>
@@ -86,7 +80,7 @@ export interface AccountClient {
   updateWorkspaceRole: (account: string, role: AccountRole) => Promise<void>
   updateWorkspaceName: (name: string) => Promise<void>
   deleteWorkspace: () => Promise<void>
-  findPerson: (socialString: string) => Promise<PersonUuid | undefined>
+  findPerson: (socialString: PersonId) => Promise<PersonUuid | undefined>
 
   // Service methods
   workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
@@ -350,16 +344,10 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async createInviteLink (
-    exp: number,
-    emailMask: string,
-    limit: number,
-    role: AccountRole,
-    personId?: any
-  ): Promise<string> {
+  async createInviteLink (exp: number, emailMask: string, limit: number, role: AccountRole): Promise<string> {
     const request = {
       method: 'createInviteLink' as const,
-      params: { exp, emailMask, limit, role, personId }
+      params: { exp, emailMask, limit, role }
     }
 
     return await this.rpc(request)

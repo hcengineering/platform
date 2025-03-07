@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { personByPersonIdStore, statusByUserStore } from '@hcengineering/contact-resources'
+  import { statusByUserStore } from '@hcengineering/contact-resources'
   import { Doc, reduceCalls, Ref } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { getResource, IntlString, translate } from '@hcengineering/platform'
@@ -54,8 +54,7 @@
 
   $: sortedItems = sortFn(items, {
     contexts,
-    userStatusByAccount: $statusByUserStore,
-    personByPersonId: $personByPersonIdStore
+    userStatusByAccount: $statusByUserStore
   })
   $: canShowMore = itemsCount > items.length
 

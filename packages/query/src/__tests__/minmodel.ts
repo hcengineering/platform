@@ -25,7 +25,8 @@ import type {
   Ref,
   Space,
   TxCreateDoc,
-  TxCUD
+  TxCUD,
+  AccountUuid
 } from '@hcengineering/core'
 import core, { AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
@@ -240,8 +241,8 @@ export function genMinModel (): TxCUD<Doc>[] {
     })
   )
 
-  const u1 = 'User1' as PersonId
-  const u2 = 'User2' as PersonId
+  const u1 = 'User1' as AccountUuid
+  const u2 = 'User2' as AccountUuid
   // TODO: fixme!
   txes.push(
     // createDoc(core.class.Account, { email: 'user1@site.com', role: AccountRole.User }, u1),

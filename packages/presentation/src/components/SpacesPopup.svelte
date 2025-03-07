@@ -49,7 +49,7 @@
   $: query.query(
     _class,
     {
-      members: { $in: getCurrentAccount().socialIds },
+      members: getCurrentAccount().uuid,
       ...(spaceQuery ?? {}),
       ...(search !== undefined && search !== ''
         ? {

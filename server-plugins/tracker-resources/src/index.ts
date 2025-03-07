@@ -23,6 +23,7 @@ import core, {
   PersonId,
   Ref,
   Space,
+  systemAccountUuid,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -159,7 +160,7 @@ export async function getIssueNotificationContent (
   }
 }
 
-export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   // Fill owner of default space with the very first owner account creating a social identity
   const account = control.ctx.contextData.account
   if (account.role !== AccountRole.Owner) return []
@@ -172,9 +173,9 @@ export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerContr
 
   const owners = defaultSpace.owners ?? []
 
-  if (owners.length === 0 || (owners.length === 1 && owners[0] === core.account.System)) {
+  if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
     const setOwnerTx = control.txFactory.createTxUpdateDoc(defaultSpace._class, defaultSpace.space, defaultSpace._id, {
-      owners: [account.primarySocialId]
+      owners: [account.uuid]
     })
 
     return [setOwnerTx]
@@ -543,7 +544,7 @@ export default async () => ({
     IssueLinkIdProvider: issueLinkIdProvider
   },
   trigger: {
-    OnSocialIdentityCreate,
+    OnEmployeeCreate,
     OnIssueUpdate,
     OnComponentRemove,
     OnProjectRemove

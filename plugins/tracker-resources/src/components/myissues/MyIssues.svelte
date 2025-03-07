@@ -17,7 +17,7 @@
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { IntlString, Asset } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
+  import type { Issue, IssueStatus } from '@hcengineering/tracker'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -29,6 +29,7 @@
   export let icon: Asset | undefined = undefined
 
   const socialIds = getCurrentAccount().socialIds
+  const acc = getCurrentAccount().uuid
   const dispatch = createEventDispatcher()
   const assigned = { assignee: getCurrentEmployee() }
   const created = { createdBy: { $in: socialIds } }
@@ -64,7 +65,7 @@
   const subscribedQuery = createQuery()
   $: subscribedQuery.query(
     tracker.class.Issue,
-    { 'notification:mixin:Collaborators.collaborators': { $in: socialIds } },
+    { 'notification:mixin:Collaborators.collaborators': acc },
     (result) => {
       const newSub = result.map((p) => p._id as Ref<Doc> as Ref<Issue>)
       const curSub = subscribed._id.$in

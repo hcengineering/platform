@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { ClassifierKind, IndexKind } from '@hcengineering/core'
+import core, { ClassifierKind, type Domain, IndexKind } from '@hcengineering/core'
 import { type Builder, Index, Model, Prop, TypeString } from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
 
@@ -25,12 +25,13 @@ import setting from '@hcengineering/setting'
 import { type MailRoute } from '@hcengineering/mail'
 import mail from './plugin'
 
+const DOMAIN_MAIL = 'mail' as Domain
 const mailTag = 'Mail'
 
 export { mailId } from '@hcengineering/mail'
 export { default } from './plugin'
 
-@Model(mail.class.MailRoute, core.class.Doc)
+@Model(mail.class.MailRoute, core.class.Doc, DOMAIN_MAIL)
 export class TMailRoute extends TDoc implements MailRoute {
   @Prop(TypeString(), mail.string.MailId)
   @Index(IndexKind.Indexed)

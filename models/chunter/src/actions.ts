@@ -121,6 +121,21 @@ function defineMessageActions (builder: Builder): void {
   createAction(
     builder,
     {
+      action: chunter.actionImpl.SummarizeMessages,
+      label: chunter.string.SummarizeMessages,
+      icon: view.icon.Feather,
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: core.class.Doc,
+      context: { mode: ['context', 'browser'], group: 'tools' },
+      visibilityTester: chunter.function.CanSummarizeMessages
+    },
+    chunter.action.SummarizeMessages
+  )
+
+  createAction(
+    builder,
+    {
       action: chunter.actionImpl.TranslateMessage,
       label: chunter.string.Translate,
       icon: view.icon.Translate,

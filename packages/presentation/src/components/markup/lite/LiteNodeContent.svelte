@@ -34,7 +34,7 @@
   }
 
   function toString (value: AttrValue | undefined): string | undefined {
-    return value !== undefined ? `${value}` : undefined
+    return value != null ? `${value}` : undefined
   }
 
   function toNumber (value: AttrValue | undefined): number | undefined {
@@ -42,7 +42,7 @@
       return value ? 1 : 0
     }
 
-    return value !== undefined ? (typeof value === 'string' ? parseInt(value) : value) : undefined
+    return value != null ? (typeof value === 'string' ? parseInt(value) : value) : undefined
   }
 </script>
 

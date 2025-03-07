@@ -22,7 +22,7 @@ import core, {
   type SessionData,
   TxApplyIf,
   systemAccountUuid,
-  type PersonUuid
+  AccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
@@ -56,7 +56,7 @@ export class NotificationsMiddleware extends BaseMiddleware implements Middlewar
   }
 
   processTx (ctx: MeasureContext<SessionData>, tx: Tx): void {
-    let target: PersonUuid[] | undefined
+    let target: AccountUuid[] | undefined
     if (this.isTargetDomain(tx)) {
       const account = ctx.contextData.account
       if (!account.socialIds.includes(tx.modifiedBy) && account.uuid !== systemAccountUuid) {

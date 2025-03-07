@@ -13,16 +13,29 @@
 // limitations under the License.
 //
 
-import type { IntlString, Plugin, Resource } from '@hcengineering/platform'
+import type { IntlString, Plugin, Resource, Asset } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
-
-import type { UploadFilesFn, UploadFilesPopupFn } from './types'
+import type { Class, Ref } from '@hcengineering/core'
+import type {
+  GetUploadHandlers,
+  UploadFilesFn,
+  UploadFilesPopupFn,
+  UploadHandlerDefinition,
+  UploadHandler
+} from './types'
 
 /** @public */
 export const uploaderId = 'uploader' as Plugin
 
 export const uploaderPlugin = plugin(uploaderId, {
+  icon: {
+    UploadFilesIcon: '' as Asset,
+    UploadFoldersIcon: '' as Asset
+  },
+  class: {
+    UploadHandlerDefinition: '' as Ref<Class<UploadHandlerDefinition>>
+  },
   component: {
     FileUploadPopup: '' as AnyComponent
   },
@@ -33,12 +46,17 @@ export const uploaderPlugin = plugin(uploaderId, {
     Error: '' as IntlString
   },
   string: {
+    UploadFiles: '' as IntlString,
+    UploadFolders: '' as IntlString,
     Cancel: '' as IntlString,
     Retry: '' as IntlString
   },
   function: {
     ShowFilesUploadPopup: '' as Resource<UploadFilesPopupFn>,
-    UploadFiles: '' as Resource<UploadFilesFn>
+    UploadFiles: '' as Resource<UploadFilesFn>,
+    UploadFilesHandler: '' as Resource<UploadHandler>,
+    UploadFoldersHandler: '' as Resource<UploadHandler>,
+    GetUploadHandlers: '' as Resource<GetUploadHandlers>
   }
 })
 

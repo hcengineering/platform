@@ -131,6 +131,8 @@
     "ViewingThreadFromArchivedChannel": "You are viewing a thread from an archived channel",
     "ViewingArchivedChannel": "You are viewing an archived channel",
     "OpenChatInSidebar": "Open chat in sidebar",
-    "ResolveThread": "Resolve"
+    "ResolveThread": "Resolve",
+    "NoThreadsYet": "There are no threads yet.",
+    "SummarizeMessages": "Summarize discussion"
   }
 }

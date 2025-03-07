@@ -46,7 +46,43 @@ export function createModel (builder: Builder): void {
     isAsync: true,
     txMatch: {
       _class: core.class.TxRemoveDoc,
-      objectClass: card.class.MasterTag
+      objectClass: { $in: [card.class.MasterTag, card.class.Tag] }
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnMasterTagCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: { $in: [card.class.MasterTag, card.class.Tag] }
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnCardRemove,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: card.class.Card
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnCardCreate,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: card.class.Card
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnCardParentChange,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: card.class.Card,
+      operations: { parent: { $exists: true } }
     }
   })
 

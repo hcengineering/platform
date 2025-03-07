@@ -13,32 +13,48 @@
 // limitations under the License.
 //
 
+import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import {
   AIEventRequest,
   ConnectMeetingRequest,
   DisconnectMeetingRequest,
   IdentityResponse,
+  PersonMessage,
   PostTranscriptRequest,
+  SummarizeMessagesRequest,
+  SummarizeMessagesResponse,
   TranslateRequest,
   TranslateResponse
 } from '@hcengineering/ai-bot'
-import { MeasureContext, PersonUuid, Ref, SocialId, type WorkspaceIds, type WorkspaceUuid } from '@hcengineering/core'
+import core, {
+  AccountUuid,
+  MeasureContext,
+  PersonId,
+  Ref,
+  SocialId,
+  SortingOrder,
+  toIdMap,
+  type WorkspaceIds,
+  type WorkspaceUuid
+} from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
-import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
-import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import { htmlToMarkup, jsonToHTML, jsonToMarkup, markupToJSON } from '@hcengineering/text'
 import { encodingForModel } from 'js-tiktoken'
 import OpenAI from 'openai'
 
+import chunter from '@hcengineering/chunter'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import config from './config'
 import { DbStorage } from './storage'
-import { WorkspaceClient } from './workspace/workspaceClient'
-import { translateHtml } from './utils/openai'
 import { tryAssignToWorkspace } from './utils/account'
+import { summarizeMessages, translateHtml } from './utils/openai'
+import { WorkspaceClient } from './workspace/workspaceClient'
+import contact, { Contact, getName } from '@hcengineering/contact'
 
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
 
@@ -53,7 +69,7 @@ export class AIControl {
   private readonly openaiEncoding = encodingForModel(config.OpenAIModel)
 
   constructor (
-    readonly personUuid: PersonUuid,
+    readonly personUuid: AccountUuid,
     readonly socialIds: SocialId[],
     private readonly storage: DbStorage,
     private readonly ctx: MeasureContext
@@ -195,11 +211,114 @@ export class AIControl {
     if (this.openai === undefined) {
       return undefined
     }
-    const html = markupToHTML(req.text)
+    const html = jsonToHTML(markupToJSON(req.text))
     const result = await translateHtml(this.openai, html, req.lang)
     const text = result !== undefined ? htmlToMarkup(result) : req.text
     return {
       text,
+      lang: req.lang
+    }
+  }
+
+  async summarizeMessages (
+    workspace: WorkspaceUuid,
+    req: SummarizeMessagesRequest
+  ): Promise<SummarizeMessagesResponse | undefined> {
+    if (this.openai === undefined) return
+    if (req.target === undefined || req.targetClass === undefined) return
+
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) return
+
+    const opClient = await wsClient.opClient
+    if (opClient === undefined) return
+
+    const client = wsClient.client
+    if (client === undefined) return
+
+    const target = await client.findOne(req.targetClass, { _id: req.target })
+    if (target === undefined) return
+
+    const messages = await client.findAll(
+      chunter.class.ChatMessage,
+      {
+        attachedTo: target._id,
+        collection: { $in: ['messages', 'transcription'] }
+      },
+      {
+        sort: { createdOn: SortingOrder.Ascending },
+        limit: 5000
+      }
+    )
+
+    const personIds = new Set<PersonId>()
+    for (const m of messages) {
+      if (m.createdBy !== undefined) personIds.add(m.createdBy)
+    }
+    const identities = await client.findAll(contact.class.SocialIdentity, { key: { $in: Array.from(personIds) } })
+    const contacts = await client.findAll(contact.class.Contact, { _id: { $in: identities.map((i) => i.attachedTo) } })
+    const contactById = toIdMap(contacts)
+    const contactByPersonId = new Map<PersonId, Contact>()
+    for (const identity of identities) {
+      const contact = contactById.get(identity.attachedTo)
+      if (contact !== undefined) contactByPersonId.set(identity.key, contact)
+    }
+
+    const messagesToSummarize: PersonMessage[] = []
+
+    for (const m of messages) {
+      const author = m.createdBy
+      if (author === undefined) continue
+
+      const contact = contactByPersonId.get(author)
+      if (contact === undefined) continue
+
+      const personName = getName(client.getHierarchy(), contact)
+      const text = markupToMarkdown(markupToJSON(m.message))
+
+      const lastPiece = messagesToSummarize[messagesToSummarize.length - 1]
+      if (lastPiece?.personRef === contact._id) {
+        lastPiece.text += (m.collection === 'transcription' ? ' ' : '\n') + text
+      } else {
+        messagesToSummarize.push({
+          personRef: contact._id,
+          personName,
+          time: m.createdOn ?? 0,
+          text
+        })
+      }
+    }
+
+    const summary = await summarizeMessages(this.openai, messagesToSummarize, req.lang)
+    if (summary === undefined) return
+
+    const summaryMarkup = jsonToMarkup(markdownToMarkup(summary))
+
+    const lastMessage = await client.findOne(
+      chunter.class.ChatMessage,
+      {
+        attachedTo: target._id,
+        collection: { $in: ['messages', 'transcription', 'summary'] }
+      },
+      {
+        sort: { createdOn: SortingOrder.Descending },
+        limit: 1
+      }
+    )
+
+    const op = opClient.apply(undefined, 'AISummarizeMessagesRequestEvent')
+
+    if (lastMessage?.collection === 'summary' && lastMessage.createdBy === opClient.user) {
+      await op.update(lastMessage, { message: summaryMarkup, editedOn: Date.now() })
+    } else {
+      await op.addCollection(chunter.class.ChatMessage, core.space.Workspace, target._id, target._class, 'summary', {
+        message: summaryMarkup
+      })
+    }
+    await op.commit()
+
+    return {
+      text: summaryMarkup,
       lang: req.lang
     }
   }

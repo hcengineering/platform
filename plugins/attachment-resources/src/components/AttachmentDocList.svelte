@@ -16,10 +16,12 @@
   import { Attachment } from '@hcengineering/attachment'
   import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
+  import { onMount } from 'svelte'
 
   import attachment from '../plugin'
   import { AttachmentImageSize } from '../types'
   import AttachmentGroup from './AttachmentGroup.svelte'
+  import { loadSavedAttachments, savedAttachmentsStore } from '../stores'
 
   export let value: Doc & { attachments?: number }
   export let attachments: Attachment[] | undefined = undefined
@@ -28,10 +30,11 @@
   export let isOwn = false
 
   const query = createQuery()
-  const savedAttachmentsQuery = createQuery()
 
   let savedAttachmentsIds: Ref<Attachment>[] = []
   let resAttachments: WithLookup<Attachment>[] = []
+
+  $: savedAttachmentsIds = $savedAttachmentsStore.map((it) => it.attachedTo)
 
   $: updateQuery(value, attachments)
 
@@ -58,8 +61,8 @@
     }
   }
 
-  savedAttachmentsQuery.query(attachment.class.SavedAttachments, {}, (res) => {
-    savedAttachmentsIds = res.map(({ attachedTo }) => attachedTo)
+  onMount(() => {
+    loadSavedAttachments()
   })
 </script>
 

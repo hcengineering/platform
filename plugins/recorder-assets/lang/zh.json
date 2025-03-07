@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Cancel": "取消",
+    "Pause": "暂停",
+    "Stop": "停止",
+    "Resume": "继续",
+    "Record": "录制",
+    "ClickToSkip": "点击跳过"
+  }
+}

@@ -30,7 +30,8 @@ import core, {
   type Ref,
   type TxCreateDoc,
   type TxCUD,
-  TxFactory
+  TxFactory,
+  type AccountUuid
 } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -198,8 +199,8 @@ export function genMinModel (): TxCUD<Doc>[] {
     })
   )
 
-  const u1 = 'User1' as PersonId
-  const u2 = 'User2' as PersonId
+  const u1 = 'User1' as AccountUuid
+  const u2 = 'User2' as AccountUuid
   txes.push(
     createDoc(core.class.Space, {
       name: 'Sp1',

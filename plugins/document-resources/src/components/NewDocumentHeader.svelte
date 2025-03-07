@@ -39,13 +39,12 @@
   const client = getClient()
   const query = createQuery()
   const myAcc = getCurrentAccount()
-  const socialStrings = myAcc.socialIds
 
   let loading = true
   let hasTeamspace = false
   query.query(
     document.class.Teamspace,
-    { archived: false, members: { $in: socialStrings } },
+    { archived: false, members: myAcc.uuid },
     (res) => {
       hasTeamspace = res.length > 0
       loading = false

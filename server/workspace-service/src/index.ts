@@ -63,6 +63,10 @@ export function serveWorkspaceAccount (
     process.exit(1)
   }
 
+  if (process.env.MIGRATION_CLEANUP !== 'true') {
+    console.log('Migration cleanup is not set, so move to regions will not clean old DB.')
+  }
+
   const backup =
     wsOperation === 'all+backup'
       ? {

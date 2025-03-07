@@ -15,7 +15,12 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Employee } from '@hcengineering/contact'
-  import { AccountArrayEditor, AssigneeBox, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import {
+    AccountArrayEditor,
+    AssigneeBox,
+    personRefByAccountUuidStore,
+    personRefByPersonIdStore
+  } from '@hcengineering/contact-resources'
   import core, {
     PersonId,
     Data,
@@ -27,7 +32,8 @@
     SpaceType,
     generateId,
     getCurrentAccount,
-    notEmpty
+    notEmpty,
+    AccountUuid
   } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
@@ -70,10 +76,10 @@
   let color = project?.color ?? getColorNumberByText(name)
   let isColorSelected = false
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
-  let members: PersonId[] =
-    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount().primarySocialId]
-  let owners: PersonId[] =
-    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount().primarySocialId]
+  let members: AccountUuid[] =
+    project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount().uuid]
+  let owners: AccountUuid[] =
+    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount().uuid]
   let projectsIdentifiers = new Set<string>()
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
@@ -81,7 +87,7 @@
 
   let typeId: Ref<ProjectType> | undefined = project?.type
   $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
-  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
+  $: membersPersons = members.map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
   let autoJoin = project?.autoJoin ?? typeType?.autoJoin ?? false
 
   const dispatch = createEventDispatcher()
@@ -310,14 +316,14 @@
     rolesQuery.unsubscribe()
   }
 
-  function handleOwnersChanged (newOwners: PersonId[]): void {
+  function handleOwnersChanged (newOwners: AccountUuid[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: PersonId[]): void {
+  function handleMembersChanged (newMembers: AccountUuid[]): void {
     membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -332,7 +338,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: AccountUuid[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }

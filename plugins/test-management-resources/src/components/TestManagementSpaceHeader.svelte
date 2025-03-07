@@ -25,8 +25,6 @@
   export let currentSpace: Ref<TestProject> | undefined
 
   const myAcc = getCurrentAccount()
-  const socialStrings = myAcc.socialIds
-
   const query = createQuery()
 
   let hasProject = currentSpace !== undefined
@@ -34,7 +32,7 @@
   if (!hasProject) {
     query.query(
       testManagement.class.TestProject,
-      { archived: false, members: { $in: socialStrings } },
+      { archived: false, members: myAcc.uuid },
       (res) => {
         hasProject = res.length > 0
         loading = false

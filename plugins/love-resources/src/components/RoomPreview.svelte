@@ -144,7 +144,6 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="floorGrid-room"
-  class:preview
   class:hovered
   class:disabled
   class:myOffice={$myInfo?.room === room._id}

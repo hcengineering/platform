@@ -76,6 +76,7 @@
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/query": "^0.6.12",
     "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-markdown": "^0.6.0",
     "@hcengineering/github": "^0.6.0",
     "@hcengineering/attachment": "^0.6.14",
     "dotenv": "~16.0.0",

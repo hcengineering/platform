@@ -52,10 +52,12 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnSocialIdentityCreate,
+    trigger: serverTracker.trigger.OnEmployeeCreate,
     txMatch: {
-      _class: core.class.TxCreateDoc,
-      objectClass: contact.class.SocialIdentity
+      objectClass: contact.class.Person,
+      _class: core.class.TxMixin,
+      mixin: contact.mixin.Employee,
+      'attributes.active': true
     }
   })
 

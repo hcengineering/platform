@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
+import { AccountUuid, buildSocialIdString, SocialIdType } from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 
@@ -21,6 +21,7 @@ export * from './rest'
 
 export const aiBotId = 'ai-bot' as Plugin
 
+export const aiBotAccountUuid = '' as AccountUuid
 export const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
 export const aiBotEmailSocialId = buildSocialIdString({
   type: SocialIdType.EMAIL,

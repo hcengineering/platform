@@ -568,7 +568,7 @@ export async function checkPermission (
 
   const me = getCurrentAccount()
   const asMixin = client.getHierarchy().as(space, mixin)
-  const myRoles = type.$lookup?.roles?.filter((role) => includesAny((asMixin as any)[role._id], me.socialIds)) as Role[]
+  const myRoles = type.$lookup?.roles?.filter((role) => ((asMixin as any)[role._id] ?? []).includes(me.uuid)) as Role[]
 
   if (myRoles === undefined) {
     return false

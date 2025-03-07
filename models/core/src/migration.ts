@@ -46,7 +46,10 @@ import core, {
   toIdMap,
   type TypedSpace,
   TxProcessor,
-  type SocialKey
+  type SocialKey,
+  type AccountUuid,
+  systemAccountUuid,
+  configUserAccountUuid
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -349,8 +352,14 @@ export function getSocialKeyByOldEmail (rawEmail: string): SocialKey {
   }
 }
 
-async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('core migrateAccountsToSocialIds', {})
+/**
+ * Migrates old accounts to new accounts/social ids.
+ * Should be applied to prodcution directly without applying migrateSpaceMembersToAccountUuids
+ * @param client
+ * @returns
+ */
+async function migrateAccounts (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('core migrateAccounts', {})
   const hierarchy = client.hierarchy
   const socialIdByAccount = await getSocialIdByOldAccount(client)
 
@@ -427,6 +436,8 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
     }
   }
 
+  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+
   ctx.info('processing spaces members, owners and roles assignment', {})
   let processedSpaces = 0
   const spacesIterator = await client.traverse(DOMAIN_SPACE, {})
@@ -444,11 +455,21 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
         if (!hierarchy.isDerived(s._class, core.class.Space)) continue
         const space = s as Space
 
-        const newMembers = space.members.map((m) => socialIdByAccount[m] ?? m)
-        const newOwners = space.owners?.map((m) => socialIdByAccount[m] ?? m)
+        const newMembers = await getUniqueAccountsFromOldAccounts(
+          client,
+          space.members,
+          socialIdByAccount,
+          accountUuidBySocialId
+        )
+        const newOwners = await getUniqueAccountsFromOldAccounts(
+          client,
+          space.owners ?? [],
+          socialIdByAccount,
+          accountUuidBySocialId
+        )
         const update: MigrateUpdate<Space> = {
-          members: newMembers,
-          owners: newOwners
+          members: newMembers as any,
+          owners: newOwners as any
         }
 
         const type = spaceTypesById.get((space as TypedSpace).type)
@@ -461,7 +482,12 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
             for (const role of roles ?? []) {
               const oldAssignees: string[] | undefined = (mixin as any)[role._id]
               if (oldAssignees != null && oldAssignees.length > 0) {
-                const newAssignees = oldAssignees.map((a) => socialIdByAccount[a])
+                const newAssignees = await getUniqueAccountsFromOldAccounts(
+                  client,
+                  oldAssignees,
+                  socialIdByAccount,
+                  accountUuidBySocialId
+                )
 
                 update[`${type.targetClass}`] = {
                   [role._id]: newAssignees
@@ -495,7 +521,235 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
   for (const spaceType of spaceTypes) {
     if (spaceType.members === undefined || spaceType.members.length === 0) continue
 
-    const newMembers = spaceType.members.map((m) => socialIdByAccount[m] ?? m)
+    const newMembers = await getUniqueAccountsFromOldAccounts(
+      client,
+      spaceType.members,
+      socialIdByAccount,
+      accountUuidBySocialId
+    )
+    const tx: TxUpdateDoc<SpaceType> = {
+      _id: generateId(),
+      _class: core.class.TxUpdateDoc,
+      space: core.space.Tx,
+      objectId: spaceType._id,
+      objectClass: spaceType._class,
+      objectSpace: spaceType.space,
+      operations: {
+        members: newMembers as any
+      },
+      modifiedOn: Date.now(),
+      createdBy: core.account.ConfigUser,
+      createdOn: Date.now(),
+      modifiedBy: core.account.ConfigUser
+    }
+
+    await client.create(DOMAIN_MODEL_TX, tx)
+    updatedSpaceTypes++
+  }
+  ctx.info('finished processing space types members', { totalSpaceTypes: spaceTypes.length, updatedSpaceTypes })
+}
+
+export async function getAccountUuidBySocialId (
+  client: MigrationClient,
+  socialId: PersonId,
+  accountUuidBySocialId: Map<PersonId, AccountUuid | null>
+): Promise<AccountUuid | null> {
+  if (socialId === core.account.System) {
+    return systemAccountUuid
+  }
+
+  if (socialId === core.account.ConfigUser) {
+    return configUserAccountUuid
+  }
+
+  const cached = accountUuidBySocialId.has(socialId)
+
+  if (!cached) {
+    const personUuid = await client.accountClient.findPerson(socialId)
+    if (personUuid === undefined) {
+      console.log('Could not find person for', socialId)
+    }
+
+    accountUuidBySocialId.set(socialId, (personUuid as AccountUuid | undefined) ?? null)
+  }
+
+  return accountUuidBySocialId.get(socialId) ?? null
+}
+
+export async function getUniqueAccounts (
+  client: MigrationClient,
+  persons: PersonId[],
+  accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+): Promise<AccountUuid[]> {
+  const accounts = new Set<AccountUuid>()
+  for (const person of persons) {
+    let newAccount = await getAccountUuidBySocialId(client, person as unknown as PersonId, accountUuidBySocialId)
+
+    if (newAccount == null && isUuid(person)) {
+      newAccount = person as unknown as AccountUuid
+    }
+    if (newAccount != null) {
+      accounts.add(newAccount)
+    }
+  }
+
+  return Array.from(accounts)
+}
+
+export async function getAccountUuidByOldAccount (
+  client: MigrationClient,
+  oldAccount: string,
+  socialIdByOldAccount: Record<string, PersonId>,
+  accountUuidByOldAccount: Map<string, AccountUuid | null>
+): Promise<AccountUuid | null> {
+  if (oldAccount === core.account.System) {
+    return systemAccountUuid
+  }
+
+  if (oldAccount === core.account.ConfigUser) {
+    return configUserAccountUuid
+  }
+
+  const cached = accountUuidByOldAccount.has(oldAccount)
+
+  if (!cached) {
+    const socialId = socialIdByOldAccount[oldAccount]
+    if (socialId == null) {
+      accountUuidByOldAccount.set(oldAccount, null)
+      return null
+    }
+
+    const personUuid = await client.accountClient.findPerson(socialId)
+
+    accountUuidByOldAccount.set(oldAccount, (personUuid as AccountUuid | undefined) ?? null)
+  }
+
+  return accountUuidByOldAccount.get(oldAccount) ?? null
+}
+
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+function isUuid (val: string): boolean {
+  return uuidRegex.test(val)
+}
+
+export async function getUniqueAccountsFromOldAccounts (
+  client: MigrationClient,
+  oldAccounts: string[],
+  socialIdByOldAccount: Record<string, PersonId>,
+  accountUuidByOldAccount: Map<string, AccountUuid | null> = new Map<string, AccountUuid | null>()
+): Promise<AccountUuid[]> {
+  const accounts = new Set<AccountUuid>()
+  for (const oldAcc of oldAccounts) {
+    let newAccount = await getAccountUuidByOldAccount(client, oldAcc, socialIdByOldAccount, accountUuidByOldAccount)
+
+    if (newAccount == null && isUuid(oldAcc)) {
+      newAccount = oldAcc as unknown as AccountUuid
+    }
+
+    if (newAccount != null) {
+      accounts.add(newAccount)
+    }
+  }
+
+  return Array.from(accounts)
+}
+
+/**
+ * Migrates social ids to new accounts where needed.
+ * Should only be applied to staging where old accounts have already been migrated to social ids.
+ * REMOVE IT BEFORE MERGING TO PRODUCTION
+ * @param client
+ * @returns
+ */
+async function migrateSpaceMembersToAccountUuids (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('core migrateSpaceMembersToAccountUuids', {})
+  const hierarchy = client.hierarchy
+  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+
+  const spaceTypes = client.model.findAllSync(core.class.SpaceType, {})
+  const spaceTypesById = toIdMap(spaceTypes)
+  const roles = client.model.findAllSync(core.class.Role, {})
+  const rolesBySpaceType = new Map<Ref<SpaceType>, Role[]>()
+  for (const role of roles) {
+    const spaceType = role.attachedTo
+    if (spaceType === undefined) continue
+    if (rolesBySpaceType.has(spaceType)) {
+      rolesBySpaceType.get(spaceType)?.push(role)
+    } else {
+      rolesBySpaceType.set(spaceType, [role])
+    }
+  }
+
+  ctx.info('processing spaces members, owners and roles assignment', {})
+  let processedSpaces = 0
+  const spacesIterator = await client.traverse(DOMAIN_SPACE, {})
+
+  try {
+    while (true) {
+      const spaces = await spacesIterator.next(200)
+      if (spaces === null || spaces.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Space>, update: MigrateUpdate<Space> }[] = []
+
+      for (const s of spaces) {
+        if (!hierarchy.isDerived(s._class, core.class.Space)) continue
+        const space = s as Space
+        const update: MigrateUpdate<Space> = {
+          members: await getUniqueAccounts(client, space.members as unknown as PersonId[], accountUuidBySocialId),
+          owners: await getUniqueAccounts(client, (space.owners ?? []) as unknown as PersonId[], accountUuidBySocialId)
+        }
+
+        const type = spaceTypesById.get((space as TypedSpace).type)
+
+        if (type !== undefined) {
+          const mixin = hierarchy.as(space, type.targetClass)
+          if (mixin !== undefined) {
+            const roles = rolesBySpaceType.get(type._id)
+
+            for (const role of roles ?? []) {
+              const oldAssignees: PersonId[] | undefined = (mixin as any)[role._id]
+              if (oldAssignees != null && oldAssignees.length > 0) {
+                const newAssignees = await getUniqueAccounts(client, oldAssignees, accountUuidBySocialId)
+
+                update[`${type.targetClass}`] = {
+                  [role._id]: newAssignees
+                }
+              }
+            }
+          }
+        }
+
+        operations.push({
+          filter: { _id: space._id },
+          update
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_SPACE, operations)
+      }
+
+      processedSpaces += spaces.length
+      ctx.info('...spaces processed', { count: processedSpaces })
+    }
+
+    ctx.info('finished processing spaces members, owners and roles assignment', { processedSpaces })
+  } finally {
+    await spacesIterator.close()
+  }
+
+  ctx.info('processing space types members', {})
+  let updatedSpaceTypes = 0
+  for (const spaceType of spaceTypes) {
+    if (spaceType.members === undefined || spaceType.members.length === 0) continue
+
+    const newMembers = await getUniqueAccounts(
+      client,
+      spaceType.members as unknown as PersonId[],
+      accountUuidBySocialId
+    )
     const tx: TxUpdateDoc<SpaceType> = {
       _id: generateId(),
       _class: core.class.TxUpdateDoc,
@@ -721,7 +975,12 @@ export const coreOperation: MigrateOperation = {
       },
       {
         state: 'accounts-to-social-ids',
-        func: migrateAccountsToSocialIds
+        func: migrateAccounts
+      },
+      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
+      {
+        state: 'space-members-to-account-uuids',
+        func: migrateSpaceMembersToAccountUuids
       }
     ])
   },

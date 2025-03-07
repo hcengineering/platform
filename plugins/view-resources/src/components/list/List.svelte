@@ -72,7 +72,7 @@
   $: configOptions = options
   $: resultOptions = {
     ...configOptions,
-    lookup,
+    ...(Object.keys(lookup).length > 0 ? lookup : {}),
     ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {})
   }
 
@@ -109,7 +109,7 @@
     queryNoLookup,
     (res) => {
       fastDocs = res
-      // console.log('query, res', queryNoLookup, res)
+      // console.log('query, res', res)
       fastQueryIds = new Set(res.map((it) => it._id))
     },
     { ...categoryQueryOptions, limit: 1000 }

@@ -18,6 +18,7 @@
   import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
   import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import card from '../plugin'
 
   export let value: Card | undefined
@@ -26,8 +27,9 @@
   export let shouldShowAvatar: boolean = false
   export let noUnderline: boolean = disabled
   export let colorInherit: boolean = false
-  export let noSelect: boolean = false
+  export let noSelect: boolean = true
   export let inline = false
+  export let showParent: boolean = false
   export let kind: 'list' | undefined = undefined
   export let type: ObjectPresenterType = 'link'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -48,7 +50,7 @@
         component={card.component.EditCard}
         shrink={0}
       >
-        <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
+        <span class="presenterRoot" class:cursor-pointer={!disabled}>
           {#if shouldShowAvatar}
             <div class="icon" use:tooltip={{ label: card.string.Card }}>
               <Icon icon={icon ?? card.icon.Card} size={'small'} />
@@ -56,6 +58,9 @@
           {/if}
           <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
             {value.title}
+            {#if showParent}
+              <ParentNamesPresenter {value} />
+            {/if}
             <slot name="details" />
           </span>
         </span>
@@ -69,18 +74,10 @@
 {/if}
 
 <style lang="scss">
-  .issuePresenterRoot {
+  .presenterRoot {
     display: flex;
     align-items: center;
     flex-shrink: 0;
-
-    &:not(.list) {
-      color: var(--theme-content-color);
-    }
-
-    &.list {
-      color: var(--theme-halfcontent-color);
-    }
 
     .icon {
       margin-right: 0.5rem;

@@ -14,16 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountArrayEditor, personRefByPersonIdStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, personRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import core, {
-    PersonId,
     getCurrentAccount,
     Ref,
     Role,
     RolesAssignment,
     SpaceType,
     WithLookup,
-    notEmpty
+    notEmpty,
+    AccountUuid
   } from '@hcengineering/core'
   import lead, { Funnel, LeadEvents } from '@hcengineering/lead'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
@@ -50,12 +50,11 @@
   let rolesAssignment: RolesAssignment = {}
   let isPrivate: boolean = funnel?.private ?? false
 
-  let members: PersonId[] =
-    funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount().primarySocialId]
-  let owners: PersonId[] =
-    funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount().primarySocialId]
+  let members: AccountUuid[] =
+    funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount().uuid]
+  let owners: AccountUuid[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount().uuid]
 
-  $: membersPersons = members.map((m) => $personRefByPersonIdStore.get(m)).filter(notEmpty)
+  $: membersPersons = members.map((m) => $personRefByAccountUuidStore.get(m)).filter(notEmpty)
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
     spaceType =
@@ -135,14 +134,14 @@
     }
   }
 
-  function handleOwnersChanged (newOwners: PersonId[]): void {
+  function handleOwnersChanged (newOwners: AccountUuid[]): void {
     owners = newOwners
 
     const newMembersSet = new Set([...members, ...newOwners])
     members = Array.from(newMembersSet)
   }
 
-  function handleMembersChanged (newMembers: PersonId[]): void {
+  function handleMembersChanged (newMembers: AccountUuid[]): void {
     membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -157,7 +156,7 @@
     members = newMembers
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: PersonId[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: AccountUuid[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }

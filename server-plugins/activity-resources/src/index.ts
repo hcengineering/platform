@@ -37,6 +37,7 @@ import core, {
   TxCUD,
   TxProcessor
 } from '@hcengineering/core'
+import { getAccountBySocialId } from '@hcengineering/server-contact'
 import notification, { NotificationContent } from '@hcengineering/notification'
 import { getResource, translate } from '@hcengineering/platform'
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
@@ -108,9 +109,9 @@ export async function createReactionNotifications (tx: TxCUD<Reaction>, control:
     return []
   }
 
-  const user = parentMessage.createdBy
+  const userSocialId = parentMessage.createdBy
 
-  if (user === undefined || user === core.account.System || user === tx.modifiedBy) {
+  if (userSocialId === undefined || userSocialId === core.account.System || userSocialId === tx.modifiedBy) {
     return []
   }
 
@@ -136,9 +137,14 @@ export async function createReactionNotifications (tx: TxCUD<Reaction>, control:
   res.push(messageTx)
 
   const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx as TxCreateDoc<DocUpdateMessage>)
+  const account = await getAccountBySocialId(control, userSocialId)
+
+  if (account == null) {
+    return []
+  }
 
   res = res.concat(
-    await createCollabDocInfo(control.ctx, res, [user], control, tx, parentMessage, [docUpdateMessage], {
+    await createCollabDocInfo(control.ctx, res, [account], control, tx, parentMessage, [docUpdateMessage], {
       isOwn: true,
       isSpace: false,
       shouldUpdateTimestamp: false

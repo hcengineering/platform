@@ -47,7 +47,8 @@ import core, {
   type Status,
   type Timestamp,
   type TxOperations,
-  type PersonId
+  type PersonId,
+  type AccountUuid
 } from '@hcengineering/core'
 import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
 import task, {
@@ -57,7 +58,8 @@ import task, {
   type TaskType,
   type TaskTypeWithFactory
 } from '@hcengineering/task'
-import { jsonToMarkup, parseMessageMarkdown } from '@hcengineering/text'
+import { jsonToMarkup } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import tracker, {
   type Issue,
   type IssueParentInfo,
@@ -102,8 +104,8 @@ export interface ImportSpace<T extends ImportDoc> {
   archived?: boolean
   description?: string
   emoji?: string
-  owners?: PersonId[]
-  members?: PersonId[]
+  owners?: AccountUuid[]
+  members?: AccountUuid[]
   docs: T[]
 }
 export interface ImportDoc {
@@ -175,9 +177,9 @@ export interface ImportDrawing {
 export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate // todo: rename
 export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
   class: Ref<Class<DocumentSpace>>
-  qualified?: PersonId
-  manager?: PersonId
-  qara?: PersonId
+  qualified?: AccountUuid
+  manager?: AccountUuid
+  qara?: AccountUuid
 }
 
 export interface ImportControlledDocumentTemplate extends ImportDoc {
@@ -644,7 +646,7 @@ export class WorkspaceImporter {
   }
 
   async createComment (issueId: Ref<Issue>, comment: ImportComment, projectId: Ref<Project>): Promise<void> {
-    const json = parseMessageMarkdown(comment.text ?? '', 'image://')
+    const json = markdownToMarkup(comment.text ?? '')
     const processedJson = this.preprocessor.process(json, issueId, projectId)
     const markup = jsonToMarkup(processedJson)
 
@@ -760,7 +762,7 @@ export class WorkspaceImporter {
     content: string,
     spaceId: Ref<Space>
   ): Promise<Ref<PlatformBlob>> {
-    const json = parseMessageMarkdown(content ?? '', 'image://')
+    const json = markdownToMarkup(content ?? '')
     const processedJson = this.preprocessor.process(json, id, spaceId)
 
     const markup = jsonToMarkup(processedJson)

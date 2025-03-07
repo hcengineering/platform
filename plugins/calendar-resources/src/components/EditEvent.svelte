@@ -197,7 +197,7 @@
       />
     </div>
     <div class="block rightCropPadding">
-      <LocationEditor bind:value={location} focusIndex={10005} />
+      <LocationEditor bind:value={location} focusIndex={10005} {readOnly} />
       <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} focusIndex={10006} />
       <ComponentExtensions extension={calendar.extensions.EditEventExtensions} props={{ readOnly, value: object }} />
     </div>
@@ -221,9 +221,15 @@
       <CalendarSelector bind:value={_calendar} focusIndex={10008} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
-        <VisibilityEditor bind:value={visibility} kind={'tertiary'} withoutIcon focusIndex={10009} />
+        <VisibilityEditor
+          bind:value={visibility}
+          kind={'tertiary'}
+          disabled={readOnly}
+          withoutIcon
+          focusIndex={10009}
+        />
       </div>
-      <EventReminders bind:reminders focusIndex={10010} />
+      <EventReminders bind:reminders focusIndex={10010} disabled={readOnly} />
     </div>
   </Scroller>
   <div class="antiDivider noMargin" />

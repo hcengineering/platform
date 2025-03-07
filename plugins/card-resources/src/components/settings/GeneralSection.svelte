@@ -50,7 +50,7 @@
   async function handleDelete (): Promise<void> {
     await deleteMasterTag(masterTag, () => {
       const loc = getCurrentLocation()
-      if (masterTag.extends !== card.class.MasterTag && masterTag.extends !== undefined) {
+      if (masterTag.extends !== card.class.Card && masterTag.extends !== undefined) {
         loc.path[4] = masterTag.extends
       } else {
         loc.path.length = 3

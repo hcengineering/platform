@@ -16,8 +16,13 @@
 <script lang="ts">
   import { DocAttributeUpdates, DocUpdateMessage } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
-  import { PersonId, Ref } from '@hcengineering/core'
-  import { personRefByPersonIdStore, personByIdStore, PersonPresenter } from '@hcengineering/contact-resources'
+  import { AccountUuid, notEmpty, PersonId, Ref } from '@hcengineering/core'
+  import {
+    personRefByAccountUuidStore,
+    personRefByPersonIdStore,
+    personByIdStore,
+    PersonPresenter
+  } from '@hcengineering/contact-resources'
   import { ChunterSpace } from '@hcengineering/chunter'
   import { Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -32,17 +37,17 @@
   let addedPersons: Person[] = []
   let removedPersons: Person[] = []
 
-  $: addedPersons = getPersons(value.added.length > 0 ? value.added : value.set, $personRefByPersonIdStore)
-  $: removedPersons = getPersons(value.removed, $personRefByPersonIdStore)
+  $: addedPersons = getPersons(value.added.length > 0 ? value.added : value.set, $personRefByAccountUuidStore)
+  $: removedPersons = getPersons(value.removed, $personRefByAccountUuidStore)
 
   function getPersons (
-    personIds: DocAttributeUpdates['removed' | 'added' | 'set'],
-    personRefByPersonId: Map<PersonId, Ref<Person>>
+    accounts: DocAttributeUpdates['removed' | 'added' | 'set'],
+    personRefByAccountUuid: Map<AccountUuid, Ref<Person>>
   ): Person[] {
     const persons = new Set<Ref<Person>>()
 
-    for (const personId of personIds) {
-      const person = personRefByPersonId.get(personId as PersonId)
+    for (const acc of accounts) {
+      const person = personRefByAccountUuid.get(acc as AccountUuid)
 
       if (person === undefined) continue
 
@@ -51,7 +56,7 @@
 
     return Array.from(persons)
       .map((personRef) => $personByIdStore.get(personRef))
-      .filter((person): person is Person => person !== undefined)
+      .filter(notEmpty)
   }
 
   $: creatorPersonRef = $personRefByPersonIdStore.get(message.createdBy as PersonId)

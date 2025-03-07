@@ -48,7 +48,7 @@ import serverTelegram from '@hcengineering/server-telegram'
 import { generateToken } from '@hcengineering/server-token'
 import setting, { Integration } from '@hcengineering/setting'
 import telegram, { TelegramMessage, TelegramNotificationRequest } from '@hcengineering/telegram'
-import { markupToHTML } from '@hcengineering/text-core'
+import { jsonToHTML, markupToJSON } from '@hcengineering/text'
 
 /**
  * @public
@@ -168,7 +168,7 @@ async function activityMessageToHtml (control: TriggerControl, message: Activity
   const { hierarchy } = control
   if (hierarchy.isDerived(message._class, chunter.class.ChatMessage)) {
     const chatMessage = message as ChatMessage
-    return markupToHTML(chatMessage.message)
+    return jsonToHTML(markupToJSON(chatMessage.message))
   } else {
     const resource = getTextPresenter(message._class, control.hierarchy)
 
@@ -176,7 +176,7 @@ async function activityMessageToHtml (control: TriggerControl, message: Activity
       const fn = await getResource(resource.presenter)
       const textData = await fn(message, control)
       if (textData !== undefined && textData !== '') {
-        return markupToHTML(textData)
+        return jsonToHTML(markupToJSON(textData))
       }
     }
   }
@@ -210,9 +210,9 @@ async function getTranslatedData (
 
   if (hierarchy.isDerived(data._class, notification.class.MentionInboxNotification)) {
     const text = (data as MentionInboxNotification).messageHtml
-    body = text !== undefined ? markupToHTML(text) : body
+    body = text !== undefined ? jsonToHTML(markupToJSON(text)) : body
   } else if (data.data !== undefined) {
-    body = markupToHTML(data.data)
+    body = jsonToHTML(markupToJSON(data.data))
   } else if (message !== undefined) {
     const html = await activityMessageToHtml(control, message)
     if (html !== undefined) {

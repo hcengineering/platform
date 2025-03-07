@@ -34,7 +34,8 @@ import {
   type Timestamp,
   type Tx,
   type TxCUD,
-  DOMAIN_TRANSIENT
+  DOMAIN_TRANSIENT,
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -47,9 +48,9 @@ import {
   TypeIntlString,
   TypeMarkup,
   TypeRef,
-  TypePersonId,
   UX,
-  type Builder
+  type Builder,
+  TypeAccountUuid
 } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
@@ -100,7 +101,7 @@ export class TBrowserNotification extends TDoc implements BrowserNotification {
   title!: string
   body!: string
   onClickLocation?: Location | undefined
-  user!: PersonId
+  user!: AccountUuid
   messageId?: Ref<ActivityMessage>
   messageClass?: Ref<Class<ActivityMessage>>
   objectId!: Ref<Doc>
@@ -109,7 +110,7 @@ export class TBrowserNotification extends TDoc implements BrowserNotification {
 
 @Model(notification.class.PushSubscription, core.class.Doc, DOMAIN_USER_NOTIFY)
 export class TPushSubscription extends TDoc implements PushSubscription {
-  user!: PersonId
+  user!: AccountUuid
   endpoint!: string
   keys!: PushSubscriptionKeys
 }
@@ -170,9 +171,9 @@ export class TClassCollaborators extends TClass {
 @Mixin(notification.mixin.Collaborators, core.class.Doc)
 @UX(notification.string.Collaborators)
 export class TCollaborators extends TDoc {
-  @Prop(ArrOf(TypePersonId()), notification.string.Collaborators)
+  @Prop(ArrOf(TypeAccountUuid()), notification.string.Collaborators)
   @Index(IndexKind.Indexed)
-    collaborators!: PersonId[]
+    collaborators!: AccountUuid[]
 }
 
 @Mixin(notification.mixin.NotificationObjectPresenter, core.class.Class)
@@ -192,9 +193,9 @@ export class TNotificationContextPresenter extends TClass implements Notificatio
 
 @Model(notification.class.DocNotifyContext, core.class.Doc, DOMAIN_DOC_NOTIFY)
 export class TDocNotifyContext extends TDoc implements DocNotifyContext {
-  @Prop(TypePersonId(), core.string.Account)
+  @Prop(TypeAccountUuid(), core.string.Account)
   @Index(IndexKind.Indexed)
-    user!: PersonId
+    user!: AccountUuid
 
   @Prop(TypeRef(core.class.Doc), core.string.Object)
   @Index(IndexKind.Indexed)
@@ -229,9 +230,9 @@ export class TInboxNotification extends TDoc implements InboxNotification {
   @Index(IndexKind.Indexed)
     docNotifyContext!: Ref<DocNotifyContext>
 
-  @Prop(TypePersonId(), core.string.Account)
+  @Prop(TypeAccountUuid(), core.string.Account)
   @Index(IndexKind.Indexed)
-    user!: PersonId
+    user!: AccountUuid
 
   @Prop(TypeBoolean(), core.string.Boolean)
   // @Index(IndexKind.Indexed)

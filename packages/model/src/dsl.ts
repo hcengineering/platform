@@ -50,7 +50,8 @@ import core, {
   ArrOf as TypeArrOf,
   Collection as TypeCollection,
   TypeDate as TypeDateType,
-  generateId
+  generateId,
+  type AccountUuid
 } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import toposort from 'toposort'
@@ -526,4 +527,8 @@ export function TypeRank (): Type<Rank> {
 
 export function TypePersonId (): Type<PersonId> {
   return { _class: core.class.TypePersonId, label: core.string.PersonId }
+}
+
+export function TypeAccountUuid (): Type<AccountUuid> {
+  return { _class: core.class.TypeAccountUuid, label: core.string.AccountId }
 }

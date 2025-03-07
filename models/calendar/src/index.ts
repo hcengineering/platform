@@ -22,9 +22,11 @@ import {
   type ReccuringEvent,
   type ReccuringInstance,
   type RecurringRule,
+  type Schedule,
+  type ScheduleAvailability,
   type Visibility
 } from '@hcengineering/calendar'
-import { type Contact } from '@hcengineering/contact'
+import { type Contact, type Employee } from '@hcengineering/contact'
 import {
   DateRangeMode,
   IndexKind,
@@ -155,6 +157,18 @@ export class TReccuringInstance extends TReccuringEvent implements ReccuringInst
   virtual?: boolean
 }
 
+@Model(calendar.class.Schedule, core.class.Doc, DOMAIN_CALENDAR)
+@UX(calendar.string.Schedule, calendar.icon.Calendar)
+export class TSchedule extends TDoc implements Schedule {
+  owner!: Ref<Employee>
+  title!: string
+  description?: string
+  meetingDuration!: number
+  meetingInterval!: number
+  availability!: ScheduleAvailability
+  timeZone!: string
+}
+
 @Mixin(calendar.mixin.CalendarEventPresenter, core.class.Class)
 export class TCalendarEventPresenter extends TClass implements CalendarEventPresenter {
   presenter!: AnyComponent
@@ -167,6 +181,7 @@ export function createModel (builder: Builder): void {
     TReccuringEvent,
     TReccuringInstance,
     TEvent,
+    TSchedule,
     TCalendarEventPresenter
   )
 

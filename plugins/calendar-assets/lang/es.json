@@ -85,6 +85,20 @@
     "FreeBusy": "Disponible/Ocupado",
     "DefaultVisibility": "Visibilidad predeterminada",
     "NotAllPermissions": "No se concedieron todos los permisos",
-    "GooglePrivacy": "Huly’s use and transfer of information received from Google APIs to any other app will adhere to <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API Services User Data Policy</a>, including the Limited Use requirements."
+    "GooglePrivacy": "Huly’s use and transfer of information received from Google APIs to any other app will adhere to <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API Services User Data Policy</a>, including the Limited Use requirements.",
+    "Value": "{value}",
+    "Schedule": "Programa público",
+    "ScheduleNew": "Agregar programa",
+    "ScheduleDeleteConfirm": "Se eliminará el programa. ¿Confirmar?",
+    "ScheduleShareLink": "Compartir enlace",
+    "ScheduleSharedLinkMessage": "Comparte este enlace para permitir que otros reserven una reunión contigo:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkCopy": "Copiar enlace",
+    "ScheduleAvailability": "Disponibilidad",
+    "ScheduleUnavailable": "No disponible",
+    "ScheduleTitlePlaceholder": "Título del programa",
+    "ScheduleAddPeriod": "Agregar período",
+    "ScheduleRemovePeriod": "Eliminar período",
+    "MeetingDuration": "Duración de la reunión",
+    "MeetingInterval": "Pausa entre reuniones"
   }
 }

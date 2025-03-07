@@ -60,8 +60,8 @@ import type {
   TypeAny,
   TypedSpace,
   UserStatus,
-  PersonUuid,
-  Version
+  Version,
+  AccountUuid
 } from './classes'
 import { Status, StatusCategory } from './status'
 import type {
@@ -86,13 +86,15 @@ export const coreId = 'core' as Plugin
  */
 // TODO: consider removing email?
 export const systemAccountEmail = 'anticrm@hc.engineering'
-export const systemAccountUuid = '1749089e-22e6-48de-af4e-165e18fbd2f9' as PersonUuid
+export const systemAccountUuid = '1749089e-22e6-48de-af4e-165e18fbd2f9' as AccountUuid
 export const systemAccount: Account = {
   uuid: systemAccountUuid,
   role: AccountRole.Owner,
   primarySocialId: '' as PersonId,
   socialIds: []
 }
+
+export const configUserAccountUuid = '0d94731c-0787-4bcd-aefe-304efc3706b1' as AccountUuid
 
 export default plugin(coreId, {
   class: {
@@ -136,6 +138,7 @@ export default plugin(coreId, {
     TypeDate: '' as Ref<Class<Type<Timestamp | Date>>>,
     TypeCollaborativeDoc: '' as Ref<Class<Type<MarkupBlobRef>>>,
     TypePersonId: '' as Ref<Class<Type<string>>>,
+    TypeAccountUuid: '' as Ref<Class<Type<string>>>,
     RefTo: '' as Ref<Class<RefTo<Doc>>>,
     ArrOf: '' as Ref<Class<ArrOf<Doc>>>,
     Enum: '' as Ref<Class<Enum>>,
@@ -224,6 +227,7 @@ export default plugin(coreId, {
     CollaborativeDoc: '' as IntlString,
     MarkupBlobRef: '' as IntlString,
     PersonId: '' as IntlString,
+    AccountId: '' as IntlString,
     Number: '' as IntlString,
     Boolean: '' as IntlString,
     Timestamp: '' as IntlString,

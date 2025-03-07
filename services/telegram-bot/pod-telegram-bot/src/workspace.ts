@@ -27,7 +27,8 @@ import core, {
   Space,
   systemAccountUuid,
   TxFactory,
-  WorkspaceUuid
+  WorkspaceUuid,
+  AccountUuid
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import notification, { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
@@ -104,7 +105,7 @@ export class WorkspaceClient {
     return attachments
   }
 
-  async isReplyAvailable (account: PersonId, message: ActivityMessage): Promise<boolean> {
+  async isReplyAvailable (account: AccountUuid, message: ActivityMessage): Promise<boolean> {
     const hierarchy = this.hierarchy
 
     let objectId: Ref<Doc>
@@ -376,7 +377,7 @@ export class WorkspaceClient {
     // })
   }
 
-  async getPersons (_ids: PersonId[], myEmail: string): Promise<Person[]> {
+  async getPersons (_ids: AccountUuid[], myEmail: string): Promise<Person[]> {
     // TODO: FIXME
     throw new Error('Not implemented')
     // const me = await this.client.findOne(contact.class.PersonAccount, { email: myEmail })

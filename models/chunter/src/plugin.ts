@@ -56,7 +56,8 @@ export default mergeIds(chunterId, chunter, {
     OpenInSidebar: '' as ViewAction,
     TranslateMessage: '' as ViewAction,
     ShowOriginalMessage: '' as ViewAction,
-    StartConversation: '' as ViewAction
+    StartConversation: '' as ViewAction,
+    SummarizeMessages: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>

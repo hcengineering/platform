@@ -33,10 +33,11 @@
   import view, { decodeObjectURI } from '@hcengineering/view'
   import { parseLinkId, getObjectLinkId } from '@hcengineering/view-resources'
   import { ActivityMessage } from '@hcengineering/activity'
+  import { loadSavedAttachments } from '@hcengineering/attachment-resources'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
-  import { chatSpecials, loadSavedAttachments } from './utils'
+  import { chatSpecials } from './utils'
   import { SelectChannelEvent } from './types'
   import { openChannel, openThreadInSidebar } from '../../navigation'
 

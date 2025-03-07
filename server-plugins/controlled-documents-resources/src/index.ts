@@ -17,7 +17,8 @@ import core, {
   type Doc,
   type RolesAssignment,
   type Timestamp,
-  type TxCUD
+  type TxCUD,
+  systemAccountUuid
 } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import { getEmployees, getSocialStrings, getSocialStringsByPersons } from '@hcengineering/server-contact'
@@ -167,8 +168,8 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
     }
 
     const mixin = control.hierarchy.as(space, spaceType.targetClass) as unknown as RolesAssignment
-    const personIds = roles.map((roleId) => mixin[roleId] ?? []).flat()
-    const employees = await getEmployees(control, personIds)
+    const accounts = roles.map((roleId) => mixin[roleId] ?? []).flat()
+    const employees = await getEmployees(control, accounts)
 
     for (const employee of employees) {
       traineesMap.set(employee._id, true)
@@ -286,7 +287,7 @@ export async function OnDocHasBecomeEffective (
   return result
 }
 
-export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   // Fill owner of default space with the very first owner account creating a social identity
   const account = control.ctx.contextData.account
   if (account.role !== AccountRole.Owner) return []
@@ -299,9 +300,9 @@ export async function OnSocialIdentityCreate (_txes: Tx[], control: TriggerContr
 
   const owners = defaultSpace.owners ?? []
 
-  if (owners.length === 0 || (owners.length === 1 && owners[0] === core.account.System)) {
+  if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
     const setOwnerTx = control.txFactory.createTxUpdateDoc(defaultSpace._class, defaultSpace.space, defaultSpace._id, {
-      owners: [account.primarySocialId]
+      owners: [account.uuid]
     })
 
     return [setOwnerTx]
@@ -418,7 +419,7 @@ async function CoAuthorsTypeMatch (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnSocialIdentityCreate,
+    OnEmployeeCreate,
     OnDocDeleted,
     OnDocPlannedEffectiveDateChanged,
     OnDocApprovalRequestApproved,

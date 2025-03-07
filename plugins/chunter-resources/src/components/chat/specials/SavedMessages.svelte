@@ -14,17 +14,16 @@
 -->
 <script lang="ts">
   import { Attachment, SavedAttachments } from '@hcengineering/attachment'
-  import { AttachmentPreview } from '@hcengineering/attachment-resources'
+  import { AttachmentPreview, savedAttachmentsStore } from '@hcengineering/attachment-resources'
   import { Person, getName as getContactName } from '@hcengineering/contact'
   import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import { getDisplayTime, PersonId, Ref, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Label, Scroller } from '@hcengineering/ui'
+  import { Label, Scroller, Lazy } from '@hcengineering/ui'
   import activity, { ActivityMessage, SavedMessage } from '@hcengineering/activity'
   import { ActivityMessagePresenter, savedMessagesStore } from '@hcengineering/activity-resources'
 
   import chunter from '../../../plugin'
-  import { savedAttachmentsStore } from '../utils'
   import Header from '../../Header.svelte'
   import { openMessageFromSpecial } from '../../../navigation'
   import BlankView from '../../BlankView.svelte'
@@ -60,23 +59,28 @@
   function handleMessageClicked (message?: ActivityMessage): void {
     void openMessageFromSpecial(message)
   }
+
+  $: isEmpty = savedMessages.length === 0 && savedAttachments.length === 0
 </script>
 
 <Header icon={chunter.icon.Bookmarks} intlLabel={chunter.string.Saved} titleKind={'breadcrumbs'} />
 
-<Scroller padding={'.75rem .5rem'} bottomPadding={'.75rem'}>
-  {#if savedMessages.length > 0 || savedAttachments.length > 0}
+<Scroller padding={'.75rem .5rem'} bottomPadding={'.75rem'} noStretch={!isEmpty}>
+  {#if !isEmpty}
     {#each savedMessages as message}
       {#if message.$lookup?.attachedTo}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-
-        <ActivityMessagePresenter
-          value={message.$lookup?.attachedTo}
-          onClick={() => {
-            handleMessageClicked(message.$lookup?.attachedTo)
-          }}
-        />
+        <div class="message-container">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <Lazy>
+            <ActivityMessagePresenter
+              value={message.$lookup?.attachedTo}
+              onClick={() => {
+                handleMessageClicked(message.$lookup?.attachedTo)
+              }}
+            />
+          </Lazy>
+        </div>
       {/if}
     {/each}
     {#each savedAttachments as attach}
@@ -87,16 +91,18 @@
           class="attachmentContainer flex-no-shrink clear-mins"
           on:click={() => openAttachment(attach.$lookup?.attachedTo)}
         >
-          <AttachmentPreview value={attach.$lookup.attachedTo} isSaved={true} />
-          <div class="label">
-            <Label
-              label={chunter.string.SharedBy}
-              params={{
-                name: getName(attach.$lookup.attachedTo, $personByPersonIdStore),
-                time: getDisplayTime(attach.modifiedOn)
-              }}
-            />
-          </div>
+          <Lazy>
+            <AttachmentPreview value={attach.$lookup.attachedTo} isSaved={true} />
+            <div class="label">
+              <Label
+                label={chunter.string.SharedBy}
+                params={{
+                  name: getName(attach.$lookup.attachedTo, $personByPersonIdStore),
+                  time: getDisplayTime(attach.modifiedOn)
+                }}
+              />
+            </div>
+          </Lazy>
         </div>
       {/if}
     {/each}
@@ -114,6 +120,7 @@
     cursor: pointer;
     padding: 2rem;
     border-radius: 0.25rem;
+    min-height: 3.75rem;
 
     &:hover {
       background-color: var(--global-ui-BackgroundColor);
@@ -122,5 +129,11 @@
     .label {
       padding-top: 1rem;
     }
+  }
+
+  .message-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 3.75rem;
   }
 </style>

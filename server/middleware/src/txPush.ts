@@ -51,13 +51,15 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
   async tx (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> {
     const txToStore: Tx[] = []
     for (const tx of txes) {
-      if (tx.space !== core.space.DerivedTx && TxProcessor.isExtendsCUD(tx._class)) {
-        const objectClass = (tx as TxCUD<Doc>).objectClass
-        if (
-          objectClass !== core.class.BenchmarkDoc &&
-          this.context.hierarchy.findDomain(objectClass) !== DOMAIN_TRANSIENT
-        ) {
-          txToStore.push(tx)
+      if (TxProcessor.isExtendsCUD(tx._class)) {
+        if (tx.space !== core.space.DerivedTx || tx.objectSpace === core.space.Model) {
+          const objectClass = (tx as TxCUD<Doc>).objectClass
+          if (
+            objectClass !== core.class.BenchmarkDoc &&
+            this.context.hierarchy.findDomain(objectClass) !== DOMAIN_TRANSIENT
+          ) {
+            txToStore.push(tx)
+          }
         }
       }
     }

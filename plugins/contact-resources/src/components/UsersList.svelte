@@ -31,6 +31,7 @@
   export let disableDeselectFor: Ref<Employee>[] = []
   export let showStatus = true
   export let skipInactive = false
+  export let skipOnlyLocal = true
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -52,7 +53,8 @@
           : { [searchField]: { $like: '%' + search + '%' } }
         : {}),
       ...(skipCurrentAccount ? { _id: { $ne: me } } : {}),
-      ...(skipInactive ? { active: true } : {})
+      ...(skipInactive ? { active: true } : {}),
+      ...(skipOnlyLocal ? { personUuid: { $exists: true } } : {})
     },
     (result) => {
       result.sort((a, b) => {

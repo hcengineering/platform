@@ -14,18 +14,18 @@
 -->
 <script lang="ts">
   import { Contact, Employee, getCurrentEmployee, getName, Person } from '@hcengineering/contact'
-  import { PersonId, Ref } from '@hcengineering/core'
+  import { AccountUuid, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import contact from '../plugin'
-  import { personRefByPersonIdStore, primarySocialIdByPersonRefStore } from '../utils'
+  import { employeeByIdStore, personRefByAccountUuidStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
-  export let value: PersonId[]
-  export let onChange: ((refs: PersonId[]) => void | Promise<void>) | undefined
+  export let value: AccountUuid[]
+  export let onChange: ((refs: AccountUuid[]) => void | Promise<void>) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -41,7 +41,7 @@
 
   $: valueByPersonRef = new Map(
     value.map((p) => {
-      const person = $personRefByPersonIdStore.get(p)
+      const person = $personRefByAccountUuidStore.get(p)
 
       if (person === undefined) {
         console.error('Person not found for social id', p)
@@ -57,24 +57,21 @@
     }
     update = async () => {
       const newPersons = evt.detail
-      const newSocialIds: PersonId[] = []
+      const newAccounts: AccountUuid[] = []
+
       for (const person of newPersons) {
-        const socialId = valueByPersonRef.get(person)
-        if (socialId !== undefined) {
-          newSocialIds.push(socialId)
+        const acc = valueByPersonRef.get(person)
+        if (acc !== undefined) {
+          newAccounts.push(acc)
         } else {
-          const primaryId = $primarySocialIdByPersonRefStore.get(person)
+          const employee = $employeeByIdStore.get(person)
+          if (employee?.personUuid == null) continue
 
-          if (primaryId === undefined) {
-            console.error('Primary social id not found for person', person)
-            continue
-          }
-
-          newSocialIds.push(primaryId)
+          newAccounts.push(employee.personUuid)
         }
       }
 
-      void onChange?.(newSocialIds)
+      void onChange?.(newAccounts)
       if (timer !== null) {
         clearTimeout(timer)
       }
@@ -89,7 +86,7 @@
     void update?.()
   })
 
-  $: employees = value.map((p) => $personRefByPersonIdStore.get(p)).filter((p) => p !== undefined) as Ref<Employee>[]
+  $: employees = value.map((p) => $personRefByAccountUuidStore.get(p)).filter((p) => p !== undefined) as Ref<Employee>[]
   $: docQuery =
     excludeItems.length === 0 && includeItems.length === 0
       ? {}

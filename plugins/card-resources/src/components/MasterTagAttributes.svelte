@@ -69,7 +69,7 @@
       icon={setting.icon.Setting}
       kind={'link'}
       size={'medium'}
-      showTooltip={{ label: setting.string.ClassSetting }}
+      showTooltip={{ label: setting.string.Setting }}
       on:click={(ev) => {
         ev.stopPropagation()
         const loc = getCurrentResolvedLocation()

@@ -86,7 +86,14 @@ import { get, writable } from 'svelte/store'
 import { sendMessage } from './broadcast'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
-import { $myPreferences, currentMeetingMinutes, currentRoom, myOffice, selectedRoomPlace } from './stores'
+import {
+  $myPreferences,
+  currentMeetingMinutes,
+  currentRoom,
+  myOffice,
+  selectedRoomPlace,
+  loveUseMaxWidth
+} from './stores'
 
 export const selectedCamId = 'selectedDevice_cam'
 export const selectedMicId = 'selectedDevice_mic'
@@ -991,11 +998,14 @@ export async function createMeeting (
   phase: DocCreatePhase
 ): Promise<void> {
   if (phase === 'post' && store.room != null && store.isMeeting === true) {
-    await client.createMixin<Event, Meeting>(_id, calendar.class.Event, space._id, love.mixin.Meeting, {
-      room: store.room as Ref<Room>
-    })
     const event = await client.findOne(calendar.class.Event, { _id })
     if (event === undefined) return
+    const events = await client.findAll(calendar.class.Event, { eventId: event.eventId })
+    for (const event of events) {
+      await client.createMixin<Event, Meeting>(event._id, calendar.class.Event, space._id, love.mixin.Meeting, {
+        room: store.room as Ref<Room>
+      })
+    }
     const navigateUrl = getCurrentLocation()
     navigateUrl.path[2] = loveId
     navigateUrl.query = {
@@ -1157,4 +1167,19 @@ export async function getMeetingMinutesTitle (
   const meeting = doc ?? (await client.findOne(love.class.MeetingMinutes, { _id: ref }))
 
   return meeting?.title ?? ''
+}
+
+// Floor Scaling (Max Width)
+const useMaxWidthKey = 'loveUseMaxWidth'
+export const saveLoveUseMaxWidth = (useMaxWidth: boolean): void => {
+  if (useMaxWidth) localStorage.setItem(useMaxWidthKey, 'true')
+  else localStorage.removeItem(useMaxWidthKey)
+}
+export const getLoveUseMaxWidth = (): boolean => {
+  return localStorage.getItem(useMaxWidthKey) === 'true'
+}
+export const toggleLoveUseMaxWidth = (): void => {
+  const value = !get(loveUseMaxWidth)
+  loveUseMaxWidth.set(value)
+  saveLoveUseMaxWidth(value)
 }

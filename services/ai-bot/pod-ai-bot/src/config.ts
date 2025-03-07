@@ -31,6 +31,7 @@ interface Config {
   OpenAIModel: OpenAI.ChatModel
   OpenAIBaseUrl: string
   OpenAITranslateModel: OpenAI.ChatModel
+  OpenAISummaryModel: OpenAI.ChatModel
   MaxContentTokens: number
   MaxHistoryRecords: number
   Port: number
@@ -56,6 +57,7 @@ const config: Config = (() => {
     OpenAIKey: process.env.OPENAI_API_KEY ?? '',
     OpenAIModel: (process.env.OPENAI_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
     OpenAITranslateModel: (process.env.OPENAI_TRANSLATE_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
+    OpenAISummaryModel: (process.env.OPENAI_SUMMARY_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
     OpenAIBaseUrl: process.env.OPENAI_BASE_URL ?? '',
     MaxContentTokens: parseNumber(process.env.MAX_CONTENT_TOKENS) ?? 128 * 100,
     MaxHistoryRecords: parseNumber(process.env.MAX_HISTORY_RECORDS) ?? 500,

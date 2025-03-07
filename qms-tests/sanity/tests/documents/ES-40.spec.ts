@@ -61,6 +61,10 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       await page.waitForURL((url) => {
         return url.pathname.startsWith(`/workbench/${PlatformWs}/`)
       })
+      // We should wait for the user's client to finish creating social ids and ensuring employee
+      // Otherwise, when done in parallel with kicking the workspace the employee creation
+      // finishes after the kick. Better later change to some more meaningful wait but it's not obvious now.
+      await page.waitForTimeout(2000)
     })
 
     await test.step('2. check if owner can kick user from workspace', async () => {

@@ -21,6 +21,7 @@ import core, {
   Ref,
   SortingOrder,
   Space,
+  systemAccountUuid,
   Tx,
   TxCreateDoc,
   TxOperations,
@@ -352,7 +353,7 @@ describe('query', () => {
       attempt++
       await factory.updateDoc(space._class, space.space, space._id, {
         name: attempt.toString(),
-        $push: { members: core.account.System }
+        $push: { members: systemAccountUuid }
       })
     }
     await pp

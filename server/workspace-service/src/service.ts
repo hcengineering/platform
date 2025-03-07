@@ -20,6 +20,7 @@ import {
   isRestoringMode,
   systemAccountUuid,
   type BrandingMap,
+  DOMAIN_BLOB,
   type Data,
   type MeasureContext,
   type Tx,
@@ -67,8 +68,6 @@ import {
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
-
-const dbCleanTreshold = 256 // Cleanup workspaces if less 256mb
 
 export interface WorkspaceOptions {
   errorHandler: (workspace: WorkspaceInfoWithStatus, error: any) => Promise<void>
@@ -527,8 +526,7 @@ export class WorkspaceWorker {
         await sendEvent('migrate-clean-started', 0)
         await this.sendTransactorMaitenance(token, workspace.uuid)
 
-        const sz = workspace.backupInfo?.backupSize ?? 0
-        if (sz <= dbCleanTreshold) {
+        if (process.env.MIGRATION_CLEANUP === 'true') {
           try {
             await this.doCleanup(ctx, workspace, false)
           } catch (err: any) {
@@ -557,7 +555,7 @@ export class WorkspaceWorker {
     ctx: MeasureContext,
     workspace: WorkspaceInfoWithStatus,
     opt: WorkspaceOptions,
-    archive: boolean
+    doFullCheck: boolean
   ): Promise<boolean> {
     if (opt.backup === undefined) {
       return false
@@ -626,6 +624,7 @@ export class WorkspaceWorker {
         50000,
         ['blob'],
         sharedPipelineContextVars,
+        doFullCheck, // Do full check based on config, do not do for migration, it is to slow, will perform before migration.
         (_p: number) => {
           if (progress !== Math.round(_p)) {
             progress = Math.round(_p)
@@ -701,7 +700,7 @@ export class WorkspaceWorker {
         opt.backup.bucketName,
         pipelineFactory,
         workspaceStorageAdapter,
-        ['blob'],
+        [DOMAIN_BLOB],
         true,
         (_p: number) => {
           if (progress !== Math.round(_p)) {

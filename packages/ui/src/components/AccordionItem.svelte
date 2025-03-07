@@ -41,6 +41,7 @@
   export let categoryHeader: boolean = false
   export let hiddenHeader: boolean = false
   export let background: string | undefined = undefined
+  export let contentAlign: 'start' | 'center' | 'end' | 'stretch' = 'start'
 
   const dispatch = createEventDispatcher()
 
@@ -125,7 +126,7 @@
       <slot name="actions" />
     </div>
   </button>
-  <div class="hulyAccordionItem-content">
+  <div class="hulyAccordionItem-content" style:align-items={contentAlign}>
     <slot />
   </div>
 </div>

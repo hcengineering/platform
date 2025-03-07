@@ -15,29 +15,30 @@
 <script lang="ts">
   import contact, { Employee, Person } from '@hcengineering/contact'
   import {
-    PersonId,
     AccountRole,
     DocumentQuery,
     Ref,
     SortingOrder,
     Space,
     getCurrentAccount,
-    hasAccountRole
+    hasAccountRole,
+    notEmpty,
+    AccountUuid
   } from '@hcengineering/core'
   import { translateCB } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, IconClose, Label, SearchEdit, showPopup, themeStore } from '@hcengineering/ui'
   import AddMembersPopup from './AddMembersPopup.svelte'
   import UserInfo from './UserInfo.svelte'
-  import { personRefByPersonIdStore, primarySocialIdByPersonRefStore } from '../utils'
+  import { personRefByAccountUuidStore, primarySocialIdByPersonRefStore } from '../utils'
 
   export let space: Space
   export let withAddButton: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const initialMembers = space.members.reduce<Record<Ref<Person>, PersonId>>((acc, m) => {
-    const personRef = $personRefByPersonIdStore.get(m)
+  const initialMembers = space.members.reduce<Record<Ref<Person>, AccountUuid>>((acc, m) => {
+    const personRef = $personRefByAccountUuidStore.get(m)
     if (personRef === undefined) return acc
     acc[personRef] = m
     return acc
@@ -49,10 +50,8 @@
   $: isSearch = search.trim().length
   let members: Set<Ref<Person>> = new Set<Ref<Person>>()
 
-  async function getUsers (personIds: PersonId[], search: string): Promise<Employee[]> {
-    const employeeRefs = personIds
-      .map((pid) => $personRefByPersonIdStore.get(pid))
-      .filter((e) => e !== undefined) as Ref<Employee>[]
+  async function getUsers (accounts: AccountUuid[], search: string): Promise<Employee[]> {
+    const employeeRefs = accounts.map((acc) => $personRefByAccountUuidStore.get(acc)).filter(notEmpty)
     const query: DocumentQuery<Employee> =
       isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: employeeRefs } }
     const employees = await client.findAll(contact.mixin.Employee, query, { sort: { name: SortingOrder.Descending } })
@@ -80,11 +79,12 @@
   }
 
   function openAddMembersPopup (): void {
-    showPopup(AddMembersPopup, { value: space }, undefined, async (membersIds: PersonId[]) => {
-      if (membersIds) {
-        for (const member of membersIds) {
-          if (space.members.includes(member)) continue
-          await client.update(space, { $push: { members: member } })
+    showPopup(AddMembersPopup, { value: space }, undefined, async (accounts: AccountUuid[]) => {
+      if (accounts != null) {
+        for (const account of accounts) {
+          if (space.members.includes(account)) continue
+
+          await client.update(space, { $push: { members: account } })
         }
       }
     })

@@ -157,7 +157,7 @@
           <span class="font-medium"><Label label={time.string.AddTo} /></span>
           <SpaceSelector
             _class={task.class.Project}
-            query={{ archived: false, members: { $in: getCurrentAccount().socialIds } }}
+            query={{ archived: false, members: getCurrentAccount().uuid }}
             label={core.string.Space}
             kind={'regular'}
             size={'medium'}

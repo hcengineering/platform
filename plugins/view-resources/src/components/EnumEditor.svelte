@@ -56,7 +56,7 @@
   {size}
   {kind}
   width={'100%'}
-  {allowDeselect}
+  allowDeselect
   disabled={readonly}
   autoSelect={false}
   on:selected={(e) => {

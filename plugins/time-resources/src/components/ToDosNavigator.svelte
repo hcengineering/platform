@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ScheduleNavSection } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
@@ -165,6 +166,8 @@
           </svelte:fragment>
         </Month>
       </div>
+
+      <ScheduleNavSection />
 
       {#if tags.length > 0}
         <NavGroup

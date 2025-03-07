@@ -32,8 +32,8 @@
   $: rows = calculateFloorSize(rooms) - 1
 </script>
 
-<Scroller padding="1rem" bottomPadding="4rem" horizontal>
-  <FloorGrid bind:floorContainer {rows} preview>
+<Scroller padding="1rem" bottomPadding="4rem" align={'center'} horizontal>
+  <FloorGrid bind:floorContainer {rows}>
     {#each rooms as room}
       <RoomPreview {room} info={getInfo(room._id, $infos)} on:open />
     {/each}

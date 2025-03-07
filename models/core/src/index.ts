@@ -63,6 +63,7 @@ import {
   TTypeIntlString,
   TTypeMarkup,
   TTypePersonId,
+  TTypeAccountUuid,
   TTypeNumber,
   TTypeRank,
   TTypeRecord,
@@ -81,7 +82,16 @@ import { TTx, TTxApplyIf, TTxCreateDoc, TTxCUD, TTxMixin, TTxRemoveDoc, TTxUpdat
 
 export { coreId, DOMAIN_SPACE } from '@hcengineering/core'
 export * from './core'
-export { coreOperation, getSocialIdByOldAccount, getAccountsFromTxes, getSocialKeyByOldEmail } from './migration'
+export {
+  coreOperation,
+  getSocialIdByOldAccount,
+  getAccountsFromTxes,
+  getSocialKeyByOldEmail,
+  getAccountUuidBySocialId,
+  getUniqueAccounts,
+  getAccountUuidByOldAccount,
+  getUniqueAccountsFromOldAccounts
+} from './migration'
 export * from './security'
 export * from './status'
 export * from './tx'
@@ -115,6 +125,7 @@ export function createModel (builder: Builder): void {
     TEnumOf,
     TTypeMarkup,
     TTypePersonId,
+    TTypeAccountUuid,
     TTypeCollaborativeDoc,
     TArrOf,
     TRefTo,

@@ -42,6 +42,7 @@
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-activity": "^0.6.0",
+    "@hcengineering/server-contact": "^0.6.1",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-notification-resources": "^0.6.0",
     "@hcengineering/text-core": "^0.6.0",

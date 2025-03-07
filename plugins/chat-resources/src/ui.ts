@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 
-import { type Reaction, type Message } from '@hcengineering/communication-types'
+import { type Message, type Reaction } from '@hcengineering/communication-types'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
 import { type PersonId } from '@hcengineering/core'
-import { parseMessageMarkdown, jsonToMarkup } from '@hcengineering/text'
-import { type ReactionType, type MessageType } from '@hcengineering/ui-next'
+import { jsonToMarkup } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
+import { type MessageType, type ReactionType } from '@hcengineering/ui-next'
 
 export interface MessagesGroup {
   day: number
@@ -60,7 +61,7 @@ export function toDisplayMessage (message: Message, personByPersonId: Map<Person
   const person = personByPersonId.get(message.creator)
   return {
     id: message.id,
-    text: jsonToMarkup(parseMessageMarkdown(message.content, '')),
+    text: jsonToMarkup(markdownToMarkup(message.content)),
     authorName: person?.name ?? '',
     author: person?._id,
     avatar: person,

@@ -54,12 +54,14 @@ import { analyticsCollectorOperation } from '@hcengineering/model-analytics-coll
 import { workbenchOperation } from '@hcengineering/model-workbench'
 import { testManagementOperation } from '@hcengineering/model-test-management'
 import { surveyOperation } from '@hcengineering/model-survey'
+import { cardOperation } from '@hcengineering/model-card'
 import { aiBotId, aiBotOperation } from '@hcengineering/model-ai-bot'
 import { chatId, chatOperation } from '@hcengineering/model-chat'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
   ['activity', activityOperation],
+  ['card', cardOperation],
   ['chunter', chunterOperation],
   ['calendar', calendarOperation],
   ['gmail', gmailOperation],

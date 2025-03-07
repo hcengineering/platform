@@ -32,8 +32,7 @@ import core, {
   TxProcessor,
   TxUpdateDoc,
   toIdMap,
-  Space,
-  includesAny
+  Space
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
@@ -272,7 +271,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
 
     if (
       !hierarchy.isDerived(objectSpace._class, core.class.SystemSpace) &&
-      !includesAny(objectSpace.members, currentAcc.socialIds)
+      !objectSpace.members.includes(currentAcc.uuid)
     ) {
       continue
     }
@@ -298,6 +297,11 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
 
     const socialStrings = await getSocialStrings(control, employee._id)
     const primarySocialString = pickPrimarySocialId(socialStrings)
+    const account = employee.personUuid
+
+    if (account == null) {
+      continue
+    }
 
     // TODO: Select a proper account
     const receiverInfo: ReceiverInfo = {
@@ -306,6 +310,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
       socialStrings,
 
       employee,
+      account,
       space: personSpace._id
     }
 

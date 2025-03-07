@@ -17,7 +17,7 @@ import { Markup } from '@hcengineering/core'
 
 import { deepEqual } from 'fast-equals'
 import { nodeDoc, nodeParagraph, nodeText } from './dsl'
-import { MarkupMark, MarkupMarkType, MarkupNode, MarkupNodeType, emptyMarkupNode, type AttrValue } from './model'
+import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
 import { traverseNode } from './traverse'
 
 /** @public */
@@ -188,221 +188,21 @@ export function stripTags (markup: Markup, textLimit = 0): string {
   return result
 }
 
-class NodeBuilder {
-  textParts: string[] = []
-
-  constructor (private readonly addTags: boolean) {}
-
-  addText (text: string): void {
-    this.textParts.push(text)
-  }
-
-  addTag (text: string, newLine: boolean = false): void {
-    if (this.addTags) {
-      this.textParts.push(text)
-    }
-    if (!this.addTags && newLine) {
-      this.textParts.push('\n')
-    }
-  }
-
-  toText (): string {
-    return this.textParts.join('')
-  }
-}
-
-function addMark (builder: NodeBuilder, mark?: MarkupMark, next?: () => void): void {
-  if (mark != null) {
-    const attrs = mark.attrs ?? {}
-
-    if (mark.type === MarkupMarkType.bold) {
-      builder.addTag('<strong>')
-      next?.()
-      builder.addTag('</strong>')
-    } else if (mark.type === MarkupMarkType.code) {
-      builder.addTag('<code class="proseCode">')
-      next?.()
-      builder.addTag('</code>')
-    } else if (mark.type === MarkupMarkType.em) {
-      builder.addTag('<em>')
-      next?.()
-      builder.addTag('</em>')
-    } else if (mark.type === MarkupMarkType.link) {
-      builder.addTag(`<a href=${attrs.href} target=${attrs.target}>`)
-      next?.()
-      builder.addTag('</a>')
-    } else if (mark.type === MarkupMarkType.strike) {
-      builder.addTag('<s>')
-      next?.()
-      builder.addTag('</s>')
-    } else if (mark.type === MarkupMarkType.underline) {
-      builder.addTag('<u>')
-      next?.()
-      builder.addTag('</u>')
-    } else {
-      builder.addTag(`unknown mark: "${mark.type as string}"`, false)
-      next?.()
-    }
-  }
-}
-
-function addMarks (builder: NodeBuilder, marks: MarkupMark[], next?: () => void): void {
-  if (marks.length > 0) {
-    const mark = marks[0]
-    const others = marks.slice(1)
-
-    if (others.length > 0) {
-      addMark(builder, mark, () => {
-        addMarks(builder, others, next)
-      })
-    } else {
-      addMark(builder, mark, next)
-    }
-  }
-}
-
-function addNodeContent (builder: NodeBuilder, node?: MarkupNode): void {
-  if (node == null) return
-
-  const attrs = node.attrs ?? {}
-  const nodes = node.content ?? []
-
-  if (node.type === MarkupNodeType.doc) {
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-  } else if (node.type === MarkupNodeType.text) {
-    builder.addText(node.text ?? '')
-  } else if (node.type === MarkupNodeType.paragraph) {
-    builder.addTag('<p>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</p>')
-  } else if (node.type === MarkupNodeType.blockquote) {
-    builder.addTag('<blockquote>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</blockquote>')
-  } else if (node.type === MarkupNodeType.horizontal_rule) {
-    builder.addTag('<hr/>')
-  } else if (node.type === MarkupNodeType.heading) {
-    const level = toNumber(node.attrs?.level) ?? 1
-    builder.addTag(`<h${level}>`)
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag(`</h${level}>`)
-  } else if (node.type === MarkupNodeType.code_block) {
-    builder.addTag('<pre><code>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</code></pre>')
-  } else if (node.type === MarkupNodeType.image) {
-    const src = toString(attrs.src)
-    const alt = toString(attrs.alt)
-    builder.addText(`<img src="${src}" alt="${alt}"/>`)
-  } else if (node.type === MarkupNodeType.reference) {
-    const label = toString(attrs.label)
-    builder.addTag(
-      `<span class="antiMention reference" data-type="reference" label="${attrs.label}" id="${attrs.id}" objectclass="${attrs.objectclass}">`
-    )
-    builder.addText(label !== undefined ? `@${label}` : '')
-    builder.addTag('</span>')
-  } else if (node.type === MarkupNodeType.hard_break) {
-    builder.addTag('<br/>')
-  } else if (node.type === MarkupNodeType.ordered_list) {
-    builder.addTag('<ol>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</ol>')
-  } else if (node.type === MarkupNodeType.bullet_list) {
-    builder.addTag('<ul>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</ul>')
-  } else if (node.type === MarkupNodeType.list_item) {
-    builder.addTag('<li>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</li>')
-  } else if (node.type === MarkupNodeType.subLink) {
-    builder.addTag('<sub>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</sub>')
-  } else if (node.type === MarkupNodeType.table) {
-    builder.addTag('<table><tbody>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</tbody></table>')
-  } else if (node.type === MarkupNodeType.table_row) {
-    builder.addTag('<tr>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</tr>')
-  } else if (node.type === MarkupNodeType.table_cell) {
-    builder.addTag('<td>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</td>')
-  } else if (node.type === MarkupNodeType.table_header) {
-    builder.addTag('<th>')
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-    builder.addTag('</th>')
-  } else {
-    builder.addText(`unknown node: "${node.type}"`)
-    nodes.forEach((childNode) => {
-      addNode(builder, childNode)
-    })
-  }
-}
-
-function addNode (builder: NodeBuilder, node: MarkupNode): void {
-  const marks = node.marks ?? []
-
-  if (marks.length > 0) {
-    addMarks(builder, marks, () => {
-      addNodeContent(builder, node)
-    })
-  } else {
-    addNodeContent(builder, node)
-  }
-}
-
-function toString (value: AttrValue | undefined): string | undefined {
-  return value !== undefined ? `${value}` : undefined
-}
-
-function toNumber (value: AttrValue | undefined): number | undefined {
-  if (typeof value === 'boolean') {
-    return value ? 1 : 0
-  }
-
-  return value !== undefined ? (typeof value === 'string' ? parseInt(value) : value) : undefined
-}
-
-export function markupToHTML (markup: Markup): string {
-  const jsonModel = markupToJSON(markup)
-  const builder = new NodeBuilder(true)
-  addNode(builder, jsonModel)
-  return builder.toText()
-}
-
 export function markupToText (markup: Markup): string {
   const jsonModel = markupToJSON(markup)
-  const builder = new NodeBuilder(false)
-  addNode(builder, jsonModel)
-  return builder.toText()
+  const fragments: string[] = []
+
+  traverseNode(jsonModel, (node) => {
+    if (node.type === MarkupNodeType.text) {
+      const text = node.text ?? ''
+      if (node.text !== undefined && node.text.length > 0) {
+        fragments.push(text)
+      }
+    } else if (node.type === MarkupNodeType.paragraph) {
+      fragments.push('\n\n')
+    }
+    return true
+  })
+
+  return fragments.join('').trim()
 }

@@ -233,7 +233,7 @@
         </div>
         <SpaceSelector
           _class={task.class.Project}
-          query={{ archived: false, members: { $in: getCurrentAccount().socialIds } }}
+          query={{ archived: false, members: getCurrentAccount().uuid }}
           label={core.string.Space}
           autoSelect={false}
           allowDeselect

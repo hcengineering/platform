@@ -1,14 +1,14 @@
 import {
+  type AccountUuid,
   PersonId,
   WorkspaceDataId,
   WorkspaceUuid,
   type AccountRole,
-  type PersonUuid,
   type Timestamp
 } from '@hcengineering/core'
 
 export interface LoginInfo {
-  account: PersonUuid
+  account: AccountUuid
   name?: string
   socialId?: PersonId
   token?: string

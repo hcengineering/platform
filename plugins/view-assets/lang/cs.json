@@ -127,6 +127,8 @@
     "Join": "Připojit se",
     "Copied": "Zkopírováno",
     "Title": "Název",
-    "HideArchived": "Skrýt archivované"
+    "HideArchived": "Skrýt archivované",
+    "RemoveRelation": "Odstranit vztah",  
+    "RemoveRelationConfirmation": "Chcete odstranit vztah?"  
   }
 }

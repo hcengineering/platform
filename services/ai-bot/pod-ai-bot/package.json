@@ -77,6 +77,8 @@
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/text": "^0.6.5",
+    "@hcengineering/text-html": "^0.6.0",
+    "@hcengineering/text-markdown": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",

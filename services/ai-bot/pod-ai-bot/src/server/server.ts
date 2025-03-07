@@ -21,7 +21,8 @@ import {
   ConnectMeetingRequest,
   DisconnectMeetingRequest,
   AIEventRequest,
-  PostTranscriptRequest
+  PostTranscriptRequest,
+  SummarizeMessagesRequest
 } from '@hcengineering/ai-bot'
 import { extractToken } from '@hcengineering/server-client'
 import { MeasureContext } from '@hcengineering/core'
@@ -64,6 +65,23 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
         throw new ApiError(400)
       }
       const response = await controller.translate(req.body as TranslateRequest)
+      if (response === undefined) {
+        throw new ApiError(500)
+      }
+
+      res.status(200)
+      res.json(response)
+    })
+  )
+
+  app.post(
+    '/summarize',
+    wrapRequest(async (req, res, token) => {
+      if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
+        throw new ApiError(400)
+      }
+
+      const response = await controller.summarizeMessages(token.workspace, req.body as SummarizeMessagesRequest)
       if (response === undefined) {
         throw new ApiError(500)
       }

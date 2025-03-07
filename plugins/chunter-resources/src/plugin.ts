@@ -109,6 +109,7 @@ export default mergeIds(chunterId, chunter, {
     JoinChannelHeader: '' as IntlString,
     JoinChannelText: '' as IntlString,
     LatestMessages: '' as IntlString,
-    ResolveThread: '' as IntlString
+    ResolveThread: '' as IntlString,
+    NoThreadsYet: '' as IntlString
   }
 })

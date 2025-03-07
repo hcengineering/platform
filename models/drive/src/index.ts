@@ -24,10 +24,10 @@ import core, {
   type Ref,
   type Role,
   type RolesAssignment,
-  PersonId,
   AccountRole,
   IndexKind,
-  SortingOrder
+  SortingOrder,
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   type Drive,
@@ -81,7 +81,7 @@ export class TDrive extends TTypedSpace implements Drive {}
 @Mixin(drive.mixin.DefaultDriveTypeData, drive.class.Drive)
 @UX(getEmbeddedLabel('Default drive type'))
 export class TDefaultDriveTypeData extends TDrive implements RolesAssignment {
-  [key: Ref<Role>]: PersonId[]
+  [key: Ref<Role>]: AccountUuid[]
 }
 
 @Model(drive.class.Resource, core.class.Doc, DOMAIN_DRIVE)

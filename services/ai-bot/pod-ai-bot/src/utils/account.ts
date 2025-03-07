@@ -14,11 +14,12 @@
 //
 
 import {
-  WorkspaceInfoWithStatus,
+  type WorkspaceInfoWithStatus,
   isWorkspaceCreating,
   type WorkspaceUuid,
   AccountRole,
-  Person as GlobalPerson
+  type Person as GlobalPerson,
+  type AccountUuid
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { getAccountClient, withRetry } from '@hcengineering/server-client'
@@ -129,14 +130,14 @@ async function confirmAccount (uuid: PersonUuid): Promise<void> {
   }
 }
 
-export async function getPersonUuid (ctx: MeasureContext): Promise<PersonUuid | undefined> {
+export async function getAccountUuid (ctx?: MeasureContext): Promise<AccountUuid | undefined> {
   const token = generateToken(systemAccountUuid, undefined, { service: 'aibot', confirmEmail: aiBotAccountEmail })
   const accountClient = getAccountClient(token)
   const personUuid = await accountClient.findPerson(aiBotEmailSocialId)
 
   if (personUuid !== undefined) {
     await confirmAccount(personUuid)
-    return personUuid
+    return personUuid as AccountUuid
   }
 
   const result = await accountClient.signUp(aiBotEmailSocialId, config.Password, config.FirstName, config.LastName)

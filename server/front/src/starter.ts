@@ -113,6 +113,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const linkPreviewUrl = process.env.LINK_PREVIEW_URL
 
+  const streamUrl = process.env.STREAM_URL
+
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
   const disableSignUp = process.env.DISABLE_SIGNUP
@@ -136,7 +138,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     uploadConfig,
     pushPublicKey,
     disableSignUp,
-    linkPreviewUrl
+    linkPreviewUrl,
+    streamUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

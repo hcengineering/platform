@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { concatLink, type Markup, type Ref } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
 import {
   type ConnectMeetingRequest,
   type DisconnectMeetingRequest,
+  type SummarizeMessagesRequest,
+  type SummarizeMessagesResponse,
   type TranslateRequest,
   type TranslateResponse
 } from '@hcengineering/ai-bot'
+import { type Class, concatLink, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import { type Room, type RoomLanguage } from '@hcengineering/love'
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
 
 import aiBot from './plugin'
 
@@ -48,6 +50,43 @@ export async function translate (text: Markup, lang: string): Promise<TranslateR
     }
 
     return (await resp.json()) as TranslateResponse
+  } catch (error) {
+    console.error(error)
+    return undefined
+  }
+}
+
+export async function summarizeMessages (
+  lang: string,
+  target: Ref<Doc>,
+  targetClass: Ref<Class<Doc>>
+): Promise<SummarizeMessagesResponse | undefined> {
+  const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
+  const token = getMetadata(presentation.metadata.Token) ?? ''
+
+  if (url === '' || token === '') {
+    return undefined
+  }
+
+  try {
+    const req: SummarizeMessagesRequest = {
+      target,
+      targetClass,
+      lang
+    }
+    const resp = await fetch(concatLink(url, '/summarize'), {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(req)
+    })
+    if (!resp.ok) {
+      return undefined
+    }
+
+    return (await resp.json()) as SummarizeMessagesResponse
   } catch (error) {
     console.error(error)
     return undefined

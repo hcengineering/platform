@@ -19,7 +19,7 @@
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import core, {
-    type PersonId,
+    type AccountUuid,
     type Ref,
     type Role,
     type RolesAssignment,
@@ -71,7 +71,7 @@
     )
   }
 
-  async function onChange (roleId: Ref<Role>, members: Array<PersonId>): Promise<void> {
+  async function onChange (roleId: Ref<Role>, members: AccountUuid[]): Promise<void> {
     if (space === null || spaceType === null) {
       return
     }

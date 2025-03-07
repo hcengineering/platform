@@ -16,6 +16,7 @@
 import { DocUpdateMessage } from '@hcengineering/activity'
 import core, { Doc, Tx, TxCUD, TxCreateDoc, TxProcessor, TxUpdateDoc, type MeasureContext } from '@hcengineering/core'
 import notification from '@hcengineering/notification'
+import { getPrimarySocialIdsByAccounts } from '@hcengineering/server-contact'
 import { getResource, translate } from '@hcengineering/platform'
 import request, { Request, RequestStatus } from '@hcengineering/request'
 import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
@@ -145,7 +146,15 @@ async function getRequestNotificationTx (
   const notifyContexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
     objectId: doc._id
   })
-  const usersInfo = await getUsersInfo(control.ctx, [...collaborators, tx.modifiedBy], control)
+  const collaboratorsPrimarySocialStringsByAccounts = await getPrimarySocialIdsByAccounts(
+    control,
+    Array.from(collaborators)
+  )
+  const usersInfo = await getUsersInfo(
+    control.ctx,
+    [...Object.values(collaboratorsPrimarySocialStringsByAccounts), tx.modifiedBy],
+    control
+  )
   const senderInfo = usersInfo.get(tx.modifiedBy) ?? {
     _id: tx.modifiedBy,
     socialStrings: []
@@ -154,7 +163,10 @@ async function getRequestNotificationTx (
   const notificationControl = await getNotificationProviderControl(ctx, control)
 
   for (const target of collaborators) {
-    const targetInfo = toReceiverInfo(control.hierarchy, usersInfo.get(target))
+    const targetInfo = toReceiverInfo(
+      control.hierarchy,
+      usersInfo.get(collaboratorsPrimarySocialStringsByAccounts[target])
+    )
     if (targetInfo === undefined) continue
 
     const txes = await getNotificationTxes(

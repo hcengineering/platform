@@ -19,6 +19,10 @@
     "TagRelations": "Relaciones de Etiquetas",
     "DeleteTagConfirm": "¿Estás seguro de que quieres eliminar esta etiqueta? Todas las propiedades relacionadas serán eliminadas",
     "DeleteMasterTag": "Eliminar Tipo",
-    "DeleteMasterTagConfirm": "¿Estás seguro de que quieres eliminar este tipo? Todos los objetos relacionados con este tipo serán eliminados"
+    "DeleteMasterTagConfirm": "¿Estás seguro de que quieres eliminar este tipo? Todos los objetos relacionados con este tipo serán eliminados",
+    "UnsetParent": "Desasignar padre",
+    "SetParent": "Asignar padre",
+    "CreateChild": "Crear hijo",
+    "Children": "Hijos"
   }
 }

@@ -307,7 +307,7 @@ onClient((client, user) => {
 
   projectQuery.query(
     task.class.Project,
-    { members: { $in: getCurrentAccount().socialIds } },
+    { members: getCurrentAccount().uuid },
     (res) => {
       typesOfJoinedProjectsStore.set(res.map((r) => r.type).filter((it, idx, arr) => arr.indexOf(it) === idx))
       joinedProjectsStore.set(res)

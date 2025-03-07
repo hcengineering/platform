@@ -50,6 +50,7 @@ import {
   type TooltipAlignment
 } from '@hcengineering/ui'
 import { AggregationManager } from '@hcengineering/view-resources'
+import PersonIdArrayEditor from './components/PersonIdArrayEditor.svelte'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
 import AssigneeBox from './components/AssigneeBox.svelte'
@@ -152,6 +153,7 @@ export * from './utils'
 export { employeeByIdStore } from './utils'
 export * from './assignee'
 export {
+  PersonIdArrayEditor,
   AccountArrayEditor,
   AccountBox,
   AssigneeBox,
@@ -367,6 +369,7 @@ export default async (): Promise<Resources> => ({
     EmployeeArrayEditor,
     EmployeeEditor,
     CreateEmployee,
+    PersonIdArrayEditor,
     AccountArrayEditor,
     ChannelFilter,
     MergePersons,

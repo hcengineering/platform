@@ -24,5 +24,7 @@
 </script>
 
 {#if _class}
-  <Label label={_class.label} />
+  <div>
+    <Label label={_class.label} />
+  </div>
 {/if}

@@ -21,6 +21,7 @@
   import { Room } from '@hcengineering/love'
 
   export let value: Event
+  export let readOnly: boolean = false
 
   const client = getClient()
 
@@ -28,10 +29,13 @@
   $: meeting = isMeeting ? client.getHierarchy().as(value, love.mixin.Meeting) : null
 
   async function changeRoom (val: Ref<Room>): Promise<void> {
-    await client.updateMixin(value._id, value._class, value.space, love.mixin.Meeting, { room: val })
+    const events = await client.findAll(value._class, { eventId: value.eventId }, { projection: { _id: 1 } })
+    for (const event of events) {
+      await client.updateMixin(event._id, event._class, event.space, love.mixin.Meeting, { room: val })
+    }
   }
 </script>
 
 {#if isMeeting && meeting}
-  <RoomSelector value={meeting?.room} on:change={(ev) => changeRoom(ev.detail)} />
+  <RoomSelector value={meeting?.room} disabled={readOnly} on:change={(ev) => changeRoom(ev.detail)} />
 {/if}

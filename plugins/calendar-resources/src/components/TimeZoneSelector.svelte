@@ -28,6 +28,9 @@
   export let disabled: boolean = false
 
   function open (e: MouseEvent) {
+    if (disabled) {
+      return
+    }
     const timeZones: TimeZone[] = []
     const tzs: string[] = []
     if (!Intl.supportedValuesOf) console.log('Your browser does not support Intl.supportedValuesOf().')

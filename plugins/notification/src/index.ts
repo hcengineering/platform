@@ -29,7 +29,8 @@ import {
   Timestamp,
   Tx,
   TxCUD,
-  TxOperations
+  TxOperations,
+  AccountUuid
 } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -51,7 +52,7 @@ export const DOMAIN_USER_NOTIFY = 'notification-user' as Domain
  * @public
  */
 export interface BrowserNotification extends Doc {
-  user: PersonId
+  user: AccountUuid
   title: string
   body: string
   onClickLocation?: Location
@@ -78,7 +79,7 @@ export interface PushSubscriptionKeys {
 }
 
 export interface PushSubscription extends Doc {
-  user: PersonId
+  user: AccountUuid
   endpoint: string
   keys: PushSubscriptionKeys
 }
@@ -205,7 +206,7 @@ export interface NotificationObjectPresenter extends Class<Doc> {
  * @public
  */
 export interface Collaborators extends Doc {
-  collaborators: PersonId[]
+  collaborators: AccountUuid[]
 }
 
 /**
@@ -231,7 +232,7 @@ export interface NotificationContextPresenter extends Class<Doc> {
  * @public
  */
 export interface InboxNotification extends Doc<PersonSpace> {
-  user: PersonId
+  user: AccountUuid
   isViewed: boolean
 
   docNotifyContext: Ref<DocNotifyContext>
@@ -280,7 +281,7 @@ export type DisplayInboxNotification = DisplayActivityInboxNotification | InboxN
  * @public
  */
 export interface DocNotifyContext extends Doc<PersonSpace> {
-  user: PersonId
+  user: AccountUuid
   // Context
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>

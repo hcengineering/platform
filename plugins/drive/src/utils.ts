@@ -43,7 +43,7 @@ export async function createFile (
   space: Ref<Drive>,
   parent: Ref<Folder>,
   data: Omit<AttachedData<FileVersion>, 'version'>
-): Promise<void> {
+): Promise<Ref<File>> {
   const folder = await client.findOne(drive.class.Folder, { _id: parent })
   const path = folder !== undefined ? [folder._id, ...folder.path] : []
 
@@ -68,6 +68,8 @@ export async function createFile (
     { ...data, version },
     versionId
   )
+
+  return fileId
 }
 
 /** @public */

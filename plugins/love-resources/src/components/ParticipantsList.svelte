@@ -16,6 +16,7 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { ParticipantInfo } from '@hcengineering/love'
   import { Scroller } from '@hcengineering/ui'
+  import { formatName } from '@hcengineering/contact'
 
   export let items: (ParticipantInfo & { onclick?: (e: MouseEvent) => void })[]
 </script>
@@ -36,7 +37,7 @@
           person={$personByIdStore.get(participant.person)}
         />
       </div>
-      {participant.name}
+      {formatName(participant.name)}
     </div>
   {/each}
 </Scroller>

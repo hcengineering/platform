@@ -14,8 +14,17 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { CollectionSize, MarkupBlobRef, Domain, Rank, Ref, Role, RolesAssignment } from '@hcengineering/core'
-import { PersonId, AccountRole, IndexKind } from '@hcengineering/core'
+import type {
+  CollectionSize,
+  MarkupBlobRef,
+  Domain,
+  Rank,
+  Ref,
+  Role,
+  RolesAssignment,
+  PersonId
+} from '@hcengineering/core'
+import { AccountUuid, AccountRole, IndexKind } from '@hcengineering/core'
 import {
   type Document,
   type DocumentSnapshot,
@@ -151,7 +160,7 @@ export class TTeamspace extends TTypedSpace implements Teamspace {}
 @Mixin(document.mixin.DefaultTeamspaceTypeData, document.class.Teamspace)
 @UX(getEmbeddedLabel('Default teamspace type'), document.icon.Document)
 export class TDefaultTeamspaceTypeData extends TTeamspace implements RolesAssignment {
-  [key: Ref<Role>]: PersonId[]
+  [key: Ref<Role>]: AccountUuid[]
 }
 
 function defineTeamspace (builder: Builder): void {

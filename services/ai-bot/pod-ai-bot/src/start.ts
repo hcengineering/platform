@@ -18,7 +18,7 @@ import serverToken, { generateToken } from '@hcengineering/server-token'
 import { initStatisticsContext } from '@hcengineering/server-core'
 
 import config from './config'
-import { getPersonUuid } from './utils/account'
+import { getAccountUuid } from './utils/account'
 import { registerLoaders } from './loaders'
 import { getDbStorage } from './storage'
 import { AIControl } from './controller'
@@ -37,7 +37,7 @@ export const start = async (): Promise<void> => {
   ctx.info('AI Bot Service started', { firstName: config.FirstName, lastName: config.LastName })
 
   const personUuid = await withRetry(
-    async () => await getPersonUuid(ctx),
+    async () => await getAccountUuid(ctx),
     (_, attempt) => attempt >= 5,
     5000
   )()

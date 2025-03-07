@@ -16,7 +16,7 @@
 import { getResource } from '@hcengineering/platform'
 
 import uploader from './plugin'
-import type { FileUploadOptions, FileUploadPopupOptions, FileWithPath } from './types'
+import type { FileUploadOptions, FileUploadPopupOptions, FileWithPath, UploadHandlerDefinition } from './types'
 
 /** @public */
 export async function showFilesUploadPopup (
@@ -31,6 +31,12 @@ export async function showFilesUploadPopup (
 export async function uploadFile (file: File, options: FileUploadOptions): Promise<void> {
   const fn = await getResource(uploader.function.UploadFiles)
   await fn([file], options)
+}
+
+/** @public */
+export async function getUploadHandlers (): Promise<UploadHandlerDefinition[]> {
+  const fn = await getResource(uploader.function.GetUploadHandlers)
+  return await fn()
 }
 
 /** @public */
