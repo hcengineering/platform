@@ -22,12 +22,15 @@ jest.mock('../mail', () => ({
     sendMessage: jest.fn()
   }))
 }))
-jest.mock('../config', () => ({}))
+jest.mock('../config', () => ({
+  source: 'noreply@example.com'
+}))
 
 describe('handleSendMail', () => {
   let req: Request
   let res: Response
   let sendMailMock: jest.Mock
+  let mailClient: MailClient
 
   beforeEach(() => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -44,7 +47,8 @@ describe('handleSendMail', () => {
       send: jest.fn()
     } as unknown as Response
 
-    sendMailMock = (new MailClient().sendMessage as jest.Mock).mockResolvedValue({})
+    mailClient = new MailClient()
+    sendMailMock = (mailClient.sendMessage as jest.Mock).mockResolvedValue({})
   })
 
   it('should return 400 if text is missing', async () => {
@@ -83,5 +87,46 @@ describe('handleSendMail', () => {
     await handleSendMail(new MailClient(), req, res)
 
     expect(res.send).toHaveBeenCalled() // Check that a response is still sent
+  })
+
+  it('should use source from config if from is not provided', async () => {
+    await handleSendMail(mailClient, req, res)
+
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'noreply@example.com', // Verify that the default source from config is used
+        to: 'test@example.com',
+        subject: 'Test Subject',
+        text: 'Hello, world!'
+      })
+    )
+  })
+
+  it('should use from if it is provided', async () => {
+    req.body.from = 'test.from@example.com'
+    await handleSendMail(mailClient, req, res)
+
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'test.from@example.com', // Verify that the from is used
+        to: 'test@example.com',
+        subject: 'Test Subject',
+        text: 'Hello, world!'
+      })
+    )
+  })
+
+  it('should send to multiple addresses', async () => {
+    req.body.to = ['test1@example.com', 'test2@example.com']
+    await handleSendMail(mailClient, req, res)
+
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'noreply@example.com',
+        to: ['test1@example.com', 'test2@example.com'], // Verify that multiple addresses are passed
+        subject: 'Test Subject',
+        text: 'Hello, world!'
+      })
+    )
   })
 })
