@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,7 +18,7 @@ import { type Resources } from '@hcengineering/platform'
 import FileUploadExt from './components/FileUploadExt.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 
-import { showFilesUploadPopup, uploadFiles } from './utils'
+import { uploadFiles, uploadXHRFiles, getUploadHandlers, showFilesUploadPopup, uploadXHRFolders } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -27,6 +27,9 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     ShowFilesUploadPopup: showFilesUploadPopup,
-    UploadFiles: uploadFiles
+    UploadFiles: uploadFiles,
+    UploadFilesHandler: uploadXHRFiles,
+    UploadFoldersHandler: uploadXHRFolders,
+    GetUploadHandlers: getUploadHandlers
   }
 })

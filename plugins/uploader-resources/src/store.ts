@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,48 +14,53 @@
 //
 
 import { type FileUploadTarget } from '@hcengineering/uploader'
-
-import { type Uppy } from '@uppy/core'
-import { type Writable, writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 
 /** @public */
 export interface FileUpload {
-  target: FileUploadTarget
-  uppy: Uppy
+  error?: string
+  retry?: () => Promise<void>
+  cancel?: () => void
+  progress: number
+  name: string
+  finished: boolean
 }
 
 /** @public */
-export const uploads: Writable<FileUpload[]> = writable([])
-
-/** @public */
-export function dockFileUpload (target: FileUploadTarget, uppy: Uppy): void {
-  uploads.update((instances) => {
-    instances.push({ target, uppy })
-    return instances
-  })
-
-  uppy.on('complete', () => {
-    undockFileUploadIfCompleted(target, uppy)
-  })
-
-  uppy.on('file-removed', () => {
-    undockFileUploadIfCompleted(target, uppy)
-  })
+export interface Upload {
+  uuid: string
+  progress: number
+  files: Map<string, FileUpload>
+  target?: FileUploadTarget
+  error?: string
 }
 
-function undockFileUploadIfCompleted (target: FileUploadTarget, uppy: Uppy): void {
-  const files = uppy.getFiles()
-  const incompleted = files.filter((p) => p.progress?.uploadComplete !== true)
-  if (incompleted.length === 0) {
-    undockFileUpload(target, uppy)
+/** @public */
+export const uploads = writable(new Map<string, Upload>())
+
+/** @public */
+export function trackUpload (upload: Upload): void {
+  if (upload.target === undefined) {
+    return
   }
+  uploads.update((m) => {
+    m.set(upload.uuid, upload)
+    return m
+  })
 }
 
-function undockFileUpload (target: FileUploadTarget, uppy: Uppy): void {
-  uppy.cancelAll()
-  uppy.close()
+/** @public */
+export function updateUploads (): void {
+  uploads.update((m) => m)
+}
 
-  uploads.update((instances) => {
-    return instances.filter((instance) => instance.uppy !== uppy)
+/** @public */
+export function untrackUpload (upload: Upload): void {
+  if (upload.target === undefined) {
+    return
+  }
+  uploads.update((m) => {
+    m.delete(upload.uuid)
+    return m
   })
 }

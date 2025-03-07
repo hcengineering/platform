@@ -15,47 +15,18 @@
 <script lang="ts">
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { ProgressCircle, showPopup, tooltip } from '@hcengineering/ui'
-  import { type State as UppyState } from '@uppy/core'
-  import { onDestroy, onMount } from 'svelte'
 
-  import { type FileUpload } from '../store'
+  import { type Upload } from '../store'
 
   import IconError from './icons/Error.svelte'
   import FileUploadStatusPopup from './FileUploadStatusPopup.svelte'
 
-  export let upload: FileUpload
+  export let upload: Upload
 
-  let state: UppyState<any, any> = upload.uppy.getState()
-  let progress: number = state.totalProgress
-
-  $: state = upload.uppy.getState()
-  $: progress = state.totalProgress
-  $: files = Object.values(state.files)
-  $: filesTotal = files.length
-  $: filesComplete = files.filter((p) => p.progress?.uploadComplete).length
-
-  function updateState (): void {
-    state = upload.uppy.getState()
-  }
-
-  onMount(() => {
-    upload.uppy.on('error', updateState)
-    upload.uppy.on('progress', updateState)
-    upload.uppy.on('upload-progress', updateState)
-    upload.uppy.on('upload-success', updateState)
-    upload.uppy.on('file-removed', updateState)
-  })
-
-  onDestroy(() => {
-    upload.uppy.off('error', updateState)
-    upload.uppy.off('progress', updateState)
-    upload.uppy.off('upload-progress', updateState)
-    upload.uppy.off('upload-success', updateState)
-    upload.uppy.off('file-removed', updateState)
-  })
+  $: console.log(upload.progress / Math.max(upload.files.size, 1))
 
   function handleClick (ev: MouseEvent): void {
-    showPopup(FileUploadStatusPopup, { upload }, ev.currentTarget as HTMLElement)
+    showPopup(FileUploadStatusPopup, { uploadId: upload.uuid }, ev.currentTarget as HTMLElement)
   }
 </script>
 
@@ -63,19 +34,16 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="container flex-row-center flex-gap-2 active"
-  class:error={state.error}
+  class:error={upload.error}
   on:click={handleClick}
-  use:tooltip={state.error != null ? { label: getEmbeddedLabel(state.error) } : undefined}
+  use:tooltip={upload.error !== undefined ? { label: getEmbeddedLabel(upload.error) } : undefined}
 >
-  {#if state.error}
+  {#if upload.error}
     <IconError size={'small'} fill={'var(--negative-button-default)'} />
   {:else}
-    <ProgressCircle value={progress} size={'small'} primary />
+    <ProgressCircle value={upload.progress / Math.max(upload.files.size, 1)} size={'small'} primary />
   {/if}
-  <span>{progress}%</span>
-  {#if filesTotal > 0}
-    <span>{filesComplete}/{filesTotal}</span>
-  {/if}
+  <span>{(upload.progress / Math.max(upload.files.size, 1)).toFixed(1)}%</span>
 </div>
 
 <style lang="scss">
