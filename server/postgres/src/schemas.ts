@@ -1,6 +1,5 @@
 import { DOMAIN_DOC_INDEX_STATE, DOMAIN_MODEL_TX, DOMAIN_RELATION, DOMAIN_SPACE, DOMAIN_TX } from '@hcengineering/core'
-
-export type DataType = 'bigint' | 'bool' | 'text' | 'text[]'
+import { type SchemaDiff, type FieldSchema, type Schema } from './types'
 
 export function getIndex (field: FieldSchema): string {
   if (field.indexType === undefined || field.indexType === 'btree') {
@@ -8,15 +7,6 @@ export function getIndex (field: FieldSchema): string {
   }
   return ` USING ${field.indexType}`
 }
-
-export interface FieldSchema {
-  type: DataType
-  notNull: boolean
-  index: boolean
-  indexType?: 'btree' | 'gin' | 'gist' | 'brin' | 'hash'
-}
-
-export type Schema = Record<string, FieldSchema>
 
 const baseSchema: Schema = {
   _id: {
@@ -139,6 +129,11 @@ const notificationSchema: Schema = {
     type: 'text',
     notNull: true,
     index: true
+  },
+  docNotifyContext: {
+    type: 'text',
+    notNull: false,
+    index: false
   }
 }
 
@@ -185,7 +180,7 @@ const docIndexStateSchema: Schema = {
 }
 
 const timeSchema: Schema = {
-  ...baseSchema,
+  ...defaultSchema,
   workslots: {
     type: 'bigint',
     notNull: false,
@@ -289,9 +284,96 @@ const githubLogin: Schema = {
   }
 }
 
-export function addSchema (domain: string, schema: Schema): void {
+function addSchema (domain: string, schema: Schema): void {
   domainSchemas[translateDomain(domain)] = schema
   domainSchemaFields.set(domain, createSchemaFields(schema))
+}
+
+// add schema if not forced and return migrate script if have differences
+export function setSchema (domain: string, schema: Schema): string | undefined {
+  const translated = translateDomain(domain)
+  if (forcedSchemas.includes(translated)) {
+    const diff = getSchemaDiff(translated, schema)
+    if (diff !== undefined) {
+      return migrateSchema(translated, diff)
+    }
+  }
+  addSchema(translated, schema)
+}
+
+function migrateSchema (domain: string, diff: SchemaDiff): string {
+  const queries: string[] = []
+  if (diff.remove !== undefined) {
+    for (const key in diff.remove) {
+      const field = diff.remove[key]
+      switch (field.type) {
+        case 'text':
+          queries.push(`UPDATE ${domain} SET data = jsonb_set(data, '{${key}}', to_jsonb("${key}"), true);`)
+          break
+        case 'text[]':
+          queries.push(`UPDATE ${domain} SET data = jsonb_set(data, '{${key}}', to_jsonb("${key}::text[]"), true);`)
+          break
+        case 'bigint':
+          queries.push(`UPDATE ${domain} SET data = jsonb_set(data, '{${key}}', to_jsonb("${key}"::bigint), true);`)
+          break
+        case 'bool':
+          queries.push(`UPDATE ${domain} SET data = jsonb_set(data, '{${key}}', to_jsonb("${key}"::boolean), true);`)
+          break
+      }
+      queries.push(`ALTER TABLE ${domain} DROP COLUMN "${key}"`)
+    }
+  }
+  if (diff.add !== undefined) {
+    for (const key in diff.add) {
+      const field = diff.add[key]
+      queries.push(`ALTER TABLE ${domain} ADD COLUMN "${key}" ${field.type}`)
+      queries.push('COMMIT')
+      switch (field.type) {
+        case 'text':
+          queries.push(`UPDATE ${domain} SET "${key}" = (data->>'${key}');`)
+          break
+        case 'text[]':
+          queries.push(`UPDATE ${domain} SET "${key}" = array(
+            SELECT jsonb_array_elements_text(data->'${key}')
+          )`)
+          break
+        case 'bigint':
+          queries.push(`UPDATE ${domain} SET "${key}" = (data->>'${key}')::bigint;`)
+          break
+        case 'bool':
+          queries.push(`UPDATE ${domain} SET "${key}" = (data->>'${key}')::boolean;`)
+          break
+      }
+      if (field.notNull) {
+        queries.push(`ALTER TABLE ${domain} ALTER COLUMN "${key}" SET NOT NULL`)
+      }
+    }
+  }
+  return queries.join(';')
+}
+
+function getSchemaDiff (domain: string, dbSchema: Schema): SchemaDiff | undefined {
+  const domainSchema = getSchema(domain)
+  const res: SchemaDiff = {}
+  const add: Schema = {}
+  const remove: Schema = {}
+  for (const key in domainSchema) {
+    if (dbSchema[key] === undefined) {
+      add[key] = domainSchema[key]
+    }
+  }
+  for (const key in dbSchema) {
+    if (domainSchema[key] === undefined) {
+      remove[key] = dbSchema[key]
+    }
+  }
+  if (Object.keys(add).length > 0) {
+    res.add = add
+  }
+  if (Object.keys(remove).length > 0) {
+    res.remove = remove
+  }
+  return Object.keys(res).length > 0 ? res : undefined
 }
 
 export function translateDomain (domain: string): string {
@@ -314,6 +396,8 @@ export const domainSchemas: Record<string, Schema> = {
   [DOMAIN_RELATION]: relationSchema,
   kanban: defaultSchema
 }
+
+const forcedSchemas: string[] = Object.keys(domainSchemas)
 
 export function getSchema (domain: string): Schema {
   return domainSchemas[translateDomain(domain)] ?? defaultSchema

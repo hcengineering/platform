@@ -36,16 +36,15 @@ import { type DomainHelperOperations } from '@hcengineering/server-core'
 import postgres, { type Options, type ParameterOrJSON } from 'postgres'
 import type { DBClient } from './client'
 import {
-  addSchema,
-  type DataType,
   getDocFieldsByDomains,
   getIndex,
   getSchema,
   getSchemaAndFields,
-  type Schema,
   type SchemaAndFields,
+  setSchema,
   translateDomain
 } from './schemas'
+import { type Schema, type DataType } from './types'
 
 const clientRefs = new Map<string, ClientRef>()
 const loadedDomains = new Set<string>()
@@ -145,7 +144,10 @@ async function getTableSchema (client: postgres.Sql, domains: string[]): Promise
     }
   }
   for (const [domain, schema] of Object.entries(schemas)) {
-    addSchema(domain, schema)
+    const schemaMigration = setSchema(domain, schema)
+    if (schemaMigration !== undefined) {
+      await client.unsafe(schemaMigration)
+    }
   }
 }
 
