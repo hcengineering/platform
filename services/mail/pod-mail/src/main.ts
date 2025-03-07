@@ -21,6 +21,9 @@ import { createServer, listen } from './server'
 import { MailClient } from './mail'
 import { Endpoint } from './types'
 
+// Import Mail using require since esModuleInterop is not enabled
+import Mail = require('nodemailer/lib/mailer')
+
 export const main = async (): Promise<void> => {
   const client = new MailClient()
   console.log('Mail service has been started')
@@ -55,18 +58,35 @@ export const main = async (): Promise<void> => {
 
 export async function handleSendMail (client: MailClient, req: Request, res: Response): Promise<void> {
   // Skip auth check, since service should be internal
-  const message: SendMailOptions = req.body
-  if (message?.text === undefined) {
+  const { from, to, subject, text, html, attachments } = req.body
+  const fromAddress = from ?? config.source
+  if (text === undefined) {
     res.status(400).send({ err: "'text' is missing" })
     return
   }
-  if (message?.subject === undefined) {
+  if (subject === undefined) {
     res.status(400).send({ err: "'subject' is missing" })
     return
   }
-  if (message?.to === undefined) {
+  if (to === undefined) {
     res.status(400).send({ err: "'to' is missing" })
     return
+  }
+  if (fromAddress === undefined) {
+    res.status(400).send({ err: "'from' is missing" })
+    return
+  }
+  const message: SendMailOptions = {
+    from: fromAddress,
+    to,
+    subject,
+    text
+  }
+  if (html !== undefined) {
+    message.html = html
+  }
+  if (attachments !== undefined) {
+    message.attachments = getAttachments(attachments)
   }
   try {
     await client.sendMessage(message)
@@ -75,4 +95,28 @@ export async function handleSendMail (client: MailClient, req: Request, res: Res
   }
 
   res.send()
+}
+
+function getAttachments (attachments: any): Mail.Attachment[] | undefined {
+  if (attachments === undefined || attachments === null) {
+    return undefined
+  }
+  if (!Array.isArray(attachments)) {
+    console.error('attachments is not array')
+    return undefined
+  }
+  return attachments.map((a) => {
+    const attachment: Mail.Attachment = {
+      content: a.content,
+      contentType: a.contentType,
+      path: a.path,
+      filename: a.filename,
+      cid: a.cid,
+      encoding: a.encoding,
+      contentTransferEncoding: a.contentTransferEncoding,
+      headers: a.headers,
+      raw: a.raw
+    }
+    return attachment
+  })
 }
