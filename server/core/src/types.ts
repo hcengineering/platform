@@ -15,6 +15,7 @@
 
 import {
   type Account,
+  type AccountUuid,
   type Branding,
   type Class,
   type Doc,
@@ -29,7 +30,6 @@ import {
   type ModelDb,
   type Obj,
   type PersonId,
-  type PersonUuid,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -525,7 +525,7 @@ export interface ClientSessionCtx {
   pipeline: Pipeline
   communicationApi: CommunicationApi
 
-  socialStringsToUsers: Map<PersonId, PersonUuid>
+  socialStringsToUsers: Map<PersonId, AccountUuid>
   requestId: ReqId | undefined
   sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
   sendPong: () => void
@@ -563,7 +563,7 @@ export interface Session {
 
   // Client methods
   ping: (ctx: ClientSessionCtx) => Promise<void>
-  getUser: () => PersonUuid
+  getUser: () => AccountUuid
   getUserSocialIds: () => PersonId[]
 
   loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>

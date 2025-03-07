@@ -19,6 +19,10 @@
     "DeleteTag": "Tag löschen",
     "DeleteTagConfirm": "Möchten Sie diesen Tag wirklich löschen? Alle zugehörigen Eigenschaften werden gelöscht",
     "DeleteMasterTag": "Master-Tag löschen",
-    "DeleteMasterTagConfirm": "Möchten Sie diesen Master-Tag wirklich löschen? Alle mit diesem Master-Tag verbundenen Objekte werden gelöscht"
+    "DeleteMasterTagConfirm": "Möchten Sie diesen Master-Tag wirklich löschen? Alle mit diesem Master-Tag verbundenen Objekte werden gelöscht",
+    "UnsetParent": "Elternteil entfernen",
+    "SetParent": "Elternteil setzen",
+    "CreateChild": "Kind erstellen",
+    "Children": "Kinder"
   }
 }

@@ -14,21 +14,28 @@
 -->
 
 <script lang="ts">
-  import { AvatarProvider, getAvatarProviderId, Person } from '@hcengineering/contact'
+  import {
+    type AvatarInfo,
+    AvatarProvider,
+    getAvatarColorForId,
+    getAvatarDisplayName,
+    getAvatarProvider,
+    getAvatarProviderId,
+    Person
+  } from '@hcengineering/contact'
   import { Asset, getResource } from '@hcengineering/platform'
-  import { getBlobURL, reduceCalls, sizeToWidth } from '@hcengineering/presentation'
+  import { getBlobURL, getClient, reduceCalls, sizeToWidth } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     ColorDefinition,
-    IconSize,
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
     getPlatformColor,
+    IconSize,
     themeStore
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
-  import { type AvatarInfo, getAvatarDisplayName, getAvatarColorForId, getAvatarProvider } from '@hcengineering/contact'
-  import { PersonUuid, Ref, type Data, type WithLookup } from '@hcengineering/core'
+  import { AccountUuid, type Data, PersonUuid, Ref, type WithLookup } from '@hcengineering/core'
 
   import { loadUsersStatus, statusByUserStore } from '../utils'
   import AvatarInstance from './AvatarInstance.svelte'
@@ -72,8 +79,9 @@
       avatarProvider = undefined
       srcSet = undefined
     } else if (avatar != null) {
+      const client = getClient()
       const avatarProviderId = getAvatarProviderId(avatar.avatarType)
-      avatarProvider = avatarProviderId !== undefined ? await getAvatarProvider(avatarProviderId) : undefined
+      avatarProvider = avatarProviderId !== undefined ? await getAvatarProvider(client, avatarProviderId) : undefined
 
       if (avatarProvider === undefined) {
         url = undefined
@@ -100,7 +108,8 @@
     loadUsersStatus()
   })
 
-  $: isOnline = person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid)?.online === true
+  $: isOnline =
+    person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid as AccountUuid)?.online === true
 </script>
 
 {#if showStatus && person}

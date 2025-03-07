@@ -25,7 +25,15 @@ import accountPlugin, {
   type AccountDB
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
-import { createFileBackupStorage, createStorageBackupStorage, restore } from '@hcengineering/server-backup'
+import {
+  backup,
+  backupFind,
+  checkBackupIntegrity,
+  compactBackup,
+  createFileBackupStorage,
+  createStorageBackupStorage,
+  restore
+} from '@hcengineering/server-backup'
 import serverClientPlugin, { getAccountClient } from '@hcengineering/server-client'
 import {
   registerAdapterFactory,
@@ -36,7 +44,7 @@ import {
   setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
-import serverToken from '@hcengineering/server-token'
+import serverToken, { generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
@@ -47,12 +55,15 @@ import {
   AccountRole,
   MeasureMetricsContext,
   metricsToString,
-  type PersonId,
-  type WorkspaceUuid,
+  systemAccountUuid,
   type Data,
+  type Doc,
+  type PersonId,
+  type Ref,
   type Tx,
   type Version,
-  type WorkspaceDataId
+  type WorkspaceDataId,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import {
@@ -76,8 +87,8 @@ import { getAccountDBUrl, getMongoDBUrl } from './__start'
 import { changeConfiguration } from './configuration'
 import { reindexWorkspace } from './fulltext'
 
-import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 import { moveAccountDbFromMongoToPG } from './db'
+import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -619,19 +630,69 @@ export function devTool (
 
   //                     const destroyer = getWorkspaceDestroyAdapter(dbUrl)
 
-  //                     await destroyer.deleteWorkspace(toolCtx, sharedPipelineContextVars, { name: ws.workspace })
-  //                   }
-  //                 }
-  //               )
-  //             } catch (err: any) {
-  //               toolCtx.error('Failed to backup/archive workspace', { workspace: ws.workspace })
-  //             }
-  //           }
-  //         }
-  //         console.log('Processed unused workspaces', unused)
-  //       })
+  // program
+  //   .command('restore-all')
+  //   .description('Restore workspaces to selected region DB...')
+  //   .option('-t|--timeout [timeout]', 'Timeout in days', '60')
+  //   .option('-r|--region [region]', 'Timeout in days', '')
+  //   .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+  //   .option('-d|--dry [dry]', 'Dry run', false)
+  //   .action(async (cmd: { timeout: string, workspace: string, region: string, dry: boolean, account: string }) => {
+  //     const { txes, dbUrl } = prepareTools()
+
+  //     const bucketName = process.env.BUCKET_NAME
+  //     if (bucketName === '' || bucketName == null) {
+  //       console.error('please provide butket name env')
+  //       process.exit(1)
   //     }
-  //   )
+
+  //     const token = generateToken(systemAccountEmail, getWorkspaceId(''))
+  //     const workspaces = (await listAccountWorkspaces(token, cmd.region))
+  //       .sort((a, b) => {
+  //         const bsize = b.backupInfo?.backupSize ?? 0
+  //         const asize = a.backupInfo?.backupSize ?? 0
+  //         return bsize - asize
+  //       })
+  //       .filter((it) => cmd.workspace === '' || cmd.workspace === it.workspace)
+
+  //     for (const ws of workspaces) {
+  //       const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+
+  //       toolCtx.warn('--- restoring workspace', {
+  //         url: ws.workspaceUrl,
+  //         id: ws.workspace,
+  //         lastVisitDays,
+  //         backupSize: ws.backupInfo?.blobsSize ?? 0,
+  //         mode: ws.mode
+  //       })
+  //       if (cmd.dry) {
+  //         continue
+  //       }
+  //       try {
+  //         const st = Date.now()
+  //         await backupRestore(
+  //           toolCtx,
+  //           dbUrl,
+  //           bucketName,
+  //           ws,
+  //           (dbUrl, storageAdapter) => {
+  //             const factory: PipelineFactory = createBackupPipeline(toolCtx, dbUrl, txes, {
+  //               externalStorage: storageAdapter,
+  //               usePassedCtx: true
+  //             })
+  //             return factory
+  //           },
+  //           [DOMAIN_BLOB]
+  //         )
+  //         const ed = Date.now()
+  //         toolCtx.warn('--- restoring complete', {
+  //           time: ed - st
+  //         })
+  //       } catch (err: any) {
+  //         toolCtx.error('REstore of f workspace failedarchive workspace', { workspace: ws.workspace })
+  //       }
+  //     }
+  //   })
 
   // program
   //   .command('backup-all')
@@ -852,73 +913,155 @@ export function devTool (
   //   })
   // })
 
-  // program
-  // .command('backup <dirName> <workspace>')
-  // .description('dump workspace transactions and minio resources')
-  // .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
-  // .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
-  // .option(
-  //   '-ct, --contentTypes <contentTypes>',
-  //   'A list of ; separated content types for blobs to skip download if size >= limit',
-  //   ''
-  // )
-  // .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
-  // .option('-f, --force', 'Force backup', false)
-  // .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
-  // .action(
-  //   async (
-  //     dirName: string,
-  //     workspace: string,
-  //     cmd: {
-  //       skip: string
-  //       force: boolean
-  //       timeout: string
-  //       include: string
-  //       blobLimit: string
-  //       contentTypes: string
-  //     }
-  //   ) => {
-  //     const storage = await createFileBackupStorage(dirName)
-  //     const wsid = getWorkspaceId(workspace)
-  //     const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-  //     await backup(toolCtx, endpoint, wsIds, storage, {
-  //       force: cmd.force,
-  //       include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
-  //       skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
-  //       timeout: 0,
-  //       connectTimeout: parseInt(cmd.timeout) * 1000,
-  //       blobDownloadLimit: parseInt(cmd.blobLimit),
-  //       skipBlobContentTypes: cmd.contentTypes
-  //         .split(';')
-  //         .map((it) => it.trim())
-  //         .filter((it) => it.length > 0)
-  //     })
-  //   }
-  // )
-  // program
-  // .command('backup-find <dirName> <fileId>')
-  // .description('dump workspace transactions and minio resources')
-  // .option('-d, --domain <domain>', 'Check only domain')
-  // .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined }) => {
-  //   const storage = await createFileBackupStorage(dirName)
-  //   await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.domain)
-  // })
+  program
+    .command('backup <dirName> <workspace>')
+    .description('dump workspace transactions and minio resources')
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('--full', 'Full recheck', false)
+    .option(
+      '-ct, --contentTypes <contentTypes>',
+      'A list of ; separated content types for blobs to skip download if size >= limit',
+      ''
+    )
+    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
+    .option('-f, --force', 'Force backup', false)
+    .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
+    .action(
+      async (
+        dirName: string,
+        workspace: string,
+        cmd: {
+          skip: string
+          force: boolean
+          timeout: string
+          include: string
+          blobLimit: string
+          contentTypes: string
+          full: boolean
+        }
+      ) => {
+        const storage = await createFileBackupStorage(dirName)
+        await withAccountDatabase(async (db) => {
+          const ws = await getWorkspace(db, workspace)
+          if (ws === null) {
+            throw new Error(`workspace ${workspace} not found`)
+          }
+          const wsIds = {
+            uuid: ws.uuid,
+            dataId: ws.dataId,
+            url: ws.url
+          }
+          const endpoint = await getWorkspaceTransactorEndpoint(ws.uuid)
 
-  // program
-  // .command('backup-compact <dirName>')
-  // .description('Compact a given backup, will create one snapshot clean unused resources')
-  // .option('-f, --force', 'Force compact.', false)
-  // .action(async (dirName: string, cmd: { force: boolean }) => {
-  //   const storage = await createFileBackupStorage(dirName)
-  //   await compactBackup(toolCtx, storage, cmd.force)
-  // })
-  // program
-  // .command('backup-check <dirName>')
-  // .description('Compact a given backup, will create one snapshot clean unused resources')
-  // .action(async (dirName: string, cmd: any) => {
-  //   const storage = await createFileBackupStorage(dirName)
-  //   await checkBackupIntegrity(toolCtx, storage)
-  // })
+          await backup(toolCtx, endpoint, wsIds, storage, {
+            force: cmd.force,
+            include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
+            skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
+            timeout: 0,
+            connectTimeout: parseInt(cmd.timeout) * 1000,
+            blobDownloadLimit: parseInt(cmd.blobLimit),
+            skipBlobContentTypes: cmd.contentTypes
+              .split(';')
+              .map((it) => it.trim())
+              .filter((it) => it.length > 0)
+          })
+        })
+      }
+    )
+  program
+    .command('backup-find <dirName> <fileId>')
+    .description('dump workspace transactions and minio resources')
+    .option('-d, --domain <domain>', 'Check only domain')
+    .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined }) => {
+      const storage = await createFileBackupStorage(dirName)
+      await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.domain)
+    })
+
+  program
+    .command('backup-compact <dirName>')
+    .description('Compact a given backup, will create one snapshot clean unused resources')
+    .option('-f, --force', 'Force compact.', false)
+    .action(async (dirName: string, cmd: { force: boolean }) => {
+      const storage = await createFileBackupStorage(dirName)
+      await compactBackup(toolCtx, storage, cmd.force)
+    })
+  program
+    .command('backup-check <dirName>')
+    .description('Compact a given backup, will create one snapshot clean unused resources')
+    .action(async (dirName: string, cmd: any) => {
+      const storage = await createFileBackupStorage(dirName)
+      await checkBackupIntegrity(toolCtx, storage)
+    })
+
+  program
+    .command('backup-check-all')
+    .description('Check Backup integrity')
+    .option('-r|--region [region]', 'Timeout in days', '')
+    .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+    .option('-s|--skip [skip]', 'A command separated list of workspaces to skip', '')
+    .option('-d|--dry [dry]', 'Dry run', false)
+    .action(async (cmd: { timeout: string, workspace: string, region: string, dry: boolean, skip: string }) => {
+      const bucketName = process.env.BUCKET_NAME
+      if (bucketName === '' || bucketName == null) {
+        console.error('please provide butket name env')
+        process.exit(1)
+      }
+
+      const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
+
+      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid)
+      const workspaces = (await getAccountClient(token).listWorkspaces(cmd.region))
+        .sort((a, b) => {
+          const bsize = b.backupInfo?.backupSize ?? 0
+          const asize = a.backupInfo?.backupSize ?? 0
+          return bsize - asize
+        })
+        .filter((it) => (cmd.workspace === '' || cmd.workspace === it.url) && !skipWorkspaces.has(it.url))
+
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      for (const ws of workspaces) {
+        const lastVisitDays = Math.floor((Date.now() - (ws.lastVisit ?? 0)) / 1000 / 3600 / 24)
+
+        toolCtx.warn('--- checking workspace backup', {
+          url: ws.url,
+          id: ws.uuid,
+          lastVisitDays,
+          backupSize: ws.backupInfo?.blobsSize ?? 0,
+          mode: ws.mode
+        })
+        if (cmd.dry) {
+          continue
+        }
+        try {
+          const st = Date.now()
+
+          try {
+            const storage = await createStorageBackupStorage(
+              toolCtx,
+              storageAdapter,
+              {
+                uuid: 'backup' as WorkspaceUuid,
+                url: 'backup',
+                dataId: bucketName as WorkspaceDataId
+              },
+              ws.dataId ?? ws.uuid
+            )
+            await checkBackupIntegrity(toolCtx, storage)
+          } catch (err: any) {
+            toolCtx.error('failed to size backup', { err })
+          }
+          const ed = Date.now()
+          toolCtx.warn('--- check complete', {
+            time: ed - st
+          })
+        } catch (err: any) {
+          toolCtx.error('Restore of f workspace failedarchive workspace', { workspace: ws.url })
+        }
+      }
+      await storageAdapter.close()
+    })
 
   program
     .command('backup-restore <dirName> <workspace> [date]')

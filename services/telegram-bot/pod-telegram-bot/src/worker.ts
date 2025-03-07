@@ -14,7 +14,7 @@
 //
 
 import type { Collection, ObjectId, WithId } from 'mongodb'
-import { MeasureContext, PersonId, Ref, SortingOrder, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
+import { MeasureContext, Ref, SortingOrder, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { InboxNotification } from '@hcengineering/notification'
 import { TelegramNotificationRequest } from '@hcengineering/telegram'
 import { StorageAdapter } from '@hcengineering/server-core'
@@ -245,7 +245,7 @@ export class PlatformWorker {
 
   async getChannelName (client: WorkspaceClient, channel: ChunterSpace, email: string): Promise<string> {
     if (client.hierarchy.isDerived(channel._class, chunter.class.DirectMessage)) {
-      const persons = await client.getPersons(channel.members as PersonId[], email)
+      const persons = await client.getPersons(channel.members, email)
       return persons
         .map(({ name }) => formatName(name))
         .sort((a, b) => a.localeCompare(b))

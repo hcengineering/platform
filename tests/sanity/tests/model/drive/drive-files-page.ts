@@ -1,6 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { ButtonFilesContextMenu } from './types'
-import { uploadFile } from '../../utils'
 import { CommonPage } from '../common-page'
 
 export class DriveFilesPage extends CommonPage {
@@ -16,11 +15,6 @@ export class DriveFilesPage extends CommonPage {
   readonly linkFile = (fileName: string): Locator => this.page.locator(`td:has(span:text-is("${fileName}")) a`).first()
   readonly buttonContextMenu = (buttonText: ButtonFilesContextMenu): Locator =>
     this.page.locator('div.antiPopup').getByRole('button', { name: buttonText })
-
-  async uploadFile (fileName: string): Promise<void> {
-    await uploadFile(this.page, fileName, 'My device')
-    await this.buttonConfirmUpload().click()
-  }
 
   async checkFileExists (fileName: string): Promise<void> {
     await expect(this.linkFile(fileName)).toBeVisible()

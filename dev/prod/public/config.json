@@ -18,5 +18,7 @@
   "VERSION": null,
   "MODEL_VERSION": null,
   "STATS_URL": "http://localhost:4900",
-  "PASSWORD_STRICTNESS": "none"
+  "PASSWORD_STRICTNESS": "none",
+  "STREAM_URL": "http://localhost:1080/recording",
+  "PUBLIC_SCHEDULE_URL": "http://localhost:8060"
 }

@@ -124,6 +124,8 @@
     "Join": "Присоединиться",
     "Copied": "Скопировано",
     "Title": "Заголовок",
-    "HideArchived": "Скрыть архивные"
+    "HideArchived": "Скрыть архивные",
+    "RemoveRelation": "Удалить связь",  
+    "RemoveRelationConfirmation": "Вы хотите удалить связь?"  
   }
 }

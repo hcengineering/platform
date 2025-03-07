@@ -14,6 +14,7 @@
 //
 
 import core, {
+  type AccountUuid,
   type Arr,
   type AttachedDoc,
   type Class,
@@ -234,8 +235,8 @@ export function genMinModel (): TxCUD<Doc>[] {
     })
   )
 
-  const u1 = 'User1' as PersonId
-  const u2 = 'User2' as PersonId
+  const u1 = 'User1' as AccountUuid
+  const u2 = 'User2' as AccountUuid
   txes.push(
     createDoc(core.class.Space, {
       name: 'Sp1',

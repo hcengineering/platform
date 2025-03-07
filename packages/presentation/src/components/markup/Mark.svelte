@@ -23,7 +23,7 @@
 
   function handleLink (e: MouseEvent): void {
     try {
-      const href = mark.attrs.href
+      const href = mark.attrs?.href
       if (href != null && href !== '') {
         const url = new URL(href)
         const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin

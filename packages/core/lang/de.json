@@ -26,14 +26,14 @@
     "String": "Text",
     "Markup": "Formatierter Text",
     "Number": "Zahl",
-    "Boolean": "Boolesch",
+    "Boolean": "Kontrollkästchen",
     "Timestamp": "Zeitstempel",
     "Date": "Datum",
     "IntlString": "Internationaler Text",
     "Ref": "Referenz",
     "Collection": "Sammlung",
-    "Array": "Liste",
-    "Enum": "Aufzählung",
+    "Array": "Mehrfachauswahl",
+    "Enum": "Auswahl",
     "Members": "Mitglieder",
     "Hyperlink": "URL",
     "MarkupBlobRef": "Kollaborativ",
@@ -65,6 +65,8 @@
     "BlobContentType": "Inhaltstyp",
     "Relation": "Beziehung",
     "Relations": "Beziehungen",
-    "AddRelation": "Beziehung hinzufügen"
+    "AddRelation": "Beziehung hinzufügen",
+    "PersonId": "Person",
+    "AccountId": "Konto"
   }
 }

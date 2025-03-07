@@ -139,14 +139,14 @@
 
     .label {
       position: absolute;
-      bottom: 0;
+      top: 0;
       left: 0;
       max-width: 100%;
-      padding: 0.25rem 0.5rem 0.5rem 1rem;
+      padding: 0.5rem 0.5rem 0.25rem 1rem;
       color: white;
       font-weight: 500;
       background-color: rgba(0, 0, 0, 0.3);
-      border-radius: 0 0.25rem 0 0.75rem;
+      border-radius: 0.75rem 0 0.25rem 0;
       display: flex;
       align-items: center;
       gap: 0.25rem;
@@ -158,8 +158,8 @@
         text-shadow: 0 0 0.25rem black;
       }
       &.filled {
-        padding: 0.25rem 1rem 0.5rem 1rem;
-        border-radius: 0 0 0.75rem 0.75rem;
+        padding: 0.5rem 1rem 0.25rem 1rem;
+        border-radius: 0.75rem 0.75rem 0 0;
       }
     }
     &.small .label {

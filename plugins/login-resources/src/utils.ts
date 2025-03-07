@@ -20,9 +20,7 @@ import {
   AccountRole,
   concatLink,
   parseSocialIdString,
-  type Doc,
   type Person,
-  type Ref,
   type WorkspaceInfoWithStatus,
   type WorkspaceUserOperation
 } from '@hcengineering/core'
@@ -536,8 +534,7 @@ export async function getInviteLinkId (
   expHours: number,
   emailMask: string,
   limit: number,
-  role: AccountRole = AccountRole.User,
-  personId?: Ref<Doc>
+  role: AccountRole = AccountRole.User
 ): Promise<string> {
   const exp = expHours < 0 ? -1 : expHours * 1000 * 60 * 60
   const token = getMetadata(presentation.metadata.Token)
@@ -551,7 +548,7 @@ export async function getInviteLinkId (
     return ''
   }
 
-  const inviteLink = await getAccountClient(token).createInviteLink(exp, emailMask, limit, role, personId)
+  const inviteLink = await getAccountClient(token).createInviteLink(exp, emailMask, limit, role)
 
   Analytics.handleEvent('Get invite link')
 

@@ -23,17 +23,17 @@
     "Archived": "Архивный",
     "ClassLabel": "Тип",
     "ClassPropertyLabel": "Название",
-    "String": "Строка",
+    "String": "Текст",
     "Markup": "Разметка",
     "Number": "Число",
-    "Boolean": "Логическое",
+    "Boolean": "Чекбокс",
     "Timestamp": "Временная отметка",
     "Date": "Дата",
     "IntlString": "Интернационализированная строка",
     "Ref": "Ссылка",
     "Collection": "Коллекция",
-    "Array": "Массив",
-    "Enum": "Справочник",
+    "Array": "Множественный выбор",
+    "Enum": "Выбор",
     "Members": "Участники",
     "Hyperlink": "URL",
     "MarkupBlobRef": "Коллаборативный",
@@ -66,6 +66,7 @@
     "Relation": "Связь",
     "Relations": "Связи",
     "AddRelation": "Добавить связь",
-    "PersonId": "Персона"
+    "PersonId": "Персона",
+    "AccountId": "Аккаунт"
   }
 }

@@ -29,7 +29,9 @@ import {
   Ref,
   SocialId,
   TxFactory,
-  Person as GlobalPerson
+  Person as GlobalPerson,
+  AccountUuid,
+  notEmpty
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
@@ -372,10 +374,22 @@ export async function getSocialStringsByEmployee (client: Client): Promise<Recor
   return socialStringsByPerson
 }
 
+export async function getAllAccounts (client: Client): Promise<AccountUuid[]> {
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+
+  return employees.map((it) => it.personUuid).filter(notEmpty)
+}
+
 export async function getAllEmployeesPrimarySocialStrings (client: Client): Promise<PersonId[]> {
   const socialStringsByPerson = getSocialStringsByEmployee(client)
 
   return Object.values(socialStringsByPerson).map((it) => pickPrimarySocialId(it))
+}
+
+export async function getAllUserAccounts (client: Client): Promise<AccountUuid[]> {
+  const employees = await client.findAll(contact.mixin.Employee, { active: true })
+
+  return employees.map((it) => it.personUuid).filter(notEmpty)
 }
 
 export async function ensureEmployee (
@@ -436,32 +450,6 @@ export async function ensureEmployee (
     await client.tx(updatePersonTx)
   }
 
-  if (me.role !== AccountRole.Guest) {
-    const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
-
-    if (employee === undefined || !Hierarchy.hasMixin(employee, contact.mixin.Employee) || !employee.active) {
-      await ctx.with('create-employee', {}, async () => {
-        if (personRef === undefined) {
-          // something went wrong
-          console.error('Person not found')
-          return null
-        }
-
-        const createEmployeeTx = txFactory.createTxMixin(
-          personRef,
-          contact.class.Person,
-          contact.space.Contacts,
-          contact.mixin.Employee,
-          {
-            active: true
-          }
-        )
-
-        await client.tx(createEmployeeTx)
-      })
-    }
-  }
-
   const existingIdentifiers = await client.findAll(contact.class.SocialIdentity, {
     attachedTo: personRef,
     attachedToClass: contact.class.Person
@@ -496,6 +484,39 @@ export async function ensureEmployee (
         await client.tx(createSocialIdTx)
       })
     }
+  }
+
+  // NOTE: it is important to create Employee after Person and SocialIdentities are ensured so all the triggers applied
+  // on Employee creation will be able to properly map things
+  const employeeRole = me.role === AccountRole.Guest ? 'GUEST' : 'USER'
+  const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
+
+  if (
+    employee === undefined ||
+    !Hierarchy.hasMixin(employee, contact.mixin.Employee) ||
+    !employee.active ||
+    employee.role !== employeeRole
+  ) {
+    await ctx.with('create-employee', {}, async () => {
+      if (personRef === undefined) {
+        // something went wrong
+        console.error('Person not found')
+        return null
+      }
+
+      const createEmployeeTx = txFactory.createTxMixin(
+        personRef,
+        contact.class.Person,
+        contact.space.Contacts,
+        contact.mixin.Employee,
+        {
+          active: true,
+          role: employeeRole
+        }
+      )
+
+      await client.tx(createEmployeeTx)
+    })
   }
 
   // TODO: check for merged persons with this one and do the merge

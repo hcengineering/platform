@@ -20,7 +20,7 @@ import { decodeDocumentId } from '@hcengineering/collaborator-client'
 import core, { AttachedData, MeasureContext, Ref, Space, TxOperations } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { areEqualMarkups } from '@hcengineering/text'
-import { markupToYDocNoSchema } from '@hcengineering/text-ydoc'
+import { markupToYDoc } from '@hcengineering/text-ydoc'
 import { Doc as YDoc } from 'yjs'
 
 import { Context } from '../context'
@@ -63,7 +63,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
           })
         })
         if (markup !== undefined) {
-          const ydoc = markupToYDocNoSchema(markup, documentId.objectAttr)
+          const ydoc = markupToYDoc(markup, documentId.objectAttr)
 
           // if document was loaded from the initial content or storage we need to save
           // it to ensure the next time we load it from the ydoc document

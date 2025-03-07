@@ -47,7 +47,7 @@
       _class: card.class.MasterTag
     },
     (result) => {
-      tags = result
+      tags = result.sort((a, b) => a.label.localeCompare(b.label))
     }
   )
 

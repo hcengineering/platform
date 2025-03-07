@@ -85,6 +85,20 @@
     "FreeBusy": "Occupé/Libre",
     "DefaultVisibility": "Visibilité par défaut",
     "NotAllPermissions": "Toutes les autorisations n'ont pas été accordées",
-    "GooglePrivacy": "L'utilisation et le transfert d'informations reçues des API Google par Huly à toute autre application respecteront les <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">règles d'utilisation des données utilisateur des services API Google</a>, y compris les exigences d'utilisation limitée."
+    "GooglePrivacy": "L'utilisation et le transfert d'informations reçues des API Google par Huly à toute autre application respecteront les <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">règles d'utilisation des données utilisateur des services API Google</a>, y compris les exigences d'utilisation limitée.",
+    "Value": "{value}",
+    "Schedule": "Calendrier public",
+    "ScheduleNew": "Ajouter un calendrier",
+    "ScheduleDeleteConfirm": "Le calendrier sera supprimé. Confirmer ?",
+    "ScheduleShareLink": "Partager le lien",
+    "ScheduleSharedLinkMessage": "Partager ce lien pour permettre à d'autres personnes de réserver une réunion avec vous :</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkCopy": "Copier le lien",
+    "ScheduleAvailability": "Disponibilité",
+    "ScheduleUnavailable": "Indisponible",
+    "ScheduleTitlePlaceholder": "Titre du calendrier",
+    "ScheduleAddPeriod": "Ajouter une période",
+    "ScheduleRemovePeriod": "Supprimer une période",
+    "MeetingDuration": "Durée de la réunion",
+    "MeetingInterval": "Pause entre les réunions"
   }
 }

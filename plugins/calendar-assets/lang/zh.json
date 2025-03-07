@@ -37,7 +37,7 @@
     "AllDay": "全天",
     "AndMore": "还有 {count} 个",
     "CreateEvent": "创建事件",
-    "EventFor": "事件针对：",
+    "EventFor": "事件针对: ",
     "ConfigLabel": "日历",
     "ConfigDescription": "扩展日历事件",
     "HideDetails": "隐藏详细信息",
@@ -85,6 +85,20 @@
     "FreeBusy": "空闲/忙碌",
     "DefaultVisibility": "默认可见性",
     "NotAllPermissions": "未授予所有权限",
-    "GooglePrivacy": "Huly 从 Google API 接收的信息的使用和传输将遵守 <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API 服务用户数据政策</a>，包括有限使用要求。"
+    "GooglePrivacy": "Huly 从 Google API 接收的信息的使用和传输将遵守 <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API 服务用户数据政策</a>,包括有限使用要求。",
+    "Value": "{value}",
+    "Schedule": "公开日程表",
+    "ScheduleNew": "添加日程表",
+    "ScheduleDeleteConfirm": "日程表将被删除。确认吗？",
+    "ScheduleShareLink": "共享链接",
+    "ScheduleSharedLinkMessage": "共享此链接以允许其他人与您预约会议: </p><p><a href=\"{link}\" target=\"_blank\">{link</a></p>",
+    "ScheduleSharedLinkCopy": "复制链接",
+    "ScheduleAvailability": "可用性",
+    "ScheduleUnavailable": "不可用",
+    "ScheduleTitlePlaceholder": "日程表标题",
+    "ScheduleAddPeriod": "添加时间段",
+    "ScheduleRemovePeriod": "删除时间段",
+    "MeetingDuration": "会议时长",
+    "MeetingInterval": "会议间暂停"
   }
 }

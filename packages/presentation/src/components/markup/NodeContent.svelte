@@ -35,7 +35,7 @@
   }
 
   function toString (value: AttrValue | undefined): string | undefined {
-    return value !== undefined ? `${value}` : undefined
+    return value != null ? `${value}` : undefined
   }
 
   function toNumber (value: AttrValue | undefined): number | undefined {
@@ -43,11 +43,14 @@
       return value ? 1 : 0
     }
 
-    return value !== undefined ? (typeof value === 'string' ? parseInt(value) : value) : undefined
+    return value != null ? (typeof value === 'string' ? parseInt(value) : value) : undefined
   }
 
   const checkEmoji = (nodes: MarkupNode[]): boolean => {
     const matches: boolean[] = []
+    if (nodes.some((node) => node.type !== 'text')) {
+      return false
+    }
     nodes.forEach((node) => {
       const reg = node.text?.match(/\P{Emoji}/gu)
       matches.push(reg != null && reg.length > 0 && [65039, 65038, 8205].every((code) => code !== reg[0].charCodeAt(0)))

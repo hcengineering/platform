@@ -69,6 +69,7 @@
     "CreateEmployee": "Mitarbeiter",
     "Inactive": "Inaktiv",
     "Active": "Aktiv",
+    "Role": "Rolle",
     "Birthday": "Geburtstag",
     "UseImage": "Angehängtes Foto",
     "UseGravatar": "Gravatar",

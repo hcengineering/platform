@@ -57,7 +57,7 @@
     {disabled}
     showTooltip={{ label, direction: labelDirection }}
     on:click={() => {
-      if (!opened) {
+      if (!opened && !disabled) {
         opened = true
         showPopup(DropdownPopup, { title: label, items, icon, withSearch }, container, (result) => {
           if (result) {

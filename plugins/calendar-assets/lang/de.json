@@ -85,6 +85,20 @@
     "FreeBusy": "Frei/Beschäftigt",
     "DefaultVisibility": "Standardsichtbarkeit",
     "NotAllPermissions": "Es wurden nicht alle Berechtigungen erteilt",
-    "GooglePrivacy": "Die Nutzung und Übertragung von Informationen durch Huly, die von Google APIs empfangen werden, an andere Apps entspricht der <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API Services User Data Policy</a>, einschließlich der Anforderungen zur eingeschränkten Nutzung."
+    "GooglePrivacy": "Die Nutzung und Übertragung von Informationen durch Huly, die von Google APIs empfangen werden, an andere Apps entspricht der <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API Services User Data Policy</a>, einschließlich der Anforderungen zur eingeschränkten Nutzung.",
+    "Value": "{value}",
+    "Schedule": "Öffentlicher Zeitplan",
+    "ScheduleNew": "Zeitplan hinzufügen",
+    "ScheduleDeleteConfirm": "Der Zeitplan wird gelöscht. Bestätigen?",
+    "ScheduleShareLink": "Link teilen",
+    "ScheduleSharedLinkMessage": "Teilen Sie diesen Link, damit andere ein Meeting mit Ihnen buchen können:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkCopy": "Link kopieren",
+    "ScheduleAvailability": "Verfügbarkeit",
+    "ScheduleUnavailable": "Nicht verfügbar",
+    "ScheduleTitlePlaceholder": "Zeitplantitel",
+    "ScheduleAddPeriod": "Zeitraum hinzufügen",
+    "ScheduleRemovePeriod": "Zeitraum entfernen",
+    "MeetingDuration": "Meetingdauer",
+    "MeetingInterval": "Pause zwischen Meetings"
   }
 }

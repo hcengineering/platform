@@ -123,7 +123,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
       - name: Checking svelte sources...
-        run: node common/scripts/install-run-rush.js svelte-check
+        run: node common/scripts/install-run-rush.js svelte-check -v
   formatting:
     needs: build
     runs-on: ubuntu-latest
@@ -518,7 +518,7 @@ jobs:
           name: docker-logs-ws
           path: ./ws-tests/sanity/logs
   docker-build:
-    needs: [build, test, svelte-check, uitest]
+    needs: [build, test, svelte-check]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:

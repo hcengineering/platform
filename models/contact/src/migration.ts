@@ -1,8 +1,8 @@
 //
 
-import { AvatarType, type Contact, type SocialIdentity } from '@hcengineering/contact'
+import { AvatarType, type Person, type Contact, type SocialIdentity } from '@hcengineering/contact'
 import {
-  type AccountRole,
+  AccountRole,
   buildSocialIdString,
   type Class,
   type Doc,
@@ -95,6 +95,62 @@ async function getOldPersonAccounts (
   return getAccountsFromTxes(accountsTxes)
 }
 
+async function fillAccountUuids (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact fillAccountUuids', {})
+  ctx.info('filling account uuids...')
+  const iterator = await client.traverse<Person>(DOMAIN_CONTACT, { _class: contact.class.Person })
+
+  try {
+    let operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+    while (true) {
+      const persons = await iterator.next(200)
+      if (persons === null || persons.length === 0) {
+        break
+      }
+
+      for (const person of persons) {
+        const employee = client.hierarchy.as(person, contact.mixin.Employee)
+        if (employee === undefined || employee.personUuid !== undefined) {
+          continue
+        }
+
+        const socialIdentity = (
+          await client.find<SocialIdentity>(DOMAIN_CHANNEL, {
+            _class: contact.class.SocialIdentity,
+            attachedTo: person._id
+          })
+        )[0]
+        if (socialIdentity == null) continue
+
+        const accountUuid = await client.accountClient.findPerson(socialIdentity.key)
+        if (accountUuid == null) {
+          continue
+        }
+
+        operations.push({
+          filter: { _id: person._id },
+          update: {
+            personUuid: accountUuid
+          }
+        })
+      }
+
+      if (operations.length > 50) {
+        await client.bulk(DOMAIN_CONTACT, operations)
+        operations = []
+      }
+    }
+
+    if (operations.length > 0) {
+      await client.bulk(DOMAIN_CONTACT, operations)
+      operations = []
+    }
+  } finally {
+    await iterator.close()
+  }
+}
+
 async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('contact assignWorkspaceRoles', {})
   ctx.info('assigning workspace roles...')
@@ -118,6 +174,57 @@ async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
   }
 
   ctx.info('finished assigning workspace roles', { users: oldPersonAccounts.length })
+}
+
+async function assignEmployeeRoles (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact assignEmployeeRoles', {})
+  ctx.info('assigning roles to employees...')
+
+  const wsMembers = await client.accountClient.getWorkspaceMembers()
+  const persons = await client.traverse<Person>(DOMAIN_CONTACT, {
+    _class: contact.class.Person
+  })
+
+  try {
+    while (true) {
+      const docs = await persons.next(50)
+      if (docs === null || docs?.length === 0) {
+        break
+      }
+
+      const updates: { filter: MigrationDocumentQuery<Contact>, update: MigrateUpdate<Contact> }[] = []
+      for (const d of docs) {
+        const employee = client.hierarchy.as(d, contact.mixin.Employee)
+        if (employee === undefined || !employee.active) {
+          continue
+        }
+        if (!employee.active) continue
+
+        const memberInfo = wsMembers.find((m) => m.person === employee.personUuid)
+        if (memberInfo === undefined) {
+          continue
+        }
+
+        const role = memberInfo.role === AccountRole.Guest ? 'GUEST' : 'USER'
+
+        updates.push({
+          filter: { _id: d._id },
+          update: {
+            [contact.mixin.Employee]: {
+              ...(d as any)[contact.mixin.Employee],
+              role
+            }
+          }
+        })
+      }
+      if (updates.length > 0) {
+        await client.bulk(DOMAIN_CONTACT, updates)
+      }
+    }
+  } finally {
+    await persons.close()
+    ctx.info('finished assigning roles to employees...')
+  }
 }
 
 async function createSocialIdentities (client: MigrationClient): Promise<void> {
@@ -302,6 +409,14 @@ export const contactOperation: MigrateOperation = {
       {
         state: 'assign-workspace-roles',
         func: assignWorkspaceRoles
+      },
+      {
+        state: 'fill-account-uuids',
+        func: fillAccountUuids
+      },
+      {
+        state: 'assign-employee-roles-v1',
+        func: assignEmployeeRoles
       }
     ])
   },

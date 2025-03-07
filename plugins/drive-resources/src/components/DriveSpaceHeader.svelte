@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -17,27 +17,45 @@
   import { type Drive } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
-
+  import { FileUploadOptions, getUploadHandlers, UploadHandler } from '@hcengineering/uploader'
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
-  import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup } from '../utils'
+  import {
+    showCreateDrivePopup,
+    showCreateFolderPopup,
+    uploadFilesToDrivePopup,
+    getUploadOptionsByFragment
+  } from '../utils'
+  import { getResource } from '@hcengineering/platform'
+  import { onMount } from 'svelte'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
 
   const myAcc = getCurrentAccount()
-  const socialStrings = myAcc.socialIds
 
   const query = createQuery()
+  const actionWithExtensionMap = new Map<string, UploadHandler>()
+
+  onMount(async () => {
+    const handlers = await getUploadHandlers()
+    for (const handler of handlers) {
+      dropdownItems.push({ id: handler._id, label: handler.label, icon: handler.icon })
+      const uploadHandler = async (opts: FileUploadOptions): Promise<void> => {
+        const fn = await getResource(handler.handler)
+        await fn(opts)
+      }
+      actionWithExtensionMap.set(handler._id, uploadHandler)
+    }
+  })
 
   let loading = true
   let hasDrive = false
   query.query(
     drive.class.Drive,
-    { archived: false, members: { $in: socialStrings } },
+    { archived: false, members: myAcc.uuid },
     (res) => {
       hasDrive = res.length > 0
-      loading = false
     },
     { limit: 1, projection: { _id: 1 } }
   )
@@ -49,8 +67,13 @@
       await handleCreateDrive()
     } else if (res === drive.string.CreateFolder) {
       await handleCreateFolder()
-    } else if (res === drive.string.UploadFile) {
-      await handleUploadFile()
+    } else if (typeof res === 'string' && currentSpace !== undefined) {
+      const opts = await getUploadOptionsByFragment(currentSpace, currentFragment ?? '')
+      const uploadFn = actionWithExtensionMap.get(res)
+      if (uploadFn === undefined) {
+        return
+      }
+      await uploadFn(opts)
     }
   }
 
@@ -68,16 +91,14 @@
     }
   }
 
-  const dropdownItems = hasAccountRole(myAcc, AccountRole.User)
+  const dropdownItems: SelectPopupValueType[] = hasAccountRole(myAcc, AccountRole.User)
     ? [
         { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive },
-        { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
-        { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
+        { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder }
       ]
-    : [
-        { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
-        { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
-      ]
+    : [{ id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder }]
+
+  loading = false
 </script>
 
 {#if loading}
