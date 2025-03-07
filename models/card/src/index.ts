@@ -99,6 +99,8 @@ export class MasterTagEditorSection extends TDoc implements MasterTagEditorSecti
   component!: AnyComponent
 }
 
+export * from './migration'
+
 export function createModel (builder: Builder): void {
   builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
 
