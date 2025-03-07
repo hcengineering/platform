@@ -36,18 +36,18 @@
     showCamera = false
   }
 
-  const startCamera = async (): void => {
+  const startCamera = async (): Promise<void> => {
     stopCamera()
     showCamera = true
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { getUserMedia: { ideal: 30 } } })
+      stream = await navigator.mediaDevices.getUserMedia({ video: { frameRate: { ideal: 30 } } })
       videoElement.srcObject = stream
     } catch (err) {
       console.log(err)
     }
   }
 
-  onDestroy(async (): void => {
+  onDestroy(async (): Promise<void> => {
     stopCamera()
   })
 </script>
