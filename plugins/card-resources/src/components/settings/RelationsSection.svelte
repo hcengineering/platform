@@ -50,6 +50,7 @@
 
   function addRelation (): void {
     showPopup(setting.component.CreateRelation, {
+      aClass: masterTag._id,
       exclude: [],
       _classes: [card.class.Card, contact.class.Contact]
     })

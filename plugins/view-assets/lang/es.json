@@ -122,6 +122,8 @@
     "Join": "Unirse",
     "Copied": "Copiado",
     "Title": "Título",
-    "HideArchived": "Ocultar archivadas"
+    "HideArchived": "Ocultar archivadas",
+    "RemoveRelation": "Eliminar relación",  
+    "RemoveRelationConfirmation": "¿Quieres eliminar la relación?"  
   }
 }
