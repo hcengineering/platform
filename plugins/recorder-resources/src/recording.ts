@@ -50,9 +50,8 @@ export async function record (options: FileUploadOptions): Promise<void> {
 }
 
 async function uploadRecording (recordingName: string, onUploaded: FileUploadCallback): Promise<void> {
-  const u = new URL(getFileUrl(recordingName))
   await onUploaded({
-    uuid: getFileUrl(u.toString()) as Ref<Blob>,
+    uuid: getBlobUrl(recordingName) as Ref<Blob>,
     name: 'Recording-' + now(),
     file: { ...new Blob(), type: 'video/x-mpegURL' },
     path: undefined,
@@ -64,4 +63,13 @@ async function uploadRecording (recordingName: string, onUploaded: FileUploadCal
 function now (): string {
   const date = new Date()
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+}
+
+function getBlobUrl (file: string): string {
+  const fileUrl = getFileUrl(file)
+  const u = new URL(fileUrl)
+  if (u.searchParams.has('file')) {
+    return u.toString()
+  }
+  return fileUrl.split('/').slice(0, -1).join('/')
 }
