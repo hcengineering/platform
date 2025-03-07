@@ -15,14 +15,12 @@
 
 import { type SendMailOptions } from 'nodemailer'
 import { Request, Response } from 'express'
+import Mail from 'nodemailer/lib/mailer'
 
 import config from './config'
 import { createServer, listen } from './server'
 import { MailClient } from './mail'
 import { Endpoint } from './types'
-
-// Import Mail using require since esModuleInterop is not enabled
-import Mail = require('nodemailer/lib/mailer')
 
 export const main = async (): Promise<void> => {
   const client = new MailClient()
