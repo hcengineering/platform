@@ -26,10 +26,12 @@ export class MailClient {
 
   async sendMessage (message: SendMailOptions): Promise<void> {
     this.transporter.sendMail(message, (err, info) => {
+      const messageInfo = `(from: ${message.from as string}, to: ${message.to as string})`
       if (err !== null) {
-        console.error('Failed to send email: ', err.message)
+        console.error(`Failed to send email ${messageInfo}: `, err.message)
+        console.log('Failed message details: ', message)
       } else {
-        console.log(`Email request ${info?.messageId} sent: ${info?.response}`)
+        console.log(`Email request ${messageInfo} sent: ${info?.response}`)
       }
     })
   }

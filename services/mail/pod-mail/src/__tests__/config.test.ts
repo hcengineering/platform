@@ -35,6 +35,7 @@ describe('Config', () => {
     process.env.SMTP_HOST = 'smtp.example.com'
     process.env.SMTP_PORT = '587'
     process.env.SMTP_USERNAME = 'user'
+    process.env.SMTP_PASSWORD = undefined
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const loadedConfig = require('../config').default
