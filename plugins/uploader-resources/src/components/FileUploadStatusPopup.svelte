@@ -118,7 +118,9 @@
                 <div class="flex-row-center flex-gap-2 text-sm">
                   {#if file.error}
                     <Label label={uploader.status.Error} />
-                    <span class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(file.error) }}>{file.error}</span>
+                    <span class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(file.error) }}
+                      >{file.error}</span
+                    >
                   {:else if file.progress > 0}
                     {#if file.finished}
                       <Label label={uploader.status.Completed} />
