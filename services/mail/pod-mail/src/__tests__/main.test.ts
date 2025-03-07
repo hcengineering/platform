@@ -115,4 +115,18 @@ describe('handleSendMail', () => {
       })
     )
   })
+
+  it('should send to multiple addresses', async () => {
+    req.body.to = ['test1@example.com', 'test2@example.com']
+    await handleSendMail(mailClient, req, res)
+
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'noreply@example.com',
+        to: ['test1@example.com', 'test2@example.com'], // Verify that multiple addresses are passed
+        subject: 'Test Subject',
+        text: 'Hello, world!'
+      })
+    )
+  })
 })
