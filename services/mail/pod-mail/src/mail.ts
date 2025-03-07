@@ -15,6 +15,7 @@
 import { type SendMailOptions, type Transporter } from 'nodemailer'
 
 import config from './config'
+import { Message, Receivers } from './types'
 import { getTransport } from './transport'
 
 export class MailClient {
@@ -24,8 +25,24 @@ export class MailClient {
     this.transporter = getTransport(config)
   }
 
-  async sendMessage (message: SendMailOptions): Promise<void> {
-    this.transporter.sendMail(message, (err, info) => {
+  async sendMessage (message: Message, receivers: Receivers, from?: string): Promise<void> {
+    const mailOptions: SendMailOptions = {
+      from: from ?? config.source,
+      to: receivers.to,
+      text: message.text,
+      subject: message.subject
+    }
+    if (receivers.cc !== undefined) {
+      mailOptions.cc = receivers.cc
+    }
+    if (receivers.bcc !== undefined) {
+      mailOptions.bcc = receivers.bcc
+    }
+    if (message.html !== undefined) {
+      mailOptions.html = message.html
+    }
+
+    this.transporter.sendMail(mailOptions, (err, info) => {
       if (err !== null) {
         console.error('Failed to send email: ', err.message)
       } else {
