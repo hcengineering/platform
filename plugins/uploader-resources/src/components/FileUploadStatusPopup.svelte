@@ -47,7 +47,7 @@
 
   function handleCancelAll (): void {
     upload?.files.forEach((element) => {
-        element.cancel?.()
+      element.cancel?.()
     })
   }
 
