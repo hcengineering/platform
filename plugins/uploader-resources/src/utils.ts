@@ -116,9 +116,7 @@ export async function uploadFile (
       progress: 0
     }
     fileUpload.retry = async () => {
-      if (fileUpload.cancel !== undefined) {
-        fileUpload.cancel()
-      }
+      fileUpload.cancel?.()
       await uploadFile(file, metadata, upload, options)
     }
 

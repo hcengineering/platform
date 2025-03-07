@@ -47,24 +47,16 @@
 
   function handleCancelAll (): void {
     upload?.files.forEach((element) => {
-      if (element.cancel !== undefined) {
-        element.cancel()
-      }
+        element.cancel?.()
     })
   }
 
   function handleCancelFile (file: FileUpload): void {
-    if (file.cancel === undefined) {
-      return
-    }
-    file.cancel()
+    file.cancel?.()
   }
 
   function handleRetryFile (file: FileUpload): void {
-    if (file.retry === undefined) {
-      return
-    }
-    void file.retry()
+    void file.retry?.()
   }
   onMount(() => {
     return uploads.subscribe(updateState)
