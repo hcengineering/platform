@@ -1449,6 +1449,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           ON relation."${keyB}" = assoc."_id" 
           AND relation."workspaceId" = ${wsId}
           WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" 
+          AND relation.association = '${_id}'
           AND assoc."workspaceId" = ${wsId}) AS assoc_${tagetDomain}_${association[0]}`
       )
     }

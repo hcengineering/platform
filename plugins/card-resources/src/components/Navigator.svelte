@@ -40,7 +40,7 @@
   let allClasses: MasterTag[] = []
 
   function fillClasses (tags: MasterTag[]): void {
-    classes = tags.filter((it) => it.extends === card.class.Card)
+    classes = tags.filter((it) => it.extends === card.class.Card).sort((a, b) => a.label.localeCompare(b.label))
   }
 
   const query = createQuery()

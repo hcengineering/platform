@@ -127,6 +127,8 @@
     "Join": "加入",
     "Copied": "已复制",
     "Title": "标题",
-    "HideArchived": "隱藏已存檔"
+    "HideArchived": "隱藏已存檔",
+    "RemoveRelation": "移除关系",  
+    "RemoveRelationConfirmation": "您要移除关系吗？"
   }
 }
