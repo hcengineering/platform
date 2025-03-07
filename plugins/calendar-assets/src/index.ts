@@ -30,7 +30,9 @@ loadMetadata(calendar.icon, {
   Globe: `${icons}#globe`,
   Private: `${icons}#private`,
   Public: `${icons}#public`,
-  Hidden: `${icons}#eyeCrossed`
+  Hidden: `${icons}#eyeCrossed`,
+  Duration: `${icons}#duration`,
+  Timer: `${icons}#timer`
 })
 
 const permission = require('../assets/permission.png') as string // eslint-disable-line

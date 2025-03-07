@@ -18,5 +18,6 @@
   "VERSION": null,
   "MODEL_VERSION": null,
   "STATS_URL": "http://localhost:4900",
-  "PASSWORD_STRICTNESS": "none"
+  "PASSWORD_STRICTNESS": "none",
+  "PUBLIC_SCHEDULE_URL": "http://localhost:8060"
 }
