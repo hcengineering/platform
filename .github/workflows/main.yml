@@ -479,7 +479,7 @@ jobs:
           DOCKER_CLI_HINTS: false
       - name: Configure /etc/hosts
         run: |
-          sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+          sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
       - name: Prepare server
         run: |
           cd ./ws-tests
