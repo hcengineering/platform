@@ -30,7 +30,6 @@
   import DueDateEditor from './DueDateEditor.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import Workslots from './Workslots.svelte'
-  import { mySocialStringsStore } from '@hcengineering/contact-resources'
 
   export let object: Doc | undefined
 
@@ -117,7 +116,7 @@
   const q = createQuery()
   q.query(
     calendar.class.ExternalCalendar,
-    { default: true, hidden: false, createdBy: { $in: $mySocialStringsStore } },
+    { default: true, hidden: false, createdBy: { $in: myAccount.socialIds } },
     (res) => {
       if (res.length > 0) {
         _calendar = res[0]._id

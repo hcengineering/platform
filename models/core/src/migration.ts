@@ -324,7 +324,7 @@ export async function getSocialIdByOldAccount (client: MigrationClient): Promise
     if (systemAccounts.includes(account._id)) {
       socialIdByAccount[account._id] = account._id
     } else {
-      socialIdByAccount[account._id] = buildSocialIdString(getSocialKeyByOldEmail(account.email))
+      socialIdByAccount[account._id] = buildSocialIdString(getSocialKeyByOldEmail(account.email)) as any
     }
   }
 
@@ -565,7 +565,7 @@ export async function getAccountUuidBySocialId (
   const cached = accountUuidBySocialId.has(socialId)
 
   if (!cached) {
-    const personUuid = await client.accountClient.findPerson(socialId)
+    const personUuid = await client.accountClient.findPersonBySocialKey(socialId)
     if (personUuid === undefined) {
       console.log('Could not find person for', socialId)
     }
@@ -619,7 +619,7 @@ export async function getAccountUuidByOldAccount (
       return null
     }
 
-    const personUuid = await client.accountClient.findPerson(socialId)
+    const personUuid = await client.accountClient.findPersonBySocialKey(socialId)
 
     accountUuidByOldAccount.set(oldAccount, (personUuid as AccountUuid | undefined) ?? null)
   }

@@ -37,8 +37,8 @@ import {
   PersonId,
   TxOperations,
   WorkspaceUuid,
-  buildSocialIdString,
-  generateId
+  generateId,
+  pickPrimarySocialId
 } from '@hcengineering/core'
 import { addLocation, getResource } from '@hcengineering/platform'
 
@@ -60,19 +60,14 @@ export async function connect (url: string, options: ConnectOptions): Promise<Pl
 
   const { endpoint, token } = await getWorkspaceToken(url, options, config)
   const accountClient = getAccountClient(config.ACCOUNTS_URL, token)
-  const socialStrings = (await accountClient.getSocialIds()).map((si) => buildSocialIdString(si))
-
-  if (socialStrings.length === 0) {
-    throw new Error('No social ids found for the logged in user')
-  }
-
+  const socialId = pickPrimarySocialId(await accountClient.getSocialIds())
   const wsLoginInfo = await accountClient.selectWorkspace(options.workspace)
 
   if (wsLoginInfo === undefined) {
     throw new Error(`Workspace ${options.workspace} not found`)
   }
 
-  return await createClient(url, endpoint, token, wsLoginInfo.workspace, socialStrings[0], config, options)
+  return await createClient(url, endpoint, token, wsLoginInfo.workspace, socialId._id, config, options)
 }
 
 async function createClient (

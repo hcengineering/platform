@@ -123,7 +123,7 @@ async function fillAccountUuids (client: MigrationClient): Promise<void> {
         )[0]
         if (socialIdentity == null) continue
 
-        const accountUuid = await client.accountClient.findPerson(socialIdentity.key)
+        const accountUuid = await client.accountClient.findPersonBySocialKey(socialIdentity.key)
         if (accountUuid == null) {
           continue
         }
@@ -167,7 +167,7 @@ async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
     }
     const socialKey = getSocialKeyByOldEmail(email)
     try {
-      await client.accountClient.updateWorkspaceRoleBySocialId(buildSocialIdString(socialKey), role)
+      await client.accountClient.updateWorkspaceRoleBySocialKey(buildSocialIdString(socialKey), role)
     } catch (err: any) {
       ctx.error('Failed to update workspace role', { email, ...socialKey, role, err })
     }
@@ -242,12 +242,11 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
 
     const socialIdKey = getSocialKeyByOldEmail(email)
     const socialId: SocialIdentity = {
-      _id: generateId(),
+      _id: generateId() as any,
       _class: contact.class.SocialIdentity,
       space: contact.space.Contacts,
       ...socialIdKey,
       key: buildSocialIdString(socialIdKey),
-      confirmed: false,
 
       attachedTo: pAcc.person,
       attachedToClass: contact.class.Person,

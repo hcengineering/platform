@@ -46,7 +46,7 @@ import os from 'os'
 import { Worker, isMainThread, parentPort } from 'worker_threads'
 import { CSVWriter } from './csv'
 
-import { AvatarType, getPersonBySocialId } from '@hcengineering/contact'
+import { AvatarType, getPersonBySocialKey } from '@hcengineering/contact'
 import contact from '@hcengineering/model-contact'
 import recruit from '@hcengineering/model-recruit'
 import { type Vacancy } from '@hcengineering/recruit'
@@ -579,7 +579,7 @@ export async function generateWorkspaceData (
   const client = new TxOperations(connection, core.account.System)
   try {
     const emailSocialString = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
-    const person = await getPersonBySocialId(client, emailSocialString)
+    const person = await getPersonBySocialKey(client, emailSocialString)
     const account = person?.personUuid as AccountUuid
     if (account == null) {
       throw new Error('User not found')
@@ -632,7 +632,7 @@ export async function generateEmployee (client: TxOperations): Promise<AccountUu
       type: SocialIdType.HULY,
       value: personUuid,
       key: socialString,
-      confirmed: true
+      verifiedOn: Date.now()
     }
   )
 
@@ -678,7 +678,7 @@ async function generateVacancy (client: TxOperations, members: AccountUuid[]): P
         type: SocialIdType.HULY,
         value: personUuid,
         key: socialString,
-        confirmed: true
+        verifiedOn: Date.now()
       }
     )
     await client.createMixin(personId, contact.class.Person, contact.space.Contacts, recruit.mixin.Candidate, {})

@@ -347,8 +347,8 @@ export async function connect (title: string): Promise<Client | undefined> {
   const me: Account = {
     uuid: account,
     role: workspaceLoginInfo.role,
-    primarySocialId: pickPrimarySocialId(socialIds).key,
-    socialIds: socialIds.map((si) => si.key)
+    primarySocialId: pickPrimarySocialId(socialIds)._id,
+    socialIds: socialIds.map((si) => si._id)
   }
 
   // Ensure employee and social identifiers

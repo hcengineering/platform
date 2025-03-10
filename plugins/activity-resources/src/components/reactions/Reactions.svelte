@@ -29,16 +29,16 @@
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()
 
-  let reactionsAccounts = new Map<string, PersonId[]>()
+  let reactionsPersons = new Map<string, PersonId[]>()
   let opened: boolean = false
 
   $: {
-    reactionsAccounts.clear()
+    reactionsPersons.clear()
     reactions.forEach((r) => {
-      const accounts = reactionsAccounts.get(r.emoji) ?? []
-      reactionsAccounts.set(r.emoji, [...accounts, r.createBy])
+      const persons = reactionsPersons.get(r.emoji) ?? []
+      reactionsPersons.set(r.emoji, [...persons, r.createBy])
     })
-    reactionsAccounts = reactionsAccounts
+    reactionsPersons = reactionsPersons
   }
 
   function getClickHandler (emoji: string): ((e: CustomEvent) => void) | undefined {
@@ -63,21 +63,21 @@
 </script>
 
 <div class="hulyReactions-container">
-  {#each [...reactionsAccounts] as [emoji, accounts]}
+  {#each [...reactionsPersons] as [emoji, persons]}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="hulyReactions-button"
-      class:highlight={includesAny(accounts, me.socialIds)}
+      class:highlight={includesAny(persons, me.socialIds)}
       class:cursor-pointer={!readonly}
-      use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
+      use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: persons } }}
       on:click={getClickHandler(emoji)}
     >
       <span class="emoji">{emoji}</span>
-      <span class="counter">{accounts.length}</span>
+      <span class="counter">{persons.length}</span>
     </div>
   {/each}
-  {#if object && reactionsAccounts.size > 0 && !readonly}
+  {#if object && reactionsPersons.size > 0 && !readonly}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="hulyReactions-button withoutBackground" class:opened on:click={openEmojiPalette}>

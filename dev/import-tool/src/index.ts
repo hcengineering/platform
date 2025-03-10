@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { buildSocialIdString, concatLink, SocialIdType, TxOperations } from '@hcengineering/core'
+import { concatLink, TxOperations } from '@hcengineering/core'
 import {
   ClickupImporter,
   defaultDocumentPreprocessors,
@@ -75,8 +75,8 @@ export function importTool (): void {
     setMetadata(serverClientPlugin.metadata.Endpoint, config.ACCOUNTS_URL)
     console.log('Trying to login user: ', user)
     const unauthAccountClient = getAccountClient()
-    const { account, token } = await unauthAccountClient.login(user, password)
-    if (token === undefined || account === undefined) {
+    const { account, token, socialId } = await unauthAccountClient.login(user, password)
+    if (token === undefined || account === undefined || socialId === undefined) {
       console.log('Login failed for user: ', user)
       return
     }
@@ -95,7 +95,7 @@ export function importTool (): void {
 
     console.log('Connecting to Transactor URL: ', selectedWs.endpoint)
     const connection = await createClient(selectedWs.endpoint, selectedWs.token)
-    const client = new TxOperations(connection, buildSocialIdString({ type: SocialIdType.EMAIL, value: user }))
+    const client = new TxOperations(connection, socialId)
     const fileUploader = new FrontFileUploader(
       getFrontUrl(),
       selectedWs.workspace,

@@ -18,7 +18,6 @@
 <script lang="ts">
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import core, { type Class, type Doc, type Ref, getCurrentAccount } from '@hcengineering/core'
-  import { includesAny } from '@hcengineering/contact'
   import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -105,7 +104,7 @@
     !readonly &&
     object !== undefined &&
     !object.archived &&
-    (includesAny(object.owners ?? [], getCurrentAccount().socialIds) ||
+    ((object.owners ?? []).includes(getCurrentAccount().uuid) ||
       checkMyPermission(core.permission.UpdateSpace, _id, $permissionsStore) ||
       checkMyPermission(core.permission.UpdateObject, core.space.Space, $permissionsStore))
 

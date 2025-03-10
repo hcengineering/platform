@@ -32,7 +32,8 @@ import {
   type Version,
   type PersonUuid,
   type WorkspaceUuid,
-  generateUuid
+  generateUuid,
+  type PersonId
 } from '@hcengineering/core'
 
 import type {
@@ -217,9 +218,9 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'>
   }
 }
 
-export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId, 'id'> implements DbCollection<SocialId> {
+export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId, '_id'> implements DbCollection<SocialId> {
   constructor (db: Db) {
-    super('socialId', db, 'id')
+    super('socialId', db, '_id')
   }
 
   async insertOne (data: Partial<SocialId>): Promise<any> {
@@ -480,10 +481,9 @@ export class MongoAccountDB implements AccountDB {
     return {
       key: 'account_db_v1_fill_social_id_ids',
       op: async () => {
-        const socialIds = await this.socialId.find({ id: null })
+        const socialIds = await this.socialId.find({ _id: null })
         for (const socialId of socialIds) {
-          socialId.id = generateUuid()
-          await this.socialId.updateOne({ key: socialId.key }, { id: socialId.id })
+          await this.socialId.updateOne({ key: socialId.key }, { _id: generateUuid() as PersonId })
         }
       }
     }

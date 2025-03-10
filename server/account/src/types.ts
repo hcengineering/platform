@@ -20,10 +20,10 @@ import {
   MeasureContext,
   Timestamp,
   Version,
-  SocialIdType,
   WorkspaceMode,
   WorkspaceMemberInfo,
   BackupStatus,
+  type SocialId as SocialIdBase,
   type PersonUuid,
   type WorkspaceUuid,
   type WorkspaceDataId,
@@ -42,12 +42,7 @@ export enum Location {
 // AccountRole in core
 // Person in core
 
-export interface SocialId {
-  // generated ID so the actual social ID can be detached from a person w/o losing the ID in the linked database records
-  id: string // bigint should be represented as string as it exceeds JS safe integer limit
-  type: SocialIdType
-  value: string
-  key: PersonId // Value calculated based on type and value properties - may be removed later if appears redundant
+export interface SocialId extends SocialIdBase {
   personUuid: PersonUuid
   createdOn?: Timestamp
   verifiedOn?: Timestamp

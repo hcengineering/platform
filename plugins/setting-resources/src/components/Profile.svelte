@@ -34,6 +34,7 @@
   import setting from '../plugin'
 
   const client = getClient()
+  const account = getCurrentAccount()
   const me = getCurrentEmployee()
 
   $: employee = $personByIdStore.get(me)
@@ -60,7 +61,7 @@
       message: setting.string.LeaveDescr,
       action: async () => {
         const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-        const loginInfo = await leaveWorkspace(getCurrentAccount().uuid)
+        const loginInfo = await leaveWorkspace(account.uuid)
 
         if (loginInfo?.token != null) {
           await logIn(loginInfo)

@@ -21,12 +21,12 @@ import contact, {
   getPrimarySocialId,
   getPersonRefBySocialId,
   getPersonRefsBySocialIds,
-  type Employee
+  type Employee,
+  SocialIdentityRef
 } from '@hcengineering/contact'
 import core, {
   PersonId,
   SocialIdType,
-  buildSocialIdString,
   TxMixin,
   RateLimiter,
   TxOperations,
@@ -64,7 +64,7 @@ export class WorkspaceClient {
   private readonly syncHistory: Collection<SyncHistory>
   private readonly tokens: Collection<Token>
   private channels = new Map<Ref<Channel>, Channel>()
-  private readonly calendarsByGoogleId = new Map<PersonId, ExternalCalendar[]>()
+  private readonly externalIdByPersonId = new Map<PersonId, string | null>()
   readonly calendars = {
     byId: new Map<Ref<ExternalCalendar>, ExternalCalendar>(),
     byExternal: new Map<string, ExternalCalendar[]>()
@@ -433,12 +433,7 @@ export class WorkspaceClient {
     const calendars = await this.client.findAll(calendar.class.ExternalCalendar, {})
     this.calendars.byId = toIdMap(calendars)
     this.calendars.byExternal.clear()
-    this.calendarsByGoogleId.clear()
     for (const calendar of calendars) {
-      const googleId = buildSocialIdString({ type: SocialIdType.GOOGLE, value: calendar.externalUser })
-      const arr = this.calendarsByGoogleId.get(googleId) ?? []
-      arr.push(calendar)
-      this.calendarsByGoogleId.set(googleId, arr)
       const arrByExt = this.calendars.byExternal.get(calendar.externalId) ?? []
       arrByExt.push(calendar)
       this.calendars.byExternal.set(calendar.externalId, arrByExt)
@@ -450,8 +445,22 @@ export class WorkspaceClient {
     })
   }
 
-  getMyCalendars (personId: PersonId): ExternalCalendar[] {
-    return this.calendarsByGoogleId.get(personId) ?? []
+  async getExtIdByPersonId (personId: PersonId): Promise<string | null | undefined> {
+    if (!this.externalIdByPersonId.has(personId)) {
+      const socialIdentity = await this.client.findOne(contact.class.SocialIdentity, { _id: personId as SocialIdentityRef, type: SocialIdType.GOOGLE })
+      this.externalIdByPersonId.set(personId, socialIdentity?.value ?? null)
+    }
+
+    return this.externalIdByPersonId.get(personId)
+  }
+
+  async getMyCalendars (personId: PersonId): Promise<ExternalCalendar[]> {
+    const extId = await this.getExtIdByPersonId(personId)
+    if (extId == null) {
+      return []
+    }
+
+    return this.calendars.byExternal.get(extId) ?? []
   }
 
   private async txCalendarHandler (actualTx: Tx): Promise<void> {
@@ -462,27 +471,16 @@ export class WorkspaceClient {
         const arr = this.calendars.byExternal.get(calendar.externalId) ?? []
         arr.push(calendar)
         this.calendars.byExternal.set(calendar.externalId, arr)
-        const googleId = buildSocialIdString({ type: SocialIdType.GOOGLE, value: calendar.externalUser })
-        const arrByExt = this.calendarsByGoogleId.get(googleId) ?? []
-        arrByExt.push(calendar)
-        this.calendarsByGoogleId.set(googleId, arrByExt)
       }
     }
     if (actualTx._class === core.class.TxRemoveDoc) {
       const remTx = actualTx as TxRemoveDoc<ExternalCalendar>
       const calendar = this.calendars.byId.get(remTx.objectId)
       if (calendar !== undefined) {
-        const googleId = buildSocialIdString({ type: SocialIdType.GOOGLE, value: calendar.externalUser })
-        const arr = this.calendarsByGoogleId.get(googleId) ?? []
-        const index = arr.findIndex((p) => p._id === calendar._id)
-        if (index !== -1) {
-          arr.splice(index, 1)
-          this.calendarsByGoogleId.set(googleId, arr)
-        }
         this.calendars.byId.delete(remTx.objectId)
         const arrByExt = this.calendars.byExternal.get(calendar.externalId) ?? []
         const indexByExt = arrByExt.findIndex((p) => p._id === calendar._id)
-        if (index !== -1) {
+        if (indexByExt !== -1) {
           arrByExt.splice(indexByExt, 1)
           this.calendars.byExternal.set(calendar.externalId, arrByExt)
         }

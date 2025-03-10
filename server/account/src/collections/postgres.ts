@@ -681,7 +681,7 @@ export class PostgresAccountDB implements AccountDB {
 
       /* ======= S O C I A L   I D S ======= */
       CREATE TABLE IF NOT EXISTS global_account.social_id (
-          id INT8 NOT NULL DEFAULT unique_rowid(),
+          _id INT8 NOT NULL DEFAULT unique_rowid(),
           type global_account.social_id_type NOT NULL,
           value STRING NOT NULL,
           key STRING AS (CONCAT(type::STRING, ':', value)) STORED,

@@ -41,7 +41,7 @@ async function getTxOperations (client: Client, token: Token, isDerived: boolean
     const rawToken = generateToken(token.account, token.workspace, { service: 'collaborator' })
     const accountClient = getAccountClient(config.AccountsUrl, rawToken)
     const socialIds = await accountClient.getSocialIds()
-    primarySocialString = pickPrimarySocialId(socialIds).key
+    primarySocialString = pickPrimarySocialId(socialIds)._id
   }
 
   return new TxOperations(client, primarySocialString, isDerived)
