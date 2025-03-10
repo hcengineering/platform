@@ -78,7 +78,7 @@
 
   let options = viewlet?.options
 
-  $: void updateQuery(_baseQuery, viewOptions, viewlet)
+  $: void updateQuery(_baseQuery, viewOptions, viewlet, queryBuilder)
   $: void updateOptions(viewlet?.options, viewOptions, viewlet)
 
   async function updateOptions (
@@ -92,9 +92,10 @@
   async function updateQuery (
     initialQuery: DocumentQuery<Doc>,
     viewOptions: ViewOptions | undefined,
-    viewlet: Viewlet | undefined
+    viewlet: Viewlet | undefined,
+    builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined
   ): Promise<void> {
-    const updatedQuery = queryBuilder === undefined ? initialQuery : updateInitialQuery(initialQuery)
+    const updatedQuery = builder === undefined ? initialQuery : updateInitialQuery(initialQuery, builder)
     query =
       viewOptions !== undefined && viewlet !== undefined
         ? await getResultQuery(hierarchy, updatedQuery, viewlet.viewOptions?.other, viewOptions)
@@ -102,9 +103,9 @@
     isQueryLoaded = true
   }
 
-  async function updateInitialQuery (initialQuery: DocumentQuery<Doc>): Promise<DocumentQuery<Doc>> {
-    if (queryBuilder === undefined) return initialQuery
-    const fn = await getResource(queryBuilder)
+  async function updateInitialQuery (initialQuery: DocumentQuery<Doc>, builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined): Promise<DocumentQuery<Doc>> {
+    if (builder === undefined) return initialQuery
+    const fn = await getResource(builder)
     const q = (await fn()) ?? {}
     return mergeQueries(initialQuery ?? {}, q ?? {})
   }
