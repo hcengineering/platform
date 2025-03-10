@@ -134,13 +134,13 @@ export function createServer (config: Config): { app: Express, close: () => void
   // S3 upload
 
   app.get(
-    '/upload/r2/:workspace',
+    '/upload/s3/:workspace',
     withAuthorization,
     withWorkspace,
     wrapRequest(ctx, datalake, handleS3CreateBlobParams)
   )
 
-  app.post('/upload/r2/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, datalake, handleS3CreateBlob))
+  app.post('/upload/s3/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, datalake, handleS3CreateBlob))
 
   // // Multipart upload
   // app.post('/upload/multipart/:workspace/:name',
