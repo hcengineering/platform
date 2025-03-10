@@ -23,7 +23,6 @@ import {
   type Class,
   type CollaborativeDoc,
   type Doc,
-  type PersonId,
   type AccountUuid
 } from '@hcengineering/core'
 import { type Document, type DocumentSnapshot, type Teamspace } from '@hcengineering/document'
@@ -339,7 +338,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 
 async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('document migrateSocialIdsToGlobalAccounts', {})
-  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   ctx.info('processing document lockedBy ', {})
   const iterator = await client.traverse(DOMAIN_DOCUMENT, { _class: document.class.Document })
@@ -358,11 +357,7 @@ async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promi
         const document = doc as Document
         const newLockedBy =
           document.lockedBy != null
-            ? (await getAccountUuidBySocialKey(
-                client,
-                document.lockedBy as unknown as PersonId,
-                accountUuidBySocialKey
-              )) ?? document.lockedBy
+            ? (await getAccountUuidBySocialKey(client, document.lockedBy, accountUuidBySocialKey)) ?? document.lockedBy
             : document.lockedBy
 
         if (newLockedBy === document.lockedBy) continue

@@ -111,7 +111,7 @@
     dispatch('close', true)
   }
 
-  let _calendar: Ref<Calendar> = `${myAccount.primarySocialId}_calendar` as Ref<Calendar>
+  let _calendar: Ref<Calendar> = `${myAccount.uuid}_calendar` as Ref<Calendar>
 
   const q = createQuery()
   q.query(

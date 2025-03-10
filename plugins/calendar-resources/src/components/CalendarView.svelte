@@ -260,7 +260,7 @@
           attachedToClass: dragItem._class,
           _class: dragEventClass,
           collection: 'events',
-          calendar: `${myPrimaryId}_calendar` as Ref<Calendar>,
+          calendar: `${acc.uuid}_calendar` as Ref<Calendar>,
           modifiedBy: myPrimaryId,
           participants: [me],
           modifiedOn: Date.now(),

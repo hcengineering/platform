@@ -27,7 +27,6 @@ import core, {
   type Domain,
   groupByArray,
   MeasureMetricsContext,
-  type PersonId,
   type Ref,
   type Space
 } from '@hcengineering/core'
@@ -255,7 +254,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
-  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
   ctx.info('processing activity doc updates ', {})
 
   function getUpdatedClass (attrKey: string): string {
@@ -363,11 +362,11 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
  */
 async function migrateSocialIdsInDocUpdates (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateSocialIdsInDocUpdates', {})
-  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
   ctx.info('processing activity doc updates ', {})
 
   async function getUpdatedVal (oldVal: string): Promise<any> {
-    return (await getAccountUuidBySocialKey(client, oldVal as PersonId, accountUuidBySocialKey)) ?? oldVal
+    return (await getAccountUuidBySocialKey(client, oldVal, accountUuidBySocialKey)) ?? oldVal
   }
 
   async function migrateField<P extends keyof DocAttributeUpdates> (

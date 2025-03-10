@@ -443,7 +443,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
 async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('notification migrateSocialIdsToAccountUuids', {})
   const hierarchy = client.hierarchy
-  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   ctx.info('processing collaborators ', {})
   for (const domain of client.hierarchy.domains()) {
