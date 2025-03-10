@@ -24,7 +24,6 @@ import core, {
   FindResult,
   Hierarchy,
   PersonId,
-  buildSocialIdString,
   parseSocialIdString,
   Ref,
   systemAccountUuid,
@@ -121,9 +120,7 @@ export async function OnSocialIdentityCreate (txes: Tx[], control: TriggerContro
 
     if (await checkCalendarsExist(control, employee._id)) continue
 
-    const socialString = buildSocialIdString(socialId)
-
-    result.push(...(await createCalendar(control, socialString, socialId.value)))
+    result.push(...(await createCalendar(control, socialId._id, socialId.value)))
   }
   return result
 }

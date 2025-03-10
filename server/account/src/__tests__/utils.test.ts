@@ -695,11 +695,11 @@ describe('account utils', () => {
 
       describe('sendOtp', () => {
         const mockSocialId = {
-          id: '333444555',
+          _id: '333444555' as PersonId,
           personUuid: '123456-uuid' as PersonUuid,
           type: SocialIdType.EMAIL,
           value: 'test@example.com',
-          key: 'email:test@example.com' as PersonId
+          key: 'email:test@example.com'
         }
 
         test('should return existing OTP if not expired', async () => {
@@ -740,11 +740,11 @@ describe('account utils', () => {
 
         test('should throw error for unsupported social id type', async () => {
           const invalidSocialId = {
-            id: '999888777',
+            _id: '999888777' as PersonId,
             personUuid: '123456-uuid' as PersonUuid,
             type: 'INVALID' as SocialIdType,
             value: 'test',
-            key: 'invalid:test' as PersonId
+            key: 'invalid:test'
           }
 
           await expect(sendOtp(mockCtx, mockDb, mockBranding, invalidSocialId)).rejects.toThrow(

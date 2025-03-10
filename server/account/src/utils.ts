@@ -29,8 +29,7 @@ import {
   isActiveMode,
   type PersonUuid,
   type PersonId,
-  type Person,
-  buildSocialIdString
+  type Person
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -461,11 +460,12 @@ export async function signUpByEmail (
   firstName: string,
   lastName: string,
   confirmed = false
-): Promise<PersonUuid> {
+): Promise<{ account: PersonUuid, socialId: PersonId }> {
   const normalizedEmail = cleanEmail(email)
 
   const emailSocialId = await getEmailSocialId(db, normalizedEmail)
-  let personUuid: PersonUuid
+  let account: PersonUuid
+  let socialId: PersonId
 
   if (emailSocialId !== null) {
     const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
@@ -475,24 +475,25 @@ export async function signUpByEmail (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
     }
 
-    personUuid = emailSocialId.personUuid
+    account = emailSocialId.personUuid
+    socialId = emailSocialId._id
     // Person exists, but may have different name, need to update with what's been provided
-    await db.person.updateOne({ uuid: personUuid }, { firstName, lastName })
+    await db.person.updateOne({ uuid: account }, { firstName, lastName })
   } else {
     // There's no person we can link to this email, so we need to create a new one
-    personUuid = await db.person.insertOne({ firstName, lastName })
-    await db.socialId.insertOne({
+    account = await db.person.insertOne({ firstName, lastName })
+    socialId = await db.socialId.insertOne({
       type: SocialIdType.EMAIL,
       value: normalizedEmail,
-      personUuid,
+      personUuid: account,
       ...(confirmed ? { verifiedOn: Date.now() } : {})
     })
   }
 
-  await createAccount(db, personUuid, confirmed)
-  await setPassword(ctx, db, branding, personUuid, password)
+  await createAccount(db, account, confirmed)
+  await setPassword(ctx, db, branding, account, password)
 
-  return personUuid
+  return { account, socialId }
 }
 
 export async function selectWorkspace (
@@ -803,7 +804,7 @@ export async function sendEmailConfirmation (
   }
 }
 
-export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account: string, email: string): Promise<void> {
+export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account: string, email: string): Promise<PersonId> {
   const normalizedEmail = cleanEmail(email)
   ctx.info('Confirming email', { account, email, normalizedEmail })
 
@@ -829,6 +830,7 @@ export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account:
   }
 
   await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
+  return emailSocialId._id
 }
 
 export async function useInvite (db: AccountDB, inviteId: string): Promise<void> {
@@ -891,7 +893,7 @@ export async function getWorkspaceInvite (db: AccountDB, id: string): Promise<Wo
   return await db.invite.findOne({ migratedFrom: id })
 }
 
-export async function getSocialIdByKey (db: AccountDB, socialKey: PersonId): Promise<SocialId | null> {
+export async function getSocialIdByKey (db: AccountDB, socialKey: string): Promise<SocialId | null> {
   return await db.socialId.findOne({ key: socialKey })
 }
 
@@ -1026,11 +1028,13 @@ export async function loginOrSignUpWithProvider (
     await db.resetPassword(personUuid)
   }
 
+  let socialIdId: PersonId | undefined
   // Create and/or confirm missing social ids
   if (targetSocialId == null) {
-    await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
+    socialIdId = await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
   } else if (targetSocialId.verifiedOn == null) {
     await db.socialId.updateOne({ key: targetSocialId.key }, { verifiedOn: Date.now() })
+    socialIdId = targetSocialId._id
   }
 
   if (emailSocialId == null) {
@@ -1048,7 +1052,7 @@ export async function loginOrSignUpWithProvider (
 
   return {
     account: personUuid,
-    socialId: buildSocialIdString(socialId),
+    socialId: socialIdId,
     name: getPersonName(person),
     token: generateToken(personUuid)
   }

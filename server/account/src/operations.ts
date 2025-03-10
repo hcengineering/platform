@@ -155,7 +155,7 @@ export async function login (
       account: existingAccount.uuid,
       token: isConfirmed ? generateToken(existingAccount.uuid, undefined, extraToken) : undefined,
       name: getPersonName(person),
-      socialId: emailSocialId.key
+      socialId: emailSocialId._id
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -210,7 +210,7 @@ export async function signUp (
   }
 ): Promise<LoginInfo> {
   const { email, password, firstName, lastName } = params
-  const account = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName)
+  const { account, socialId } = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName)
   const person = await db.person.findOne({ uuid: account })
   if (person == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
@@ -230,7 +230,7 @@ export async function signUp (
   return {
     account,
     name: getPersonName(person),
-    socialId: buildSocialIdString({ type: SocialIdType.EMAIL, value: email }),
+    socialId,
     token: !forceConfirmation ? generateToken(account) : undefined
   }
 }
@@ -268,7 +268,7 @@ export async function signUpOtp (
     personUuid = await db.person.insertOne({ firstName, lastName })
     const newSocialId = { type: SocialIdType.EMAIL, value: normalizedEmail, personUuid }
     const emailSocialIdId = await db.socialId.insertOne(newSocialId)
-    emailSocialId = { ...newSocialId, id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
+    emailSocialId = { ...newSocialId, _id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
   }
 
   return await sendOtp(ctx, db, branding, emailSocialId)
@@ -328,7 +328,7 @@ export async function validateOtp (
   return {
     account: emailSocialId.personUuid,
     name: getPersonName(person),
-    socialId: emailSocialId.key,
+    socialId: emailSocialId._id,
     token: generateToken(emailSocialId.personUuid)
   }
 }
@@ -380,7 +380,7 @@ export async function createWorkspace (
 
   return {
     account,
-    socialId: socialId.key,
+    socialId: socialId._id,
     name: getPersonName(person),
     token: generateToken(account, workspaceUuid),
     endpoint: getEndpoint(ctx, workspaceUuid, region, EndpointKind.External),
@@ -662,7 +662,7 @@ export async function signUpJoin (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
-  const account = await signUpByEmail(ctx, db, branding, email, password, first, last, true)
+  const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last, true)
 
   return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
 }
@@ -681,7 +681,7 @@ export async function confirm (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  await confirmEmail(ctx, db, account, email)
+  const socialId = await confirmEmail(ctx, db, account, email)
 
   const person = await db.person.findOne({ uuid: account })
   if (person == null) {
@@ -691,7 +691,7 @@ export async function confirm (
   const result = {
     account,
     name: getPersonName(person),
-    socialId: buildSocialIdString({ type: SocialIdType.EMAIL, value: email }),
+    socialId,
     token: generateToken(account)
   }
 
@@ -1229,7 +1229,7 @@ export async function getLoginInfoByToken (
   const loginInfo = {
     account: accountUuid,
     name: getPersonName(person),
-    socialId: socialId?.key,
+    socialId: socialId?._id,
     token
   }
 
@@ -1326,11 +1326,11 @@ export async function getPersonInfo (
   return {
     personUuid: account,
     name: getPersonName(person),
-    socialIds: verifiedSocialIds.map((it) => it.key)
+    socialIds: verifiedSocialIds.map((it) => it._id)
   }
 }
 
-export async function findPerson (
+export async function findPersonBySocialKey (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1340,13 +1340,32 @@ export async function findPerson (
   const { socialString } = params
   decodeTokenVerbose(ctx, token)
 
-  const socialId = await db.socialId.findOne({ key: socialString as PersonId })
+  const socialId = await db.socialId.findOne({ key: socialString })
 
   if (socialId == null) {
     return
   }
 
   return socialId.personUuid
+}
+
+export async function findPersonBySocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { socialId: PersonId }
+): Promise<PersonUuid | undefined> {
+  const { socialId } = params
+  decodeTokenVerbose(ctx, token)
+
+  const socialIdObj = await db.socialId.findOne({ _id: socialId })
+
+  if (socialIdObj == null) {
+    return
+  }
+
+  return socialIdObj.personUuid
 }
 
 export async function getWorkspaceMembers (
@@ -1370,7 +1389,7 @@ export async function getWorkspaceMembers (
   return await db.getWorkspaceMembers(workspace)
 }
 
-export async function updateWorkspaceRoleBySocialId (
+export async function updateWorkspaceRoleBySocialKey (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1749,7 +1768,7 @@ export async function ensurePerson (
 
   const socialId = await db.socialId.findOne({ type: socialType, value: socialValue })
   if (socialId != null) {
-    return { uuid: socialId.personUuid, socialId: socialId.key }
+    return { uuid: socialId.personUuid, socialId: socialId._id }
   }
 
   const personUuid = await db.person.insertOne({ firstName, lastName })
@@ -1796,9 +1815,10 @@ export type AccountMethods =
   | 'getPersonInfo'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
-  | 'findPerson'
+  | 'findPersonBySocialKey'
+  | 'findPersonBySocialId'
   | 'performWorkspaceOperation'
-  | 'updateWorkspaceRoleBySocialId'
+  | 'updateWorkspaceRoleBySocialKey'
   | 'ensurePerson'
 
 /**
@@ -1839,7 +1859,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),
     getPersonInfo: wrap(getPersonInfo),
-    findPerson: wrap(findPerson),
+    findPersonBySocialKey: wrap(findPersonBySocialKey),
+    findPersonBySocialId: wrap(findPersonBySocialId),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
 
     /* SERVICE METHODS */
@@ -1850,7 +1871,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     assignWorkspace: wrap(assignWorkspace),
     listWorkspaces: wrap(listWorkspaces),
     performWorkspaceOperation: wrap(performWorkspaceOperation),
-    updateWorkspaceRoleBySocialId: wrap(updateWorkspaceRoleBySocialId),
+    updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
     ensurePerson: wrap(ensurePerson)
   }
 }

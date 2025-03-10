@@ -14,7 +14,7 @@
 //
 
 import { TriggerControl } from '@hcengineering/server-core'
-import contact, { Employee, pickPrimarySocialId, type Person } from '@hcengineering/contact'
+import contact, { Employee, pickPrimarySocialId, SocialIdentityRef, type Person } from '@hcengineering/contact'
 import { AccountUuid, parseSocialIdString, PersonId, type Ref, toIdMap } from '@hcengineering/core'
 
 export async function getTriggerCurrentPerson (control: TriggerControl): Promise<Person | undefined> {
@@ -41,7 +41,7 @@ export async function getSocialStrings (control: TriggerControl, person: Ref<Per
     attachedToClass: contact.class.Person
   })
 
-  return socialIdentities.map((s) => s.key)
+  return socialIdentities.map((s) => s._id)
 }
 
 export async function getSocialStringsByPersons (
@@ -58,7 +58,7 @@ export async function getSocialStringsByPersons (
       acc[s.attachedTo] = []
     }
 
-    acc[s.attachedTo].push(s.key)
+    acc[s.attachedTo].push(s._id)
 
     return acc
   }, {})
@@ -68,13 +68,13 @@ export async function getAllSocialStringsByPersonId (
   control: TriggerControl,
   personIds: PersonId[]
 ): Promise<PersonId[]> {
-  const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, { key: { $in: personIds } })
+  const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, { _id: { $in: personIds as SocialIdentityRef[] } })
   const allSocialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, {
     attachedTo: { $in: socialIdentities.map((sid) => sid.attachedTo) },
     attachedToClass: contact.class.Person
   })
 
-  return allSocialIdentities.map((sid) => sid.key)
+  return allSocialIdentities.map((sid) => sid._id)
 }
 
 export async function getPerson (control: TriggerControl, personId: PersonId): Promise<Person | undefined> {
@@ -92,7 +92,7 @@ export async function getPersonsBySocialIds (
   control: TriggerControl,
   personIds: PersonId[]
 ): Promise<Record<PersonId, Person>> {
-  const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { key: { $in: personIds } })
+  const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { _id: { $in: personIds as SocialIdentityRef[] } })
   const persons = toIdMap(
     await control.findAll(control.ctx, contact.class.Person, { _id: { $in: socialIds.map((s) => s.attachedTo) } })
   )
@@ -100,7 +100,7 @@ export async function getPersonsBySocialIds (
   return socialIds.reduce<Record<PersonId, Person>>((acc, s) => {
     const person = persons.get(s.attachedTo)
     if (person !== undefined) {
-      acc[s.key] = person
+      acc[s._id] = person
     } else {
       console.error('No person found for social id', s.key)
     }
@@ -173,7 +173,7 @@ export async function getSocialIdsByAccounts (
       acc[employee.personUuid] = []
     }
 
-    acc[employee.personUuid].push(sid.key)
+    acc[employee.personUuid].push(sid._id)
     return acc
   }, {})
 }
@@ -195,7 +195,34 @@ export async function getAccountBySocialId (control: TriggerControl, socialId: P
   const socialIdentity = await control.findAll(
     control.ctx,
     contact.class.SocialIdentity,
-    { key: socialId },
+    { _id: socialId as SocialIdentityRef },
+    { limit: 1 }
+  )
+
+  if (socialIdentity.length === 0) {
+    return null
+  }
+
+  const employee = await control.findAll(
+    control.ctx,
+    contact.mixin.Employee,
+    { _id: socialIdentity[0].attachedTo as Ref<Employee> },
+    { limit: 1 }
+  )
+
+  return employee[0]?.personUuid ?? null
+}
+
+/**
+ * It should only be used for well-known social identities. Should never be used for regular users as social key might change.
+ * @param control
+ * @param socialId
+ */
+export async function getAccountBySocialKey (control: TriggerControl, socialKey: string): Promise<AccountUuid | null> {
+  const socialIdentity = await control.findAll(
+    control.ctx,
+    contact.class.SocialIdentity,
+    { key: socialKey },
     { limit: 1 }
   )
 

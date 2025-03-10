@@ -26,7 +26,6 @@ import {
   getLastName,
   getName,
   getCurrentEmployee,
-  pickPrimarySocialId,
   currentEmployeePromise,
   type Person,
   type SocialIdentity,
@@ -55,7 +54,9 @@ import core, {
   type WithLookup,
   type AccountUuid,
   notEmpty,
-  getCurrentAccount
+  getCurrentAccount,
+  pickPrimarySocialId,
+  type PersonId
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { type IntlString, getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
@@ -71,7 +72,7 @@ import {
 } from '@hcengineering/ui'
 import view, { type Filter, type GrouppingManager } from '@hcengineering/view'
 import { accessDeniedStore, FilterQuery } from '@hcengineering/view-resources'
-import { derived, get, writable } from 'svelte/store'
+import { derived, get, type Readable, writable } from 'svelte/store'
 import { type LocationData } from '@hcengineering/workbench'
 
 import contact from './plugin'
@@ -338,15 +339,12 @@ export const socialIdsStore = writable<Array<WithLookup<SocialIdentity>>>([])
 export const mySocialIdsStore = derived([currentEmployeeRefStore, socialIdsStore], ([myEmployeeRef, socialIds]) => {
   return socialIds.filter((si) => si.attachedTo === myEmployeeRef)
 })
-export const mySocialStringsStore = derived(mySocialIdsStore, (mySocialIds) => {
-  return mySocialIds.map((si) => si.key)
-})
 
 /**
  * [Ref<Person> => SocialIdentity[]] mapping
  */
-export const socialIdsByPersonRefStore = derived([socialIdsStore], ([socialIds]) => {
-  const sidsByPersonRef: Record<Ref<Person>, SocialIdentity[]> = socialIds.reduce<
+export const socialIdsByPersonRefStore: Readable<Map<Ref<Person>, SocialIdentity[]>> = derived([socialIdsStore], ([socialIds]) => {
+  const sidsByPersonRef = socialIds.reduce<
   Record<Ref<Person>, SocialIdentity[]>
   >((acc, si) => {
     acc[si.attachedTo] = acc[si.attachedTo] ?? []
@@ -354,22 +352,22 @@ export const socialIdsByPersonRefStore = derived([socialIdsStore], ([socialIds])
     return acc
   }, {})
 
-  return new Map(Object.entries(sidsByPersonRef))
+  return new Map(Object.entries(sidsByPersonRef) as Array<[Ref<Person>, SocialIdentity[]]>)
 })
 /**
  * [Ref<Person> => PersonId (primary)] mapping
  */
-export const primarySocialIdByPersonRefStore = derived(socialIdsByPersonRefStore, (socialIdsByPersonRef) => {
+export const primarySocialIdByPersonRefStore: Readable<Map<Ref<Person>, PersonId>> = derived(socialIdsByPersonRefStore, (socialIdsByPersonRef) => {
   const mapped = Array.from(socialIdsByPersonRef.entries())
     .filter(([_, socialIds]) => socialIds.length > 0)
-    .map(([_id, socialIds]) => [_id, pickPrimarySocialId(socialIds.map((si) => si.key))] as const)
+    .map(([_id, socialIds]) => [_id, pickPrimarySocialId(socialIds)._id] as const)
   return new Map(mapped)
 })
 /**
  * [PersonId (social string) => Ref<Person>] mapping
  */
-export const personRefByPersonIdStore = derived(socialIdsStore, (socialIds) => {
-  const mapped = socialIds.map((si) => [si.key, si.attachedTo] as const)
+export const personRefByPersonIdStore: Readable<Map<PersonId, Ref<Person>>> = derived(socialIdsStore, (socialIds) => {
+  const mapped = socialIds.map((si) => [si._id, si.attachedTo] as const)
   return new Map(mapped)
 })
 /**
@@ -379,7 +377,7 @@ export const personRefByAccountUuidStore = writable<Map<AccountUuid, Ref<Employe
 /**
  * [PersonId (social string) => Person] mapping
  */
-export const personByPersonIdStore = derived(
+export const personByPersonIdStore: Readable<Map<PersonId, Person>> = derived(
   [personRefByPersonIdStore, personByIdStore],
   ([personRefByPersonId, personById]) => {
     const mapped = Array.from(personRefByPersonId.entries())
@@ -415,7 +413,7 @@ export const employeeByAccountStore = derived(
 /**
  * [PersonId (social string) => SocialIdentity[]] mapping
  */
-export const socialIdsByPersonIdStore = derived(
+export const socialIdsByPersonIdStore: Readable<Map<PersonId, SocialIdentity[]>> = derived(
   [personRefByPersonIdStore, socialIdsByPersonRefStore],
   ([personRefByPersonId, socialIdsByPersonRef]) => {
     const mapped = Array.from(personRefByPersonId.entries()).map(([personId, personRef]) => {
@@ -428,10 +426,10 @@ export const socialIdsByPersonIdStore = derived(
 /**
  * [PersonId (social string) => PersonId (primary)] mapping
  */
-export const primarySocialIdByPersonIdStore = derived(socialIdsByPersonIdStore, (socialIdsByPersonId) => {
+export const primarySocialIdByPersonIdStore: Readable<Map<PersonId, PersonId>> = derived(socialIdsByPersonIdStore, (socialIdsByPersonId) => {
   const mapped = Array.from(socialIdsByPersonId.entries())
     .filter(([_, socialIds]) => socialIds.length > 0)
-    .map(([personId, socialIds]) => [personId, pickPrimarySocialId(socialIds.map((si) => si.key))] as const)
+    .map(([personId, socialIds]) => [personId, pickPrimarySocialId(socialIds)._id] as const)
   return new Map(mapped)
 })
 

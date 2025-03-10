@@ -198,7 +198,7 @@ export class CalendarClient {
   async startSync (): Promise<void> {
     try {
       await this.syncCalendars()
-      const calendars = this.workspace.getMyCalendars(this.user.userId)
+      const calendars = await this.workspace.getMyCalendars(this.user.userId)
       for (const calendar of calendars) {
         if (calendar.externalId !== undefined) {
           await this.sync(calendar.externalId)
@@ -439,7 +439,7 @@ export class CalendarClient {
   private async syncEvent (calendarId: string, event: calendar_v3.Schema$Event, accessRole: string): Promise<void> {
     this.updateTimer()
     if (event.id != null) {
-      const calendars = this.workspace.getMyCalendars(this.user.userId)
+      const calendars = await this.workspace.getMyCalendars(this.user.userId)
       const _calendar =
         calendars.find((p) => p.externalId === event.organizer?.email) ??
         calendars.find((p) => p.externalId === calendarId) ??
@@ -881,7 +881,7 @@ export class CalendarClient {
     const events = await this.client.findAll(calendar.class.Event, {
       access: 'owner',
       createdBy: this.user.userId,
-      calendar: { $in: this.workspace.getMyCalendars(this.user.userId).map((p) => p._id) }
+      calendar: { $in: (await this.workspace.getMyCalendars(this.user.userId)).map((p) => p._id) }
     })
     for (const event of events) {
       await this.syncMyEvent(event)

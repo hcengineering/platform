@@ -21,7 +21,7 @@ import {
   Doc,
   PersonId,
   Ref,
-  SocialKey,
+  SocialId,
   Space,
   Timestamp,
   UXObject,
@@ -57,13 +57,13 @@ export interface ChannelProvider extends Doc, UXObject {
   integrationType?: Ref<Doc>
 }
 
-export interface SocialIdentity extends SocialKey, AttachedDoc {
+export interface SocialIdentity extends SocialId, AttachedDoc {
+  _id: Ref<this> & PersonId
   attachedTo: Ref<Person>
   attachedToClass: Ref<Class<Person>>
-
-  key: PersonId
-  confirmed: boolean
 }
+
+export type SocialIdentityRef = SocialIdentity['_id']
 
 /**
  * @public
