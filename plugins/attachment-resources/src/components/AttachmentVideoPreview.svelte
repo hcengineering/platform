@@ -74,8 +74,8 @@
 
 <style lang="scss">
   .container {
-    max-width: 20rem;
-    max-height: 20rem;
+    max-width: 25rem;
+    max-height: 25rem;
     min-width: 4rem;
     min-height: 4rem;
     border-radius: 0.75rem;
