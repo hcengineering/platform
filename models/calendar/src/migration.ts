@@ -14,7 +14,7 @@
 //
 
 import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import { type Doc, MeasureMetricsContext, type PersonId, type Ref, type Space } from '@hcengineering/core'
+import { type Doc, MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
 import {
   createDefaultSpace,
   type MigrateUpdate,
@@ -25,18 +25,18 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { DOMAIN_SPACE, getSocialIdByOldAccount } from '@hcengineering/model-core'
+import { DOMAIN_SPACE, getSocialKeyByOldAccount } from '@hcengineering/model-core'
 import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
 import calendar from './plugin'
 
-function getCalendarId (socialString: PersonId): Ref<Calendar> {
-  return `${socialString}_calendar` as Ref<Calendar>
+function getCalendarId (socialKey: string): Ref<Calendar> {
+  return `${socialKey}_calendar` as Ref<Calendar>
 }
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('calendar migrateAccountsToSocialIds', {})
   const hierarchy = client.hierarchy
-  const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const eventClasses = hierarchy.getDescendants(calendar.class.Event)
 
   const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, {
@@ -53,7 +53,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
     }
 
     const account = id.substring(0, id.length - 9)
-    const socialId = socialIdByAccount[account]
+    const socialId = socialKeyByAccount[account]
     if (socialId === undefined) {
       ctx.warn('no socialId for account', { account })
       continue
@@ -88,7 +88,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
         }
 
         const account = id.substring(0, id.length - 9)
-        const socialId = socialIdByAccount[account]
+        const socialId = socialKeyByAccount[account]
         if (socialId === undefined) {
           ctx.warn('no socialId for account', { account })
           continue

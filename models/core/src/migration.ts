@@ -309,27 +309,27 @@ export function getAccountsFromTxes (accTxes: TxCUD<Doc>[]): any {
     .filter((it) => it !== undefined)
 }
 
-export async function getSocialIdByOldAccount (client: MigrationClient): Promise<Record<string, PersonId>> {
+export async function getSocialKeyByOldAccount (client: MigrationClient): Promise<Record<string, string>> {
   const systemAccounts = [core.account.System, core.account.ConfigUser]
   const accountsTxes: TxCUD<Doc>[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
     objectClass: { $in: ['core:class:Account', 'contact:class:PersonAccount'] as Ref<Class<Doc>>[] }
   })
   const accounts = getAccountsFromTxes(accountsTxes)
 
-  const socialIdByAccount: Record<string, PersonId> = {}
+  const socialKeyByAccount: Record<string, PersonId> = {}
   for (const account of accounts) {
     if (account.email === undefined) {
       continue
     }
 
     if (systemAccounts.includes(account._id)) {
-      socialIdByAccount[account._id] = account._id
+      socialKeyByAccount[account._id] = account._id
     } else {
-      socialIdByAccount[account._id] = buildSocialIdString(getSocialKeyByOldEmail(account.email)) as any
+      socialKeyByAccount[account._id] = buildSocialIdString(getSocialKeyByOldEmail(account.email)) as any
     }
   }
 
-  return socialIdByAccount
+  return socialKeyByAccount
 }
 
 export function getSocialKeyByOldEmail (rawEmail: string): SocialKey {
@@ -362,7 +362,7 @@ export function getSocialKeyByOldEmail (rawEmail: string): SocialKey {
 async function migrateAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('core migrateAccounts', {})
   const hierarchy = client.hierarchy
-  const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
 
   ctx.info('migrating createdBy and modifiedBy')
   function chunkArray<T> (array: T[], chunkSize: number): T[][] {
@@ -380,25 +380,25 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     const groupByModified = await client.groupBy<any, Doc>(domain, 'modifiedBy', {})
 
     groupByCreated.forEach((_, accId) => {
-      const socialId = socialIdByAccount[accId]
-      if (socialId == null || accId === socialId) return
+      const socialKey = socialKeyByAccount[accId]
+      if (socialKey == null || accId === socialKey) return
 
       operations.push({
         filter: { createdBy: accId },
         update: {
-          createdBy: socialId
+          createdBy: socialKey as PersonId
         }
       })
     })
 
     groupByModified.forEach((_, accId) => {
-      const socialId = socialIdByAccount[accId]
-      if (socialId == null || accId === socialId) return
+      const socialKey = socialKeyByAccount[accId]
+      if (socialKey == null || accId === socialKey) return
 
       operations.push({
         filter: { modifiedBy: accId },
         update: {
-          modifiedBy: socialId
+          modifiedBy: socialKey as PersonId
         }
       })
     })
@@ -437,7 +437,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     }
   }
 
-  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
 
   ctx.info('processing spaces members, owners and roles assignment', {})
   let processedSpaces = 0
@@ -459,14 +459,14 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
         const newMembers = await getUniqueAccountsFromOldAccounts(
           client,
           space.members,
-          socialIdByAccount,
-          accountUuidBySocialId
+          socialKeyByAccount,
+          accountUuidBySocialKey
         )
         const newOwners = await getUniqueAccountsFromOldAccounts(
           client,
           space.owners ?? [],
-          socialIdByAccount,
-          accountUuidBySocialId
+          socialKeyByAccount,
+          accountUuidBySocialKey
         )
         const update: MigrateUpdate<Space> = {
           members: newMembers as any,
@@ -486,8 +486,8 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
                 const newAssignees = await getUniqueAccountsFromOldAccounts(
                   client,
                   oldAssignees,
-                  socialIdByAccount,
-                  accountUuidBySocialId
+                  socialKeyByAccount,
+                  accountUuidBySocialKey
                 )
 
                 update[`${type.targetClass}`] = {
@@ -525,8 +525,8 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     const newMembers = await getUniqueAccountsFromOldAccounts(
       client,
       spaceType.members,
-      socialIdByAccount,
-      accountUuidBySocialId
+      socialKeyByAccount,
+      accountUuidBySocialKey
     )
     const tx: TxUpdateDoc<SpaceType> = {
       _id: generateId(),
@@ -550,41 +550,41 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
   ctx.info('finished processing space types members', { totalSpaceTypes: spaceTypes.length, updatedSpaceTypes })
 }
 
-export async function getAccountUuidBySocialId (
+export async function getAccountUuidBySocialKey (
   client: MigrationClient,
-  socialId: PersonId,
-  accountUuidBySocialId: Map<PersonId, AccountUuid | null>
+  socialKey: string,
+  accountUuidBySocialKey: Map<string, AccountUuid | null>
 ): Promise<AccountUuid | null> {
-  if (socialId === core.account.System) {
+  if (socialKey === core.account.System) {
     return systemAccountUuid
   }
 
-  if (socialId === core.account.ConfigUser) {
+  if (socialKey === core.account.ConfigUser) {
     return configUserAccountUuid
   }
 
-  const cached = accountUuidBySocialId.has(socialId)
+  const cached = accountUuidBySocialKey.has(socialKey)
 
   if (!cached) {
-    const personUuid = await client.accountClient.findPersonBySocialKey(socialId)
+    const personUuid = await client.accountClient.findPersonBySocialKey(socialKey)
     if (personUuid === undefined) {
-      console.log('Could not find person for', socialId)
+      console.log('Could not find person for', socialKey)
     }
 
-    accountUuidBySocialId.set(socialId, (personUuid as AccountUuid | undefined) ?? null)
+    accountUuidBySocialKey.set(socialKey, (personUuid as AccountUuid | undefined) ?? null)
   }
 
-  return accountUuidBySocialId.get(socialId) ?? null
+  return accountUuidBySocialKey.get(socialKey) ?? null
 }
 
 export async function getUniqueAccounts (
   client: MigrationClient,
-  persons: PersonId[],
-  accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  socialKeys: string[],
+  accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 ): Promise<AccountUuid[]> {
   const accounts = new Set<AccountUuid>()
-  for (const person of persons) {
-    let newAccount = await getAccountUuidBySocialId(client, person as unknown as PersonId, accountUuidBySocialId)
+  for (const person of socialKeys) {
+    let newAccount = await getAccountUuidBySocialKey(client, person, accountUuidBySocialKey)
 
     if (newAccount == null && isUuid(person)) {
       newAccount = person as unknown as AccountUuid
@@ -600,7 +600,7 @@ export async function getUniqueAccounts (
 export async function getAccountUuidByOldAccount (
   client: MigrationClient,
   oldAccount: string,
-  socialIdByOldAccount: Record<string, PersonId>,
+  socialKeyByOldAccount: Record<string, string>,
   accountUuidByOldAccount: Map<string, AccountUuid | null>
 ): Promise<AccountUuid | null> {
   if (oldAccount === core.account.System) {
@@ -614,7 +614,7 @@ export async function getAccountUuidByOldAccount (
   const cached = accountUuidByOldAccount.has(oldAccount)
 
   if (!cached) {
-    const socialId = socialIdByOldAccount[oldAccount]
+    const socialId = socialKeyByOldAccount[oldAccount]
     if (socialId == null) {
       accountUuidByOldAccount.set(oldAccount, null)
       return null
@@ -636,12 +636,12 @@ function isUuid (val: string): boolean {
 export async function getUniqueAccountsFromOldAccounts (
   client: MigrationClient,
   oldAccounts: string[],
-  socialIdByOldAccount: Record<string, PersonId>,
+  socialKeyByOldAccount: Record<string, string>,
   accountUuidByOldAccount: Map<string, AccountUuid | null> = new Map<string, AccountUuid | null>()
 ): Promise<AccountUuid[]> {
   const accounts = new Set<AccountUuid>()
   for (const oldAcc of oldAccounts) {
-    let newAccount = await getAccountUuidByOldAccount(client, oldAcc, socialIdByOldAccount, accountUuidByOldAccount)
+    let newAccount = await getAccountUuidByOldAccount(client, oldAcc, socialKeyByOldAccount, accountUuidByOldAccount)
 
     if (newAccount == null && isUuid(oldAcc)) {
       newAccount = oldAcc as unknown as AccountUuid
@@ -665,7 +665,7 @@ export async function getUniqueAccountsFromOldAccounts (
 async function migrateSpaceMembersToAccountUuids (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('core migrateSpaceMembersToAccountUuids', {})
   const hierarchy = client.hierarchy
-  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
 
   const spaceTypes = client.model.findAllSync(core.class.SpaceType, {})
   const spaceTypesById = toIdMap(spaceTypes)
@@ -698,8 +698,8 @@ async function migrateSpaceMembersToAccountUuids (client: MigrationClient): Prom
         if (!hierarchy.isDerived(s._class, core.class.Space)) continue
         const space = s as Space
         const update: MigrateUpdate<Space> = {
-          members: await getUniqueAccounts(client, space.members as unknown as PersonId[], accountUuidBySocialId),
-          owners: await getUniqueAccounts(client, (space.owners ?? []) as unknown as PersonId[], accountUuidBySocialId)
+          members: await getUniqueAccounts(client, space.members as unknown as PersonId[], accountUuidBySocialKey),
+          owners: await getUniqueAccounts(client, (space.owners ?? []) as unknown as PersonId[], accountUuidBySocialKey)
         }
 
         const type = spaceTypesById.get((space as TypedSpace).type)
@@ -712,7 +712,7 @@ async function migrateSpaceMembersToAccountUuids (client: MigrationClient): Prom
             for (const role of roles ?? []) {
               const oldAssignees: PersonId[] | undefined = (mixin as any)[role._id]
               if (oldAssignees != null && oldAssignees.length > 0) {
-                const newAssignees = await getUniqueAccounts(client, oldAssignees, accountUuidBySocialId)
+                const newAssignees = await getUniqueAccounts(client, oldAssignees, accountUuidBySocialKey)
 
                 update[`${type.targetClass}`] = {
                   [role._id]: newAssignees
@@ -749,7 +749,7 @@ async function migrateSpaceMembersToAccountUuids (client: MigrationClient): Prom
     const newMembers = await getUniqueAccounts(
       client,
       spaceType.members as unknown as PersonId[],
-      accountUuidBySocialId
+      accountUuidBySocialKey
     )
     const tx: TxUpdateDoc<SpaceType> = {
       _id: generateId(),

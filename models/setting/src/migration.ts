@@ -24,7 +24,11 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import setting, { type Integration, settingId } from '@hcengineering/setting'
-import { getSocialIdByOldAccount, getUniqueAccounts, getUniqueAccountsFromOldAccounts } from '@hcengineering/model-core'
+import {
+  getSocialKeyByOldAccount,
+  getUniqueAccounts,
+  getUniqueAccountsFromOldAccounts
+} from '@hcengineering/model-core'
 
 import { DOMAIN_SETTING } from '.'
 
@@ -36,7 +40,7 @@ import { DOMAIN_SETTING } from '.'
  */
 async function migrateAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('setting migrateAccounts', {})
-  const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
   const accountUuidByOldAccount = new Map<string, AccountUuid | null>()
 
   ctx.info('processing setting integration shared ', {})
@@ -60,7 +64,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
         const newShared = await getUniqueAccountsFromOldAccounts(
           client,
           integration.shared,
-          socialIdByAccount,
+          socialKeyByAccount,
           accountUuidByOldAccount
         )
 
@@ -94,7 +98,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
  */
 async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('setting migrateAccounts', {})
-  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
 
   ctx.info('processing setting integration shared ', {})
   const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })
@@ -117,7 +121,7 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
         const newShared = await getUniqueAccounts(
           client,
           integration.shared as unknown as PersonId[],
-          accountUuidBySocialId
+          accountUuidBySocialKey
         )
 
         operations.push({
