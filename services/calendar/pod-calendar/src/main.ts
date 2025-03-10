@@ -15,7 +15,6 @@
 
 import { type IncomingHttpHeaders } from 'http'
 import { decode64 } from './base64'
-import { CalendarClient } from './calendar'
 import { CalendarController } from './calendarController'
 import config from './config'
 import { createServer, listen } from './server'
@@ -24,6 +23,8 @@ import { type Endpoint, type State } from './types'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
+import { GoogleClient } from './googleClient'
+import { WatchController } from './watch'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -40,7 +41,10 @@ export const main = async (): Promise<void> => {
 
   const db = await getDB()
   const calendarController = CalendarController.getCalendarController(db)
-  await calendarController.startAll()
+  const watchController = WatchController.get(db)
+  void calendarController.startAll().then(() => {
+    watchController.startCheck()
+  })
   const endpoints: Endpoint[] = [
     {
       endpoint: '/signin',
@@ -57,10 +61,10 @@ export const main = async (): Promise<void> => {
 
           const { email, workspace } = decodeToken(token)
           const userId = await calendarController.getUserId(email, workspace.name)
-          const url = CalendarClient.getAutUrl(redirectURL, workspace.name, userId, token)
+          const url = GoogleClient.getAutUrl(redirectURL, workspace.name, userId, token)
           res.send(url)
         } catch (err) {
-          console.log('signin error', err)
+          console.error('signin error', err)
           res.status(500).send()
         }
       }
@@ -75,7 +79,7 @@ export const main = async (): Promise<void> => {
           await calendarController.newClient(state, code)
           res.redirect(state.redirectURL)
         } catch (err) {
-          console.log(err)
+          console.error(err)
           res.redirect(state.redirectURL)
         }
       }
@@ -97,7 +101,7 @@ export const main = async (): Promise<void> => {
           const { workspace } = decodeToken(token)
           await calendarController.signout(workspace.name, value)
         } catch (err) {
-          console.log('signout error', err)
+          console.error('signout error', err)
         }
 
         res.send()
@@ -122,9 +126,23 @@ export const main = async (): Promise<void> => {
             res.status(400).send({ err: "'data' is missing" })
             return
           }
-          calendarController.push(data.user, data.mode as 'events' | 'calendar', data.calendarId)
+          void calendarController.push(data.user, data.mode as 'events' | 'calendar', data.calendarId)
         }
 
+        res.send()
+      }
+    },
+    {
+      endpoint: '/event',
+      type: 'post',
+      handler: async (req, res) => {
+        const { event, workspace, type } = req.body
+
+        if (event === undefined || workspace === undefined || type === undefined) {
+          res.status(400).send({ err: "'event' or 'workspace' or 'type' is missing" })
+          return
+        }
+        void calendarController.pushEvent(workspace, event, type)
         res.send()
       }
     }
@@ -134,6 +152,7 @@ export const main = async (): Promise<void> => {
 
   const shutdown = (): void => {
     server.close(() => {
+      watchController.stop()
       void calendarController
         .close()
         .then(async () => {

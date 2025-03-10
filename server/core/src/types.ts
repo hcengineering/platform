@@ -547,6 +547,8 @@ export interface Session {
   getUser: () => string
 
   loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>
+
+  loadModelRaw: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<LoadModelResponse | Tx[]>
   getAccount: (ctx: ClientSessionCtx) => Promise<void>
 
   getRawAccount: (pipeline: Pipeline) => Account
@@ -564,7 +566,18 @@ export interface Session {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions) => Promise<void>
+  searchFulltextRaw: (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
   tx: (ctx: ClientSessionCtx, tx: Tx) => Promise<void>
+
+  txRaw: (
+    ctx: ClientSessionCtx,
+    tx: Tx
+  ) => Promise<{
+    result: TxResult
+    broadcastPromise: Promise<void>
+    asyncsPromise: Promise<void> | undefined
+  }>
+
   loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number) => Promise<void>
 
   getDomainHash: (ctx: ClientSessionCtx, domain: Domain) => Promise<void>
@@ -581,13 +594,15 @@ export interface ConnectionSocket {
   id: string
   isClosed: boolean
   close: () => void
-  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => void
+  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<void>
 
   sendPong: () => void
   data: () => Record<string, any>
 
   readRequest: (buffer: Buffer, binary: boolean) => Request<any>
 
+  isBackpressure: () => boolean // In bytes
+  backpressure: (ctx: MeasureContext) => Promise<void>
   checkState: () => boolean
 }
 
@@ -701,6 +716,23 @@ export interface SessionManager {
     ws: ConnectionSocket,
     request: Request<any>,
     workspace: string // wsId, toWorkspaceString()
+  ) => Promise<void>
+
+  createOpContext: (
+    ctx: MeasureContext,
+    sendCtx: MeasureContext,
+    pipeline: Pipeline,
+    requestId: Request<any>['id'],
+    service: Session,
+    ws: ConnectionSocket,
+    workspace: WorkspaceId
+  ) => ClientSessionCtx
+
+  handleRPC: <S extends Session>(
+    requestCtx: MeasureContext,
+    service: S,
+    ws: ConnectionSocket,
+    operation: (ctx: ClientSessionCtx) => Promise<void>
   ) => Promise<void>
 }
 

@@ -15,22 +15,12 @@
 -->
 <script lang="ts">
   import { SearchResultDoc } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
-  import presentation, {
-    SearchResult,
-    getClient,
-    reduceCalls,
-    searchFor,
-    type SearchItem
-  } from '@hcengineering/presentation'
+  import presentation, { SearchResult, reduceCalls, searchFor, type SearchItem } from '@hcengineering/presentation'
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import { getReferenceLabel, getReferenceObject } from './extension/reference'
 
   export let query: string = ''
-
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let items: SearchItem[] = []
 
@@ -40,22 +30,13 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  async function getIdentifier (item: SearchResultDoc): Promise<string | undefined> {
-    const identifierProvider = hierarchy.classHierarchyMixin(item.doc._class, view.mixin.ObjectIdentifier)
-    if (identifierProvider === undefined) {
-      return item.shortTitle ?? item.title
-    }
-
-    const resource = await getResource(identifierProvider.provider)
-    return await resource(client, item.id)
-  }
-
   async function handleSelectItem (item: SearchResultDoc): Promise<void> {
-    const identifier = await getIdentifier(item)
+    const obj = (await getReferenceObject(item.doc._class, item.doc._id)) ?? item.doc
+    const label = await getReferenceLabel(obj._class, obj._id)
     dispatch('close', {
-      id: item.id,
-      label: identifier,
-      objectclass: item.doc._class
+      id: obj._id,
+      label,
+      objectclass: obj._class
     })
   }
 

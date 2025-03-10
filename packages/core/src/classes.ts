@@ -791,3 +791,13 @@ export interface BaseWorkspaceInfo {
 
   backupInfo?: BackupStatus
 }
+
+/**
+ * @public
+ */
+export type ClientWorkspaceInfo = Omit<BaseWorkspaceInfo, 'workspaceUrl'> & {
+  lastProcessingTime?: number
+  attempts?: number
+  message?: string
+  workspaceId: string
+}

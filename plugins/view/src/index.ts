@@ -16,7 +16,7 @@
 
 import { Class, Doc, DocumentQuery, FindOptions, Mixin, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
-import { AnyComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui'
+import { AnyComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui/src/types'
 import {
   Action,
   ActionCategory,
@@ -52,6 +52,7 @@ import {
   ObjectTitle,
   ObjectTooltip,
   ObjectValidator,
+  ReferenceObjectProvider,
   AttrPresenter,
   PreviewPresenter,
   SpaceHeader,
@@ -96,6 +97,7 @@ const view = plugin(viewId, {
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
     ObjectTitle: '' as Ref<Mixin<ObjectTitle>>,
     ObjectIdentifier: '' as Ref<Mixin<ObjectIdentifier>>,
+    ReferenceObjectProvider: '' as Ref<Mixin<ReferenceObjectProvider>>,
     ObjectTooltip: '' as Ref<Mixin<ObjectTooltip>>,
     SpaceHeader: '' as Ref<Mixin<SpaceHeader>>,
     SpaceName: '' as Ref<Mixin<SpaceName>>,
@@ -214,7 +216,9 @@ const view = plugin(viewId, {
     Leave: '' as IntlString,
     Copied: '' as IntlString,
     And: '' as IntlString,
-    Title: '' as IntlString
+    Title: '' as IntlString,
+    DeleteObject: '' as IntlString,
+    DeleteObjectConfirm: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

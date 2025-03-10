@@ -43,6 +43,7 @@ export interface Account {
   admin?: boolean
   confirmed?: boolean
   lastWorkspace?: number
+  sendOperations?: number
   createdOn: number
   lastVisit: number
   githubId?: string
@@ -61,11 +62,6 @@ export interface Workspace extends BaseWorkspaceInfo {
   attempts?: number
   message?: string
 }
-
-/**
- * @public
- */
-export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'> & { workspaceId: string }
 
 /**
  * @public

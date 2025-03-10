@@ -103,5 +103,5 @@
 {:else if kind === 'content' && category === undefined}
   <div class="hulyComponent" />
 {:else if category}
-  <Component is={category.component} props={{ kind: 'content' }} on:change />
+  <Component is={category.component} props={{ kind: 'content', ...category.props }} on:change />
 {/if}

@@ -3,6 +3,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
+  import { showMenu } from '../actions'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import DocTable from './DocTable.svelte'
   import ObjectBoxPopup from './ObjectBoxPopup.svelte'
@@ -13,6 +14,8 @@
   export let association: Association
   export let readonly: boolean = false
   export let direction: 'A' | 'B'
+
+  const client = getClient()
 
   $: _class = direction === 'B' ? association.classB : association.classA
 
@@ -28,8 +31,8 @@
         if (result != null) {
           const client = getClient()
           await client.createDoc(core.class.Relation, core.space.Workspace, {
-            docA: direction === 'A' ? object._id : result._id,
-            docB: direction === 'A' ? result._id : object._id,
+            docA: direction === 'B' ? object._id : result._id,
+            docB: direction === 'B' ? result._id : object._id,
             association: association._id
           })
         }
@@ -73,15 +76,40 @@
     )
   } else {
     preferenceQuery.unsubscribe()
+    preference = undefined
   }
 
-  $: config = preference?.config ?? viewlet?.config
+  $: selectedConfig = preference?.config ?? viewlet?.config
+  $: config = selectedConfig?.filter((p) =>
+    typeof p === 'string'
+      ? !p.includes('$lookup') && !p.startsWith('@')
+      : !p.key.includes('$lookup') && !p.key.startsWith('@')
+  )
+
+  async function onContextMenu (ev: MouseEvent, doc: Doc): Promise<void> {
+    const q =
+      direction === 'B'
+        ? { docA: object._id, docB: doc._id, association: association._id }
+        : { docA: doc._id, docB: object._id, association: association._id }
+    const relation = await client.findOne(core.class.Relation, q)
+    if (relation !== undefined) {
+      showMenu(ev, { object: relation, includedActions: [view.action.Delete] })
+    }
+  }
+
+  function isAllowedToCreate (association: Association, docs: Doc[], direction: 'A' | 'B'): boolean {
+    if (docs.length === 0 || association.type === 'N:N') return true
+    if (association.type === '1:1') return false
+    return direction === 'B'
+  }
+
+  $: allowToCreate = isAllowedToCreate(association, docs, direction)
 </script>
 
 <Section {label}>
   <svelte:fragment slot="header">
     <div class="buttons-group xsmall-gap">
-      {#if !readonly}
+      {#if !readonly && allowToCreate}
         <Button id={core.string.AddRelation} icon={IconAdd} kind={'ghost'} on:click={add} />
       {/if}
     </div>
@@ -90,9 +118,7 @@
   <svelte:fragment slot="content">
     <div class="antiSection-empty solid flex-col mt-3">
       {#if docs?.length > 0 && config != null}
-        <div class="self-start flex-col flex-gap-2">
-          <DocTable objects={docs} {_class} {config} />
-        </div>
+        <DocTable objects={docs} {_class} {config} {onContextMenu} />
       {:else if !readonly}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->

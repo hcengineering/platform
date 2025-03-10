@@ -67,11 +67,11 @@ import ProjectTypeClassPresenter from './components/taskTypes/ProjectTypeClassPr
 import TaskKindSelector from './components/taskTypes/TaskKindSelector.svelte'
 import TaskTypeClassPresenter from './components/taskTypes/TaskTypeClassPresenter.svelte'
 import TaskTypePresenter from './components/taskTypes/TaskTypePresenter.svelte'
+import TaskTypeListPresenter from './components/taskTypes/TaskTypeListPresenter.svelte'
 
 import { employeeByIdStore, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
 import CreateProjectType from './components/projectTypes/CreateProjectType.svelte'
 import ProjectTypeAutomationsSectionEditor from './components/projectTypes/ProjectTypeAutomationsSectionEditor.svelte'
-import ProjectTypeCollectionsSectionEditor from './components/projectTypes/ProjectTypeCollectionsSectionEditor.svelte'
 import ProjectTypeGeneralSectionEditor from './components/projectTypes/ProjectTypeGeneralSectionEditor.svelte'
 import ProjectTypeSelector from './components/projectTypes/ProjectTypeSelector.svelte'
 import ProjectTypeTasksTypeSectionEditor from './components/projectTypes/ProjectTypeTasksTypeSectionEditor.svelte'
@@ -198,6 +198,7 @@ export default async (): Promise<Resources> => ({
     StateIconPresenter,
     StatusFilter,
     TaskTypePresenter,
+    TaskTypeListPresenter,
     TaskTypeClassPresenter,
     ProjectTypeClassPresenter,
     ProjectTypePresenter,
@@ -206,7 +207,6 @@ export default async (): Promise<Resources> => ({
     ProjectTypeGeneralSectionEditor,
     ProjectTypeTasksTypeSectionEditor,
     ProjectTypeAutomationsSectionEditor,
-    ProjectTypeCollectionsSectionEditor,
     TaskTypeEditor
   },
   actionImpl: {
@@ -227,11 +227,16 @@ export async function getAllStates (
   attr: Attribute<Status>,
   filterDone: boolean = true
 ): Promise<any[]> {
-  const typeId = get(selectedTypeStore)
+  const joinedProjectsTypes = get(typesOfJoinedProjectsStore) ?? []
+  const typeId = get(selectedTypeStore) ?? (joinedProjectsTypes.length === 1 ? joinedProjectsTypes[0] : undefined)
   const type = typeId !== undefined ? get(typeStore).get(typeId) : undefined
-  const taskTypeId = get(selectedTaskTypeStore)
+  const $taskType = get(taskTypeStore)
+  const joinedTaskTypes = Array.from($taskType.values()).filter((taskType) =>
+    joinedProjectsTypes.includes(taskType.parent)
+  )
+  const taskTypeId = get(selectedTaskTypeStore) ?? (joinedTaskTypes.length === 1 ? joinedTaskTypes[0]?._id : undefined)
   if (taskTypeId !== undefined) {
-    const taskType = get(taskTypeStore).get(taskTypeId)
+    const taskType = $taskType.get(taskTypeId)
     if (taskType === undefined) {
       return []
     }
@@ -284,17 +289,16 @@ export async function getAllStates (
       return statuses.map((p) => p?._id)
     }
   }
-  const joinedProjectsTypes = get(typesOfJoinedProjectsStore) ?? []
-  const includedStatuses = Array.from(get(taskTypeStore).values())
-    .filter((taskType) => joinedProjectsTypes.includes(taskType.parent))
-    .flatMap((taskType) => taskType.statuses)
-  const allStates = get(statusStore).array.filter((p) => p.ofAttribute === attr._id && includedStatuses.includes(p._id))
+  const includedStatuses = new Set(joinedTaskTypes.flatMap((taskType) => taskType.statuses))
+  const $statusStore = get(statusStore)
+  const allStates = [...includedStatuses].map((p) => $statusStore.byId.get(p))
+  const states = allStates.filter((p) => p !== undefined && p.ofAttribute === attr._id)
   if (filterDone) {
-    return allStates
+    return states
       .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
       .map((p) => p?._id)
   } else {
-    return allStates.map((p) => p?._id)
+    return states.map((p) => p?._id)
   }
 }
 

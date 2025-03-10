@@ -26,6 +26,8 @@ import {
   type Class,
   type Data,
   type Doc,
+  type DocIndexState,
+  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_SEQUENCE,
   DOMAIN_TX,
   generateId,
@@ -51,6 +53,7 @@ import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import core from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
 
+import { compareDocumentVersions } from '@hcengineering/controlled-documents/src'
 import { makeRank } from '@hcengineering/rank'
 import documents, { DOMAIN_DOCUMENTS } from './index'
 
@@ -404,6 +407,57 @@ async function migrateProjectMetaRank (client: MigrationClient): Promise<void> {
   await client.bulk(DOMAIN_DOCUMENTS, operations)
 }
 
+async function migrateDocumentMetaInternalCode (client: MigrationClient): Promise<void> {
+  const docMetas = await client.find<DocumentMeta>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.DocumentMeta
+  })
+
+  let docs = await client.find<ControlledDocument>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.ControlledDocument
+  })
+
+  docs = docs.slice().sort(compareDocumentVersions).reverse()
+  const docMap = new Map<Ref<DocumentMeta>, ControlledDocument>()
+
+  for (const doc of docs) {
+    const curr = docMap.get(doc.attachedTo)
+    const metaId = doc.attachedTo
+
+    const shouldBind =
+      curr === undefined ||
+      doc.state === DocumentState.Effective ||
+      (doc.state === DocumentState.Archived && curr.state !== DocumentState.Effective)
+
+    if (shouldBind) docMap.set(metaId, doc)
+  }
+
+  const operations: { filter: MigrationDocumentQuery<DocumentMeta>, update: MigrateUpdate<DocumentMeta> }[] = []
+  const updatedIds = new Set<Ref<DocumentMeta>>()
+  for (const meta of docMetas) {
+    const doc = docMap.get(meta._id)
+    if (doc === undefined) continue
+
+    const title = `${doc.code} ${doc.title}`
+    if (meta.title === title) continue
+
+    operations.push({
+      filter: { _id: meta._id },
+      update: { $set: { title } }
+    })
+    updatedIds.add(meta._id)
+  }
+
+  await client.bulk(DOMAIN_DOCUMENTS, operations)
+  await client.update<DocIndexState>(
+    DOMAIN_DOC_INDEX_STATE,
+    {
+      _id: { $in: Array.from(updatedIds) as any },
+      objectClass: documents.class.DocumentMeta
+    },
+    { $set: { needIndex: true } }
+  )
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentsId, [
@@ -429,6 +483,10 @@ export const documentsOperation: MigrateOperation = {
           )
           await client.move(DOMAIN_DOCUMENTS, { _class: core.class.Sequence }, DOMAIN_SEQUENCE)
         }
+      },
+      {
+        state: 'migrateDocumentMetaInternalCode',
+        func: migrateDocumentMetaInternalCode
       }
     ])
   },

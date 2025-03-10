@@ -16,7 +16,7 @@
 import board, { boardId } from '@hcengineering/board'
 import { type Ref, type StatusCategory } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 
 export default mergeIds(boardId, board, {
   string: {

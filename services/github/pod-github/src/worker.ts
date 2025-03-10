@@ -226,7 +226,10 @@ export class GithubWorker implements IntegrationManager {
     }
   }
 
-  async getAccountU (user: User): Promise<PersonAccount | undefined> {
+  async getAccountU (user?: User): Promise<PersonAccount | undefined> {
+    if (user == null) {
+      return undefined
+    }
     return await this.getAccount({
       id: user.node_id,
       login: user.login,
@@ -1101,38 +1104,41 @@ export class GithubWorker implements IntegrationManager {
           this.ctx.error('Failed to perform full sync', { error: err })
         })
       }
-
-      const { projects, repositories } = await this.collectActiveProjects()
-      if (projects.length === 0 && repositories.length === 0) {
-        await this.waitChanges()
-        continue
-      }
-
-      // Check if we have documents with external sync request's pending.
-      const hadExternalChanges = await this.performExternalSync(
-        projects,
-        repositories,
-        'externalVersion',
-        githubExternalSyncVersion
-      )
-      const hadSyncChanges = await this.performSync(projects, repositories)
-
-      // Perform derived operations
-      // Sync derived external data, like pull request reviews, files etc.
-      const hadDerivedChanges = await this.performExternalSync(
-        projects,
-        repositories,
-        'derivedVersion',
-        githubDerivedSyncVersion
-      )
-
-      if (!hadExternalChanges && !hadSyncChanges && !hadDerivedChanges) {
-        if (this.previousWait !== 0) {
-          this.ctx.info('Wait for changes:', { previousWait: this.previousWait, workspace: this.workspace.name })
-          this.previousWait = 0
+      try {
+        const { projects, repositories } = await this.collectActiveProjects()
+        if (projects.length === 0 && repositories.length === 0) {
+          await this.waitChanges()
+          continue
         }
-        // Wait until some sync documents will be modified, updated.
-        await this.waitChanges()
+
+        // Check if we have documents with external sync request's pending.
+        const hadExternalChanges = await this.performExternalSync(
+          projects,
+          repositories,
+          'externalVersion',
+          githubExternalSyncVersion
+        )
+        const hadSyncChanges = await this.performSync(projects, repositories)
+
+        // Perform derived operations
+        // Sync derived external data, like pull request reviews, files etc.
+        const hadDerivedChanges = await this.performExternalSync(
+          projects,
+          repositories,
+          'derivedVersion',
+          githubDerivedSyncVersion
+        )
+
+        if (!hadExternalChanges && !hadSyncChanges && !hadDerivedChanges) {
+          if (this.previousWait !== 0) {
+            this.ctx.info('Wait for changes:', { previousWait: this.previousWait, workspace: this.workspace.name })
+            this.previousWait = 0
+          }
+          // Wait until some sync documents will be modified, updated.
+          await this.waitChanges()
+        }
+      } catch (err: any) {
+        this.ctx.error('failed to perform sync', { err, workspace: this.workspace.name })
       }
     }
   }
@@ -1327,25 +1333,30 @@ export class GithubWorker implements IntegrationManager {
             const targetProject = await this.client.findOne(github.mixin.GithubProject, {
               _id: existing.space as Ref<GithubProject>
             })
-            if (await mapper.handleDelete(existing, info, derivedClient, false, parent)) {
-              const h = this._client.getHierarchy()
-              await derivedClient.remove(info)
-              if (h.hasMixin(existing, github.mixin.GithubIssue)) {
-                const mixinData = this._client.getHierarchy().as(existing, github.mixin.GithubIssue)
-                await this._client.update<GithubIssue>(
-                  mixinData,
-                  {
-                    url: '',
-                    githubNumber: 0,
-                    repository: '' as Ref<GithubIntegrationRepository>
-                  },
-                  false,
-                  Date.now(),
-                  existing.modifiedBy
-                )
+            try {
+              if (await mapper.handleDelete(existing, info, derivedClient, false, parent)) {
+                const h = this._client.getHierarchy()
+                await derivedClient.remove(info)
+                if (h.hasMixin(existing, github.mixin.GithubIssue)) {
+                  const mixinData = this._client.getHierarchy().as(existing, github.mixin.GithubIssue)
+                  await this._client.update<GithubIssue>(
+                    mixinData,
+                    {
+                      url: '',
+                      githubNumber: 0,
+                      repository: '' as Ref<GithubIntegrationRepository>
+                    },
+                    false,
+                    Date.now(),
+                    existing.modifiedBy
+                  )
+                }
+                return
               }
-              return
+            } catch (err: any) {
+              this.ctx.error('failed to handle delete', { err })
             }
+
             if (targetProject !== undefined) {
               // We need to sync into new project.
               await derivedClient.update<DocSyncInfo>(info, {
@@ -1361,8 +1372,12 @@ export class GithubWorker implements IntegrationManager {
           }
 
           if (info.deleted === true) {
-            if (await mapper.handleDelete(existing, info, derivedClient, true)) {
-              await derivedClient.remove(info)
+            try {
+              if (await mapper.handleDelete(existing, info, derivedClient, true)) {
+                await derivedClient.remove(info)
+              }
+            } catch (err: any) {
+              this.ctx.error('failed to handle delete', { err })
             }
             return
           }

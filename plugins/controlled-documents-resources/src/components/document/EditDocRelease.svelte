@@ -58,33 +58,33 @@
 
   const client = getClient()
 
-  async function changePlannedEffectiveDate (plannedEffectiveDate: Timestamp) {
-    if (!$controlledDocument) {
-      return
-    }
+  // async function changePlannedEffectiveDate (plannedEffectiveDate: Timestamp) {
+  //   if (!$controlledDocument) {
+  //     return
+  //   }
 
-    await client.update($controlledDocument, { plannedEffectiveDate })
-  }
+  //   await client.update($controlledDocument, { plannedEffectiveDate })
+  // }
 
-  let selectedDate: Timestamp =
-    $controlledDocument?.plannedEffectiveDate != null && $controlledDocument?.plannedEffectiveDate > 0
-      ? $controlledDocument.plannedEffectiveDate
-      : Date.now()
+  // let selectedDate: Timestamp =
+  //   $controlledDocument?.plannedEffectiveDate != null && $controlledDocument?.plannedEffectiveDate > 0
+  //     ? $controlledDocument.plannedEffectiveDate
+  //     : Date.now()
 
-  let selected: IntlString | undefined = undefined
-  if ($controlledDocument?.plannedEffectiveDate === 0) {
-    selected = documentsRes.string.EffectiveImmediately
-  } else if ($controlledDocument?.plannedEffectiveDate != null) {
-    selected = documentsRes.string.EffectiveOn
-  }
+  // let selected: IntlString | undefined = undefined
+  // if ($controlledDocument?.plannedEffectiveDate === 0) {
+  //   selected = documentsRes.string.EffectiveImmediately
+  // } else if ($controlledDocument?.plannedEffectiveDate != null) {
+  //   selected = documentsRes.string.EffectiveOn
+  // }
 
-  async function changeSelectedDate (ev: CustomEvent) {
-    if (ev.detail !== undefined) {
-      selectedDate = ev.detail
-      await changePlannedEffectiveDate(ev.detail)
-      selected = documentsRes.string.EffectiveOn
-    }
-  }
+  // async function changeSelectedDate (ev: CustomEvent) {
+  //   if (ev.detail !== undefined) {
+  //     selectedDate = ev.detail
+  //     await changePlannedEffectiveDate(ev.detail)
+  //     selected = documentsRes.string.EffectiveOn
+  //   }
+  // }
 
   const reviewIntervals: DropdownTextItem[] = []
   for (const interval of periodicReviewIntervals) {
@@ -254,10 +254,10 @@
           gap="none"
         />
       </div>
-      <header class="fs-title text-lg my-4">
+      <header class="fs-title text-lg mt-4">
         <Label label={documentsRes.string.EffectiveDocumentLifecycle} />
       </header>
-      <span class="fs-title text-normal">
+      <!-- <span class="fs-title text-normal">
         <Label label={documentsRes.string.EffectiveDate} />
       </span>
       <div>
@@ -298,7 +298,7 @@
             </div>
           </RadioButton>
         </div>
-      </div>
+      </div> -->
       <div class="flex-row-center flex-gap-2">
         <span class="whitespace-nowrap fs-title text-normal">
           <Label label={documentsRes.string.PeriodicReviewToBeCompleted} />

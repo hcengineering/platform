@@ -13,7 +13,7 @@ import {
   type TxOperations
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
-import { type AnyComponent, type AnySvelteComponent, type ComponentExtensionId } from '@hcengineering/ui'
+import { type AnyComponent, type AnySvelteComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 
 export * from './components/breadcrumbs/types'
 
@@ -72,6 +72,7 @@ export interface ObjectSearchCategory extends Doc {
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>
   classToSearch?: Ref<Class<Doc>>
+  includeChilds?: boolean
 
   priority?: number
 }

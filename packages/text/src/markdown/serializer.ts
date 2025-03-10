@@ -466,7 +466,11 @@ export class MarkdownState implements IState {
 
     for (let i = 0; i < len; i++) {
       const mark = state.marks[i]
-      if (!this.marks[mark.type].mixable) break
+      const mm = this.marks[mark.type]
+      if (mm == null) {
+        break
+      }
+      if (!mm.mixable) break
       this.reorderMixableMark(state, mark, i, len)
     }
   }
@@ -735,6 +739,9 @@ export class MarkdownState implements IState {
     let value = mark.attrs?.marker
     if (value === undefined) {
       const info = this.marks[mark.type]
+      if (info == null) {
+        throw new Error(`No info for mark ${mark.type}`)
+      }
       value = open ? info.open : info.close
     }
     return typeof value === 'string' ? value : value(this, mark, parent, index) ?? ''

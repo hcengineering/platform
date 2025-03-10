@@ -16,6 +16,7 @@ import { type Employee, type Person, type PersonAccount } from '@hcengineering/c
 import documents, {
   type ControlledDocument,
   type Document,
+  type DocumentBundle,
   type DocumentCategory,
   type DocumentComment,
   type DocumentMeta,
@@ -27,12 +28,12 @@ import documents, {
   type ProjectDocument,
   type ProjectMeta,
   ControlledDocumentState,
-  type DocumentBundle,
   DocumentState,
+  ProjectDocumentTree,
+  compareDocumentVersions,
   emptyBundle,
   getDocumentName,
-  getFirstRank,
-  ProjectDocumentTree
+  getFirstRank
 } from '@hcengineering/controlled-documents'
 import core, {
   type Class,
@@ -193,6 +194,18 @@ export async function getDocumentMetaLinkFragment (document: Doc): Promise<Locat
   const project = projectDoc?.project ?? documents.ids.NoProject
 
   return getProjectDocumentLink(targetDocument, project)
+}
+
+export async function getControlledDocumentLinkFragment (document: ControlledDocument): Promise<Location> {
+  const client = getClient()
+  const targetDocument = await client.findOne(documents.class.ProjectDocument, { document: document._id })
+
+  if (targetDocument === undefined) {
+    throw new Error('Cannot resolve a ProjectDocument for document ' + document._id)
+  }
+
+  const project = targetDocument.project ?? documents.ids.NoProject
+  return getProjectDocumentLink(document, project)
 }
 
 export interface TeamPopupData {
@@ -707,6 +720,41 @@ export async function documentIdentifierProvider (client: Client, ref: Ref<Docum
   return document.code
 }
 
+export async function controlledDocumentReferenceObjectProvider (
+  client: Client,
+  ref: Ref<ControlledDocument>,
+  doc?: ControlledDocument
+): Promise<Doc | undefined> {
+  const document = doc ?? (await client.findOne(documents.class.ControlledDocument, { _id: ref }))
+  if (document === undefined) return
+
+  const meta = await client.findOne(documents.class.DocumentMeta, { _id: document.attachedTo })
+  if (meta === undefined) return
+
+  let documentSeq: ControlledDocument[] = await client.findAll(documents.class.ControlledDocument, {
+    attachedTo: meta._id
+  })
+
+  const allowStates = [DocumentState.Draft, DocumentState.Effective]
+  documentSeq = documentSeq.filter((d) => allowStates.includes(d.state)).sort(compareDocumentVersions)
+
+  const effIndex = documentSeq.findIndex((d) => d.state === DocumentState.Effective)
+  const docIndex = documentSeq.findIndex((d) => d._id === document._id)
+
+  return docIndex >= 0 && (docIndex <= effIndex || effIndex < 0) ? meta : document
+}
+
+export async function projectDocumentReferenceObjectProvider (
+  client: Client,
+  ref: Ref<ProjectDocument>,
+  doc?: ProjectDocument
+): Promise<Doc | undefined> {
+  const prjdoc = doc ?? (await client.findOne(documents.class.ProjectDocument, { _id: ref }))
+  if (prjdoc === undefined) return
+
+  return await controlledDocumentReferenceObjectProvider(client, prjdoc.document as Ref<ControlledDocument>)
+}
+
 export function documentCompareFn (doc1: Document, doc2: Document): number {
   return doc1.major - doc2.major !== 0 ? doc1.major - doc2.major : doc1.minor - doc2.minor
 }
@@ -724,7 +772,21 @@ export async function getControlledDocumentTitle (
 
   if (object === undefined) return ''
 
-  return object.title
+  return object.title + ` (${getDocumentVersionString(object)})`
+}
+
+export async function getDocumentMetaTitle (
+  client: Client,
+  ref: Ref<DocumentMeta>,
+  doc?: DocumentMeta
+): Promise<string> {
+  const object = doc ?? (await client.findOne(documents.class.DocumentMeta, { _id: ref }))
+
+  if (object === undefined) return ''
+
+  const hint = await translate(documentsResources.string.LatestVersionHint, {})
+
+  return object.title + ` (${hint})`
 }
 
 export const getCurrentEmployee = (): Ref<Employee> | undefined => {
@@ -919,4 +981,16 @@ export class DocumentHiearchyQuery {
 
 export function createDocumentHierarchyQuery (): DocumentHiearchyQuery {
   return new DocumentHiearchyQuery()
+}
+
+export async function syncDocumentMetaTitle (
+  client: Client & TxOperations,
+  _id: Ref<DocumentMeta>,
+  code: string,
+  title: string
+): Promise<void> {
+  const meta = await client.findOne(documents.class.DocumentMeta, { _id })
+  if (meta !== undefined) {
+    await client.update(meta, { title: `${code} ${title}` })
+  }
 }

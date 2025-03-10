@@ -294,7 +294,7 @@ export function convertEstimation (estimation: number | string): string {
 
   const days = Math.floor(value / hoursInWorkingDay)
   const hours = Math.floor(value % hoursInWorkingDay)
-  const minutes = Math.floor((value % 1) * 60)
+  const minutes = Math.round((value % 1) * 60)
   const result = [
     ...(days === 0 ? [] : [`${days}d`]),
     ...(hours === 0 ? [] : [`${hours}h`]),

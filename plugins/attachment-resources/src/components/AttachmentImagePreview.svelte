@@ -43,7 +43,7 @@
   $: urlSize = getUrlSize(size)
 
   function getDimensions (value: Attachment, size: AttachmentImageSize): Dimensions {
-    if (size === 'auto') {
+    if (size === 'auto' || size == null) {
       return {
         width: 'auto',
         height: 'auto',

@@ -78,10 +78,11 @@ import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv }
 import { program, type Command } from 'commander'
 import { addControlledDocumentRank } from './qms'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, updateField } from './workspace'
+import { backupRestore, diffWorkspace, updateField } from './workspace'
 
 import core, {
   AccountRole,
+  DOMAIN_BLOB,
   generateId,
   getWorkspaceId,
   isActiveMode,
@@ -664,6 +665,7 @@ export function devTool (
                   cmd.region,
                   5000, // 5 gigabytes per blob
                   sharedPipelineContextVars,
+                  true, // Do full check
                   async (storage, workspaceStorage) => {
                     if (cmd.remove) {
                       await updateArchiveInfo(toolCtx, db, ws.workspace, true)
@@ -698,16 +700,100 @@ export function devTool (
     )
 
   program
+    .command('restore-all')
+    .description('Restore workspaces to selected region DB...')
+    .option('-t|--timeout [timeout]', 'Timeout in days', '60')
+    .option('-r|--region [region]', 'Timeout in days', '')
+    .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+    .option('-s|--skip [skip]', 'A command separated list of workspaces to skip', '')
+    .option('-d|--dry [dry]', 'Dry run', false)
+    .action(
+      async (cmd: {
+        timeout: string
+        workspace: string
+        region: string
+        dry: boolean
+        account: string
+        skip: string
+      }) => {
+        const { txes, dbUrl } = prepareTools()
+
+        const bucketName = process.env.BUCKET_NAME
+        if (bucketName === '' || bucketName == null) {
+          console.error('please provide butket name env')
+          process.exit(1)
+        }
+
+        const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
+
+        const token = generateToken(systemAccountEmail, getWorkspaceId(''))
+        const workspaces = (await listAccountWorkspaces(token, cmd.region))
+          .sort((a, b) => {
+            const bsize = b.backupInfo?.backupSize ?? 0
+            const asize = a.backupInfo?.backupSize ?? 0
+            return bsize - asize
+          })
+          .filter((it) => (cmd.workspace === '' || cmd.workspace === it.workspace) && !skipWorkspaces.has(it.workspace))
+
+        for (const ws of workspaces) {
+          const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+
+          toolCtx.warn('--- restoring workspace', {
+            url: ws.workspaceUrl,
+            id: ws.workspace,
+            lastVisitDays,
+            backupSize: ws.backupInfo?.blobsSize ?? 0,
+            mode: ws.mode
+          })
+          if (cmd.dry) {
+            continue
+          }
+          try {
+            const st = Date.now()
+            await backupRestore(
+              toolCtx,
+              dbUrl,
+              bucketName,
+              ws,
+              (dbUrl, storageAdapter) => {
+                const factory: PipelineFactory = createBackupPipeline(toolCtx, dbUrl, txes, {
+                  externalStorage: storageAdapter,
+                  usePassedCtx: true
+                })
+                return factory
+              },
+              [DOMAIN_BLOB]
+            )
+            const ed = Date.now()
+            toolCtx.warn('--- restoring complete', {
+              time: ed - st
+            })
+          } catch (err: any) {
+            toolCtx.error('REstore of f workspace failedarchive workspace', { workspace: ws.workspace })
+          }
+        }
+      }
+    )
+
+  program
     .command('backup-all')
     .description('Backup all workspaces...')
     .option('--region [region]', 'Force backup of selected workspace', '')
+    .option('--full', 'Full recheck', false)
     .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
-    .action(async (cmd: { workspace: string, region: string }) => {
+    .option('-s|--skip [skip]', 'A command separated list of workspaces to skip', '')
+    .action(async (cmd: { workspace: string, region: string, full: boolean, skip: string }) => {
       const { txes } = prepareTools()
+      const skipped = new Set(cmd.skip.split(',').map((it) => it.trim()))
       await withAccountDatabase(async (db) => {
         const workspaces = (await listWorkspacesPure(db))
-          .sort((a, b) => a.lastVisit - b.lastVisit)
-          .filter((it) => cmd.workspace === '' || cmd.workspace === it.workspace)
+          .sort((a, b) => {
+            const bsize = b.backupInfo?.backupSize ?? 0
+            const asize = a.backupInfo?.backupSize ?? 0
+            return bsize - asize
+          })
+          .filter((it) => isActiveMode(it.mode))
+          .filter((it) => (cmd.workspace === '' || cmd.workspace === it.workspace) && !skipped.has(it.workspace))
 
         let processed = 0
 
@@ -733,13 +819,18 @@ export function devTool (
                 },
                 cmd.region,
                 100,
-                sharedPipelineContextVars
+                sharedPipelineContextVars,
+                cmd.full
               )
             ) {
               processed++
             }
           } catch (err: any) {
-            toolCtx.error('Failed to backup workspace', { workspace: ws.workspace })
+            toolCtx.error('Failed to backup workspace', {
+              workspace: ws.workspace,
+              err: err.message,
+              errStack: err.stack
+            })
           }
         }
         console.log('Processed workspaces', processed)
@@ -921,6 +1012,7 @@ export function devTool (
     .description('dump workspace transactions and minio resources')
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option('--full', 'Full recheck', false)
     .option(
       '-ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to skip download if size >= limit',
@@ -940,6 +1032,7 @@ export function devTool (
           include: string
           blobLimit: string
           contentTypes: string
+          full: boolean
         }
       ) => {
         const storage = await createFileBackupStorage(dirName)
@@ -955,7 +1048,8 @@ export function devTool (
           skipBlobContentTypes: cmd.contentTypes
             .split(';')
             .map((it) => it.trim())
-            .filter((it) => it.length > 0)
+            .filter((it) => it.length > 0),
+          fullVerify: cmd.full
         })
       }
     )
@@ -982,6 +1076,71 @@ export function devTool (
     .action(async (dirName: string, cmd: any) => {
       const storage = await createFileBackupStorage(dirName)
       await checkBackupIntegrity(toolCtx, storage)
+    })
+
+  program
+    .command('backup-check-all')
+    .description('Check Backup integrity')
+    .option('-r|--region [region]', 'Timeout in days', '')
+    .option('-w|--workspace [workspace]', 'Force backup of selected workspace', '')
+    .option('-s|--skip [skip]', 'A command separated list of workspaces to skip', '')
+    .option('-d|--dry [dry]', 'Dry run', false)
+    .action(async (cmd: { timeout: string, workspace: string, region: string, dry: boolean, skip: string }) => {
+      const bucketName = process.env.BUCKET_NAME
+      if (bucketName === '' || bucketName == null) {
+        console.error('please provide butket name env')
+        process.exit(1)
+      }
+
+      const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
+
+      const token = generateToken(systemAccountEmail, getWorkspaceId(''))
+      const workspaces = (await listAccountWorkspaces(token, cmd.region))
+        .sort((a, b) => {
+          const bsize = b.backupInfo?.backupSize ?? 0
+          const asize = a.backupInfo?.backupSize ?? 0
+          return bsize - asize
+        })
+        .filter((it) => (cmd.workspace === '' || cmd.workspace === it.workspace) && !skipWorkspaces.has(it.workspace))
+
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      for (const ws of workspaces) {
+        const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+
+        toolCtx.warn('--- checking workspace backup', {
+          url: ws.workspaceUrl,
+          id: ws.workspace,
+          lastVisitDays,
+          backupSize: ws.backupInfo?.blobsSize ?? 0,
+          mode: ws.mode
+        })
+        if (cmd.dry) {
+          continue
+        }
+        try {
+          const st = Date.now()
+
+          try {
+            const storage = await createStorageBackupStorage(
+              toolCtx,
+              storageAdapter,
+              getWorkspaceId(bucketName),
+              ws.workspace
+            )
+            await checkBackupIntegrity(toolCtx, storage)
+          } catch (err: any) {
+            toolCtx.error('failed to size backup', { err })
+          }
+          const ed = Date.now()
+          toolCtx.warn('--- check complete', {
+            time: ed - st
+          })
+        } catch (err: any) {
+          toolCtx.error('REstore of f workspace failedarchive workspace', { workspace: ws.workspace })
+        }
+      }
+      await storageAdapter.close()
     })
 
   program
@@ -1780,8 +1939,9 @@ export function devTool (
       await withAccountDatabase(async (db) => {
         console.log('configure all workspaces')
         console.log(JSON.stringify(cmd))
-        const workspaces = await listWorkspacesRaw(db)
+        const workspaces = (await listWorkspacesRaw(db)).sort((a, b) => b.lastVisit - a.lastVisit)
         for (const ws of workspaces) {
+          if (!isActiveMode(ws.mode)) continue
           console.log('configure', ws.workspaceName ?? ws.workspace)
           const wsid = getWorkspaceId(ws.workspace)
           const token = generateToken(systemAccountEmail, wsid)

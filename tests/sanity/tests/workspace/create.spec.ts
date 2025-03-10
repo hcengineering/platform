@@ -143,9 +143,8 @@ test.describe('Workspace tests', () => {
         password: '1234'
       }
 
-      await page2.getByRole('link', { name: 'Sign Up' }).click()
       const signUpPage2 = new SignUpPage(page2)
-      await signUpPage2.signUp(newUser2, 'join')
+      await signUpPage2.signUp(newUser2)
 
       const leftSideMenuPage2 = new LeftSideMenuPage(page2)
       await leftSideMenuPage2.clickTracker()

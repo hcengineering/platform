@@ -9,8 +9,10 @@ import core, {
   BrandingMap,
   Client,
   ClientConnectEvent,
+  ClientWorkspaceInfo,
   DocumentUpdate,
   isActiveMode,
+  isDeletingMode,
   MeasureContext,
   RateLimiter,
   Ref,
@@ -28,7 +30,6 @@ import { Installation, type InstallationCreatedEvent, type InstallationUnsuspend
 import { Collection } from 'mongodb'
 import { App, Octokit } from 'octokit'
 
-import { ClientWorkspaceInfo } from '@hcengineering/account'
 import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger } from '@hcengineering/analytics-service'
 import contact, { Person, PersonAccount } from '@hcengineering/contact'
@@ -712,33 +713,36 @@ export class PlatformWorker {
     return Array.from(workspaces)
   }
 
-  async checkWorkspaceIsActive (token: string, workspace: string): Promise<ClientWorkspaceInfo | undefined> {
+  async checkWorkspaceIsActive (
+    token: string,
+    workspace: string
+  ): Promise<{ workspaceInfo: ClientWorkspaceInfo | undefined, needRecheck: boolean }> {
     let workspaceInfo: ClientWorkspaceInfo | undefined
     try {
       workspaceInfo = await getWorkspaceInfo(token)
     } catch (err: any) {
       this.ctx.error('Workspace not found:', { workspace })
-      return
+      return { workspaceInfo: undefined, needRecheck: false }
     }
     if (workspaceInfo?.workspace === undefined) {
       this.ctx.error('No workspace exists for workspaceId', { workspace })
-      return
+      return { workspaceInfo: undefined, needRecheck: false }
+    }
+    if (workspaceInfo?.disabled === true || isDeletingMode(workspaceInfo?.mode)) {
+      this.ctx.warn('Workspace is disabled', { workspace })
+      return { workspaceInfo: undefined, needRecheck: false }
     }
     if (!isActiveMode(workspaceInfo?.mode)) {
-      this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace })
-      return
-    }
-    if (workspaceInfo?.disabled === true) {
-      this.ctx.warn('Workspace is disabled', { workspace })
-      return
+      this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace, mode: workspaceInfo?.mode })
+      return { workspaceInfo: undefined, needRecheck: true }
     }
     const lastVisit = (Date.now() - workspaceInfo.lastVisit) / (3600 * 24 * 1000) // In days
 
     if (config.WorkspaceInactivityInterval > 0 && lastVisit > config.WorkspaceInactivityInterval) {
       this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
-      return
+      return { workspaceInfo: undefined, needRecheck: true }
     }
-    return workspaceInfo
+    return { workspaceInfo, needRecheck: true }
   }
 
   private async checkWorkspaces (): Promise<boolean> {
@@ -781,9 +785,11 @@ export class PlatformWorker {
           },
           { mode: 'github' }
         )
-        const workspaceInfo = await this.checkWorkspaceIsActive(token, workspace)
+        const { workspaceInfo, needRecheck } = await this.checkWorkspaceIsActive(token, workspace)
         if (workspaceInfo === undefined) {
-          errors++
+          if (needRecheck) {
+            errors++
+          }
           return
         }
         try {

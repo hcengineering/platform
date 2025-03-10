@@ -7,6 +7,8 @@ import os from 'os'
 export interface MemoryStatistics {
   memoryUsed: number
   memoryTotal: number
+
+  memoryArrayBuffers: number
   memoryRSS: number
   freeMem: number
   totalMem: number
@@ -56,6 +58,7 @@ export function getMemoryInfo (): MemoryStatistics {
     memoryUsed: Math.round((memU.heapUsed / 1024 / 1024) * 100) / 100,
     memoryRSS: Math.round((memU.rss / 1024 / 1024) * 100) / 100,
     memoryTotal: Math.round((memU.heapTotal / 1024 / 1024) * 100) / 100,
+    memoryArrayBuffers: Math.round((memU.arrayBuffers / 1024 / 1024) * 100) / 100,
     freeMem: Math.round((os.freemem() / 1024 / 1024) * 100) / 100,
     totalMem: Math.round((os.totalmem() / 1024 / 1024) * 100) / 100
   }
@@ -103,6 +106,7 @@ export function initStatisticsContext (
     let oldMetricsValue = ''
     const serviceId = encodeURIComponent(os.hostname() + '-' + serviceName)
 
+    let prev: Promise<void> | undefined
     const handleError = (err: any): void => {
       errorToSend++
       if (errorToSend % 2 === 0) {
@@ -110,6 +114,7 @@ export function initStatisticsContext (
           console.error(err)
         }
       }
+      prev = undefined
     }
 
     const intTimer = setInterval(() => {
@@ -128,6 +133,10 @@ export function initStatisticsContext (
             }
           }
         }
+        if (prev !== undefined) {
+          // In case of high load, skip
+          return
+        }
         if (statsUrl !== undefined) {
           const token = generateToken(systemAccountEmail, { name: '' }, { service: 'true' })
           const data: ServiceStatistics = {
@@ -140,7 +149,7 @@ export function initStatisticsContext (
 
           const statData = JSON.stringify(data)
 
-          void fetch(
+          prev = fetch(
             concatLink(statsUrl, '/api/v1/statistics') + `/?token=${encodeURIComponent(token)}&name=${serviceId}`,
             {
               method: 'PUT',
@@ -149,7 +158,11 @@ export function initStatisticsContext (
               },
               body: statData
             }
-          ).catch(handleError)
+          )
+            .catch(handleError)
+            .then(() => {
+              prev = undefined
+            })
         }
       } catch (err: any) {
         handleError(err)

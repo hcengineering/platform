@@ -31,7 +31,7 @@ import {
   type TextEditorActionKind
 } from '@hcengineering/text-editor'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { EditorKitOptions } from '@hcengineering/text-editor-resources'
+import type { EditorKitOptions } from '@hcengineering/text-editor-resources/src/kits/editor-kit'
 import textEditor from './plugin'
 
 export { textEditorOperation } from './migration'

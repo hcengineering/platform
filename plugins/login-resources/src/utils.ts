@@ -31,6 +31,7 @@ import presentation, { isAdminUser } from '@hcengineering/presentation'
 import {
   fetchMetadataLocalStorage,
   getCurrentLocation,
+  isSameSegments,
   locationStorageKeyId,
   locationToUrl,
   navigate,
@@ -409,6 +410,20 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
     }
     return result.result
   } catch (err: any) {
+    if (err instanceof PlatformError && err.status.code === platform.status.Unauthorized) {
+      setMetadata(presentation.metadata.Token, null)
+      setMetadata(presentation.metadata.Workspace, null)
+      setMetadata(presentation.metadata.WorkspaceId, null)
+      setMetadataLocalStorage(login.metadata.LastToken, null)
+      setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
+      setMetadataLocalStorage(login.metadata.LoginEmail, null)
+
+      const loc = getCurrentLocation()
+      loc.path[1] = 'login'
+      loc.path.length = 2
+      navigate(loc)
+      return
+    }
     Analytics.handleError(err)
   }
 }
@@ -549,6 +564,38 @@ export async function fetchWorkspace (workspace: string): Promise<[Status, Works
     return [unknownError(err), undefined]
   }
 }
+
+export async function unArchive (workspaceId: string, token: string): Promise<boolean> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  if (token === undefined) {
+    return false
+  }
+
+  const request = {
+    method: 'performWorkspaceOperation',
+    params: [workspaceId, 'unarchive']
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    return (await response.json()).result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return false
+  }
+}
 export async function createMissingEmployee (workspace: string): Promise<[Status]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
@@ -626,11 +673,18 @@ export function navigateToWorkspace (
       // Json parse error could be ignored
     }
   }
-  const last = localStorage.getItem(`${locationStorageKeyId}_${workspace}`)
-  if (last !== null) {
-    navigate(JSON.parse(last), replace)
+  const newLoc: Location = { path: [workbenchId, workspace] }
+  let last: Location | undefined
+  try {
+    last = JSON.parse(localStorage.getItem(`${locationStorageKeyId}_${workspace}`) ?? '')
+  } catch (err: any) {
+    // Ignore
+  }
+  if (last != null && isSameSegments(last, newLoc, 2)) {
+    // If last location in our workspace path, use it.
+    navigate(last, replace)
   } else {
-    navigate({ path: [workbenchId, workspace] }, replace)
+    navigate(newLoc, replace)
   }
 }
 

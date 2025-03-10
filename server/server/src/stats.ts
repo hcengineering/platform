@@ -43,6 +43,8 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager, ad
   const memU = process.memoryUsage()
   data.statistics.memoryUsed = Math.round(((memU.heapUsed + memU.rss) / 1024 / 1024) * 100) / 100
   data.statistics.memoryTotal = Math.round((memU.heapTotal / 1024 / 1024) * 100) / 100
+  data.statistics.memoryRSS = Math.round((memU.rss / 1024 / 1024) * 100) / 100
+  data.statistics.memoryArrayBuffers = Math.round((memU.arrayBuffers / 1024 / 1024) * 100) / 100
   data.statistics.cpuUsage = Math.round(os.loadavg()[0] * 100) / 100
   data.statistics.freeMem = Math.round((os.freemem() / 1024 / 1024) * 100) / 100
   data.statistics.totalMem = Math.round((os.totalmem() / 1024 / 1024) * 100) / 100

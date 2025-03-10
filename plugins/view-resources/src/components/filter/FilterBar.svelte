@@ -19,13 +19,13 @@
   import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
   import { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { filterStore, removeFilter, updateFilter, selectedFilterStore } from '../../filter'
+  import { filterStore, removeFilter, selectedFilterStore, updateFilter } from '../../filter'
   import view from '../../plugin'
+  import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
+  import { getViewOptions, viewOptionStore } from '../../viewOptions'
   import FilterSave from './FilterSave.svelte'
   import FilterSection from './FilterSection.svelte'
   import FilterTypePopup from './FilterTypePopup.svelte'
-  import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
-  import { getViewOptions, viewOptionStore } from '../../viewOptions'
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined
@@ -36,8 +36,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
-
-  let maxIndex = 1
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
@@ -52,7 +50,7 @@
         _class,
         target,
         space,
-        index: ++maxIndex,
+        index: $filterStore.map((it) => it.index).reduce((a, b) => Math.max(a, b), 0) + 1,
         onChange
       },
       target
@@ -145,11 +143,9 @@
 
   $: makeQuery(query, $filterStore)
 
-  let clazz: Class<Doc<Space>>
   let visible: boolean = false
   $: if (_class) {
-    clazz = hierarchy.getClass(_class)
-    visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+    visible = hierarchy.classHierarchyMixin(_class, view.mixin.ClassFilters) !== undefined
   }
 
   const me = getCurrentAccount()._id

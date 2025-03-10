@@ -20,7 +20,7 @@ import documents, {
 } from '@hcengineering/controlled-documents'
 import { type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
-import { type AnyComponent, type Location } from '@hcengineering/ui'
+import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 import type { KeyFilter, SortFunc, ViewActionAvailabilityFunction } from '@hcengineering/view'
 
 export default mergeIds(documentsId, documents, {
@@ -212,7 +212,9 @@ export default mergeIds(documentsId, documents, {
 
     CreateDocumentFailed: '' as IntlString,
     CreateDocumentTemplateFailed: '' as IntlString,
-    TryAgain: '' as IntlString
+    TryAgain: '' as IntlString,
+
+    LatestVersionHint: '' as IntlString
   },
   controlledDocStates: {
     Empty: '' as IntlString,
@@ -240,12 +242,14 @@ export default mergeIds(documentsId, documents, {
     GetAllDocumentStates: '' as Resource<() => Promise<DocumentState[]>>,
     GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,
     GetDocumentMetaLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    GetControlledDocumentLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CanDeleteDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanArchiveDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanMakeDocumentObsolete: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanOpenDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanPrintDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanTransferDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    ControlledDocumentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
+    ControlledDocumentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    DocumentMetaTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

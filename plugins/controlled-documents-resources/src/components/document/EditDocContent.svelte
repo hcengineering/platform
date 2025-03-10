@@ -20,7 +20,7 @@
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import documents from '@hcengineering/controlled-documents'
+  import documents, { DocumentState } from '@hcengineering/controlled-documents'
   import { Editor, Heading } from '@hcengineering/text-editor'
   import {
     CollaboratorEditor,
@@ -34,8 +34,9 @@
     highlightUpdateCommand,
     getNodeElement
   } from '@hcengineering/text-editor-resources'
-  import { navigate, EditBox, Scroller } from '@hcengineering/ui'
+  import { navigate, EditBox, Scroller, Label } from '@hcengineering/ui'
   import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
+  import plugin from '../../plugin'
 
   import {
     $areDocumentCommentPopupsOpened as areDocumentCommentPopupsOpened,
@@ -48,10 +49,12 @@
     $documentComments as documentComments,
     documentCommentsDisplayRequested,
     documentCommentsHighlightUpdated,
-    documentCommentsLocationNavigateRequested
+    documentCommentsLocationNavigateRequested,
+    $documentReleasedVersions as documentReleasedVersions
   } from '../../stores/editors/document'
   import DocumentTitle from './DocumentTitle.svelte'
   import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
+  import { syncDocumentMetaTitle } from '../../utils'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -110,14 +113,17 @@
     unsubscribeNavigateToLocation()
   })
 
-  const handleUpdateTitle = () => {
+  const handleUpdateTitle = async () => {
     if (!$controlledDocument || !title) {
       return
     }
     const titleTrimmed = title.trim()
 
     if (titleTrimmed.length > 0 && titleTrimmed !== $controlledDocument.title) {
-      client.update($controlledDocument, { title: titleTrimmed })
+      await client.update($controlledDocument, { title: titleTrimmed })
+      if ($documentReleasedVersions.length === 0 && $controlledDocument.state === DocumentState.Draft) {
+        await syncDocumentMetaTitle(client, $controlledDocument.attachedTo, $controlledDocument.code, titleTrimmed)
+      }
     }
   }
 
@@ -248,7 +254,7 @@
       <TableOfContents items={headings} enumerated={true} on:select={(ev) => handleShowHeading(ev.detail)} />
     </div>
     <Scroller>
-      <div class="content">
+      <div class="content relative">
         <DocumentTitle>
           {#if $isEditable}
             <EditBox
@@ -262,6 +268,13 @@
             {$controlledDocument.title}
           {/if}
         </DocumentTitle>
+        {#if $controlledDocument.state === DocumentState.Obsolete}
+          <div class="watermark-container">
+            {#each { length: 24 } as _, i}
+              <div class="watermark"><Label label={plugin.string.Obsolete} /></div>
+            {/each}
+          </div>
+        {/if}
         <CollaboratorEditor
           bind:this={textEditor}
           object={$controlledDocument}
@@ -351,6 +364,34 @@
   }
 
   .bottomSpacing {
-    padding-bottom: 30vh;
+    padding-bottom: 55vh;
+  }
+
+  .watermark-container {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 35rem;
+    padding-top: 20rem;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .watermark {
+    z-index: 100;
+    margin: auto;
+    height: 4rem;
+    width: 100%;
+    color: var(--theme-divider-color);
+    font-size: 8rem;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>

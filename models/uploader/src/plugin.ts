@@ -14,7 +14,7 @@
 //
 
 import { mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { uploaderId } from '@hcengineering/uploader'
 import uploader from '@hcengineering/uploader-resources/src/plugin'
 

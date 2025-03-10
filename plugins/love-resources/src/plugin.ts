@@ -15,8 +15,8 @@
 
 import love, { loveId } from '@hcengineering/love'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
-import { type DocCreateFunction } from '@hcengineering/presentation'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type DocCreateFunction } from '@hcengineering/presentation/src/types'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type ViewActionAvailabilityFunction } from '@hcengineering/view'
 
 export default mergeIds(loveId, love, {

@@ -26,6 +26,7 @@ import contact, {
 import core, {
   AccountRole,
   Client,
+  ClientWorkspaceInfo,
   concatLink,
   Data,
   generateId,
@@ -68,7 +69,6 @@ import type {
   Account,
   AccountDB,
   AccountInfo,
-  ClientWorkspaceInfo,
   Invite,
   LoginInfo,
   ObjectId,
@@ -1237,6 +1237,7 @@ export async function updateWorkspaceInfo (
     case 'restore-done':
       update.mode = 'active'
       update.progress = 100
+      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
       break
 
     case 'archiving-backup-started':
@@ -1304,7 +1305,9 @@ export async function performWorkspaceOperation (
   }
 
   if (account.admin !== true) {
-    return false
+    if (event !== 'unarchive' || workspaceId !== decodedToken.workspace.name) {
+      return false
+    }
   }
   const workspaceInfos = await getWorkspacesById(db, workspaceId)
   if (workspaceInfos.length === 0) {
@@ -1819,6 +1822,34 @@ export async function getWorkspaceInfo (
   clientWs.upgrade = upgrade
 
   return clientWs
+}
+
+/**
+ * @public
+ */
+export async function getWorkspacesInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  ids: string[]
+): Promise<ClientWorkspaceInfo[]> {
+  const { email } = decodeToken(ctx, token)
+
+  if (email !== systemAccountEmail) {
+    ctx.error('getWorkspaceInfos with wrong email', { email, token })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  const query: Query<Workspace> = {
+    workspace: { $in: ids }
+  }
+  const workspaces = await ctx.with(
+    'get-workspace',
+    {},
+    async () => await db.workspace.find(query, { lastVisit: 'descending' })
+  )
+
+  return workspaces.map(mapToClientWorkspace)
 }
 
 async function getUpgradeStatistics (db: AccountDB, region: string): Promise<UpgradeStatistic | undefined> {
@@ -2457,6 +2488,16 @@ export async function leaveWorkspace (
   ctx.info('Account removed from workspace', { email, workspace })
 }
 
+export function sanitizeEmail (email: string): string {
+  if (email == null || typeof email !== 'string') return ''
+  const sanitizedEmail = email
+    .trim()
+    .replace(/[<>/\\@{}()[\]'"`]/g, '') // Remove special chars and quotes
+    .replace(/^(http|ssh|ftp|https|mailto|javascript|data|file):?\/?\/?\s*/i, '') // Remove potentially dangerous protocols
+    .slice(0, 40)
+  return sanitizedEmail
+}
+
 /**
  * @public
  */
@@ -2471,7 +2512,7 @@ export async function sendInvite (
 ): Promise<void> {
   const tokenData = decodeToken(ctx, token)
   const currentAccount = await getAccount(db, tokenData.email)
-  if (currentAccount === null) {
+  if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: tokenData.email }))
   }
 
@@ -2481,10 +2522,7 @@ export async function sendInvite (
       new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: tokenData.workspace.name })
     )
   }
-
-  // TODO: Why we not send invite if user has account???
-  // const account = await getAccount(db, email)
-  // if (account !== null) return
+  await checkSendRateLimit(currentAccount, tokenData.workspace.name, db)
 
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
@@ -2501,7 +2539,8 @@ export async function sendInvite (
   const inviteId = await getInviteLink(ctx, db, branding, token, exp, email, 1)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  const ws = workspace.workspaceName ?? workspace.workspace
+  const ws = sanitizeEmail(workspace.workspaceName ?? workspace.workspaceUrl ?? workspace.workspace)
+
   const lang = branding?.language
   const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours }, lang)
   const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours }, lang)
@@ -2521,6 +2560,20 @@ export async function sendInvite (
     })
   })
   ctx.info('Invite sent', { email, workspace, link })
+}
+
+async function checkSendRateLimit (currentAccount: Account, workspace: string, db: AccountDB): Promise<void> {
+  let sendOps = (currentAccount.sendOperations ?? 0) + 1
+
+  const timePassed = Date.now() - (currentAccount.lastWorkspace ?? 0)
+
+  if (timePassed < 60 * 1000 && sendOps > 5) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace }))
+  }
+  if (timePassed > (sendOps - 1) * 60 * 1000) {
+    sendOps = 1
+  }
+  await db.account.updateOne({ _id: currentAccount._id }, { lastWorkspace: Date.now(), sendOperations: sendOps })
 }
 
 /**
@@ -2559,6 +2612,8 @@ export async function resendInvite (
     await db.invite.updateOne({ _id: db.getObjectId(inviteId) }, { exp: newExp })
   }
 
+  await checkSendRateLimit(currentAccount, workspace.name, db)
+
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
     throw new Error('Please provide email service url')
@@ -2569,7 +2624,7 @@ export async function resendInvite (
   }
 
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
-  const ws = wsPromise.workspaceName ?? wsPromise.workspace
+  const ws = sanitizeEmail(wsPromise.workspaceName ?? wsPromise.workspaceUrl ?? wsPromise.workspace)
   const lang = branding?.language
   const text = await translate(accountPlugin.string.ResendInviteText, { link, ws, expHours }, lang)
   const html = await translate(accountPlugin.string.ResendInviteHTML, { link, ws, expHours }, lang)
@@ -2936,6 +2991,7 @@ export function getMethods (hasSignUp: boolean = true): Record<string, AccountMe
     getAllWorkspaces: wrap(getAllWorkspaces),
     getInviteLink: wrap(getInviteLink),
     getAccountInfo: wrap(getAccountInfo),
+    getWorkspacesInfo: wrap(getWorkspacesInfo),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
     ...(hasSignUp ? { createAccount: wrap(createAccount) } : {}),
     createWorkspace: wrap(createUserWorkspace),

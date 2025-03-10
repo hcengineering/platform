@@ -5,19 +5,20 @@
     "Cards": "Karty",
     "Content": "Obsah",
     "CreateCard": "Vytvořit kartu",
-    "CreateMasterTag": "Vytvořit hlavní štítek",
+    "CreateMasterTag": "Vytvořit typ",
     "CreateTag": "Vytvořit štítek",
-    "MasterTag": "Hlavní štítek",
-    "MasterTags": "Hlavní štítky",
-    "Parent": "Rodič",
+    "MasterTag": "Typ",
+    "MasterTags": "Typy",
+    "Parent": "Nadřazený",
     "Tags": "Štítky",
     "Tag": "Štítek",
     "CardLibrary": "Knihovna karet",
     "MinimizeAll": "Minimalizovat vše",
     "ExpandAll": "Rozbalit vše",
     "DeleteTag": "Smazat štítek",
+    "TagRelations": "Vztahy štítků",
     "DeleteTagConfirm": "Opravdu chcete smazat tento štítek? Všechny související vlastnosti budou smazány",
-    "DeleteMasterTag": "Smazat hlavní štítek",
-    "DeleteMasterTagConfirm": "Opravdu chcete smazat tento hlavní štítek? Všechny objekty související s tímto hlavním štítkem budou smazány"
+    "DeleteMasterTag": "Smazat typ",
+    "DeleteMasterTagConfirm": "Opravdu chcete smazat tento typ? Všechny objekty související s tímto typem budou smazány"
   }
 }

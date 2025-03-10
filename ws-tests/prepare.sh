@@ -27,3 +27,9 @@ fi
 
 ./tool.sh confirm-email user1
 ./tool.sh confirm-email user2
+
+
+./tool.sh create-workspace api-tests -w api-tests
+./tool-europe.sh create-workspace api-tests-cr -w api-tests --region 'europe'
+./tool.sh assign-workspace user1 api-tests
+./tool.sh assign-workspace user1 api-tests-cr

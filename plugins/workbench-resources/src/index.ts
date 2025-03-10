@@ -40,6 +40,7 @@ export { default as TreeSeparator } from './components/navigator/TreeSeparator.s
 export { default as WorkbenchTabs } from './components/WorkbenchTabs.svelte'
 export { default as AppItem } from './components/AppItem.svelte'
 export { default as ComponentNavigator } from './components/ComponentNavigator.svelte'
+export { default as SavedView } from './components/SavedView.svelte'
 
 export { SpecialView }
 

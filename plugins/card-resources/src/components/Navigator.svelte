@@ -14,38 +14,27 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { CardEvents, MasterTag } from '@hcengineering/card'
-  import core, { Class, Doc, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
+  import { Card, CardEvents, cardId, MasterTag } from '@hcengineering/card'
+  import core, { Class, Data, Doc, fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { makeRank } from '@hcengineering/rank'
   import {
     Button,
-    ButtonWithDropdown,
-    IconAdd,
-    IconDropdown,
-    NavItem,
-    Scroller,
-    SelectPopupValueType,
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
+    IconAdd,
     navigate,
-    showPopup
+    Scroller
   } from '@hcengineering/ui'
-  import { NavLink, showMenu } from '@hcengineering/view-resources'
-  import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { NavFooter, NavHeader, SavedView } from '@hcengineering/workbench-resources'
   import card from '../plugin'
-  import CreateTag from './CreateTag.svelte'
   import TagHierarchy from './TagHierarchy.svelte'
 
   export let _class: Ref<Class<Doc>>
 
   const client = getClient()
-
-  const clazz = client.getHierarchy().getClass(card.class.Card)
-
-  const dispatch = createEventDispatcher()
+  const hierarchy = client.getHierarchy()
 
   let classes: MasterTag[] = []
   let allClasses: MasterTag[] = []
@@ -64,11 +53,15 @@
     const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const title = await translate(card.string.Card, {})
 
-    const _id = await client.createDoc(card.class.Card, core.space.Workspace, {
+    const data: Data<Card> = {
       title,
       rank: makeRank(lastOne?.rank, undefined),
       content: '' as MarkupBlobRef
-    })
+    }
+
+    const filledData = fillDefaults(hierarchy, data, _class)
+
+    const _id = await client.createDoc(_class, core.space.Workspace, filledData)
 
     Analytics.handleEvent(CardEvents.CardCreated)
 
@@ -78,25 +71,7 @@
     navigate(loc)
   }
 
-  function createMasteTag (): void {
-    showPopup(CreateTag, {
-      parent: undefined,
-      _class: card.class.MasterTag
-    })
-  }
-
-  async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
-    if (res === card.string.CreateCard) {
-      await createCard()
-    } else if (res === card.string.CreateMasterTag) {
-      createMasteTag()
-    }
-  }
-
-  const dropdownItems = [
-    { id: card.string.CreateCard, label: card.string.CreateCard },
-    { id: card.string.CreateMasterTag, label: card.string.CreateMasterTag }
-  ]
+  let menuSelection: boolean = false
 </script>
 
 <div
@@ -107,55 +82,27 @@
     <NavHeader label={card.string.Cards} />
 
     <div class="antiNav-subheader">
-      {#if allClasses.length > 0}
-        <ButtonWithDropdown
-          icon={IconAdd}
-          justify={'left'}
-          kind={'primary'}
-          label={card.string.CreateCard}
-          on:click={createCard}
-          mainButtonId={'new-card'}
-          dropdownIcon={IconDropdown}
-          {dropdownItems}
-          on:dropdown-selected={(ev) => {
-            void dropdownItemSelected(ev.detail)
-          }}
-        />
-      {:else}
-        <Button
-          icon={IconAdd}
-          label={card.string.CreateMasterTag}
-          justify={'left'}
-          width={'100%'}
-          kind={'primary'}
-          gap={'large'}
-          on:click={createMasteTag}
-        />
-      {/if}
+      <Button
+        icon={IconAdd}
+        label={card.string.CreateCard}
+        disabled={allClasses.length === 0 || _class === undefined}
+        justify={'left'}
+        width={'100%'}
+        kind={'primary'}
+        gap={'large'}
+        on:click={createCard}
+      />
     </div>
 
-    <NavLink space={card.class.Card}>
-      <NavItem
-        _id={card.class.Card}
-        label={card.string.CardLibrary}
-        icon={card.icon.Card}
-        isFold
-        empty
-        selected={card.class.Card === _class}
-        on:click={() => {
-          dispatch('select', card.class.Card)
-        }}
-        on:contextmenu={(evt) => {
-          showMenu(evt, { object: clazz })
-        }}
-      />
-    </NavLink>
+    <SavedView alias={cardId} on:select={(res) => (menuSelection = res.detail)} />
 
     <div class="antiNav-divider line" />
 
     <Scroller shrink>
-      <TagHierarchy bind:_class {classes} {allClasses} on:select />
+      <TagHierarchy bind:_class deselect={menuSelection} {classes} {allClasses} />
     </Scroller>
+
+    <div class="mt-2" />
 
     <NavFooter split />
   </div>

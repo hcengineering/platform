@@ -76,8 +76,8 @@ import {
   type TaskTypeDescriptor,
   type TaskTypeKind
 } from '@hcengineering/task'
-import type { AnyComponent } from '@hcengineering/ui'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 
 import task from './plugin'
 
@@ -530,11 +530,6 @@ export function createModel (builder: Builder): void {
         id: 'automations',
         label: setting.string.Automations,
         component: task.component.ProjectTypeAutomationsSectionEditor
-      },
-      {
-        id: 'collections',
-        label: setting.string.Collections,
-        component: task.component.ProjectTypeCollectionsSectionEditor
       }
     ],
     subEditors: {

@@ -19,7 +19,7 @@ import type { Client, Doc, Ref } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
-import { type AnyComponent } from '@hcengineering/ui'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { type NotificationType, type NotificationGroup } from '@hcengineering/notification'
 import { type TextActionVisibleFunction, type TextActionFunction } from '@hcengineering/text-editor'
@@ -52,6 +52,12 @@ export default mergeIds(documentsId, documents, {
   function: {
     DocumentIdentifierProvider: '' as Resource<
       <T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>
+    >,
+    ControlledDocumentReferenceObjectProvider: '' as Resource<
+      <T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<Doc>
+    >,
+    ProjectDocumentReferenceObjectProvider: '' as Resource<
+      <T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<Doc>
     >,
     Comment: '' as Resource<TextActionFunction>,
     IsCommentVisible: '' as Resource<TextActionVisibleFunction>

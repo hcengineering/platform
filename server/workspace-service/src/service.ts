@@ -15,6 +15,7 @@
 import {
   type BaseWorkspaceInfo,
   type BrandingMap,
+  DOMAIN_BLOB,
   type Data,
   type MeasureContext,
   type Tx,
@@ -372,15 +373,19 @@ export class WorkspaceWorker {
   /**
    * If onlyDrop is true, will drop workspace from database, overwize remove only indexes and do full reindex.
    */
-  async doCleanup (ctx: MeasureContext, workspace: BaseWorkspaceInfo, onlyDrop: boolean): Promise<void> {
+  async doCleanup (ctx: MeasureContext, workspace: BaseWorkspaceInfo, cleanIndexes: boolean): Promise<void> {
     const { dbUrl } = prepareTools([])
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
     await adapter.deleteWorkspace(ctx, sharedPipelineContextVars, { name: workspace.workspace, uuid: workspace.uuid })
 
-    await this.doReindexFulltext(ctx, workspace, onlyDrop)
+    await this.doReindexFulltext(ctx, workspace, cleanIndexes)
   }
 
-  private async doReindexFulltext (ctx: MeasureContext, workspace: BaseWorkspaceInfo, onlyDrop: boolean): Promise<void> {
+  private async doReindexFulltext (
+    ctx: MeasureContext,
+    workspace: BaseWorkspaceInfo,
+    clearIndexes: boolean
+  ): Promise<void> {
     if (this.fulltextUrl !== undefined) {
       const token = generateToken(systemAccountEmail, { name: workspace.workspace }, { service: 'workspace' })
 
@@ -390,7 +395,7 @@ export class WorkspaceWorker {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ token, onlyDrop })
+          body: JSON.stringify({ token, onlyDrop: clearIndexes })
         })
         if (!res.ok) {
           throw new Error(`HTTP Error ${res.status} ${res.statusText}`)
@@ -491,11 +496,14 @@ export class WorkspaceWorker {
         // We should remove DB, not storages.
         await sendEvent('migrate-clean-started', 0)
         await this.sendTransactorMaitenance(token, { name: workspace.workspace })
-        try {
-          await this.doCleanup(ctx, workspace, false)
-        } catch (err: any) {
-          Analytics.handleError(err)
-          return
+
+        if (process.env.MIGRATION_CLEANUP === 'true') {
+          try {
+            await this.doCleanup(ctx, workspace, false)
+          } catch (err: any) {
+            Analytics.handleError(err)
+            return
+          }
         }
         await sendEvent('migrate-clean-done', 0)
         break
@@ -518,7 +526,7 @@ export class WorkspaceWorker {
     ctx: MeasureContext,
     workspace: BaseWorkspaceInfo,
     opt: WorkspaceOptions,
-    archive: boolean
+    doFullCheck: boolean
   ): Promise<boolean> {
     if (opt.backup === undefined) {
       return false
@@ -580,6 +588,7 @@ export class WorkspaceWorker {
         50000,
         ['blob'],
         sharedPipelineContextVars,
+        doFullCheck, // Do full check based on config, do not do for migration, it is to slow, will perform before migration.
         (_p: number) => {
           if (progress !== Math.round(_p)) {
             progress = Math.round(_p)
@@ -641,7 +650,7 @@ export class WorkspaceWorker {
         opt.backup.bucketName,
         pipelineFactory,
         workspaceStorageAdapter,
-        ['blob'],
+        [DOMAIN_BLOB],
         true,
         (_p: number) => {
           if (progress !== Math.round(_p)) {

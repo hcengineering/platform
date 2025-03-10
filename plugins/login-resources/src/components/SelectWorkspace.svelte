@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { isArchivingMode } from '@hcengineering/core'
+  import { isActiveMode, isArchivingMode, isRestoringMode, isUpgradingMode } from '@hcengineering/core'
   import { LoginInfo, Workspace } from '@hcengineering/login'
   import { OK, Severity, Status } from '@hcengineering/platform'
-  import presentation, { NavLink, isAdminUser, reduceCalls } from '@hcengineering/presentation'
+  import presentation, { NavLink, reduceCalls } from '@hcengineering/presentation'
   import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
   import {
     Button,
@@ -32,7 +32,7 @@
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
-  import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
+  import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace, unArchive } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
   export let navigateUrl: string | undefined = undefined
@@ -69,13 +69,25 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const [loginStatus, result] = await selectWorkspace(workspace)
-    if (isArchivingMode(result?.mode)) {
+    if (isArchivingMode(result?.mode) && result?.workspaceId !== undefined) {
+      const workspaceId = result?.workspaceId
       showPopup(MessageBox, {
         label: login.string.SelectWorkspace,
         message: login.string.WorkspaceArchivedDesc,
-        canSubmit: false,
+        canSubmit: true,
         params: {},
-        action: async () => {}
+        okLabel: login.string.RestoreArchivedWorkspace,
+        action: async () => {
+          if (await unArchive(workspaceId, result.token)) {
+            workspaces = await getWorkspaces()
+            let info = workspaces.filter((it) => it.workspaceId === workspaceId).shift()
+            while (isRestoringMode(info?.mode) || isUpgradingMode(info?.mode)) {
+              await new Promise<void>((resolve) => setTimeout(resolve, 5000))
+              workspaces = await getWorkspaces()
+              info = workspaces.filter((it) => it.workspaceId === workspaceId).shift()
+            }
+          }
+        }
       })
       status = loginStatus
       return
@@ -105,8 +117,6 @@
       throw err
     }
   }
-  $: isAdmin = isAdminUser()
-
   let search: string = ''
 </script>
 
@@ -123,7 +133,7 @@
   <div class="status">
     <StatusControl {status} />
   </div>
-  {#if isAdmin}
+  {#if workspaces.length > 10}
     <div class="ml-2 mr-2 mb-2 flex-grow">
       <SearchEdit bind:value={search} width={'100%'} />
     </div>
@@ -152,29 +162,12 @@
                 {#if isArchivingMode(workspace.mode)}
                   - <Label label={presentation.string.Archived} />
                 {/if}
-                {#if workspace.mode !== 'active' && workspace.mode !== 'archived'}
+                {#if !isActiveMode(workspace.mode) && !isArchivingMode(workspace.mode)}
                   ({workspace.progress}%)
                 {/if}
               </span>
               <span class="text-xs flex-row-center flex-center">
-                {#if isAdmin}
-                  {workspace.workspace}
-                  {#if workspace.region !== undefined}
-                    at ({workspace.region})
-                  {/if}
-                {/if}
                 <div class="text-sm">
-                  {#if isAdmin}
-                    {#if workspace.backupInfo != null}
-                      {@const sz = workspace.backupInfo.dataSize + workspace.backupInfo.blobsSize}
-                      {@const szGb = Math.round((sz * 100) / 1024) / 100}
-                      {#if szGb > 0}
-                        - {Math.round((sz * 100) / 1024) / 100}Gb -
-                      {:else}
-                        - {Math.round(sz)}Mb -
-                      {/if}
-                    {/if}
-                  {/if}
                   ({lastUsageDays} days)
                 </div>
               </span>

@@ -19,7 +19,7 @@ import type { Client, Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
-import { type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
 import { type LocationData } from '@hcengineering/workbench'
 import { type Action, type ViewAction } from '@hcengineering/view'
 
@@ -34,7 +34,9 @@ export default mergeIds(cardId, card, {
     DeleteMasterTag: '' as Ref<Action>
   },
   ids: {
-    MasterTags: '' as Ref<Doc>
+    MasterTags: '' as Ref<Doc>,
+    ManageMasterTags: '' as Ref<Doc>,
+    TagRelations: '' as Ref<Doc>
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,

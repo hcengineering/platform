@@ -137,7 +137,7 @@
 
 <div class="question-answer-container flex-col flex-gap-3">
   <div class="flex-row-center flex-gap-1 flex-no-shrink">
-    <span class="text-lg caption-color font-medium">{question.name}</span>
+    <strong class="text-base caption-color font-medium pre-wrap">{question.name}</strong>
     {#if question.isMandatory && !readonly}
       <div
         class="flex-no-shrink"
@@ -151,9 +151,9 @@
   {#if readonly}
     {#each getReadonlyAnswers() as answer}
       {#if answer}
-        <div class="pl-6">{answer}</div>
+        <div class="pre-wrap">{answer}</div>
       {:else}
-        <div class="pl-6 content-halfcontent-color">
+        <div class="content-halfcontent-color">
           <Label label={survey.string.NoAnswer} />
         </div>
       {/if}
@@ -180,7 +180,6 @@
         {#if selectedOption === customOption}
           <div class="pl-6">
             <EditBox
-              kind={'ghost-large'}
               bind:value={answer}
               placeholder={survey.string.AnswerPlaceholder}
               focusable
@@ -206,7 +205,6 @@
         {#if selectedOptions[customOption]}
           <div class="pl-6">
             <EditBox
-              kind={'ghost-large'}
               bind:value={answer}
               placeholder={survey.string.AnswerPlaceholder}
               focusable
@@ -218,13 +216,14 @@
       {/if}
     </div>
   {:else}
-    <EditBox
-      kind={'ghost-large'}
-      bind:value={answer}
-      placeholder={survey.string.AnswerPlaceholder}
-      focusable
-      on:change={answerChange}
-    />
+    <div>
+      <EditBox
+        format={'text-multiline'}
+        bind:value={answer}
+        placeholder={survey.string.AnswerPlaceholder}
+        on:change={answerChange}
+      />
+    </div>
   {/if}
 </div>
 
@@ -232,5 +231,8 @@
   :global(.question-answer-container + .question-answer-container) {
     padding-top: var(--spacing-2);
     border-top: 1px solid var(--theme-divider-color);
+  }
+  .pre-wrap {
+    white-space: pre-wrap;
   }
 </style>

@@ -14,8 +14,11 @@
 import activity from '@hcengineering/activity'
 import { CardEvents, cardId, type Card, type MasterTag, type Tag } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
+import contact from '@hcengineering/contact'
 import core, {
   AccountRole,
+  DOMAIN_MODEL,
+  IndexKind,
   type CollectionSize,
   type Domain,
   type MarkupBlobRef,
@@ -24,12 +27,12 @@ import core, {
 } from '@hcengineering/core'
 import {
   Collection,
+  Index,
   Model,
   Prop,
   TypeCollaborativeDoc,
   TypeRef,
   TypeString,
-  UX,
   type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -38,8 +41,9 @@ import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import { getEmbeddedLabel } from '@hcengineering/platform'
+import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
 import card from './plugin'
 
 export { cardId } from '@hcengineering/card'
@@ -53,12 +57,12 @@ export class TMasterTag extends TClass implements MasterTag {}
 export class TTag extends TMixin implements Tag {}
 
 @Model(card.class.Card, core.class.Doc, DOMAIN_CARD)
-@UX(card.string.Card)
 export class TCard extends TDoc implements Card {
   @Prop(TypeRef(card.class.MasterTag), card.string.MasterTag)
   declare _class: Ref<MasterTag>
 
   @Prop(TypeString(), core.string.Name)
+  @Index(IndexKind.FullText)
     title!: string
 
   @Prop(TypeCollaborativeDoc(), card.string.Content)
@@ -75,8 +79,15 @@ export class TCard extends TDoc implements Card {
     todos?: CollectionSize<ToDo>
 }
 
+@Model(card.class.MasterTagEditorSection, core.class.Doc, DOMAIN_MODEL)
+export class MasterTagEditorSection extends TDoc implements MasterTagEditorSection {
+  id!: string
+  label!: IntlString
+  component!: AnyComponent
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TMasterTag, TTag, TCard)
+  builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
 
   builder.createDoc(
     workbench.class.Application,
@@ -111,20 +122,6 @@ export function createModel (builder: Builder): void {
       ]
     },
     card.viewlet.CardTable
-  )
-
-  builder.createDoc(
-    setting.class.WorkspaceSettingCategory,
-    core.space.Model,
-    {
-      name: 'masterTags',
-      label: card.string.Tags,
-      icon: card.icon.Tags,
-      role: AccountRole.User,
-      component: card.component.MasterTags,
-      order: 4400
-    },
-    card.ids.MasterTags
   )
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
@@ -268,9 +265,53 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'tagrelation',
+      label: card.string.TagRelations,
+      icon: setting.icon.Relations,
+      props: { _classes: [card.class.Card, contact.class.Contact], exclude: [] },
+      component: setting.component.RelationSetting,
+      group: 'settings-editor',
+      role: AccountRole.Maintainer,
+      order: 4501
+    },
+    card.ids.TagRelations
+  )
+
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: 'masterTags',
+      label: card.string.MasterTags,
+      icon: card.icon.Card,
+      component: card.component.ManageMasterTagsContent,
+      extraComponents: {
+        navigation: card.component.ManageMasterTags,
+        tools: card.component.ManageMasterTagsTools
+      },
+      group: 'settings-editor',
+      role: AccountRole.User,
+      order: 5000,
+      expandable: true
+    },
+    card.ids.ManageMasterTags
+  )
+
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ClassFilters, {
     filters: [],
     ignoreKeys: ['parent']
+  })
+
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: card.class.Card,
+    fullTextSummary: true,
+    forceIndex: true,
+    childProcessingAllowed: true,
+    propagate: []
   })
 
   builder.createDoc(
@@ -283,10 +324,42 @@ export function createModel (builder: Builder): void {
       query: card.completion.CardQuery,
       context: ['search', 'mention', 'spotlight'],
       classToSearch: card.class.Card,
+      includeChilds: true,
       priority: 500
     },
     card.completion.CardCategory
   )
+
+  builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
+    id: 'general',
+    label: setting.string.General,
+    component: card.component.GeneralSection
+  })
+
+  builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
+    id: 'properties',
+    label: setting.string.Properties,
+    component: card.component.ProperitiesSection
+  })
+
+  builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
+    id: 'tags',
+    label: card.string.Tags,
+    component: card.component.TagsSection
+  })
+
+  builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
+    id: 'childs',
+    label: card.string.MasterTags,
+    masterOnly: true,
+    component: card.component.ChildsSection
+  })
+
+  builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
+    id: 'relations',
+    label: core.string.Relations,
+    component: card.component.RelationsSection
+  })
 }
 
 export default card

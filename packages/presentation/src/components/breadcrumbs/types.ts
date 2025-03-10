@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type AnyComponent, type AnySvelteComponent } from '@hcengineering/ui'
+import { type AnyComponent, type AnySvelteComponent } from '@hcengineering/ui/src/types'
 
 interface BreadcrumbsProps {
   readonly color?: number | undefined

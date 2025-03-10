@@ -300,7 +300,7 @@ export class Transactor extends DurableObject<Env> {
         throw session.error
       }
       if ('upgrade' in session) {
-        cs.send(
+        await cs.send(
           this.measureCtx,
           { id: -1, result: { state: 'upgrading', stats: (session as any).upgradeInfo } },
           false,
@@ -352,6 +352,8 @@ export class Transactor extends DurableObject<Env> {
         }
         return true
       },
+      backpressure: async (ctx) => {},
+      isBackpressure: () => false,
       readRequest: (buffer: Buffer, binary: boolean) => {
         if (buffer.length === pingConst.length) {
           if (buffer.toString() === pingConst) {
@@ -361,7 +363,7 @@ export class Transactor extends DurableObject<Env> {
         return rpcHandler.readRequest(buffer, binary)
       },
       data: () => data,
-      send: (ctx: MeasureContext, msg, binary, _compression) => {
+      send: async (ctx: MeasureContext, msg, binary, _compression) => {
         let smsg = rpcHandler.serialize(msg, binary)
 
         ctx.measure('send-data', smsg.length)
@@ -435,7 +437,9 @@ export class Transactor extends DurableObject<Env> {
       data: () => {
         return {}
       },
-      send: (ctx: MeasureContext, msg, binary, compression) => {},
+      isBackpressure: () => false,
+      backpressure: async (ctx) => {},
+      send: async (ctx: MeasureContext, msg, binary, compression) => {},
       sendPong: () => {}
     }
     return cs
