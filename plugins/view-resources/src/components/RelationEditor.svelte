@@ -93,7 +93,7 @@
         : { docA: doc._id, docB: object._id, association: association._id }
     const relation = await client.findOne(core.class.Relation, q)
     if (relation !== undefined) {
-      showMenu(ev, { object: relation, includedActions: [view.action.Delete] })
+      showMenu(ev, { object: relation, includedActions: [view.action.RemoveRelation] })
     }
   }
 

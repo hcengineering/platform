@@ -1183,6 +1183,16 @@ export async function sendEmail (info: EmailInfo): Promise<void> {
   })
 }
 
+export function sanitizeEmail (email: string): string {
+  if (email == null || typeof email !== 'string') return ''
+  const sanitizedEmail = email
+    .trim()
+    .replace(/[<>/\\@{}()[\]'"`]/g, '') // Remove special chars and quotes
+    .replace(/^(http|ssh|ftp|https|mailto|javascript|data|file):?\/?\/?\s*/i, '') // Remove potentially dangerous protocols
+    .slice(0, 40)
+  return sanitizedEmail
+}
+
 export async function getInviteEmail (
   branding: Branding | null,
   email: string,
@@ -1193,7 +1203,7 @@ export async function getInviteEmail (
 ): Promise<EmailInfo> {
   const front = getFrontUrl(branding)
   const link = concatLink(front, `/login/join?inviteId=${inviteId}`)
-  const ws = (workspace.name !== '' ? workspace.name : workspace.url).replace(/[<>/]/g, '').slice(0, 40)
+  const ws = sanitizeEmail(workspace.name !== '' ? workspace.name : workspace.url)
   const lang = branding?.language
 
   return {

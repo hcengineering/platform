@@ -19,7 +19,7 @@
   import { fromCurrentToTz, fromTzToCurrent } from './internal/DateUtils'
 
   export let currentDate: Date
-  export let size: 'small' | 'medium' = 'medium'
+  export let size: 'small' | 'medium' | 'narrow' = 'medium'
   export let noBorder: boolean = false
   export let disabled: boolean = false
   export let timeZone: string | undefined = undefined
@@ -244,6 +244,9 @@
     }
     &.noBorder {
       padding: 0.125rem;
+    }
+    &.narrow {
+      padding: 0.125rem 0.5rem;
     }
     &:focus-within {
       color: var(--theme-caption-color);

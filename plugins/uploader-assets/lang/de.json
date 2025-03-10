@@ -1,0 +1,15 @@
+{
+  "string": {
+    "Cancel": "Abbrechen",
+    "Retry": "Wiederholen",
+    "UploadFiles": "Dateien Hochladen",
+    "UploadFolders": "Ordner Hochladen",
+    "UploadingTo": "Lade {files, plural, =1 {# Datei} other {# Dateien}} hoch nach"
+  },
+  "status": {
+    "Error": "Fehler",
+    "Waiting": "Warten",
+    "Uploading": "Hochladen",
+    "Completed": "Abgeschlossen"
+  }
+}

@@ -12,43 +12,141 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
-  import HLS from 'hls.js'
+  import HLS, { LoadPolicy } from 'hls.js'
   import { onDestroy, onMount } from 'svelte'
+  import Plyr from 'plyr'
 
   export let src: string
   export let hlsSrc: string
-  export let hlsThumbnail: string
-  export let name: string = ''
+  export let hlsThumbnail = ''
+  export let name = ''
   export let preload = true
 
-  let video: HTMLVideoElement
-  let hls: HLS
+  let video: HTMLVideoElement | null = null
+  let hls: HLS | null = null
+  let player: Plyr | null = null
+
+  const options: Plyr.Options = {}
+
+  function initialize (src: string): void {
+    if (video === null) {
+      return
+    }
+    if (!HLS.isSupported()) {
+      video.src = src
+      player = new Plyr(video, options)
+      return
+    }
+    const originalUrl = new URL(src)
+    hls?.destroy()
+    player?.destroy()
+    const loadPolicy: LoadPolicy = {
+      default: {
+        maxTimeToFirstByteMs: Infinity,
+        maxLoadTimeMs: 1000 * 60,
+        timeoutRetry: {
+          maxNumRetry: 20,
+          retryDelayMs: 100,
+          maxRetryDelayMs: 250
+        },
+        errorRetry: {
+          maxNumRetry: 20,
+          retryDelayMs: 100,
+          maxRetryDelayMs: 250,
+          shouldRetry: (retryConfig, retryCount) => retryCount < (retryConfig?.maxNumRetry ?? 10)
+        }
+      }
+    }
+    hls = new HLS({
+      manifestLoadPolicy: loadPolicy,
+      playlistLoadPolicy: loadPolicy,
+      autoStartLoad: preload,
+      xhrSetup: (xhr, url) => {
+        const urlObj = new URL(url)
+        if (urlObj.searchParams.size > 1) {
+          return
+        }
+        const workspace = originalUrl.searchParams.get('workspace')
+        if (workspace == null) {
+          return
+        }
+        xhr.withCredentials = true
+        const fileName = urlObj.href.substring(urlObj.href.lastIndexOf('/') + 1)
+        urlObj.searchParams.append('file', fileName)
+        urlObj.searchParams.append('workspace', workspace)
+        xhr.open('GET', urlObj.toString(), true)
+      }
+    })
+    hls.loadSource(hlsSrc)
+    hls.attachMedia(video)
+    video.poster = hlsThumbnail
+    if (!preload) {
+      video.onplay = () => {
+        if (video === null) {
+          return
+        }
+        video.onplay = null
+        hls?.startLoad()
+      }
+    }
+    hls.on(HLS.Events.MANIFEST_PARSED, () => {
+      if (hls === null) {
+        return
+      }
+      const availableQualities = hls?.levels.map((l) => l.height)
+      availableQualities.unshift(0)
+
+      options.quality = {
+        default: 0,
+        options: availableQualities,
+        forced: true,
+        onChange: (e) => {
+          updateQuality(e)
+        }
+      }
+
+      options.i18n = {
+        qualityLabel: {
+          0: 'Auto'
+        }
+      }
+      if (video === null) {
+        return
+      }
+      player = new Plyr(video, options)
+    })
+  }
+
+  $: initialize(src)
 
   onMount(() => {
-    if (HLS.isSupported()) {
-      hls?.destroy()
-      hls = new HLS({ autoStartLoad: false })
-      hls.loadSource(hlsSrc)
-      hls.attachMedia(video)
-
-      video.poster = hlsThumbnail
-      video.onplay = () => {
-        // autoStartLoad disables autoplay, so we need to enable it manually
-        video.onplay = null
-        hls.startLoad()
-      }
-    } else {
-      video.src = src
-    }
+    initialize(src)
   })
 
   onDestroy(() => {
     hls?.destroy()
+    player?.destroy()
   })
+
+  function updateQuality (newQuality: number): void {
+    if (hls === null) {
+      return
+    }
+    if (newQuality === 0) {
+      hls.currentLevel = -1
+    } else {
+      hls.levels.forEach((level, levelIndex) => {
+        if (level.height === newQuality && hls !== null) {
+          hls.currentLevel = levelIndex
+        }
+      })
+    }
+  }
 </script>
 
-<video bind:this={video} width="100%" height="100%" preload={preload ? 'auto' : 'none'} controls>
+<video bind:this={video} width="100%" height="100%" class="plyr" preload={preload ? 'auto' : 'none'} controls>
   <track kind="captions" label={name} />
 </video>
 
@@ -65,4 +163,5 @@
   video::-webkit-media-controls-enclosure {
     visibility: visible;
   }
+  @import 'plyr/dist/plyr.css';
 </style>

@@ -48,7 +48,7 @@ export class LoveController {
   private participantsInfo: ParticipantInfo[] = []
   private rooms: Room[] = []
   private readonly socialIdByPerson = new Map<Ref<Person>, PersonId>()
-  private readonly meetingMinutes: MeetingMinutes[] = []
+  private meetingMinutes: MeetingMinutes[] = []
 
   constructor (
     private readonly workspace: WorkspaceUuid,
@@ -169,6 +169,7 @@ export class LoveController {
       await stopTranscription(this.token, getTokenRoomName(this.workspace, room.name, room._id), room.name)
     }
 
+    this.meetingMinutes = this.meetingMinutes.filter((m) => m.attachedTo !== roomId)
     this.connectedRooms.delete(roomId)
   }
 

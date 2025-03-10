@@ -74,6 +74,7 @@ import { textEditorId, createModel as textEditorModel } from '@hcengineering/mod
 import { timeId, createModel as timeModel } from '@hcengineering/model-time'
 import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/model-tracker'
 import { uploaderId, createModel as uploaderModel } from '@hcengineering/model-uploader'
+import { recorderId, createModel as recorderModel } from '@hcengineering/model-recorder'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
 import card, { cardId, createModel as cardModel } from '@hcengineering/model-card'
@@ -261,6 +262,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [templatesModel, templatesId],
     [textEditorModel, textEditorId],
     [uploaderModel, uploaderId],
+    [recorderModel, recorderId],
     [notificationModel, notificationId],
     [preferenceModel, preferenceId],
     [analyticsCollectorModel, analyticsCollectorId],

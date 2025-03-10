@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.149.0",
+  "rushVersion": "5.150.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -62,7 +62,7 @@
      * The default value is false to avoid legacy compatibility issues.
      * It is strongly recommended to set strictPeerDependencies=true.
      */
-    "strictPeerDependencies": false,
+    "strictPeerDependencies": false
 
     /**
      * Configures the strategy used to select versions during installation.
@@ -247,14 +247,12 @@
     //   "[^@]+@users\\.noreply\\.github\\.com",
     //   "travis@example\\.org"
     // ],
-
     /**
      * When Rush reports that the address is malformed, the notice can include an example
      * of a recommended email.  Make sure it conforms to one of the allowedEmailRegExps
      * expressions.
      */
     // "sampleEmail": "mrexample@users.noreply.github.com",
-
     /**
      * The commit message to use when committing changes during 'rush publish'.
      *
@@ -263,7 +261,6 @@
      * in the commit message, and then customize Rush's message to contain that string.
      */
     // "versionBumpCommitMessage": "Applying package updates. [skip-ci]",
-
     /**
      * The commit message to use when committing changes during 'rush version'.
      *
@@ -528,6 +525,26 @@
     {
       "packageName": "@hcengineering/model-uploader",
       "projectFolder": "models/uploader",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/recorder",
+      "projectFolder": "plugins/recorder",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/recorder-resources",
+      "projectFolder": "plugins/recorder-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/recorder-assets",
+      "projectFolder": "plugins/recorder-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-recorder",
+      "projectFolder": "models/recorder",
       "shouldPublish": false
     },
     {

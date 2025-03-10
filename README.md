@@ -65,10 +65,10 @@ To verify the installation, perform the following checks in your terminal:
 
 - Ensure that the `docker` commands are available:
 
-  ```bash
-  docker --version
-  docker compose version
-  ```
+```bash
+docker --version
+docker compose version
+```
 
 ## Fast start
 
@@ -94,16 +94,16 @@ You need Microsoft's [rush](https://rushjs.io) to install the application.
 
 1. Install Rush globally using the command:
 
-   ```bash
-   npm install -g @microsoft/rush
-   ```
+```bash
+npm install -g @microsoft/rush
+```
 
 2. Navigate to the repository root and run the following commands:
 
-   ```bash
-   rush install
-   rush build
-   ```
+```bash
+rush install
+rush build
+```
 
 Alternatively, you can just execute:
 

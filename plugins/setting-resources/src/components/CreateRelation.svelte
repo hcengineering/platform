@@ -23,6 +23,7 @@
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
 
+  export let aClass: Ref<Class<Doc>> | undefined = undefined
   export let _classes: Ref<Class<Doc>>[] = [core.class.Doc]
   export let exclude: Ref<Class<Doc>>[] = [cardPlugin.class.Card]
 
@@ -79,7 +80,10 @@
     for (const [key, value] of base) {
       try {
         const clazz = hierarchy.getClass(key)
-        result.push([{ id: key, label: clazz.label }, value.map((it) => ({ id: it._id, label: it.label }))])
+        result.push([
+          { id: key, label: clazz.label, icon: clazz.icon },
+          value.map((it) => ({ id: it._id, label: it.label, icon: it.icon }))
+        ])
       } catch {}
     }
     return result
@@ -87,7 +91,7 @@
 
   const classes = filterClasses(descendants, viewlets, exclude)
 
-  let classARef: Ref<Class<Doc>> | undefined = undefined
+  let classARef: Ref<Class<Doc>> | undefined = aClass
   let classBRef: Ref<Class<Doc>> | undefined = undefined
   let nameA: string = ''
   let nameB: string = ''
@@ -122,6 +126,20 @@
   ]
 
   let mode: '1:1' | '1:N' | 'N:N' = 'N:N' as '1:1' | '1:N' | 'N:N'
+
+  $: classA = getAClass(aClass)
+
+  function getAClass (aClass: Ref<Class<Doc>> | undefined): DropdownIntlItem | undefined {
+    if (aClass === undefined) {
+      return undefined
+    }
+    const clazz = hierarchy.getClass(aClass)
+    return {
+      id: clazz._id,
+      label: clazz.label,
+      icon: clazz.icon
+    }
+  }
 </script>
 
 <Card
@@ -138,12 +156,16 @@
         <EditBox bind:value={nameA} placeholder={core.string.Name} kind={'default'} />
       </div>
       <div>
-        <NestedDropdown
-          items={classes}
-          on:selected={(e) => {
-            classARef = e.detail
-          }}
-        />
+        {#if classA !== undefined}
+          <DropdownLabelsIntl items={[classA]} selected={classA.id} disabled />
+        {:else}
+          <NestedDropdown
+            items={classes}
+            on:selected={(e) => {
+              classARef = e.detail
+            }}
+          />
+        {/if}
       </div>
     </div>
 

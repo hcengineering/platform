@@ -1,5 +1,5 @@
-//
-// Copyright © 2024 Hardcore Engineering Inc.
+<!--
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,18 +11,14 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-import type { IndexedObject } from '@uppy/core'
+-->
 
-// For Uppy 4.0 compatibility
-export type Meta = IndexedObject<any>
-export type Body = IndexedObject<any>
+<script lang="ts">
+  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'full'
+  export let fill: string = 'currentColor'
+</script>
 
-/** @public */
-export type UppyMeta = Meta & {
-  uuid: string
-  relativePath?: string
-}
-
-/** @public */
-export type UppyBody = Body
+<svg width="32" height="32" viewBox="0 0 32 32" class="svg-{size}" {fill} xmlns="http://www.w3.org/2000/svg">
+  <path d="M17 26L27 16L17 6L15.5858 7.41421L24.1716 16L15.5858 24.5858L17 26Z" />
+  <path d="M6 26L16 16L6 6L4.58579 7.41421L13.1716 16L4.58579 24.5858L6 26Z" />
+</svg>

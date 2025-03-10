@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from '../utils'
+import { PlatformSetting, PlatformURI, uploadFile } from '../utils'
 import { Drive } from '../model/drive/types'
 import { faker } from '@faker-js/faker'
 import { DriveLeftMenu } from '../model/drive/drive-left-menu'
@@ -69,9 +69,8 @@ test.describe('Drive tests', () => {
 
   test('Upload/rename/delete file, check file was uploaded, renamed and deleted', async () => {
     await drivesPage.clickOnDrive(drive)
-    await leftMenu.clickUploadFiles()
     const fileName = 'cat.jpeg'
-    await filesPage.uploadFile(fileName)
+    await uploadFile(leftMenu.page, fileName, 'Upload files')
     await filesPage.checkFileExists(fileName)
     const newFileName = 'dog.jpeg'
     await filesPage.renameFile(fileName, newFileName)

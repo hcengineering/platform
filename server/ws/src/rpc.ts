@@ -150,7 +150,7 @@ export function registerRPC (
         await operation(ctx, rpc.session)
       })
     } catch (err: any) {
-      sendError(res, 401, { message: 'Failed to execute operation', error: err.message, stack: err.stack })
+      sendError(res, 500, { message: 'Failed to execute operation', error: err.message, stack: err.stack })
     }
   }
 

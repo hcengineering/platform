@@ -1188,6 +1188,7 @@ export class TSessionManager implements SessionManager {
             service.binaryMode,
             service.useCompression
           )
+          throw err
         }
       })
       .finally(() => {

@@ -1,4 +1,17 @@
 services:
+  stream: 
+    image: 'hardcoreeng/huly-stream'
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    container_name: stream
+    environment:
+      - STREAM_ENDPOINT_URL=s3://huly.local:9000
+      - STREAM_INSECURE=true
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+    ports:
+      - 1080:1080
+    restart: unless-stopped
   mongodb:
     image: 'mongo:7-jammy'
     container_name: mongodb
@@ -209,6 +222,7 @@ services:
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://huly.local:8087/branding.json
+      - STREAM_URL=http://huly.local:1080/recording
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor:

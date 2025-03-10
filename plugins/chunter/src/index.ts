@@ -203,7 +203,8 @@ export default plugin(chunterId, {
     StartConversation: '' as IntlString,
     ViewingThreadFromArchivedChannel: '' as IntlString,
     ViewingArchivedChannel: '' as IntlString,
-    OpenChatInSidebar: '' as IntlString
+    OpenChatInSidebar: '' as IntlString,
+    SummarizeMessages: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
@@ -221,11 +222,13 @@ export default plugin(chunterId, {
     LeaveChannel: '' as Ref<Action>,
     RemoveChannel: '' as Ref<Action>,
     TranslateMessage: '' as Ref<Action>,
+    SummarizeMessages: '' as Ref<Action>,
     ShowOriginalMessage: '' as Ref<Action>,
     CloseConversation: '' as Ref<Action>
   },
   function: {
     CanTranslateMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanSummarizeMessages: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     OpenThreadInSidebar: '' as Resource<
     (
       _id: Ref<ActivityMessage>,

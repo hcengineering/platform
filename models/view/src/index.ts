@@ -1,6 +1,8 @@
 //
 // Copyright © 2020 Anticrm Platform Contributors.
 //
+// Copyright © 2025 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
@@ -644,7 +646,7 @@ export function createModel (builder: Builder): void {
     presentation.class.FilePreviewExtension,
     core.space.Model,
     {
-      contentType: ['video/*'],
+      contentType: ['video/*', 'application/x-mpegURL'],
       alignment: 'centered',
       component: view.component.VideoViewer,
       metadataProvider: view.function.BlobVideoMetadata,
@@ -691,6 +693,25 @@ export function createModel (builder: Builder): void {
       visibilityTester: view.function.CanDeleteObject
     },
     view.action.Delete
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      actionProps: {
+        confirmation: view.string.RemoveRelationConfirmation
+      },
+      label: view.string.RemoveRelation,
+      icon: view.icon.Delete,
+      keyBinding: ['Meta + Backspace'],
+      category: view.category.General,
+      override: [view.action.Delete],
+      input: 'any',
+      target: core.class.Relation,
+      context: { mode: ['context', 'browser'], group: 'remove' }
+    },
+    view.action.RemoveRelation
   )
 
   createAction(
