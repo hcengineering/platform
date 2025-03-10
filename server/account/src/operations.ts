@@ -1361,6 +1361,25 @@ export async function findPersonBySocialId (
   return socialIdObj.personUuid
 }
 
+export async function findSocialIdBySocialKey (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { socialKey: string }
+): Promise<PersonId | undefined> {
+  const { socialKey } = params
+  decodeTokenVerbose(ctx, token)
+
+  const socialIdObj = await db.socialId.findOne({ key: socialKey })
+
+  if (socialIdObj == null) {
+    return
+  }
+
+  return socialIdObj._id
+}
+
 export async function getWorkspaceMembers (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1810,6 +1829,7 @@ export type AccountMethods =
   | 'updateWorkspaceRole'
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
+  | 'findSocialIdBySocialKey'
   | 'performWorkspaceOperation'
   | 'updateWorkspaceRoleBySocialKey'
   | 'ensurePerson'
@@ -1854,6 +1874,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getPersonInfo: wrap(getPersonInfo),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     findPersonBySocialId: wrap(findPersonBySocialId),
+    findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
 
     /* SERVICE METHODS */
