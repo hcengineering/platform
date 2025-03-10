@@ -82,7 +82,8 @@ function createMailViewlet (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name'],
         sortable: true
-      }
+      },
+      baseQuery: { space: undefined }
     },
     mail.viewlet.TableMail
   )

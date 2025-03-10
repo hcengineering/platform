@@ -438,7 +438,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: mySpace.string.ConfigLabel,
         description: mySpace.string.ConfigDescription,
-        enabled: false,
+        enabled: true,
         beta: true,
         classFilter: defaultFilter
       }

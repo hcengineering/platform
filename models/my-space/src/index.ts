@@ -47,9 +47,7 @@ export function createModel (builder: Builder): void {
             componentProps: {
               _class: mail.class.MailThread,
               icon: mySpace.icon.Mail,
-              label: mySpace.string.Mail,
-              createLabel: mail.string.CreateMail,
-              createComponent: mail.component.CreateMail
+              label: mySpace.string.Mail
             },
             queryBuilder: mySpace.functions.BuildQuery
           }

@@ -92,18 +92,18 @@
     viewOptions: ViewOptions | undefined,
     viewlet: Viewlet | undefined
   ): Promise<void> {
-    initialQuery = queryBuilder !== undefined ? await buildQuery(initialQuery) : initialQuery
+    const updatedQuery = queryBuilder === undefined ? initialQuery : updateInitialQuery(initialQuery)
     query =
       viewOptions !== undefined && viewlet !== undefined
-        ? await getResultQuery(hierarchy, initialQuery, viewlet.viewOptions?.other, viewOptions)
-        : initialQuery
+        ? await getResultQuery(hierarchy, updatedQuery, viewlet.viewOptions?.other, viewOptions)
+        : updatedQuery
   }
 
-  async function buildQuery (initialQuery: DocumentQuery<Doc>): Promise<DocumentQuery<Doc>> {
+  async function updateInitialQuery (initialQuery: DocumentQuery<Doc>): Promise<DocumentQuery<Doc>> {
     if (queryBuilder === undefined) return initialQuery
     const fn = await getResource(queryBuilder)
-    const q = await fn()
-    return mergeQueries(initialQuery, q)
+    const q = (await fn()) ?? {}
+    return mergeQueries(initialQuery ?? {}, q ?? {})
   }
 
   function showCreateDialog (): void {
