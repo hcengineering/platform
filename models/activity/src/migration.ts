@@ -43,8 +43,8 @@ import {
 import { htmlToMarkup } from '@hcengineering/text'
 import {
   getAccountUuidByOldAccount,
-  getAccountUuidBySocialId,
-  getSocialIdByOldAccount
+  getAccountUuidBySocialKey,
+  getSocialKeyByOldAccount
 } from '@hcengineering/model-core'
 
 import { activityId, DOMAIN_ACTIVITY, DOMAIN_REACTION, DOMAIN_USER_MENTION } from './index'
@@ -204,7 +204,7 @@ async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
-  const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
 
   ctx.info('processing activity reactions ', {})
   const iterator = await client.traverse(DOMAIN_REACTION, { _class: activity.class.Reaction })
@@ -221,7 +221,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 
       for (const doc of docs) {
         const reaction = doc as Reaction
-        const newCreateBy = socialIdByAccount[reaction.createBy] ?? reaction.createBy
+        const newCreateBy = socialKeyByAccount[reaction.createBy] ?? reaction.createBy
 
         if (newCreateBy === reaction.createBy) continue
 
@@ -254,8 +254,8 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
  */
 async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
-  const socialIdByAccount = await getSocialIdByOldAccount(client)
-  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
   ctx.info('processing activity doc updates ', {})
 
   function getUpdatedClass (attrKey: string): string {
@@ -264,9 +264,9 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
 
   async function getUpdatedVal (oldVal: string, attrKey: string): Promise<any> {
     if (['members', 'owners', 'user'].includes(attrKey)) {
-      return (await getAccountUuidByOldAccount(client, oldVal, socialIdByAccount, accountUuidBySocialId)) ?? oldVal
+      return (await getAccountUuidByOldAccount(client, oldVal, socialKeyByAccount, accountUuidBySocialKey)) ?? oldVal
     } else {
-      return socialIdByAccount[oldVal] ?? oldVal
+      return socialKeyByAccount[oldVal] ?? oldVal
     }
   }
 
@@ -363,11 +363,11 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
  */
 async function migrateSocialIdsInDocUpdates (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateSocialIdsInDocUpdates', {})
-  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
   ctx.info('processing activity doc updates ', {})
 
   async function getUpdatedVal (oldVal: string): Promise<any> {
-    return (await getAccountUuidBySocialId(client, oldVal as PersonId, accountUuidBySocialId)) ?? oldVal
+    return (await getAccountUuidBySocialKey(client, oldVal as PersonId, accountUuidBySocialKey)) ?? oldVal
   }
 
   async function migrateField<P extends keyof DocAttributeUpdates> (
