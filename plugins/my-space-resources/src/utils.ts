@@ -13,14 +13,16 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
+import type { Doc, DocumentQuery } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
+import contact, { getCurrentEmployee } from '@hcengineering/contact'
 
-import { buildPersonSpaceQuery } from './utils'
-export { default as plugin } from './plugin'
-
-export default async (): Promise<Resources> => ({
-  component: {},
-  functions: {
-    BuildQuery: buildPersonSpaceQuery
+export async function buildPersonSpaceQuery (): Promise<DocumentQuery<Doc>> {
+  const client = getClient()
+  const employee = getCurrentEmployee()
+  if (employee === undefined) {
+    return { space: undefined }
   }
-})
+  const space = await client.findOne(contact.class.PersonSpace, { person: employee }, { projection: { _id: 1 } })
+  return space?._id !== undefined ? { space: space._id } : {}
+}
