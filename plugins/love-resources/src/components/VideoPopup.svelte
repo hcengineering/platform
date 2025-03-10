@@ -66,7 +66,8 @@
     isAgent: boolean
   }
 
-  $: aiPersonId = $aiBotSocialIdentityStore != null ? $personRefByPersonIdStore.get($aiBotSocialIdentityStore._id) : undefined
+  $: aiPersonId =
+    $aiBotSocialIdentityStore != null ? $personRefByPersonIdStore.get($aiBotSocialIdentityStore._id) : undefined
 
   const dispatch = createEventDispatcher()
 

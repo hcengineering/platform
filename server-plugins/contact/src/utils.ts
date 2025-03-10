@@ -68,7 +68,9 @@ export async function getAllSocialStringsByPersonId (
   control: TriggerControl,
   personIds: PersonId[]
 ): Promise<PersonId[]> {
-  const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, { _id: { $in: personIds as SocialIdentityRef[] } })
+  const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+    _id: { $in: personIds as SocialIdentityRef[] }
+  })
   const allSocialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, {
     attachedTo: { $in: socialIdentities.map((sid) => sid.attachedTo) },
     attachedToClass: contact.class.Person
@@ -92,7 +94,9 @@ export async function getPersonsBySocialIds (
   control: TriggerControl,
   personIds: PersonId[]
 ): Promise<Record<PersonId, Person>> {
-  const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { _id: { $in: personIds as SocialIdentityRef[] } })
+  const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+    _id: { $in: personIds as SocialIdentityRef[] }
+  })
   const persons = toIdMap(
     await control.findAll(control.ctx, contact.class.Person, { _id: { $in: socialIds.map((s) => s.attachedTo) } })
   )

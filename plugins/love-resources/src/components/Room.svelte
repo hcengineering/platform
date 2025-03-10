@@ -65,7 +65,8 @@
   let screen: HTMLVideoElement
   let roomEl: HTMLDivElement
 
-  $: aiPersonId = $aiBotSocialIdentityStore != null ? $personRefByPersonIdStore.get($aiBotSocialIdentityStore._id) : undefined
+  $: aiPersonId =
+    $aiBotSocialIdentityStore != null ? $personRefByPersonIdStore.get($aiBotSocialIdentityStore._id) : undefined
 
   function handleTrackSubscribed (
     track: RemoteTrack,

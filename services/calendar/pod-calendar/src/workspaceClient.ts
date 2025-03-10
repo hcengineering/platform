@@ -447,7 +447,10 @@ export class WorkspaceClient {
 
   async getExtIdByPersonId (personId: PersonId): Promise<string | null | undefined> {
     if (!this.externalIdByPersonId.has(personId)) {
-      const socialIdentity = await this.client.findOne(contact.class.SocialIdentity, { _id: personId as SocialIdentityRef, type: SocialIdType.GOOGLE })
+      const socialIdentity = await this.client.findOne(contact.class.SocialIdentity, {
+        _id: personId as SocialIdentityRef,
+        type: SocialIdType.GOOGLE
+      })
       this.externalIdByPersonId.set(personId, socialIdentity?.value ?? null)
     }
 
