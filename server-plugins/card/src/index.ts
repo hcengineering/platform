@@ -32,7 +32,7 @@ export default plugin(serverCardId, {
     OnMasterTagCreate: '' as Resource<TriggerFunc>,
     OnMasterTagRemove: '' as Resource<TriggerFunc>,
     OnCardCreate: '' as Resource<TriggerFunc>,
-    OnCardParentChange: '' as Resource<TriggerFunc>,
+    OnCardUpdate: '' as Resource<TriggerFunc>,
     OnCardRemove: '' as Resource<TriggerFunc>
   }
 })
