@@ -103,7 +103,10 @@
     isQueryLoaded = true
   }
 
-  async function updateInitialQuery (initialQuery: DocumentQuery<Doc>, builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined): Promise<DocumentQuery<Doc>> {
+  async function updateInitialQuery (
+    initialQuery: DocumentQuery<Doc>,
+    builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined
+  ): Promise<DocumentQuery<Doc>> {
     if (builder === undefined) return initialQuery
     const fn = await getResource(builder)
     const q = (await fn()) ?? {}
