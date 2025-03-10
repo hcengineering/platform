@@ -45,7 +45,7 @@ import core, {
 } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
-import { getAccountBySocialId, getTriggerCurrentPerson } from '@hcengineering/server-contact'
+import { getAccountBySocialId, getCurrentPerson } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
 
@@ -263,13 +263,13 @@ export function contactNameProvider (
 }
 
 export async function getCurrentEmployeeName (control: TriggerControl, context: Record<string, Doc>): Promise<string> {
-  const person = await getTriggerCurrentPerson(control)
+  const person = await getCurrentPerson(control)
 
   return person !== undefined ? formatName(person.name, control.branding?.lastNameFirst) : ''
 }
 
 export async function getCurrentEmployeeEmail (control: TriggerControl, context: Record<string, Doc>): Promise<string> {
-  const person = await getTriggerCurrentPerson(control)
+  const person = await getCurrentPerson(control)
   if (person === undefined) return ''
 
   const emailSocialId = (
@@ -288,7 +288,7 @@ export async function getCurrentEmployeePosition (
   control: TriggerControl,
   context: Record<string, Doc>
 ): Promise<string | undefined> {
-  const person = await getTriggerCurrentPerson(control)
+  const person = await getCurrentPerson(control)
   if (person === undefined) return ''
 
   return control.hierarchy.as(person, contact.mixin.Employee)?.position ?? ''

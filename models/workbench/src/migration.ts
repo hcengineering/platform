@@ -20,7 +20,7 @@ import {
 } from '@hcengineering/model'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import workbench, { type WorkbenchTab } from '@hcengineering/workbench'
-import core, { type AccountUuid, DOMAIN_TX, MeasureMetricsContext, type PersonId } from '@hcengineering/core'
+import core, { type AccountUuid, DOMAIN_TX, MeasureMetricsContext } from '@hcengineering/core'
 import { getAccountUuidBySocialKey, getSocialKeyByOldAccount } from '@hcengineering/model-core'
 
 import { workbenchId } from '.'
@@ -46,15 +46,11 @@ async function migrateTabsToSocialIds (client: MigrationClient): Promise<void> {
 async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('workbench migrateSocialIdsToGlobalAccounts', {})
   ctx.info('migrating workbench tabs to global accounts...')
-  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   const tabs = await client.find<WorkbenchTab>(DOMAIN_PREFERENCE, { _class: workbench.class.WorkbenchTab })
   for (const tab of tabs) {
-    const newAttachedTo = await getAccountUuidBySocialKey(
-      client,
-      tab.attachedTo as unknown as PersonId,
-      accountUuidBySocialKey
-    )
+    const newAttachedTo = await getAccountUuidBySocialKey(client, tab.attachedTo, accountUuidBySocialKey)
     if (newAttachedTo != null && newAttachedTo !== tab.attachedTo) {
       await client.update(DOMAIN_PREFERENCE, { _id: tab._id }, { attachedTo: newAttachedTo })
     }

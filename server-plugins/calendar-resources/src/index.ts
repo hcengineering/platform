@@ -33,7 +33,8 @@ import core, {
   TxMixin,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  AccountUuid
 } from '@hcengineering/core'
 import serverCalendar from '@hcengineering/server-calendar'
 import { getMetadata, getResource } from '@hcengineering/platform'
@@ -101,8 +102,19 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
     const socialString = pickPrimarySocialId(socialStrings)
     const { value } = parseSocialIdString(socialString)
 
-    result.push(...(await createCalendar(control, socialString, value)))
+    const employee = (
+      await control.findAll(
+        control.ctx,
+        contactPlugin.mixin.Employee,
+        { _id: ctx.objectId as Ref<Employee> },
+        { limit: 1 }
+      )
+    )[0]
+    if (employee?.personUuid === undefined) continue
+
+    result.push(...(await createCalendar(control, employee.personUuid, socialString, value)))
   }
+
   return result
 }
 
@@ -116,11 +128,11 @@ export async function OnSocialIdentityCreate (txes: Tx[], control: TriggerContro
     const employee = (
       await control.findAll(control.ctx, contactPlugin.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
     )[0]
-    if (employee === undefined || !employee.active) continue
+    if (employee === undefined || !employee.active || employee.personUuid === undefined) continue
 
     if (await checkCalendarsExist(control, employee._id)) continue
 
-    result.push(...(await createCalendar(control, socialId._id, socialId.value)))
+    result.push(...(await createCalendar(control, employee.personUuid, socialId._id, socialId.value)))
   }
   return result
 }
@@ -137,7 +149,12 @@ async function checkCalendarsExist (control: TriggerControl, person: Ref<Person>
   return calendars.length > 0
 }
 
-async function createCalendar (control: TriggerControl, socialString: PersonId, name: string): Promise<Tx[]> {
+async function createCalendar (
+  control: TriggerControl,
+  account: AccountUuid,
+  socialId: PersonId,
+  name: string
+): Promise<Tx[]> {
   const res: TxCreateDoc<Calendar> = control.txFactory.createTxCreateDoc(
     calendar.class.Calendar,
     calendar.space.Calendar,
@@ -146,9 +163,9 @@ async function createCalendar (control: TriggerControl, socialString: PersonId, 
       hidden: false,
       visibility: 'public'
     },
-    `${socialString}_calendar` as Ref<Calendar>,
+    `${account}_calendar` as Ref<Calendar>,
     undefined,
-    socialString
+    socialId
   )
   return [res]
 }

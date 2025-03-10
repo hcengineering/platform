@@ -17,7 +17,7 @@ import { TriggerControl } from '@hcengineering/server-core'
 import contact, { Employee, pickPrimarySocialId, SocialIdentityRef, type Person } from '@hcengineering/contact'
 import { AccountUuid, parseSocialIdString, PersonId, type Ref, toIdMap } from '@hcengineering/core'
 
-export async function getTriggerCurrentPerson (control: TriggerControl): Promise<Person | undefined> {
+export async function getCurrentPerson (control: TriggerControl): Promise<Person | undefined> {
   const { type, value } = parseSocialIdString(control.txFactory.account)
   const socialIdentity = (await control.findAll(control.ctx, contact.class.SocialIdentity, { type, value }))[0]
 

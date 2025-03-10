@@ -437,7 +437,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     }
   }
 
-  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   ctx.info('processing spaces members, owners and roles assignment', {})
   let processedSpaces = 0
@@ -665,7 +665,7 @@ export async function getUniqueAccountsFromOldAccounts (
 async function migrateSpaceMembersToAccountUuids (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('core migrateSpaceMembersToAccountUuids', {})
   const hierarchy = client.hierarchy
-  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   const spaceTypes = client.model.findAllSync(core.class.SpaceType, {})
   const spaceTypesById = toIdMap(spaceTypes)
@@ -698,8 +698,8 @@ async function migrateSpaceMembersToAccountUuids (client: MigrationClient): Prom
         if (!hierarchy.isDerived(s._class, core.class.Space)) continue
         const space = s as Space
         const update: MigrateUpdate<Space> = {
-          members: await getUniqueAccounts(client, space.members as unknown as PersonId[], accountUuidBySocialKey),
-          owners: await getUniqueAccounts(client, (space.owners ?? []) as unknown as PersonId[], accountUuidBySocialKey)
+          members: await getUniqueAccounts(client, space.members, accountUuidBySocialKey),
+          owners: await getUniqueAccounts(client, space.owners ?? [], accountUuidBySocialKey)
         }
 
         const type = spaceTypesById.get((space as TypedSpace).type)

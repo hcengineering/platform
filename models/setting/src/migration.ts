@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { type AccountUuid, MeasureMetricsContext, type PersonId, type Ref, type Space } from '@hcengineering/core'
+import core, { type AccountUuid, MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
 import {
   migrateSpace,
   type MigrateUpdate,
@@ -98,7 +98,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
  */
 async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('setting migrateAccounts', {})
-  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   ctx.info('processing setting integration shared ', {})
   const iterator = await client.traverse(DOMAIN_SETTING, { _class: setting.class.Integration })
@@ -118,11 +118,7 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
 
         if (integration.shared === undefined || integration.shared.length === 0) continue
 
-        const newShared = await getUniqueAccounts(
-          client,
-          integration.shared as unknown as PersonId[],
-          accountUuidBySocialKey
-        )
+        const newShared = await getUniqueAccounts(client, integration.shared, accountUuidBySocialKey)
 
         operations.push({
           filter: { _id: integration._id },

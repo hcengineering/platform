@@ -14,7 +14,7 @@
 //
 
 import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import { type Doc, MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
+import { type AccountUuid, type Doc, MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
 import {
   createDefaultSpace,
   type MigrateUpdate,
@@ -25,12 +25,12 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { DOMAIN_SPACE, getSocialKeyByOldAccount } from '@hcengineering/model-core'
+import { DOMAIN_SPACE, getAccountUuidBySocialKey, getSocialKeyByOldAccount } from '@hcengineering/model-core'
 import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
 import calendar from './plugin'
 
-function getCalendarId (socialKey: string): Ref<Calendar> {
-  return `${socialKey}_calendar` as Ref<Calendar>
+function getCalendarId (val: string): Ref<Calendar> {
+  return `${val}_calendar` as Ref<Calendar>
 }
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
@@ -98,6 +98,90 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
           filter: { _id: event._id },
           update: {
             calendar: getCalendarId(socialId)
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_EVENT, operations)
+      }
+
+      processedEvents += events.length
+      ctx.info('...processed events', { count: processedEvents })
+    }
+
+    ctx.info('finished processing events')
+  } finally {
+    await eventsIterator.close()
+  }
+}
+
+async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('calendar migrateSocialIdsToAccountUuids', {})
+  const hierarchy = client.hierarchy
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
+
+  const eventClasses = hierarchy.getDescendants(calendar.class.Event)
+
+  const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, {
+    _class: calendar.class.Calendar
+  })
+
+  ctx.info('processing internal calendars')
+
+  for (const calendar of calendars) {
+    const id = calendar._id
+    if (!id.endsWith('_calendar')) {
+      ctx.warn('Wrong calendar id format', { calendar: calendar._id })
+      continue
+    }
+
+    const socialKey = id.substring(0, id.length - 9)
+    const accountUuid = await getAccountUuidBySocialKey(client, socialKey, accountUuidBySocialKey)
+    if (accountUuid == null) {
+      ctx.warn('no account uuid for social key', { socialKey })
+      continue
+    }
+
+    await client.delete(DOMAIN_CALENDAR, calendar._id)
+    await client.create(DOMAIN_CALENDAR, {
+      ...calendar,
+      _id: getCalendarId(accountUuid)
+    })
+  }
+
+  let processedEvents = 0
+  const eventsIterator = await client.traverse<Event>(DOMAIN_EVENT, {
+    _class: { $in: eventClasses }
+  })
+
+  try {
+    while (true) {
+      const events = await eventsIterator.next(200)
+      if (events === null || events.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+      for (const event of events) {
+        const id = event.calendar
+        if (!id.endsWith('_calendar')) {
+          // Nothing to do, in external calendar
+          continue
+        }
+
+        const socialKey = id.substring(0, id.length - 9)
+        const accountUuid = await getAccountUuidBySocialKey(client, socialKey, accountUuidBySocialKey)
+        if (accountUuid == null) {
+          ctx.warn('no account uuid for social key', { socialKey })
+          continue
+        }
+
+        operations.push({
+          filter: { _id: event._id },
+          update: {
+            calendar: getCalendarId(accountUuid)
           }
         })
       }
@@ -243,6 +327,10 @@ export const calendarOperation: MigrateOperation = {
       {
         state: 'accounts-to-social-ids',
         func: migrateAccountsToSocialIds
+      },
+      {
+        state: 'migrate-social-ids-to-account-uuids',
+        func: migrateSocialIdsToAccountUuids
       }
     ])
   },

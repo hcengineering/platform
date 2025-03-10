@@ -24,7 +24,7 @@ import {
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import view, { type Filter, type FilteredView, type ViewletPreference, viewId } from '@hcengineering/view'
 import { getSocialKeyByOldAccount, getUniqueAccounts } from '@hcengineering/model-core'
-import { type AccountUuid, MeasureMetricsContext, type PersonId } from '@hcengineering/core'
+import { type AccountUuid, MeasureMetricsContext } from '@hcengineering/core'
 
 import { DOMAIN_VIEW } from '.'
 
@@ -128,7 +128,7 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 
 async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('view migrateSocialIdsToGlobalAccounts', {})
-  const accountUuidBySocialKey = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   ctx.info('processing view filtered view users ', {})
   const iterator = await client.traverse(DOMAIN_VIEW, { _class: view.class.FilteredView })
@@ -148,11 +148,7 @@ async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promi
 
         if (filteredView.users === undefined || filteredView.users.length === 0) continue
 
-        const newUsers = await getUniqueAccounts(
-          client,
-          filteredView.users as unknown as PersonId[],
-          accountUuidBySocialKey
-        )
+        const newUsers = await getUniqueAccounts(client, filteredView.users, accountUuidBySocialKey)
 
         operations.push({
           filter: { _id: filteredView._id },
