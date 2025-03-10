@@ -69,10 +69,12 @@
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
 
+  let isQueryLoaded = queryBuilder === undefined
+
   $: _baseQuery = mergeQueries(baseQuery ?? {}, viewlet?.baseQuery ?? {})
   $: query = { ..._baseQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
-  $: resultQuery = searchQuery
+  $: resultQuery = isQueryLoaded ? searchQuery : undefined
 
   let options = viewlet?.options
 
@@ -97,6 +99,7 @@
       viewOptions !== undefined && viewlet !== undefined
         ? await getResultQuery(hierarchy, updatedQuery, viewlet.viewOptions?.other, viewOptions)
         : updatedQuery
+    isQueryLoaded = true
   }
 
   async function updateInitialQuery (initialQuery: DocumentQuery<Doc>): Promise<DocumentQuery<Doc>> {
