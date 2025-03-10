@@ -56,7 +56,7 @@
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined = undefined
-  export let queryBuilder: Resource<() => Promise<DocumentQuery<Doc>>>
+  export let queryBuilder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
