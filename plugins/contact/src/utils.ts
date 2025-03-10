@@ -319,7 +319,10 @@ export async function getPersonRefsBySocialIds (
   client: Client,
   ids: PersonId[] = []
 ): Promise<Record<PersonId, Ref<Person>>> {
-  const socialIds = await client.findAll(contact.class.SocialIdentity, ids.length === 0 ? {} : { _id: { $in: ids as SocialIdentityRef[] } })
+  const socialIds = await client.findAll(
+    contact.class.SocialIdentity,
+    ids.length === 0 ? {} : { _id: { $in: ids as SocialIdentityRef[] } }
+  )
   const result: Record<PersonId, Ref<Person>> = {}
 
   for (const socialId of socialIds) {
@@ -409,7 +412,9 @@ export async function ensureEmployee (
   const personByUuid = await client.findOne(contact.class.Person, { personUuid: me.uuid })
   let personRef: Ref<Person> | undefined = personByUuid?._id
   if (personRef === undefined) {
-    const socialIdentity = await client.findOne(contact.class.SocialIdentity, { _id: { $in: me.socialIds as SocialIdentityRef[] } })
+    const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
+      _id: { $in: me.socialIds as SocialIdentityRef[] }
+    })
 
     // This social id is confirmed globally as we only have ids of confirmed social identities in socialIds array
     personRef = socialIdentity?.attachedTo
@@ -444,7 +449,9 @@ export async function ensureEmployee (
     await client.tx(updatePersonTx)
   }
 
-  const existingIdentifiers = toIdMap(await client.findAll(contact.class.SocialIdentity, { _id: { $in: me.socialIds as SocialIdentityRef[] } }))
+  const existingIdentifiers = toIdMap(
+    await client.findAll(contact.class.SocialIdentity, { _id: { $in: me.socialIds as SocialIdentityRef[] } })
+  )
 
   for (const socialId of socialIds) {
     const existing = existingIdentifiers.get(socialId._id as SocialIdentityRef)
@@ -462,15 +469,20 @@ export async function ensureEmployee (
           personRef,
           contact.space.Contacts,
           'socialIds',
-          txFactory.createTxCreateDoc(contact.class.SocialIdentity, contact.space.Contacts, {
-            attachedTo: personRef,
-            attachedToClass: contact.class.Person,
-            collection: 'socialIds',
-            type: socialId.type,
-            value: socialId.value,
-            key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
-            verifiedOn: socialId.verifiedOn
-          }, socialId._id as SocialIdentityRef)
+          txFactory.createTxCreateDoc(
+            contact.class.SocialIdentity,
+            contact.space.Contacts,
+            {
+              attachedTo: personRef,
+              attachedToClass: contact.class.Person,
+              collection: 'socialIds',
+              type: socialId.type,
+              value: socialId.value,
+              key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
+              verifiedOn: socialId.verifiedOn
+            },
+            socialId._id as SocialIdentityRef
+          )
         )
 
         await client.tx(createSocialIdTx)

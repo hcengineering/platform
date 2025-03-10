@@ -21,9 +21,12 @@ import { aiBotEmailSocialKey } from '@hcengineering/ai-bot'
 export const aiBotSocialIdentityStore = writable<SocialIdentity>()
 const identityQuery = createQuery(true)
 
-export const aiBotPersonRefStore = derived([personRefByPersonIdStore, aiBotSocialIdentityStore], ([personRefByPersonId, aiBotSocialIdentity]) => {
-  return personRefByPersonId.get(aiBotSocialIdentity?._id)
-})
+export const aiBotPersonRefStore = derived(
+  [personRefByPersonIdStore, aiBotSocialIdentityStore],
+  ([personRefByPersonId, aiBotSocialIdentity]) => {
+    return personRefByPersonId.get(aiBotSocialIdentity?._id)
+  }
+)
 
 onClient(() => {
   identityQuery.query(contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, (res) => {

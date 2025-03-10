@@ -148,7 +148,11 @@ async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promi
 
         if (filteredView.users === undefined || filteredView.users.length === 0) continue
 
-        const newUsers = await getUniqueAccounts(client, filteredView.users as unknown as PersonId[], accountUuidBySocialId)
+        const newUsers = await getUniqueAccounts(
+          client,
+          filteredView.users as unknown as PersonId[],
+          accountUuidBySocialId
+        )
 
         operations.push({
           filter: { _id: filteredView._id },

@@ -62,7 +62,6 @@ import {
   TypeCollaborativeDoc,
   TypeDate,
   TypeNumber,
-  TypePersonId,
   TypeRecord,
   TypeRef,
   TypeString,

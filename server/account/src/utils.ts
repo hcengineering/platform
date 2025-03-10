@@ -804,7 +804,12 @@ export async function sendEmailConfirmation (
   }
 }
 
-export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account: string, email: string): Promise<PersonId> {
+export async function confirmEmail (
+  ctx: MeasureContext,
+  db: AccountDB,
+  account: string,
+  email: string
+): Promise<PersonId> {
   const normalizedEmail = cleanEmail(email)
   ctx.info('Confirming email', { account, email, normalizedEmail })
 

@@ -24,19 +24,13 @@ export async function connectPlatform (token: string, endpoint: string): Promise
 }
 
 export async function getAccountBySocialKey (client: TxOperations, socialKey: string): Promise<AccountUuid | null> {
-  const socialIdentity = await client.findOne(
-    contact.class.SocialIdentity,
-    { key: socialKey }
-  )
+  const socialIdentity = await client.findOne(contact.class.SocialIdentity, { key: socialKey })
 
   if (socialIdentity == null) {
     return null
   }
 
-  const employee = await client.findOne(
-    contact.mixin.Employee,
-    { _id: socialIdentity.attachedTo as Ref<Employee> }
-  )
+  const employee = await client.findOne(contact.mixin.Employee, { _id: socialIdentity.attachedTo as Ref<Employee> })
 
   return employee?.personUuid ?? null
 }
