@@ -21,7 +21,7 @@ export async function buildPersonSpaceQuery (): Promise<DocumentQuery<Doc>> {
   const client = getClient()
   const employee = getCurrentEmployee()
   if (employee === undefined) {
-    return {}
+    return { space: undefined }
   }
   const space = await client.findOne(contact.class.PersonSpace, { person: employee }, { projection: { _id: 1 } })
   return space?._id !== undefined ? { space: space._id } : {}
