@@ -90,39 +90,6 @@ export function createDb (ctx: MeasureContext, connectionString: string): BlobDB
   return new LoggedDB(new PostgresDB(new RetryDBAdapter(dbAdapter, { retries: 5 })), ctx)
 }
 
-export async function withPostgres<T> (
-  ctx: MeasureContext,
-  connectionString: string,
-  fn: (db: BlobDB) => Promise<T>
-): Promise<T> {
-  const sql = postgres(connectionString, {
-    max: 5,
-    connection: {
-      application_name: 'datalake'
-    },
-    fetch_types: false,
-    prepare: false,
-    types: {
-      // https://jdbc.postgresql.org/documentation/publicapi/constant-values.html
-      int8: {
-        to: 0,
-        from: [20],
-        serialize: (value: string) => value.toString(),
-        parse: (value: number) => Number(value)
-      }
-    }
-  })
-
-  const dbAdapter = new PostgresDBAdapter(sql)
-  const db = new LoggedDB(new PostgresDB(new RetryDBAdapter(dbAdapter, { retries: 5 })), ctx)
-
-  try {
-    return await fn(db)
-  } finally {
-    await sql.end({ timeout: 0 })
-  }
-}
-
 export interface BlobDB {
   getData: (dataId: BlobDataId) => Promise<BlobDataRecord | null>
   getBlob: (blobId: BlobId) => Promise<BlobWithDataRecord | null>

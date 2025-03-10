@@ -17,7 +17,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "node ../../../common/scripts/esbuild.js --keep-names=true --external=sharp",
+    "bundle": "node ../../../common/scripts/esbuild.js --keep-names=true --sourcemap=external --external=sharp",
     "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/datalake",
     "docker:tbuild": "docker build -t hardcoreeng/datalake . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/datalake",
     "docker:abuild": "docker build -t hardcoreeng/datalake . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/datalake",

@@ -16,3 +16,4 @@
 export * from './blob'
 export * from './image'
 export * from './multipart'
+export * from './s3'

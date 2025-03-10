@@ -60,6 +60,8 @@ export interface S3UploadPartOptions {
 }
 
 export interface S3Bucket {
+  bucket: string
+
   head: (key: string) => Promise<S3Object | null>
   get: (key: string, options?: S3GetOptions) => Promise<S3ObjectBody | null>
   put: (key: string, body: Readable | Buffer | string, options: S3PutOptions) => Promise<S3Object>

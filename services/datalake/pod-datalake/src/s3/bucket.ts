@@ -36,7 +36,7 @@ export function createBucket (client: S3, bucket: string): S3Bucket {
 class S3BucketImpl implements S3Bucket {
   constructor (
     private readonly client: S3,
-    private readonly bucket: string
+    readonly bucket: string
   ) {}
 
   async head (key: string): Promise<S3Object | null> {

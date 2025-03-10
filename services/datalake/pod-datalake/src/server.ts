@@ -34,6 +34,8 @@ import {
   handleBlobHead,
   handleBlobList,
   handleImageGet,
+  handleS3CreateBlob,
+  handleS3CreateBlobParams,
   handleUploadFormData
 } from './handlers'
 import { Datalake, Location } from './datalake'
@@ -121,12 +123,24 @@ export function createServer (config: Config): { app: Express, close: () => void
   app.delete('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, datalake, handleBlobDeleteList))
 
   // Form Data upload
+
   app.post(
     '/upload/form-data/:workspace',
     withAuthorization,
     withWorkspace,
     wrapRequest(ctx, datalake, handleUploadFormData)
   )
+
+  // S3 upload
+
+  app.get(
+    '/upload/r2/:workspace',
+    withAuthorization,
+    withWorkspace,
+    wrapRequest(ctx, datalake, handleS3CreateBlobParams)
+  )
+
+  app.post('/upload/r2/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, datalake, handleS3CreateBlob))
 
   // // Multipart upload
   // app.post('/upload/multipart/:workspace/:name',
