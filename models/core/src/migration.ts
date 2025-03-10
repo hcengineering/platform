@@ -363,6 +363,8 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('core migrateAccounts', {})
   const hierarchy = client.hierarchy
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  const socialIdByOldAccount = new Map<string, PersonId | null>()
 
   ctx.info('migrating createdBy and modifiedBy')
   function chunkArray<T> (array: T[], chunkSize: number): T[][] {
@@ -379,29 +381,41 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     const groupByCreated = await client.groupBy<any, Doc>(domain, 'createdBy', {})
     const groupByModified = await client.groupBy<any, Doc>(domain, 'modifiedBy', {})
 
-    groupByCreated.forEach((_, accId) => {
-      const socialKey = socialKeyByAccount[accId]
-      if (socialKey == null || accId === socialKey) return
+    for (const accId of groupByCreated.keys()) {
+      const socialId = await getSocialIdFromOldAccount(
+        client,
+        accId,
+        socialKeyByAccount,
+        socialIdBySocialKey,
+        socialIdByOldAccount
+      )
+      if (socialId == null || accId === socialId) return
 
       operations.push({
         filter: { createdBy: accId },
         update: {
-          createdBy: socialKey as PersonId
+          createdBy: socialId
         }
       })
-    })
+    }
 
-    groupByModified.forEach((_, accId) => {
-      const socialKey = socialKeyByAccount[accId]
-      if (socialKey == null || accId === socialKey) return
+    for (const accId of groupByModified.keys()) {
+      const socialId = await getSocialIdFromOldAccount(
+        client,
+        accId,
+        socialKeyByAccount,
+        socialIdBySocialKey,
+        socialIdByOldAccount
+      )
+      if (socialId == null || accId === socialId) return
 
       operations.push({
         filter: { modifiedBy: accId },
         update: {
-          modifiedBy: socialKey as PersonId
+          modifiedBy: socialId
         }
       })
-    })
+    }
 
     if (operations.length > 0) {
       const operationsChunks = chunkArray(operations, 40)
@@ -628,6 +642,38 @@ export async function getAccountUuidByOldAccount (
   return accountUuidByOldAccount.get(oldAccount) ?? null
 }
 
+export async function getSocialIdBySocialKey (
+  client: MigrationClient,
+  socialKey: string,
+  socialIdBySocialKey?: Map<string, PersonId | null>
+): Promise<PersonId | null> {
+  if (socialIdBySocialKey == null || !socialIdBySocialKey.has(socialKey)) {
+    const val = (await client.accountClient.findSocialIdBySocialKey(socialKey)) ?? null
+    if (socialIdBySocialKey == null) return val
+
+    socialIdBySocialKey.set(socialKey, val)
+  }
+
+  return socialIdBySocialKey.get(socialKey) ?? null
+}
+
+export async function getSocialIdFromOldAccount (
+  client: MigrationClient,
+  oldAccount: string,
+  socialKeyByOldAccount: Record<string, string>,
+  socialIdBySocialKey: Map<string, PersonId | null>,
+  socialIdByOldAccount: Map<string, PersonId | null>
+): Promise<PersonId | null> {
+  if (!socialIdByOldAccount.has(oldAccount)) {
+    const socialKey = socialKeyByOldAccount[oldAccount]
+    if (socialKey == null) return null
+
+    socialIdByOldAccount.set(oldAccount, await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey))
+  }
+
+  return socialIdByOldAccount.get(oldAccount) ?? null
+}
+
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 function isUuid (val: string): boolean {
   return uuidRegex.test(val)
@@ -656,8 +702,8 @@ export async function getUniqueAccountsFromOldAccounts (
 }
 
 /**
- * Migrates social ids to new accounts where needed.
- * Should only be applied to staging where old accounts have already been migrated to social ids.
+ * Migrates social keys to new accounts where needed.
+ * Should only be applied to staging where old accounts have already been migrated to social keys.
  * REMOVE IT BEFORE MERGING TO PRODUCTION
  * @param client
  * @returns
@@ -771,6 +817,77 @@ async function migrateSpaceMembersToAccountUuids (client: MigrationClient): Prom
     updatedSpaceTypes++
   }
   ctx.info('finished processing space types members', { totalSpaceTypes: spaceTypes.length, updatedSpaceTypes })
+}
+
+/**
+ * Migrates social keys to social ids where needed.
+ * Should only be applied to staging where old accounts have already been migrated to social keys.
+ * REMOVE IT BEFORE MERGING TO PRODUCTION
+ * @param client
+ * @returns
+ */
+async function migrateCreatedByToGenSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('core migrateCreatedByToGenSocialIds', {})
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+
+  ctx.info('migrating createdBy and modifiedBy')
+  function chunkArray<T> (array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = []
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize))
+    }
+    return chunks
+  }
+
+  for (const domain of client.hierarchy.domains()) {
+    ctx.info('processing domain ', { domain })
+    const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+    const groupByCreated = await client.groupBy<any, Doc>(domain, 'createdBy', {})
+    const groupByModified = await client.groupBy<any, Doc>(domain, 'modifiedBy', {})
+
+    for (const socialKey of groupByCreated.keys()) {
+      const socialId = await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey)
+      if (socialId == null || socialKey === socialId) return
+
+      operations.push({
+        filter: { createdBy: socialKey },
+        update: {
+          createdBy: socialId
+        }
+      })
+    }
+
+    for (const socialKey of groupByModified.keys()) {
+      const socialId = await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey)
+      if (socialId == null || socialKey === socialId) return
+
+      operations.push({
+        filter: { modifiedBy: socialKey },
+        update: {
+          modifiedBy: socialId
+        }
+      })
+    }
+
+    if (operations.length > 0) {
+      const operationsChunks = chunkArray(operations, 40)
+      ctx.info('chunks to process ', { total: operationsChunks.length })
+      let processed = 0
+      for (const operationsChunk of operationsChunks) {
+        if (operationsChunk.length === 0) continue
+
+        await client.bulk(domain, operationsChunk)
+        processed++
+        if (operationsChunks.length > 1) {
+          ctx.info('processed chunk', { processed, of: operationsChunks.length })
+        }
+      }
+    } else {
+      ctx.info('no social keys to migrate')
+    }
+  }
+
+  ctx.info('finished migrating createdBy and modifiedBy')
 }
 
 async function processMigrateJsonForDomain (
@@ -990,9 +1107,15 @@ export const coreOperation: MigrateOperation = {
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
-        state: 'space-members-to-account-uuids',
+        state: 'created-by-to-account-uuids',
         mode: 'upgrade',
         func: migrateSpaceMembersToAccountUuids
+      },
+      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
+      {
+        state: 'created-by-to-gen-social-ids',
+        mode: 'upgrade',
+        func: migrateCreatedByToGenSocialIds
       }
     ])
   },

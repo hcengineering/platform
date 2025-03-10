@@ -27,6 +27,7 @@ import core, {
   type Domain,
   groupByArray,
   MeasureMetricsContext,
+  type PersonId,
   type Ref,
   type Space
 } from '@hcengineering/core'
@@ -43,6 +44,8 @@ import { htmlToMarkup } from '@hcengineering/text'
 import {
   getAccountUuidByOldAccount,
   getAccountUuidBySocialKey,
+  getSocialIdBySocialKey,
+  getSocialIdFromOldAccount,
   getSocialKeyByOldAccount
 } from '@hcengineering/model-core'
 
@@ -204,6 +207,8 @@ async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  const socialIdByOldAccount = new Map<string, PersonId | null>()
 
   ctx.info('processing activity reactions ', {})
   const iterator = await client.traverse(DOMAIN_REACTION, { _class: activity.class.Reaction })
@@ -220,7 +225,14 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 
       for (const doc of docs) {
         const reaction = doc as Reaction
-        const newCreateBy = socialKeyByAccount[reaction.createBy] ?? reaction.createBy
+        const socialId = await getSocialIdFromOldAccount(
+          client,
+          reaction.createBy,
+          socialKeyByAccount,
+          socialIdBySocialKey,
+          socialIdByOldAccount
+        )
+        const newCreateBy = socialId ?? reaction.createBy
 
         if (newCreateBy === reaction.createBy) continue
 
@@ -454,6 +466,51 @@ async function migrateSocialIdsInDocUpdates (client: MigrationClient): Promise<v
   ctx.info('finished processing activity doc updates ', {})
 }
 
+async function migrateSocialKeysToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('activity migrateSocialKeysToSocialIds', {})
+
+  ctx.info('processing activity reactions ', {})
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  const iterator = await client.traverse(DOMAIN_REACTION, { _class: activity.class.Reaction })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+      for (const doc of docs) {
+        const reaction = doc as Reaction
+        const newCreateBy =
+          (await getSocialIdBySocialKey(client, reaction.createBy, socialIdBySocialKey)) ?? reaction.createBy
+
+        if (newCreateBy === reaction.createBy) continue
+
+        operations.push({
+          filter: { _id: doc._id },
+          update: {
+            createBy: newCreateBy
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_REACTION, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  ctx.info('finished processing activity reactions ', {})
+}
+
 export const activityOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, activityId, [
@@ -542,6 +599,11 @@ export const activityOperation: MigrateOperation = {
         state: 'social-ids-in-doc-updates',
         mode: 'upgrade',
         func: migrateSocialIdsInDocUpdates
+      },
+      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
+      {
+        state: 'social-keys-to-social-ids',
+        func: migrateSocialKeysToSocialIds
       }
     ])
   },

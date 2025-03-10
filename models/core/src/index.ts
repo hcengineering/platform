@@ -90,7 +90,9 @@ export {
   getAccountUuidBySocialKey,
   getUniqueAccounts,
   getAccountUuidByOldAccount,
-  getUniqueAccountsFromOldAccounts
+  getUniqueAccountsFromOldAccounts,
+  getSocialIdBySocialKey,
+  getSocialIdFromOldAccount
 } from './migration'
 export * from './security'
 export * from './status'

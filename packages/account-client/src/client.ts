@@ -80,8 +80,9 @@ export interface AccountClient {
   updateWorkspaceRole: (account: string, role: AccountRole) => Promise<void>
   updateWorkspaceName: (name: string) => Promise<void>
   deleteWorkspace: () => Promise<void>
-  findPersonBySocialKey: (socialString: string) => Promise<PersonUuid | undefined>
+  findPersonBySocialKey: (socialKey: string) => Promise<PersonUuid | undefined>
   findPersonBySocialId: (socialId: PersonId) => Promise<PersonUuid | undefined>
+  findSocialIdBySocialKey: (socialKey: string) => Promise<PersonId | undefined>
 
   // Service methods
   workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
@@ -544,6 +545,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'findPersonBySocialId' as const,
       params: { socialId }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async findSocialIdBySocialKey (socialKey: string): Promise<PersonId | undefined> {
+    const request = {
+      method: 'findSocialIdBySocialKey' as const,
+      params: { socialKey }
     }
 
     return await this.rpc(request)

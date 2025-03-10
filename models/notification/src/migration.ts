@@ -49,7 +49,9 @@ import {
   getUniqueAccounts,
   getAccountUuidBySocialKey,
   getAccountUuidByOldAccount,
-  getUniqueAccountsFromOldAccounts
+  getUniqueAccountsFromOldAccounts,
+  getSocialIdBySocialKey,
+  getSocialIdFromOldAccount
 } from '@hcengineering/model-core'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
 
@@ -250,6 +252,8 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('notification migrateAccounts', {})
   const hierarchy = client.hierarchy
   const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  const socialIdByOldAccount = new Map<string, PersonId | null>()
   const accountUuidByOldAccount = new Map<string, AccountUuid | null>()
 
   ctx.info('processing collaborators ', {})
@@ -356,20 +360,26 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     _class: notification.class.BrowserNotification
   })
 
-  groupBySenderId.forEach((_, accId) => {
-    const socialId = socialKeyByAccount[accId]
-    if (socialId == null || accId === socialId) return
+  for (const socialKey of groupBySenderId.keys()) {
+    const socialId = await getSocialIdFromOldAccount(
+      client,
+      socialKey,
+      socialKeyByAccount,
+      socialIdBySocialKey,
+      socialIdByOldAccount
+    )
+    if (socialId == null || socialKey === socialId) return
 
     operations.push({
       filter: {
-        senderId: accId,
+        senderId: socialKey,
         _class: notification.class.BrowserNotification
       },
       update: {
         senderId: socialId
       }
     })
-  })
+  }
 
   if (operations.length > 0) {
     const operationsChunks = chunkArray(operations, 40)
@@ -604,6 +614,57 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
     await dncIterator.close()
   }
   ctx.info('finished processing doc notify contexts ', {})
+}
+
+async function migrateSocialKeysToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('notification migrateSocialKeysToSocialIds', {})
+  ctx.info('processing browser notifications sender ids ', {})
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  function chunkArray<T> (array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = []
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize))
+    }
+    return chunks
+  }
+
+  const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+  const groupBySenderId = await client.groupBy<any, Doc>(DOMAIN_NOTIFICATION, 'senderId', {
+    _class: notification.class.BrowserNotification
+  })
+
+  for (const socialKey of groupBySenderId.keys()) {
+    const socialId = (await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey)) ?? socialKey
+    if (socialId == null || socialKey === socialId) return
+
+    operations.push({
+      filter: {
+        senderId: socialKey,
+        _class: notification.class.BrowserNotification
+      },
+      update: {
+        senderId: socialId
+      }
+    })
+  }
+
+  if (operations.length > 0) {
+    const operationsChunks = chunkArray(operations, 40)
+    let processed = 0
+    for (const operationsChunk of operationsChunks) {
+      if (operationsChunk.length === 0) continue
+
+      await client.bulk(DOMAIN_NOTIFICATION, operationsChunk)
+      processed++
+      if (operationsChunks.length > 1) {
+        ctx.info('processed chunk', { processed, of: operationsChunks.length })
+      }
+    }
+  } else {
+    ctx.info('no social keys to migrate')
+  }
+
+  ctx.info('finished processing browser notifications sender ids ', {})
 }
 
 export async function migrateSettings (client: MigrationClient): Promise<void> {
@@ -886,6 +947,11 @@ export const notificationOperation: MigrateOperation = {
         state: 'migrate-social-ids-to-account-uuids',
         mode: 'upgrade',
         func: migrateSocialIdsToAccountUuids
+      },
+      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
+      {
+        state: 'migrate-social-keys-to-social-ids',
+        func: migrateSocialKeysToSocialIds
       }
     ])
   },
