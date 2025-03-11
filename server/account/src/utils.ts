@@ -1162,10 +1162,29 @@ export async function getWorkspaces (
   }))
 }
 
-export function verifyAllowedServices (services: string[], extra: any): void {
-  if (!services.includes(extra?.service) && extra?.admin !== 'true') {
+export function verifyAllowedServices (services: string[], extra: any, shouldThrow = true): boolean {
+  const ok = services.includes(extra?.service) || extra?.admin === 'true'
+
+  if (!ok && shouldThrow) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
+
+  return ok
+}
+
+export function verifyAllowedRole (
+  targetRole: AccountRole | null,
+  minRole: AccountRole,
+  extra: any,
+  shouldThrow = true
+): boolean {
+  const ok = extra?.admin === 'true' || (targetRole != null && getRolePower(targetRole) >= getRolePower(minRole))
+
+  if (!ok && shouldThrow) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  return ok
 }
 
 export function getPersonName (person: Person): string {

@@ -93,6 +93,7 @@ import {
   setPassword,
   signUpByEmail,
   verifyAllowedServices,
+  verifyAllowedRole,
   verifyPassword,
   wrap,
   getWorkspaceRole
@@ -446,7 +447,7 @@ export async function sendInvite (
   }
 ): Promise<void> {
   const { email, role } = params
-  const { account, workspace: workspaceUuid } = decodeTokenVerbose(ctx, token)
+  const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
   if (currentAccount == null) {
@@ -457,6 +458,9 @@ export async function sendInvite (
   if (workspace == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
+
+  const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
+  verifyAllowedRole(callerRole, role, extra)
 
   checkRateLimit(account, workspaceUuid)
 
@@ -1771,8 +1775,13 @@ export async function ensurePerson (
     lastName: string
   }
 ): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
-  const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['schedule', 'mail'], extra)
+  const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
+  const allowedService = verifyAllowedServices(['schedule', 'mail'], extra, false)
+
+  if (!allowedService) {
+    const callerRole = await getWorkspaceRole(db, account, workspace)
+    verifyAllowedRole(callerRole, AccountRole.User, extra)
+  }
 
   const { socialType, socialValue, firstName, lastName } = params
 
