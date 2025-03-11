@@ -214,7 +214,7 @@ export class UnifiedConverter {
       return await Promise.all(collectionDocs.map(async (doc) => await this.convert(doc)))
     }
 
-    if (type._class === core.class.TypeTimestamp) {
+    if (type._class === core.class.TypeTimestamp || type._class === core.class.TypeDate) {
       return this.formatTimestamp(value as number)
     }
 

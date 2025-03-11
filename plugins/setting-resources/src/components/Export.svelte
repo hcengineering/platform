@@ -21,6 +21,7 @@
 
   const classItems = [
     { id: 'tracker:class:Issue', label: setting.string.ExportIssues },
+    { id: 'tracker:class:Milestone', label: setting.string.ExportMilestones },
     { id: 'document:class:Document', label: setting.string.ExportDocuments },
     { id: 'testManagement:class:TestCase', label: setting.string.ExportTestCases },
     { id: 'testManagement:class:TestRun', label: setting.string.ExportTestRuns },
