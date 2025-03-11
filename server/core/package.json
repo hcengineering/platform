@@ -43,6 +43,7 @@
     "@hcengineering/query": "^0.6.12",
     "fast-equals": "^5.2.2",
     "@hcengineering/storage": "^0.6.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "@hcengineering/communication-sdk-types": "^0.1.61"
   }
 }

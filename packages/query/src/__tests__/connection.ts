@@ -28,6 +28,7 @@ import core, {
   FindResult,
   FulltextStorage,
   generateId,
+  Handler,
   Hierarchy,
   LoadModelResponse,
   ModelDb,
@@ -48,6 +49,7 @@ BackupClient &
 FulltextStorage & {
   isConnected: () => boolean
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
+  pushHandler: (handler: Handler) => void
 }
 > {
   const txes = genMinModel()
@@ -76,6 +78,8 @@ FulltextStorage & {
     isConnected (): boolean {
       return true
     }
+
+    pushHandler (): void {}
 
     async findAll<T extends Doc>(
       _class: Ref<Class<T>>,

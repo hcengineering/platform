@@ -52,7 +52,11 @@ import {
   type Workspace
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
-
+import { FindMessagesGroupsParams, FindMessagesParams } from '@hcengineering/communication-types'
+import {
+  RequestEvent as CommunicationEvent,
+  ConnectionInfo as CommunicationCtx
+} from '@hcengineering/communication-sdk-types'
 const useReserveContext = (process.env.USE_RESERVE_CTX ?? 'true') === 'true'
 
 /**
@@ -365,5 +369,36 @@ export class ClientSession implements Session {
       return
     }
     await ctx.sendResponse(ctx.requestId, {})
+  }
+
+  async event (ctx: ClientSessionCtx, event: CommunicationEvent): Promise<void> {
+    this.lastRequest = Date.now()
+    const result = await ctx.communicationApi.event(this.getCommunicationCtx(), event)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findMessages (ctx: ClientSessionCtx, params: FindMessagesParams, queryId?: number): Promise<void> {
+    this.lastRequest = Date.now()
+    const result = await ctx.communicationApi.findMessages(this.getCommunicationCtx(), params, queryId)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findMessagesGroups (ctx: ClientSessionCtx, params: FindMessagesGroupsParams): Promise<void> {
+    this.lastRequest = Date.now()
+    const result = await ctx.communicationApi.findMessagesGroups(this.getCommunicationCtx(), params)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async unsubscribeQuery (ctx: ClientSessionCtx, id: number): Promise<void> {
+    this.lastRequest = Date.now()
+    await ctx.communicationApi.unsubscribeQuery(this.getCommunicationCtx(), id)
+    await ctx.sendResponse(ctx.requestId, {})
+  }
+
+  private getCommunicationCtx (): CommunicationCtx {
+    return {
+      sessionId: this.sessionId,
+      account: this.account
+    }
   }
 }

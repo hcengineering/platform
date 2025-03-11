@@ -121,6 +121,7 @@ describe('client', () => {
 
         isConnected = (): boolean => true
         findAll = findAll
+        pushHandler = (): void => {}
 
         searchFulltext = async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
           return { docs: [] }

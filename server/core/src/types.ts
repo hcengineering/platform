@@ -14,8 +14,8 @@
 //
 
 import {
-  type AccountUuid,
   type Account,
+  type AccountUuid,
   type Branding,
   type Class,
   type Doc,
@@ -49,6 +49,8 @@ import type { LiveQuery } from '@hcengineering/query'
 import type { ReqId, Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
+import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
+
 import type { DbAdapter, DomainHelper } from './adapter'
 import type { StatisticsElement } from './stats'
 import { type StorageAdapter } from './storage'
@@ -123,6 +125,8 @@ export type BroadcastFunc = (
   targets?: string | string[],
   exclude?: string[]
 ) => void
+
+export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
 
 /**
  * @public
@@ -226,6 +230,12 @@ export type PipelineFactory = (
   broadcast: BroadcastFunc,
   branding: Branding | null
 ) => Promise<Pipeline>
+
+export type CommunicationApiFactory = (
+  ctx: MeasureContext,
+  ws: WorkspaceIds,
+  broadcastSessions: BroadcastSessionsFunc
+) => Promise<CommunicationApi>
 
 /**
  * @public
@@ -513,6 +523,8 @@ export interface ClientSessionCtx {
   ctx: MeasureContext
 
   pipeline: Pipeline
+  communicationApi: CommunicationApi
+
   socialStringsToUsers: Map<PersonId, AccountUuid>
   requestId: ReqId | undefined
   sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
@@ -637,6 +649,7 @@ export interface Workspace {
   id: string
   token: string // Account workspace update token.
   pipeline: Promise<Pipeline> | Pipeline
+  communicationApi: Promise<CommunicationApi> | CommunicationApi
   tickHash: number
 
   tickHandlers: Map<string, TickHandler>
@@ -683,6 +696,7 @@ export interface SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
+    communicationApiFactory: CommunicationApiFactory,
     sessionId: string | undefined
   ) => Promise<AddSessionResponse>
 
@@ -716,6 +730,7 @@ export interface SessionManager {
     request: Request<any>,
     workspace: WorkspaceUuid
   ) => Promise<void>
+
   handleRPC: <S extends Session>(
     requestCtx: MeasureContext,
     service: S,
@@ -727,6 +742,7 @@ export interface SessionManager {
     ctx: MeasureContext,
     sendCtx: MeasureContext,
     pipeline: Pipeline,
+    communicationApi: CommunicationApi,
     requestId: Request<any>['id'],
     service: Session,
     ws: ConnectionSocket
@@ -753,6 +769,7 @@ export type ServerFactory = (
   handleRequest: HandleRequestFunction,
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
+  communicationApiFactory: CommunicationApiFactory,
   port: number,
   accountsUrl: string,
   externalStorage: StorageAdapter

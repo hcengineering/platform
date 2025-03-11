@@ -19,6 +19,7 @@ import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
 import { ClientSession, startSessionManager } from '@hcengineering/server'
 import {
+  type CommunicationApiFactory,
   type ServerFactory,
   type Session,
   type SessionManager,
@@ -39,6 +40,7 @@ import {
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import { uncompress } from 'snappy'
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
 
 import {
   createMongoAdapter,
@@ -126,10 +128,19 @@ export function start (
   const sessionFactory = (token: Token, workspace: Workspace, account: Account): Session => {
     return new ClientSession(token, workspace, account, token.extra?.mode === 'backup')
   }
+  const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
+    return await CommunicationApi.create(
+      ctx.newChild('💬 communication api', {}),
+      workspace.uuid,
+      dbUrl,
+      broadcastSessions
+    )
+  }
 
   const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {
     pipelineFactory,
     sessionFactory,
+    communicationApiFactory,
     port: opt.port,
     brandingMap: opt.brandingMap,
     serverFactory: opt.serverFactory,
