@@ -25,7 +25,7 @@ export async function handleS3CreateBlobParams (
   datalake: Datalake
 ): Promise<void> {
   const { workspace } = req.params
-  const { location, bucket } = await datalake.selectStorage(workspace)
+  const { location, bucket } = await datalake.selectStorage(ctx, workspace)
   res.status(200).json({ location, bucket: bucket.bucket })
 }
 
@@ -43,7 +43,7 @@ export async function handleS3CreateBlob (
   }
 
   try {
-    await datalake.create(workspace, name, filename)
+    await datalake.create(ctx, workspace, name, filename)
     res.status(200).send()
   } catch (err: any) {
     const error = err instanceof Error ? err.message : String(err)

@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
-import { initStatisticsContext } from '@hcengineering/server-core'
+import { Analytics } from '@hcengineering/analytics'
+import { MeasureContext, metricsAggregate } from '@hcengineering/core'
+import { decodeToken, TokenError } from '@hcengineering/server-token'
 
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
@@ -22,6 +23,7 @@ import fileUpload from 'express-fileupload'
 import { mkdtempSync } from 'fs'
 import { type Server } from 'http'
 import { tmpdir } from 'os'
+import { join } from 'path'
 
 import { cacheControl } from './const'
 import { createDb } from './datalake/db'
@@ -43,12 +45,14 @@ import { DatalakeImpl } from './datalake/datalake'
 import { Config } from './config'
 import { createBucket, S3Bucket } from './s3'
 import { createClient } from './s3/client'
-import { join } from 'path'
+
+const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
 type AsyncRequestHandler = (ctx: MeasureContext, req: Request, res: Response, datalake: Datalake) => Promise<void>
 
 const handleRequest = async (
   ctx: MeasureContext,
+  name: string,
   datalake: Datalake,
   fn: AsyncRequestHandler,
   req: Request,
@@ -56,22 +60,20 @@ const handleRequest = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    await fn(ctx, req, res, datalake)
+    await ctx.with(name, {}, (ctx) => fn(ctx, req, res, datalake))
   } catch (err: unknown) {
     next(err)
   }
 }
 
 const wrapRequest =
-  (ctx: MeasureContext, datalake: Datalake, fn: AsyncRequestHandler) =>
+  (ctx: MeasureContext, name: string, datalake: Datalake, fn: AsyncRequestHandler) =>
     (req: Request, res: Response, next: NextFunction) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      handleRequest(ctx, datalake, fn, req, res, next)
+      handleRequest(ctx, name, datalake, fn, req, res, next)
     }
 
-export function createServer (config: Config): { app: Express, close: () => void } {
-  const ctx = initStatisticsContext('datalake', {})
-
+export function createServer (ctx: MeasureContext, config: Config): { app: Express, close: () => void } {
   const buckets: Partial<Record<Location, S3Bucket>> = {}
   for (const bucket of config.Buckets) {
     const location = bucket.location as Location
@@ -87,7 +89,7 @@ export function createServer (config: Config): { app: Express, close: () => void
   }
 
   const db = createDb(ctx, config.DbUrl)
-  const datalake = new DatalakeImpl(ctx, db, buckets, { cacheControl })
+  const datalake = new DatalakeImpl(db, buckets, { cacheControl })
 
   const tempFileDir = mkdtempSync(join(tmpdir(), 'datalake-'))
 
@@ -101,26 +103,36 @@ export function createServer (config: Config): { app: Express, close: () => void
     })
   )
 
-  app.get('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, datalake, handleBlobList))
+  app.get('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, 'listBlobs', datalake, handleBlobList))
 
-  app.head('/blob/:workspace/:name', withBlob, wrapRequest(ctx, datalake, handleBlobHead))
+  app.head('/blob/:workspace/:name', withBlob, wrapRequest(ctx, 'headBlob', datalake, handleBlobHead))
 
-  app.head('/blob/:workspace/:name/:filename', withBlob, wrapRequest(ctx, datalake, handleBlobHead))
+  app.head('/blob/:workspace/:name/:filename', withBlob, wrapRequest(ctx, 'headBlob', datalake, handleBlobHead))
 
-  app.get('/blob/:workspace/:name', withBlob, wrapRequest(ctx, datalake, handleBlobGet))
+  app.get('/blob/:workspace/:name', withBlob, wrapRequest(ctx, 'getBlob', datalake, handleBlobGet))
 
-  app.get('/blob/:workspace/:name/:filename', withBlob, wrapRequest(ctx, datalake, handleBlobGet))
+  app.get('/blob/:workspace/:name/:filename', withBlob, wrapRequest(ctx, 'getBlob', datalake, handleBlobGet))
 
-  app.delete('/blob/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, datalake, handleBlobDelete))
+  app.delete(
+    '/blob/:workspace/:name',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 'deleteBlob', datalake, handleBlobDelete)
+  )
 
   app.delete(
     '/blob/:workspace/:name/:filename',
     withAuthorization,
     withBlob,
-    wrapRequest(ctx, datalake, handleBlobDelete)
+    wrapRequest(ctx, 'deleteBlob', datalake, handleBlobDelete)
   )
 
-  app.delete('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, datalake, handleBlobDeleteList))
+  app.delete(
+    '/blob/:workspace',
+    withAuthorization,
+    withWorkspace,
+    wrapRequest(ctx, 'deleteBlob', datalake, handleBlobDeleteList)
+  )
 
   // Form Data upload
 
@@ -128,7 +140,7 @@ export function createServer (config: Config): { app: Express, close: () => void
     '/upload/form-data/:workspace',
     withAuthorization,
     withWorkspace,
-    wrapRequest(ctx, datalake, handleUploadFormData)
+    wrapRequest(ctx, 'uploadFormData', datalake, handleUploadFormData)
   )
 
   // S3 upload
@@ -137,10 +149,15 @@ export function createServer (config: Config): { app: Express, close: () => void
     '/upload/s3/:workspace',
     withAuthorization,
     withWorkspace,
-    wrapRequest(ctx, datalake, handleS3CreateBlobParams)
+    wrapRequest(ctx, 's3UploadParams', datalake, handleS3CreateBlobParams)
   )
 
-  app.post('/upload/s3/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, datalake, handleS3CreateBlob))
+  app.post(
+    '/upload/s3/:workspace/:name',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 's3Upload', datalake, handleS3CreateBlob)
+  )
 
   // // Multipart upload
   // app.post('/upload/multipart/:workspace/:name',
@@ -161,7 +178,9 @@ export function createServer (config: Config): { app: Express, close: () => void
   //   wrapRequest(ctx, handleMultipartUploadComplete)
   // )
 
-  app.get('/image/:transform/:workspace/:name', withBlob, wrapRequest(ctx, datalake, handleImageGet)) // no auth
+  // Image
+
+  app.get('/image/:transform/:workspace/:name', withBlob, wrapRequest(ctx, 'transformImage', datalake, handleImageGet)) // no auth
 
   app.use((err: any, _req: any, res: any, _next: any) => {
     console.log(err)
@@ -171,6 +190,35 @@ export function createServer (config: Config): { app: Express, close: () => void
     }
 
     res.status(500).json({ message: err.message?.length > 0 ? err.message : 'Internal Server Error' })
+  })
+
+  app.get('/api/v1/statistics', (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      const admin = payload.extra?.admin === 'true'
+      res.setHeader('Content-Type', 'application/json')
+      res.setHeader('Connection', 'keep-alive')
+      res.setHeader('Keep-Alive', 'timeout=5')
+      res.setHeader('Cache-Control', cacheControlNoCache)
+
+      const json = JSON.stringify({
+        metrics: metricsAggregate((ctx as any).metrics),
+        statistics: {
+          activeSessions: {}
+        },
+        admin
+      })
+      res.status(200).send(json)
+    } catch (err: any) {
+      if (err instanceof TokenError) {
+        res.status(401).send()
+        return
+      }
+      ctx.error('statistics error', { err })
+      Analytics.handleError(err)
+      res.status(404).send()
+    }
   })
 
   app.get('/', (_req, res) => {

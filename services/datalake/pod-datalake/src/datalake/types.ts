@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { MeasureContext } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { S3Bucket } from '../s3'
 
@@ -47,19 +48,20 @@ export interface BlobStorage {
 }
 
 export interface Datalake {
-  list: (workspace: string, cursor?: string, limit?: number) => Promise<BlobList>
-  head: (workspace: string, name: string) => Promise<BlobHead | null>
-  get: (workspace: string, name: string, options: { range?: string }) => Promise<BlobBody | null>
-  delete: (workspace: string, name: string | string[]) => Promise<void>
+  list: (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number) => Promise<BlobList>
+  head: (ctx: MeasureContext, workspace: string, name: string) => Promise<BlobHead | null>
+  get: (ctx: MeasureContext, workspace: string, name: string, options: { range?: string }) => Promise<BlobBody | null>
+  delete: (ctx: MeasureContext, workspace: string, name: string | string[]) => Promise<void>
   put: (
+    ctx: MeasureContext,
     workspace: string,
     name: string,
     sha256: string,
     body: Buffer | Readable,
     options: Omit<BlobHead, 'name' | 'etag'>
   ) => Promise<BlobHead>
-  create: (workspace: string, name: string, filename: string) => Promise<BlobHead | null>
+  create: (ctx: MeasureContext, workspace: string, name: string, filename: string) => Promise<BlobHead | null>
 
-  setParent: (workspace: string, name: string, parent: string | null) => Promise<void>
-  selectStorage: (workspace: string) => Promise<BlobStorage>
+  setParent: (ctx: MeasureContext, workspace: string, name: string, parent: string | null) => Promise<void>
+  selectStorage: (ctx: MeasureContext, workspace: string) => Promise<BlobStorage>
 }

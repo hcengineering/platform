@@ -24,7 +24,6 @@ import { type S3Bucket } from '../s3'
 
 export class DatalakeImpl implements Datalake {
   constructor (
-    private readonly ctx: MeasureContext,
     private readonly db: BlobDB,
     private readonly buckets: Partial<Record<Location, S3Bucket>>,
     private readonly options: {
@@ -32,8 +31,8 @@ export class DatalakeImpl implements Datalake {
     }
   ) {}
 
-  async list (workspace: string, cursor?: string, limit?: number): Promise<BlobList> {
-    const blobs = await this.db.listBlobs(workspace, cursor, limit)
+  async list (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number): Promise<BlobList> {
+    const blobs = await this.db.listBlobs(ctx, workspace, cursor, limit)
 
     return {
       cursor: blobs.cursor,
@@ -44,15 +43,15 @@ export class DatalakeImpl implements Datalake {
     }
   }
 
-  async head (workspace: string, name: string): Promise<BlobHead | null> {
-    const { bucket } = await this.selectStorage(workspace)
+  async head (ctx: MeasureContext, workspace: string, name: string): Promise<BlobHead | null> {
+    const { bucket } = await this.selectStorage(ctx, workspace)
 
-    const blob = await this.db.getBlob({ workspace, name })
+    const blob = await this.db.getBlob(ctx, { workspace, name })
     if (blob === null) {
       return null
     }
 
-    const head = await bucket.head(blob.filename)
+    const head = await bucket.head(ctx, blob.filename)
     if (head == null) {
       return null
     }
@@ -67,16 +66,21 @@ export class DatalakeImpl implements Datalake {
     }
   }
 
-  async get (workspace: string, name: string, options: { range?: string }): Promise<BlobBody | null> {
-    const { bucket } = await this.selectStorage(workspace)
+  async get (
+    ctx: MeasureContext,
+    workspace: string,
+    name: string,
+    options: { range?: string }
+  ): Promise<BlobBody | null> {
+    const { bucket } = await this.selectStorage(ctx, workspace)
 
-    const blob = await this.db.getBlob({ workspace, name })
+    const blob = await this.db.getBlob(ctx, { workspace, name })
     if (blob === null) {
       return null
     }
 
     const range = options.range
-    const object = await bucket.get(blob.filename, { range })
+    const object = await bucket.get(ctx, blob.filename, { range })
     if (object == null) {
       return null
     }
@@ -95,15 +99,16 @@ export class DatalakeImpl implements Datalake {
     }
   }
 
-  async delete (workspace: string, name: string | string[]): Promise<void> {
+  async delete (ctx: MeasureContext, workspace: string, name: string | string[]): Promise<void> {
     if (Array.isArray(name)) {
-      await this.db.deleteBlobList({ workspace, names: name })
+      await this.db.deleteBlobList(ctx, { workspace, names: name })
     } else {
-      await this.db.deleteBlob({ workspace, name })
+      await this.db.deleteBlob(ctx, { workspace, name })
     }
   }
 
   async put (
+    ctx: MeasureContext,
     workspace: string,
     name: string,
     sha256: string,
@@ -113,9 +118,9 @@ export class DatalakeImpl implements Datalake {
     const cacheControl = options.cacheControl ?? this.options.cacheControl
 
     const { size, contentType, lastModified } = options
-    const { location, bucket } = await this.selectStorage(workspace)
+    const { location, bucket } = await this.selectStorage(ctx, workspace)
 
-    const blob = await this.db.getBlob({ workspace, name })
+    const blob = await this.db.getBlob(ctx, { workspace, name })
 
     const hash = digestToUUID(sha256)
     const filename = hash
@@ -125,11 +130,11 @@ export class DatalakeImpl implements Datalake {
       return { name, size, contentType, lastModified, etag: hash }
     }
 
-    const data = await this.db.getData({ hash, location })
+    const data = await this.db.getData(ctx, { hash, location })
 
     if (data !== null) {
       // Lucky boy, nothing to upload, use existing blob
-      await this.db.createBlob({ workspace, name, hash, location })
+      await this.db.createBlob(ctx, { workspace, name, hash, location })
       return { name, size, contentType, lastModified, etag: hash }
     } else {
       const putOptions = {
@@ -138,16 +143,16 @@ export class DatalakeImpl implements Datalake {
         cacheControl,
         lastModified
       }
-      await bucket.put(filename, body, putOptions)
-      await this.db.createBlobData({ workspace, name, hash, location, filename, size, type: contentType })
+      await bucket.put(ctx, filename, body, putOptions)
+      await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
       return { name, size, contentType, lastModified, etag: hash }
     }
   }
 
-  async create (workspace: string, name: string, filename: string): Promise<BlobHead | null> {
-    const { location, bucket } = await this.selectStorage(workspace)
+  async create (ctx: MeasureContext, workspace: string, name: string, filename: string): Promise<BlobHead | null> {
+    const { location, bucket } = await this.selectStorage(ctx, workspace)
 
-    const head = await bucket.head(filename)
+    const head = await bucket.head(ctx, filename)
     if (head == null) {
       return null
     }
@@ -157,21 +162,21 @@ export class DatalakeImpl implements Datalake {
     const contentType = head.contentType ?? 'application/octet-stream'
     const lastModified = head.lastModified
 
-    const data = await this.db.getData({ hash, location })
+    const data = await this.db.getData(ctx, { hash, location })
     if (data !== null) {
-      await Promise.all([bucket.delete(filename), this.db.createBlob({ workspace, name, hash, location })])
+      await Promise.all([bucket.delete(ctx, filename), this.db.createBlob(ctx, { workspace, name, hash, location })])
     } else {
-      await this.db.createBlobData({ workspace, name, hash, location, filename, size, type: contentType })
+      await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
     }
 
     return { name, size, contentType, lastModified, etag: hash }
   }
 
-  async setParent (workspace: string, name: string, parent: string | null): Promise<void> {
-    await this.db.setParent({ workspace, name }, parent !== null ? { workspace, name: parent } : null)
+  async setParent (ctx: MeasureContext, workspace: string, name: string, parent: string | null): Promise<void> {
+    await this.db.setParent(ctx, { workspace, name }, parent !== null ? { workspace, name: parent } : null)
   }
 
-  async selectStorage (workspace: string): Promise<BlobStorage> {
+  async selectStorage (ctx: MeasureContext, workspace: string): Promise<BlobStorage> {
     const location = this.selectLocation(workspace)
     const bucket = this.buckets[location]
     if (bucket == null) {
