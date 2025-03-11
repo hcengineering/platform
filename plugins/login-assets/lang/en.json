@@ -3,7 +3,7 @@
     "RequiredField": "Required field {field}",
     "FieldsDoNotMatch": "{field} don't match {field2}",
     "ConnectingToServer": "Connecting to server....",
-    "IncorrectValue": "Incorrect value {field}"
+    "IncorrectValue": "Incorrect value {field}"    
   },
   "string": {
     "LogIn": "Log In",

@@ -63,6 +63,7 @@ services:
       - REGION_INFO=|America;europe| # Europe without name will not be available for creation of new workspaces.
       # - REGION_INFO=|America;europe|Europe
       - ADMIN_EMAILS=admin
+      - WORKSPACE_LIMIT_PER_USER=100
       - ACCOUNT_PORT=3003
       - SERVER_SECRET=secret
       - DB_URL=mongodb://huly.local:27018
