@@ -1,0 +1,25 @@
+{
+  "string": {
+    "WorkspaceNamePattern": "Název musí být 40 znaků nebo méně, není prázdný a nesmí obsahovat speciální znaky (<, >, /)",
+    "Export": "Export",
+    "DataToExport": "Data k exportu",
+    "ExportDocuments": "Dokumenty",
+    "ExportIssues": "Problémy",
+    "ExportTestCases": "Testovací případy",
+    "ExportTestRuns": "Běhy testů",
+    "ExportTestPlans": "Testovací plány",
+    "ExportFormat": "Formát exportu",
+    "ExportJSON": "JSON",
+    "ExportCSV": "CSV",
+    "ExportUnifiedFormat": "Jednotný formát Huly",
+    "ExportIncludeContent": "Zahrnout obsah",
+    "ExportEverything": "Vše",
+    "ExportAttributesOnly": "Pouze atributy",
+    "ExportRequestSuccess": "Export byl zahájen.",
+    "ExportRequestSuccessMessage": "Export byl zahájen. Až bude dokončen, obdržíte oznámení ve své schránce.",
+    "ExportRequestFailed": "Nepodařilo se odeslat export.",
+    "ExportRequestFailedMessage": "Při odesílání exportu došlo k chybě. Zkuste to prosím později.",
+    "ExportCompleted": "Export byl dokončen. Vaše soubory jsou připraveny. Můžete je stáhnout z disku.",
+    "ExportFailed": "Export dat se nezdařil. Zkuste to prosím později."
+  }
+}

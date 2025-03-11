@@ -72,6 +72,7 @@
     "express": "^4.21.2",
     "ws": "^8.18.0",
     "@hcengineering/drive": "^0.6.0",
+    "@hcengineering/export": "^0.6.0",
     "uuid": "^8.3.2",
     "tar": "^7.4.3",
     "archiver": "^7.0.1",

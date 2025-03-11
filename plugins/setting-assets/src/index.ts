@@ -33,6 +33,5 @@ loadMetadata(setting.icon, {
   InviteSettings: `${icons}#inviteSettings`,
   InviteWorkspace: `${icons}#inviteWorkspace`,
   Views: `${icons}#views`,
-  Relations: `${icons}#relation`,
-  Export: `${icons}#export`
+  Relations: `${icons}#relation`
 })

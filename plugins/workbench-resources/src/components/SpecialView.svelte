@@ -31,6 +31,7 @@
   } from '@hcengineering/ui'
   import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import {
+    ExportButton,
     FilterBar,
     FilterButton,
     getResultOptions,
@@ -39,7 +40,7 @@
     ViewletSettingButton
   } from '@hcengineering/view-resources'
   import { ParentsNavigationModel } from '@hcengineering/workbench'
-
+  import { ExportButton, type TransformConfig } from '@hcengineering/export'
   import ComponentNavigator from './ComponentNavigator.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -56,6 +57,8 @@
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined = undefined
+  export let exportVisible: boolean = false
+  export let exportConfig: TransformConfig = {}
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -63,7 +66,6 @@
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
   let filterVisible: boolean = false
-
   let preference: ViewletPreference | undefined
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
@@ -131,6 +133,7 @@
     <FilterButton {_class} bind:visible={filterVisible} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
+    <ExportButton {_class} bind:visible={exportVisible} bind:query={resultQuery} bind:config={exportConfig} />
     {#if createLabel && createComponent}
       <Button
         icon={IconAdd}
