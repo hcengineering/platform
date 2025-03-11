@@ -20,19 +20,17 @@ import {
   Collection,
   Doc,
   isId,
-  Markup,
   MarkupBlobRef,
   MeasureContext,
   Mixin,
   Ref,
   RefTo,
   Type,
-  WorkspaceId
+  WorkspaceIds
 } from '@hcengineering/core'
 import attachment from '@hcengineering/model-attachment'
 import core from '@hcengineering/model-core'
 import { StorageAdapter } from '@hcengineering/server-core'
-import { markupToMarkdown } from '@hcengineering/text'
 import { UnifiedAttachment, UnifiedDoc } from './types'
 
 export class UnifiedConverter {
@@ -43,7 +41,7 @@ export class UnifiedConverter {
     private readonly context: MeasureContext,
     private readonly client: Client,
     private readonly storage: StorageAdapter,
-    private readonly workspaceId: WorkspaceId
+    private readonly wsIds: WorkspaceIds
   ) {}
 
   async convert (doc: Doc, attributesOnly: boolean = false): Promise<UnifiedDoc> {
@@ -169,8 +167,8 @@ export class UnifiedConverter {
 
     if (type._class === core.class.TypeMarkup) {
       markdownFields.push(key)
-      const markdown = await markupToMarkdown(value as Markup, '', '')
-      return markdown
+      // const markdown = await markupToMarkdown(value as Markup, '', '')
+      return value // todo: test
     }
 
     if (type._class === core.class.TypeCollaborativeDoc) {
@@ -267,15 +265,15 @@ export class UnifiedConverter {
     console.log(`Resolving markup content for ${blobRef}`)
     // return 'test'
     try {
-      const buffer = await this.storage.read(this.context, this.workspaceId, blobRef)
+      const buffer = await this.storage.read(this.context, this.wsIds, blobRef)
       if (buffer === undefined) {
         console.error(`Blob not found: ${blobRef}`)
         return ''
       }
 
       const markup = Buffer.concat(buffer as any).toString()
-      const markdown = await markupToMarkdown(markup, '', '')
-      return markdown
+      // const markdown = await markupToMarkdown(markup, '', '')
+      return markup // todo: test it is a markdown
     } catch (err) {
       console.error(`Failed to resolve markup content: ${blobRef}`, err)
       return ''
@@ -304,7 +302,7 @@ export class UnifiedConverter {
         size: (attachment as any).size,
         contentType: (attachment as any).contentType,
         getData: async () => {
-          const buffer = await this.storage.read(this.context, this.workspaceId, attachment._id)
+          const buffer = await this.storage.read(this.context, this.wsIds, attachment._id)
 
           if (buffer === undefined) {
             console.error(`Attachment not found: ${attachment._id}`)

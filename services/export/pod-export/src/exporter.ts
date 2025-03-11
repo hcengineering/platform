@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Client, MeasureContext, WorkspaceId } from '@hcengineering/core'
+import { Client, MeasureContext, WorkspaceIds } from '@hcengineering/core'
 import { Class, Doc, Ref, Space } from '@hcengineering/core/types/classes'
 import core from '@hcengineering/model-core'
 import { StorageAdapter } from '@hcengineering/server-core'
@@ -37,11 +37,11 @@ export class WorkspaceExporter {
     context: MeasureContext,
     private readonly client: Client,
     storage: StorageAdapter,
-    workspaceId: WorkspaceId
+    wsIds: WorkspaceIds
   ) {
     this.jsonSerializer = new UnifiedJsonSerializer()
     this.csvSerializer = new UnifiedCsvSerializer()
-    this.converter = new UnifiedConverter(context, client, storage, workspaceId)
+    this.converter = new UnifiedConverter(context, client, storage, wsIds)
   }
 
   async export (

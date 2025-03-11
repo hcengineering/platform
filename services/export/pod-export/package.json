@@ -63,6 +63,7 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-client": "^0.6.0",
     "@hcengineering/account": "^0.6.0",
+    "@hcengineering/account-client": "^0.6.0",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-core": "^0.6.0",
