@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { FindOptions, SortingOrder } from '@hcengineering/core'
+  import { Doc, FindOptions, SortingOrder } from '@hcengineering/core'
   import { ObjectPopup, getClient } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
@@ -48,6 +48,13 @@
 
   $: selected = !Array.isArray(value) ? value.parent ?? undefined : undefined
   $: ignoreObjects = !Array.isArray(value) ? [value._id] : undefined
+
+  $: cards = new Set(Array.isArray(value) ? value.map((p) => p._id) : [value._id])
+
+  const filter = (it: Doc): boolean => {
+    const card = it as Card
+    return !card.parentInfo.some((p) => cards.has(p._id))
+  }
 </script>
 
 <ObjectPopup
@@ -59,6 +66,7 @@
   allowDeselect={true}
   placeholder={card.string.SetParent}
   create={undefined}
+  {filter}
   {ignoreObjects}
   shadows={true}
   {width}

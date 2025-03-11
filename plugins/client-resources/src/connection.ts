@@ -28,6 +28,7 @@ import core, {
   ClientConnectEvent,
   ClientConnection,
   clone,
+  Handler,
   Doc,
   DocChunk,
   DocumentQuery,
@@ -35,7 +36,6 @@ import core, {
   FindOptions,
   FindResult,
   generateId,
-  Handler,
   LoadModelResponse,
   type MeasureContext,
   MeasureMetricsContext,
@@ -62,13 +62,13 @@ import platform, {
 } from '@hcengineering/platform'
 import { uncompress } from 'snappyjs'
 
-import { HelloRequest, HelloResponse, ReqId, type Response, RPCHandler } from '@hcengineering/rpc'
+import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
 import { EventResult } from '@hcengineering/communication-sdk-types'
 import {
-  FindMessagesGroupsParams,
   FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
+  FindMessagesGroupsParams,
   Message,
   MessagesGroup,
   NotificationContext

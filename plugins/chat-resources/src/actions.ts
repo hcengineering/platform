@@ -16,9 +16,9 @@
 import { type Message } from '@hcengineering/communication-types'
 import { getCurrentAccount, type Ref } from '@hcengineering/core'
 import { type Card } from '@hcengineering/card'
+import type { CommunicationClient } from '@hcengineering/presentation'
 
 import { openThreadInSidebar } from './location'
-import type { CommunicationClient } from '@hcengineering/presentation'
 
 export async function replyToThread (card: Ref<Card>, message: Message): Promise<void> {
   await openThreadInSidebar(card, message)

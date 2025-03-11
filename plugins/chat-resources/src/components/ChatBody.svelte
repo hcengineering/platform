@@ -22,10 +22,11 @@
   import { Scroller } from '@hcengineering/ui'
   import { Markup, SortingOrder } from '@hcengineering/core'
   import { tick } from 'svelte'
+  import { markupToMarkdown } from '@hcengineering/text-markdown'
+  import { markupToJSON } from '@hcengineering/text'
 
   import ReverseScroller from './internal/ReverseScroller.svelte'
   import { toDisplayMessages, groupMessagesByDay, MessagesGroup } from '../ui'
-  import { markupToMarkdown } from '@hcengineering/text'
   import { replyToThread, toggleReaction } from '../actions'
 
   export let card: Card | undefined = undefined
@@ -186,7 +187,7 @@
   async function handleUpdateMessage (event: CustomEvent<{ id: MessageID, text: Markup }>): Promise<void> {
     if (window === undefined || card === undefined) return
     const { id, text } = event.detail
-    const markdown = await markupToMarkdown(text)
+    const markdown = markupToMarkdown(markupToJSON(text))
     await communicationClient.updateMessage(card._id, id, markdown)
   }
 

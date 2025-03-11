@@ -77,12 +77,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverCard.trigger.OnCardParentChange,
+    trigger: serverCard.trigger.OnCardUpdate,
     isAsync: true,
     txMatch: {
       _class: core.class.TxUpdateDoc,
-      objectClass: card.class.Card,
-      operations: { parent: { $exists: true } }
+      objectClass: card.class.Card
     }
   })
 

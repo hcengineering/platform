@@ -64,7 +64,6 @@
       playlistLoadPolicy: loadPolicy,
       autoStartLoad: preload,
       xhrSetup: (xhr, url) => {
-        xhr.withCredentials = true
         const urlObj = new URL(url)
         if (urlObj.searchParams.size > 1) {
           return
@@ -73,6 +72,7 @@
         if (workspace == null) {
           return
         }
+        xhr.withCredentials = true
         const fileName = urlObj.href.substring(urlObj.href.lastIndexOf('/') + 1)
         urlObj.searchParams.append('file', fileName)
         urlObj.searchParams.append('workspace', workspace)

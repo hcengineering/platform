@@ -16,13 +16,12 @@ import {
   CardEvents,
   cardId,
   DOMAIN_CARD,
-  type ParentInfo,
   type Card,
   type MasterTag,
+  type ParentInfo,
   type Tag
 } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
-import contact from '@hcengineering/contact'
 import core, {
   AccountRole,
   DOMAIN_MODEL,
@@ -369,8 +368,7 @@ export function createModel (builder: Builder): void {
       name: 'tagrelation',
       label: card.string.TagRelations,
       icon: setting.icon.Relations,
-      props: { _classes: [card.class.Card, contact.class.Contact], exclude: [] },
-      component: setting.component.RelationSetting,
+      component: card.component.RelationSetting,
       group: 'settings-editor',
       role: AccountRole.Maintainer,
       order: 4501
@@ -382,7 +380,7 @@ export function createModel (builder: Builder): void {
     setting.class.SettingsCategory,
     core.space.Model,
     {
-      name: 'masterTags',
+      name: 'types',
       label: card.string.MasterTags,
       icon: card.icon.Card,
       component: card.component.ManageMasterTagsContent,

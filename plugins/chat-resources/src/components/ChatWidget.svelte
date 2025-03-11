@@ -21,7 +21,8 @@
   import { Message as MessagePresenter, MessageInput, Divider } from '@hcengineering/ui-next'
   import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import core, { Data, type Markup, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
-  import { jsonToMarkup, markupToMarkdown, markupToText, parseMessageMarkdown } from '@hcengineering/text'
+  import { jsonToMarkup, markupToJSON, markupToText } from '@hcengineering/text'
+  import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
   import { makeRank } from '@hcengineering/rank'
 
   import { ChatWidgetData } from '../types'
@@ -86,7 +87,7 @@
 
     let threadId: Ref<Card> | undefined = message.thread?.thread
     if (threadId == null) {
-      const markup = jsonToMarkup(parseMessageMarkdown(message.content, ''))
+      const markup = jsonToMarkup(markdownToMarkup(message.content))
       const title = markupToText(markup).trim()
 
       const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
@@ -94,7 +95,8 @@
       const data: Data<Card> = {
         title: `Thread: ${title.slice(0, 100)}${title.length > 100 ? '...' : ''}`,
         rank: makeRank(lastOne?.rank, undefined),
-        content: '' as MarkupBlobRef
+        content: '' as MarkupBlobRef,
+        parentInfo: []
       }
 
       threadId = await client.createDoc(chat.masterTag.Thread, core.space.Workspace, data)
@@ -103,7 +105,7 @@
     }
 
     if (threadId != null) {
-      const markdown = await markupToMarkdown(event.detail)
+      const markdown = markupToMarkdown(markupToJSON(event.detail))
       await communicationClient.createMessage(threadId, markdown)
     }
   }

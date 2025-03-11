@@ -57,7 +57,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/analytics-service": "^0.6.0",
-    "@hcengineering/communication-server": "^0.1.64",
+    "@hcengineering/communication-server": "^0.1.84",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/middleware": "^0.6.0",

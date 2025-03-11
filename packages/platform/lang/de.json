@@ -19,6 +19,7 @@
     "AccountAlreadyConfirmed": "Konto wurde bereits bestätigt",
     "WorkspaceAlreadyExists": "Arbeitsbereich existiert bereits",
     "InvalidOtp": "Ungültiger Code",
-    "InviteNotFound": "Einladung mit E-Mail: {email} nicht gefunden."
+    "InviteNotFound": "Einladung mit E-Mail: {email} nicht gefunden.",
+    "WorkspaceLimitReached": "Sie haben das Arbeitsbereichslimit erreicht. Bitte kontaktieren Sie uns..."
   }
 }

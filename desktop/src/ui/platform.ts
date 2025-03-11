@@ -334,6 +334,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(productsId, async () => await import('@hcengineering/products-resources'))
   addLocation(documentsId, async () => await import('@hcengineering/controlled-documents-resources'))
   addLocation(uploaderId, async () => await import('@hcengineering/uploader-resources'))
+  addLocation(recorderId, async () => await import('@hcengineering/recorder-resources'))
   addLocation(presenceId, async () => await import('@hcengineering/presence-resources'))
   addLocation(githubId, async () => await import(/* webpackChunkName: "github" */ '@hcengineering/github-resources'))
   addLocation(

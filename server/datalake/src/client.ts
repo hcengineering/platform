@@ -372,7 +372,7 @@ export class DatalakeClient {
   // R2
 
   async getR2UploadParams (ctx: MeasureContext, workspace: WorkspaceUuid): Promise<R2UploadParams> {
-    const path = `/upload/r2/${workspace}`
+    const path = `/upload/s3/${workspace}`
     const url = concatLink(this.endpoint, path)
 
     const response = await fetchSafe(ctx, url, { headers: { ...this.headers } })
@@ -388,7 +388,7 @@ export class DatalakeClient {
       filename: string
     }
   ): Promise<void> {
-    const path = `/upload/r2/${workspace}/${encodeURIComponent(objectName)}`
+    const path = `/upload/s3/${workspace}/${encodeURIComponent(objectName)}`
     const url = concatLink(this.endpoint, path)
 
     await fetchSafe(ctx, url, {

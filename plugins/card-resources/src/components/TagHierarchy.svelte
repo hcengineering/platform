@@ -17,7 +17,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { NavItem } from '@hcengineering/ui'
-  import { NavLink, showMenu } from '@hcengineering/view-resources'
+  import { NavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
 
@@ -66,9 +66,6 @@
       selected={!deselect && clazz._id === _class}
       on:click={() => {
         dispatch('select', clazz._id)
-      }}
-      on:contextmenu={(evt) => {
-        showMenu(evt, { object: clazz })
       }}
     />
   </NavLink>
