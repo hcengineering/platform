@@ -136,7 +136,9 @@ implements DbCollection<T> {
     }
 
     return cursor.map((doc) => {
-      delete doc._id
+      if (this.idKey !== '_id') {
+        delete doc._id
+      }
 
       return doc
     })

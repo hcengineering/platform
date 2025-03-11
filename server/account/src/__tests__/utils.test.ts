@@ -1292,7 +1292,7 @@ describe('account utils', () => {
 
       const result = await signUpByEmail(mockCtx, mockDb, mockBranding, email, password, firstName, lastName)
 
-      expect(result).toBe(personUuid)
+      expect(result.account).toBe(personUuid)
       expect(mockDb.person.insertOne).toHaveBeenCalledWith({ firstName, lastName })
       expect(mockDb.socialId.insertOne).toHaveBeenCalledWith({
         type: SocialIdType.EMAIL,
@@ -1322,7 +1322,7 @@ describe('account utils', () => {
 
       const result = await signUpByEmail(mockCtx, mockDb, mockBranding, email, password, firstName, lastName)
 
-      expect(result).toBe(personUuid)
+      expect(result.account).toBe(personUuid)
       expect(mockDb.person.updateOne).toHaveBeenCalledWith({ uuid: personUuid }, { firstName, lastName })
       expect(mockDb.account.insertOne).toHaveBeenCalledWith({ uuid: personUuid })
       expect(mockDb.setPassword).toHaveBeenCalledWith(personUuid, expect.any(Buffer), expect.any(Buffer))
@@ -1729,8 +1729,10 @@ describe('account utils', () => {
       const firstName = 'John'
       const lastName = 'Doe'
       const personUuid = 'new-person' as PersonUuid
+      const mockSocialIdUuid = 'mock-social-id-uuid'
 
       ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.insertOne as jest.Mock).mockResolvedValue(mockSocialIdUuid)
       ;(mockDb.person.insertOne as jest.Mock).mockResolvedValue(personUuid)
       ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ firstName, lastName })
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
@@ -1747,7 +1749,7 @@ describe('account utils', () => {
 
       expect(result).toEqual({
         account: personUuid,
-        socialId: expect.any(String),
+        socialId: mockSocialIdUuid,
         name: 'John Doe',
         token: 'new-token'
       })

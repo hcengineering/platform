@@ -673,10 +673,12 @@ describe('WorkspaceStatusMongoDbCollection', () => {
 describe('MongoAccountDB', () => {
   let mockDb: any
   let accountDb: MongoAccountDB
+  let mockSocialId: any
   let mockAccount: any
   let mockWorkspace: any
   let mockWorkspaceMembers: any
   let mockWorkspaceStatus: any
+  let mockMigration: any
 
   beforeEach(() => {
     mockDb = {}
@@ -685,6 +687,11 @@ describe('MongoAccountDB', () => {
     mockAccount = {
       updateOne: jest.fn(),
       ensureIndices: jest.fn()
+    }
+
+    mockSocialId = {
+      find: jest.fn().mockResolvedValue([]),
+      updateOne: jest.fn()
     }
 
     mockWorkspace = {
@@ -710,14 +717,22 @@ describe('MongoAccountDB', () => {
       insertOne: jest.fn()
     }
 
+    mockMigration = {
+      insertOne: jest.fn(),
+      updateOne: jest.fn(),
+      findOne: jest.fn()
+    }
+
     accountDb = new MongoAccountDB(mockDb)
 
     // Override the getters to return our mocks
     Object.defineProperties(accountDb, {
       account: { get: () => mockAccount },
+      socialId: { get: () => mockSocialId },
       workspace: { get: () => mockWorkspace },
       workspaceMembers: { get: () => mockWorkspaceMembers },
-      workspaceStatus: { get: () => mockWorkspaceStatus }
+      workspaceStatus: { get: () => mockWorkspaceStatus },
+      migration: { get: () => mockMigration }
     })
   })
 
