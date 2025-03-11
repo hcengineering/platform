@@ -165,7 +165,7 @@ export async function handleImageGet (
 
   res.on('finish', () => {
     try {
-      rmSync(tempDir)
+      rmSync(tempDir, { recursive: true })
     } catch (err: any) {
       ctx.error('failed to remove temp dir', { workspace, name, error: err })
     }
