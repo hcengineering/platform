@@ -94,6 +94,10 @@ import {
 } from './utils'
 
 import MD5 from 'crypto-js/md5'
+
+const workspaceLimitPerUser =
+  process.env.WORKSPACE_LIMIT_PER_USER != null ? parseInt(process.env.WORKSPACE_LIMIT_PER_USER) : 10
+
 function buildGravatarId (email: string): string {
   return MD5(email.trim().toLowerCase()).toString()
 }
@@ -1564,6 +1568,16 @@ export async function createUserWorkspace (
   }
   if (userAccount.confirmed === false) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
+  }
+
+  // Get a list of created workspaces
+  const created = (await db.workspace.find({ createdBy: email })).length
+
+  if (created >= (userAccount.workspaceLimit ?? workspaceLimitPerUser)) {
+    ctx.warn('created-by-limit', { email, workspace: workspaceName, limit: userAccount.workspaceLimit })
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceLimitReached, { workspace: workspaceName })
+    )
   }
 
   if (userAccount.lastWorkspace !== undefined && userAccount.admin === false) {

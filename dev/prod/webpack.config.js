@@ -74,7 +74,7 @@ const devProxy = {
 
 const devProxyTest = {
   '/account': {
-    target: 'http://localhost:3003',
+    target: 'http://huly.local:3003',
     changeOrigin: true,
     pathRewrite: { '^/account': '' },
     logLevel: 'debug'

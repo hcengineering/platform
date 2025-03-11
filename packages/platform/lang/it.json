@@ -19,6 +19,7 @@
     "AccountAlreadyConfirmed": "Account già confermato",
     "WorkspaceAlreadyExists": "Spazio di lavoro già esistente",
     "InvalidOtp": "Codice non valido",
-    "InviteNotFound": "Invito con email:{email} non trovato."
+    "InviteNotFound": "Invito con email:{email} non trovato.",
+    "WorkspaceLimitReached": "Hai raggiunto il limite di spazi di lavoro. Contattaci..."
   }
 }

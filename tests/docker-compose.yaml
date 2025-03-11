@@ -58,6 +58,7 @@ services:
     environment:
       - ACCOUNT_PORT=3003
       - SERVER_SECRET=secret
+      - WORKSPACE_LIMIT_PER_USER=100
       - DB_URL=mongodb://mongodb:27018
       - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
