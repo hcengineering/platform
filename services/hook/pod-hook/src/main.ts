@@ -26,6 +26,7 @@ export const main = async (): Promise<void> => {
         console.log('mta-hook retrieved')
         const message = getMessageInfo(req.body)
         console.log('Email from:', message?.from)
+        // TODO: Send request to add message or put event to the queue
 
         res.json({
           action: 'accept'
