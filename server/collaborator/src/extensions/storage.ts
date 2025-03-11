@@ -118,7 +118,7 @@ export class StorageExtension implements Extension {
     ctx.info('disconnect from document', params)
 
     const updates = this.updates.get(documentName)
-    if (updates === undefined || updates.collaborators.size === 0) {
+    if (updates === undefined || !updates.collaborators.has(connectionId)) {
       ctx.info('no changes for document', { documentName, connectionId })
       return
     }
