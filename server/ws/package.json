@@ -53,7 +53,7 @@
     "express": "^4.21.2",
     "utf-8-validate": "^6.0.4",
     "ws": "^8.18.0",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "snappy": "^7.2.2",
     "@hcengineering/api-client": "^0.6.0",
     "morgan": "^1.10.0"
