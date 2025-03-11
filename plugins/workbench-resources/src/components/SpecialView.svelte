@@ -31,6 +31,7 @@
   } from '@hcengineering/ui'
   import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import {
+    ExportButton,
     FilterBar,
     FilterButton,
     getResultOptions,
@@ -63,7 +64,7 @@
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
   let filterVisible: boolean = false
-
+  let exportVisible: boolean = true // todo: false by default
   let preference: ViewletPreference | undefined
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
@@ -131,6 +132,7 @@
     <FilterButton {_class} bind:visible={filterVisible} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
+    <ExportButton {_class} bind:visible={exportVisible} bind:query={resultQuery} />
     {#if createLabel && createComponent}
       <Button
         icon={IconAdd}
