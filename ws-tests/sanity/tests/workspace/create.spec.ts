@@ -190,6 +190,9 @@ test.describe('Workspace tests', () => {
 
       const signUpPage2 = new SignUpPage(page2)
       await signUpPage2.signUp(newUser2)
+      await page2.waitForURL((url) => {
+        return url.pathname.startsWith('/login/createWorkspace')
+      })
 
       await page2.waitForURL((url) => {
         return url.pathname.startsWith('/login/createWorkspace')
