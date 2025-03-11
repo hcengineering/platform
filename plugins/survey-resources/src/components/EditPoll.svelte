@@ -15,12 +15,12 @@
 //
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
-  import { Question, QuestionKind, Poll, PollData } from '@hcengineering/survey'
-  import PollQuestion from './PollQuestion.svelte'
+  import { Poll, PollData, Question, QuestionKind } from '@hcengineering/survey'
+  import { createEventDispatcher } from 'svelte'
   import { hasText } from '../utils'
+  import PollQuestion from './PollQuestion.svelte'
 
-  const client = getClient()
+  const dispatch = createEventDispatcher()
 
   export let object: Poll | PollData
   export let canSubmit: boolean = false
@@ -47,16 +47,14 @@
     return true
   }
 
-  function isPreviewMode (): boolean {
-    return (object as Poll)._id === undefined
+  function handleChange (patch: Partial<Poll>): void {
+    dispatch('change', patch)
   }
 
-  async function saveAnswers (): Promise<void> {
-    if (isPreviewMode()) {
-      return
-    }
-    const poll = object as Poll
-    await client.updateDoc(poll._class, poll.space, poll._id, { questions: object.questions })
+  function handleQuestionChange (index: number, patch: Partial<PollQuestion>): Promise<void> | void {
+    const questions = (object.questions ?? []).slice()
+    questions[index] = { ...questions[index], ...patch }
+    handleChange({ questions })
   }
 </script>
 
@@ -68,13 +66,13 @@
       </span>
     </div>
   {/if}
-  {#each object.questions ?? [] as question, index}
+  {#each object.questions ?? [] as question, index (index)}
     {#if isQuestionValid(question)}
       <PollQuestion
         bind:this={questionNodes[index]}
         bind:isAnswered={isAnswered[index]}
         {readonly}
-        on:answered={saveAnswers}
+        on:change={(e) => handleQuestionChange(index, e.detail)}
         {question}
       />
     {/if}
