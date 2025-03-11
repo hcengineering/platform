@@ -71,6 +71,10 @@ test.describe('Workspace Migration tests', () => {
         return url.pathname.startsWith('/login/selectWorkspace') || url.pathname.startsWith('/workbench/')
       })
 
+      await loginPage2.page.waitForURL((url) => {
+        return url.pathname.startsWith('/login/selectWorkspace') || url.pathname.startsWith('/workbench/')
+      })
+
       const adminPage = new AdminPage(page2)
       await adminPage.gotoAdmin()
 
