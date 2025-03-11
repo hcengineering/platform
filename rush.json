@@ -508,6 +508,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/ui-next",
+      "projectFolder": "packages/ui-next",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/uploader",
       "projectFolder": "plugins/uploader",
       "shouldPublish": false
@@ -2361,6 +2366,26 @@
     {
       "packageName": "@hcengineering/pod-mail",
       "projectFolder": "services/mail/pod-mail",
+      "shouldPublish": false,
+    },
+    {
+      "packageName": "@hcengineering/chat",
+      "projectFolder": "plugins/chat",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/chat-assets",
+      "projectFolder": "plugins/chat-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/chat-resources",
+      "projectFolder": "plugins/chat-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-chat",
+      "projectFolder": "models/chat",
       "shouldPublish": false
     },
     {

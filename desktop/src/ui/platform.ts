@@ -41,6 +41,7 @@ import telegram, { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import uiPlugin, { getCurrentLocation, locationStorageKeyId, navigate, setLocationStorageKey } from '@hcengineering/ui'
+import {uiNextId} from '@hcengineering/ui-next'
 import { uploaderId } from '@hcengineering/uploader'
 import recorder, { recorderId } from '@hcengineering/recorder'
 import { viewId } from '@hcengineering/view'
@@ -60,6 +61,7 @@ import { testManagementId } from '@hcengineering/test-management'
 import { surveyId } from '@hcengineering/survey'
 import { mySpaceId } from '@hcengineering/my-space'
 import { mailId } from '@hcengineering/mail'
+import { chatId } from '@hcengineering/chat'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
@@ -106,6 +108,7 @@ import '@hcengineering/test-management-assets'
 import '@hcengineering/survey-assets'
 import '@hcengineering/card-assets'
 import '@hcengineering/mail-assets'
+import '@hcengineering/chat-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, parseUploadConfig, presentationId } from '@hcengineering/presentation'
@@ -144,6 +147,7 @@ function configureI18n (): void {
   )
   addStringsLoader(textEditorId, async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`))
   addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
+  addStringsLoader(uiNextId, async (lang: string) => await import(`@hcengineering/ui-next/lang/${lang}.json`))
   addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
   addStringsLoader(recorderId, async (lang: string) => await import(`@hcengineering/recorder-assets/lang/${lang}.json`))
   addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
@@ -213,6 +217,7 @@ function configureI18n (): void {
   addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
   addStringsLoader(mySpaceId, async (lang: string) => await import(`@hcengineering/my-space-assets/lang/${lang}.json`))
   addStringsLoader(mailId, async (lang: string) => await import(`@hcengineering/mail-assets/lang/${lang}.json`))
+  addStringsLoader(chatId, async (lang: string) => await import(`@hcengineering/chat-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform (): Promise<void> {
@@ -344,6 +349,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
   addLocation(mySpaceId, () => import(/* webpackChunkName: "card" */ '@hcengineering/my-space-resources'))
+  addLocation(chatId, () => import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

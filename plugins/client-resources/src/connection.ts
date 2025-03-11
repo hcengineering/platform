@@ -16,17 +16,18 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import client, {
+  type ClientFactoryOptions,
   ClientSocket,
   ClientSocketReadyState,
   pingConst,
-  pongConst,
-  type ClientFactoryOptions
+  pongConst
 } from '@hcengineering/client'
 import core, {
   Account,
   Class,
   ClientConnectEvent,
   ClientConnection,
+  clone,
   Handler,
   Doc,
   DocChunk,
@@ -34,31 +35,30 @@ import core, {
   Domain,
   FindOptions,
   FindResult,
+  generateId,
   LoadModelResponse,
+  type MeasureContext,
   MeasureMetricsContext,
+  type PersonUuid,
   Ref,
   SearchOptions,
   SearchQuery,
   SearchResult,
   Timestamp,
+  toFindResult,
   Tx,
   TxApplyIf,
   TxHandler,
   TxResult,
-  clone,
-  generateId,
-  toFindResult,
-  type MeasureContext,
-  type PersonUuid,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, {
+  broadcastEvent,
+  getMetadata,
   PlatformError,
   Severity,
   Status,
-  UNAUTHORIZED,
-  broadcastEvent,
-  getMetadata
+  UNAUTHORIZED
 } from '@hcengineering/platform'
 import { uncompress } from 'snappyjs'
 
@@ -68,7 +68,9 @@ import {
   FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
+  FindMessagesGroupsParams,
   Message,
+  MessagesGroup,
   NotificationContext
 } from '@hcengineering/communication-types'
 
@@ -867,6 +869,10 @@ class Connection implements ClientConnection {
 
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
     return await this.sendRequest({ method: 'findMessages', params: [params, queryId] })
+  }
+
+  async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+    return await this.sendRequest({ method: 'findMessagesGroups', params: [params] })
   }
 
   async findNotificationContexts (

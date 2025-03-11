@@ -33,6 +33,7 @@
 
   export let content: Markup = EmptyMarkup
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
+  export let placeholderParams: Record<string, any> = {}
   export let extensions: AnyExtension[] = []
   export let supportSubmit = true
   export let editorAttributes: Record<string, string> = {}
@@ -47,7 +48,7 @@
 
   let placeHolderStr: string = ''
 
-  $: ph = translate(placeholder, {}, $themeStore.language).then((r) => {
+  $: ph = translate(placeholder, placeholderParams, $themeStore.language).then((r) => {
     if (editor !== undefined && placeHolderStr !== r) {
       const placeholderIndex = editor.extensionManager.extensions.findIndex(
         (extension) => extension.name === 'placeholder'

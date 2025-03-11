@@ -1,0 +1,24 @@
+{
+  "string": {
+    "Attach": "Attach",
+    "Cancel": "Cancel",
+    "Edit": "Edit",
+    "Edited": "Edited",
+    "Emoji": "Emoji",
+    "HoursAgo": "{hours, plural, =0 {less than an hour ago} =1 {an hour ago} other {# hours ago}}",
+    "JustNow": "Just now",
+    "LastReply": "Last reply",
+    "Mention": "Mention",
+    "MinutesAgo": "{minutes, plural, =0 {less than a minute ago} =1 {a minute ago} other {# minutes ago}}",
+    "MonthAt": "{month} at {time}",
+    "RepliesCount": "{count} replies",
+    "Reply": "Reply",
+    "Send": "Send",
+    "ShowFormatting": "Show formatting",
+    "Today": "Today",
+    "WeekdayAt": "{weekday} at {time}",
+    "YearAt": "{year} at {time}",
+    "Yesterday": "Yesterday",
+    "YesterdayAt": "Yesterday at {time}"
+  }
+}

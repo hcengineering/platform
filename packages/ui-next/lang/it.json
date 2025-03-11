@@ -1,0 +1,24 @@
+{
+  "string": {
+    "Attach": "Allega",
+    "Cancel": "Annulla",
+    "Edit": "Modifica",
+    "Edited": "Modificato",
+    "Emoji": "Emoji",
+    "HoursAgo": "{hours, plural, =0 {meno di un'ora fa} =1 {un'ora fa} other {# ore fa}}",
+    "JustNow": "Proprio adesso",
+    "LastReply": "Ultima risposta",
+    "Mention": "Menziona",
+    "MinutesAgo": "{minutes, plural, =0 {meno di un minuto fa} =1 {un minuto fa} other {# minuti fa}}",
+    "MonthAt": "{month} alle {time}",
+    "RepliesCount": "{count} risposte",
+    "Reply": "Rispondi",
+    "Send": "Invia",
+    "ShowFormatting": "Mostra la formattazione",
+    "Today": "Oggi",
+    "WeekdayAt": "{weekday} alle {time}",
+    "YearAt": "{year} alle {time}",
+    "Yesterday": "Ieri",
+    "YesterdayAt": "Ieri alle {time}"
+  }
+}
