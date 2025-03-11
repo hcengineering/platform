@@ -131,8 +131,8 @@
     blob={value.file}
     alt={value.name}
     fit={dimensions.fit}
-    width={dimensions.width}
-    height={dimensions.height}
+    width={Math.ceil(dimensions.width)}
+    height={Math.ceil(dimensions.height)}
     on:load={handleLoad}
     on:error={handleError}
     on:loadstart={handleLoadStart}
