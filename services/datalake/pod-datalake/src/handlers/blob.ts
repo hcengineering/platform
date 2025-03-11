@@ -64,7 +64,10 @@ export async function handleBlobGet (
   res.setHeader('Content-Length', blob.bodyLength.toString())
   res.setHeader('Content-Type', blob.contentType ?? '')
   res.setHeader('Content-Security-Policy', "default-src 'none';")
-  res.setHeader('Content-Disposition', filename !== undefined ? `attachment; filename="${filename}"` : 'attachment')
+  res.setHeader(
+    'Content-Disposition',
+    filename !== undefined ? `attachment; filename*=UTF-8''${encodeURIComponent(filename)}"` : 'attachment'
+  )
   res.setHeader('Cache-Control', blob.cacheControl ?? cacheControl)
   res.setHeader('Last-Modified', new Date(blob.lastModified).toUTCString())
   res.setHeader('ETag', blob.etag)
