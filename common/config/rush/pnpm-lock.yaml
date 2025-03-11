@@ -1505,8 +1505,8 @@ importers:
         specifier: ^1.6.51
         version: 1.6.52
       body-parser:
-        specifier: ^1.20.2
-        version: 1.20.2
+        specifier: ^1.20.3
+        version: 1.20.3
       browserslist:
         specifier: ^4.24.4
         version: 4.24.4
@@ -1661,8 +1661,8 @@ importers:
         specifier: ^2.0.22
         version: 2.0.23
       express-static-gzip:
-        specifier: ^2.1.7
-        version: 2.1.7
+        specifier: ^2.2.0
+        version: 2.2.0
       fast-copy:
         specifier: ^3.0.2
         version: 3.0.2
@@ -4004,7 +4004,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/collaborator@file:projects/collaborator.tgz':
-    resolution: {integrity: sha512-+HMz/V8Ne3kDYebHozkhIZW49OAaf89689gEqbe8KXMUs0hAJG7Fe4Ns5uQp7PqZBEiKoILlfNDJEJPvBRR4tQ==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-eg/WJC9/J+krohT9uWgxd0coEdm3dT0vUkG8G+HVefveqsCAkCyLN+6ku1+SzySVXPlr6ZNg6WQZUEYiKtPuUA==, tarball: file:projects/collaborator.tgz}
     version: 0.0.0
 
   '@rush-temp/contact-assets@file:projects/contact-assets.tgz':
@@ -4108,7 +4108,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/front@file:projects/front.tgz':
-    resolution: {integrity: sha512-dohiQMA5N6BQ+LJRe15hzxZOdP3edinNbP2id3xuoM/Xgq/Irs0EfczCo7zy3YcQocIDFMR71AYWGdXgilJbBw==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-XWse8MQKaDpuLm6JWK68erqnPkqTDwcMvBivgd+nk/OXV7iV5h2byqVOubSaqo0L738HbssZaCKkVfGpfvjifA==, tarball: file:projects/front.tgz}
     version: 0.0.0
 
   '@rush-temp/github-assets@file:projects/github-assets.tgz':
@@ -4636,7 +4636,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-front@file:projects/pod-front.tgz':
-    resolution: {integrity: sha512-XJIJr89EKyo2BNEgx6vOpEelpSHnUlNA3EfFDfN2rjS36akL7FPNYksmJ5XpDmyXWyNDkzt54f905X79RwTitw==, tarball: file:projects/pod-front.tgz}
+    resolution: {integrity: sha512-QqOjSuA/TCsyJ2dcUngqeocZvZq5cpE1y+3mttFGjhSsFNMLmNDnmHN5a7Bs357ctxk9ytvxw0fxSeed3Yem5w==, tarball: file:projects/pod-front.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-fulltext@file:projects/pod-fulltext.tgz':
@@ -4644,7 +4644,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-github@file:projects/pod-github.tgz':
-    resolution: {integrity: sha512-FPRCZ36WCkBXnk5ATqZKSIq0KfPHT0mYZpvpzLw1z5J74osXHxMoifo28Lb7bZcHDbXg6o6VOGHotBvPgCYUng==, tarball: file:projects/pod-github.tgz}
+    resolution: {integrity: sha512-xthnEvAJdK8JEOK4+srw+ZHAXBaKhHJh+uGJBViecMRb01+y0KPzAkno222gvffmRPpWRktWHugnFN8TM7xs4A==, tarball: file:projects/pod-github.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
@@ -4784,7 +4784,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/rekoni-service@file:projects/rekoni-service.tgz':
-    resolution: {integrity: sha512-B36vBrx2VBzD93psOJ3qPhyolM81Fz9OnzhcbhGiDal1XCEIoXpICMpYXXgO1phsr1nsXyQkQ3f9EnGATJAWGA==, tarball: file:projects/rekoni-service.tgz}
+    resolution: {integrity: sha512-drU6icafREaUYcSZfNn/CEYQLJC1ha6FkF7QrRcQ/TsuFaruapqmET0Ttqcr/vQaYemKF6SnshiKRGmeg+tcDA==, tarball: file:projects/rekoni-service.tgz}
     version: 0.0.0
 
   '@rush-temp/rekoni@file:projects/rekoni.tgz':
@@ -5108,7 +5108,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-ws@file:projects/server-ws.tgz':
-    resolution: {integrity: sha512-kVd/j4HPgbCYMMEqEkxRQiGqM0es47rgzzPdQvTDEFs6HtkyWxy8pbzRqA6HXJIDbNY5WLeTbtiLV37db6q33A==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-Y39D7UN7V20GCOt/FSCQYmNm7SOxOB0mbnWi0Rxeor9F8a8gW3+dDPBVzoAJU/eKLqGuVYq+YSQLBjIOR06MvA==, tarball: file:projects/server-ws.tgz}
     version: 0.0.0
 
   '@rush-temp/server@file:projects/server.tgz':
@@ -7104,10 +7104,6 @@ packages:
   bn.js@4.12.0:
     resolution: {integrity: sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==}
 
-  body-parser@1.20.2:
-    resolution: {integrity: sha512-ml9pReCu3M61kGlqoTm2umSXTlRTuGTx0bfYj+uIUKKYycG5NtSbeetV3faSU6R7ajOPw0g/J1PvK4qNy7s5bA==}
-    engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
-
   body-parser@1.20.3:
     resolution: {integrity: sha512-7rAxByjUMqQ3/bHJy7D6OGXvx/MMc4IqBn/X0fcM1QUcAItpZrBEYhWGem+tzXH90c+G01ypMcYJBO9Y30203g==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
@@ -8760,8 +8756,8 @@ packages:
     resolution: {integrity: sha512-Efm2t+xL6vEqUPs4kAyBY9xG/8LGpbSVnnFLZw6HgdxHzSRlg2/sNlA2UdMlcIKMH+LDOn7NKXUDGJK125F4rw==}
     engines: {node: '>=10.7.0'}
 
-  express-static-gzip@2.1.7:
-    resolution: {integrity: sha512-QOCZUC+lhPPCjIJKpQGu1Oa61Axg9Mq09Qvit8Of7kzpMuwDeMSqjjQteQS3OVw/GkENBoSBheuQDWPlngImvw==}
+  express-static-gzip@2.2.0:
+    resolution: {integrity: sha512-4ZQ0pHX0CAauxmzry2/8XFLM6aZA4NBvg9QezSlsEO1zLnl7vMFa48/WIcjzdfOiEUS4S1npPPKP2NHHYAp6qg==}
 
   express@4.21.2:
     resolution: {integrity: sha512-28HqgMZAmih1Czt9ny7qr6ek2qddF4FclbMzwhCREB6OFfH+rXAnuNCwo1/wFvrtbgsQDb4kSbX9de9lFbrXnA==}
@@ -11694,10 +11690,6 @@ packages:
   pure-rand@6.0.4:
     resolution: {integrity: sha512-LA0Y9kxMYv47GIPJy6MI84fqTd2HmYZI83W/kM/SkKfDlajnZYfmXFTxkbY+xSBPkLJxltMa9hIkmdc29eguMA==}
 
-  qs@6.11.0:
-    resolution: {integrity: sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==}
-    engines: {node: '>=0.6'}
-
   qs@6.11.2:
     resolution: {integrity: sha512-tDNIz22aBzCDxLtVH++VnTfzxlfeK5CbqohpSqpJgj1Wg/cQbStNAz3NuqCs5vV+pjBsK4x4pN9HlVh7rcYRiA==}
     engines: {node: '>=0.6'}
@@ -12068,10 +12060,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  send@0.18.0:
-    resolution: {integrity: sha512-qqWzuOjSFOuqPjFe4NOsMLafToQQwBSOEpS+FwEt3A2V3vKubTquT3vmLTQpFgMXp8AlFWFuP1qKaJZOtPpVXg==}
-    engines: {node: '>= 0.8.0'}
-
   send@0.19.0:
     resolution: {integrity: sha512-dW41u5VfLXu8SJh5bwRmyYUbAoSB3c9uQh6L8h/KtsFREPWpbX1lrljJo186Jc4nmci/sGUZ9a0a0J2zgfq2hw==}
     engines: {node: '>= 0.8.0'}
@@ -12085,10 +12073,6 @@ packages:
 
   serve-index@1.9.1:
     resolution: {integrity: sha512-pXHfKNP4qujrtteMrSBb0rc8HJ9Ms/GrXwcUtUtD5s4ewDJI8bT3Cz2zTVRMKtri49pLx2e0Ya8ziP5Ya2pZZw==}
-    engines: {node: '>= 0.8.0'}
-
-  serve-static@1.15.0:
-    resolution: {integrity: sha512-XGuRDNjXUijsUL0vl6nSD7cwURuzEgglbOaFuZM9g3kwDXOWVTck0jLzjPzGD+TazWbboZYu52/9/XPdUgne9g==}
     engines: {node: '>= 0.8.0'}
 
   serve-static@1.16.2:
@@ -14106,7 +14090,7 @@ snapshots:
       '@babel/traverse': 7.23.9
       '@babel/types': 7.23.9
       convert-source-map: 2.0.0
-      debug: 4.3.5
+      debug: 4.4.0
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -17137,7 +17121,7 @@ snapshots:
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      body-parser: 1.20.2
+      body-parser: 1.20.3
       cors: 2.8.5
       cross-env: 7.0.3
       esbuild: 0.24.2
@@ -17997,7 +17981,7 @@ snapshots:
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      body-parser: 1.20.2
+      body-parser: 1.20.3
       cors: 2.8.5
       cross-env: 7.0.3
       eslint: 8.56.0
@@ -18007,7 +17991,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       express-fileupload: 1.5.1
-      express-static-gzip: 2.1.7
+      express-static-gzip: 2.2.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       morgan: 1.10.0
       prettier: 3.2.5
@@ -20876,7 +20860,7 @@ snapshots:
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      body-parser: 1.20.2
+      body-parser: 1.20.3
       cors: 2.8.5
       cross-env: 7.0.3
       esbuild: 0.24.2
@@ -20981,7 +20965,7 @@ snapshots:
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      body-parser: 1.20.2
+      body-parser: 1.20.3
       cors: 2.8.5
       cross-env: 7.0.3
       dotenv: 16.0.3
@@ -22244,7 +22228,7 @@ snapshots:
       '@types/sharp': 0.32.0
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      body-parser: 1.20.2
+      body-parser: 1.20.3
       cors: 2.8.5
       dotenv: 16.0.3
       email-addresses: 5.0.0
@@ -24333,7 +24317,7 @@ snapshots:
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      body-parser: 1.20.2
+      body-parser: 1.20.3
       bufferutil: 4.0.8
       cors: 2.8.5
       eslint: 8.56.0
@@ -28593,21 +28577,6 @@ snapshots:
 
   bn.js@4.12.0: {}
 
-  body-parser@1.20.2:
-    dependencies:
-      bytes: 3.1.2
-      content-type: 1.0.5
-      debug: 2.6.9
-      depd: 2.0.0
-      destroy: 1.2.0
-      http-errors: 2.0.0
-      iconv-lite: 0.4.24
-      on-finished: 2.4.1
-      qs: 6.11.0
-      raw-body: 2.5.2
-      type-is: 1.6.18
-      unpipe: 1.0.0
-
   body-parser@1.20.3:
     dependencies:
       bytes: 3.1.2
@@ -30668,9 +30637,10 @@ snapshots:
       fs-extra: 9.1.0
       signal-exit: 3.0.7
 
-  express-static-gzip@2.1.7:
+  express-static-gzip@2.2.0:
     dependencies:
-      serve-static: 1.15.0
+      parseurl: 1.3.3
+      serve-static: 1.16.2
 
   express@4.21.2:
     dependencies:
@@ -31842,7 +31812,7 @@ snapshots:
 
   istanbul-lib-source-maps@4.0.1:
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
       istanbul-lib-coverage: 3.2.2
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -34081,10 +34051,6 @@ snapshots:
 
   pure-rand@6.0.4: {}
 
-  qs@6.11.0:
-    dependencies:
-      side-channel: 1.0.6
-
   qs@6.11.2:
     dependencies:
       side-channel: 1.0.5
@@ -34144,7 +34110,7 @@ snapshots:
 
   read-binary-file-arch@1.0.6:
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -34463,22 +34429,6 @@ snapshots:
 
   semver@7.6.3: {}
 
-  send@0.18.0:
-    dependencies:
-      debug: 2.6.9
-      depd: 2.0.0
-      destroy: 1.2.0
-      encodeurl: 1.0.2
-      escape-html: 1.0.3
-      etag: 1.8.1
-      fresh: 0.5.2
-      http-errors: 2.0.0
-      mime: 1.6.0
-      ms: 2.1.3
-      on-finished: 2.4.1
-      range-parser: 1.2.1
-      statuses: 2.0.1
-
   send@0.19.0:
     dependencies:
       debug: 2.6.9
@@ -34513,13 +34463,6 @@ snapshots:
       http-errors: 1.6.3
       mime-types: 2.1.35
       parseurl: 1.3.3
-
-  serve-static@1.15.0:
-    dependencies:
-      encodeurl: 1.0.2
-      escape-html: 1.0.3
-      parseurl: 1.3.3
-      send: 0.18.0
 
   serve-static@1.16.2:
     dependencies:
