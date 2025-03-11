@@ -200,51 +200,90 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
   return res
 }
 
-async function OnCardParentChange (ctx: TxUpdateDoc<Card>[], control: TriggerControl): Promise<Tx[]> {
+async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl): Promise<Tx[]> {
   const updateTx = ctx[0]
-  if (updateTx.operations.parent === undefined) return []
-  const newParent = updateTx.operations.parent
   const doc = (await control.findAll(control.ctx, card.class.Card, { _id: updateTx.objectId }))[0]
   if (doc === undefined) return []
-  const oldParent = doc.parentInfo[doc.parentInfo.length - 1]?._id
   const res: Tx[] = []
-  if (oldParent != null) {
-    const parent = (await control.findAll(control.ctx, card.class.Card, { _id: oldParent }))[0]
-    if (parent !== undefined) {
-      res.push(
-        control.txFactory.createTxUpdateDoc(parent._class, parent.space, parent._id, {
-          $inc: {
-            children: -1
-          }
-        })
-      )
+  if (updateTx.operations.parent !== undefined) {
+    const newParent = updateTx.operations.parent
+    const oldParent = doc.parentInfo[doc.parentInfo.length - 1]?._id
+    if (newParent != null) {
+      const parent = (await control.findAll(control.ctx, card.class.Card, { _id: newParent }))[0]
+      if (parent !== undefined) {
+        if (parent.parentInfo.findIndex((p) => p._id === doc._id) === -1) {
+          res.push(
+            control.txFactory.createTxUpdateDoc(parent._class, parent.space, parent._id, {
+              $inc: {
+                children: 1
+              }
+            })
+          )
+          res.push(
+            control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+              parentInfo: [
+                ...parent.parentInfo,
+                {
+                  _id: parent._id,
+                  _class: parent._class,
+                  title: parent.title
+                }
+              ]
+            })
+          )
+        } else {
+          // rollback
+          return [
+            control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
+              parent: oldParent ?? null
+            })
+          ]
+        }
+      }
+    }
+    if (oldParent != null) {
+      const parent = (await control.findAll(control.ctx, card.class.Card, { _id: oldParent }))[0]
+      if (parent !== undefined) {
+        res.push(
+          control.txFactory.createTxUpdateDoc(parent._class, parent.space, parent._id, {
+            $inc: {
+              children: -1
+            }
+          })
+        )
+      }
     }
   }
-  if (newParent != null) {
-    const parent = (await control.findAll(control.ctx, card.class.Card, { _id: newParent }))[0]
-    if (parent !== undefined) {
-      res.push(
-        control.txFactory.createTxUpdateDoc(parent._class, parent.space, parent._id, {
-          $inc: {
-            children: 1
-          }
-        })
-      )
-      res.push(
-        control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-          parentInfo: [
-            ...parent.parentInfo,
-            {
-              _id: parent._id,
-              _class: parent._class,
-              title: parent.title
-            }
-          ]
-        })
-      )
-    }
+  if (updateTx.operations.title !== undefined) {
+    res.push(...(await updateParentInfoName(control, doc._id, updateTx.operations.title, doc._id)))
   }
 
+  return res
+}
+
+async function updateParentInfoName (
+  control: TriggerControl,
+  parent: Ref<Card>,
+  title: string,
+  originParent: Ref<Card>
+): Promise<Tx[]> {
+  const res: Tx[] = []
+  const childs = await control.findAll(control.ctx, card.class.Card, { parent })
+  for (const child of childs) {
+    if (child._id === originParent) continue
+    const parentInfo = child.parentInfo
+    const index = parentInfo.findIndex((p) => p._id === parent)
+    if (index === -1) {
+      continue
+    }
+    parentInfo[index].title = title
+    res.push(
+      control.txFactory.createTxUpdateDoc(child._class, child.space, child._id, {
+        parentInfo
+      })
+    )
+    res.push(...(await updateParentInfoName(control, child._id, title, originParent)))
+  }
   return res
 }
 
@@ -277,6 +316,6 @@ export default async () => ({
     OnMasterTagRemove,
     OnCardRemove,
     OnCardCreate,
-    OnCardParentChange
+    OnCardUpdate
   }
 })

@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import card, { MasterTag } from '@hcengineering/card'
-  import contact from '@hcengineering/contact'
+  import { MasterTag } from '@hcengineering/card'
   import core, { Association, Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -22,6 +21,7 @@
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import { ButtonIcon, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
+  import CreateRelation from './CreateRelation.svelte'
 
   export let masterTag: MasterTag
 
@@ -49,10 +49,8 @@
   }
 
   function addRelation (): void {
-    showPopup(setting.component.CreateRelation, {
-      aClass: masterTag._id,
-      exclude: [],
-      _classes: [card.class.Card, contact.class.Contact]
+    showPopup(CreateRelation, {
+      aClass: masterTag._id
     })
   }
 

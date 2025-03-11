@@ -14,13 +14,13 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
-import { resolveLocation } from './navigation'
 
+import { buildPersonSpaceQuery } from './utils'
 export { default as plugin } from './plugin'
 
 export default async (): Promise<Resources> => ({
   component: {},
-  resolver: {
-    Location: resolveLocation
+  functions: {
+    BuildQuery: buildPersonSpaceQuery
   }
 })

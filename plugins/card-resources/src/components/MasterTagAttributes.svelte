@@ -74,7 +74,7 @@
         ev.stopPropagation()
         const loc = getCurrentResolvedLocation()
         loc.path[2] = settingId
-        loc.path[3] = 'masterTags'
+        loc.path[3] = 'types'
         loc.path[4] = value._class
         loc.path.length = 5
         loc.fragment = undefined

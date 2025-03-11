@@ -2119,6 +2119,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-datalake",
+      "projectFolder": "services/datalake/pod-datalake",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-love",
       "projectFolder": "services/love",
       "shouldPublish": false
