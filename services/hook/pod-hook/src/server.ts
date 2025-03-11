@@ -62,7 +62,7 @@ export function createServer (endpoints: Endpoint[]): Express {
 
 export function listen (e: Express, port: number, host?: string): Server {
   const cb = (): void => {
-    console.log(`Mail service has been started at ${host ?? '*'}:${port}`)
+    console.log(`Hook service has been started at ${host ?? '*'}:${port}`)
   }
 
   return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
