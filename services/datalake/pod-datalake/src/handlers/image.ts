@@ -88,11 +88,6 @@ export async function handleImageGet (
     return
   }
 
-  if (!blob.contentType.startsWith('image/')) {
-    res.status(400).send()
-    return
-  }
-
   const dpr = image.dpr === undefined || Number.isNaN(image.dpr) ? 1 : image.dpr
   const width = image.width === undefined || Number.isNaN(image.width)
     ? undefined
