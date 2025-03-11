@@ -220,39 +220,43 @@
   }
 
   async function onCreateNewDraft (): Promise<void> {
-    if (creating) {
-      return
-    }
+    if (creating) return
 
     creating = true
     try {
-      if ($controlledDocument != null && $canCreateNewDraft && $documentLatestVersion != null) {
-        const latest = $documentLatestVersion
-        const version = { major: latest.major, minor: latest.minor + 1 }
-        const project = await getLatestProjectId($controlledDocument.space)
-
-        if (project !== undefined) {
-          try {
-            const { id, success } = await createNewDraftForControlledDoc(
-              client,
-              $controlledDocument,
-              $controlledDocument.space,
-              version,
-              project
-            )
-            if (success) {
-              const loc = getProjectDocumentLink(id, project)
-              navigate(loc)
-            }
-          } catch (err) {
-            await setPlatformStatus(unknownError(err))
-          }
-        } else {
-          console.warn('No document project found for space', $controlledDocument.space)
-        }
-      } else {
+      if (!$controlledDocument || !$canCreateNewDraft || !$documentLatestVersion) {
         console.warn('Unexpected document state', $documentState)
+        return
       }
+
+      const latest = $documentLatestVersion
+      const version = { major: latest.major, minor: latest.minor + 1 }
+      const project = await getLatestProjectId($controlledDocument.space)
+
+      if (project === undefined) {
+        console.warn('No document project found for space', $controlledDocument.space)
+        return
+      }
+
+      if (latest.state === DocumentState.Deleted) {
+        await client.update(latest, { state: DocumentState.Draft })
+        const loc = getProjectDocumentLink(latest, project)
+        navigate(loc)
+      } else {
+        const { id, success } = await createNewDraftForControlledDoc(
+          client,
+          $controlledDocument,
+          $controlledDocument.space,
+          version,
+          project
+        )
+        if (success) {
+          const loc = getProjectDocumentLink(id, project)
+          navigate(loc)
+        }
+      }
+    } catch (err) {
+      await setPlatformStatus(unknownError(err))
     } finally {
       creating = false
     }
