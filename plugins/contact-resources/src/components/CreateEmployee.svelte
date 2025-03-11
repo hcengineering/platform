@@ -13,7 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, Channel, combineName, ContactEvents, Employee, Person } from '@hcengineering/contact'
+  import {
+    AvatarType,
+    Channel,
+    combineName,
+    ContactEvents,
+    Employee,
+    Person,
+    SocialIdentityRef
+  } from '@hcengineering/contact'
   import {
     AccountRole,
     AttachedData,
@@ -30,7 +38,7 @@
   import { createEventDispatcher } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
-  import { personByPersonIdStore } from '../utils'
+  import { employeeBySocialKeyStore, getAccountClient } from '../utils'
   import EditableAvatar from './EditableAvatar.svelte'
   import { Analytics } from '@hcengineering/analytics'
 
@@ -59,6 +67,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const accountClient = getAccountClient()
 
   async function createEmployee (): Promise<void> {
     try {
@@ -70,13 +79,20 @@
         value: mail
       })
 
-      const existingPerson = $personByPersonIdStore.get(socialString)
+      const existingId = await client.findOne(contact.class.SocialIdentity, { key: socialString })
+      const existingPerson =
+        existingId !== undefined
+          ? await client.findOne(contact.class.Person, { _id: existingId.attachedTo })
+          : undefined
       if (existingPerson !== undefined && client.getHierarchy().hasMixin(existingPerson, contact.mixin.Employee)) {
         return
       }
 
+      const { uuid, socialId } = await accountClient.ensurePerson(SocialIdType.EMAIL, mail, firstName, lastName)
+
       const name = combineName(firstName, lastName)
       person.name = name
+      person.personUuid = uuid
       const info = await avatarEditor.createAvatar()
       person.avatar = info.avatar
       person.avatarType = info.avatarType
@@ -89,8 +105,9 @@
       }
       const employeeRef = (existingPerson?._id as Ref<Employee>) ?? id
 
-      await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
-        active: true
+      await client.createMixin(employeeRef, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
+        active: true,
+        role: AccountRole.User
       })
 
       await client.addCollection(
@@ -102,9 +119,9 @@
         {
           type: SocialIdType.EMAIL,
           value: mail,
-          confirmed: false,
           key: socialString
-        }
+        },
+        socialId as SocialIdentityRef
       )
 
       const sendInvite = await getResource(login.function.SendInvite)
@@ -140,8 +157,7 @@
 
   let channels: AttachedData<Channel>[] = []
 
-  $: emailPerson = $personByPersonIdStore.get(emailSocialString)
-  $: exists = emailPerson !== undefined && client.getHierarchy().hasMixin(emailPerson, contact.mixin.Employee)
+  $: exists = $employeeBySocialKeyStore.get(emailSocialString) !== undefined
 
   const manager = createFocusManager()
 

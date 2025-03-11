@@ -59,9 +59,10 @@ import core, {
   type PersonId
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
-import { type IntlString, getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
-import { createQuery, getClient, onClient } from '@hcengineering/presentation'
+import { type IntlString, getEmbeddedLabel, getMetadata, getResource, translate } from '@hcengineering/platform'
+import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
+import login from '@hcengineering/login'
 import {
   getCurrentResolvedLocation,
   getPanelURI,
@@ -74,6 +75,7 @@ import view, { type Filter, type GrouppingManager } from '@hcengineering/view'
 import { accessDeniedStore, FilterQuery } from '@hcengineering/view-resources'
 import { derived, get, type Readable, writable } from 'svelte/store'
 import { type LocationData } from '@hcengineering/workbench'
+import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 
 import contact from './plugin'
 
@@ -368,10 +370,17 @@ export const primarySocialIdByPersonRefStore: Readable<Map<Ref<Person>, PersonId
   }
 )
 /**
- * [PersonId (social string) => Ref<Person>] mapping
+ * [PersonId (social ID) => Ref<Person>] mapping
  */
 export const personRefByPersonIdStore: Readable<Map<PersonId, Ref<Person>>> = derived(socialIdsStore, (socialIds) => {
   const mapped = socialIds.map((si) => [si._id, si.attachedTo] as const)
+  return new Map(mapped)
+})
+/**
+ * [string (social key) => Ref<Person>] mapping
+ */
+export const personRefBySocialKeyStore: Readable<Map<string, Ref<Person>>> = derived(socialIdsStore, (socialIds) => {
+  const mapped = socialIds.map((si) => [si.key, si.attachedTo] as const)
   return new Map(mapped)
 })
 /**
@@ -379,7 +388,7 @@ export const personRefByPersonIdStore: Readable<Map<PersonId, Ref<Person>>> = de
  */
 export const personRefByAccountUuidStore = writable<Map<AccountUuid, Ref<Employee>>>(new Map())
 /**
- * [PersonId (social string) => Person] mapping
+ * [PersonId (social ID) => Person] mapping
  */
 export const personByPersonIdStore: Readable<Map<PersonId, Person>> = derived(
   [personRefByPersonIdStore, personByIdStore],
@@ -391,6 +400,24 @@ export const personByPersonIdStore: Readable<Map<PersonId, Person>> = derived(
           return undefined
         }
         return [personId, person] as const
+      })
+      .filter(notEmpty)
+    return new Map(mapped)
+  }
+)
+/**
+ * [string (social key) => Employee] mapping
+ */
+export const employeeBySocialKeyStore: Readable<Map<string, Employee>> = derived(
+  [personRefBySocialKeyStore, employeeByIdStore],
+  ([personRefBySocialKey, employeeById]) => {
+    const mapped = Array.from(personRefBySocialKey.entries())
+      .map(([socialKey, personRef]) => {
+        const employee = employeeById.get(personRef as Ref<Employee>)
+        if (employee === undefined) {
+          return undefined
+        }
+        return [socialKey, employee] as const
       })
       .filter(notEmpty)
     return new Map(mapped)
@@ -415,7 +442,7 @@ export const employeeByAccountStore = derived(
   }
 )
 /**
- * [PersonId (social string) => SocialIdentity[]] mapping
+ * [PersonId (social ID) => SocialIdentity[]] mapping
  */
 export const socialIdsByPersonIdStore: Readable<Map<PersonId, SocialIdentity[]>> = derived(
   [personRefByPersonIdStore, socialIdsByPersonRefStore],
@@ -428,7 +455,7 @@ export const socialIdsByPersonIdStore: Readable<Map<PersonId, SocialIdentity[]>>
   }
 )
 /**
- * [PersonId (social string) => PersonId (primary)] mapping
+ * [PersonId (social ID) => PersonId (primary)] mapping
  */
 export const primarySocialIdByPersonIdStore: Readable<Map<PersonId, PersonId>> = derived(
   socialIdsByPersonIdStore,
@@ -776,3 +803,10 @@ spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
     }
   )
 })
+
+export function getAccountClient (): AccountClient {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  const token = getMetadata(presentation.metadata.Token)
+
+  return getAccountClientRaw(accountsUrl, token)
+}
