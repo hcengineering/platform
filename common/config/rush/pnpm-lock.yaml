@@ -1661,8 +1661,8 @@ importers:
         specifier: ^2.0.22
         version: 2.0.23
       express-static-gzip:
-        specifier: ^2.1.7
-        version: 2.1.7
+        specifier: ^2.2.0
+        version: 2.2.0
       fast-copy:
         specifier: ^3.0.2
         version: 3.0.2
@@ -4108,7 +4108,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/front@file:projects/front.tgz':
-    resolution: {integrity: sha512-dohiQMA5N6BQ+LJRe15hzxZOdP3edinNbP2id3xuoM/Xgq/Irs0EfczCo7zy3YcQocIDFMR71AYWGdXgilJbBw==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-Xmib9BMu+V/NLsbZjQJZifqSNtD8vw7zkhGh8X0e6IgcYE2c/5ci6kxivqd9n/nXW1QCpjpM/8fMKYuHmf/Fng==, tarball: file:projects/front.tgz}
     version: 0.0.0
 
   '@rush-temp/github-assets@file:projects/github-assets.tgz':
@@ -4632,7 +4632,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
-    resolution: {integrity: sha512-10QloVozuuc7JtF7agUluck8iEau1sLhcqsXsSgUmNKlL4VtrfktsJkQ21pvBS6z8+oC8tXFFuuHHzTkA5dIYg==, tarball: file:projects/pod-export.tgz}
+    resolution: {integrity: sha512-ZFXMGyHVkTv7XD9ADDO1+n6cQN0dJ9yEGP3vaEaGZjKYTltoWwGGpfOW5k9Qe+ebpt7oL0s077OY1NDlWtTMRA==, tarball: file:projects/pod-export.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-front@file:projects/pod-front.tgz':
@@ -5268,7 +5268,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-SwaFO7JH3Wmm+A6k1wXMTuh8TQReA2d7r3xZoTIAqR1ZgU95Re6jCJwsbYIQTJAU1DiputUiBugeGazt/MC+zw==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-1/Aodec9LySBThOZAeA3XJfP83lSVTVRFdlb8uNTORq1sHJxCADx9BliCh2dTzdhydW46wcAxMPeArhopkcN1Q==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -8760,8 +8760,8 @@ packages:
     resolution: {integrity: sha512-Efm2t+xL6vEqUPs4kAyBY9xG/8LGpbSVnnFLZw6HgdxHzSRlg2/sNlA2UdMlcIKMH+LDOn7NKXUDGJK125F4rw==}
     engines: {node: '>=10.7.0'}
 
-  express-static-gzip@2.1.7:
-    resolution: {integrity: sha512-QOCZUC+lhPPCjIJKpQGu1Oa61Axg9Mq09Qvit8Of7kzpMuwDeMSqjjQteQS3OVw/GkENBoSBheuQDWPlngImvw==}
+  express-static-gzip@2.2.0:
+    resolution: {integrity: sha512-4ZQ0pHX0CAauxmzry2/8XFLM6aZA4NBvg9QezSlsEO1zLnl7vMFa48/WIcjzdfOiEUS4S1npPPKP2NHHYAp6qg==}
 
   express@4.21.2:
     resolution: {integrity: sha512-28HqgMZAmih1Czt9ny7qr6ek2qddF4FclbMzwhCREB6OFfH+rXAnuNCwo1/wFvrtbgsQDb4kSbX9de9lFbrXnA==}
@@ -12068,10 +12068,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  send@0.18.0:
-    resolution: {integrity: sha512-qqWzuOjSFOuqPjFe4NOsMLafToQQwBSOEpS+FwEt3A2V3vKubTquT3vmLTQpFgMXp8AlFWFuP1qKaJZOtPpVXg==}
-    engines: {node: '>= 0.8.0'}
-
   send@0.19.0:
     resolution: {integrity: sha512-dW41u5VfLXu8SJh5bwRmyYUbAoSB3c9uQh6L8h/KtsFREPWpbX1lrljJo186Jc4nmci/sGUZ9a0a0J2zgfq2hw==}
     engines: {node: '>= 0.8.0'}
@@ -12085,10 +12081,6 @@ packages:
 
   serve-index@1.9.1:
     resolution: {integrity: sha512-pXHfKNP4qujrtteMrSBb0rc8HJ9Ms/GrXwcUtUtD5s4ewDJI8bT3Cz2zTVRMKtri49pLx2e0Ya8ziP5Ya2pZZw==}
-    engines: {node: '>= 0.8.0'}
-
-  serve-static@1.15.0:
-    resolution: {integrity: sha512-XGuRDNjXUijsUL0vl6nSD7cwURuzEgglbOaFuZM9g3kwDXOWVTck0jLzjPzGD+TazWbboZYu52/9/XPdUgne9g==}
     engines: {node: '>= 0.8.0'}
 
   serve-static@1.16.2:
@@ -18007,7 +17999,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       express-fileupload: 1.5.1
-      express-static-gzip: 2.1.7
+      express-static-gzip: 2.2.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       morgan: 1.10.0
       prettier: 3.2.5
@@ -30667,9 +30659,10 @@ snapshots:
       fs-extra: 9.1.0
       signal-exit: 3.0.7
 
-  express-static-gzip@2.1.7:
+  express-static-gzip@2.2.0:
     dependencies:
-      serve-static: 1.15.0
+      parseurl: 1.3.3
+      serve-static: 1.16.2
 
   express@4.21.2:
     dependencies:
@@ -34462,22 +34455,6 @@ snapshots:
 
   semver@7.6.3: {}
 
-  send@0.18.0:
-    dependencies:
-      debug: 2.6.9
-      depd: 2.0.0
-      destroy: 1.2.0
-      encodeurl: 1.0.2
-      escape-html: 1.0.3
-      etag: 1.8.1
-      fresh: 0.5.2
-      http-errors: 2.0.0
-      mime: 1.6.0
-      ms: 2.1.3
-      on-finished: 2.4.1
-      range-parser: 1.2.1
-      statuses: 2.0.1
-
   send@0.19.0:
     dependencies:
       debug: 2.6.9
@@ -34512,13 +34489,6 @@ snapshots:
       http-errors: 1.6.3
       mime-types: 2.1.35
       parseurl: 1.3.3
-
-  serve-static@1.15.0:
-    dependencies:
-      encodeurl: 1.0.2
-      escape-html: 1.0.3
-      parseurl: 1.3.3
-      send: 0.18.0
 
   serve-static@1.16.2:
     dependencies:
