@@ -13,8 +13,13 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
+import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
+import { initStatisticsContext } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
+import { join } from 'path'
 
 import config from './config'
 import { createServer, listen } from './server'
@@ -26,7 +31,24 @@ const setupMetadata = (): void => {
 export const main = async (): Promise<void> => {
   setupMetadata()
 
-  const { app, close } = createServer(config)
+  configureAnalytics(process.env.SENTRY_DSN, {})
+  Analytics.setTag('application', 'datalake')
+
+  const metricsContext = initStatisticsContext('datalake', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'datalake',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('datalake', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
+
+  const { app, close } = createServer(metricsContext, config)
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {

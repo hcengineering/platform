@@ -40,14 +40,14 @@ export async function handleMultipartUploadStart (
 ): Promise<void> {
   const { workspace, name } = req.params
 
-  const { bucket } = await datalake.selectStorage(workspace)
+  const { bucket } = await datalake.selectStorage(ctx, workspace)
 
   const contentType = req.headers['content-type'] ?? 'application/octet-stream'
   const lastModifiedHeader = req.headers['last-modified']
   const lastModified =
     lastModifiedHeader != null ? new Date(lastModifiedHeader).toISOString() : new Date().toISOString()
 
-  const { uploadId } = await bucket.createMultipartUpload(name, { contentType, cacheControl, lastModified })
+  const { uploadId } = await bucket.createMultipartUpload(ctx, name, { contentType, cacheControl, lastModified })
   res.status(200).json({ key: name, uploadId })
 }
 
@@ -72,9 +72,9 @@ export async function handleMultipartUploadPart (
     return
   }
 
-  const { bucket } = await datalake.selectStorage(workspace)
+  const { bucket } = await datalake.selectStorage(ctx, workspace)
 
-  const part = await bucket.uploadMultipartPart(key, { uploadId }, req.body, {
+  const part = await bucket.uploadMultipartPart(ctx, key, { uploadId }, req.body, {
     partNumber: Number.parseInt(partNumber)
   })
 
@@ -88,7 +88,7 @@ export async function handleMultipartUploadComplete (
   datalake: Datalake
 ): Promise<void> {
   const { workspace, name } = req.params
-  const { bucket } = await datalake.selectStorage(workspace)
+  const { bucket } = await datalake.selectStorage(ctx, workspace)
 
   const uploadId = req.query.uploadId as string
   if (typeof uploadId !== 'string') {
@@ -97,8 +97,8 @@ export async function handleMultipartUploadComplete (
   }
 
   const { parts } = req.body as MultipartUploadCompleteRequest
-  await bucket.completeMultipartUpload(name, { uploadId }, parts)
-  const metadata = await datalake.create(workspace, name, name)
+  await bucket.completeMultipartUpload(ctx, name, { uploadId }, parts)
+  const metadata = await datalake.create(ctx, workspace, name, name)
 
   res.status(200).json(metadata)
 }
@@ -117,8 +117,8 @@ export async function handleMultipartUploadAbort (
     return
   }
 
-  const { bucket } = await datalake.selectStorage(workspace)
-  await bucket.abortMultipartUpload(name, { uploadId })
+  const { bucket } = await datalake.selectStorage(ctx, workspace)
+  await bucket.abortMultipartUpload(ctx, name, { uploadId })
 
   res.status(204).send()
 }

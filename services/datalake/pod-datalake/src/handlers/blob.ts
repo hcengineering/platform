@@ -40,7 +40,7 @@ export async function handleBlobList (
   const cursor = req.query.cursor as string
   const limit = extractIntParam(req.query.limit as string)
 
-  const blobs = await datalake.list(workspace, cursor, limit)
+  const blobs = await datalake.list(ctx, workspace, cursor, limit)
   res.status(200).json(blobs)
 }
 
@@ -54,7 +54,7 @@ export async function handleBlobGet (
 
   const range = req.headers.range
 
-  const blob = await datalake.get(workspace, name, { range })
+  const blob = await datalake.get(ctx, workspace, name, { range })
   if (blob == null) {
     res.status(404).send()
     return
@@ -107,7 +107,7 @@ export async function handleBlobHead (
 ): Promise<void> {
   const { workspace, name, filename } = req.params
 
-  const head = await datalake.head(workspace, name)
+  const head = await datalake.head(ctx, workspace, name)
   if (head == null) {
     res.status(404).send()
     return
@@ -134,7 +134,7 @@ export async function handleBlobDelete (
   const { workspace, name } = req.params
 
   try {
-    await datalake.delete(workspace, name)
+    await datalake.delete(ctx, workspace, name)
     res.status(204).send()
   } catch (err: any) {
     const message = err instanceof Error ? err.message : String(err)
@@ -153,7 +153,7 @@ export async function handleBlobDeleteList (
   const body = req.body.names as DeleteBlobsRequest
 
   try {
-    await datalake.delete(workspace, body.names)
+    await datalake.delete(ctx, workspace, body.names)
     res.status(204).send()
   } catch (err: any) {
     const message = err instanceof Error ? err.message : String(err)
@@ -172,7 +172,7 @@ export async function handleBlobSetParent (
   const { parent } = (await req.body) as BlobParentRequest
 
   try {
-    await datalake.setParent(workspace, name, parent)
+    await datalake.setParent(ctx, workspace, name, parent)
     res.status(204).send()
   } catch (err: any) {
     const message = err instanceof Error ? err.message : String(err)
@@ -220,7 +220,7 @@ export async function handleUploadFormData (
       const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
 
       try {
-        const metadata = await datalake.put(workspace, name, sha256, data, {
+        const metadata = await datalake.put(ctx, workspace, name, sha256, data, {
           size,
           contentType,
           lastModified: Date.now()
