@@ -4632,7 +4632,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
-    resolution: {integrity: sha512-10QloVozuuc7JtF7agUluck8iEau1sLhcqsXsSgUmNKlL4VtrfktsJkQ21pvBS6z8+oC8tXFFuuHHzTkA5dIYg==, tarball: file:projects/pod-export.tgz}
+    resolution: {integrity: sha512-ZFXMGyHVkTv7XD9ADDO1+n6cQN0dJ9yEGP3vaEaGZjKYTltoWwGGpfOW5k9Qe+ebpt7oL0s077OY1NDlWtTMRA==, tarball: file:projects/pod-export.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-front@file:projects/pod-front.tgz':
@@ -5152,7 +5152,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/survey-resources@file:projects/survey-resources.tgz':
-    resolution: {integrity: sha512-GcIw9MyT6uttWSxYSZOdu9Kln2eLlum64WfLRrHoA0/Z6zxXdlKn6IgZwRdwo2iQBbws9Vz3sfEvoa89XCm6dw==, tarball: file:projects/survey-resources.tgz}
+    resolution: {integrity: sha512-OKGMUZJzuG7+t/0yBujRPBsJPraZFObMn+gF0hOPlgUeBwmFhh5fUKhodNvqAQhmaikyUI8wqf1Zt8roq1fMUg==, tarball: file:projects/survey-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/survey@file:projects/survey.tgz':
@@ -5268,7 +5268,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/tool@file:projects/tool.tgz':
-    resolution: {integrity: sha512-SwaFO7JH3Wmm+A6k1wXMTuh8TQReA2d7r3xZoTIAqR1ZgU95Re6jCJwsbYIQTJAU1DiputUiBugeGazt/MC+zw==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-1/Aodec9LySBThOZAeA3XJfP83lSVTVRFdlb8uNTORq1sHJxCADx9BliCh2dTzdhydW46wcAxMPeArhopkcN1Q==, tarball: file:projects/tool.tgz}
     version: 0.0.0
 
   '@rush-temp/tracker-assets@file:projects/tracker-assets.tgz':
@@ -24656,6 +24656,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      fast-equals: 5.2.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)

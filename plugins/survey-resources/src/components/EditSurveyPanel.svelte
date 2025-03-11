@@ -17,38 +17,90 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Panel } from '@hcengineering/panel'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Survey } from '@hcengineering/survey'
-  import { Button, Icon, IconMoreH, Label, tooltip, Breadcrumb } from '@hcengineering/ui'
+  import {
+    Breadcrumb,
+    Button,
+    DebouncedCaller,
+    Icon,
+    IconMoreH,
+    Label,
+    ThrottledCaller,
+    tooltip
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
-  import EditSurvey from './EditSurvey.svelte'
-  import EditPoll from './EditPoll.svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import survey from '../plugin'
   import { makePollData } from '../utils'
+  import EditPoll from './EditPoll.svelte'
+  import EditSurvey from './EditSurvey.svelte'
 
+  const client = getClient()
   const dispatch = createEventDispatcher()
   const query = createQuery()
+
+  const throttle = new ThrottledCaller(250)
+  const debounce = new DebouncedCaller(1000)
 
   export let _id: Ref<Survey>
   export let embedded: boolean = false
   export let readonly: boolean = false
 
-  let object: Survey | undefined = undefined
+  interface Patch {
+    id: number
+    patch: Partial<Survey>
+  }
+
+  function combinedPatch (patches: Patch[]): Partial<Survey> {
+    return patches.reduce((r, c) => Object.assign(r, c.patch), {})
+  }
+
+  let patchCounter = 0
+  let patches: Patch[] = []
+
+  let objectState: Survey | undefined = undefined
+  $: object = objectState ? { ...objectState, ...combinedPatch(patches) } : undefined
+
   let preview = false
   let canSubmit = false
 
-  $: updateObject(_id)
+  $: void queryObject(_id)
   $: poll = preview && object !== undefined ? makePollData(object) : undefined
 
-  function updateObject (_id: Ref<Survey>): void {
+  async function queryObject (_id: Ref<Survey>): Promise<void> {
+    await flush()
+    objectState = undefined
+    patches = []
     query.query(survey.class.Survey, { _id }, (result) => {
-      object = result[0]
+      objectState = result[0]
     })
   }
+
+  function handleChange (patch: Partial<Survey>): void {
+    patches = [...patches, { id: patchCounter++, patch }]
+    throttle.call(() => {
+      void flush()
+    })
+  }
+
+  async function flush (): Promise<void> {
+    if (!object?._id || patches.length < 1) return
+
+    const patchesToApply = patches.slice()
+    const patchIds = new Set(patchesToApply.map((p) => p.id))
+    const update: Partial<Survey> = combinedPatch(patchesToApply)
+
+    await client.updateDoc(object._class, object.space, object._id, update)
+    debounce.call(() => {
+      patches = patches.filter((p) => !patchIds.has(p.id))
+    })
+  }
+  onDestroy(flush)
 </script>
 
+<svelte:window on:beforeunload={flush} />
 {#if object}
   <Panel
     isHeader={false}
@@ -109,7 +161,13 @@
           <EditPoll object={poll} bind:canSubmit />
         {/if}
       {:else}
-        <EditSurvey {object} {readonly} />
+        <EditSurvey
+          {object}
+          on:change={(e) => {
+            handleChange(e.detail)
+          }}
+          {readonly}
+        />
       {/if}
     </div>
   </Panel>
