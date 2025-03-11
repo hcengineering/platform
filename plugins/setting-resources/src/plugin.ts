@@ -119,6 +119,7 @@ export default mergeIds(settingId, setting, {
     DataToExport: '' as IntlString,
     ExportDocuments: '' as IntlString,
     ExportIssues: '' as IntlString,
+    ExportMilestones: '' as IntlString,
     ExportTestCases: '' as IntlString,
     ExportTestRuns: '' as IntlString,
     ExportTestPlans: '' as IntlString,

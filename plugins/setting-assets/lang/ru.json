@@ -138,6 +138,7 @@
     "DataToExport": "Данные для экспорта",
     "ExportDocuments": "Документы",
     "ExportIssues": "Задачи",
+    "ExportMilestones": "Этапы",
     "ExportTestCases": "Тест-кейсы",
     "ExportTestRuns": "Прогоны тестов",
     "ExportTestPlans": "Планы тестирования",
