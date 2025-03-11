@@ -1580,7 +1580,7 @@ export async function createUserWorkspace (
     )
   }
 
-  if (userAccount.lastWorkspace !== undefined) {
+  if (userAccount.lastWorkspace !== undefined && userAccount.admin === false) {
     if (Date.now() - userAccount.lastWorkspace < 60 * 1000) {
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
