@@ -19,6 +19,7 @@
     "AccountAlreadyConfirmed": "Účet již byl potvrzen",
     "WorkspaceAlreadyExists": "Pracovní prostor již existuje",
     "InvalidOtp": "Neplatný kód",
-    "InviteNotFound": "Pozvánka s email:{email} nebyla nalezena."
+    "InviteNotFound": "Pozvánka s email:{email} nebyla nalezena.",
+    "WorkspaceLimitReached": "Dosáhli jste limitu pracovních prostorů. Kontaktujte nás..."
   }
 }

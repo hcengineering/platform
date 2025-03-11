@@ -3,7 +3,7 @@
     "RequiredField": "Campo obligatorio: {field}",
     "FieldsDoNotMatch": "{field} no coincide con {field2}",
     "ConnectingToServer": "Conectando al servidor...",
-    "IncorrectValue": "Valor incorrecto para {field}"
+    "IncorrectValue": "Valor incorrecto para {field}"    
   },
   "string": {
     "LogIn": "Iniciar sesión",
