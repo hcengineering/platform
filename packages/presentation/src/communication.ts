@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 import {
+  PatchType,
   type CardID,
   type FindMessagesGroupsParams,
   type FindMessagesParams,
@@ -136,6 +137,7 @@ class Client {
   async updateMessage (card: CardID, message: MessageID, content: RichText): Promise<void> {
     const event: CreatePatchEvent = {
       type: RequestEventType.CreatePatch,
+      patchType: PatchType.update,
       card,
       message,
       content,
