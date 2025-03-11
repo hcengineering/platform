@@ -87,21 +87,21 @@ export function createDb (ctx: MeasureContext, connectionString: string): BlobDB
   })
 
   const dbAdapter = new PostgresDBAdapter(sql)
-  return new LoggedDB(new PostgresDB(new RetryDBAdapter(dbAdapter, { retries: 5 })), ctx)
+  return new LoggedDB(ctx, new PostgresDB(new RetryDBAdapter(dbAdapter, { retries: 5 })))
 }
 
 export interface BlobDB {
-  getData: (dataId: BlobDataId) => Promise<BlobDataRecord | null>
-  getBlob: (blobId: BlobId) => Promise<BlobWithDataRecord | null>
-  listBlobs: (workspace: string, cursor?: string, limit?: number) => Promise<ListBlobResult>
-  createData: (data: BlobDataRecord) => Promise<void>
-  createBlob: (blob: Omit<BlobRecord, 'filename'>) => Promise<void>
-  createBlobData: (blob: BlobWithDataRecord) => Promise<void>
-  deleteBlob: (blob: BlobId) => Promise<void>
-  setParent: (blob: BlobId, parent: BlobId | null) => Promise<void>
-  deleteBlobList: (list: BlobIds) => Promise<void>
-  getStats: () => Promise<StatsResult>
-  getWorkspaceStats: (workspace: string) => Promise<WorkspaceStatsResult>
+  getData: (ctx: MeasureContext, dataId: BlobDataId) => Promise<BlobDataRecord | null>
+  getBlob: (ctx: MeasureContext, blobId: BlobId) => Promise<BlobWithDataRecord | null>
+  listBlobs: (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number) => Promise<ListBlobResult>
+  createData: (ctx: MeasureContext, data: BlobDataRecord) => Promise<void>
+  createBlob: (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>) => Promise<void>
+  createBlobData: (ctx: MeasureContext, blob: BlobWithDataRecord) => Promise<void>
+  deleteBlob: (ctx: MeasureContext, blob: BlobId) => Promise<void>
+  setParent: (ctx: MeasureContext, blob: BlobId, parent: BlobId | null) => Promise<void>
+  deleteBlobList: (ctx: MeasureContext, list: BlobIds) => Promise<void>
+  getStats: (ctx: MeasureContext) => Promise<StatsResult>
+  getWorkspaceStats: (ctx: MeasureContext, workspace: string) => Promise<WorkspaceStatsResult>
 }
 
 interface DBAdapter {
@@ -131,7 +131,7 @@ class PostgresDBAdapter implements DBAdapter {
 export class PostgresDB implements BlobDB {
   constructor (private readonly db: DBAdapter) {}
 
-  async getData (dataId: BlobDataId): Promise<BlobDataRecord | null> {
+  async getData (ctx: MeasureContext, dataId: BlobDataId): Promise<BlobDataRecord | null> {
     const { hash, location } = dataId
 
     const rows = await this.db.execute<BlobDataRecord[]>(
@@ -146,7 +146,7 @@ export class PostgresDB implements BlobDB {
     return rows.length > 0 ? rows[0] : null
   }
 
-  async deleteBlobList (blobList: BlobIds): Promise<void> {
+  async deleteBlobList (ctx: MeasureContext, blobList: BlobIds): Promise<void> {
     const { workspace, names } = blobList
 
     await this.db.execute(
@@ -159,7 +159,7 @@ export class PostgresDB implements BlobDB {
     )
   }
 
-  async getBlob (blobId: BlobId): Promise<BlobWithDataRecord | null> {
+  async getBlob (ctx: MeasureContext, blobId: BlobId): Promise<BlobWithDataRecord | null> {
     const { workspace, name } = blobId
 
     const rows = await this.db.execute<BlobWithDataRecord[]>(
@@ -179,7 +179,7 @@ export class PostgresDB implements BlobDB {
     return null
   }
 
-  async listBlobs (workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
+  async listBlobs (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
     cursor = cursor ?? ''
     limit = Math.min(limit ?? 100, 1000)
 
@@ -201,7 +201,7 @@ export class PostgresDB implements BlobDB {
     }
   }
 
-  async createBlob (blob: Omit<BlobRecord, 'filename'>): Promise<void> {
+  async createBlob (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>): Promise<void> {
     const { workspace, name, hash, location, parent } = blob
 
     await this.db.execute(
@@ -213,7 +213,7 @@ export class PostgresDB implements BlobDB {
     )
   }
 
-  async createData (data: BlobDataRecord): Promise<void> {
+  async createData (ctx: MeasureContext, data: BlobDataRecord): Promise<void> {
     const { hash, location, filename, size, type } = data
 
     await this.db.execute(
@@ -225,7 +225,7 @@ export class PostgresDB implements BlobDB {
     )
   }
 
-  async createBlobData (data: BlobWithDataRecord): Promise<void> {
+  async createBlobData (ctx: MeasureContext, data: BlobWithDataRecord): Promise<void> {
     const { workspace, name, hash, location, parent, filename, size, type } = data
 
     await this.db.execute(
@@ -245,7 +245,7 @@ export class PostgresDB implements BlobDB {
     )
   }
 
-  async deleteBlob (blob: BlobId): Promise<void> {
+  async deleteBlob (ctx: MeasureContext, blob: BlobId): Promise<void> {
     const { workspace, name } = blob
 
     const blobs = new Set<BlobId['name']>()
@@ -284,7 +284,7 @@ export class PostgresDB implements BlobDB {
     )
   }
 
-  async setParent (blob: BlobId, parent: BlobId | null): Promise<void> {
+  async setParent (ctx: MeasureContext, blob: BlobId, parent: BlobId | null): Promise<void> {
     const { workspace, name } = blob
 
     await this.db.execute(
@@ -297,7 +297,7 @@ export class PostgresDB implements BlobDB {
     )
   }
 
-  async getStats (): Promise<StatsResult> {
+  async getStats (ctx: MeasureContext): Promise<StatsResult> {
     const blobStatsRows = await this.db.execute(`
       SELECT count(distinct b.workspace) as workspaces, count(1) as count, sum(d.size) as size
       FROM blob.blob b
@@ -326,7 +326,7 @@ export class PostgresDB implements BlobDB {
     }
   }
 
-  async getWorkspaceStats (workspace: string): Promise<WorkspaceStatsResult> {
+  async getWorkspaceStats (ctx: MeasureContext, workspace: string): Promise<WorkspaceStatsResult> {
     const rows = await this.db.execute(
       `
       SELECT count(1) as count, sum(d.size) as size
@@ -348,52 +348,52 @@ export class PostgresDB implements BlobDB {
 
 export class LoggedDB implements BlobDB {
   constructor (
-    private readonly db: BlobDB,
-    private readonly ctx: MeasureContext
+    private readonly ctx: MeasureContext,
+    private readonly db: BlobDB
   ) {}
 
-  async getData (dataId: BlobDataId): Promise<BlobDataRecord | null> {
-    return await this.ctx.with('db.getData', {}, () => this.db.getData(dataId))
+  async getData (ctx: MeasureContext, dataId: BlobDataId): Promise<BlobDataRecord | null> {
+    return await ctx.with('db.getData', {}, () => this.db.getData(this.ctx, dataId))
   }
 
-  async getBlob (blobId: BlobId): Promise<BlobWithDataRecord | null> {
-    return await this.ctx.with('db.getBlob', {}, () => this.db.getBlob(blobId))
+  async getBlob (ctx: MeasureContext, blobId: BlobId): Promise<BlobWithDataRecord | null> {
+    return await ctx.with('db.getBlob', {}, () => this.db.getBlob(this.ctx, blobId))
   }
 
-  async listBlobs (workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
-    return await this.ctx.with('db.listBlobs', {}, () => this.db.listBlobs(workspace, cursor, limit))
+  async listBlobs (ctx: MeasureContext, workspace: string, cursor?: string, limit?: number): Promise<ListBlobResult> {
+    return await ctx.with('db.listBlobs', {}, () => this.db.listBlobs(this.ctx, workspace, cursor, limit))
   }
 
-  async createData (data: BlobDataRecord): Promise<void> {
-    await this.ctx.with('db.createData', {}, () => this.db.createData(data))
+  async createData (ctx: MeasureContext, data: BlobDataRecord): Promise<void> {
+    await ctx.with('db.createData', {}, () => this.db.createData(this.ctx, data))
   }
 
-  async createBlob (blob: Omit<BlobRecord, 'filename'>): Promise<void> {
-    await this.ctx.with('db.createBlob', {}, () => this.db.createBlob(blob))
+  async createBlob (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>): Promise<void> {
+    await ctx.with('db.createBlob', {}, () => this.db.createBlob(this.ctx, blob))
   }
 
-  async createBlobData (data: BlobWithDataRecord): Promise<void> {
-    await this.ctx.with('db.createBlobData', {}, () => this.db.createBlobData(data))
+  async createBlobData (ctx: MeasureContext, data: BlobWithDataRecord): Promise<void> {
+    await ctx.with('db.createBlobData', {}, () => this.db.createBlobData(this.ctx, data))
   }
 
-  async deleteBlobList (blobs: BlobIds): Promise<void> {
-    await this.ctx.with('db.deleteBlobList', {}, () => this.db.deleteBlobList(blobs))
+  async deleteBlobList (ctx: MeasureContext, blobs: BlobIds): Promise<void> {
+    await ctx.with('db.deleteBlobList', {}, () => this.db.deleteBlobList(this.ctx, blobs))
   }
 
-  async deleteBlob (blob: BlobId): Promise<void> {
-    await this.ctx.with('db.deleteBlob', {}, () => this.db.deleteBlob(blob))
+  async deleteBlob (ctx: MeasureContext, blob: BlobId): Promise<void> {
+    await ctx.with('db.deleteBlob', {}, () => this.db.deleteBlob(this.ctx, blob))
   }
 
-  async setParent (blob: BlobId, parent: BlobId | null): Promise<void> {
-    await this.ctx.with('db.setParent', {}, () => this.db.setParent(blob, parent))
+  async setParent (ctx: MeasureContext, blob: BlobId, parent: BlobId | null): Promise<void> {
+    await ctx.with('db.setParent', {}, () => this.db.setParent(this.ctx, blob, parent))
   }
 
-  async getStats (): Promise<StatsResult> {
-    return await this.ctx.with('db.getStats', {}, () => this.db.getStats())
+  async getStats (ctx: MeasureContext): Promise<StatsResult> {
+    return await ctx.with('db.getStats', {}, () => this.db.getStats(this.ctx))
   }
 
-  async getWorkspaceStats (workspace: string): Promise<WorkspaceStatsResult> {
-    return await this.ctx.with('db.getWorkspaceStats', {}, () => this.db.getWorkspaceStats(workspace))
+  async getWorkspaceStats (ctx: MeasureContext, workspace: string): Promise<WorkspaceStatsResult> {
+    return await ctx.with('db.getWorkspaceStats', {}, () => this.db.getWorkspaceStats(this.ctx, workspace))
   }
 }
 

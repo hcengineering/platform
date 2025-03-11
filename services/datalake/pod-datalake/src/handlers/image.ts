@@ -82,7 +82,7 @@ export async function handleImageGet (
   const accept = req.headers.accept ?? 'image/*'
   const image = parseImageTransform(accept, transform)
 
-  const blob = await datalake.get(workspace, name, {})
+  const blob = await datalake.get(ctx, workspace, name, {})
   if (blob == null) {
     res.status(404).send()
     return
@@ -151,7 +151,7 @@ export async function handleImageGet (
     res.setHeader('Content-Type', contentType)
     res.setHeader('Cache-Control', cacheControl)
 
-    await ctx.with('resize', {}, () => pipeline.toFile(outFile))
+    await ctx.with('sharp', {}, () => pipeline.toFile(outFile))
     pipeline.destroy()
 
     createReadStream(outFile).pipe(res)

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { MeasureContext } from '@hcengineering/core'
 import { Readable } from 'stream'
 
 export interface S3Object {
@@ -62,19 +63,29 @@ export interface S3UploadPartOptions {
 export interface S3Bucket {
   bucket: string
 
-  head: (key: string) => Promise<S3Object | null>
-  get: (key: string, options?: S3GetOptions) => Promise<S3ObjectBody | null>
-  put: (key: string, body: Readable | Buffer | string, options: S3PutOptions) => Promise<S3Object>
-  delete: (key: string) => Promise<void>
+  head: (ctx: MeasureContext, key: string) => Promise<S3Object | null>
+  get: (ctx: MeasureContext, key: string, options?: S3GetOptions) => Promise<S3ObjectBody | null>
+  put: (ctx: MeasureContext, key: string, body: Readable | Buffer | string, options: S3PutOptions) => Promise<S3Object>
+  delete: (ctx: MeasureContext, key: string) => Promise<void>
 
   // multipart
-  createMultipartUpload: (key: string, options: S3CreateMultipartUploadOptions) => Promise<S3MultipartUpload>
+  createMultipartUpload: (
+    ctx: MeasureContext,
+    key: string,
+    options: S3CreateMultipartUploadOptions
+  ) => Promise<S3MultipartUpload>
   uploadMultipartPart: (
+    ctx: MeasureContext,
     key: string,
     multipart: S3MultipartUpload,
     body: Readable | Buffer | string,
     options: S3UploadPartOptions
   ) => Promise<S3MultipartUploadPart>
-  completeMultipartUpload: (key: string, multipart: S3MultipartUpload, parts: S3MultipartUploadPart[]) => Promise<void>
-  abortMultipartUpload: (key: string, multipart: S3MultipartUpload) => Promise<void>
+  completeMultipartUpload: (
+    ctx: MeasureContext,
+    key: string,
+    multipart: S3MultipartUpload,
+    parts: S3MultipartUploadPart[]
+  ) => Promise<void>
+  abortMultipartUpload: (ctx: MeasureContext, key: string, multipart: S3MultipartUpload) => Promise<void>
 }

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { MeasureContext } from '@hcengineering/core'
 import { S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import { Readable } from 'stream'
@@ -39,8 +40,9 @@ class S3BucketImpl implements S3Bucket {
     readonly bucket: string
   ) {}
 
-  async head (key: string): Promise<S3Object | null> {
-    const result = await this.client.headObject({ Bucket: this.bucket, Key: key })
+  async head (ctx: MeasureContext, key: string): Promise<S3Object | null> {
+    const result = await ctx.with('s3.headObject', {}, () => this.client.headObject({ Bucket: this.bucket, Key: key }))
+
     return {
       key,
       etag: result.ETag ?? '',
@@ -51,9 +53,11 @@ class S3BucketImpl implements S3Bucket {
     }
   }
 
-  async get (key: string, options?: S3GetOptions): Promise<S3ObjectBody | null> {
+  async get (ctx: MeasureContext, key: string, options?: S3GetOptions): Promise<S3ObjectBody | null> {
     const command = { Bucket: this.bucket, Key: key, Range: options?.range }
-    const result = await this.client.getObject(command)
+
+    const result = await ctx.with('s3.getObject', {}, () => this.client.getObject(command))
+
     if (result.Body === undefined) {
       return null
     }
@@ -80,7 +84,12 @@ class S3BucketImpl implements S3Bucket {
     }
   }
 
-  async put (key: string, body: Readable | Buffer | string, options: S3PutOptions): Promise<S3Object> {
+  async put (
+    ctx: MeasureContext,
+    key: string,
+    body: Readable | Buffer | string,
+    options: S3PutOptions
+  ): Promise<S3Object> {
     const command = {
       Bucket: this.bucket,
       Key: key,
@@ -94,7 +103,7 @@ class S3BucketImpl implements S3Bucket {
     }
 
     if (options.contentLength < 5 * 1024 * 1024) {
-      const result = await this.client.putObject(command)
+      const result = await ctx.with('s3.putObject', {}, () => this.client.putObject(command))
 
       return {
         key,
@@ -112,7 +121,8 @@ class S3BucketImpl implements S3Bucket {
         leavePartsOnError: false
       })
 
-      const result = await upload.done()
+      const result = await ctx.with('s3.upload', {}, () => upload.done())
+
       return {
         key,
         etag: result.ETag ?? '',
@@ -124,11 +134,15 @@ class S3BucketImpl implements S3Bucket {
     }
   }
 
-  async delete (key: string): Promise<void> {
+  async delete (ctx: MeasureContext, key: string): Promise<void> {
     await this.client.deleteObject({ Bucket: this.bucket, Key: key })
   }
 
-  async createMultipartUpload (key: string, options: S3CreateMultipartUploadOptions): Promise<S3MultipartUpload> {
+  async createMultipartUpload (
+    ctx: MeasureContext,
+    key: string,
+    options: S3CreateMultipartUploadOptions
+  ): Promise<S3MultipartUpload> {
     const command = {
       Bucket: this.bucket,
       Key: key,
@@ -139,7 +153,7 @@ class S3BucketImpl implements S3Bucket {
       }
     }
 
-    const result = await this.client.createMultipartUpload(command)
+    const result = await ctx.with('s3.createMultipartUpload', {}, () => this.client.createMultipartUpload(command))
     if (result.UploadId === undefined) {
       throw new Error('failed to create multipart upload')
     }
@@ -150,6 +164,7 @@ class S3BucketImpl implements S3Bucket {
   }
 
   async uploadMultipartPart (
+    ctx: MeasureContext,
     key: string,
     multipart: S3MultipartUpload,
     body: Readable | Buffer | string,
@@ -162,7 +177,7 @@ class S3BucketImpl implements S3Bucket {
       UploadId: multipart.uploadId,
       PartNumber: options.partNumber
     }
-    const result = await this.client.uploadPart(command)
+    const result = await ctx.with('s3.uploadPart', {}, () => this.client.uploadPart(command))
     return {
       etag: result.ETag ?? '',
       partNumber: options.partNumber
@@ -170,6 +185,7 @@ class S3BucketImpl implements S3Bucket {
   }
 
   async completeMultipartUpload (
+    ctx: MeasureContext,
     key: string,
     multipart: S3MultipartUpload,
     parts: S3MultipartUploadPart[]
@@ -187,15 +203,15 @@ class S3BucketImpl implements S3Bucket {
         })
       }
     }
-    await this.client.completeMultipartUpload(command)
+    await ctx.with('s3.completeMultipartUpload', {}, () => this.client.completeMultipartUpload(command))
   }
 
-  async abortMultipartUpload (key: string, multipart: S3MultipartUpload): Promise<void> {
+  async abortMultipartUpload (ctx: MeasureContext, key: string, multipart: S3MultipartUpload): Promise<void> {
     const command = {
       Bucket: this.bucket,
       Key: key,
       UploadId: multipart.uploadId
     }
-    await this.client.abortMultipartUpload(command)
+    await ctx.with('s3.abortMultipartUpload', {}, () => this.client.abortMultipartUpload(command))
   }
 }
