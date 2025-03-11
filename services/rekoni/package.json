@@ -71,7 +71,7 @@
     "@anticrm/skillset": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@types/email-addresses": "^3.0.0",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "email-addresses": "^5.0.0",
