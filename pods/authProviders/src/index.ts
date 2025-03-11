@@ -71,7 +71,11 @@ export function registerProviders (
 
   router.get('providers', '/providers', (ctx) => {
     const json = JSON.stringify(res)
-    ctx.res.writeHead(200, { 'Content-Type': 'application/json', 'keep-alive': 'timeout=5, max=1000', connection: 'keep-alive' })
+    ctx.res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'keep-alive': 'timeout=5, max=1000',
+      connection: 'keep-alive'
+    })
     ctx.res.end(json)
   })
 }
