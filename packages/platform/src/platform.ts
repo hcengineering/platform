@@ -156,6 +156,7 @@ export default plugin(platformId, {
     AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     WorkspaceRateLimit: '' as StatusCode<{ workspace: string }>,
+    WorkspaceLimitReached: '' as StatusCode<{ workspace: string }>,
     InvalidOtp: '' as StatusCode,
     InviteNotFound: '' as StatusCode<{ email: string }>
   },
