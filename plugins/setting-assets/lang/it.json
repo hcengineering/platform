@@ -137,6 +137,7 @@
     "DataToExport": "Dati da esportare",
     "ExportDocuments": "Documenti",
     "ExportIssues": "Problemi",
+    "ExportMilestones": "Milestone",
     "ExportTestCases": "Casi di test",
     "ExportTestRuns": "Esecuzioni di test",
     "ExportTestPlans": "Piani di test",
