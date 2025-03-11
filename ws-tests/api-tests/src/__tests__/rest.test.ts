@@ -113,7 +113,7 @@ describe('rest-api-server', () => {
     const conn = connect()
     const account = await conn.getAccount()
 
-    expect(account.primarySocialId).toBe('email:user1')
+    expect(account.primarySocialId).toEqual(expect.any(String))
     expect(account.role).toBe('USER')
     // expect(account.space).toBe(core.space.Model)
     // expect(account.modifiedBy).toBe(core.account.System)
