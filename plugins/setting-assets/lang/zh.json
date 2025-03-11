@@ -141,6 +141,7 @@
     "DataToExport": "要导出的数据",
     "ExportDocuments": "文档",
     "ExportIssues": "问题",
+    "ExportMilestones": "里程碑",
     "ExportTestCases": "测试用例",
     "ExportTestRuns": "测试运行",
     "ExportTestPlans": "测试计划",

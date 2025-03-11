@@ -141,6 +141,7 @@
     "DataToExport": "Zu exportierende Daten",
     "ExportDocuments": "Dokumente",
     "ExportIssues": "Probleme",
+    "ExportMilestones": "Meilensteine",
     "ExportTestCases": "Testfälle",
     "ExportTestRuns": "Testläufe",
     "ExportTestPlans": "Testpläne",
