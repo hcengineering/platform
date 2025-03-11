@@ -24,6 +24,12 @@ import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import os from 'os'
 
+const KEEP_ALIVE_HEADERS = {
+  'Content-Type': 'application/json',
+  Connection: 'keep-alive',
+  'Keep-Alive': 'timeout=5, max=1000'
+}
+
 /**
  * @public
  */
@@ -155,7 +161,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       data.statistics.freeMem = Math.round((os.freemem() / 1024 / 1024) * 100) / 100
       data.statistics.totalMem = Math.round((os.totalmem() / 1024 / 1024) * 100) / 100
       const json = JSON.stringify(data)
-      req.res.writeHead(200, { 'Content-Type': 'application/json' })
+      req.res.writeHead(200, KEEP_ALIVE_HEADERS)
       req.res.end(json)
     } catch (err: any) {
       Analytics.handleError(err)
@@ -214,7 +220,10 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
         error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
       }
 
-      ctx.body = JSON.stringify(response)
+      const body = JSON.stringify(response)
+      ctx.res.writeHead(404, KEEP_ALIVE_HEADERS)
+      ctx.res.end(body)
+      return
     }
 
     const [db] = await accountsDb
@@ -227,7 +236,9 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     const branding = host !== undefined ? brandings[host] : null
     const result = await measureCtx.with(request.method, {}, (ctx) => method(ctx, db, branding, request, token))
 
-    ctx.body = result
+    const body = JSON.stringify(result)
+    ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
+    ctx.res.end(body)
   })
 
   app.use(router.routes()).use(router.allowedMethods())
