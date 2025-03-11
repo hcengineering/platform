@@ -13,6 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import documents, {
+    ControlledDocument,
+    ControlledDocumentState,
+    DocumentRequest,
+    DocumentState,
+    Project
+  } from '@hcengineering/controlled-documents'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -23,25 +30,19 @@
     Button,
     Chevron,
     DropdownLabelsIntl,
-    IconMoreV,
-    Tab,
-    Tabs,
     eventToHTMLElement,
+    IconMoreV,
     navigate,
     resolvedLocationStore,
-    showPopup
+    showPopup,
+    Tab,
+    Tabs
   } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
-  import documents, {
-    ControlledDocument,
-    ControlledDocumentState,
-    DocumentRequest,
-    DocumentState,
-    Project
-  } from '@hcengineering/controlled-documents'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   import { createDocumentSnapshotAndEdit, createNewDraftForControlledDoc, getDocReference } from '../docutils'
+  import { getProjectDocumentLink } from '../navigation'
   import documentRes from '../plugin'
   import {
     $activeRightPanelTab as activeRightPanelTab,
@@ -49,20 +50,21 @@
     $availableRightPanelTabs as availableRightPanelTabs,
     $canCreateNewDraft as canCreateNewDraft,
     $canCreateNewSnapshot as canCreateNewSnapshot,
+    $canRestoreDraft as canRestoreDraft,
     $canSendForApproval as canSendForApproval,
     $canSendForReview as canSendForReview,
     $controlledDocument as controlledDocument,
+    controlledDocumentClosed,
+    controlledDocumentOpened,
     $controlledDocumentTemplate as controlledDocumentTemplate,
-    $documentLatestVersion as documentLatestVersion,
     $documentApprovalIsActive as documentApprovalIsActive,
+    $documentLatestVersion as documentLatestVersion,
     $documentReviewIsActive as documentReviewIsActive,
     $documentState as documentState,
     $editorMode as editorMode,
+    editorModeUpdated,
     $isDocumentOwner as isDocumentOwner,
     $isProjectEditable as isProjectEditable,
-    controlledDocumentClosed,
-    controlledDocumentOpened,
-    editorModeUpdated,
     rightPanelTabChanged
   } from '../stores/editors/document'
   import { completeRequest, getDocumentVersionString, getLatestProjectId, rejectRequest, TeamPopupData } from '../utils'
@@ -77,12 +79,11 @@
   import DocumentRightPanel from './document/right-panel/DocumentRightPanel.svelte'
   import { scrollIntoSection } from './document/store'
   import DocumentVersionsPopup from './DocumentVersionsPopup.svelte'
+  import DocumentTemplateFooter from './print/DocumentTemplateFooter.svelte'
+  import DocumentTemplateHeader from './print/DocumentTemplateHeader.svelte'
+  import ProjectSelector from './project/ProjectSelector.svelte'
   import SignatureDialog from './SignatureDialog.svelte'
   import TeamPopup from './TeamPopup.svelte'
-  import ProjectSelector from './project/ProjectSelector.svelte'
-  import DocumentTemplateHeader from './print/DocumentTemplateHeader.svelte'
-  import DocumentTemplateFooter from './print/DocumentTemplateFooter.svelte'
-  import { getProjectDocumentLink } from '../navigation'
 
   export let _id: Ref<ControlledDocument>
   export let _class: Ref<Class<ControlledDocument>>
@@ -238,7 +239,7 @@
         return
       }
 
-      if (latest.state === DocumentState.Deleted) {
+      if ($canRestoreDraft) {
         await client.update(latest, { state: DocumentState.Draft })
         const loc = getProjectDocumentLink(latest, project)
         navigate(loc)
@@ -375,7 +376,7 @@
 
             {#if $canCreateNewDraft}
               <Button
-                label={documentRes.string.CreateNewDraft}
+                label={$canRestoreDraft ? documentRes.string.RestoreDraft : documentRes.string.CreateNewDraft}
                 kind="regular"
                 loading={creating}
                 disabled={creating}

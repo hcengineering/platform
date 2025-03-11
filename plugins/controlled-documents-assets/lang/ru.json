@@ -256,6 +256,7 @@
     "Name": "Название",
     "DraftRevision": "Ревизия рабочей копии",
     "CreateNewDraft": "Создать новую рабочую копию",
+    "RestoreDraft": "Восстановить черновик",
     "ChangeSeverity": "Серьезность изменений",
     "Reference": "Референс",
     "History": "История",

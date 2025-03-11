@@ -253,6 +253,7 @@
     "Name": "名称",
     "DraftRevision": "草稿修订",
     "CreateNewDraft": "创建新版本草稿",
+    "RestoreDraft": "恢复草稿",
     "ChangeSeverity": "更改严重性",
     "Reference": "参考",
     "History": "历史",
