@@ -101,6 +101,9 @@ import {
 // Move to config?
 const processingTimeoutMs = 30 * 1000
 
+const workspaceLimitPerUser =
+  process.env.WORKSPACE_LIMIT_PER_USER != null ? parseInt(process.env.WORKSPACE_LIMIT_PER_USER) : 10
+
 /* =================================== */
 /* ============OPERATIONS============= */
 /* =================================== */
@@ -353,17 +356,27 @@ export async function createWorkspace (
   if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, {}))
   }
+  const person = await db.person.findOne({ uuid: socialId.personUuid })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
+  // Get a list of created workspaces
+  const created = (await db.workspace.find({ createdBy: socialId.personUuid })).length
+
+  // TODO: Add support for per person limit increase
+  if (created >= workspaceLimitPerUser) {
+    ctx.warn('created-by-limit', { person: socialId.key, workspace: workspaceName })
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceLimitReached, { workspace: workspaceName })
+    )
+  }
 
   const { workspaceUuid, workspaceUrl } = await createWorkspaceRecord(ctx, db, branding, workspaceName, account, region)
 
   await db.assignWorkspace(account, workspaceUuid, AccountRole.Owner)
 
   ctx.info('Creating workspace record done', { workspaceName, region, account: socialId.personUuid })
-
-  const person = await db.person.findOne({ uuid: socialId.personUuid })
-  if (person == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
-  }
 
   return {
     account,

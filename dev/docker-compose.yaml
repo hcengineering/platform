@@ -90,6 +90,7 @@ services:
       - SERVER_SECRET=secret
       - ADMIN_EMAILS=admin
       - STATS_URL=http://huly.local:4900
+      - WORKSPACE_LIMIT_PER_USER=10000
       # - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
       - DB_URL=${MONGO_URL}
       # - DB_NS=account-2
@@ -222,6 +223,7 @@ services:
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://huly.local:8087/branding.json
+      - STREAM_URL=http://huly.local:1080/recording
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor:

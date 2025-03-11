@@ -82,7 +82,9 @@
         const clazz = hierarchy.getClass(key)
         result.push([
           { id: key, label: clazz.label, icon: clazz.icon },
-          value.map((it) => ({ id: it._id, label: it.label, icon: it.icon }))
+          value
+            .map((it) => ({ id: it._id, label: it.label, icon: it.icon }))
+            .sort((a, b) => a.label.localeCompare(b.label))
         ])
       } catch {}
     }

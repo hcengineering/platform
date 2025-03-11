@@ -48,7 +48,7 @@
   $: query.query(
     view.class.Viewlet,
     {
-      attachTo: _class
+      attachTo: client.getHierarchy().getBaseClass(_class)
     },
     (res) => {
       viewlet = res[0]

@@ -40,6 +40,9 @@
 {:else if value}
   {#if type === 'link'}
     <div class="flex-row-center">
+      {#if showParent}
+        <ParentNamesPresenter {value} />
+      {/if}
       <DocNavLink
         object={value}
         {onClick}
@@ -58,9 +61,6 @@
           {/if}
           <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
             {value.title}
-            {#if showParent}
-              <ParentNamesPresenter {value} />
-            {/if}
             <slot name="details" />
           </span>
         </span>

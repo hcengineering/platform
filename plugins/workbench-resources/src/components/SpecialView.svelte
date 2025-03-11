@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup, mergeQueries } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import { Asset, getResource, IntlString, Resource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
@@ -38,7 +38,7 @@
     ViewletSelector,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
-  import { QueryOptions, ParentsNavigationModel } from '@hcengineering/workbench'
+  import { ParentsNavigationModel } from '@hcengineering/workbench'
 
   import ComponentNavigator from './ComponentNavigator.svelte'
 
@@ -56,7 +56,7 @@
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined = undefined
-  export let queryOptions: QueryOptions | undefined = undefined
+  export let queryBuilder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -69,15 +69,16 @@
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
 
-  $: spaceQuery = queryOptions?.filterBySpace === true && space !== undefined ? { space } : {}
-  $: _baseQuery = mergeQueries(mergeQueries(baseQuery ?? {}, viewlet?.baseQuery ?? {}), spaceQuery)
+  let isQueryLoaded = queryBuilder === undefined
+
+  $: _baseQuery = mergeQueries(baseQuery ?? {}, viewlet?.baseQuery ?? {})
   $: query = { ..._baseQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
-  $: resultQuery = searchQuery
+  $: resultQuery = isQueryLoaded ? searchQuery : undefined
 
   let options = viewlet?.options
 
-  $: void updateQuery(_baseQuery, viewOptions, viewlet)
+  $: void updateQuery(_baseQuery, viewOptions, viewlet, queryBuilder)
   $: void updateOptions(viewlet?.options, viewOptions, viewlet)
 
   async function updateOptions (
@@ -91,12 +92,25 @@
   async function updateQuery (
     initialQuery: DocumentQuery<Doc>,
     viewOptions: ViewOptions | undefined,
-    viewlet: Viewlet | undefined
+    viewlet: Viewlet | undefined,
+    builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined
   ): Promise<void> {
+    const updatedQuery = builder === undefined ? initialQuery : updateInitialQuery(initialQuery, builder)
     query =
       viewOptions !== undefined && viewlet !== undefined
-        ? await getResultQuery(hierarchy, initialQuery, viewlet.viewOptions?.other, viewOptions)
-        : initialQuery
+        ? await getResultQuery(hierarchy, updatedQuery, viewlet.viewOptions?.other, viewOptions)
+        : updatedQuery
+    isQueryLoaded = true
+  }
+
+  async function updateInitialQuery (
+    initialQuery: DocumentQuery<Doc>,
+    builder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined
+  ): Promise<DocumentQuery<Doc>> {
+    if (builder === undefined) return initialQuery
+    const fn = await getResource(builder)
+    const q = (await fn()) ?? {}
+    return mergeQueries(initialQuery ?? {}, q ?? {})
   }
 
   function showCreateDialog (): void {

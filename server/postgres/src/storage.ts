@@ -1305,7 +1305,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
   private translateQueryValue (vars: ValuesVariables, tkey: string, value: any, type: ValueType): string | undefined {
     const tkeyData = tkey.includes('data') && (tkey.includes('->') || tkey.includes('#>>'))
     if (tkeyData && (Array.isArray(value) || (typeof value !== 'object' && typeof value !== 'string'))) {
-      value = Array.isArray(value) ? value.map((it) => (it == null ? null : `${it}`)) : `${value}`
+      value = Array.isArray(value)
+        ? value.map((it) => (it == null ? null : `${it}`))
+        : value == null
+          ? null
+          : `${value}`
     }
 
     if (value === null) {
@@ -1316,51 +1320,58 @@ abstract class PostgresAdapterBase implements DbAdapter {
       for (const operator in value) {
         let val = value[operator]
         if (tkeyData && (Array.isArray(val) || (typeof val !== 'object' && typeof val !== 'string'))) {
-          val = Array.isArray(val) ? val.map((it) => (it == null ? null : `${it}`)) : `${val}`
+          val = Array.isArray(val) ? val.map((it) => (it == null ? null : `${it}`)) : val == null ? null : `${val}`
         }
+
+        let valType = inferType(val)
+        const { tlkey, arrowCount } = prepareJsonValue(tkey, valType)
+        if (arrowCount > 0 && valType === '::text') {
+          valType = ''
+        }
+
         switch (operator) {
           case '$ne':
-            if (val === null) {
-              res.push(`${tkey} IS NOT NULL`)
+            if (val == null) {
+              res.push(`${tlkey} IS NOT NULL`)
             } else {
-              res.push(`${tkey} != ${vars.add(val, inferType(val))}`)
+              res.push(`${tlkey} != ${vars.add(val, valType)}`)
             }
             break
           case '$gt':
-            res.push(`${tkey} > ${vars.add(val, inferType(val))}`)
+            res.push(`${tlkey} > ${vars.add(val, valType)}`)
             break
           case '$gte':
-            res.push(`${tkey} >= ${vars.add(val, inferType(val))}`)
+            res.push(`${tlkey} >= ${vars.add(val, valType)}`)
             break
           case '$lt':
-            res.push(`${tkey} < ${vars.add(val, inferType(val))}`)
+            res.push(`${tlkey} < ${vars.add(val, valType)}`)
             break
           case '$lte':
-            res.push(`${tkey} <= ${vars.add(val, inferType(val))}`)
+            res.push(`${tlkey} <= ${vars.add(val, valType)}`)
             break
           case '$in':
             switch (type) {
               case 'common':
                 if (Array.isArray(val) && val.includes(null)) {
-                  const vv = vars.addArray(val, inferType(val))
-                  res.push(`(${tkey} = ANY(${vv}) OR ${tkey} IS NULL)`)
+                  const vv = vars.addArray(val, valType)
+                  res.push(`(${tlkey} = ANY(${vv}) OR ${tkey} IS NULL)`)
                 } else {
                   if (val.length > 0) {
-                    res.push(`${tkey} = ANY(${vars.addArray(val, inferType(val))})`)
+                    res.push(`${tlkey} = ANY(${vars.addArray(val, valType)})`)
                   } else {
-                    res.push(`${tkey} IN ('NULL')`)
+                    res.push(`${tlkey} IN ('NULL')`)
                   }
                 }
                 break
               case 'array':
                 {
-                  const vv = vars.addArrayI(val, inferType(val))
+                  const vv = vars.addArrayI(val, valType)
                   res.push(`${tkey} && ${vv}`)
                 }
                 break
               case 'dataArray':
                 {
-                  const vv = vars.addArrayI(val, inferType(val))
+                  const vv = vars.addArrayI(val, valType)
                   res.push(`${tkey} ?| ${vv}`)
                 }
                 break
@@ -1368,24 +1379,28 @@ abstract class PostgresAdapterBase implements DbAdapter {
             break
           case '$nin':
             if (Array.isArray(val) && val.includes(null)) {
-              res.push(`(${tkey} != ALL(${vars.addArray(val, inferType(val))}) AND ${tkey} IS NOT NULL)`)
+              res.push(`(${tlkey} != ALL(${vars.addArray(val, valType)}) AND ${tkey} IS NOT NULL)`)
             } else if (Array.isArray(val) && val.length > 0) {
-              res.push(`${tkey} != ALL(${vars.addArray(val, inferType(val))})`)
+              res.push(`${tlkey} != ALL(${vars.addArray(val, valType)})`)
             }
             break
           case '$like':
-            res.push(`${tkey} ILIKE ${vars.add(val, inferType(val))}`)
+            res.push(`${tlkey} ILIKE ${vars.add(val, valType)}`)
             break
           case '$exists':
-            res.push(`${tkey} IS ${val === true || val === 'true' ? 'NOT NULL' : 'NULL'}`)
+            res.push(`${tlkey} IS ${val === true || val === 'true' ? 'NOT NULL' : 'NULL'}`)
             break
           case '$regex':
-            res.push(`${tkey} SIMILAR TO ${vars.add(val, inferType(val))}`)
+            res.push(`${tlkey} SIMILAR TO ${vars.add(val, valType)}`)
             break
           case '$options':
             break
           case '$all':
-            res.push(`${tkey} @> ${vars.addArray(value, inferType(value))}`)
+            if (arrowCount > 0) {
+              res.push(`${tkey} @> '${JSON.stringify(val)}'::jsonb`)
+            } else {
+              res.push(`${tkey} @> ${vars.addArray(val, valType)}`)
+            }
             break
           default:
             res.push(`${tkey} @> '[${JSON.stringify(value)}]'`)
@@ -1395,8 +1410,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
       return res.length === 0 ? undefined : res.join(' AND ')
     }
 
+    let valType = inferType(value)
+    const { tlkey, arrowCount } = prepareJsonValue(tkey, valType)
+    if (arrowCount > 0 && valType === '::text') {
+      valType = ''
+    }
     return type === 'common'
-      ? `${tkey} = ${vars.add(value, inferType(value))}`
+      ? `${tlkey} = ${vars.add(value, valType)}`
       : type === 'array'
         ? `${tkey} @> '${typeof value === 'string' ? '{"' + value + '"}' : value}'`
         : `${tkey} @> '${typeof value === 'string' ? '"' + value + '"' : value}'`
@@ -2083,6 +2103,21 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
     return this.stripHash(systemTx.concat(userTx)) as Tx[]
   }
 }
+function prepareJsonValue (tkey: string, valType: string): { tlkey: string, arrowCount: number } {
+  if (valType === '::string') {
+    valType = '' // No need to add a string conversion
+  }
+  const arrowCount = (tkey.match(/->/g) ?? []).length
+  // We need to convert to type without array if pressent
+  let tlkey = arrowCount > 0 ? `(${tkey})${valType.replace('[]', '')}` : tkey
+
+  if (arrowCount > 0) {
+    // We need to replace only the last -> to ->>
+    tlkey = arrowCount === 1 ? tlkey.replace('->', '->>') : tlkey.replace(/->(?!.*->)/, '->>')
+  }
+  return { tlkey, arrowCount }
+}
+
 /**
  * @public
  */

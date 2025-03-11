@@ -35,7 +35,8 @@ export default mergeIds(cardId, card, {
     TagsSection: '' as AnyComponent,
     ChildsSection: '' as AnyComponent,
     RelationsSection: '' as AnyComponent,
-    SetParentActionPopup: '' as AnyComponent
+    SetParentActionPopup: '' as AnyComponent,
+    RelationSetting: '' as AnyComponent
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,

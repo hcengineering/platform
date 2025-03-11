@@ -35,7 +35,7 @@
   onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
 
   function handleLocationChanged ({ path }: Location): void {
-    if (path[3] !== 'masterTags' || path[4] === undefined) {
+    if (path[3] !== 'types' || path[4] === undefined) {
       selectedTagId = undefined
     } else {
       selectedTagId = path[4] as Ref<MasterTag>

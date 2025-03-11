@@ -13,9 +13,8 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref, type SpaceTypeDescriptor } from '@hcengineering/core'
+import { DocumentQuery, type Doc, type Ref, type SpaceTypeDescriptor } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
-import { type Location, type ResolvedLocation } from '@hcengineering/ui'
 
 import { plugin } from '@hcengineering/platform'
 
@@ -41,8 +40,8 @@ export const mySpacePlugin = plugin(mySpaceId, {
     ConfigDescription: '' as IntlString,
     Mail: '' as IntlString
   },
-  resolver: {
-    Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
+  functions: {
+    BuildQuery: '' as Resource<() => Promise<DocumentQuery<Doc>>>
   }
 })
 

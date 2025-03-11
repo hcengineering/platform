@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { AccountRole, Class, Doc, Obj, PersonId, Ref, Space, Tx } from '@hcengineering/core'
+import type { AccountRole, Class, Doc, DocumentQuery, Obj, PersonId, Ref, Space, Tx } from '@hcengineering/core'
 import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -173,7 +173,7 @@ export interface SpecialNavModel {
   (inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => number
   >
   navigationModel?: ParentsNavigationModel
-  queryOptions?: QueryOptions
+  queryBuilder?: Resource<() => Promise<DocumentQuery<Doc>>>
 }
 
 /** @public */
@@ -188,12 +188,6 @@ export interface ParentsNavigationModel {
   createComponent?: AnyComponent
   createComponentProps?: Record<string, any>
   createButton?: AnyComponent
-}
-
-/** @public */
-export interface QueryOptions {
-  // If specified should display only documents from the current space
-  filterBySpace?: boolean
 }
 
 /** @public */

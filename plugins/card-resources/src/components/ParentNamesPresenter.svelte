@@ -72,7 +72,7 @@
       &:active {
         color: var(--theme-content-color);
       }
-      &::before {
+      &::after {
         content: '›';
         padding: 0 0.25rem;
       }
