@@ -15,8 +15,7 @@
 //
 -->
 <script lang="ts">
-  import { MessageBox, getClient } from '@hcengineering/presentation'
-  import { Question, QuestionKind, Survey } from '@hcengineering/survey'
+  import { Question, QuestionKind } from '@hcengineering/survey'
   import {
     ButtonIcon,
     EditBox,
@@ -27,138 +26,86 @@
     showPopup,
     tooltip
   } from '@hcengineering/ui'
+  import { deepEqual } from 'fast-equals'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import survey from '../plugin'
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
-  export let parent: Survey
-  export let index: number
+  export let question: Question
   export let readonly: boolean = false
+  export let isNewQuestion = false
 
-  let editQuestion: EditBox
+  let inputNameEditBox: EditBox
+  let inputNameSyncState: string = ''
+  let inputName: string = ''
+
+  $: if (inputNameSyncState !== question.name) {
+    inputNameSyncState = question.name
+    inputName = question.name
+  }
+
+  let inputOptionsSyncState: string[] = []
+  let inputOptions: string[] = []
+
+  let inputNewOption = ''
+
+  $: if (!deepEqual(inputOptionsSyncState, question.options ?? [])) {
+    inputOptionsSyncState = question.options ?? []
+    inputOptions = inputOptionsSyncState?.slice() ?? []
+  }
+
   let hovered: boolean = false
 
-  let defaultQuestion: Question = {
-    name: '',
-    kind: QuestionKind.STRING,
-    isMandatory: false,
-    hasCustomOption: false
+  function handleChange (patch: Partial<Question>): void {
+    dispatch('change', patch)
   }
 
-  $: question = (parent?.questions?.[index] as Question) ?? defaultQuestion
-  $: isNewQuestion = parent?.questions?.[index] === undefined
-  $: options = question?.options ?? []
-  $: questionIcon = isNewQuestion
-    ? survey.icon.Question
-    : question.kind === QuestionKind.OPTIONS
-      ? survey.icon.QuestionKindOptions
-      : question.kind === QuestionKind.OPTION
-        ? survey.icon.QuestionKindOption
-        : survey.icon.QuestionKindString
+  function flush (): void {
+    if (isNewQuestion) return
 
-  let haveNameChanges = false
+    const patch: Partial<Question> = {}
+    let haveChanges = false
 
-  let newOption = ''
-
-  onDestroy(() => {
-    handleExit()
-  })
-
-  function handleExit (): void {
-    void handleNameChange()
-  }
-
-  async function updateParent (): Promise<void> {
-    await client.updateDoc(parent._class, parent.space, parent._id, { questions: parent.questions })
-  }
-
-  $: if (isNewQuestion && question.name.trim() !== '') {
-    void createQuestion()
-  }
-
-  function createQuestion (): Promise<void> {
-    if (parent.questions === undefined) {
-      parent.questions = []
+    if (inputName !== question.name) {
+      patch.name = inputName
+      haveChanges = true
     }
-    parent.questions.push({ ...question })
-    defaultQuestion = { ...defaultQuestion, name: '' }
-    return updateParent()
-  }
-
-  function handleNameChange (): Promise<void> | void {
-    if (!haveNameChanges) return
-    haveNameChanges = false
-
-    if (isNewQuestion) return createQuestion()
-    return changeName()
-  }
-
-  async function changeName (): Promise<void> {
-    if (!isNewQuestion) {
-      await updateParent()
+    if (!deepEqual(inputOptions, question.options ?? [])) {
+      patch.options = inputOptions
+      haveChanges = true
     }
+
+    if (haveChanges) handleChange(patch)
+  }
+  onDestroy(flush)
+
+  $: haveNonEmptyName = inputName.trim().length > 0
+  $: if (haveNonEmptyName && isNewQuestion) {
+    handleChange({ name: inputName })
   }
 
-  async function changeKind (kind: QuestionKind): Promise<void> {
-    if (question.kind !== kind) {
-      question.kind = kind
-      await updateParent()
-    }
-  }
-
-  async function changeMandatory (): Promise<void> {
-    question.isMandatory = !question.isMandatory
-    await updateParent()
-  }
-
-  async function changeCustomOption (): Promise<void> {
-    question.hasCustomOption = !question.hasCustomOption
-    await updateParent()
-  }
-
-  async function changeOption (index: number): Promise<void> {
-    if (options[index].trim().length === 0) {
-      await deleteOption(index)
+  function changeOption (index: number): void {
+    if (inputOptions[index]?.trim()?.length === 0) {
+      deleteOption(index)
     } else {
-      await updateParent()
+      handleChange({ options: inputOptions })
     }
   }
 
-  async function addOption (): Promise<void> {
-    if (newOption.trim().length === 0) {
-      newOption = ''
+  function addOption (): void {
+    if (inputNewOption.trim().length === 0) {
+      inputNewOption = ''
       return
     }
-    if (question.options === undefined) {
-      question.options = []
-    }
-    question.options = [...options, newOption]
-    await updateParent()
-    newOption = ''
+    inputOptions = [...inputOptions, inputNewOption]
+    inputNewOption = ''
+    handleChange({ options: inputOptions })
   }
 
-  async function deleteOption (index: number): Promise<void> {
-    options.splice(index, 1)
-    await updateParent()
-  }
-
-  async function deleteQuestion (): Promise<void> {
-    showPopup(
-      MessageBox,
-      {
-        label: survey.string.DeleteQuestion,
-        message: survey.string.DeleteQuestionConfirm
-      },
-      undefined,
-      async (result?: boolean) => {
-        if (result === true) {
-          parent.questions?.splice(index, 1)
-          await updateParent()
-        }
-      }
-    )
+  function deleteOption (index: number): void {
+    inputOptions = inputOptions.filter((val, idx) => idx !== index)
+    handleChange({ options: inputOptions })
   }
 
   function showQuestionParams (ev: MouseEvent): void {
@@ -214,27 +161,27 @@
       async (id) => {
         switch (id) {
           case QuestionKind.STRING: {
-            await changeKind(QuestionKind.STRING)
+            handleChange({ kind: QuestionKind.STRING })
             break
           }
           case QuestionKind.OPTION: {
-            await changeKind(QuestionKind.OPTION)
+            handleChange({ kind: QuestionKind.OPTION })
             break
           }
           case QuestionKind.OPTIONS: {
-            await changeKind(QuestionKind.OPTIONS)
+            handleChange({ kind: QuestionKind.OPTIONS })
             break
           }
           case 'mandatory': {
-            await changeMandatory()
+            handleChange({ isMandatory: !question.isMandatory })
             break
           }
           case 'custom-option': {
-            await changeCustomOption()
+            handleChange({ hasCustomOption: !question.hasCustomOption })
             break
           }
           case 'delete': {
-            await deleteQuestion()
+            dispatch('delete')
             break
           }
           case undefined: {
@@ -266,7 +213,7 @@
       async (id) => {
         switch (id) {
           case 'delete': {
-            await deleteOption(index)
+            deleteOption(index)
             break
           }
           case undefined: {
@@ -285,7 +232,7 @@
   let draggedOverIndex: number | undefined
   const draggableElements: HTMLElement[] = []
 
-  function dragStart (ev: DragEvent, index: number): void {
+  function onOptionDragStart (ev: DragEvent, index: number): void {
     if (readonly || ev.dataTransfer === null) {
       return
     }
@@ -298,7 +245,7 @@
     )
   }
 
-  function dragOver (ev: DragEvent, index: number): void {
+  function onOptionDragOver (ev: DragEvent, index: number): void {
     if (draggedIndex === undefined || draggedIndex === draggedOverIndex || draggedIndex + 1 === draggedOverIndex) {
       return
     }
@@ -306,7 +253,7 @@
     draggedOverIndex = index
   }
 
-  function dragLeave (ev: DragEvent, index: number): void {
+  function onOptionDragLeave (ev: DragEvent, index: number): void {
     if (draggedIndex === undefined) {
       return
     }
@@ -316,32 +263,23 @@
     }
   }
 
-  async function dragDrop (): Promise<void> {
+  function onOptionDrop (): void {
     if (draggedIndex === undefined || draggedOverIndex === undefined) {
       return
     }
-    let modified = false
-    if (draggedOverIndex === options.length && draggedIndex !== options.length - 1) {
-      options.push(options[draggedIndex])
-      options.splice(draggedIndex, 1)
-      modified = true
-    } else if (draggedOverIndex < draggedIndex) {
-      const tmp = options[draggedIndex]
-      options[draggedIndex] = options[draggedOverIndex]
-      options[draggedOverIndex] = tmp
-      modified = true
-    } else if (draggedIndex + 1 !== draggedOverIndex) {
-      const tmp = options[draggedIndex]
-      options[draggedIndex] = options[draggedOverIndex - 1]
-      options[draggedOverIndex - 1] = tmp
-      modified = true
+    if (draggedIndex === draggedOverIndex || draggedIndex === draggedOverIndex - 1) {
+      return
     }
-    if (modified) {
-      await updateParent()
-    }
+
+    const item = inputOptions[draggedIndex]
+    const other = inputOptions.filter((_, index) => index !== draggedIndex)
+    const index = draggedIndex < draggedOverIndex ? draggedOverIndex - 1 : draggedOverIndex
+    inputOptions = [...other.slice(0, index), item, ...other.slice(index)]
+
+    handleChange({ options: inputOptions })
   }
 
-  function dragEnd (): void {
+  function onOptionDragEnd (): void {
     draggedIndex = undefined
     draggedOverIndex = undefined
   }
@@ -349,7 +287,7 @@
   let isRootDragging = false
   let rootElement: HTMLElement
 
-  function rootDragStart (ev: DragEvent): void {
+  function onRootDragStart (ev: DragEvent): void {
     if (readonly || ev.dataTransfer === null) {
       return
     }
@@ -363,17 +301,25 @@
     dispatch('dragStart')
   }
 
-  function rootDragEnd (): void {
+  function onRootDragEnd (): void {
     isRootDragging = false
     dispatch('dragEnd')
   }
 
-  const focusQuestion = (): void => {
-    editQuestion.focusInput()
+  export function focusQuestion (): void {
+    inputNameEditBox.focusInput()
   }
+
+  $: questionIcon = isNewQuestion
+    ? survey.icon.Question
+    : question.kind === QuestionKind.OPTIONS
+      ? survey.icon.QuestionKindOptions
+      : question.kind === QuestionKind.OPTION
+        ? survey.icon.QuestionKindOption
+        : survey.icon.QuestionKindString
 </script>
 
-<svelte:window on:beforeunload={handleExit} />
+<svelte:window on:beforeunload={flush} />
 <div
   bind:this={rootElement}
   class="question-container flex-col flex-gap-2"
@@ -392,22 +338,21 @@
         class="self-start"
         role="presentation"
         draggable={!readonly}
-        on:dragstart={rootDragStart}
-        on:dragend={rootDragEnd}
+        on:dragstart={onRootDragStart}
+        on:dragend={onRootDragEnd}
       >
         <ButtonIcon size={'small'} disabled={readonly} icon={questionIcon} on:click={showQuestionParams} />
       </div>
     {/if}
     <EditBox
-      bind:this={editQuestion}
+      bind:this={inputNameEditBox}
       format={'text-multiline'}
       disabled={readonly}
       placeholder={survey.string.QuestionPlaceholderEmpty}
-      bind:value={question.name}
-      on:input={() => {
-        haveNameChanges = true
+      bind:value={inputName}
+      on:change={() => {
+        handleChange({ name: inputName })
       }}
-      on:change={handleNameChange}
     />
     {#if !isNewQuestion}
       {#if question.hasCustomOption && question.kind !== QuestionKind.STRING}
@@ -423,18 +368,18 @@
     {/if}
   </div>
   {#if !isNewQuestion && question.kind !== QuestionKind.STRING}
-    {#each options as option, index (index)}
+    {#each inputOptions as option, index (index)}
       <div
         class="flex-row-center flex-gap-3 option"
         role="listitem"
         bind:this={draggableElements[index]}
         on:dragover={(ev) => {
-          dragOver(ev, index)
+          onOptionDragOver(ev, index)
         }}
         on:dragleave={(ev) => {
-          dragLeave(ev, index)
+          onOptionDragLeave(ev, index)
         }}
-        on:drop={dragDrop}
+        on:drop={onOptionDrop}
         class:is-dragged={index === draggedIndex}
         class:dragged-over={draggedIndex !== undefined &&
           draggedOverIndex === index &&
@@ -445,9 +390,9 @@
           role="presentation"
           draggable={!readonly}
           on:dragstart={(ev) => {
-            dragStart(ev, index)
+            onOptionDragStart(ev, index)
           }}
-          on:dragend={dragEnd}
+          on:dragend={onOptionDragEnd}
         >
           <ButtonIcon
             disabled={readonly}
@@ -463,9 +408,9 @@
         <EditBox
           disabled={readonly}
           placeholder={survey.string.QuestionPlaceholderOption}
-          bind:value={options[index]}
-          on:change={async () => {
-            await changeOption(index)
+          bind:value={inputOptions[index]}
+          on:change={() => {
+            changeOption(index)
           }}
         />
       </div>
@@ -475,16 +420,20 @@
         class="flex-row-center flex-gap-3 option"
         role="listitem"
         on:dragover={(ev) => {
-          dragOver(ev, options.length)
+          onOptionDragOver(ev, question.options?.length ?? 0)
         }}
         on:dragleave={(ev) => {
-          dragLeave(ev, options.length)
+          onOptionDragLeave(ev, question.options?.length ?? 0)
         }}
-        on:drop={dragDrop}
-        class:dragged-over={draggedOverIndex === options.length && draggedIndex !== options.length - 1}
+        on:drop={onOptionDrop}
+        class:dragged-over={draggedOverIndex === inputOptions.length && draggedIndex !== inputOptions.length - 1}
       >
         <ButtonIcon disabled icon={survey.icon.Question} iconSize={'x-small'} kind={'tertiary'} size={'extra-small'} />
-        <EditBox placeholder={survey.string.QuestionPlaceholderOption} bind:value={newOption} on:change={addOption} />
+        <EditBox
+          placeholder={survey.string.QuestionPlaceholderOption}
+          bind:value={inputNewOption}
+          on:change={addOption}
+        />
       </div>
     {/if}
   {/if}

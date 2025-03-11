@@ -5345,7 +5345,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/survey-resources@file:projects/survey-resources.tgz':
-    resolution: {integrity: sha512-GcIw9MyT6uttWSxYSZOdu9Kln2eLlum64WfLRrHoA0/Z6zxXdlKn6IgZwRdwo2iQBbws9Vz3sfEvoa89XCm6dw==, tarball: file:projects/survey-resources.tgz}
+    resolution: {integrity: sha512-OKGMUZJzuG7+t/0yBujRPBsJPraZFObMn+gF0hOPlgUeBwmFhh5fUKhodNvqAQhmaikyUI8wqf1Zt8roq1fMUg==, tarball: file:projects/survey-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/survey@file:projects/survey.tgz':
@@ -25234,6 +25234,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      fast-equals: 5.2.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)

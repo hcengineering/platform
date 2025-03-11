@@ -15,34 +15,76 @@
 //
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
-  import { Survey } from '@hcengineering/survey'
-  import { EditBox, FocusHandler, Label, createFocusManager, Icon } from '@hcengineering/ui'
-  import EditQuestion from './EditQuestion.svelte'
+  import { MessageBox } from '@hcengineering/presentation'
+  import { Question, QuestionKind, Survey } from '@hcengineering/survey'
+  import { createFocusManager, EditBox, FocusHandler, Icon, Label, showPopup } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import survey from '../plugin'
+  import EditQuestion from './EditQuestion.svelte'
   import IconQuestion from './icons/Question.svelte'
 
+  const dispatch = createEventDispatcher()
   const manager = createFocusManager()
-  const client = getClient()
 
   export let object: Survey
   export let readonly: boolean = false
 
-  $: questions = object?.questions ?? []
-  $: questionEditSlots = readonly ? questions : [...questions, {}]
-
-  async function nameChange (): Promise<void> {
-    await client.updateDoc(object._class, object.space, object._id, { name: object.name })
+  const emptyQuestion: Question = {
+    name: '',
+    kind: QuestionKind.STRING,
+    isMandatory: false,
+    hasCustomOption: false
   }
 
-  async function promptChange (): Promise<void> {
-    await client.updateDoc(object._class, object.space, object._id, { prompt: object.prompt })
+  let newQuestion: Question = { ...emptyQuestion }
+
+  let newQuestionComponent: EditQuestion
+  const questionComponents: EditQuestion[] = []
+
+  function handleChange (patch: Partial<Survey>): void {
+    dispatch('change', patch)
+  }
+
+  function deleteQuestion (index: number): void {
+    if (!object.questions?.[index]) return
+    showPopup(
+      MessageBox,
+      {
+        label: survey.string.DeleteQuestion,
+        message: survey.string.DeleteQuestionConfirm
+      },
+      undefined,
+      async (result?: boolean) => {
+        if (result === true) {
+          let questions = object.questions ?? []
+          questions = questions.filter((q, i) => i !== index)
+          handleChange({ questions })
+        }
+      }
+    )
+  }
+
+  function handleNewQuestionChange (patch: Partial<Question>): void {
+    const question = { ...newQuestion, ...patch }
+
+    let questions = object.questions ?? []
+
+    questions = [...questions, question]
+    newQuestion = { ...emptyQuestion }
+
+    handleChange({ questions })
+  }
+
+  function handleQuestionChange (index: number, patch: Partial<Question>): Promise<void> | void {
+    const questions = (object.questions ?? []).slice()
+    questions[index] = { ...questions[index], ...patch }
+    handleChange({ questions })
   }
 
   let draggedIndex: number | undefined = undefined
   let draggedOverIndex: number | undefined = undefined
 
-  function dragOver (ev: DragEvent, index: number): void {
+  function onQuestionDragOver (ev: DragEvent, index: number): void {
     if (draggedIndex === undefined || draggedIndex === draggedOverIndex || draggedIndex + 1 === draggedOverIndex) {
       return
     }
@@ -50,40 +92,32 @@
     draggedOverIndex = index
   }
 
-  function dragLeave (ev: DragEvent, index: number): void {
-    if (draggedIndex === undefined) {
-      return
-    }
+  function onQuestionDragLeave (ev: DragEvent, index: number): void {
+    if (draggedIndex === undefined) return
+
     ev.preventDefault()
-    if (draggedOverIndex === index) {
-      draggedOverIndex = undefined
-    }
+    if (draggedOverIndex === index) draggedOverIndex = undefined
   }
 
-  async function dragDrop (): Promise<void> {
+  function onQuestionDrop (): void {
     if (draggedIndex === undefined || draggedOverIndex === undefined) {
       return
     }
-    let modified = false
-    if (draggedOverIndex === questions.length && draggedIndex !== questions.length - 1) {
-      questions.push(questions[draggedIndex])
-      questions.splice(draggedIndex, 1)
-      modified = true
-    } else if (draggedOverIndex < draggedIndex) {
-      const tmp = questions[draggedIndex]
-      questions[draggedIndex] = questions[draggedOverIndex]
-      questions[draggedOverIndex] = tmp
-      modified = true
-    } else if (draggedIndex + 1 !== draggedOverIndex) {
-      const tmp = questions[draggedIndex]
-      questions[draggedIndex] = questions[draggedOverIndex - 1]
-      questions[draggedOverIndex - 1] = tmp
-      modified = true
+    if (draggedIndex === draggedOverIndex || draggedIndex === draggedOverIndex - 1) {
+      return
     }
-    if (modified) {
-      await client.updateDoc(object._class, object.space, object._id, { questions })
-    }
+
+    let questions = object?.questions ?? []
+    const item = questions[draggedIndex]
+    const other = questions.filter((_, index) => index !== draggedIndex)
+    const index = draggedIndex < draggedOverIndex ? draggedOverIndex - 1 : draggedOverIndex
+    questions = [...other.slice(0, index), item, ...other.slice(index)]
+    questionComponents[index]?.focusQuestion()
+
+    handleChange({ questions })
   }
+
+  $: questionList = [...(object.questions ?? []), newQuestion]
 </script>
 
 <FocusHandler {manager} />
@@ -95,7 +129,9 @@
       placeholder={survey.string.Name}
       bind:value={object.name}
       kind={'large-style'}
-      on:change={nameChange}
+      on:input={() => {
+        handleChange({ name: object.name })
+      }}
     />
   </div>
   <div class="step-tb-6">
@@ -103,7 +139,9 @@
       disabled={readonly}
       placeholder={survey.string.PromptPlaceholder}
       bind:value={object.prompt}
-      on:change={promptChange}
+      on:input={() => {
+        handleChange({ prompt: object.prompt })
+      }}
     />
   </div>
   <div class="antiSection step-tb-6">
@@ -115,42 +153,48 @@
         <Label label={survey.string.Questions} />
       </span>
     </div>
-    {#each questionEditSlots as question, index}
+    {#each questionList as question, index (index)}
+      {@const isNewQuestion = index === questionList.length - 1}
       <div
         role="listitem"
         on:dragover={(ev) => {
-          dragOver(ev, index)
+          onQuestionDragOver(ev, index)
         }}
         on:dragleave={(ev) => {
-          dragLeave(ev, index)
+          onQuestionDragLeave(ev, index)
         }}
-        on:drop={dragDrop}
+        on:drop={onQuestionDrop}
         class:dragged-over={draggedIndex !== undefined &&
           draggedOverIndex === index &&
           draggedOverIndex !== draggedIndex &&
           draggedOverIndex !== draggedIndex + 1}
       >
-        {#key index}
-          <EditQuestion
-            {index}
-            {readonly}
-            parent={object}
-            on:dragStart={() => {
-              draggedIndex = index
-            }}
-            on:dragEnd={() => {
-              draggedIndex = undefined
-              draggedOverIndex = undefined
-            }}
-          />
-        {/key}
+        <EditQuestion
+          bind:this={questionComponents[index]}
+          {question}
+          {isNewQuestion}
+          on:delete={() => {
+            deleteQuestion(index)
+          }}
+          on:change={(e) => {
+            isNewQuestion ? handleNewQuestionChange(e.detail) : handleQuestionChange(index, e.detail)
+          }}
+          {readonly}
+          on:dragStart={() => {
+            draggedIndex = index
+          }}
+          on:dragEnd={() => {
+            draggedIndex = undefined
+            draggedOverIndex = undefined
+          }}
+        />
       </div>
     {/each}
   </div>
 {/if}
 
 <style lang="scss">
-  div[role='listitem'] + div[role='listitem'] {
+  div[role='listitem'] {
     margin-top: var(--spacing-1);
   }
   .dragged-over {
