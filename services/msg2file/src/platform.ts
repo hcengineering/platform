@@ -24,7 +24,7 @@ import config from './config'
 export async function connectPlatform (workspace: WorkspaceID): Promise<RestClient> {
   const token = generateToken(systemAccountUuid, workspace, { service: config.ServiceID })
   const endpoint = toHttpUrl(await getTransactorEndpoint(token))
-  return await createRestClient(endpoint, workspace, token)
+  return createRestClient(endpoint, workspace, token)
 }
 
 function toHttpUrl (url: string): string {

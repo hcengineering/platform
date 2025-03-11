@@ -240,7 +240,10 @@ export class RestClientImpl implements RestClient {
     if (Object.keys(params).length > 0) {
       searchParams.append('params', JSON.stringify(params))
     }
-    const requestUrl = concatLink(this.endpoint, `/api/v1/find-messages-groups/${this.workspace}?${searchParams.toString()}`)
+    const requestUrl = concatLink(
+      this.endpoint,
+      `/api/v1/find-messages-groups/${this.workspace}?${searchParams.toString()}`
+    )
     return await withRetry(async () => {
       const response = await fetch(requestUrl, this.requestInit())
       if (!response.ok) {

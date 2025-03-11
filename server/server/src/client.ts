@@ -52,7 +52,12 @@ import {
   type Workspace
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
-import { FindMessagesGroupsParams, FindMessagesParams, Message, MessagesGroup } from '@hcengineering/communication-types'
+import {
+  FindMessagesGroupsParams,
+  FindMessagesParams,
+  Message,
+  MessagesGroup
+} from '@hcengineering/communication-types'
 import {
   RequestEvent as CommunicationEvent,
   ConnectionInfo as CommunicationCtx,

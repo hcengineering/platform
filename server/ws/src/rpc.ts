@@ -249,6 +249,7 @@ export function registerRPC (
         limit: req.query.limit !== undefined ? parseInt(req.query.limit as string) : undefined
       }
       const result = await session.searchFulltextRaw(ctx, query, options)
+      await sendJson(req, res, result)
     })
   })
 

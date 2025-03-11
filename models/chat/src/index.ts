@@ -23,7 +23,6 @@ import setting from '@hcengineering/setting'
 import { createCardTableViewlet } from '@hcengineering/model-card'
 import { WidgetType } from '@hcengineering/workbench'
 
-
 import chat from './plugin'
 
 export { chatId } from '@hcengineering/chat'
