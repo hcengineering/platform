@@ -1573,7 +1573,7 @@ export async function createUserWorkspace (
   // Get a list of created workspaces
   const created = (await db.workspace.find({ createdBy: email })).length
 
-  if (created > (userAccount.workspaceLimit ?? workspaceLimitPerUser)) {
+  if (created >= (userAccount.workspaceLimit ?? workspaceLimitPerUser)) {
     ctx.warn('created-by-limit', { email, workspace: workspaceName, limit: userAccount.workspaceLimit })
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.WorkspaceLimitReached, { workspace: workspaceName })
