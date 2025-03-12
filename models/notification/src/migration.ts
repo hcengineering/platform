@@ -333,8 +333,9 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
   })
 
   for (const oldAccId of groupByUser.keys()) {
+    if (oldAccId == null) continue
     const newAccId = await getAccountUuidByOldAccount(client, oldAccId, socialKeyByAccount, accountUuidByOldAccount)
-    if (newAccId == null || oldAccId === newAccId) return
+    if (newAccId == null || oldAccId === newAccId) continue
 
     operations.push({
       filter: {
@@ -360,19 +361,20 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     _class: notification.class.BrowserNotification
   })
 
-  for (const socialKey of groupBySenderId.keys()) {
+  for (const oldAccId of groupBySenderId.keys()) {
+    if (oldAccId == null) continue
     const socialId = await getSocialIdFromOldAccount(
       client,
-      socialKey,
+      oldAccId,
       socialKeyByAccount,
       socialIdBySocialKey,
       socialIdByOldAccount
     )
-    if (socialId == null || socialKey === socialId) return
+    if (socialId == null || oldAccId === socialId) continue
 
     operations.push({
       filter: {
-        senderId: socialKey,
+        senderId: oldAccId,
         _class: notification.class.BrowserNotification
       },
       update: {
@@ -527,6 +529,7 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
   })
 
   for (const socialId of groupByUser.keys()) {
+    if (socialId == null) continue
     const account = await getAccountUuidBySocialKey(client, socialId, accountUuidBySocialKey)
 
     if (account == null || (account as unknown as PersonId) === socialId) continue
@@ -634,8 +637,9 @@ async function migrateSocialKeysToSocialIds (client: MigrationClient): Promise<v
   })
 
   for (const socialKey of groupBySenderId.keys()) {
+    if (socialKey == null) continue
     const socialId = (await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey)) ?? socialKey
-    if (socialId == null || socialKey === socialId) return
+    if (socialId == null || socialKey === socialId) continue
 
     operations.push({
       filter: {

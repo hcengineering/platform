@@ -381,6 +381,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     const groupByModified = await client.groupBy<any, Doc>(domain, 'modifiedBy', {})
 
     for (const accId of groupByCreated.keys()) {
+      if (accId == null) continue
       const socialId = await getSocialIdFromOldAccount(
         client,
         accId,
@@ -388,7 +389,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
         socialIdBySocialKey,
         socialIdByOldAccount
       )
-      if (socialId == null || accId === socialId) return
+      if (socialId == null || accId === socialId) continue
 
       operations.push({
         filter: { createdBy: accId },
@@ -399,6 +400,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     }
 
     for (const accId of groupByModified.keys()) {
+      if (accId == null) continue
       const socialId = await getSocialIdFromOldAccount(
         client,
         accId,
@@ -406,7 +408,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
         socialIdBySocialKey,
         socialIdByOldAccount
       )
-      if (socialId == null || accId === socialId) return
+      if (socialId == null || accId === socialId) continue
 
       operations.push({
         filter: { modifiedBy: accId },
@@ -646,6 +648,10 @@ export async function getSocialIdBySocialKey (
   socialKey: string,
   socialIdBySocialKey?: Map<string, PersonId | null>
 ): Promise<PersonId | null> {
+  if ([core.account.System, core.account.ConfigUser].includes(socialKey as PersonId)) {
+    return socialKey as PersonId
+  }
+
   if (socialIdBySocialKey == null || !socialIdBySocialKey.has(socialKey)) {
     const val = (await client.accountClient.findSocialIdBySocialKey(socialKey)) ?? null
     if (socialIdBySocialKey == null) return val
@@ -845,8 +851,9 @@ async function migrateCreatedByToGenSocialIds (client: MigrationClient): Promise
     const groupByModified = await client.groupBy<any, Doc>(domain, 'modifiedBy', {})
 
     for (const socialKey of groupByCreated.keys()) {
+      if (socialKey == null) continue
       const socialId = await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey)
-      if (socialId == null || socialKey === socialId) return
+      if (socialId == null || socialKey === socialId) continue
 
       operations.push({
         filter: { createdBy: socialKey },
@@ -857,8 +864,9 @@ async function migrateCreatedByToGenSocialIds (client: MigrationClient): Promise
     }
 
     for (const socialKey of groupByModified.keys()) {
+      if (socialKey == null) continue
       const socialId = await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey)
-      if (socialId == null || socialKey === socialId) return
+      if (socialId == null || socialKey === socialId) continue
 
       operations.push({
         filter: { modifiedBy: socialKey },
