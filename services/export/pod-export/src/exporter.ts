@@ -21,7 +21,7 @@ import path from 'path'
 import { UnifiedConverter } from './converter'
 import { UnifiedJsonSerializer } from './json/json-serializer'
 import { UnifiedCsvSerializer } from './csv/csv-serializer'
-
+import { TalantsFormatter } from './candidates/talants-formatter'
 export enum ExportFormat {
   UNIFIED = 'unified',
   CSV = 'csv',
@@ -46,7 +46,7 @@ export class WorkspaceExporter {
     workspaceId: WorkspaceId
   ) {
     this.jsonSerializer = new UnifiedJsonSerializer()
-    this.csvSerializer = new UnifiedCsvSerializer()
+    this.csvSerializer = new UnifiedCsvSerializer(new TalantsFormatter()) // TODO: make formatter configurable
     this.converter = new UnifiedConverter(context, client, storage, workspaceId)
   }
 
