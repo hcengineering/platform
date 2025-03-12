@@ -136,9 +136,8 @@ export async function handleBlobDelete (
   try {
     await datalake.delete(ctx, workspace, name)
     res.status(204).send()
-  } catch (err: any) {
-    const message = err instanceof Error ? err.message : String(err)
-    ctx.error('failed to delete blob', { message })
+  } catch (error: any) {
+    ctx.error('failed to delete blob', { error })
     res.status(500).send()
   }
 }
@@ -155,9 +154,8 @@ export async function handleBlobDeleteList (
   try {
     await datalake.delete(ctx, workspace, body.names)
     res.status(204).send()
-  } catch (err: any) {
-    const message = err instanceof Error ? err.message : String(err)
-    ctx.error('failed to delete blobs', { message })
+  } catch (error: any) {
+    ctx.error('failed to delete blobs', { error })
     res.status(500).send()
   }
 }
@@ -174,9 +172,8 @@ export async function handleBlobSetParent (
   try {
     await datalake.setParent(ctx, workspace, name, parent)
     res.status(204).send()
-  } catch (err: any) {
-    const message = err instanceof Error ? err.message : String(err)
-    ctx.error('failed to delete blob', { message })
+  } catch (error: any) {
+    ctx.error('failed to delete blob', { error })
     res.status(500).send()
   }
 }
@@ -229,7 +226,7 @@ export async function handleUploadFormData (
         return { key, metadata }
       } catch (err: any) {
         const error = err instanceof Error ? err.message : String(err)
-        ctx.error('failed to upload blob', { error })
+        ctx.error('failed to upload blob', { error: err })
         return { key, error }
       }
     })
