@@ -18,14 +18,13 @@ import client, { ClientSocket } from '@hcengineering/client'
 import core, {
   AccountUuid,
   Blob,
-  buildSocialIdString,
   Class,
   Client,
   Doc,
   generateId,
   MeasureContext,
+  type PersonId,
   Ref,
-  SocialIdType,
   Space,
   TxOperations,
   WorkspaceIds
@@ -118,6 +117,7 @@ type AsyncRequestHandler = (
   res: Response,
   wsIds: WorkspaceIds,
   token: string,
+  socialId: PersonId,
   next: NextFunction
 ) => Promise<void>
 
@@ -133,12 +133,15 @@ const handleRequest = async (
     if (!isWorkspaceLoginInfo(wsLoginInfo)) {
       throw new ApiError(401, "Couldn't find workspace with the provided token")
     }
+    if (wsLoginInfo.socialId === undefined) {
+      throw new ApiError(401, 'Social ID is missing')
+    }
     const wsIds = {
       uuid: wsLoginInfo.workspace,
       dataId: wsLoginInfo.workspaceDataId,
       url: wsLoginInfo.workspaceUrl
     }
-    await fn(req, res, wsIds, token, next)
+    await fn(req, res, wsIds, token, wsLoginInfo.socialId, next)
   } catch (err: unknown) {
     next(err)
   }
@@ -159,7 +162,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
   app.get(
     '/export',
-    wrapRequest(async (req, res, wsIds, token) => {
+    wrapRequest(async (req, res, wsIds, token, socialId) => {
       const classId = req.query.class as Ref<Class<Doc<Space>>>
       const exportType = req.query.type as ExportType
       const attributesOnly = req.query.attributesOnly === 'true'
@@ -171,10 +174,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
       const platformClient = await createPlatformClient(token)
       const { account, workspace } = decodeToken(token)
 
-      const txOperations = new TxOperations(
-        platformClient,
-        buildSocialIdString({ type: SocialIdType.EMAIL, value: account })
-      )
+      const txOperations = new TxOperations(platformClient, socialId)
 
       res.status(200).send({ message: 'Export started' })
 
