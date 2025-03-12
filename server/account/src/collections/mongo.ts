@@ -150,7 +150,9 @@ implements DbCollection<T> {
       return null
     }
 
-    delete doc._id
+    if (this.idKey !== '_id') {
+      delete doc._id
+    }
     return doc
   }
 
