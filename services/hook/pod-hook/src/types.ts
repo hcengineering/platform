@@ -24,3 +24,11 @@ export interface Endpoint {
   type: RequestType
   handler: RequestHandler
 }
+
+export interface MailInfo {
+  from: string
+  to: string[]
+  subject: string
+  contents: any
+  size: number
+}

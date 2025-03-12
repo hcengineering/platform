@@ -18,21 +18,33 @@ dotenvConfig()
 
 export interface Config {
   port: number
+  ingoredEmails: string[]
+  messageServiceUrl: string
 }
 
 const envMap = {
-  Port: 'PORT'
+  Port: 'PORT',
+  IngoredEmails: 'IGNORED_EMAILS',
+  MessageServiceUrl: 'MESSAGE_SERVICE_URL'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
+const parseEmailsList = (str: string | undefined): string[] => (str !== undefined ? str.split(',') : [])
 
 const config: Config = (() => {
   const port = parseNumber(process.env[envMap.Port])
   if (port === undefined) {
     throw Error('Missing env variable: Port')
   }
+  const messageServiceUrl = process.env[envMap.MessageServiceUrl]
+  if (messageServiceUrl === undefined) {
+    throw Error('Missing env variable: MessageServiceUrl')
+  }
+  const ingoredEmails = parseEmailsList(process.env[envMap.IngoredEmails])
   const params: Config = {
-    port
+    port,
+    ingoredEmails,
+    messageServiceUrl
   }
 
   return params
