@@ -49,5 +49,6 @@ startFront(metricsContext, {
   TELEGRAM_BOT_URL: process.env.TELEGRAM_BOT_URL,
   STATS_URL: process.env.STATS_API ?? process.env.STATS_URL,
   BACKUP_URL: process.env.BACKUP_URL,
-  TRANSACTOR_OVERRIDE: process.env.TRANSACTOR_OVERRIDE
+  TRANSACTOR_OVERRIDE: process.env.TRANSACTOR_OVERRIDE,
+  EXPORT_URL: process.env.EXPORT_URL
 })

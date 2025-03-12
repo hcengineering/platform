@@ -67,6 +67,7 @@ import CreateRelation from './components/CreateRelation.svelte'
 import EditRelation from './components/EditRelation.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
+import Export from './components/Export.svelte'
 
 export * from './store'
 export {
@@ -143,7 +144,8 @@ export default async (): Promise<Resources> => ({
     SettingsWidget,
     CreateAttributePopup,
     CreateRelation,
-    EditRelation
+    EditRelation,
+    Export
   },
   actionImpl: {
     DeleteMixin

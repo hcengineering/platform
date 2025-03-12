@@ -18,7 +18,7 @@ import { markupToMarkdown } from '@hcengineering/text-markdown'
 import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import * as yaml from 'js-yaml'
 import { basename, dirname, extname, join, relative } from 'path'
-import { UnifiedControlledDocumentHeader, UnifiedDocumentTemplateHeader } from '../huly/unified'
+import { HulyControlledDocumentHeader, HulyDocumentTemplateHeader } from '../huly/huly'
 
 export interface DocumentConverterOptions {
   outputPath: string
@@ -32,7 +32,7 @@ export interface DocumentState {
   path: string
   root: string
   markup: MarkupNode
-  header?: UnifiedControlledDocumentHeader | UnifiedDocumentTemplateHeader
+  header?: HulyControlledDocumentHeader | HulyDocumentTemplateHeader
 }
 
 export interface DocumentPreprocessorOptions<T> {
