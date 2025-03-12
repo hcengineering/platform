@@ -24,7 +24,6 @@ import core, {
   FindResult,
   Hierarchy,
   PersonId,
-  parseSocialIdString,
   Ref,
   systemAccountUuid,
   Tx,
@@ -96,11 +95,10 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
     if (ctx.attributes?.active !== true) continue
     if (await checkCalendarsExist(control, ctx.objectId)) continue
 
-    const socialStrings = await getSocialStrings(control, ctx.objectId)
-    if (socialStrings.length === 0) continue
+    const socialIds = await getSocialStrings(control, ctx.objectId)
+    if (socialIds.length === 0) continue
 
-    const socialString = pickPrimarySocialId(socialStrings)
-    const { value } = parseSocialIdString(socialString)
+    const socialId = pickPrimarySocialId(socialIds)
 
     const employee = (
       await control.findAll(
@@ -112,7 +110,7 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
     )[0]
     if (employee?.personUuid === undefined) continue
 
-    result.push(...(await createCalendar(control, employee.personUuid, socialString, value)))
+    result.push(...(await createCalendar(control, employee.personUuid, socialId, socialId)))
   }
 
   return result
