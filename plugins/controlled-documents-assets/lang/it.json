@@ -267,7 +267,10 @@
     "MakeDocumentObsoleteDialog": "Segna {count, plural, one {il documento come obsoleto} other {i documenti come obsoleti}}",
     "MakeDocumentObsoleteConfirm": "Vuoi davvero segnare i seguenti documenti come obsoleti: {titles}?",
 
-    "LatestVersionHint": "ultimo"
+    "LatestVersionHint": "ultimo",
+
+    "CannotDeleteFolder": "Impossibile eliminare la cartella",
+    "CannotDeleteFolderHint": "Sposta tutti i documenti figli in un'altra posizione prima di eliminare la cartella."
   },
   "controlledDocStates": {
     "Empty": "",

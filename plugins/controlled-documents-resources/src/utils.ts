@@ -33,7 +33,8 @@ import documents, {
   compareDocumentVersions,
   emptyBundle,
   getDocumentName,
-  getFirstRank
+  getFirstRank,
+  transferDocuments
 } from '@hcengineering/controlled-documents'
 import core, {
   type Class,
@@ -53,7 +54,7 @@ import core, {
   getCurrentAccount
 } from '@hcengineering/core'
 import { type IntlString, translate } from '@hcengineering/platform'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import request, { type Request, RequestStatus } from '@hcengineering/request'
 import { isEmptyMarkup } from '@hcengineering/text'
 import { type Location, getUserTimezone, showPopup } from '@hcengineering/ui'
@@ -551,46 +552,22 @@ export async function canRenameFolder (
   return await isEditableProject(doc.project)
 }
 
-export async function canDeleteFolder (obj?: Doc | Doc[]): Promise<boolean> {
-  if (obj == null) {
-    return false
-  }
+export async function canDeleteFolder (doc: ProjectDocument): Promise<boolean> {
+  if (doc?._class === undefined) return false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
-
-  const isFolders = objs.every((doc) => isFolder(hierarchy, doc))
-  if (!isFolders) {
-    return false
-  }
-
-  const folders = objs as unknown as ProjectDocument[]
-
-  const pjMeta = await client.findAll(documents.class.ProjectMeta, { _id: { $in: folders.map((f) => f.attachedTo) } })
-  const directChildren = await client.findAll(documents.class.ProjectMeta, {
-    parent: { $in: pjMeta.map((p) => p.meta) }
-  })
-
-  if (directChildren.length > 0) {
+  if (!isFolder(hierarchy, doc)) {
     return false
   }
 
   const currentUser = getCurrentAccount() as PersonAccount
-  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
-
-  if (isOwner) {
+  if (doc.createdBy === currentUser._id) {
     return true
   }
 
-  const spaces = new Set(objs.map((doc) => doc.space))
-
-  return await Promise.all(
-    Array.from(spaces).map(
-      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
-    )
-  ).then((res) => res.every((r) => r))
+  return await checkPermission(getClient(), documents.permission.ArchiveDocument, doc.space)
 }
 
 export async function canDeleteDocumentCategory (doc?: Doc | Doc[]): Promise<boolean> {
@@ -835,25 +812,70 @@ export async function renameFolder (doc: ProjectDocument): Promise<void> {
   showPopup(documents.component.CreateFolder, props)
 }
 
-export async function deleteFolder (obj: ProjectDocument | ProjectDocument[]): Promise<void> {
+export async function deleteFolder (obj: ProjectDocument): Promise<void> {
+  const success = await _deleteFolder(obj)
+  if (!success) {
+    showPopup(MessageBox, {
+      label: documentsResources.string.CannotDeleteFolder,
+      message: documentsResources.string.CannotDeleteFolderHint,
+      canSubmit: false
+    })
+  }
+}
+
+async function _deleteFolder (obj: ProjectDocument): Promise<boolean> {
   const client = getClient()
 
   if (!(await canDeleteFolder(obj))) {
-    return
+    return false
   }
 
-  const objs = Array.isArray(obj) ? obj : [obj]
+  const space = obj.space
+  const project = obj.project
 
-  const pjmeta = await client.findAll(documents.class.ProjectMeta, { _id: { $in: objs.map((p) => p.attachedTo) } })
-  const meta = await client.findAll(documents.class.DocumentMeta, { _id: { $in: pjmeta.map((p) => p.meta) } })
+  const bundle: DocumentBundle = {
+    ...emptyBundle(),
+    ProjectMeta: await client.findAll(documents.class.ProjectMeta, { space, project }),
+    ProjectDocument: await client.findAll(documents.class.ProjectDocument, { space, project }),
+    DocumentMeta: await client.findAll(documents.class.DocumentMeta, { space }),
+    ControlledDocument: await client.findAll(documents.class.ControlledDocument, { space })
+  }
 
-  const docsToRemove = [...objs, ...pjmeta, ...meta]
+  const prjMeta = bundle.ProjectMeta.find((m) => m._id === obj.attachedTo)
+  if (prjMeta === undefined) return false
+
+  const tree = new ProjectDocumentTree(bundle, { keepRemoved: true })
+
+  const movableStates = [DocumentState.Deleted, DocumentState.Obsolete]
+  const descendants = tree.descendantsOf(prjMeta.meta)
+  for (const meta of descendants) {
+    const bundle = tree.bundleOf(meta)
+    const docs = bundle?.ControlledDocument ?? []
+    const movable = docs.every((d) => movableStates.includes(d.state))
+    if (!movable) return false
+  }
+
+  const children = tree.childrenOf(prjMeta.meta)
+  if (children.length > 0) {
+    await transferDocuments(client, {
+      sourceDocumentIds: children,
+      sourceSpaceId: obj.space,
+      sourceProjectId: obj.project,
+
+      targetSpaceId: obj.space,
+      targetProjectId: obj.project
+    })
+  }
+
+  const toRemoval = [obj, prjMeta]
+
   const ops = client.apply()
-  for (const doc of docsToRemove) {
+  for (const doc of toRemoval) {
     await ops.remove(doc)
   }
 
   await ops.commit()
+  return true
 }
 
 export async function createDocument (space: DocumentSpace): Promise<void> {

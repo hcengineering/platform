@@ -311,7 +311,10 @@
     "RenameFolder": "Rename folder",
     "CreateChildFolder": "Create child folder",
 
-    "LatestVersionHint": "latest"
+    "LatestVersionHint": "latest",
+
+    "CannotDeleteFolder": "The folder cannot be deleted",
+    "CannotDeleteFolderHint": "Please move all child documents to another location before deleting the folder."
   },
   "controlledDocStates": {
     "Empty": "",
