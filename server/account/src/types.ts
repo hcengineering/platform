@@ -104,7 +104,7 @@ export interface Workspace {
 }
 
 export interface OTP {
-  socialId: string
+  socialId: PersonId
   code: string
   expiresOn: Timestamp
   createdOn: Timestamp

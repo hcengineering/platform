@@ -355,7 +355,7 @@ export async function sendOtp (
   socialId: SocialId
 ): Promise<OtpInfo> {
   const ts = Date.now()
-  const otpData = (await db.otp.find({ socialId: socialId.key }, { createdOn: 'descending' }, 1))[0]
+  const otpData = (await db.otp.find({ socialId: socialId._id }, { createdOn: 'descending' }, 1))[0]
   const retryDelay = getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30
 
   if (otpData !== undefined && otpData.expiresOn > ts && otpData.createdOn + retryDelay * 1000 > ts) {
@@ -378,7 +378,7 @@ export async function sendOtp (
   const code = await generateUniqueOtp(db)
 
   await sendMethod(ctx, branding, code, socialId.value)
-  await db.otp.insertOne({ socialId: socialId.key, code, expiresOn: ts + ttlMs, createdOn: ts })
+  await db.otp.insertOne({ socialId: socialId._id, code, expiresOn: ts + ttlMs, createdOn: ts })
 
   return { sent: true, retryOn: ts + retryDelayMs }
 }
@@ -422,7 +422,7 @@ export async function sendOtpEmail (
   }
 }
 
-export async function isOtpValid (db: AccountDB, socialId: string, code: string): Promise<boolean> {
+export async function isOtpValid (db: AccountDB, socialId: PersonId, code: string): Promise<boolean> {
   const otpData = await db.otp.findOne({ socialId, code })
 
   return (otpData?.expiresOn ?? 0) > Date.now()

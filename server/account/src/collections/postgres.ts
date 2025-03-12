@@ -43,11 +43,19 @@ import type {
 } from '../types'
 
 function toSnakeCase (str: string): string {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+  // Preserve leading underscore
+  const hasLeadingUnderscore = str.startsWith('_')
+  const baseStr = hasLeadingUnderscore ? str.slice(1) : str
+  const converted = baseStr.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+  return hasLeadingUnderscore ? '_' + converted : converted
 }
 
 function toCamelCase (str: string): string {
-  return str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
+  // Preserve leading underscore
+  const hasLeadingUnderscore = str.startsWith('_')
+  const baseStr = hasLeadingUnderscore ? str.slice(1) : str
+  const converted = baseStr.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
+  return hasLeadingUnderscore ? '_' + converted : converted
 }
 
 function convertKeysToCamelCase (obj: any): any {
@@ -362,7 +370,7 @@ export class PostgresAccountDB implements AccountDB {
 
   person: PostgresDbCollection<Person, 'uuid'>
   account: AccountPostgresDbCollection
-  socialId: PostgresDbCollection<SocialId, 'key'>
+  socialId: PostgresDbCollection<SocialId, '_id'>
   workspace: PostgresDbCollection<Workspace, 'uuid'>
   workspaceStatus: PostgresDbCollection<WorkspaceStatus>
   accountEvent: PostgresDbCollection<AccountEvent>
@@ -375,7 +383,7 @@ export class PostgresAccountDB implements AccountDB {
   ) {
     this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid')
     this.account = new AccountPostgresDbCollection(client)
-    this.socialId = new PostgresDbCollection<SocialId, 'key'>('social_id', client, 'key')
+    this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, '_id')
     this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client)
     this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid')
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client)
@@ -687,7 +695,7 @@ export class PostgresAccountDB implements AccountDB {
           person_uuid UUID NOT NULL,
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           verified_on BIGINT,
-          CONSTRAINT social_id_pk PRIMARY KEY (id),
+          CONSTRAINT social_id_pk PRIMARY KEY (_id),
           CONSTRAINT social_id_tv_key_unique UNIQUE (type, value),
           CONSTRAINT social_id_key_unique UNIQUE (key),
           INDEX social_id_account_idx (person_uuid),
@@ -744,12 +752,12 @@ export class PostgresAccountDB implements AccountDB {
 
       /* ======= O T P ======= */
       CREATE TABLE IF NOT EXISTS ${this.ns}.otp (
-          social_id STRING NOT NULL,
+          social_id INT8 NOT NULL,
           code STRING NOT NULL,
           expires_on BIGINT NOT NULL,
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           CONSTRAINT otp_pk PRIMARY KEY (social_id, code),
-          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(key)
+          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(_id)
       );
 
       /* ======= I N V I T E ======= */
