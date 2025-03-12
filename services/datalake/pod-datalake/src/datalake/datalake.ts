@@ -25,7 +25,7 @@ import { type S3Bucket } from '../s3'
 export class DatalakeImpl implements Datalake {
   constructor (
     private readonly db: BlobDB,
-    private readonly buckets: Partial<Record<Location, S3Bucket>>,
+    private readonly buckets: Array<{ location: Location, bucket: S3Bucket }>,
     private readonly options: {
       cacheControl: string
     }
@@ -44,13 +44,12 @@ export class DatalakeImpl implements Datalake {
   }
 
   async head (ctx: MeasureContext, workspace: string, name: string): Promise<BlobHead | null> {
-    const { bucket } = await this.selectStorage(ctx, workspace)
-
     const blob = await this.db.getBlob(ctx, { workspace, name })
     if (blob === null) {
       return null
     }
 
+    const { bucket } = await this.selectStorage(ctx, workspace, blob.location)
     const head = await bucket.head(ctx, blob.filename)
     if (head == null) {
       return null
@@ -72,12 +71,12 @@ export class DatalakeImpl implements Datalake {
     name: string,
     options: { range?: string }
   ): Promise<BlobBody | null> {
-    const { bucket } = await this.selectStorage(ctx, workspace)
-
     const blob = await this.db.getBlob(ctx, { workspace, name })
     if (blob === null) {
       return null
     }
+
+    const { bucket } = await this.selectStorage(ctx, workspace, blob.location)
 
     const range = options.range
     const object = await bucket.get(ctx, blob.filename, { range })
@@ -176,9 +175,10 @@ export class DatalakeImpl implements Datalake {
     await this.db.setParent(ctx, { workspace, name }, parent !== null ? { workspace, name: parent } : null)
   }
 
-  async selectStorage (ctx: MeasureContext, workspace: string): Promise<BlobStorage> {
-    const location = this.selectLocation(workspace)
-    const bucket = this.buckets[location]
+  async selectStorage (ctx: MeasureContext, workspace: string, location?: Location): Promise<BlobStorage> {
+    location ??= this.selectLocation(workspace)
+
+    const bucket = this.buckets.find((b) => b.location === location)?.bucket
     if (bucket == null) {
       throw new Error(`Unsupported location: ${location}`)
     }
@@ -186,7 +186,6 @@ export class DatalakeImpl implements Datalake {
   }
 
   selectLocation (workspace: string): Location {
-    // TODO select location based on workspace
-    return 'weur'
+    return this.buckets[0].location
   }
 }
