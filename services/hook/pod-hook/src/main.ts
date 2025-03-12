@@ -14,7 +14,7 @@
 //
 
 import { createServer, listen } from './server'
-import { Endpoint } from './types'
+import { Endpoint, type MailInfo } from './types'
 import config from './config'
 
 export const main = async (): Promise<void> => {
@@ -23,14 +23,27 @@ export const main = async (): Promise<void> => {
       endpoint: '/mta',
       type: 'post',
       handler: async (req, res) => {
-        console.log('mta-hook retrieved')
-        const message = getMessageInfo(req.body)
-        console.log('Email from:', message?.from)
-        // TODO: Send request to add message or put event to the queue
-
-        res.json({
-          action: 'accept'
-        })
+        try {
+          console.log('mta-hook retrieved')
+          const message = getMailInfo(req.body)
+          if (message === undefined) {
+            console.log('No message')
+            return
+          }
+          if (config.ingoredEmails.includes(message?.from)) {
+            console.log('Internal email from:', message?.from)
+            return
+          }
+          console.log('Email from:', message?.from)
+          await createMessage(message)
+        } catch (err) {
+          console.error('Failed to process email:', err)
+        } finally {
+          // Continue processing email on the server without changes
+          res.json({
+            action: 'accept'
+          })
+        }
       }
     }
   ]
@@ -53,9 +66,7 @@ export const main = async (): Promise<void> => {
   })
 }
 
-const getMessageInfo = (
-  body: any
-): { from: string, to: string[], subject: string, contents: any, size: number } | undefined => {
+const getMailInfo = (body: any): MailInfo | undefined => {
   try {
     const from = body.envelope.from.address
     const to = body.envelope.to.map((recipient: any) => recipient.address)
@@ -74,5 +85,25 @@ const getMessageInfo = (
   } catch (e) {
     console.error('Failed to parse message:', e)
     return undefined
+  }
+}
+
+async function createMessage (message: MailInfo): Promise<void> {
+  const response = await fetch('http://message-service/create-mail', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: message.from,
+      to: message.to,
+      subject: message.subject,
+      contents: message.contents,
+      size: message.size
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.statusText}`)
   }
 }
