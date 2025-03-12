@@ -461,8 +461,9 @@ export async function getUsersInfo (
   control: TriggerControl
 ): Promise<Map<PersonId, ReceiverInfo | SenderInfo>> {
   if (ids.length === 0) return new Map()
+  const uniqueIds = Array.from(new Set(ids))
 
-  const employeesBySocialId = await getEmployeesBySocialIds(control, ids)
+  const employeesBySocialId = await getEmployeesBySocialIds(control, uniqueIds)
   const presentEmployeeIds = Object.values(employeesBySocialId)
     .map((it) => it?._id)
     .filter((it) => it !== undefined)
@@ -482,7 +483,7 @@ export async function getUsersInfo (
   const socialStringsByPersons = await getSocialStringsByPersons(control, persons as Ref<Person>[])
 
   return new Map(
-    ids.map((_id) => {
+    uniqueIds.map((_id) => {
       const employee = employeesBySocialId[_id]
       const space = employee !== undefined ? spacesByEmployee.get(employee._id)?.[0] : undefined
       const person = employee ?? personsBySocialId[_id]

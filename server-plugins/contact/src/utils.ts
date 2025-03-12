@@ -143,15 +143,17 @@ export async function getEmployeesBySocialIds (
   control: TriggerControl,
   personIds: PersonId[]
 ): Promise<Record<PersonId, Employee | undefined>> {
-  const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, { key: { $in: personIds } })
+  const socialIds = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+    _id: { $in: personIds as SocialIdentityRef[] }
+  })
   const employees = toIdMap(
     await control.findAll(control.ctx, contact.mixin.Employee, {
       _id: { $in: socialIds.map((s) => s.attachedTo as Ref<Employee>) }
     })
   )
 
-  return socialIds.reduce<Record<string, Employee | undefined>>((acc, s) => {
-    acc[s.key] = employees.get(s.attachedTo as Ref<Employee>)
+  return socialIds.reduce<Record<PersonId, Employee | undefined>>((acc, s) => {
+    acc[s._id] = employees.get(s.attachedTo as Ref<Employee>)
 
     return acc
   }, {})
