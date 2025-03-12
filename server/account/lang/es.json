@@ -1,19 +1,19 @@
 {
   "string": {
-    "ConfirmationText": "Gracias por tu interés en {name}. Para completar el proceso de registro, copia el siguiente enlace en la barra de URL de tu navegador: {link}. Saludos, equipo de {name}.",
-    "ConfirmationHTML": "<p>Hola,</p><p>Gracias por tu interés en {name}. Para completar el proceso de registro, sigue <a href={link}>este enlace</a> o copia el siguiente enlace en la barra de URL de tu navegador.</p><p>{link}</p><p>Saludos,</p><p>Equipo de {name}.</p>",
-    "ConfirmationSubject": "Confirma tu dirección de correo electrónico para registrarte en {name}",
-    "RecoveryText": "Recibimos una solicitud para restablecer la contraseña de tu cuenta. Para restablecer tu contraseña, pega el siguiente enlace en la barra de direcciones de tu navegador web: {link}. Si no solicitaste la recuperación de la contraseña, ignora este mensaje.",
-    "RecoveryHTML": "<p>Recibimos una solicitud para restablecer la contraseña de tu cuenta. Para restablecer tu contraseña, haz clic en el enlace a continuación: <a href={link}>Restablecer contraseña</a></p><p>Si el enlace anterior Restablecer contraseña no funciona, pega el siguiente enlace en la barra de direcciones de tu navegador web: {link}</p><p>Si no solicitaste la recuperación de la contraseña, ignora este mensaje.</p>",
-    "RecoverySubject": "Recuperación de Contraseña",
-    "InviteText": "Te invitaron a {ws}. Para unirte, pega el siguiente enlace en la barra de URL de tu navegador web: {link}. Enlace válido por {expHours} horas.",
-    "InviteHTML": "<p>Te invitaron a {ws}. Para unirte, haz clic en el enlace a continuación: <a href={link}>Unirse</a></p><p>Si el enlace de invitación anterior no funciona, pega el siguiente enlace en la barra de URL de tu navegador web: {link}</p><p>Enlace válido por {expHours} horas.</p>",
-    "InviteSubject": "Invitación a {ws}",
-    "OtpText": "¡Confirma tu dirección de correo electrónico para acceder a {app}!\n\nTu código de confirmación está a continuación: ingrésalo en la ventana donde iniciaste sesión en {app}.\n\n{code}\n\nSi no solicitaste este correo electrónico, no hay de qué preocuparse; puedes ignorarlo con seguridad.",
-    "OtpHTML": "<h3>¡Confirma tu dirección de correo electrónico para acceder a {app}!</h3><p>Tu código de confirmación está a continuación: ingrésalo en la ventana donde iniciaste sesión en {app}.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Si no solicitaste este correo electrónico, no hay de qué preocuparse; puedes ignorarlo con seguridad.</p>",
-    "OtpSubject": "Código de confirmación de {app}: {code}",
-    "ResendInviteText": "Has sido reinvitado a {ws}. Por favor, utiliza el siguiente enlace para unirte: {link}. El enlace de reinvitación es válido por {expHours} horas.",
-    "ResendInviteHTML": "<p>Has sido reinvitado a {ws}. Para unirte, haz clic en el enlace de abajo: <a href={link}>Unirse</a></p><p>Si el enlace de invitación anterior no funciona, pega el siguiente enlace en la barra de direcciones de tu navegador: {link}</p><p>El enlace de reinvitación es válido por {expHours} horas.</p>",
-    "ResendInviteSubject": "Reinvitación a {ws}"
+    "ConfirmationText": "{name} projesine gösterdiğiniz ilgi için teşekkür ederiz. Kayıt işlemini tamamlamak için lütfen aşağıdaki bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}. Saygılarımızla, {name} Ekibi.",
+    "ConfirmationHTML": "<p>Merhaba,</p><p>{name} projesine gösterdiğiniz ilgi için teşekkür ederiz. Kayıt işlemini tamamlamak için lütfen <a href={link}>bu bağlantıya tıklayın</a> veya aşağıdaki bağlantıyı tarayıcınızın adres çubuğuna yapıştırın.</p><p>{link}</p><p>Saygılarımızla,</p><p>{name} Ekibi.</p>",
+    "ConfirmationSubject": "{name} projesine kayıt olmak için e-posta adresinizi doğrulayın",
+    "RecoveryText": "Hesabınızın parolasını sıfırlama isteği aldık. Parolanızı sıfırlamak için lütfen aşağıdaki bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}. Parola sıfırlama talebinde bulunmadıysanız, lütfen bu e-postayı dikkate almayın.",
+    "RecoveryHTML": "<p>Hesabınızın parolasını sıfırlama isteği aldık. Parolanızı sıfırlamak için lütfen aşağıdaki bağlantıya tıklayın: <a href={link}>Parolayı sıfırla</a></p><p>Yukarıdaki parola sıfırlama bağlantısı çalışmazsa, aşağıdaki bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}</p><p>Parola sıfırlama talebinde bulunmadıysanız, lütfen bu e-postayı dikkate almayın.</p>",
+    "RecoverySubject": "Parola kurtarma",
+    "InviteText": "{ws} platformuna davet edildiniz. Katılmak için lütfen aşağıdaki bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}. Bu bağlantı {expHours} saat geçerlidir.",
+    "InviteHTML": "<p>{ws} platformuna davet edildiniz. Katılmak için lütfen aşağıdaki bağlantıya tıklayın: <a href={link}>Katıl</a></p><p>Yukarıdaki davet bağlantısı çalışmazsa, aşağıdaki bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}</p><p>Bu bağlantı {expHours} saat geçerlidir.</p>",
+    "InviteSubject": "{ws} platformuna davet",
+    "OtpText": "{app} uygulamasına erişmek için e-posta adresinizi doğrulayın!\n\nDoğrulama kodunuz aşağıdadır - {app} uygulamasına giriş yapmaya başladığınız pencereye girin.\n\n{code}\n\nBu e-postayı siz istemediyseniz, endişelenmenize gerek yok — güvenle göz ardı edebilirsiniz.",
+    "OtpHTML": "<h3>{app} uygulamasına erişmek için e-posta adresinizi doğrulayın!</h3><p>Doğrulama kodunuz aşağıdadır - {app} uygulamasına giriş yapmaya başladığınız pencereye girin.<p/><br/><b style=\"font-size:36px\">{code}</b><br/><br/><p>Bu e-postayı siz istemediyseniz, endişelenmenize gerek yok — güvenle göz ardı edebilirsiniz.</p>",
+    "OtpSubject": "{app} doğrulama kodu: {code}",
+    "ResendInviteText": "{ws} platformuna yeniden davet edildiniz. Lütfen katılmak için aşağıdaki bağlantıyı kullanın: {link}. Bu yeniden davet bağlantısı {expHours} saat geçerlidir.",
+    "ResendInviteHTML": "<p>{ws} platformuna yeniden davet edildiniz. Katılmak için aşağıdaki bağlantıya tıklayın: <a href={link}>Katıl</a></p><p>Yukarıdaki davet bağlantısı çalışmazsa, aşağıdaki bağlantıyı tarayıcınızın adres çubuğuna yapıştırın: {link}</p><p>Bu yeniden davet bağlantısı {expHours} saat geçerlidir.</p>",
+    "ResendInviteSubject": "{ws} platformuna yeniden davet"
   }
 }

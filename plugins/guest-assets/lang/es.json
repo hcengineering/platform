@@ -1,10 +1,10 @@
 {
   "string": {
-    "CreatePublicLink": "Crear enlace público",
-    "PublicLink": "Enlace público",
-    "Revoke": "Revocar",
-    "RevokeConfirmation": "¿Está seguro de que desea revocar este enlace público? Esto hará que el enlace compartido anteriormente deje de funcionar.",
-    "LinkWasRevoked": "Enlace público revocado",
-    "Copy": "Copiar"
+    "CreatePublicLink": "Herkese Açık Bağlantı Oluştur",
+    "PublicLink": "Herkese Açık Bağlantı",
+    "Revoke": "İptal Et",
+    "RevokeConfirmation": "Bu işlem, daha önce paylaşılan bağlantının çalışmasını durduracaktır. Bu herkese açık bağlantıyı iptal etmek istediğinizden emin misiniz?",
+    "LinkWasRevoked": "Herkese açık bağlantı iptal edildi",
+    "Copy": "Kopyala"
   }
 }

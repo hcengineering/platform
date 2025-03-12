@@ -1,10 +1,10 @@
 {
   "string": {
-    "Cancel": "Cancelar",
-    "Pause": "Pausar",
-    "Stop": "Detener",
-    "Resume": "Reanudar",
-    "Record": "Grabar",
-    "ClickToSkip": "Haz clic para saltar"
+    "Cancel": "İptal",
+    "Pause": "Duraklat",
+    "Stop": "Durdur",
+    "Resume": "Devam Et",
+    "Record": "Kaydet",
+    "ClickToSkip": "Atlamak için tıklayın"
   }
 }

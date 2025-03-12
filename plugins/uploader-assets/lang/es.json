@@ -1,15 +1,15 @@
 {
   "string": {
-    "Cancel": "Cancelar",
-    "Retry": "Reintentar",
-    "UploadFiles": "Subir Archivos",
-    "UploadFolders": "Subir Carpetas",
-    "UploadingTo": "Cargando {files, plural, =1 {# archivo} other {# archivos}} a"
+    "Cancel": "İptal",
+    "Retry": "Tekrar Dene",
+    "UploadFiles": "Dosyaları Yükle",
+    "UploadFolders": "Klasörleri Yükle",
+    "UploadingTo": "{files, plural, =1 {# dosya} other {# dosya}} şuraya yükleniyor:"
   },
   "status": {
-    "Error": "Error",
-    "Waiting": "Esperando",
-    "Uploading": "Cargando",
-    "Completed": "Completado"
+    "Error": "Hata",
+    "Waiting": "Bekliyor",
+    "Uploading": "Yükleniyor",
+    "Completed": "Tamamlandı"
   }
 }

@@ -1,5 +1,5 @@
 {
   "string": {
-    "loadingPlugin": "Cargando plugin '<b>'{plugin}'</b>'..."
+    "loadingPlugin": "'<b>'{plugin}'</b>' eklentisi yükleniyor..."
   }
 }

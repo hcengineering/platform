@@ -1,13 +1,13 @@
 {
   "string": {
-    "Subject": "Asunto",
-    "From": "De",
-    "To": "Para",
-    "CreateMail": "Nuevo mensaje",
-    "MailThread": "Mensaje",
-    "Reply": "Responder",
-    "Date": "Fecha",
-    "MailMessage": "Mensaje",
-    "MailMessages": "Mensajes"
+    "Subject": "Konu",
+    "From": "Kimden",
+    "To": "Kime",
+    "CreateMail": "Yeni E-Posta Oluştur",
+    "MailThread": "E-Posta",
+    "Reply": "Yanıtla",
+    "Date": "Tarih",
+    "MailMessage": "Mesaj",
+    "MailMessages": "Mesajlar"
   }
 }
