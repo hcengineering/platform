@@ -1,7 +1,7 @@
 {
   "string": {
-    "Starred": "Destacados",
-    "Star": "Destacar",
-    "Unstar": "Eliminar destaque"
+    "Starred": "Yıldızlı",
+    "Star": "Yıldızla",
+    "Unstar": "Yıldızı Kaldır"
   }
 }

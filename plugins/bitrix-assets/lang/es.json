@@ -1,18 +1,18 @@
 {
   "string": {
-    "BitrixTokenUrl": "URL del token de Bitrix24",
+    "BitrixTokenUrl": "Bitrix24 Token Adresi",
     "Bitrix": "",
-    "BitrixDesc": "Integración con Bitrix24",
-    "Settings": "Configurar",
-    "NotAllowed": "No permitido sin derechos administrativos",
-    "BitrixEntityType": "Mapeo de entidades",
-    "FieldMapping": "Mapeo de campos",
-    "AddField": "Agregar mapeo",
-    "Attribute": "Atributo",
-    "MapField": "Mapear...",
-    "BitrixImport": "Sincronizar con Bitrix",
-    "AddMapping": "Agregar mapeo de entidad",
+    "BitrixDesc": "Bitrix 24 entegrasyonu",
+    "Settings": "Ayarlar",
+    "NotAllowed": "Yönetici hakları olmadan izin verilmez",
+    "BitrixEntityType": "Varlık eşleme",
+    "FieldMapping": "Alan eşleme",
+    "AddField": "Eşleme ekle",
+    "Attribute": "Özellik",
+    "MapField": "Eşle...",
+    "BitrixImport": "Bitrix ile senkronize et",
+    "AddMapping": "Varlık eşlemesi ekle",
     "ConfigLabel": "Bitrix24",
-    "ConfigDescription": "Extensión para integración con Bitrix24"
+    "ConfigDescription": "Bitrix 24 entegrasyonu için eklenti"
   }
 }

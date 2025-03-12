@@ -1,25 +1,25 @@
 {
   "status": {
-    "CategoryRequired": "Categoría Requerida",
-    "NameRequired": "Nombre Requerido"
+    "CategoryRequired": "Kategori gerekli",
+    "NameRequired": "İsim gerekli"
   },
   "string": {
-    "Categories": "Categorías",
-    "Category": "Categoría",
-    "CategoryCreateLabel": "Categoría",
-    "CreateCategory": "Crear Categoría",
-    "CreateSubcategory": "Crear Sub-Categoria",
-    "Inventory": "Inventario",
-    "ProductCreateLabel": "Producto",
-    "CreateProduct": "Crear Producto",
-    "Products": "Productos",
-    "Product": "Producto",
-    "Variant": "Variante",
+    "Categories": "Kategoriler",
+    "Category": "Kategori",
+    "CategoryCreateLabel": "Kategori",
+    "CreateCategory": "Kategori Oluştur",
+    "CreateSubcategory": "Alt Kategori Oluştur",
+    "Inventory": "Envanter",
+    "ProductCreateLabel": "Ürün",
+    "CreateProduct": "Ürün Oluştur",
+    "Products": "Ürünler",
+    "Product": "Ürün",
+    "Variant": "Varyant",
     "SKU": "SKU",
-    "Variants": "Variantes",
-    "NoVariantsForProduct": "No hay variantes para este producto.",
-    "CreateVariant": "Crear Variante",
-    "ConfigLabel": "Inventario",
-    "ConfigDescription": "Extensión para gestionar extensiones"
+    "Variants": "Varyantlar",
+    "NoVariantsForProduct": "Bu ürün için varyant bulunmamaktadır.",
+    "CreateVariant": "Varyant Oluştur",
+    "ConfigLabel": "Envanter",
+    "ConfigDescription": "Uzantıları yönetmek için eklenti"
   }
 }

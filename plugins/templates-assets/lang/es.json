@@ -1,21 +1,21 @@
 {
   "string": {
-    "Cancel": "Cancelar",
-    "Templates": "Plantillas de texto",
-    "TemplatesHeader": "PLANTILLAS DE TEXTO",
-    "CreateTemplate": "CREAR PLANTILLA",
-    "SaveTemplate": "Guardar plantilla",
-    "EditTemplate": "Editar plantilla",
-    "ViewTemplate": "Ver plantilla",
-    "Suggested": "SUGERIDAS",
-    "SearchTemplate": "buscar plantilla",
-    "TemplatePlaceholder": "Nueva plantilla",
-    "Title": "Título",
-    "Message": "Mensaje",
-    "Field": "Campo",
-    "TemplateCategory": "Grupo de plantillas",
-    "CreateTemplateCategory": "Crear grupo",
-    "Copy": "Copiar",
-    "Template": "Plantilla"
+    "Cancel": "İptal",
+    "Templates": "Metin Şablonları",
+    "TemplatesHeader": "METİN ŞABLONLARI",
+    "CreateTemplate": "ŞABLON OLUŞTUR",
+    "SaveTemplate": "Şablonu Kaydet",
+    "EditTemplate": "Şablonu Düzenle",
+    "ViewTemplate": "Şablonu Görüntüle",
+    "Suggested": "ÖNERİLEN",
+    "SearchTemplate": "Şablon ara",
+    "TemplatePlaceholder": "Yeni şablon",
+    "Title": "Başlık",
+    "Message": "Mesaj",
+    "Field": "Alan",
+    "TemplateCategory": "Şablon grubu",
+    "CreateTemplateCategory": "Grup oluştur",
+    "Copy": "Kopyala",
+    "Template": "Şablon"
   }
 }

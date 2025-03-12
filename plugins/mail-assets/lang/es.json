@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Subject": "Konu",
+    "From": "Kimden",
+    "To": "Kime",
+    "CreateMail": "Yeni E-Posta Oluştur",
+    "MailThread": "E-Posta",
+    "Reply": "Yanıtla",
+    "Date": "Tarih",
+    "MailMessage": "Mesaj",
+    "MailMessages": "Mesajlar"
+  }
+}
