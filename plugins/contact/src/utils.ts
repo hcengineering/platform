@@ -310,7 +310,7 @@ export async function getPersonRefBySocialId (
   client: Client,
   socialIdString: PersonId
 ): Promise<Ref<Person> | undefined> {
-  const socialId = await client.findOne(contact.class.SocialIdentity, { key: socialIdString })
+  const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
 
   return socialId?.attachedTo
 }
