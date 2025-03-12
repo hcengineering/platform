@@ -693,9 +693,11 @@ describe('account utils', () => {
         })
       })
 
+      const socialIdId = '333444555' as PersonId
+
       describe('sendOtp', () => {
         const mockSocialId = {
-          _id: '333444555' as PersonId,
+          _id: socialIdId,
           personUuid: '123456-uuid' as PersonUuid,
           type: SocialIdType.EMAIL,
           value: 'test@example.com',
@@ -731,7 +733,7 @@ describe('account utils', () => {
             retryOn: expect.any(Number)
           })
           expect(mockDb.otp.insertOne).toHaveBeenCalledWith({
-            socialId: mockSocialId.key,
+            socialId: mockSocialId._id,
             code: expect.any(String),
             expiresOn: expect.any(Number),
             createdOn: expect.any(Number)
@@ -788,7 +790,7 @@ describe('account utils', () => {
           }
           ;(mockDb.otp.findOne as jest.Mock).mockResolvedValue(mockOtpData)
 
-          const result = await isOtpValid(mockDb, 'email:test@example.com', '123456')
+          const result = await isOtpValid(mockDb, socialIdId, '123456')
           expect(result).toBe(true)
         })
 
@@ -798,14 +800,14 @@ describe('account utils', () => {
           }
           ;(mockDb.otp.findOne as jest.Mock).mockResolvedValue(mockOtpData)
 
-          const result = await isOtpValid(mockDb, 'email:test@example.com', '123456')
+          const result = await isOtpValid(mockDb, socialIdId, '123456')
           expect(result).toBe(false)
         })
 
         test('should return false for non-existent OTP', async () => {
           ;(mockDb.otp.findOne as jest.Mock).mockResolvedValue(null)
 
-          const result = await isOtpValid(mockDb, 'email:test@example.com', '123456')
+          const result = await isOtpValid(mockDb, socialIdId, '123456')
           expect(result).toBe(false)
         })
       })

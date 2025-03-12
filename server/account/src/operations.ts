@@ -295,16 +295,16 @@ export async function validateOtp (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  const isValid = await isOtpValid(db, emailSocialId.key, code)
+  const isValid = await isOtpValid(db, emailSocialId._id, code)
 
   if (!isValid) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
   }
 
-  await db.otp.deleteMany({ socialId: emailSocialId.key })
+  await db.otp.deleteMany({ socialId: emailSocialId._id })
 
   if (emailSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
+    await db.socialId.updateOne({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
   }
 
   // This method handles both login and signup
