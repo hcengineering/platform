@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment, BlobMetadata } from '@hcengineering/attachment'
+  import { Attachment } from '@hcengineering/attachment'
   import {
     Class,
     Doc,
@@ -24,7 +24,8 @@
     toIdMap,
     type Blob,
     TxOperations,
-    PersonId
+    PersonId,
+    BlobMetadata
   } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {

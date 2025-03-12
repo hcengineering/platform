@@ -14,12 +14,10 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { SortingOrder, type Blob, type Ref } from '@hcengineering/core'
+  import { BlobMetadata, SortingOrder, type Blob, type Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Button, Dialog, IconHistory, IconScribble, showPopup, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
-
-  import { BlobMetadata } from '../types'
 
   import ActionContext from './ActionContext.svelte'
   import FilePreview from './FilePreview.svelte'

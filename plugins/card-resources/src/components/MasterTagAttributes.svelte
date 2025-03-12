@@ -36,7 +36,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const label = hierarchy.getClass(value._class).label
+  $: label = hierarchy.getClass(value._class).label
 
   let isCollapsed = false
 

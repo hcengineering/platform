@@ -70,6 +70,7 @@ export interface FileUploadPopupOptions {
 export interface FileUploadCallbackParams {
   uuid: Ref<PlatformBlob>
   name: string
+  type: string
   file: FileWithPath | Blob
   path: string | undefined
   metadata: Record<string, any> | undefined
