@@ -17,7 +17,7 @@ import { MeasureContext } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { S3Bucket } from '../s3'
 
-export type Location = 'weur' | 'eeur' | 'wnam' | 'enam' | 'apac'
+export type Location = 'eu' | 'weur' | 'eeur' | 'wnam' | 'enam' | 'apac'
 
 export type UUID = string & { __uuid: true }
 
