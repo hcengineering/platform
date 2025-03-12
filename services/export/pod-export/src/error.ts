@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,13 +13,27 @@
 // limitations under the License.
 //
 
-export * from './huly/huly'
-export * from './clickup/clickup'
-export * from './notion/notion'
-export * from './docx/docx'
-export * from './docx/preprocessors'
+const generateMessage = (code: number): string => {
+  if (code === 401) {
+    return 'Unauthorized'
+  }
 
-export * from './importer/uploader'
-export * from './importer/storageUploader'
-export * from './importer/frontUploader'
-export * from './importer/logger'
+  if (code === 404) {
+    return 'Not Found'
+  }
+
+  if (code === 400) {
+    return 'Bad Request'
+  }
+
+  return 'Error'
+}
+
+export class ApiError extends Error {
+  readonly code: number
+
+  constructor (code: number, message?: string) {
+    super(message ?? generateMessage(code))
+    this.code = code
+  }
+}

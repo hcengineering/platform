@@ -137,6 +137,26 @@
     "SystemSetupString": "Системная настройка ({day})",
     "DefaultString": "По умолчанию ({day})",
     "AddAttribute": "Добавить атрибут",
-    "WorkspaceNamePattern": "Имя должно быть длиной 40 символов или меньше, не должно быть пустым и не может содержать специальные символы (<, >, /)"
+    "WorkspaceNamePattern": "Имя должно быть длиной 40 символов или меньше, не должно быть пустым и не может содержать специальные символы (<, >, /)",
+    "Export": "Экспорт",
+    "DataToExport": "Данные для экспорта",
+    "ExportDocuments": "Документы",
+    "ExportIssues": "Задачи",
+    "ExportTestCases": "Тест-кейсы",
+    "ExportTestRuns": "Прогоны тестов",
+    "ExportTestPlans": "Планы тестирования",
+    "ExportFormat": "Формат экспорта",
+    "ExportJSON": "JSON",
+    "ExportCSV": "CSV",
+    "ExportUnifiedFormat": "Единый формат Huly",
+    "ExportIncludeContent": "Включить содержимое",
+    "ExportEverything": "Всё",
+    "ExportAttributesOnly": "Только атрибуты",
+    "ExportRequestSuccess": "Экспорт начат.",
+    "ExportRequestSuccessMessage": "Экспорт начат. Вы получите уведомление во входящих, когда он будет завершен.",
+    "ExportRequestFailed": "Не удалось начать экспорт.",
+    "ExportRequestFailedMessage": "Произошла ошибка при отправке экспорта. Пожалуйста, попробуйте позже.",
+    "ExportCompleted": "Экспорт завершен. Ваши файлы готовы. Вы можете скачать их с диска.",
+    "ExportFailed": "Не удалось экспортировать данные. Пожалуйста, попробуйте позже."
   }
 }

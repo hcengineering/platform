@@ -20,5 +20,6 @@
   "STATS_URL": "http://localhost:4900",
   "PASSWORD_STRICTNESS": "none",
   "STREAM_URL": "http://localhost:1080/recording",
-  "PUBLIC_SCHEDULE_URL": "http://localhost:8060"
+  "PUBLIC_SCHEDULE_URL": "http://localhost:8060",
+  "EXPORT_URL": "http://localhost:4009/export"
 }

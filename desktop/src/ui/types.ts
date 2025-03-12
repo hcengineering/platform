@@ -41,6 +41,7 @@ export interface Config {
   STREAM_URL?: string
   BACKUP_URL?: string
   PUBLIC_SCHEDULE_URL?: string
+  EXPORT_URL?: string
 }
 
 export interface Branding {

@@ -61,13 +61,13 @@ import documents, {
   DocumentMeta
 } from '@hcengineering/controlled-documents'
 
-export interface UnifiedComment {
+export interface HulyComment {
   author: string
   text: string
   attachments?: string[]
 }
 
-export interface UnifiedIssueHeader {
+export interface HulyIssueHeader {
   class: 'tracker:class:Issue'
   title: string
   status: string
@@ -75,10 +75,10 @@ export interface UnifiedIssueHeader {
   priority?: string
   estimation?: number // in hours
   remainingTime?: number // in hours
-  comments?: UnifiedComment[]
+  comments?: HulyComment[]
 }
 
-export interface UnifiedSpaceSettings {
+export interface HulySpaceSettings {
   class: 'tracker:class:Project' | 'document:class:Teamspace' | 'documents:class:OrgSpace'
   title: string
   private?: boolean
@@ -90,7 +90,7 @@ export interface UnifiedSpaceSettings {
   emoji?: string
 }
 
-export interface UnifiedProjectSettings extends UnifiedSpaceSettings {
+export interface HulyProjectSettings extends HulySpaceSettings {
   class: 'tracker:class:Project'
   identifier: string
   id?: 'tracker:project:DefaultProject'
@@ -98,16 +98,16 @@ export interface UnifiedProjectSettings extends UnifiedSpaceSettings {
   defaultIssueStatus?: string
 }
 
-export interface UnifiedTeamspaceSettings extends UnifiedSpaceSettings {
+export interface HulyTeamspaceSettings extends HulySpaceSettings {
   class: 'document:class:Teamspace'
 }
 
-export interface UnifiedDocumentHeader {
+export interface HulyDocumentHeader {
   class: 'document:class:Document'
   title: string
 }
 
-export interface UnifiedWorkspaceSettings {
+export interface HulyWorkspaceSettings {
   projectTypes?: Array<{
     name: string
     taskTypes?: Array<{
@@ -121,13 +121,13 @@ export interface UnifiedWorkspaceSettings {
   }>
 }
 
-export interface UnifiedChangeControlHeader {
+export interface HulyChangeControlHeader {
   description?: string
   reason?: string
   impact?: string
 }
 
-export interface UnifiedControlledDocumentHeader {
+export interface HulyControlledDocumentHeader {
   class: 'documents:class:ControlledDocument'
   title: string
   template: string
@@ -137,10 +137,10 @@ export interface UnifiedControlledDocumentHeader {
   reviewers?: string[]
   approvers?: string[]
   coAuthors?: string[]
-  changeControl?: UnifiedChangeControlHeader
+  changeControl?: HulyChangeControlHeader
 }
 
-export interface UnifiedDocumentTemplateHeader {
+export interface HulyDocumentTemplateHeader {
   class: 'documents:mixin:DocumentTemplate'
   title: string
   category: string
@@ -151,10 +151,10 @@ export interface UnifiedDocumentTemplateHeader {
   reviewers?: string[]
   approvers?: string[]
   coAuthors?: string[]
-  changeControl?: UnifiedChangeControlHeader
+  changeControl?: HulyChangeControlHeader
 }
 
-export interface UnifiedOrgSpaceSettings extends UnifiedSpaceSettings {
+export interface HulyOrgSpaceSettings extends HulySpaceSettings {
   class: 'documents:class:OrgSpace'
   qualified?: string
   manager?: string
@@ -332,7 +332,7 @@ interface AttachmentMetadata {
   spaceId?: Ref<Space>
 }
 
-export class UnifiedFormatImporter {
+export class HulyFormatImporter {
   private readonly importerEmailPlaceholder = 'newuser@huly.io'
   private readonly importerNamePlaceholder = 'New User'
   private readonly pathById = new Map<Ref<Doc>, string>()
@@ -467,7 +467,7 @@ export class UnifiedFormatImporter {
     const wsSettingsPath = path.join(folderPath, 'settings.yaml')
     if (fs.existsSync(wsSettingsPath)) {
       const wsSettingsFile = fs.readFileSync(wsSettingsPath, 'utf8')
-      const wsSettings = yaml.load(wsSettingsFile) as UnifiedWorkspaceSettings
+      const wsSettings = yaml.load(wsSettingsFile) as HulyWorkspaceSettings
 
       // Add project types
       for (const pt of this.processProjectTypes(wsSettings)) {
@@ -485,7 +485,7 @@ export class UnifiedFormatImporter {
 
       try {
         this.logger.log(`Processing ${spaceName}...`)
-        const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as UnifiedSpaceSettings
+        const spaceConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as HulySpaceSettings
 
         if (spaceConfig?.class === undefined) {
           this.logger.error(`Skipping ${spaceName}: not a space - no class specified`)
@@ -494,7 +494,7 @@ export class UnifiedFormatImporter {
 
         switch (spaceConfig.class) {
           case tracker.class.Project: {
-            const project = await this.processProject(spaceConfig as UnifiedProjectSettings)
+            const project = await this.processProject(spaceConfig as HulyProjectSettings)
             builder.addProject(spacePath, project)
             if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
               await this.processIssuesRecursively(builder, project.identifier, spacePath, spacePath)
@@ -503,7 +503,7 @@ export class UnifiedFormatImporter {
           }
 
           case document.class.Teamspace: {
-            const teamspace = await this.processTeamspace(spaceConfig as UnifiedTeamspaceSettings)
+            const teamspace = await this.processTeamspace(spaceConfig as HulyTeamspaceSettings)
             builder.addTeamspace(spacePath, teamspace)
             if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
               await this.processDocumentsRecursively(builder, spacePath, spacePath)
@@ -512,7 +512,7 @@ export class UnifiedFormatImporter {
           }
 
           case documents.class.OrgSpace: {
-            const orgSpace = await this.processOrgSpace(spaceConfig as UnifiedOrgSpaceSettings)
+            const orgSpace = await this.processOrgSpace(spaceConfig as HulyOrgSpaceSettings)
             builder.addOrgSpace(spacePath, orgSpace)
             if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
               await this.processControlledDocumentsRecursively(builder, spacePath, spacePath)
@@ -544,7 +544,7 @@ export class UnifiedFormatImporter {
 
     for (const issueFile of issueFiles) {
       const issuePath = path.join(currentPath, issueFile)
-      const issueHeader = (await this.readYamlHeader(issuePath)) as UnifiedIssueHeader
+      const issueHeader = (await this.readYamlHeader(issuePath)) as HulyIssueHeader
 
       if (issueHeader.class === undefined) {
         this.logger.error(`Skipping ${issueFile}: not an issue`)
@@ -640,7 +640,7 @@ export class UnifiedFormatImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = (await this.readYamlHeader(docPath)) as UnifiedDocumentHeader
+      const docHeader = (await this.readYamlHeader(docPath)) as HulyDocumentHeader
 
       if (docHeader.class === undefined) {
         this.logger.error(`Skipping ${docFile}: not a document`)
@@ -689,8 +689,8 @@ export class UnifiedFormatImporter {
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
       const docHeader = (await this.readYamlHeader(docPath)) as
-        | UnifiedControlledDocumentHeader
-        | UnifiedDocumentTemplateHeader
+        | HulyControlledDocumentHeader
+        | HulyDocumentTemplateHeader
 
       if (docHeader.class === undefined) {
         this.logger.error(`Skipping ${docFile}: not a document`)
@@ -717,7 +717,7 @@ export class UnifiedFormatImporter {
         this.pathById.set(docId, docPath)
 
         const doc = await this.processControlledDocument(
-          docHeader as UnifiedControlledDocumentHeader,
+          docHeader as HulyControlledDocumentHeader,
           docPath,
           docId,
           documentMetaId
@@ -736,7 +736,7 @@ export class UnifiedFormatImporter {
         }
 
         const template = await this.processControlledDocumentTemplate(
-          docHeader as UnifiedDocumentTemplateHeader,
+          docHeader as HulyDocumentTemplateHeader,
           docPath,
           templateId,
           documentMetaId
@@ -751,7 +751,7 @@ export class UnifiedFormatImporter {
     }
   }
 
-  private processComments (currentPath: string, comments: UnifiedComment[] = []): Promise<ImportComment[]> {
+  private processComments (currentPath: string, comments: HulyComment[] = []): Promise<ImportComment[]> {
     return Promise.all(
       comments.map(async (comment) => {
         const attachments: ImportAttachment[] = []
@@ -774,7 +774,7 @@ export class UnifiedFormatImporter {
     )
   }
 
-  private processProjectTypes (wsHeader: UnifiedWorkspaceSettings): ImportProjectType[] {
+  private processProjectTypes (wsHeader: HulyWorkspaceSettings): ImportProjectType[] {
     return (
       wsHeader.projectTypes?.map((pt) => ({
         name: pt.name,
@@ -790,7 +790,7 @@ export class UnifiedFormatImporter {
     )
   }
 
-  private async processProject (projectHeader: UnifiedProjectSettings): Promise<ImportProject> {
+  private async processProject (projectHeader: HulyProjectSettings): Promise<ImportProject> {
     return {
       class: tracker.class.Project,
       id: projectHeader.id as Ref<Project>,
@@ -811,7 +811,7 @@ export class UnifiedFormatImporter {
     }
   }
 
-  private async processTeamspace (spaceHeader: UnifiedTeamspaceSettings): Promise<ImportTeamspace> {
+  private async processTeamspace (spaceHeader: HulyTeamspaceSettings): Promise<ImportTeamspace> {
     return {
       class: document.class.Teamspace,
       title: spaceHeader.title,
@@ -827,7 +827,7 @@ export class UnifiedFormatImporter {
     }
   }
 
-  private async processOrgSpace (spaceHeader: UnifiedOrgSpaceSettings): Promise<ImportOrgSpace> {
+  private async processOrgSpace (spaceHeader: HulyOrgSpaceSettings): Promise<ImportOrgSpace> {
     return {
       class: documents.class.OrgSpace,
       title: spaceHeader.title,
@@ -844,7 +844,7 @@ export class UnifiedFormatImporter {
   }
 
   private async processControlledDocument (
-    header: UnifiedControlledDocumentHeader,
+    header: HulyControlledDocumentHeader,
     docPath: string,
     id: Ref<ControlledDocument>,
     metaId: Ref<DocumentMeta>
@@ -898,7 +898,7 @@ export class UnifiedFormatImporter {
   }
 
   private async processControlledDocumentTemplate (
-    header: UnifiedDocumentTemplateHeader,
+    header: HulyDocumentTemplateHeader,
     docPath: string,
     id: Ref<ControlledDocument>,
     metaId: Ref<DocumentMeta>
