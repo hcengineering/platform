@@ -104,17 +104,12 @@ async function msg2file (
   storage: StorageAdapter
 ): Promise<void> {
   const client = await connectPlatform(workspace)
-
-  let card = await client.findOne<Card>(cardPlugin.class.Card, { _id: cardId })
+  // TODO: FIXME
+  const card = await client.findOne<Card>(cardPlugin.class.Card, { _id: cardId as any })
 
   if (card === undefined) {
     ctx.error('Card not found, skip processing', { workspace, card: cardId })
     return
-  }
-
-  card = {
-    ...card,
-    _id: cardId
   }
 
   await applyPatchesToGroups(ctx, client, workspace, card, storage)
@@ -225,7 +220,7 @@ async function newMessages2file (
 
 async function createGroup (
   client: RestClient,
-  card: Ref<Card>,
+  card: CardID,
   blobId: Ref<Blob>,
   fromDate: Date,
   toDate: Date,
@@ -251,7 +246,7 @@ async function createGroup (
   )
 }
 
-async function removeGroup (client: RestClient, card: Ref<Card>, blobId: Ref<Blob>): Promise<void> {
+async function removeGroup (client: RestClient, card: CardID, blobId: Ref<Blob>): Promise<void> {
   await retry(
     async () =>
       await client.event({
@@ -263,7 +258,7 @@ async function removeGroup (client: RestClient, card: Ref<Card>, blobId: Ref<Blo
   )
 }
 
-async function removeMessages (client: RestClient, card: Ref<Card>, fromId: MessageID, toId: MessageID): Promise<void> {
+async function removeMessages (client: RestClient, card: CardID, fromId: MessageID, toId: MessageID): Promise<void> {
   await retry(
     async () =>
       await client.event({
