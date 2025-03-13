@@ -2407,6 +2407,11 @@
       "packageName": "@hcengineering/kafka",
       "projectFolder": "server/kafka",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-message",
+      "projectFolder": "services/message/pod-message",
+      "shouldPublish": false
     }
   ]
 }

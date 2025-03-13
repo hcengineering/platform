@@ -66,7 +66,9 @@ export const main = async (): Promise<void> => {
   })
 }
 
-const getMailInfo = (body: any): MailInfo | undefined => {
+const getMailInfo = (
+  body: any
+): MailInfo | undefined => {
   try {
     const from = body.envelope.from.address
     const to = body.envelope.to.map((recipient: any) => recipient.address)
@@ -89,21 +91,24 @@ const getMailInfo = (body: any): MailInfo | undefined => {
 }
 
 async function createMessage (message: MailInfo): Promise<void> {
-  const response = await fetch('http://message-service/create-mail', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      from: message.from,
-      to: message.to,
-      subject: message.subject,
-      contents: message.contents,
-      size: message.size
+  try {
+    const response = await fetch('http://message-service/create-mail', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: message.from,
+        to: message.to,
+        subject: message.subject,
+        contents: message.contents,
+        size: message.size
+      })
     })
-  })
-
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.statusText}`)
+    if (!response.ok) {
+      console.error(`Message creation failed: ${response.statusText}`)
+    }
+  } catch (err: any) {
+    console.error('Failed to create mail message:', err.message)
   }
 }
