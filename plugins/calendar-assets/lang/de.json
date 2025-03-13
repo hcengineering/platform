@@ -91,7 +91,7 @@
     "ScheduleNew": "Zeitplan hinzufügen",
     "ScheduleDeleteConfirm": "Der Zeitplan wird gelöscht. Bestätigen?",
     "ScheduleShareLink": "Link teilen",
-    "ScheduleSharedLinkMessage": "Teilen Sie diesen Link, damit andere ein Meeting mit Ihnen buchen können:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkMessage": "<p>Teilen Sie diesen Link, damit andere ein Meeting mit Ihnen buchen können:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
     "ScheduleSharedLinkCopy": "Link kopieren",
     "ScheduleAvailability": "Verfügbarkeit",
     "ScheduleUnavailable": "Nicht verfügbar",

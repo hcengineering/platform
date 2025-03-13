@@ -91,7 +91,7 @@
     "ScheduleNew": "添加日程表",
     "ScheduleDeleteConfirm": "日程表将被删除。确认吗？",
     "ScheduleShareLink": "共享链接",
-    "ScheduleSharedLinkMessage": "共享此链接以允许其他人与您预约会议: </p><p><a href=\"{link}\" target=\"_blank\">{link</a></p>",
+    "ScheduleSharedLinkMessage": "<p>共享此链接以允许其他人与您预约会议: </p><p><a href=\"{link}\" target=\"_blank\">{link</a></p>",
     "ScheduleSharedLinkCopy": "复制链接",
     "ScheduleAvailability": "可用性",
     "ScheduleUnavailable": "不可用",

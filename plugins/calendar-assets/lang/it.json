@@ -91,7 +91,7 @@
     "ScheduleNew": "Aggiungi programma",
     "ScheduleDeleteConfirm": "Il programma verrà eliminato. Confermare?",
     "ScheduleShareLink": "Condividi link",
-    "ScheduleSharedLinkMessage": "Condividi questo link per consentire ad altri di prenotare una riunione con te:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkMessage": "<p>Condividi questo link per consentire ad altri di prenotare una riunione con te:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
     "ScheduleSharedLinkCopy": "Copia link",
     "ScheduleAvailability": "Disponibilità",
     "ScheduleUnavailable": "Non disponibile",

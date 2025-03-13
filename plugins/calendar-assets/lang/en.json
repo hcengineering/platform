@@ -91,7 +91,7 @@
     "ScheduleNew": "Add schedule",
     "ScheduleDeleteConfirm": "The schedule will be deleted. Confirm?",
     "ScheduleShareLink": "Share link",
-    "ScheduleSharedLinkMessage": "Share this link to allow others to book a meeting with you:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkMessage": "<p>Share this link to allow others to book a meeting with you:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
     "ScheduleSharedLinkCopy": "Copy link",
     "ScheduleAvailability": "Availability",
     "ScheduleUnavailable": "Unavailable",

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
-  import { getFileUrl, getVideoMeta, type BlobMetadata } from '@hcengineering/presentation'
+  import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
+  import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
   import { HlsVideo, Video } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
