@@ -25,21 +25,21 @@
 
   async function handleExport (): Promise<void> {
     try {
-      const exportUrl = 'http://localhost:4009/export' // todo: add export url
+      const baseUrl = getMetadata(setting.metadata.ExportUrl)
       const token = getMetadata(presentation.metadata.Token)
       if (token == null) {
         throw new Error('No token available')
       }
 
-      const res = await fetch(`${exportUrl}?class=${_class}&type=csv`, {
+      const res = await fetch(`${baseUrl}?format=csv&sync=true`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          query,
-          attributesOnly: false
+          _class,
+          query
         })
       })
 
@@ -47,7 +47,34 @@
         throw new Error('Export failed to start')
       }
 
-      console.log('Export started')
+      // Handle successful response with file download
+      let filename = 'Talants.zip'
+      // Try to extract filename from content-disposition header if available
+      const contentDisposition = res.headers.get('content-disposition')
+      if (contentDisposition !== null) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+        if (filenameMatch?.[1] !== undefined) {
+          filename = filenameMatch[1]
+        }
+      }
+
+      // Create a blob from the ReadableStream
+      const blob = await res.blob()
+
+      // Create a download link and trigger the download
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+
+      // Clean up
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      console.log('Export downloaded successfully')
     } catch (err) {
       console.error('Export error:', err)
     }
