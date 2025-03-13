@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS blob;
 
 -- B L O B
 
-CREATE TABLE IF NOT EXISTS blob.location AS ENUM ('eu', 'weur', 'eeur', 'wnam', 'enam', 'apac');
+CREATE TYPE IF NOT EXISTS blob.location AS ENUM ('eu', 'weur', 'eeur', 'wnam', 'enam', 'apac');
 
 \echo "Creating blob.data..."
 CREATE TABLE IF NOT EXISTS blob.data (
