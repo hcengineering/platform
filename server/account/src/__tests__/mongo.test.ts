@@ -691,6 +691,10 @@ describe('MongoAccountDB', () => {
 
     mockSocialId = {
       find: jest.fn().mockResolvedValue([]),
+      findCursor: jest.fn(() => ({
+        hasNext: jest.fn().mockReturnValue(false),
+        close: jest.fn()
+      })),
       updateOne: jest.fn()
     }
 
