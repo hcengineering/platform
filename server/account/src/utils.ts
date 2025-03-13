@@ -302,6 +302,10 @@ export function cleanEmail (email: string): string {
   return email.toLowerCase().trim()
 }
 
+export function normalizeValue (value: string): string {
+  return value.toLowerCase().trim()
+}
+
 export function isEmail (email: string): boolean {
   // RFC 5322 compliant email regex
   const EMAIL_REGEX =

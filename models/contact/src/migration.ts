@@ -5,7 +5,9 @@ import {
   type Person,
   type Contact,
   type SocialIdentity,
-  type SocialIdentityRef
+  type SocialIdentityRef,
+  getFirstName,
+  getLastName
 } from '@hcengineering/contact'
 import {
   AccountRole,
@@ -320,7 +322,42 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
   }
 }
 
+async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact ensureGlobalPersonsForLocalAccounts', {})
+  ctx.info('ensuring global persons for local accounts ', {})
+
+  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
+  const personAccounts = getAccountsFromTxes(personAccountsTxes)
+
+  let count = 0
+  for (const pAcc of personAccounts) {
+    const email: string = pAcc.email ?? ''
+    if (email === '') continue
+
+    const socialIdKey = getSocialKeyByOldEmail(email)
+    const person = (await client.find<Person>(DOMAIN_CONTACT, { _id: pAcc.person }))[0]
+    const name = person?.name
+    const firstName = getFirstName(name)
+    const lastName = getLastName(name)
+    const effectiveFirstName = firstName === '' ? socialIdKey.value : firstName
+
+    await client.accountClient.ensurePerson(socialIdKey.type, socialIdKey.value, effectiveFirstName, lastName)
+    count++
+  }
+  ctx.info('finished ensuring global persons for local accounts. Total persons ensured: ', { count })
+}
+
 export const contactOperation: MigrateOperation = {
+  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
+    await tryMigrate(client, contactId, [
+      {
+        state: 'ensure-accounts-global-persons',
+        func: (client) => ensureGlobalPersonsForLocalAccounts(client, logger)
+      }
+    ])
+  },
   async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, contactId, [
       {

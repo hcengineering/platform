@@ -31,9 +31,7 @@ import {
   type Data,
   type Version,
   type PersonUuid,
-  type WorkspaceUuid,
-  generateUuid,
-  type PersonId
+  type WorkspaceUuid
 } from '@hcengineering/core'
 
 import type {
@@ -485,9 +483,27 @@ export class MongoAccountDB implements AccountDB {
     return {
       key: 'account_db_v1_fill_social_id_ids',
       op: async () => {
-        const socialIds = await this.socialId.find({ _id: null })
-        for (const socialId of socialIds) {
-          await this.socialId.updateOne({ key: socialId.key }, { _id: generateUuid() as PersonId })
+        const sidCursor = this.socialId.findCursor({})
+
+        try {
+          let sidsCount = 0
+          while (await sidCursor.hasNext()) {
+            const socialIdObj = await sidCursor.next()
+            if (socialIdObj == null) break
+
+            if (socialIdObj._id != null && socialIdObj._id !== socialIdObj.key) continue
+
+            await this.socialId.deleteMany({ key: socialIdObj.key })
+            const newSocialId: any = { ...socialIdObj }
+            delete newSocialId._id
+            await this.socialId.insertOne(newSocialId)
+
+            sidsCount++
+          }
+
+          console.log(`Migrated ${sidsCount} social ids`)
+        } finally {
+          await sidCursor.close()
         }
       }
     }
