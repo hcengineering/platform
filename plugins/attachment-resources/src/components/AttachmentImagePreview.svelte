@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import type { WithLookup } from '@hcengineering/core'
+  import type { BlobType, WithLookup } from '@hcengineering/core'
   import { Image } from '@hcengineering/presentation'
   import { Loading } from '@hcengineering/ui'
 
   import BrokenImage from './icons/BrokenImage.svelte'
   import { AttachmentImageSize } from '../types'
 
-  export let value: WithLookup<Attachment>
+  export let value: WithLookup<Attachment> | BlobType
   export let size: AttachmentImageSize = 'auto'
 
   interface Dimensions {
@@ -41,7 +41,7 @@
 
   $: dimensions = getDimensions(value, size)
 
-  function getDimensions (value: Attachment, size: AttachmentImageSize): Dimensions {
+  function getDimensions (value: Attachment | BlobType, size: AttachmentImageSize): Dimensions {
     if (size === 'auto' || size == null) {
       return {
         width: 300,

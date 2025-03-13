@@ -17,16 +17,16 @@
   import { Attachment } from '@hcengineering/attachment'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { WithLookup } from '@hcengineering/core'
+  import { BlobType, WithLookup } from '@hcengineering/core'
   import { AttachmentImageSize } from '../types'
-  import { getType, showAttachmentPreviewPopup } from '../utils'
+  import { getType, isAttachment, showAttachmentPreviewPopup } from '../utils'
   import AttachmentActions from './AttachmentActions.svelte'
   import AttachmentImagePreview from './AttachmentImagePreview.svelte'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentVideoPreview from './AttachmentVideoPreview.svelte'
   import AudioPlayer from './AudioPlayer.svelte'
 
-  export let value: WithLookup<Attachment>
+  export let value: WithLookup<Attachment> | BlobType
   export let isSaved: boolean = false
   export let listProvider: ListSelectionProvider | undefined = undefined
   export let imageSize: AttachmentImageSize = 'auto'
@@ -44,7 +44,7 @@
   <div
     class="content flex-center buttonContainer cursor-pointer"
     on:click={() => {
-      if (listProvider !== undefined) listProvider.updateFocus(value)
+      if (listProvider !== undefined && isAttachment(value)) listProvider.updateFocus(value)
       const popupInfo = showAttachmentPreviewPopup(value)
       dispatch('open', popupInfo.id)
     }}

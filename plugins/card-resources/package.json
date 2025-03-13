@@ -47,6 +47,7 @@
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/setting-resources": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/panel": "^0.6.23",
     "@hcengineering/rank": "^0.6.4",

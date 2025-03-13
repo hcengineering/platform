@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Class, Mixin, Doc, Ref, MarkupBlobRef, Rank, Domain } from '@hcengineering/core'
+import { Blobs, Class, Doc, Domain, MarkupBlobRef, Mixin, Rank, Ref } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -22,10 +22,10 @@ export interface MasterTag extends Class<Card> {}
 export interface Tag extends MasterTag, Mixin<Card> {}
 
 export interface Card extends Doc {
-  attachments?: number
   _class: Ref<MasterTag>
   title: string
   content: MarkupBlobRef
+  blobs: Blobs
   children?: number
   parentInfo: ParentInfo[]
   parent?: Ref<Card> | null
@@ -62,12 +62,16 @@ const cardPlugin = plugin(cardId, {
     Tag: '' as Ref<Class<Tag>>,
     MasterTagEditorSection: '' as Ref<Class<MasterTagEditorSection>>
   },
+  types: {
+    File: '' as Ref<MasterTag>
+  },
   icon: {
     MasterTags: '' as Asset,
     MasterTag: '' as Asset,
     Tag: '' as Asset,
     Tags: '' as Asset,
-    Card: '' as Asset
+    Card: '' as Asset,
+    File: '' as Asset
   },
   string: {
     MasterTag: '' as IntlString,

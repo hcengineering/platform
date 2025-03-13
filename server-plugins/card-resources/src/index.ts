@@ -187,6 +187,20 @@ async function OnCardRemove (ctx: TxRemoveDoc<Card>[], control: TriggerControl):
   for (const card of cards) {
     res.push(control.txFactory.createTxRemoveDoc(card._class, card.space, card._id))
   }
+
+  const toDelete: string[] = []
+
+  for (const key in removedCard.blobs ?? {}) {
+    const val = removedCard.blobs[key]
+    if (val === undefined) continue
+    const toDelete: string[] = []
+    toDelete.push(val.file)
+  }
+
+  if (toDelete.length > 0) {
+    await control.storageAdapter.remove(control.ctx, control.workspace, toDelete)
+  }
+
   if (removedCard.parent != null) {
     res.push(
       control.txFactory.createTxUpdateDoc(card.class.Card, core.space.Workspace, removedCard.parent, {

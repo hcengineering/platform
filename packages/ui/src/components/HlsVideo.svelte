@@ -21,7 +21,7 @@
   export let src: string
   export let hlsSrc: string
   export let hlsThumbnail = ''
-  export let name = ''
+  export let name: string | undefined = undefined
   export let preload = true
 
   let video: HTMLVideoElement | null = null
@@ -147,7 +147,7 @@
 </script>
 
 <video bind:this={video} width="100%" height="100%" class="plyr" preload={preload ? 'auto' : 'none'} controls>
-  <track kind="captions" label={name} />
+  <track kind="captions" label={name ?? ''} />
 </video>
 
 <style lang="scss">
