@@ -91,7 +91,7 @@
     "ScheduleNew": "Přidat rozvrh",
     "ScheduleDeleteConfirm": "Plán bude smazán. Potvrdit?",
     "ScheduleShareLink": "Sdílet odkaz",
-    "ScheduleSharedLinkMessage": "Sdílením tohoto odkazu umožníte ostatním zarezervovat si s vámi schůzku:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkMessage": "<p>Sdílením tohoto odkazu umožníte ostatním zarezervovat si s vámi schůzku:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
     "ScheduleSharedLinkCopy": "Kopírovat odkaz",
     "ScheduleAvailability": "Dostupnost",
     "ScheduleUnavailable": "Nedostupné",
