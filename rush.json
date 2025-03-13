@@ -2367,6 +2367,11 @@
       "packageName": "@hcengineering/pod-hook",
       "projectFolder": "services/hook/pod-hook",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-message",
+      "projectFolder": "services/message/pod-message",
+      "shouldPublish": false
     }
   ]
 }
