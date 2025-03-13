@@ -141,10 +141,9 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
   app.use(express.json())
 
   app.post(
-    '/export',
+    '/exportAsync',
     wrapRequest(async (req, res, token) => {
       const format = req.query.format as ExportFormat
-      const sync = req.query.sync === 'true'
 
       const { _class, query, attributesOnly }: {
         _class: Ref<Class<Doc<Space>>>
@@ -166,51 +165,96 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
       const txOperations = new TxOperations(platformClient, account._id)
 
-      if (sync) {
-        const archivePath = await exportArchive(
-          measureCtx,
-          storageAdapter,
-          txOperations,
-          workspace,
-          _class,
-          format,
-          attributesOnly,
-          query
-        )
+      res.status(200).send({ message: 'Export started' })
 
-        res.download(archivePath)
-      } else {
-        res.status(200).send({ message: 'Export started' })
+      void (async () => {
+        const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
+        try {
+          const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, workspace)
 
-        void (async () => {
-          try {
-            const archivePath = await exportArchive(
-              measureCtx,
-              storageAdapter,
-              txOperations,
-              workspace,
-              _class,
-              format,
-              attributesOnly,
-              query
-            )
+          await exporter.export(_class, exportDir, { format, attributesOnly, query })
 
-            const archiveName = basename(archivePath)
-            const exportDrive = await saveToDrive(
-              measureCtx,
-              txOperations,
-              storageAdapter,
-              workspace,
-              archivePath,
-              account._id
-            )
+          const hierarchy = platformClient.getHierarchy()
+          const className = hierarchy.getClass(_class).label
 
-            await sendSuccessNotification(txOperations, account._id, exportDrive, archiveName)
-          } catch (err: any) {
-            console.error('Export failed:', err)
-            await sendFailureNotification(txOperations, account._id, err.message ?? 'Unknown error when exporting')
+          const archiveDir = await fs.mkdtemp(join(tmpdir(), 'export-archive-'))
+          const archiveName = `export-${workspace.name}-${className}-${format}-${Date.now()}.zip`
+          const archivePath = join(archiveDir, archiveName)
+
+          const files = await fs.readdir(exportDir)
+          if (files.length === 0) {
+            throw new ApiError(400, 'No files were exported')
           }
-        })()
+
+          await saveToArchive(exportDir, archivePath)
+          const exportDrive = await saveToDrive(
+            measureCtx,
+            txOperations,
+            storageAdapter,
+            workspace,
+            archivePath,
+            account._id
+          )
+
+          await sendSuccessNotification(txOperations, account._id, exportDrive, archiveName)
+        } catch (err: any) {
+          console.error('Export failed:', err)
+          await sendFailureNotification(txOperations, account._id, err.message ?? 'Unknown error when exporting')
+        } finally {
+          await fs.rmdir(exportDir, { recursive: true })
+        }
+      })()
+    })
+  )
+
+  // New endpoint for synchronous export
+  app.post(
+    '/exportSync',
+    wrapRequest(async (req, res, token) => {
+      const format = req.query.format as ExportFormat
+      const { _class, query, attributesOnly }: {
+        _class: Ref<Class<Doc<Space>>>
+        query?: DocumentQuery<Doc>
+        attributesOnly?: boolean
+      } = req.body
+
+      if (_class == null || format == null) {
+        throw new ApiError(400, 'Missing required parameters')
+      }
+
+      const platformClient = await createPlatformClient(token)
+      const { email, workspace } = decodeToken(token)
+
+      const account = platformClient.getModel().getAccountByEmail(email)
+      if (account === undefined) {
+        throw new ApiError(401, 'Account not found')
+      }
+
+      const txOperations = new TxOperations(platformClient, account._id)
+
+      // Always synchronous - similar to /export?sync=true
+      const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
+      try {
+        const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, workspace)
+        await exporter.export(_class, exportDir, { format, attributesOnly: attributesOnly ?? false, query })
+
+        const files = await fs.readdir(exportDir)
+        if (files.length === 0) {
+          throw new ApiError(400, 'No files were exported')
+        }
+
+        if (files.length !== 1) {
+          throw new ApiError(400, 'Unexpected number of files exported')
+        }
+
+        const exportedFile = join(exportDir, files[0])
+        res.download(exportedFile, basename(exportedFile), () => {
+        })
+      } catch (err: any) {
+        console.error('Export failed:', err)
+        throw err
+      } finally {
+        void fs.rmdir(exportDir, { recursive: true })
       }
     })
   )
@@ -254,42 +298,6 @@ export function listen (e: Express, port: number, host?: string): Server {
   }
 
   return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
-}
-
-async function exportArchive (
-  measureCtx: MeasureContext,
-  storageAdapter: StorageAdapter,
-  client: TxOperations,
-  workspace: WorkspaceId,
-  _class: Ref<Class<Doc<Space>>>,
-  format: ExportFormat,
-  attributesOnly: boolean,
-  query?: DocumentQuery<Doc>
-): Promise<string> {
-  const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
-  try {
-    const exporter = new WorkspaceExporter(measureCtx, client, storageAdapter, workspace)
-
-    await exporter.export(_class, exportDir, { format, attributesOnly, query })
-
-    const hierarchy = client.getHierarchy()
-    const className = hierarchy.getClass(_class).label
-
-    const archiveDir = await fs.mkdtemp(join(tmpdir(), 'export-archive-'))
-    const archiveName = `export-${workspace.name}-${className}-${format}-${Date.now()}.zip`
-    const archivePath = join(archiveDir, archiveName)
-
-    const files = await fs.readdir(exportDir)
-    if (files.length === 0) {
-      throw new ApiError(400, 'No files were exported')
-    }
-
-    await saveToArchive(exportDir, archivePath)
-
-    return archivePath
-  } finally {
-    await fs.rmdir(exportDir, { recursive: true })
-  }
 }
 
 async function saveToArchive (inputDir: string, outputPath: string): Promise<void> {
