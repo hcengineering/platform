@@ -1,6 +1,6 @@
 {
   "name": "desktop",
-  "version": "0.6.458",
+  "version": "0.7.33",
   "main": "dist/main/electron.js",
   "author": "Hardcore Engineering <hey@huly.io>",
   "template": "@hcengineering/default-package",
