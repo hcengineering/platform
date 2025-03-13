@@ -89,7 +89,6 @@
 
     const startOfYear = new Date(nowDate.getFullYear(), 0, 1, 0, 0, 0, 0)
 
-    // Текущий год
     if (date >= startOfYear) {
       const month = date.toLocaleString('default', {
         month: 'short',
@@ -127,7 +126,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="replies" on:click>
   <div class="replies__count">
-    <Label label={uiNext.string.RepliesCount} params={{ replies: count }} />
+    <Label label={uiNext.string.RepliesCount} params={{ count }} />
   </div>
 
   <div class="replies__last-reply">

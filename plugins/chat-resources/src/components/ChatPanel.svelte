@@ -15,18 +15,20 @@
 
 <script lang="ts">
   import { Card } from '@hcengineering/card'
+  import { NotificationContext } from '@hcengineering/communication-types'
 
   import ChatHeader from './ChatHeader.svelte'
   import ChatBody from './ChatBody.svelte'
   import ChatFooter from './ChatFooter.svelte'
 
   export let card: Card
+  export let context: NotificationContext | undefined = undefined
 
   let footerHeight: number | undefined = undefined
 </script>
 
 <ChatHeader {card} />
-<ChatBody {card} {footerHeight} />
+<ChatBody {card} {footerHeight} {context} />
 <ChatFooter {card} bind:height={footerHeight} />
 
 <style lang="scss">

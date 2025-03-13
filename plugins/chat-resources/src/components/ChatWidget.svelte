@@ -17,10 +17,9 @@
   import { Widget } from '@hcengineering/workbench'
   import { getClient, createQuery, getCommunicationClient, createMessagesQuery } from '@hcengineering/presentation'
   import cardPlugin, { type Card } from '@hcengineering/card'
-  import { Message } from '@hcengineering/communication-types'
+  import { Message, CardID } from '@hcengineering/communication-types'
   import { Message as MessagePresenter, MessageInput, Divider } from '@hcengineering/ui-next'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
-  import core, { Data, type Markup, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { fillDefaults, type Markup, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
   import { jsonToMarkup, markupToJSON, markupToText } from '@hcengineering/text'
   import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
   import { makeRank } from '@hcengineering/rank'
@@ -37,7 +36,9 @@
   export let width: string
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const communicationClient = getCommunicationClient()
+
   const messageQuery = createMessagesQuery()
   const threadCardQuery = createQuery()
 
@@ -60,7 +61,7 @@
   $: if (message?.thread != null) {
     threadCardQuery.query(
       cardPlugin.class.Card,
-      { _id: message.thread.thread },
+      { _id: message.thread.thread as Ref<Card> },
       (res) => {
         threadCard = res[0]
       },
@@ -69,11 +70,6 @@
   } else {
     threadCard = undefined
     threadCardQuery.unsubscribe()
-  }
-
-  function handleClose (tabId?: string): void {
-    // if (widget === undefined || tabId === undefined) return
-    // void closeWidgetTab(widget, tabId)
   }
 
   $: if (widget === undefined || data === undefined) {
@@ -85,22 +81,25 @@
     const { card } = data
     if (card === undefined) return
 
-    let threadId: Ref<Card> | undefined = message.thread?.thread
+    let threadId: CardID | undefined = message.thread?.thread
     if (threadId == null) {
       const markup = jsonToMarkup(markdownToMarkup(message.content))
       const title = markupToText(markup).trim()
 
       const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
+      const data = fillDefaults(
+        hierarchy,
+        {
+          title: `Thread: ${title.slice(0, 100)}${title.length > 100 ? '...' : ''}`,
+          rank: makeRank(lastOne?.rank, undefined),
+          content: '' as MarkupBlobRef,
+          parentInfo: [],
+          blobs: {}
+        },
+        chat.masterTag.Thread
+      )
 
-      const data: Data<Card> = {
-        title: `Thread: ${title.slice(0, 100)}${title.length > 100 ? '...' : ''}`,
-        rank: makeRank(lastOne?.rank, undefined),
-        content: '' as MarkupBlobRef,
-        parentInfo: [],
-        blobs: {}
-      }
-
-      threadId = await client.createDoc(chat.masterTag.Thread, core.space.Workspace, data)
+      threadId = (await client.createDoc(chat.masterTag.Thread, core.space.Workspace, data)) as CardID
 
       await communicationClient.createThread(card, message.id, threadId)
     }
@@ -116,7 +115,7 @@
   <div class="chat-widget" style:width style:height>
     <ChatHeader card={threadCard} />
     {#if message}
-      {@const displayMessage = toDisplayMessage({ ...message, thread: undefined }, $personByPersonIdStore)}
+      {@const displayMessage = toDisplayMessage({ ...message, thread: undefined })}
       <div style:padding="0 1rem">
         <MessagePresenter message={displayMessage} />
       </div>

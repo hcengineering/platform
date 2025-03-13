@@ -24,8 +24,10 @@
     restoreLocation
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { getClient } from '@hcengineering/presentation'
+  import { createNotificationContextsQuery, createQuery, getClient } from '@hcengineering/presentation'
   import { chatId } from '@hcengineering/chat'
+  import { SortingOrder } from '@hcengineering/core'
+  import { NotificationContext } from '@hcengineering/communication-types'
 
   import ChatPanel from './ChatPanel.svelte'
   import ChatNavigation from './ChatNavigation.svelte'
@@ -33,9 +35,34 @@
 
   const client = getClient()
 
+  const query = createQuery()
+  const notificationContextsQuery = createNotificationContextsQuery()
+
   let replacedPanelElement: HTMLElement
   let card: Card | undefined = undefined
   let needRestoreLoc = true
+
+  let cards: Card[] = []
+  let contexts: NotificationContext[] = []
+
+  // TODO: only subscribed cards
+  query.query(cardPlugin.class.Card, {}, (res) => {
+    cards = res
+  })
+
+  // TODO: only for subscribed cards
+  notificationContextsQuery.query(
+    {
+      notifications: {
+        order: SortingOrder.Descending,
+        read: false,
+        limit: 10
+      }
+    },
+    (res) => {
+      contexts = res.getResult()
+    }
+  )
 
   async function syncLocation (loc: Location): Promise<void> {
     if (loc.path[2] !== chatId) {
@@ -89,7 +116,7 @@
       class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
-        <ChatNavigation {card} on:select={selectCard} />
+        <ChatNavigation {card} {cards} {contexts} on:select={selectCard} />
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
         <Separator name="new-chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
@@ -106,8 +133,9 @@
   {/if}
   <div bind:this={replacedPanelElement} class="hulyComponent chat__panel">
     {#if card}
+      {@const context = contexts.find((c) => c.card === card?._id)}
       {#key card._id}
-        <ChatPanel {card} />
+        <ChatPanel {card} {context} />
       {/key}
     {/if}
   </div>

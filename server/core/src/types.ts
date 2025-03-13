@@ -201,6 +201,7 @@ export interface PipelineContext {
   contextVars: Record<string, any>
 
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
+  communicationApi: CommunicationApi | null
 }
 /**
  * @public
@@ -238,7 +239,8 @@ export type PipelineFactory = (
   ws: WorkspaceIds,
   upgrade: boolean,
   broadcast: BroadcastFunc,
-  branding: Branding | null
+  branding: Branding | null,
+  communicationApi: CommunicationApi | null
 ) => Promise<Pipeline>
 
 export type CommunicationApiFactory = (
@@ -265,6 +267,7 @@ export interface TriggerControl {
   lowLevel: LowLevelStorage
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
+  communicationApi: CommunicationApi | null
 
   // Cache per workspace
   cache: Map<string, any>

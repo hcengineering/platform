@@ -532,10 +532,17 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
+<<<<<<< HEAD
   async findPersonBySocialKey (socialString: string): Promise<PersonUuid | undefined> {
     const request = {
       method: 'findPersonBySocialKey' as const,
       params: { socialString }
+=======
+  async findPerson (socialString: string, requireAccount?: boolean): Promise<PersonUuid | undefined> {
+    const request = {
+      method: 'findPerson' as const,
+      params: { socialString, requireAccount }
+>>>>>>> 965c4d33f2 (Init new notifications)
     }
 
     return await this.rpc(request)

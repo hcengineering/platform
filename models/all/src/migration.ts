@@ -57,6 +57,7 @@ import { surveyOperation } from '@hcengineering/model-survey'
 import { cardOperation } from '@hcengineering/model-card'
 import { aiBotId, aiBotOperation } from '@hcengineering/model-ai-bot'
 import { chatId, chatOperation } from '@hcengineering/model-chat'
+import { inboxId, inboxOperation } from '@hcengineering/model-inbox'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -102,5 +103,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['testManagement', testManagementOperation],
   ['survey', surveyOperation],
   [aiBotId, aiBotOperation],
-  [chatId, chatOperation]
+  [chatId, chatOperation],
+  [inboxId, inboxOperation]
 ]

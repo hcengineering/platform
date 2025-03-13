@@ -16,14 +16,16 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { EmojiPopup, showPopup } from '@hcengineering/ui'
+  import { getCurrentAccount, groupByArray } from '@hcengineering/core'
 
   import Reaction from './Reaction.svelte'
   import IconEmojiAdd from './icons/IconEmojiAdd.svelte'
-  import { ReactionType } from '../types'
+  import { DisplayReaction } from '../types'
 
-  export let reactions: ReactionType[] = []
+  export let reactions: DisplayReaction[] = []
 
   const dispatch = createEventDispatcher()
+  const me = getCurrentAccount()
 
   let emojiPopupOpened = false
 
@@ -45,15 +47,18 @@
       () => {}
     )
   }
+
+  let reactionsByEmoji = new Map<string, DisplayReaction[]>()
+  $: reactionsByEmoji = groupByArray(reactions, (it) => it.emoji)
 </script>
 
 <div class="reactions">
-  {#each reactions as reaction (reaction.id)}
+  {#each reactionsByEmoji as [emoji, reactions] (emoji)}
     <Reaction
-      emoji={reaction.emoji}
-      selected={reaction.selected}
-      count={reaction.count}
-      on:click={() => dispatch('click', reaction.emoji)}
+      {emoji}
+      selected={reactions.some((it) => me.socialIds.includes(it.creator))}
+      count={reactions.length}
+      on:click={() => dispatch('click', emoji)}
     />
   {/each}
   <Reaction icon={IconEmojiAdd} iconSize="small" active={emojiPopupOpened} on:click={handleAdd} />

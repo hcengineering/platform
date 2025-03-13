@@ -33,6 +33,7 @@
           label={item.label}
           icon={item.icon}
           selected={selected === item.id}
+          notificationsCount={item.notificationsCount}
           on:click={() => {
             dispatch('click', item.id)
           }}

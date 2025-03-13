@@ -14,23 +14,24 @@
 //
 
 import { type Message, type Reaction } from '@hcengineering/communication-types'
-import { getCurrentEmployee, type Person } from '@hcengineering/contact'
-import { type PersonId } from '@hcengineering/core'
 import { jsonToMarkup } from '@hcengineering/text'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
-import { type MessageType, type ReactionType } from '@hcengineering/ui-next'
+import { type DisplayMessage, type DisplayReaction } from '@hcengineering/ui-next'
 
 export interface MessagesGroup {
   day: number
   messages: Message[]
 }
 
+export function getGroupDay (date: Date): number {
+  return new Date(date).setHours(0, 0, 0, 0)
+}
 export function groupMessagesByDay (messages: Message[]): MessagesGroup[] {
   const result: MessagesGroup[] = []
 
   for (const message of messages) {
-    const dayTimestamp = new Date(message.created).setHours(0, 0, 0, 0)
-    const group = findOrCreateGroup(result, dayTimestamp, (group) => result.push(group))
+    const day = getGroupDay(message.created)
+    const group = findOrCreateGroup(result, day, (group) => result.push(group))
     group.messages.push(message)
   }
 
@@ -52,85 +53,70 @@ function findOrCreateGroup (
   return group
 }
 
-export function toDisplayMessages (message: Message[], personByPersonId: Map<PersonId, Person>): MessageType[] {
-  return message.map((message) => toDisplayMessage(message, personByPersonId))
+export function toDisplayMessages (message: Message[]): DisplayMessage[] {
+  return message.map((message) => toDisplayMessage(message))
 }
 
-export function toDisplayMessage (message: Message, personByPersonId: Map<PersonId, Person>): MessageType {
-  // TODO: remove it
-  const person = personByPersonId.get(message.creator)
+export function toDisplayMessage (message: Message): DisplayMessage {
   return {
     id: message.id,
     text: jsonToMarkup(markdownToMarkup(message.content)),
-    authorName: person?.name ?? '',
-    author: person?._id,
-    avatar: person,
-    date: message.created,
+    author: message.creator,
+    created: message.created,
     edited: message.edited,
-    reactions: toDisplayReactions(message.reactions, personByPersonId),
+    reactions: toDisplayReactions(message.reactions),
     repliesCount: message.thread?.repliesCount,
     lastReplyDate: message.thread?.lastReply
   }
 }
-function toDisplayReactions (reactions: Reaction[], personByPersonId: Map<PersonId, Person>): ReactionType[] {
-  const result: ReactionType[] = []
-  const me = getCurrentEmployee()
 
-  for (const reaction of reactions) {
-    const person = personByPersonId.get(reaction.creator)
-    const current = result.find((it) => it.emoji === reaction.reaction)
-    if (current !== undefined) {
-      current.count++
-      current.selected = current.selected === true || person?._id === me
-      if (person != null && !current.persons.includes(person._id)) {
-        current.persons.push(person._id)
-      }
-    } else {
-      result.push({
-        id: reaction.reaction,
-        emoji: reaction.reaction,
-        selected: person?._id === me,
-        persons: person != null ? [person._id] : [],
-        count: 1
-      })
-    }
-  }
-  return result
+function toDisplayReactions (reactions: Reaction[]): DisplayReaction[] {
+  return reactions.map((reaction) => ({
+    id: `${reaction.reaction}-${reaction.creator}`,
+    emoji: reaction.reaction,
+    creator: reaction.creator
+  }))
 }
 
-// export function createMessagesObserver (contentDiv: HTMLDivElement, onMessageView: (node: HTMLDivElement) => void): void {
-//   const messageObserver = new IntersectionObserver((entries) => {
-//     entries.forEach(entry => {
-//       if (entry.isIntersecting) {
-//         onMessageView(entry.target as HTMLDivElement)
-//         messageObserver.unobserve(entry.target)
-//       }
-//     })
-//   }, {
-//     root: null,
-//     rootMargin: '0px',
-//     threshold: 0.1
-//   })
-//
-//   contentDiv.querySelectorAll('.message').forEach(message => {
-//     messageObserver.observe(message)
-//   })
-//
-//   const mutationObserver = new MutationObserver((mutations) => {
-//     mutations.forEach(mutation => {
-//       mutation.addedNodes.forEach((node: Node) => {
-//         const element = node as HTMLDivElement
-//         if (element.classList?.contains('messages-group')) {
-//           element.querySelectorAll('.message').forEach(message => {
-//             messageObserver.observe(message)
-//           })
-//         }
-//         if (element.classList?.contains('message') && !element.classList.contains('read')) {
-//           messageObserver.observe(element)
-//         }
-//       })
-//     })
-//   })
-//
-//   mutationObserver.observe(contentDiv, { childList: true, subtree: true })
-// }
+export function createMessagesObserver (
+  contentDiv: HTMLDivElement,
+  onMessageView: (node: HTMLDivElement) => void
+): void {
+  const messageObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          onMessageView(entry.target as HTMLDivElement)
+          messageObserver.unobserve(entry.target)
+        }
+      })
+    },
+    {
+      root: null,
+      rootMargin: '-150px 0px -120px 0px',
+      threshold: 0.1
+    }
+  )
+
+  contentDiv.querySelectorAll('.message').forEach((message) => {
+    messageObserver.observe(message)
+  })
+
+  const mutationObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node: Node) => {
+        const element = node as HTMLDivElement
+        if (element.classList?.contains('messages-group')) {
+          element.querySelectorAll('.message').forEach((message) => {
+            messageObserver.observe(message)
+          })
+        }
+        if (element.classList?.contains('message')) {
+          messageObserver.observe(element)
+        }
+      })
+    })
+  })
+
+  mutationObserver.observe(contentDiv, { childList: true, subtree: true })
+}

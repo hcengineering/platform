@@ -56,7 +56,9 @@ import {
   FindMessagesGroupsParams,
   FindMessagesParams,
   Message,
-  MessagesGroup
+  MessagesGroup,
+  FindNotificationContextParams,
+  FindNotificationsParams
 } from '@hcengineering/communication-types'
 import {
   RequestEvent as CommunicationEvent,
@@ -405,6 +407,20 @@ export class ClientSession implements Session {
 
   async findMessagesGroups (ctx: ClientSessionCtx, params: FindMessagesGroupsParams): Promise<void> {
     const result = await this.findMessagesGroupsRaw(ctx, params)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findNotifications (ctx: ClientSessionCtx, params: FindNotificationsParams): Promise<void> {
+    const result = await ctx.communicationApi.findNotifications(this.getCommunicationCtx(), params)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findNotificationContexts (
+    ctx: ClientSessionCtx,
+    params: FindNotificationContextParams,
+    queryId?: number
+  ): Promise<void> {
+    const result = await ctx.communicationApi.findNotificationContexts(this.getCommunicationCtx(), params, queryId)
     await ctx.sendResponse(ctx.requestId, result)
   }
 

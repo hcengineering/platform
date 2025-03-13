@@ -20,6 +20,7 @@ import chat from '@hcengineering/chat'
 import { translate } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import { get, writable } from 'svelte/store'
+import { type NotificationContext } from '@hcengineering/communication-types'
 
 const navigatorStateStorageKey = 'chat.navigatorState'
 
@@ -57,7 +58,11 @@ export function toggleSection (id: string): void {
   navigatorStateStore.set(result)
 }
 
-export async function cardsToChatSections (cards: Card[], state: NavigatorState): Promise<NavigationSection[]> {
+export async function cardsToChatSections (
+  cards: Card[],
+  contexts: NotificationContext[],
+  state: NavigatorState
+): Promise<NavigationSection[]> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const { threads, channels, other } = splitCards(cards, hierarchy)
@@ -66,16 +71,16 @@ export async function cardsToChatSections (cards: Card[], state: NavigatorState)
   const result: NavigationSection[] = []
 
   if (threads.length > 0) {
-    result.push(getSection(chat.masterTag.Thread, threads, state, hierarchy))
+    result.push(getSection(chat.masterTag.Thread, threads, contexts, state, hierarchy))
   }
 
   if (channels.length > 0) {
-    result.push(getSection(chat.masterTag.Channel, channels, state, hierarchy))
+    result.push(getSection(chat.masterTag.Channel, channels, contexts, state, hierarchy))
   }
 
   const cardSessions: Array<[string, NavigationSection]> = []
   for (const [_class, cards] of cardByClass.entries()) {
-    const section = getSection(_class, cards, state, hierarchy)
+    const section = getSection(_class, cards, contexts, state, hierarchy)
     const label = await translate(section.title, {})
     cardSessions.push([label, section])
   }
@@ -90,6 +95,7 @@ export async function cardsToChatSections (cards: Card[], state: NavigatorState)
 function getSection (
   _class: Ref<MasterTag>,
   cards: Card[],
+  contexts: NotificationContext[],
   state: NavigatorState,
   hierarchy: Hierarchy
 ): NavigationSection {
@@ -100,11 +106,15 @@ function getSection (
     title: clazz.pluralLabel ?? clazz.label,
     expanded: !state.collapsedSections.includes(_class),
     items: cards
-      .map((card) => ({
-        id: card._id,
-        label: card.title,
-        icon: clazz.icon ?? chat.icon.Thread
-      }))
+      .map((card) => {
+        const context = contexts.find((it) => it.card === card._id)
+        return {
+          id: card._id,
+          label: card.title,
+          icon: clazz.icon ?? chat.icon.Thread,
+          notificationsCount: context?.notifications?.length ?? 0
+        }
+      })
       .sort((c1, c2) => c1.label.toLowerCase().localeCompare(c2.label.toLowerCase()))
   }
 }

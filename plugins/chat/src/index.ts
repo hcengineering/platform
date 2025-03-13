@@ -26,6 +26,7 @@ const chat = plugin(chatId, {
     Channels: '' as IntlString,
     Chat: '' as IntlString,
     Description: '' as IntlString,
+    Loading: '' as IntlString,
     MessageIn: '' as IntlString,
     Thread: '' as IntlString,
     Threads: '' as IntlString,

@@ -36,7 +36,8 @@
     createQuery,
     getClient,
     isAdminUser,
-    reduceCalls
+    reduceCalls,
+    createNotificationsQuery
   } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { supportLink, SupportStatus } from '@hcengineering/support'
@@ -125,6 +126,7 @@
     tabsStore
   } from '../workbench'
   import { get } from 'svelte/store'
+  import inbox, { inboxId } from '@hcengineering/inbox'
 
   const HIDE_NAVIGATOR = 720
   const FLOAT_ASIDE = 1024 // lg
@@ -270,6 +272,12 @@
   let hasNotificationsFn: ((data: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>) | undefined =
     undefined
   let hasInboxNotifications = false
+  let hasNewInboxNotifications = false
+  const notificationCountQuery = createNotificationsQuery()
+
+  notificationCountQuery.query({ read: false, limit: 1 }, (res) => {
+    hasNewInboxNotifications = res.getResult().length > 0
+  })
 
   void getResource(notification.function.HasInboxNotifications).then((f) => {
     hasNotificationsFn = f
@@ -838,6 +846,32 @@
               }
             }}
             notify={hasInboxNotifications}
+          />
+        </NavLink>
+        <NavLink
+          app={inboxId}
+          shrink={0}
+          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === inboxId}
+        >
+          <AppItem
+            icon={inbox.icon.Inbox}
+            label={inbox.string.Inbox}
+            selected={currentAppAlias === inboxId || inboxPopup !== undefined}
+            navigator={(currentAppAlias === inboxId || inboxPopup !== undefined) && $deviceInfo.navigator.visible}
+            on:click={(e) => {
+              if (e.metaKey || e.ctrlKey) return
+              if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === inboxId) {
+                toggleNav()
+              } else if (currentAppAlias === inboxId && lastLoc !== undefined) {
+                e.preventDefault()
+                e.stopPropagation()
+                navigate(lastLoc)
+                lastLoc = undefined
+              } else {
+                lastLoc = $location
+              }
+            }}
+            notify={hasNewInboxNotifications}
           />
         </NavLink>
         <Applications
