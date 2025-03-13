@@ -36,6 +36,9 @@ import {
   handleBlobHead,
   handleBlobList,
   handleImageGet,
+  handleMetaGet,
+  handleMetaPut,
+  handleMetaPatch,
   handleS3CreateBlob,
   handleS3CreateBlobParams,
   handleUploadFormData
@@ -135,6 +138,19 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
     withAuthorization,
     withWorkspace,
     wrapRequest(ctx, 'deleteBlob', datalake, handleBlobDeleteList)
+  )
+
+  // Blob meta
+
+  app.get('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'getMeta', datalake, handleMetaGet))
+
+  app.put('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'putMeta', datalake, handleMetaPut))
+
+  app.patch(
+    '/meta/:workspace/:name',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 'patchMeta', datalake, handleMetaPatch)
   )
 
   // Form Data upload
