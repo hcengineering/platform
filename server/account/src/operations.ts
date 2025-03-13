@@ -96,7 +96,8 @@ import {
   verifyAllowedRole,
   verifyPassword,
   wrap,
-  getWorkspaceRole
+  getWorkspaceRole,
+  normalizeValue
 } from './utils'
 
 // Move to config?
@@ -1776,7 +1777,7 @@ export async function ensurePerson (
   }
 ): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
   const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
-  const allowedService = verifyAllowedServices(['schedule', 'mail'], extra, false)
+  const allowedService = verifyAllowedServices(['tool', 'workspace', 'schedule', 'mail'], extra, false)
 
   if (!allowedService) {
     const callerRole = await getWorkspaceRole(db, account, workspace)
@@ -1784,23 +1785,21 @@ export async function ensurePerson (
   }
 
   const { socialType, socialValue, firstName, lastName } = params
+  const trimmedFirst = firstName.trim()
+  const trimmedLast = lastName.trim()
+  const normalizedValue = normalizeValue(socialValue)
 
-  if (
-    !Object.values(SocialIdType).includes(socialType) ||
-    firstName.length === 0 ||
-    lastName.length === 0 ||
-    socialValue.length === 0
-  ) {
+  if (!Object.values(SocialIdType).includes(socialType) || trimmedFirst.length === 0 || normalizedValue.length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const socialId = await db.socialId.findOne({ type: socialType, value: socialValue })
+  const socialId = await db.socialId.findOne({ type: socialType, value: normalizedValue })
   if (socialId != null) {
     return { uuid: socialId.personUuid, socialId: socialId._id }
   }
 
-  const personUuid = await db.person.insertOne({ firstName, lastName })
-  const newSocialId = await db.socialId.insertOne({ type: socialType, value: socialValue, personUuid })
+  const personUuid = await db.person.insertOne({ firstName: trimmedFirst, lastName: trimmedLast })
+  const newSocialId = await db.socialId.insertOne({ type: socialType, value: normalizedValue, personUuid })
 
   return { uuid: personUuid, socialId: newSocialId }
 }
