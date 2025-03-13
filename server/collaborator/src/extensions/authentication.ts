@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
+import { guestAccountEmail } from '@hcengineering/account'
 import { decodeDocumentId } from '@hcengineering/collaborator-client'
 import { MeasureContext } from '@hcengineering/core'
-import { decodeToken } from '@hcengineering/server-token'
+import { Token, decodeToken } from '@hcengineering/server-token'
 import { Extension, onAuthenticatePayload } from '@hocuspocus/server'
 
 import { getWorkspaceInfo } from '../account'
@@ -38,8 +39,13 @@ export class AuthenticationExtension implements Extension {
 
     return await ctx.with('authenticate', { workspaceId }, async () => {
       const token = decodeToken(data.token)
+      const readonly = isGuest(token)
 
-      ctx.info('authenticate', { workspaceId, mode: token.extra?.mode ?? '' })
+      ctx.info('authenticate', { workspaceId, mode: token.extra?.mode ?? '', readonly })
+
+      if (readonly) {
+        data.connection.readOnly = true
+      }
 
       // verify workspace can be accessed with the token
       const workspaceInfo = await getWorkspaceInfo(data.token)
@@ -52,4 +58,8 @@ export class AuthenticationExtension implements Extension {
       return buildContext(data)
     })
   }
+}
+
+export function isGuest (token: Token): boolean {
+  return token.email === guestAccountEmail && token.extra?.guest === 'true'
 }
