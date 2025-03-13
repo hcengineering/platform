@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref } from '@hcengineering/core'
+import type { Client, Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { driveId } from '@hcengineering/drive'
 import drive from '@hcengineering/drive-resources/src/plugin'
@@ -55,7 +55,9 @@ export default mergeIds(driveId, drive, {
     FileLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CanRenameFile: '' as Resource<ViewActionAvailabilityFunction>,
     CanRenameFolder: '' as Resource<ViewActionAvailabilityFunction>,
-    CanDeleteFileVersion: '' as Resource<ViewActionAvailabilityFunction>
+    CanDeleteFileVersion: '' as Resource<ViewActionAvailabilityFunction>,
+    FileTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    FolderTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   },
   completion: {
     FileQuery: '' as Resource<ObjectSearchFactory>,
