@@ -171,6 +171,18 @@ export async function CanDeleteFileVersion (
   return docs.every((p) => p.$lookup?.attachedTo !== undefined && p.$lookup?.attachedTo.file !== p._id)
 }
 
+export async function FileTitleProvider (client: Client, ref: Ref<File>, doc?: File): Promise<string> {
+  const object = doc ?? (await client.findOne(drive.class.File, { _id: ref }))
+  if (object === undefined) throw new Error(`File not found, _id: ${ref}`)
+  return object.title
+}
+
+export async function FolderTitleProvider (client: Client, ref: Ref<Folder>, doc?: Folder): Promise<string> {
+  const object = doc ?? (await client.findOne(drive.class.Folder, { _id: ref }))
+  if (object === undefined) throw new Error(`Folder not found, _id: ${ref}`)
+  return object.title
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateDrive,
@@ -212,7 +224,9 @@ export default async (): Promise<Resources> => ({
     FolderLinkProvider,
     CanRenameFile,
     CanRenameFolder,
-    CanDeleteFileVersion
+    CanDeleteFileVersion,
+    FileTitleProvider,
+    FolderTitleProvider
   },
   resolver: {
     Location: resolveLocation
