@@ -164,6 +164,7 @@ async function fillSocialIdentitiesIds (client: MigrationClient): Promise<void> 
   ctx.info('filling social identities genenrated ids...')
   const socialIdBySocialKey = new Map<string, PersonId | null>()
   const iterator = await client.traverse<SocialIdentity>(DOMAIN_CHANNEL, { _class: contact.class.SocialIdentity })
+  let count = 0
 
   try {
     let newSids: SocialIdentity[] = []
@@ -178,19 +179,21 @@ async function fillSocialIdentitiesIds (client: MigrationClient): Promise<void> 
       for (const socialIdentity of socialIdentities) {
         const socialId = await getSocialIdBySocialKey(client, socialIdentity.key, socialIdBySocialKey)
 
-        if (socialId == null) continue
+        if (socialId == null || socialId === socialIdentity._id) continue
+
         newSids.push({
           ...socialIdentity,
           _id: socialId as SocialIdentityRef
         })
         deleteSids.push(socialIdentity._id)
-      }
+        count++
 
-      if (newSids.length > 50) {
-        await client.create(DOMAIN_CHANNEL, newSids)
-        await client.deleteMany(DOMAIN_CHANNEL, { _id: { $in: deleteSids } })
-        newSids = []
-        deleteSids = []
+        if (newSids.length > 50) {
+          await client.create(DOMAIN_CHANNEL, newSids)
+          await client.deleteMany(DOMAIN_CHANNEL, { _id: { $in: deleteSids } })
+          newSids = []
+          deleteSids = []
+        }
       }
     }
 
@@ -200,6 +203,7 @@ async function fillSocialIdentitiesIds (client: MigrationClient): Promise<void> 
       newSids = []
       deleteSids = []
     }
+    ctx.info('finished filling social identities genenrated ids. Updated count: ', { count })
   } finally {
     await iterator.close()
   }
