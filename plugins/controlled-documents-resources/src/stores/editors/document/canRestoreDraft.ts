@@ -16,9 +16,14 @@
 import { DocumentState } from '@hcengineering/controlled-documents'
 import { combine } from 'effector'
 import { $canCreateNewDraft } from './canCreateNewDraft'
-import { $documentLatestVersion } from './editor'
+import { $controlledDocument, $documentLatestVersion } from './editor'
 
-export const $canRestoreDraft = combine($documentLatestVersion, $canCreateNewDraft, (latest, canCreateNewDraft) => {
-  if (latest === null) return false
-  return canCreateNewDraft && latest.state === DocumentState.Deleted
-})
+export const $canRestoreDraft = combine(
+  $controlledDocument,
+  $documentLatestVersion,
+  $canCreateNewDraft,
+  (document, latest, canCreateNewDraft) => {
+    if (latest === null || document == null) return false
+    return canCreateNewDraft && latest._id === document._id && document.state === DocumentState.Deleted
+  }
+)
