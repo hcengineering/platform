@@ -9,5 +9,6 @@
   "COLLABORATOR_URL": "wss://collaborator.hc.engineering",
   "STATS_URL": "https://stats.hc.engineering",
   "PRESENCE_URL": "wss://presence.hc.engineering",
+  "PUBLIC_SCHEDULE_URL": "https://schedule.hc.engineering",
   "BACKUP_URL": "https://front.hc.engineering/api/backup"
 }

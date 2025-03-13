@@ -57,7 +57,8 @@
       title,
       rank: makeRank(lastOne?.rank, undefined),
       content: '' as MarkupBlobRef,
-      parentInfo: []
+      parentInfo: [],
+      blobs: {}
     }
 
     const filledData = fillDefaults(hierarchy, data, _class)

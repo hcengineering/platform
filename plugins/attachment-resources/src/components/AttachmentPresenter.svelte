@@ -16,7 +16,7 @@
 <script lang="ts">
   import contact, { PermissionsStore } from '@hcengineering/contact'
   import type { Attachment } from '@hcengineering/attachment'
-  import core, { type WithLookup } from '@hcengineering/core'
+  import core, { BlobType, type WithLookup } from '@hcengineering/core'
   import presentation, {
     canPreviewFile,
     getBlobRef,
@@ -31,16 +31,16 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { getResource } from '@hcengineering/platform'
   import { Readable } from 'svelte/store'
-  import { getType, openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
+  import { getType, isAttachment, openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
   import AttachmentName from './AttachmentName.svelte'
 
-  export let value: WithLookup<Attachment> | undefined
+  export let value: WithLookup<Attachment> | BlobType | undefined
   export let removable: boolean = false
   export let showPreview = false
   export let preview = false
 
   const dispatch = createEventDispatcher()
-  let permissionsStore: Readable<PermissionsStore>
+  let permissionsStore: Readable<PermissionsStore> | undefined = undefined
 
   onMount(async () => {
     permissionsStore = await getResource(contact.store.Permissions)
@@ -51,13 +51,22 @@
   const trimFilename = (fname: string): string =>
     fname.length > maxLength ? fname.substr(0, (maxLength - 1) / 2) + '...' + fname.substr(-(maxLength - 1) / 2) : fname
 
-  $: canRemove =
-    removable &&
-    value !== undefined &&
-    value.readonly !== true &&
-    permissionsStore != null &&
-    ($permissionsStore.whitelist.has(value.space) ||
-      !$permissionsStore.ps[value.space]?.has(core.permission.ForbidDeleteObject))
+  $: canRemove = isRemovable(removable, value, $permissionsStore)
+
+  function isRemovable (
+    removable: boolean,
+    value: Attachment | BlobType | undefined,
+    permissionsStore: PermissionsStore | undefined
+  ): boolean {
+    if (value === undefined || !removable) return false
+    if (!isAttachment(value)) return true
+    if (permissionsStore === undefined) return false
+    return (
+      value.readonly !== true &&
+      (permissionsStore.whitelist.has(value.space) ||
+        !permissionsStore.ps[value.space]?.has(core.permission.ForbidDeleteObject))
+    )
+  }
 
   function iconLabel (name: string): string {
     const parts = `${name}`.split('.')
@@ -201,7 +210,7 @@
               </a>
             </div>
             <div class="info-content flex-row-center">
-              {filesize(value.size, { spacer: '' })}
+              {#if isAttachment(value)}{filesize(value.size, { spacer: '' })}{/if}
               <span class="actions inline-flex clear-mins ml-1 gap-1">
                 <span>•</span>
                 <a class="no-line colorInherit" href={valueRef.src} download={value.name} bind:this={download}>

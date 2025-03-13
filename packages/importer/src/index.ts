@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-export * from './huly/unified'
+export * from './huly/huly'
 export * from './clickup/clickup'
 export * from './notion/notion'
 export * from './docx/docx'

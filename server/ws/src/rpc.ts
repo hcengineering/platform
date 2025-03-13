@@ -1,4 +1,5 @@
 import core, {
+  generateId,
   TxProcessor,
   type Class,
   type Doc,
@@ -274,6 +275,14 @@ export function registerRPC (
       const event: any = (await retrieveJson(req)) ?? {}
 
       const result = await session.eventRaw(ctx, event)
+      await sendJson(req, res, result)
+    })
+  })
+
+  // To use in non-js (rust) clients that can't link to @hcengineering/core
+  app.get('/api/v1/generate-id/:workspaceId', (req, res) => {
+    void withSession(req, res, async () => {
+      const result = { id: generateId() }
       await sendJson(req, res, result)
     })
   })

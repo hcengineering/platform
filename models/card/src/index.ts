@@ -24,13 +24,15 @@ import {
 import chunter from '@hcengineering/chunter'
 import core, {
   AccountRole,
+  type Blobs,
   DOMAIN_MODEL,
   IndexKind,
   SortingOrder,
   type CollectionSize,
-  type MarkupBlobRef,
   type Rank,
-  type Ref
+  type Ref,
+  ClassifierKind,
+  type MarkupBlobRef
 } from '@hcengineering/core'
 import {
   Collection,
@@ -76,6 +78,8 @@ export class TCard extends TDoc implements Card {
   @Prop(TypeCollaborativeDoc(), card.string.Content)
     content!: MarkupBlobRef
 
+  blobs!: Blobs
+
   @Prop(TypeRef(card.class.Card), card.string.Parent)
     parent?: Ref<Card> | null
 
@@ -103,6 +107,62 @@ export * from './migration'
 
 export function createModel (builder: Builder): void {
   builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
+
+  builder.createDoc(
+    card.class.MasterTag,
+    core.space.Model,
+    {
+      label: attachment.string.File,
+      extends: card.class.Card,
+      icon: card.icon.File,
+      kind: ClassifierKind.CLASS
+    },
+    card.types.File
+  )
+
+  builder.mixin(card.types.File, card.class.MasterTag, setting.mixin.Editable, {
+    value: true
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: card.types.File,
+    descriptor: view.viewlet.Table,
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: [
+      '',
+      '_class',
+      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      'modifiedOn'
+    ]
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: card.types.File,
+    descriptor: view.viewlet.List,
+    viewOptions: {
+      groupBy: ['_class', 'createdBy', 'modifiedBy'],
+      orderBy: [
+        ['modifiedOn', SortingOrder.Descending],
+        ['rank', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: [
+      { key: '', props: { showParent: true } },
+      '_class',
+      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      { key: '', displayProps: { grow: true } },
+      {
+        key: 'modifiedOn',
+        displayProps: { fixed: 'right', dividerBefore: true }
+      }
+    ]
+  })
 
   builder.createDoc(
     workbench.class.Application,

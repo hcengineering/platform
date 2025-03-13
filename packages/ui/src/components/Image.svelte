@@ -17,7 +17,7 @@
 
   export let src: string | undefined
   export let srcset: string | undefined = undefined
-  export let alt: string = ''
+  export let alt: string | undefined = undefined
   export let width: number | string
   export let height: number | string
   export let fit: string = 'contain'
@@ -55,7 +55,7 @@
 <img
   {src}
   {srcset}
-  {alt}
+  alt={alt ?? ''}
   {width}
   {height}
   style:object-fit={fit}
