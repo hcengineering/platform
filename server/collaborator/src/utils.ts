@@ -12,10 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type WorkspaceIds } from '@hcengineering/core'
+import { GUEST_ACCOUNT } from '@hcengineering/account'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { type WorkspaceIds } from '@hcengineering/core'
+import { type Token } from '@hcengineering/server-token'
 
 import config from './config'
+
+export function isGuest (token: Token): boolean {
+  return token.account === GUEST_ACCOUNT && token.extra?.guest === 'true'
+}
 
 // TODO: consider storing this in a cache for some short period of time
 export async function getWorkspaceIds (token: string): Promise<WorkspaceIds> {

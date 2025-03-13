@@ -19,7 +19,7 @@ import { decodeToken } from '@hcengineering/server-token'
 import { Extension, onAuthenticatePayload } from '@hocuspocus/server'
 
 import { Context, buildContext } from '../context'
-import { getWorkspaceIds } from '../utils'
+import { getWorkspaceIds, isGuest } from '../utils'
 
 export interface AuthenticationConfiguration {
   ctx: MeasureContext
@@ -38,8 +38,13 @@ export class AuthenticationExtension implements Extension {
 
     return await ctx.with('authenticate', { workspaceId }, async () => {
       const token = decodeToken(data.token)
+      const readonly = isGuest(token)
 
-      ctx.info('authenticate', { workspaceId, mode: token.extra?.mode ?? '' })
+      ctx.info('authenticate', { workspaceId, mode: token.extra?.mode ?? '', readonly })
+
+      if (readonly) {
+        data.connection.readOnly = true
+      }
 
       // verify workspace can be accessed with the token
       const ids = await getWorkspaceIds(data.token)
