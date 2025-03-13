@@ -4,9 +4,9 @@
 -->
 
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
+  import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
-  import presentation, { BlobMetadata, getFileUrl } from '@hcengineering/presentation'
+  import presentation, { getFileUrl } from '@hcengineering/presentation'
   import { EmbeddedPDF, Spinner, themeStore } from '@hcengineering/ui'
   import { convertToHTML } from '@hcengineering/print'
 

@@ -54,6 +54,7 @@ async function uploadRecording (recordingName: string, onUploaded: FileUploadCal
     uuid: getBlobUrl(recordingName) as Ref<Blob>,
     name: 'Recording-' + now(),
     file: { ...new Blob(), type: 'video/x-mpegURL' },
+    type: 'video/x-mpegURL',
     path: undefined,
     metadata: undefined,
     navigateOnUpload: true

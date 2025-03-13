@@ -27,6 +27,7 @@ export interface S3Options {
 
 export function createClient (opt: S3Options): S3 {
   return new S3({
+    forcePathStyle: true,
     endpoint: opt.endpoint,
     credentials: {
       accessKeyId: opt.accessKey,

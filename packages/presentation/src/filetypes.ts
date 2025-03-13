@@ -14,13 +14,13 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { type Blob, type Ref } from '@hcengineering/core'
+import { type BlobMetadata, type Blob, type Ref } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { type PopupAlignment } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 
 import plugin from './plugin'
-import type { BlobMetadata, FileOrBlob, FilePreviewExtension } from './types'
+import type { FileOrBlob, FilePreviewExtension } from './types'
 import { createQuery } from './utils'
 
 /**

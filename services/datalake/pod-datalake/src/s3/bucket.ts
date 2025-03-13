@@ -102,7 +102,7 @@ class S3BucketImpl implements S3Bucket {
       }
     }
 
-    if (options.contentLength < 5 * 1024 * 1024) {
+    if (Buffer.isBuffer(body)) {
       const result = await ctx.with('s3.putObject', {}, () => this.client.putObject(command))
 
       return {

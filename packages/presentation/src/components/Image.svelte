@@ -18,7 +18,7 @@
   import { getBlobRef } from '../preview'
 
   export let blob: Ref<Blob>
-  export let alt: string = ''
+  export let alt: string | undefined = undefined
   export let fit: string = 'contain'
   export let width: number
   export let height: number

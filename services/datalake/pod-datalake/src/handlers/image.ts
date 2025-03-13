@@ -60,10 +60,10 @@ function parseImageTransform (accept: string, transform: string): ImageTransform
         image.dpr = parseFloat(value)
         break
       case 'width':
-        image.width = parseFloat(value)
+        image.width = parseInt(value)
         break
       case 'height':
-        image.height = parseFloat(value)
+        image.height = parseInt(value)
         break
     }
   })
@@ -88,14 +88,13 @@ export async function handleImageGet (
     return
   }
 
-  if (!blob.contentType.startsWith('image/')) {
-    res.status(400).send()
-    return
-  }
-
   const dpr = image.dpr === undefined || Number.isNaN(image.dpr) ? 1 : image.dpr
-  const width = image.width === undefined || Number.isNaN(image.width) ? undefined : image.width * dpr
-  const height = image.height === undefined || Number.isNaN(image.height) ? undefined : image.height * dpr
+  const width =
+    image.width === undefined || Number.isNaN(image.width) ? undefined : Math.min(Math.round(image.width * dpr), 2048)
+  const height =
+    image.height === undefined || Number.isNaN(image.height)
+      ? undefined
+      : Math.min(Math.round(image.height * dpr), 2048)
   const fit = image.fit ?? 'cover'
 
   const tempDir = mkdtempSync(join(tmpdir(), 'image-'))

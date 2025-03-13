@@ -17,7 +17,7 @@ import { MeasureContext } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { S3Bucket } from '../s3'
 
-export type Location = 'weur' | 'eeur' | 'wnam' | 'enam' | 'apac'
+export type Location = 'eu' | 'weur' | 'eeur' | 'wnam' | 'enam' | 'apac'
 
 export type UUID = string & { __uuid: true }
 
@@ -61,6 +61,9 @@ export interface Datalake {
     options: Omit<BlobHead, 'name' | 'etag'>
   ) => Promise<BlobHead>
   create: (ctx: MeasureContext, workspace: string, name: string, filename: string) => Promise<BlobHead | null>
+
+  getMeta: (ctx: MeasureContext, workspace: string, name: string) => Promise<Record<string, any> | null>
+  setMeta: (ctx: MeasureContext, workspace: string, name: string, meta: Record<string, any>) => Promise<void>
 
   setParent: (ctx: MeasureContext, workspace: string, name: string, parent: string | null) => Promise<void>
   selectStorage: (ctx: MeasureContext, workspace: string) => Promise<BlobStorage>

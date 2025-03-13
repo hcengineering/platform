@@ -20,5 +20,6 @@ loadMetadata(card.icon, {
   MasterTag: `${icons}#masterTag`,
   Tags: `${icons}#tags`,
   Tag: `${icons}#tag`,
-  Card: `${icons}#card`
+  Card: `${icons}#card`,
+  File: `${icons}#file`
 })

@@ -36,6 +36,9 @@ import {
   handleBlobHead,
   handleBlobList,
   handleImageGet,
+  handleMetaGet,
+  handleMetaPut,
+  handleMetaPatch,
   handleS3CreateBlob,
   handleS3CreateBlobParams,
   handleUploadFormData
@@ -74,17 +77,20 @@ const wrapRequest =
     }
 
 export function createServer (ctx: MeasureContext, config: Config): { app: Express, close: () => void } {
-  const buckets: Partial<Record<Location, S3Bucket>> = {}
+  const buckets: Array<{ location: Location, bucket: S3Bucket }> = []
   for (const bucket of config.Buckets) {
     const location = bucket.location as Location
     if (
+      location === 'eu' ||
       location === 'weur' ||
       location === 'eeur' ||
       location === 'wnam' ||
       location === 'enam' ||
       location === 'apac'
     ) {
-      buckets[location] = createBucket(createClient(bucket), bucket.bucket)
+      buckets.push({ location, bucket: createBucket(createClient(bucket), bucket.bucket) })
+    } else {
+      ctx.warn('invalid bucket location', { location, bucket })
     }
   }
 
@@ -132,6 +138,19 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
     withAuthorization,
     withWorkspace,
     wrapRequest(ctx, 'deleteBlob', datalake, handleBlobDeleteList)
+  )
+
+  // Blob meta
+
+  app.get('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'getMeta', datalake, handleMetaGet))
+
+  app.put('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'putMeta', datalake, handleMetaPut))
+
+  app.patch(
+    '/meta/:workspace/:name',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 'patchMeta', datalake, handleMetaPatch)
   )
 
   // Form Data upload

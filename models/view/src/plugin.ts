@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Blob, type Doc, type Ref } from '@hcengineering/core'
+import { type Blob, type BlobMetadata, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import {
@@ -23,7 +23,7 @@ import {
   viewId,
   type ViewOptionsAction
 } from '@hcengineering/view'
-import { type BlobMetadata, type FileOrBlob, type FilePreviewExtension } from '@hcengineering/presentation/src/types'
+import { type FileOrBlob, type FilePreviewExtension } from '@hcengineering/presentation/src/types'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
 import view from '@hcengineering/view-resources/src/plugin'
 

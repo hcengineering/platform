@@ -91,7 +91,7 @@
     "ScheduleNew": "Добавить расписание",
     "ScheduleDeleteConfirm": "Расписание будет удалено. Подтвердить?",
     "ScheduleShareLink": "Поделиться ссылкой",
-    "ScheduleSharedLinkMessage": "Поделитесь этой ссылкой, чтобы другие могли записаться на встречу с вами:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
+    "ScheduleSharedLinkMessage": "<p>Поделитесь этой ссылкой, чтобы другие могли записаться на встречу с вами:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
     "ScheduleSharedLinkCopy": "Копировать ссылку",
     "ScheduleAvailability": "Доступность",
     "ScheduleUnavailable": "Недоступно",

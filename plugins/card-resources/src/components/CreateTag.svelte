@@ -14,12 +14,10 @@
 -->
 <script lang="ts">
   import { MasterTag, Tag } from '@hcengineering/card'
-  import core, { Class, ClassifierKind, Data, Doc, Ref, generateId } from '@hcengineering/core'
+  import core, { Class, ClassifierKind, Data, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting'
   import { EditBox, Icon, Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
 
@@ -40,8 +38,7 @@
       icon: isMasterTag ? card.icon.MasterTag : card.icon.Tag
     }
 
-    const id = generateId<Class<MasterTag>>()
-    await client.createDoc(_class, core.space.Model, data, id)
+    await client.createDoc(_class, core.space.Model, data)
 
     dispatch('close')
   }
