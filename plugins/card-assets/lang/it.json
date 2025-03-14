@@ -23,6 +23,9 @@
     "UnsetParent": "Rimuovi genitore",
 	  "SetParent": "Imposta genitore",
 	  "CreateChild": "Crea figlio",
-	  "Children": "Figli"
+	  "Children": "Figli",
+    "Views": "Viste",
+    "CreateView": "Crea vista",
+    "SelectViewType": "Seleziona il tipo di vista"
   }
 }

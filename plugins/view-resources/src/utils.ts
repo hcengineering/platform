@@ -1193,7 +1193,7 @@ export async function getDocLabel (client: Client, object: Doc | undefined): Pro
     return name
   }
 
-  const label = hierarchy.getClass(object._class).label
+  const label = hierarchy.getClass(object._class).label ?? object.label
 
   if (label === undefined) {
     return undefined

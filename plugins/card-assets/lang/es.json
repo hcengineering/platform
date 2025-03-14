@@ -23,6 +23,9 @@
     "UnsetParent": "Desasignar padre",
     "SetParent": "Asignar padre",
     "CreateChild": "Crear hijo",
-    "Children": "Hijos"
+    "Children": "Hijos",
+    "Views": "Vistas",
+    "CreateView": "Crear vista",
+    "SelectViewType": "Seleccionar tipo de vista"
   }
 }

@@ -13,28 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
+  import { IconSize } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import { Doc } from '@hcengineering/core'
-  import { Asset } from '@hcengineering/platform'
+  import ObjectIcon from './ObjectIcon.svelte'
 
-  import { classIcon, getDocLinkTitle } from '../utils'
+  import { getDocLinkTitle } from '../utils'
 
   export let object: Doc | undefined = undefined
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let value: Doc | undefined = undefined
   export let size: IconSize = 'small'
+
+  $: _object = object ?? value
 
   const client = getClient()
 </script>
 
-{#if object}
-  {@const objectIcon = icon ?? classIcon(client, object._class)}
+{#if _object}
   <div class="flex-presenter">
-    {#if objectIcon}
-      <Icon icon={objectIcon} {size} />
-      <div class="mr-4" />
-    {/if}
-    {#await getDocLinkTitle(client, object._id, object._class, object) then title}
+    <ObjectIcon value={_object} {size}/>
+    {#await getDocLinkTitle(client, _object._id, _object._class, _object) then title}
       {title}
     {/await}
   </div>

@@ -23,6 +23,9 @@
     "UnsetParent": "Désassocier le parent",
     "SetParent": "Associer un parent",
     "CreateChild": "Créer un enfant",
-    "Children": "Enfants"
+    "Children": "Enfants",
+    "Views": "Vues",
+    "CreateView": "Créer une vue",
+    "SelectViewType": "Sélectionner le type de vue"
   }
 }

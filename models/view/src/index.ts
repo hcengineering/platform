@@ -1278,6 +1278,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilterPresenter, {
     presenter: view.component.PersonIdFilterValuePresenter
   })
+
+  builder.mixin(view.class.ViewletDescriptor, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: view.component.BaseDocPresenter
+  })
 }
 
 export default view

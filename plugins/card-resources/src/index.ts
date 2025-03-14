@@ -36,6 +36,7 @@ import RelationsSection from './components/settings/RelationsSection.svelte'
 import ChildsSection from './components/settings/ChildsSection.svelte'
 import SetParentActionPopup from './components/SetParentActionPopup.svelte'
 import RelationSetting from './components/settings/RelationSetting.svelte'
+import ViewsSection from './components/settings/ViewsSection.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -53,7 +54,8 @@ export default async (): Promise<Resources> => ({
     RelationsSection,
     ChildsSection,
     SetParentActionPopup,
-    RelationSetting
+    RelationSetting,
+    ViewsSection
   },
   completion: {
     CardQuery: queryCard

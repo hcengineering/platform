@@ -23,6 +23,9 @@
     "UnsetParent": "Unset parent",
     "SetParent": "Set parent",
     "CreateChild": "Create child",
-    "Children": "Children"
+    "Children": "Children",
+    "Views": "Views",
+    "CreateView": "Create View",
+    "SelectViewType": "Select View Type"
   }
 }

@@ -14,14 +14,16 @@
 -->
 <script lang="ts">
   import view from '@hcengineering/view'
-  import { Component, Icon, IconSize } from '@hcengineering/ui'
+  import { AnySvelteComponent, Component, Icon, IconSize } from '@hcengineering/ui'
   import type { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
 
   import { classIcon } from '../utils'
+  import { Asset } from '@hcengineering/platform'
 
   export let value: Doc
   export let size: IconSize = 'small'
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -32,8 +34,8 @@
 {#if iconMixin}
   <Component is={iconMixin.component} props={{ value, size }} />
 {:else}
-  {@const icon = classIcon(client, value._class)}
-  {#if icon}
-    <Icon {icon} {size} />
+  {@const objectIcon = icon ?? classIcon(client, value._class)}
+  {#if objectIcon}
+    <Icon icon={objectIcon} {size} />
   {/if}
 {/if}

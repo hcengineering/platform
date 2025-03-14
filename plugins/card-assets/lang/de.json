@@ -23,6 +23,9 @@
     "UnsetParent": "Elternteil entfernen",
     "SetParent": "Elternteil setzen",
     "CreateChild": "Kind erstellen",
-    "Children": "Kinder"
+    "Children": "Kinder",
+    "Views": "Ansichten",
+    "CreateView": "Ansicht erstellen",
+    "SelectViewType": "Ansichtstyp auswählen"
   }
 }
