@@ -153,6 +153,10 @@
     "ExportRequestFailed": "Impossibile inviare l'esportazione.",
     "ExportRequestFailedMessage": "Si è verificato un errore durante l'invio dell'esportazione. Riprova più tardi.",
     "ExportCompleted": "Esportazione completata. I tuoi file sono pronti. Puoi scaricarli dal drive.",
-    "ExportFailed": "Impossibile esportare i dati. Riprova più tardi."
+    "ExportFailed": "Impossibile esportare i dati. Riprova più tardi.",
+    "DisablePermissions": "Disabilita il controllo degli accessi basato sui ruoli",
+    "EnablePermissions": "Abilita il controllo degli accessi basato sui ruoli",
+    "DisablePermissionsConfirmation": "Sei sicuro di voler disabilitare il controllo degli accessi basato sui ruoli? Tutti i ruoli e le autorizzazioni verranno disabilitati.",
+    "EnablePermissionsConfirmation": "Sei sicuro di voler abilitare il controllo degli accessi basato sui ruoli? Tutti i ruoli e le autorizzazioni verranno abilitati."
   }
 }

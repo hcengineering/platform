@@ -13,16 +13,11 @@
 // limitations under the License.
 //
 
-import core, {
+import {
   AccountRole,
-  Class,
   Doc,
-  DocumentQuery,
   DOMAIN_CONFIGURATION,
-  FindOptions,
-  FindResult,
   MeasureContext,
-  Ref,
   Tx,
   TxCUD,
   TxProcessor,
@@ -69,27 +64,5 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
       }
     }
     return this.provideTx(ctx, txes)
-  }
-
-  findAll<T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<FindResult<T>> {
-    const domain = this.context.hierarchy.getDomain(_class)
-    if (this.targetDomains.includes(domain)) {
-      if (ctx.contextData.userEmail !== configurationAccountEmail) {
-        const account = ctx.contextData.account
-        if (
-          account.role !== AccountRole.Owner &&
-          account._id !== core.account.System &&
-          ctx.contextData.admin !== true
-        ) {
-          throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-        }
-      }
-    }
-    return this.provideFindAll(ctx, _class, query, options)
   }
 }

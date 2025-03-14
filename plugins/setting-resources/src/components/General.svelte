@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core from '@hcengineering/core'
+  import core, { Configuration } from '@hcengineering/core'
   import {
     Breadcrumb,
     Header,
@@ -34,9 +34,10 @@
 
   import setting from '../plugin'
   import { rpcAccount } from '../utils'
-  import { getClient, MessageBox } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
   import { AvatarType } from '@hcengineering/contact'
+  import settingsRes from '../plugin'
 
   let loading = true
   let isEditingName = false
@@ -121,6 +122,39 @@
       icon: avatar.avatar
     })
   }
+
+  const permissionConfigurationQuery = createQuery()
+  let disablePermissionsConfiguration: Configuration | undefined = undefined
+  $: arePermissionsDisabled = disablePermissionsConfiguration?.enabled ?? false
+
+  $: permissionConfigurationQuery.query(
+    core.class.Configuration,
+    { _id: setting.ids.DisablePermissionsConfiguration },
+    (result) => {
+      disablePermissionsConfiguration = result[0]
+    }
+  )
+
+  function handleTogglePermissions (): void {
+    const newState = !arePermissionsDisabled
+    showPopup(MessageBox, {
+      label: newState ? settingsRes.string.DisablePermissions : settingsRes.string.EnablePermissions,
+      message: newState ? setting.string.DisablePermissionsConfirmation : setting.string.EnablePermissionsConfirmation,
+      dangerous: true,
+      action: async () => {
+        if (disablePermissionsConfiguration === undefined) {
+          await client.createDoc(
+            core.class.Configuration,
+            core.space.Workspace,
+            { enabled: newState },
+            setting.ids.DisablePermissionsConfiguration
+          )
+        } else {
+          await client.update(disablePermissionsConfiguration, { enabled: newState })
+        }
+      }
+    })
+  }
 </script>
 
 <div class="hulyComponent">
@@ -170,6 +204,16 @@
           </div>
           <div class="delete mt-6">
             <Button icon={IconDelete} kind="dangerous" label={setting.string.DeleteWorkspace} on:click={handleDelete} />
+          </div>
+          <div class="title mt-6"><Label label={setting.string.Permissions} /></div>
+          <div class="delete">
+            <Button
+              kind="regular"
+              label={arePermissionsDisabled
+                ? settingsRes.string.EnablePermissions
+                : settingsRes.string.DisablePermissions}
+              on:click={handleTogglePermissions}
+            />
           </div>
         </div>
       </Scroller>

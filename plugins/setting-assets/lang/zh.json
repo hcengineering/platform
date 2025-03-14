@@ -153,6 +153,10 @@
     "ExportRequestFailed": "提交导出失败。",
     "ExportRequestFailedMessage": "提交导出时发生错误。请稍后重试。",
     "ExportCompleted": "导出完成。您的文件已准备就绪。您可以从驱动器下载它们。",
-    "ExportFailed": "导出数据失败。请稍后重试。"
+    "ExportFailed": "导出数据失败。请稍后重试。",
+    "DisablePermissions": "禁用基于角色的访问控制",
+    "EnablePermissions": "启用基于角色的访问控制",
+    "DisablePermissionsConfirmation": "您确定要禁用基于角色的访问控制吗？所有角色和权限都将被禁用。",
+    "EnablePermissionsConfirmation": "您确定要启用基于角色的访问控制吗？所有角色和权限都将被启用。"
   }
 }
