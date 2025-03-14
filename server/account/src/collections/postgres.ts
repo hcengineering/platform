@@ -631,7 +631,7 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   protected getMigrations (): [string, string][] {
-    return [this.getV1Migration()]
+    return [this.getV1Migration(), this.getV2Migration1(), this.getV2Migration2(), this.getV2Migration3()]
   }
 
   // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO ADJUST THE SCHEMA, ADD A NEW MIGRATION.
@@ -775,6 +775,60 @@ export class PostgresAccountDB implements AccountDB {
           CONSTRAINT invite_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid)
       );
     `
+    ]
+  }
+
+  private getV2Migration1 (): [string, string] {
+    return [
+      'account_db_v2_social_id_id_add',
+      `
+      -- Add _id column to social_id table
+      ALTER TABLE ${this.ns}.social_id
+      ADD COLUMN IF NOT EXISTS _id INT8 NOT NULL DEFAULT unique_rowid();
+      `
+    ]
+  }
+
+  private getV2Migration2 (): [string, string] {
+    return [
+      'account_db_v2_social_id_pk_change',
+      `
+      -- Drop existing otp foreign key constraint
+      ALTER TABLE ${this.ns}.otp
+      DROP CONSTRAINT IF EXISTS otp_social_id_fk;
+
+      -- Drop existing primary key on social_id
+      ALTER TABLE ${this.ns}.social_id
+      DROP CONSTRAINT IF EXISTS social_id_pk;
+
+      -- Add new primary key on _id
+      ALTER TABLE ${this.ns}.social_id
+      ADD CONSTRAINT social_id_pk PRIMARY KEY (_id);
+      `
+    ]
+  }
+
+  private getV2Migration3 (): [string, string] {
+    return [
+      'account_db_v2_social_id_constraints',
+      `
+      -- Add unique constraint on type, value
+      ALTER TABLE ${this.ns}.social_id
+      ADD CONSTRAINT social_id_tv_key_unique UNIQUE (type, value);
+
+      -- Drop old table
+      DROP TABLE ${this.ns}.otp;
+
+      -- Create new OTP table with correct column type
+      CREATE TABLE ${this.ns}.otp (
+          social_id INT8 NOT NULL,
+          code STRING NOT NULL,
+          expires_on BIGINT NOT NULL,
+          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
+          CONSTRAINT otp_new_pk PRIMARY KEY (social_id, code),
+          CONSTRAINT otp_new_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(_id)
+      );
+      `
     ]
   }
 }
