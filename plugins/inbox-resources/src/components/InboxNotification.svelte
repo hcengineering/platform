@@ -28,7 +28,8 @@
       author: message.creator,
       created: message.created,
       edited: message.edited,
-      reactions: []
+      reactions: [],
+      files: []
     }
   }
 </script>

@@ -29,21 +29,22 @@ import {
   type RichText,
   type SocialID,
   type ContextID,
-  type AccountID
+  type AccountID,
+  type BlobID
 } from '@hcengineering/communication-types'
 import {
+  type CreateFileEvent,
   type CreateMessageEvent,
   type CreateMessageResult,
   type CreatePatchEvent,
   type CreateReactionEvent,
   type CreateThreadEvent,
   type EventResult,
+  type RemoveFileEvent,
   type RemoveReactionEvent,
   type RequestEvent,
   RequestEventType,
   type ResponseEvent,
-  type CreateFileEvent,
-  type RemoveFileEvent,
   type UpdateNotificationContextEvent
 } from '@hcengineering/communication-sdk-types'
 import {

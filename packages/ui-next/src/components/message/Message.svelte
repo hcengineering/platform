@@ -21,6 +21,7 @@
   import { EmojiPopup, getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
   import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
+  import { AttachmentPreview } from '@hcengineering/attachment-resources'
 
   import { AvatarSize, DisplayMessage } from '../../types'
   import Avatar from '../Avatar.svelte'
@@ -155,6 +156,13 @@
       {/if}
     </div>
   </div>
+  {#if message.files.length > 0}
+    <div class="message__files">
+      {#each message.files as file (file.blobId)}
+        <AttachmentPreview value={{ file: file.blobId, type: file.type, name: file.filename }} />
+      {/each}
+    </div>
+  {/if}
   {#if message.reactions.length > 0}
     <div class="message__reactions">
       <ReactionsList
@@ -248,5 +256,10 @@
     padding-top: 0.5rem;
     margin-left: 2.75rem;
     padding-bottom: 0;
+  }
+  .message__files {
+    display: flex;
+    gap: 0.375rem;
+    overflow-x: auto;
   }
 </style>

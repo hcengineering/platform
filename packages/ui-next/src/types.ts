@@ -17,7 +17,7 @@ import { type Markup } from '@hcengineering/core'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
-import { type SocialID } from '@hcengineering/communication-types'
+import { type BlobID, type SocialID } from '@hcengineering/communication-types'
 
 export interface NavigationSection {
   id: string
@@ -40,6 +40,7 @@ export interface DisplayMessage {
   created: Date
   edited?: Date
   reactions: DisplayReaction[]
+  files: DisplayFile[]
   repliesCount?: number
   lastReplyDate?: Date
 }
@@ -48,6 +49,12 @@ export interface DisplayReaction {
   id: string
   emoji: string
   creator: SocialID
+}
+
+export interface DisplayFile {
+  blobId: BlobID
+  type: string
+  filename: string
 }
 
 export type IconSize = 'x-small' | 'small' | 'medium' | 'large'
@@ -94,4 +101,10 @@ export interface TextInputAction {
   action: TextInputActionFn
   order: number
   disabled?: boolean
+}
+
+export interface UploadedFile {
+  blobId: BlobID
+  type: string
+  filename: string
 }

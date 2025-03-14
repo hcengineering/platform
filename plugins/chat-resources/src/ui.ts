@@ -65,6 +65,7 @@ export function toDisplayMessage (message: Message): DisplayMessage {
     created: message.created,
     edited: message.edited,
     reactions: toDisplayReactions(message.reactions),
+    files: message.files ?? [],
     repliesCount: message.thread?.repliesCount,
     lastReplyDate: message.thread?.lastReply
   }

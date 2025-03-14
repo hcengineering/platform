@@ -281,7 +281,6 @@
   }
 </script>
 
-{shouldScrollToNew}
 <ReverseScroller
   bind:scrollDiv
   bind:scroller
