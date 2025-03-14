@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import core, { type Configuration, type PluginConfiguration, type Ref, SortingOrder, toIdMap, type Tx, type TxUpdateDoc } from '@hcengineering/core'
+import core, {
+  type Configuration,
+  type PluginConfiguration,
+  type Ref,
+  SortingOrder,
+  toIdMap,
+  type Tx,
+  type TxUpdateDoc
+} from '@hcengineering/core'
 import { getResourcePlugin, type Plugin, type Resource } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
 import { addTxListener, createQuery } from '.'
@@ -77,9 +85,8 @@ pluginConfigQuery.query(
 )
 
 const configQuery = createQuery(true)
-export const configurationStore = writable <Map<Ref<Configuration>, Configuration>>(new Map())
+export const configurationStore = writable<Map<Ref<Configuration>, Configuration>>(new Map())
 
-configQuery.query(
-  core.class.Configuration,
-  {},
-  (res) => { configurationStore.set(toIdMap(res)) })
+configQuery.query(core.class.Configuration, {}, (res) => {
+  configurationStore.set(toIdMap(res))
+})
