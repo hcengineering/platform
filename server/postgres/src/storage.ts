@@ -1705,7 +1705,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const finalSql = sqlChunks.join(' ')
         return await this.mgr.retry(ctx.id, async (connection) => {
           const result = await connection.execute(finalSql, vars.getValues())
-          return new Map(result.map((r) => [r[`_${field.toLowerCase()}`], r.count]))
+          return new Map(
+            result.map((r) => [r[`_${field.toLowerCase()}`], typeof r.count === 'string' ? parseInt(r.count) : r.count])
+          )
         })
       } catch (err) {
         ctx.error('Error while grouping by', { domain, field })

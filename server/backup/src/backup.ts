@@ -31,16 +31,16 @@ import core, {
   RateLimiter,
   Ref,
   SortingOrder,
+  systemAccountUuid,
   toIdMap,
   TxProcessor,
-  systemAccountUuid,
-  type WorkspaceUuid,
   type BackupStatus,
   type Blob,
   type DocIndexState,
   type Tx,
   type TxCUD,
-  type WorkspaceIds
+  type WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { estimateDocSize, type StorageAdapter } from '@hcengineering/server-core'
@@ -137,6 +137,8 @@ export interface BackupInfo {
 
   // A hash of current domain transactions, so we could skip all other checks if same.
   domainHashes: Record<Domain, string>
+
+  migrations: Record<string, boolean>
 }
 
 async function loadDigest (
@@ -220,6 +222,7 @@ async function verifyDigest (
     ctx.info('checking', { domain })
     // We have required documents here.
     const validDocs = new Set<Ref<Doc>>()
+    const zeroEntres = new Set<Ref<Doc>>()
 
     for (const sf of d.storage ?? []) {
       const blobs = new Map<string, { doc: Doc | undefined, buffer: Buffer | undefined }>()
@@ -239,20 +242,27 @@ async function verifyDigest (
             })
             stream.on('end', () => {
               const bf = Buffer.concat(chunks as any)
-              const doc = JSON.parse(bf.toString()) as Doc
-              if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
-                const data = migradeBlobData(doc as Blob, '')
-                const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
-                if (d === undefined) {
-                  blobs.set(bname, { doc, buffer: undefined })
-                } else {
-                  blobs.delete(bname)
+              try {
+                const doc = JSON.parse(bf.toString()) as Doc
+                if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
+                  const data = migradeBlobData(doc as Blob, '')
+                  const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
+                  if (d === undefined) {
+                    blobs.set(bname, { doc, buffer: undefined })
+                  } else {
+                    blobs.delete(bname)
+                  }
                 }
+                validDocs.add(bname as Ref<Doc>)
+              } catch (err: any) {
+                // If not a json, skip
               }
-              validDocs.add(bname as Ref<Doc>)
               next()
             })
           } else {
+            if (headers.size === 0) {
+              zeroEntres.add(name as any)
+            }
             next()
           }
           stream.resume() // just auto drain the stream
@@ -285,6 +295,11 @@ async function verifyDigest (
         modified = true
         storageToRemove.add(sf)
       }
+    }
+
+    // Clear zero files, they potentially wrong downloaded.
+    for (const zz of zeroEntres.values()) {
+      validDocs.delete(zz)
     }
     if (storageToRemove.size > 0) {
       modified = true
@@ -739,7 +754,10 @@ export async function backup (
       workspace: workspaceId,
       version: '0.6.2',
       snapshots: [],
-      domainHashes: {}
+      domainHashes: {},
+      migrations: {
+        zeroCheckSize: true // Assume already checked for new backups
+      }
     }
 
     // Version 0.6.2, format of digest file is changed to
@@ -750,6 +768,20 @@ export async function backup (
       backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
     }
     backupInfo.version = '0.6.2'
+
+    if (backupInfo.migrations == null) {
+      backupInfo.migrations = {}
+    }
+
+    // Apply verification to backup, since we know it should have broken blobs
+    if (backupInfo.migrations.zeroCheckSize == null) {
+      await checkBackupIntegrity(ctx, storage)
+      if (await storage.exists(infoFile)) {
+        backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
+      }
+      backupInfo.migrations.zeroCheckSize = true
+      await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
+    }
 
     backupInfo.workspace = workspaceId
 
@@ -2035,7 +2067,7 @@ export async function restore (
                   }
                 }
               } catch (err: any) {
-                ctx.warn('failed to upload blob', { _id: blob._id, err, workspace: workspaceId })
+                ctx.warn('failed to upload blob', { _id: blob._id, cause: err.cause?.message, workspace: workspaceId })
               }
             }
             docsToAdd.delete(blob._id)
@@ -2091,7 +2123,7 @@ export async function restore (
                         sz = bf.length
                       }
                       void sendBlob(blob, bf, next).catch((err) => {
-                        ctx.error('failed to send blob', { err })
+                        ctx.error('failed to send blob', { message: err.message })
                       })
                     }
                   })
