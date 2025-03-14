@@ -2409,8 +2409,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-message",
-      "projectFolder": "services/message/pod-message",
+      "packageName": "@hcengineering/pod-inbound-mail",
+      "projectFolder": "services/mail/pod-inbound-mail",
       "shouldPublish": false
     }
   ]

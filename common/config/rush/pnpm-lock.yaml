@@ -718,15 +718,15 @@ importers:
       '@rush-temp/pod-hook':
         specifier: file:./projects/pod-hook.tgz
         version: file:projects/pod-hook.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
+      '@rush-temp/pod-inbound-mail':
+        specifier: file:./projects/pod-inbound-mail.tgz
+        version: file:projects/pod-inbound-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-love':
         specifier: file:./projects/pod-love.tgz
         version: file:projects/pod-love.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@rush-temp/pod-mail':
         specifier: file:./projects/pod-mail.tgz
         version: file:projects/pod-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
-      '@rush-temp/pod-message':
-        specifier: file:./projects/pod-message.tgz
-        version: file:projects/pod-message.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-print':
         specifier: file:./projects/pod-print.tgz
         version: file:projects/pod-print.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)
@@ -1525,9 +1525,6 @@ importers:
       '@types/toposort':
         specifier: ^2.0.3
         version: 2.0.7
-      '@types/uuid':
-        specifier: ^8.3.1
-        version: 8.3.4
       '@types/web-push':
         specifier: ^3.6.4
         version: 3.6.4
@@ -1924,6 +1921,9 @@ importers:
       png-chunks-extract:
         specifier: ^1.0.0
         version: 1.0.0
+      postal-mime:
+        specifier: ^1.1.0
+        version: 1.1.0
       postcss:
         specifier: ^8.4.20
         version: 8.4.35
@@ -4610,16 +4610,16 @@ packages:
     resolution: {integrity: sha512-RgcAHfNOUxdFKPBrtcgIsNpQLo4ro8kuPIbNvG8omy/njf/HHWU5YJMFlznSlv+gCrvZmGsP9YV4k+X0uL/bdw==, tarball: file:projects/pod-hook.tgz}
     version: 0.0.0
 
+  '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
+    resolution: {integrity: sha512-WDawkCPNeFbeHUAsO0e4o06bR74Xhp01YDrOivlHWrQw5IpJsxE1CRqLtj8+N0IOwuhutL6zLncRmc/EgW9GTw==, tarball: file:projects/pod-inbound-mail.tgz}
+    version: 0.0.0
+
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
     resolution: {integrity: sha512-K9Hvwm8QesWBTSx/A+swmRDUOy0RY8y4tNJkrW85Zh5wMUxHzeYrX/tQL+usk+cRrvPCw9C8yag1gxsKqPkWIQ==, tarball: file:projects/pod-love.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
     resolution: {integrity: sha512-jAdMLPMqs82cRy4ZUvhNJH8S1dO+25xCBl/Xkrdg/JTDI9dp1mE1tqthuwvQ/erGB0uqditAX+FXJgqKG1gq7Q==, tarball: file:projects/pod-mail.tgz}
-    version: 0.0.0
-
-  '@rush-temp/pod-message@file:projects/pod-message.tgz':
-    resolution: {integrity: sha512-Z0EqmLd1a3A4jDEJCMaVIZeY2d2KGnbUEC48POAf1t4gILl3pXTawxYvxVZO0TIQSpgE1UJzrMj9xAH4R5+yug==, tarball: file:projects/pod-message.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-print@file:projects/pod-print.tgz':
@@ -6366,6 +6366,9 @@ packages:
 
   '@types/unist@2.0.10':
     resolution: {integrity: sha512-IfYcSBWE3hLpBg8+X2SEa8LVkJdJEkT2Ese2aaLs3ptGdVtABxndrMaxuFlQ1qdFf9Q5rDvDpxI3WwgvKFAsQA==}
+
+  '@types/uuid@10.0.0':
+    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
 
   '@types/uuid@8.3.4':
     resolution: {integrity: sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==}
@@ -11319,6 +11322,9 @@ packages:
   possible-typed-array-names@1.0.0:
     resolution: {integrity: sha512-d7Uw+eZoloe0EHDIYoe+bQ5WXnGMOpmiZFTuMWCwpjzzkL2nTjcKiAk4hh8TjnGye2TwWOk3UXucZ+3rbmBa8Q==}
     engines: {node: '>= 0.4'}
+
+  postal-mime@1.1.0:
+    resolution: {integrity: sha512-IyYhoZpCq/I9l9om5soJ5Ch5vsS76EGu/tn7mHQGiAEmIKf2uvr3TdiYTB56FmD5bOm78eYjCPryM+0GuJcMJg==}
 
   postcss-load-config@3.1.4:
     resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
@@ -21251,6 +21257,44 @@ snapshots:
       - node-notifier
       - supports-color
 
+  '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
+    dependencies:
+      '@tsconfig/node16': 1.0.4
+      '@types/cors': 2.8.17
+      '@types/express': 4.17.21
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@types/uuid': 10.0.0
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      cors: 2.8.5
+      cross-env: 7.0.3
+      dotenv: 16.0.3
+      esbuild: 0.24.2
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-node: 11.1.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      express: 4.21.2
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      postal-mime: 1.1.0
+      prettier: 3.2.5
+      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
+      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.7.3)
+      typescript: 5.7.3
+      uuid: 8.3.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - node-notifier
+      - supports-color
+
   '@rush-temp/pod-love@file:projects/pod-love.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
       '@tsconfig/node16': 1.0.4
@@ -21327,41 +21371,6 @@ snapshots:
       - '@swc/core'
       - '@swc/wasm'
       - aws-crt
-      - babel-jest
-      - babel-plugin-macros
-      - node-notifier
-      - supports-color
-
-  '@rush-temp/pod-message@file:projects/pod-message.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
-    dependencies:
-      '@tsconfig/node16': 1.0.4
-      '@types/cors': 2.8.17
-      '@types/express': 4.17.21
-      '@types/jest': 29.5.12
-      '@types/node': 20.11.19
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
-      cors: 2.8.5
-      cross-env: 7.0.3
-      dotenv: 16.0.3
-      esbuild: 0.24.2
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-node: 11.1.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      express: 4.21.2
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      prettier: 3.2.5
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
-      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.7.3)
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@swc/core'
-      - '@swc/wasm'
       - babel-jest
       - babel-plugin-macros
       - node-notifier
@@ -27951,6 +27960,8 @@ snapshots:
 
   '@types/unist@2.0.10': {}
 
+  '@types/uuid@10.0.0': {}
+
   '@types/uuid@8.3.4': {}
 
   '@types/verror@1.10.10':
@@ -34044,6 +34055,8 @@ snapshots:
       points-on-curve: 0.2.0
 
   possible-typed-array-names@1.0.0: {}
+
+  postal-mime@1.1.0: {}
 
   postcss-load-config@3.1.4(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)):
     dependencies:
