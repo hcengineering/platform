@@ -39,8 +39,9 @@ import core, {
   type Space,
   TxFactory,
   type WithLookup,
-  coreId,
   type WorkspaceIds,
+  type WorkspaceUuid,
+  coreId,
   docKey,
   generateId,
   getFullTextIndexableAttributes,
@@ -48,10 +49,9 @@ import core, {
   isClassIndexable,
   isFullTextAttribute,
   isIndexedAttribute,
-  toIdMap,
-  withContext,
   systemAccount,
-  type WorkspaceUuid
+  toIdMap,
+  withContext
 } from '@hcengineering/core'
 import drivePlugin, { type FileVersion } from '@hcengineering/drive'
 import type {
@@ -229,7 +229,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await this.addMigration(ctx, fullReindex)
     }
 
-    const docStructure = 'full-text-structure-v5'
+    const docStructure = 'full-text-structure-v6'
     if (migrations.find((it) => it.state === docStructure) === undefined) {
       ctx.warn('verify document structure', { version: docStructure, workspace: this.workspace.uuid })
 
@@ -267,7 +267,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                 await this.storage.upload(ctx, DOMAIN_DOC_INDEX_STATE, missingDocs)
               }
               processed += docs.length
-              ctx.info('processed', { processed, allDocs: allDocs.length, domain })
+              ctx.info('check-processed', { processed, allDocs: allDocs.length, domain })
             }
           } catch (err: any) {
             ctx.error('failed to restore index state', { err })
@@ -776,9 +776,17 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     await pushToIndex()
     await pushQueue.waitProcessing()
 
-    await ctx.with('update-index-state', {}, (ctx) =>
-      this.storage.rawUpdate(DOMAIN_DOC_INDEX_STATE, DOMAIN_DOC_INDEX_STATE, docUpdates)
-    )
+    await ctx.with('update-index-state', {}, async (ctx) => {
+      const ids = [...docUpdates.entries()]
+      const groups = groupByArray(ids, (it) => JSON.stringify(it[1]))
+      for (const [, values] of groups.entries()) {
+        const ids = values.map((it) => it[0])
+        while (ids.length > 0) {
+          const part = ids.splice(0, 200)
+          await this.storage.rawUpdate(DOMAIN_DOC_INDEX_STATE, { _id: { $in: part } }, values[0][1])
+        }
+      }
+    })
   }
 
   private createContextData (): SessionDataImpl {
