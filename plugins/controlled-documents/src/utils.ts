@@ -197,19 +197,25 @@ function extractPresentableStateFromDocumentBundle (bundle: DocumentBundle, prjm
   return bundle
 }
 
+export interface ProjectDocumentTreeOptions {
+  keepRemoved?: boolean
+}
+
 export class ProjectDocumentTree {
   parents: Map<Ref<DocumentMeta>, Ref<DocumentMeta>>
   nodesChildren: Map<Ref<DocumentMeta>, DocumentBundle[]>
   nodes: Map<Ref<DocumentMeta>, DocumentBundle>
   links: Map<Ref<Doc>, Ref<DocumentMeta>>
 
-  constructor (bundle?: DocumentBundle) {
+  constructor (bundle?: DocumentBundle, options?: ProjectDocumentTreeOptions) {
     bundle = { ...emptyBundle(), ...bundle }
     const { bundles, links } = compileBundles(bundle)
     this.links = links
     this.nodes = new Map()
     this.nodesChildren = new Map()
     this.parents = new Map()
+
+    const keepRemoved = options?.keepRemoved ?? false
 
     bundles.sort((a, b) => {
       const rankA = a.ProjectMeta[0]?.rank ?? ''
@@ -224,7 +230,7 @@ export class ProjectDocumentTree {
       const presentable = extractPresentableStateFromDocumentBundle(bundle, prjmeta)
       this.nodes.set(prjmeta.meta, presentable)
 
-      const parent = prjmeta.path[0] ?? documents.ids.NoParent
+      const parent = prjmeta.parent ?? documents.ids.NoParent
       this.parents.set(prjmeta.meta, parent)
 
       if (!this.nodesChildren.has(parent)) {
@@ -234,10 +240,12 @@ export class ProjectDocumentTree {
     }
 
     const nodesForRemoval = new Set<Ref<DocumentMeta>>()
-    for (const [id, node] of this.nodes) {
-      const state = node.ControlledDocument[0]?.state
-      const isRemoved = state === DocumentState.Obsolete || state === DocumentState.Deleted
-      if (isRemoved) nodesForRemoval.add(id)
+    if (!keepRemoved) {
+      for (const [id, node] of this.nodes) {
+        const state = node.ControlledDocument[0]?.state
+        const isRemoved = state === DocumentState.Obsolete || state === DocumentState.Deleted
+        if (isRemoved) nodesForRemoval.add(id)
+      }
     }
 
     for (const id of this.nodes.keys()) {
@@ -320,8 +328,12 @@ export async function findProjectDocsHierarchy (
   space: Ref<DocumentSpace>,
   project?: Ref<Project<DocumentSpace>>
 ): Promise<ProjectDocumentTree> {
-  const ProjectMeta = await client.findAll(documents.class.ProjectMeta, { space, project })
-  return new ProjectDocumentTree({ ...emptyBundle(), ProjectMeta })
+  const bundle: DocumentBundle = {
+    ...emptyBundle(),
+    DocumentMeta: await client.findAll(documents.class.DocumentMeta, { space }),
+    ProjectMeta: await client.findAll(documents.class.ProjectMeta, { space, project })
+  }
+  return new ProjectDocumentTree(bundle, { keepRemoved: true })
 }
 
 export interface DocumentBundle {
@@ -507,12 +519,20 @@ async function _buildDocumentTransferContext (
   client: TxOperations,
   request: DocumentTransferRequest
 ): Promise<DocumentTransferContext | undefined> {
+  const isSameSpace = request.sourceSpaceId === request.targetSpaceId
+
   const sourceTree = await findProjectDocsHierarchy(client, request.sourceSpaceId, request.sourceProjectId)
-  const targetTree = await findProjectDocsHierarchy(client, request.targetSpaceId, request.targetProjectId)
+  const targetTree = isSameSpace
+    ? sourceTree
+    : await findProjectDocsHierarchy(client, request.targetSpaceId, request.targetProjectId)
 
   const docIds = new Set<Ref<DocumentMeta>>(request.sourceDocumentIds)
   for (const id of request.sourceDocumentIds) {
     sourceTree.descendantsOf(id).forEach((d) => docIds.add(d))
+  }
+
+  if (request.targetParentId !== undefined && docIds.has(request.targetParentId)) {
+    return
   }
 
   const bundles = await findAllDocumentBundles(client, Array.from(docIds))
@@ -520,7 +540,9 @@ async function _buildDocumentTransferContext (
     request.targetParentId !== undefined ? await findOneDocumentBundle(client, request.targetParentId) : undefined
 
   const sourceSpace = await client.findOne(documents.class.DocumentSpace, { _id: request.sourceSpaceId })
-  const targetSpace = await client.findOne(documents.class.DocumentSpace, { _id: request.targetSpaceId })
+  const targetSpace = isSameSpace
+    ? sourceSpace
+    : await client.findOne(documents.class.DocumentSpace, { _id: request.targetSpaceId })
 
   if (sourceSpace === undefined || targetSpace === undefined) return
 
@@ -565,7 +587,6 @@ async function _transferDocuments (
   mode: 'default' | 'check' = 'default'
 ): Promise<boolean> {
   if (cx.bundles.length < 1) return false
-  if (cx.targetSpace._id === cx.sourceSpace._id) return false
 
   const hierarchy = client.getHierarchy()
 
@@ -621,13 +642,17 @@ async function _transferDocuments (
 
     let key: keyof DocumentBundle
     for (key in bundle) {
-      bundle[key].forEach((doc) => {
-        update(doc, { space: cx.targetSpace._id })
-      })
+      for (const doc of bundle[key]) {
+        const space = cx.targetSpace._id
+        if (doc.space !== space) update(doc, { space })
+      }
     }
-
-    for (const m of bundle.ProjectMeta) update(m, { project })
-    for (const m of bundle.ProjectDocument) update(m, { project })
+    for (const m of bundle.ProjectMeta) {
+      if (m.project !== project) update(m, { project })
+    }
+    for (const m of bundle.ProjectDocument) {
+      if (m.project !== project) update(m, { project })
+    }
   }
 
   if (mode === 'check') return true
