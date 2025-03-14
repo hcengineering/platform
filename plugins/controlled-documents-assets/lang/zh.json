@@ -309,7 +309,10 @@
     "MakeDocumentObsoleteDialog": "标记 {count, plural, one {文档为过时} other {文档为过时}}",
     "MakeDocumentObsoleteConfirm": "您确定要将以下文档标记为过时吗：{titles}？",
 
-    "LatestVersionHint": "最新"
+    "LatestVersionHint": "最新",
+
+    "CannotDeleteFolder": "无法删除文件夹",
+    "CannotDeleteFolderHint": "请在删除文件夹之前将所有子文档移动到其他位置。"
   },
   "controlledDocStates": {
     "Empty": "",
