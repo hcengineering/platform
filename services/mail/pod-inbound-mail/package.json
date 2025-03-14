@@ -58,17 +58,14 @@
     "@hcengineering/attachment": "^0.6.0",
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/chunter": "^0.6.0",
-    "@hcengineering/cloud-datalake": "^0.6.0",
-    "@hcengineering/cloud-transactor-client": "^0.6.0",
     "@hcengineering/contact": "^0.6.0",
     "@hcengineering/core": "^0.6.0",
-    "@hcengineering/html-to-md": "^0.6.0",
     "@hcengineering/mail": "^0.6.0",
     "@types/uuid": "^10.0.0",
     "postal-mime": "^1.1.0",
     "uuid": "^8.3.2",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "dotenv": "~16.0.0",
+    "dotenv": "~16.0.0"
   }
 }
