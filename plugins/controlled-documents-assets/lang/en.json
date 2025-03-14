@@ -261,6 +261,7 @@
     "Name": "Name",
     "DraftRevision": "Draft revision",
     "CreateNewDraft": "Draft new version",
+    "RestoreDraft": "Restore draft",
     "ChangeSeverity": "Change severity",
     "Reference": "Reference",
     "History": "History",
