@@ -168,6 +168,7 @@ async function fillSocialIdentitiesIds (client: MigrationClient): Promise<void> 
 
   try {
     let newSids: SocialIdentity[] = []
+    let newSidIds = new Set<Ref<SocialIdentity>>()
     let deleteSids: Ref<SocialIdentity>[] = []
 
     while (true) {
@@ -181,10 +182,17 @@ async function fillSocialIdentitiesIds (client: MigrationClient): Promise<void> 
 
         if (socialId == null || socialId === socialIdentity._id) continue
 
-        newSids.push({
-          ...socialIdentity,
-          _id: socialId as SocialIdentityRef
-        })
+        const socialIdRef = socialId as SocialIdentityRef
+        // Some old data might contain duplicate accounts for github users
+        // so need to filter just in case
+        if (!newSidIds.has(socialIdRef)) {
+          newSidIds.add(socialIdRef)
+          newSids.push({
+            ...socialIdentity,
+            _id: socialIdRef
+          })
+        }
+
         deleteSids.push(socialIdentity._id)
         count++
 
@@ -192,6 +200,7 @@ async function fillSocialIdentitiesIds (client: MigrationClient): Promise<void> 
           await client.create(DOMAIN_CHANNEL, newSids)
           await client.deleteMany(DOMAIN_CHANNEL, { _id: { $in: deleteSids } })
           newSids = []
+          newSidIds = new Set()
           deleteSids = []
         }
       }
@@ -201,6 +210,7 @@ async function fillSocialIdentitiesIds (client: MigrationClient): Promise<void> 
       await client.create(DOMAIN_CHANNEL, newSids)
       await client.deleteMany(DOMAIN_CHANNEL, { _id: { $in: deleteSids } })
       newSids = []
+      newSidIds = new Set()
       deleteSids = []
     }
     ctx.info('finished filling social identities genenrated ids. Updated count: ', { count })
