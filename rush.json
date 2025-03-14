@@ -2379,7 +2379,6 @@
       "shouldPublish": false
     },
     {
-<<<<<<< HEAD
       "packageName": "@hcengineering/process",
       "projectFolder": "plugins/process",
       "shouldPublish": false
