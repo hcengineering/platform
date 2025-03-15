@@ -1131,10 +1131,10 @@
       &::after {
         position: absolute;
         content: attr(data-now);
-        top: -0.5rem;
+        top: -0.46rem;
         left: -1.25rem;
         font-weight: 500;
-        font-size: 0.75rem;
+        font-size: 0.66rem;
         color: var(--primary-button-color);
         transform: translateX(-50%);
       }
