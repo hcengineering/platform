@@ -16,7 +16,7 @@ package resconv_test
 import (
 	"testing"
 
-	"github.com/huly-stream/internal/pkg/resconv"
+	"github.com/hcengineering/stream/internal/pkg/resconv"
 	"github.com/stretchr/testify/require"
 )
 

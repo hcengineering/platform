@@ -11,13 +11,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package uploader
+// Package storage provdies simple storage interface for the remote storages.
+package storage
 
 import (
 	"context"
 	"fmt"
-
-	"github.com/pkg/errors"
 
 	"os"
 	"path/filepath"
@@ -28,8 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/smithy-go"
-	"github.com/huly-stream/internal/pkg/log"
+	"github.com/hcengineering/stream/internal/pkg/log"
 	"go.uber.org/zap"
 )
 
@@ -44,7 +42,6 @@ type S3Storage struct {
 func NewS3(ctx context.Context, endpoint, bucketName string) Storage {
 	var accessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
 	var accessKeySecret = os.Getenv("AWS_SECRET_ACCESS_KEY")
-	var logger = log.FromContext(ctx).With(zap.String("s3", "storage"))
 
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, "")),
@@ -62,7 +59,7 @@ func NewS3(ctx context.Context, endpoint, bucketName string) Storage {
 	return &S3Storage{
 		client:     s3Client,
 		bucketName: bucketName,
-		logger:     logger,
+		logger:     log.FromContext(ctx).With(zap.String("s3", "storage")),
 	}
 }
 
@@ -71,7 +68,7 @@ func getContentType(objectKey string) string {
 		return "video/mp2t"
 	}
 	if strings.HasSuffix(objectKey, ".m3u8") {
-		return "application/x-mpegurl"
+		return "video/x-mpegurl"
 	}
 	return "application/octet-stream"
 }
@@ -79,9 +76,10 @@ func getContentType(objectKey string) string {
 // DeleteFile deletes file from the s3 storage
 func (u *S3Storage) DeleteFile(ctx context.Context, fileName string) error {
 	var _, objectKey = filepath.Split(fileName)
-	var logger = log.FromContext(ctx).With(zap.String("s3 delete", u.bucketName), zap.String("fileName", fileName))
+	var logger = u.logger.With(zap.String("delete", u.bucketName), zap.String("fileName", fileName))
 
-	logger.Debug("start deleting")
+	logger.Debug("start")
+
 	input := &s3.DeleteObjectInput{
 		Bucket: aws.String(u.bucketName),
 		Key:    aws.String(objectKey),
@@ -91,15 +89,17 @@ func (u *S3Storage) DeleteFile(ctx context.Context, fileName string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete file from S3: %w", err)
 	}
-	logger.Debug("file deleted")
+
+	logger.Debug("deleted")
 	return nil
 }
 
-// UploadFile uploads file to the s3 storage
-func (u *S3Storage) UploadFile(ctx context.Context, fileName string) error {
+// PutFile uploads file to the s3 storage
+func (u *S3Storage) PutFile(ctx context.Context, fileName string) error {
 	var _, objectKey = filepath.Split(fileName)
-	var logger = log.FromContext(ctx).With(zap.String("s3 upload", u.bucketName), zap.String("fileName", fileName))
-	logger.Debug("start upload file")
+	var logger = u.logger.With(zap.String("upload", u.bucketName), zap.String("fileName", fileName))
+
+	logger.Debug("start")
 
 	// #nosec
 	var file, err = os.Open(fileName)
@@ -112,6 +112,7 @@ func (u *S3Storage) UploadFile(ctx context.Context, fileName string) error {
 	defer func() {
 		_ = file.Close()
 	}()
+
 	_, err = u.client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(u.bucketName),
 		Key:         aws.String(objectKey),
@@ -120,23 +121,57 @@ func (u *S3Storage) UploadFile(ctx context.Context, fileName string) error {
 	})
 
 	if err != nil {
-		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "EntityTooLarge" {
-			logger.Error("Error while uploading object. The object is too large." +
-				"To upload objects larger than 5GB, use the S3 console (160GB max)" +
-				"or the multipart upload API (5TB max).")
-		} else {
-			logger.Error("Couldn't upload file", zap.Error(err))
-		}
-		return apiErr
+		logger.Error("couldn't upload file", zap.Error(err))
+		return err
 	}
 
 	err = s3.NewObjectExistsWaiter(u.client).Wait(
 		ctx, &s3.HeadObjectInput{Bucket: aws.String(u.bucketName), Key: aws.String(objectKey)}, time.Minute)
+
 	if err != nil {
-		logger.Debug("Failed attempt to wait for object to exist.")
+		logger.Error("Failed attempt to wait for object to exist")
+		return err
 	}
 
-	logger.Debug("file has uploaded")
-	return err
+	logger.Debug("uploaded")
+	return nil
+}
+
+// GetFile gets file from the storage and stores it to destination
+func (u *S3Storage) GetFile(ctx context.Context, filename, dest string) error {
+	var logger = u.logger.With(zap.String("get", u.bucketName), zap.String("fileName", filename), zap.String("destination", dest))
+
+	var result, err = u.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: &u.bucketName,
+		Key:    &filename,
+	})
+
+	if err != nil {
+		logger.Error("failed to get object", zap.Error(err))
+		return err
+	}
+	defer func() {
+		_ = result.Body.Close()
+	}()
+
+	// Create a local file to save the downloaded content
+	// #nosec
+	file, err := os.Create(dest)
+	if err != nil {
+		logger.Error("failed to create file", zap.Error(err))
+		return err
+	}
+	defer func() {
+		_ = file.Close()
+	}()
+	// Copy the S3 object content to the local file
+	_, err = file.ReadFrom(result.Body)
+	if err != nil {
+		logger.Error("failed to write to file", zap.Error(err))
+		return err
+	}
+
+	logger.Debug("file downloaded successfully")
+
+	return nil
 }

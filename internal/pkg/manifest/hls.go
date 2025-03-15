@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/huly-stream/internal/pkg/resconv"
+	"github.com/hcengineering/stream/internal/pkg/resconv"
 )
 
 // GenerateHLSPlaylist generates master file for master files for resolution levels

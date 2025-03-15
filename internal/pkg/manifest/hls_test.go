@@ -18,7 +18,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/huly-stream/internal/pkg/manifest"
+	"github.com/hcengineering/stream/internal/pkg/manifest"
 	"github.com/stretchr/testify/require"
 )
 
