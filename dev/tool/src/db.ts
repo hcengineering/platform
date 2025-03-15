@@ -198,7 +198,7 @@ export async function moveAccountDbFromMongoToPG (
         }
 
         if (person.lastName == null) {
-          person.lastName = 'n/a'
+          person.lastName = ''
         }
 
         await pgDb.person.insertOne(person)
@@ -254,6 +254,7 @@ export async function moveAccountDbFromMongoToPG (
       const exists = await pgDb.socialId.findOne({ key: socialId.key })
       if (exists == null) {
         delete (socialId as any).key
+        delete (socialId as any).id
 
         await pgDb.socialId.insertOne(socialId)
         socialIdsCount++
@@ -281,6 +282,9 @@ export async function moveAccountDbFromMongoToPG (
         time: accountEvent.time
       })
       if (exists == null) {
+        const account = await pgDb.account.findOne({ uuid: accountEvent.accountUuid })
+        if (account == null) continue // Not a big deal if we don't move the event for non-existing account
+
         await pgDb.accountEvent.insertOne(accountEvent)
         eventsCount++
         if (eventsCount % 100 === 0) {

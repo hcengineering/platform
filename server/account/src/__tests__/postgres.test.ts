@@ -383,7 +383,11 @@ describe('PostgresAccountDB', () => {
 
       expect(mockClient.begin).toHaveBeenCalled()
       expect(mockClient).toHaveBeenCalledWith(
-        ['INSERT INTO _account_applied_migrations (identifier, ddl) VALUES (', ', ', ') ON CONFLICT DO NOTHING'],
+        'global_account' // First call with schema name
+      )
+      expect(mockClient).toHaveBeenCalledWith(
+        ['INSERT INTO ', '._account_applied_migrations (identifier, ddl) VALUES (', ', ', ') ON CONFLICT DO NOTHING'],
+        expect.anything(),
         'test_migration',
         'CREATE TABLE test'
       )
