@@ -1458,7 +1458,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       const isReverse = association[1] === -1
       const _class = isReverse ? assoc.classA : assoc.classB
-      const tagetDomain = translateDomain(this.hierarchy.getDomain(_class))
+      const domain = this.hierarchy.findDomain(_class)
+      if (domain === undefined) continue
+      const tagetDomain = translateDomain(domain)
       const keyA = isReverse ? 'docB' : 'docA'
       const keyB = isReverse ? 'docA' : 'docB'
       const wsId = vars.add(this.workspaceId, '::uuid')

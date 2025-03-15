@@ -1196,26 +1196,24 @@ export class LiveQuery implements WithTx, Client {
 
   private async handleDocRemove (q: Query, tx: TxRemoveDoc<Doc>): Promise<void> {
     const h = this.client.getHierarchy()
-    if (q.result instanceof Promise) {
-      q.result = await q.result
-    }
-    const index = q.result.getDocs().find((p) => p._id === tx.objectId && h.isDerived(p._class, tx.objectClass))
-    if (index !== undefined) {
-      if (
-        q.options?.limit !== undefined &&
-        q.options.limit === q.result.length &&
-        h.isDerived(q._class, tx.objectClass)
-      ) {
-        await this.refresh(q)
-        return
+    if (q._class === tx.objectClass || h.isDerived(q._class, tx.objectClass) || h.isDerived(tx.objectClass, q._class)) {
+      if (q.result instanceof Promise) {
+        q.result = await q.result
       }
-      q.result.delete(index._id)
-      this.refs.updateDocuments(q, [index], true)
+      const index = q.result.getDocs().find((p) => p._id === tx.objectId)
+      if (index !== undefined) {
+        if (q.options?.limit !== undefined && q.options.limit === q.result.length && q.query._id !== tx.objectId) {
+          await this.refresh(q)
+          return
+        }
+        q.result.delete(index._id)
+        this.refs.updateDocuments(q, [index], true)
 
-      if (q.options?.total === true) {
-        q.total--
+        if (q.options?.total === true) {
+          q.total--
+        }
+        await this.callback(q, true)
       }
-      await this.callback(q, true)
     }
     await this.handleDocRemoveLookup(q, tx)
     await this.handleDocRemoveRelation(q, tx)

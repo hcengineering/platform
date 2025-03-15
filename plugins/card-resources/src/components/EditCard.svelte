@@ -22,7 +22,15 @@
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, EditBox, FocusHandler, IconMoreH, createFocusManager } from '@hcengineering/ui'
+  import {
+    Button,
+    EditBox,
+    FocusHandler,
+    IconMoreH,
+    createFocusManager,
+    getCurrentLocation,
+    navigate
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ParentsNavigator, RelationsEditor, getDocMixins, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -70,8 +78,14 @@
 
   $: _id !== undefined &&
     query.query(card.class.Card, { _id }, async (result) => {
-      ;[doc] = result
-      title = doc?.title ?? ''
+      if (result.length > 0) {
+        ;[doc] = result
+        title = doc?.title ?? ''
+      } else {
+        const loc = getCurrentLocation()
+        loc.path.length = 3
+        navigate(loc)
+      }
     })
 
   $: canSave = title.trim().length > 0

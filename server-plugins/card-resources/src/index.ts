@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import card, { Card, DOMAIN_CARD, MasterTag, Tag } from '@hcengineering/card'
+import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   AnyAttribute,
-  Class,
   Data,
   Doc,
   Ref,
@@ -27,8 +26,8 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
-import view from '@hcengineering/view'
 import setting from '@hcengineering/setting'
+import view from '@hcengineering/view'
 
 async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerControl): Promise<Tx[]> {
   const attr = TxProcessor.createDoc2Doc(ctx[0])
@@ -91,51 +90,83 @@ async function OnAttributeRemove (ctx: TxRemoveDoc<AnyAttribute>[], control: Tri
   return []
 }
 
-async function OnMasterTagRemove (ctx: TxRemoveDoc<MasterTag | Tag>[], control: TriggerControl): Promise<Tx[]> {
+async function OnMasterTagRemove (ctx: TxUpdateDoc<MasterTag>[], control: TriggerControl): Promise<Tx[]> {
+  const updateTx = ctx[0]
+  if (updateTx.operations.removed !== true) return []
+  const res: Tx[] = []
+  const desc = control.hierarchy.getDescendants(updateTx.objectId)
+  // should remove objects if masterTag
+  const cards = await control.findAll<Card>(control.ctx, updateTx.objectId, {})
+  for (const doc of cards) {
+    res.push(control.txFactory.createTxRemoveDoc(card.class.Card, doc.space, doc._id))
+  }
+  for (const des of desc) {
+    res.push(...(await removeTagRelations(control, des)))
+  }
+  for (const des of desc) {
+    if (des === updateTx.objectId) continue
+    const _class = control.hierarchy.findClass(des)
+    if (_class === undefined) continue
+    if (_class._class === card.class.MasterTag) {
+      res.push(
+        control.txFactory.createTxUpdateDoc<MasterTag>(card.class.MasterTag, core.space.Model, des, {
+          removed: true
+        })
+      )
+    } else {
+      res.push(control.txFactory.createTxRemoveDoc(card.class.Tag, core.space.Model, des))
+    }
+  }
+
+  return res
+}
+
+async function OnTagRemove (ctx: TxRemoveDoc<Tag>[], control: TriggerControl): Promise<Tx[]> {
   const removeTx = ctx[0]
   const removedTag = control.removedMap.get(removeTx.objectId)
   if (removedTag === undefined) return []
   const res: Tx[] = []
-  // should remove objects if masterTag
-  if (removedTag._class === card.class.MasterTag) {
-    const cards = await control.lowLevel.rawFindAll(DOMAIN_CARD, { _class: removedTag._id as Ref<Class<Doc>> })
-    for (const card of cards) {
-      res.push(control.txFactory.createTxRemoveDoc(card._class, card.space, card._id))
-    }
+  const desc = control.hierarchy.getDescendants(removeTx.objectId)
+
+  for (const des of desc) {
+    if (des === removeTx.objectId) continue
+    res.push(control.txFactory.createTxRemoveDoc(card.class.Tag, core.space.Model, des))
   }
+
+  res.push(...(await removeTagRelations(control, removeTx.objectId)))
+
+  return res
+}
+
+async function removeTagRelations (control: TriggerControl, tag: Ref<Tag | MasterTag>): Promise<Tx[]> {
+  const res: Tx[] = []
   const viewlets = await control.findAll(control.ctx, view.class.Viewlet, {
-    attachTo: removeTx.objectId
+    attachTo: tag
   })
   for (const viewlet of viewlets) {
     res.push(control.txFactory.createTxRemoveDoc(viewlet._class, viewlet.space, viewlet._id))
   }
   const attributes = control.modelDb.findAllSync(core.class.Attribute, {
-    attributeOf: removeTx.objectId
+    attributeOf: tag
   })
   for (const attribute of attributes) {
     res.push(control.txFactory.createTxRemoveDoc(attribute._class, attribute.space, attribute._id))
   }
-  const desc = control.hierarchy.getDescendants(removeTx.objectId)
-  for (const des of desc) {
-    if (des === removeTx.objectId) continue
-    res.push(control.txFactory.createTxRemoveDoc(card.class.MasterTag, core.space.Model, des))
-  }
   const removedRelation = new Set()
   const relationsA = control.modelDb.findAllSync(core.class.Association, {
-    classA: removeTx.objectId
+    classA: tag
   })
   for (const rel of relationsA) {
     removedRelation.add(rel._id)
     res.push(control.txFactory.createTxRemoveDoc(core.class.Association, core.space.Model, rel._id))
   }
   const relationsB = control.modelDb.findAllSync(core.class.Association, {
-    classB: removeTx.objectId
+    classB: tag
   })
   for (const rel of relationsB) {
     if (removedRelation.has(rel._id)) continue
     res.push(control.txFactory.createTxRemoveDoc(core.class.Association, core.space.Model, rel._id))
   }
-
   return res
 }
 
@@ -328,6 +359,7 @@ export default async () => ({
     OnAttributeRemove,
     OnMasterTagCreate,
     OnMasterTagRemove,
+    OnTagRemove,
     OnCardRemove,
     OnCardCreate,
     OnCardUpdate
