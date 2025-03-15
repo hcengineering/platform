@@ -28,6 +28,7 @@
   export let doc: Card
   export let readonly: boolean = false
   export let content: HTMLElement
+  export let minHeight: '15vh' | '25vh' = '25vh'
 
   const client = getClient()
 
@@ -89,7 +90,7 @@
       {readonly}
       boundary={content}
       overflow={'none'}
-      editorAttributes={{ style: 'padding: 0 2em 2em; margin: 0 -2em; min-height: 30vh' }}
+      editorAttributes={{ style: `padding: 0 2em 2em; margin: 0 -2em; min-height: ${minHeight}` }}
       attachFile={async (file) => {
         return await createEmbedding(file)
       }}

@@ -16,6 +16,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
+  import { Attachments } from '@hcengineering/attachment-resources'
   import { Card, CardEvents } from '@hcengineering/card'
   import { Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
@@ -164,6 +165,8 @@
 
     <Childs object={doc} {readonly} />
     <RelationsEditor object={doc} {readonly} />
+
+    <Attachments objectId={doc._id} _class={doc._class} space={doc.space} attachments={doc.attachments ?? 0} />
 
     <svelte:fragment slot="utils">
       {#if !readonly}

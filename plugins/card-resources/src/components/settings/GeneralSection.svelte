@@ -20,6 +20,7 @@
     ButtonIcon,
     getCurrentLocation,
     IconDelete,
+    IconWithEmoji,
     ModernEditbox,
     navigate,
     showPopup,
@@ -29,6 +30,7 @@
   import setting from '@hcengineering/setting'
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
+  import view from '@hcengineering/view'
 
   export let masterTag: MasterTag
 
@@ -61,12 +63,18 @@
   }
 
   function setIcon (): void {
-    showPopup(IconPicker, { icon: masterTag.icon, showEmoji: false, showColor: false }, 'top', async (res) => {
-      if (res !== undefined) {
-        await attributeUpdated('icon', res.icon)
-        masterTag.icon = res.icon
+    showPopup(
+      IconPicker,
+      { icon: masterTag.icon, color: masterTag.color, showEmoji: true, showColor: false },
+      'top',
+      async (res) => {
+        if (res !== undefined) {
+          await client.update(masterTag, { icon: res.icon, color: res.color })
+          masterTag.icon = res.icon
+          masterTag.color = res.color
+        }
       }
-    })
+    )
   }
 
   const h = client.getHierarchy()
@@ -77,7 +85,8 @@
   <div class="hulyComponent-content__header items-center">
     <div class="flex items-center">
       <ButtonIcon
-        icon={masterTag.icon ?? card.icon.MasterTag}
+        icon={masterTag.icon === view.ids.IconWithEmoji ? IconWithEmoji : masterTag.icon ?? card.icon.MasterTag}
+        iconProps={masterTag.icon === view.ids.IconWithEmoji ? { icon: masterTag.color, size: 'large' } : {}}
         size={'large'}
         iconSize={'large'}
         kind={'tertiary'}

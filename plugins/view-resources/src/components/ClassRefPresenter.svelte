@@ -24,7 +24,7 @@
 </script>
 
 {#if _class}
-  <div>
+  <div class="whitespace-nowrap">
     <Label label={_class.label} />
   </div>
 {/if}
