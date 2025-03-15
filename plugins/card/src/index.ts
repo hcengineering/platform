@@ -17,7 +17,9 @@ import type { AnyComponent } from '@hcengineering/ui'
 
 export * from './analytics'
 
-export interface MasterTag extends Class<Card> {}
+export interface MasterTag extends Class<Card> {
+  color?: number
+}
 
 export interface Tag extends MasterTag, Mixin<Card> {}
 
@@ -27,6 +29,7 @@ export interface Card extends Doc {
   content: MarkupBlobRef
   blobs: Blobs
   children?: number
+  attachments?: number
   parentInfo: ParentInfo[]
   parent?: Ref<Card> | null
   rank: Rank

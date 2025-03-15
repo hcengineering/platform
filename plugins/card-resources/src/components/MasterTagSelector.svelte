@@ -13,57 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card, MasterTag } from '@hcengineering/card'
-  import { fillDefaults } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
-  import card from '../plugin'
+  import { Card } from '@hcengineering/card'
+  import { getClient } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
 
   export let value: Card
 
-  let selected = value._class
+  $: selected = value._class
 
-  const clQuery = createQuery()
   const client = getClient()
   const hierarchy = client.getHierarchy()
-
-  let masterTags: MasterTag[] = []
-
-  $: items = masterTags.map((x) => ({
-    id: x._id,
-    label: x.label
-  }))
-
-  clQuery.query(card.class.MasterTag, { _class: card.class.MasterTag }, (res) => {
-    masterTags = res
-  })
-
-  async function select (event: CustomEvent): Promise<void> {
-    const _class = event.detail
-    const update = { _class } as any
-    selected = event.detail
-    await client.update(value, update)
-    const updated = fillDefaults(hierarchy, hierarchy.clone(value), _class)
-    await client.diffUpdate(value, updated)
-  }
 
   $: label = hierarchy.getClass(selected).label
 </script>
 
 <div class="flex flex-gap-2 items-center item caption-color">
-  {#if value._class === card.class.Card}
-    <DropdownLabelsIntl
-      {items}
-      {selected}
-      disabled={value._class !== card.class.Card}
-      label={card.string.MasterTag}
-      on:selected={select}
-    />
-  {:else}
-    <div class="tag">
-      <Label {label} />
-    </div>
-  {/if}
+  <div class="tag">
+    <Label {label} />
+  </div>
 </div>
 
 <style lang="scss">

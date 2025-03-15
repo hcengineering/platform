@@ -26,12 +26,10 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: hasDescription = !hierarchy.isDerived(doc._class, card.types.File)
+  $: isFile = hierarchy.isDerived(doc._class, card.types.File)
 </script>
 
-{#if hasDescription}
-  <Description {doc} {readonly} bind:content />
-{:else if Object.keys(doc.blobs ?? {}).length === 0 && !readonly}
+{#if isFile && Object.keys(doc.blobs ?? {}).length === 0 && !readonly}
   <FilePlaceholder {doc} />
 {/if}
 
@@ -44,3 +42,5 @@
     fit={blob.type !== 'application/pdf'}
   />
 {/each}
+
+<Description {doc} {readonly} bind:content minHeight={isFile ? '15vh' : '25vh'} />

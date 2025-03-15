@@ -59,10 +59,14 @@ import card from './plugin'
 export { cardId } from '@hcengineering/card'
 
 @Model(card.class.MasterTag, core.class.Class)
-export class TMasterTag extends TClass implements MasterTag {}
+export class TMasterTag extends TClass implements MasterTag {
+  color?: number
+}
 
 @Model(card.class.Tag, core.class.Mixin)
-export class TTag extends TMixin implements Tag {}
+export class TTag extends TMixin implements Tag {
+  color?: number
+}
 
 @Model(card.class.Card, core.class.Doc, DOMAIN_CARD)
 @UX(card.string.Card, card.icon.Card)
@@ -153,8 +157,14 @@ export function createModel (builder: Builder): void {
     },
     config: [
       { key: '', props: { showParent: true } },
-      '_class',
-      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      { key: '_class', displayProps: { fixed: 'left' } },
+      {
+        key: '',
+        presenter: view.component.RolePresenter,
+        label: card.string.Tags,
+        props: { fullSize: true },
+        displayProps: { fixed: 'left' }
+      },
       { key: '', displayProps: { grow: true } },
       {
         key: 'modifiedOn',
