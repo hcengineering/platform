@@ -64,7 +64,7 @@ import type {
 import { RateLimiter, SessionDataImpl } from '@hcengineering/server-core'
 import { jsonToText, markupToJSON, markupToText } from '@hcengineering/text'
 import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
-import { type FullTextPipeline } from './types'
+import { docStructure, fullReindex, indexes, type FullTextPipeline } from './types'
 import { createIndexedDoc, createStateDoc, getContent } from './utils'
 
 export * from './types'
@@ -205,7 +205,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       })
     )
 
-    const indexes = 'verify-indexes-v2'
     if (migrations.find((it) => it.state === indexes) === undefined) {
       ctx.warn('Rebuild DB index', { workspace: this.workspace.uuid })
       // Clean all existing docs, they will be re-created on verify stage
@@ -215,7 +214,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       ctx.warn('Rebuild DB index complete', { workspace: this.workspace.uuid })
     }
 
-    const fullReindex = 'full-text-indexer-v5'
     if (migrations.find((it) => it.state === fullReindex) === undefined) {
       ctx.warn('rebuilding index to v5', { workspace: this.workspace.uuid })
       // Clean all existing docs, they will be re-created on verify stage
@@ -229,7 +227,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await this.addMigration(ctx, fullReindex)
     }
 
-    const docStructure = 'full-text-structure-v6'
     if (migrations.find((it) => it.state === docStructure) === undefined) {
       ctx.warn('verify document structure', { version: docStructure, workspace: this.workspace.uuid })
 
@@ -293,7 +290,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       const migrations = await this.storage.findAll<MigrationState>(ctx, core.class.MigrationState, {
         plugin: coreId,
         state: {
-          $in: ['verify-indexes-v2', 'full-text-indexer-v5', 'full-text-structure-v4']
+          $in: [indexes, fullReindex, docStructure]
         }
       })
 

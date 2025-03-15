@@ -138,7 +138,8 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
         ctx.error('Unsupported transaction', tx)
         continue
       }
-      const domain = this.context.hierarchy.getDomain(txCUD.objectClass)
+      const domain = this.context.hierarchy.findDomain(txCUD.objectClass)
+      if (domain === undefined) continue
       domains.add(domain)
       const adapterName = this.adapterManager.getAdapterName(domain)
 

@@ -61,6 +61,7 @@ export { cardId } from '@hcengineering/card'
 @Model(card.class.MasterTag, core.class.Class)
 export class TMasterTag extends TClass implements MasterTag {
   color?: number
+  removed?: boolean
 }
 
 @Model(card.class.Tag, core.class.Mixin)
@@ -124,7 +125,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(card.types.File, card.class.MasterTag, setting.mixin.Editable, {
-    value: true
+    value: false
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

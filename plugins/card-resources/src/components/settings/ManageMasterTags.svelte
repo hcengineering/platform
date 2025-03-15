@@ -41,15 +41,9 @@
 
   let tags: MasterTag[] = []
   const tagsQuery = createQuery()
-  $: tagsQuery.query(
-    card.class.MasterTag,
-    {
-      _class: card.class.MasterTag
-    },
-    (result) => {
-      tags = result.sort((a, b) => a.label.localeCompare(b.label))
-    }
-  )
+  $: tagsQuery.query(card.class.MasterTag, {}, (result) => {
+    tags = result.filter((p) => p.removed !== true).sort((a, b) => a.label.localeCompare(b.label))
+  })
 
   function selectProjectType (id: string): void {
     clearSettingsStore()

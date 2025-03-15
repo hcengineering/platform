@@ -19,6 +19,7 @@ export * from './analytics'
 
 export interface MasterTag extends Class<Card> {
   color?: number
+  removed?: boolean
 }
 
 export interface Tag extends MasterTag, Mixin<Card> {}
