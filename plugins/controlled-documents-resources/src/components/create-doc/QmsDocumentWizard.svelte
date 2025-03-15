@@ -137,10 +137,15 @@
 
   $: space = $locationStep.space
 
+  let submitted = false
+
   async function handleSubmit (): Promise<void> {
     if ($locationStep.space === undefined || $locationStep.project === undefined) {
       return
     }
+
+    if (submitted) return
+    submitted = true
 
     const newDocId = generateId<ControlledDocument>()
     const _space = $locationStep.space
@@ -198,6 +203,7 @@
   loading={isLoading}
   label={documents.string.NewDocument}
   submitLabel={documents.string.CreateDraft}
+  canSubmit={!submitted}
   {canProceed}
   {steps}
   selectedStep={$currentStep}
