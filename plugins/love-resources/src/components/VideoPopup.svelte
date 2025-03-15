@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
+  import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
   import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { RoomType, Room as TypeRoom } from '@hcengineering/love'
@@ -66,7 +66,8 @@
     isAgent: boolean
   }
 
-  $: aiPersonId = $personRefByPersonIdStore.get(aiBotEmailSocialId)
+  $: aiPersonId =
+    $aiBotSocialIdentityStore != null ? $personRefByPersonIdStore.get($aiBotSocialIdentityStore._id) : undefined
 
   const dispatch = createEventDispatcher()
 

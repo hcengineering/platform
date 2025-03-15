@@ -1,5 +1,5 @@
 <script lang="ts">
-  import contact, { includesAny } from '@hcengineering/contact'
+  import contact from '@hcengineering/contact'
   import { Ref, getCurrentAccount, toIdMap } from '@hcengineering/core'
   import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
@@ -48,8 +48,8 @@
   let myFilteredViews: FilteredView[] = []
   $: if (alias !== undefined) {
     filteredViewsQuery.query<FilteredView>(view.class.FilteredView, { attachedTo: alias }, (result) => {
-      myFilteredViews = result.filter((p) => includesAny(p.users, myAcc.socialIds))
-      availableFilteredViews = result.filter((p) => p.sharable && !includesAny(p.users, myAcc.socialIds))
+      myFilteredViews = result.filter((p) => p.users.includes(myAcc.uuid))
+      availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(myAcc.uuid))
 
       const location = getLocation()
       if (location.query?.filterViewId) {
@@ -152,7 +152,7 @@
         icon: view.icon.Archive,
         label: view.string.Hide,
         action: async (ctx: any, evt: Event) => {
-          await client.update(object, { $pull: { users: { $in: myAcc.socialIds } } })
+          await client.update(object, { $pull: { users: myAcc.uuid } })
         }
       }
     ]
@@ -239,7 +239,7 @@
       const pushMeToFV = async (id: Ref<FilteredView>): Promise<void> => {
         if (id === undefined) return
         const filteredView = filteredViewsIdMap.get(id)
-        if (filteredView) await client.update(filteredView, { $push: { users: myAcc.primarySocialId } })
+        if (filteredView) await client.update(filteredView, { $push: { users: myAcc.uuid } })
       }
       const value = availableFilteredViews.map((p) => ({
         id: p._id,

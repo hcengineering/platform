@@ -61,7 +61,7 @@
       hidden: false,
       default: true
     })
-    const _calendar = extCalendar ? extCalendar._id : (`${currentAccount.primarySocialId}_calendar` as Ref<Calendar>)
+    const _calendar = extCalendar ? extCalendar._id : (`${currentAccount.uuid}_calendar` as Ref<Calendar>)
     const dueDate = date + defaultDuration
     await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, todo._id, todo._class, 'workslots', {
       eventId: generateEventId(),

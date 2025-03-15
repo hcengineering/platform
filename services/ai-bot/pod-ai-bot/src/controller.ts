@@ -54,7 +54,7 @@ import { DbStorage } from './storage'
 import { tryAssignToWorkspace } from './utils/account'
 import { summarizeMessages, translateHtml } from './utils/openai'
 import { WorkspaceClient } from './workspace/workspaceClient'
-import contact, { Contact, getName } from '@hcengineering/contact'
+import contact, { Contact, getName, SocialIdentityRef } from '@hcengineering/contact'
 
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
 
@@ -255,13 +255,15 @@ export class AIControl {
     for (const m of messages) {
       if (m.createdBy !== undefined) personIds.add(m.createdBy)
     }
-    const identities = await client.findAll(contact.class.SocialIdentity, { key: { $in: Array.from(personIds) } })
+    const identities = await client.findAll(contact.class.SocialIdentity, {
+      _id: { $in: Array.from(personIds) as SocialIdentityRef[] }
+    })
     const contacts = await client.findAll(contact.class.Contact, { _id: { $in: identities.map((i) => i.attachedTo) } })
     const contactById = toIdMap(contacts)
     const contactByPersonId = new Map<PersonId, Contact>()
     for (const identity of identities) {
       const contact = contactById.get(identity.attachedTo)
-      if (contact !== undefined) contactByPersonId.set(identity.key, contact)
+      if (contact !== undefined) contactByPersonId.set(identity._id, contact)
     }
 
     const messagesToSummarize: PersonMessage[] = []

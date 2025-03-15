@@ -61,7 +61,7 @@ import {
   TypeBoolean,
   TypeCollaborativeDoc,
   TypeDate,
-  TypePersonId,
+  TypeNumber,
   TypeRecord,
   TypeRef,
   TypeString,
@@ -167,12 +167,13 @@ export class TChannel extends TAttachedDoc implements Channel {
 @Model(contact.class.SocialIdentity, core.class.AttachedDoc, DOMAIN_CHANNEL)
 @UX(contact.string.SocialId)
 export class TSocialIdentity extends TAttachedDoc implements SocialIdentity {
+  declare _id: Ref<this> & PersonId
   declare attachedTo: Ref<Person>
   declare attachedToClass: Ref<Class<Person>>
 
-  @Prop(TypePersonId(), getEmbeddedLabel('Key'))
+  @Prop(TypeString(), getEmbeddedLabel('Key'))
   @Hidden()
-    key!: PersonId
+    key!: string
 
   @Prop(TypeString(), contact.string.Type)
     type!: SocialIdType
@@ -181,9 +182,9 @@ export class TSocialIdentity extends TAttachedDoc implements SocialIdentity {
   @Index(IndexKind.FullText)
     value!: string
 
-  @Prop(TypeBoolean(), contact.string.Confirmed)
+  @Prop(TypeNumber(), contact.string.Confirmed)
   @ReadOnly()
-    confirmed!: boolean
+    verifiedOn?: number
 }
 
 @Model(contact.class.Person, contact.class.Contact)

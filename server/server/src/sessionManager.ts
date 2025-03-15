@@ -35,7 +35,6 @@ import core, {
   type WorkspaceInfoWithStatus,
   Account,
   pickPrimarySocialId,
-  buildSocialIdString,
   type PersonId,
   type WorkspaceDataId,
   Data,
@@ -346,8 +345,8 @@ export class TSessionManager implements SessionManager {
       return {
         uuid: loginInfo.account,
         role: loginInfo.role,
-        primarySocialId: buildSocialIdString(pickPrimarySocialId(socialIds)),
-        socialIds: socialIds.map((si) => si.key)
+        primarySocialId: pickPrimarySocialId(socialIds)._id,
+        socialIds: socialIds.map((si) => si._id)
       }
     } catch (err: any) {
       if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {

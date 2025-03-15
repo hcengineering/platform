@@ -37,8 +37,7 @@ import core, {
   TxUpdateDoc,
   Type,
   type MeasureContext,
-  AccountUuid,
-  buildSocialIdString
+  AccountUuid
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
@@ -82,7 +81,7 @@ export async function getPersonNotificationTxes (
 ): Promise<Tx[]> {
   const receiver = reference.attachedTo as Ref<Person>
   const receiverSocialIds = await control.findAll(ctx, contact.class.SocialIdentity, { attachedTo: receiver })
-  const receiverSocialStrings = receiverSocialIds.map(buildSocialIdString)
+  const receiverSocialStrings = receiverSocialIds.map((si) => si._id) as PersonId[]
 
   if (receiverSocialStrings.includes(senderId)) {
     return []
@@ -178,7 +177,7 @@ export async function getPersonNotificationTxes (
   const senderInfo = {
     _id: senderId,
     person: senderPerson,
-    socialStrings: senderSocialIds.map((si) => si.key)
+    socialStrings: senderSocialIds.map((si) => si._id)
   }
 
   const notifyResult = await shouldNotifyCommon(

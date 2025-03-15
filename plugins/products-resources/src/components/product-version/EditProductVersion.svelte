@@ -18,7 +18,6 @@
 <script lang="ts">
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import core, { Class, Doc, Ref, WithLookup, getCurrentAccount } from '@hcengineering/core'
-  import { includesAny } from '@hcengineering/contact'
   import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -84,7 +83,7 @@
   $: canEdit =
     !readonly &&
     object?.$lookup?.space !== undefined &&
-    (includesAny(object?.$lookup?.space.owners ?? [], getCurrentAccount().socialIds) ||
+    ((object?.$lookup?.space.owners ?? []).includes(getCurrentAccount().uuid) ||
       checkMyPermission(core.permission.UpdateSpace, object.space, $permissionsStore) ||
       checkMyPermission(core.permission.UpdateObject, core.space.Space, $permissionsStore))
 

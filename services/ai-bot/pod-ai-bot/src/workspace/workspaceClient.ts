@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 import {
-  aiBotEmailSocialId,
   AIEventRequest,
   ConnectMeetingRequest,
   DisconnectMeetingRequest,
@@ -48,7 +47,8 @@ import core, {
   TxOperations,
   type WorkspaceUuid,
   type WorkspaceIds,
-  AccountUuid
+  AccountUuid,
+  pickPrimarySocialId
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
@@ -76,6 +76,7 @@ export class WorkspaceClient {
 
   rate = new RateLimiter(1)
 
+  primarySocialId: SocialId
   aiPerson: Person | undefined
   personUuidBySocialId = new Map<PersonId, PersonUuid>()
 
@@ -102,21 +103,22 @@ export class WorkspaceClient {
     void this.opClient.then((opClient) => {
       this.opClient = opClient
     })
+    this.primarySocialId = pickPrimarySocialId(this.socialIds)
   }
 
   private async ensureEmployee (client: Client): Promise<void> {
     const me: Account = {
       uuid: this.personUuid,
       role: AccountRole.User,
-      primarySocialId: aiBotEmailSocialId,
-      socialIds: this.socialIds.map((it) => it.key)
+      primarySocialId: this.primarySocialId._id,
+      socialIds: this.socialIds.map((it) => it._id)
     }
     await ensureEmployee(this.ctx, me, client, this.socialIds, async () => await getGlobalPerson(this.token))
   }
 
   private async initClient (): Promise<TxOperations> {
     this.client = await connectPlatform(this.token, this.transactorUrl)
-    const opClient = new TxOperations(this.client, aiBotEmailSocialId)
+    const opClient = new TxOperations(this.client, this.primarySocialId._id)
 
     await this.ensureEmployee(this.client)
     await this.checkEmployeeInfo(opClient)
@@ -305,7 +307,7 @@ export class WorkspaceClient {
     const { user, objectId, objectClass, messageClass } = event
     const client = await this.opClient
     const accountClient = getAccountClient(this.token)
-    const personUuid = this.personUuidBySocialId.get(user) ?? (await accountClient.findPerson(user))
+    const personUuid = this.personUuidBySocialId.get(user) ?? (await accountClient.findPersonBySocialId(user))
 
     if (personUuid === undefined) {
       return

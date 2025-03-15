@@ -25,7 +25,6 @@
   import EditableAvatar from './EditableAvatar.svelte'
   import Avatar from './Avatar.svelte'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
-  import { socialIdsByPersonRefStore } from '../utils'
 
   export let object: Person
   export let readonly: boolean = false
@@ -37,7 +36,6 @@
   const account = getCurrentAccount()
   const me = getCurrentEmployee()
   $: owner = me === object._id
-  $: mySocialStrings = ($socialIdsByPersonRefStore.get(me) ?? []).map((si) => si.key)
 
   function isEditable (owner: boolean, object: Person): boolean {
     if (owner) return true
@@ -74,9 +72,13 @@
 
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { createdBy: { $in: mySocialStrings }, disabled: false }, (res) => {
-    integrations = new Set(res.map((p) => p.type))
-  })
+  $: settingsQuery.query(
+    setting.class.Integration,
+    { createdBy: { $in: account.socialIds }, disabled: false },
+    (res) => {
+      integrations = new Set(res.map((p) => p.type))
+    }
+  )
 
   const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)

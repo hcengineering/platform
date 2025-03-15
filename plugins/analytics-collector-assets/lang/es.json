@@ -14,7 +14,7 @@
     "WorkspaceId": "Workspace id",
     "WorkspaceName": "Workspace name",
     "WorkspaceUrl": "Workspace url",
-    "SocialId": "Social Id",
+    "Account": "Cuenta",
     "UserName": "User name",
     "DisableAIReplies": "Disable AI replies",
     "ShowAIReplies": "Show AI replies"

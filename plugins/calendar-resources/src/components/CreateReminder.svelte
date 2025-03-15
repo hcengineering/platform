@@ -44,7 +44,7 @@
     let date: number | undefined
     if (value != null) date = value
     if (date === undefined) return
-    const _calendar = `${getCurrentAccount().primarySocialId}_calendar` as Ref<Calendar>
+    const _calendar = `${getCurrentAccount().uuid}_calendar` as Ref<Calendar>
     await client.addCollection(calendar.class.Event, calendar.space.Calendar, attachedTo, attachedToClass, 'events', {
       calendar: _calendar,
       eventId: generateEventId(),

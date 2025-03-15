@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { AccountRole, Class, Doc, DocumentQuery, Obj, PersonId, Ref, Space, Tx } from '@hcengineering/core'
+import type { AccountRole, AccountUuid, Class, Doc, DocumentQuery, Obj, Ref, Space, Tx } from '@hcengineering/core'
 import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -115,7 +115,7 @@ export interface TxSidebarEvent<T extends Record<string, any> = Record<string, a
 
 /** @public */
 export interface WorkbenchTab extends Preference {
-  attachedTo: PersonId
+  attachedTo: AccountUuid
   location: string
   isPinned: boolean
   name?: string

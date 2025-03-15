@@ -84,13 +84,15 @@ export { coreId, DOMAIN_SPACE } from '@hcengineering/core'
 export * from './core'
 export {
   coreOperation,
-  getSocialIdByOldAccount,
+  getSocialKeyByOldAccount,
   getAccountsFromTxes,
   getSocialKeyByOldEmail,
-  getAccountUuidBySocialId,
+  getAccountUuidBySocialKey,
   getUniqueAccounts,
   getAccountUuidByOldAccount,
-  getUniqueAccountsFromOldAccounts
+  getUniqueAccountsFromOldAccounts,
+  getSocialIdBySocialKey,
+  getSocialIdFromOldAccount
 } from './migration'
 export * from './security'
 export * from './status'

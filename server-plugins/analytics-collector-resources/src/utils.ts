@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 import chunter, { Channel } from '@hcengineering/chunter'
-import core, { MeasureContext, PersonId, Ref, TxOperations, type WorkspaceUuid } from '@hcengineering/core'
-import { getAllUserAccounts, getAllSocialStringsByPersonId, Person } from '@hcengineering/contact'
+import core, { AccountUuid, MeasureContext, Ref, TxOperations, type WorkspaceUuid } from '@hcengineering/core'
+import { getAllUserAccounts, Person } from '@hcengineering/contact'
 import analyticsCollector, { getOnboardingChannelName, OnboardingChannel } from '@hcengineering/analytics-collector'
 import { translate } from '@hcengineering/platform'
 
@@ -27,27 +27,26 @@ interface WorkspaceInfo {
 export async function getOrCreateOnboardingChannel (
   ctx: MeasureContext,
   client: TxOperations,
-  socialString: PersonId,
+  account: AccountUuid,
   workspace: WorkspaceInfo,
   person?: Person
 ): Promise<[Ref<OnboardingChannel> | undefined, boolean]> {
-  // TODO: FIXME
-  const personIds = await getAllSocialStringsByPersonId(client, socialString)
   const channel = await client.findOne(analyticsCollector.class.OnboardingChannel, {
     workspaceId: workspace.workspaceId,
-    personId: { $in: personIds }
+    account
   })
 
   if (channel !== undefined) {
     return [channel._id, false]
   }
 
-  ctx.info('Creating user onboarding channel', { personId: socialString, workspace })
+  const user = person?.name ?? account
+  ctx.info('Creating user onboarding channel', { account, workspace, user })
 
   const _id = await client.createDoc(analyticsCollector.class.OnboardingChannel, core.space.Space, {
-    name: getOnboardingChannelName(workspace.workspaceUrl, socialString),
+    name: getOnboardingChannelName(workspace.workspaceUrl, user),
     topic: await translate(analyticsCollector.string.OnboardingChannelDescription, {
-      user: person?.name ?? socialString,
+      user,
       workspace: workspace.workspaceName
     }),
     description: '',
@@ -55,11 +54,11 @@ export async function getOrCreateOnboardingChannel (
     members: [],
     autoJoin: false,
     archived: false,
-    socialString,
+    account,
     workspaceId: workspace.workspaceId,
     workspaceUrl: workspace.workspaceUrl,
     workspaceName: workspace.workspaceName,
-    userName: person?.name ?? socialString,
+    userName: user,
     disableAIReplies: false,
     showAIReplies: true
   })

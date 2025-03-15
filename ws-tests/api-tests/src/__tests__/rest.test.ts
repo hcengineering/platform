@@ -77,8 +77,8 @@ describe('rest-api-server', () => {
       {
         uuid: apiWorkspace1.info.account,
         role: apiWorkspace1.info.role,
-        primarySocialId: pickPrimarySocialId(socialIds).key,
-        socialIds: socialIds.map((si) => si.key)
+        primarySocialId: pickPrimarySocialId(socialIds)._id,
+        socialIds: socialIds.map((si) => si._id)
       },
       connect(),
       socialIds,
@@ -90,8 +90,8 @@ describe('rest-api-server', () => {
       {
         uuid: apiWorkspace2.info.account,
         role: apiWorkspace2.info.role,
-        primarySocialId: pickPrimarySocialId(socialIds).key,
-        socialIds: socialIds.map((si) => si.key)
+        primarySocialId: pickPrimarySocialId(socialIds)._id,
+        socialIds: socialIds.map((si) => si._id)
       },
       connect(apiWorkspace2),
       socialIds,
@@ -113,7 +113,7 @@ describe('rest-api-server', () => {
     const conn = connect()
     const account = await conn.getAccount()
 
-    expect(account.primarySocialId).toBe('email:user1')
+    expect(account.primarySocialId).toEqual(expect.any(String))
     expect(account.role).toBe('USER')
     // expect(account.space).toBe(core.space.Model)
     // expect(account.modifiedBy).toBe(core.account.System)

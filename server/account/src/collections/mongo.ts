@@ -134,7 +134,9 @@ implements DbCollection<T> {
     }
 
     return cursor.map((doc) => {
-      delete doc._id
+      if (this.idKey !== '_id') {
+        delete doc._id
+      }
 
       return doc
     })
@@ -146,7 +148,9 @@ implements DbCollection<T> {
       return null
     }
 
-    delete doc._id
+    if (this.idKey !== '_id') {
+      delete doc._id
+    }
     return doc
   }
 
@@ -216,9 +220,9 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'>
   }
 }
 
-export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId, 'key'> implements DbCollection<SocialId> {
+export class SocialIdMongoDbCollection extends MongoDbCollection<SocialId, '_id'> implements DbCollection<SocialId> {
   constructor (db: Db) {
-    super('socialId', db, 'key')
+    super('socialId', db, '_id')
   }
 
   async insertOne (data: Partial<SocialId>): Promise<any> {
@@ -344,7 +348,19 @@ interface WorkspaceMember {
   role: AccountRole
 }
 
+interface Migration {
+  key: string
+  op: () => Promise<void>
+}
+
+interface MigrationInfo {
+  key: string
+  completed: boolean
+  lastProcessedTime: number
+}
+
 export class MongoAccountDB implements AccountDB {
+  migration: MongoDbCollection<MigrationInfo, 'key'>
   person: MongoDbCollection<Person, 'uuid'>
   socialId: SocialIdMongoDbCollection
   workspace: MongoDbCollection<WorkspaceInfoWithStatus, 'uuid'>
@@ -357,6 +373,7 @@ export class MongoAccountDB implements AccountDB {
   workspaceMembers: MongoDbCollection<WorkspaceMember>
 
   constructor (readonly db: Db) {
+    this.migration = new MongoDbCollection<MigrationInfo, 'key'>('migration', db, 'key')
     this.person = new MongoDbCollection<Person, 'uuid'>('person', db, 'uuid')
     this.socialId = new SocialIdMongoDbCollection(db)
     this.workspace = new MongoDbCollection<WorkspaceInfoWithStatus, 'uuid'>('workspace', db, 'uuid')
@@ -370,6 +387,11 @@ export class MongoAccountDB implements AccountDB {
   }
 
   async init (): Promise<void> {
+    // Apply all the migrations
+    for (const migration of this.getMigrations()) {
+      await this.migrate(migration)
+    }
+
     await this.account.ensureIndices([
       {
         key: { uuid: 1 },
@@ -408,6 +430,83 @@ export class MongoAccountDB implements AccountDB {
         }
       }
     ])
+  }
+
+  async migrate ({ key, op }: Migration): Promise<void> {
+    const { completed, exists } = await this.shouldMigrate(key)
+    if (completed) {
+      return
+    }
+
+    console.log(`Applying migration: ${key}`)
+    if (!exists) {
+      await this.migration.insertOne({ key, completed: false, lastProcessedTime: Date.now() })
+    } else {
+      await this.migration.updateOne({ key }, { lastProcessedTime: Date.now() })
+    }
+
+    const processingHandle = setInterval(() => {
+      void this.migration.updateOne({ key }, { lastProcessedTime: Date.now() })
+    }, 1000 * 5)
+    await op()
+    await this.migration.updateOne({ key }, { completed: true, lastProcessedTime: Date.now() })
+    clearInterval(processingHandle)
+    console.log(`Migration ${key} completed`)
+  }
+
+  async shouldMigrate (key: string): Promise<{ completed: boolean, exists: boolean }> {
+    while (true) {
+      const migrationInfo = await this.migration.findOne({ key })
+      if (migrationInfo?.completed === true) {
+        return { completed: true, exists: true }
+      }
+
+      if (migrationInfo == null) {
+        return { completed: false, exists: false }
+      }
+
+      if (migrationInfo.lastProcessedTime === undefined || Date.now() - migrationInfo.lastProcessedTime > 1000 * 15) {
+        return { completed: false, exists: true }
+      }
+
+      console.log(`Migration ${key} is in progress by other process, waiting...`)
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+    }
+  }
+
+  protected getMigrations (): Migration[] {
+    return [this.getV1Migration()]
+  }
+
+  // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO DO SOMETHING, ADD A NEW MIGRATION.
+  private getV1Migration (): Migration {
+    return {
+      key: 'account_db_v1_fill_social_id_ids',
+      op: async () => {
+        const sidCursor = this.socialId.findCursor({})
+
+        try {
+          let sidsCount = 0
+          while (await sidCursor.hasNext()) {
+            const socialIdObj = await sidCursor.next()
+            if (socialIdObj == null) break
+
+            if (socialIdObj._id != null && socialIdObj._id !== socialIdObj.key) continue
+
+            await this.socialId.deleteMany({ key: socialIdObj.key })
+            const newSocialId: any = { ...socialIdObj }
+            delete newSocialId._id
+            await this.socialId.insertOne(newSocialId)
+
+            sidsCount++
+          }
+
+          console.log(`Migrated ${sidsCount} social ids`)
+        } finally {
+          await sidCursor.close()
+        }
+      }
+    }
   }
 
   async assignWorkspace (accountId: PersonUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {

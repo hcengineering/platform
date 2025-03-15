@@ -29,7 +29,7 @@
       viewOptions,
       viewletId: getActiveViewletId(),
       sharable,
-      users: [getCurrentAccount().primarySocialId]
+      users: [getCurrentAccount().uuid]
     })
   }
 

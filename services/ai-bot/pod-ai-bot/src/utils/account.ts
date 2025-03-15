@@ -23,7 +23,7 @@ import {
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { getAccountClient, withRetry } from '@hcengineering/server-client'
-import { aiBotAccountEmail, aiBotEmailSocialId } from '@hcengineering/ai-bot'
+import { aiBotAccountEmail, aiBotEmailSocialKey } from '@hcengineering/ai-bot'
 import { MeasureContext, PersonUuid, systemAccountUuid } from '@hcengineering/core'
 
 import config from '../config'
@@ -130,21 +130,27 @@ async function confirmAccount (uuid: PersonUuid): Promise<void> {
   }
 }
 
+let account: AccountUuid | undefined
+
 export async function getAccountUuid (ctx?: MeasureContext): Promise<AccountUuid | undefined> {
+  if (account !== undefined) return account
+
   const token = generateToken(systemAccountUuid, undefined, { service: 'aibot', confirmEmail: aiBotAccountEmail })
   const accountClient = getAccountClient(token)
-  const personUuid = await accountClient.findPerson(aiBotEmailSocialId)
+  const personUuid = await accountClient.findPersonBySocialKey(aiBotEmailSocialKey)
 
   if (personUuid !== undefined) {
     await confirmAccount(personUuid)
-    return personUuid as AccountUuid
+    account = personUuid as AccountUuid
+    return account
   }
 
-  const result = await accountClient.signUp(aiBotEmailSocialId, config.Password, config.FirstName, config.LastName)
+  const result = await accountClient.signUp(aiBotAccountEmail, config.Password, config.FirstName, config.LastName)
 
   if (result !== undefined) {
     await confirmAccount(result.account)
-    return result.account
+    account = result.account
+    return account
   }
 
   return undefined

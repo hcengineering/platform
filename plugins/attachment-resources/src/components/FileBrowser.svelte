@@ -70,7 +70,7 @@
       attachedTo: { $in: selectedParticipants_ },
       attachedToClass: contact.class.Person
     })
-    const senderQuery = allSocialIds.length !== 0 ? { modifiedBy: { $in: allSocialIds.map((si) => si.key) } } : {}
+    const senderQuery = allSocialIds.length !== 0 ? { modifiedBy: { $in: allSocialIds.map((si) => si._id) } } : {}
 
     let spaceQuery: { space: any }
     if (selectedSpaces_.length > 0) {

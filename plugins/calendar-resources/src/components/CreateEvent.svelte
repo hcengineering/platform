@@ -77,7 +77,7 @@
 
   let description: Markup = EmptyMarkup
   let visibility: Visibility = 'private'
-  let _calendar: Ref<Calendar> = `${myPrimaryId}_calendar` as Ref<Calendar>
+  let _calendar: Ref<Calendar> = `${acc.uuid}_calendar` as Ref<Calendar>
 
   const q = createQuery()
   q.query(

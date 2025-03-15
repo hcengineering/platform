@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import core, { Client, Ref, TxOperations, AccountUuid, PersonId } from '@hcengineering/core'
+import core, { Client, Ref, TxOperations, AccountUuid } from '@hcengineering/core'
 import { createClient } from '@hcengineering/server-client'
 import contact, { Employee, Person } from '@hcengineering/contact'
 import chunter, { DirectMessage } from '@hcengineering/chunter'
-import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
+import { aiBotEmailSocialKey } from '@hcengineering/ai-bot'
 import notification from '@hcengineering/notification'
 
 export async function connectPlatform (token: string, endpoint: string): Promise<Client> {
   return await createClient(endpoint, token)
 }
 
-export async function getAccountBySocialId (client: TxOperations, socialId: PersonId): Promise<AccountUuid | null> {
-  const socialIdentity = await client.findOne(contact.class.SocialIdentity, { key: socialId })
+export async function getAccountBySocialKey (client: TxOperations, socialKey: string): Promise<AccountUuid | null> {
+  const socialIdentity = await client.findOne(contact.class.SocialIdentity, { key: socialKey })
 
-  if (socialIdentity === undefined) {
+  if (socialIdentity == null) {
     return null
   }
 
@@ -40,7 +40,7 @@ export async function getDirect (
   account: AccountUuid,
   aiPerson?: Ref<Person>
 ): Promise<Ref<DirectMessage> | undefined> {
-  const aibotAccount = await getAccountBySocialId(client, aiBotEmailSocialId)
+  const aibotAccount = await getAccountBySocialKey(client, aiBotEmailSocialKey)
   if (aibotAccount == null) return undefined
 
   const existingDm = (await client.findAll(chunter.class.DirectMessage, { members: aibotAccount })).find((dm) =>

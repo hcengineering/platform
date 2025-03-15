@@ -25,15 +25,22 @@ import { getMongoAccountDB } from './utils'
 import { type Account as OldAccount, type Workspace as OldWorkspace } from './types'
 import { type MongoAccountDB } from './collections/mongo'
 
-async function shouldMigrate (oldAccountDb: MongoAccountDB, migrationKey: string): Promise<boolean> {
+async function shouldMigrate (
+  oldAccountDb: MongoAccountDB,
+  migrationKey: string
+): Promise<{ completed: boolean, exists: boolean }> {
   while (true) {
     const migration = await oldAccountDb.migration.findOne({ key: migrationKey })
     if (migration?.completed === true) {
-      return false
+      return { completed: true, exists: true }
     }
 
-    if (migration?.lastProcessedTime === undefined || Date.now() - migration.lastProcessedTime > 1000 * 15) {
-      return true
+    if (migration == null) {
+      return { completed: false, exists: false }
+    }
+
+    if (migration.lastProcessedTime === undefined || Date.now() - migration.lastProcessedTime > 1000 * 15) {
+      return { completed: false, exists: true }
     }
 
     console.log('Migration of accounts database from old accounts is still in progress, waiting...')
@@ -48,11 +55,16 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
   let processingHandle
 
   try {
-    if (!(await shouldMigrate(oldAccountDb, migrationKey))) {
+    const { completed, exists } = await shouldMigrate(oldAccountDb, migrationKey)
+    if (completed) {
       return
     }
 
-    await oldAccountDb.migration.insertOne({ key: migrationKey, completed: false, lastProcessedTime: Date.now() })
+    if (!exists) {
+      await oldAccountDb.migration.insertOne({ key: migrationKey, completed: false, lastProcessedTime: Date.now() })
+    } else {
+      await oldAccountDb.migration.updateOne({ key: migrationKey }, { completed: false, lastProcessedTime: Date.now() })
+    }
 
     processingHandle = setInterval(() => {
       void oldAccountDb.migration.updateOne({ key: migrationKey }, { lastProcessedTime: Date.now() })

@@ -114,7 +114,7 @@
         current.date = e.detail.date.getTime()
         current.dueDate = new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
       } else {
-        const _calendar = `${myAcc.primarySocialId}_calendar` as Ref<Calendar>
+        const _calendar = `${myAcc.uuid}_calendar` as Ref<Calendar>
         const ev: WorkSlot = {
           _id: dragItemId,
           allDay: false,
@@ -129,7 +129,7 @@
           visibility: 'public',
           calendar: _calendar,
           space: calendar.space.Calendar,
-          modifiedBy: getCurrentAccount().primarySocialId,
+          modifiedBy: myAcc.primarySocialId,
           participants: [getCurrentEmployee()],
           modifiedOn: Date.now(),
           date: e.detail.date.getTime(),
