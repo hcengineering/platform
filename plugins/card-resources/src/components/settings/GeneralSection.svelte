@@ -26,6 +26,7 @@
     themeStore
   } from '@hcengineering/ui'
   import { IconPicker } from '@hcengineering/view-resources'
+  import setting from '@hcengineering/setting'
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
 
@@ -67,6 +68,9 @@
       }
     })
   }
+
+  const h = client.getHierarchy()
+  $: isEditable = h.hasMixin(masterTag, setting.mixin.Editable) && h.as(masterTag, setting.mixin.Editable).value
 </script>
 
 <div class="hulyComponent-content__column-group">
@@ -95,6 +99,8 @@
         }}
       />
     </div>
-    <ButtonIcon icon={IconDelete} size="small" kind="secondary" on:click={handleDelete} />
+    {#if isEditable}
+      <ButtonIcon icon={IconDelete} size={'large'} kind={'tertiary'} on:click={handleDelete} />
+    {/if}
   </div>
 </div>

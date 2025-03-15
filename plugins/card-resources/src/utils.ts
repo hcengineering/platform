@@ -39,30 +39,24 @@ import card from './plugin'
 export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: () => void): Promise<void> {
   if (tag !== undefined) {
     const client = getClient()
-    const objects = await client.findOne(tag._id, {})
-    if (objects !== undefined) {
-      if (tag._class === card.class.MasterTag) {
-        showPopup(MessageBox, {
-          label: card.string.DeleteMasterTag,
-          message: card.string.DeleteMasterTagConfirm,
-          action: async () => {
-            onDelete?.()
-            await client.remove(tag)
-          }
-        })
-      } else {
-        showPopup(MessageBox, {
-          label: card.string.DeleteTag,
-          message: card.string.DeleteTagConfirm,
-          action: async () => {
-            onDelete?.()
-            await client.remove(tag)
-          }
-        })
-      }
+    if (tag._class === card.class.MasterTag) {
+      showPopup(MessageBox, {
+        label: card.string.DeleteMasterTag,
+        message: card.string.DeleteMasterTagConfirm,
+        action: async () => {
+          onDelete?.()
+          await client.update(tag, { removed: true })
+        }
+      })
     } else {
-      onDelete?.()
-      await client.remove(tag)
+      showPopup(MessageBox, {
+        label: card.string.DeleteTag,
+        message: card.string.DeleteTagConfirm,
+        action: async () => {
+          onDelete?.()
+          await client.remove(tag)
+        }
+      })
     }
   }
 }

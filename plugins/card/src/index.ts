@@ -17,7 +17,9 @@ import type { AnyComponent } from '@hcengineering/ui'
 
 export * from './analytics'
 
-export interface MasterTag extends Class<Card> {}
+export interface MasterTag extends Class<Card> {
+  removed?: boolean
+}
 
 export interface Tag extends MasterTag, Mixin<Card> {}
 
