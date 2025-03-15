@@ -12,36 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { derived, get, writable } from 'svelte/store'
 import core, {
   type Class,
   concatLink,
   type Doc,
-  getCurrentAccount,
-  type Ref,
   generateId,
-  reduceCalls
+  getCurrentAccount,
+  reduceCalls,
+  type Ref
 } from '@hcengineering/core'
-import { type Application, workbenchId, type WorkbenchTab } from '@hcengineering/workbench'
+import notification, { notificationId } from '@hcengineering/notification'
+import { type Asset, getMetadata, getResource, type IntlString, setMetadata, translate } from '@hcengineering/platform'
+import presentation, { configurationStore, getClient } from '@hcengineering/presentation'
 import {
-  location as locationStore,
-  locationToUrl,
-  parseLocation,
-  type Location,
-  navigate,
+  type AnyComponent,
   getCurrentLocation,
   languageStore,
-  type AnyComponent,
-  locationStorageKeyId
+  type Location,
+  locationStorageKeyId,
+  location as locationStore,
+  locationToUrl,
+  navigate,
+  parseLocation
 } from '@hcengineering/ui'
-import presentation, { getClient } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
-import { type Asset, type IntlString, getMetadata, getResource, translate } from '@hcengineering/platform'
 import { parseLinkId } from '@hcengineering/view-resources'
-import notification, { notificationId } from '@hcengineering/notification'
+import { type Application, workbenchId, type WorkbenchTab } from '@hcengineering/workbench'
+import { derived, get, writable } from 'svelte/store'
 
-import { locationWorkspaceStore } from './utils'
+import setting from '@hcengineering/setting'
 import workbench from './plugin'
+import { locationWorkspaceStore } from './utils'
 
 export const tabIdStore = writable<Ref<WorkbenchTab> | undefined>()
 export const prevTabIdStore = writable<Ref<WorkbenchTab> | undefined>()
@@ -298,3 +299,8 @@ async function getDefaultTabName (loc: Location): Promise<string | undefined> {
     console.error(err)
   }
 }
+
+configurationStore.subscribe((config) => {
+  const arePermissionsDisabled = config.get(setting.ids.DisablePermissionsConfiguration)?.enabled ?? false
+  setMetadata(core.metadata.DisablePermissions, arePermissionsDisabled)
+})

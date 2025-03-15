@@ -144,6 +144,10 @@
     "ExportRequestFailed": "Error al enviar la exportación.",
     "ExportRequestFailedMessage": "Ocurrió un error al enviar la exportación. Por favor, inténtelo más tarde.",
     "ExportCompleted": "Exportación completada. Sus archivos están listos. Puede descargarlos desde la unidad.",
-    "ExportFailed": "Error al exportar datos. Por favor, inténtelo más tarde."
+    "ExportFailed": "Error al exportar datos. Por favor, inténtelo más tarde.",
+    "DisablePermissions": "Desactivar el control de acceso basado en roles",
+    "EnablePermissions": "Activar el control de acceso basado en roles",
+    "DisablePermissionsConfirmation": "¿Está seguro de que desea desactivar el control de acceso basado en roles? Todos los roles y permisos serán desactivados.",
+    "EnablePermissionsConfirmation": "¿Está seguro de que desea activar el control de acceso basado en roles? Todos los roles y permisos serán activados."
   }
 }

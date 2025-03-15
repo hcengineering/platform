@@ -153,6 +153,10 @@
     "ExportRequestFailed": "Export konnte nicht gestartet werden.",
     "ExportRequestFailedMessage": "Beim Starten des Exports ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
     "ExportCompleted": "Export abgeschlossen. Ihre Dateien sind bereit. Sie können sie vom Laufwerk herunterladen.",
-    "ExportFailed": "Datenexport fehlgeschlagen. Bitte versuchen Sie es später erneut."
+    "ExportFailed": "Datenexport fehlgeschlagen. Bitte versuchen Sie es später erneut.",
+    "DisablePermissions": "Rollenbasierte Zugriffskontrolle deaktivieren",
+    "EnablePermissions": "Rollenbasierte Zugriffskontrolle aktivieren",
+    "DisablePermissionsConfirmation": "Sind Sie sicher, dass Sie die rollenbasierte Zugriffskontrolle deaktivieren möchten? Alle Rollen und Berechtigungen werden deaktiviert.",
+    "EnablePermissionsConfirmation": "Sind Sie sicher, dass Sie die rollenbasierte Zugriffskontrolle aktivieren möchten? Alle Rollen und Berechtigungen werden aktiviert."
   }
 }

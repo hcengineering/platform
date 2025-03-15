@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, getMetadata, IntlString } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
 import { DOMAIN_BENCHMARK } from './benchmark'
 import {
@@ -567,6 +567,9 @@ export async function checkPermission (
   _space: Ref<TypedSpace>,
   space?: TypedSpace
 ): Promise<boolean> {
+  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
+  if (arePermissionsDisabled) return true
+
   space = space ?? (await client.findOne(core.class.TypedSpace, { _id: _space }))
   const type = await client
     .getModel()

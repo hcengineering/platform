@@ -135,6 +135,10 @@ export default mergeIds(settingId, setting, {
     ExportRequestFailed: '' as IntlString,
     ExportRequestFailedMessage: '' as IntlString,
     ExportCompleted: '' as IntlString,
-    ExportFailed: '' as IntlString
+    ExportFailed: '' as IntlString,
+    DisablePermissions: '' as IntlString,
+    EnablePermissions: '' as IntlString,
+    DisablePermissionsConfirmation: '' as IntlString,
+    EnablePermissionsConfirmation: '' as IntlString
   }
 })

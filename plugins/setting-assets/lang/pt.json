@@ -144,6 +144,10 @@
     "ExportRequestFailed": "Falha ao enviar exportação.",
     "ExportRequestFailedMessage": "Ocorreu um erro ao enviar a exportação. Por favor, tente novamente mais tarde.",
     "ExportCompleted": "Exportação concluída. Seus arquivos estão prontos. Você pode baixá-los do drive.",
-    "ExportFailed": "Falha ao exportar dados. Por favor, tente novamente mais tarde."
+    "ExportFailed": "Falha ao exportar dados. Por favor, tente novamente mais tarde.",
+    "DisablePermissions": "Desativar controle de acesso baseado em funções",
+    "EnablePermissions": "Ativar controle de acesso baseado em funções",
+    "DisablePermissionsConfirmation": "Tem certeza de que deseja desativar o controle de acesso baseado em funções? Todos os papéis e permissões serão desativados.",
+    "EnablePermissionsConfirmation": "Tem certeza de que deseja ativar o controle de acesso baseado em funções? Todos os papéis e permissões serão ativados."
   }
 }

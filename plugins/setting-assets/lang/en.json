@@ -1,7 +1,7 @@
 {
   "string": {
     "Setting": "Setting",
-    "Spaces": "Spaces", 
+    "Spaces": "Spaces",
     "Integrations": "Integrations",
     "Support": "Support",
     "Privacy": "Privacy",
@@ -139,7 +139,7 @@
     "ExportIssues": "Issues",
     "ExportMilestones": "Milestones",
     "ExportTestCases": "Test Cases",
-    "ExportTestRuns": "Test Runs", 
+    "ExportTestRuns": "Test Runs",
     "ExportTestPlans": "Test Plans",
     "ExportFormat": "Export format",
     "ExportJSON": "JSON",
@@ -153,6 +153,10 @@
     "ExportRequestFailed": "Failed to submit export.",
     "ExportRequestFailedMessage": "Error occurred while submitting export. Please try again later.",
     "ExportCompleted": "Export completed. Your files are ready. You can download them from the drive.",
-    "ExportFailed": "Failed to export data. Please try again later."
+    "ExportFailed": "Failed to export data. Please try again later.",
+    "DisablePermissions": "Disable role-based access control",
+    "EnablePermissions": "Enable role-based access control",
+    "DisablePermissionsConfirmation": "Are you sure you want to disable role-based access control? All roles and permissions will be disabled.",
+    "EnablePermissionsConfirmation": "Are you sure you want to enable role-based access control? All roles and permissions will be enabled."
   }
 }
