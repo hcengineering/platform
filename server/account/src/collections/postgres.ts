@@ -695,8 +695,7 @@ export class PostgresAccountDB implements AccountDB {
           person_uuid UUID NOT NULL,
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           verified_on BIGINT,
-          CONSTRAINT social_id_pk PRIMARY KEY (id),
-          CONSTRAINT social_id_tv_key_unique UNIQUE (type, value),
+          CONSTRAINT social_id_pk PRIMARY KEY (type, value),
           CONSTRAINT social_id_key_unique UNIQUE (key),
           INDEX social_id_account_idx (person_uuid),
           CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES ${this.ns}.person(uuid)
@@ -752,12 +751,12 @@ export class PostgresAccountDB implements AccountDB {
 
       /* ======= O T P ======= */
       CREATE TABLE IF NOT EXISTS ${this.ns}.otp (
-          social_id INT8 NOT NULL,
+          social_id STRING NOT NULL,
           code STRING NOT NULL,
           expires_on BIGINT NOT NULL,
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           CONSTRAINT otp_pk PRIMARY KEY (social_id, code),
-          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(_id)
+          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(key)
       );
 
       /* ======= I N V I T E ======= */

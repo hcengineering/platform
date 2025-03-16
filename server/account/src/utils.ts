@@ -80,8 +80,7 @@ export async function getAccountDB (uri: string, dbNs?: string): Promise<[Accoun
   } else {
     const client = getDBClient(sharedPipelineContextVars, uri)
     const pgClient = await client.getClient()
-    // TODO: if dbNs is provided put tables in that schema
-    const pgAccount = new PostgresAccountDB(pgClient)
+    const pgAccount = new PostgresAccountDB(pgClient, dbNs ?? 'global_account')
 
     let error = false
 
