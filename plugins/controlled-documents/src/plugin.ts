@@ -255,6 +255,7 @@ export const documentsPlugin = plugin(documentsId, {
     ControlledSnapshot: '' as IntlString,
     DraftRevision: '' as IntlString,
     CreateNewDraft: '' as IntlString,
+    RestoreDraft: '' as IntlString,
     CreateOrgSpace: '' as IntlString,
 
     ReviewDocumentPermission: '' as IntlString,

@@ -254,6 +254,7 @@
     "Name": "Name",
     "DraftRevision": "Entwurfsrevision",
     "CreateNewDraft": "Neue Version entwerfen",
+    "RestoreDraft": "Entwurf wiederherstellen",
     "ChangeSeverity": "Änderungsschwere",
     "Reference": "Referenz",
     "History": "Historie",

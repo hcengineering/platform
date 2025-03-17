@@ -252,6 +252,7 @@
     "Name": "Název",
     "DraftRevision": "Revize konceptu",
     "CreateNewDraft": "Vytvořit nový koncept",
+    "RestoreDraft": "Obnovit koncept",
     "ChangeSeverity": "Změnit závažnost",
     "Reference": "Reference",
     "History": "Historie",

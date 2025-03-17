@@ -53,6 +53,7 @@ import {
   ProjectDocument,
   ProjectMeta
 } from './types'
+import { RequestStatus } from '@hcengineering/request'
 
 /**
  * @public
@@ -728,6 +729,9 @@ export function extractValidationWorkflow (
     })
 
     for (const request of requests) {
+      if (request.status === RequestStatus.Cancelled) {
+        continue
+      }
       const state =
         states.find((s) => (s.snapshot?.createdOn ?? 0) > (request.createdOn ?? 0)) ?? states[states.length - 1]
       state.requests.push(request)
