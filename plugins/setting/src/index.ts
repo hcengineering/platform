@@ -135,7 +135,8 @@ export default plugin(settingId, {
     ManageSpaces: '' as Ref<Doc>,
     Spaces: '' as Ref<Doc>,
     Backup: '' as Ref<Doc>,
-    Export: '' as Ref<Doc>
+    Export: '' as Ref<Doc>,
+    DisablePermissionsConfiguration: '' as Ref<Configuration>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,

@@ -153,6 +153,10 @@
     "ExportRequestFailed": "Nepodařilo se odeslat export.",
     "ExportRequestFailedMessage": "Při odesílání exportu došlo k chybě. Zkuste to prosím později.",
     "ExportCompleted": "Export byl dokončen. Vaše soubory jsou připraveny. Můžete je stáhnout z disku.",
-    "ExportFailed": "Export dat se nezdařil. Zkuste to prosím později."
+    "ExportFailed": "Export dat se nezdařil. Zkuste to prosím později.",
+    "DisablePermissions": "Zakázat řízení přístupu na základě rolí",
+    "EnablePermissions": "Povolit řízení přístupu na základě rolí",
+    "DisablePermissionsConfirmation": "Opravdu chcete zakázat řízení přístupu na základě rolí? Všechny role a oprávnění budou deaktivovány.",
+    "EnablePermissionsConfirmation": "Opravdu chcete povolit řízení přístupu na základě rolí? Všechny role a oprávnění budou aktivovány."
   }
 }
