@@ -78,10 +78,12 @@ export const workbenchOperation: MigrateOperation = {
       },
       {
         state: 'tabs-accounts-to-social-ids',
+        mode: 'upgrade',
         func: migrateTabsToSocialIds
       },
       {
         state: 'tabs-social-ids-to-global-accounts',
+        mode: 'upgrade',
         func: migrateSocialIdsToGlobalAccounts
       }
     ])

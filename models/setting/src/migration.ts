@@ -146,17 +146,20 @@ export const settingOperation: MigrateOperation = {
     await tryMigrate(mode, client, settingId, [
       {
         state: 'removeDeprecatedSpace',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'setting:space:Setting' as Ref<Space>, core.space.Workspace, [DOMAIN_SETTING])
         }
       },
       {
         state: 'accounts-to-social-ids',
+        mode: 'upgrade',
         func: migrateAccounts
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
         state: 'migrate-social-ids-to-account-uuids',
+        mode: 'upgrade',
         func: migrateSocialIdsToAccountUuids
       }
     ])

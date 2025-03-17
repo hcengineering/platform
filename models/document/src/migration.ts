@@ -464,6 +464,7 @@ export const documentOperation: MigrateOperation = {
       },
       {
         state: 'social-ids-to-global-accounts',
+        mode: 'upgrade',
         func: migrateSocialIdsToGlobalAccounts
       }
     ])

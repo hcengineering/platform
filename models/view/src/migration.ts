@@ -186,10 +186,12 @@ export const viewOperation: MigrateOperation = {
       },
       {
         state: 'accounts-to-social-ids',
+        mode: 'upgrade',
         func: migrateAccountsToSocialIds
       },
       {
         state: 'social-ids-to-global-accounts',
+        mode: 'upgrade',
         func: migrateSocialIdsToGlobalAccounts
       }
     ])

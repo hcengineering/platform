@@ -326,10 +326,12 @@ export const calendarOperation: MigrateOperation = {
       },
       {
         state: 'accounts-to-social-ids',
+        mode: 'upgrade',
         func: migrateAccountsToSocialIds
       },
       {
         state: 'migrate-social-ids-to-account-uuids',
+        mode: 'upgrade',
         func: migrateSocialIdsToAccountUuids
       }
     ])

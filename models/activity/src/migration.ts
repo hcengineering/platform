@@ -603,6 +603,7 @@ export const activityOperation: MigrateOperation = {
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
         state: 'social-keys-to-social-ids',
+        mode: 'upgrade',
         func: migrateSocialKeysToSocialIds
       }
     ])

@@ -955,6 +955,7 @@ export const notificationOperation: MigrateOperation = {
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
         state: 'migrate-social-keys-to-social-ids',
+        mode: 'upgrade',
         func: migrateSocialKeysToSocialIds
       }
     ])

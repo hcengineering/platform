@@ -336,7 +336,7 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
   }
 }
 
-async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient, logger: ModelLogger): Promise<void> {
+async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('contact ensureGlobalPersonsForLocalAccounts', {})
   ctx.info('ensuring global persons for local accounts ', {})
 
@@ -364,11 +364,11 @@ async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient, log
 }
 
 export const contactOperation: MigrateOperation = {
-  async preMigrate (client: MigrationClient, mode): Promise<void> {
+  async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
     await tryMigrate(mode, client, contactId, [
       {
         state: 'ensure-accounts-global-persons',
-        func: (client) => ensureGlobalPersonsForLocalAccounts(client, logger)
+        func: (client) => ensureGlobalPersonsForLocalAccounts(client)
       }
     ])
   },
@@ -516,23 +516,28 @@ export const contactOperation: MigrateOperation = {
       },
       {
         state: 'create-social-identities',
+        mode: 'upgrade',
         func: createSocialIdentities
       },
       {
         state: 'assign-workspace-roles',
+        mode: 'upgrade',
         func: assignWorkspaceRoles
       },
       {
         state: 'fill-account-uuids',
+        mode: 'upgrade',
         func: fillAccountUuids
       },
       {
         state: 'assign-employee-roles-v1',
+        mode: 'upgrade',
         func: assignEmployeeRoles
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
         state: 'fill-social-identities-ids',
+        mode: 'upgrade',
         func: fillSocialIdentitiesIds
       }
     ])
