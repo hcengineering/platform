@@ -189,7 +189,7 @@ export class CommentSyncManager implements DocSyncManager {
         })
 
         const messageData: MessageData = {
-          message: await this.provider.getMarkup(integration, event.comment.body)
+          message: await this.provider.getMarkupSafe(integration, event.comment.body)
         }
 
         if (commentData !== undefined) {
@@ -281,7 +281,7 @@ export class CommentSyncManager implements DocSyncManager {
     const account = existing?.modifiedBy ?? (await this.provider.getAccountU(comment.user))?._id ?? core.account.System
 
     const messageData: MessageData = {
-      message: await this.provider.getMarkup(container.container, comment.body)
+      message: await this.provider.getMarkupSafe(container.container, comment.body)
     }
     if (existing === undefined) {
       try {

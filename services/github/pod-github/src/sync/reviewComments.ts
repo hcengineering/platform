@@ -246,7 +246,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
           )
           if (reviewObj !== undefined) {
             const lastModified = Date.now()
-            const body = await this.provider.getMarkup(integration, event.comment.body)
+            const body = await this.provider.getMarkupSafe(integration, event.comment.body)
             await derivedClient.diffUpdate(
               reviewData,
               {
@@ -344,7 +344,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     }
 
     const messageData: ReviewCommentData = {
-      body: await this.provider.getMarkup(container.container, reviewComment.body),
+      body: await this.provider.getMarkupSafe(container.container, reviewComment.body),
       diffHunk: reviewComment.diffHunk,
       isMinimized: reviewComment.isMinimized,
       reviewUrl: reviewComment.pullRequestReview.url,
@@ -415,7 +415,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
 
     if (Object.keys(platformUpdate).length > 0) {
       if (platformUpdate.body !== undefined) {
-        const body = await this.provider.getMarkup(container.container, platformUpdate.body)
+        const body = await this.provider.getMarkupSafe(container.container, platformUpdate.body)
         const okit = (await this.provider.getOctokit(account as Ref<PersonAccount>)) ?? container.container.octokit
         const q = `mutation updateReviewComment($commentID: ID!, $body: String!) {
           updatePullRequestReviewComment(input: {

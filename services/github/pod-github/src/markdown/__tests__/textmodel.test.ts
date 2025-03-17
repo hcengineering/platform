@@ -551,7 +551,7 @@ A list of closed updated issues`
 
     const md = serializeMessage(msg, 'ref://', 'http://')
 
-    expect(md).toEqual('## Hello\n\nSome text')
+    expect(md).toEqual(t1)
   })
 
   it('Check horizontal line', () => {

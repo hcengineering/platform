@@ -210,7 +210,11 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           update.title = event.pull_request.title
         }
         if (event.changes.body !== undefined) {
-          update.description = await this.provider.getMarkup(integration, event.pull_request.body, this.stripGuestLink)
+          update.description = await this.provider.getMarkupSafe(
+            integration,
+            event.pull_request.body,
+            this.stripGuestLink
+          )
           du.markdown = await this.provider.getMarkdown(update.description)
         }
         if (event.changes.base !== undefined) {
@@ -462,7 +466,11 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     }
     const pullRequestData: GithubPullRequestData = {
       title: pullRequestExternal.title,
-      description: await this.provider.getMarkup(container.container, pullRequestExternal.body, this.stripGuestLink),
+      description: await this.provider.getMarkupSafe(
+        container.container,
+        pullRequestExternal.body,
+        this.stripGuestLink
+      ),
       assignee: assignees[0]?.person ?? null,
       reviewers: reviewers.map((it) => it.person),
       draft: pullRequestExternal.isDraft,
@@ -1066,7 +1074,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           },
           { url: issueExternal.url }
         )
-        issueData.description = await this.provider.getMarkup(container.container, body, this.stripGuestLink)
+        issueData.description = await this.provider.getMarkupSafe(container.container, body, this.stripGuestLink)
       } else if (hasFieldsUpdate) {
         await this.ctx.withLog('==> updatePullRequest:', {}, async () => {
           this.ctx.info('update-fields', {
