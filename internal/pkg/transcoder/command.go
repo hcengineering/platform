@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package transcoding
+package transcoder
 
 import (
 	"context"
@@ -25,13 +25,13 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/huly-stream/internal/pkg/log"
-	"github.com/huly-stream/internal/pkg/resconv"
+	"github.com/hcengineering/stream/internal/pkg/log"
 	"go.uber.org/zap"
 )
 
 // Options represents configuration for the ffmpeg command
 type Options struct {
+	Input         string
 	OuputDir      string
 	ScalingLevels []string
 	Level         string
@@ -58,9 +58,8 @@ func newFfmpegCommand(ctx context.Context, in io.Reader, args []string) (*exec.C
 
 func buildCommonComamnd(opts *Options) []string {
 	return []string{
-		"-nostdin",
 		"-threads", fmt.Sprint(opts.Threads),
-		"-i", "pipe:0",
+		"-i", opts.Input,
 	}
 }
 
@@ -79,8 +78,6 @@ func BuildRawVideoCommand(opts *Options) []string {
 	return append(buildCommonComamnd(opts),
 		"-c:v",
 		"copy",
-		"-fps_mode",
-		"vfr",
 		"-hls_time", "5",
 		"-hls_list_size", "0",
 		"-hls_segment_filename", filepath.Join(opts.OuputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
@@ -90,9 +87,10 @@ func BuildRawVideoCommand(opts *Options) []string {
 // BuildScalingVideoCommand returns flags for ffmpeg for video scaling
 func BuildScalingVideoCommand(opts *Options) []string {
 	var result = buildCommonComamnd(opts)
+
 	for _, level := range opts.ScalingLevels {
 		result = append(result,
-			"-vf", "scale="+resconv.Resolution(level),
+			"-vf", "scale=-2:"+level[:len(level)-1],
 			"-c:v",
 			"libx264",
 			"-preset", "veryfast",

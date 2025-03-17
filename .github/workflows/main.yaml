@@ -36,7 +36,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.5
+          go-version: 1.24.1
       - name: Build
         run: go build -race  ./...
       - name: Test
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.23.5
+          go-version: 1.24.1
       - run: go mod tidy
       - name: Check for changes in go.mod or go.sum
         run: |
@@ -63,9 +63,9 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.5
+          go-version: 1.24.1
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
-          version: v1.60.3
+          version: v1.64.7
           args: --timeout 3m --verbose

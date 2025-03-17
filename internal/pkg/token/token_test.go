@@ -11,35 +11,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package uploader
+package token_test
 
 import (
-	"context"
-	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/hcengineering/stream/internal/pkg/token"
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Postpone(t *testing.T) {
-	var u = uploader{
-		postponeDuration: time.Second / 4,
-	}
-	var counter atomic.Int32
-	u.postpone("1", func(context.Context) { counter.Add(1) })
-	time.Sleep(time.Second / 8)
-	u.postpone("1", func(context.Context) { counter.Add(1) })
-	time.Sleep(time.Second / 2)
-	require.Equal(t, int32(1), counter.Load())
-	time.Sleep(time.Second / 2)
-	require.Equal(t, int32(1), counter.Load())
+func Test_GenerateSimpleServiceToken(t *testing.T) {
+	var _, err = token.NewToken("secret", "ws", "issuer", "aud")
+	require.NoError(t, err)
 }
 
-func Test_WithoutPostpone(t *testing.T) {
-	var counter atomic.Int32
-	var u uploader
-	u.postpone("1", func(context.Context) { counter.Add(1) })
-	time.Sleep(time.Second / 10)
-	require.Equal(t, int32(1), counter.Load())
+func Test_ParseSimpleServiceToken(t *testing.T) {
+	const secret = "secret"
+	tokenString, err := token.NewToken(secret, "ws", "issuer", "aud")
+	require.NoError(t, err)
+	tok, err := token.Decode(secret, tokenString)
+	require.NoError(t, err)
+	require.Equal(t, tok.Issuer, "issuer")
+	require.Equal(t, tok.Audience, jwt.ClaimStrings{"aud"})
+	require.Equal(t, tok.Workspace, "ws")
+	require.True(t, tok.ExpiresAt.After(time.Now()))
 }

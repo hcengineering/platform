@@ -29,7 +29,7 @@ jobs:
         id: metaci
         uses: docker/metadata-action@v3
         with:
-          images: hardcoreeng/huly-stream
+          images: hardcoreeng/stream:${{ inputs.version }}
           tags: |
             type=ref,event=pr
             type=sha,prefix=
@@ -41,4 +41,4 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: hardcoreeng/huly-stream:${{ inputs.version }}
+          tags: hardcoreeng/stream:${{ inputs.version }}

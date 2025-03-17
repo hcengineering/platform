@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM golang:1.23.5 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.24.1 AS builder
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 ENV GOBIN=/bin
@@ -19,18 +19,18 @@ ARG BUILDARCH=amd64
 
 COPY . ./
 
-RUN set -xe && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /go/bin/huly-stream ./cmd/huly-stream
+RUN set -xe && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /go/bin/stream ./cmd/stream
 
-FROM alpine
+FROM --platform=$BUILDPLATFORM alpine
 
 RUN set -xe && apk add --no-cache ffmpeg
 RUN apk add --no-cache ca-certificates jq bash \
-    && addgroup -g 1000 huly-stream \
-    && adduser -u 1000 -G huly-stream -s /bin/sh -D huly-stream \
-    && chown huly-stream:huly-stream /.
-COPY --from=builder /go/bin/huly-stream /huly-stream
+    && addgroup -g 1000 stream \
+    && adduser -u 1000 -G stream -s /bin/sh -D stream \
+    && chown stream:stream /.
+COPY --from=builder /go/bin/stream /stream
 
 EXPOSE 1080
-USER huly-stream
+USER stream
 
-ENTRYPOINT ["/huly-stream"]
+ENTRYPOINT ["/stream"]

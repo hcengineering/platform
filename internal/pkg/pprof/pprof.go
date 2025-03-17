@@ -20,7 +20,7 @@ import (
 	"net/http/pprof"
 	"time"
 
-	"github.com/huly-stream/internal/pkg/log"
+	"github.com/hcengineering/stream/internal/pkg/log"
 	"go.uber.org/zap"
 )
 
@@ -48,7 +48,6 @@ func ListenAndServe(ctx context.Context, listenOn string) {
 	if err := server.ListenAndServe(); err != nil {
 		log.FromContext(ctx).Debug("Failed to start profiler", zap.Error(err))
 	}
-
 	<-ctx.Done()
 	_ = server.Close()
 }

@@ -22,8 +22,8 @@ import (
 
 type contextKey struct{}
 
-// WithLoggerFields createsa new context with zap.Logger and passed fields
-func WithLoggerFields(ctx context.Context, fields ...zap.Field) context.Context {
+// WithFields createsa new context with zap.Logger and passed fields
+func WithFields(ctx context.Context, fields ...zap.Field) context.Context {
 	var logger = FromContext(ctx)
 	if logger == nil {
 		var err error

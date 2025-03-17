@@ -196,36 +196,35 @@ func Test_Consistent(t *testing.T) {
 }
 
 // Benchmark_DefaultPipe-8 (4 b)   	   		61956	     19177 ns/op	      48 B/op	       1 allocs/op
-// Benchmark_DefaultPipe-8 (8 mb)   	     	 22	  49187741 ns/op	     118 B/op	       1 allocs/op
+// Benchmark_DefaultPipe-8 (8 mb)   	      24	  48471316 ns/op	     257 B/op	       1 allocs/op
 func Benchmark_DefaultPipe(b *testing.B) {
 	var data [sendMessageSize]byte
 	var buffer = make([]byte, len(data))
 	var readers []io.Reader
 	var writers []io.Writer
 
-	for i := 0; i < readerCount; i++ {
+	for range readerCount {
 		r, w := io.Pipe()
 		readers = append(readers, r)
 		writers = append(writers, w)
 	}
 
 	b.ReportAllocs()
-	b.ResetTimer()
 
-	for range b.N {
+	for b.Loop() {
 		go func() {
-			for i := 0; i < readerCount; i++ {
+			for i := range readerCount {
 				_, _ = writers[i].Write(data[:])
 			}
 		}()
-		for i := 0; i < readerCount; i++ {
+		for i := range readerCount {
 			_, _ = readers[i].Read(buffer)
 		}
 	}
 }
 
 // Benchmark_SharedPipe-8 (4 b)  	  	161847	      8131 ns/op	     160 B/op	       2 allocs/op
-// Benchmark_SharedPipe-8 (8 mb)  	      69	  15880031 ns/op	     160 B/op	       2 allocs/op
+// Benchmark_SharedPipe-8 (8 mb)  	      75	  15710658 ns/op	     161 B/op	       2 allocs/op
 func Benchmark_SharedPipe(b *testing.B) {
 	var data [sendMessageSize]byte
 	var buffer = make([]byte, len(data))
@@ -237,11 +236,10 @@ func Benchmark_SharedPipe(b *testing.B) {
 	}
 
 	b.ReportAllocs()
-	b.ResetTimer()
 
-	for range b.N {
+	for b.Loop() {
 		_, _ = writer.Write(data[:])
-		for i := 0; i < readerCount; i++ {
+		for i := range readerCount {
 			_, _ = readers[i].Read(buffer)
 		}
 	}

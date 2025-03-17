@@ -13,7 +13,15 @@
 
 package uploader
 
-type options struct{}
+import "time"
 
-// Option provides option for storages
-type Option func(*options)
+// Options reprents options for uploading files
+type Options struct {
+	Dir         string
+	WorkerCount uint32
+	BufferSize  int
+	RetryCount  int
+	RetryDelay  time.Duration
+	Timeout     time.Duration
+	SourceFile  string
+}
