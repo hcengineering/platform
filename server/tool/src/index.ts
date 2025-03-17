@@ -160,25 +160,27 @@ export async function updateModel (
 
   const migrateState = new Map<string, Set<string>>(sts.map((it) => [it[0], _toSet(it[1])]))
 
-  try {
-    let i = 0
-    for (const op of migrateOperations) {
-      const st = Date.now()
-      await ctx.with(op[0], {}, async () => {
-        await op[1].upgrade(migrateState, async () => connection as any, mode)
-      })
-      const tdelta = Date.now() - st
-      if (tdelta > 0) {
-        logger.log('Create', { name: op[0], time: tdelta })
+  await ctx.with('create-upgrade', {}, async () => {
+    try {
+      let i = 0
+      for (const op of migrateOperations) {
+        const st = Date.now()
+        await ctx.with(op[0], {}, async () => {
+          await op[1].upgrade(migrateState, async () => connection as any, mode)
+        })
+        const tdelta = Date.now() - st
+        if (tdelta > 0) {
+          logger.log('Create', { name: op[0], time: tdelta })
+        }
+        i++
+        await progress((((100 / migrateOperations.length) * i) / 100) * 100)
       }
-      i++
-      await progress((((100 / migrateOperations.length) * i) / 100) * 100)
+      await progress(100)
+    } catch (e: any) {
+      logger.error('error', { error: e })
+      throw e
     }
-    await progress(100)
-  } catch (e: any) {
-    logger.error('error', { error: e })
-    throw e
-  }
+  })
 }
 
 /**
