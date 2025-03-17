@@ -50,7 +50,14 @@
   $: data = widgetState?.data as ChatWidgetData
 
   $: if (data?.card !== undefined && data?.message !== undefined) {
-    messageQuery.query({ card: data.card, id: data.message, limit: 1 }, (res) => {
+    messageQuery.query({
+      card: data.card,
+      id: data.message,
+      limit: 1,
+      withReplies: true,
+      withFiles: true,
+      withReactions: true
+    }, (res) => {
       message = res.getResult()[0]
     })
   } else {
