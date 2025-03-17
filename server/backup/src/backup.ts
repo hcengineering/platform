@@ -779,6 +779,9 @@ export async function backup (
       if (await storage.exists(infoFile)) {
         backupInfo = JSON.parse(gunzipSync(new Uint8Array(await storage.loadFile(infoFile))).toString())
       }
+      if (backupInfo.migrations == null) {
+        backupInfo.migrations = {}
+      }
       backupInfo.migrations.zeroCheckSize = true
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
