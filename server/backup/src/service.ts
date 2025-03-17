@@ -263,7 +263,7 @@ class BackupWorker {
       workspace: ws.uuid,
       url: ws.url
     })
-    const ctx = rootCtx.newChild(ws.uuid, { workspace: ws.uuid, url: ws.url })
+    const ctx = rootCtx.newChild('doBackup', {})
     const dataId = ws.dataId ?? (ws.uuid as unknown as WorkspaceDataId)
     let pipeline: Pipeline | undefined
     const backupIds = {
@@ -278,54 +278,58 @@ class BackupWorker {
         dataId: ws.dataId,
         url: ws.url
       }
-      const result = await ctx.with('backup', { workspace: ws.uuid, url: ws.url }, (ctx) =>
-        backup(ctx, '', wsIds, storage, {
-          skipDomains: this.skipDomains,
-          force: true,
-          timeout: this.config.Timeout * 1000,
-          connectTimeout: 5 * 60 * 1000, // 5 minutes to,
-          blobDownloadLimit: this.downloadLimit,
-          skipBlobContentTypes: [],
-          fullVerify: this.fullCheck,
-          storageAdapter: this.workspaceStorageAdapter,
-          getLastTx: async (): Promise<Tx | undefined> => {
-            const config = this.getConfig(ctx, wsIds, null, this.workspaceStorageAdapter)
-            const adapterConf = config.adapters[config.domains[DOMAIN_TX]]
-            const hierarchy = new Hierarchy()
-            const modelDb = new ModelDb(hierarchy)
-            const txAdapter = await adapterConf.factory(
-              ctx,
-              this.contextVars,
-              hierarchy,
-              adapterConf.url,
-              wsIds,
-              modelDb,
-              this.workspaceStorageAdapter
-            )
-            try {
-              await txAdapter.init?.(ctx, this.contextVars)
+      const result = await ctx.with(
+        'backup',
+        {},
+        (ctx) =>
+          backup(ctx, '', wsIds, storage, {
+            skipDomains: this.skipDomains,
+            force: true,
+            timeout: this.config.Timeout * 1000,
+            connectTimeout: 5 * 60 * 1000, // 5 minutes to,
+            blobDownloadLimit: this.downloadLimit,
+            skipBlobContentTypes: [],
+            fullVerify: this.fullCheck,
+            storageAdapter: this.workspaceStorageAdapter,
+            getLastTx: async (): Promise<Tx | undefined> => {
+              const config = this.getConfig(ctx, wsIds, null, this.workspaceStorageAdapter)
+              const adapterConf = config.adapters[config.domains[DOMAIN_TX]]
+              const hierarchy = new Hierarchy()
+              const modelDb = new ModelDb(hierarchy)
+              const txAdapter = await adapterConf.factory(
+                ctx,
+                this.contextVars,
+                hierarchy,
+                adapterConf.url,
+                wsIds,
+                modelDb,
+                this.workspaceStorageAdapter
+              )
+              try {
+                await txAdapter.init?.(ctx, this.contextVars)
 
-              return (
-                await txAdapter.rawFindAll<Tx>(
-                  DOMAIN_TX,
-                  { objectSpace: { $ne: core.space.Model } },
-                  { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
-                )
-              ).shift()
-            } finally {
-              await txAdapter.close()
+                return (
+                  await txAdapter.rawFindAll<Tx>(
+                    DOMAIN_TX,
+                    { objectSpace: { $ne: core.space.Model } },
+                    { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
+                  )
+                ).shift()
+              } finally {
+                await txAdapter.close()
+              }
+            },
+            getConnection: async () => {
+              if (pipeline === undefined) {
+                pipeline = await this.pipelineFactory(ctx, wsIds, true, () => {}, null)
+              }
+              return wrapPipeline(ctx, pipeline, wsIds)
+            },
+            progress: (progress) => {
+              return notify?.(progress) ?? Promise.resolve()
             }
-          },
-          getConnection: async () => {
-            if (pipeline === undefined) {
-              pipeline = await this.pipelineFactory(ctx, wsIds, true, () => {}, null)
-            }
-            return wrapPipeline(ctx, pipeline, wsIds)
-          },
-          progress: (progress) => {
-            return notify?.(progress) ?? Promise.resolve()
-          }
-        })
+          }),
+        { workspace: ws.uuid, url: ws.url }
       )
 
       if (result.result) {
@@ -444,28 +448,32 @@ export async function doRestoreWorkspace (
   rootCtx.warn('\nRESTORE WORKSPACE ', {
     workspace: wsIds.uuid
   })
-  const ctx = rootCtx.newChild(wsIds.uuid, { workspace: wsIds.uuid })
+  const ctx = rootCtx.newChild('doRestore', {})
   let pipeline: Pipeline | undefined
   try {
     const restoreIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
     const storage = await createStorageBackupStorage(ctx, backupAdapter, restoreIds, wsIds.uuid)
-    const result: boolean = await ctx.with('restore', { workspace: wsIds.uuid }, (ctx) =>
-      restore(ctx, '', wsIds, storage, {
-        date: -1,
-        skip: new Set(skipDomains),
-        recheck: false, // Do not need to recheck
-        storageAdapter: workspaceStorageAdapter,
-        cleanIndexState,
-        getConnection: async () => {
-          if (pipeline === undefined) {
-            pipeline = await pipelineFactory(ctx, wsIds, true, () => {}, null)
+    const result: boolean = await ctx.with(
+      'restore',
+      {},
+      (ctx) =>
+        restore(ctx, '', wsIds, storage, {
+          date: -1,
+          skip: new Set(skipDomains),
+          recheck: false, // Do not need to recheck
+          storageAdapter: workspaceStorageAdapter,
+          cleanIndexState,
+          getConnection: async () => {
+            if (pipeline === undefined) {
+              pipeline = await pipelineFactory(ctx, wsIds, true, () => {}, null)
+            }
+            return wrapPipeline(ctx, pipeline, wsIds)
+          },
+          progress: (progress) => {
+            return notify?.(progress) ?? Promise.resolve()
           }
-          return wrapPipeline(ctx, pipeline, wsIds)
-        },
-        progress: (progress) => {
-          return notify?.(progress) ?? Promise.resolve()
-        }
-      })
+        }),
+      { workspace: wsIds.uuid }
     )
     return result
   } catch (err: any) {

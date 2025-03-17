@@ -379,9 +379,9 @@ export function startHttpServer (
         const range = req.headers.range
         if (range !== undefined) {
           ctx
-            .with('file-range', { workspace: wsIds.uuid }, (ctx) =>
-              getFileRange(ctx, range, externalStorage, wsIds, name, wrapRes(res))
-            )
+            .with('file-range', {}, (ctx) => getFileRange(ctx, range, externalStorage, wsIds, name, wrapRes(res)), {
+              workspace: wsIds.uuid
+            })
             .catch((err) => {
               Analytics.handleError(err)
               ctx.error('/api/v1/blob get error', { err })

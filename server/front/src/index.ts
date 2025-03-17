@@ -472,9 +472,9 @@ export function start (
             return
           }
 
-          let blobInfo = await ctx.with('stat', { workspace: wsIds.uuid }, (ctx) =>
-            config.storageAdapter.stat(ctx, wsIds, uuid)
-          )
+          let blobInfo = await ctx.with('stat', {}, (ctx) => config.storageAdapter.stat(ctx, wsIds, uuid), {
+            workspace: wsIds.uuid
+          })
 
           if (blobInfo === undefined) {
             ctx.error('No such key', { file: uuid, workspace: wsIds.uuid })
