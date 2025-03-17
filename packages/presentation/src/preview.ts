@@ -11,9 +11,12 @@ export interface PreviewConfig {
 }
 
 export interface VideoMeta {
-  status: 'ready' | 'error' | 'inprogress' | 'queued' | 'downloading' | 'pendingupload'
-  thumbnail: string
-  hls: string
+  hls?: HLSMeta
+}
+
+export interface HLSMeta {
+  thumbnail?: string
+  source?: string
 }
 
 const defaultImagePreview = (): string => `/files/${getCurrentWorkspaceId()}?file=:blobId&size=:size`

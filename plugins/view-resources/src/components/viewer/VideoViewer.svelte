@@ -37,11 +37,16 @@
 >
   {#await getVideoMeta(value, name) then meta}
     {@const src = getFileUrl(value, name)}
-
-    {#if meta && meta.status === 'ready'}
-      <HlsVideo {src} {name} hlsSrc={meta.hls} hlsThumbnail={meta.thumbnail} />
-    {:else}
-      <Video {src} {name} />
-    {/if}
-  {/await}
+    <HlsVideo {src} hlsSrc={src} preload={true} />
+  {:else}
+    {#await getVideoMeta(value, name) then meta}
+      {#if meta?.hls?.source !== undefined}
+        {@const src = getFileUrl(value, name)}
+        <HlsVideo {src} {name} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
+      {:else}
+        {@const src = getFileUrl(value, name)}
+        <Video {src} {name} />
+      {/if}
+    {/await}
+  {/if}
 </div>

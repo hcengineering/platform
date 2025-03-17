@@ -17,6 +17,7 @@ import { MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { cacheControl } from '../const'
 import { Datalake } from '../datalake'
+import { requestHLS } from './video'
 
 export interface MultipartUpload {
   key: string
@@ -146,6 +147,11 @@ export async function handleMultipartUploadAbort (
   await bucket.abortMultipartUpload(ctx, uuid, { uploadId })
 
   ctx.info('multipart-abort', { workspace, name, uuid, uploadId })
+
+  const contentType = req.headers['content-type'] ?? 'application/octet-stream'
+  if (contentType.startsWith('video/')) {
+    void requestHLS(ctx, workspace, name)
+  }
 
   res.status(204).send()
 }
