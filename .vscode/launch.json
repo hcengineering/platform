@@ -746,6 +746,25 @@
       "cwd": "${workspaceRoot}/services/telegram-bot/pod-telegram-bot"
     },
     {
+      "name": "Debug datalake",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4030",
+        "SECRET": "secret",
+        "DB_URL": "",
+        "BUCKETS": "",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STATS_URL": "http://huly.local:4900",
+        "STREAM_URL": "http://huly.local:1080/recording"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/datalake/pod-datalake"
+    },
+    {
       "type": "chrome",
       "name": "Attach to Browser",
       "request": "attach",
