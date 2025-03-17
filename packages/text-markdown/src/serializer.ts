@@ -238,6 +238,10 @@ export const storeNodes: Record<string, NodeProcessor> = {
         ')'
     )
   },
+  markdown: (state, node) => {
+    state.renderInline(node)
+    state.closeBlock(node)
+  },
   comment: (state, node) => {
     state.write('<!--')
     state.renderInline(node)
