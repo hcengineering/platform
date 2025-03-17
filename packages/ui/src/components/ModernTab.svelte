@@ -77,7 +77,7 @@
     {/if}
   </span>
 
-  {#if canClose && !readonly}
+  {#if canClose && !readonly && highlighted}
     <div class="close-button {orientation}">
       <ButtonIcon icon={IconClose} size="min" on:click={() => dispatch('close')} />
     </div>
@@ -109,7 +109,7 @@
       padding: 0.125rem 0.125rem 0.125rem 0.5rem;
       height: 1.625rem;
       min-height: 1.625rem;
-      min-width: 4rem;
+      min-width: 5rem;
     }
 
     &.vertical {
