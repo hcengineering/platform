@@ -267,6 +267,7 @@ export const activityServerOperation: MigrateOperation = {
     await tryMigrate(client, serverActivityId, [
       {
         state: 'doc-update-messages',
+        mode: 'upgrade',
         func: async (client) => {
           // Recreate activity to avoid duplicates
           await client.deleteMany(DOMAIN_ACTIVITY, {

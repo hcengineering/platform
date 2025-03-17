@@ -181,17 +181,12 @@ export class WorkspaceWorker {
         await this.doSleep(ctx, opt)
       } else {
         void this.exec(async () => {
-          await this.doWorkspaceOperation(
-            ctx.newChild('workspaceOperation', {
-              workspace: workspace.uuid,
-              workspaceName: workspace.name
-            }),
-            workspace,
-            opt
-          ).catch((err) => {
-            Analytics.handleError(err)
-            ctx.error('error', { err })
-          })
+          await ctx
+            .with('workspaceOperation', {}, (ctx) => this.doWorkspaceOperation(ctx, workspace, opt))
+            .catch((err) => {
+              Analytics.handleError(err)
+              ctx.error('error', { err })
+            })
         })
       }
     }

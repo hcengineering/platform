@@ -236,14 +236,17 @@ export const chunterOperation: MigrateOperation = {
     await tryMigrate(client, chunterId, [
       {
         state: 'create-chat-messages',
+        mode: 'upgrade',
         func: convertCommentsToChatMessages
       },
       {
         state: 'remove-backlinks',
+        mode: 'upgrade',
         func: removeBacklinks
       },
       {
         state: 'migrate-chat-messages-space',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateMessagesSpace(
             client,
@@ -255,6 +258,7 @@ export const chunterOperation: MigrateOperation = {
       },
       {
         state: 'migrate-thread-messages-space',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateMessagesSpace(
             client,
@@ -266,18 +270,21 @@ export const chunterOperation: MigrateOperation = {
       },
       {
         state: 'remove-old-classes-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await removeOldClasses(client)
         }
       },
       {
         state: 'remove-wrong-activity-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await removeWrongActivity(client)
         }
       },
       {
         state: 'remove-chat-info-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:ChatInfo' as Ref<Class<Doc>> })
           await client.deleteMany(DOMAIN_TX, { objectClass: 'chunter:class:ChatInfo' })
@@ -291,6 +298,7 @@ export const chunterOperation: MigrateOperation = {
       },
       {
         state: 'remove-direct-doc-update-messages',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
             _class: activity.class.DocUpdateMessage,

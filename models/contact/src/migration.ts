@@ -22,7 +22,6 @@ import {
   type MigrationClient,
   type MigrationDocumentQuery,
   type MigrationUpgradeClient,
-  type ModelLogger,
   tryMigrate,
   tryUpgrade
 } from '@hcengineering/model'
@@ -264,7 +263,7 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
 }
 
 export const contactOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, contactId, [
       {
         state: 'employees',

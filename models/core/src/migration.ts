@@ -55,6 +55,7 @@ import {
   createDefaultSpace,
   tryMigrate,
   tryUpgrade,
+  type MigrateMode,
   type MigrateOperation,
   type MigrateUpdate,
   type MigrationClient,
@@ -64,7 +65,7 @@ import {
 } from '@hcengineering/model'
 import { type StorageAdapter } from '@hcengineering/storage'
 
-async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
+async function migrateStatusesToModel (client: MigrationClient, mode: MigrateMode): Promise<void> {
   // Move statuses to model:
   // Migrate the default ones with well-known ids as system's model
   // And the rest as user's model
@@ -887,26 +888,32 @@ export const coreOperation: MigrateOperation = {
     await tryMigrate(client, coreId, [
       {
         state: 'statuses-to-model',
+        mode: 'upgrade',
         func: migrateStatusesToModel
       },
       {
         state: 'all-space-to-typed',
+        mode: 'upgrade',
         func: migrateAllSpaceToTyped
       },
       {
         state: 'add-spaces-owner-v1',
+        mode: 'upgrade',
         func: migrateSpacesOwner
       },
       {
         state: 'old-statuses-transactions',
+        mode: 'upgrade',
         func: migrateStatusTransactions
       },
       {
         state: 'collaborative-content-to-storage',
+        mode: 'upgrade',
         func: migrateCollaborativeContentToStorage
       },
       {
         state: 'fix-backups-hash-timestamp-v2',
+        mode: 'upgrade',
         func: async (client: MigrationClient): Promise<void> => {
           const now = Date.now().toString(16)
           for (const d of client.hierarchy.domains()) {
@@ -916,6 +923,7 @@ export const coreOperation: MigrateOperation = {
       },
       {
         state: 'remove-collection-txes',
+        mode: 'upgrade',
         func: async (client) => {
           let processed = 0
           let last = 0
@@ -959,6 +967,7 @@ export const coreOperation: MigrateOperation = {
       },
       {
         state: 'move-model-txes',
+        mode: 'upgrade',
         func: async (client) => {
           await client.move(
             DOMAIN_TX,
@@ -971,15 +980,18 @@ export const coreOperation: MigrateOperation = {
       },
       {
         state: 'collaborative-docs-to-json',
+        mode: 'upgrade',
         func: migrateCollaborativeDocsToJson
       },
       {
         state: 'accounts-to-social-ids',
+        mode: 'upgrade',
         func: migrateAccounts
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
         state: 'space-members-to-account-uuids',
+        mode: 'upgrade',
         func: migrateSpaceMembersToAccountUuids
       }
     ])
