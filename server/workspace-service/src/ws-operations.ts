@@ -13,7 +13,7 @@ import core, {
   type Version,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import { consoleModelLogger, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
+import { consoleModelLogger, type MigrateMode, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { SessionDataImpl, wrapPipeline, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
 import { getServerPipeline, getTxAdapterFactory, sharedPipelineContextVars } from '@hcengineering/server-pipeline'
@@ -89,18 +89,27 @@ export async function createWorkspace (
 
       const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.ConfigUser)
 
-      await updateModel(ctx, wsId, migrationOperation, client, pipeline, ctxModellogger, async (value) => {
-        await handleWsEvent?.('progress', version, 10 + Math.round((Math.min(value, 100) / 100) * 10))
-      })
+      await updateModel(
+        childLogger,
+        wsId,
+        migrationOperation,
+        client,
+        pipeline,
+        ctxModellogger,
+        async (value) => {
+          await handleWsEvent?.('progress', version, 10 + Math.round((Math.min(value, 100) / 100) * 10))
+        },
+        'create'
+      )
 
       ctx.info('Starting init script if any')
-      await initializeWorkspace(ctx, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
+      await initializeWorkspace(childLogger, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
         ctx.info('Init script progress', { value })
         await handleWsEvent?.('progress', version, 20 + Math.round((Math.min(value, 100) / 100) * 60))
       })
 
       await upgradeWorkspaceWith(
-        ctx,
+        childLogger,
         version,
         txes,
         migrationOperation,
@@ -115,7 +124,8 @@ export async function createWorkspace (
         },
         false,
         'disable',
-        external
+        external,
+        'create'
       )
 
       await handleWsEvent?.('create-done', version, 100, '')
@@ -192,7 +202,8 @@ export async function upgradeWorkspace (
       handleWsEvent,
       forceUpdate,
       forceIndexes ? 'perform' : 'skip',
-      external
+      external,
+      'upgrade'
     )
   } finally {
     await pipeline?.close()
@@ -221,7 +232,8 @@ export async function upgradeWorkspaceWith (
   ) => Promise<void>,
   forceUpdate: boolean = true,
   updateIndexes: 'perform' | 'skip' | 'disable' = 'skip',
-  external: boolean = false
+  external: boolean = false,
+  mode: MigrateMode = 'create'
 ): Promise<void> {
   const versionStr = versionToString(version)
 
@@ -282,7 +294,8 @@ export async function upgradeWorkspaceWith (
       async (value) => {
         progress = value
       },
-      updateIndexes
+      updateIndexes,
+      mode
     )
 
     await handleWsEvent?.('upgrade-done', version, 100, '')

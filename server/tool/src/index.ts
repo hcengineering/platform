@@ -35,7 +35,7 @@ import core, {
   type Ref,
   type WithLookup
 } from '@hcengineering/core'
-import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
+import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate, type MigrateMode } from '@hcengineering/model'
 import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
 import { InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
@@ -146,7 +146,8 @@ export async function updateModel (
   connection: TxOperations,
   pipeline: Pipeline,
   logger: ModelLogger = consoleModelLogger,
-  progress: (value: number) => Promise<void>
+  progress: (value: number) => Promise<void>,
+  mode: MigrateMode
 ): Promise<void> {
   logger.log('connecting to transactor', { workspaceId })
 
@@ -163,7 +164,9 @@ export async function updateModel (
     let i = 0
     for (const op of migrateOperations) {
       const st = Date.now()
-      await op[1].upgrade(migrateState, async () => connection as any, logger)
+      await ctx.with(op[0], {}, async () => {
+        await op[1].upgrade(migrateState, async () => connection as any, mode)
+      })
       const tdelta = Date.now() - st
       if (tdelta > 0) {
         logger.log('Create', { name: op[0], time: tdelta })
@@ -238,7 +241,8 @@ export async function upgradeModel (
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>,
-  updateIndexes: 'perform' | 'skip' | 'disable' = 'skip'
+  updateIndexes: 'perform' | 'skip' | 'disable' = 'skip',
+  mode: MigrateMode = 'create'
 ): Promise<Tx[]> {
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
@@ -269,7 +273,7 @@ export async function upgradeModel (
 
       const t = Date.now()
       try {
-        await ctx.with(op[0], {}, (ctx) => preMigrate(preMigrateClient, logger))
+        await ctx.with(op[0], {}, (ctx) => preMigrate(preMigrateClient, logger, mode))
       } catch (err: any) {
         logger.error(`error during pre-migrate: ${op[0]} ${err.message}`, err)
         throw err
@@ -312,7 +316,7 @@ export async function upgradeModel (
     for (const op of migrateOperations) {
       try {
         const t = Date.now()
-        await ctx.with(op[0], {}, () => op[1].migrate(migrateClient, logger))
+        await ctx.with(op[0], {}, () => op[1].migrate(migrateClient, mode))
         const tdelta = Date.now() - t
         if (tdelta > 0) {
           logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
@@ -341,7 +345,7 @@ export async function upgradeModel (
     let i = 0
     for (const op of migrateOperations) {
       const t = Date.now()
-      await ctx.with(op[0], {}, () => op[1].upgrade(migrateState, async () => connection, logger))
+      await ctx.with(op[0], {}, () => op[1].upgrade(migrateState, async () => connection, mode))
       const tdelta = Date.now() - t
       if (tdelta > 0) {
         logger.log('upgrade:', { operation: op[0], time: tdelta, workspaceId: workspaceId.name })

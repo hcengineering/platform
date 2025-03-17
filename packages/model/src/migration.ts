@@ -123,20 +123,21 @@ export interface MigrationClient {
  * @public
  */
 export type MigrationUpgradeClient = Client
+export type MigrateMode = 'create' | 'upgrade'
 
 /**
  * @public
  */
 export interface MigrateOperation {
   // Perform low level migration prior to the model update
-  preMigrate?: (client: MigrationClient, logger: ModelLogger) => Promise<void>
+  preMigrate?: (client: MigrationClient, logger: ModelLogger, mode: MigrateMode) => Promise<void>
   // Perform low level migration
-  migrate: (client: MigrationClient, logger: ModelLogger) => Promise<void>
+  migrate: (client: MigrationClient, mode: MigrateMode) => Promise<void>
   // Perform high level upgrade operations.
   upgrade: (
     state: Map<string, Set<string>>,
     client: () => Promise<MigrationUpgradeClient>,
-    logger: ModelLogger
+    mode: MigrateMode
   ) => Promise<void>
 }
 
@@ -145,7 +146,8 @@ export interface MigrateOperation {
  */
 export interface Migrations {
   state: string
-  func: (client: MigrationClient) => Promise<void>
+  mode?: MigrateMode // If set only applied to specified mode
+  func: (client: MigrationClient, mode: MigrateMode) => Promise<void>
 }
 
 /**
@@ -153,23 +155,31 @@ export interface Migrations {
  */
 export interface UpgradeOperations {
   state: string
-  func: (client: MigrationUpgradeClient) => Promise<void>
+  mode?: MigrateMode // If set only applied to specified mode
+  func: (client: MigrationUpgradeClient, mode: MigrateMode) => Promise<void>
 }
 
 /**
  * @public
  */
-export async function tryMigrate (client: MigrationClient, plugin: string, migrations: Migrations[]): Promise<void> {
+export async function tryMigrate (
+  client: MigrationClient,
+  plugin: string,
+  migrations: Migrations[],
+  mode: MigrateMode = 'upgrade'
+): Promise<void> {
   const states = client.migrateState.get(plugin) ?? new Set()
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
-    try {
-      console.log('running migration', plugin, migration.state)
-      await migration.func(client)
-    } catch (err: any) {
-      console.error(err)
-      Analytics.handleError(err)
-      continue
+    if (migration.mode == null || migration.mode === mode) {
+      try {
+        console.log('running migration', plugin, migration.state)
+        await migration.func(client, mode)
+      } catch (err: any) {
+        console.error(err)
+        Analytics.handleError(err)
+        continue
+      }
     }
     const st: MigrationState = {
       plugin,
@@ -191,22 +201,25 @@ export async function tryUpgrade (
   state: Map<string, Set<string>>,
   client: () => Promise<MigrationUpgradeClient>,
   plugin: string,
-  migrations: UpgradeOperations[]
+  migrations: UpgradeOperations[],
+  mode: MigrateMode = 'upgrade'
 ): Promise<void> {
   const states = state.get(plugin) ?? new Set()
-  for (const migration of migrations) {
-    if (states.has(migration.state)) continue
+  for (const upgrades of migrations) {
+    if (states.has(upgrades.state)) continue
     const _client = await client()
-    try {
-      await migration.func(_client)
-    } catch (err: any) {
-      console.error(err)
-      Analytics.handleError(err)
-      continue
+    if (upgrades.mode == null || upgrades.mode === mode) {
+      try {
+        await upgrades.func(_client, mode)
+      } catch (err: any) {
+        console.error(err)
+        Analytics.handleError(err)
+        continue
+      }
     }
     const st: Data<MigrationState> = {
       plugin,
-      state: migration.state
+      state: upgrades.state
     }
     const tx = new TxOperations(_client, core.account.System)
     await tx.createDoc(core.class.MigrationState, core.space.Configuration, st)
