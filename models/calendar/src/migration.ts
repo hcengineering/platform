@@ -118,10 +118,11 @@ async function migrateTimezone (client: MigrationClient): Promise<void> {
 }
 
 export const calendarOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, calendarId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, calendarId, [
       {
         state: 'calendar001',
+        mode: 'upgrade',
         func: async (client) => {
           await fixEventDueDate(client)
           await migrateReminders(client)
@@ -131,14 +132,17 @@ export const calendarOperation: MigrateOperation = {
       },
       {
         state: 'timezone',
+        mode: 'upgrade',
         func: migrateTimezone
       },
       {
         state: 'migrate_calendars',
+        mode: 'upgrade',
         func: migrateCalendars
       },
       {
         state: 'move-events',
+        mode: 'upgrade',
         func: async (client) => {
           await client.move(
             DOMAIN_CALENDAR,
@@ -149,8 +153,8 @@ export const calendarOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, calendarId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, calendarId, [
       {
         state: 'default-space',
         func: (client) =>

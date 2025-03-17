@@ -163,14 +163,16 @@ async function processFixMigrateMarkupFor (
 }
 
 export const textEditorOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, 'text-editor', [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, 'text-editor', [
       {
         state: 'markup',
+        mode: 'upgrade',
         func: migrateMarkup
       },
       {
         state: 'fix-markup',
+        mode: 'upgrade',
         func: fixMigrateMarkup
       }
     ])

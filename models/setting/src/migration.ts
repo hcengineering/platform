@@ -25,8 +25,8 @@ import { settingId } from '@hcengineering/setting'
 import { DOMAIN_SETTING } from '.'
 
 export const settingOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, settingId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, settingId, [
       {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {

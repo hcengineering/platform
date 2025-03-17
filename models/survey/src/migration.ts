@@ -25,11 +25,11 @@ import {
 import survey, { surveyId } from './index'
 
 export const surveyOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, surveyId, [])
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, surveyId, [])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, surveyId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, surveyId, [
       {
         state: 'createSpace',
         func: async (client) => {

@@ -396,8 +396,8 @@ async function processMigrateJsonForDoc (
 }
 
 export const coreOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, coreId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, coreId, [
       {
         state: 'statuses-to-model',
         mode: 'upgrade',
@@ -497,8 +497,8 @@ export const coreOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, coreId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, coreId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

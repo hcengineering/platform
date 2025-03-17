@@ -13,16 +13,18 @@
 // limitations under the License.
 //
 
+import { type DocUpdateMessage } from '@hcengineering/activity'
 import { chunterId, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
+import contactPlugin, { type Person, type PersonAccount } from '@hcengineering/contact'
 import core, {
-  type Account,
+  DOMAIN_TX,
   TxOperations,
+  type Account,
   type Class,
   type Doc,
   type Domain,
   type Ref,
-  type Space,
-  DOMAIN_TX
+  type Space
 } from '@hcengineering/core'
 import {
   tryMigrate,
@@ -31,15 +33,13 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import activity, { migrateMessagesSpace, DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import notification from '@hcengineering/notification'
-import contactPlugin, { type Person, type PersonAccount } from '@hcengineering/contact'
-import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
-import { type DocUpdateMessage } from '@hcengineering/activity'
+import activity, { DOMAIN_ACTIVITY, migrateMessagesSpace } from '@hcengineering/model-activity'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
+import notification from '@hcengineering/notification'
 
-import chunter from './plugin'
 import { DOMAIN_CHUNTER } from './index'
+import chunter from './plugin'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
 
@@ -289,8 +289,8 @@ async function removeDuplicatedDirects (client: MigrationClient): Promise<void> 
 }
 
 export const chunterOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, chunterId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, chunterId, [
       {
         state: 'create-chat-messages',
         mode: 'upgrade',
@@ -374,8 +374,8 @@ export const chunterOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, chunterId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, chunterId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

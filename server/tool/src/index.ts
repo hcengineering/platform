@@ -330,7 +330,7 @@ export async function upgradeModel (
     }
 
     if (updateIndexes === 'skip') {
-      await tryMigrate(migrateClient, coreId, [
+      await tryMigrate('upgrade', migrateClient, coreId, [
         {
           state: 'indexes-v5',
           func: upgradeIndexes

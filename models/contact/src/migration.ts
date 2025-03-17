@@ -184,10 +184,11 @@ async function mergePersonSpaces (client: MigrationClient): Promise<void> {
 }
 
 export const contactOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, contactId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, contactId, [
       {
         state: 'employees',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_TX,
@@ -296,6 +297,7 @@ export const contactOperation: MigrateOperation = {
       },
       {
         state: 'removeEmployeeSpace',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_CONTACT,
@@ -310,12 +312,14 @@ export const contactOperation: MigrateOperation = {
       },
       {
         state: 'avatars',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateAvatars(client)
         }
       },
       {
         state: 'avatarsKind',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_CONTACT,
@@ -334,8 +338,8 @@ export const contactOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, contactId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, contactId, [
       {
         state: 'createSpace-v2',
         func: async (client) => {

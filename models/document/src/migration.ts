@@ -314,8 +314,8 @@ async function removeOldClasses (client: MigrationClient): Promise<void> {
   }
 }
 export const documentOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, documentId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, documentId, [
       {
         state: 'updateDocumentIcons',
         mode: 'upgrade',
