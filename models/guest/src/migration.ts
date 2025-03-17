@@ -13,14 +13,13 @@ import {
   tryMigrate,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient,
-  type ModelLogger
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { GUEST_DOMAIN } from '.'
 
 export const guestOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, guestId, [
       {
         state: 'migrateRoles',

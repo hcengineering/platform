@@ -20,8 +20,7 @@ import {
   type MigrateUpdate,
   type MigrationClient,
   type MigrationDocumentQuery,
-  type MigrationUpgradeClient,
-  type ModelLogger
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
 import request, { requestId, type Request } from '@hcengineering/request'
 
@@ -87,7 +86,7 @@ async function migrateRequestPersonAccounts (client: MigrationClient): Promise<v
 }
 
 export const requestOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, requestId, [
       {
         state: 'migrateRequestPersonAccounts',

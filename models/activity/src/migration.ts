@@ -23,6 +23,7 @@ import {
   type MigrationDocumentQuery,
   type MigrationIterator,
   type MigrationUpgradeClient,
+  type MigrateMode,
   tryMigrate
 } from '@hcengineering/model'
 import { htmlToMarkup } from '@hcengineering/text'
@@ -182,49 +183,60 @@ async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
 }
 
 export const activityOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, activityId, [
-      {
-        state: 'reactions',
-        func: migrateReactions
-      },
-      {
-        state: 'markup',
-        func: migrateMarkup
-      },
-      {
-        state: 'migrate-doc-update-messages-space',
-        func: async (client) => {
-          await migrateMessagesSpace(
-            client,
-            activity.class.DocUpdateMessage,
-            ({ attachedTo }) => attachedTo,
-            ({ attachedToClass }) => attachedToClass
-          )
+  async migrate (client: MigrationClient, mode: MigrateMode): Promise<void> {
+    await tryMigrate(
+      client,
+      activityId,
+      [
+        {
+          state: 'reactions',
+          mode: 'upgrade',
+          func: migrateReactions
+        },
+        {
+          state: 'markup',
+          mode: 'upgrade',
+          func: migrateMarkup
+        },
+        {
+          state: 'migrate-doc-update-messages-space',
+          mode: 'upgrade',
+          func: async (client) => {
+            await migrateMessagesSpace(
+              client,
+              activity.class.DocUpdateMessage,
+              ({ attachedTo }) => attachedTo,
+              ({ attachedToClass }) => attachedToClass
+            )
+          }
+        },
+        {
+          state: 'migrate-employee-space-v1',
+          mode: 'upgrade',
+          func: async () => {
+            await client.update<ActivityMessage>(
+              DOMAIN_ACTIVITY,
+              { space: 'contact:space:Employee' as Ref<Space> },
+              { space: contact.space.Contacts }
+            )
+          }
+        },
+        {
+          state: 'migrate-activity-markup',
+          mode: 'upgrade',
+          func: migrateActivityMarkup
+        },
+        {
+          state: 'move-reactions',
+          mode: 'upgrade',
+          func: async (client: MigrationClient): Promise<void> => {
+            await client.move(DOMAIN_ACTIVITY, { _class: activity.class.Reaction }, DOMAIN_REACTION)
+            await client.move(DOMAIN_ACTIVITY, { _class: activity.class.UserMentionInfo }, DOMAIN_USER_MENTION)
+          }
         }
-      },
-      {
-        state: 'migrate-employee-space-v1',
-        func: async () => {
-          await client.update<ActivityMessage>(
-            DOMAIN_ACTIVITY,
-            { space: 'contact:space:Employee' as Ref<Space> },
-            { space: contact.space.Contacts }
-          )
-        }
-      },
-      {
-        state: 'migrate-activity-markup',
-        func: migrateActivityMarkup
-      },
-      {
-        state: 'move-reactions',
-        func: async (client: MigrationClient): Promise<void> => {
-          await client.move(DOMAIN_ACTIVITY, { _class: activity.class.Reaction }, DOMAIN_REACTION)
-          await client.move(DOMAIN_ACTIVITY, { _class: activity.class.UserMentionInfo }, DOMAIN_USER_MENTION)
-        }
-      }
-    ])
+      ],
+      mode
+    )
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }
