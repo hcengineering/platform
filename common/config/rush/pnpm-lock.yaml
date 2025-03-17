@@ -1730,8 +1730,8 @@ importers:
         specifier: ^0.5.6
         version: 0.5.6
       koa:
-        specifier: ^2.15.3
-        version: 2.15.3
+        specifier: ^2.15.4
+        version: 2.16.0
       koa-bodyparser:
         specifier: ^4.4.1
         version: 4.4.1
@@ -3646,7 +3646,7 @@ packages:
     resolution: {integrity: sha512-42aWfPrimMfDKDi4YegyS7x+/0tlzaqwPQCULLanv3DMIlu96KTJR0fM5isWX2UViOqlGnX6YFgqWepcX+XMNg==}
 
   '@rush-temp/account-service@file:projects/account-service.tgz':
-    resolution: {integrity: sha512-oAW0UD+ThGbtuXdyaoWJoe93XY7bLO0K2uZneePiHsI3KZM3z9st9fjxSbJE4wmC9iE2wmzNYTN6AHrcFxvRrQ==, tarball: file:projects/account-service.tgz}
+    resolution: {integrity: sha512-M3O55fcDQTmXWWXaTht9dJUp5NaNsid5Q/b9CfzamUZeuGNL97xhM+oEg3NtF95mKLLKndrMCwrHJ1cmAuvTsg==, tarball: file:projects/account-service.tgz}
     version: 0.0.0
 
   '@rush-temp/account@file:projects/account.tgz':
@@ -3714,7 +3714,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/auth-providers@file:projects/auth-providers.tgz':
-    resolution: {integrity: sha512-jUJhz8FiPT3x0ybVjdPysK9HBA/E1UzU+QraBxLurUXjwKzqnob4Jw112MUJzyHjAiAmYQGYq7jEePiav6nnMQ==, tarball: file:projects/auth-providers.tgz}
+    resolution: {integrity: sha512-8027arO/VZMpGEl6EkwkHNFveRHfysqZagOnNgSIR0n5NikyICKv1/e2lCeUF8d1PvPgbrWFEGSQzZwwEHnmNg==, tarball: file:projects/auth-providers.tgz}
     version: 0.0.0
 
   '@rush-temp/backup-service@file:projects/backup-service.tgz':
@@ -4402,7 +4402,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-account@file:projects/pod-account.tgz':
-    resolution: {integrity: sha512-DCZlxY22Z2TNo08v2hcwz+2yg0HfoH2psDkdlVGlzX5KwZt6knEzAUZeb+MiOb7KpGSQoKp4jJDcydUcC+QsVQ==, tarball: file:projects/pod-account.tgz}
+    resolution: {integrity: sha512-k6QlwCTJlWZSIGpuh2EqFoFRKt2jBFvuq9Z8P/k/xP2ds3zigoFgxcN0DpGlt8ntylazQk9pQkWn7c+XMhcwKg==, tarball: file:projects/pod-account.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-ai-bot@file:projects/pod-ai-bot.tgz':
@@ -4434,7 +4434,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-fulltext@file:projects/pod-fulltext.tgz':
-    resolution: {integrity: sha512-qAc1qMufvQ5R7zo3iMcczXu7FPrsF3Ftam2OjmXYYw502Ud2o//qrNMBZYqah5OALgVKddSCrs2RITvy6JWg4g==, tarball: file:projects/pod-fulltext.tgz}
+    resolution: {integrity: sha512-rDotFbiaTJUlFISEWa7+hd74cQWXGijcNrq3qeAItyw4A2PVKLSQusomUp5Mo1oP0wIurREXjiKCN1I7I27eAA==, tarball: file:projects/pod-fulltext.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-github@file:projects/pod-github.tgz':
@@ -4470,7 +4470,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-stats@file:projects/pod-stats.tgz':
-    resolution: {integrity: sha512-ouA9lYKub8TxCkmuHM/0ntjEtt1wrvlQf0e/91eqYf53bva/0dRDeidmXRCgzpNqSNpL+eGdkKzMlAizjuXk6A==, tarball: file:projects/pod-stats.tgz}
+    resolution: {integrity: sha512-12Hecy11uK/HaEuI4s7rZedJiibXQX963SIIN7vj1jHPQ8uk2bywNRkWgGeXSZUE/40U+xwY39CfNYlcR3jyTw==, tarball: file:projects/pod-stats.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-telegram-bot@file:projects/pod-telegram-bot.tgz':
@@ -5130,7 +5130,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/workspace-service@file:projects/workspace-service.tgz':
-    resolution: {integrity: sha512-Rj6gppjTr+cKVJqzPxQ7PZy4reEXSEvjJouyZb7e3NApoh7WtqBWYau+N9i/jQw5C1dyGcH3HHaRBoFH9ZZcHA==, tarball: file:projects/workspace-service.tgz}
+    resolution: {integrity: sha512-OrGQXIKTqmQ+wKbfqMNYRVLCt0ZTyQmyvESGvtmCLJKVFRr/c6orMOkonDGuL8pcEumuegKcw/y0AcpOfg8vbQ==, tarball: file:projects/workspace-service.tgz}
     version: 0.0.0
 
   '@selderee/plugin-htmlparser2@0.11.0':
@@ -9902,8 +9902,8 @@ packages:
     resolution: {integrity: sha512-h/dxmSOvNEXpHQPRs4TV03TZVFyZIjmYQiTAW5JBFTYBOZ0VdpZ8QEE6Dud75g8z9JNGXi3m++VqRmqToB+c2A==}
     engines: {node: '>=8.0.0'}
 
-  koa@2.15.3:
-    resolution: {integrity: sha512-j/8tY9j5t+GVMLeioLaxweJiKUayFhlGqNTzf2ZGwL0ZCQijd2RLHK0SLW5Tsko8YyyqCZC2cojIb0/s62qTAg==}
+  koa@2.16.0:
+    resolution: {integrity: sha512-Afhqq0Vq3W7C+/rW6IqHVBDLzqObwZ07JaUNUEF8yCQ6afiyFE3RAy+i7V0E46XOWlH7vPWn/x0vsZwNy6PWxw==}
     engines: {node: ^4.8.4 || ^6.10.1 || ^7.10.1 || >= 8.1.4}
 
   kolorist@1.8.0:
@@ -15457,7 +15457,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      koa: 2.15.3
+      koa: 2.16.0
       koa-bodyparser: 4.4.1
       koa-router: 12.0.1
       mongodb: 6.12.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
@@ -16005,7 +16005,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      koa: 2.15.3
+      koa: 2.16.0
       koa-passport: 6.0.0
       koa-router: 12.0.1
       koa-session: 6.4.0
@@ -20096,7 +20096,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      koa: 2.15.3
+      koa: 2.16.0
       koa-bodyparser: 4.4.1
       koa-router: 12.0.1
       mongodb: 6.12.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
@@ -20437,7 +20437,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      koa: 2.15.3
+      koa: 2.16.0
       koa-bodyparser: 4.4.1
       koa-router: 12.0.1
       prettier: 3.2.5
@@ -20854,7 +20854,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      koa: 2.15.3
+      koa: 2.16.0
       koa-bodyparser: 4.4.1
       koa-router: 12.0.1
       prettier: 3.2.5
@@ -25709,7 +25709,7 @@ snapshots:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      koa: 2.15.3
+      koa: 2.16.0
       koa-bodyparser: 4.4.1
       koa-router: 12.0.1
       prettier: 3.2.5
@@ -27187,7 +27187,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.3.3)
       '@typescript-eslint/utils': 5.62.0(eslint@8.56.0)(typescript@5.3.3)
-      debug: 4.3.5
+      debug: 4.4.0
       eslint: 8.56.0
       tsutils: 3.21.0(typescript@5.3.3)
     optionalDependencies:
@@ -27239,7 +27239,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/visitor-keys': 5.62.0
-      debug: 4.3.5
+      debug: 4.4.0
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.6.3
@@ -27647,7 +27647,7 @@ snapshots:
 
   agent-base@7.1.1:
     dependencies:
-      debug: 4.3.5
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -31872,14 +31872,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  koa@2.15.3:
+  koa@2.16.0:
     dependencies:
       accepts: 1.3.8
       cache-content-type: 1.0.1
       content-disposition: 0.5.4
       content-type: 1.0.5
       cookies: 0.9.1
-      debug: 4.3.4
+      debug: 4.4.0
       delegates: 1.0.0
       depd: 2.0.0
       destroy: 1.2.0
@@ -33438,7 +33438,7 @@ snapshots:
   proxy-agent@6.4.0:
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.5
+      debug: 4.4.0
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.5
       lru-cache: 7.18.3
