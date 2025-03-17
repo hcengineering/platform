@@ -363,8 +363,8 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
 }
 
 export const trackerOperation: MigrateOperation = {
-  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
-    await tryMigrate(client, trackerId, [
+  async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
+    await tryMigrate(mode, client, trackerId, [
       {
         state: 'fixIncorrectIssueStatuses',
         func: migrateIssueStatuses
@@ -375,28 +375,32 @@ export const trackerOperation: MigrateOperation = {
       }
     ])
   },
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, trackerId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, trackerId, [
       {
         state: 'identifier',
+        mode: 'upgrade',
         func: migrateIdentifiers
       },
       {
         state: 'passIdentifierToParentInfo',
+        mode: 'upgrade',
         func: passIdentifierToParentInfo
       },
       {
         state: 'statusesToModel-2',
+        mode: 'upgrade',
         func: migrateStatusesToModel
       },
       {
         state: 'migrateDefaultTypeMixins',
+        mode: 'upgrade',
         func: migrateDefaultTypeMixins
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, trackerId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, trackerId, [
       {
         state: 'create-defaults',
         func: async (client) => {

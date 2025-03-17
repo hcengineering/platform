@@ -148,18 +148,19 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
 }
 
 export const leadOperation: MigrateOperation = {
-  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
-    await tryMigrate(client, leadId, [
+  async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
+    await tryMigrate(mode, client, leadId, [
       {
         state: 'migrate-default-statuses',
         func: (client) => migrateDefaultStatuses(client, logger)
       }
     ])
   },
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, leadId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, leadId, [
       {
         state: 'identifier',
+        mode: 'upgrade',
         func: migrateIdentifiers
       },
       {
@@ -170,6 +171,7 @@ export const leadOperation: MigrateOperation = {
       },
       {
         state: 'migrate-customer-description',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_CONTACT,
@@ -186,8 +188,8 @@ export const leadOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, leadId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, leadId, [
       {
         state: 'u-default-funnel',
         func: async (client) => {
