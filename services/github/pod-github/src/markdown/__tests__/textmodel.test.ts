@@ -545,7 +545,7 @@ A list of closed updated issues`
   })
 
   it('Check underline heading rule', () => {
-    const t1 = 'Hello\n---\nSome text'
+    const t1 = 'Hello\n---\n\nSome text'
     const msg = parseMessageMarkdown(t1, 'ref://', 'http://', 'http://')
     expect(msg.type).toEqual(MarkupNodeType.doc)
 
