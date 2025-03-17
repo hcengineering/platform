@@ -42,6 +42,70 @@ const tests: Array<{ name: string, markdown: string, markup: object }> = [
     }
   },
   {
+    name: 'heading',
+    markdown: '# heading 1',
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 1, marker: '#' },
+          content: [
+            {
+              type: 'text',
+              text: 'heading 1',
+              marks: []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    name: 'block heading level 1',
+    markdown: `heading 1
+===
+`,
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 1, marker: '=' },
+          content: [
+            {
+              type: 'text',
+              text: 'heading 1',
+              marks: []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    name: 'block heading level 2',
+    markdown: `heading 2
+---
+`,
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 2, marker: '-' },
+          content: [
+            {
+              type: 'text',
+              text: 'heading 2',
+              marks: []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
     name: 'text with heading',
     markdown: `# Lorem ipsum
 
@@ -52,7 +116,7 @@ Lorem ipsum dolor sit amet.
       content: [
         {
           type: 'heading',
-          attrs: { level: 1 },
+          attrs: { level: 1, marker: '#' },
           content: [
             {
               type: 'text',
@@ -85,7 +149,7 @@ Lorem ipsum dolor sit amet.
       content: [
         {
           type: 'heading',
-          attrs: { level: 1 },
+          attrs: { level: 1, marker: '#' },
           content: [
             {
               type: 'text',
@@ -146,7 +210,7 @@ Lorem ipsum dolor sit amet.
       content: [
         {
           type: 'heading',
-          attrs: { level: 1 },
+          attrs: { level: 1, marker: '#' },
           content: [
             {
               type: 'text',
@@ -211,7 +275,7 @@ Lorem ipsum dolor sit amet.
       content: [
         {
           type: 'heading',
-          attrs: { level: 1 },
+          attrs: { level: 1, marker: '#' },
           content: [
             {
               type: 'text',
@@ -314,7 +378,7 @@ Lorem ipsum dolor sit amet.
       content: [
         {
           type: 'heading',
-          attrs: { level: 1 },
+          attrs: { level: 1, marker: '#' },
           content: [
             {
               type: 'text',
@@ -431,7 +495,7 @@ Lorem ipsum dolor sit amet.
       content: [
         {
           type: 'heading',
-          attrs: { level: 1 },
+          attrs: { level: 1, marker: '#' },
           content: [
             {
               type: 'text',
@@ -506,7 +570,7 @@ Lorem ipsum dolor sit amet.
       content: [
         {
           type: 'heading',
-          attrs: { level: 1 },
+          attrs: { level: 1, marker: '#' },
           content: [
             {
               type: 'text',
@@ -670,7 +734,7 @@ Lorem ipsum dolor sit amet.
       content: [
         {
           type: 'heading',
-          attrs: { level: 1 },
+          attrs: { level: 1, marker: '#' },
           content: [
             {
               type: 'text',

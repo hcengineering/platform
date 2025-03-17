@@ -88,8 +88,18 @@ export const storeNodes: Record<string, NodeProcessor> = {
   },
   heading: (state, node) => {
     const attrs = nodeAttrs(node)
-    state.write(state.repeat('#', attrs.level !== undefined ? Number(attrs.level) : 1) + ' ')
-    state.renderInline(node)
+    if (attrs.marker === '=' && attrs.level === 1) {
+      state.renderInline(node)
+      state.ensureNewLine()
+      state.write('===\n')
+    } else if (attrs.marker === '-' && attrs.level === 2) {
+      state.renderInline(node)
+      state.ensureNewLine()
+      state.write('---\n')
+    } else {
+      state.write(state.repeat('#', attrs.level !== undefined ? Number(attrs.level) : 1) + ' ')
+      state.renderInline(node)
+    }
     state.closeBlock(node)
   },
   horizontalRule: (state, node) => {

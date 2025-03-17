@@ -446,7 +446,10 @@ const tokensBlock: Record<string, ParsingBlockRule> = {
   },
   heading: {
     block: MarkupNodeType.heading,
-    getAttrs: (tok: Token) => ({ level: Number(tok.tag.slice(1)) })
+    getAttrs: (tok: Token) => ({
+      level: Number(tok.tag.slice(1)),
+      marker: tok.markup
+    })
   },
   code_block: {
     block: MarkupNodeType.code_block,
