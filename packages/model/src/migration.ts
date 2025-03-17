@@ -163,10 +163,10 @@ export interface UpgradeOperations {
  * @public
  */
 export async function tryMigrate (
+  mode: MigrateMode,
   client: MigrationClient,
   plugin: string,
-  migrations: Migrations[],
-  mode: MigrateMode = 'upgrade'
+  migrations: Migrations[]
 ): Promise<void> {
   const states = client.migrateState.get(plugin) ?? new Set()
   for (const migration of migrations) {
@@ -198,11 +198,11 @@ export async function tryMigrate (
  * @public
  */
 export async function tryUpgrade (
+  mode: MigrateMode,
   state: Map<string, Set<string>>,
   client: () => Promise<MigrationUpgradeClient>,
   plugin: string,
-  migrations: UpgradeOperations[],
-  mode: MigrateMode = 'upgrade'
+  migrations: UpgradeOperations[]
 ): Promise<void> {
   const states = state.get(plugin) ?? new Set()
   for (const upgrades of migrations) {

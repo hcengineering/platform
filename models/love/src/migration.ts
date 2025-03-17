@@ -14,7 +14,7 @@
 //
 
 import contact from '@hcengineering/contact'
-import { type Space, TxOperations, type Ref } from '@hcengineering/core'
+import { TxOperations, type Ref, type Space } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
 import {
   MeetingStatus,
@@ -35,8 +35,8 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import love from './plugin'
 import { DOMAIN_LOVE, DOMAIN_MEETING_MINUTES } from '.'
+import love from './plugin'
 
 async function createDefaultFloor (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(love.class.Floor, {
@@ -96,16 +96,18 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
 }
 
 export const loveOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, loveId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, loveId, [
       {
         state: 'removeDeprecatedSpace',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'love:space:Rooms' as Ref<Space>, core.space.Workspace, [DOMAIN_LOVE])
         }
       },
       {
         state: 'setup-defaults-settings-v2',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await client.update(
             DOMAIN_LOVE,
@@ -151,12 +153,14 @@ export const loveOperation: MigrateOperation = {
       },
       {
         state: 'move-meeting-minutes',
+        mode: 'upgrade',
         func: async (client) => {
           await client.move(DOMAIN_LOVE, { _class: love.class.MeetingMinutes }, DOMAIN_MEETING_MINUTES)
         }
       },
       {
         state: 'default-meeting-minutes-status',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_MEETING_MINUTES,
@@ -167,8 +171,8 @@ export const loveOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, loveId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, loveId, [
       {
         state: 'initial-defaults',
         func: async (client) => {

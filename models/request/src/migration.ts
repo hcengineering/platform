@@ -86,10 +86,11 @@ async function migrateRequestPersonAccounts (client: MigrationClient): Promise<v
 }
 
 export const requestOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, requestId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, requestId, [
       {
         state: 'migrateRequestPersonAccounts',
+        mode: 'upgrade',
         func: migrateRequestPersonAccounts
       }
     ])

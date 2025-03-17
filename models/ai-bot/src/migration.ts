@@ -13,24 +13,24 @@
 // limitations under the License.
 //
 
+import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 import contact, { type Channel, type Person, type PersonAccount } from '@hcengineering/contact'
 import core, {
   DOMAIN_MODEL_TX,
+  TxProcessor,
+  type Domain,
+  type Ref,
   type TxCUD,
   type TxCreateDoc,
-  type Ref,
-  type TxUpdateDoc,
-  TxProcessor,
-  type Domain
+  type TxUpdateDoc
 } from '@hcengineering/core'
-import { DOMAIN_CHANNEL, DOMAIN_CONTACT } from '@hcengineering/model-contact'
 import {
   tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import aiBot, { aiBotId } from '@hcengineering/ai-bot'
+import { DOMAIN_CHANNEL, DOMAIN_CONTACT } from '@hcengineering/model-contact'
 
 const DOMAIN_ACTIVITY = 'activity' as Domain
 
@@ -74,8 +74,8 @@ async function migrateAiExtraAccounts (client: MigrationClient): Promise<void> {
 }
 
 export const aiBotOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, aiBotId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, aiBotId, [
       {
         state: 'remove-ai-bot-extra-accounts-v100',
         func: migrateAiExtraAccounts

@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
+import { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import {
+  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient,
-  tryMigrate
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { analyticsCollectorId } from '@hcengineering/analytics-collector'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
-import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 
 async function removeOnboardingChannels (client: MigrationClient): Promise<void> {
   const channels = await client.find(DOMAIN_SPACE, { 'analytics:mixin:AnalyticsChannel': { $exists: true } })
@@ -42,10 +42,11 @@ async function removeOnboardingChannels (client: MigrationClient): Promise<void>
 }
 
 export const analyticsCollectorOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, analyticsCollectorId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, analyticsCollectorId, [
       {
         state: 'remove-analytics-channels-v3',
+        mode: 'upgrade',
         func: removeOnboardingChannels
       }
     ])

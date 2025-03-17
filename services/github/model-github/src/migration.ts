@@ -127,20 +127,22 @@ async function migrateDocSyncInfo (client: MigrationClient): Promise<void> {
 }
 
 export const githubOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, githubId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, githubId, [
       {
         state: 'pull-requests',
+        mode: 'upgrade',
         func: migratePullRequests
       },
       {
         state: 'update-doc-sync-info',
+        mode: 'upgrade',
         func: migrateDocSyncInfo
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, githubId, [])
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, githubId, [])
   }
 }
 
@@ -301,36 +303,43 @@ async function processMigrateMarkupFor (
 }
 
 export const githubOperationPreTime: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, githubId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, githubId, [
       {
         state: 'fix-todo-spaces',
+        mode: 'upgrade',
         func: migrateTodoSpaces
       },
       {
         state: 'fix-missing-doc-sync-info',
+        mode: 'upgrade',
         func: migrateFixMissingDocSyncInfo
       },
       {
         state: 'remove-github-components',
+        mode: 'upgrade',
         func: migrateRemoveGithubComponents
       },
       {
         state: 'markup',
+        mode: 'upgrade',
         func: migrateMarkup
       },
       {
         state: 'migrate-missing-states',
+        mode: 'upgrade',
         func: migrateMissingStates
       },
       {
         state: 'remove-doc-sync-info-txes',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_TX, { objectClass: github.class.DocSyncInfo })
         }
       },
       {
         state: 'migrate-github-sync-domain',
+        mode: 'upgrade',
         func: async (client) => {
           await client.move(DOMAIN_GITHUB, { _class: github.class.DocSyncInfo }, DOMAIN_GITHUB_SYNC, 100)
           await client.move(DOMAIN_GITHUB, { _class: github.class.GithubUserInfo }, DOMAIN_GITHUB_USER)
