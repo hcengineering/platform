@@ -369,9 +369,7 @@ export class DatalakeClient {
     })
   }
 
-  // R2
-
-  async getR2UploadParams (ctx: MeasureContext, workspace: WorkspaceId): Promise<R2UploadParams> {
+  async getS3UploadParams (ctx: MeasureContext, workspace: WorkspaceId): Promise<R2UploadParams> {
     const path = `/upload/s3/${workspace}`
     const url = concatLink(this.endpoint, path)
 
@@ -380,7 +378,7 @@ export class DatalakeClient {
     return json
   }
 
-  async uploadFromR2 (
+  async createFromS3 (
     ctx: MeasureContext,
     workspace: WorkspaceId,
     objectName: string,

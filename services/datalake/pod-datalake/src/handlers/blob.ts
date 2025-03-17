@@ -122,7 +122,7 @@ export async function handleBlobHead (
   res.setHeader('Last-Modified', new Date(head.lastModified).toUTCString())
   res.setHeader('ETag', head.etag)
 
-  res.status(204).send()
+  res.status(200).send()
 }
 
 export async function handleBlobDelete (
