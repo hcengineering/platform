@@ -2093,7 +2093,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
         SELECT * 
         FROM "${translateDomain(DOMAIN_MODEL_TX)}" 
         WHERE "workspaceId" = $1::uuid 
-        ORDER BY _id::text ASC, "modifiedOn"::bigint ASC
+        ORDER BY "modifiedOn"::bigint ASC, _id::text ASC
       `
       return client.execute(query, [this.workspaceId])
     })
