@@ -55,8 +55,11 @@ export const main = async (): Promise<void> => {
 }
 
 export async function handleSendMail (client: MailClient, req: Request, res: Response): Promise<void> {
-  // Skip auth check, since service should be internal
-  const { from, to, subject, text, html, attachments } = req.body
+  const { from, to, subject, text, html, attachments, headers, apiKey } = req.body
+  if (process.env.API_KEY !== undefined && process.env.API_KEY !== apiKey) {
+    res.status(401).send({ err: 'Unauthorized' })
+    return
+  }
   const fromAddress = from ?? config.source
   if (text === undefined) {
     res.status(400).send({ err: "'text' is missing" })
@@ -82,6 +85,9 @@ export async function handleSendMail (client: MailClient, req: Request, res: Res
   }
   if (html !== undefined) {
     message.html = html
+  }
+  if (headers !== undefined) {
+    message.headers = headers
   }
   if (attachments !== undefined) {
     message.attachments = getAttachments(attachments)
