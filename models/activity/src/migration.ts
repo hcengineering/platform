@@ -38,7 +38,6 @@ import {
   type MigrationDocumentQuery,
   type MigrationIterator,
   type MigrationUpgradeClient,
-  type MigrateMode,
   tryMigrate
 } from '@hcengineering/model'
 import { htmlToMarkup } from '@hcengineering/text'
@@ -457,8 +456,8 @@ async function migrateSocialIdsInDocUpdates (client: MigrationClient): Promise<v
 }
 
 export const activityOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, mode: MigrateMode): Promise<void> {
-    await tryMigrate(client, activityId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, activityId, [
       {
         state: 'reactions',
         mode: 'upgrade',
@@ -507,6 +506,7 @@ export const activityOperation: MigrateOperation = {
       },
       {
         state: 'migrate-employee-space-v1',
+        mode: 'upgrade',
         func: async () => {
           await client.update<ActivityMessage>(
             DOMAIN_ACTIVITY,
@@ -517,10 +517,12 @@ export const activityOperation: MigrateOperation = {
       },
       {
         state: 'migrate-activity-markup',
+        mode: 'upgrade',
         func: migrateActivityMarkup
       },
       {
         state: 'move-reactions',
+        mode: 'upgrade',
         func: async (client: MigrationClient): Promise<void> => {
           await client.move(DOMAIN_ACTIVITY, { _class: activity.class.Reaction }, DOMAIN_REACTION)
           await client.move(DOMAIN_ACTIVITY, { _class: activity.class.UserMentionInfo }, DOMAIN_USER_MENTION)
@@ -528,15 +530,18 @@ export const activityOperation: MigrateOperation = {
       },
       {
         state: 'accounts-to-social-ids-v2',
+        mode: 'upgrade',
         func: migrateAccountsToSocialIds
       },
       {
         state: 'accounts-in-doc-updates-v2',
+        mode: 'upgrade',
         func: migrateAccountsInDocUpdates
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
         state: 'social-ids-in-doc-updates',
+        mode: 'upgrade',
         func: migrateSocialIdsInDocUpdates
       }
     ])

@@ -127,14 +127,16 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 }
 
 export const viewOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, viewId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, viewId, [
       {
         state: 'remove-done-state-pref',
+        mode: 'upgrade',
         func: removeDoneStatePref
       },
       {
         state: 'remove-done-state-filter',
+        mode: 'upgrade',
         func: removeDoneStateFilter
       },
       {

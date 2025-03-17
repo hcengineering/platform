@@ -37,8 +37,8 @@ import contact, { getAllAccounts } from '@hcengineering/contact'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 import { type DocUpdateMessage } from '@hcengineering/activity'
 
-import chunter from './plugin'
 import { DOMAIN_CHUNTER } from './index'
+import chunter from './plugin'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
 
@@ -232,8 +232,8 @@ async function removeWrongActivity (client: MigrationClient): Promise<void> {
 }
 
 export const chunterOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, chunterId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, chunterId, [
       {
         state: 'create-chat-messages',
         mode: 'upgrade',
@@ -308,8 +308,8 @@ export const chunterOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, chunterId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, chunterId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

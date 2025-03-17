@@ -8,6 +8,7 @@ else
   wget https://github.com/hcengineering/init/archive/refs/heads/${INIT_SCRIPTS_BRANCH}.zip
 fi
 
-unzip ${INIT_SCRIPTS_BRANCH}.zip -d ./temp 
+unzip ${INIT_SCRIPTS_BRANCH}.zip -d ./temp
+rm -rf ./init 
 mv temp/init-${INIT_SCRIPTS_BRANCH} ./init
 rm -rf ./temp

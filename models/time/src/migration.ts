@@ -44,18 +44,19 @@ async function fillProps (client: MigrationClient): Promise<void> {
 }
 
 export const timeOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, timeId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, timeId, [
       {
         state: 'm-time-001',
+        mode: 'upgrade',
         func: async (client) => {
           await fillProps(client)
         }
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, timeId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, timeId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

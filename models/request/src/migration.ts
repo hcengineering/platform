@@ -21,8 +21,8 @@ import {
 } from '@hcengineering/model'
 
 export const requestOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, requestId, [])
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, requestId, [])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }
