@@ -47,7 +47,7 @@ export async function handleS3CreateBlob (
     res.status(200).send()
   } catch (err: any) {
     const error = err instanceof Error ? err.message : String(err)
-    console.error('failed to create blob', { workspace, name, error })
+    ctx.error('failed to create blob', { workspace, name, error })
     res.status(500).send()
   }
 }
