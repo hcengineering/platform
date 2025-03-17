@@ -136,6 +136,7 @@ export default plugin(settingId, {
     Spaces: '' as Ref<Doc>,
     Backup: '' as Ref<Doc>,
     Export: '' as Ref<Doc>,
+    DisablePermissionsConfiguration: '' as Ref<Configuration>,
     Mailboxes: '' as Ref<Doc>
   },
   mixin: {

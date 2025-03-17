@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import core, { SortingOrder, type PluginConfiguration, type Tx, type TxUpdateDoc } from '@hcengineering/core'
+import core, {
+  type Configuration,
+  type PluginConfiguration,
+  type Ref,
+  SortingOrder,
+  toIdMap,
+  type Tx,
+  type TxUpdateDoc
+} from '@hcengineering/core'
 import { getResourcePlugin, type Plugin, type Resource } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
 import { addTxListener, createQuery } from '.'
@@ -41,10 +49,10 @@ export class ConfigurationManager {
   }
 }
 // Issue status live query
-export let configuration = new ConfigurationManager([], new Map())
-export const configurationStore = writable<ConfigurationManager>(configuration)
+export let pluginConfiguration = new ConfigurationManager([], new Map())
+export const pluginConfigurationStore = writable<ConfigurationManager>(pluginConfiguration)
 
-const configQuery = createQuery(true)
+const pluginConfigQuery = createQuery(true)
 
 addTxListener((txes: Tx[]) => {
   for (const tx of txes) {
@@ -63,15 +71,22 @@ addTxListener((txes: Tx[]) => {
  * @public
  */
 export function hasResource<T> (resource?: Resource<T>): boolean | undefined {
-  return configuration.hasResource(resource)
+  return pluginConfiguration.hasResource(resource)
 }
 
-configQuery.query(
+pluginConfigQuery.query(
   core.class.PluginConfiguration,
   {},
   (res) => {
-    configuration = new ConfigurationManager(res, new Map(res.map((it) => [it.pluginId, it])))
-    configurationStore.set(configuration)
+    pluginConfiguration = new ConfigurationManager(res, new Map(res.map((it) => [it.pluginId, it])))
+    pluginConfigurationStore.set(pluginConfiguration)
   },
   { sort: { pluginId: SortingOrder.Ascending } }
 )
+
+const configQuery = createQuery(true)
+export const configurationStore = writable<Map<Ref<Configuration>, Configuration>>(new Map())
+
+configQuery.query(core.class.Configuration, {}, (res) => {
+  configurationStore.set(toIdMap(res))
+})

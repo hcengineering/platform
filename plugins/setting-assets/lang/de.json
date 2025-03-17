@@ -148,6 +148,10 @@
     "MailboxErrorMailboxExists": "Dieser Postfachname ist bereits belegt",
     "MailboxErrorMailboxCountLimit": "Postfachlimit für Ihr Konto erreicht",
     "DeleteMailbox": "Postfach löschen",
-    "MailboxDeleteConfirmation": "Möchten Sie dieses Postfach wirklich löschen?"
+    "MailboxDeleteConfirmation": "Möchten Sie dieses Postfach wirklich löschen?",
+    "DisablePermissions": "Rollenbasierte Zugriffskontrolle deaktivieren",
+    "EnablePermissions": "Rollenbasierte Zugriffskontrolle aktivieren",
+    "DisablePermissionsConfirmation": "Sind Sie sicher, dass Sie die rollenbasierte Zugriffskontrolle deaktivieren möchten? Alle Rollen und Berechtigungen werden deaktiviert.",
+    "EnablePermissionsConfirmation": "Sind Sie sicher, dass Sie die rollenbasierte Zugriffskontrolle aktivieren möchten? Alle Rollen und Berechtigungen werden aktiviert."
   }
 }

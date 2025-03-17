@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core from '@hcengineering/core'
+  import core, { Configuration } from '@hcengineering/core'
   import {
     Breadcrumb,
     Header,
@@ -37,14 +37,12 @@
     type DropdownTextItem
   } from '@hcengineering/ui'
   import { loginId } from '@hcengineering/login'
-  import { EditableAvatar } from '@hcengineering/contact-resources'
+  import { EditableAvatar, getAccountClient } from '@hcengineering/contact-resources'
   import { translateCB } from '@hcengineering/platform'
-  import { getClient, MessageBox } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
   import { AvatarType } from '@hcengineering/contact'
-
-  import setting from '../plugin'
-  import { getAccountClient } from '../utils'
+  import settingsRes from '../plugin'
 
   let loading = true
   let isEditingName = false
@@ -90,8 +88,8 @@
 
   async function handleDelete (): Promise<void> {
     showPopup(MessageBox, {
-      label: setting.string.DeleteWorkspace,
-      message: setting.string.DeleteWorkspaceConfirm,
+      label: settingsRes.string.DeleteWorkspace,
+      message: settingsRes.string.DeleteWorkspaceConfirm,
       dangerous: true,
       action: async () => {
         await accountClient.deleteWorkspace()
@@ -105,7 +103,7 @@
   let workspaceSettings: WorkspaceSetting | undefined = undefined
 
   const client = getClient()
-  void client.findOne(setting.class.WorkspaceSetting, {}).then((r) => {
+  void client.findOne(settingsRes.class.WorkspaceSetting, {}).then((r) => {
     workspaceSettings = r
   })
 
@@ -113,10 +111,10 @@
     if (workspaceSettings === undefined) {
       const avatar = await avatarEditor.createAvatar()
       await client.createDoc(
-        setting.class.WorkspaceSetting,
+        settingsRes.class.WorkspaceSetting,
         core.space.Workspace,
         { icon: avatar.avatar },
-        setting.ids.WorkspaceSetting
+        settingsRes.ids.WorkspaceSetting
       )
       return
     }
@@ -131,6 +129,39 @@
     })
   }
 
+  const permissionConfigurationQuery = createQuery()
+  let disablePermissionsConfiguration: Configuration | undefined = undefined
+  $: arePermissionsDisabled = disablePermissionsConfiguration?.enabled ?? false
+
+  $: permissionConfigurationQuery.query(
+    core.class.Configuration,
+    { _id: settingsRes.ids.DisablePermissionsConfiguration },
+    (result) => {
+      disablePermissionsConfiguration = result[0]
+    }
+  )
+
+  function handleTogglePermissions (): void {
+    const newState = !arePermissionsDisabled
+    showPopup(MessageBox, {
+      label: newState ? settingsRes.string.DisablePermissions : settingsRes.string.EnablePermissions,
+      message: newState ? settingsRes.string.DisablePermissionsConfirmation : settingsRes.string.EnablePermissionsConfirmation,
+      dangerous: true,
+      action: async () => {
+        if (disablePermissionsConfiguration === undefined) {
+          await client.createDoc(
+            core.class.Configuration,
+            core.space.Workspace,
+            { enabled: newState },
+            settingsRes.ids.DisablePermissionsConfiguration
+          )
+        } else {
+          await client.update(disablePermissionsConfiguration, { enabled: newState })
+        }
+      }
+    })
+  }
+
   const weekInfoFirstDay: number = getLocalWeekStart()
   const hasWeekInfo: boolean = hasLocalWeekStart()
   const weekNames = getWeekDayNames()
@@ -138,7 +169,7 @@
   let selected: string
 
   $: translateCB(
-    hasWeekInfo ? setting.string.SystemSetupString : setting.string.DefaultString,
+    hasWeekInfo ? settingsRes.string.SystemSetupString : settingsRes.string.DefaultString,
     { day: weekNames?.get(weekInfoFirstDay)?.toLowerCase() ?? '' },
     $themeStore.language,
     (r) => {
@@ -159,7 +190,7 @@
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb icon={setting.icon.Setting} label={setting.string.General} size={'large'} isCurrent />
+    <Breadcrumb icon={settingsRes.icon.Setting} label={settingsRes.string.General} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
     {#if loading}
@@ -167,7 +198,7 @@
     {:else}
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content flex-col flex-gap-4">
-          <div class="title"><Label label={setting.string.Workspace} /></div>
+          <div class="title"><Label label={settingsRes.string.Workspace} /></div>
           <div class="ws">
             <EditableAvatar
               person={{
@@ -183,7 +214,7 @@
             <div class="editBox">
               <EditBox
                 bind:value={name}
-                placeholder={setting.string.WorkspaceName}
+                placeholder={settingsRes.string.WorkspaceName}
                 kind="ghost-large"
                 disabled={!isEditingName}
               />
@@ -202,13 +233,13 @@
               icon={IconDelete}
               kind="dangerous"
               on:click={handleDelete}
-              showTooltip={{ label: setting.string.DeleteWorkspace }}
+              showTooltip={{ label: settingsRes.string.DeleteWorkspace }}
             />
           </div>
           <div class="flex-col flex-gap-4 mt-6">
-            <div class="title"><Label label={setting.string.Calendar} /></div>
+            <div class="title"><Label label={settingsRes.string.Calendar} /></div>
             <div class="flex-row-center flex-gap-4">
-              <Label label={setting.string.StartOfTheWeek} />
+              <Label label={settingsRes.string.StartOfTheWeek} />
               <DropdownLabels
                 {items}
                 kind={'regular'}
@@ -218,6 +249,26 @@
                 on:selected={onSelected}
               />
             </div>
+          </div>
+          <div class="title mt-6"><Label label={settingsRes.string.Permissions} /></div>
+          <div class="delete">
+            <Button
+              kind="regular"
+              label={arePermissionsDisabled
+                ? settingsRes.string.EnablePermissions
+                : settingsRes.string.DisablePermissions}
+              on:click={handleTogglePermissions}
+            />
+          </div>
+          <div class="title mt-6"><Label label={settingsRes.string.Permissions} /></div>
+          <div class="delete">
+            <Button
+              kind="regular"
+              label={arePermissionsDisabled
+                ? settingsRes.string.EnablePermissions
+                : settingsRes.string.DisablePermissions}
+              on:click={handleTogglePermissions}
+            />
           </div>
         </div>
       </Scroller>
