@@ -792,7 +792,7 @@ export abstract class IssueSyncManagerBase {
 
       if (k === 'description' && pv != null) {
         const mdown = await this.provider.getMarkdown(pv)
-        pv = await this.provider.getMarkup(container.container, mdown, this.stripGuestLink)
+        pv = await this.provider.getMarkupSafe(container.container, mdown, this.stripGuestLink)
       }
       if (pv != null && pv !== v) {
         // We have conflict of values, assume platform is more proper one.
@@ -1008,7 +1008,7 @@ export abstract class IssueSyncManagerBase {
     if (platformUpdate.description != null) {
       // Need to convert to markdown
       issueUpdate.body = await this.provider.getMarkdown(platformUpdate.description ?? '')
-      issueData.description = await this.provider.getMarkup(
+      issueData.description = await this.provider.getMarkupSafe(
         container.container,
         issueUpdate.body ?? '',
         this.stripGuestLink

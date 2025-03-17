@@ -171,7 +171,7 @@ export class ProjectsSyncManager implements DocSyncManager {
 
       const messageData: MilestoneData = {
         label: milestoneExternal.label,
-        description: await this.provider.getMarkup(container.container, milestoneExternal.description)
+        description: await this.provider.getMarkupSafe(container.container, milestoneExternal.description)
       }
 
       await this.handleDiffUpdateMilestone(existing, info, messageData, container, milestoneExternal)
