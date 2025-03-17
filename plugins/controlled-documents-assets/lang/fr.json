@@ -219,6 +219,7 @@
     "Name": "Nom",
     "DraftRevision": "Révision du brouillon",
     "CreateNewDraft": "Créer une nouvelle version brouillon",
+    "RestoreDraft": "Restaurer le brouillon",
     "ChangeSeverity": "Changer la gravité",
     "Reference": "Référence",
     "History": "Historique",

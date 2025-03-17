@@ -217,6 +217,7 @@
     "Name": "Nome",
     "DraftRevision": "Revisione della bozza",
     "CreateNewDraft": "Crea nuova versione",
+    "RestoreDraft": "Ripristina bozza",
     "ChangeSeverity": "Cambia gravità",
     "Reference": "Riferimento",
     "History": "Storia",

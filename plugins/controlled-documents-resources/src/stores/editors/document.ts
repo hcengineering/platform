@@ -34,6 +34,7 @@ import {
 
 export * from './document/actions'
 export * from './document/canCreateNewDraft'
+export * from './document/canRestoreDraft'
 export * from './document/canCreateNewSnapshot'
 export * from './document/canSendForApproval'
 export * from './document/canSendForReview'
