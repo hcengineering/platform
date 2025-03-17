@@ -2810,6 +2810,13 @@ export async function checkBackupIntegrity (ctx: MeasureContext, storage: Backup
         modified = true
       }
     }
+    if (backupInfo.migrations == null) {
+      backupInfo.migrations = {}
+    }
+    if (!backupInfo.migrations.zeroCheckSize) {
+      backupInfo.migrations.zeroCheckSize = true
+      modified = true
+    }
     if (modified) {
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
