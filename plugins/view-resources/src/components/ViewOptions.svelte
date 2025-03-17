@@ -19,6 +19,8 @@
       ? [...viewOptions.groupBy]
       : [...viewOptions.groupBy, noCategory]
 
+  console.log('groups', groups)
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
@@ -31,6 +33,8 @@
       }
     })
     .concat({ id: noCategory, label: view.string.NoGrouping })
+
+  console.log('groupBy', groupBy)
 
   const orderBy = config.orderBy.map((p) => {
     const key = p[0]

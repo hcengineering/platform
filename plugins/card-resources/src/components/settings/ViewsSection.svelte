@@ -35,7 +35,8 @@
 
   $: query.query(
     view.class.Viewlet,
-    { attachTo: { $in: hierarchy.getDescendants(masterTag._id) } }, (res) => {
+    { attachTo: { $in: hierarchy.getDescendants(masterTag._id) } },
+    (res) => {
       viewlets = res
     },
     {

@@ -15,61 +15,20 @@
 <script lang="ts">
   import core, { AnyAttribute, Class, Doc, Ref, Type } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { createQuery, getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
+  import { getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
   import { Loading, resizeObserver } from '@hcengineering/ui'
-  import DropdownLabelsIntl from '@hcengineering/ui/src/components/DropdownLabelsIntl.svelte'
-  import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { deepEqual } from 'fast-equals'
+  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import view from '../plugin'
-  import { buildConfigLookup, getKeyLabel } from '../utils'
-  import ViewletClassSettings from './ViewletClassSettings.svelte'
+  import { buildConfigLookup, getKeyLabel, ViewletClassSettings } from '@hcengineering/view-resources'
 
-  export let viewlet: Viewlet
+  export let viewlet: Data<Viewlet>
 
   const dispatch = createEventDispatcher()
 
-  let preferences: ViewletPreference[] = []
-  const preferenceQuery = createQuery()
-
-  let selected = viewlet._id
-
-  let viewlets: Viewlet[] = []
-
-  $: client
-    .findAll(view.class.Viewlet, {
-      attachTo: {
-        $in: client
-          .getHierarchy()
-          .getDescendants(viewlet.attachTo)
-          .filter((it) => !client.getHierarchy().isMixin(it) || it === viewlet.attachTo)
-      },
-      variant: viewlet.variant ? viewlet.variant : { $exists: false },
-      descriptor: viewlet.descriptor
-    })
-    .then((res) => {
-      viewlets = res
-    })
-
-  $: if (viewlet && viewlets.length > 0) {
-    preferenceQuery.query(
-      view.class.ViewletPreference,
-      {
-        space: core.space.Workspace,
-        attachedTo: { $in: Array.from(viewlets.map((it) => it._id)) }
-      },
-      (res) => {
-        preferences = res
-        loading = false
-      }
-    )
-  } else {
-    preferenceQuery.unsubscribe()
-  }
-
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  let loading = true
+
+  $: citems = getConfig(viewlet, undefined)
 
   interface Config {
     value: string | BuildModelKey | undefined
@@ -257,37 +216,7 @@
       })
     }
 
-    return preference === undefined ? result : setStatus(result, preference)
-  }
-
-  async function save (viewletId: Ref<Viewlet>, items: Array<Config | AttributeConfig>): Promise<void> {
-    dispatch('save', items)
-  }
-
-  async function restoreDefault (viewletId: Ref<Viewlet>): Promise<void> {
-    const preference = preferences.find((p) => p.attachedTo === viewletId)
-    if (preference !== undefined) {
-      await client.remove(preference)
-    }
-  }
-
-  function setStatus (result: Config[], preference: ViewletPreference): Config[] {
-    for (const key of result) {
-      if (!isAttribute(key)) continue
-      const index = preference.config.findIndex((p) => deepEqual(p, key.value))
-      key.enabled = index !== -1
-      key.order = index !== -1 ? index : undefined
-    }
-    if (viewlet.configOptions?.sortable) {
-      result.sort((a, b) => {
-        if (!isAttribute(a) || !isAttribute(b)) return 0
-        if (a.order === undefined && b.order === undefined) return 0
-        if (a.order === undefined) return 1
-        if (b.order === undefined) return -1
-        return a.order - b.order
-      })
-    }
-    return result
+    return preference === undefined ? result : []
   }
 </script>
 
@@ -295,37 +224,17 @@
   <div class="menu-space" />
   <div class="scroll">
     <div class="box">
-      {#if loading}
-        <Loading />
-      {:else}
-        {#if viewlets.length > 1}
-          <div class="p-1">
-            <DropdownLabelsIntl
-              kind={'ghost'}
-              items={viewlets.map((it) => ({ id: it._id, label: hierarchy.getClass(it.attachTo).label }))}
-              {selected}
-              on:selected={(evt) => {
-                selected = evt.detail
-              }}
-              width={'100%'}
-            />
-          </div>
-        {/if}
-        {@const selectedViewlet = viewlets.find((it) => it._id === selected)}
-        {@const selectedPreferece = preferences.find((it) => it.attachedTo === selected)}
-        {#if selectedViewlet}
-          {@const citems = getConfig(selectedViewlet, selectedPreferece)}
-          <ViewletClassSettings
-            {viewlet}
-            items={citems}
-            on:restoreDefaults={() => {
-              restoreDefault(selected)
-            }}
-            on:save={(evt) => {
-              save(selected, evt.detail)
-            }}
-          />
-        {/if}
+      {#if citems !== undefined}
+        <ViewletClassSettings
+          {viewlet}
+          items={citems}
+          on:restoreDefaults={() => {
+            // TODO
+          }}
+          on:save={(event) => {
+            dispatch('update', event.detail)
+          }}
+        />
       {/if}
     </div>
   </div>

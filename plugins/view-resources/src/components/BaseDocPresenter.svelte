@@ -31,7 +31,7 @@
 
 {#if _object}
   <div class="flex-presenter">
-    <ObjectIcon value={_object} {size}/>
+    <ObjectIcon value={_object} {size} />
     {#await getDocLinkTitle(client, _object._id, _object._class, _object) then title}
       {title}
     {/await}
