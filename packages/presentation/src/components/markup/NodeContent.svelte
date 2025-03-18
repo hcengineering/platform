@@ -54,7 +54,13 @@
     }
     nodes.forEach((node) => {
       const reg = node.text?.match(/\P{Emoji}/gu)
-      matches.push(reg != null && reg.length > 0 && [65039, 65038, 8205].every((code) => code !== reg[0].charCodeAt(0)))
+      const regInc = node.text?.match(
+        /\p{Emoji}\uFE0F|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?/gu
+      )
+      matches.push(
+        (reg != null && reg.length > 0 && [65039, 65038, 8205].every((code) => code !== reg[0].charCodeAt(0))) ||
+          regInc == null
+      )
     })
     return matches.every((m) => !m)
   }
