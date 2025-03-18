@@ -34,7 +34,6 @@
   const query = createQuery()
 
   query.query(core.class.Association, {}, (res) => {
-    console.log(res)
     associations = res
   })
 
