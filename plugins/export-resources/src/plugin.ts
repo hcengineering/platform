@@ -8,7 +8,6 @@ import exportPlugin, { exportId } from '@hcengineering/export'
 export default mergeIds(exportId, exportPlugin, {
   string: {
     WorkspaceNamePattern: '' as IntlString,
-    Export: '' as IntlString,
     DataToExport: '' as IntlString,
     ExportDocuments: '' as IntlString,
     ExportIssues: '' as IntlString,
