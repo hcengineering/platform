@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { Button, showPopup } from '@hcengineering/ui'
-  import setting from '@hcengineering/setting'
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { MessageBox } from '@hcengineering/presentation'
   import { type TransformConfig } from '@hcengineering/export'
@@ -50,9 +49,9 @@
 
       if (!res.ok) {
         showPopup(MessageBox, {
-          label: setting.string.ExportRequestFailed,
+          label: plugin.string.ExportRequestFailed,
           kind: 'error',
-          message: setting.string.ExportRequestFailedMessage
+          message: plugin.string.ExportRequestFailedMessage
         })
       }
 
@@ -78,9 +77,9 @@
       console.log('Export downloaded successfully')
     } catch (err) {
       showPopup(MessageBox, {
-        label: setting.string.ExportRequestFailed,
+        label: plugin.string.ExportRequestFailed,
         kind: 'error',
-        message: setting.string.ExportRequestFailedMessage
+        message: plugin.string.ExportRequestFailedMessage
       })
     }
   }
@@ -88,11 +87,11 @@
 
 {#if visible}
   <Button
-    icon={setting.icon.Export}
-    label={setting.string.Export}
+    icon={plugin.icon.Export}
+    label={plugin.string.Export}
     kind={'regular'}
     size={'medium'}
-    showTooltip={{ label: setting.string.Export }}
+    showTooltip={{ label: plugin.string.Export }}
     on:click={handleExport}
   />
 {/if}
