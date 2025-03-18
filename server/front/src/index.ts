@@ -926,6 +926,9 @@ async function getGeneratePreview (
       }
       sharp.cache(false)
 
+      // auto orient image based on exif to prevent resize use wrong orientation
+      pipeline = pipeline.rotate()
+
       pipeline = pipeline.resize({
         width: size,
         fit: 'cover',
