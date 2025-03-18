@@ -41,6 +41,7 @@
         body: JSON.stringify({
           _class,
           query,
+          attributesOnly: true,
           config
         })
       })

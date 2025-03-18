@@ -189,7 +189,7 @@ export function createModel (builder: Builder): void {
               createComponentProps: { shouldSaveDraft: false },
               exportVisible: true,
               exportConfig: {
-                skipAttributes: ['_class', 'avatarType'],
+                skipAttributes: ['_class', 'avatarType', 'space'],
                 attributeKeyMap: { city: 'location' },
                 attributeTransforms: {
                   channels: {
@@ -197,7 +197,7 @@ export function createModel (builder: Builder): void {
                       {
                         type: 'group_by',
                         config: {
-                          field: 'data.provider',
+                          keyField: 'data.provider',
                           valueField: 'data.value'
                         }
                       },
