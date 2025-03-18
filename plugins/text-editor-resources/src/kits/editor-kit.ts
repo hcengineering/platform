@@ -19,7 +19,9 @@ import {
   BackgroundColor,
   CodeExtension,
   codeOptions,
+  CommentNode,
   InlineCommentMark,
+  MarkdownNode,
   TextColor,
   TextStyle
 } from '@hcengineering/text'
@@ -158,7 +160,7 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
       .then((kitExtensionCreators) => {
         resolve(
           Extension.create<EditorKitOptions>({
-            name: 'defaultKit',
+            name: 'editorKit',
 
             addExtensions () {
               const mode: TextEditorMode = this.options.mode ?? 'full'
@@ -193,7 +195,16 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                 [150, InlineCommentMark.configure({})],
                 [200, CodeBlockHighlighExtension.configure(codeBlockHighlightOptions)],
                 [210, CodeExtension.configure(codeOptions)],
-                [220, HardBreakExtension.configure({ shortcuts: mode })]
+                [220, HardBreakExtension.configure({ shortcuts: mode })],
+                [230, CommentNode],
+                [
+                  240,
+                  MarkdownNode.configure({
+                    HTMLAttributes: {
+                      class: 'proseCodeBlock'
+                    }
+                  })
+                ]
               ]
 
               if (this.options.submit !== false) {

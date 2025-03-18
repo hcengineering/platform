@@ -18,6 +18,7 @@
 
   import CodeBlockNode from './CodeBlockNode.svelte'
   import ObjectNode from './ObjectNode.svelte'
+  import MarkdownNode from './MarkdownNode.svelte'
   import Node from './Node.svelte'
 
   export let node: MarkupNode
@@ -198,6 +199,8 @@
         {/each}
       {/if}
     </th>
+  {:else if node.type === MarkupNodeType.markdown}
+    <MarkdownNode {node} {preview} />
   {:else if node.type === MarkupNodeType.mermaid}
     <!-- TODO -->
   {:else if node.type === MarkupNodeType.comment}

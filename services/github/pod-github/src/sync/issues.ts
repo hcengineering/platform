@@ -220,7 +220,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         const update: IssueUpdate = {}
         const du: DocumentUpdate<DocSyncInfo> = {}
         if (event.changes.body !== undefined) {
-          update.description = await this.provider.getMarkup(integration, event.issue.body, this.stripGuestLink)
+          update.description = await this.provider.getMarkupSafe(integration, event.issue.body, this.stripGuestLink)
           du.markdown = await this.provider.getMarkdown(update.description)
         }
         if (event.changes.title !== undefined) {
@@ -413,7 +413,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         addHulyLink: false, // Do not need, since we create comment on Github about issue is connected.
         current: {
           title: issueExternal.title,
-          description: await this.provider.getMarkup(container.container, issueExternal.body, this.stripGuestLink)
+          description: await this.provider.getMarkupSafe(container.container, issueExternal.body, this.stripGuestLink)
         }
       }
       needCreateConnectedAtHuly = true
@@ -501,7 +501,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     const issueData = {
       title: issueExternal.title,
-      description: await this.provider.getMarkup(container.container, issueExternal.body, this.stripGuestLink),
+      description: await this.provider.getMarkupSafe(container.container, issueExternal.body, this.stripGuestLink),
       assignee: assignees[0]?.person,
       repository: info.repository,
       remainingTime: 0
@@ -767,7 +767,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           },
           { url: issueExternal.url, id: existing._id }
         )
-        issueData.description = await this.provider.getMarkup(container.container, body, this.stripGuestLink)
+        issueData.description = await this.provider.getMarkupSafe(container.container, body, this.stripGuestLink)
       } else if (hasFieldStateChanges) {
         await this.ctx.withLog(
           '==> updateIssue',

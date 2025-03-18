@@ -305,7 +305,7 @@ export class ReviewSyncManager implements DocSyncManager {
     const account = existing?.modifiedBy ?? (await this.provider.getAccount(review.author))?._id ?? core.account.System
 
     const messageData: ReviewData = {
-      body: await this.provider.getMarkup(container.container, review.body),
+      body: await this.provider.getMarkupSafe(container.container, review.body),
       state: toReviewState(review.state),
       comments: (review.comments?.nodes ?? []).map((it) => it.url)
     }
