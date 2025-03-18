@@ -53,13 +53,18 @@
       const attributesOnly = selectedDetailLevel === 'attributesOnly'
 
       const res = await fetch(
-        `${baseUrl}/exportAsync?class=${selectedClass}&type=${selectedFormat}&attributesOnly=${attributesOnly}`,
+        `${baseUrl}/exportAsync?format=${selectedFormat}`,
         {
-          method: 'GET',
+          method: 'POST',
           headers: {
-            Authorization: 'Bearer ' + token,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify({
+            _class: selectedClass,
+            attributesOnly,
+            config: {}
+          })
         }
       )
 
