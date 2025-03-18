@@ -230,7 +230,7 @@
           {viewlet}
           items={citems}
           on:restoreDefaults={() => {
-            // TODO
+            // TODO UBERF-9639: restore defaults
           }}
           on:save={(event) => {
             dispatch('update', event.detail)
