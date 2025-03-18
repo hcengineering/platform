@@ -105,7 +105,7 @@ export async function generateFolderLocation (loc: Location, id: Ref<Folder>): P
 
   return {
     loc: {
-      path: [appComponent, workspace, driveId],
+      path: [appComponent, workspace, driveId, doc.space],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {
