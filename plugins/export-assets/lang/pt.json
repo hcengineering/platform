@@ -1,5 +1,25 @@
 {
   "string": {
-    "PrintToPDF": "Imprimir em PDF"
+    "WorkspaceNamePattern": "O nome deve ter 40 caracteres ou menos, não está vazio e não pode conter caracteres especiais (<, >, /)",
+    "Export": "Exportar",
+    "DataToExport": "Dados para exportar",
+    "ExportDocuments": "Documentos",
+    "ExportIssues": "Problemas",
+    "ExportTestCases": "Casos de teste",
+    "ExportTestRuns": "Execuções de teste",
+    "ExportTestPlans": "Planos de teste",
+    "ExportFormat": "Formato de exportação",
+    "ExportJSON": "JSON",
+    "ExportCSV": "CSV",
+    "ExportUnifiedFormat": "Formato Unificado Huly",
+    "ExportIncludeContent": "Incluir conteúdo",
+    "ExportEverything": "Tudo",
+    "ExportAttributesOnly": "Apenas atributos",
+    "ExportRequestSuccess": "Exportação iniciada.",
+    "ExportRequestSuccessMessage": "Exportação iniciada. Você receberá uma notificação em sua caixa de entrada quando for concluída.",
+    "ExportRequestFailed": "Falha ao enviar exportação.",
+    "ExportRequestFailedMessage": "Ocorreu um erro ao enviar a exportação. Por favor, tente novamente mais tarde.",
+    "ExportCompleted": "Exportação concluída. Seus arquivos estão prontos. Você pode baixá-los do drive.",
+    "ExportFailed": "Falha ao exportar dados. Por favor, tente novamente mais tarde."
   }
 }

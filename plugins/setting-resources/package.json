@@ -57,6 +57,7 @@
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/templates": "^0.6.11",
     "@hcengineering/workbench": "^0.6.16",
-    "@hcengineering/workbench-resources": "^0.6.1"
+    "@hcengineering/workbench-resources": "^0.6.1",
+    "@hcengineering/export": "^0.6.0"
   }
 }

@@ -17,7 +17,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { MessageBox } from '@hcengineering/presentation'
   import { Breadcrumb, Button, DropdownLabelsIntl, Header, Label, Scroller, showPopup } from '@hcengineering/ui'
-  import setting from '../plugin'
+  import plugin from '../plugin'
 
   const classItems = [
     { id: 'tracker:class:Issue', label: setting.string.ExportIssues },
@@ -48,7 +48,7 @@
 
     try {
       isExporting = true
-      const baseUrl = getMetadata(setting.metadata.ExportUrl) ?? ''
+      const baseUrl = getMetadata(plugin.metadata.ExportUrl) ?? ''
       const token = getMetadata(presentation.metadata.Token) ?? ''
       const attributesOnly = selectedDetailLevel === 'attributesOnly'
 

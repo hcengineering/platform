@@ -36,6 +36,7 @@ import {
   type WorkspaceSetting
 } from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
+import exportPlugin from '@hcengineering/export'
 import setting from './plugin'
 
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
@@ -341,9 +342,9 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       name: 'export',
-      label: setting.string.Export,
-      icon: setting.icon.Export,
-      component: setting.component.Export,
+      label: exportPlugin.string.Export,
+      icon: exportPlugin.icon.Export,
+      component: exportPlugin.component.ExportSettings,
       group: 'settings-editor',
       role: AccountRole.User,
       order: 4800

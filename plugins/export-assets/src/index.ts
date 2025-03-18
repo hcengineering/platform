@@ -17,6 +17,7 @@ import { loadMetadata } from '@hcengineering/platform'
 import exportPlugin from '@hcengineering/export'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
+
 loadMetadata(exportPlugin.icon, {
   Export: `${icons}#export`
 })

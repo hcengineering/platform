@@ -9,16 +9,17 @@ export const exportId = 'export' as Plugin
 
 export const exportPlugin = plugin(exportId, {
   string: {
-    Export: '' as IntlString // todo: add more export strings
+    Export: '' as IntlString // todo: remove?
   },
   component: {
-    ExportButton: '' as AnyComponent
+    ExportButton: '' as AnyComponent,
+    ExportSettings: '' as AnyComponent
   },
   icon: {
     Export: '' as Asset
   },
   metadata: {
-    ExportURL: '' as Metadata<string>
+    ExportUrl: '' as Metadata<string>
   }
 })
 

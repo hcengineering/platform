@@ -40,7 +40,7 @@
     ViewletSettingButton
   } from '@hcengineering/view-resources'
   import { ParentsNavigationModel } from '@hcengineering/workbench'
-  import { type TransformConfig } from '@hcengineering/export'
+  import { ExportButton, type TransformConfig } from '@hcengineering/export'
   import ComponentNavigator from './ComponentNavigator.svelte'
 
   export let _class: Ref<Class<Doc>>

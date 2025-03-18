@@ -19,6 +19,8 @@
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { MessageBox } from '@hcengineering/presentation'
   import { type TransformConfig } from '@hcengineering/export'
+  import plugin from '../plugin'
+
   export let _class: Ref<Class<Doc>>
   export let query: string = ''
   export let visible: boolean = false
@@ -26,7 +28,7 @@
 
   async function handleExport (): Promise<void> {
     try {
-      const baseUrl = getMetadata(setting.metadata.ExportUrl)
+      const baseUrl = getMetadata(plugin.metadata.ExportUrl)
       const token = getMetadata(presentation.metadata.Token)
       if (token == null) {
         throw new Error('No token available')

@@ -47,6 +47,7 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/export": "^0.6.0",
-    "@hcengineering/sign": "^0.6.0"
+    "@hcengineering/sign": "^0.6.0",
+    "@hcengineering/setting": "^0.6.17"
   }
 }

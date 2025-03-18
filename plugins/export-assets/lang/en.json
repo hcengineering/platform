@@ -1,5 +1,25 @@
 {
   "string": {
-      "PrintToPDF": "Print to PDF"
+    "WorkspaceNamePattern": "Name must be 40 characters or less, not empty, and cannot contain special characters (<, >, /)",
+    "Export": "Export",
+    "DataToExport": "Data to export",
+    "ExportDocuments": "Documents",
+    "ExportIssues": "Issues",
+    "ExportTestCases": "Test Cases",
+    "ExportTestRuns": "Test Runs", 
+    "ExportTestPlans": "Test Plans",
+    "ExportFormat": "Export format",
+    "ExportJSON": "JSON",
+    "ExportCSV": "CSV",
+    "ExportUnifiedFormat": "Huly Unified Format",
+    "ExportIncludeContent": "Include content",
+    "ExportEverything": "Everything",
+    "ExportAttributesOnly": "Attributes only",
+    "ExportRequestSuccess": "Export started.",
+    "ExportRequestSuccessMessage": "Export started. You will receive a notification in your Inbox when it completes.",
+    "ExportRequestFailed": "Failed to submit export.",
+    "ExportRequestFailedMessage": "Error occurred while submitting export. Please try again later.",
+    "ExportCompleted": "Export completed. Your files are ready. You can download them from the drive.",
+    "ExportFailed": "Failed to export data. Please try again later."
   }
 }
