@@ -1801,7 +1801,7 @@
     {
       "packageName": "@hcengineering/love",
       "projectFolder": "plugins/love",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/love-assets",
