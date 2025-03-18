@@ -15,7 +15,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
 
-  import card, { MasterTag } from '@hcengineering/card'
+  import { MasterTag } from '@hcengineering/card'
   import core, { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -23,7 +23,9 @@
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import { ButtonIcon, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import view, { type Viewlet } from '@hcengineering/view'
+
   import CreateView from './CreateView.svelte'
+  import card from '../../plugin'
 
   export let masterTag: MasterTag
 
@@ -46,14 +48,6 @@
     }
   )
 
-  function getViewletTitle (viewlet: WithLookup<Viewlet>): IntlString {
-    const { title } = viewlet
-    if (title !== undefined && title.length > 0) {
-      return title
-    }
-    return viewlet.$lookup?.descriptor?.label ?? card.string.Untitled
-  }
-
   function addRelation (): void {
     showPopup(CreateView, {
       tag: masterTag
@@ -61,7 +55,7 @@
   }
 
   const handleSelect = (viewlet: Viewlet): void => {
-    // $settingsStore = { id: viewlet._id, component: setting.component.EditRelation, props: { association } }
+    $settingsStore = { id: viewlet._id, component: card.component.EditView, props: { viewlet } }
   }
   onDestroy(() => {
     clearSettingsStore()
@@ -88,7 +82,11 @@
           </div>
         {/if}
         <div class="hulyTableAttr-content__row-label font-medium-14 cursor-pointer">
-          <Label label={getViewletTitle(viewlet)} />
+          {#if viewlet.title !== undefined}
+            <span>{viewlet.title}</span>
+          {:else}
+            <Label label={viewlet.$lookup?.descriptor?.label ?? card.string.Untitled} />
+          {/if}
         </div>
       </button>
     {/each}

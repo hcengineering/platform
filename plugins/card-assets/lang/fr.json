@@ -26,6 +26,7 @@
     "Children": "Enfants",
     "Views": "Vues",
     "CreateView": "Créer une vue",
+    "EditView": "Modifier la vue",
     "SelectViewType": "Sélectionner le type de vue"
   }
 }

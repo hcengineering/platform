@@ -37,7 +37,8 @@ export default mergeIds(cardId, card, {
     RelationsSection: '' as AnyComponent,
     SetParentActionPopup: '' as AnyComponent,
     RelationSetting: '' as AnyComponent,
-    ViewsSection: '' as AnyComponent
+    ViewsSection: '' as AnyComponent,
+    EditView: '' as AnyComponent
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,
@@ -68,6 +69,7 @@ export default mergeIds(cardId, card, {
     CreateChild: '' as IntlString,
     Children: '' as IntlString,
     CreateView: '' as IntlString,
+    EditView: '' as IntlString,
     SelectViewType: '' as IntlString
   }
 })

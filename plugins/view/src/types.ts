@@ -434,6 +434,7 @@ export interface Viewlet extends Doc {
   viewOptions?: ViewOptionsModel
   variant?: string
   props?: Record<string, any>
+  title?: string
 }
 
 /**

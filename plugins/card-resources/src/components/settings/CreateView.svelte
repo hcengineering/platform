@@ -16,24 +16,23 @@
   import { createEventDispatcher } from 'svelte'
 
   import { MasterTag, Tag } from '@hcengineering/card'
-  import core, { Class, ClassifierKind, Data, Ref } from '@hcengineering/core'
+  import core, { Data, Ref } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
-  import { EditBox, Icon, Label } from '@hcengineering/ui'
+  import { EditBox, Label } from '@hcengineering/ui'
   import { ObjectBox } from '@hcengineering/view-resources'
-  import view, { Viewlet, ViewletDescriptor } from '@hcengineering/view'
+  import view, { Viewlet, ViewletDescriptor, ViewOptionsModel } from '@hcengineering/view'
 
+  import ViewSettingButton from './ViewSettingButton.svelte'
   import card from '../../plugin'
-  import ViewOptionsButton from './ViewOptionsButton'
-  import ViewSettingButton from './ViewSettingButton'
 
   export let tag: MasterTag | Tag
-  export let _class: Ref<Class<MasterTag>> | Ref<Class<Tag>>
 
-  let name: string
+  let title: string
   let type: Ref<ViewletDescriptor> | undefined = undefined
 
   let viewletConfig: Data<Viewlet> | undefined = undefined
   $: viewletConfig = {
+    title,
     attachTo: tag._id,
     descriptor: type ?? view.viewlet.Table,
     config: [
@@ -66,18 +65,12 @@
     if (type === undefined || viewletConfig === undefined) return
     await client.createDoc(view.class.Viewlet, core.space.Model, viewletConfig)
   }
-
-  async function updateConfig (evt: CustomEvent<Array<Config | AttributeConfig>>): Promise<void> {
-    if (type === undefined || viewletConfig === undefined) return
-    viewletConfig.config = evt.detail
-    await client.update(viewletConfig)
-  }
 </script>
 
 <Card
-  label={card.string.CreateView}
+  label={card.string.EditView}
   okAction={save}
-  canSave={!(name === undefined || name.trim().length === 0) && type !== undefined}
+  canSave={type !== undefined}
   on:close={() => {
     dispatch('close')
   }}
@@ -92,7 +85,7 @@
       </div>
     {/if}
   </svelte:fragment>
-  <div class="mb-2"><EditBox autoFocus bind:value={name} placeholder={core.string.Name} /></div>
+  <div class="mb-2"><EditBox autoFocus bind:value={title} placeholder={view.string.Title} /></div>
   <svelte:fragment slot="pool">
     <ObjectBox
       _class={view.class.ViewletDescriptor}

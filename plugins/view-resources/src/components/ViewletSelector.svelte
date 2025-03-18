@@ -60,7 +60,8 @@
     return {
       id: views._id,
       icon: views.$lookup?.descriptor?.icon,
-      tooltip: views.$lookup?.descriptor?.label
+      tooltip: views.$lookup?.descriptor?.label,
+      label: views.title
     }
   })
 

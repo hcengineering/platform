@@ -13,8 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-
   import { getClient } from '@hcengineering/presentation'
   import { ButtonIcon, showPopup, closeTooltip, IconOptions } from '@hcengineering/ui'
   import view, { ViewOptionsModel, Viewlet } from '@hcengineering/view'
@@ -55,7 +53,11 @@
       )
       .map((a) => a.name)
     console.log('customAttributes', customAttributes)
-    const mergedModel: ViewOptionsModel = viewlet.viewOptions ?? {}
+    const mergedModel: ViewOptionsModel = viewlet.viewOptions ?? {
+      groupBy: [],
+      orderBy: [],
+      other: []
+    }
 
     mergedModel.groupBy = Array.from(new Set([...mergedModel.groupBy, ...customAttributes]))
     mergedModel.groupBy = mergedModel.groupBy.filter((it, idx, arr) => arr.indexOf(it) === idx)

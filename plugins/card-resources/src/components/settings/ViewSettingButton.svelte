@@ -15,16 +15,13 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
-  import view, { ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
-  import { getViewOptions, viewOptionStore, defaultOptions } from '@hcengineering/view-resources'
+  import view, { Viewlet } from '@hcengineering/view'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewSetting.svelte'
 
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
-  export let viewOptions: ViewOptions | undefined = undefined
   export let viewlet: Viewlet | undefined = undefined
   export let disabled: boolean = false
-  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -47,12 +44,10 @@
       }
     )
   }
-
-  $: viewOptions = viewlet?.viewOptions
 </script>
 
 {#if viewlet}
-  {#if viewOptions !== undefined}
+  {#if viewlet?.viewOptions !== undefined}
     <ViewOptionsButton {viewlet} {kind} />
   {/if}
   <ButtonIcon

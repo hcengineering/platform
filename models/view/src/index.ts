@@ -319,6 +319,7 @@ export class TViewlet extends TDoc implements Viewlet {
   hiddenKeys?: string[]
   viewOptions?: ViewOptionsModel
   props?: Record<string, any>
+  title?: IntlString
 }
 
 @Model(view.class.Action, core.class.Doc, DOMAIN_MODEL)
