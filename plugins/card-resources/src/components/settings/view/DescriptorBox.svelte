@@ -13,22 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-import { Ref } from '@hcengineering/core'
-import { ObjectBox } from '@hcengineering/view-resources'
-import view, { ViewletDescriptor } from '@hcengineering/view'
-import { IntlString } from '@hcengineering/platform'
+  import { Ref } from '@hcengineering/core'
+  import { ObjectBox } from '@hcengineering/view-resources'
+  import view, { ViewletDescriptor } from '@hcengineering/view'
+  import { IntlString } from '@hcengineering/platform'
 
-export let value: Ref<ViewletDescriptor> | undefined = undefined
-export let supportedTypes: Ref<ViewletDescriptor>[] = [view.viewlet.Table, view.viewlet.List]
-export let label: IntlString
-
+  export let value: Ref<ViewletDescriptor> | undefined = undefined
+  export let supportedTypes: Ref<ViewletDescriptor>[] = [view.viewlet.Table, view.viewlet.List]
+  export let label: IntlString
 </script>
 
 <ObjectBox
   _class={view.class.ViewletDescriptor}
-  label={label}
+  {label}
   showNavigate={false}
-  bind:value={value}
+  bind:value
   docQuery={{
     _id: { $in: supportedTypes }
   }}

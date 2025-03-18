@@ -37,7 +37,6 @@
     // Use one ancestor, viewlet class and all derived ones.
     const classes = [viewlet.attachTo].filter((it, idx, arr) => arr.indexOf(it) === idx)
 
-    console.log('classes', classes)
     const customAttributes = classes
       .flatMap((c) => {
         const hierarchy = client.getHierarchy()
@@ -52,7 +51,6 @@
         (attr) => attr.isCustom && !attr.isHidden && [core.class.RefTo, core.class.EnumOf].includes(attr.type._class)
       )
       .map((a) => a.name)
-    console.log('customAttributes', customAttributes)
     const mergedModel: ViewOptionsModel = viewlet.viewOptions ?? {
       groupBy: [],
       orderBy: [],

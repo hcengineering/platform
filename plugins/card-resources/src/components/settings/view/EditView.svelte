@@ -22,6 +22,7 @@
   import DescriptorBox from './DescriptorBox.svelte'
   import ViewSettingButton from './ViewSettingButton.svelte'
   import card from '../../../plugin'
+  import { updateViewletConfig } from './utils'
 
   export let viewlet: Viewlet
 
@@ -52,8 +53,7 @@
     })
   }
   function onSave (items: any[]): void {
-    const enabledAttibutes = items.filter((it) => it.type === 'attribute' && it.enabled).map((it) => it.value)
-    viewlet.config = enabledAttibutes
+    updateViewletConfig(viewlet, items)
   }
 </script>
 
@@ -69,18 +69,15 @@
     <Button icon={IconDelete} kind={'dangerous'} on:click={remove} />
   </svelte:fragment>
   <div class="hulyModal-content__titleGroup">
-    <ModernEditbox bind:value={title} label={view.string.Title} size={'large'} kind={'ghost'}/>
+    <ModernEditbox bind:value={title} label={view.string.Title} size={'large'} kind={'ghost'} />
   </div>
   <div class="hulyModal-content__settingsSet">
     <div class="hulyModal-content__settingsSet-line">
       <span class="label">
-        <Label label={setting.string.Type} />
+        <Label label={view.string.Type} />
       </span>
       <div class="pl-2">
-        <DescriptorBox
-          label={card.string.SelectViewType}
-          bind:value={type}
-        />
+        <DescriptorBox label={card.string.SelectViewType} bind:value={type} />
       </div>
     </div>
     <div class="hulyModal-content__settingsSet-line">

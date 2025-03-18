@@ -24,6 +24,7 @@
   import DescriptorBox from './DescriptorBox.svelte'
   import ViewSettingButton from './ViewSettingButton.svelte'
   import card from '../../../plugin'
+  import { updateViewletConfig } from './utils'
 
   export let tag: MasterTag | Tag
 
@@ -65,8 +66,7 @@
   }
   function onConfigUpdate (items: any[]): void {
     if (viewletConfig === undefined) return
-    const enabledAttibutes = items.filter((it) => it.type === 'attribute' && it.enabled).map((it) => it.value)
-    viewletConfig.config = enabledAttibutes
+    updateViewletConfig(viewletConfig, items)
   }
 </script>
 
@@ -90,10 +90,7 @@
   </svelte:fragment>
   <div class="mb-2"><EditBox autoFocus bind:value={title} placeholder={view.string.Title} /></div>
   <svelte:fragment slot="pool">
-    <DescriptorBox
-      label={card.string.SelectViewType}
-      bind:value={descriptor}
-    />
+    <DescriptorBox label={card.string.SelectViewType} bind:value={descriptor} />
     <ViewSettingButton
       viewlet={viewletConfig}
       disabled={descriptor === undefined}

@@ -261,7 +261,24 @@
   }
 
   async function save (viewletId: Ref<Viewlet>, items: Array<Config | AttributeConfig>): Promise<void> {
-    dispatch('save', items)
+    const configValues = items.filter(
+      (p) =>
+        p.value !== undefined &&
+        ((p.type === 'divider' && typeof p.value === 'object' && p.value.displayProps?.grow) ||
+          (p.type === 'attribute' && (p as AttributeConfig).enabled))
+    )
+    const config = configValues.map((p) => p.value as string | BuildModelKey)
+    const preference = preferences.find((p) => p.attachedTo === viewletId)
+    if (preference !== undefined) {
+      await client.update(preference, {
+        config
+      })
+    } else {
+      await client.createDoc(view.class.ViewletPreference, core.space.Workspace, {
+        attachedTo: viewletId,
+        config
+      })
+    }
   }
 
   async function restoreDefault (viewletId: Ref<Viewlet>): Promise<void> {
