@@ -232,7 +232,6 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
       const txOperations = new TxOperations(platformClient, account._id)
 
-      // Always synchronous - similar to /export?sync=true
       const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
       try {
         const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, workspace, config)

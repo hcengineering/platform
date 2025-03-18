@@ -40,7 +40,6 @@
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
   import IconVacancy from './icons/Vacancy.svelte'
-  import { getMetadata } from '@hcengineering/platform'
 
   let search: string = ''
   let searchQuery: DocumentQuery<Doc> = {}

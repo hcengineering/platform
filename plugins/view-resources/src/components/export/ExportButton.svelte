@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Button } from '@hcengineering/ui'
+  import { Button, showPopup } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import { getMetadata } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
+  import presentation, { MessageBox } from '@hcengineering/presentation'
 
   export let _class: Ref<Class<Doc>>
   export let query: string = ''
@@ -32,30 +32,6 @@
         throw new Error('No token available')
       }
 
-      const talantsConfig = {
-        skipAttributes: ['_class', 'avatarType'],
-        attributeKeyMap: { city: 'location' },
-        attributeTransforms: {
-          channels: {
-            operations: [
-              {
-                type: 'group_by',
-                config: {
-                  field: 'data.provider',
-                  valueField: 'data.value'
-                }
-              },
-              {
-                type: 'join',
-                config: {
-                  delimiter: ', '
-                }
-              }
-            ]
-          }
-        }
-      }
-
       const res = await fetch(`${baseUrl}/exportSync?format=csv`, {
         method: 'POST',
         headers: {
@@ -65,12 +41,16 @@
         body: JSON.stringify({
           _class,
           query,
-          config: talantsConfig
+          config
         })
       })
 
       if (!res.ok) {
-        throw new Error('Export failed to start')
+        showPopup(MessageBox, {
+          label: setting.string.ExportRequestFailed,
+          kind: 'error',
+          message: setting.string.ExportRequestFailedMessage
+        })
       }
 
       // Handle successful response with file download
@@ -94,7 +74,11 @@
 
       console.log('Export downloaded successfully')
     } catch (err) {
-      console.error('Export error:', err)
+      showPopup(MessageBox, {
+        label: setting.string.ExportRequestFailed,
+        kind: 'error',
+        message: setting.string.ExportRequestFailedMessage
+      })
     }
   }
 </script>
@@ -102,10 +86,10 @@
 {#if visible}
   <Button
     icon={setting.icon.Export}
-    label={'Export'}
+    label={setting.string.Export}
     kind={'regular'}
     size={'medium'}
-    showTooltip={{ label: 'Export' }}
+    showTooltip={{ label: setting.string.Export }}
     on:click={handleExport}
   />
 {/if}

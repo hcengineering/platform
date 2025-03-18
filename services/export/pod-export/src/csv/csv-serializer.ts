@@ -51,7 +51,6 @@ export class UnifiedCsvSerializer {
     const csvData: Record<string, any> = {}
 
     Object.entries(data).forEach(([key, value]) => {
-      console.log('key', key, 'value', value)
       const formatted = this.transformer.transformAttribute(key, value)
       Object.entries(formatted).forEach(([formattedKey, formattedValue]) => {
         csvData[formattedKey] = formattedValue

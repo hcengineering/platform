@@ -57,6 +57,8 @@
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined = undefined
+  export let exportVisible: boolean = false
+  export let exportConfig: Record<string, any> = {}
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -64,7 +66,6 @@
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
   let filterVisible: boolean = false
-  let exportVisible: boolean = true // todo: false by default
   let preference: ViewletPreference | undefined
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
@@ -132,7 +133,7 @@
     <FilterButton {_class} bind:visible={filterVisible} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
-    <ExportButton {_class} bind:visible={exportVisible} bind:query={resultQuery} />
+    <ExportButton {_class} bind:visible={exportVisible} bind:query={resultQuery} bind:config={exportConfig} />
     {#if createLabel && createComponent}
       <Button
         icon={IconAdd}

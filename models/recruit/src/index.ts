@@ -186,7 +186,31 @@ export function createModel (builder: Builder): void {
               createEvent: RecruitEvents.PlusTalentButtonClicked,
               createLabel: recruit.string.TalentCreateLabel,
               createComponent: recruit.component.CreateCandidate,
-              createComponentProps: { shouldSaveDraft: false }
+              createComponentProps: { shouldSaveDraft: false },
+              exportVisible: true,
+              exportConfig: {
+                skipAttributes: ['_class', 'avatarType'],
+                attributeKeyMap: { city: 'location' },
+                attributeTransforms: {
+                  channels: {
+                    operations: [
+                      {
+                        type: 'group_by',
+                        config: {
+                          field: 'data.provider',
+                          valueField: 'data.value'
+                        }
+                      },
+                      {
+                        type: 'join',
+                        config: {
+                          delimiter: ', '
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             position: 'vacancy'
           },

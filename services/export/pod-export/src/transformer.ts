@@ -75,12 +75,12 @@ export class Transformer {
   }
 
   public transformAttribute (key: string, value: any): Record<string, any> {
-    // 1. Если ключ в списке пропускаемых, возвращаем пустой объект
+    // 1. if attribute is not needed, return empty object
     if (!this.isAttributeNeeded(key)) {
       return {}
     }
 
-    // Проверяем, есть ли специальная трансформация для этого ключа
+    // check if there is a special transformation for this key
     const transform = this.attributeTransforms.get(key)
     if (transform !== undefined) {
       return this.applyTransform(value, transform)
@@ -88,12 +88,12 @@ export class Transformer {
 
     const transformedKey = this.transformAttributeKey(key)
 
-    // 4. Если значение - массив, возвращаем {key, value.length}
+    // 4. if value is an array, return {key, value.length}
     if (Array.isArray(value)) {
       return { [transformedKey]: value.length }
     }
 
-    // 3. Если значение - объект, возвращаем объект с префиксом "key."
+    // 3. if value is an object, return object with prefix "key."
     if (value !== null && typeof value === 'object') {
       const result: Record<string, any> = {}
       for (const [objKey, objValue] of Object.entries(value)) {
@@ -102,7 +102,7 @@ export class Transformer {
       return result
     }
 
-    // 2. Если значение - примитив, возвращаем {key, value}
+    // 2. if value is a primitive, return {key, value}
     return { [transformedKey]: value }
   }
 
@@ -113,17 +113,17 @@ export class Transformer {
   private applyTransform (value: any, transform: AttributeTransform): Record<string, any> {
     let result = value
 
-    // Применяем операции последовательно
+    // apply operations sequentially
     for (const operation of transform.operations) {
       result = this.applyOperation(result, operation)
     }
 
-    // Если результат - объект, возвращаем его
+    // if result is an object, return it
     if (result !== null && typeof result === 'object' && !Array.isArray(result)) {
       return result as Record<string, any>
     }
 
-    // Иначе оборачиваем в объект с ключом "value"
+    // otherwise wrap in an object with key "value"
     return { value: result }
   }
 
