@@ -53,7 +53,7 @@ async function sendJson (
   // Calculate ETag
   let body: any = JSON.stringify(result, rpcJSONReplacer)
 
-  const etag = createHash('sha1').update(body).digest('hex')
+  const etag = createHash('sha256').update(body).digest('hex')
   const headers: OutgoingHttpHeaders = {
     ...(extraHeaders ?? {}),
     'Content-Type': 'application/json',
