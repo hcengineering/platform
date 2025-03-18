@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package transcoder
+package mediaconvert
 
 import (
 	"context"
@@ -77,7 +77,7 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 	var stream = &Stream{
 		writer: sharedpipe.NewWriter(),
 		info:   info,
-		logger: log.FromContext(s.mainContext).With(zap.String("worker", info.ID)),
+		logger: log.FromContext(s.mainContext).With(zap.String("stream", info.ID)),
 		done:   make(chan struct{}),
 	}
 
@@ -142,12 +142,12 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 // GetUpload returns current a worker based on upload id
 func (s *StreamCoordinator) GetUpload(ctx context.Context, id string) (upload handler.Upload, err error) {
 	if v, ok := s.streams.Load(id); ok {
-		s.logger.Debug("GetUpload: found worker by id", zap.String("id", id))
+		s.logger.Debug("GetUpload: found stream by id", zap.String("id", id))
 		var w = v.(*Stream)
 		s.manageTimeout(w)
 		return w, nil
 	}
-	s.logger.Debug("GetUpload: worker not found", zap.String("id", id))
+	s.logger.Debug("GetUpload: stream not found", zap.String("id", id))
 	return nil, errors.New("bad id")
 }
 
@@ -175,6 +175,7 @@ func (s *StreamCoordinator) manageTimeout(w *Stream) {
 		case <-w.done:
 			w.logger.Debug("stream has finished")
 			s.cancels.Delete(w.info.ID)
+			s.streams.Delete(w.info.ID)
 			return
 		case <-cancelCtx.Done():
 			w.logger.Debug("stream timeout has refreshed")
@@ -185,6 +186,7 @@ func (s *StreamCoordinator) manageTimeout(w *Stream) {
 			var terminateCtx, terminateCancel = context.WithTimeout(context.Background(), s.conf.Timeout)
 			defer terminateCancel()
 			_ = w.Terminate(terminateCtx)
+			s.streams.Delete(w.info.ID)
 		}
 	}()
 }

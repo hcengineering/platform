@@ -19,15 +19,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
-	"github.com/hcengineering/stream/internal/pkg/transcoder"
+	"github.com/hcengineering/stream/internal/pkg/mediaconvert"
 	"go.uber.org/zap"
 )
 
 type trascodeHandler struct {
-	taskQueue *transcoder.Scheduler
+	scheduler *mediaconvert.Scheduler
 	logger    *zap.Logger
 }
 
@@ -45,7 +46,7 @@ func (t *trascodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var decoder = json.NewDecoder(r.Body)
-	var task transcoder.Task
+	var task mediaconvert.Task
 
 	if err := decoder.Decode(&task); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -53,14 +54,29 @@ func (t *trascodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.taskQueue.Schedule(&task)
+	if !isSupportedFormat(task.Format) {
+		w.WriteHeader(http.StatusUnsupportedMediaType)
+		_, _ = fmt.Fprint(w, "output media format is not supported")
+		return
+	}
+
+	t.scheduler.Schedule(&task)
 	w.WriteHeader(http.StatusOK)
 }
 
 // NewHandler creates a new trnascoding http handler, requires context and config.
 func NewHandler(ctx context.Context, cfg *config.Config) http.Handler {
 	return &trascodeHandler{
-		taskQueue: transcoder.NewScheduler(ctx, cfg),
+		scheduler: mediaconvert.NewScheduler(ctx, cfg),
 		logger:    log.FromContext(ctx).With(zap.String("handler", "transcoding")),
+	}
+}
+
+func isSupportedFormat(s string) bool {
+	switch strings.ToLower(s) {
+	case "hls":
+		return true
+	default:
+		return false
 	}
 }

@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM golang:1.24.1 AS builder
+FROM golang:1.24.1 AS builder
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 ENV GOBIN=/bin
@@ -21,7 +21,7 @@ COPY . ./
 
 RUN set -xe && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /go/bin/stream ./cmd/stream
 
-FROM --platform=$BUILDPLATFORM alpine
+FROM alpine
 
 RUN set -xe && apk add --no-cache ffmpeg
 RUN apk add --no-cache ca-certificates jq bash \

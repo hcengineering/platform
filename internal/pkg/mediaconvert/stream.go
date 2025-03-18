@@ -11,8 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package transcoder provides types and functions for video trnascoding
-package transcoder
+// Package mediaconvert provides types and functions for video trnascoding
+package mediaconvert
 
 import (
 	"context"
