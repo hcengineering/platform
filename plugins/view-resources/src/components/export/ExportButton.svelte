@@ -22,6 +22,7 @@
   export let _class: Ref<Class<Doc>>
   export let query: string = ''
   export let visible: boolean = false
+  export let config: Record<string, any> = {}
 
   async function handleExport (): Promise<void> {
     try {
@@ -31,7 +32,7 @@
         throw new Error('No token available')
       }
 
-      const res = await fetch(`${baseUrl}?format=csv&sync=true`, {
+      const res = await fetch(`${baseUrl}/exportSync?format=csv`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -39,7 +40,8 @@
         },
         body: JSON.stringify({
           _class,
-          query
+          query,
+          config
         })
       })
 
@@ -48,15 +50,7 @@
       }
 
       // Handle successful response with file download
-      let filename = 'Talants.zip'
-      // Try to extract filename from content-disposition header if available
-      const contentDisposition = res.headers.get('content-disposition')
-      if (contentDisposition !== null) {
-        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
-        if (filenameMatch?.[1] !== undefined) {
-          filename = filenameMatch[1]
-        }
-      }
+      const filename = `Talants_${new Date().toLocaleDateString()}_${new Date().toLocaleTimeString()}.csv`
 
       // Create a blob from the ReadableStream
       const blob = await res.blob()

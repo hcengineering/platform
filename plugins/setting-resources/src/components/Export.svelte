@@ -53,7 +53,7 @@
       const attributesOnly = selectedDetailLevel === 'attributesOnly'
 
       const res = await fetch(
-        `${baseUrl}?class=${selectedClass}&type=${selectedFormat}&attributesOnly=${attributesOnly}`,
+        `${baseUrl}/exportAsync?class=${selectedClass}&type=${selectedFormat}&attributesOnly=${attributesOnly}`,
         {
           method: 'GET',
           headers: {
