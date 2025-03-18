@@ -1193,13 +1193,17 @@ export async function getDocLabel (client: Client, object: Doc | undefined): Pro
     return name
   }
 
-  const label = hierarchy.getClass(object._class).label ?? object.label
+  const label = hierarchy.getClass(object._class).label ?? getObjectLabel(object)
 
   if (label === undefined) {
     return undefined
   }
 
   return await translate(label, {}, get(themeStore).language)
+}
+
+function getObjectLabel (object: any): IntlString | undefined {
+  return object?.label
 }
 
 export async function getDocTitle (

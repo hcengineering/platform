@@ -19,22 +19,22 @@
   import core, { Data, Ref } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Label } from '@hcengineering/ui'
-  import { ObjectBox } from '@hcengineering/view-resources'
   import view, { Viewlet, ViewletDescriptor, ViewOptionsModel } from '@hcengineering/view'
 
+  import DescriptorBox from './DescriptorBox.svelte'
   import ViewSettingButton from './ViewSettingButton.svelte'
-  import card from '../../plugin'
+  import card from '../../../plugin'
 
   export let tag: MasterTag | Tag
 
   let title: string
-  let type: Ref<ViewletDescriptor> | undefined = undefined
+  let descriptor: Ref<ViewletDescriptor> | undefined = undefined
 
   let viewletConfig: Data<Viewlet> | undefined = undefined
   $: viewletConfig = {
     title,
     attachTo: tag._id,
-    descriptor: type ?? view.viewlet.Table,
+    descriptor: descriptor ?? view.viewlet.Table,
     config: [
       {
         key: ''
@@ -43,7 +43,7 @@
       'modifiedOn'
     ],
     configOptions: {},
-    viewOptions: getViewOptions(type)
+    viewOptions: getViewOptions(descriptor)
   }
 
   function getViewOptions (descriptor: Ref<ViewletDescriptor> | undefined): ViewOptionsModel | undefined {
@@ -55,22 +55,25 @@
     }
   }
 
-  const viewTypes: Ref<ViewletDescriptor>[] = [view.viewlet.Table, view.viewlet.List]
-
   const client = getClient()
   const dispatch = createEventDispatcher()
 
   async function save (): Promise<void> {
     dispatch('close')
-    if (type === undefined || viewletConfig === undefined) return
+    if (descriptor === undefined || viewletConfig === undefined) return
     await client.createDoc(view.class.Viewlet, core.space.Model, viewletConfig)
+  }
+  function onConfigUpdate (items: any[]): void {
+    if (viewletConfig === undefined) return
+    const enabledAttibutes = items.filter((it) => it.type === 'attribute' && it.enabled).map((it) => it.value)
+    viewletConfig.config = enabledAttibutes
   }
 </script>
 
 <Card
   label={card.string.EditView}
   okAction={save}
-  canSave={type !== undefined}
+  canSave={descriptor !== undefined}
   on:close={() => {
     dispatch('close')
   }}
@@ -87,24 +90,15 @@
   </svelte:fragment>
   <div class="mb-2"><EditBox autoFocus bind:value={title} placeholder={view.string.Title} /></div>
   <svelte:fragment slot="pool">
-    <ObjectBox
-      _class={view.class.ViewletDescriptor}
+    <DescriptorBox
       label={card.string.SelectViewType}
-      showNavigate={false}
-      bind:value={type}
-      docQuery={{
-        _id: { $in: viewTypes }
-      }}
+      bind:value={descriptor}
     />
     <ViewSettingButton
       viewlet={viewletConfig}
-      disabled={type === undefined}
+      disabled={descriptor === undefined}
       on:save={(event) => {
-        let items = event.detail ?? []
-        console.log('items', items)
-        items = items.filter((it) => it.type === 'attribute' && it.enabled).map((it) => it.value)
-
-        viewletConfig.config = items
+        onConfigUpdate(event.detail ?? [])
       }}
     />
   </svelte:fragment>

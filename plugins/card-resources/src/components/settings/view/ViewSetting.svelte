@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+
   import core, { AnyAttribute, Class, Doc, Ref, Type } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
-  import { Loading, resizeObserver } from '@hcengineering/ui'
+  import { resizeObserver } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
   import { buildConfigLookup, getKeyLabel, ViewletClassSettings } from '@hcengineering/view-resources'
 
-  export let viewlet: Data<Viewlet>
+  export let viewlet: Viewlet
 
   const dispatch = createEventDispatcher()
 

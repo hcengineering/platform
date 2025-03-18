@@ -13,21 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core from '@hcengineering/core'
   import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
-  import { Button, EditBox, IconDelete, Label, Modal, showPopup } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { ObjectBox } from '@hcengineering/view-resources'
+  import { Button, IconDelete, Label, Modal, ModernEditbox, showPopup } from '@hcengineering/ui'
+  import view, { Viewlet } from '@hcengineering/view'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
-  import card from '@hcengineering/card'
   import setting from '@hcengineering/setting'
 
+  import DescriptorBox from './DescriptorBox.svelte'
   import ViewSettingButton from './ViewSettingButton.svelte'
+  import card from '../../../plugin'
 
   export let viewlet: Viewlet
 
-  $: title = viewlet.title
-  $: type = viewlet.descriptor
+  let title = viewlet.title
+  let type = viewlet.descriptor
 
   const client = getClient()
 
@@ -35,11 +34,10 @@
     await client.diffUpdate(viewlet, {
       title,
       descriptor: type,
-      config: viewletConfig.config
+      config: viewlet.config
     })
     clearSettingsStore()
   }
-  const viewTypes: Ref<ViewletDescriptor>[] = [view.viewlet.Table, view.viewlet.List]
 
   async function remove (): Promise<void> {
     showPopup(MessageBox, {
@@ -53,10 +51,14 @@
       }
     })
   }
+  function onSave (items: any[]): void {
+    const enabledAttibutes = items.filter((it) => it.type === 'attribute' && it.enabled).map((it) => it.value)
+    viewlet.config = enabledAttibutes
+  }
 </script>
 
 <Modal
-  label={card.string.View}
+  label={card.string.EditView}
   type={'type-aside'}
   okLabel={presentation.string.Save}
   okAction={save}
@@ -66,28 +68,18 @@
   <svelte:fragment slot="actions">
     <Button icon={IconDelete} kind={'dangerous'} on:click={remove} />
   </svelte:fragment>
+  <div class="hulyModal-content__titleGroup">
+    <ModernEditbox bind:value={title} label={view.string.Title} size={'large'} kind={'ghost'}/>
+  </div>
   <div class="hulyModal-content__settingsSet">
-    <div class="hulyModal-content__settingsSet-line">
-      <span class="label">
-        <Label label={view.string.Title} />
-      </span>
-      <div class="pl-2">
-        <EditBox bind:value={title} kind={'default'} />
-      </div>
-    </div>
     <div class="hulyModal-content__settingsSet-line">
       <span class="label">
         <Label label={setting.string.Type} />
       </span>
       <div class="pl-2">
-        <ObjectBox
-          _class={view.class.ViewletDescriptor}
+        <DescriptorBox
           label={card.string.SelectViewType}
-          showNavigate={false}
           bind:value={type}
-          docQuery={{
-            _id: { $in: viewTypes }
-          }}
         />
       </div>
     </div>
@@ -99,11 +91,7 @@
         <ViewSettingButton
           {viewlet}
           on:save={(event) => {
-            let items = event.detail ?? []
-            console.log('items', items)
-            items = items.filter((it) => it.type === 'attribute' && it.enabled).map((it) => it.value)
-
-            viewletConfig.config = items
+            onSave(event.detail ?? [])
           }}
         />
       </div>

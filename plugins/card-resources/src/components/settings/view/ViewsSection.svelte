@@ -16,8 +16,7 @@
   import { onDestroy } from 'svelte'
 
   import { MasterTag } from '@hcengineering/card'
-  import core, { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import { WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
@@ -25,7 +24,7 @@
   import view, { type Viewlet } from '@hcengineering/view'
 
   import CreateView from './CreateView.svelte'
-  import card from '../../plugin'
+  import card from '../../../plugin'
 
   export let masterTag: MasterTag
 
@@ -84,8 +83,8 @@
         <div class="hulyTableAttr-content__row-label font-medium-14 cursor-pointer">
           {#if viewlet.title !== undefined}
             <span>{viewlet.title}</span>
-          {:else}
-            <Label label={viewlet.$lookup?.descriptor?.label ?? card.string.Untitled} />
+          {:else if viewlet.$lookup?.descriptor?.label !== undefined}
+            <Label label={viewlet.$lookup?.descriptor?.label} />
           {/if}
         </div>
       </button>

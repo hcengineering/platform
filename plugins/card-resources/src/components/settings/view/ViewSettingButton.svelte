@@ -14,13 +14,16 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+
   import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
+
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewSetting.svelte'
+  import { Data } from '@hcengineering/core'
 
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
-  export let viewlet: Viewlet | undefined = undefined
+  export let viewlet: Data<Viewlet> | undefined = undefined
   export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -28,7 +31,7 @@
   let btn: HTMLButtonElement
   let pressed: boolean = false
 
-  function clickHandler () {
+  function clickHandler (): void {
     pressed = true
     closeTooltip()
     showPopup(
@@ -39,7 +42,6 @@
         pressed = false
       },
       (result) => {
-        console.log('result', result)
         dispatch('save', result)
       }
     )

@@ -36,8 +36,8 @@ import RelationsSection from './components/settings/RelationsSection.svelte'
 import ChildsSection from './components/settings/ChildsSection.svelte'
 import SetParentActionPopup from './components/SetParentActionPopup.svelte'
 import RelationSetting from './components/settings/RelationSetting.svelte'
-import ViewsSection from './components/settings/ViewsSection.svelte'
-import EditView from './components/settings/EditView.svelte'
+import ViewsSection from './components/settings/view/ViewsSection.svelte'
+import EditView from './components/settings/view/EditView.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
