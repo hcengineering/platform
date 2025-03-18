@@ -47,7 +47,7 @@ import { v4 as uuid } from 'uuid'
 import WebSocket from 'ws'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
-
+import { TransformConfig } from './transformer'
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
     return null
@@ -207,15 +207,15 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
     })
   )
 
-  // New endpoint for synchronous export
   app.post(
     '/exportSync',
     wrapRequest(async (req, res, token) => {
       const format = req.query.format as ExportFormat
-      const { _class, query, attributesOnly }: {
+      const { _class, query, attributesOnly, config }: {
         _class: Ref<Class<Doc<Space>>>
         query?: DocumentQuery<Doc>
         attributesOnly?: boolean
+        config?: TransformConfig
       } = req.body
 
       if (_class == null || format == null) {
@@ -235,7 +235,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
       // Always synchronous - similar to /export?sync=true
       const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
       try {
-        const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, workspace)
+        const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, workspace, config)
         await exporter.export(_class, exportDir, { format, attributesOnly: attributesOnly ?? false, query })
 
         const files = await fs.readdir(exportDir)

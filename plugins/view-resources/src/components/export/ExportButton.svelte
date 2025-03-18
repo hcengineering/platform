@@ -32,6 +32,30 @@
         throw new Error('No token available')
       }
 
+      const talantsConfig = {
+        skipAttributes: ['_class', 'avatarType'],
+        attributeKeyMap: { city: 'location' },
+        attributeTransforms: {
+          channels: {
+            operations: [
+              {
+                type: 'group_by',
+                config: {
+                  field: 'data.provider',
+                  valueField: 'data.value'
+                }
+              },
+              {
+                type: 'join',
+                config: {
+                  delimiter: ', '
+                }
+              }
+            ]
+          }
+        }
+      }
+
       const res = await fetch(`${baseUrl}/exportSync?format=csv`, {
         method: 'POST',
         headers: {
@@ -41,7 +65,7 @@
         body: JSON.stringify({
           _class,
           query,
-          config
+          config: talantsConfig
         })
       })
 

@@ -13,17 +13,17 @@
 // limitations under the License.
 //
 
+import { stringify } from 'csv-stringify/sync'
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
+import { TransformConfig, Transformer } from '../transformer'
 import { UnifiedAttachment, UnifiedDoc } from '../types'
-import { stringify } from 'csv-stringify/sync'
-import { ExportFormatter } from '../formatter'
 
 export class UnifiedCsvSerializer {
-  private readonly formatter: ExportFormatter
+  private readonly transformer: Transformer
 
-  constructor (formatter?: ExportFormatter) {
-    this.formatter = formatter ?? new ExportFormatter()
+  constructor (config?: TransformConfig) {
+    this.transformer = new Transformer(config)
   }
 
   async serializeSpace (docs: UnifiedDoc[], outputPath: string, spaceName: string): Promise<void> {
@@ -52,7 +52,7 @@ export class UnifiedCsvSerializer {
 
     Object.entries(data).forEach(([key, value]) => {
       console.log('key', key, 'value', value)
-      const formatted = this.formatter.formatAttribute(key, value)
+      const formatted = this.transformer.transformAttribute(key, value)
       Object.entries(formatted).forEach(([formattedKey, formattedValue]) => {
         csvData[formattedKey] = formattedValue
       })

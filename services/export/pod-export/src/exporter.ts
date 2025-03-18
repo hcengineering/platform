@@ -19,9 +19,9 @@ import core from '@hcengineering/model-core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import path from 'path'
 import { UnifiedConverter } from './converter'
-import { UnifiedJsonSerializer } from './json/json-serializer'
 import { UnifiedCsvSerializer } from './csv/csv-serializer'
-import { TalantsFormatter } from './candidates/talants-formatter'
+import { UnifiedJsonSerializer } from './json/json-serializer'
+import { TransformConfig } from './transformer'
 export enum ExportFormat {
   UNIFIED = 'unified',
   CSV = 'csv',
@@ -43,10 +43,11 @@ export class WorkspaceExporter {
     context: MeasureContext,
     private readonly client: Client,
     storage: StorageAdapter,
-    workspaceId: WorkspaceId
+    workspaceId: WorkspaceId,
+    config?: TransformConfig
   ) {
     this.jsonSerializer = new UnifiedJsonSerializer()
-    this.csvSerializer = new UnifiedCsvSerializer(new TalantsFormatter()) // TODO: make formatter configurable
+    this.csvSerializer = new UnifiedCsvSerializer(config)
     this.converter = new UnifiedConverter(context, client, storage, workspaceId)
   }
 
