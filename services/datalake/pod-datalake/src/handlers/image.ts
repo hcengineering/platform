@@ -106,6 +106,10 @@ export async function handleImageGet (
     await writeFile(tmpFile, blob.body)
 
     let pipeline = sharp(tmpFile)
+
+    // auto orient image based on exif to prevent resize use wrong orientation
+    pipeline = pipeline.rotate()
+
     pipeline.resize({
       width,
       height,
