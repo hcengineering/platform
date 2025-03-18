@@ -24,7 +24,7 @@ import (
 
 	"github.com/hcengineering/stream/internal/pkg/config"
 	"github.com/hcengineering/stream/internal/pkg/log"
-	"github.com/hcengineering/stream/internal/pkg/transcoder"
+	"github.com/hcengineering/stream/internal/pkg/mediaconvert"
 	"go.uber.org/zap"
 
 	tusd "github.com/tus/tusd/v2/pkg/handler"
@@ -56,13 +56,13 @@ func NewHandler(ctx context.Context, cfg *config.Config) http.Handler {
 }
 
 func (h *recordingHandler) initialize() {
-	scheduler := transcoder.NewStreamCoordinator(h.ctx, h.cfg)
+	coordinator := mediaconvert.NewStreamCoordinator(h.ctx, h.cfg)
 
 	tusComposer := tusd.NewStoreComposer()
-	tusComposer.UseCore(scheduler)
-	tusComposer.UseTerminater(scheduler)
-	tusComposer.UseConcater(scheduler)
-	tusComposer.UseLengthDeferrer(scheduler)
+	tusComposer.UseCore(coordinator)
+	tusComposer.UseTerminater(coordinator)
+	tusComposer.UseConcater(coordinator)
+	tusComposer.UseLengthDeferrer(coordinator)
 
 	var tusHandler, err = tusd.NewHandler(tusd.Config{
 		BasePath:                "/recording",

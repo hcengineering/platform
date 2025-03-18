@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package transcoder
+package mediaconvert
 
 import (
 	"context"
@@ -37,7 +37,10 @@ import (
 
 // HLS represents metadata for transcoding result
 type HLS struct {
-	Source string `json:"source"`
+	Source    string `json:"source"`
+	Thumbnail string `json:"thumbnail"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
 }
 
 // Task represents transcoding task
@@ -77,7 +80,7 @@ func NewScheduler(ctx context.Context, cfg *config.Config) *Scheduler {
 		taskCh: make(chan *Task, 128),
 		cfg:    cfg,
 		ctx:    ctx,
-		logger: log.FromContext(ctx).With(zap.String("transcoding", "planner")),
+		logger: log.FromContext(ctx).With(zap.String("transcoding", "scheduler")),
 	}
 
 	go p.start()
@@ -100,6 +103,7 @@ func (p *Scheduler) start() {
 	}
 }
 
+// TODO: add a factory pattern to process tasks by different media type
 func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 	var logger = p.logger.With(zap.String("task-id", task.ID))
 
@@ -166,60 +170,57 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		SourceFile:  sourceFilePath,
 	})
 
-	go uploader.Start()
-
-	logger.Debug("phase 6: start async transcode process")
-	var rawCommand, scaleCommand *exec.Cmd
-
-	rawCommand, err = newFfmpegCommand(ctx, nil, BuildRawVideoCommand(&opts))
-	if err != nil {
-		logger.Error("can not create ffmpeg command", zap.Error(err))
-		go uploader.Cancel()
-		return
-	}
-
-	scaleCommand, err = newFfmpegCommand(ctx, nil, BuildScalingVideoCommand(&opts))
-	if err != nil {
-		logger.Error("can not create ffmpeg command", zap.Error(err))
-		go uploader.Cancel()
-		return
-	}
-
 	_ = manifest.GenerateHLSPlaylist(opts.ScalingLevels, p.cfg.OutputDir, opts.UploadID)
 
-	if err = rawCommand.Start(); err != nil {
-		logger.Error("can not run raw ffmpeg command", zap.Error(err))
-		go uploader.Cancel()
-		return
-	}
+	go uploader.Start()
 
-	if err = scaleCommand.Start(); err != nil {
-		logger.Error("can not run scale ffmpeg command", zap.Error(err))
-		go uploader.Cancel()
-		return
+	logger.Debug("phase 6: start async transcode processes")
+
+	var argsSlice = [][]string{
+		BuildThumbnailCommand(&opts),
+		BuildRawVideoCommand(&opts),
+		BuildScalingVideoCommand(&opts),
+	}
+	var cmds []*exec.Cmd
+
+	for _, args := range argsSlice {
+		cmd, cmdErr := newFfmpegCommand(ctx, nil, args)
+		if cmdErr != nil {
+			logger.Error("can not create a new command", zap.Error(cmdErr), zap.Strings("args", args))
+			go uploader.Cancel()
+			return
+		}
+		cmds = append(cmds, cmd)
+		if err = cmd.Start(); err != nil {
+			logger.Error("can not start a command", zap.Error(err), zap.Strings("args", args))
+			go uploader.Cancel()
+			return
+		}
 	}
 
 	logger.Debug("phase 7: wait for the result")
-	if err = scaleCommand.Wait(); err != nil {
-		logger.Error("can not scale ", zap.Error(err))
-		go uploader.Cancel()
-		return
-	}
-	if err = rawCommand.Wait(); err != nil {
-		logger.Error("can not process raw", zap.Error(err))
-		go uploader.Cancel()
-		return
+	for _, cmd := range cmds {
+		if err = cmd.Wait(); err != nil {
+			logger.Error("can not wait for command end ", zap.Error(err))
+			go uploader.Cancel()
+			return
+		}
 	}
 
 	logger.Debug("phase 8: schedule cleanup")
 	go uploader.Stop()
 
 	logger.Debug("phase 9: try to set metadata")
-	var resultURL = p.cfg.Endpoint().JoinPath("blob", task.Workspace, task.ID+"_master.m3u8")
 
 	if metaProvider, ok := remoteStorage.(storage.MetaProvider); ok {
-		var hls = &HLS{Source: resultURL.String()}
-		logger.Debug("applying metadata", zap.Stringer("url", resultURL), zap.String("source", task.Source))
+		var hls = HLS{
+			Width:     probe.FirstVideoStream().Width,
+			Height:    probe.FirstVideoStream().Height,
+			Source:    p.cfg.Endpoint().JoinPath("blob", task.Workspace, task.ID+"_master.m3u8").String(),
+			Thumbnail: p.cfg.Endpoint().JoinPath("blob", task.Workspace, task.ID+".jpg").String(),
+		}
+
+		logger.Debug("applying metadata", zap.String("url", hls.Source), zap.String("thumbnail", hls.Thumbnail), zap.String("source", task.Source))
 		err = metaProvider.PatchMeta(
 			ctx,
 			task.Source,

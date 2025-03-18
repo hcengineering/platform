@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package transcoder
+package mediaconvert
 
 import (
 	"context"
@@ -79,9 +79,19 @@ func BuildRawVideoCommand(opts *Options) []string {
 		"-c:v",
 		"copy",
 		"-hls_time", "5",
+		"-hls_flags", "split_by_time",
 		"-hls_list_size", "0",
 		"-hls_segment_filename", filepath.Join(opts.OuputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", opts.Level)),
 		filepath.Join(opts.OuputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, opts.Level)))
+}
+
+// BuildThumbnailCommand creates a command that creates a thumbnail for the input video
+func BuildThumbnailCommand(opts *Options) []string {
+	return append([]string{},
+		"-i", opts.Input,
+		"-vframes", "1",
+		filepath.Join(opts.OuputDir, opts.UploadID, opts.UploadID+".jpg"),
+	)
 }
 
 // BuildScalingVideoCommand returns flags for ffmpeg for video scaling
@@ -97,6 +107,7 @@ func BuildScalingVideoCommand(opts *Options) []string {
 			"-crf", "23",
 			"-g", "60",
 			"-hls_time", "5",
+			"-hls_flags", "split_by_time",
 			"-hls_list_size", "0",
 			"-hls_segment_filename", filepath.Join(opts.OuputDir, opts.UploadID, fmt.Sprintf("%s_%s_%s.ts", opts.UploadID, "%03d", level)),
 			filepath.Join(opts.OuputDir, opts.UploadID, fmt.Sprintf("%s_%s_master.m3u8", opts.UploadID, level)))
