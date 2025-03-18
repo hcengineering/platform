@@ -16,13 +16,22 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
+  import { Attachments } from '@hcengineering/attachment-resources'
   import { Card, CardEvents } from '@hcengineering/card'
   import { Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, EditBox, FocusHandler, IconMoreH, createFocusManager } from '@hcengineering/ui'
+  import {
+    Button,
+    EditBox,
+    FocusHandler,
+    IconMoreH,
+    createFocusManager,
+    getCurrentLocation,
+    navigate
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ParentsNavigator, RelationsEditor, getDocMixins, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -70,8 +79,14 @@
 
   $: _id !== undefined &&
     query.query(card.class.Card, { _id }, async (result) => {
-      ;[doc] = result
-      title = doc?.title ?? ''
+      if (result.length > 0) {
+        ;[doc] = result
+        title = doc?.title ?? ''
+      } else {
+        const loc = getCurrentLocation()
+        loc.path.length = 3
+        navigate(loc)
+      }
     })
 
   $: canSave = title.trim().length > 0
@@ -150,6 +165,8 @@
 
     <Childs object={doc} {readonly} />
     <RelationsEditor object={doc} {readonly} />
+
+    <Attachments objectId={doc._id} _class={doc._class} space={doc.space} attachments={doc.attachments ?? 0} />
 
     <svelte:fragment slot="utils">
       {#if !readonly}

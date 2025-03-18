@@ -42,11 +42,19 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverCard.trigger.OnMasterTagRemove,
-    isAsync: true,
+    trigger: serverCard.trigger.OnTagRemove,
     txMatch: {
       _class: core.class.TxRemoveDoc,
-      objectClass: { $in: [card.class.MasterTag, card.class.Tag] }
+      objectClass: card.class.Tag
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnMasterTagRemove,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: card.class.MasterTag,
+      'operations.removed': true
     }
   })
 

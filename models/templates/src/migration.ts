@@ -25,8 +25,8 @@ import { templatesId } from '@hcengineering/templates'
 
 export const templatesOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, templatesId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, templatesId, [
       {
         state: 'create-defaults',
         func: async (client) => {

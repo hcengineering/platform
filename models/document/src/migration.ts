@@ -353,46 +353,56 @@ async function removeOldClasses (client: MigrationClient): Promise<void> {
   }
 }
 export const documentOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, documentId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, documentId, [
       {
         state: 'updateDocumentIcons',
+        mode: 'upgrade',
         func: migrateDocumentIcons
       },
       {
         state: 'migrate-timespaces',
+        mode: 'upgrade',
         func: migrateTeamspaces
       },
       {
         state: 'migrate-teamspaces-mixins',
+        mode: 'upgrade',
         func: migrateTeamspacesMixins
       },
       {
         state: 'migrateRank',
+        mode: 'upgrade',
         func: migrateRank
       },
       {
         state: 'renameFields',
+        mode: 'upgrade',
         func: renameFields
       },
       {
         state: 'renameFieldsRevert',
+        mode: 'upgrade',
         func: renameFieldsRevert
       },
       {
         state: 'restoreContentField',
+        mode: 'upgrade',
         func: restoreContentField
       },
       {
         state: 'migrateRanks',
+        mode: 'upgrade',
         func: migrateRanks
       },
       {
         state: 'removeOldClasses',
+        mode: 'upgrade',
         func: removeOldClasses
       },
       {
         state: 'migrateEmbeddings',
+        mode: 'upgrade',
         func: migrateEmbeddings
       },
       {
@@ -401,6 +411,7 @@ export const documentOperation: MigrateOperation = {
       },
       {
         state: 'migrateEmbeddingsRefs',
+        mode: 'upgrade',
         func: migrateEmbeddingsRefs
       }
     ])

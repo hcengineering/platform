@@ -27,16 +27,17 @@ import view from '@hcengineering/view'
 import card from '.'
 
 export const cardOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, chunterId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, chunterId, [
       {
         state: 'set-parent-info',
+        mode: 'upgrade',
         func: setParentInfo
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, chunterId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, chunterId, [
       {
         state: 'migrateViewlets',
         func: migrateViewlets

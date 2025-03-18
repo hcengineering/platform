@@ -41,46 +41,62 @@ class S3BucketImpl implements S3Bucket {
   ) {}
 
   async head (ctx: MeasureContext, key: string): Promise<S3Object | null> {
-    const result = await ctx.with('s3.headObject', {}, () => this.client.headObject({ Bucket: this.bucket, Key: key }))
+    try {
+      const result = await ctx.with('s3.headObject', {}, () =>
+        this.client.headObject({ Bucket: this.bucket, Key: key })
+      )
 
-    return {
-      key,
-      etag: result.ETag ?? '',
-      size: result.ContentLength ?? 0,
-      contentType: result.ContentType ?? '',
-      lastModified: result.LastModified?.getTime() ?? 0,
-      cacheControl: result.CacheControl
+      return {
+        key,
+        etag: result.ETag ?? '',
+        size: result.ContentLength ?? 0,
+        contentType: result.ContentType ?? '',
+        lastModified: result.LastModified?.getTime() ?? 0,
+        cacheControl: result.CacheControl
+      }
+    } catch (err: any) {
+      if (err?.$metadata?.httpStatusCode !== 404) {
+        ctx.warn('no object found', { error: err, key })
+      }
+      return null
     }
   }
 
   async get (ctx: MeasureContext, key: string, options?: S3GetOptions): Promise<S3ObjectBody | null> {
-    const command = { Bucket: this.bucket, Key: key, Range: options?.range }
+    try {
+      const command = { Bucket: this.bucket, Key: key, Range: options?.range }
 
-    const result = await ctx.with('s3.getObject', {}, () => this.client.getObject(command))
+      const result = await ctx.with('s3.getObject', {}, () => this.client.getObject(command))
 
-    if (result.Body === undefined) {
+      if (result.Body === undefined) {
+        return null
+      }
+
+      const stream = result.Body?.transformToWebStream()
+      if (stream === undefined) {
+        return null
+      }
+
+      const lastModified =
+        result.Metadata?.['last-modified'] !== undefined
+          ? new Date(result.Metadata['last-modified']).getTime()
+          : result.LastModified?.getTime()
+
+      return {
+        key,
+        body: Readable.fromWeb(stream as ReadableStream<any>),
+        range: result.ContentRange,
+        etag: result.ETag ?? '',
+        size: result.ContentLength ?? 0,
+        contentType: result.ContentType ?? '',
+        lastModified: lastModified ?? 0,
+        cacheControl: result.CacheControl
+      }
+    } catch (err: any) {
+      if (err?.$metadata?.httpStatusCode !== 404) {
+        ctx.warn('no object found', { error: err, key })
+      }
       return null
-    }
-
-    const stream = result.Body?.transformToWebStream()
-    if (stream === undefined) {
-      return null
-    }
-
-    const lastModified =
-      result.Metadata?.['last-modified'] !== undefined
-        ? new Date(result.Metadata['last-modified']).getTime()
-        : result.LastModified?.getTime()
-
-    return {
-      key,
-      body: Readable.fromWeb(stream as ReadableStream<any>),
-      range: result.ContentRange,
-      etag: result.ETag ?? '',
-      size: result.ContentLength ?? 0,
-      contentType: result.ContentType ?? '',
-      lastModified: lastModified ?? 0,
-      cacheControl: result.CacheControl
     }
   }
 

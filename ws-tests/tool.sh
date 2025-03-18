@@ -13,4 +13,10 @@ export ELASTIC_URL=http://localhost:9201
 export SERVER_SECRET=secret
 export DB_URL=$MONGO_URL
 
-node ${TOOL_OPTIONS} --max-old-space-size=8096 ../dev/tool/bundle/bundle.js $@
+# Check if local bundle.js exists and use it if available
+BUNDLE_PATH="../dev/tool/bundle/bundle.js"
+if [ -f "./bundle.js" ]; then
+  BUNDLE_PATH="./bundle.js"
+fi
+
+node ${TOOL_OPTIONS} --max-old-space-size=8096 $BUNDLE_PATH $@

@@ -515,10 +515,11 @@ function areSameArrays (arr1: any[] | undefined, arr2: any[] | undefined): boole
 }
 
 export const taskOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, taskId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, taskId, [
       {
         state: 'migrate-tt-model-states',
+        mode: 'upgrade',
         func: async (client) => {
           const prTaskTypes = client.model.findAllSync(task.class.TaskType, {})
 
@@ -547,10 +548,12 @@ export const taskOperation: MigrateOperation = {
       },
       {
         state: 'migrateRanks',
+        mode: 'upgrade',
         func: migrateRanks
       },
       {
         state: 'migrate_wrong_isdone',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           const statuses = client.model.findAllSync(core.class.Status, {
             category: { $in: [task.statusCategory.Won, task.statusCategory.Lost] }
@@ -582,6 +585,7 @@ export const taskOperation: MigrateOperation = {
       },
       {
         state: 'migrateSequnce',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await client.update(
             'kanban' as Domain,
@@ -593,8 +597,8 @@ export const taskOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, taskId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, taskId, [
       {
         state: 'u-task-001',
         func: async (client) => {

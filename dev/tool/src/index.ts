@@ -1010,7 +1010,9 @@ export function devTool (
 
       const skipWorkspaces = new Set(cmd.skip.split(',').map((it) => it.trim()))
 
-      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid)
+      const token = generateToken(systemAccountUuid, '' as WorkspaceUuid, {
+        service: 'tool'
+      })
       const workspaces = (await getAccountClient(token).listWorkspaces(cmd.region))
         .sort((a, b) => {
           const bsize = b.backupInfo?.backupSize ?? 0
