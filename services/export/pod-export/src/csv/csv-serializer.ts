@@ -16,8 +16,9 @@
 import { stringify } from 'csv-stringify/sync'
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
-import { TransformConfig, Transformer } from '../transformer'
+import { Transformer } from '../transformer'
 import { UnifiedAttachment, UnifiedDoc } from '../types'
+import { type TransformConfig } from '@hcengineering/export'
 
 export class UnifiedCsvSerializer {
   private readonly transformer: Transformer

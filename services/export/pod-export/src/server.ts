@@ -47,7 +47,8 @@ import { v4 as uuid } from 'uuid'
 import WebSocket from 'ws'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
-import { TransformConfig } from './transformer'
+import { type TransformConfig } from '@hcengineering/export'
+
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
     return null

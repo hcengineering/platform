@@ -40,7 +40,7 @@
     ViewletSettingButton
   } from '@hcengineering/view-resources'
   import { ParentsNavigationModel } from '@hcengineering/workbench'
-
+  import { type TransformConfig } from '@hcengineering/export'
   import ComponentNavigator from './ComponentNavigator.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -58,7 +58,7 @@
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined = undefined
   export let exportVisible: boolean = false
-  export let exportConfig: Record<string, any> = {}
+  export let exportConfig: TransformConfig = {}
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

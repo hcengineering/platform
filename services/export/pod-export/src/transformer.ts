@@ -13,36 +13,7 @@
 // limitations under the License.
 //
 
-export enum OperationType {
-  IDENTITY = 'identity',
-  GROUP_BY = 'group_by',
-  // JOIN = 'join',
-  // EXTRACT = 'extract',
-  // MAP = 'map'
-}
-
-export interface OperationConfig {
-  [OperationType.IDENTITY]: undefined
-  [OperationType.GROUP_BY]: {
-    keyField: string
-    valueField?: string
-  }
-}
-
-export interface TransformOperation {
-  type: OperationType
-  config: OperationConfig[OperationType]
-}
-
-export interface AttributeTransform {
-  operations: TransformOperation[]
-}
-
-export interface TransformConfig {
-  skipAttributes?: string[]
-  attributeKeyMap?: Record<string, string>
-  attributeTransforms?: Record<string, AttributeTransform>
-}
+import { type TransformConfig, type AttributeTransform, type TransformOperation, OperationType, type OperationConfig } from '@hcengineering/export'
 
 export class Transformer {
   private readonly skipAttributes: Set<string>

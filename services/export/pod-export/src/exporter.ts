@@ -21,7 +21,8 @@ import path from 'path'
 import { UnifiedConverter } from './converter'
 import { UnifiedCsvSerializer } from './csv/csv-serializer'
 import { UnifiedJsonSerializer } from './json/json-serializer'
-import { TransformConfig } from './transformer'
+import { type TransformConfig } from '@hcengineering/export'
+
 export enum ExportFormat {
   UNIFIED = 'unified',
   CSV = 'csv',
