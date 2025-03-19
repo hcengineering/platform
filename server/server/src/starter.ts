@@ -45,9 +45,9 @@ export function serverConfigFromEnv (): ServerEnv {
   }
 
   const filesUrl = process.env.FILES_URL
-  const mailUrl = process.env.MAIL_URL ?? process.env.SES_URL // SES_URL is used for backward compatibility
-  const mailAuthToken = process.env.MAIL_AUTH_TOKEN ?? process.env.SES_AUTH_TOKEN
-  const webPushUrl = process.env.WEB_PUSH_URL ?? process.env.SES_URL
+  const mailUrl = process.env.MAIL_URL
+  const mailAuthToken = process.env.MAIL_AUTH_TOKEN
+  const webPushUrl = process.env.WEB_PUSH_URL
 
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {

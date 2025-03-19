@@ -72,8 +72,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
   })
 
-  const mailUrl = process.env.MAIL_URL ?? process.env.SES_URL // SES_URL is used for backward compatibility
-  const mailAuthToken = process.env.MAIL_AUTH_TOKEN ?? process.env.SES_AUTH_TOKEN
+  const mailUrl = process.env.MAIL_URL
+  const mailAuthToken = process.env.MAIL_AUTH_TOKEN
 
   const frontURL = process.env.FRONT_URL
   const productName = process.env.PRODUCT_NAME
