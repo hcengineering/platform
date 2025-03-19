@@ -11,7 +11,7 @@ export const accountId = 'account' as Plugin
 export const accountPlugin = plugin(accountId, {
   metadata: {
     FrontURL: '' as Metadata<string>,
-    SES_URL: '' as Metadata<string>,
+    MAIL_URL: '' as Metadata<string>,
     ProductName: '' as Metadata<string>,
     Transactors: '' as Metadata<string>,
     OtpTimeToLiveSec: '' as Metadata<number>,

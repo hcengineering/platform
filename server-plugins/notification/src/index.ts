@@ -150,8 +150,8 @@ export const PUSH_NOTIFICATION_TITLE_SIZE = 80
  */
 export default plugin(serverNotificationId, {
   metadata: {
-    SesUrl: '' as Metadata<string>,
-    SesAuthToken: '' as Metadata<string>,
+    MailUrl: '' as Metadata<string>,
+    MailAuthToken: '' as Metadata<string>,
     WebPushUrl: '' as Metadata<string>,
     InboxOnlyNotifications: '' as Metadata<boolean>
   },

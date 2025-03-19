@@ -42,7 +42,7 @@ services:
       - SERVER_SECRET=secret
       - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
       - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
-      - SES_URL=
+      - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://localhost:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
@@ -129,7 +129,7 @@ services:
       - FRONT_URL=http://localhost:8087
       - UPLOAD_URL=http://localhost:8087/files
       # - APM_SERVER_URL=http://apm-server:8200
-      - SES_URL=''
+      - MAIL_URL=''
       - ACCOUNTS_URL=http://account:3000
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
