@@ -753,7 +753,9 @@ describe('account utils', () => {
 
       describe('sendOtpEmail', () => {
         beforeEach(() => {
-          global.fetch = jest.fn()
+          const mockFetch = jest.fn()
+          mockFetch.mockResolvedValue({ ok: true })
+          global.fetch = mockFetch
         })
 
         test('should send email with OTP', async () => {
