@@ -20,6 +20,7 @@ import core, {
   Class,
   Client,
   Doc,
+  DocumentQuery,
   generateId,
   MeasureContext,
   Ref,
@@ -41,11 +42,12 @@ import { createWriteStream } from 'fs'
 import fs from 'fs/promises'
 import { IncomingHttpHeaders, type Server } from 'http'
 import { tmpdir } from 'os'
-import { join } from 'path'
+import { basename, join } from 'path'
 import { v4 as uuid } from 'uuid'
 import WebSocket from 'ws'
 import { ApiError } from './error'
-import { ExportType, WorkspaceExporter } from './exporter'
+import { ExportFormat, WorkspaceExporter } from './exporter'
+import { type TransformConfig } from '@hcengineering/export'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -139,14 +141,22 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
   app.use(cors())
   app.use(express.json())
 
-  app.get(
-    '/export',
+  app.post(
+    '/exportAsync',
     wrapRequest(async (req, res, token) => {
-      const classId = req.query.class as Ref<Class<Doc<Space>>>
-      const exportType = req.query.type as ExportType
-      const attributesOnly = req.query.attributesOnly === 'true'
+      const format = req.query.format as ExportFormat
 
-      if (classId == null || exportType == null) {
+      const {
+        _class,
+        query,
+        attributesOnly
+      }: {
+        _class: Ref<Class<Doc<Space>>>
+        query?: DocumentQuery<Doc>
+        attributesOnly: boolean
+      } = req.body
+
+      if (_class == null || format == null) {
         throw new ApiError(400, 'Missing required parameters')
       }
 
@@ -167,13 +177,13 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
         try {
           const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, workspace)
 
-          await exporter.export(classId, exportDir, exportType, attributesOnly)
+          await exporter.export(_class, exportDir, { format, attributesOnly, query })
 
           const hierarchy = platformClient.getHierarchy()
-          const className = hierarchy.getClass(classId).label
+          const className = hierarchy.getClass(_class).label
 
           const archiveDir = await fs.mkdtemp(join(tmpdir(), 'export-archive-'))
-          const archiveName = `export-${workspace.name}-${className}-${exportType}-${Date.now()}.zip`
+          const archiveName = `export-${workspace.name}-${className}-${format}-${Date.now()}.zip`
           const archivePath = join(archiveDir, archiveName)
 
           const files = await fs.readdir(exportDir)
@@ -188,7 +198,6 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
             storageAdapter,
             workspace,
             archivePath,
-            archiveName,
             account._id
           )
 
@@ -200,6 +209,61 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
           await fs.rmdir(exportDir, { recursive: true })
         }
       })()
+    })
+  )
+
+  app.post(
+    '/exportSync',
+    wrapRequest(async (req, res, token) => {
+      const format = req.query.format as ExportFormat
+      const {
+        _class,
+        query,
+        attributesOnly,
+        config
+      }: {
+        _class: Ref<Class<Doc<Space>>>
+        query?: DocumentQuery<Doc>
+        attributesOnly?: boolean
+        config?: TransformConfig
+      } = req.body
+
+      if (_class == null || format == null) {
+        throw new ApiError(400, 'Missing required parameters')
+      }
+
+      const platformClient = await createPlatformClient(token)
+      const { email, workspace } = decodeToken(token)
+
+      const account = platformClient.getModel().getAccountByEmail(email)
+      if (account === undefined) {
+        throw new ApiError(401, 'Account not found')
+      }
+
+      const txOperations = new TxOperations(platformClient, account._id)
+
+      const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
+      try {
+        const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, workspace, config)
+        await exporter.export(_class, exportDir, { format, attributesOnly: attributesOnly ?? false, query })
+
+        const files = await fs.readdir(exportDir)
+        if (files.length === 0) {
+          throw new ApiError(400, 'No files were exported')
+        }
+
+        if (files.length !== 1) {
+          throw new ApiError(400, 'Unexpected number of files exported')
+        }
+
+        const exportedFile = join(exportDir, files[0])
+        res.download(exportedFile, basename(exportedFile), () => {})
+      } catch (err: any) {
+        console.error('Export failed:', err)
+        throw err
+      } finally {
+        void fs.rmdir(exportDir, { recursive: true })
+      }
     })
   )
 
@@ -221,7 +285,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
   }
 }
 
-export async function createPlatformClient (token: string): Promise<Client> {
+async function createPlatformClient (token: string): Promise<Client> {
   setMetadata(client.metadata.ClientSocketFactory, (url) => {
     return new WebSocket(url, {
       headers: {
@@ -271,7 +335,6 @@ async function saveToDrive (
   storage: StorageAdapter,
   workspace: WorkspaceId,
   archivePath: string,
-  archiveName: string,
   account: Ref<Account>
 ): Promise<Ref<Drive>> {
   const exportDrive = await ensureExportDrive(client, account)
@@ -281,7 +344,7 @@ async function saveToDrive (
   await storage.put(ctx, workspace, blobId, fileContent, 'application/gzip', fileContent.length)
 
   await createFile(client, exportDrive, drive.ids.Root, {
-    title: archiveName,
+    title: basename(archivePath),
     file: blobId,
     size: fileContent.length,
     type: 'application/gzip',
