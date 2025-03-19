@@ -787,7 +787,7 @@ export async function requestPasswordReset (
     })
   })
   if (!response.ok) {
-    ctx.error(`Failed to send mail: ${response.statusText}`)
+    ctx.error(`Failed to send reset password email: ${response.statusText}`)
   }
 
   ctx.info('Password reset email sent', { email, normalizedEmail, account: account.uuid })
