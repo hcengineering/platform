@@ -26,7 +26,7 @@
   export let value: Doc & { attachments?: number }
   export let attachments: Attachment[] | undefined = undefined
   export let imageSize: AttachmentImageSize = 'x-large'
-  export let videoPreload = true
+  export let videoPreload = false
   export let isOwn = false
 
   const query = createQuery()
