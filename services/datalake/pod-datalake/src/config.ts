@@ -57,7 +57,7 @@ function parseBucketConfig (str: string): BucketConfig {
   }
 
   const uri = new URL(url)
-  const endpoint = uri.protocol + '//' + uri.hostname + uri.pathname
+  const endpoint = uri.protocol + '//' + uri.host + uri.pathname
 
   return {
     bucket,
