@@ -243,6 +243,7 @@ export { default as IconHistory } from './components/icons/History.svelte'
 export { default as IconScribble } from './components/icons/Scribble.svelte'
 export { default as IconMenuOpen } from './components/icons/MenuOpen.svelte'
 export { default as IconMenuClose } from './components/icons/MenuClose.svelte'
+export { default as IconError } from './components/icons/Error.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'

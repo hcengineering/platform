@@ -33,6 +33,7 @@ export interface BlobId {
   workspace: string
   name: string
 }
+
 export interface BlobIds {
   workspace: string
   names: string[]
@@ -42,6 +43,12 @@ export interface BlobRecord extends BlobId {
   hash: UUID
   location: Location
   parent?: string
+}
+
+export type BlobMeta = Record<string, any>
+
+export interface BlobMetaRecord extends BlobId {
+  meta: BlobMeta
 }
 
 export type BlobWithDataRecord = BlobRecord & BlobDataRecord
@@ -62,6 +69,7 @@ export interface StatsResult {
     size: number
   }
 }
+
 export interface WorkspaceStatsResult {
   count: number
   size: number
@@ -98,6 +106,8 @@ export interface BlobDB {
   createBlob: (ctx: MeasureContext, blob: Omit<BlobRecord, 'filename'>) => Promise<void>
   createBlobData: (ctx: MeasureContext, blob: BlobWithDataRecord) => Promise<void>
   deleteBlob: (ctx: MeasureContext, blob: BlobId) => Promise<void>
+  getMeta: (ctx: MeasureContext, blobId: BlobId) => Promise<BlobMeta | null>
+  setMeta: (ctx: MeasureContext, blobId: BlobId, meta: BlobMeta) => Promise<void>
   setParent: (ctx: MeasureContext, blob: BlobId, parent: BlobId | null) => Promise<void>
   deleteBlobList: (ctx: MeasureContext, list: BlobIds) => Promise<void>
   getStats: (ctx: MeasureContext) => Promise<StatsResult>
@@ -284,6 +294,34 @@ export class PostgresDB implements BlobDB {
     )
   }
 
+  async getMeta (ctx: MeasureContext, blobId: BlobId): Promise<BlobMeta | null> {
+    const { workspace, name } = blobId
+
+    const rows = await this.db.execute<BlobMetaRecord[]>(
+      `
+      SELECT m.workspace, m.name, m.meta
+      FROM blob.blob b
+      LEFT JOIN blob.meta as m ON m.workspace = b.workspace AND m.name = b.name
+      WHERE b.workspace = $1 AND b.name = $2 and b.deleted_at IS NULL
+    `,
+      [workspace, name]
+    )
+
+    return rows.length > 0 ? rows[0].meta ?? {} : null
+  }
+
+  async setMeta (ctx: MeasureContext, blobId: BlobId, meta: BlobMeta): Promise<void> {
+    const { workspace, name } = blobId
+
+    await this.db.execute(
+      `
+      UPSERT INTO blob.meta (workspace, name, meta)
+      VALUES ($1, $2, $3)
+    `,
+      [workspace, name, meta]
+    )
+  }
+
   async setParent (ctx: MeasureContext, blob: BlobId, parent: BlobId | null): Promise<void> {
     const { workspace, name } = blob
 
@@ -384,6 +422,14 @@ export class LoggedDB implements BlobDB {
     await ctx.with('db.deleteBlob', {}, () => this.db.deleteBlob(this.ctx, blob))
   }
 
+  async getMeta (ctx: MeasureContext, blobId: BlobId): Promise<BlobMeta | null> {
+    return await this.ctx.with('db.getMeta', {}, () => this.db.getMeta(ctx, blobId))
+  }
+
+  async setMeta (ctx: MeasureContext, blobId: BlobId, meta: BlobMeta): Promise<void> {
+    await this.ctx.with('db.setMeta', {}, () => this.db.setMeta(ctx, blobId, meta))
+  }
+
   async setParent (ctx: MeasureContext, blob: BlobId, parent: BlobId | null): Promise<void> {
     await ctx.with('db.setParent', {}, () => this.db.setParent(this.ctx, blob, parent))
   }
@@ -422,6 +468,12 @@ export function escape (value: any): string {
       return value ? 'TRUE' : 'FALSE'
     case 'string':
       return `'${value.replace(/'/g, "''")}'`
+    case 'object':
+      if (value instanceof Date) {
+        return `'${value.toISOString()}'`
+      } else {
+        return `'${JSON.stringify(value)}'`
+      }
     default:
       throw new Error(`Unsupported value type: ${typeof value}`)
   }

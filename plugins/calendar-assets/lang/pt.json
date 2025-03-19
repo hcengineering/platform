@@ -91,7 +91,7 @@
     "ScheduleNew": "Adicionar agenda",
     "ScheduleDeleteConfirm": "A agenda será eliminada. Confirma?",
     "ScheduleShareLink": "Partilhar link",
-    "ScheduleSharedLinkMessage": "Partilhe este link para permitir que outras pessoas agendem uma reunião consigo:</p><p><a href=\"{link}\" ></p>",
+    "ScheduleSharedLinkMessage": "<p>Partilhe este link para permitir que outras pessoas agendem uma reunião consigo:</p><p><a href=\"{link}\" ></p>",
     "ScheduleSharedLinkCopy": "Copiar link",
     "ScheduleAvailability": "Disponibilidade",
     "ScheduleUnavailable": "Indisponível",

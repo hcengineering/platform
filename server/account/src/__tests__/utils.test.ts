@@ -58,7 +58,7 @@ import {
   getPersonName,
   getInviteEmail,
   getFrontUrl,
-  getSesUrl,
+  getMailUrl,
   getSocialIdByKey,
   getWorkspaceInvite,
   loginOrSignUpWithProvider,
@@ -654,9 +654,9 @@ describe('account utils', () => {
               return 30
             case accountPlugin.metadata.OtpTimeToLiveSec:
               return 60
-            case accountPlugin.metadata.SES_URL:
+            case accountPlugin.metadata.MAIL_URL:
               return sesUrl
-            case accountPlugin.metadata.SES_AUTH_TOKEN:
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
               return sesAuth
             case accountPlugin.metadata.ProductName:
               return 'Test Product'
@@ -753,7 +753,9 @@ describe('account utils', () => {
 
       describe('sendOtpEmail', () => {
         beforeEach(() => {
-          global.fetch = jest.fn()
+          const mockFetch = jest.fn()
+          mockFetch.mockResolvedValue({ ok: true })
+          global.fetch = mockFetch
         })
 
         test('should send email with OTP', async () => {
@@ -833,9 +835,9 @@ describe('account utils', () => {
         mockFetch.mockResolvedValue({ ok: true })
         ;(getMetadata as jest.Mock).mockImplementation((key) => {
           switch (key) {
-            case accountPlugin.metadata.SES_URL:
+            case accountPlugin.metadata.MAIL_URL:
               return 'https://ses.example.com'
-            case accountPlugin.metadata.SES_AUTH_TOKEN:
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
               return 'test-auth-token'
             case accountPlugin.metadata.ProductName:
               return 'Test Product'
@@ -871,14 +873,14 @@ describe('account utils', () => {
           )
         })
 
-        test('should throw error if SES_URL is missing', async () => {
+        test('should throw error if MAIL_URL is missing', async () => {
           ;(getMetadata as jest.Mock).mockReturnValue(undefined)
 
           await expect(sendEmailConfirmation(mockCtx, mockBranding, account, email)).rejects.toThrow(
             new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
           )
 
-          expect(mockCtx.error).toHaveBeenCalledWith('Please provide SES_URL to enable email confirmations.')
+          expect(mockCtx.error).toHaveBeenCalledWith('Please provide MAIL_URL to enable email confirmations.')
         })
 
         test('should use branding front URL if available', async () => {
@@ -999,9 +1001,9 @@ describe('account utils', () => {
       beforeEach(() => {
         ;(getMetadata as jest.Mock).mockImplementation((key) => {
           switch (key) {
-            case accountPlugin.metadata.SES_URL:
+            case accountPlugin.metadata.MAIL_URL:
               return 'https://ses.example.com'
-            case accountPlugin.metadata.SES_AUTH_TOKEN:
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
               return 'test-token'
             default:
               return undefined
@@ -1010,6 +1012,10 @@ describe('account utils', () => {
       })
 
       test('should send email with correct parameters', async () => {
+        const mockCtx = {
+          error: jest.fn(),
+          info: jest.fn()
+        } as unknown as MeasureContext
         const emailInfo = {
           text: 'Test email',
           html: '<p>Test email</p>',
@@ -1017,7 +1023,7 @@ describe('account utils', () => {
           to: 'test@example.com'
         }
 
-        await sendEmail(emailInfo)
+        await sendEmail(emailInfo, mockCtx)
 
         expect(mockFetch).toHaveBeenCalledWith('https://ses.example.com/send', {
           method: 'post',
@@ -1832,9 +1838,9 @@ describe('account utils', () => {
     beforeEach(() => {
       ;(getMetadata as jest.Mock).mockImplementation((key) => {
         switch (key) {
-          case accountPlugin.metadata.SES_URL:
+          case accountPlugin.metadata.MAIL_URL:
             return 'https://ses.example.com'
-          case accountPlugin.metadata.SES_AUTH_TOKEN:
+          case accountPlugin.metadata.MAIL_AUTH_TOKEN:
             return 'test-token'
           default:
             return undefined
@@ -1847,17 +1853,17 @@ describe('account utils', () => {
     })
 
     test('should return SES URL and auth token when configured', () => {
-      const result = getSesUrl()
+      const result = getMailUrl()
       expect(result).toEqual({
-        sesURL: 'https://ses.example.com',
-        sesAuth: 'test-token'
+        mailURL: 'https://ses.example.com',
+        mailAuth: 'test-token'
       })
     })
 
     test('should throw error when SES URL not configured', () => {
       ;(getMetadata as jest.Mock).mockReturnValue(undefined)
 
-      expect(() => getSesUrl()).toThrow('Please provide email service url')
+      expect(() => getMailUrl()).toThrow('Please provide email service url')
     })
   })
 

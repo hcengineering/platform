@@ -86,7 +86,7 @@ import activity, { TActivityMessage } from '@hcengineering/model-activity'
 import attachment, { TAttachment } from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import { TPreference } from '@hcengineering/model-preference'
-import { TToDO } from '@hcengineering/model-time'
+import { TToDo } from '@hcengineering/model-time'
 import notification from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import time from '@hcengineering/time'
@@ -406,7 +406,7 @@ export class TGithubIssue extends TIssue implements GithubIssue {
 }
 
 @Mixin(github.mixin.GithubTodo, time.class.ToDo)
-export class TGithubTodo extends TToDO implements GithubTodo {
+export class TGithubTodo extends TToDo implements GithubTodo {
   purpose!: 'review' | 'fix'
 }
 

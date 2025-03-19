@@ -50,5 +50,6 @@ startFront(metricsContext, {
   STATS_URL: process.env.STATS_API ?? process.env.STATS_URL,
   BACKUP_URL: process.env.BACKUP_URL,
   TRANSACTOR_OVERRIDE: process.env.TRANSACTOR_OVERRIDE,
+  PUBLIC_SCHEDULE_URL: process.env.PUBLIC_SCHEDULE_URL,
   EXPORT_URL: process.env.EXPORT_URL
 })

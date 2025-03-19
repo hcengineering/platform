@@ -142,8 +142,8 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
 }
 
 export const settingOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, settingId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, settingId, [
       {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {

@@ -21,7 +21,7 @@
   export let src: string
   export let hlsSrc: string
   export let hlsThumbnail = ''
-  export let name = ''
+  export let name: string | undefined = undefined
   export let preload = true
 
   let video: HTMLVideoElement | null = null
@@ -34,6 +34,7 @@
     if (video === null) {
       return
     }
+
     if (!HLS.isSupported()) {
       video.src = src
       player = new Plyr(video, options)
@@ -107,6 +108,9 @@
         }
       }
 
+      options.captions = {
+        active: false
+      }
       options.i18n = {
         qualityLabel: {
           0: 'Auto'
@@ -146,9 +150,8 @@
   }
 </script>
 
-<video bind:this={video} width="100%" height="100%" class="plyr" preload={preload ? 'auto' : 'none'} controls>
-  <track kind="captions" label={name} />
-</video>
+<!-- svelte-ignore a11y-media-has-caption -->
+<video bind:this={video} width="100%" height="100%" preload={preload ? 'auto' : 'none'} controls />
 
 <style lang="scss">
   video {

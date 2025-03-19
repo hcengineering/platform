@@ -118,7 +118,7 @@
                       <Label label={uploader.status.Completed} />
                     {:else}
                       <Label label={uploader.status.Uploading} />
-                      <span>file.progress</span>
+                      <span>{Math.ceil(file.progress)}%</span>
                     {/if}
                   {/if}
                 </div>

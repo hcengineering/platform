@@ -37,8 +37,8 @@ import contact, { getAllAccounts } from '@hcengineering/contact'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 import { type DocUpdateMessage } from '@hcengineering/activity'
 
-import chunter from './plugin'
 import { DOMAIN_CHUNTER } from './index'
+import chunter from './plugin'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
 
@@ -232,18 +232,21 @@ async function removeWrongActivity (client: MigrationClient): Promise<void> {
 }
 
 export const chunterOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, chunterId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, chunterId, [
       {
         state: 'create-chat-messages',
+        mode: 'upgrade',
         func: convertCommentsToChatMessages
       },
       {
         state: 'remove-backlinks',
+        mode: 'upgrade',
         func: removeBacklinks
       },
       {
         state: 'migrate-chat-messages-space',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateMessagesSpace(
             client,
@@ -255,6 +258,7 @@ export const chunterOperation: MigrateOperation = {
       },
       {
         state: 'migrate-thread-messages-space',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateMessagesSpace(
             client,
@@ -266,18 +270,21 @@ export const chunterOperation: MigrateOperation = {
       },
       {
         state: 'remove-old-classes-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await removeOldClasses(client)
         }
       },
       {
         state: 'remove-wrong-activity-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await removeWrongActivity(client)
         }
       },
       {
         state: 'remove-chat-info-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:ChatInfo' as Ref<Class<Doc>> })
           await client.deleteMany(DOMAIN_TX, { objectClass: 'chunter:class:ChatInfo' })
@@ -291,6 +298,7 @@ export const chunterOperation: MigrateOperation = {
       },
       {
         state: 'remove-direct-doc-update-messages',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
             _class: activity.class.DocUpdateMessage,
@@ -300,8 +308,8 @@ export const chunterOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, chunterId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, chunterId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

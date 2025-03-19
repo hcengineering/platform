@@ -17,7 +17,7 @@
   import { Card, CardEvents, cardId, MasterTag } from '@hcengineering/card'
   import core, { Class, Data, Doc, fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { makeRank } from '@hcengineering/rank'
   import {
     Button,
@@ -31,25 +31,15 @@
   import card from '../plugin'
   import TagHierarchy from './TagHierarchy.svelte'
 
-  export let _class: Ref<Class<Doc>>
+  export let _class: Ref<Class<Doc>> | undefined
+  export let classes: MasterTag[] = []
+  export let allClasses: MasterTag[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let classes: MasterTag[] = []
-  let allClasses: MasterTag[] = []
-
-  function fillClasses (tags: MasterTag[]): void {
-    classes = tags.filter((it) => it.extends === card.class.Card).sort((a, b) => a.label.localeCompare(b.label))
-  }
-
-  const query = createQuery()
-  query.query(card.class.MasterTag, { _class: card.class.MasterTag }, (res) => {
-    allClasses = res
-    fillClasses(res)
-  })
-
   async function createCard (): Promise<void> {
+    if (_class === undefined) return
     const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const title = await translate(card.string.Card, {})
 
@@ -57,12 +47,13 @@
       title,
       rank: makeRank(lastOne?.rank, undefined),
       content: '' as MarkupBlobRef,
-      parentInfo: []
+      parentInfo: [],
+      blobs: {}
     }
 
     const filledData = fillDefaults(hierarchy, data, _class)
 
-    const _id = await client.createDoc(_class ?? card.class.Card, core.space.Workspace, filledData)
+    const _id = await client.createDoc(_class, core.space.Workspace, filledData)
 
     Analytics.handleEvent(CardEvents.CardCreated)
 
@@ -99,7 +90,6 @@
 
     {#if classes.length > 0}
       <div class="antiNav-divider line" />
-
       <Scroller shrink>
         <TagHierarchy bind:_class deselect={menuSelection} {classes} {allClasses} on:select />
       </Scroller>

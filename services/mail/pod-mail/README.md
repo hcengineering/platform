@@ -9,6 +9,7 @@ It supports sending emails with multiple recipients, along with optional CC, BCC
 
 Environment variables should be set to configure the Mail Service:
 - `PORT`: The port on which the mail service listens for incoming HTTP requests.
+- `API_KEY`: An API key that clients must pass. The parameter is optional, should be provided when external access to the service is allowed.
 
 Settings for SMTP or SES email service should be specified, simultaneous use of both protocols is not supported
 
@@ -53,6 +54,8 @@ Send an email message.
 - `subject`: Required. String containing the email subject.
 - `html`: Optional. String containing HTML message body.
 - `from`: Optional. Sender's email address.
+- `headers`: Optional. An object or array of additional header fields.
+- `apiKey`: Required if the service started with `API_KEY`.
 - `attachments`: Optional. Array of objects, each object can have the following fields:
   - `filename`: Filename to be reported as the name of the attached file. Use of unicode is allowed.
   - `contentType`: Optional. Content type for the attachment, if not set will be derived from the filename property.

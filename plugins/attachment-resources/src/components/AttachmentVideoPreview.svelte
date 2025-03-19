@@ -14,20 +14,22 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import type { WithLookup } from '@hcengineering/core'
+  import type { BlobType, WithLookup } from '@hcengineering/core'
   import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
   import { HlsVideo, Video } from '@hcengineering/ui'
 
-  export let value: WithLookup<Attachment>
+  export let value: WithLookup<Attachment> | BlobType
   export let preload = true
 
-  const maxSizeRem = 20
-  const baseSizeRem = 12
-  const minSizeRem = 4
+  const maxSizeRem = 25
+  const baseSizeRem = 20
+  const minSizeRem = 10
 
   $: dimensions = getDimensions(value)
+  $: name = value.name
+  $: file = value.file
 
-  function getDimensions (value: Attachment): { width: number, height: number } {
+  function getDimensions (value: Attachment | BlobType): { width: number, height: number } {
     const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
 
     if (!value.metadata) {
@@ -61,23 +63,21 @@
 </script>
 
 <div class="container" style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
-  {#await getVideoMeta(value.file, value.name) then meta}
-    {@const src = getFileUrl(value.file, value.name)}
+  {#await getVideoMeta(file, name) then meta}
+    {@const src = getFileUrl(file, name)}
 
-    {#if meta && meta.status === 'ready'}
-      <HlsVideo {src} {preload} hlsSrc={meta.hls} hlsThumbnail={meta.thumbnail} name={value.name} />
+    {#if meta?.hls?.source !== undefined}
+      <HlsVideo {src} {preload} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} {name} />
     {:else}
-      <Video {src} {preload} name={value.name} />
+      <Video {src} {preload} {name} />
     {/if}
   {/await}
 </div>
 
 <style lang="scss">
   .container {
-    max-width: 25rem;
-    max-height: 25rem;
-    min-width: 4rem;
-    min-height: 4rem;
+    min-width: 10rem;
+    min-height: 10rem;
     border-radius: 0.75rem;
   }
 </style>

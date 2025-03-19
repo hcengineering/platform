@@ -1,6 +1,7 @@
 export enum CardEvents {
-  NewCardButtonClicked = 'card.card.NewButtonClicked',
-  MasterTagRemoved = 'card.card.MasterTagRemoved',
+  TypeCreated = 'card.card.TypeCreated',
+  TagCreated = 'card.card.TagCreated',
+  RelationCreated = 'card.card.RelationCreated',
   CardCreated = 'card.card.Created',
   CardOpened = 'card.card.Opened'
 }

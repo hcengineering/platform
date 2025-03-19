@@ -390,12 +390,12 @@ export async function sendOtpEmail (
   otp: string,
   email: string
 ): Promise<void> {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     ctx.error('Please provide email service url to enable email otp')
     return
   }
-  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
+  const mailAuth = getMetadata(accountPlugin.metadata.MAIL_AUTH_TOKEN)
 
   const lang = branding?.language
   const app = branding?.title ?? getMetadata(accountPlugin.metadata.ProductName)
@@ -405,11 +405,11 @@ export async function sendOtpEmail (
   const subject = await translate(accountPlugin.string.OtpSubject, { code: otp, app }, lang)
 
   const to = email
-  await fetch(concatLink(sesURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -418,6 +418,9 @@ export async function sendOtpEmail (
       to
     })
   })
+  if (!response.ok) {
+    ctx.error(`Failed to send otp email: ${response.statusText}`, { to })
+  }
 }
 
 export async function isOtpValid (db: AccountDB, socialId: string, code: string): Promise<boolean> {
@@ -756,13 +759,13 @@ export async function sendEmailConfirmation (
   account: PersonUuid,
   email: string
 ): Promise<void> {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
-    ctx.error('Please provide SES_URL to enable email confirmations.')
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
+    ctx.error('Please provide MAIL_URL to enable email confirmations.')
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
+  const mailAuth = getMetadata(accountPlugin.metadata.MAIL_AUTH_TOKEN)
 
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
@@ -782,11 +785,11 @@ export async function sendEmailConfirmation (
   const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link }, lang)
   const subject = await translate(accountPlugin.string.ConfirmationSubject, { name }, lang)
 
-  await fetch(concatLink(sesURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
-      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -795,6 +798,9 @@ export async function sendEmailConfirmation (
       to: email
     })
   })
+  if (!response.ok) {
+    ctx.error(`Failed to send email confirmation: ${response.statusText}`, { email })
+  }
 }
 
 export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account: string, email: string): Promise<void> {
@@ -893,15 +899,15 @@ export async function getEmailSocialId (db: AccountDB, email: string): Promise<S
   return await db.socialId.findOne({ type: SocialIdType.EMAIL, value: email })
 }
 
-export function getSesUrl (): { sesURL: string, sesAuth: string | undefined } {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+export function getMailUrl (): { mailURL: string, mailAuth: string | undefined } {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
 
-  if (sesURL === undefined || sesURL === '') {
+  if (mailURL === undefined || mailURL === '') {
     throw new Error('Please provide email service url')
   }
-  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
+  const mailAuth = getMetadata(accountPlugin.metadata.MAIL_AUTH_TOKEN)
 
-  return { sesURL, sesAuth }
+  return { mailURL, mailAuth }
 }
 
 export function getFrontUrl (branding: Branding | null): string {
@@ -1165,14 +1171,14 @@ interface EmailInfo {
   to: string
 }
 
-export async function sendEmail (info: EmailInfo): Promise<void> {
+export async function sendEmail (info: EmailInfo, ctx: MeasureContext): Promise<void> {
   const { text, html, subject, to } = info
-  const { sesURL, sesAuth } = getSesUrl()
-  await fetch(concatLink(sesURL, '/send'), {
+  const { mailURL, mailAuth } = getMailUrl()
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
-      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -1181,6 +1187,9 @@ export async function sendEmail (info: EmailInfo): Promise<void> {
       to
     })
   })
+  if (!response.ok) {
+    ctx.error(`Failed to send mail: ${response.statusText}`, { to })
+  }
 }
 
 export function sanitizeEmail (email: string): string {

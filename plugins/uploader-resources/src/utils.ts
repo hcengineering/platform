@@ -94,7 +94,7 @@ export async function uploadFiles (files: File[] | FileList, options: FileUpload
     const { relativePath } = data
     const uuid = data.name
     void limiter.add(async () => {
-      await uploadFile(data, { name: files[i].name, uuid, relativePath }, upload, options)
+      await uploadFile(data, { name: files[i].name, uuid, type: data.type, relativePath }, upload, options)
     })
   }
 
@@ -155,7 +155,8 @@ export async function uploadFile (
         if (uuid !== undefined && onFileUploaded !== undefined) {
           try {
             void callbackLimiter.exec(async () => {
-              void onFileUploaded({
+              await onFileUploaded({
+                type: metadata.type,
                 uuid,
                 name: metadata.name,
                 file,

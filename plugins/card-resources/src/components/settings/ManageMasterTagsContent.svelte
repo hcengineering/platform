@@ -14,13 +14,16 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
-  import core, { Ref } from '@hcengineering/core'
+  import core, { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
+    AnyComponent,
+    AnySvelteComponent,
     BreadcrumbItem,
     Breadcrumbs,
     Header,
     Location,
+    resizeObserver,
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
     navigate,
@@ -29,16 +32,38 @@
   import { onDestroy, onMount } from 'svelte'
   import card from '../../plugin'
   import MasterTagEditor from './MasterTagEditor.svelte'
+  import { getResource } from '@hcengineering/platform'
 
   let masterTag: MasterTag | undefined
+  let visibleSecondNav: boolean = true
   let selectedTagId: Ref<MasterTag> | undefined
-  onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
 
   function handleLocationChanged ({ path }: Location): void {
     if (path[3] !== 'types' || path[4] === undefined) {
       selectedTagId = undefined
     } else {
       selectedTagId = path[4] as Ref<MasterTag>
+    }
+
+    selectSubItem(path[5] as AnyComponent, path[6] as Ref<Doc>)
+  }
+
+  let selectedSubObjectId: Ref<Doc> | undefined = undefined
+  let subEditor: AnySvelteComponent | undefined = undefined
+  let subEditorTitle: string | undefined = undefined
+
+  function selectSubItem (editorId: AnyComponent | undefined, objId: Ref<Doc> | undefined): void {
+    if (editorId !== undefined && objId !== undefined) {
+      selectedSubObjectId = objId
+      void getResource(editorId)
+        .then((res) => (subEditor = res))
+        .catch((err) => {
+          subEditor = undefined
+          console.error(err)
+        })
+    } else {
+      selectedSubObjectId = undefined
+      subEditor = undefined
     }
   }
 
@@ -50,18 +75,26 @@
     masterTag = res[0]
   })
 
-  function getBreadcrumbs (tag: Ref<MasterTag> | undefined): BreadcrumbItem[] {
+  function handleSubEditorOpen (event: CustomEvent): void {
+    subEditorTitle = event.detail
+  }
+
+  function getBreadcrumbs (tag: Ref<MasterTag> | undefined, subEditorTitle: string | undefined): BreadcrumbItem[] {
     if (tag === undefined) return []
     const toAncestors = hierarchy.getAncestors(card.class.Card)
     const ancestors = hierarchy.getAncestors(tag)
     const filtered = ancestors.filter((it) => !toAncestors.includes(it))
-    return filtered.reverse().map((it) => ({
+    const res: BreadcrumbItem[] = filtered.reverse().map((it) => ({
       id: it,
       label: hierarchy.getClass(it).label
     }))
+    if (subEditorTitle !== undefined) {
+      res.push({ id: subEditorTitle, title: subEditorTitle })
+    }
+    return res
   }
 
-  $: items = getBreadcrumbs(masterTag?._id)
+  $: items = getBreadcrumbs(masterTag?._id, subEditorTitle)
 
   onMount(() => {
     setTimeout(() => {
@@ -74,18 +107,36 @@
     if (id !== undefined) {
       const loc = getCurrentLocation()
       loc.path[4] = id
+      loc.path.length = 5
       navigate(loc)
     }
   }
+
+  onDestroy(resolvedLocationStore.subscribe(handleLocationChanged))
 </script>
 
-<div class="hulyComponent">
+<div
+  class="hulyComponent"
+  use:resizeObserver={(element) => {
+    visibleSecondNav = element.clientWidth > 720
+  }}
+>
   {#if masterTag !== undefined}
     <Header adaptive={'disabled'}>
       <Breadcrumbs {items} selected={items.length - 1} size={'large'} on:select={handleSelect} />
     </Header>
-    {#key masterTag._id}
-      <MasterTagEditor {masterTag} on:change />
-    {/key}
+    {#if subEditor === undefined}
+      {#key masterTag._id}
+        <MasterTagEditor {masterTag} {visibleSecondNav} on:change />
+      {/key}
+    {:else}
+      <svelte:component
+        this={subEditor}
+        _id={selectedSubObjectId}
+        {masterTag}
+        {visibleSecondNav}
+        on:change={handleSubEditorOpen}
+      />
+    {/if}
   {/if}
 </div>

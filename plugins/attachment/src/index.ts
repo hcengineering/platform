@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { AttachedDoc, Blob, Class, Doc, Ref } from '@hcengineering/core'
+import type { AttachedDoc, Blob, BlobMetadata, Class, Doc, Ref } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -22,11 +22,6 @@ import { AnyComponent } from '@hcengineering/ui'
 import { Widget } from '@hcengineering/workbench'
 
 export * from './analytics'
-
-/**
- * @public
- */
-export type BlobMetadata = Record<string, any>
 
 /**
  * @public
@@ -109,6 +104,7 @@ export default plugin(attachmentId, {
     PreviewWidget: '' as Ref<Widget>
   },
   string: {
+    UploadDropFilesHere: '' as IntlString,
     Files: '' as IntlString,
     NoFiles: '' as IntlString,
     NoParticipants: '' as IntlString,

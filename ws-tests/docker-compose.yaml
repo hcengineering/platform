@@ -93,6 +93,7 @@ services:
       - STATS_URL=http://huly.local:4901
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+      # - INIT_WORKSPACE=huly
     restart: unless-stopped
   workspace_europe:
     image: hardcoreeng/workspace

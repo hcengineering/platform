@@ -12,21 +12,15 @@
 // limitations under the License.
 
 import activity from '@hcengineering/activity'
-import {
-  CardEvents,
-  cardId,
-  DOMAIN_CARD,
-  type Card,
-  type MasterTag,
-  type ParentInfo,
-  type Tag
-} from '@hcengineering/card'
+import { cardId, DOMAIN_CARD, type Card, type MasterTag, type ParentInfo, type Tag } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import core, {
   AccountRole,
+  ClassifierKind,
   DOMAIN_MODEL,
   IndexKind,
   SortingOrder,
+  type Blobs,
   type CollectionSize,
   type MarkupBlobRef,
   type Rank,
@@ -52,15 +46,21 @@ import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { type BuildModelKey } from '@hcengineering/view'
 import card from './plugin'
 
 export { cardId } from '@hcengineering/card'
 
 @Model(card.class.MasterTag, core.class.Class)
-export class TMasterTag extends TClass implements MasterTag {}
+export class TMasterTag extends TClass implements MasterTag {
+  color?: number
+  removed?: boolean
+}
 
 @Model(card.class.Tag, core.class.Mixin)
-export class TTag extends TMixin implements Tag {}
+export class TTag extends TMixin implements Tag {
+  color?: number
+}
 
 @Model(card.class.Card, core.class.Doc, DOMAIN_CARD)
 @UX(card.string.Card, card.icon.Card)
@@ -74,6 +74,8 @@ export class TCard extends TDoc implements Card {
 
   @Prop(TypeCollaborativeDoc(), card.string.Content)
     content!: MarkupBlobRef
+
+  blobs!: Blobs
 
   @Prop(TypeRef(card.class.Card), card.string.Parent)
     parent?: Ref<Card> | null
@@ -102,6 +104,70 @@ export * from './migration'
 
 export function createModel (builder: Builder): void {
   builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
+
+  builder.createDoc(
+    card.class.MasterTag,
+    core.space.Model,
+    {
+      label: attachment.string.File,
+      extends: card.class.Card,
+      icon: card.icon.File,
+      kind: ClassifierKind.CLASS
+    },
+    card.types.File
+  )
+
+  builder.mixin(card.types.File, card.class.MasterTag, setting.mixin.Editable, {
+    value: false
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: card.types.File,
+    descriptor: view.viewlet.Table,
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: [
+      '',
+      '_class',
+      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      'modifiedOn'
+    ]
+  })
+
+  const listConfig: (BuildModelKey | string)[] = [
+    { key: '', props: { showParent: true }, displayProps: { fixed: 'left', key: 'card' } },
+    { key: '_class', displayProps: { fixed: 'left', key: 'type' } },
+    { key: '', displayProps: { grow: true } },
+    {
+      key: '',
+      presenter: view.component.RolePresenter,
+      label: card.string.Tags,
+      props: { fullSize: true },
+      displayProps: { key: 'tags', fixed: 'right' }
+    },
+    {
+      key: 'modifiedOn',
+      displayProps: { fixed: 'right', dividerBefore: true }
+    }
+  ]
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: card.types.File,
+    descriptor: view.viewlet.List,
+    viewOptions: {
+      groupBy: ['_class', 'createdBy', 'modifiedBy'],
+      orderBy: [
+        ['modifiedOn', SortingOrder.Descending],
+        ['rank', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: listConfig
+  })
 
   builder.createDoc(
     workbench.class.Application,
@@ -205,18 +271,33 @@ export function createModel (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['content', 'title']
       },
-      config: [
-        { key: '', props: { showParent: true } },
-        '_class',
-        { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
-        { key: '', displayProps: { grow: true } },
-        {
-          key: 'modifiedOn',
-          displayProps: { fixed: 'right', dividerBefore: true }
-        }
-      ]
+      config: listConfig
     },
     card.viewlet.CardList
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: card.class.Card,
+      descriptor: view.viewlet.List,
+      variant: 'child',
+      viewOptions: {
+        groupBy: ['_class', 'createdBy', 'modifiedBy'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending]
+        ],
+        other: []
+      },
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['content', 'title']
+      },
+      config: listConfig
+    },
+    card.viewlet.CardChildList
   )
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
@@ -318,8 +399,7 @@ export function createModel (builder: Builder): void {
       context: {
         mode: ['context', 'browser'],
         group: 'remove'
-      },
-      analyticsEvent: CardEvents.MasterTagRemoved
+      }
     },
     card.action.DeleteMasterTag
   )
@@ -334,8 +414,7 @@ export function createModel (builder: Builder): void {
     context: {
       mode: ['context', 'browser'],
       group: 'remove'
-    },
-    analyticsEvent: CardEvents.MasterTagRemoved
+    }
   })
 
   createAction(builder, {

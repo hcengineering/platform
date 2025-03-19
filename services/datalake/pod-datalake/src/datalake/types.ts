@@ -62,6 +62,9 @@ export interface Datalake {
   ) => Promise<BlobHead>
   create: (ctx: MeasureContext, workspace: string, name: string, filename: string) => Promise<BlobHead | null>
 
+  getMeta: (ctx: MeasureContext, workspace: string, name: string) => Promise<Record<string, any> | null>
+  setMeta: (ctx: MeasureContext, workspace: string, name: string, meta: Record<string, any>) => Promise<void>
+
   setParent: (ctx: MeasureContext, workspace: string, name: string, parent: string | null) => Promise<void>
   selectStorage: (ctx: MeasureContext, workspace: string) => Promise<BlobStorage>
 }

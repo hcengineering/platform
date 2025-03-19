@@ -1458,7 +1458,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       const isReverse = association[1] === -1
       const _class = isReverse ? assoc.classA : assoc.classB
-      const tagetDomain = translateDomain(this.hierarchy.getDomain(_class))
+      const domain = this.hierarchy.findDomain(_class)
+      if (domain === undefined) continue
+      const tagetDomain = translateDomain(domain)
       const keyA = isReverse ? 'docB' : 'docA'
       const keyB = isReverse ? 'docA' : 'docB'
       const wsId = vars.add(this.workspaceId, '::uuid')
@@ -1705,7 +1707,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const finalSql = sqlChunks.join(' ')
         return await this.mgr.retry(ctx.id, async (connection) => {
           const result = await connection.execute(finalSql, vars.getValues())
-          return new Map(result.map((r) => [r[`_${field.toLowerCase()}`], r.count]))
+          return new Map(
+            result.map((r) => [r[`_${field.toLowerCase()}`], typeof r.count === 'string' ? parseInt(r.count) : r.count])
+          )
         })
       } catch (err) {
         ctx.error('Error while grouping by', { domain, field })
@@ -2089,7 +2093,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
         SELECT * 
         FROM "${translateDomain(DOMAIN_MODEL_TX)}" 
         WHERE "workspaceId" = $1::uuid 
-        ORDER BY _id::text ASC, "modifiedOn"::bigint ASC
+        ORDER BY "modifiedOn"::bigint ASC, _id::text ASC
       `
       return client.execute(query, [this.workspaceId])
     })

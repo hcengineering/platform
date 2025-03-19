@@ -16,7 +16,7 @@
   import { Person, formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { Icon, Loading, resizeObserver } from '@hcengineering/ui'
+  import { Icon, Loading } from '@hcengineering/ui'
   import love from '../plugin'
 
   export let _id: string
@@ -28,7 +28,6 @@
 
   let parent: HTMLDivElement
   let activeTrack: boolean = false
-  let filled: boolean = false
 
   export function appendChild (track: HTMLMediaElement): void {
     const video = parent.querySelector('.video')
@@ -53,36 +52,20 @@
     activeTrack = !value
   }
 
-  let labelWidth: number
-  let parentWidth: number
-  $: filled = labelWidth === parentWidth && labelWidth > 0
   $: user = $personByIdStore.get(_id as Ref<Person>)
 </script>
 
-<div
-  id={_id}
-  class="parent"
-  class:small
-  use:resizeObserver={(element) => {
-    parentWidth = element.clientWidth
-  }}
->
-  <div
-    class="label"
-    class:filled
-    use:resizeObserver={(element) => {
-      labelWidth = element.clientWidth
-    }}
-  >
+<div id={_id} class="parent" class:small>
+  <div class="label">
     <span class="overflow-label">{formatName(name)}</span>
     {#if connecting}
       <div class="loading">
         <Loading size={'small'} />
       </div>
     {/if}
-    <div class="icon" class:muted>
-      <Icon size="small" icon={love.icon.MicDisabled} />
-    </div>
+  </div>
+  <div class="icon" class:muted>
+    <Icon size="medium" icon={love.icon.MicDisabled} />
   </div>
   <div bind:this={parent} class="cover" class:active={activeTrack} class:mirror={mirror && activeTrack}>
     <div class="ava">
@@ -139,40 +122,40 @@
 
     .label {
       position: absolute;
-      top: 0;
-      left: 0;
-      max-width: 100%;
-      padding: 0.5rem 0.5rem 0.25rem 1rem;
-      color: white;
-      font-weight: 500;
-      background-color: rgba(0, 0, 0, 0.3);
-      border-radius: 0.75rem 0 0.25rem 0;
       display: flex;
       align-items: center;
-      gap: 0.25rem;
-      z-index: 1;
+      gap: 0.375rem;
+      top: 0.5rem;
+      left: 0.5rem;
+      max-width: calc(100% - 1rem);
+      padding: 0.375rem;
       text-overflow: ellipsis;
       overflow: hidden;
-
-      span {
-        text-shadow: 0 0 0.25rem black;
-      }
-      &.filled {
-        padding: 0.5rem 1rem 0.25rem 1rem;
-        border-radius: 0.75rem 0.75rem 0 0;
-      }
+      font-weight: 500;
+      font-size: 0.75rem;
+      color: rgba(35, 37, 45, 0.75);
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 0.375rem;
+      z-index: 1;
     }
     &.small .label {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.25rem 0.25rem 0.5rem;
-
-      &.filled {
-        padding: 0.25rem 0.5rem;
-      }
+      font-size: 0.625rem;
     }
   }
 
   .icon {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    background-color: #36373d;
+    border-radius: 0.5rem;
+    z-index: 1;
+
     &:not(.muted) {
       display: none;
     }

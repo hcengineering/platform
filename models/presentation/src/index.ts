@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import { DOMAIN_MODEL, type Tx, type Blob, type Class, type Doc, type Ref } from '@hcengineering/core'
+import {
+  DOMAIN_MODEL,
+  type Tx,
+  type Blob,
+  type Class,
+  type Doc,
+  type Ref,
+  type BlobMetadata
+} from '@hcengineering/core'
 import { Mixin, Model, Prop, TypeRef, TypeString, type Builder } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
@@ -23,7 +31,6 @@ import {
   type PresentationMiddlewareFactory
 } from '@hcengineering/presentation/src/pipeline'
 import {
-  type BlobMetadata,
   type ComponentPointExtension,
   type CreateExtensionKind,
   type DocAttributeRule,

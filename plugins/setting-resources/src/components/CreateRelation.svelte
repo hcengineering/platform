@@ -102,14 +102,14 @@
     if (classBRef === undefined || classARef === undefined) {
       return
     }
-    await client.createDoc(core.class.Association, core.space.Model, {
+    const _id = await client.createDoc(core.class.Association, core.space.Model, {
       classA: classARef,
       classB: classBRef,
       type: mode,
       nameA,
       nameB
     })
-    dispatch('close')
+    dispatch('close', _id)
   }
 
   const items: DropdownIntlItem[] = [

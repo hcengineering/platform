@@ -26,6 +26,7 @@ export interface Config {
   Port: number
   Secret: string
   AccountsUrl: string
+  StreamUrl?: string
   DbUrl: string
   Buckets: BucketConfig[]
 }
@@ -57,7 +58,7 @@ function parseBucketConfig (str: string): BucketConfig {
   }
 
   const uri = new URL(url)
-  const endpoint = uri.protocol + '//' + uri.hostname + uri.pathname
+  const endpoint = uri.protocol + '//' + uri.host + uri.pathname
 
   return {
     bucket,
@@ -75,6 +76,7 @@ const config: Config = (() => {
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
     DbUrl: process.env.DB_URL,
+    StreamUrl: process.env.STREAM_URL,
     Buckets: parseBucketsConfig(process.env.BUCKETS)
   }
 

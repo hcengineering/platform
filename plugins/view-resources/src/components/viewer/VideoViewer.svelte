@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
-  import { getFileUrl, getVideoMeta, type BlobMetadata } from '@hcengineering/presentation'
+  import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
+  import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
   import { HlsVideo, Video } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
@@ -41,9 +41,9 @@
     <HlsVideo {src} hlsSrc={src} preload={true} />
   {:else}
     {#await getVideoMeta(value, name) then meta}
-      {#if meta !== undefined && meta.status === 'ready'}
+      {#if meta?.hls?.source !== undefined}
         {@const src = getFileUrl(value, name)}
-        <HlsVideo {src} {name} hlsSrc={meta.hls} hlsThumbnail={meta.thumbnail} preload={false} />
+        <HlsVideo {src} {name} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
       {:else}
         {@const src = getFileUrl(value, name)}
         <Video {src} {name} />

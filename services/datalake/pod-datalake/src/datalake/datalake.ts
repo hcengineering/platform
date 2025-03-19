@@ -171,6 +171,14 @@ export class DatalakeImpl implements Datalake {
     return { name, size, contentType, lastModified, etag: hash }
   }
 
+  async getMeta (ctx: MeasureContext, workspace: string, name: string): Promise<Record<string, any> | null> {
+    return await this.db.getMeta(ctx, { workspace, name })
+  }
+
+  async setMeta (ctx: MeasureContext, workspace: string, name: string, meta: Record<string, any>): Promise<void> {
+    await this.db.setMeta(ctx, { workspace, name }, meta)
+  }
+
   async setParent (ctx: MeasureContext, workspace: string, name: string, parent: string | null): Promise<void> {
     await this.db.setParent(ctx, { workspace, name }, parent !== null ? { workspace, name: parent } : null)
   }

@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
+import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import {
+  tryMigrate,
   type MigrateOperation,
   type MigrateUpdate,
   type MigrationClient,
   type MigrationDocumentQuery,
-  type MigrationUpgradeClient,
-  tryMigrate
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
-import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { DOMAIN_SPACE, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
@@ -87,10 +87,11 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 }
 
 export const analyticsCollectorOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, analyticsCollectorId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, analyticsCollectorId, [
       {
         state: 'remove-analytics-channels-v3',
+        mode: 'upgrade',
         func: removeOnboardingChannels
       },
       {

@@ -603,6 +603,11 @@ export interface Sequence extends Doc {
 
 /**
  * @public
+ */
+export type BlobMetadata = Record<string, any>
+
+/**
+ * @public
  *
  * A blob document to manage blob attached documents.
  *
@@ -621,6 +626,18 @@ export interface Blob extends Doc {
   // A document size
   size: number
 }
+
+export interface BlobType {
+  file: Ref<Blob>
+
+  type: string
+
+  name: string
+
+  metadata?: BlobMetadata
+}
+
+export type Blobs = Record<string, BlobType>
 
 /**
  * For every blob will automatically add a lookup.
