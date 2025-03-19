@@ -1849,8 +1849,8 @@ describe('account utils', () => {
     test('should return SES URL and auth token when configured', () => {
       const result = getMailUrl()
       expect(result).toEqual({
-        sesURL: 'https://ses.example.com',
-        sesAuth: 'test-token'
+        mailURL: 'https://ses.example.com',
+        mailAuth: 'test-token'
       })
     })
 
