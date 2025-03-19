@@ -35,9 +35,19 @@ async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerCo
     const desc = control.hierarchy.getDescendants(attr.attributeOf)
     const res: Tx[] = []
     for (const des of desc) {
-      const viewlets = control.modelDb.findAllSync(view.class.Viewlet, { attachTo: des })
+      const viewlets = control.modelDb.findAllSync(view.class.Viewlet, { attachTo: des, variant: { $exists: false } })
       for (const viewlet of viewlets) {
-        viewlet.config.push(attr.name)
+        // let push it after grow for the list
+        if (viewlet.descriptor === view.viewlet.List) {
+          const index = viewlet.config.findIndex((p) => typeof p !== 'string' && p.displayProps?.grow === true)
+          if (index !== -1) {
+            viewlet.config.splice(index + 1, 0, attr.name)
+          } else {
+            viewlet.config.push(attr.name)
+          }
+        } else {
+          viewlet.config.push(attr.name)
+        }
         res.push(
           control.txFactory.createTxUpdateDoc(viewlet._class, viewlet.space, viewlet._id, {
             config: viewlet.config
@@ -45,7 +55,16 @@ async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerCo
         )
         const prefs = await control.findAll(control.ctx, view.class.ViewletPreference, { attachedTo: viewlet._id })
         for (const pref of prefs) {
-          pref.config.push(attr.name)
+          if (viewlet.descriptor === view.viewlet.List) {
+            const index = viewlet.config.findIndex((p) => typeof p !== 'string' && p.displayProps?.grow === true)
+            if (index !== -1) {
+              viewlet.config.splice(index + 1, 0, attr.name)
+            } else {
+              viewlet.config.push(attr.name)
+            }
+          } else {
+            viewlet.config.push(attr.name)
+          }
           res.push(
             control.txFactory.createTxUpdateDoc(pref._class, pref.space, pref._id, {
               config: pref.config
