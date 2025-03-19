@@ -127,7 +127,7 @@
     const thread = loc.path[4] as Ref<ActivityMessage> | undefined
 
     if (thread !== undefined) {
-      void openThreadInSidebar(thread)
+      void openThreadInSidebar(thread, undefined, undefined, undefined, undefined, false)
     }
   }
 

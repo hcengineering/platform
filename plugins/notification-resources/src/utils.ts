@@ -50,7 +50,7 @@ import notification, {
   type NotificationProviderSetting,
   type NotificationTypeSetting
 } from '@hcengineering/notification'
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, getResource } from '@hcengineering/platform'
 import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
 import {
   getCurrentLocation,
@@ -551,6 +551,8 @@ async function navigateToInboxDoc (
   if (thread !== undefined) {
     loc.path[4] = thread
     loc.path.length = 5
+    const fn = await getResource(chunter.function.OpenThreadInSidebar)
+    void fn(thread, undefined, undefined, message, { autofocus: false })
   } else {
     loc.path[4] = ''
     loc.path.length = 4

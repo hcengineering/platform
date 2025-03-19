@@ -339,8 +339,23 @@ export async function openThreadInSidebar (
   msg?: ActivityMessage,
   doc?: Doc,
   selectedMessageId?: Ref<ActivityMessage>,
-  props?: Record<string, any>
+  props?: Record<string, any>,
+  force: boolean = true
 ): Promise<void> {
+  const sidebar = get(sidebarStore)
+  if (!force && sidebar.widget != null && sidebar.widget !== chunter.ids.ChatWidget) {
+    removeThreadFromLoc(_id)
+    return
+  }
+  const state = sidebar.widget === chunter.ids.ChatWidget ? sidebar.widgetsState.get(chunter.ids.ChatWidget) : undefined
+  const currentTabs = sidebar.widgetsState.get(chunter.ids.ChatWidget)?.tabs ?? []
+  const currentTab = state != null ? currentTabs.find((t) => t.id === state.tab) : undefined
+
+  if (!force && currentTab != null && (currentTab.isPinned === true || !currentTab.id.startsWith('thread_'))) {
+    removeThreadFromLoc(_id)
+    return
+  }
+
   const client = getClient()
 
   const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: chunter.ids.ChatWidget })[0]
@@ -362,7 +377,7 @@ export async function openThreadInSidebar (
   }
 
   const allowedPath = loc.path.join('/')
-  const currentTabs = get(sidebarStore).widgetsState.get(widget._id)?.tabs ?? []
+
   const tabsToClose = currentTabs.filter((t) => t.isPinned !== true && t.allowedPath === allowedPath).map((t) => t.id)
 
   if (tabsToClose.length > 0) {
