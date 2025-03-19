@@ -65,7 +65,7 @@ export class Transformer {
 
     const transformedKey = this.transformAttributeKey(key)
 
-    // 4. if value is an array, return {key, value.length}
+    // 2. if value is an array, return {key, value.length}
     if (Array.isArray(value)) {
       return { [transformedKey]: value.length }
     }
@@ -79,7 +79,7 @@ export class Transformer {
       return result
     }
 
-    // 2. if value is a primitive, return {key, value}
+    // 4. if value is a primitive, return {key, value}
     return { [transformedKey]: value }
   }
 

@@ -55,13 +55,8 @@
         })
       }
 
-      // Handle successful response with file download
       const filename = `Talants_${new Date().toLocaleDateString()}_${new Date().toLocaleTimeString()}.csv`
-
-      // Create a blob from the ReadableStream
       const blob = await res.blob()
-
-      // Create a download link and trigger the download
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.style.display = 'none'
@@ -70,7 +65,6 @@
       document.body.appendChild(a)
       a.click()
 
-      // Clean up
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
 
