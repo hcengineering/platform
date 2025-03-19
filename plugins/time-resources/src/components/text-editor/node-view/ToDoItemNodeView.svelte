@@ -243,6 +243,7 @@
     .assignee,
     .todo-check {
       height: 1.5em;
+      padding-right: 0.125rem;
     }
 
     &.unassigned {

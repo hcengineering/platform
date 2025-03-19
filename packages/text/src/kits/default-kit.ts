@@ -14,16 +14,19 @@
 //
 
 import { Extension } from '@tiptap/core'
-import type { CodeBlockOptions } from '@tiptap/extension-code-block'
+import BulletList from '@tiptap/extension-bullet-list'
 import type { CodeOptions } from '@tiptap/extension-code'
+import type { CodeBlockOptions } from '@tiptap/extension-code-block'
 import { Level } from '@tiptap/extension-heading'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
+import ListItem from '@tiptap/extension-list-item'
+import OrderedList from '@tiptap/extension-ordered-list'
 import Typography from '@tiptap/extension-typography'
 import Underline from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
-import { codeBlockOptions } from '../nodes'
 import { codeOptions } from '../marks/code'
+import { codeBlockOptions } from '../nodes'
 
 export interface DefaultKitOptions {
   codeBlock?: Partial<CodeBlockOptions> | false
@@ -48,8 +51,14 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
         code: this.options.code ?? codeOptions,
         codeBlock: this.options.codeBlock ?? codeBlockOptions,
         heading: this.options.heading,
-        history: this.options.history
+        history: this.options.history,
+        bulletList: false,
+        orderedList: false,
+        listItem: false
       }),
+      ListItem.extend({ group: 'listItems' }),
+      BulletList.extend({ content: 'listItems+' }),
+      OrderedList.extend({ content: 'listItems+' }),
       Underline,
       Highlight.configure({
         multicolor: false
