@@ -216,8 +216,8 @@ func (p *Scheduler) processTask(ctx context.Context, task *Task) {
 		var hls = HLS{
 			Width:     probe.FirstVideoStream().Width,
 			Height:    probe.FirstVideoStream().Height,
-			Source:    p.cfg.Endpoint().JoinPath("blob", task.Workspace, task.ID+"_master.m3u8").String(),
-			Thumbnail: p.cfg.Endpoint().JoinPath("blob", task.Workspace, task.ID+".jpg").String(),
+			Source:    task.ID + "_master.m3u8",
+			Thumbnail: task.ID + ".jpg",
 		}
 
 		logger.Debug("applying metadata", zap.String("url", hls.Source), zap.String("thumbnail", hls.Thumbnail), zap.String("source", task.Source))
