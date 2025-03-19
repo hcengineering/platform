@@ -105,7 +105,7 @@
     class="floorGrid full"
     {style}
     style:grid-template-columns={`repeat(${FULL_GW}, minmax(${minSize}rem, ${maxSize}rem))`}
-    style:grid-template-rows={`repeat(${rows},  minmax(${minSize}rem, ${maxSize}rem)`}
+    style:grid-template-rows={`repeat(${rows},  minmax(${minSize}rem, ${maxSize}rem))`}
     style:aspect-ratio={`${FULL_GW} / ${rows}`}
     style:margin-inline={marginInline}
     on:mouseover
