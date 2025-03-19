@@ -2,7 +2,7 @@ import type { Blob, Ref } from '@hcengineering/core'
 import { concatLink } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 
-import { getFileUrl, getCurrentWorkspaceUuid } from './file'
+import { getFileUrl, getCurrentWorkspaceUuid, getBlobUrl } from './file'
 import presentation from './plugin'
 
 export interface PreviewConfig {
@@ -158,7 +158,12 @@ export async function getVideoMeta (file: string, filename?: string): Promise<Vi
   try {
     const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
     if (response.ok) {
-      return (await response.json()) as VideoMeta
+      const result = (await response.json()) as VideoMeta
+      if (result.hls !== undefined) {
+        result.hls.source = getBlobUrl(result.hls.source ?? '')
+        result.hls.thumbnail = getBlobUrl(result.hls.thumbnail ?? '')
+      }
+      return result
     }
   } catch {}
 }
