@@ -96,7 +96,7 @@ export class TTypeToDoPriority extends TType {}
 
 @Model(time.class.ToDo, core.class.AttachedDoc, DOMAIN_TIME)
 @UX(time.string.ToDo, time.icon.Planned)
-export class TToDO extends TAttachedDoc implements ToDo {
+export class TToDo extends TAttachedDoc implements ToDo {
   @Prop(TypeDate(DateRangeMode.DATE), task.string.DueDate)
     dueDate?: number | null | undefined
 
@@ -132,7 +132,7 @@ export class TToDO extends TAttachedDoc implements ToDo {
 
 @Model(time.class.ProjectToDo, time.class.ToDo)
 @UX(time.string.ToDo, time.icon.Planned)
-export class TProjectToDo extends TToDO implements ProjectToDo {
+export class TProjectToDo extends TToDo implements ProjectToDo {
   declare attachedSpace: Ref<Space>
 }
 
@@ -143,7 +143,7 @@ export class TTodoAutomationHelper extends TDoc implements TodoAutomationHelper 
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TWorkSlot, TItemPresenter, TToDO, TProjectToDo, TTypeToDoPriority, TTodoAutomationHelper)
+  builder.createModel(TWorkSlot, TItemPresenter, TToDo, TProjectToDo, TTypeToDoPriority, TTodoAutomationHelper)
 
   builder.mixin(time.class.ToDo, core.class.Class, activity.mixin.IgnoreActivity, {})
   builder.mixin(time.class.ProjectToDo, core.class.Class, activity.mixin.IgnoreActivity, {})

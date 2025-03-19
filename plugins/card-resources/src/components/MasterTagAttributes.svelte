@@ -35,6 +35,7 @@
   export let value: Card
   export let readonly: boolean = false
   export let ignoreKeys: string[]
+  export let fourRows: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -91,7 +92,7 @@
   </div>
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
-  <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} fourRows />
+  <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} {fourRows} />
 </ExpandCollapse>
 
 <style lang="scss">

@@ -91,6 +91,7 @@ import love, { loveId, createModel as loveModel } from '@hcengineering/model-lov
 import { printId, createModel as printModel } from '@hcengineering/model-print'
 import { analyticsCollectorId, createModel as analyticsCollectorModel } from '@hcengineering/model-analytics-collector'
 import { serverLoveId, createModel as serverLoveModel } from '@hcengineering/model-server-love'
+import { serverProcessId, createModel as serverProcessModel } from '@hcengineering/model-server-process'
 
 import { questionsId, createModel as questionsModel } from '@hcengineering/model-questions'
 import trainings, { trainingId, createModel as trainingModel } from '@hcengineering/model-training'
@@ -112,6 +113,7 @@ import {
 import { serverFulltextId, createModel as serverFulltextModel } from '@hcengineering/model-server-fulltext'
 import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
 import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
+import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
 
 import { type Plugin } from '@hcengineering/platform'
 
@@ -378,6 +380,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+    [
+      processModel,
+      processId,
+      {
+        label: processes.string.ConfigLabel,
+        description: processes.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        icon: processes.icon.Process,
+        classFilter: defaultFilter
+      }
+    ],
     [driveModel, driveId],
     [
       documentsModel,
@@ -479,7 +493,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTrainingModel, serverTrainingId],
     [serverDocumentsModel, serverDocumentsId],
     [serverAiBotModel, serverAiBotId],
-    [serverFulltextModel, serverFulltextId]
+    [serverFulltextModel, serverFulltextId],
+    [serverProcessModel, serverProcessId]
   ]
 
   for (const [b, id, config] of builders) {

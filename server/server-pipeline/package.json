@@ -171,6 +171,8 @@
     "@hcengineering/server-fulltext": "^0.6.0",
     "@hcengineering/server-fulltext-resources": "^0.6.0",
     "@hcengineering/survey": "^0.6.0",
-    "@hcengineering/survey-assets": "^0.6.0"
+    "@hcengineering/survey-assets": "^0.6.0",
+    "@hcengineering/server-process": "^0.6.0",
+    "@hcengineering/server-process-resources": "^0.6.0"
   }
 }
