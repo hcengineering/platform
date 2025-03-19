@@ -38,15 +38,10 @@
   },
   "dependencies": {
     "svelte": "^4.2.19",
-    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/guest": "^0.6.4",
-    "@hcengineering/view": "^0.6.13",
-    "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/export": "^0.6.0",
-    "@hcengineering/sign": "^0.6.0"
+    "@hcengineering/export": "^0.6.0"
   }
 }
