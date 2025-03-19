@@ -380,7 +380,7 @@
     <div class="videoGrid">
       {#each activeParticipants as participant, i (participant._id)}
         <div class="video">
-          <ParticipantView bind:this={participantElements[i]} {...participant} small />
+          <ParticipantView bind:this={participantElements[i]} {...participant} />
         </div>
       {/each}
     </div>
