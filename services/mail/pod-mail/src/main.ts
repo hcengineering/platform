@@ -17,7 +17,9 @@ import { type SendMailOptions } from 'nodemailer'
 import { Request, Response } from 'express'
 import Mail from 'nodemailer/lib/mailer'
 import { initStatisticsContext } from '@hcengineering/server-core'
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { SplitLogger } from '@hcengineering/analytics-service'
+import { join } from 'path'
 
 import config from './config'
 import { createServer, listen } from './server'
@@ -25,7 +27,19 @@ import { MailClient } from './mail'
 import { Endpoint } from './types'
 
 export const main = async (): Promise<void> => {
-  const measureCtx = initStatisticsContext('sign', {})
+  const measureCtx = initStatisticsContext('mail', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'mail',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('mail', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
   const client = new MailClient()
   measureCtx.info('Mail service has been started')
 

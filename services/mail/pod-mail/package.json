@@ -55,6 +55,7 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.738.0",
     "@types/nodemailer": "^6.4.17",
+    "@hcengineering/analytics-service": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/server-core": "^0.6.1",
     "cors": "^2.8.5",
