@@ -419,7 +419,7 @@ export async function sendOtpEmail (
     })
   })
   if (!response.ok) {
-    ctx.error(`Failed to send otp email: ${response.statusText}`)
+    ctx.error(`Failed to send otp email: ${response.statusText}`, { to })
   }
 }
 
@@ -799,7 +799,7 @@ export async function sendEmailConfirmation (
     })
   })
   if (!response.ok) {
-    ctx.error(`Failed to send email confirmation: ${response.statusText}`)
+    ctx.error(`Failed to send email confirmation: ${response.statusText}`, { email })
   }
 }
 
@@ -1188,7 +1188,7 @@ export async function sendEmail (info: EmailInfo, ctx: MeasureContext): Promise<
     })
   })
   if (!response.ok) {
-    ctx.error(`Failed to send mail: ${response.statusText}`)
+    ctx.error(`Failed to send mail: ${response.statusText}`, { to })
   }
 }
 
