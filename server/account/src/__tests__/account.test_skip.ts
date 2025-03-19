@@ -37,7 +37,7 @@ describe('server', () => {
   let workspace: string = 'ws-' + randomBytes(8).toString('hex')
 
   beforeAll(async () => {
-    setMetadata(accountPlugin.metadata.SES_URL, '')
+    setMetadata(accountPlugin.metadata.MAIL_URL, '')
     conn = await MongoClient.connect(dbUri)
     ;[accountsDb, accountsDbClose] = await getAccountDB(dbUri, DB_NAME)
   })
