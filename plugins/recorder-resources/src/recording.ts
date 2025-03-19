@@ -17,7 +17,7 @@ import { type FileUploadOptions, type FileUploadCallback } from '@hcengineering/
 import Recorder from './components/Recorder.svelte'
 import { showPopup } from '@hcengineering/ui'
 import { type Blob, type Ref } from '@hcengineering/core'
-import { getFileUrl } from '@hcengineering/presentation'
+import { getBlobUrl } from '@hcengineering/presentation'
 
 let recorderOppened = false
 
@@ -64,13 +64,4 @@ async function uploadRecording (recordingName: string, onUploaded: FileUploadCal
 function now (): string {
   const date = new Date()
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
-}
-
-function getBlobUrl (file: string): string {
-  const fileUrl = getFileUrl(file)
-  const u = new URL(fileUrl)
-  if (u.searchParams.has('file')) {
-    return u.toString()
-  }
-  return fileUrl.split('/').slice(0, -1).join('/')
 }
