@@ -753,7 +753,9 @@ describe('account utils', () => {
 
       describe('sendOtpEmail', () => {
         beforeEach(() => {
-          global.fetch = jest.fn()
+          const mockFetch = jest.fn()
+          mockFetch.mockResolvedValue({ ok: true })
+          global.fetch = mockFetch
         })
 
         test('should send email with OTP', async () => {
@@ -1010,6 +1012,10 @@ describe('account utils', () => {
       })
 
       test('should send email with correct parameters', async () => {
+        const mockCtx = {
+          error: jest.fn(),
+          info: jest.fn()
+        } as unknown as MeasureContext
         const emailInfo = {
           text: 'Test email',
           html: '<p>Test email</p>',
@@ -1017,7 +1023,7 @@ describe('account utils', () => {
           to: 'test@example.com'
         }
 
-        await sendEmail(emailInfo)
+        await sendEmail(emailInfo, mockCtx)
 
         expect(mockFetch).toHaveBeenCalledWith('https://ses.example.com/send', {
           method: 'post',

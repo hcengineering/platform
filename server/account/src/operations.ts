@@ -466,7 +466,7 @@ export async function sendInvite (
   const inviteId = await createInviteLink(ctx, db, branding, token, { exp, emailMask: email, limit: 1, role })
   const inviteEmail = await getInviteEmail(branding, email, inviteId, workspace, expHours)
 
-  await sendEmail(inviteEmail)
+  await sendEmail(inviteEmail, ctx)
 
   ctx.info('Invite has been sent', { to: inviteEmail.to, workspaceUuid: workspace.uuid, workspaceName: workspace.name })
 }
@@ -533,7 +533,7 @@ export async function resendInvite (
   }
 
   const inviteEmail = await getInviteEmail(branding, email, inviteId, workspace, expHours, true)
-  await sendEmail(inviteEmail)
+  await sendEmail(inviteEmail, ctx)
 
   ctx.info('Invite has been resent', {
     to: inviteEmail.to,
@@ -773,7 +773,7 @@ export async function requestPasswordReset (
   const html = await translate(accountPlugin.string.RecoveryHTML, { link }, lang)
   const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
 
-  await fetch(concatLink(mailURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
@@ -786,8 +786,15 @@ export async function requestPasswordReset (
       to: normalizedEmail
     })
   })
-
-  ctx.info('Password reset email sent', { email, normalizedEmail, account: account.uuid })
+  if (response.ok) {
+    ctx.info('Password reset email sent', { email, normalizedEmail, account: account.uuid })
+  } else {
+    ctx.error(`Failed to send reset password email: ${response.statusText}`, {
+      email,
+      normalizedEmail,
+      account: account.uuid
+    })
+  }
 }
 
 export async function restorePassword (
