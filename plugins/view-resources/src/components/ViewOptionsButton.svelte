@@ -14,14 +14,13 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { ButtonIcon, showPopup, closeTooltip, IconOptions } from '@hcengineering/ui'
-  import { ViewOptionModel, ViewOptions, ViewOptionsModel, Viewlet } from '@hcengineering/view'
+  import { ButtonIcon, closeTooltip, IconOptions, showPopup } from '@hcengineering/ui'
+  import { Viewlet, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { focusStore } from '../selection'
   import { setViewOptions } from '../viewOptions'
   import ViewOptionsEditor from './ViewOptions.svelte'
-  import core from '@hcengineering/core'
 
   export let viewlet: Viewlet | undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
@@ -35,67 +34,20 @@
   let btn: HTMLButtonElement
   let pressed: boolean = false
 
-  async function clickHandler (event: MouseEvent): Promise<void> {
+  async function clickHandler (): Promise<void> {
     if (viewlet === undefined) {
       return
     }
     pressed = true
     closeTooltip()
     const h = client.getHierarchy()
-    const config = await client.findAll(view.class.Viewlet, {
-      attachTo: { $in: h.getDescendants(viewlet.attachTo) },
-      variant: viewlet.variant ? viewlet.variant : { $exists: false },
-      descriptor: viewlet.descriptor
-    })
-
-    // Use one ancestor, viewlet class and all derived ones.
-    const classes = [viewlet.attachTo, ...config.map((it) => it.attachTo)].filter(
-      (it, idx, arr) => arr.indexOf(it) === idx
-    )
-
-    const extraViewlets = await client.findAll(view.class.Viewlet, {
-      attachTo: { $in: classes },
-      descriptor: viewlet.descriptor,
-      variant: viewlet.variant ? viewlet.variant : { $exists: false }
-    })
-
-    const customAttributes = classes
-      .flatMap((c) => {
-        const hierarchy = client.getHierarchy()
-        return hierarchy.isMixin(c)
-          ? [
-              ...Array.from(hierarchy.getOwnAttributes(c).values()),
-              ...Array.from(hierarchy.getOwnAttributes(hierarchy.getBaseClass(c)).values())
-            ]
-          : Array.from(client.getHierarchy().getOwnAttributes(c).values())
-      })
-      .filter(
-        (attr) => attr.isCustom && !attr.isHidden && [core.class.RefTo, core.class.EnumOf].includes(attr.type._class)
-      )
-      .map((a) => a.name)
-    const mergedModel: ViewOptionsModel = {
-      groupBy: [],
-      orderBy: [],
-      other: [],
-      groupDepth: viewlet.viewOptions?.groupDepth
-    }
-
-    for (const ev of extraViewlets) {
-      mergedModel.groupBy.push(...(ev.viewOptions?.groupBy ?? []))
-      mergedModel.orderBy.push(...(ev.viewOptions?.orderBy ?? []))
-      mergedModel.other.push(...(ev.viewOptions?.other ?? []))
-    }
-    mergedModel.groupBy = Array.from(new Set([...mergedModel.groupBy, ...customAttributes]))
-    mergedModel.groupBy = mergedModel.groupBy.filter((it, idx, arr) => arr.indexOf(it) === idx)
-    mergedModel.orderBy = mergedModel.orderBy.filter((it, idx, arr) => arr.findIndex((q) => it[0] === q[0]) === idx)
-    mergedModel.other = mergedModel.other.filter((it, idx, arr) => arr.findIndex((q) => q.key === it.key) === idx)
-
-    if (viewOptionsConfig !== undefined) {
-      mergedModel.other = viewOptionsConfig
+    const config = viewlet.viewOptions !== undefined ? h.clone(viewlet.viewOptions) : undefined
+    if (viewOptionsConfig !== undefined && config !== undefined) {
+      config.other = viewOptionsConfig
     }
     showPopup(
       ViewOptionsEditor,
-      { viewlet, config: mergedModel, viewOptions: getClient().getHierarchy().clone(viewOptions) },
+      { viewlet, config, viewOptions: h.clone(viewOptions) },
       btn,
       () => {
         pressed = false
