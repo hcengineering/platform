@@ -4,6 +4,7 @@
     "Export": "导出",
     "DataToExport": "要导出的数据",
     "ExportDocuments": "文档",
+    "ExportMilestones": "里程碑",
     "ExportIssues": "问题",
     "ExportTestCases": "测试用例",
     "ExportTestRuns": "测试运行",

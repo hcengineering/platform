@@ -4,6 +4,7 @@
     "Export": "Export",
     "DataToExport": "Data to export",
     "ExportDocuments": "Documents",
+    "ExportMilestones": "Milestone",
     "ExportIssues": "Issues",
     "ExportTestCases": "Test Cases",
     "ExportTestRuns": "Test Runs", 

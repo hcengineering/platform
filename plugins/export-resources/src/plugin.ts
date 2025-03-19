@@ -21,6 +21,7 @@ export default mergeIds(exportId, exportPlugin, {
     WorkspaceNamePattern: '' as IntlString,
     DataToExport: '' as IntlString,
     ExportDocuments: '' as IntlString,
+    ExportMilestones: '' as IntlString,
     ExportIssues: '' as IntlString,
     ExportTestCases: '' as IntlString,
     ExportTestRuns: '' as IntlString,
