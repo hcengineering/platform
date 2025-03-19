@@ -6,6 +6,7 @@ export interface ServerEnv {
   frontUrl: string
   filesUrl: string | undefined
   mailUrl: string | undefined
+  mailAuthToken: string | undefined
   webPushUrl: string | undefined
   accountsUrl: string
   serverPort: number
@@ -45,6 +46,7 @@ export function serverConfigFromEnv (): ServerEnv {
 
   const filesUrl = process.env.FILES_URL
   const mailUrl = process.env.MAIL_URL
+  const mailAuthToken = process.env.MAIL_AUTH_TOKEN
   const webPushUrl = process.env.WEB_PUSH_URL
 
   const accountsUrl = process.env.ACCOUNTS_URL
@@ -63,6 +65,7 @@ export function serverConfigFromEnv (): ServerEnv {
     frontUrl,
     filesUrl,
     mailUrl,
+    mailAuthToken,
     webPushUrl,
     accountsUrl,
     serverPort,
