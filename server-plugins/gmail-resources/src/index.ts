@@ -117,7 +117,7 @@ export async function sendEmailNotification (
       return
     }
     const mailAuth: string | undefined = getMetadata(serverNotification.metadata.MailAuthToken)
-    await fetch(concatLink(mailURL, '/send'), {
+    const response = await fetch(concatLink(mailURL, '/send'), {
       method: 'post',
       keepalive: true,
       headers: {
@@ -131,6 +131,9 @@ export async function sendEmailNotification (
         to: [receiver]
       })
     })
+    if (!response.ok) {
+      ctx.error(`Failed to send email notification: ${response.statusText}`)
+    }
   } catch (err) {
     ctx.error('Could not send email notification', { err, receiver })
   }
