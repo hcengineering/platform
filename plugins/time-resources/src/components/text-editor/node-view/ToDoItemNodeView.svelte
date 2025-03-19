@@ -237,6 +237,7 @@
 <style lang="scss">
   .todo-item {
     .assignee {
+      z-index: 50;
       width: 1.25rem;
       cursor: pointer;
     }
