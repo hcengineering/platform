@@ -13,7 +13,13 @@
 // limitations under the License.
 //
 
-import { type TransformConfig, type AttributeTransform, type TransformOperation, OperationType, type OperationConfig } from '@hcengineering/export'
+import {
+  type TransformConfig,
+  type AttributeTransform,
+  type TransformOperation,
+  OperationType,
+  type OperationConfig
+} from '@hcengineering/export'
 
 export class Transformer {
   private readonly skipAttributes: Set<string>

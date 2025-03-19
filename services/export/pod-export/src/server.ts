@@ -146,7 +146,11 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
     wrapRequest(async (req, res, token) => {
       const format = req.query.format as ExportFormat
 
-      const { _class, query, attributesOnly }: {
+      const {
+        _class,
+        query,
+        attributesOnly
+      }: {
         _class: Ref<Class<Doc<Space>>>
         query?: DocumentQuery<Doc>
         attributesOnly: boolean
@@ -212,7 +216,12 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
     '/exportSync',
     wrapRequest(async (req, res, token) => {
       const format = req.query.format as ExportFormat
-      const { _class, query, attributesOnly, config }: {
+      const {
+        _class,
+        query,
+        attributesOnly,
+        config
+      }: {
         _class: Ref<Class<Doc<Space>>>
         query?: DocumentQuery<Doc>
         attributesOnly?: boolean
@@ -248,8 +257,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
         }
 
         const exportedFile = join(exportDir, files[0])
-        res.download(exportedFile, basename(exportedFile), () => {
-        })
+        res.download(exportedFile, basename(exportedFile), () => {})
       } catch (err: any) {
         console.error('Export failed:', err)
         throw err

@@ -52,11 +52,7 @@ export class WorkspaceExporter {
     this.converter = new UnifiedConverter(context, client, storage, workspaceId)
   }
 
-  async export (
-    _class: Ref<Class<Doc>>,
-    outputDir: string,
-    options: ExportOptions
-  ): Promise<void> {
+  async export (_class: Ref<Class<Doc>>, outputDir: string, options: ExportOptions): Promise<void> {
     const { format, attributesOnly, query } = options
 
     const docs = await this.client.findAll(_class, query ?? {})

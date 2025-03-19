@@ -52,21 +52,18 @@
       const token = getMetadata(presentation.metadata.Token) ?? ''
       const attributesOnly = selectedDetailLevel === 'attributesOnly'
 
-      const res = await fetch(
-        `${baseUrl}/exportAsync?format=${selectedFormat}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            _class: selectedClass,
-            attributesOnly,
-            config: {}
-          })
-        }
-      )
+      const res = await fetch(`${baseUrl}/exportAsync?format=${selectedFormat}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          _class: selectedClass,
+          attributesOnly,
+          config: {}
+        })
+      })
 
       if (!res.ok) {
         throw new Error('Export failed to start')

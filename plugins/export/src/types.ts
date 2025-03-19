@@ -15,7 +15,7 @@
 
 export enum OperationType {
   IDENTITY = 'identity',
-  GROUP_BY = 'group_by',
+  GROUP_BY = 'group_by'
   // JOIN = 'join',
   // EXTRACT = 'extract',
   // MAP = 'map'
