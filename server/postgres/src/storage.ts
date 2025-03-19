@@ -1410,7 +1410,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       if (Object.keys(nonOperator).length > 0) {
         const qkey = tkey.replace('#>>', '->').replace('{', '').replace('}', '')
-        res.push(`${qkey} @> '${JSON.stringify(nonOperator)}'`)
+        res.push(`(${qkey} @> '${JSON.stringify(nonOperator)}' or ${qkey} @> '[${JSON.stringify(nonOperator)}]')`)
       }
       return res.length === 0 ? undefined : res.join(' AND ')
     }
