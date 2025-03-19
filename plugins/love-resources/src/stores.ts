@@ -17,7 +17,6 @@ import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
 
 import love from './plugin'
 import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
-import { getLoveUseMaxWidth } from './utils'
 
 export const rooms = writable<Room[]>([])
 export const myOffice = derived(rooms, (val) => {
@@ -142,5 +141,3 @@ onClient(() => {
   )
 })
 export const lockedRoom = writable<string>('')
-
-export const loveUseMaxWidth = writable<boolean>(getLoveUseMaxWidth())

@@ -175,6 +175,18 @@
     & > .antiEditBox input { font-size: .7rem; }
   }
 }
+@container floorGridContainer (max-width: 380px) {
+  .floorGrid-room::before,
+  .floorGrid-configureRoom::before { border-radius: 0.25rem; }  
+  .floorGrid-room .floorGrid-room__header {
+    top: calc(100% / var(--huly-floor-roomHeight) / 3 * -1.6 + .125rem);
+    span { font-size: .5rem; }
+  }
+  .floorGrid-configureRoom .floorGrid-configureRoom__header {
+    top: calc(100% / var(--huly-floor-roomHeight) / 3 * -1.6 + .125rem);
+    & > .antiEditBox input { font-size: .5rem; }
+  }
+}
 
 // Room
 @media only screen and (max-width: 1024px) {

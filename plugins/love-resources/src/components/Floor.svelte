@@ -14,25 +14,15 @@
 -->
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole, WithLookup } from '@hcengineering/core'
-  import ui, {
-    Breadcrumb,
-    Header,
-    IconEdit,
-    ModernButton,
-    Component,
-    IconMaxWidth,
-    IconMinWidth,
-    Button
-  } from '@hcengineering/ui'
+  import { Breadcrumb, Header, IconEdit, ModernButton, Component } from '@hcengineering/ui'
   import { Floor, Room } from '@hcengineering/love'
   import { createEventDispatcher } from 'svelte'
   import { ViewletSelector } from '@hcengineering/view-resources'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
 
   import lovePlg from '../plugin'
-  import { currentRoom, floors, loveUseMaxWidth } from '../stores'
+  import { currentRoom, floors } from '../stores'
   import ControlBar from './ControlBar.svelte'
-  import { toggleLoveUseMaxWidth } from '../utils'
 
   export let rooms: Room[] = []
   export let floor: Ref<Floor>
@@ -58,14 +48,6 @@
       <ViewletSelector bind:viewlet bind:preference bind:loading viewletQuery={{ attachTo: lovePlg.class.Floor }} />
     </svelte:fragment>
     <svelte:fragment slot="actions">
-      <Button
-        icon={$loveUseMaxWidth ? IconMaxWidth : IconMinWidth}
-        kind={'regular'}
-        pressed={$loveUseMaxWidth}
-        size={'medium'}
-        showTooltip={{ label: ui.string.UseMaxWidth }}
-        on:click={toggleLoveUseMaxWidth}
-      />
       {#if editable}
         <ModernButton
           icon={IconEdit}
