@@ -127,27 +127,6 @@
     "SystemSetupString": "Configuración del sistema ({day})",
     "DefaultString": "Predeterminado ({day})",
     "AddAttribute": "Añadir atributo",
-    "WorkspaceNamePattern": "El nombre debe tener 40 caracteres o menos, no esté vacío y no puede contener caracteres especiales (<, >, /)",
-    "Export": "Exportar",
-    "DataToExport": "Datos a exportar",
-    "ExportDocuments": "Documentos",
-    "ExportIssues": "Problemas",
-    "ExportMilestones": "Hitos",
-    "ExportTestCases": "Casos de prueba",
-    "ExportTestRuns": "Ejecuciones de prueba",
-    "ExportTestPlans": "Planes de prueba",
-    "ExportFormat": "Formato de exportación",
-    "ExportJSON": "JSON",
-    "ExportCSV": "CSV",
-    "ExportUnifiedFormat": "Formato Unificado Huly",
-    "ExportIncludeContent": "Incluir contenido",
-    "ExportEverything": "Todo",
-    "ExportAttributesOnly": "Solo atributos",
-    "ExportRequestSuccess": "Exportación iniciada.",
-    "ExportRequestSuccessMessage": "Exportación iniciada. Recibirá una notificación en su bandeja de entrada cuando se complete.",
-    "ExportRequestFailed": "Error al enviar la exportación.",
-    "ExportRequestFailedMessage": "Ocurrió un error al enviar la exportación. Por favor, inténtelo más tarde.",
-    "ExportCompleted": "Exportación completada. Sus archivos están listos. Puede descargarlos desde la unidad.",
-    "ExportFailed": "Error al exportar datos. Por favor, inténtelo más tarde."
+    "WorkspaceNamePattern": "El nombre debe tener 40 caracteres o menos, no esté vacío y no puede contener caracteres especiales (<, >, /)"
   }
 }

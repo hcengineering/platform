@@ -136,27 +136,6 @@
     "SystemSetupString": "Systemkonfiguration ({day})",
     "DefaultString": "Stillschweigend ({day})",
     "AddAttribute": "Attribut hinzufügen",
-    "WorkspaceNamePattern": "Name muss 40 Zeichen oder weniger sein, nicht leer sein und keine Sonderzeichen (<, >, /) enthalten",
-    "Export": "Exportieren",
-    "DataToExport": "Zu exportierende Daten",
-    "ExportDocuments": "Dokumente",
-    "ExportIssues": "Probleme",
-    "ExportMilestones": "Meilensteine",
-    "ExportTestCases": "Testfälle",
-    "ExportTestRuns": "Testläufe",
-    "ExportTestPlans": "Testpläne",
-    "ExportFormat": "Exportformat",
-    "ExportJSON": "JSON",
-    "ExportCSV": "CSV",
-    "ExportUnifiedFormat": "Huly Einheitliches Format",
-    "ExportIncludeContent": "Inhalt einschließen",
-    "ExportEverything": "Alles",
-    "ExportAttributesOnly": "Nur Attribute",
-    "ExportRequestSuccess": "Export gestartet.",
-    "ExportRequestSuccessMessage": "Export gestartet. Sie erhalten eine Benachrichtigung in Ihrem Posteingang, wenn der Export abgeschlossen ist.",
-    "ExportRequestFailed": "Export konnte nicht gestartet werden.",
-    "ExportRequestFailedMessage": "Beim Starten des Exports ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-    "ExportCompleted": "Export abgeschlossen. Ihre Dateien sind bereit. Sie können sie vom Laufwerk herunterladen.",
-    "ExportFailed": "Datenexport fehlgeschlagen. Bitte versuchen Sie es später erneut."
+    "WorkspaceNamePattern": "Name muss 40 Zeichen oder weniger sein, nicht leer sein und keine Sonderzeichen (<, >, /) enthalten"
   }
 }

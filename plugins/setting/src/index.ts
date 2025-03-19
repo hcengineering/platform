@@ -172,8 +172,7 @@ export default plugin(settingId, {
     Backup: '' as AnyComponent,
     CreateAttributePopup: '' as AnyComponent,
     CreateRelation: '' as AnyComponent,
-    EditRelation: '' as AnyComponent,
-    Export: '' as AnyComponent
+    EditRelation: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -238,7 +237,6 @@ export default plugin(settingId, {
     Terms: '' as Asset,
     Signout: '' as Asset,
     SelectWorkspace: '' as Asset,
-    Export: '' as Asset,
     Clazz: '' as Asset,
     Enums: '' as Asset,
     InviteSettings: '' as Asset,
@@ -256,7 +254,6 @@ export default plugin(settingId, {
     Value: '' as Ref<TemplateField>
   },
   metadata: {
-    BackupUrl: '' as Metadata<string>,
-    ExportUrl: '' as Metadata<string>
+    BackupUrl: '' as Metadata<string>
   }
 })
