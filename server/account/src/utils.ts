@@ -1171,7 +1171,7 @@ interface EmailInfo {
   to: string
 }
 
-export async function sendEmail (info: EmailInfo): Promise<void> {
+export async function sendEmail (info: EmailInfo, ctx: MeasureContext): Promise<void> {
   const { text, html, subject, to } = info
   const { mailURL, mailAuth } = getMailUrl()
   const response = await fetch(concatLink(mailURL, '/send'), {
@@ -1188,7 +1188,7 @@ export async function sendEmail (info: EmailInfo): Promise<void> {
     })
   })
   if (!response.ok) {
-    console.error(`Failed to send mail: ${response.statusText}`)
+    ctx.error(`Failed to send mail: ${response.statusText}`)
   }
 }
 

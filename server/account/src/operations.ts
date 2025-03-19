@@ -466,7 +466,7 @@ export async function sendInvite (
   const inviteId = await createInviteLink(ctx, db, branding, token, { exp, emailMask: email, limit: 1, role })
   const inviteEmail = await getInviteEmail(branding, email, inviteId, workspace, expHours)
 
-  await sendEmail(inviteEmail)
+  await sendEmail(inviteEmail, ctx)
 
   ctx.info('Invite has been sent', { to: inviteEmail.to, workspaceUuid: workspace.uuid, workspaceName: workspace.name })
 }
