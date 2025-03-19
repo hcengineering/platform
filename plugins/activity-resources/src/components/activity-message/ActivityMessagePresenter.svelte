@@ -36,7 +36,7 @@
   export let withShowMore: boolean = false
   export let attachmentImageSize: 'x-large' | undefined = undefined
   export let type: ActivityMessageViewType = 'default'
-  export let videoPreload = true
+  export let videoPreload = false
   export let hideLink = false
   export let compact = false
   export let readonly = false

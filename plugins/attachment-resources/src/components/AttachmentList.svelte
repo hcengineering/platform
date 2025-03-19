@@ -22,7 +22,7 @@
   export let attachments: WithLookup<Attachment>[] = []
   export let savedAttachmentsIds: Ref<Attachment>[] = []
   export let imageSize: AttachmentImageSize | undefined = undefined
-  export let videoPreload = true
+  export let videoPreload = false
 </script>
 
 {#if attachments.length}

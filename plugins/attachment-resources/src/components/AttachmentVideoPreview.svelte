@@ -20,7 +20,7 @@
   import { HlsVideo, Video } from '@hcengineering/ui'
 
   export let value: WithLookup<Attachment> | BlobType
-  export let preload = true
+  export let preload = false
 
   const maxSizeRem = 25
   const baseSizeRem = 20
