@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 import { type SendMailOptions, type Transporter } from 'nodemailer'
+import { MeasureContext } from '@hcengineering/core'
 
 import config from './config'
 import { getTransport } from './transport'
@@ -24,13 +25,13 @@ export class MailClient {
     this.transporter = getTransport(config)
   }
 
-  async sendMessage (message: SendMailOptions): Promise<void> {
+  async sendMessage (message: SendMailOptions, ctx: MeasureContext): Promise<void> {
     this.transporter.sendMail(message, (err, info) => {
       const messageInfo = `(from: ${message.from as string}, to: ${message.to as string})`
       if (err !== null) {
-        console.error(`Failed to send email ${messageInfo}: `, err.message)
+        ctx.error(`Failed to send email ${messageInfo}: ${err.message}`)
       } else {
-        console.log(`Email request ${messageInfo} sent: ${info?.response}`)
+        ctx.info(`Email request ${messageInfo} sent: ${info?.response}`)
       }
     })
   }

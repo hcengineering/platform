@@ -16,6 +16,8 @@
 import { type SendMailOptions } from 'nodemailer'
 import { Request, Response } from 'express'
 import Mail from 'nodemailer/lib/mailer'
+import { initStatisticsContext } from '@hcengineering/server-core'
+import { MeasureContext } from '@hcengineering/core'
 
 import config from './config'
 import { createServer, listen } from './server'
@@ -23,15 +25,16 @@ import { MailClient } from './mail'
 import { Endpoint } from './types'
 
 export const main = async (): Promise<void> => {
+  const measureCtx = initStatisticsContext('sign', {})
   const client = new MailClient()
-  console.log('Mail service has been started')
+  measureCtx.info('Mail service has been started')
 
   const endpoints: Endpoint[] = [
     {
       endpoint: '/send',
       type: 'post',
       handler: async (req, res) => {
-        await handleSendMail(client, req, res)
+        await handleSendMail(client, req, res, measureCtx)
       }
     }
   ]
@@ -46,15 +49,20 @@ export const main = async (): Promise<void> => {
 
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)
-  process.on('uncaughtException', (e) => {
-    console.error(e)
+  process.on('uncaughtException', (e: any) => {
+    measureCtx.error(e.message)
   })
-  process.on('unhandledRejection', (e) => {
-    console.error(e)
+  process.on('unhandledRejection', (e: any) => {
+    measureCtx.error(e.message)
   })
 }
 
-export async function handleSendMail (client: MailClient, req: Request, res: Response): Promise<void> {
+export async function handleSendMail (
+  client: MailClient,
+  req: Request,
+  res: Response,
+  ctx: MeasureContext
+): Promise<void> {
   const { from, to, subject, text, html, attachments, headers, apiKey } = req.body
   if (process.env.API_KEY !== undefined && process.env.API_KEY !== apiKey) {
     res.status(401).send({ err: 'Unauthorized' })
@@ -93,9 +101,9 @@ export async function handleSendMail (client: MailClient, req: Request, res: Res
     message.attachments = getAttachments(attachments)
   }
   try {
-    await client.sendMessage(message)
-  } catch (err) {
-    console.log(err)
+    await client.sendMessage(message, ctx)
+  } catch (err: any) {
+    ctx.error(err.message)
   }
 
   res.send()
