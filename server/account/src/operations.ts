@@ -533,7 +533,7 @@ export async function resendInvite (
   }
 
   const inviteEmail = await getInviteEmail(branding, email, inviteId, workspace, expHours, true)
-  await sendEmail(inviteEmail)
+  await sendEmail(inviteEmail, ctx)
 
   ctx.info('Invite has been resent', {
     to: inviteEmail.to,
