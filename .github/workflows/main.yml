@@ -518,7 +518,7 @@ jobs:
           name: docker-logs-ws
           path: ./ws-tests/sanity/logs
   docker-build:
-    needs: [build, test, svelte-check]
+    needs: [uitest-workspaces]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
