@@ -29,7 +29,6 @@ export class MailClient {
       const messageInfo = `(from: ${message.from as string}, to: ${message.to as string})`
       if (err !== null) {
         console.error(`Failed to send email ${messageInfo}: `, err.message)
-        console.log('Failed message details: ', message)
       } else {
         console.log(`Email request ${messageInfo} sent: ${info?.response}`)
       }

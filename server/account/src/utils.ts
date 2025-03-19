@@ -405,7 +405,7 @@ export async function sendOtpEmail (
   const subject = await translate(accountPlugin.string.OtpSubject, { code: otp, app }, lang)
 
   const to = email
-  await fetch(concatLink(mailURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -418,6 +418,9 @@ export async function sendOtpEmail (
       to
     })
   })
+  if (!response.ok) {
+    ctx.error(`Failed to send otp email: ${response.statusText}`)
+  }
 }
 
 export async function isOtpValid (db: AccountDB, socialId: string, code: string): Promise<boolean> {
@@ -782,7 +785,7 @@ export async function sendEmailConfirmation (
   const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link }, lang)
   const subject = await translate(accountPlugin.string.ConfirmationSubject, { name }, lang)
 
-  await fetch(concatLink(mailURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
@@ -795,6 +798,9 @@ export async function sendEmailConfirmation (
       to: email
     })
   })
+  if (!response.ok) {
+    ctx.error(`Failed to send email confirmation: ${response.statusText}`)
+  }
 }
 
 export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account: string, email: string): Promise<void> {
@@ -1168,7 +1174,7 @@ interface EmailInfo {
 export async function sendEmail (info: EmailInfo): Promise<void> {
   const { text, html, subject, to } = info
   const { mailURL, mailAuth } = getMailUrl()
-  await fetch(concatLink(mailURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
@@ -1181,6 +1187,9 @@ export async function sendEmail (info: EmailInfo): Promise<void> {
       to
     })
   })
+  if (!response.ok) {
+    console.error(`Failed to send mail: ${response.statusText}`)
+  }
 }
 
 export function sanitizeEmail (email: string): string {

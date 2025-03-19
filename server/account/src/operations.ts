@@ -773,7 +773,7 @@ export async function requestPasswordReset (
   const html = await translate(accountPlugin.string.RecoveryHTML, { link }, lang)
   const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
 
-  await fetch(concatLink(mailURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
@@ -786,6 +786,9 @@ export async function requestPasswordReset (
       to: normalizedEmail
     })
   })
+  if (!response.ok) {
+    ctx.error(`Failed to send mail: ${response.statusText}`)
+  }
 
   ctx.info('Password reset email sent', { email, normalizedEmail, account: account.uuid })
 }
