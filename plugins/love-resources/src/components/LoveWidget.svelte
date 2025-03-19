@@ -69,6 +69,7 @@
           configure={configure && floor?._id === _floor._id}
           rooms={getRooms($rooms, _floor._id)}
           selected={floor?._id === _floor._id}
+          background={'var(--theme-panel-color)'}
           on:configure={() => {
             if (floor?._id === _floor._id) {
               configure = !configure

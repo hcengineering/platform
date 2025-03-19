@@ -15,10 +15,7 @@
 <script lang="ts">
   import { DocumentUpdate, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import ui, {
-    Button,
-    IconMaxWidth,
-    IconMinWidth,
+  import {
     Breadcrumb,
     ButtonIcon,
     ModernButton,
@@ -30,9 +27,9 @@
   } from '@hcengineering/ui'
   import { Floor, GRID_WIDTH, Room, getFreeSpace } from '@hcengineering/love'
   import { createEventDispatcher } from 'svelte'
-  import { floors, lockedRoom, loveUseMaxWidth } from '../stores'
+  import { floors, lockedRoom } from '../stores'
   import { FloorSize, RGBAColor, ResizeInitParams, RoomSide, shadowError, shadowNormal } from '../types'
-  import { calculateFloorSize, toggleLoveUseMaxWidth } from '../utils'
+  import { calculateFloorSize } from '../utils'
   import AddRoomPopup from './AddRoomPopup.svelte'
   import FloorGrid from './FloorGrid.svelte'
   import RoomConfigure from './RoomConfigure.svelte'
@@ -298,14 +295,6 @@
     <svelte:fragment slot="actions">
       <ButtonIcon icon={IconAdd} size={'small'} on:click={addRoom} />
       <div class="hulyHeader-divider short" />
-      <Button
-        icon={$loveUseMaxWidth ? IconMaxWidth : IconMinWidth}
-        kind={'regular'}
-        pressed={$loveUseMaxWidth}
-        size={'medium'}
-        showTooltip={{ label: ui.string.UseMaxWidth }}
-        on:click={toggleLoveUseMaxWidth}
-      />
       <ModernButton
         label={lovePlg.string.FinalizeEditing}
         kind={'primary'}
