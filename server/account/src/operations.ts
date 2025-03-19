@@ -180,8 +180,8 @@ async function getAccountInfo (
 }
 
 async function sendOtpEmail (branding: Branding | null, otp: string, email: string): Promise<void> {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     console.info('Please provide email service url to enable email otp.')
     return
   }
@@ -194,7 +194,7 @@ async function sendOtpEmail (branding: Branding | null, otp: string, email: stri
   const subject = await translate(accountPlugin.string.OtpSubject, { code: otp, app }, lang)
 
   const to = email
-  await fetch(concatLink(sesURL, '/send'), {
+  await fetch(concatLink(mailURL, '/send'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -649,8 +649,8 @@ export async function confirm (
 }
 
 async function sendConfirmation (branding: Branding | null, account: Account): Promise<void> {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     console.info('Please provide email service url to enable email confirmations.')
     return
   }
@@ -675,9 +675,9 @@ async function sendConfirmation (branding: Branding | null, account: Account): P
   const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link }, lang)
   const subject = await translate(accountPlugin.string.ConfirmationSubject, { name }, lang)
 
-  if (sesURL !== undefined && sesURL !== '') {
+  if (mailURL !== undefined && mailURL !== '') {
     const to = account.email
-    await fetch(concatLink(sesURL, '/send'), {
+    await fetch(concatLink(mailURL, '/send'), {
       method: 'post',
       headers: {
         'Content-Type': 'application/json'
@@ -709,7 +709,7 @@ export async function signUpJoin (
   console.log(`signup join:${email} ${first} ${last}`)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(ctx, invite, email)
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
   await createAcc(
     ctx,
     db,
@@ -718,7 +718,7 @@ export async function signUpJoin (
     password,
     first,
     last,
-    invite?.emailMask === email || invite?.personId !== undefined || sesURL === undefined || sesURL === ''
+    invite?.emailMask === email || invite?.personId !== undefined || mailURL === undefined || mailURL === ''
   )
   const ws = await assignAccountToWs(
     ctx,
@@ -785,9 +785,9 @@ export async function createAcc (
   if (newAccount === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, { account: email }))
   }
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
   if (!confirmed && shouldConfirm) {
-    if (sesURL !== undefined && sesURL !== '') {
+    if (mailURL !== undefined && mailURL !== '') {
       await sendConfirmation(branding, newAccount)
     } else {
       ctx.info('Please provide email service url to enable email confirmations.')
@@ -811,7 +811,7 @@ export async function createAccount (
   last: string
 ): Promise<LoginInfo> {
   const email = cleanEmail(_email)
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
   const account = await createAcc(
     ctx,
     db,
@@ -820,7 +820,7 @@ export async function createAccount (
     password,
     first,
     last,
-    sesURL === undefined || sesURL === ''
+    mailURL === undefined || mailURL === ''
   )
 
   const result = {
@@ -2275,8 +2275,8 @@ export async function requestPassword (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     throw new Error('Please provide email service url')
   }
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
@@ -2299,7 +2299,7 @@ export async function requestPassword (
   const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
 
   const to = account.email
-  await fetch(concatLink(sesURL, '/send'), {
+  await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
@@ -2538,8 +2538,8 @@ export async function sendInvite (
   }
   await checkSendRateLimit(currentAccount, tokenData.workspace.name, db)
 
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     throw new Error('Please provide email service url')
   }
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
@@ -2561,7 +2561,7 @@ export async function sendInvite (
   const subject = await translate(accountPlugin.string.InviteSubject, { ws }, lang)
 
   const to = email
-  await fetch(concatLink(sesURL, '/send'), {
+  await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
@@ -2628,8 +2628,8 @@ export async function resendInvite (
 
   await checkSendRateLimit(currentAccount, workspace.name, db)
 
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     throw new Error('Please provide email service url')
   }
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
@@ -2645,7 +2645,7 @@ export async function resendInvite (
   const subject = await translate(accountPlugin.string.ResendInviteSubject, { ws }, lang)
 
   const to = emailMask
-  await fetch(concatLink(sesURL, '/send'), {
+  await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
