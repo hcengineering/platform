@@ -58,7 +58,7 @@ import {
   getPersonName,
   getInviteEmail,
   getFrontUrl,
-  getSesUrl,
+  getMailUrl,
   getSocialIdByKey,
   getWorkspaceInvite,
   loginOrSignUpWithProvider,
@@ -1847,7 +1847,7 @@ describe('account utils', () => {
     })
 
     test('should return SES URL and auth token when configured', () => {
-      const result = getSesUrl()
+      const result = getMailUrl()
       expect(result).toEqual({
         sesURL: 'https://ses.example.com',
         sesAuth: 'test-token'
@@ -1857,7 +1857,7 @@ describe('account utils', () => {
     test('should throw error when SES URL not configured', () => {
       ;(getMetadata as jest.Mock).mockReturnValue(undefined)
 
-      expect(() => getSesUrl()).toThrow('Please provide email service url')
+      expect(() => getMailUrl()).toThrow('Please provide email service url')
     })
   })
 

@@ -77,7 +77,7 @@ import {
   getPersonName,
   getRegions,
   getRolePower,
-  getSesUrl,
+  getMailUrl,
   getSocialIdByKey,
   getWorkspaceById,
   getWorkspaceInfoWithStatusById,
@@ -216,14 +216,14 @@ export async function signUp (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  const forceConfirmation = sesURL !== undefined && sesURL !== ''
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  const forceConfirmation = mailURL !== undefined && mailURL !== ''
   if (forceConfirmation) {
     const normalizedEmail = cleanEmail(email)
 
     await sendEmailConfirmation(ctx, branding, account, normalizedEmail)
   } else {
-    ctx.warn('Please provide SES_URL to enable sign up email confirmations.')
+    ctx.warn('Please provide MAIL_URL to enable sign up email confirmations.')
     await confirmEmail(ctx, db, account, email)
   }
 
@@ -760,7 +760,7 @@ export async function requestPasswordReset (
     )
   }
 
-  const { sesURL, sesAuth } = getSesUrl()
+  const { mailURL, mailAuth } = getMailUrl()
   const front = getFrontUrl(branding)
 
   const token = generateToken(account.uuid, undefined, {
@@ -773,11 +773,11 @@ export async function requestPasswordReset (
   const html = await translate(accountPlugin.string.RecoveryHTML, { link }, lang)
   const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
 
-  await fetch(concatLink(sesURL, '/send'), {
+  await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
-      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
     },
     body: JSON.stringify({
       text,
