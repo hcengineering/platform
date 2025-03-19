@@ -20,6 +20,7 @@
   import {
     Icon,
     IconOpenedArrow,
+    IconWithEmoji,
     Label,
     Location,
     getCurrentResolvedLocation,
@@ -28,6 +29,7 @@
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import card from '../../plugin'
+  import view from '@hcengineering/view'
 
   export let categoryName: string
 
@@ -64,9 +66,14 @@
     }}
   >
     <div class="hulyTaskNavLink-avatar">
-      {#if tag?.icon}
+      {#if tag.icon}
         <div class="hulyTaskNavLink-icon">
-          <Icon icon={tag?.icon} size="small" fill="currentColor" />
+          <Icon
+            icon={tag.icon === view.ids.IconWithEmoji ? IconWithEmoji : tag.icon ?? card.icon.MasterTag}
+            iconProps={tag.icon === view.ids.IconWithEmoji ? { icon: tag.color } : {}}
+            size="small"
+            fill="currentColor"
+          />
         </div>
       {/if}
     </div>
