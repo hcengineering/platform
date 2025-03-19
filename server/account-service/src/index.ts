@@ -72,8 +72,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
   })
 
-  const ses = process.env.SES_URL
-  const sesAuthToken = process.env.SES_AUTH_TOKEN
+  const mailUrl = process.env.MAIL_URL ?? process.env.SES_URL // SES_URL is used for backward compatibility
+  const mailAuthToken = process.env.MAIL_AUTH_TOKEN ?? process.env.SES_AUTH_TOKEN
 
   const frontURL = process.env.FRONT_URL
   const productName = process.env.PRODUCT_NAME
@@ -95,8 +95,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(account.metadata.ProductName, productName)
   setMetadata(account.metadata.OtpTimeToLiveSec, parseInt(process.env.OTP_TIME_TO_LIVE ?? '60'))
   setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
-  setMetadata(account.metadata.SES_URL, ses)
-  setMetadata(account.metadata.SES_AUTH_TOKEN, sesAuthToken)
+  setMetadata(account.metadata.MAIL_URL, mailUrl)
+  setMetadata(account.metadata.MAIL_AUTH_TOKEN, mailAuthToken)
 
   setMetadata(account.metadata.FrontURL, frontURL)
   setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)

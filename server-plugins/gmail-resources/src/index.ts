@@ -112,18 +112,18 @@ export async function sendEmailNotification (
   receiver: string
 ): Promise<void> {
   try {
-    const sesURL = getMetadata(serverNotification.metadata.SesUrl)
-    if (sesURL === undefined || sesURL === '') {
+    const mailURL = getMetadata(serverNotification.metadata.MailUrl)
+    if (mailURL === undefined || mailURL === '') {
       ctx.error('Please provide email service url to enable email notifications.')
       return
     }
-    const sesAuth: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
-    await fetch(concatLink(sesURL, '/send'), {
+    const mailAuth: string | undefined = getMetadata(serverNotification.metadata.MailAuthToken)
+    await fetch(concatLink(mailURL, '/send'), {
       method: 'post',
       keepalive: true,
       headers: {
         'Content-Type': 'application/json',
-        ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+        ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
       },
       body: JSON.stringify({
         text,

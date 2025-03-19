@@ -654,9 +654,9 @@ describe('account utils', () => {
               return 30
             case accountPlugin.metadata.OtpTimeToLiveSec:
               return 60
-            case accountPlugin.metadata.SES_URL:
+            case accountPlugin.metadata.MAIL_URL:
               return sesUrl
-            case accountPlugin.metadata.SES_AUTH_TOKEN:
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
               return sesAuth
             case accountPlugin.metadata.ProductName:
               return 'Test Product'
@@ -833,9 +833,9 @@ describe('account utils', () => {
         mockFetch.mockResolvedValue({ ok: true })
         ;(getMetadata as jest.Mock).mockImplementation((key) => {
           switch (key) {
-            case accountPlugin.metadata.SES_URL:
+            case accountPlugin.metadata.MAIL_URL:
               return 'https://ses.example.com'
-            case accountPlugin.metadata.SES_AUTH_TOKEN:
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
               return 'test-auth-token'
             case accountPlugin.metadata.ProductName:
               return 'Test Product'
@@ -871,14 +871,14 @@ describe('account utils', () => {
           )
         })
 
-        test('should throw error if SES_URL is missing', async () => {
+        test('should throw error if MAIL_URL is missing', async () => {
           ;(getMetadata as jest.Mock).mockReturnValue(undefined)
 
           await expect(sendEmailConfirmation(mockCtx, mockBranding, account, email)).rejects.toThrow(
             new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
           )
 
-          expect(mockCtx.error).toHaveBeenCalledWith('Please provide SES_URL to enable email confirmations.')
+          expect(mockCtx.error).toHaveBeenCalledWith('Please provide MAIL_URL to enable email confirmations.')
         })
 
         test('should use branding front URL if available', async () => {
@@ -999,9 +999,9 @@ describe('account utils', () => {
       beforeEach(() => {
         ;(getMetadata as jest.Mock).mockImplementation((key) => {
           switch (key) {
-            case accountPlugin.metadata.SES_URL:
+            case accountPlugin.metadata.MAIL_URL:
               return 'https://ses.example.com'
-            case accountPlugin.metadata.SES_AUTH_TOKEN:
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
               return 'test-token'
             default:
               return undefined
@@ -1832,9 +1832,9 @@ describe('account utils', () => {
     beforeEach(() => {
       ;(getMetadata as jest.Mock).mockImplementation((key) => {
         switch (key) {
-          case accountPlugin.metadata.SES_URL:
+          case accountPlugin.metadata.MAIL_URL:
             return 'https://ses.example.com'
-          case accountPlugin.metadata.SES_AUTH_TOKEN:
+          case accountPlugin.metadata.MAIL_AUTH_TOKEN:
             return 'test-token'
           default:
             return undefined

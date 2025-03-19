@@ -5,8 +5,8 @@ export interface ServerEnv {
   serverSecret: string
   frontUrl: string
   filesUrl: string | undefined
-  sesUrl: string | undefined
-  sesAuthToken: string | undefined
+  mailUrl: string | undefined
+  mailAuthToken: string | undefined
   webPushUrl: string | undefined
   accountsUrl: string
   serverPort: number
@@ -45,9 +45,9 @@ export function serverConfigFromEnv (): ServerEnv {
   }
 
   const filesUrl = process.env.FILES_URL
-  const sesUrl = process.env.SES_URL
-  const sesAuthToken = process.env.SES_AUTH_TOKEN
-  const webPushUrl = process.env.WEB_PUSH_URL
+  const mailUrl = process.env.MAIL_URL ?? process.env.SES_URL // SES_URL is used for backward compatibility
+  const mailAuthToken = process.env.MAIL_AUTH_TOKEN ?? process.env.SES_AUTH_TOKEN
+  const webPushUrl = process.env.WEB_PUSH_URL ?? process.env.SES_URL
 
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -64,8 +64,8 @@ export function serverConfigFromEnv (): ServerEnv {
     serverSecret,
     frontUrl,
     filesUrl,
-    sesUrl,
-    sesAuthToken,
+    mailUrl,
+    mailAuthToken,
     webPushUrl,
     accountsUrl,
     serverPort,
