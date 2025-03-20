@@ -32,7 +32,7 @@ import core, {
 } from '@hcengineering/core'
 import drive, { createFile, Drive } from '@hcengineering/drive'
 import notification from '@hcengineering/notification'
-import { Asset, IntlString, setMetadata } from '@hcengineering/platform'
+import { setMetadata } from '@hcengineering/platform'
 import { createClient, getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { initStatisticsContext, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
@@ -49,7 +49,7 @@ import { v4 as uuid } from 'uuid'
 import WebSocket from 'ws'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
-import { type TransformConfig } from '@hcengineering/export'
+import exportPlugin, { type TransformConfig } from '@hcengineering/export'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -409,8 +409,8 @@ async function sendSuccessNotification (
     user: account,
     objectId: exportDrive,
     objectClass: drive.class.Drive,
-    icon: 'setting:icon:Export' as Asset,
-    message: 'setting:string:ExportCompleted' as IntlString,
+    icon: exportPlugin.icon.Export,
+    message: exportPlugin.string.ExportCompleted,
     props: {
       fileName: archiveName
     },
@@ -434,9 +434,8 @@ async function sendFailureNotification (client: TxOperations, account: AccountUu
     user: account,
     objectId: core.class.Doc,
     objectClass: core.class.Doc,
-    icon: 'setting:icon:Export' as Asset,
-    message: 'setting:string:ExportFailed' as IntlString,
-    props: {
+    icon: exportPlugin.icon.Export,
+    message: exportPlugin.string.ExportFailed,    props: {
       error
     },
     isViewed: false,
