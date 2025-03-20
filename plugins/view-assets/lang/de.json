@@ -129,6 +129,7 @@
     "Title": "Titel",
     "HideArchived": "Archivierte ausblenden",
     "RemoveRelation": "Beziehung entfernen",  
-    "RemoveRelationConfirmation": "Möchten Sie die Beziehung entfernen?"  
+    "RemoveRelationConfirmation": "Möchten Sie die Beziehung entfernen?",
+    "MasterDetail": "Master-detail"
   }
 }

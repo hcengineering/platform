@@ -106,6 +106,7 @@ import PDFViewer from './components/viewer/PDFViewer.svelte'
 import TextViewer from './components/viewer/TextViewer.svelte'
 import FoldersBrowser from './components/folders/FoldersBrowser.svelte'
 import BaseDocPresenter from './components/BaseDocPresenter.svelte'
+import MasterDetailView from './components/MasterDetail/MasterDetailView.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -317,7 +318,8 @@ export default async (): Promise<Resources> => ({
     PDFViewer,
     TextViewer,
     FoldersBrowser,
-    BaseDocPresenter
+    BaseDocPresenter,
+    MasterDetailView
   },
   popup: {
     PositionElementAlignment

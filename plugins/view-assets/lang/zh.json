@@ -129,6 +129,7 @@
     "Title": "标题",
     "HideArchived": "隱藏已存檔",
     "RemoveRelation": "移除关系",  
-    "RemoveRelationConfirmation": "您要移除关系吗？"
+    "RemoveRelationConfirmation": "您要移除关系吗？",
+    "MasterDetail": "主要-详细"
   }
 }

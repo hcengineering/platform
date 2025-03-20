@@ -19,7 +19,7 @@
   import { IntlString } from '@hcengineering/platform'
 
   export let value: Ref<ViewletDescriptor> | undefined = undefined
-  export let supportedTypes: Ref<ViewletDescriptor>[] = [view.viewlet.Table, view.viewlet.List]
+  export let supportedTypes: Ref<ViewletDescriptor>[] = [view.viewlet.Table, view.viewlet.List, view.viewlet.MasterDetail]
   export let label: IntlString
 </script>
 

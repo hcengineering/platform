@@ -126,6 +126,7 @@
     "Title": "Заголовок",
     "HideArchived": "Скрыть архивные",
     "RemoveRelation": "Удалить связь",  
-    "RemoveRelationConfirmation": "Вы хотите удалить связь?"  
+    "RemoveRelationConfirmation": "Вы хотите удалить связь?",
+    "MasterDetail": "Мастер-деталь"
   }
 }

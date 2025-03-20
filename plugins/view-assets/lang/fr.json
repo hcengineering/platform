@@ -124,6 +124,7 @@
     "Title": "Titre",
     "HideArchived": "Masquer les archives",
     "RemoveRelation": "Supprimer la relation",  
-    "RemoveRelationConfirmation": "Voulez-vous supprimer la relation ?"  
+    "RemoveRelationConfirmation": "Voulez-vous supprimer la relation ?",
+    "MasterDetail": "Maître-détail"
   }
 }

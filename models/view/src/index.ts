@@ -601,6 +601,17 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.MasterDetail,
+      icon: view.icon.MasterDetail,
+      component: view.component.MasterDetailView
+    },
+    view.viewlet.MasterDetail
+  )
+
+  builder.createDoc(
     presentation.class.PresentationMiddlewareFactory,
     core.space.Model,
     {
