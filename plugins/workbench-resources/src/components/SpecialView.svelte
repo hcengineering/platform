@@ -63,10 +63,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  console.log('ExportButton')
-  console.log(ExportButton)
-
-
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
   let filterVisible: boolean = false
