@@ -409,6 +409,9 @@ importers:
       '@rush-temp/model-drive':
         specifier: file:./projects/model-drive.tgz
         version: file:projects/model-drive.tgz
+      '@rush-temp/model-export':
+        specifier: file:./projects/model-export.tgz
+        version: file:projects/model-export.tgz
       '@rush-temp/model-github':
         specifier: file:./projects/model-github.tgz
         version: file:projects/model-github.tgz
@@ -4152,7 +4155,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-all@file:projects/model-all.tgz':
-    resolution: {integrity: sha512-aDRtqYlITENsW02SJbs+KjoynFL+/QYQmYQVN6++EqsnAT+jHGPl/UpnmSr3ZMcALGcwTx61LKQ1nnxNen8tyA==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-cCkSGKxkB5o3dRcuzz1qy9OaZOD4csjs7AuOseXhFYaDohtiiUV/SDW6jrmrTPpqlcMSFqiqepXwiYOhRLMKCg==, tarball: file:projects/model-all.tgz}
     version: 0.0.0
 
   '@rush-temp/model-analytics-collector@file:projects/model-analytics-collector.tgz':
@@ -4205,6 +4208,10 @@ packages:
 
   '@rush-temp/model-drive@file:projects/model-drive.tgz':
     resolution: {integrity: sha512-JG62skvnh8n7bBwsriHH6TE71W/gVm287OVnmy4VRJVf/tDC0/sCKlg+75qvcSu3CmAjaYqnnJz5q1Lz9EH3xw==, tarball: file:projects/model-drive.tgz}
+    version: 0.0.0
+
+  '@rush-temp/model-export@file:projects/model-export.tgz':
+    resolution: {integrity: sha512-PNegtj/2YMRt09wtM8e0PMh3hCXmlORZyIug/h0GZ1Y2b4bxHW4ZhNmdjtdv+UXpEP84GRs4Ab5DFZzqE/GMng==, tarball: file:projects/model-export.tgz}
     version: 0.0.0
 
   '@rush-temp/model-github@file:projects/model-github.tgz':
@@ -19392,6 +19399,20 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@rush-temp/model-export@file:projects/model-export.tgz':
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
