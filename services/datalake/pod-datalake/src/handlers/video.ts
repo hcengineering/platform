@@ -13,7 +13,9 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { systemAccountUuid, MeasureContext } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
+
 import config from '../config'
 
 interface StreamRequest {
@@ -28,10 +30,12 @@ export async function requestHLS (ctx: MeasureContext, workspace: string, name: 
     return
   }
   const streamReq: StreamRequest = { format: 'hls', source: name, workspace }
+  const token = generateToken(systemAccountUuid)
 
   const request = new Request(config.StreamUrl, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(streamReq)
