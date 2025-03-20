@@ -1761,26 +1761,45 @@ export class PostgresAdapter extends PostgresAdapterBase {
     this._helper.domains = new Set(resultDomains as Domain[])
   }
 
-  private process (ops: OperationBulk, tx: Tx): void {
-    switch (tx._class) {
-      case core.class.TxCreateDoc:
-        ops.add.push(TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>))
-        break
-      case core.class.TxUpdateDoc:
-        ops.updates.push(tx as TxUpdateDoc<Doc>)
-        break
-      case core.class.TxRemoveDoc:
-        ops.removes.push(tx as TxRemoveDoc<Doc>)
-        break
-      case core.class.TxMixin:
-        ops.mixins.push(tx as TxMixin<Doc, Doc>)
-        break
-      case core.class.TxApplyIf:
-        return undefined
-      default:
-        console.error('Unknown/Unsupported operation:', tx._class, tx)
-        break
+  private process (txes: Tx[]): OperationBulk {
+    const ops: OperationBulk = {
+      add: [],
+      mixins: [],
+      removes: [],
+      updates: []
     }
+    const updateGroup = new Map<Ref<Doc>, TxUpdateDoc<Doc>>()
+    for (const tx of txes) {
+      switch (tx._class) {
+        case core.class.TxCreateDoc:
+          ops.add.push(TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>))
+          break
+        case core.class.TxUpdateDoc: {
+          const updateTx = tx as TxUpdateDoc<Doc>
+          const current = updateGroup.get(updateTx.objectId)
+          if (current !== undefined) {
+            current.operations = { ...current.operations, ...updateTx.operations }
+            updateGroup.set(updateTx.objectId, current)
+          } else {
+            updateGroup.set(updateTx.objectId, updateTx)
+          }
+          break
+        }
+        case core.class.TxRemoveDoc:
+          ops.removes.push(tx as TxRemoveDoc<Doc>)
+          break
+        case core.class.TxMixin:
+          ops.mixins.push(tx as TxMixin<Doc, Doc>)
+          break
+        case core.class.TxApplyIf:
+          break
+        default:
+          console.error('Unknown/Unsupported operation:', tx._class, tx)
+          break
+      }
+    }
+    ops.updates = [...updateGroup.values()]
+    return ops
   }
 
   private async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>, schemaFields: SchemaAndFields): Promise<TxResult> {
@@ -1829,15 +1848,8 @@ export class PostgresAdapter extends PostgresAdapterBase {
       if (domain === undefined) {
         continue
       }
-      const ops: OperationBulk = {
-        add: [],
-        mixins: [],
-        removes: [],
-        updates: []
-      }
-      for (const tx of txs) {
-        this.process(ops, tx)
-      }
+
+      const ops = this.process(txs)
 
       const domainFields = getSchemaAndFields(domain)
       if (ops.add.length > 0) {
