@@ -421,7 +421,7 @@ table.proseTable {
   background-color: var(--theme-button-default);
   border: 1px solid var(--theme-button-border);
   border-radius: .25rem;
-  padding: .5rem;
+  padding: 0.25rem .5rem;
   user-select: text;
   cursor: auto;
 
@@ -431,7 +431,8 @@ table.proseTable {
     white-space: pre;
     word-wrap: nowrap;
     scrollbar-width: auto;
-    font-size: 0.875rem;
+    font-size: .8125rem;
+    font-family: var(--mono-font);
   }
 }
 
@@ -518,7 +519,7 @@ pre.proseCodeBlock>pre.proseCode {
 
   >code {
     display: block;
-    padding: 0.75rem;
+    padding: 0.25rem 0.5rem;
     user-select: text;
     font-family: var(--mono-font);
     color: var(--theme-content-color);
@@ -527,7 +528,7 @@ pre.proseCodeBlock>pre.proseCode {
 
     background: var(--theme-button-default);
 
-    font-size: 0.875rem;
+    font-size: .8125rem;
     line-height: 1.5em;
 
     overflow-x: auto;
