@@ -159,6 +159,9 @@ export function getFileUploadParams (blobId: string, blob: Blob): FileUploadPara
  * @public
  */
 export function getBlobUrl (file: string): string {
+  if (file.includes('://')) {
+    return file
+  }
   const fileUrl = getFileUrl(file)
   const u = new URL(fileUrl)
   if (u.searchParams.has('file')) {
