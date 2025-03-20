@@ -222,8 +222,8 @@ test.describe('Planning ToDo tests', () => {
       await documentContentPage.addContentToTheNewLine('/')
 
       await documentContentPage.slashActionItemsPopup().getByText('Action item').click()
-      await documentContentPage.page.keyboard.type(toDoName)
-      await documentContentPage.page.keyboard.press('Escape')
+      await documentContentPage.addContentToTheNewLine('[] ' + toDoName)
+      await documentContentPage.checkContent(toDoName)
       await documentContentPage.assignToDo('Appleseed John', toDoName)
     })
 

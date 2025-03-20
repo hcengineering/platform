@@ -41,6 +41,8 @@
     "EnableDiffMode": "Mode différentiel",
     "AddColumnBefore": "Ajouter avant",
     "AddColumnAfter": "Ajouter après",
+    "TodoItem": "Tâche",
+    "TodoList": "Liste des tâches",
     "DeleteColumn": "Supprimer",
     "AddRowBefore": "Ajouter avant",
     "AddRowAfter": "Ajouter après",
@@ -57,7 +59,6 @@
     "Unset": "Non défini",
     "Image": "Image",
     "SeparatorLine": "Ligne de séparation",
-    "TodoList": "À faire",
     "DrawingBoard": "Tableau de dessin"
   }
 }
