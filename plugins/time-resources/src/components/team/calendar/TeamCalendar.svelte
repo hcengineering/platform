@@ -49,7 +49,7 @@
 
   let txes = new Map<Ref<Person>, Tx[]>()
 
-  $: personsSocialStrings = persons.map((p) => ($socialIdsByPersonRefStore.get(p) ?? []).map((si) => si.key)).flat()
+  $: personsSocialStrings = persons.map((p) => ($socialIdsByPersonRefStore.get(p) ?? []).map((si) => si._id)).flat()
   $: txCreateQuery.query(
     core.class.Tx,
     { modifiedBy: { $in: personsSocialStrings }, modifiedOn: { $gt: fromDate, $lt: toDate } },

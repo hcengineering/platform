@@ -343,6 +343,7 @@ export class HulyFormatImporter {
   private personsByName = new Map<string, Ref<Person>>()
   private employeesByName = new Map<string, Ref<Employee>>()
   private accountsByEmail = new Map<string, AccountUuid>()
+  private readonly personIdByEmail = new Map<string, PersonId>()
 
   constructor (
     private readonly client: TxOperations,
@@ -606,12 +607,28 @@ export class HulyFormatImporter {
     return person
   }
 
-  private getSocialIdByEmail (email: string): PersonId {
+  private async getPersonIdByEmail (email: string): Promise<PersonId> {
     if (email === this.importerEmailPlaceholder && this.importerSocialId != null) {
       return this.importerSocialId
     }
 
-    return buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
+    const personId = this.personIdByEmail.get(email)
+    if (personId !== undefined) {
+      return personId
+    }
+
+    const socialId = await this.client.findOne(contact.class.SocialIdentity, {
+      type: SocialIdType.EMAIL,
+      value: email
+    })
+
+    if (socialId === undefined) {
+      throw new Error(`Social ID not found for email: ${email}`)
+    }
+
+    this.personIdByEmail.set(email, socialId._id)
+
+    return socialId._id
   }
 
   private findAccountByEmail (email: string): AccountUuid {
@@ -767,7 +784,7 @@ export class HulyFormatImporter {
         }
         return {
           text: comment.text,
-          author: this.getSocialIdByEmail(comment.author),
+          author: await this.getPersonIdByEmail(comment.author),
           attachments
         }
       })
@@ -952,6 +969,24 @@ export class HulyFormatImporter {
   }
 
   private async cacheAccountsByEmails (): Promise<void> {
+    const employees = await this.client.findAll(
+      contact.mixin.Employee,
+      { active: true },
+      { lookup: { _id: { socialIds: contact.class.SocialIdentity } } }
+    )
+
+    this.accountsByEmail = employees.reduce((map, employee) => {
+      employee.$lookup?.socialIds?.forEach((socialId) => {
+        if ((socialId as SocialIdentity).type === SocialIdType.EMAIL) {
+          map.set((socialId as SocialIdentity).value, employee.personUuid)
+        }
+      })
+
+      return map
+    }, new Map())
+  }
+
+  private async cachePersonIdsByEmails (): Promise<void> {
     const employees = await this.client.findAll(
       contact.mixin.Employee,
       { active: true },

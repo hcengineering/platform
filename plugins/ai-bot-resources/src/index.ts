@@ -16,5 +16,6 @@
 import { type Resources } from '@hcengineering/platform'
 
 export * from './requests'
+export * from './utils'
 
 export default async (): Promise<Resources> => ({})

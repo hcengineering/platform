@@ -13,20 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { mySocialStringsStore } from '@hcengineering/contact-resources'
-  import contact, { includesAny } from '@hcengineering/contact'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import contact from '@hcengineering/contact'
   import { DisplayDocUpdateMessage } from '@hcengineering/activity'
   import notification from '@hcengineering/notification'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
   import { Action, Icon, Label } from '@hcengineering/ui'
-  import { type PersonId } from '@hcengineering/core'
 
   export let message: DisplayDocUpdateMessage
   export let actions: Action[] = []
 
   $: attributeUpdates = message.attributeUpdates ?? { added: [], removed: [], set: [] }
   $: addedAttributes = (attributeUpdates.added.length > 0 ? attributeUpdates.added : attributeUpdates.set) ?? []
-  $: isMeAdded = includesAny(addedAttributes as PersonId[], $mySocialStringsStore)
+  $: isMeAdded = addedAttributes.includes(getCurrentAccount().uuid)
 </script>
 
 <BaseMessagePreview {actions} {message} on:click>

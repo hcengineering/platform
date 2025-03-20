@@ -24,7 +24,7 @@ import recruit, { recruitId } from '@hcengineering/recruit'
 import time, { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import workbench, { WorkbenchEvents } from '@hcengineering/workbench'
-import { Class, Doc, Hierarchy, Markup, PersonId, Ref, TxOperations } from '@hcengineering/core'
+import { AccountUuid, Class, Doc, Hierarchy, Markup, Ref, TxOperations } from '@hcengineering/core'
 import { MarkupNode, MarkupNodeType, MarkupMark, MarkupMarkType } from '@hcengineering/text'
 import { translate } from '@hcengineering/platform'
 
@@ -454,16 +454,16 @@ function parseHash (hash: string): string {
   return decodeURIComponent(hash)
 }
 
-export function getOnboardingMessage (personId: PersonId, workspace: string, name: string): Markup {
+export function getOnboardingMessage (account: AccountUuid, workspace: string, name: string): Markup {
   const nodes: MarkupNode[] = [
     toText('New user for onboarding: '),
     toText('name', 'bold'),
     toText(' - '),
     toText(name),
     toText(', '),
-    toText('social id', 'bold'),
+    toText('account', 'bold'),
     toText(' - '),
-    toText(personId),
+    toText(account),
     toText(', '),
     toText('workspace', 'bold'),
     toText(' - '),
