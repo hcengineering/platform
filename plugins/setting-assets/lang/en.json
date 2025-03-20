@@ -136,6 +136,7 @@
     "SystemSetupString": "System Setup ({day})",
     "DefaultString": "Default ({day})",
     "AddAttribute": "Add attribute",
-    "WorkspaceNamePattern": "Name must be 40 characters or less, not empty, and cannot contain special characters (<, >, /)"
+    "WorkspaceNamePattern": "Name must be 40 characters or less, not empty, and cannot contain special characters (<, >, /)",
+    "Mailboxes": "Mailboxes"
   }
 }

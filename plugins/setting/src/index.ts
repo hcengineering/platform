@@ -135,7 +135,8 @@ export default plugin(settingId, {
     ManageSpaces: '' as Ref<Doc>,
     Spaces: '' as Ref<Doc>,
     Backup: '' as Ref<Doc>,
-    Export: '' as Ref<Doc>
+    Export: '' as Ref<Doc>,
+    Mailboxes: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -172,7 +173,8 @@ export default plugin(settingId, {
     Backup: '' as AnyComponent,
     CreateAttributePopup: '' as AnyComponent,
     CreateRelation: '' as AnyComponent,
-    EditRelation: '' as AnyComponent
+    EditRelation: '' as AnyComponent,
+    Mailboxes: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -224,7 +226,8 @@ export default plugin(settingId, {
     BackupFileDownload: '' as IntlString,
     BackupFiles: '' as IntlString,
     BackupNoBackup: '' as IntlString,
-    AddAttribute: '' as IntlString
+    AddAttribute: '' as IntlString,
+    Mailboxes: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
@@ -242,7 +245,8 @@ export default plugin(settingId, {
     InviteSettings: '' as Asset,
     InviteWorkspace: '' as Asset,
     Views: '' as Asset,
-    Relations: '' as Asset
+    Relations: '' as Asset,
+    Mailbox: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>

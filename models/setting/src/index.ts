@@ -215,6 +215,20 @@ export function createModel (builder: Builder): void {
     setting.ids.Integrations
   )
   builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: 'mailboxes',
+      label: setting.string.Mailboxes,
+      icon: setting.icon.Mailbox,
+      component: setting.component.Mailboxes,
+      group: 'settings-account',
+      role: AccountRole.User,
+      order: 1700
+    },
+    setting.ids.Mailboxes
+  )
+  builder.createDoc(
     setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
