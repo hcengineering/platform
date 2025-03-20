@@ -13,27 +13,24 @@
 // limitations under the License.
 //
 
-import { type IntlString, type Metadata, type Plugin, plugin, type Asset } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { type Builder } from '@hcengineering/model'
+import core from '@hcengineering/model-core'
+import presentation from '@hcengineering/model-presentation'
+import workbench from '@hcengineering/workbench'
+import exportPlugin from './plugin'
 
-export const exportId = 'export' as Plugin
-
-export const exportPlugin = plugin(exportId, {
-  string: {
-    Export: '' as IntlString,
-    ExportCompleted: '' as IntlString,
-    ExportFailed: '' as IntlString
-  },
-  component: {
-    ExportButton: '' as AnyComponent,
-    ExportSettings: '' as AnyComponent
-  },
-  icon: {
-    Export: '' as Asset
-  },
-  metadata: {
-    ExportUrl: '' as Metadata<string>
-  }
-})
-
+export { exportId } from '@hcengineering/export'
+export * from './migration'
 export default exportPlugin
+
+export function createModel (builder: Builder): void {
+  builder.createDoc(
+    presentation.class.ComponentPointExtension,
+    core.space.Model,
+    {
+      extension: workbench.extensions.SpecialViewAction,
+      component: exportPlugin.component.ExportButton
+    },
+    exportPlugin.extensions.ExportButton
+  )
+}

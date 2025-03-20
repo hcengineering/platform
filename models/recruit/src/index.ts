@@ -187,8 +187,8 @@ export function createModel (builder: Builder): void {
               createLabel: recruit.string.TalentCreateLabel,
               createComponent: recruit.component.CreateCandidate,
               createComponentProps: { shouldSaveDraft: false },
-              exportVisible: true,
-              exportConfig: {
+              actionVisible: true,
+              actionConfig: {
                 skipAttributes: ['_class', 'avatarType', 'space'],
                 attributeKeyMap: { city: 'location' },
                 attributeTransforms: {

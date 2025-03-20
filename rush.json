@@ -1909,6 +1909,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/model-export",
+      "projectFolder": "models/export",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/export",
       "projectFolder": "plugins/export",
       "shouldPublish": false
