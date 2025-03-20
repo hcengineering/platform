@@ -20,6 +20,7 @@
 
   import BrokenImage from './icons/BrokenImage.svelte'
   import { AttachmentImageSize } from '../types'
+  import { getImageDimensions } from '../utils'
 
   export let value: WithLookup<Attachment> | BlobType
   export let size: AttachmentImageSize = 'auto'
@@ -33,64 +34,24 @@
   const minSizeRem = 4
   const maxSizeRem = 20
 
-  const preferredWidthMap = {
-    'x-large': 300
-  } as const
-
   let dimensions: Dimensions
 
   $: dimensions = getDimensions(value, size)
 
   function getDimensions (value: Attachment | BlobType, size: AttachmentImageSize): Dimensions {
-    if (size === 'auto' || size == null) {
-      return {
-        width: 300,
-        height: 300,
-        fit: 'contain'
-      }
-    }
+    const byDefault = { width: 300, height: 300, fit: 'contain' } as const
+    if (size === 'auto' || size == null) return byDefault
 
-    const preferredWidth = preferredWidthMap[size]
     const { metadata } = value
+    if (metadata === undefined) return byDefault
 
-    if (metadata === undefined) {
-      return {
-        width: preferredWidth,
-        height: preferredWidth,
-        fit: 'contain'
-      }
-    }
-
-    const { originalWidth, originalHeight } = metadata
-    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
-    const maxSize = maxSizeRem * fontSize
-    const minSize = minSizeRem * fontSize
-
-    const width = Math.min(originalWidth, preferredWidth)
-    const ratio = originalHeight / originalWidth
-    const height = Math.ceil(width * ratio)
-
-    const fit = width < minSize || height < minSize ? 'cover' : 'contain'
-
-    if (height > maxSize) {
-      return {
-        width: maxSize / ratio,
-        height: maxSize,
-        fit
-      }
-    } else if (height < minSize) {
-      return {
-        width,
-        height: minSize,
-        fit
-      }
-    } else {
-      return {
-        width,
-        height,
-        fit
-      }
-    }
+    return getImageDimensions(
+      {
+        width: metadata.originalWidth,
+        height: metadata.originalHeight
+      },
+      { maxWidth: maxSizeRem, minWidth: minSizeRem, maxHeight: maxSizeRem, minHeight: minSizeRem }
+    )
   }
 
   function toStyle (size: 'auto' | number): string {
@@ -131,8 +92,8 @@
     blob={value.file}
     alt={value.name}
     fit={dimensions.fit}
-    width={Math.ceil(dimensions.width)}
-    height={Math.ceil(dimensions.height)}
+    width={dimensions.width}
+    height={dimensions.height}
     on:load={handleLoad}
     on:error={handleError}
     on:loadstart={handleLoadStart}
