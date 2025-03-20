@@ -179,7 +179,7 @@ async function getAccountInfo (
   return toAccountInfo(account)
 }
 
-async function sendOtpEmail (branding: Branding | null, otp: string, email: string): Promise<void> {
+async function sendOtpEmail (ctx: MeasureContext, branding: Branding | null, otp: string, email: string): Promise<void> {
   const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
   if (mailURL === undefined || mailURL === '') {
     console.info('Please provide email service url to enable email otp.')
@@ -194,7 +194,7 @@ async function sendOtpEmail (branding: Branding | null, otp: string, email: stri
   const subject = await translate(accountPlugin.string.OtpSubject, { code: otp, app }, lang)
 
   const to = email
-  await fetch(concatLink(mailURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -206,6 +206,12 @@ async function sendOtpEmail (branding: Branding | null, otp: string, email: stri
       to
     })
   })
+  if (!response.ok) {
+    ctx.error('Failed to send OTP email', {
+      email,
+      error: response.statusText
+    })
+  }
 }
 
 export async function getAccountInfoByToken (
@@ -318,7 +324,7 @@ export async function sendOtp (
   const expires = now + timeToLive
   const otp = await getNewOtp(db)
 
-  await sendOtpEmail(branding, otp, email)
+  await sendOtpEmail(ctx, branding, otp, email)
   await db.otp.insertOne({ account: account._id, otp, expires, createdOn: now })
 
   return { sent: true, retryOn: now + retryDelay * 1000 }
@@ -2299,7 +2305,7 @@ export async function requestPassword (
   const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
 
   const to = account.email
-  await fetch(concatLink(mailURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
@@ -2311,7 +2317,15 @@ export async function requestPassword (
       to
     })
   })
-  ctx.info('recovery email sent', { email, accountEmail: account.email })
+  if (response.ok) {
+    ctx.info('recovery email sent', { email, accountEmail: account.email })
+  } else {
+    ctx.error('Failed to send reset password email', {
+      email,
+      accountEmail: account.email,
+      error: response.statusText
+    })
+  }
 }
 
 /**
@@ -2561,7 +2575,7 @@ export async function sendInvite (
   const subject = await translate(accountPlugin.string.InviteSubject, { ws }, lang)
 
   const to = email
-  await fetch(concatLink(mailURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
@@ -2573,7 +2587,16 @@ export async function sendInvite (
       to
     })
   })
-  ctx.info('Invite sent', { email, workspace, link })
+  if (response.ok) {
+    ctx.info('Invite sent', { email, workspace, link })
+  } else {
+    ctx.error('Failed to send invite email', {
+      email,
+      workspace,
+      link,
+      error: response.statusText
+    })
+  }
 }
 
 async function checkSendRateLimit (currentAccount: Account, workspace: string, db: AccountDB): Promise<void> {
@@ -2645,7 +2668,7 @@ export async function resendInvite (
   const subject = await translate(accountPlugin.string.ResendInviteSubject, { ws }, lang)
 
   const to = emailMask
-  await fetch(concatLink(mailURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
@@ -2657,7 +2680,16 @@ export async function resendInvite (
       to
     })
   })
-  ctx.info('Invite resend and email sent', { email: emailMask, workspace: wsPromise.workspace, link })
+  if (response.ok) {
+    ctx.info('Invite resend and email sent', { email: emailMask, workspace: wsPromise.workspace, link })
+  } else {
+    ctx.error('Failed to send invite resend email', {
+      email: emailMask,
+      workspace: wsPromise.workspace,
+      link,
+      error: response.statusText
+    })
+  }
 }
 
 async function deactivatePersonAccount (
