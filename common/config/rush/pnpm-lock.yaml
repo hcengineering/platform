@@ -1640,8 +1640,8 @@ importers:
         specifier: ~22.8.7
         version: 22.8.8
       electron:
-        specifier: ^34.3.2
-        version: 34.3.2
+        specifier: ^35.0.3
+        version: 35.0.3
       electron-builder:
         specifier: ^25.1.8
         version: 25.1.8
@@ -3916,7 +3916,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop-1@file:projects/desktop-1.tgz':
-    resolution: {integrity: sha512-4sR7MAGllDVJst+eCoxFB+w3+g1UOcBrXHjrLJPb/AnS7aiZmPernGMfGWSEUvdZUC6KeKC40EqE986t6uRKDA==, tarball: file:projects/desktop-1.tgz}
+    resolution: {integrity: sha512-rsHmRGdl06oTqUIcR9dPSRKa4Fr+aiBNUfdnskyM/yzol/YQcaOhrOmStUArrr+l0ey5qSVX40GNrRuDK5RQJA==, tarball: file:projects/desktop-1.tgz}
     version: 0.0.0
 
   '@rush-temp/desktop-preferences-assets@file:projects/desktop-preferences-assets.tgz':
@@ -3932,7 +3932,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-PS1shSU9sJaQjs6wKdOdqLcE9dk+KfmqhGPcT5/Co+2wn6N8gFLKw7zaVmK9GYpFQRoED/BiDDsvTY/SOupTwA==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-V0BxySM6hHbYJuPTKf/3ZBnv9RyYR8q/c4zOUiL/TPd/oi3eGeWe71z5T0kMtcKChisukNqWPMfnymBRaqvBWQ==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4584,7 +4584,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
-    resolution: {integrity: sha512-QEDa4s87Zyvys2mg7RVFvzkCiKyMAEampey02avzJp9UJkyebgpEFTmjg5IuKvK1iHGsR6kVfruxAo75nxDvQA==, tarball: file:projects/pod-mail.tgz}
+    resolution: {integrity: sha512-jAdMLPMqs82cRy4ZUvhNJH8S1dO+25xCBl/Xkrdg/JTDI9dp1mE1tqthuwvQ/erGB0uqditAX+FXJgqKG1gq7Q==, tarball: file:projects/pod-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-print@file:projects/pod-print.tgz':
@@ -4660,11 +4660,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/process-resources@file:projects/process-resources.tgz':
-    resolution: {integrity: sha512-2D3+6ghVMXevcWbs9bmZCBijf2AdzENcrQvExr6/+2Dq5YbDCLH7Az7Mxve11kbyuzDhFX0mN85uB1yx4E1o+g==, tarball: file:projects/process-resources.tgz}
+    resolution: {integrity: sha512-pCcsKyA9USfFOyuQ9TEY22sx2CdSI3oPCnIaRvnAJbltCZesjg/QsCJJTJ+taGA9aqSTbwsLVtpmG5LeKbPE3g==, tarball: file:projects/process-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/process@file:projects/process.tgz':
-    resolution: {integrity: sha512-wwzjmPYeU3WKLCCACU//+l83r/eqiJbVPzSGzMDcU5QyNx55yWzeZ8DbW7L3s51QVyRojZzBJr+4wOwmAPBdkQ==, tarball: file:projects/process.tgz}
+    resolution: {integrity: sha512-3vz9X1/VX0PmWuKw9m3Nlfp2CjFZo2MpgCRdLfPaeo6EHExPeSitbfYl7LojLsGo5Uk7tSnUOwMSgd/GOndOVA==, tarball: file:projects/process.tgz}
     version: 0.0.0
 
   '@rush-temp/prod@file:projects/prod.tgz':
@@ -5196,7 +5196,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-editor-resources@file:projects/text-editor-resources.tgz':
-    resolution: {integrity: sha512-EOKVWvCnTrXtst6yszXjgYSe1Hi0pCnMvNVw34jFBOQfLgMrUi1pk2IN6HVwFXFa5hSEEoR3C3Bh/Ga8quvrqQ==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-U/QQQBlHdJNBGg8V+32Le7qTt48Z+BzrIagL/7TqefKabNxjaXFHeB9Be8aZXZxtLojz3qjYREbyOkYDo/sf/w==, tarball: file:projects/text-editor-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor@file:projects/text-editor.tgz':
@@ -5216,7 +5216,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text@file:projects/text.tgz':
-    resolution: {integrity: sha512-MzCjKpbxV9a83Hnx+Ur5THHu4Uguk3iJPecgEEiPUZRJCnOaoSjnAL5dmi8lEU3N/x5hzoOVeKaVvnwA9Kareg==, tarball: file:projects/text.tgz}
+    resolution: {integrity: sha512-L15cB2onnifUgVCbWFbEQbPN2kYcWcLS7YiWdzNq+pGi8f6l/IQUxqvW2zZIC35PwHZLRE0LR+Qii0/Rg9R8nA==, tarball: file:projects/text.tgz}
     version: 0.0.0
 
   '@rush-temp/theme@file:projects/theme.tgz':
@@ -6217,6 +6217,9 @@ packages:
 
   '@types/node@20.11.19':
     resolution: {integrity: sha512-7xMnVEcZFu0DikYjWOlRq7NTPETrm7teqUT2WkQjrTIkEgUyyGdWsj/Zg8bEJt5TNklzbPD1X3fqfsHw3SpapQ==}
+
+  '@types/node@22.13.10':
+    resolution: {integrity: sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw==}
 
   '@types/nodemailer@6.4.17':
     resolution: {integrity: sha512-I9CCaIp6DTldEg7vyUTZi8+9Vo0hi1/T8gv3C89yk1rSAAzoKQ8H8ki/jBYJSFoH/BisgLP8tkZMlQ91CIquww==}
@@ -8167,8 +8170,8 @@ packages:
   electron-windows-badge@1.1.0:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
 
-  electron@34.3.2:
-    resolution: {integrity: sha512-n9tzmFexVLxipZXwMTY30H10f0X9k2OP0SkpSwL5VvnDZi0l/Hc+8CEArKkQPbbSf/IS7nxgc96gtTaR+XoSBg==}
+  electron@35.0.3:
+    resolution: {integrity: sha512-kjQAYEWXSr2TyK19IZoF85dzFIBaYuX7Yp/C+34b5Y/jmI2z270CGie+RjmEGMMitsy0G8YJKftukhYMuWlK6g==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -12824,6 +12827,9 @@ packages:
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
+  undici-types@6.20.0:
+    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
+
   unique-filename@2.0.1:
     resolution: {integrity: sha512-ODWHtkkdx3IAR+veKxFV+VBkUMcN+FaqzUUd7IZzt+0zhDZFPFxhlqwPF3YQvMHx1TD0tdgYl+kuPnJ8E6ql7A==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
@@ -17130,7 +17136,7 @@ snapshots:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 34.3.2
+      electron: 35.0.3
       electron-builder: 25.1.8
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.97.1)
@@ -17246,7 +17252,7 @@ snapshots:
       css-loader: 5.2.7(webpack@5.97.1)
       dotenv: 16.0.3
       dotenv-webpack: 8.0.1(webpack@5.97.1)
-      electron: 34.3.2
+      electron: 35.0.3
       electron-context-menu: 4.0.4
       electron-log: 5.1.7
       electron-squirrel-startup: 1.0.1
@@ -27674,6 +27680,10 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
+  '@types/node@22.13.10':
+    dependencies:
+      undici-types: 6.20.0
+
   '@types/nodemailer@6.4.17':
     dependencies:
       '@types/node': 20.11.19
@@ -30118,10 +30128,10 @@ snapshots:
 
   electron-windows-badge@1.1.0: {}
 
-  electron@34.3.2:
+  electron@35.0.3:
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 20.11.19
+      '@types/node': 22.13.10
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -35788,6 +35798,8 @@ snapshots:
   underscore@1.13.7: {}
 
   undici-types@5.26.5: {}
+
+  undici-types@6.20.0: {}
 
   unique-filename@2.0.1:
     dependencies:
