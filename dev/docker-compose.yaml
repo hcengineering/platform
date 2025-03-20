@@ -1,12 +1,13 @@
 services:
   stream: 
-    image: 'hardcoreeng/huly-stream'
+    image: 'hardcoreeng/stream'
     extra_hosts:
       - 'huly.local:host-gateway'
     container_name: stream
     environment:
       - STREAM_ENDPOINT_URL=s3://huly.local:9000
       - STREAM_INSECURE=true
+      - STREAM_SERVER_SECRET=secret
       - AWS_ACCESS_KEY_ID=minioadmin
       - AWS_SECRET_ACCESS_KEY=minioadmin
     ports:
@@ -98,7 +99,7 @@ services:
       - REGION_INFO=|Mongo;cockroach|CockroachDB
       # - REGION_INFO=cockroach|CockroachDB
       - TRANSACTOR_URL=ws://huly.local:3333,ws://huly.local:3332;;cockroach,
-      - SES_URL=
+      - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
@@ -134,7 +135,7 @@ services:
       - SERVER_SECRET=secret
       - DB_URL=${MONGO_URL}
       - STATS_URL=http://huly.local:4900
-      - SES_URL=
+      - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
@@ -160,7 +161,7 @@ services:
       - SERVER_SECRET=secret
       - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
       - STATS_URL=http://huly.local:4900
-      - SES_URL=
+      - MAIL_URL=
       - REGION=cockroach
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - RESERVED_DB_NAMES=telegram,gmail,github
@@ -258,7 +259,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8087
       # - APM_SERVER_URL=http://apm-server:8200
-      - SES_URL=''
+      - MAIL_URL=''
       - ACCOUNTS_URL=http://huly.local:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
@@ -293,7 +294,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8087
       # - APM_SERVER_URL=http://apm-server:8200
-      - SES_URL=''
+      - MAIL_URL=''
       - ACCOUNTS_URL=http://huly.local:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json

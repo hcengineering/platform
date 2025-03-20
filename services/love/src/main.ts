@@ -311,7 +311,8 @@ const startRecord = async (
         accessKey,
         region,
         secret,
-        bucket
+        bucket,
+        forcePathStyle: true
       })
     }
   })

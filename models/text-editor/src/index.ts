@@ -301,6 +301,20 @@ export function createModel (builder: Builder): void {
     index: 10
   })
 
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: {
+      command: 'toggleTaskList'
+    },
+    icon: textEditor.icon.ListTodo,
+    visibilityTester: textEditor.function.IsEditable,
+    isActive: {
+      name: 'todoList'
+    },
+    label: textEditor.string.TodoList,
+    category: 40,
+    index: 15
+  })
+
   // Text align category
   createTextAlignmentAction(builder, 'left')
   createTextAlignmentAction(builder, 'center')

@@ -104,11 +104,16 @@
   }
 
   $: allowToCreate = isAllowedToCreate(association, docs, direction)
+
+  $: classLabel = client.getHierarchy().getClass(_class).label
 </script>
 
 <Section {label}>
   <svelte:fragment slot="header">
     <div class="buttons-group xsmall-gap">
+      {#if classLabel}
+        <Label label={classLabel} />
+      {/if}
       {#if !readonly && allowToCreate}
         <Button id={core.string.AddRelation} icon={IconAdd} kind={'ghost'} on:click={add} />
       {/if}

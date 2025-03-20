@@ -77,7 +77,7 @@ import {
   getPersonName,
   getRegions,
   getRolePower,
-  getSesUrl,
+  getMailUrl,
   getSocialIdByKey,
   getWorkspaceById,
   getWorkspaceInfoWithStatusById,
@@ -93,9 +93,11 @@ import {
   setPassword,
   signUpByEmail,
   verifyAllowedServices,
+  verifyAllowedRole,
   verifyPassword,
   wrap,
-  getWorkspaceRole
+  getWorkspaceRole,
+  normalizeValue
 } from './utils'
 
 // Move to config?
@@ -155,7 +157,7 @@ export async function login (
       account: existingAccount.uuid,
       token: isConfirmed ? generateToken(existingAccount.uuid, undefined, extraToken) : undefined,
       name: getPersonName(person),
-      socialId: emailSocialId.key
+      socialId: emailSocialId._id
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -210,27 +212,27 @@ export async function signUp (
   }
 ): Promise<LoginInfo> {
   const { email, password, firstName, lastName } = params
-  const account = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName)
+  const { account, socialId } = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName)
   const person = await db.person.findOne({ uuid: account })
   if (person == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  const forceConfirmation = sesURL !== undefined && sesURL !== ''
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  const forceConfirmation = mailURL !== undefined && mailURL !== ''
   if (forceConfirmation) {
     const normalizedEmail = cleanEmail(email)
 
     await sendEmailConfirmation(ctx, branding, account, normalizedEmail)
   } else {
-    ctx.warn('Please provide SES_URL to enable sign up email confirmations.')
+    ctx.warn('Please provide MAIL_URL to enable sign up email confirmations.')
     await confirmEmail(ctx, db, account, email)
   }
 
   return {
     account,
     name: getPersonName(person),
-    socialId: buildSocialIdString({ type: SocialIdType.EMAIL, value: email }),
+    socialId,
     token: !forceConfirmation ? generateToken(account) : undefined
   }
 }
@@ -267,8 +269,8 @@ export async function signUpOtp (
     // There's no person linked to this email, so we need to create a new one
     personUuid = await db.person.insertOne({ firstName, lastName })
     const newSocialId = { type: SocialIdType.EMAIL, value: normalizedEmail, personUuid }
-    const emailSocialIdKey = await db.socialId.insertOne(newSocialId)
-    emailSocialId = { ...newSocialId, key: emailSocialIdKey }
+    const emailSocialIdId = await db.socialId.insertOne(newSocialId)
+    emailSocialId = { ...newSocialId, _id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
   }
 
   return await sendOtp(ctx, db, branding, emailSocialId)
@@ -294,16 +296,16 @@ export async function validateOtp (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  const isValid = await isOtpValid(db, emailSocialId.key, code)
+  const isValid = await isOtpValid(db, emailSocialId._id, code)
 
   if (!isValid) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
   }
 
-  await db.otp.deleteMany({ socialId: emailSocialId.key })
+  await db.otp.deleteMany({ socialId: emailSocialId._id })
 
   if (emailSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
+    await db.socialId.updateOne({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
   }
 
   // This method handles both login and signup
@@ -328,7 +330,7 @@ export async function validateOtp (
   return {
     account: emailSocialId.personUuid,
     name: getPersonName(person),
-    socialId: emailSocialId.key,
+    socialId: emailSocialId._id,
     token: generateToken(emailSocialId.personUuid)
   }
 }
@@ -380,7 +382,7 @@ export async function createWorkspace (
 
   return {
     account,
-    socialId: socialId.key,
+    socialId: socialId._id,
     name: getPersonName(person),
     token: generateToken(account, workspaceUuid),
     endpoint: getEndpoint(ctx, workspaceUuid, region, EndpointKind.External),
@@ -446,7 +448,7 @@ export async function sendInvite (
   }
 ): Promise<void> {
   const { email, role } = params
-  const { account, workspace: workspaceUuid } = decodeTokenVerbose(ctx, token)
+  const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
   if (currentAccount == null) {
@@ -458,6 +460,9 @@ export async function sendInvite (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
+  const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
+  verifyAllowedRole(callerRole, role, extra)
+
   checkRateLimit(account, workspaceUuid)
 
   const expHours = 48
@@ -466,7 +471,7 @@ export async function sendInvite (
   const inviteId = await createInviteLink(ctx, db, branding, token, { exp, emailMask: email, limit: 1, role })
   const inviteEmail = await getInviteEmail(branding, email, inviteId, workspace, expHours)
 
-  await sendEmail(inviteEmail)
+  await sendEmail(inviteEmail, ctx)
 
   ctx.info('Invite has been sent', { to: inviteEmail.to, workspaceUuid: workspace.uuid, workspaceName: workspace.name })
 }
@@ -533,7 +538,7 @@ export async function resendInvite (
   }
 
   const inviteEmail = await getInviteEmail(branding, email, inviteId, workspace, expHours, true)
-  await sendEmail(inviteEmail)
+  await sendEmail(inviteEmail, ctx)
 
   ctx.info('Invite has been resent', {
     to: inviteEmail.to,
@@ -662,7 +667,7 @@ export async function signUpJoin (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
-  const account = await signUpByEmail(ctx, db, branding, email, password, first, last, true)
+  const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last, true)
 
   return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
 }
@@ -681,7 +686,7 @@ export async function confirm (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  await confirmEmail(ctx, db, account, email)
+  const socialId = await confirmEmail(ctx, db, account, email)
 
   const person = await db.person.findOne({ uuid: account })
   if (person == null) {
@@ -691,7 +696,7 @@ export async function confirm (
   const result = {
     account,
     name: getPersonName(person),
-    socialId: buildSocialIdString({ type: SocialIdType.EMAIL, value: email }),
+    socialId,
     token: generateToken(account)
   }
 
@@ -760,7 +765,7 @@ export async function requestPasswordReset (
     )
   }
 
-  const { sesURL, sesAuth } = getSesUrl()
+  const { mailURL, mailAuth } = getMailUrl()
   const front = getFrontUrl(branding)
 
   const token = generateToken(account.uuid, undefined, {
@@ -773,11 +778,11 @@ export async function requestPasswordReset (
   const html = await translate(accountPlugin.string.RecoveryHTML, { link }, lang)
   const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
 
-  await fetch(concatLink(sesURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
-      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -786,8 +791,15 @@ export async function requestPasswordReset (
       to: normalizedEmail
     })
   })
-
-  ctx.info('Password reset email sent', { email, normalizedEmail, account: account.uuid })
+  if (response.ok) {
+    ctx.info('Password reset email sent', { email, normalizedEmail, account: account.uuid })
+  } else {
+    ctx.error(`Failed to send reset password email: ${response.statusText}`, {
+      email,
+      normalizedEmail,
+      account: account.uuid
+    })
+  }
 }
 
 export async function restorePassword (
@@ -1222,7 +1234,7 @@ export async function getLoginInfoByToken (
   const loginInfo = {
     account: accountUuid,
     name: getPersonName(person),
-    socialId: socialId?.key,
+    socialId: socialId?._id,
     token
   }
 
@@ -1319,11 +1331,11 @@ export async function getPersonInfo (
   return {
     personUuid: account,
     name: getPersonName(person),
-    socialIds: verifiedSocialIds.map((it) => it.key)
+    socialIds: verifiedSocialIds.map((it) => it._id)
   }
 }
 
-export async function findPerson (
+export async function findPersonBySocialKey (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1333,13 +1345,51 @@ export async function findPerson (
   const { socialString } = params
   decodeTokenVerbose(ctx, token)
 
-  const socialId = await db.socialId.findOne({ key: socialString as PersonId })
+  const socialId = await db.socialId.findOne({ key: socialString })
 
   if (socialId == null) {
     return
   }
 
   return socialId.personUuid
+}
+
+export async function findPersonBySocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { socialId: PersonId }
+): Promise<PersonUuid | undefined> {
+  const { socialId } = params
+  decodeTokenVerbose(ctx, token)
+
+  const socialIdObj = await db.socialId.findOne({ _id: socialId })
+
+  if (socialIdObj == null) {
+    return
+  }
+
+  return socialIdObj.personUuid
+}
+
+export async function findSocialIdBySocialKey (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { socialKey: string }
+): Promise<PersonId | undefined> {
+  const { socialKey } = params
+  decodeTokenVerbose(ctx, token)
+
+  const socialIdObj = await db.socialId.findOne({ key: socialKey })
+
+  if (socialIdObj == null) {
+    return
+  }
+
+  return socialIdObj._id
 }
 
 export async function getWorkspaceMembers (
@@ -1363,7 +1413,7 @@ export async function getWorkspaceMembers (
   return await db.getWorkspaceMembers(workspace)
 }
 
-export async function updateWorkspaceRoleBySocialId (
+export async function updateWorkspaceRoleBySocialKey (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1726,27 +1776,30 @@ export async function ensurePerson (
     lastName: string
   }
 ): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
-  const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['schedule', 'mail'], extra)
+  const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
+  const allowedService = verifyAllowedServices(['tool', 'workspace', 'schedule', 'mail'], extra, false)
+
+  if (!allowedService) {
+    const callerRole = await getWorkspaceRole(db, account, workspace)
+    verifyAllowedRole(callerRole, AccountRole.User, extra)
+  }
 
   const { socialType, socialValue, firstName, lastName } = params
+  const trimmedFirst = firstName.trim()
+  const trimmedLast = lastName.trim()
+  const normalizedValue = normalizeValue(socialValue)
 
-  if (
-    !Object.values(SocialIdType).includes(socialType) ||
-    firstName.length === 0 ||
-    lastName.length === 0 ||
-    socialValue.length === 0
-  ) {
+  if (!Object.values(SocialIdType).includes(socialType) || trimmedFirst.length === 0 || normalizedValue.length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const socialId = await db.socialId.findOne({ type: socialType, value: socialValue })
+  const socialId = await db.socialId.findOne({ type: socialType, value: normalizedValue })
   if (socialId != null) {
-    return { uuid: socialId.personUuid, socialId: socialId.key }
+    return { uuid: socialId.personUuid, socialId: socialId._id }
   }
 
-  const personUuid = await db.person.insertOne({ firstName, lastName })
-  const newSocialId = await db.socialId.insertOne({ type: socialType, value: socialValue, personUuid })
+  const personUuid = await db.person.insertOne({ firstName: trimmedFirst, lastName: trimmedLast })
+  const newSocialId = await db.socialId.insertOne({ type: socialType, value: normalizedValue, personUuid })
 
   return { uuid: personUuid, socialId: newSocialId }
 }
@@ -1789,9 +1842,11 @@ export type AccountMethods =
   | 'getPersonInfo'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
-  | 'findPerson'
+  | 'findPersonBySocialKey'
+  | 'findPersonBySocialId'
+  | 'findSocialIdBySocialKey'
   | 'performWorkspaceOperation'
-  | 'updateWorkspaceRoleBySocialId'
+  | 'updateWorkspaceRoleBySocialKey'
   | 'ensurePerson'
 
 /**
@@ -1832,7 +1887,9 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),
     getPersonInfo: wrap(getPersonInfo),
-    findPerson: wrap(findPerson),
+    findPersonBySocialKey: wrap(findPersonBySocialKey),
+    findPersonBySocialId: wrap(findPersonBySocialId),
+    findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
 
     /* SERVICE METHODS */
@@ -1843,7 +1900,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     assignWorkspace: wrap(assignWorkspace),
     listWorkspaces: wrap(listWorkspaces),
     performWorkspaceOperation: wrap(performWorkspaceOperation),
-    updateWorkspaceRoleBySocialId: wrap(updateWorkspaceRoleBySocialId),
+    updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
     ensurePerson: wrap(ensurePerson)
   }
 }

@@ -67,6 +67,15 @@ import { retrieveJson } from './utils'
 
 import { setImmediate } from 'timers/promises'
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB limit
+
+const KEEP_ALIVE_TIMEOUT = 5 // seconds
+const KEEP_ALIVE_MAX = 1000
+const KEEP_ALIVE_HEADERS = {
+  Connection: 'keep-alive',
+  'Keep-Alive': `timeout=${KEEP_ALIVE_TIMEOUT}, max=${KEEP_ALIVE_MAX}`
+}
+
 export type RequestHandler = (req: Request, res: ExpressResponse, next?: NextFunction) => Promise<void>
 
 const catchError = (fn: RequestHandler) => (req: Request, res: ExpressResponse, next: NextFunction) => {
@@ -287,7 +296,7 @@ export function startHttpServer (
       try {
         const authHeader = req.headers.authorization
         if (authHeader === undefined) {
-          res.status(403).send({ error: 'Unauthorized' })
+          res.status(403).end(JSON.stringify({ error: 'Unauthorized' }))
           return
         }
 
@@ -295,16 +304,16 @@ export function startHttpServer (
         const wsIds = await getWorkspaceIds(token)
 
         if (wsIds.uuid == null) {
-          res.status(401).send({ error: 'No workspace found' })
+          res.status(401).end(JSON.stringify({ error: 'No workspace found' }))
+          return
         }
 
         const name = req.query.name as string
         const contentType = req.query.contentType as string
         const size = parseInt((req.query.size as string) ?? '-1')
-        const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB limit
 
         if (size > MAX_FILE_SIZE) {
-          res.writeHead(413, { 'Content-Type': 'application/json' })
+          res.writeHead(413, { 'Content-Type': 'application/json', ...KEEP_ALIVE_HEADERS })
           res.end(JSON.stringify({ error: 'File too large' }))
           return
         }
@@ -314,32 +323,38 @@ export function startHttpServer (
             name,
             workspace: wsIds.uuid
           })
-          res.writeHead(404, {})
+          res.writeHead(404, { ...KEEP_ALIVE_HEADERS })
           res.end()
           return
         }
-        ctx
-          .with(
-            'storage upload',
-            { workspace: wsIds.uuid },
-            (ctx) => externalStorage.put(ctx, wsIds, name, req, contentType, size !== -1 ? size : undefined),
-            { file: name, contentType }
-          )
-          .then(() => {
-            res.writeHead(200, { 'Cache-Control': 'no-cache' })
-            res.end()
-          })
-          .catch((err) => {
-            Analytics.handleError(err)
-            ctx.error('/api/v1/blob put error', { err })
-            res.writeHead(404, {})
-            res.end()
-          })
+        await ctx.with(
+          'storage upload',
+          { workspace: wsIds.uuid },
+          async (ctx) => {
+            await externalStorage.put(
+              ctx,
+              wsIds,
+              name,
+              size === 0 ? '' : req,
+              contentType,
+              size !== -1 ? size : undefined
+            )
+            res.writeHead(200, {
+              ...KEEP_ALIVE_HEADERS,
+              'Cache-Control': 'no-cache'
+            })
+            res.end(JSON.stringify({ success: true }))
+          },
+          { file: name, contentType }
+        )
       } catch (err: any) {
         Analytics.handleError(err)
         ctx.error('/api/v1/blob put error', { err })
-        res.writeHead(404, {})
-        res.end()
+        res.writeHead(200, {
+          ...KEEP_ALIVE_HEADERS,
+          'content-type': 'application/json'
+        })
+        res.end(JSON.stringify({ error: err.message }))
       }
     })
   )
@@ -366,9 +381,9 @@ export function startHttpServer (
         const range = req.headers.range
         if (range !== undefined) {
           ctx
-            .with('file-range', { workspace: wsIds.uuid }, (ctx) =>
-              getFileRange(ctx, range, externalStorage, wsIds, name, wrapRes(res))
-            )
+            .with('file-range', {}, (ctx) => getFileRange(ctx, range, externalStorage, wsIds, name, wrapRes(res)), {
+              workspace: wsIds.uuid
+            })
             .catch((err) => {
               Analytics.handleError(err)
               ctx.error('/api/v1/blob get error', { err })
@@ -502,10 +517,11 @@ export function startHttpServer (
           }, 1000)
         }
         if ('upgrade' in s) {
-          void cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
-          setTimeout(() => {
-            cs.close()
-          }, 5000)
+          void cs
+            .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
+            .then(() => {
+              cs.close()
+            })
         }
       })
       void webSocketData.session.catch((err) => {

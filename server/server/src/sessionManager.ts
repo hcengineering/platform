@@ -15,6 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
+  AccountRole,
   cutObjectArray,
   generateId,
   isArchivingMode,
@@ -35,7 +36,6 @@ import core, {
   type WorkspaceInfoWithStatus,
   Account,
   pickPrimarySocialId,
-  buildSocialIdString,
   type PersonId,
   type WorkspaceDataId,
   Data,
@@ -349,8 +349,8 @@ export class TSessionManager implements SessionManager {
       return {
         uuid: loginInfo.account,
         role: loginInfo.role,
-        primarySocialId: buildSocialIdString(pickPrimarySocialId(socialIds)),
-        socialIds: socialIds.map((si) => si.key)
+        primarySocialId: pickPrimarySocialId(socialIds)._id,
+        socialIds: socialIds.map((si) => si._id)
       }
     } catch (err: any) {
       if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
@@ -1304,11 +1304,11 @@ export class TSessionManager implements SessionManager {
 
       // We do not need to wait for set-status, just return session to client
       const _workspace = service.workspace
-      void ctx
-        .with('set-status', {}, (ctx) =>
-          this.trySetStatus(ctx, pipeline, communicationApi, service, true, _workspace.workspaceUuid)
-        )
-        .catch(() => {})
+      if (helloResponse.account.role !== AccountRole.DocGuest) {
+        void ctx
+          .with('set-status', {}, (ctx) => this.trySetStatus(ctx, pipeline, communicationApi, service, true, _workspace.workspaceUuid))
+          .catch(() => {})
+      }
     } catch (err: any) {
       ctx.error('error', { err })
     }

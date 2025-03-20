@@ -49,6 +49,10 @@
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/workbench": "^0.6.16"
   },
+  "repository": "https://github.com/hcengineering/platform",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "exports": {
     ".": {
       "types": "./types/index.d.ts",

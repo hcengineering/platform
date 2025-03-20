@@ -20,14 +20,17 @@
     ButtonIcon,
     getCurrentLocation,
     IconDelete,
+    IconWithEmoji,
     ModernEditbox,
     navigate,
     showPopup,
     themeStore
   } from '@hcengineering/ui'
   import { IconPicker } from '@hcengineering/view-resources'
+  import setting from '@hcengineering/setting'
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
+  import view from '@hcengineering/view'
 
   export let masterTag: MasterTag
 
@@ -60,20 +63,30 @@
   }
 
   function setIcon (): void {
-    showPopup(IconPicker, { icon: masterTag.icon, showEmoji: false, showColor: false }, 'top', async (res) => {
-      if (res !== undefined) {
-        await attributeUpdated('icon', res.icon)
-        masterTag.icon = res.icon
+    showPopup(
+      IconPicker,
+      { icon: masterTag.icon, color: masterTag.color, showEmoji: true, showColor: false },
+      'top',
+      async (res) => {
+        if (res !== undefined) {
+          await client.update(masterTag, { icon: res.icon, color: res.color })
+          masterTag.icon = res.icon
+          masterTag.color = res.color
+        }
       }
-    })
+    )
   }
+
+  const h = client.getHierarchy()
+  $: isEditable = h.hasMixin(masterTag, setting.mixin.Editable) && h.as(masterTag, setting.mixin.Editable).value
 </script>
 
 <div class="hulyComponent-content__column-group">
   <div class="hulyComponent-content__header items-center">
     <div class="flex items-center">
       <ButtonIcon
-        icon={masterTag.icon ?? card.icon.MasterTag}
+        icon={masterTag.icon === view.ids.IconWithEmoji ? IconWithEmoji : masterTag.icon ?? card.icon.MasterTag}
+        iconProps={masterTag.icon === view.ids.IconWithEmoji ? { icon: masterTag.color, size: 'large' } : {}}
         size={'large'}
         iconSize={'large'}
         kind={'tertiary'}
@@ -95,6 +108,8 @@
         }}
       />
     </div>
-    <ButtonIcon icon={IconDelete} size="small" kind="secondary" on:click={handleDelete} />
+    {#if isEditable}
+      <ButtonIcon icon={IconDelete} size={'large'} kind={'tertiary'} on:click={handleDelete} />
+    {/if}
   </div>
 </div>

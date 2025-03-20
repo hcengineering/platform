@@ -58,7 +58,7 @@ import {
   getPersonName,
   getInviteEmail,
   getFrontUrl,
-  getSesUrl,
+  getMailUrl,
   getSocialIdByKey,
   getWorkspaceInvite,
   loginOrSignUpWithProvider,
@@ -654,9 +654,9 @@ describe('account utils', () => {
               return 30
             case accountPlugin.metadata.OtpTimeToLiveSec:
               return 60
-            case accountPlugin.metadata.SES_URL:
+            case accountPlugin.metadata.MAIL_URL:
               return sesUrl
-            case accountPlugin.metadata.SES_AUTH_TOKEN:
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
               return sesAuth
             case accountPlugin.metadata.ProductName:
               return 'Test Product'
@@ -693,12 +693,15 @@ describe('account utils', () => {
         })
       })
 
+      const socialIdId = '333444555' as PersonId
+
       describe('sendOtp', () => {
         const mockSocialId = {
+          _id: socialIdId,
           personUuid: '123456-uuid' as PersonUuid,
           type: SocialIdType.EMAIL,
           value: 'test@example.com',
-          key: 'email:test@example.com' as PersonId
+          key: 'email:test@example.com'
         }
 
         test('should return existing OTP if not expired', async () => {
@@ -730,7 +733,7 @@ describe('account utils', () => {
             retryOn: expect.any(Number)
           })
           expect(mockDb.otp.insertOne).toHaveBeenCalledWith({
-            socialId: mockSocialId.key,
+            socialId: mockSocialId._id,
             code: expect.any(String),
             expiresOn: expect.any(Number),
             createdOn: expect.any(Number)
@@ -739,10 +742,11 @@ describe('account utils', () => {
 
         test('should throw error for unsupported social id type', async () => {
           const invalidSocialId = {
+            _id: '999888777' as PersonId,
             personUuid: '123456-uuid' as PersonUuid,
             type: 'INVALID' as SocialIdType,
             value: 'test',
-            key: 'invalid:test' as PersonId
+            key: 'invalid:test'
           }
 
           await expect(sendOtp(mockCtx, mockDb, mockBranding, invalidSocialId)).rejects.toThrow(
@@ -753,7 +757,9 @@ describe('account utils', () => {
 
       describe('sendOtpEmail', () => {
         beforeEach(() => {
-          global.fetch = jest.fn()
+          const mockFetch = jest.fn()
+          mockFetch.mockResolvedValue({ ok: true })
+          global.fetch = mockFetch
         })
 
         test('should send email with OTP', async () => {
@@ -786,7 +792,7 @@ describe('account utils', () => {
           }
           ;(mockDb.otp.findOne as jest.Mock).mockResolvedValue(mockOtpData)
 
-          const result = await isOtpValid(mockDb, 'email:test@example.com', '123456')
+          const result = await isOtpValid(mockDb, socialIdId, '123456')
           expect(result).toBe(true)
         })
 
@@ -796,14 +802,14 @@ describe('account utils', () => {
           }
           ;(mockDb.otp.findOne as jest.Mock).mockResolvedValue(mockOtpData)
 
-          const result = await isOtpValid(mockDb, 'email:test@example.com', '123456')
+          const result = await isOtpValid(mockDb, socialIdId, '123456')
           expect(result).toBe(false)
         })
 
         test('should return false for non-existent OTP', async () => {
           ;(mockDb.otp.findOne as jest.Mock).mockResolvedValue(null)
 
-          const result = await isOtpValid(mockDb, 'email:test@example.com', '123456')
+          const result = await isOtpValid(mockDb, socialIdId, '123456')
           expect(result).toBe(false)
         })
       })
@@ -833,9 +839,9 @@ describe('account utils', () => {
         mockFetch.mockResolvedValue({ ok: true })
         ;(getMetadata as jest.Mock).mockImplementation((key) => {
           switch (key) {
-            case accountPlugin.metadata.SES_URL:
+            case accountPlugin.metadata.MAIL_URL:
               return 'https://ses.example.com'
-            case accountPlugin.metadata.SES_AUTH_TOKEN:
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
               return 'test-auth-token'
             case accountPlugin.metadata.ProductName:
               return 'Test Product'
@@ -871,14 +877,14 @@ describe('account utils', () => {
           )
         })
 
-        test('should throw error if SES_URL is missing', async () => {
+        test('should throw error if MAIL_URL is missing', async () => {
           ;(getMetadata as jest.Mock).mockReturnValue(undefined)
 
           await expect(sendEmailConfirmation(mockCtx, mockBranding, account, email)).rejects.toThrow(
             new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
           )
 
-          expect(mockCtx.error).toHaveBeenCalledWith('Please provide SES_URL to enable email confirmations.')
+          expect(mockCtx.error).toHaveBeenCalledWith('Please provide MAIL_URL to enable email confirmations.')
         })
 
         test('should use branding front URL if available', async () => {
@@ -999,9 +1005,9 @@ describe('account utils', () => {
       beforeEach(() => {
         ;(getMetadata as jest.Mock).mockImplementation((key) => {
           switch (key) {
-            case accountPlugin.metadata.SES_URL:
+            case accountPlugin.metadata.MAIL_URL:
               return 'https://ses.example.com'
-            case accountPlugin.metadata.SES_AUTH_TOKEN:
+            case accountPlugin.metadata.MAIL_AUTH_TOKEN:
               return 'test-token'
             default:
               return undefined
@@ -1010,6 +1016,10 @@ describe('account utils', () => {
       })
 
       test('should send email with correct parameters', async () => {
+        const mockCtx = {
+          error: jest.fn(),
+          info: jest.fn()
+        } as unknown as MeasureContext
         const emailInfo = {
           text: 'Test email',
           html: '<p>Test email</p>',
@@ -1017,7 +1027,7 @@ describe('account utils', () => {
           to: 'test@example.com'
         }
 
-        await sendEmail(emailInfo)
+        await sendEmail(emailInfo, mockCtx)
 
         expect(mockFetch).toHaveBeenCalledWith('https://ses.example.com/send', {
           method: 'post',
@@ -1284,7 +1294,7 @@ describe('account utils', () => {
 
       const result = await signUpByEmail(mockCtx, mockDb, mockBranding, email, password, firstName, lastName)
 
-      expect(result).toBe(personUuid)
+      expect(result.account).toBe(personUuid)
       expect(mockDb.person.insertOne).toHaveBeenCalledWith({ firstName, lastName })
       expect(mockDb.socialId.insertOne).toHaveBeenCalledWith({
         type: SocialIdType.EMAIL,
@@ -1314,7 +1324,7 @@ describe('account utils', () => {
 
       const result = await signUpByEmail(mockCtx, mockDb, mockBranding, email, password, firstName, lastName)
 
-      expect(result).toBe(personUuid)
+      expect(result.account).toBe(personUuid)
       expect(mockDb.person.updateOne).toHaveBeenCalledWith({ uuid: personUuid }, { firstName, lastName })
       expect(mockDb.account.insertOne).toHaveBeenCalledWith({ uuid: personUuid })
       expect(mockDb.setPassword).toHaveBeenCalledWith(personUuid, expect.any(Buffer), expect.any(Buffer))
@@ -1721,8 +1731,10 @@ describe('account utils', () => {
       const firstName = 'John'
       const lastName = 'Doe'
       const personUuid = 'new-person' as PersonUuid
+      const mockSocialIdUuid = 'mock-social-id-uuid'
 
       ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.insertOne as jest.Mock).mockResolvedValue(mockSocialIdUuid)
       ;(mockDb.person.insertOne as jest.Mock).mockResolvedValue(personUuid)
       ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ firstName, lastName })
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
@@ -1739,7 +1751,7 @@ describe('account utils', () => {
 
       expect(result).toEqual({
         account: personUuid,
-        socialId: expect.any(String),
+        socialId: mockSocialIdUuid,
         name: 'John Doe',
         token: 'new-token'
       })
@@ -1832,9 +1844,9 @@ describe('account utils', () => {
     beforeEach(() => {
       ;(getMetadata as jest.Mock).mockImplementation((key) => {
         switch (key) {
-          case accountPlugin.metadata.SES_URL:
+          case accountPlugin.metadata.MAIL_URL:
             return 'https://ses.example.com'
-          case accountPlugin.metadata.SES_AUTH_TOKEN:
+          case accountPlugin.metadata.MAIL_AUTH_TOKEN:
             return 'test-token'
           default:
             return undefined
@@ -1847,17 +1859,17 @@ describe('account utils', () => {
     })
 
     test('should return SES URL and auth token when configured', () => {
-      const result = getSesUrl()
+      const result = getMailUrl()
       expect(result).toEqual({
-        sesURL: 'https://ses.example.com',
-        sesAuth: 'test-token'
+        mailURL: 'https://ses.example.com',
+        mailAuth: 'test-token'
       })
     })
 
     test('should throw error when SES URL not configured', () => {
       ;(getMetadata as jest.Mock).mockReturnValue(undefined)
 
-      expect(() => getSesUrl()).toThrow('Please provide email service url')
+      expect(() => getMailUrl()).toThrow('Please provide email service url')
     })
   })
 

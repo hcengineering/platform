@@ -17,6 +17,7 @@ import analyticsCollector, { AnalyticEvent, OnboardingChannel } from '@hcenginee
 import chunter, { Channel, ChatMessage } from '@hcengineering/chunter'
 import { getPrimarySocialId, type Person } from '@hcengineering/contact'
 import core, {
+  AccountUuid,
   Doc,
   generateId,
   PersonId,
@@ -92,14 +93,14 @@ export class SupportWsClient extends WorkspaceClient {
   private async getOrCreateOnboardingChannel (
     client: TxOperations,
     workspace: WorkspaceUuid,
-    personId: PersonId,
+    account: AccountUuid,
     person: Person
   ): Promise<{
       channelId: Ref<OnboardingChannel> | undefined
       isCreated: boolean
       workspace?: WorkspaceInfoWithStatus
     }> {
-    const key = `${personId}-${workspace}`
+    const key = `${account}-${workspace}`
 
     if (this.channelIdByKey.has(key)) {
       return {
@@ -122,7 +123,7 @@ export class SupportWsClient extends WorkspaceClient {
     const [channel, isCreated] = await getOrCreateOnboardingChannel(
       this.ctx,
       client,
-      personId,
+      account,
       {
         workspaceId: workspace,
         workspaceName: wsInfo?.name ?? '',
@@ -167,9 +168,9 @@ export class SupportWsClient extends WorkspaceClient {
     const client = await this.opClient
     const op = client.apply(undefined, 'processEvents')
     const wsString = workspace
-    const personId = await this.getPersonId(person._id)
+    const account = person.personUuid as AccountUuid
 
-    if (personId === undefined) {
+    if (account === undefined) {
       return
     }
 
@@ -177,7 +178,7 @@ export class SupportWsClient extends WorkspaceClient {
       channelId,
       isCreated,
       workspace: workspaceInfo
-    } = await this.getOrCreateOnboardingChannel(op, wsString, personId, person)
+    } = await this.getOrCreateOnboardingChannel(op, wsString, account, person)
 
     if (channelId === undefined) {
       return
@@ -191,7 +192,7 @@ export class SupportWsClient extends WorkspaceClient {
         analyticsCollector.space.GeneralOnboardingChannel,
         chunter.class.Channel,
         'messages',
-        { message: getOnboardingMessage(personId, workspaceInfo?.url ?? wsString, person.name) },
+        { message: getOnboardingMessage(account, workspaceInfo?.url ?? wsString, person.name) },
         messageId
       )
 

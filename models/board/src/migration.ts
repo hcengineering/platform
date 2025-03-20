@@ -82,16 +82,17 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
 }
 
 export const boardOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, boardId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, boardId, [
       {
         state: 'identifier',
+        mode: 'upgrade',
         func: migrateIdentifiers
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, boardId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, boardId, [
       {
         state: 'board0001',
         func: async (client) => {

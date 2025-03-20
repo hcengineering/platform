@@ -1,6 +1,6 @@
 {
   "name": "desktop",
-  "version": "0.6.458",
+  "version": "0.6.435",
   "main": "dist/main/electron.js",
   "author": "Hardcore Engineering <hey@huly.io>",
   "template": "@hcengineering/default-package",
@@ -21,7 +21,7 @@
     "node-loader": "~2.0.0",
     "cross-env": "~7.0.3",
     "typescript": "^5.3.3",
-    "electron": "^34.3.2",
+    "electron": "^35.0.3",
     "@types/node": "~20.11.16",
     "electron-builder": "^25.1.8",
     "@electron/notarize": "^2.3.2"

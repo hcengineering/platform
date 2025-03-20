@@ -13,28 +13,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { MasterTag } from '@hcengineering/card'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
   import { Separator, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { SpecialView } from '@hcengineering/workbench-resources'
+  import { onDestroy } from 'svelte'
   import card from '../plugin'
   import Navigator from './Navigator.svelte'
-  import { onDestroy } from 'svelte'
-  import { IntlString } from '@hcengineering/platform'
 
   export let currentSpace: Ref<Class<Doc>>
 
-  $: _class = currentSpace
+  let classes: MasterTag[] = []
+  let allClasses: MasterTag[] = []
 
-  const client = getClient()
+  function fillClasses (tags: MasterTag[]): void {
+    classes = tags.filter((it) => it.extends === card.class.Card).sort((a, b) => a.label.localeCompare(b.label))
+  }
 
-  $: label = getLabel(_class)
+  const query = createQuery()
+  query.query(card.class.MasterTag, {}, (res) => {
+    const notRemoved = res.filter((it) => it.removed !== true)
+    allClasses = notRemoved
+    fillClasses(notRemoved)
+  })
 
-  function getLabel (_class: Ref<Class<Doc>> | undefined): IntlString | undefined {
-    try {
-      const clazz = _class !== undefined ? client.getHierarchy().getClass(_class) : undefined
-      return clazz?.label
-    } catch {}
+  $: clazz = allClasses.find((it) => it._id === currentSpace)
+
+  $: label = getLabel(clazz)
+
+  function getLabel (clazz: MasterTag | undefined): IntlString | undefined {
+    return clazz?.label
   }
 
   let replacedPanel: HTMLElement
@@ -44,7 +54,7 @@
 
 <div class="hulyPanels-container">
   {#if $deviceInfo.navigator.visible}
-    <Navigator bind:_class />
+    <Navigator _class={clazz?._id} {classes} {allClasses} />
     <Separator
       name={'workbench'}
       float={$deviceInfo.navigator.float}
@@ -56,8 +66,8 @@
   {/if}
 
   <div class="hulyComponent" bind:this={replacedPanel}>
-    {#if _class !== undefined && label !== undefined}
-      <SpecialView {_class} {label} icon={card.icon.Card} />
+    {#if clazz !== undefined && label !== undefined}
+      <SpecialView _class={clazz._id} {label} icon={card.icon.Card} />
     {/if}
   </div>
 </div>

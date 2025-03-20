@@ -32,16 +32,26 @@ export function createPostgreeDestroyAdapter (url: string): WorkspaceDestroyAdap
         }
         const connection = await client.getClient()
 
-        await ctx.with('delete-workspace', {}, async () => {
-          // We need to clear information about workspace from all collections in schema
-          for (const [domain] of Object.entries(domainSchemas)) {
-            await ctx.with('delete-workspace-domain', {}, async () => {
-              await retryTxn(connection, async (client) => {
-                await client.unsafe(`delete from ${domain} where "workspaceId" = $1::uuid`, [workspaceUuid])
-              })
-            })
-          }
-        })
+        await ctx.with(
+          'delete-workspace',
+          {},
+          async (ctx) => {
+            // We need to clear information about workspace from all collections in schema
+            for (const [domain] of Object.entries(domainSchemas)) {
+              await ctx.with(
+                'delete-workspace-domain',
+                {},
+                async (ctx) => {
+                  await retryTxn(connection, async (client) => {
+                    await client.unsafe(`delete from ${domain} where "workspaceId" = $1::uuid`, [workspaceUuid])
+                  })
+                },
+                { domain }
+              )
+            }
+          },
+          { url: workspaceUuid }
+        )
       } catch (err: any) {
         ctx.error('failed to clean workspace data', { err })
         throw err

@@ -43,7 +43,7 @@
   {:else}
     <ProgressCircle value={upload.progress / Math.max(upload.files.size, 1)} size={'small'} primary />
   {/if}
-  <span>{(upload.progress / Math.max(upload.files.size, 1)).toFixed(1)}%</span>
+  <span>{Math.ceil(upload.progress / Math.max(upload.files.size, 1))}%</span>
 </div>
 
 <style lang="scss">

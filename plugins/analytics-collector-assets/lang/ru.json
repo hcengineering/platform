@@ -14,7 +14,7 @@
     "WorkspaceId": "Id пространства",
     "WorkspaceName": "Имя пространства",
     "WorkspaceUrl": "URL пространства",
-    "SocialId": "Социальный ID",
+    "Account": "Учетная запись",
     "UserName": "Имя пользователя",
     "DisableAIReplies": "Отключить ответы ИИ",
     "ShowAIReplies": "Показать ответы ИИ"

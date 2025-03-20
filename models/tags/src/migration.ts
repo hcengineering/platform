@@ -10,8 +10,8 @@ import { tagsId } from '@hcengineering/tags'
 import { DOMAIN_TAGS } from '.'
 
 export const tagsOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, tagsId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, tagsId, [
       {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {

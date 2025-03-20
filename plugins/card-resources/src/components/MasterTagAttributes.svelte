@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
+  import { Card, MasterTag } from '@hcengineering/card'
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import {
@@ -23,20 +23,24 @@
     getCurrentResolvedLocation,
     Icon,
     IconAdd,
+    IconWithEmoji,
     Label,
     navigate,
     showPopup
   } from '@hcengineering/ui'
   import card from '../plugin'
   import CardAttributes from './CardAttributes.svelte'
+  import view from '@hcengineering/view'
 
   export let value: Card
   export let readonly: boolean = false
   export let ignoreKeys: string[]
+  export let fourRows: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  $: label = hierarchy.getClass(value._class).label
+  $: clazz = hierarchy.getClass(value._class) as MasterTag
+  $: label = clazz.label
 
   let isCollapsed = false
 
@@ -51,7 +55,11 @@
 
 <div class="header flex flex-gap-2">
   <div class="label flex flex-gap-2" on:click={isCollapsed ? expand : collapse}>
-    <Icon icon={card.icon.MasterTag} size="large" />
+    <Icon
+      icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz.icon ?? card.icon.MasterTag}
+      iconProps={clazz.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
+      size="large"
+    />
     <Label {label} />
     <Chevron expanded={!isCollapsed} outline fill={'var(--content-color)'} />
   </div>
@@ -84,7 +92,7 @@
   </div>
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
-  <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} fourRows />
+  <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} {fourRows} />
 </ExpandCollapse>
 
 <style lang="scss">
