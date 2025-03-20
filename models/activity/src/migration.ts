@@ -43,8 +43,10 @@ import {
 import { htmlToMarkup } from '@hcengineering/text'
 import {
   getAccountUuidByOldAccount,
-  getAccountUuidBySocialId,
-  getSocialIdByOldAccount
+  getAccountUuidBySocialKey,
+  getSocialIdBySocialKey,
+  getSocialIdFromOldAccount,
+  getSocialKeyByOldAccount
 } from '@hcengineering/model-core'
 
 import { activityId, DOMAIN_ACTIVITY, DOMAIN_REACTION, DOMAIN_USER_MENTION } from './index'
@@ -204,7 +206,9 @@ async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
-  const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  const socialIdByOldAccount = new Map<string, PersonId | null>()
 
   ctx.info('processing activity reactions ', {})
   const iterator = await client.traverse(DOMAIN_REACTION, { _class: activity.class.Reaction })
@@ -221,7 +225,14 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
 
       for (const doc of docs) {
         const reaction = doc as Reaction
-        const newCreateBy = socialIdByAccount[reaction.createBy] ?? reaction.createBy
+        const socialId = await getSocialIdFromOldAccount(
+          client,
+          reaction.createBy,
+          socialKeyByAccount,
+          socialIdBySocialKey,
+          socialIdByOldAccount
+        )
+        const newCreateBy = socialId ?? reaction.createBy
 
         if (newCreateBy === reaction.createBy) continue
 
@@ -254,8 +265,8 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
  */
 async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateAccountsToSocialIds', {})
-  const socialIdByAccount = await getSocialIdByOldAccount(client)
-  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
   ctx.info('processing activity doc updates ', {})
 
   function getUpdatedClass (attrKey: string): string {
@@ -264,9 +275,9 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
 
   async function getUpdatedVal (oldVal: string, attrKey: string): Promise<any> {
     if (['members', 'owners', 'user'].includes(attrKey)) {
-      return (await getAccountUuidByOldAccount(client, oldVal, socialIdByAccount, accountUuidBySocialId)) ?? oldVal
+      return (await getAccountUuidByOldAccount(client, oldVal, socialKeyByAccount, accountUuidBySocialKey)) ?? oldVal
     } else {
-      return socialIdByAccount[oldVal] ?? oldVal
+      return socialKeyByAccount[oldVal] ?? oldVal
     }
   }
 
@@ -363,11 +374,11 @@ async function migrateAccountsInDocUpdates (client: MigrationClient): Promise<vo
  */
 async function migrateSocialIdsInDocUpdates (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('activity migrateSocialIdsInDocUpdates', {})
-  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
   ctx.info('processing activity doc updates ', {})
 
   async function getUpdatedVal (oldVal: string): Promise<any> {
-    return (await getAccountUuidBySocialId(client, oldVal as PersonId, accountUuidBySocialId)) ?? oldVal
+    return (await getAccountUuidBySocialKey(client, oldVal, accountUuidBySocialKey)) ?? oldVal
   }
 
   async function migrateField<P extends keyof DocAttributeUpdates> (
@@ -455,19 +466,67 @@ async function migrateSocialIdsInDocUpdates (client: MigrationClient): Promise<v
   ctx.info('finished processing activity doc updates ', {})
 }
 
+async function migrateSocialKeysToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('activity migrateSocialKeysToSocialIds', {})
+
+  ctx.info('processing activity reactions ', {})
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  const iterator = await client.traverse(DOMAIN_REACTION, { _class: activity.class.Reaction })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+      for (const doc of docs) {
+        const reaction = doc as Reaction
+        const newCreateBy =
+          (await getSocialIdBySocialKey(client, reaction.createBy, socialIdBySocialKey)) ?? reaction.createBy
+
+        if (newCreateBy === reaction.createBy) continue
+
+        operations.push({
+          filter: { _id: doc._id },
+          update: {
+            createBy: newCreateBy
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_REACTION, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  ctx.info('finished processing activity reactions ', {})
+}
+
 export const activityOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, activityId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, activityId, [
       {
         state: 'reactions',
+        mode: 'upgrade',
         func: migrateReactions
       },
       {
         state: 'markup',
+        mode: 'upgrade',
         func: migrateMarkup
       },
       {
         state: 'migrate-doc-update-messages-space',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateMessagesSpace(
             client,
@@ -479,6 +538,7 @@ export const activityOperation: MigrateOperation = {
       },
       {
         state: 'migrate-employee-space-v1',
+        mode: 'upgrade',
         func: async () => {
           await client.update<ActivityMessage>(
             DOMAIN_ACTIVITY,
@@ -489,10 +549,36 @@ export const activityOperation: MigrateOperation = {
       },
       {
         state: 'migrate-activity-markup',
+        mode: 'upgrade',
         func: migrateActivityMarkup
       },
       {
         state: 'move-reactions',
+        mode: 'upgrade',
+        func: async (client: MigrationClient): Promise<void> => {
+          await client.move(DOMAIN_ACTIVITY, { _class: activity.class.Reaction }, DOMAIN_REACTION)
+          await client.move(DOMAIN_ACTIVITY, { _class: activity.class.UserMentionInfo }, DOMAIN_USER_MENTION)
+        }
+      },
+      {
+        state: 'migrate-employee-space-v1',
+        mode: 'upgrade',
+        func: async () => {
+          await client.update<ActivityMessage>(
+            DOMAIN_ACTIVITY,
+            { space: 'contact:space:Employee' as Ref<Space> },
+            { space: contact.space.Contacts }
+          )
+        }
+      },
+      {
+        state: 'migrate-activity-markup',
+        mode: 'upgrade',
+        func: migrateActivityMarkup
+      },
+      {
+        state: 'move-reactions',
+        mode: 'upgrade',
         func: async (client: MigrationClient): Promise<void> => {
           await client.move(DOMAIN_ACTIVITY, { _class: activity.class.Reaction }, DOMAIN_REACTION)
           await client.move(DOMAIN_ACTIVITY, { _class: activity.class.UserMentionInfo }, DOMAIN_USER_MENTION)
@@ -500,16 +586,25 @@ export const activityOperation: MigrateOperation = {
       },
       {
         state: 'accounts-to-social-ids-v2',
+        mode: 'upgrade',
         func: migrateAccountsToSocialIds
       },
       {
         state: 'accounts-in-doc-updates-v2',
+        mode: 'upgrade',
         func: migrateAccountsInDocUpdates
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
         state: 'social-ids-in-doc-updates',
+        mode: 'upgrade',
         func: migrateSocialIdsInDocUpdates
+      },
+      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
+      {
+        state: 'social-keys-to-social-ids',
+        mode: 'upgrade',
+        func: migrateSocialKeysToSocialIds
       }
     ])
   },

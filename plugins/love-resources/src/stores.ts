@@ -13,11 +13,9 @@ import {
 } from '@hcengineering/love'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
-import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
+import { aiBotPersonRefStore } from '@hcengineering/ai-bot-resources'
 
 import love from './plugin'
-import { personRefByPersonIdStore } from '@hcengineering/contact-resources'
-import { getLoveUseMaxWidth } from './utils'
 
 export const rooms = writable<Room[]>([])
 export const myOffice = derived(rooms, (val) => {
@@ -63,7 +61,7 @@ export const selectedRoomPlace = writable<{ _id: Ref<Room>, x: number, y: number
 
 function filterParticipantInfo (value: ParticipantInfo[]): ParticipantInfo[] {
   const map = new Map<string, ParticipantInfo>()
-  const aiPerson = get(personRefByPersonIdStore).get(aiBotEmailSocialId)
+  const aiPerson = get(aiBotPersonRefStore)
   for (const val of value) {
     if (aiPerson !== undefined && val.person === aiPerson) {
       map.set(val._id, val)
@@ -142,5 +140,3 @@ onClient(() => {
   )
 })
 export const lockedRoom = writable<string>('')
-
-export const loveUseMaxWidth = writable<boolean>(getLoveUseMaxWidth())

@@ -104,10 +104,11 @@ async function migrateDepartmentMembersToEmployee (client: MigrationClient): Pro
 }
 
 export const hrOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, hrId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, hrId, [
       {
         state: 'migrateDepartments',
+        mode: 'upgrade',
         func: migrateDepartments
       },
       {
@@ -122,8 +123,8 @@ export const hrOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, hrId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, hrId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

@@ -155,7 +155,7 @@ export async function uploadFile (
         if (uuid !== undefined && onFileUploaded !== undefined) {
           try {
             void callbackLimiter.exec(async () => {
-              void onFileUploaded({
+              await onFileUploaded({
                 type: metadata.type,
                 uuid,
                 name: metadata.name,

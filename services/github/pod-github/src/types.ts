@@ -87,6 +87,11 @@ export interface IntegrationManager {
   getAccount: (user?: UserInfo | null) => Promise<any | undefined>
   getAccountU: (user: User) => Promise<any | undefined>
   getOctokit: (account: PersonId) => Promise<Octokit | undefined>
+  getMarkupSafe: (
+    container: IntegrationContainer,
+    text?: string | null,
+    preprocessor?: (nodes: MarkupNode) => Promise<void>
+  ) => Promise<string>
   getMarkup: (
     container: IntegrationContainer,
     text?: string | null,

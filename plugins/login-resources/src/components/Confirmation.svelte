@@ -32,7 +32,7 @@
 
     status = loginStatus
 
-    if (result !== undefined) {
+    if (result != null) {
       await logIn(result)
       await afterConfirm()
     } else {

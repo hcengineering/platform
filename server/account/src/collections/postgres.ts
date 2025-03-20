@@ -43,11 +43,19 @@ import type {
 } from '../types'
 
 function toSnakeCase (str: string): string {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+  // Preserve leading underscore
+  const hasLeadingUnderscore = str.startsWith('_')
+  const baseStr = hasLeadingUnderscore ? str.slice(1) : str
+  const converted = baseStr.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+  return hasLeadingUnderscore ? '_' + converted : converted
 }
 
 function toCamelCase (str: string): string {
-  return str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
+  // Preserve leading underscore
+  const hasLeadingUnderscore = str.startsWith('_')
+  const baseStr = hasLeadingUnderscore ? str.slice(1) : str
+  const converted = baseStr.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
+  return hasLeadingUnderscore ? '_' + converted : converted
 }
 
 function convertKeysToCamelCase (obj: any): any {
@@ -108,7 +116,7 @@ implements DbCollection<T> {
 
     for (const key of Object.keys(query)) {
       const qKey = query[key]
-      const operator = typeof qKey === 'object' ? Object.keys(qKey)[0] : ''
+      const operator = qKey != null && typeof qKey === 'object' ? Object.keys(qKey)[0] : ''
       const snakeKey = toSnakeCase(key)
       switch (operator) {
         case '$in': {
@@ -362,7 +370,7 @@ export class PostgresAccountDB implements AccountDB {
 
   person: PostgresDbCollection<Person, 'uuid'>
   account: AccountPostgresDbCollection
-  socialId: PostgresDbCollection<SocialId, 'key'>
+  socialId: PostgresDbCollection<SocialId, '_id'>
   workspace: PostgresDbCollection<Workspace, 'uuid'>
   workspaceStatus: PostgresDbCollection<WorkspaceStatus>
   accountEvent: PostgresDbCollection<AccountEvent>
@@ -375,7 +383,7 @@ export class PostgresAccountDB implements AccountDB {
   ) {
     this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid')
     this.account = new AccountPostgresDbCollection(client)
-    this.socialId = new PostgresDbCollection<SocialId, 'key'>('social_id', client, 'key')
+    this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, '_id')
     this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client)
     this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid')
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client)
@@ -399,7 +407,7 @@ export class PostgresAccountDB implements AccountDB {
   async migrate (name: string, ddl: string): Promise<void> {
     await this.client.begin(async (client) => {
       const res =
-        await client`INSERT INTO _account_applied_migrations (identifier, ddl) VALUES (${name}, ${ddl}) ON CONFLICT DO NOTHING`
+        await client`INSERT INTO ${this.client(this.ns)}._account_applied_migrations (identifier, ddl) VALUES (${name}, ${ddl}) ON CONFLICT DO NOTHING`
 
       if (res.count === 1) {
         console.log(`Applying migration: ${name}`)
@@ -413,7 +421,9 @@ export class PostgresAccountDB implements AccountDB {
   async _init (): Promise<void> {
     await this.client.unsafe(
       `
-        CREATE TABLE IF NOT EXISTS _account_applied_migrations (
+        CREATE SCHEMA IF NOT EXISTS ${this.ns};
+
+        CREATE TABLE IF NOT EXISTS ${this.ns}._account_applied_migrations (
             identifier VARCHAR(255) NOT NULL PRIMARY KEY
           , ddl TEXT NOT NULL
           , applied_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
@@ -621,7 +631,7 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   protected getMigrations (): [string, string][] {
-    return [this.getV1Migration()]
+    return [this.getV1Migration(), this.getV2Migration1(), this.getV2Migration2(), this.getV2Migration3()]
   }
 
   // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO ADJUST THE SCHEMA, ADD A NEW MIGRATION.
@@ -629,8 +639,6 @@ export class PostgresAccountDB implements AccountDB {
     return [
       'account_db_v1_global_init',
       `
-      CREATE SCHEMA IF NOT EXISTS global_account;
-
       /* ======= FUNCTIONS ======= */
 
       CREATE OR REPLACE FUNCTION current_epoch_ms() 
@@ -639,12 +647,12 @@ export class PostgresAccountDB implements AccountDB {
       $$ LANGUAGE SQL;
 
       /* ======= T Y P E S ======= */
-      CREATE TYPE IF NOT EXISTS global_account.social_id_type AS ENUM ('email', 'github', 'google', 'phone', 'oidc', 'huly', 'telegram');
-      CREATE TYPE IF NOT EXISTS global_account.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
-      CREATE TYPE IF NOT EXISTS global_account.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST');
+      CREATE TYPE IF NOT EXISTS ${this.ns}.social_id_type AS ENUM ('email', 'github', 'google', 'phone', 'oidc', 'huly', 'telegram');
+      CREATE TYPE IF NOT EXISTS ${this.ns}.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
+      CREATE TYPE IF NOT EXISTS ${this.ns}.workspace_role AS ENUM ('OWNER', 'MAINTAINER', 'USER', 'GUEST', 'DOCGUEST');
 
       /* ======= P E R S O N ======= */
-      CREATE TABLE IF NOT EXISTS global_account.person (
+      CREATE TABLE IF NOT EXISTS ${this.ns}.person (
           uuid UUID NOT NULL DEFAULT gen_random_uuid(),
           first_name STRING NOT NULL,
           last_name STRING NOT NULL,
@@ -654,34 +662,34 @@ export class PostgresAccountDB implements AccountDB {
       );
 
       /* ======= A C C O U N T ======= */
-      CREATE TABLE IF NOT EXISTS global_account.account (
+      CREATE TABLE IF NOT EXISTS ${this.ns}.account (
           uuid UUID NOT NULL,
           timezone STRING,
           locale STRING,
           CONSTRAINT account_pk PRIMARY KEY (uuid),
-          CONSTRAINT account_person_fk FOREIGN KEY (uuid) REFERENCES global_account.person(uuid)
+          CONSTRAINT account_person_fk FOREIGN KEY (uuid) REFERENCES ${this.ns}.person(uuid)
       );
 
-      CREATE TABLE IF NOT EXISTS global_account.account_passwords (
+      CREATE TABLE IF NOT EXISTS ${this.ns}.account_passwords (
           account_uuid UUID NOT NULL,
           hash BYTES NOT NULL,
           salt BYTES NOT NULL,
           CONSTRAINT account_auth_pk PRIMARY KEY (account_uuid),
-          CONSTRAINT account_passwords_account_fk FOREIGN KEY (account_uuid) REFERENCES global_account.account(uuid)
+          CONSTRAINT account_passwords_account_fk FOREIGN KEY (account_uuid) REFERENCES ${this.ns}.account(uuid)
       );
 
-      CREATE TABLE IF NOT EXISTS global_account.account_events (
+      CREATE TABLE IF NOT EXISTS ${this.ns}.account_events (
           account_uuid UUID NOT NULL,
           event_type STRING NOT NULL,
           time BIGINT NOT NULL DEFAULT current_epoch_ms(),
           data JSONB,
           CONSTRAINT account_events_pk PRIMARY KEY (account_uuid, event_type, time),
-          CONSTRAINT account_events_account_fk FOREIGN KEY (account_uuid) REFERENCES global_account.account(uuid)
+          CONSTRAINT account_events_account_fk FOREIGN KEY (account_uuid) REFERENCES ${this.ns}.account(uuid)
       );
 
       /* ======= S O C I A L   I D S ======= */
-      CREATE TABLE IF NOT EXISTS global_account.social_id (
-          type global_account.social_id_type NOT NULL,
+      CREATE TABLE IF NOT EXISTS ${this.ns}.social_id (
+          type ${this.ns}.social_id_type NOT NULL,
           value STRING NOT NULL,
           key STRING AS (CONCAT(type::STRING, ':', value)) STORED,
           person_uuid UUID NOT NULL,
@@ -690,28 +698,28 @@ export class PostgresAccountDB implements AccountDB {
           CONSTRAINT social_id_pk PRIMARY KEY (type, value),
           CONSTRAINT social_id_key_unique UNIQUE (key),
           INDEX social_id_account_idx (person_uuid),
-          CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES global_account.person(uuid)
+          CONSTRAINT social_id_person_fk FOREIGN KEY (person_uuid) REFERENCES ${this.ns}.person(uuid)
       );
 
       /* ======= W O R K S P A C E ======= */
-      CREATE TABLE IF NOT EXISTS global_account.workspace (
+      CREATE TABLE IF NOT EXISTS ${this.ns}.workspace (
           uuid UUID NOT NULL DEFAULT gen_random_uuid(),
           name STRING NOT NULL,
           url STRING NOT NULL,
           data_id STRING,
           branding STRING,
-          location global_account.location,
+          location ${this.ns}.location,
           region STRING,
           created_by UUID, -- account uuid
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           billing_account UUID,
           CONSTRAINT workspace_pk PRIMARY KEY (uuid),
           CONSTRAINT workspace_url_unique UNIQUE (url),
-          CONSTRAINT workspace_created_by_fk FOREIGN KEY (created_by) REFERENCES global_account.account(uuid),
-          CONSTRAINT workspace_billing_account_fk FOREIGN KEY (billing_account) REFERENCES global_account.account(uuid)
+          CONSTRAINT workspace_created_by_fk FOREIGN KEY (created_by) REFERENCES ${this.ns}.account(uuid),
+          CONSTRAINT workspace_billing_account_fk FOREIGN KEY (billing_account) REFERENCES ${this.ns}.account(uuid)
       );
 
-      CREATE TABLE IF NOT EXISTS global_account.workspace_status (
+      CREATE TABLE IF NOT EXISTS ${this.ns}.workspace_status (
           workspace_uuid UUID NOT NULL,
           mode STRING,
           processing_progress INT2 DEFAULT 0,
@@ -725,16 +733,16 @@ export class PostgresAccountDB implements AccountDB {
           processing_message STRING,
           backup_info JSONB,
           CONSTRAINT workspace_status_pk PRIMARY KEY (workspace_uuid),
-          CONSTRAINT workspace_status_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES global_account.workspace(uuid)
+          CONSTRAINT workspace_status_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid)
       );
 
-      CREATE TABLE IF NOT EXISTS global_account.workspace_members (
+      CREATE TABLE IF NOT EXISTS ${this.ns}.workspace_members (
           workspace_uuid UUID NOT NULL,
           account_uuid UUID NOT NULL,
-          role global_account.workspace_role NOT NULL DEFAULT 'USER',
+          role ${this.ns}.workspace_role NOT NULL DEFAULT 'USER',
           CONSTRAINT workspace_assignment_pk PRIMARY KEY (workspace_uuid, account_uuid),
-          CONSTRAINT members_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES global_account.workspace(uuid),
-          CONSTRAINT members_account_fk FOREIGN KEY (account_uuid) REFERENCES global_account.account(uuid)
+          CONSTRAINT members_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid),
+          CONSTRAINT members_account_fk FOREIGN KEY (account_uuid) REFERENCES ${this.ns}.account(uuid)
       );
 
       /* ========================================================================================== */
@@ -742,30 +750,84 @@ export class PostgresAccountDB implements AccountDB {
       /* ===================== */
 
       /* ======= O T P ======= */
-      CREATE TABLE IF NOT EXISTS global_account.otp (
+      CREATE TABLE IF NOT EXISTS ${this.ns}.otp (
           social_id STRING NOT NULL,
           code STRING NOT NULL,
           expires_on BIGINT NOT NULL,
           created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
           CONSTRAINT otp_pk PRIMARY KEY (social_id, code),
-          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES global_account.social_id(key)
+          CONSTRAINT otp_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(key)
       );
 
       /* ======= I N V I T E ======= */
-      CREATE TABLE IF NOT EXISTS global_account.invite (
+      CREATE TABLE IF NOT EXISTS ${this.ns}.invite (
           id INT8 NOT NULL DEFAULT unique_rowid(),
           workspace_uuid UUID NOT NULL,
           expires_on BIGINT NOT NULL,
           email_pattern STRING,
           remaining_uses INT2,
-          role global_account.workspace_role NOT NULL DEFAULT 'USER',
+          role ${this.ns}.workspace_role NOT NULL DEFAULT 'USER',
           migrated_from STRING,
           CONSTRAINT invite_pk PRIMARY KEY (id),
           INDEX workspace_invite_idx (workspace_uuid),
           INDEX migrated_from_idx (migrated_from),
-          CONSTRAINT invite_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES global_account.workspace(uuid)
+          CONSTRAINT invite_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid)
       );
     `
+    ]
+  }
+
+  private getV2Migration1 (): [string, string] {
+    return [
+      'account_db_v2_social_id_id_add',
+      `
+      -- Add _id column to social_id table
+      ALTER TABLE ${this.ns}.social_id
+      ADD COLUMN IF NOT EXISTS _id INT8 NOT NULL DEFAULT unique_rowid();
+      `
+    ]
+  }
+
+  private getV2Migration2 (): [string, string] {
+    return [
+      'account_db_v2_social_id_pk_change',
+      `
+      -- Drop existing otp foreign key constraint
+      ALTER TABLE ${this.ns}.otp
+      DROP CONSTRAINT IF EXISTS otp_social_id_fk;
+
+      -- Drop existing primary key on social_id
+      ALTER TABLE ${this.ns}.social_id
+      DROP CONSTRAINT IF EXISTS social_id_pk;
+
+      -- Add new primary key on _id
+      ALTER TABLE ${this.ns}.social_id
+      ADD CONSTRAINT social_id_pk PRIMARY KEY (_id);
+      `
+    ]
+  }
+
+  private getV2Migration3 (): [string, string] {
+    return [
+      'account_db_v2_social_id_constraints',
+      `
+      -- Add unique constraint on type, value
+      ALTER TABLE ${this.ns}.social_id
+      ADD CONSTRAINT social_id_tv_key_unique UNIQUE (type, value);
+
+      -- Drop old table
+      DROP TABLE ${this.ns}.otp;
+
+      -- Create new OTP table with correct column type
+      CREATE TABLE ${this.ns}.otp (
+          social_id INT8 NOT NULL,
+          code STRING NOT NULL,
+          expires_on BIGINT NOT NULL,
+          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
+          CONSTRAINT otp_new_pk PRIMARY KEY (social_id, code),
+          CONSTRAINT otp_new_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(_id)
+      );
+      `
     ]
   }
 }

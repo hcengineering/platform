@@ -138,6 +138,7 @@
         nameA,
         nameB
       })
+      dispatch('create')
       dispatch('close')
     }
   }

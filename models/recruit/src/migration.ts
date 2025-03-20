@@ -43,18 +43,19 @@ import recruit from './plugin'
 import { defaultApplicantStatuses } from './spaceType'
 
 export const recruitOperation: MigrateOperation = {
-  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
-    await tryMigrate(client, recruitId, [
+  async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
+    await tryMigrate(mode, client, recruitId, [
       {
         state: 'migrate-default-statuses',
         func: (client) => migrateDefaultStatuses(client, logger)
       }
     ])
   },
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, recruitId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, recruitId, [
       {
         state: 'identifier',
+        mode: 'upgrade',
         func: migrateIdentifiers
       },
       {
@@ -71,6 +72,7 @@ export const recruitOperation: MigrateOperation = {
       },
       {
         state: 'migrate-applicants',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await client.update(
             DOMAIN_TASK,
@@ -81,8 +83,8 @@ export const recruitOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, recruitId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, recruitId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

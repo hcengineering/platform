@@ -15,17 +15,14 @@
 
 import {
   type MigrateOperation,
-  type MigrateUpdate,
   type MigrationClient,
-  type MigrationDocumentQuery,
   type MigrationUpgradeClient,
   tryMigrate
 } from '@hcengineering/model'
-import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
-import { DOMAIN_SPACE, getSocialKeyByOldEmail } from '@hcengineering/model-core'
+import { analyticsCollectorId } from '@hcengineering/analytics-collector'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import { buildSocialIdString, type Doc, MeasureMetricsContext } from '@hcengineering/core'
 
 async function removeOnboardingChannels (client: MigrationClient): Promise<void> {
   const channels = await client.find(DOMAIN_SPACE, { 'analytics:mixin:AnalyticsChannel': { $exists: true } })
@@ -44,58 +41,13 @@ async function removeOnboardingChannels (client: MigrationClient): Promise<void>
   await client.deleteMany(DOMAIN_SPACE, { _id: { $in: channelsIds } })
 }
 
-async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('analytics collector migrateAccountsToSocialIds', {})
-
-  ctx.info('processing analytics collector onboarding channels ', {})
-  const iterator = await client.traverse(DOMAIN_SPACE, { _class: analyticsCollector.class.OnboardingChannel })
-
-  try {
-    let processed = 0
-    while (true) {
-      const docs = await iterator.next(200)
-      if (docs === null || docs.length === 0) {
-        break
-      }
-
-      const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
-
-      for (const doc of docs) {
-        const email = (doc as any).email
-        if (email === undefined || email === '') continue
-        const socialString = buildSocialIdString(getSocialKeyByOldEmail(email))
-
-        operations.push({
-          filter: { _id: doc._id },
-          update: {
-            socialString
-          }
-        })
-      }
-
-      if (operations.length > 0) {
-        await client.bulk(DOMAIN_SPACE, operations)
-      }
-
-      processed += docs.length
-      ctx.info('...processed', { count: processed })
-    }
-  } finally {
-    await iterator.close()
-  }
-  ctx.info('finished processing analytics collector onboarding channels ', {})
-}
-
 export const analyticsCollectorOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, analyticsCollectorId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, analyticsCollectorId, [
       {
         state: 'remove-analytics-channels-v3',
+        mode: 'upgrade',
         func: removeOnboardingChannels
-      },
-      {
-        state: 'accounts-to-social-ids',
-        func: migrateAccountsToSocialIds
       }
     ])
   },

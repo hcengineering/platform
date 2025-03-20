@@ -99,6 +99,24 @@
   }
 }
 :root {
+  .plyr__volume {
+    position: relative;
+  }
+
+  .plyr__volume input[data-plyr="volume"] {
+    display: none;
+    height: 2rem;
+    position: absolute;
+    right: -3rem;
+    top: -1rem;
+    transform-origin: left;
+    transform: rotate(-90deg);
+  }
+
+  .plyr__volume:hover input[data-plyr="volume"],
+  .plyr__volume input[data-plyr="volume"]:hover {
+    display: block;
+  }
 
   --plyr-color-main: #ffffff;
   --plyr-video-control-background-hover: #d3d3d3a2;

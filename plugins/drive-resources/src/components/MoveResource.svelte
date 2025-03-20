@@ -23,7 +23,6 @@
   import drive from '../plugin'
   import { moveResources } from '../utils'
 
-  import DrivePresenter from './DrivePresenter.svelte'
   import ResourcePresenter from './ResourcePresenter.svelte'
 
   export let value: Resource
@@ -81,7 +80,6 @@
       bind:space
       _class={drive.class.Drive}
       label={drive.string.Drive}
-      component={DrivePresenter}
       iconWithEmoji={view.ids.IconWithEmoji}
       defaultIcon={drive.icon.Drive}
       kind={'regular'}

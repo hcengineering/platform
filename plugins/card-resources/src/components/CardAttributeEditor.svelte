@@ -55,7 +55,7 @@
   {/if}
   <div class="divider" />
   <div class="masterTag">
-    <MasterTagAttributes bind:this={masterTagAttributes} {readonly} {value} {ignoreKeys} />
+    <MasterTagAttributes bind:this={masterTagAttributes} {readonly} {value} {ignoreKeys} fourRows={columns === 2} />
   </div>
   {#if mixins.length > 0}
     <div class="divider" />

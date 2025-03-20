@@ -15,6 +15,7 @@
       "WorkspaceName": "Název pracovního prostoru",
       "WorkspaceUrl": "URL pracovního prostoru",
       "Email": "E-mail",
+      "Account": "Účet",
       "UserName": "Uživatelské jméno",
       "DisableAIReplies": "Zakázat odpovědi AI",
       "ShowAIReplies": "Zobrazit odpovědi AI"

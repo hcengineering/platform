@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import card, { Card, Tag } from '@hcengineering/card'
-  import { Classifier, fillDefaults, Ref } from '@hcengineering/core'
+  import { Class, Doc, fillDefaults, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     ButtonIcon,
@@ -49,15 +49,15 @@
   }
 
   $: ancestors = hierarchy.getAncestors(doc._class)
-  $: possibleMixins = getPossibleMixins(ancestors, tags)
+  $: possibleMixins = getPossibleMixins(doc._class, tags)
 
-  function getPossibleMixins (ancestors: Ref<Classifier>[], tags: Tag[]): Tag[] {
+  function getPossibleMixins (_class: Ref<Class<Doc>>, tags: Tag[]): Tag[] {
     const res: Tag[] = []
     for (const p of tags) {
       try {
         if (hierarchy.hasMixin(doc, p._id)) continue
         const base = hierarchy.getBaseClass(p._id)
-        if (hierarchy.isDerived(p._id, doc._class) || ancestors.includes(base)) {
+        if (_class === base || ancestors.includes(base)) {
           res.push(p)
         }
       } catch (err) {

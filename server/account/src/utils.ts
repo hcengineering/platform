@@ -29,8 +29,7 @@ import {
   isActiveMode,
   type PersonUuid,
   type PersonId,
-  type Person,
-  buildSocialIdString
+  type Person
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -81,8 +80,7 @@ export async function getAccountDB (uri: string, dbNs?: string): Promise<[Accoun
   } else {
     const client = getDBClient(sharedPipelineContextVars, uri)
     const pgClient = await client.getClient()
-    // TODO: if dbNs is provided put tables in that schema
-    const pgAccount = new PostgresAccountDB(pgClient)
+    const pgAccount = new PostgresAccountDB(pgClient, dbNs ?? 'global_account')
 
     let error = false
 
@@ -303,6 +301,10 @@ export function cleanEmail (email: string): string {
   return email.toLowerCase().trim()
 }
 
+export function normalizeValue (value: string): string {
+  return value.toLowerCase().trim()
+}
+
 export function isEmail (email: string): boolean {
   // RFC 5322 compliant email regex
   const EMAIL_REGEX =
@@ -356,7 +358,7 @@ export async function sendOtp (
   socialId: SocialId
 ): Promise<OtpInfo> {
   const ts = Date.now()
-  const otpData = (await db.otp.find({ socialId: socialId.key }, { createdOn: 'descending' }, 1))[0]
+  const otpData = (await db.otp.find({ socialId: socialId._id }, { createdOn: 'descending' }, 1))[0]
   const retryDelay = getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30
 
   if (otpData !== undefined && otpData.expiresOn > ts && otpData.createdOn + retryDelay * 1000 > ts) {
@@ -379,7 +381,7 @@ export async function sendOtp (
   const code = await generateUniqueOtp(db)
 
   await sendMethod(ctx, branding, code, socialId.value)
-  await db.otp.insertOne({ socialId: socialId.key, code, expiresOn: ts + ttlMs, createdOn: ts })
+  await db.otp.insertOne({ socialId: socialId._id, code, expiresOn: ts + ttlMs, createdOn: ts })
 
   return { sent: true, retryOn: ts + retryDelayMs }
 }
@@ -390,12 +392,12 @@ export async function sendOtpEmail (
   otp: string,
   email: string
 ): Promise<void> {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     ctx.error('Please provide email service url to enable email otp')
     return
   }
-  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
+  const mailAuth = getMetadata(accountPlugin.metadata.MAIL_AUTH_TOKEN)
 
   const lang = branding?.language
   const app = branding?.title ?? getMetadata(accountPlugin.metadata.ProductName)
@@ -405,11 +407,11 @@ export async function sendOtpEmail (
   const subject = await translate(accountPlugin.string.OtpSubject, { code: otp, app }, lang)
 
   const to = email
-  await fetch(concatLink(sesURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -418,9 +420,12 @@ export async function sendOtpEmail (
       to
     })
   })
+  if (!response.ok) {
+    ctx.error(`Failed to send otp email: ${response.statusText}`, { to })
+  }
 }
 
-export async function isOtpValid (db: AccountDB, socialId: string, code: string): Promise<boolean> {
+export async function isOtpValid (db: AccountDB, socialId: PersonId, code: string): Promise<boolean> {
   const otpData = await db.otp.findOne({ socialId, code })
 
   return (otpData?.expiresOn ?? 0) > Date.now()
@@ -458,11 +463,12 @@ export async function signUpByEmail (
   firstName: string,
   lastName: string,
   confirmed = false
-): Promise<PersonUuid> {
+): Promise<{ account: PersonUuid, socialId: PersonId }> {
   const normalizedEmail = cleanEmail(email)
 
   const emailSocialId = await getEmailSocialId(db, normalizedEmail)
-  let personUuid: PersonUuid
+  let account: PersonUuid
+  let socialId: PersonId
 
   if (emailSocialId !== null) {
     const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
@@ -472,24 +478,25 @@ export async function signUpByEmail (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
     }
 
-    personUuid = emailSocialId.personUuid
+    account = emailSocialId.personUuid
+    socialId = emailSocialId._id
     // Person exists, but may have different name, need to update with what's been provided
-    await db.person.updateOne({ uuid: personUuid }, { firstName, lastName })
+    await db.person.updateOne({ uuid: account }, { firstName, lastName })
   } else {
     // There's no person we can link to this email, so we need to create a new one
-    personUuid = await db.person.insertOne({ firstName, lastName })
-    await db.socialId.insertOne({
+    account = await db.person.insertOne({ firstName, lastName })
+    socialId = await db.socialId.insertOne({
       type: SocialIdType.EMAIL,
       value: normalizedEmail,
-      personUuid,
+      personUuid: account,
       ...(confirmed ? { verifiedOn: Date.now() } : {})
     })
   }
 
-  await createAccount(db, personUuid, confirmed)
-  await setPassword(ctx, db, branding, personUuid, password)
+  await createAccount(db, account, confirmed)
+  await setPassword(ctx, db, branding, account, password)
 
-  return personUuid
+  return { account, socialId }
 }
 
 export async function selectWorkspace (
@@ -756,13 +763,13 @@ export async function sendEmailConfirmation (
   account: PersonUuid,
   email: string
 ): Promise<void> {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
-    ctx.error('Please provide SES_URL to enable email confirmations.')
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
+    ctx.error('Please provide MAIL_URL to enable email confirmations.')
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
+  const mailAuth = getMetadata(accountPlugin.metadata.MAIL_AUTH_TOKEN)
 
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
@@ -782,11 +789,11 @@ export async function sendEmailConfirmation (
   const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link }, lang)
   const subject = await translate(accountPlugin.string.ConfirmationSubject, { name }, lang)
 
-  await fetch(concatLink(sesURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
-      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -795,9 +802,17 @@ export async function sendEmailConfirmation (
       to: email
     })
   })
+  if (!response.ok) {
+    ctx.error(`Failed to send email confirmation: ${response.statusText}`, { email })
+  }
 }
 
-export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account: string, email: string): Promise<void> {
+export async function confirmEmail (
+  ctx: MeasureContext,
+  db: AccountDB,
+  account: string,
+  email: string
+): Promise<PersonId> {
   const normalizedEmail = cleanEmail(email)
   ctx.info('Confirming email', { account, email, normalizedEmail })
 
@@ -823,6 +838,7 @@ export async function confirmEmail (ctx: MeasureContext, db: AccountDB, account:
   }
 
   await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
+  return emailSocialId._id
 }
 
 export async function useInvite (db: AccountDB, inviteId: string): Promise<void> {
@@ -885,7 +901,7 @@ export async function getWorkspaceInvite (db: AccountDB, id: string): Promise<Wo
   return await db.invite.findOne({ migratedFrom: id })
 }
 
-export async function getSocialIdByKey (db: AccountDB, socialKey: PersonId): Promise<SocialId | null> {
+export async function getSocialIdByKey (db: AccountDB, socialKey: string): Promise<SocialId | null> {
   return await db.socialId.findOne({ key: socialKey })
 }
 
@@ -893,15 +909,15 @@ export async function getEmailSocialId (db: AccountDB, email: string): Promise<S
   return await db.socialId.findOne({ type: SocialIdType.EMAIL, value: email })
 }
 
-export function getSesUrl (): { sesURL: string, sesAuth: string | undefined } {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+export function getMailUrl (): { mailURL: string, mailAuth: string | undefined } {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
 
-  if (sesURL === undefined || sesURL === '') {
+  if (mailURL === undefined || mailURL === '') {
     throw new Error('Please provide email service url')
   }
-  const sesAuth = getMetadata(accountPlugin.metadata.SES_AUTH_TOKEN)
+  const mailAuth = getMetadata(accountPlugin.metadata.MAIL_AUTH_TOKEN)
 
-  return { sesURL, sesAuth }
+  return { mailURL, mailAuth }
 }
 
 export function getFrontUrl (branding: Branding | null): string {
@@ -1020,11 +1036,13 @@ export async function loginOrSignUpWithProvider (
     await db.resetPassword(personUuid)
   }
 
+  let socialIdId: PersonId | undefined
   // Create and/or confirm missing social ids
   if (targetSocialId == null) {
-    await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
+    socialIdId = await db.socialId.insertOne({ ...socialId, personUuid, verifiedOn: Date.now() })
   } else if (targetSocialId.verifiedOn == null) {
     await db.socialId.updateOne({ key: targetSocialId.key }, { verifiedOn: Date.now() })
+    socialIdId = targetSocialId._id
   }
 
   if (emailSocialId == null) {
@@ -1042,7 +1060,7 @@ export async function loginOrSignUpWithProvider (
 
   return {
     account: personUuid,
-    socialId: buildSocialIdString(socialId),
+    socialId: socialIdId,
     name: getPersonName(person),
     token: generateToken(personUuid)
   }
@@ -1147,10 +1165,29 @@ export async function getWorkspaces (
   }))
 }
 
-export function verifyAllowedServices (services: string[], extra: any): void {
-  if (!services.includes(extra?.service) && extra?.admin !== 'true') {
+export function verifyAllowedServices (services: string[], extra: any, shouldThrow = true): boolean {
+  const ok = services.includes(extra?.service) || extra?.admin === 'true'
+
+  if (!ok && shouldThrow) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
+
+  return ok
+}
+
+export function verifyAllowedRole (
+  targetRole: AccountRole | null,
+  minRole: AccountRole,
+  extra: any,
+  shouldThrow = true
+): boolean {
+  const ok = extra?.admin === 'true' || (targetRole != null && getRolePower(targetRole) >= getRolePower(minRole))
+
+  if (!ok && shouldThrow) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  return ok
 }
 
 export function getPersonName (person: Person): string {
@@ -1165,14 +1202,14 @@ interface EmailInfo {
   to: string
 }
 
-export async function sendEmail (info: EmailInfo): Promise<void> {
+export async function sendEmail (info: EmailInfo, ctx: MeasureContext): Promise<void> {
   const { text, html, subject, to } = info
-  const { sesURL, sesAuth } = getSesUrl()
-  await fetch(concatLink(sesURL, '/send'), {
+  const { mailURL, mailAuth } = getMailUrl()
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
-      ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
     },
     body: JSON.stringify({
       text,
@@ -1181,6 +1218,9 @@ export async function sendEmail (info: EmailInfo): Promise<void> {
       to
     })
   })
+  if (!response.ok) {
+    ctx.error(`Failed to send mail: ${response.statusText}`, { to })
+  }
 }
 
 export function sanitizeEmail (email: string): string {

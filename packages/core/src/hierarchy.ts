@@ -183,6 +183,14 @@ export class Hierarchy {
     return data
   }
 
+  findClass<T extends Obj = Obj>(_class: Ref<Class<T>>): Class<T> | undefined {
+    const data = this.classifiers.get(_class)
+    if (data === undefined || this.isInterface(data)) {
+      return undefined
+    }
+    return data
+  }
+
   hasClass<T extends Obj = Obj>(_class: Ref<Class<T>>): boolean {
     const data = this.classifiers.get(_class)
 
@@ -214,14 +222,16 @@ export class Hierarchy {
   }
 
   public findDomain (_class: Ref<Class<Doc>>): Domain | undefined {
-    const klazz = this.getClass(_class)
+    const klazz = this.findClass(_class)
+    if (klazz === undefined) return
     if (klazz.domain !== undefined) {
       return klazz.domain
     }
 
-    let _klazz = klazz
+    let _klazz: Class<Doc> | undefined = klazz
     while (_klazz.extends !== undefined) {
-      _klazz = this.getClass(_klazz.extends)
+      _klazz = this.findClass(_klazz.extends)
+      if (_klazz === undefined) return
       if (_klazz.domain !== undefined) {
         // Cache for next requests
         klazz.domain = _klazz.domain

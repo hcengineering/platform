@@ -21,23 +21,25 @@ import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
+import TextAlign from '@tiptap/extension-text-align'
+import TextStyle from '@tiptap/extension-text-style'
 
+import { CodeExtension, codeOptions } from '../marks/code'
+import { BackgroundColor, TextColor } from '../marks/colors'
+import { InlineCommentMark } from '../marks/inlineComment'
+import { NoteBaseExtension } from '../marks/noteBase'
 import { NodeUuid } from '../marks/nodeUuid'
+
+import { CodeBlockExtension, codeBlockOptions } from '../nodes'
+import { CommentNode } from '../nodes/comment'
 import { FileNode, FileOptions } from '../nodes/file'
 import { ImageNode, ImageOptions } from '../nodes/image'
+import { MarkdownNode } from '../nodes/markdown'
+import { MermaidExtension, mermaidOptions } from '../nodes/mermaid'
 import { ReferenceNode } from '../nodes/reference'
 import { TodoItemNode, TodoListNode } from '../nodes/todo'
 
-import { CodeBlockExtension, codeBlockOptions } from '../nodes'
 import { DefaultKit, DefaultKitOptions } from './default-kit'
-import { CodeExtension, codeOptions } from '../marks/code'
-import { NoteBaseExtension } from '../marks/noteBase'
-import { CommentNode } from '../nodes/comment'
-import { MermaidExtension, mermaidOptions } from '../nodes/mermaid'
-import TextAlign from '@tiptap/extension-text-align'
-import TextStyle from '@tiptap/extension-text-style'
-import { BackgroundColor, TextColor } from '../marks/colors'
-import { InlineCommentMark } from '../marks/inlineComment'
 
 const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
 
@@ -102,6 +104,7 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       TodoListNode,
       ReferenceNode,
       CommentNode,
+      MarkdownNode,
       NodeUuid,
       NoteBaseExtension,
       TextStyle.configure({}),

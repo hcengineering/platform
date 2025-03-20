@@ -157,7 +157,7 @@ export async function createPushNotification (
 ): Promise<void> {
   const pushURL: string | undefined = getMetadata(serverNotification.metadata.WebPushUrl)
   // TODO: Remove auth token after migration to new services
-  const authToken: string | undefined = getMetadata(serverNotification.metadata.SesAuthToken)
+  const authToken: string | undefined = getMetadata(serverNotification.metadata.MailAuthToken)
   if (pushURL === undefined || pushURL === '') return
   const userSubscriptions = subscriptions.filter((it) => it.user === target)
   const data: PushData = {
@@ -190,7 +190,7 @@ export async function createPushNotification (
 
 async function sendPushToSubscription (
   pushURL: string,
-  sesAuth: string | undefined,
+  mailAuth: string | undefined,
   control: TriggerControl,
   targetUser: AccountUuid,
   subscriptions: PushSubscription[],
@@ -204,7 +204,7 @@ async function sendPushToSubscription (
           keepalive: true,
           headers: {
             'Content-Type': 'application/json',
-            ...(sesAuth != null ? { Authorization: `Bearer ${sesAuth}` } : {})
+            ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
           },
           body: JSON.stringify({
             subscriptions,

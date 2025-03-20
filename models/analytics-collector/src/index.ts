@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { type Builder, Model, Prop, ReadOnly, TypeString, UX, TypeBoolean } from '@hcengineering/model'
+import { type Builder, Model, Prop, ReadOnly, TypeString, UX, TypeBoolean, TypeAccountUuid } from '@hcengineering/model'
 import { type OnboardingChannel } from '@hcengineering/analytics-collector'
 import chunter from '@hcengineering/chunter'
 import { TChannel } from '@hcengineering/model-chunter'
 import activity, { type ActivityMessageControl } from '@hcengineering/activity'
-import core, { type PersonId, type WorkspaceUuid } from '@hcengineering/core'
+import core, { type AccountUuid, type WorkspaceUuid } from '@hcengineering/core'
 
 import analyticsCollector from './plugin'
 
@@ -40,9 +40,9 @@ export class TOnboardingChannel extends TChannel implements OnboardingChannel {
   @ReadOnly()
     userName!: string
 
-  @Prop(TypeString(), analyticsCollector.string.SocialId)
+  @Prop(TypeAccountUuid(), analyticsCollector.string.Account)
   @ReadOnly()
-    socialString!: PersonId
+    account!: AccountUuid
 
   @Prop(TypeString(), analyticsCollector.string.WorkspaceName)
   @ReadOnly()

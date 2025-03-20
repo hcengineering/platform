@@ -20,10 +20,10 @@ import {
   MeasureContext,
   Timestamp,
   Version,
-  SocialIdType,
   WorkspaceMode,
   WorkspaceMemberInfo,
   BackupStatus,
+  type SocialId as SocialIdBase,
   type PersonUuid,
   type WorkspaceUuid,
   type WorkspaceDataId,
@@ -41,10 +41,8 @@ export enum Location {
 
 // AccountRole in core
 // Person in core
-export interface SocialId {
-  type: SocialIdType
-  value: string
-  key: PersonId // Calculated from type and value
+
+export interface SocialId extends SocialIdBase {
   personUuid: PersonUuid
   createdOn?: Timestamp
   verifiedOn?: Timestamp
@@ -106,7 +104,7 @@ export interface Workspace {
 }
 
 export interface OTP {
-  socialId: string
+  socialId: PersonId
   code: string
   expiresOn: Timestamp
   createdOn: Timestamp
@@ -180,7 +178,7 @@ export type Sort<T> = {
 }
 
 export type Query<T> = {
-  [P in keyof T]?: T[P] | QueryOperator<T[P]>
+  [P in keyof T]?: T[P] | QueryOperator<T[P]> | null
 }
 
 export interface QueryOperator<T> {

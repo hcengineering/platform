@@ -13,11 +13,14 @@
 
 import { Blobs, Class, Doc, Domain, MarkupBlobRef, Mixin, Rank, Ref } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
 export * from './analytics'
 
-export interface MasterTag extends Class<Card> {}
+export interface MasterTag extends Class<Card> {
+  color?: number
+  removed?: boolean
+}
 
 export interface Tag extends MasterTag, Mixin<Card> {}
 
@@ -27,6 +30,7 @@ export interface Card extends Doc {
   content: MarkupBlobRef
   blobs: Blobs
   children?: number
+  attachments?: number
   parentInfo: ParentInfo[]
   parent?: Ref<Card> | null
   rank: Rank
@@ -72,6 +76,9 @@ const cardPlugin = plugin(cardId, {
     Tags: '' as Asset,
     Card: '' as Asset,
     File: '' as Asset
+  },
+  extensions: {
+    EditCardExtension: '' as ComponentExtensionId
   },
   string: {
     MasterTag: '' as IntlString,

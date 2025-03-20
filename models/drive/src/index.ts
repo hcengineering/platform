@@ -447,6 +447,10 @@ function defineFolder (builder: Builder): void {
     encode: drive.function.FolderLinkProvider
   })
 
+  builder.mixin(drive.class.Folder, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: drive.function.FolderTitleProvider
+  })
+
   // Search
 
   builder.createDoc(
@@ -606,6 +610,10 @@ function defineFile (builder: Builder): void {
 
   builder.mixin(drive.class.File, core.class.Class, view.mixin.LinkProvider, {
     encode: drive.function.FileLinkProvider
+  })
+
+  builder.mixin(drive.class.File, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: drive.function.FileTitleProvider
   })
 
   // Activity

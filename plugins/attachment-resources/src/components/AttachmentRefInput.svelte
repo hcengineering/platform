@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@hcengineering/attachment'
+  import { Attachment, AttachmentMetadata } from '@hcengineering/attachment'
   import {
     Class,
     Doc,
@@ -37,7 +37,8 @@
     getClient,
     getFileMetadata,
     isLinkPreviewEnabled,
-    uploadFile
+    uploadFile,
+    LinkPreviewAttachmentMetadata
   } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
@@ -176,10 +177,10 @@
     }
   }
 
-  async function createAttachment (file: File): Promise<void> {
+  async function createAttachment (file: File, meta?: AttachmentMetadata): Promise<void> {
     try {
       const uuid = await uploadFile(file)
-      const metadata = await getFileMetadata(file, uuid)
+      const metadata = meta ?? (await getFileMetadata(file, uuid))
       const _id: Ref<Attachment> = generateId()
 
       attachments.set(_id, {
@@ -360,7 +361,14 @@
         if (canDisplayLinkPreview(meta) && meta.url !== undefined) {
           const blob = new Blob([JSON.stringify(meta)])
           const file = new File([blob], meta.url, { type: 'application/link-preview' })
-          await createAttachment(file)
+          const metadata: LinkPreviewAttachmentMetadata = {
+            title: meta.title,
+            image: meta.image,
+            description: meta.description,
+            imageWidth: meta.imageWidth,
+            imageHeight: meta.imageHeight
+          }
+          await createAttachment(file, metadata)
         }
       } catch (err: any) {
         void setPlatformStatus(unknownError(err))

@@ -26,6 +26,9 @@ import Typography from '@tiptap/extension-typography'
 import Underline from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
 
+import BulletList from '@tiptap/extension-bullet-list'
+import ListItem from '@tiptap/extension-list-item'
+import OrderedList from '@tiptap/extension-ordered-list'
 import LinkPopup from '../components/LinkPopup.svelte'
 import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeblock'
 
@@ -54,8 +57,13 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
         codeBlock: false,
         hardBreak: this.options.hardBreak,
         heading: this.options.heading,
-        history: this.options.history
+        history: this.options.history,
+        bulletList: false,
+        orderedList: false
       }),
+      ListItem.extend({ group: 'listItems' }),
+      BulletList.extend({ content: 'listItems+' }),
+      OrderedList.extend({ content: 'listItems+' }),
       Underline,
       Highlight.configure({
         multicolor: false

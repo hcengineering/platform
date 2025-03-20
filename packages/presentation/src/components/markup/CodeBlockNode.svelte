@@ -16,6 +16,7 @@
   import diffview from '@hcengineering/diffview'
   import { MarkupNode } from '@hcengineering/text'
   import { Component } from '@hcengineering/ui'
+  import type { SvelteComponent } from 'svelte'
 
   export let node: MarkupNode
   export let preview = false
@@ -28,8 +29,11 @@
   $: margin = preview ? '0' : null
 
   $: props = { value, language }
+  let innerRef: SvelteComponent | undefined
 </script>
 
 {#if node}
-  <pre class="proseCodeBlock" style:margin><code><Component {is} {props} /></code></pre>
+  <pre class="proseCodeBlock" style:margin><code
+      ><Component {is} {props} showLoading={false} bind:innerRef />{#if !innerRef}{value}{/if}</code
+    ></pre>
 {/if}

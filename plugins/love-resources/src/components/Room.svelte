@@ -31,7 +31,7 @@
   } from 'livekit-client'
   import { onDestroy, onMount, tick } from 'svelte'
   import presentation from '@hcengineering/presentation'
-  import { aiBotEmailSocialId } from '@hcengineering/ai-bot'
+  import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 
   import love from '../plugin'
   import { storePromise, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
@@ -65,7 +65,8 @@
   let screen: HTMLVideoElement
   let roomEl: HTMLDivElement
 
-  $: aiPersonId = $personRefByPersonIdStore.get(aiBotEmailSocialId)
+  $: aiPersonId =
+    $aiBotSocialIdentityStore != null ? $personRefByPersonIdStore.get($aiBotSocialIdentityStore._id) : undefined
 
   function handleTrackSubscribed (
     track: RemoteTrack,
@@ -417,14 +418,7 @@
         class:scroll-m-0={$screenSharing}
       >
         {#each activeParticipants as participant, i (participant._id)}
-          <ParticipantView
-            bind:this={participantElements[i]}
-            {...participant}
-            small={$screenSharing ||
-              (!$screenSharing &&
-                ((columns > 1 && (roomWidth - 16 * (columns - 1)) / columns < 300) ||
-                  (rows > 1 && (roomHeight - 16 * (rows - 1)) / rows < 168)))}
-          />
+          <ParticipantView bind:this={participantElements[i]} {...participant} />
         {/each}
       </div>
     {/if}

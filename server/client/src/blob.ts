@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type WorkspaceIds, type MeasureContext } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceIds } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Buffer } from 'node:buffer'
 
@@ -206,22 +206,34 @@ export class BlobClient {
       // TODO: We need to improve this logig, to allow restore of huge blobs
       for (let i = 0; i < 5; i++) {
         try {
-          await fetch(
-            this.transactorAPIUrl +
-              `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}&size=${size}`,
-            {
-              method: 'PUT',
-              headers: {
-                Authorization: 'Bearer ' + this.token,
-                'Content-Type': contentType
-              },
-              body: buffer
+          const resp = await (
+            await fetch(
+              this.transactorAPIUrl +
+                `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}&size=${size}`,
+              {
+                keepalive: true,
+                method: 'PUT',
+                headers: {
+                  Authorization: 'Bearer ' + this.token,
+                  'Content-Type': contentType
+                },
+                body: buffer
+              }
+            )
+          ).text()
+          try {
+            const json = JSON.parse(resp)
+            if (json.error !== undefined) {
+              ctx.error('failed to upload file, error from server', { name, message: json.error })
+              return
             }
-          )
+          } catch (err) {
+            console.log(err)
+          }
           break
         } catch (err: any) {
           if (i === 4) {
-            ctx.error('failed to upload file', { name })
+            ctx.error('failed to upload file', { name, message: err.message, cause: err.cause?.message })
             throw err
           }
         }

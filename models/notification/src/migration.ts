@@ -45,11 +45,13 @@ import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
 import {
   DOMAIN_SPACE,
-  getSocialIdByOldAccount,
+  getSocialKeyByOldAccount,
   getUniqueAccounts,
-  getAccountUuidBySocialId,
+  getAccountUuidBySocialKey,
   getAccountUuidByOldAccount,
-  getUniqueAccountsFromOldAccounts
+  getUniqueAccountsFromOldAccounts,
+  getSocialIdBySocialKey,
+  getSocialIdFromOldAccount
 } from '@hcengineering/model-core'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
 
@@ -249,7 +251,9 @@ export async function migrateDuplicateContexts (client: MigrationClient): Promis
 async function migrateAccounts (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('notification migrateAccounts', {})
   const hierarchy = client.hierarchy
-  const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  const socialIdByOldAccount = new Map<string, PersonId | null>()
   const accountUuidByOldAccount = new Map<string, AccountUuid | null>()
 
   ctx.info('processing collaborators ', {})
@@ -276,7 +280,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
           const newCollaborators = await getUniqueAccountsFromOldAccounts(
             client,
             oldCollaborators,
-            socialIdByAccount,
+            socialKeyByAccount,
             accountUuidByOldAccount
           )
 
@@ -329,8 +333,9 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
   })
 
   for (const oldAccId of groupByUser.keys()) {
-    const newAccId = await getAccountUuidByOldAccount(client, oldAccId, socialIdByAccount, accountUuidByOldAccount)
-    if (newAccId == null || oldAccId === newAccId) return
+    if (oldAccId == null) continue
+    const newAccId = await getAccountUuidByOldAccount(client, oldAccId, socialKeyByAccount, accountUuidByOldAccount)
+    if (newAccId == null || oldAccId === newAccId) continue
 
     operations.push({
       filter: {
@@ -356,20 +361,27 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     _class: notification.class.BrowserNotification
   })
 
-  groupBySenderId.forEach((_, accId) => {
-    const socialId = socialIdByAccount[accId]
-    if (socialId == null || accId === socialId) return
+  for (const oldAccId of groupBySenderId.keys()) {
+    if (oldAccId == null) continue
+    const socialId = await getSocialIdFromOldAccount(
+      client,
+      oldAccId,
+      socialKeyByAccount,
+      socialIdBySocialKey,
+      socialIdByOldAccount
+    )
+    if (socialId == null || oldAccId === socialId) continue
 
     operations.push({
       filter: {
-        senderId: accId,
+        senderId: oldAccId,
         _class: notification.class.BrowserNotification
       },
       update: {
         senderId: socialId
       }
     })
-  })
+  }
 
   if (operations.length > 0) {
     const operationsChunks = chunkArray(operations, 40)
@@ -408,7 +420,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
 
       for (const doc of docs) {
         const oldUser: any = doc.user
-        const newUser = await getAccountUuidByOldAccount(client, oldUser, socialIdByAccount, accountUuidByOldAccount)
+        const newUser = await getAccountUuidByOldAccount(client, oldUser, socialKeyByAccount, accountUuidByOldAccount)
 
         if (newUser != null && newUser !== oldUser) {
           operations.push({
@@ -443,7 +455,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
 async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('notification migrateSocialIdsToAccountUuids', {})
   const hierarchy = client.hierarchy
-  const accountUuidBySocialId = new Map<PersonId, AccountUuid | null>()
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   ctx.info('processing collaborators ', {})
   for (const domain of client.hierarchy.domains()) {
@@ -466,7 +478,7 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
 
           if (oldCollaborators === undefined || oldCollaborators.length === 0) continue
 
-          const newCollaborators = await getUniqueAccounts(client, oldCollaborators, accountUuidBySocialId)
+          const newCollaborators = await getUniqueAccounts(client, oldCollaborators, accountUuidBySocialKey)
 
           operations.push({
             filter: { _id: doc._id },
@@ -517,7 +529,8 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
   })
 
   for (const socialId of groupByUser.keys()) {
-    const account = await getAccountUuidBySocialId(client, socialId, accountUuidBySocialId)
+    if (socialId == null) continue
+    const account = await getAccountUuidBySocialKey(client, socialId, accountUuidBySocialKey)
 
     if (account == null || (account as unknown as PersonId) === socialId) continue
 
@@ -581,7 +594,7 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
 
       for (const doc of docs) {
         const oldUser: any = doc.user
-        const newUser = await getAccountUuidBySocialId(client, oldUser, accountUuidBySocialId)
+        const newUser = await getAccountUuidBySocialKey(client, oldUser, accountUuidBySocialKey)
 
         if (newUser != null && newUser !== oldUser) {
           operations.push({
@@ -604,6 +617,58 @@ async function migrateSocialIdsToAccountUuids (client: MigrationClient): Promise
     await dncIterator.close()
   }
   ctx.info('finished processing doc notify contexts ', {})
+}
+
+async function migrateSocialKeysToSocialIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('notification migrateSocialKeysToSocialIds', {})
+  ctx.info('processing browser notifications sender ids ', {})
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  function chunkArray<T> (array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = []
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize))
+    }
+    return chunks
+  }
+
+  const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+  const groupBySenderId = await client.groupBy<any, Doc>(DOMAIN_NOTIFICATION, 'senderId', {
+    _class: notification.class.BrowserNotification
+  })
+
+  for (const socialKey of groupBySenderId.keys()) {
+    if (socialKey == null) continue
+    const socialId = (await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey)) ?? socialKey
+    if (socialId == null || socialKey === socialId) continue
+
+    operations.push({
+      filter: {
+        senderId: socialKey,
+        _class: notification.class.BrowserNotification
+      },
+      update: {
+        senderId: socialId
+      }
+    })
+  }
+
+  if (operations.length > 0) {
+    const operationsChunks = chunkArray(operations, 40)
+    let processed = 0
+    for (const operationsChunk of operationsChunks) {
+      if (operationsChunk.length === 0) continue
+
+      await client.bulk(DOMAIN_NOTIFICATION, operationsChunk)
+      processed++
+      if (operationsChunks.length > 1) {
+        ctx.info('processed chunk', { processed, of: operationsChunks.length })
+      }
+    }
+  } else {
+    ctx.info('no social keys to migrate')
+  }
+
+  ctx.info('finished processing browser notifications sender ids ', {})
 }
 
 export async function migrateSettings (client: MigrationClient): Promise<void> {
@@ -670,22 +735,25 @@ export async function migrateNotificationsObject (client: MigrationClient): Prom
 }
 
 export const notificationOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, notificationId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, notificationId, [
       {
         state: 'delete-hidden-notifications',
+        mode: 'upgrade',
         func: async (client) => {
           await removeNotifications(client, { hidden: true })
         }
       },
       {
         state: 'delete-invalid-notifications',
+        mode: 'upgrade',
         func: async (client) => {
           await removeNotifications(client, { attachedToClass: 'chunter:class:Comment' as Ref<Class<Doc>> })
         }
       },
       {
         state: 'remove-old-classes',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
           await client.deleteMany(DOMAIN_TX, { objectClass: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
@@ -693,6 +761,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'removeDeprecatedSpace',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'notification:space:Notifications' as Ref<Space>, core.space.Workspace, [
             DOMAIN_NOTIFICATION
@@ -701,34 +770,40 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-setting',
+        mode: 'upgrade',
         func: migrateSettings
       },
       {
         state: 'move-doc-notify',
+        mode: 'upgrade',
         func: async (client) => {
           await client.move(DOMAIN_NOTIFICATION, { _class: notification.class.DocNotifyContext }, DOMAIN_DOC_NOTIFY)
         }
       },
       {
         state: 'remove-last-view',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:LastView' as any })
         }
       },
       {
         state: 'remove-notification',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:Notification' as any })
         }
       },
       {
         state: 'remove-email-notification',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:EmailNotification' as any })
         }
       },
       {
         state: 'move-user',
+        mode: 'upgrade',
         func: async (client) => {
           await client.move(
             DOMAIN_NOTIFICATION,
@@ -739,6 +814,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'fill-notification-archived-field-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update<InboxNotification>(
             DOMAIN_NOTIFICATION,
@@ -759,6 +835,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'fill-contexts-pinned-field-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update<DocNotifyContext>(
             DOMAIN_DOC_NOTIFY,
@@ -769,10 +846,12 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-notifications-space-v1',
+        mode: 'upgrade',
         func: migrateNotificationsSpace
       },
       {
         state: 'migrate-employee-space-v1',
+        mode: 'upgrade',
         func: async () => {
           await client.update<DocNotifyContext>(
             DOMAIN_DOC_NOTIFY,
@@ -783,6 +862,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-wrong-spaces-v1',
+        mode: 'upgrade',
         func: async () => {
           await client.update<DocNotifyContext>(
             DOMAIN_DOC_NOTIFY,
@@ -803,10 +883,12 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-duplicated-contexts-v4',
+        mode: 'upgrade',
         func: migrateDuplicateContexts
       },
       {
         state: 'set-default-hidden',
+        mode: 'upgrade',
         func: async () => {
           await client.update(
             DOMAIN_DOC_NOTIFY,
@@ -817,6 +899,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'remove-update-txes-docnotify-ctx-v2',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_TX, {
             _class: core.class.TxUpdateDoc,
@@ -836,6 +919,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'remove-browser-notification-v2',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany<BrowserNotification>(DOMAIN_USER_NOTIFY, {
             _class: notification.class.BrowserNotification
@@ -848,6 +932,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-dnc-space',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(DOMAIN_DOC_NOTIFY, { space: core.space.Space }, { space: core.space.Workspace })
         }
@@ -858,12 +943,20 @@ export const notificationOperation: MigrateOperation = {
       // },
       {
         state: 'accounts-to-social-ids',
+        mode: 'upgrade',
         func: migrateAccounts
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
         state: 'migrate-social-ids-to-account-uuids',
+        mode: 'upgrade',
         func: migrateSocialIdsToAccountUuids
+      },
+      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
+      {
+        state: 'migrate-social-keys-to-social-ids',
+        mode: 'upgrade',
+        func: migrateSocialKeysToSocialIds
       }
     ])
   },

@@ -24,10 +24,17 @@ export interface LinkPreviewDetails {
   url?: string
   icon?: string
   image?: string
+  imageWidth?: number
+  imageHeight?: number
   charset?: string
   hostname?: string
   host?: string
 }
+
+export type LinkPreviewAttachmentMetadata = Pick<
+LinkPreviewDetails,
+'title' | 'description' | 'image' | 'imageWidth' | 'imageHeight'
+>
 
 export function canDisplayLinkPreview (val: LinkPreviewDetails): boolean {
   if (isEmpty(val.host) && isEmpty(val.title)) {

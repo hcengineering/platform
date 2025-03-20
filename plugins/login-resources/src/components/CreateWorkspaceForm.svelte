@@ -78,7 +78,7 @@
   {fields}
   {object}
   {action}
-  subtitle={getAccountDisplayName(loginInfo)}
+  subtitle={getAccountDisplayName(loginInfo ?? null)}
   bottomActions={[
     {
       caption: login.string.HaveWorkspace,

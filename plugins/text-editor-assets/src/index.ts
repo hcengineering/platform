@@ -28,6 +28,7 @@ loadMetadata(textEditor.icon, {
   Link: `${icons}#link`,
   ListNumber: `${icons}#listNumber`,
   ListBullet: `${icons}#listBullet`,
+  ListTodo: `${icons}#listTodo`,
   Quote: `${icons}#quote`,
   Code: `${icons}#code`,
   CodeBlock: `${icons}#codeBlock`,

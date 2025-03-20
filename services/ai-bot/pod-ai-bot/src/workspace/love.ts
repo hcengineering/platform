@@ -14,7 +14,7 @@
 //
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
 import chunter from '@hcengineering/chunter'
-import contact, { Person, pickPrimarySocialId } from '@hcengineering/contact'
+import contact, { Person } from '@hcengineering/contact'
 import core, {
   concatLink,
   Doc,
@@ -27,7 +27,8 @@ import core, {
   TxOperations,
   TxProcessor,
   TxUpdateDoc,
-  WorkspaceUuid
+  WorkspaceUuid,
+  pickPrimarySocialId
 } from '@hcengineering/core'
 import love, {
   getFreeRoomPlace,
@@ -180,7 +181,7 @@ export class LoveController {
         attachedToClass: contact.class.Person
       })
       if (identities.length > 0) {
-        const id = pickPrimarySocialId(identities.map((si) => si.key))
+        const id = pickPrimarySocialId(identities)._id
         this.socialIdByPerson.set(person, id)
       }
     }
