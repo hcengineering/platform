@@ -726,7 +726,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           })) as FindResult<T>
         } catch (err) {
           const sqlFull = vars.injectVars(fquery)
-          ctx.error('Error in findAll', { err, sql: fquery, sqlFull })
+          ctx.error('Error in findAll', { err, sql: fquery, sqlFull, query })
           throw err
         }
       },
@@ -1316,6 +1316,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     } else if (typeof value === 'object' && !Array.isArray(value)) {
       // we can have multiple criteria for one field
       const res: string[] = []
+      const nonOperator: Record<string, any> = {}
       for (const operator in value) {
         let val = value[operator]
         if (tkeyData && (Array.isArray(val) || (typeof val !== 'object' && typeof val !== 'string'))) {
@@ -1402,9 +1403,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
             break
           default:
-            res.push(`${tkey} @> '[${JSON.stringify(value)}]'`)
+            nonOperator[operator] = value[operator]
             break
         }
+      }
+      if (Object.keys(nonOperator).length > 0) {
+        const qkey = tkey.replace('#>>', '->').replace('{', '').replace('}', '')
+        res.push(`(${qkey} @> '${JSON.stringify(nonOperator)}' or ${qkey} @> '[${JSON.stringify(nonOperator)}]')`)
       }
       return res.length === 0 ? undefined : res.join(' AND ')
     }

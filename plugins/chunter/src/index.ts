@@ -259,7 +259,8 @@ export default plugin(chunterId, {
       msg?: ActivityMessage,
       doc?: Doc,
       selectedId?: Ref<ActivityMessage>,
-      props?: Record<string, any>
+      props?: Record<string, any>,
+      force?: boolean
     ) => Promise<void>
     >,
     OpenChannelInSidebar: '' as Resource<

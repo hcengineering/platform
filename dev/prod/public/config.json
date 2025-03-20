@@ -19,5 +19,5 @@
   "MODEL_VERSION": null,
   "STATS_URL": "http://localhost:4900",
   "PASSWORD_STRICTNESS": "none",
-  "EXPORT_URL": "http://localhost:4009/export"
+  "EXPORT_URL": "http://localhost:4009"
 }

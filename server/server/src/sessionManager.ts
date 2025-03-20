@@ -15,6 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
+  AccountRole,
   cutObjectArray,
   generateId,
   isArchivingMode,
@@ -1183,9 +1184,11 @@ export class TSessionManager implements SessionManager {
 
       // We do not need to wait for set-status, just return session to client
       const _workspace = service.workspace
-      void ctx
-        .with('set-status', {}, (ctx) => this.trySetStatus(ctx, pipeline, service, true, _workspace.workspaceId))
-        .catch(() => {})
+      if (helloResponse.account.role !== AccountRole.DocGuest) {
+        void ctx
+          .with('set-status', {}, (ctx) => this.trySetStatus(ctx, pipeline, service, true, _workspace.workspaceId))
+          .catch(() => {})
+      }
     } catch (err: any) {
       ctx.error('error', { err })
     }

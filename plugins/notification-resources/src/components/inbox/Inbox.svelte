@@ -192,7 +192,7 @@
 
     if (thread !== undefined) {
       const fn = await getResource(chunter.function.OpenThreadInSidebar)
-      void fn(thread, undefined, undefined, selectedMessageId, { autofocus: false })
+      void fn(thread, undefined, undefined, selectedMessageId, { autofocus: false }, false)
     }
 
     if (selectedMessageId !== undefined) {

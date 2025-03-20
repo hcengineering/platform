@@ -209,6 +209,9 @@
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/card-assets": "^0.6.0",
     "@hcengineering/card-resources": "^0.6.0",
+    "@hcengineering/export": "^0.6.0",
+    "@hcengineering/export-assets": "^0.6.0",
+    "@hcengineering/export-resources": "^0.6.0",
     "@sentry/svelte": "^8.52.1",
     "posthog-js": "~1.122.0"
   }
