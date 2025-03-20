@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MasterTag, Tag } from '@hcengineering/card'
+  import { CardEvents, MasterTag, Tag } from '@hcengineering/card'
   import core, { Class, ClassifierKind, Data, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Icon, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let parent: MasterTag | Tag | undefined = undefined
   export let _class: Ref<Class<MasterTag>> | Ref<Class<Tag>>
@@ -39,6 +40,7 @@
     }
 
     await client.createDoc(_class, core.space.Model, data)
+    Analytics.handleEvent(isMasterTag ? CardEvents.TypeCreated : CardEvents.TagCreated)
 
     dispatch('close')
   }

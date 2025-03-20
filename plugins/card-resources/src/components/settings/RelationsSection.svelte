@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MasterTag } from '@hcengineering/card'
+  import { CardEvents, MasterTag } from '@hcengineering/card'
   import core, { Association, Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -22,6 +22,7 @@
   import { ButtonIcon, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CreateRelation from './CreateRelation.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let masterTag: MasterTag
 
@@ -34,7 +35,6 @@
   const query = createQuery()
 
   query.query(core.class.Association, {}, (res) => {
-    console.log(res)
     associations = res
   })
 
@@ -49,9 +49,18 @@
   }
 
   function addRelation (): void {
-    showPopup(CreateRelation, {
-      aClass: masterTag._id
-    })
+    showPopup(
+      CreateRelation,
+      {
+        aClass: masterTag._id
+      },
+      undefined,
+      (res) => {
+        if (res !== undefined) {
+          Analytics.handleEvent(CardEvents.RelationCreated)
+        }
+      }
+    )
   }
 
   const handleSelect = (association: Association): void => {

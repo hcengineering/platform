@@ -48,7 +48,7 @@
 
   const query = createQuery()
 
-  const viewletId = card.viewlet.CardList
+  const viewletId = card.viewlet.CardChildList
 
   let list: List
   const listProvider = new ListSelectionProvider(

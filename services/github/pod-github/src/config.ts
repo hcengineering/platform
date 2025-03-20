@@ -99,7 +99,7 @@ const config: Config = (() => {
     WebhookSecret: process.env[envMap.WebhookSecret] ?? 'secret',
     EnterpriseHostname: process.env[envMap.EnterpriseHostname],
     Port: parseInt(process.env[envMap.Port] ?? '3500'),
-    BotName: process.env[envMap.BotName] ?? 'dev[bot]',
+    BotName: process.env[envMap.BotName] ?? 'ao-huly-dev[bot]',
 
     MongoURL: process.env[envMap.MongoURL],
     ConfigurationDB: process.env[envMap.ConfigurationDB] ?? '%github',

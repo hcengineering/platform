@@ -13,7 +13,7 @@
 
 import { Blobs, Class, Doc, Domain, MarkupBlobRef, Mixin, Rank, Ref } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
 export * from './analytics'
 
@@ -77,6 +77,9 @@ const cardPlugin = plugin(cardId, {
     Card: '' as Asset,
     File: '' as Asset,
     View: '' as Asset
+  },
+  extensions: {
+    EditCardExtension: '' as ComponentExtensionId
   },
   string: {
     MasterTag: '' as IntlString,

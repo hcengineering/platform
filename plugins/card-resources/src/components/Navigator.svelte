@@ -90,7 +90,6 @@
 
     {#if classes.length > 0}
       <div class="antiNav-divider line" />
-
       <Scroller shrink>
         <TagHierarchy bind:_class deselect={menuSelection} {classes} {allClasses} on:select />
       </Scroller>

@@ -12,27 +12,19 @@
 // limitations under the License.
 
 import activity from '@hcengineering/activity'
-import {
-  CardEvents,
-  cardId,
-  DOMAIN_CARD,
-  type Card,
-  type MasterTag,
-  type ParentInfo,
-  type Tag
-} from '@hcengineering/card'
+import { cardId, DOMAIN_CARD, type Card, type MasterTag, type ParentInfo, type Tag } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import core, {
   AccountRole,
-  type Blobs,
+  ClassifierKind,
   DOMAIN_MODEL,
   IndexKind,
   SortingOrder,
+  type Blobs,
   type CollectionSize,
+  type MarkupBlobRef,
   type Rank,
-  type Ref,
-  ClassifierKind,
-  type MarkupBlobRef
+  type Ref
 } from '@hcengineering/core'
 import {
   Collection,
@@ -54,6 +46,7 @@ import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { type BuildModelKey } from '@hcengineering/view'
 import card from './plugin'
 
 export { cardId } from '@hcengineering/card'
@@ -142,6 +135,23 @@ export function createModel (builder: Builder): void {
     ]
   })
 
+  const listConfig: (BuildModelKey | string)[] = [
+    { key: '', props: { showParent: true }, displayProps: { fixed: 'left', key: 'card' } },
+    { key: '_class', displayProps: { fixed: 'left', key: 'type' } },
+    { key: '', displayProps: { grow: true } },
+    {
+      key: '',
+      presenter: view.component.RolePresenter,
+      label: card.string.Tags,
+      props: { fullSize: true },
+      displayProps: { key: 'tags', fixed: 'right' }
+    },
+    {
+      key: 'modifiedOn',
+      displayProps: { fixed: 'right', dividerBefore: true }
+    }
+  ]
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: card.types.File,
     descriptor: view.viewlet.List,
@@ -156,22 +166,7 @@ export function createModel (builder: Builder): void {
     configOptions: {
       hiddenKeys: ['content', 'title']
     },
-    config: [
-      { key: '', props: { showParent: true } },
-      { key: '_class', displayProps: { fixed: 'left' } },
-      {
-        key: '',
-        presenter: view.component.RolePresenter,
-        label: card.string.Tags,
-        props: { fullSize: true },
-        displayProps: { fixed: 'left' }
-      },
-      { key: '', displayProps: { grow: true } },
-      {
-        key: 'modifiedOn',
-        displayProps: { fixed: 'right', dividerBefore: true }
-      }
-    ]
+    config: listConfig
   })
 
   builder.createDoc(
@@ -276,18 +271,33 @@ export function createModel (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['content', 'title']
       },
-      config: [
-        { key: '', props: { showParent: true } },
-        '_class',
-        { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
-        { key: '', displayProps: { grow: true } },
-        {
-          key: 'modifiedOn',
-          displayProps: { fixed: 'right', dividerBefore: true }
-        }
-      ]
+      config: listConfig
     },
     card.viewlet.CardList
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: card.class.Card,
+      descriptor: view.viewlet.List,
+      variant: 'child',
+      viewOptions: {
+        groupBy: ['_class', 'createdBy', 'modifiedBy'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending]
+        ],
+        other: []
+      },
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['content', 'title']
+      },
+      config: listConfig
+    },
+    card.viewlet.CardChildList
   )
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
@@ -389,8 +399,7 @@ export function createModel (builder: Builder): void {
       context: {
         mode: ['context', 'browser'],
         group: 'remove'
-      },
-      analyticsEvent: CardEvents.MasterTagRemoved
+      }
     },
     card.action.DeleteMasterTag
   )
@@ -405,8 +414,7 @@ export function createModel (builder: Builder): void {
     context: {
       mode: ['context', 'browser'],
       group: 'remove'
-    },
-    analyticsEvent: CardEvents.MasterTagRemoved
+    }
   })
 
   createAction(builder, {

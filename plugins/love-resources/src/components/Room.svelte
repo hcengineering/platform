@@ -417,14 +417,7 @@
         class:scroll-m-0={$screenSharing}
       >
         {#each activeParticipants as participant, i (participant._id)}
-          <ParticipantView
-            bind:this={participantElements[i]}
-            {...participant}
-            small={$screenSharing ||
-              (!$screenSharing &&
-                ((columns > 1 && (roomWidth - 16 * (columns - 1)) / columns < 300) ||
-                  (rows > 1 && (roomHeight - 16 * (rows - 1)) / rows < 168)))}
-          />
+          <ParticipantView bind:this={participantElements[i]} {...participant} />
         {/each}
       </div>
     {/if}

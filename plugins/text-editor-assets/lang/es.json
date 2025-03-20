@@ -57,7 +57,8 @@
     "Unset": "Anular",
     "Image": "Imagen",
     "SeparatorLine": "Línea de separación",
-    "TodoList": "Tarea pendiente",
+    "TodoList": "Lista de tareas",
+    "TodoItem": "Tarea pendiente",
     "DrawingBoard": "Tablero de dibujos"
   }
 }

@@ -55,7 +55,7 @@ import { LiveQuery } from '@hcengineering/query'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { getPublicLinkUrl } from '@hcengineering/server-guest-resources'
 import task, { ProjectType, TaskType } from '@hcengineering/task'
-import { MarkupNode, jsonToMarkup } from '@hcengineering/text'
+import { MarkupNode, MarkupNodeType, jsonToMarkup } from '@hcengineering/text'
 import { isMarkdownsEquals } from '@hcengineering/text-markdown'
 import tracker from '@hcengineering/tracker'
 import { User } from '@octokit/webhooks-types'
@@ -174,8 +174,40 @@ export class GithubWorker implements IntegrationManager {
     body: string
   ): Promise<{ markdownCompatible: boolean, markdown: string }> {
     const markupText = await this.getMarkup(container, body)
-    const markDown = await this.getMarkdown(markupText)
-    return { markdownCompatible: isMarkdownsEquals(body, markDown), markdown: markDown }
+    const markdown = await this.getMarkdown(markupText)
+    const markdownCompatible = isMarkdownsEquals(body, markdown)
+    return { markdownCompatible, markdown }
+  }
+
+  async getMarkupSafe (
+    container: IntegrationContainer,
+    text?: string | null,
+    preprocessor?: (nodes: MarkupNode) => Promise<void>
+  ): Promise<string> {
+    if (text == null) {
+      return ''
+    }
+
+    const markup = await this.getMarkup(container, text, preprocessor)
+    const markdown = await this.getMarkdown(markup)
+    const compatible = isMarkdownsEquals(text, markdown)
+
+    return compatible
+      ? markup
+      : jsonToMarkup({
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.markdown,
+            content: [
+              {
+                type: MarkupNodeType.text,
+                text
+              }
+            ]
+          }
+        ]
+      })
   }
 
   async getMarkup (

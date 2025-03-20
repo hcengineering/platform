@@ -1801,7 +1801,7 @@
     {
       "packageName": "@hcengineering/love",
       "projectFolder": "plugins/love",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/love-assets",
@@ -2361,6 +2361,41 @@
     {
       "packageName": "@hcengineering/pod-hook",
       "projectFolder": "services/hook/pod-hook",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/process",
+      "projectFolder": "plugins/process",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/process-assets",
+      "projectFolder": "plugins/process-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/process-resources",
+      "projectFolder": "plugins/process-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-process",
+      "projectFolder": "models/process",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-process",
+      "projectFolder": "server-plugins/process",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-process",
+      "projectFolder": "models/server-process",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-process-resources",
+      "projectFolder": "server-plugins/process-resources",
       "shouldPublish": false
     }
   ]

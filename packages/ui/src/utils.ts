@@ -64,7 +64,7 @@ export function checkMobile (): boolean {
  * @public
  */
 export function isSafari (): boolean {
-  return navigator.userAgent.toLowerCase().includes('safari/')
+  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent.toLowerCase())
 }
 
 /**

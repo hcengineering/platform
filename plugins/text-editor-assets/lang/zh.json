@@ -59,7 +59,8 @@
     "Unset": "未设置",
     "Image": "图片",
     "SeparatorLine": "分隔线",
-    "TodoList": "待办",
+    "TodoItem": "待办事项",
+    "TodoList": "待办事项列表",
     "DrawingBoard": "画板"
   }
 }

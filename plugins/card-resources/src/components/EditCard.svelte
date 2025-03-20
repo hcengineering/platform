@@ -22,7 +22,7 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ComponentExtensions, createQuery, getClient } from '@hcengineering/presentation'
   import {
     Button,
     EditBox,
@@ -159,6 +159,13 @@
       <TagsEditor {doc} />
 
       <CardAttributeEditor value={doc} {mixins} {readonly} ignoreKeys={['title', 'content', 'parent']} />
+
+      <ComponentExtensions
+        extension={card.extensions.EditCardExtension}
+        props={{
+          card: doc
+        }}
+      />
 
       <Content {doc} {readonly} bind:content />
     </div>

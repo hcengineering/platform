@@ -6,7 +6,6 @@
   import { createEventDispatcher, onMount, onDestroy } from 'svelte'
   import type { Emoji } from 'emojibase'
   import {
-    Label,
     Scroller,
     SearchInput,
     tooltip,
@@ -14,13 +13,11 @@
     showPopup,
     eventToHTMLElement,
     ButtonBase,
-    closeTooltip,
-    Spinner
+    closeTooltip
   } from '../../'
   import plugin from '../../plugin'
   import {
     searchEmoji,
-    resultEmojis,
     emojiStore,
     generateSkinToneEmojis,
     emojiCategories,
@@ -32,10 +29,10 @@
     setSkinTone
   } from '.'
   import type { EmojiWithGroup, EmojiCategory } from '.'
-  import EmojiButton from './EmojiButton.svelte'
   import ActionsPopup from './ActionsPopup.svelte'
   import SkinTonePopup from './SkinTonePopup.svelte'
   import IconSearch from './icons/Search.svelte'
+  import EmojiGroup from './EmojiGroup.svelte'
 
   export let embedded = false
   export let selected: string | undefined
@@ -43,7 +40,6 @@
   export let kind: 'default' | 'fade' = 'fade'
 
   const dispatch = createEventDispatcher()
-  closeTooltip()
 
   let scrollElement: HTMLDivElement
   const touchEvents = ['touchend', 'touchcancel', 'touchmove']
@@ -63,7 +59,6 @@
   let timer: any = null
   const isMobile = $deviceInfo.isMobile
 
-  let loading: boolean = true
   let emojisCat = emojiCategories
   let currentCategory = emojisCat[0]
   $: emojiTabs = emojisCat
@@ -212,11 +207,11 @@
       (em) => em.categories !== undefined || (Array.isArray(em.emojis) && em.emojis.length > 0)
     )
     currentCategory = emojisCat.find((ec) => ec.emojis !== undefined) ?? emojisCat[0]
-    loading = false
   }
 
   onMount(() => {
     if (scrollElement !== undefined) scrollElement.addEventListener('scroll', checkScroll)
+    closeTooltip()
     setTimeout(initEmoji)
   })
   onDestroy(() => {
@@ -229,7 +224,7 @@
   $: outputGroups = updateGroups(searching, emojisCat)
 </script>
 
-<div class="hulyPopupEmoji-container kind-{kind}" class:embedded class:loading>
+<div class="hulyPopupEmoji-container kind-{kind}" class:embedded>
   <div class="hulyPopupEmoji-header__tabs-wrapper">
     <div class="hulyPopupEmoji-header__tabs">
       {#each categoryTabs as category (category.id)}
@@ -237,7 +232,6 @@
           class="hulyPopupEmoji-header__tab"
           class:selected={(searching && searchCategory[0].id === category.id) ||
             (!searching && currentCategory.id === category.id)}
-          disabled={loading}
           data-id={category.id}
           use:tooltip={{ label: category.label }}
           on:click={() => {
@@ -279,42 +273,34 @@
       <span style:font-size={'1.5rem'}>{generateSkinToneEmojis(0x1f590)[skinTone]}</span>
     </ButtonBase>
   </div>
-  <Scroller bind:divScroll={scrollElement} checkForHeaders noStretch on:scrolledCategories={handleCategoryScrolled}>
-    {#if loading}
-      <div class="flex-center w-full h-full min-h-full clear-mins flex-grow"><Spinner /></div>
-    {:else}
-      {#each outputGroups as group (group.id)}
-        {@const canRemove = group.id === 'frequently-used'}
-        {@const emojisGroup = searching
-          ? $resultEmojis
-          : Array.isArray(group.emojis)
-            ? group.emojis
-            : $resultEmojis.filter((re) => re.key === group.id)}
-        <div class="hulyPopupEmoji-group">
-          <div id={group.id} class="hulyPopupEmoji-group__header categoryHeader">
-            <Label label={searching && $resultEmojis.length === 0 ? plugin.string.NoResults : group.label} />
-          </div>
-          <div class="hulyPopupEmoji-group__palette">
-            {#each emojisGroup as emoji}
-              <EmojiButton
-                {emoji}
-                selected={emoji.emoji === selected}
-                {disabled}
-                {skinTone}
-                on:select={selectedEmoji}
-                on:touchstart={(event) => {
-                  clampedContextMenu(event, emoji, canRemove)
-                }}
-                on:contextmenu={(event) => {
-                  handleContextMenu(event, emoji, canRemove)
-                }}
-              />
-            {/each}
-            <div class="clear-mins flex-grow" />
-          </div>
-        </div>
-      {/each}
-    {/if}
+  <Scroller
+    bind:divScroll={scrollElement}
+    gap="0.5rem"
+    checkForHeaders
+    noStretch
+    on:scrolledCategories={handleCategoryScrolled}
+  >
+    {#each outputGroups as group (group.id)}
+      {@const canRemove = group.id === 'frequently-used'}
+      <EmojiGroup
+        {group}
+        {searching}
+        {disabled}
+        {selected}
+        {skinTone}
+        {kind}
+        lazy={group.id !== 'frequently-used'}
+        on:select={selectedEmoji}
+        on:touchstart={(ev) => {
+          const { event, emoji } = ev.detail
+          clampedContextMenu(event, emoji, canRemove)
+        }}
+        on:contextmenu={(ev) => {
+          const { event, emoji } = ev.detail
+          handleContextMenu(event, emoji, canRemove)
+        }}
+      />
+    {/each}
   </Scroller>
   {#if !hidden && kind === 'fade'}<div class="hulyPopupEmoji-footer" />{/if}
 </div>
@@ -428,55 +414,6 @@
       padding: 0 0.75rem;
     }
 
-    .hulyPopupEmoji-group {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: nowrap;
-      min-width: 0;
-      min-height: 0;
-
-      &__header {
-        position: sticky;
-        flex-shrink: 0;
-        margin: 0.75rem 0.75rem 0.25rem;
-        padding: 0.25rem 0.375rem;
-        top: 0;
-        height: 1.5rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        text-shadow: 0 0 0.25rem var(--theme-popup-color);
-        color: var(--theme-caption-color);
-        border-radius: 0.25rem;
-        z-index: 1;
-        pointer-events: none;
-
-        &:first-child {
-          margin-top: 0;
-        }
-        &::before {
-          content: '';
-          position: absolute;
-          top: -1px;
-          left: 0;
-          width: 100%;
-          height: 150%;
-          background: var(--theme-popup-trans-gradient);
-          z-index: -1;
-        }
-      }
-      &__palette {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        flex-shrink: 0;
-        margin-inline: 0.75rem;
-        font-size: 1.25rem;
-      }
-    }
-    .hulyPopupEmoji-group + .hulyPopupEmoji-group {
-      margin-top: 0.5rem;
-    }
     .hulyPopupEmoji-footer {
       position: absolute;
       left: 50%;
@@ -488,25 +425,6 @@
       transform: translateX(-50%) rotate(180deg);
       z-index: 1;
       pointer-events: none;
-    }
-
-    &.kind-default {
-      .hulyPopupEmoji-group__header {
-        background: var(--theme-popup-header);
-
-        &::before {
-          content: none;
-        }
-      }
-    }
-
-    &.loading {
-      .hulyPopupEmoji-header__tab {
-        color: var(--theme-trans-color);
-      }
-      :global(.scroll) {
-        justify-content: center;
-      }
     }
   }
 </style>

@@ -72,6 +72,6 @@
     />
   </NavLink>
   {#if (descendants.get(clazz._id)?.length ?? 0) > 0}
-    <svelte:self classes={descendants.get(clazz._id) ?? []} {_class} level={level + 1} on:select />
+    <svelte:self classes={descendants.get(clazz._id) ?? []} {_class} {allClasses} level={level + 1} on:select />
   {/if}
 {/each}

@@ -3,12 +3,11 @@ import type { DefSeparators } from '@hcengineering/ui'
 import core, { type Class, type Client, type Doc, type Ref } from '@hcengineering/core'
 import time from '@hcengineering/time'
 import { type TextEditorMode, type AnyExtension } from '@hcengineering/text-editor'
-import { SvelteNodeViewRenderer } from '@hcengineering/text-editor-resources'
+import { SvelteNodeViewRenderer, TodoItemExtension, TodoListExtension } from '@hcengineering/text-editor-resources'
 import { getClient } from '@hcengineering/presentation'
 
 import ToDoItemNodeView from './components/text-editor/node-view/ToDoItemNodeView.svelte'
 import ToDoListNodeView from './components/text-editor/node-view/ToDoListNodeView.svelte'
-import { TodoItemExtension, TodoListExtension } from './text-editor-extensions'
 
 export * from './types'
 

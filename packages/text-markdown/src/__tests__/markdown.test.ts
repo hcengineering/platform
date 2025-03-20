@@ -74,7 +74,7 @@ Lorem ipsum dolor sit amet.
         content: [
           {
             type: 'heading',
-            attrs: { level: 1 },
+            attrs: { level: 1, marker: '#' },
             content: [
               {
                 type: 'text',
@@ -107,7 +107,7 @@ Lorem ipsum dolor sit amet.
         content: [
           {
             type: 'heading',
-            attrs: { level: 1 },
+            attrs: { level: 1, marker: '#' },
             content: [
               {
                 type: 'text',
@@ -168,7 +168,7 @@ Lorem ipsum dolor sit amet.
         content: [
           {
             type: 'heading',
-            attrs: { level: 1 },
+            attrs: { level: 1, marker: '#' },
             content: [
               {
                 type: 'text',
@@ -233,7 +233,7 @@ Lorem ipsum dolor sit amet.
         content: [
           {
             type: 'heading',
-            attrs: { level: 1 },
+            attrs: { level: 1, marker: '#' },
             content: [
               {
                 type: 'text',
@@ -336,7 +336,7 @@ Lorem ipsum dolor sit amet.
         content: [
           {
             type: 'heading',
-            attrs: { level: 1 },
+            attrs: { level: 1, marker: '#' },
             content: [
               {
                 type: 'text',
@@ -453,7 +453,7 @@ Lorem ipsum dolor sit amet.
         content: [
           {
             type: 'heading',
-            attrs: { level: 1 },
+            attrs: { level: 1, marker: '#' },
             content: [
               {
                 type: 'text',
@@ -528,7 +528,7 @@ Lorem ipsum dolor sit amet.
         content: [
           {
             type: 'heading',
-            attrs: { level: 1 },
+            attrs: { level: 1, marker: '#' },
             content: [
               {
                 type: 'text',
@@ -692,7 +692,7 @@ Lorem ipsum dolor sit amet.
         content: [
           {
             type: 'heading',
-            attrs: { level: 1 },
+            attrs: { level: 1, marker: '#' },
             content: [
               {
                 type: 'text',
