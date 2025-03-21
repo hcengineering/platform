@@ -137,7 +137,7 @@ async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerCon
 
   const person = await getPerson(control, originTx.modifiedBy)
   if (person === undefined) {
-    return []
+    return [lastReplyTx]
   }
 
   if ((message.repliedPersons ?? []).includes(person._id)) {

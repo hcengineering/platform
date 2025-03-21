@@ -296,12 +296,14 @@ export function includesAny (members: PersonId[], ids: PersonId[]): boolean {
 
 export async function getPersonBySocialKey (client: Client, socialKey: string): Promise<Person | undefined> {
   const socialId = await client.findOne(contact.class.SocialIdentity, { key: socialKey })
-
+  if (socialId === undefined) return undefined
   return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
 }
 
 export async function getPersonBySocialId (client: Client, socialIdString: PersonId): Promise<Person | undefined> {
   const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
+
+  if (socialId === undefined) return undefined
 
   return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
 }
