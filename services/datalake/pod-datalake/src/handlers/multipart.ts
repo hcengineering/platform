@@ -17,7 +17,6 @@ import { MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { cacheControl } from '../const'
 import { Datalake } from '../datalake'
-import { requestHLS } from './video'
 
 export interface MultipartUpload {
   key: string
@@ -118,12 +117,6 @@ export async function handleMultipartUploadComplete (
   const { parts } = req.body as MultipartUploadCompleteRequest
   await bucket.completeMultipartUpload(ctx, uuid, { uploadId }, parts)
   const metadata = await datalake.create(ctx, workspace, name, uuid)
-
-  const contentType = req.headers['content-type'] ?? 'application/octet-stream'
-  if (contentType.startsWith('video/')) {
-    ctx.info('transcode', { workspace, name })
-    void requestHLS(ctx, workspace, name)
-  }
 
   ctx.info('multipart-complete', { workspace, name, uuid, uploadId })
 

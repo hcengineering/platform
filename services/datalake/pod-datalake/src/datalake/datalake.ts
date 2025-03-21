@@ -19,7 +19,7 @@ import { Readable } from 'stream'
 import { type BlobDB } from './db'
 import { digestToUUID, stringToUUID } from './encodings'
 import { type BlobHead, type BlobBody, type BlobList, type BlobStorage, type Datalake, type Location } from './types'
-
+import { requestHLS } from '../handlers/video'
 import { type S3Bucket } from '../s3'
 
 export class DatalakeImpl implements Datalake {
@@ -144,6 +144,10 @@ export class DatalakeImpl implements Datalake {
       }
       await bucket.put(ctx, filename, body, putOptions)
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
+      if (contentType.startsWith('video/')) {
+        ctx.info('transcode', { workspace, name })
+        void requestHLS(ctx, workspace, name)
+      }
       return { name, size, contentType, lastModified, etag: hash }
     }
   }
@@ -166,6 +170,11 @@ export class DatalakeImpl implements Datalake {
       await Promise.all([bucket.delete(ctx, filename), this.db.createBlob(ctx, { workspace, name, hash, location })])
     } else {
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
+    }
+
+    if (contentType.startsWith('video/')) {
+      ctx.info('transcode', { workspace, name })
+      void requestHLS(ctx, workspace, name)
     }
 
     return { name, size, contentType, lastModified, etag: hash }

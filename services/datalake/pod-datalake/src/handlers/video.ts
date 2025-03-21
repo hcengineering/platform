@@ -30,7 +30,7 @@ export async function requestHLS (ctx: MeasureContext, workspace: string, name: 
     return
   }
   const streamReq: StreamRequest = { format: 'hls', source: name, workspace }
-  const token = generateToken(systemAccountUuid)
+  const token = generateToken(systemAccountUuid, undefined, { iss: 'datalake', aud: 'stream' })
 
   const request = new Request(config.StreamUrl, {
     method: 'POST',
