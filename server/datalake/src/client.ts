@@ -340,7 +340,7 @@ export class DatalakeClient {
   }
 
   async getS3UploadParams (ctx: MeasureContext, workspace: WorkspaceId): Promise<R2UploadParams> {
-    const path = `/upload/s3/${workspace}`
+    const path = `/upload/s3/${workspace.name}`
     const url = concatLink(this.endpoint, path)
 
     const response = await fetchSafe(ctx, url, { headers: { ...this.headers } })
