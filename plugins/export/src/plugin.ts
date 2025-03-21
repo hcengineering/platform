@@ -20,7 +20,9 @@ export const exportId = 'export' as Plugin
 
 export const exportPlugin = plugin(exportId, {
   string: {
-    Export: '' as IntlString // todo: remove?
+    Export: '' as IntlString, // todo: remove?
+    ExportCompleted: '' as IntlString,
+    ExportFailed: '' as IntlString
   },
   component: {
     ExportButton: '' as AnyComponent,
