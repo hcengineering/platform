@@ -401,7 +401,7 @@ export abstract class TxProcessor implements WithTx {
 
   static buildDoc2Doc<D extends Doc>(txes: Tx[]): D | undefined | null {
     let doc: Doc
-    const deleteTx = txes.find(tx => tx._class === core.class.TxRemoveDoc)
+    const deleteTx = txes.find((tx) => tx._class === core.class.TxRemoveDoc)
     if (deleteTx !== undefined) {
       return null
     }

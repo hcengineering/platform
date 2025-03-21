@@ -539,14 +539,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       // Check if we have create tx, we do not need to retrieve a doc, just combine all updates
       txes.sort((a, b) => a.modifiedOn - b.modifiedOn)
       const doc = TxProcessor.buildDoc2Doc(txes)
-      if (doc != null) {
-        if (doc === null) {
+
+      switch (doc) {
+        case null:
           toRemove.push({ _id: docId, _class: txes[0].objectClass })
-        } else {
+          break
+        case undefined:
+          docsToRetrieve.add(docId)
+          break
+        default:
           docs.push(doc)
-        }
-      } else {
-        docsToRetrieve.add(docId)
       }
     }
     if (docsToRetrieve.size > 0) {
