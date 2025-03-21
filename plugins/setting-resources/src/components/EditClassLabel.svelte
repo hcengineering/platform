@@ -61,7 +61,7 @@
       return undefined
     })
     .filter((it) => it !== undefined)
-    .filter((it, idx, arr) => arr.indexOf(it) === idx) as IntlString[]
+    .filter((it, idx, arr) => arr.indexOf(it) === idx)
 </script>
 
 <Card

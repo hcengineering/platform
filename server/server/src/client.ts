@@ -14,7 +14,7 @@
 //
 
 import {
-  AccountUuid,
+  type AccountUuid,
   generateId,
   TxProcessor,
   type Account,

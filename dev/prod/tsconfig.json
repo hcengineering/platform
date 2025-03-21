@@ -3,7 +3,7 @@
     "outDir": "./dist/",
     "noImplicitAny": true,
     "module": "esnext",
-    "target": "es2021",
+    "target": "es2024",
     "allowJs": true,
     "declaration": true,
     "sourceMap": true,

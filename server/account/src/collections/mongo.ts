@@ -26,7 +26,7 @@ import {
   type Person,
   type WorkspaceMemberInfo,
   buildSocialIdString,
-  SocialKey,
+  type SocialKey,
   type AccountRole,
   type Data,
   type Version,

@@ -1,19 +1,24 @@
 import {
-  Doc,
-  DocumentQuery,
-  Domain,
-  FindOptions,
-  Hierarchy,
-  LowLevelStorage,
-  MeasureContext,
+  type Doc,
+  type DocumentQuery,
+  type Domain,
+  type FindOptions,
+  type Hierarchy,
+  type LowLevelStorage,
+  type MeasureContext,
   MeasureMetricsContext,
-  ModelDb,
-  Ref,
-  WorkspaceIds
+  type ModelDb,
+  type Ref,
+  type WorkspaceIds
 } from '@hcengineering/core'
-import { MigrateUpdate, MigrationClient, MigrationIterator, ModelLogger } from '@hcengineering/model'
-import { Pipeline, StorageAdapter } from '@hcengineering/server-core'
-import { AccountClient } from '@hcengineering/account-client'
+import {
+  type MigrateUpdate,
+  type MigrationClient,
+  type MigrationIterator,
+  type ModelLogger
+} from '@hcengineering/model'
+import { type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
+import { type AccountClient } from '@hcengineering/account-client'
 
 /**
  * Upgrade client implementation.

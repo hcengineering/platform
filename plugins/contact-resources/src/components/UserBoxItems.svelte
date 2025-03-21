@@ -76,7 +76,7 @@
   }
 
   function getPersons (employees: Ref<Employee>[], employeeById: IdMap<Employee>): Employee[] {
-    return employees.map((p) => employeeById.get(p)).filter((p) => p !== undefined) as Employee[]
+    return employees.map((p) => employeeById.get(p)).filter((p) => p !== undefined)
   }
 
   function removePerson (removed: Employee): void {

@@ -14,7 +14,7 @@
 //
 
 import core, {
-  Account,
+  type Account,
   AccountRole,
   systemAccountUuid,
   TxProcessor,

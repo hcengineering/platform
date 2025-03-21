@@ -16,12 +16,12 @@
 import {
   type Class,
   type Doc,
-  DocumentQuery,
+  type DocumentQuery,
   type Domain,
-  FindResult,
+  type FindResult,
   type LoadModelResponse,
   type MeasureContext,
-  Ref,
+  type Ref,
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
@@ -29,7 +29,12 @@ import {
   type Timestamp,
   type Tx
 } from '@hcengineering/core'
-import { BaseMiddleware, Middleware, type PipelineContext, ServerFindOptions } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  type Middleware,
+  type PipelineContext,
+  type ServerFindOptions
+} from '@hcengineering/server-core'
 
 interface Query {
   key: string

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "es2024",
     "module": "commonjs",
     "declaration": true,
     "strict": true,
@@ -12,8 +12,7 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "incremental": true,
-    "types" : [],
-    "isolatedModules": true,
-    
+    "types": ["node"],
+    "isolatedModules": true,    
   }
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import OpenAI from 'openai'
+import type OpenAI from 'openai'
 
 interface Config {
   AccountsURL: string

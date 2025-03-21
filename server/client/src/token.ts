@@ -1,5 +1,5 @@
-import { Token, decodeToken } from '@hcengineering/server-token'
-import { IncomingHttpHeaders } from 'http'
+import { type Token, decodeToken } from '@hcengineering/server-token'
+import { type IncomingHttpHeaders } from 'http'
 
 const extractCookieToken = (cookie?: string): Token | null => {
   if (cookie === undefined || cookie === null) {

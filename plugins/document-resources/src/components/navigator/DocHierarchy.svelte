@@ -88,7 +88,7 @@
     dispatch('selected', obj)
   }
 
-  $: _documents = documents.map((it) => documentById.get(it)).filter((it) => it !== undefined) as Document[]
+  $: _documents = documents.map((it) => documentById.get(it)).filter((it) => it !== undefined)
   $: _descendants = new Map(_documents.map((it) => [it._id, getDescendants(it._id)]))
 </script>
 

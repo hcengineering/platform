@@ -34,15 +34,15 @@ import core, {
   type TxWorkspaceEvent,
   type WorkspaceUuid,
   type WorkspaceInfoWithStatus,
-  Account,
+  type Account,
   pickPrimarySocialId,
   type PersonId,
   type WorkspaceDataId,
-  Data,
-  Version,
+  type Data,
+  type Version,
   platformNow,
   platformNowDiff,
-  AccountUuid
+  type AccountUuid
 } from '@hcengineering/core'
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { unknownError, type Status } from '@hcengineering/platform'
@@ -50,11 +50,11 @@ import { type HelloRequest, type HelloResponse, type Request, type Response } fr
 import {
   LOGGING_ENABLED,
   pingConst,
-  Pipeline,
-  PipelineFactory,
-  ServerFactory,
-  SessionManager,
-  StorageAdapter,
+  type Pipeline,
+  type PipelineFactory,
+  type ServerFactory,
+  type SessionManager,
+  type StorageAdapter,
   type SessionFactory,
   type AddSessionResponse,
   type ClientSessionCtx,
@@ -489,7 +489,7 @@ export class TSessionManager implements SessionManager {
           workspace: workspaceInfo.uuid,
           wsUrl: workspaceInfo.url
         })
-        pipeline = await ctx.with('💤 wait-pipeline', {}, () => (workspace as Workspace).pipeline)
+        pipeline = await ctx.with('💤 wait-pipeline', {}, () => workspace.pipeline)
       } else {
         ctx.warn('reconnect workspace in upgrade switch', {
           email: token.account,
@@ -524,7 +524,7 @@ export class TSessionManager implements SessionManager {
 
       try {
         if (workspace.pipeline instanceof Promise) {
-          pipeline = await ctx.with('💤 wait-pipeline', {}, () => (workspace as Workspace).pipeline)
+          pipeline = await ctx.with('💤 wait-pipeline', {}, () => workspace.pipeline)
           workspace.pipeline = pipeline
         } else {
           pipeline = workspace.pipeline

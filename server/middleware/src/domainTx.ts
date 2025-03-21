@@ -14,7 +14,7 @@
 //
 
 import core, {
-  Domain,
+  type Domain,
   DOMAIN_MODEL,
   groupByArray,
   TxProcessor,
