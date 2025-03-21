@@ -110,6 +110,7 @@
       kind={'ghost'}
       size={'medium'}
       placeholder={love.string.Room}
+      padding="0.5rem"
       {items}
       withSearch={false}
       {selected}

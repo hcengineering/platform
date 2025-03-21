@@ -28,6 +28,7 @@
   export let items: ListItem[] = []
   export let selected: ListItem | undefined = undefined
   export let disabled: boolean = false
+  export let padding: string = '0 .75rem'
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -55,12 +56,13 @@
     {kind}
     {justify}
     {disabled}
+    {padding}
     showTooltip={{ label, direction: labelDirection }}
     on:click={() => {
       if (!opened && !disabled) {
         opened = true
         showPopup(DropdownPopup, { title: label, items, icon, withSearch }, container, (result) => {
-          if (result) {
+          if (result !== undefined) {
             selected = result
             dispatch('selected', result)
           }
@@ -71,7 +73,13 @@
     }}
   >
     <span slot="content" class="overflow-label disabled">
-      {#if selected}{selected.label}{:else}<Label label={placeholder} />{/if}
+      {#if selected}
+        {selected.label}
+      {:else}
+        <div style="color: var(--theme-darker-color);">
+          <Label label={placeholder} />
+        </div>
+      {/if}
     </span>
   </Button>
 </div>
