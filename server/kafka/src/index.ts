@@ -171,39 +171,40 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
             pause
           }
         )
-      },
-      eachBatch: async ({ batch, pause, heartbeat, resolveOffset }) => {
-        const queueInfo = {
-          pause,
-          heartbeat
-        }
-        const batchMessages = batch.messages
-
-        const currentMsg: ConsumerMessage<any> = {
-          id: '',
-          value: []
-        }
-        let lastOffset: string = ' '
-
-        const sendLast = async (): Promise<void> => {
-          await this.onMessage([currentMsg], queueInfo)
-          // Mark last offset as cusomed
-          resolveOffset(lastOffset)
-          await heartbeat()
-        }
-
-        for (const v of batchMessages) {
-          const id = v.key?.toString() ?? ''
-          if (currentMsg.id !== id && currentMsg.value.length > 0) {
-            await sendLast() // Send last message
-            currentMsg.id = id
-            currentMsg.value = []
-          }
-          lastOffset = v.offset
-          currentMsg.value.push(JSON.parse(v.value?.toString() ?? '{}'))
-        }
-        await sendLast()
       }
+      // , // TODO: Finish testinf
+      // eachBatch: async ({ batch, pause, heartbeat, resolveOffset }) => {
+      //   const queueInfo = {
+      //     pause,
+      //     heartbeat
+      //   }
+      //   const batchMessages = batch.messages
+
+      //   const currentMsg: ConsumerMessage<any> = {
+      //     id: '',
+      //     value: []
+      //   }
+      //   let lastOffset: string = ' '
+
+      //   const sendLast = async (): Promise<void> => {
+      //     await this.onMessage([currentMsg], queueInfo)
+      //     // Mark last offset as cusomed
+      //     resolveOffset(lastOffset)
+      //     await heartbeat()
+      //   }
+
+      //   for (const v of batchMessages) {
+      //     const id = v.key?.toString() ?? ''
+      //     if (currentMsg.id !== id && currentMsg.value.length > 0) {
+      //       await sendLast() // Send last message
+      //       currentMsg.id = id
+      //       currentMsg.value = []
+      //     }
+      //     lastOffset = v.offset
+      //     currentMsg.value.push(JSON.parse(v.value?.toString() ?? '{}'))
+      //   }
+      //   await sendLast()
+      // }
     })
   }
 
