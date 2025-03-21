@@ -22,7 +22,6 @@ import core, {
   Data,
   Doc,
   generateId,
-  parseSocialIdString,
   Hierarchy,
   Markup,
   Ref,
@@ -40,6 +39,7 @@ import core, {
   AccountUuid
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
+import { getPerson } from '@hcengineering/server-contact'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import {
   applyNotificationProviders,
@@ -155,15 +155,11 @@ export async function getPersonNotificationTxes (
     archived: false
   }
 
-  const { type, value } = parseSocialIdString(senderId)
-
-  const senderSocialIds = await control.findAll(ctx, contact.class.SocialIdentity, { type, value })
-  const senderSocialId = senderSocialIds[0]
-
-  const senderPerson =
-    senderId !== undefined
-      ? (await control.findAll(ctx, contact.class.Person, { _id: senderSocialId.attachedTo }, { limit: 1 }))[0]
-      : undefined
+  const senderPerson = await getPerson(control, senderId)
+  const senderSocialIds =
+    senderPerson !== undefined
+      ? await control.findAll(ctx, contact.class.SocialIdentity, { attachedTo: senderPerson._id })
+      : []
 
   const receiverSocialString = pickPrimarySocialId(receiverSocialStrings)
   const receiverInfo = toReceiverInfo(control.hierarchy, {
