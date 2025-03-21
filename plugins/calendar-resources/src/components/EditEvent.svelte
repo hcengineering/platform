@@ -201,7 +201,7 @@
       <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} focusIndex={10006} />
       <ComponentExtensions extension={calendar.extensions.EditEventExtensions} props={{ readOnly, value: object }} />
     </div>
-    <div class="block row gap-1-5">
+    <div class="block row">
       <div class="top-icon">
         <Icon icon={calendar.icon.Description} size={'small'} />
       </div>
@@ -221,13 +221,7 @@
       <CalendarSelector bind:value={_calendar} focusIndex={10008} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
-        <VisibilityEditor
-          bind:value={visibility}
-          kind={'tertiary'}
-          disabled={readOnly}
-          withoutIcon
-          focusIndex={10009}
-        />
+        <VisibilityEditor bind:value={visibility} kind="inline" disabled={readOnly} withoutIcon focusIndex={10009} />
       </div>
       <EventReminders bind:reminders focusIndex={10010} disabled={readOnly} />
     </div>
@@ -290,6 +284,7 @@
     .top-icon {
       flex-shrink: 0;
       margin-top: 1.375rem;
+      margin-right: 0.125rem;
     }
   }
 </style>

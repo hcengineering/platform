@@ -285,7 +285,7 @@
     </div>
   </div>
   <Scroller thinScrollBars>
-    <div class="block row gap-1-5">
+    <div class="block row">
       <div class="top-icon">
         <Icon icon={calendar.icon.Description} size={'small'} />
       </div>
@@ -325,7 +325,7 @@
       </div>
     </div>
     <div class="block rightCropPadding">
-      <div class="flex-row-center flex-gap-1">
+      <div class="flex-row-center flex-gap-1-5">
         <Icon icon={calendar.icon.Globe} size={'small'} />
         <TimeZoneSelector bind:timeZone />
       </div>
@@ -449,6 +449,7 @@
     .top-icon {
       flex-shrink: 0;
       margin-top: 1.375rem;
+      margin-right: 0.125rem;
     }
 
     .weekDay {
