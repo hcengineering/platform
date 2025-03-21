@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, metricsAggregate } from '@hcengineering/core'
-import { decodeToken, TokenError } from '@hcengineering/server-token'
+import { decodeToken } from '@hcengineering/server-token'
 
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
@@ -249,10 +249,6 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
       })
       res.status(200).send(json)
     } catch (err: any) {
-      if (err instanceof TokenError) {
-        res.status(401).send()
-        return
-      }
       ctx.error('statistics error', { err })
       Analytics.handleError(err)
       res.status(404).send()
