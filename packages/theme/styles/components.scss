@@ -909,6 +909,7 @@
 
 .hulyToDoLine-draggable {
   position: relative;
+  width: 100%;
 
   &.is-dragging-over-up::before {
     position: absolute;
