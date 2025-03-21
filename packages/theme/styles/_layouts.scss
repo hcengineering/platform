@@ -21,26 +21,34 @@ a {
   text-decoration: none;
   color: var(--theme-content-color);
   outline: none;
+  
   &:hover {
     color: var(--theme-caption-color);
-    text-decoration: underline;
+    
+    &:not(:has(button)):not(.stealth):not(.no-underline) {
+      text-decoration: underline;
+    }
   }
+  
   &:active {
     color: var(--theme-content-color);
-    text-decoration: underline;
+    
+    &:not(:has(button)):not(.stealth):not(.no-underline) {
+      text-decoration: underline;
+    }
   }
-  &:visited { color: var(--theme-content-color); }
-
-  &.stealth,
-  &.no-underline {
-    &:hover, &:active { text-decoration: none; }
+  
+  &:visited { 
+    color: var(--theme-content-color); 
   }
+  
   &.stealth {
     display: inline-flex;
     align-items: center;
     width: 100%;
   }
 }
+
 button {
   display: flex;
   justify-content: center;
