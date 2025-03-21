@@ -18,7 +18,6 @@ import { type Request, type Response } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
 
-import { requestHLS } from './video'
 import { cacheControl } from '../const'
 import { type Datalake } from '../datalake'
 import { getBufferSha256, getStreamSha256 } from '../hash'
@@ -229,11 +228,6 @@ export async function handleUploadFormData (
         })
 
         ctx.info('uploaded', { workspace, name, etag: metadata.etag, type: contentType })
-
-        if (contentType.startsWith('video/')) {
-          ctx.info('transcode', { workspace, name })
-          void requestHLS(ctx, workspace, name)
-        }
 
         return { key, metadata }
       } catch (err: any) {
