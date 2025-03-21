@@ -16,7 +16,7 @@
   import calendar, { Calendar } from '@hcengineering/calendar'
   import type { Organization, Person } from '@hcengineering/contact'
   import contact, { getCurrentEmployee } from '@hcengineering/contact'
-  import core, { Class, Client, DateRangeMode, Doc, generateId, Markup, Ref } from '@hcengineering/core'
+  import core, { Class, Client, DateRangeMode, Doc, generateId, Markup, PersonId, Ref } from '@hcengineering/core'
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import { UserBox, UserBoxList } from '@hcengineering/contact-resources'
@@ -63,7 +63,7 @@
     _id: generateId(),
     collection: 'reviews',
     modifiedOn: Date.now(),
-    modifiedBy: '',
+    modifiedBy: '' as PersonId,
     date: 0,
     access: 'reader',
     allDay: false,

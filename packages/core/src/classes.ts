@@ -91,8 +91,7 @@ export type AccountUuid = PersonUuid & { __accountUuid: true }
 
 /**
  * @public
- * String representation of a social id linked to a global person.
- * E.g. email:pied.piper@hcengineering.com or huly:ea3bf257-94b5-4a31-a7da-466d578d850f
+ * Generated identifier of a social id linked to a global person.
  */
 export type PersonId = string & { __personId: true }
 
@@ -863,11 +862,19 @@ export enum SocialIdType {
   HULY = 'huly',
   TELEGRAM = 'telegram'
 }
+
 export interface SocialId {
-  id: string
+  // generated ID so the actual social ID can be detached from a person w/o losing the ID in the linked database records
+  _id: PersonId
+
+  // Should never be changed after creation
   type: SocialIdType
   value: string
-  key: PersonId
+  key: string // Calculated from type and value. Just for convenience.
+
+  // To be used later when person detaches social id from his account by any means
+  // There should always be only one ACTIVE social id with the same key every time
+  // active: boolean
   verifiedOn?: number
 }
 

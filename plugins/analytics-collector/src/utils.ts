@@ -13,8 +13,6 @@
 // limitations under the License.
 //
 
-import type { PersonId } from '@hcengineering/core'
-
-export function getOnboardingChannelName (worksapceUrl: string, personId: PersonId): string {
-  return `${personId}; ${worksapceUrl}`
+export function getOnboardingChannelName (worksapceUrl: string, name: string): string {
+  return `${name}; ${worksapceUrl}`
 }

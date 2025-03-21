@@ -13,33 +13,29 @@
 // limitations under the License.
 // -->
 <script lang="ts">
-  import { getJsonOrEmpty, getClient, type LinkPreviewDetails } from '@hcengineering/presentation'
+  import {
+    getJsonOrEmpty,
+    getClient,
+    type LinkPreviewDetails,
+    LinkPreviewAttachmentMetadata
+  } from '@hcengineering/presentation'
   import { type Attachment } from '@hcengineering/attachment'
   import { type WithLookup } from '@hcengineering/core'
-  import { Spinner } from '@hcengineering/ui'
-  import WebIcon from './icons/Web.svelte'
   import { onMount } from 'svelte'
+
   import TrashIcon from './icons/Trash.svelte'
+  import { getImageDimensions } from '../utils'
+  import LinkPreviewIcon from './LinkPreviewIcon.svelte'
+  import LinkPreviewImage from './LinkPreviewImage.svelte'
 
   export let attachment: WithLookup<Attachment>
   export let isOwn = false
 
-  let useDefaultIcon = false
-  let retryCount = 0
   let viewModel: LinkPreviewDetails | undefined
-  let previewImageSrc: string | undefined
 
-  function refreshPreviewImage (): void {
-    if (viewModel?.image === undefined) {
-      return
-    }
-    if (retryCount > 3) {
-      previewImageSrc = undefined
-      return
-    }
-    retryCount++
-    previewImageSrc = `${viewModel.image}#${Date.now()}`
-  }
+  let metadata: LinkPreviewAttachmentMetadata | undefined
+  $: metadata = attachment.metadata
+
   const client = getClient()
 
   async function onDelete (): Promise<void> {
@@ -52,129 +48,129 @@
       'attachments'
     )
   }
+
   onMount(() => {
     void getJsonOrEmpty<LinkPreviewDetails>(attachment.file, attachment.name)
       .then((res) => {
         viewModel = res
-        refreshPreviewImage()
       })
       .catch((err) => {
         viewModel = undefined
         console.error(err)
       })
   })
+
+  $: description = viewModel?.description ?? metadata?.description
+  $: title = viewModel?.title ?? metadata?.title
+  $: icon = viewModel?.icon
+  $: image = viewModel?.image ?? metadata?.image
+  $: host = viewModel?.host
+  $: hostname = viewModel?.hostname
+  $: url = viewModel?.url
+
+  $: imageDimensions =
+    metadata?.imageWidth && metadata.imageHeight
+      ? getImageDimensions(
+        { width: metadata.imageWidth, height: metadata.imageHeight },
+        {
+          maxWidth: 24.5,
+          minWidth: 4,
+          maxHeight: 15,
+          minHeight: 4
+        }
+      )
+      : undefined
 </script>
 
-<div class="content">
-  {#if viewModel}
-    <div class="title">
-      {#if viewModel.icon !== undefined && !useDefaultIcon}
-        <img
-          src={viewModel.icon}
-          class="preview-icon"
-          alt="link-preview-icon"
-          on:error={() => {
-            useDefaultIcon = true
-          }}
-        />
-      {:else}
-        <WebIcon size="small" />
-      {/if}
-      <b><a class="link" target="_blank" href={viewModel.host}>{viewModel.hostname}</a></b>
-      {#if isOwn}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <span
-          class="delete-button"
-          tabindex="0"
-          role="button"
-          on:click={() => {
-            void onDelete()
-          }}><TrashIcon size="small" /></span
-        >
-      {/if}
-    </div>
-    <div class="description">
-      {#if viewModel.title?.toLowerCase() !== viewModel.hostname?.toLowerCase()}
-        <div>
-          <b><a class="link" target="_blank" href={viewModel.url}>{viewModel.title}</a></b>
-        </div>
-      {/if}
-
-      {#if viewModel.description}
-        <div>
-          {viewModel.description}
-        </div>
-      {/if}
-    </div>
-    {#if previewImageSrc}
-      <div>
-        <a target="_blank" href={viewModel.url}>
-          <img
-            src={previewImageSrc}
-            class="round-image"
-            alt="link-preview"
-            on:error={() => {
-              refreshPreviewImage()
-            }}
-          />
-        </a>
+<div class="link-preview">
+  <div class="link-preview__header">
+    <LinkPreviewIcon src={icon} />
+    {#if host}
+      <b class="overflow-label"><a class="link" target="_blank" href={host}>{hostname}</a></b>
+    {/if}
+    {#if isOwn}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div class="link-preview__delete-button" tabindex="0" role="button" on:click={onDelete}>
+        <TrashIcon size="small" />
       </div>
     {/if}
-  {:else}
-    <div class="centered">
-      <Spinner size="medium" />
-    </div>
+  </div>
+  <div class="link-preview__body">
+    {#if title && title.toLowerCase() !== (hostname ?? '').toLowerCase()}
+      {#if url}
+        <b><a class="link" target="_blank" href={url}>{title}</a></b>
+      {:else}
+        <b>{title}</b>
+      {/if}
+    {/if}
+    {#if description && description !== ''}
+      <span class="link-preview__description lines-limit-4">
+        {description}
+      </span>
+    {/if}
+  </div>
+  {#if image}
+    <LinkPreviewImage
+      {url}
+      src={image}
+      width={imageDimensions?.width ?? 300}
+      height={imageDimensions?.height ?? 170}
+      fit={imageDimensions?.fit ?? 'contain'}
+    />
   {/if}
 </div>
 
 <style lang="scss">
-  .delete-button {
-    margin-left: auto;
-    cursor: pointer;
-  }
-  .delete-button:not(:hover) {
-    color: var(--theme-link-preview-description-color);
-  }
-  .round-image {
-    margin-top: 0.5rem;
-    border-radius: 0.375rem;
-    max-width: 24.5rem;
-    max-height: 15rem;
-  }
-  .preview-icon {
-    width: 16px;
-    height: 16px;
-  }
-  .link {
-    color: var(--theme-link-preview-text-color);
-  }
-  .title {
-    gap: 0.375rem;
+  .link-preview {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-  }
-  .description {
-    color: var(--theme-link-preview-description-color);
-    overflow: hidden;
-  }
-  .content span {
-    display: none;
-  }
-  .content:hover span {
-    display: block;
-  }
-  .content {
     flex-direction: column;
-    display: flex;
+    gap: 0.25rem;
     line-height: 150%;
-    gap: 0.188rem;
     padding: 0.75rem;
     background-color: var(--theme-link-preview-bg-color);
     border-radius: 0.75rem;
     scroll-snap-align: start;
     max-width: 26rem;
-    max-height: 28rem;
-    font-family: var(--font-family);
+    min-width: 16rem;
+
+    &:hover {
+      .link-preview__delete-button {
+        visibility: visible;
+      }
+    }
+  }
+
+  .link-preview__header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.375rem;
+  }
+
+  .link-preview__delete-button {
+    margin-left: auto;
+    cursor: pointer;
+    visibility: hidden;
+
+    &:not(:hover) {
+      color: var(--theme-link-preview-description-color);
+    }
+  }
+
+  .link-preview__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow: hidden;
+  }
+
+  .link-preview__description {
+    color: var(--theme-link-preview-description-color);
+    overflow: hidden;
+  }
+
+  .link {
+    color: var(--theme-link-preview-text-color);
   }
 </style>
