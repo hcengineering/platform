@@ -1,6 +1,6 @@
 import { getCategories, SkillCategory } from '@anticrm/skillset'
-import { existsSync, mkdirSync, readdirSync, readFileSync } from 'fs'
-import { writeFile } from 'fs/promises'
+import { existsSync, mkdirSync, readdirSync } from 'fs'
+import { readFile, writeFile } from 'fs/promises'
 import { join } from 'path'
 import { extractDocument } from './process'
 
@@ -22,7 +22,7 @@ const categories = getCategories()
 async function readFiles (): Promise<void> {
   for (const filename of files) {
     const pdfFile = join(pdfDir, filename)
-    const data = readFileSync(pdfFile)
+    const data = await readFile(pdfFile)
 
     const { resume, model } = await extractDocument(data)
     if (resume !== undefined) {

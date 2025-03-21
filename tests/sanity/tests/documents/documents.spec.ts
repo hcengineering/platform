@@ -255,7 +255,7 @@ test.describe('Documents tests', () => {
     await documentsPage.selectMoreActionOfDocument(newDocument.title, 'Lock')
     await documentsPage.selectMoreActionOfDocument(newDocument.title, 'Copy document URL to clipboard')
     await context.grantPermissions(['clipboard-read'])
-    const handle = await page.evaluateHandle(() => navigator.clipboard.readText())
+    const handle = await page.evaluateHandle(async () => await navigator.clipboard.readText())
     const clipboardContent = await handle.jsonValue()
     await page.goto(`${clipboardContent}`)
     await documentContentPage.checkDocumentTitle(newDocument.title)

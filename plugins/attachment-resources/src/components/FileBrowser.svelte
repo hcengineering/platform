@@ -116,7 +116,7 @@
         ]}
         selected={isListDisplayMode ? 'table' : 'card'}
         on:select={(result) => {
-          if (result.detail !== undefined) isListDisplayMode = result.detail === 'table' ?? false
+          if (result.detail !== undefined) isListDisplayMode = result.detail === 'table'
         }}
       />
     </div>

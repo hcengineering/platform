@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "es2024",
     "module": "commonjs",
     "declaration": true,
     "strict": true,

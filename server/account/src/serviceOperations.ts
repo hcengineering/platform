@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 import {
-  AccountRole,
-  Data,
+  type AccountRole,
+  type Data,
   isActiveMode,
-  MeasureContext,
-  SocialIdType,
-  Version,
-  WorkspaceMode,
+  type MeasureContext,
+  type SocialIdType,
+  type Version,
+  type WorkspaceMode,
   type PersonInfo,
   type BackupStatus,
   type Branding,

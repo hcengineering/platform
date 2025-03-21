@@ -1,13 +1,13 @@
-import core, { Class, Doc, Hierarchy, Ref, systemAccount, TxCreateDoc, TxCUD, TxProcessor } from '@hcengineering/core'
-import { Card } from '@hcengineering/card'
-import { TriggerControl } from '@hcengineering/server-core'
+import core, { type Class, type Doc, type Hierarchy, type Ref, systemAccount, type TxCreateDoc, type TxCUD, TxProcessor } from '@hcengineering/core'
+import { type Card } from '@hcengineering/card'
+import { type TriggerControl } from '@hcengineering/server-core'
 import activity from '@hcengineering/activity'
-import { ActivityControl } from '@hcengineering/server-activity'
-import { ServerApi as CommunicationApi, MessageRequestEventType } from '@hcengineering/communication-sdk-types'
+import { type ActivityControl } from '@hcengineering/server-activity'
+import { type ServerApi as CommunicationApi, MessageRequestEventType } from '@hcengineering/communication-sdk-types'
 import {
-  ActivityAttributeUpdate,
-  ActivityMessageData,
-  ActivityUpdate,
+  type ActivityAttributeUpdate,
+  type ActivityMessageData,
+  type ActivityUpdate,
   ActivityUpdateType,
   MessageType
 } from '@hcengineering/communication-types'

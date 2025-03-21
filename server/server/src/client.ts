@@ -14,7 +14,7 @@
 //
 
 import {
-  AccountUuid,
+  type AccountUuid,
   generateId,
   TxProcessor,
   type Account,
@@ -53,18 +53,18 @@ import {
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import {
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  Message,
-  MessagesGroup,
-  FindNotificationContextParams,
-  FindNotificationsParams,
-  FindLabelsParams
+  type FindMessagesGroupsParams,
+  type FindMessagesParams,
+  type Message,
+  type MessagesGroup,
+  type FindNotificationContextParams,
+  type FindNotificationsParams,
+  type FindLabelsParams
 } from '@hcengineering/communication-types'
 import {
-  RequestEvent as CommunicationEvent,
-  ConnectionInfo as CommunicationCtx,
-  EventResult
+  type RequestEvent as CommunicationEvent,
+  type ConnectionInfo as CommunicationCtx,
+  type EventResult
 } from '@hcengineering/communication-sdk-types'
 
 const useReserveContext = (process.env.USE_RESERVE_CTX ?? 'true') === 'true'

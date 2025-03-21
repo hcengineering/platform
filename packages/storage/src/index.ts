@@ -62,7 +62,7 @@ export interface StorageAdapter {
     contentType: string,
     size?: number
   ) => Promise<UploadedObjectInfo>
-  read: (ctx: MeasureContext, wsIds: WorkspaceIds, name: string) => Promise<Buffer[]>
+  read: (ctx: MeasureContext, wsIds: WorkspaceIds, name: string) => Promise<Buffer>
   partial: (
     ctx: MeasureContext,
     wsIds: WorkspaceIds,
@@ -150,7 +150,7 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     throw new Error('not implemented')
   }
 
-  async read (ctx: MeasureContext, wsIds: WorkspaceIds, name: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, name: string): Promise<Buffer> {
     throw new Error('not implemented')
   }
 

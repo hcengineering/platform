@@ -14,14 +14,14 @@
 //
 import { Analytics } from '@hcengineering/analytics'
 import {
-  AccountInfo,
+  type AccountInfo,
   AccountRole,
   type Branding,
   buildSocialIdString,
   concatLink,
   isActiveMode,
   isWorkspaceCreating,
-  MeasureContext,
+  type MeasureContext,
   type Person,
   type PersonId,
   type PersonUuid,

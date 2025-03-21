@@ -19,7 +19,7 @@ import { type ServerApi as CommunicationApi } from '@hcengineering/communication
 import core, {
   AccountRole,
   cutObjectArray,
-  Data,
+  type Data,
   generateId,
   isArchivingMode,
   isMigrationMode,
@@ -30,7 +30,7 @@ import core, {
   platformNowDiff,
   systemAccountUuid,
   TxFactory,
-  Version,
+  type Version,
   versionToString,
   withContext,
   WorkspaceEvent,
@@ -45,18 +45,19 @@ import core, {
   type WorkspaceDataId,
   type WorkspaceInfoWithStatus,
   type WorkspaceUuid
+  , type WorkspaceIds
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
 import {
-  CommunicationApiFactory,
+  type CommunicationApiFactory,
   LOGGING_ENABLED,
   pingConst,
-  Pipeline,
-  PipelineFactory,
+  type Pipeline,
+  type PipelineFactory,
   QueueTopic,
-  QueueUserMessage,
-  SessionManager,
+  type QueueUserMessage,
+  type SessionManager,
   userEvents,
   workspaceEvents,
   type AddSessionResponse,
@@ -71,7 +72,6 @@ import {
 } from '@hcengineering/server-core'
 import { generateToken, type Token } from '@hcengineering/server-token'
 
-import { WorkspaceIds } from '@hcengineering/core'
 import { sendResponse } from './utils'
 
 const ticksPerSecond = 20
@@ -511,7 +511,7 @@ export class TSessionManager implements SessionManager {
           workspace: workspaceInfo.uuid,
           wsUrl: workspaceInfo.url
         })
-        pipeline = await ctx.with('💤 wait-pipeline', {}, () => (workspace as Workspace).pipeline)
+        pipeline = await ctx.with('💤 wait-pipeline', {}, () => workspace.pipeline)
       } else {
         ctx.warn('reconnect workspace in upgrade switch', {
           email: token.account,
@@ -545,7 +545,7 @@ export class TSessionManager implements SessionManager {
 
       try {
         if (workspace.pipeline instanceof Promise) {
-          pipeline = await ctx.with('💤 wait-pipeline', {}, () => (workspace as Workspace).pipeline)
+          pipeline = await ctx.with('💤 wait-pipeline', {}, () => workspace.pipeline)
           workspace.pipeline = pipeline
         } else {
           pipeline = workspace.pipeline

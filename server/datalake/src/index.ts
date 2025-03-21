@@ -188,7 +188,7 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('read')
-  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, objectName: string): Promise<Buffer> {
     const data = await this.client.getObject(ctx, wsIds.uuid, objectName)
     const chunks: Buffer[] = []
 
@@ -196,7 +196,7 @@ export class DatalakeService implements StorageAdapter {
       chunks.push(chunk)
     }
 
-    return chunks
+    return Buffer.concat(chunks)
   }
 
   @withContext('partial')
