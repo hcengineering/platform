@@ -92,7 +92,7 @@ export function createServer (storageConfig: StorageConfiguration, brandings: Br
       const ctx = {
         title: branding?.title ?? 'Huly'
       }
-      const signRes = await signPDF(Buffer.concat(originalFile), config.Cert, config.CertPwd, ctx)
+      const signRes = await signPDF(originalFile, config.Cert, config.CertPwd, ctx)
 
       if (signRes === undefined) {
         throw new ApiError(400, 'Failed to sign')

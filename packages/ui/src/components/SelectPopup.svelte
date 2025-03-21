@@ -103,7 +103,7 @@
     }
     const promises = values.map(translateValue)
     const result: Array<readonly [string, string] | null> = await Promise.all(promises)
-    itemLabelsTranslation = new Map(result.filter((r) => r !== null) as Array<readonly [string, string]>)
+    itemLabelsTranslation = new Map(result.filter((r) => r !== null))
   }
 
   $: void translateLabels(value)

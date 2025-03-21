@@ -1,12 +1,12 @@
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 import docx4js from 'docx4js'
-import { AnyNode } from 'domhandler'
+import { type AnyNode } from 'domhandler'
 
 import extract from './extract/extract'
 import { MetadataContainer, read } from './extract/types'
 import importExtractedFile from './import'
 import convert from './convert/convert'
-import { Config } from './config'
+import { type Config } from './config'
 
 export async function importDoc (ctx: MeasureContext, config: Config): Promise<void> {
   const { specFile, doc, backend } = config

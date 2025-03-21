@@ -47,9 +47,7 @@ export function collectFields (fieldMapping: BitrixFieldMapping[]): string[] {
   for (const f of fieldMapping) {
     switch (f.operation.kind) {
       case MappingOperation.CopyValue:
-        fields.push(
-          ...Array.from(f.operation.patterns.map((it) => it.field).filter((it) => it !== undefined) as string[])
-        )
+        fields.push(...Array.from(f.operation.patterns.map((it) => it.field).filter((it) => it !== undefined)))
         break
       case MappingOperation.CreateChannel:
         fields.push(...Array.from(f.operation.fields.map((it) => it.field).filter((it) => it !== undefined)))

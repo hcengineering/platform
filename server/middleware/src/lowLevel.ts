@@ -14,9 +14,9 @@
 //
 
 import {
-  DocumentQuery,
-  DocumentUpdate,
-  FindOptions,
+  type DocumentQuery,
+  type DocumentUpdate,
+  type FindOptions,
   type Doc,
   type Domain,
   type Iterator,

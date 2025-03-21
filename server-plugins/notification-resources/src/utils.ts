@@ -480,7 +480,7 @@ export async function getUsersInfo (
 
   const persons = [...presentEmployeeIds, ...Object.values(personsBySocialId).map((it) => it._id)]
 
-  const socialStringsByPersons = await getSocialStringsByPersons(control, persons as Ref<Person>[])
+  const socialStringsByPersons = await getSocialStringsByPersons(control, persons)
 
   return new Map(
     uniqueIds.map((_id) => {

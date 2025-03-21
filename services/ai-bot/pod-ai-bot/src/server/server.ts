@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Token } from '@hcengineering/server-token'
+import { type Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
 import {
-  TranslateRequest,
-  ConnectMeetingRequest,
-  DisconnectMeetingRequest,
-  AIEventRequest,
-  PostTranscriptRequest,
-  SummarizeMessagesRequest
+  type TranslateRequest,
+  type ConnectMeetingRequest,
+  type DisconnectMeetingRequest,
+  type AIEventRequest,
+  type PostTranscriptRequest,
+  type SummarizeMessagesRequest
 } from '@hcengineering/ai-bot'
 import { extractToken } from '@hcengineering/server-client'
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 
 import { ApiError } from './error'
-import { AIControl } from '../controller'
+import { type AIControl } from '../controller'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 

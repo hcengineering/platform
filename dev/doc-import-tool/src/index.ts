@@ -12,9 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Employee } from '@hcengineering/contact'
-import documents, { DocumentSpace } from '@hcengineering/controlled-documents'
-import { MeasureMetricsContext, Ref, systemAccountUuid, WorkspaceUuid, type WorkspaceDataId } from '@hcengineering/core'
+import { type Employee } from '@hcengineering/contact'
+import documents, { type DocumentSpace } from '@hcengineering/controlled-documents'
+import {
+  MeasureMetricsContext,
+  type Ref,
+  systemAccountUuid,
+  type WorkspaceUuid,
+  type WorkspaceDataId
+} from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -23,7 +29,7 @@ import serverToken, { generateToken } from '@hcengineering/server-token'
 import { program } from 'commander'
 
 import { importDoc } from './commands'
-import { Config } from './config'
+import { type Config } from './config'
 import { getBackend } from './convert/convert'
 
 /**

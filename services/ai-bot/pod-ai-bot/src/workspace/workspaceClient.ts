@@ -13,57 +13,57 @@
 // limitations under the License.
 //
 import {
-  AIEventRequest,
-  ConnectMeetingRequest,
-  DisconnectMeetingRequest,
-  IdentityResponse
+  type AIEventRequest,
+  type ConnectMeetingRequest,
+  type DisconnectMeetingRequest,
+  type IdentityResponse
 } from '@hcengineering/ai-bot'
-import attachment, { Attachment } from '@hcengineering/attachment'
-import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
+import attachment, { type Attachment } from '@hcengineering/attachment'
+import chunter, { type ChatMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, {
   AvatarType,
   combineName,
   ensureEmployee,
   getFirstName,
   getLastName,
-  Person
+  type Person
 } from '@hcengineering/contact'
 import core, {
   type Account,
   AccountRole,
-  Blob,
-  Class,
-  Client,
-  Doc,
-  MeasureContext,
-  PersonId,
-  PersonUuid,
+  type Blob,
+  type Class,
+  type Client,
+  type Doc,
+  type MeasureContext,
+  type PersonId,
+  type PersonUuid,
   RateLimiter,
-  Ref,
-  SocialId,
-  Space,
-  Tx,
-  TxCUD,
+  type Ref,
+  type SocialId,
+  type Space,
+  type Tx,
+  type TxCUD,
   TxOperations,
   type WorkspaceUuid,
   type WorkspaceIds,
-  AccountUuid,
+  type AccountUuid,
   pickPrimarySocialId
 } from '@hcengineering/core'
-import { Room } from '@hcengineering/love'
-import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
+import { type Room } from '@hcengineering/love'
+import { type WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import fs from 'fs'
-import { WithId } from 'mongodb'
-import OpenAI from 'openai'
-import { Tiktoken } from 'js-tiktoken'
+import { type WithId } from 'mongodb'
+import type OpenAI from 'openai'
+import { type Tiktoken } from 'js-tiktoken'
 
-import { StorageAdapter } from '@hcengineering/server-core'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import config from '../config'
-import { HistoryRecord } from '../types'
+import { type HistoryRecord } from '../types'
 import { createChatCompletionWithTools, requestSummary } from '../utils/openai'
 import { connectPlatform } from '../utils/platform'
 import { LoveController } from './love'
-import { DbStorage } from '../storage'
+import { type DbStorage } from '../storage'
 import { jsonToMarkup, markupToText } from '@hcengineering/text'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { countTokens } from '@hcengineering/openai'

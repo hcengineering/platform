@@ -1,4 +1,4 @@
-import { IntlString, Metadata, plugin, Plugin } from '@hcengineering/platform'
+import { type IntlString, type Metadata, plugin, type Plugin } from '@hcengineering/platform'
 
 /**
  * @public

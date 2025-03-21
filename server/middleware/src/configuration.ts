@@ -15,21 +15,26 @@
 
 import core, {
   AccountRole,
-  Class,
-  Doc,
-  DocumentQuery,
+  type Class,
+  type Doc,
+  type DocumentQuery,
   DOMAIN_CONFIGURATION,
-  FindOptions,
-  FindResult,
-  MeasureContext,
-  Ref,
-  Tx,
-  TxCUD,
+  type FindOptions,
+  type FindResult,
+  type MeasureContext,
+  type Ref,
+  type Tx,
+  type TxCUD,
   TxProcessor,
   type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import {
+  BaseMiddleware,
+  type Middleware,
+  type TxMiddlewareResult,
+  type PipelineContext
+} from '@hcengineering/server-core'
 
 export const configurationAccountEmail = '#configurator@hc.engineering'
 /**

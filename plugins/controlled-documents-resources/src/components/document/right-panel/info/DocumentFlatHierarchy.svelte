@@ -53,11 +53,11 @@
       .map((ref) => tree.bundleOf(ref))
       .filter((r) => r !== undefined)
 
-    if (parents.length > 0) levels.push([parents as DocumentBundle[], false])
+    if (parents.length > 0) levels.push([parents, false])
     if (me) {
       levels.push([[me], true])
     }
-    if (children.length > 0) levels.push([children as DocumentBundle[], false])
+    if (children.length > 0) levels.push([children, false])
   }
 </script>
 

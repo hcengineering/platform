@@ -156,12 +156,11 @@
       const category = _status.category !== undefined ? categoriesMap.get(_status.category) : undefined
       const projectStatus = getProjectStatus(type, _status)
       const color = getProjectStatus(type, _status)?.color ?? _status.color ?? category?.color
-      const sameCategory = (
-        taskType.statuses
-          .map((it) => $statusStore.byId.get(it))
-          .filter((it) => it !== undefined)
-          .filter((it) => it?.category === _status.category) as Status[]
-      ).filter((it, idx, arr) => arr.findIndex((qt) => qt._id === it._id) === idx)
+      const sameCategory = taskType.statuses
+        .map((it) => $statusStore.byId.get(it))
+        .filter((it) => it !== undefined)
+        .filter((it) => it?.category === _status.category)
+        .filter((it, idx, arr) => arr.findIndex((qt) => qt._id === it._id) === idx)
 
       $settingsStore = {
         id: opened,

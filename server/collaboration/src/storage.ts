@@ -18,14 +18,14 @@ import {
   type CollaborativeDoc,
   type Ref,
   type WorkspaceIds,
-  Markup,
-  MarkupBlobRef,
-  MeasureContext,
+  type Markup,
+  type MarkupBlobRef,
+  type MeasureContext,
   generateId,
   makeCollabJsonId,
   makeCollabYdocId
 } from '@hcengineering/core'
-import { StorageAdapter } from '@hcengineering/server-core'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import { yDocToMarkup } from '@hcengineering/text-ydoc'
 import { Doc as YDoc } from 'yjs'
 
@@ -54,7 +54,7 @@ export async function loadCollabYdoc (
   const ydoc = new YDoc({ guid: generateId(), gc: false })
 
   const buffer = await storageAdapter.read(ctx, wsIds, blobId)
-  return yDocFromBuffer(Buffer.concat(buffer as any), ydoc)
+  return yDocFromBuffer(buffer, ydoc)
 }
 
 /** @public */
@@ -106,7 +106,7 @@ export async function loadCollabJson (
   }
 
   const buffer = await storageAdapter.read(ctx, wsIds, blobId)
-  return Buffer.concat(buffer as any).toString()
+  return buffer.toString()
 }
 
 /** @public */

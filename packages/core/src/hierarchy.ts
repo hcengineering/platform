@@ -66,7 +66,7 @@ export class Hierarchy {
   }
 
   asIfArray<D extends Doc, M extends D>(docs: D[], mixin: Ref<Mixin<M>>): M[] {
-    return docs.map((it) => this.asIf(it, mixin)).filter((it) => it !== undefined) as M[]
+    return docs.map((it) => this.asIf(it, mixin)).filter((it) => it !== undefined)
   }
 
   static toDoc<D extends Doc>(doc: D): D {
@@ -607,9 +607,10 @@ export class Hierarchy {
     const classes = Array.from(this.classifiers.values()).filter(
       (it) => this.isClass(it) || this._isMixin(it)
     ) as Class<Doc>[]
-    return (classes.map((it) => it.domain).filter((it) => it !== undefined) as Domain[]).filter(
-      (it, idx, array) => array.findIndex((pt) => pt === it) === idx
-    )
+    return classes
+      .map((it) => it.domain)
+      .filter((it) => it !== undefined)
+      .filter((it, idx, array) => array.findIndex((pt) => pt === it) === idx)
   }
 
   getClassifierProp (cl: Ref<Class<Doc>>, prop: string): any | undefined {

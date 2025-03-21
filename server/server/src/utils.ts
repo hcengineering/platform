@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { WorkspaceUuid, type MeasureContext } from '@hcengineering/core'
+import { type WorkspaceUuid, type MeasureContext } from '@hcengineering/core'
 
 import type {
   AddSessionActive,
@@ -41,7 +41,7 @@ export function doSessionOp (
 ): void {
   if (data.session instanceof Promise) {
     // We need to copy since we will out of protected buffer area
-    const msgCopy = Buffer.copyBytesFrom(new Uint8Array(msg))
+    const msgCopy = Buffer.copyBytesFrom(msg)
     void data.session
       .then((_session) => {
         data.session = _session

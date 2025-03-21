@@ -1,24 +1,24 @@
-import { AccountUuid, MarkupBlobRef, Ref } from '@hcengineering/core'
-import document, { Document, getFirstRank, Teamspace } from '@hcengineering/document'
+import { type AccountUuid, type MarkupBlobRef, type Ref } from '@hcengineering/core'
+import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
 import {
-  BaseFunctionsArgs,
-  RunnableFunctionWithoutParse,
-  RunnableFunctionWithParse,
-  RunnableToolFunction,
-  RunnableToolFunctionWithoutParse,
-  RunnableToolFunctionWithParse,
-  RunnableTools
+  type BaseFunctionsArgs,
+  type RunnableFunctionWithoutParse,
+  type RunnableFunctionWithParse,
+  type RunnableToolFunction,
+  type RunnableToolFunctionWithoutParse,
+  type RunnableToolFunctionWithParse,
+  type RunnableTools
 } from 'openai/lib/RunnableFunction'
-import { Stream } from 'stream'
+import { type Stream } from 'stream'
 import { v4 as uuid } from 'uuid'
 import config from '../config'
-import { WorkspaceClient } from '../workspace/workspaceClient'
+import { type WorkspaceClient } from '../workspace/workspaceClient'
 
 async function stream2buffer (stream: Stream): Promise<Buffer> {
   return await new Promise<Buffer>((resolve, reject) => {
-    const _buf = Array<any>()
+    const _buf: Buffer[] = []
     stream.on('data', (chunk) => {
       _buf.push(chunk)
     })

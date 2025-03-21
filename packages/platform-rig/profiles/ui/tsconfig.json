@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "moduleResolution": "node",
-    "target": "esnext",
+    "target": "es2024",
     "module": "esnext",
     "declaration": true,
     "rootDir": "./src",
