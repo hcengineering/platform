@@ -27,3 +27,5 @@ fi
 ./tool.sh create-workspace sanity-ws email:user1
 
 ./restore-workspace.sh
+
+rm -rf ./sanity/.auth
