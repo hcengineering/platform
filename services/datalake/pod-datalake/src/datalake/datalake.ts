@@ -145,7 +145,6 @@ export class DatalakeImpl implements Datalake {
       await bucket.put(ctx, filename, body, putOptions)
       await this.db.createBlobData(ctx, { workspace, name, hash, location, filename, size, type: contentType })
       if (contentType.startsWith('video/')) {
-        ctx.info('transcode', { workspace, name })
         void requestHLS(ctx, workspace, name)
       }
       return { name, size, contentType, lastModified, etag: hash }
@@ -173,7 +172,6 @@ export class DatalakeImpl implements Datalake {
     }
 
     if (contentType.startsWith('video/')) {
-      ctx.info('transcode', { workspace, name })
       void requestHLS(ctx, workspace, name)
     }
 

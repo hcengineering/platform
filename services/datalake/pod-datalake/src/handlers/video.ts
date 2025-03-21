@@ -26,6 +26,15 @@ interface StreamRequest {
 }
 
 export async function requestHLS (ctx: MeasureContext, workspace: string, name: string): Promise<void> {
+  try {
+    ctx.info('request for hls', { workspace, name })
+    await postTranscodingTask(ctx, workspace, name)
+  } catch (err) {
+    ctx.error('can not schedule a task', { err })
+  }
+}
+
+async function postTranscodingTask (ctx: MeasureContext, workspace: string, name: string): Promise<void> {
   if (config.StreamUrl === undefined) {
     return
   }
