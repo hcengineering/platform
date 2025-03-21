@@ -319,6 +319,7 @@ export class TViewlet extends TDoc implements Viewlet {
   hiddenKeys?: string[]
   viewOptions?: ViewOptionsModel
   props?: Record<string, any>
+  title?: IntlString
 }
 
 @Model(view.class.Action, core.class.Doc, DOMAIN_MODEL)
@@ -1277,6 +1278,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilterPresenter, {
     presenter: view.component.PersonIdFilterValuePresenter
+  })
+
+  builder.mixin(view.class.ViewletDescriptor, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: view.component.BaseDocPresenter
   })
 }
 

@@ -23,6 +23,10 @@
     "UnsetParent": "取消父级",
     "SetParent": "设置父级",
     "CreateChild": "创建子级",
-    "Children": "子级"
+    "Children": "子级",
+    "Views": "视图",
+    "CreateView": "创建视图",
+    "EditView": "编辑视图",
+    "SelectViewType": "选择视图类型"
   }
 }

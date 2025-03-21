@@ -23,6 +23,10 @@
     "UnsetParent": "Remover pai",
     "SetParent": "Definir pai",
     "CreateChild": "Criar filho",
-    "Children": "Filhos"
+    "Children": "Filhos",
+    "Views": "Visualizações",
+    "CreateView": "Criar visualização",
+    "EditView": "Editar visualização",
+    "SelectViewType": "Selecionar tipo de visualização"
   }
 }
