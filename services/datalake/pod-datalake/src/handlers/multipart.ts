@@ -17,7 +17,6 @@ import { MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { cacheControl } from '../const'
 import { Datalake } from '../datalake'
-import { requestHLS } from './video'
 
 export interface MultipartUpload {
   key: string
