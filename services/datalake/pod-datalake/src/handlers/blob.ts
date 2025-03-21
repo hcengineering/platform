@@ -135,6 +135,8 @@ export async function handleBlobDelete (
 
   try {
     await datalake.delete(ctx, workspace, name)
+    ctx.info('deleted', { workspace, name })
+
     res.status(204).send()
   } catch (error: any) {
     ctx.error('failed to delete blob', { error })
@@ -153,6 +155,8 @@ export async function handleBlobDeleteList (
 
   try {
     await datalake.delete(ctx, workspace, body.names)
+    ctx.info('deleted', { workspace, names: body.names })
+
     res.status(204).send()
   } catch (error: any) {
     ctx.error('failed to delete blobs', { error })
