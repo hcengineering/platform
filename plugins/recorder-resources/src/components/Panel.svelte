@@ -91,8 +91,10 @@
     if (state === RecordingState.Inactive) {
       try {
         await createScreenRecorder()
-      } catch {
+      } catch (err) {
+        console.log('cant create screen recorder', err)
         distpacher('close', true)
+        return
       }
       await showCountdown()
       recorder?.start()

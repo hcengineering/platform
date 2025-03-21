@@ -1,10 +1,55 @@
 import log from 'electron-log'
 import love from '@hcengineering/love'
 import { setCustomCreateScreenTracks } from '@hcengineering/love-resources'
+import { ScreenRecorder } from '@hcengineering/recorder-resources'
 import { showPopup } from '@hcengineering/ui'
 import { Track, LocalTrack, LocalAudioTrack, LocalVideoTrack, ParticipantEvent, TrackInvalidError, ScreenShareCaptureOptions, DeviceUnsupportedError, ScreenSharePresets } from 'livekit-client'
 
 import { IPCMainExposed } from './types'
+
+export function defineScreenRecorder (): void {
+  ScreenRecorder.overrideGetMediaStream(async (opts): Promise<MediaStream> => {
+    if (opts === undefined) {
+      throw new Error('opts must be provided')
+    }
+    const ipcMain = (window as any).electron as IPCMainExposed
+    const sources = await ipcMain.getScreenSources()
+
+    const hasAccess = await ipcMain.getScreenAccess()
+    if (!hasAccess) {
+      log.error('No screen access granted')
+      throw new Error('No screen access granted')
+    }
+
+    if (navigator.mediaDevices.getDisplayMedia === undefined) {
+      throw new DeviceUnsupportedError('getDisplayMedia not supported')
+    }
+    return await new Promise<MediaStream>((resolve, reject) => {
+      showPopup(
+        love.component.SelectScreenSourcePopup,
+        {
+          sources
+        },
+        'top',
+        () => {
+          reject(new Error('No source selected'))
+        },
+        (val) => {
+          if (val != null) {
+            opts.video = {
+              mandatory: {
+                ...(typeof opts.video === 'boolean' ? {} : opts.video),
+                chromeMediaSource: 'desktop',
+                chromeMediaSourceId: val
+              }
+            } as any
+            resolve(window.navigator.mediaDevices.getUserMedia(opts))
+          }
+        }
+      )
+    })
+  })
+}
 
 export function defineScreenShare (): void {
   setCustomCreateScreenTracks(async function electronCreateScreenTracks (options?: ScreenShareCaptureOptions) {

@@ -19,30 +19,39 @@ import { TusUploader, type Uploader, type Options } from './uploader'
 export class ScreenRecorder {
   private readonly recorder: Recorder
   private readonly uploader: Uploader
+  static getMediaStream = async (options?: DisplayMediaStreamOptions): Promise<MediaStream> =>
+    await navigator.mediaDevices.getDisplayMedia(options)
 
   constructor (recorder: Recorder, uploader: Uploader) {
     this.recorder = recorder
     this.uploader = uploader
   }
 
+  static overrideGetMediaStream (val: (options?: DisplayMediaStreamOptions) => Promise<MediaStream>): void {
+    this.getMediaStream = val
+  }
+
   static async fromNavigatorMediaDevices (opts: Options): Promise<ScreenRecorder> {
     let width = 0
     let height = 0
     const combinedStream = new MediaStream()
-    const displayStream = await navigator.mediaDevices.getDisplayMedia({
-      video: { frameRate: opts.fps ?? 30 },
-      audio: true
+    const displayStream = await ScreenRecorder.getMediaStream({
+      video: { frameRate: opts.fps ?? 30 }
     })
-    const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    try {
+      const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      microphoneStream.getAudioTracks().forEach((track) => {
+        combinedStream.addTrack(track)
+      })
+    } catch (err) {
+      console.warn('microphone is disabled', err)
+    }
     displayStream.getVideoTracks().forEach((track) => {
       combinedStream.addTrack(track)
       width = Math.max(track.getSettings().width ?? width, width)
       height = Math.max(track.getSettings().height ?? height, height)
     })
     displayStream.getAudioTracks().forEach((track) => {
-      combinedStream.addTrack(track)
-    })
-    microphoneStream.getAudioTracks().forEach((track) => {
       combinedStream.addTrack(track)
     })
 
