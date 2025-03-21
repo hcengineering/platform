@@ -447,7 +447,7 @@ function uploadMultipart (
     stream.pipe(passthrough)
 
     datalake
-      .uploadMultipart(ctx, workspaceId, objectName, passthrough, metadata)
+      .uploadWithMultipart(ctx, workspaceId, objectName, passthrough, metadata)
       .then(() => {
         cleanup()
         resolve()
