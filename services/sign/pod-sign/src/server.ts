@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { generateId, type WorkspaceIds } from '@hcengineering/core'
+import { generateId, MeasureMetricsContext, newMetrics, type WorkspaceIds } from '@hcengineering/core'
 import { initStatisticsContext, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { getClient as getAccountClientRaw, AccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
@@ -27,6 +27,8 @@ import config from './config'
 import { ApiError } from './error'
 import { signPDF } from './sign'
 import { extractToken } from './token'
+import { join } from 'path'
+import { SplitLogger } from '@hcengineering/analytics-service'
 
 function getAccountClient (token: string): AccountClient {
   return getAccountClientRaw(config.AccountsUrl, token)
@@ -73,7 +75,19 @@ const wrapRequest =
 
 export function createServer (storageConfig: StorageConfiguration, brandings: BrandingMap): Express {
   const storageAdapter = buildStorageFromConfig(storageConfig)
-  const measureCtx = initStatisticsContext('sign', {})
+  const measureCtx = initStatisticsContext('sign', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'sign',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('sign', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
 
   const app = express()
   app.use(cors())

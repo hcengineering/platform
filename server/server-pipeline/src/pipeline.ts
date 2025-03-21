@@ -32,6 +32,7 @@ import {
   NotificationsMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
+  QueueMiddleware,
   SpacePermissionsMiddleware,
   SpaceSecurityMiddleware,
   TriggersMiddleware,
@@ -50,10 +51,12 @@ import {
   type PipelineContext,
   type PipelineFactory,
   type StorageAdapter,
-  type WorkspaceDestroyAdapter
+  type WorkspaceDestroyAdapter,
+  type PlatformQueue
 } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { createStorageDataAdapter } from './blobStorage'
+
 /**
  * @public
  */
@@ -99,6 +102,8 @@ export function createServerPipeline (
 
     externalStorage: StorageAdapter
 
+    queue?: PlatformQueue
+
     extraLogging?: boolean // If passed, will log every request/etc.
     pipelineContextVars?: Record<string, any>
   },
@@ -131,6 +136,7 @@ export function createServerPipeline (
       LiveQueryMiddleware.create,
       DomainFindMiddleware.create,
       DomainTxMiddleware.create,
+      ...(opt.queue !== undefined ? [QueueMiddleware.create(opt.queue)] : []),
       DBAdapterInitMiddleware.create,
       ModelMiddleware.create(model),
       DBAdapterMiddleware.create(conf), // Configure DB adapters
@@ -205,6 +211,7 @@ export async function getServerPipeline (
   wsUrl: WorkspaceIds,
   storageAdapter: StorageAdapter,
   opt?: {
+    queue?: PlatformQueue
     disableTriggers?: boolean
   }
 ): Promise<Pipeline> {
@@ -212,7 +219,8 @@ export async function getServerPipeline (
     externalStorage: storageAdapter,
     usePassedCtx: true,
     disableTriggers: opt?.disableTriggers ?? false,
-    adapterSecurity: isAdapterSecurity(dbUrl)
+    adapterSecurity: isAdapterSecurity(dbUrl),
+    queue: opt?.queue
   })
 
   return await pipelineFactory(ctx, wsUrl, true, () => {}, null)

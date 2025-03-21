@@ -1,9 +1,30 @@
 services:
+  stream:
+    image: 'hardcoreeng/stream'
+    pull_policy: always
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    environment:
+      - STREAM_ENDPOINT_URL=s3://huly.local:9000
+      - STREAM_INSECURE=true
+      - STREAM_SERVER_SECRET=secret
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+    ports:
+      - 1081:1080
+    restart: unless-stopped
   mongodb:
     image: 'mongo:7-jammy'
     command: mongod --port 27018
     extra_hosts:
       - 'huly.local:host-gateway'
+    healthcheck:
+      test: echo "try { db.currentOp().ok } catch (err) { }" | mongosh --port 27018 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
     environment:
       - PUID=1000
       - PGID=1000
@@ -16,16 +37,66 @@ services:
       - 'huly.local:host-gateway'
     ports:
       - '26258:26257'
+      - '18089:8080'
     command: start-single-node --insecure
     restart: unless-stopped
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9093,external://0.0.0.0:19093
+      - --advertise-kafka-addr internal://redpanda:9093,external://huly.local:19093
+      - --pandaproxy-addr internal://0.0.0.0:8084,external://0.0.0.0:18084
+      - --advertise-pandaproxy-addr internal://redpanda:8084,external://huly.local:18084
+      - --schema-registry-addr internal://0.0.0.0:8083,external://0.0.0.0:18083
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+    ports:
+      - 18083:18083
+      - 18084:18084
+      - 19093:19093
+      - 19645:9644
+    healthcheck:
+      test: ['CMD', 'rpk', 'cluster', 'info', '-X', 'user=superuser', '-X', 'pass=secretpassword']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  redpanda_console:
+    image: docker.redpanda.com/redpandadata/console:v2.8.3
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9093"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8083"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+    ports:
+      - 8001:8080
+    depends_on:
+      - redpanda
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
     extra_hosts:
       - 'huly.local:host-gateway'
     expose:
-      - 9000
-      - 9001
+      - 9002
+      - 9003
     ports:
       - 9002:9000
       - 9003:9001
@@ -45,33 +116,50 @@ services:
     healthcheck:
       interval: 20s
       retries: 10
-      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
+      test: curl -s http://huly.local:9200/_cluster/health | grep -vq '"status":"red"'
   account:
     image: hardcoreeng/account
     pull_policy: never
+    extra_hosts:
+      - 'huly.local:host-gateway'
     links:
       - mongodb
       - minio
       - cockroach
-    extra_hosts:
-      - 'huly.local:host-gateway'
     ports:
       - 3003:3003
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
-      - REGION_INFO=|America;europe| # Europe without name will not be available for creation of new workspaces.
-      # - REGION_INFO=|America;europe|Europe
-      - ADMIN_EMAILS=admin
-      - WORKSPACE_LIMIT_PER_USER=100
       - ACCOUNT_PORT=3003
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_SECRET=secret
-      - DB_URL=mongodb://huly.local:27018
-      - TRANSACTOR_URL=ws://huly.local:3334;ws://huly.local:3334,ws://huly.local:3335;ws://huly.local:3335;europe,
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - MODEL_ENABLED=*
-      - BRANDING_PATH=/var/cfg/branding.json
+      - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
       - STATS_URL=http://huly.local:4901
+      - WORKSPACE_LIMIT_PER_USER=100
+      - DB_URL=${MONGO_URL}
+      # - REGION_INFO=|America;europe| # Europe without name will not be available for creation of new workspaces.
+      - REGION_INFO=|America;europe|Europe
+      - TRANSACTOR_URL=ws://huly.local:3334;ws://huly.local:3334,ws://huly.local:3335;ws://huly.local:3335;europe
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://huly.local:8083
+      - MODEL_ENABLED=*
+      # - LAST_NAME_FIRST=true
+      # - WS_LIVENESS_DAYS=1
+      - ACCOUNTS_URL=http://huly.local:3003
+      - BRANDING_PATH=/var/cfg/branding.json
+      # - DISABLE_SIGNUP=true
+    restart: unless-stopped
+  stats:
+    image: hardcoreeng/stats
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    ports:
+      - 4901:4901
+    environment:
+      - PORT=4901
+      - SERVER_SECRET=secret
+    restart: unless-stopped
   workspace:
     image: hardcoreeng/workspace
     extra_hosts:
@@ -79,18 +167,20 @@ services:
     links:
       - mongodb
       - minio
+      - stats
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
       - WS_OPERATION=all+backup
       - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - DB_URL=${DB_URL}
+      - STATS_URL=http://huly.local:4901
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
       - REGION=
       - ACCOUNTS_URL=http://huly.local:3003
       - BRANDING_PATH=/var/cfg/branding.json
-      - STATS_URL=http://huly.local:4901
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
       # - INIT_WORKSPACE=huly
@@ -102,32 +192,53 @@ services:
     links:
       - cockroach
       - minio
+      - stats
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
       - WS_OPERATION=all+backup
       - REGION=europe
       - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - DB_URL=${DB_EU_URL}
+      - STATS_URL=http://huly.local:4901
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://huly.local:3003
       - BRANDING_PATH=/var/cfg/branding.json
-      - STATS_URL=http://huly.local:4901
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+      # - INIT_WORKSPACE=huly
+    restart: unless-stopped
+  collaborator:
+    image: hardcoreeng/collaborator
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    links:
+      - mongodb
+      - minio
+      - transactor
+      - stats
+    ports:
+      - 3079:3079
+    environment:
+      - COLLABORATOR_PORT=3079
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3003
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://huly.local:4901
     restart: unless-stopped
   front:
     image: hardcoreeng/front
     extra_hosts:
       - 'huly.local:host-gateway'
-    pull_policy: never
     links:
       - account
       - mongodb
       - minio
       - elastic
       - collaborator
+      - stats
       - transactor
     ports:
       - 8083:8083
@@ -138,102 +249,89 @@ services:
       - SERVER_SECRET=secret
       - ACCOUNTS_URL_INTERNAL=http://huly.local:3003
       - ACCOUNTS_URL=http://huly.local:3003
+      - STATS_URL=http://huly.local:4901
       - UPLOAD_URL=/files
-      - ELASTIC_URL=http://huly.local:9201
       - GMAIL_URL=http://huly.local:8088
       - CALENDAR_URL=http://huly.local:8095
-      - REKONI_URL=http://huly.local:4007
       - TELEGRAM_URL=http://huly.local:8086
+      - REKONI_URL=http://huly.local:4007
       - COLLABORATOR_URL=ws://huly.local:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - GITHUB_URL=http://huly.local:3501
+      - PRINT_URL=http://huly.local:4006
+      - SIGN_URL=http://huly.local:4007
       - BRANDING_URL=http://huly.local:8083/branding-test.json
-      - STATS_URL=http://huly.local:4901
       - STATS_API=http://huly.local:4901
+      - STREAM_URL=http://huly.local:1081/recording
+      # - DISABLE_SIGNUP=true
+    restart: unless-stopped
   transactor:
     image: hardcoreeng/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
-    pull_policy: never
     links:
       - mongodb
-      - elastic
       - minio
-      - rekoni
       - account
+      - stats
     ports:
       - 3334:3334
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - REGION=
       - SERVER_PORT=3334
       - SERVER_SECRET=secret
+      - ENABLE_COMPRESSION=true
+      - STATS_URL=http://huly.local:4901
+      - FULLTEXT_URL=http://huly.local:4710
       - DB_URL=${DB_URL}
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8083
       - ACCOUNTS_URL=http://huly.local:3003
-      - COLLABORATOR_URL=http://huly.local:3079
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
-      - FULLTEXT_URL=http://huly.local:4710
-      - STATS_URL=http://huly.local:4901
-      - ENABLE_COMPRESSION=true
+      - AI_BOT_URL=http://huly.local:4011
   transactor-europe:
     image: hardcoreeng/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
     pull_policy: never
     links:
-      - elastic
-      - minio
-      - rekoni
       - cockroach
+      - minio
       - account
+      - stats
     ports:
       - 3335:3335
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_PORT=3335
       - REGION=europe
       - SERVER_SECRET=secret
+      - ENABLE_COMPRESSION=true
+      - FULLTEXT_URL=http://huly.local:4710
+      - STATS_URL=http://huly.local:4901
       - DB_URL=${DB_EU_URL}
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8083
       - ACCOUNTS_URL=http://huly.local:3003
-      - COLLABORATOR_URL=http://hult-local:3079
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
-      - FULLTEXT_URL=http://huly.local:4710
-      - STATS_URL=http://huly.local:4901
-      - ENABLE_COMPRESSION=true
-  collaborator:
-    image: hardcoreeng/collaborator
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    links:
-      - mongodb
-      - minio
-      - transactor
-    ports:
-      - 3079:3079
-    environment:
-      - COLLABORATOR_PORT=3079
-      - SECRET=secret
-      - ACCOUNTS_URL=http://huly.local:3003
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FULLTEXT_URL=http://huly.local:4710
-      - STATS_URL=http://huly.local:4901
+      - AI_BOT_URL=http://huly.local:4011
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
     extra_hosts:
       - 'huly.local:host-gateway'
-    restart: on-failure
+    restart: unless-stopped
     ports:
       - 4007:4004
     environment:
@@ -246,28 +344,26 @@ services:
     links:
       - elastic
       - mongodb
-      - cockroach
       - rekoni
     ports:
       - 4710:4710
     environment:
       - PORT=4710
       - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - DB_URL=${DB_URL}
       - FULLTEXT_DB_URL=http://huly.local:9201
       - ELASTIC_INDEX_NAME=local_storage_index
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://huly.local:4901
       - REKONI_URL=http://huly.local:4007
       - ACCOUNTS_URL=http://huly.local:3003
-      - STATS_URL=http://huly.local:4901
   fulltext-europe:
     image: hardcoreeng/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
-    restart: unless-stopped
     links:
       - elastic
-      - mongodb
       - cockroach
       - rekoni
     ports:
@@ -276,20 +372,32 @@ services:
       - PORT=4711
       - REGION=europe
       - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - DB_URL=${DB_EU_URL}
       - FULLTEXT_DB_URL=http://huly.local:9201
       - ELASTIC_INDEX_NAME=local_eu_storage_index # Use different one to be able to check migration is working
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://huly.local:4901
       - REKONI_URL=http://huly.local:4007
       - ACCOUNTS_URL=http://huly.local:3003
-      - STATS_URL=http://huly.local:4901
-  stats:
-    image: hardcoreeng/stats
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    ports:
-      - 4901:4901
-    environment:
-      - PORT=4901
       - SERVER_SECRET=secret
     restart: unless-stopped
+  aiBot:
+    image: hardcoreeng/ai-bot
+    ports:
+      - 4011:4010
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    restart: unless-stopped
+    environment:
+      - SERVER_SECRET=secret
+      - MONGO_URL=${MONGO_URL}
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FIRST_NAME=Jolie
+      - LAST_NAME=AI
+      - PASSWORD=password
+      - AVATAR_PATH=./avatar.png
+      - AVATAR_CONTENT_TYPE=.png
+      - STATS_URL=http://huly.local:4900

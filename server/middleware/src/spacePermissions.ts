@@ -174,7 +174,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     if (!this.context.hierarchy.isDerived(createTx.objectClass, core.class.Space)) return
     if (this.isTypedSpaceClass(createTx.objectClass)) {
       const res = TxProcessor.buildDoc2Doc<TypedSpace>([createTx])
-      if (res !== undefined) {
+      if (res != null) {
         this.addRestrictedSpace(res)
       }
     } else {

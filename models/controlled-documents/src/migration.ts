@@ -26,8 +26,6 @@ import {
   type Class,
   type Data,
   type Doc,
-  type DocIndexState,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_SEQUENCE,
   DOMAIN_TX,
   generateId,
@@ -446,14 +444,6 @@ async function migrateDocumentMetaInternalCode (client: MigrationClient): Promis
   }
 
   await client.bulk(DOMAIN_DOCUMENTS, operations)
-  await client.update<DocIndexState>(
-    DOMAIN_DOC_INDEX_STATE,
-    {
-      _id: { $in: Array.from(updatedIds) as any },
-      objectClass: documents.class.DocumentMeta
-    },
-    { $set: { needIndex: true } }
-  )
 }
 
 export const documentsOperation: MigrateOperation = {

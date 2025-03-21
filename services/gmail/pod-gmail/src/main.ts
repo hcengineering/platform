@@ -15,12 +15,15 @@
 // limitations under the License.
 //
 
+import { SplitLogger } from '@hcengineering/analytics-service'
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverToken, { decodeToken } from '@hcengineering/server-token'
+import serverToken from '@hcengineering/server-token'
 import { type IncomingHttpHeaders } from 'http'
+import { join } from 'path'
 import { decode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
@@ -37,7 +40,19 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 }
 
 export const main = async (): Promise<void> => {
-  const ctx = initStatisticsContext('gmail', {})
+  const ctx = initStatisticsContext('gmail', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'gmail',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('gmail', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
 
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)

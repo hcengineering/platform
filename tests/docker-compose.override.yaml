@@ -1,13 +1,13 @@
 services:
   account:
     environment:
-      - DB_URL=postgresql://root@cockroach:26257/defaultdb?sslmode=disable
+      - DB_URL=${DB_PG_URL}
   transactor:
     environment:
-      - DB_URL=postgresql://root@cockroach:26257/defaultdb?sslmode=disable
+      - DB_URL=${DB_PG_URL}
   workspace:
     environment:
-      - DB_URL=postgresql://root@cockroach:26257/defaultdb?sslmode=disable
+      - DB_URL=${DB_PG_URL}
   fulltext:
     environment:
-      - DB_URL=postgresql://root@cockroach:26257/defaultdb?sslmode=disable
+      - DB_URL=${DB_PG_URL}

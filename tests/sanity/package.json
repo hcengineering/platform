@@ -50,6 +50,7 @@
     "dotenv": "~16.0.0",
     "cross-env": "~7.0.3",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/client-resources": "^0.6.27"
+    "@hcengineering/client-resources": "^0.6.27",
+    "@hcengineering/account": "^0.6.0"
   }
 }

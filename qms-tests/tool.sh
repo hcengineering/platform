@@ -10,5 +10,6 @@ export ACCOUNT_DB_URL=mongodb://localhost:27018
 export DB_URL=mongodb://localhost:27018
 export SERVER_SECRET=secret
 export STORAGE_CONFIG="minio|localhost:9002?accessKey=minioadmin&secretKey=minioadmin"
+export QUEUE_CONFIG=huly.local:19093
 
 node ../dev/tool/bundle/bundle.js $@

@@ -14,8 +14,6 @@
 //
 
 import { Client as ElasticClient } from '@elastic/elasticsearch'
-import core, { DOMAIN_DOC_INDEX_STATE } from '@hcengineering/core'
-import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { type StorageAdapter } from '@hcengineering/server-core'
 
 export async function rebuildElastic (
@@ -24,17 +22,6 @@ export async function rebuildElastic (
   storageAdapter: StorageAdapter,
   elasticUrl: string
 ): Promise<void> {
-  const client = getMongoClient(mongoUrl)
-  try {
-    const _client = await client.getClient()
-    const db = getWorkspaceMongoDB(_client, dataId)
-    await db
-      .collection(DOMAIN_DOC_INDEX_STATE)
-      .updateMany({ _class: core.class.DocIndexState }, { $set: { elastic: false } })
-  } finally {
-    client.close()
-  }
-
   await dropElastic(elasticUrl, dataId)
 }
 

@@ -11,5 +11,6 @@ export MONGO_URL=mongodb://localhost:27018
 export DB_URL=mongodb://localhost:27018
 export ELASTIC_URL=http://localhost:9201
 export SERVER_SECRET=secret
+export QUEUE_CONFIG='localhost:19093;-staging'
 
 node ../dev/tool/bundle/bundle.js $@

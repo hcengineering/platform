@@ -13,38 +13,38 @@
 // limitations under the License.
 //
 
+import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
   cutObjectArray,
+  Data,
   generateId,
   isArchivingMode,
   isMigrationMode,
   isRestoringMode,
   isWorkspaceCreating,
-  TxFactory,
-  WorkspaceEvent,
+  pickPrimarySocialId,
+  platformNow,
+  platformNowDiff,
   systemAccountUuid,
+  TxFactory,
+  Version,
   versionToString,
   withContext,
+  WorkspaceEvent,
+  type Account,
+  type AccountUuid,
   type Branding,
   type BrandingMap,
   type MeasureContext,
+  type PersonId,
   type Tx,
   type TxWorkspaceEvent,
-  type WorkspaceUuid,
-  type WorkspaceInfoWithStatus,
-  Account,
-  pickPrimarySocialId,
-  type PersonId,
   type WorkspaceDataId,
-  Data,
-  Version,
-  platformNow,
-  platformNowDiff,
-  AccountUuid
+  type WorkspaceInfoWithStatus,
+  type WorkspaceUuid
 } from '@hcengineering/core'
-import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
 import {
@@ -52,14 +52,21 @@ import {
   pingConst,
   Pipeline,
   PipelineFactory,
+  QueueTopic,
+  QueueUserMessage,
   ServerFactory,
   SessionManager,
   StorageAdapter,
-  type SessionFactory,
+  userEvents,
+  workspaceEvents,
   type AddSessionResponse,
   type ClientSessionCtx,
   type ConnectionSocket,
+  type PlatformQueue,
+  type PlatformQueueProducer,
+  type QueueWorkspaceMessage,
   type Session,
+  type SessionFactory,
   type Workspace
 } from '@hcengineering/server-core'
 import { generateToken, type Token } from '@hcengineering/server-token'
@@ -108,7 +115,8 @@ export class TSessionManager implements SessionManager {
   oldClientErrors: number = 0
   clientErrors: number = 0
   lastClients: string[] = []
-
+  workspaceProducer: PlatformQueueProducer<QueueWorkspaceMessage>
+  usersProducer: PlatformQueueProducer<QueueUserMessage>
   constructor (
     readonly ctx: MeasureContext,
     readonly sessionFactory: SessionFactory,
@@ -122,13 +130,16 @@ export class TSessionManager implements SessionManager {
     | undefined,
     readonly accountsUrl: string,
     readonly enableCompression: boolean,
-    readonly doHandleTick: boolean = true
+    readonly doHandleTick: boolean = true,
+    readonly queue: PlatformQueue
   ) {
     if (this.doHandleTick) {
       this.checkInterval = setInterval(() => {
         this.handleTick()
       }, 1000 / ticksPerSecond)
     }
+    this.workspaceProducer = this.queue.createProducer(ctx.newChild('queue', {}), QueueTopic.Workspace)
+    this.usersProducer = this.queue.createProducer(ctx.newChild('queue', {}), QueueTopic.Users)
   }
 
   scheduleMaintenance (timeMinutes: number): void {
@@ -357,6 +368,12 @@ export class TSessionManager implements SessionManager {
     }
   }
 
+  countUserSessions (workspace: Workspace, accountUuid: AccountUuid): number {
+    return Array.from(workspace.sessions.values())
+      .filter((it) => it.session.getUser() === accountUuid)
+      .reduce<number>((acc) => acc + 1, 0)
+  }
+
   tickCounter = 0
 
   @withContext('📲 add-session')
@@ -479,6 +496,7 @@ export class TSessionManager implements SessionManager {
         workspaceInfo.dataId,
         branding
       )
+      await this.workspaceProducer.send(workspaceInfo.uuid, [workspaceEvents.open()])
     }
 
     let pipeline: Pipeline
@@ -546,13 +564,26 @@ export class TSessionManager implements SessionManager {
     this.tickCounter++
     workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash: this.tickCounter % ticksPerSecond })
 
+    const accountUuid = account.uuid
+    await this.usersProducer.send(workspaceInfo.uuid, [
+      userEvents.login({
+        user: accountUuid,
+        sessions: this.countUserSessions(workspace, accountUuid),
+        socialIds: account.socialIds
+      })
+    ])
+
     // Mark workspace as init completed and we had at least one client.
     if (!workspace.workspaceInitCompleted) {
       workspace.workspaceInitCompleted = true
     }
 
     if (this.timeMinutes > 0) {
-      void ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
+      void ws
+        .send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
+        .catch((err) => {
+          ctx.error('failed to send maintenance warning', err)
+        })
     }
     return { session, context: workspace.context, workspaceId: workspaceInfo.uuid }
   }
@@ -809,8 +840,19 @@ export class TSessionManager implements SessionManager {
         totalUsers: this.sessions.size
       })
       this.sessions.delete(ws.id)
+
       if (workspace !== undefined) {
         workspace.sessions.delete(sessionRef.session.sessionId)
+
+        const userUuid = sessionRef.session.getUser()
+        await this.usersProducer.send(workspace.workspaceUuid, [
+          userEvents.logout({
+            user: userUuid,
+            sessions: this.countUserSessions(workspace, userUuid),
+            socialIds: sessionRef.session.getUserSocialIds()
+          })
+        ])
+
         const pipeline = workspace.pipeline instanceof Promise ? await workspace.pipeline : workspace.pipeline
 
         if (this.doHandleTick) {
@@ -967,6 +1009,8 @@ export class TSessionManager implements SessionManager {
           if (LOGGING_ENABLED) {
             this.ctx.warn('Closed workspace', logParams)
           }
+
+          await this.workspaceProducer.send(workspace.workspaceUuid, [workspaceEvents.down()])
         }
       } catch (err: any) {
         Analytics.handleError(err)
@@ -1266,7 +1310,8 @@ export function createSessionManager (
   | undefined,
   accountsUrl: string,
   enableCompression: boolean,
-  doHandleTick: boolean = true
+  doHandleTick: boolean = true,
+  queue: PlatformQueue
 ): SessionManager {
   return new TSessionManager(
     ctx,
@@ -1276,7 +1321,8 @@ export function createSessionManager (
     profiling,
     accountsUrl,
     enableCompression,
-    doHandleTick
+    doHandleTick,
+    queue
   )
 }
 
@@ -1298,6 +1344,7 @@ export function startSessionManager (
       start: () => void
       stop: () => Promise<string | undefined>
     }
+    queue: PlatformQueue
   } & Partial<Timeouts>
 ): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
   const sessions = createSessionManager(
@@ -1310,7 +1357,9 @@ export function startSessionManager (
     },
     opt.profiling,
     opt.accountsUrl,
-    opt.enableCompression ?? false
+    opt.enableCompression ?? false,
+    true,
+    opt.queue
   )
   return {
     shutdown: opt.serverFactory(

@@ -4,6 +4,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import builder, { getModelVersion, migrateOperations } from '@hcengineering/model-all'
 import { initStatisticsContext, loadBrandingMap } from '@hcengineering/server-core'
 import { serveWorkspaceAccount } from '@hcengineering/workspace-service'
@@ -34,8 +35,11 @@ const metricsContext = initStatisticsContext('workspace', {
 
 const brandingPath = process.env.BRANDING_PATH
 
+const queue = getPlatformQueue('workspace')
+
 serveWorkspaceAccount(
   metricsContext,
+  queue,
   getModelVersion(),
   txes,
   migrateOperations,

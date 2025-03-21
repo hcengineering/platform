@@ -399,7 +399,7 @@ export abstract class TxProcessor implements WithTx {
     return rawDoc
   }
 
-  static buildDoc2Doc<D extends Doc>(txes: Tx[]): D | undefined {
+  static buildDoc2Doc<D extends Doc>(txes: Tx[]): D | undefined | null {
     let doc: Doc
     const createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
     if (createTx === undefined) return
@@ -410,6 +410,9 @@ export abstract class TxProcessor implements WithTx {
       } else if (tx._class === core.class.TxMixin) {
         const mixinTx = tx as TxMixin<Doc, Doc>
         doc = TxProcessor.updateMixin4Doc(doc, mixinTx)
+      }
+      if (tx._class === core.class.TxRemoveDoc) {
+        return null
       }
     }
     return doc as D

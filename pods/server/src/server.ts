@@ -23,7 +23,8 @@ import {
   type Session,
   type SessionManager,
   type StorageConfiguration,
-  type Workspace
+  type Workspace,
+  type PlatformQueue
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
@@ -76,6 +77,7 @@ export function start (
   metrics: MeasureContext,
   dbUrl: string,
   opt: {
+    queue: PlatformQueue
     fulltextUrl: string
     storageConfig: StorageConfiguration
     port: number
@@ -120,7 +122,7 @@ export function start (
     metrics,
     dbUrl,
     model,
-    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl) },
+    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl), queue: opt.queue },
     {}
   )
   const sessionFactory = (token: Token, workspace: Workspace, account: Account): Session => {
@@ -136,7 +138,8 @@ export function start (
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
     externalStorage,
-    profiling: opt.profiling
+    profiling: opt.profiling,
+    queue: opt.queue
   })
   return {
     shutdown: async () => {

@@ -198,6 +198,10 @@ test.describe('Workspace tests', () => {
         return url.pathname.startsWith('/login/createWorkspace')
       })
 
+      await page2.waitForURL((url) => {
+        return url.pathname.startsWith('/login/createWorkspace')
+      })
+
       // Ok we signed in, and no workspace present.
       await page2.goto(linkText ?? '')
       const joinPage = new SignInJoinPage(page2)

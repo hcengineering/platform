@@ -13,20 +13,17 @@
 // limitations under the License.
 //
 
-import core, {
+import {
   type AnyAttribute,
   type Class,
-  type Data,
   type Doc,
-  type DocIndexState,
   type FullTextSearchContext,
   getFullTextContext,
   type Hierarchy,
-  type Obj,
   type Ref,
   type Space
 } from '@hcengineering/core'
-import plugin, { type IndexedDoc } from '@hcengineering/server-core'
+import { type IndexedDoc } from '@hcengineering/server-core'
 import { type FullTextPipeline } from './types'
 
 export { docKey, isFullTextAttribute } from '@hcengineering/core'
@@ -53,25 +50,6 @@ export function getContent (
     }
   }
   return attrs
-}
-
-/**
- * @public
- */
-export function createStateDoc (
-  id: Ref<Doc>,
-  objectClass: Ref<Class<Obj>>,
-  data: Omit<Data<DocIndexState>, 'objectClass'> & { space?: Ref<Space> }
-): DocIndexState {
-  return {
-    _class: core.class.DocIndexState,
-    _id: id as Ref<DocIndexState>,
-    space: data.space ?? plugin.space.DocIndexState,
-    objectClass,
-    modifiedBy: core.account.System,
-    modifiedOn: Date.now(),
-    ...data
-  }
 }
 
 /**
