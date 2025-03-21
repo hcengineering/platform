@@ -115,6 +115,7 @@ function hookOpenWindow (window: BrowserWindow): void {
             devTools: true,
             sandbox: false,
             partition: sessionPartition,
+            nodeIntegration: true,
             preload: path.join(app.getAppPath(), 'dist', 'main', 'preload.js'),
             additionalArguments: [
               `--open=${encodeURI(
@@ -192,6 +193,7 @@ const createWindow = async (): Promise<void> => {
     webPreferences: {
       devTools: true,
       sandbox: false,
+      nodeIntegration: true,
       backgroundThrottling: false,
       partition: sessionPartition,
       preload: path.join(app.getAppPath(), 'dist', 'main', 'preload.js')

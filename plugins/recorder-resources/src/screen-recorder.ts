@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
+import plugin from '@hcengineering/recorder'
 import { Recorder } from './recorder'
 import { TusUploader, type Uploader, type Options } from './uploader'
+import { getMetadata } from '@hcengineering/platform'
 
 export class ScreenRecorder {
   private readonly recorder: Recorder
@@ -29,20 +31,26 @@ export class ScreenRecorder {
     let width = 0
     let height = 0
     const combinedStream = new MediaStream()
-    const displayStream = await navigator.mediaDevices.getDisplayMedia({
-      video: { frameRate: opts.fps ?? 30 },
-      audio: true
+    const getMediaStream =
+      getMetadata(plugin.metadata.GetCustomMediaStream) ??
+      (async (op) => await navigator.mediaDevices.getDisplayMedia(op))
+    const displayStream = await getMediaStream({
+      video: { frameRate: opts.fps ?? 30 }
     })
-    const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    try {
+      const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      microphoneStream.getAudioTracks().forEach((track) => {
+        combinedStream.addTrack(track)
+      })
+    } catch (err) {
+      console.warn('microphone is disabled', err)
+    }
     displayStream.getVideoTracks().forEach((track) => {
       combinedStream.addTrack(track)
       width = Math.max(track.getSettings().width ?? width, width)
       height = Math.max(track.getSettings().height ?? height, height)
     })
     displayStream.getAudioTracks().forEach((track) => {
-      combinedStream.addTrack(track)
-    })
-    microphoneStream.getAudioTracks().forEach((track) => {
       combinedStream.addTrack(track)
     })
 
