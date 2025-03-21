@@ -62,7 +62,7 @@
       if (!opened && !disabled) {
         opened = true
         showPopup(DropdownPopup, { title: label, items, icon, withSearch }, container, (result) => {
-          if (result !== undefined) {
+          if (result) {
             selected = result
             dispatch('selected', result)
           }
