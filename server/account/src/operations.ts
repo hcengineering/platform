@@ -1785,9 +1785,9 @@ export async function ensurePerson (
   }
 
   const { socialType, socialValue, firstName, lastName } = params
-  const trimmedFirst = firstName.trim()
-  const trimmedLast = lastName.trim()
-  const normalizedValue = normalizeValue(socialValue)
+  const trimmedFirst = firstName == null ? '' : firstName.trim()
+  const trimmedLast = lastName == null ? '' : lastName.trim()
+  const normalizedValue = normalizeValue(socialValue ?? '')
 
   if (!Object.values(SocialIdType).includes(socialType) || trimmedFirst.length === 0 || normalizedValue.length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
