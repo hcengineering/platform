@@ -15,7 +15,6 @@
 
 import type { KeysByType } from 'simplytyped'
 import type {
-  PersonId,
   Arr,
   AttachedDoc,
   Class,
@@ -23,6 +22,7 @@ import type {
   Doc,
   Domain,
   Mixin,
+  PersonId,
   PropertyType,
   Ref,
   Space,
@@ -401,8 +401,14 @@ export abstract class TxProcessor implements WithTx {
 
   static buildDoc2Doc<D extends Doc>(txes: Tx[]): D | undefined | null {
     let doc: Doc
+    const deleteTx = txes.find(tx => tx._class === core.class.TxRemoveDoc)
+    if (deleteTx !== undefined) {
+      return null
+    }
     const createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
-    if (createTx === undefined) return
+    if (createTx === undefined) {
+      return
+    }
     doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
     for (const tx of txes) {
       if (tx._class === core.class.TxUpdateDoc) {
@@ -410,9 +416,6 @@ export abstract class TxProcessor implements WithTx {
       } else if (tx._class === core.class.TxMixin) {
         const mixinTx = tx as TxMixin<Doc, Doc>
         doc = TxProcessor.updateMixin4Doc(doc, mixinTx)
-      }
-      if (tx._class === core.class.TxRemoveDoc) {
-        return null
       }
     }
     return doc as D
