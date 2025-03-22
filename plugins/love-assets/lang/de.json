@@ -84,5 +84,8 @@
     "ShareWithAudioTooltip": "Teile deinen Bildschirm mit Systemaudio. Starte die Bildschirmfreigabe neu, um Änderungen anzuwenden.",
     "MicPermission": "Mikrofon nicht gefunden, überprüfen Sie die Browserberechtigungen",
     "CamPermission": "Kamera nicht gefunden, überprüfen Sie die Browserberechtigungen"
+  },
+  "status": {
+    "RoomRequired": "Raum ist erforderlich"
   }
 }

@@ -86,5 +86,8 @@
     "ShareWithAudioTooltip": "Partagez votre écran avec l'audio du système. Redémarrez le partage d’écran pour appliquer les modifications.",
     "MicPermission": "Microphone non trouvé, vérifiez les autorisations du navigateur",
     "CamPermission": "Caméra non trouvée, vérifiez les autorisations du navigateur"
+  },
+  "status": {
+    "RoomRequired": "La pièce est requise"
   }
 }

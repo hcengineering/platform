@@ -111,8 +111,16 @@ export async function OnPersonAccountCreate (txes: Tx[], control: TriggerControl
   return result
 }
 
-function getCalendar (calendars: Calendar[], person: Ref<PersonAccount>): Ref<Calendar> | undefined {
+function getCalendar (
+  calendars: Calendar[],
+  person: Ref<PersonAccount>,
+  targetCalendar: Ref<Calendar> | undefined
+): Ref<Calendar> | undefined {
   const filtered = calendars.filter((c) => (c.createdBy ?? c.modifiedBy) === person)
+  if (targetCalendar !== undefined) {
+    const target = filtered.find((c) => c._id === targetCalendar)
+    if (target !== undefined) return target._id
+  }
   const defaultExternal = filtered.find((c) => (c as ExternalCalendar).default)
   if (defaultExternal !== undefined) return defaultExternal._id
   return filtered[0]?._id
@@ -205,8 +213,9 @@ async function eventForNewParticipants (
     const acc = accounts.find((a) => a.person === part)
     if (acc === undefined) continue
     if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
-    const calendar = getCalendar(calendars, acc._id)
+    const calendar = getCalendar(calendars, acc._id, event.calendar)
     if (calendar === undefined) continue
+    if (calendar === event.calendar) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
@@ -279,8 +288,9 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
     const acc = accounts.find((a) => a.person === part)
     if (acc === undefined) continue
     if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
-    const calendar = getCalendar(calendars, acc._id)
+    const calendar = getCalendar(calendars, acc._id, event.calendar)
     if (calendar === undefined) continue
+    if (calendar === event.calendar) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
