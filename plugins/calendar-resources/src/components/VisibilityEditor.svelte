@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,16 +14,26 @@
 -->
 <script lang="ts">
   import { Visibility } from '@hcengineering/calendar'
-  import { ButtonMenu, DropdownIntlItem, themeStore } from '@hcengineering/ui'
+  import {
+    Button,
+    ButtonMenu,
+    closeTooltip,
+    DropdownIntlItem,
+    eventToHTMLElement,
+    showPopup,
+    ModernPopup
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
   export let value: Visibility | undefined
   export let disabled: boolean = false
-  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' | 'inline' = 'secondary'
   export let size: 'small' | 'medium' | 'large' = 'medium'
   export let withoutIcon: boolean = false
   export let focusIndex = -1
+
+  let opened: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -47,25 +57,54 @@
 
   $: selected = value !== undefined ? items.find((item) => item.id === value) : undefined
 
-  function change (val: Visibility) {
+  function change (val: Visibility): void {
     if (value !== val) {
+      console.log('Changed', val)
       dispatch('change', val)
       value = val
     }
   }
+
+  function openPopup (ev: MouseEvent): void {
+    if (!opened) {
+      opened = true
+      closeTooltip()
+      showPopup(ModernPopup, { items, selected: selected?.id }, eventToHTMLElement(ev), (selectedId) => {
+        console.log('Selected', selectedId)
+        if (selectedId !== undefined) {
+          change(selectedId)
+        }
+        opened = false
+      })
+    }
+  }
 </script>
 
-<ButtonMenu
-  icon={withoutIcon ? undefined : calendar.icon.Hidden}
-  label={selected?.label}
-  selected={selected?.id}
-  {items}
-  {kind}
-  {size}
-  {disabled}
-  {focusIndex}
-  id={'visibleButton'}
-  on:selected={(event) => {
-    if (event.detail) change(event.detail)
-  }}
-/>
+{#if kind === 'inline'}
+  <Button
+    icon={withoutIcon ? undefined : calendar.icon.Hidden}
+    label={selected?.label}
+    kind="ghost"
+    padding="0.5rem"
+    {size}
+    {disabled}
+    {focusIndex}
+    id={'visibleButton'}
+    on:click={openPopup}
+  />
+{:else}
+  <ButtonMenu
+    icon={withoutIcon ? undefined : calendar.icon.Hidden}
+    label={selected?.label}
+    selected={selected?.id}
+    {items}
+    {kind}
+    {size}
+    {disabled}
+    {focusIndex}
+    id={'visibleButton'}
+    on:selected={(event) => {
+      change(event.detail)
+    }}
+  />
+{/if}

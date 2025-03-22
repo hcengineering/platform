@@ -43,11 +43,19 @@ import type {
 } from '../types'
 
 function toSnakeCase (str: string): string {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+  // Preserve leading underscore
+  const hasLeadingUnderscore = str.startsWith('_')
+  const baseStr = hasLeadingUnderscore ? str.slice(1) : str
+  const converted = baseStr.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+  return hasLeadingUnderscore ? '_' + converted : converted
 }
 
 function toCamelCase (str: string): string {
-  return str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
+  // Preserve leading underscore
+  const hasLeadingUnderscore = str.startsWith('_')
+  const baseStr = hasLeadingUnderscore ? str.slice(1) : str
+  const converted = baseStr.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
+  return hasLeadingUnderscore ? '_' + converted : converted
 }
 
 function convertKeysToCamelCase (obj: any): any {
@@ -108,7 +116,7 @@ implements DbCollection<T> {
 
     for (const key of Object.keys(query)) {
       const qKey = query[key]
-      const operator = typeof qKey === 'object' ? Object.keys(qKey)[0] : ''
+      const operator = qKey != null && typeof qKey === 'object' ? Object.keys(qKey)[0] : ''
       const snakeKey = toSnakeCase(key)
       switch (operator) {
         case '$in': {
@@ -362,7 +370,7 @@ export class PostgresAccountDB implements AccountDB {
 
   person: PostgresDbCollection<Person, 'uuid'>
   account: AccountPostgresDbCollection
-  socialId: PostgresDbCollection<SocialId, 'key'>
+  socialId: PostgresDbCollection<SocialId, '_id'>
   workspace: PostgresDbCollection<Workspace, 'uuid'>
   workspaceStatus: PostgresDbCollection<WorkspaceStatus>
   accountEvent: PostgresDbCollection<AccountEvent>
@@ -375,7 +383,7 @@ export class PostgresAccountDB implements AccountDB {
   ) {
     this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid')
     this.account = new AccountPostgresDbCollection(client)
-    this.socialId = new PostgresDbCollection<SocialId, 'key'>('social_id', client, 'key')
+    this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, '_id')
     this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client)
     this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid')
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client)
@@ -623,7 +631,7 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   protected getMigrations (): [string, string][] {
-    return [this.getV1Migration()]
+    return [this.getV1Migration(), this.getV2Migration1(), this.getV2Migration2(), this.getV2Migration3()]
   }
 
   // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO ADJUST THE SCHEMA, ADD A NEW MIGRATION.
@@ -766,6 +774,60 @@ export class PostgresAccountDB implements AccountDB {
           CONSTRAINT invite_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid)
       );
     `
+    ]
+  }
+
+  private getV2Migration1 (): [string, string] {
+    return [
+      'account_db_v2_social_id_id_add',
+      `
+      -- Add _id column to social_id table
+      ALTER TABLE ${this.ns}.social_id
+      ADD COLUMN IF NOT EXISTS _id INT8 NOT NULL DEFAULT unique_rowid();
+      `
+    ]
+  }
+
+  private getV2Migration2 (): [string, string] {
+    return [
+      'account_db_v2_social_id_pk_change',
+      `
+      -- Drop existing otp foreign key constraint
+      ALTER TABLE ${this.ns}.otp
+      DROP CONSTRAINT IF EXISTS otp_social_id_fk;
+
+      -- Drop existing primary key on social_id
+      ALTER TABLE ${this.ns}.social_id
+      DROP CONSTRAINT IF EXISTS social_id_pk;
+
+      -- Add new primary key on _id
+      ALTER TABLE ${this.ns}.social_id
+      ADD CONSTRAINT social_id_pk PRIMARY KEY (_id);
+      `
+    ]
+  }
+
+  private getV2Migration3 (): [string, string] {
+    return [
+      'account_db_v2_social_id_constraints',
+      `
+      -- Add unique constraint on type, value
+      ALTER TABLE ${this.ns}.social_id
+      ADD CONSTRAINT social_id_tv_key_unique UNIQUE (type, value);
+
+      -- Drop old table
+      DROP TABLE ${this.ns}.otp;
+
+      -- Create new OTP table with correct column type
+      CREATE TABLE ${this.ns}.otp (
+          social_id INT8 NOT NULL,
+          code STRING NOT NULL,
+          expires_on BIGINT NOT NULL,
+          created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
+          CONSTRAINT otp_new_pk PRIMARY KEY (social_id, code),
+          CONSTRAINT otp_new_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(_id)
+      );
+      `
     ]
   }
 }

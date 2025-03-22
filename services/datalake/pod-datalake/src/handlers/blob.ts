@@ -18,7 +18,6 @@ import { type Request, type Response } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
 
-import { requestHLS } from './video'
 import { cacheControl } from '../const'
 import { type Datalake } from '../datalake'
 import { getBufferSha256, getStreamSha256 } from '../hash'
@@ -136,6 +135,8 @@ export async function handleBlobDelete (
 
   try {
     await datalake.delete(ctx, workspace, name)
+    ctx.info('deleted', { workspace, name })
+
     res.status(204).send()
   } catch (error: any) {
     ctx.error('failed to delete blob', { error })
@@ -154,6 +155,8 @@ export async function handleBlobDeleteList (
 
   try {
     await datalake.delete(ctx, workspace, body.names)
+    ctx.info('deleted', { workspace, names: body.names })
+
     res.status(204).send()
   } catch (error: any) {
     ctx.error('failed to delete blobs', { error })
@@ -224,9 +227,7 @@ export async function handleUploadFormData (
           lastModified: Date.now()
         })
 
-        if (contentType.startsWith('video/')) {
-          void requestHLS(ctx, workspace, name)
-        }
+        ctx.info('uploaded', { workspace, name, etag: metadata.etag, type: contentType })
 
         return { key, metadata }
       } catch (err: any) {

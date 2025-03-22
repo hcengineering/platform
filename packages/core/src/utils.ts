@@ -27,14 +27,12 @@ import {
   Doc,
   DocData,
   DOMAIN_BLOB,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   FullTextSearchContext,
   IndexKind,
   Obj,
   Permission,
-  PersonId,
   Ref,
   Role,
   roleOrder,
@@ -674,7 +672,6 @@ export function isClassIndexable (
   }
 
   if (
-    domain === DOMAIN_DOC_INDEX_STATE ||
     domain === DOMAIN_TX ||
     domain === DOMAIN_MODEL ||
     domain === DOMAIN_BLOB ||
@@ -907,12 +904,20 @@ export function combineAttributes (
   ).filter((v) => v != null)
 }
 
-export function buildSocialIdString (key: SocialKey): PersonId {
-  return `${key.type}:${key.value}` as PersonId
+export function buildSocialIdString (key: SocialKey): string {
+  return `${key.type}:${key.value}`
 }
 
-export function parseSocialIdString (id: PersonId): SocialKey {
+export function parseSocialIdString (id: string): SocialKey {
   const [type, value] = id.split(':')
+
+  if (type === undefined || value === undefined) {
+    throw new Error(`Social id is not valid: ${id}`)
+  }
+
+  if (!Object.values(SocialIdType).includes(type as SocialIdType)) {
+    throw new Error(`Social id type is not valid: ${id}`)
+  }
 
   return { type: type as SocialIdType, value }
 }

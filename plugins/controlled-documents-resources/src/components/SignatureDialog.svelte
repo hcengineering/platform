@@ -29,7 +29,9 @@
     translate
   } from '@hcengineering/platform'
   import { EditBox, StylishEdit, ModernDialog } from '@hcengineering/ui'
-  import { getCurrentAccount, parseSocialIdString, SocialIdType } from '@hcengineering/core'
+  import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import contact, { SocialIdentityRef } from '@hcengineering/contact'
 
   import documents from '../plugin'
   import StatusControl from './requests/StatusControl.svelte'
@@ -41,20 +43,27 @@
 
   const dispatch = createEventDispatcher()
   const account = getCurrentAccount()
+  const client = getClient()
 
   let rejectionNote = ''
-
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
-  const emailSocialIdString = account.socialIds.find((si) => parseSocialIdString(si).type === SocialIdType.EMAIL)
-  const emailSocialId = emailSocialIdString !== undefined ? parseSocialIdString(emailSocialIdString) : undefined
-  const email: string = emailSocialId?.value ?? ''
-  const disableEmailField = email !== ''
-
   const object: LoginInfo = {
-    email,
+    email: '',
     password: ''
   }
 
+  void client
+    .findOne(contact.class.SocialIdentity, {
+      _id: { $in: account.socialIds as SocialIdentityRef[] },
+      type: SocialIdType.EMAIL
+    })
+    .then((si) => {
+      if (si != null) {
+        object.email = si.value
+      }
+    })
+
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
+  $: disableEmailField = object.email !== ''
   $: canSubmit = object.email !== '' && object.password !== '' && (!isRejection || rejectionNote.trim().length > 0)
 
   let status = OK

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, Channel, combineName, ContactEvents, Person } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, ContactEvents, Person, SocialIdentityRef } from '@hcengineering/contact'
   import {
     AccountRole,
     AttachedData,
@@ -25,11 +25,12 @@
   } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
-  import { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import { Card, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { ChannelsDropdown, personByPersonIdStore } from '..'
+  import { ChannelsDropdown, employeeBySocialKeyStore } from '..'
   import contact from '../plugin'
+  import { getAccountClient } from '../utils'
   import { Analytics } from '@hcengineering/analytics'
 
   export let canSave: boolean = true
@@ -49,6 +50,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const accountClient = getAccountClient()
 
   async function createGuest (): Promise<void> {
     try {
@@ -60,30 +62,50 @@
         value: mail
       })
 
-      const existingPerson = $personByPersonIdStore.get(socialString)
-      if (existingPerson === undefined) {
-        const name = combineName(firstName, lastName)
-        const person: Data<Person> = {
-          name,
-          city: '',
-          avatarType: AvatarType.COLOR
-        }
-        await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
-
-        await client.addCollection(
-          contact.class.SocialIdentity,
-          contact.space.Contacts,
-          id,
-          contact.class.Person,
-          'socialIds',
-          {
-            type: SocialIdType.EMAIL,
-            value: mail,
-            confirmed: false,
-            key: socialString
-          }
-        )
+      const existingId = await client.findOne(contact.class.SocialIdentity, { key: socialString })
+      const existingPerson =
+        existingId !== undefined
+          ? await client.findOne(contact.class.Person, { _id: existingId.attachedTo })
+          : undefined
+      if (existingPerson !== undefined && client.getHierarchy().hasMixin(existingPerson, contact.mixin.Employee)) {
+        return
       }
+
+      const { uuid, socialId } = await accountClient.ensurePerson(SocialIdType.EMAIL, mail, firstName, lastName)
+
+      const name = combineName(firstName, lastName)
+      const person: Data<Person> = {
+        name,
+        city: '',
+        avatarType: AvatarType.COLOR,
+        personUuid: uuid
+      }
+
+      if (existingPerson === undefined) {
+        await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
+      } else {
+        await client.update(existingPerson, person)
+      }
+      const personRef = existingPerson?._id ?? id
+
+      await client.createMixin(personRef, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
+        active: true,
+        role: AccountRole.Guest
+      })
+
+      await client.addCollection(
+        contact.class.SocialIdentity,
+        contact.space.Contacts,
+        personRef,
+        contact.class.Person,
+        'socialIds',
+        {
+          type: SocialIdType.EMAIL,
+          value: mail,
+          key: socialString
+        },
+        socialId as SocialIdentityRef
+      )
 
       const sendInvite = await getResource(login.function.SendInvite)
       await sendInvite(mail, AccountRole.Guest)
@@ -102,7 +124,7 @@
         )
       }
       if (onCreate != null) {
-        await onCreate(existingPerson?._id ?? id)
+        await onCreate(personRef)
       }
       Analytics.handleEvent(ContactEvents.PersonCreated, { id, email: mail })
       dispatch('close', id)
@@ -117,12 +139,7 @@
     type: SocialIdType.EMAIL,
     value: email.trim()
   })
-  $: emailPerson = $personByPersonIdStore.get(emailSocialString)
-  $: exists = emailPerson !== undefined && client.getHierarchy().hasMixin(emailPerson, contact.mixin.Employee)
-
-  $: console.log(email)
-  $: console.log(emailPerson)
-  $: console.log(exists)
+  $: exists = $employeeBySocialKeyStore.get(emailSocialString) !== undefined
 
   const manager = createFocusManager()
 

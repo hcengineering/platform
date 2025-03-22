@@ -105,6 +105,7 @@ import VideoViewer from './components/viewer/VideoViewer.svelte'
 import PDFViewer from './components/viewer/PDFViewer.svelte'
 import TextViewer from './components/viewer/TextViewer.svelte'
 import FoldersBrowser from './components/folders/FoldersBrowser.svelte'
+import BaseDocPresenter from './components/BaseDocPresenter.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -175,6 +176,8 @@ export { default as PersonIdFilterValuePresenter } from './components/filter/Per
 export { default as FoldersBrowser } from './components/folders/FoldersBrowser.svelte'
 export { default as RelationsEditor } from './components/RelationsEditor.svelte'
 export { default as ListView } from './components/list/ListView.svelte'
+export { default as ViewOptions } from './components/ViewOptions.svelte'
+export { default as ViewletClassSettings } from './components/ViewletClassSettings.svelte'
 
 export * from './filter'
 export * from './middleware'
@@ -313,7 +316,8 @@ export default async (): Promise<Resources> => ({
     VideoViewer,
     PDFViewer,
     TextViewer,
-    FoldersBrowser
+    FoldersBrowser,
+    BaseDocPresenter
   },
   popup: {
     PositionElementAlignment

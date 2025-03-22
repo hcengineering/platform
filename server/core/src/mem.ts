@@ -35,7 +35,7 @@ import core, {
   type TxResult,
   type WorkspaceIds
 } from '@hcengineering/core'
-import { type DbAdapter, type DbAdapterHandler, type DomainHelperOperations } from './adapter'
+import { type DbAdapter, type DbAdapterHandler, type DomainHelperOperations, type RawFindIterator } from './adapter'
 /**
  * @public
  */
@@ -60,6 +60,13 @@ export class DummyDbAdapter implements DbAdapter {
     options?: FindOptions<T> | undefined
   ): Promise<FindResult<T>> {
     return toFindResult([])
+  }
+
+  rawFind (ctx: MeasureContext, domain: Domain): RawFindIterator {
+    return {
+      find: async () => [],
+      close: async () => {}
+    }
   }
 
   async init (): Promise<void> {}

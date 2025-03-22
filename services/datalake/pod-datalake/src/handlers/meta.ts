@@ -56,6 +56,7 @@ export async function handleMetaPut (
   }
 
   await datalake.setMeta(ctx, workspace, name, meta)
+  ctx.info('meta-put', { workspace, name })
 
   res.status(200).json(meta)
 }
@@ -81,6 +82,7 @@ export async function handleMetaPatch (
 
   const meta = { ...current, ...req.body }
   await datalake.setMeta(ctx, workspace, name, meta)
+  ctx.info('meta-patch', { workspace, name })
 
   res.status(200).json(meta)
 }

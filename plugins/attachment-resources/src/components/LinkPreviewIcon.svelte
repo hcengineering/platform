@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,23 +11,39 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import { type MeasureContext } from '@hcengineering/core'
+<script lang="ts">
+  import WebIcon from './icons/Web.svelte'
 
-export async function reindexWorkspace (ctx: MeasureContext, fulltextUrl: string, token: string): Promise<void> {
-  try {
-    const res = await fetch(fulltextUrl + '/api/v1/reindex', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ token })
-    })
-    if (!res.ok) {
-      throw new Error(`HTTP Error ${res.status} ${res.statusText}`)
+  export let src: string | undefined = undefined
+  export let size: 'small' | 'large' = 'small'
+
+  let useDefaultIcon = false
+</script>
+
+{#if src && !useDefaultIcon}
+  <img
+    {src}
+    class="link-preview__icon {size}"
+    alt="link-preview-icon"
+    on:error={() => {
+      useDefaultIcon = true
+    }}
+  />
+{:else}
+  <WebIcon {size} />
+{/if}
+
+<style lang="scss">
+  .link-preview__icon {
+    &.small {
+      width: 1rem;
+      height: 1rem;
     }
-  } catch (err: any) {
-    ctx.error('failed to reset index', { err })
+    &.large {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
   }
-}
+</style>

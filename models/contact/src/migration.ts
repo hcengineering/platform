@@ -1,6 +1,14 @@
 //
 
-import { AvatarType, type Person, type Contact, type SocialIdentity } from '@hcengineering/contact'
+import {
+  AvatarType,
+  type Person,
+  type Contact,
+  type SocialIdentity,
+  type SocialIdentityRef,
+  getFirstName,
+  getLastName
+} from '@hcengineering/contact'
 import {
   AccountRole,
   buildSocialIdString,
@@ -9,8 +17,8 @@ import {
   type Domain,
   DOMAIN_MODEL_TX,
   DOMAIN_TX,
-  generateId,
   MeasureMetricsContext,
+  type PersonId,
   type Ref,
   type Space,
   type TxCUD
@@ -22,11 +30,12 @@ import {
   type MigrationClient,
   type MigrationDocumentQuery,
   type MigrationUpgradeClient,
+  type ModelLogger,
   tryMigrate,
   tryUpgrade
 } from '@hcengineering/model'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import core, { getAccountsFromTxes, getSocialKeyByOldEmail } from '@hcengineering/model-core'
+import core, { getAccountsFromTxes, getSocialIdBySocialKey, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
 
 import contact, { contactId, DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
@@ -122,7 +131,7 @@ async function fillAccountUuids (client: MigrationClient): Promise<void> {
         )[0]
         if (socialIdentity == null) continue
 
-        const accountUuid = await client.accountClient.findPerson(socialIdentity.key)
+        const accountUuid = await client.accountClient.findPersonBySocialKey(socialIdentity.key)
         if (accountUuid == null) {
           continue
         }
@@ -150,6 +159,66 @@ async function fillAccountUuids (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fillSocialIdentitiesIds (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact fillSocialIdentitiesIds', {})
+  ctx.info('filling social identities genenrated ids...')
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
+  const iterator = await client.traverse<SocialIdentity>(DOMAIN_CHANNEL, { _class: contact.class.SocialIdentity })
+  let count = 0
+
+  try {
+    let newSids: SocialIdentity[] = []
+    let newSidIds = new Set<Ref<SocialIdentity>>()
+    let deleteSids: Ref<SocialIdentity>[] = []
+
+    while (true) {
+      const socialIdentities = await iterator.next(200)
+      if (socialIdentities === null || socialIdentities.length === 0) {
+        break
+      }
+
+      for (const socialIdentity of socialIdentities) {
+        const socialId = await getSocialIdBySocialKey(client, socialIdentity.key, socialIdBySocialKey)
+
+        if (socialId == null || socialId === socialIdentity._id) continue
+
+        const socialIdRef = socialId as SocialIdentityRef
+        // Some old data might contain duplicate accounts for github users
+        // so need to filter just in case
+        if (!newSidIds.has(socialIdRef)) {
+          newSidIds.add(socialIdRef)
+          newSids.push({
+            ...socialIdentity,
+            _id: socialIdRef
+          })
+        }
+
+        deleteSids.push(socialIdentity._id)
+        count++
+
+        if (newSids.length > 50) {
+          await client.create(DOMAIN_CHANNEL, newSids)
+          await client.deleteMany(DOMAIN_CHANNEL, { _id: { $in: deleteSids } })
+          newSids = []
+          newSidIds = new Set()
+          deleteSids = []
+        }
+      }
+    }
+
+    if (newSids.length > 0) {
+      await client.create(DOMAIN_CHANNEL, newSids)
+      await client.deleteMany(DOMAIN_CHANNEL, { _id: { $in: deleteSids } })
+      newSids = []
+      newSidIds = new Set()
+      deleteSids = []
+    }
+    ctx.info('finished filling social identities genenrated ids. Updated count: ', { count })
+  } finally {
+    await iterator.close()
+  }
+}
+
 async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('contact assignWorkspaceRoles', {})
   ctx.info('assigning workspace roles...')
@@ -166,7 +235,7 @@ async function assignWorkspaceRoles (client: MigrationClient): Promise<void> {
     }
     const socialKey = getSocialKeyByOldEmail(email)
     try {
-      await client.accountClient.updateWorkspaceRoleBySocialId(buildSocialIdString(socialKey), role)
+      await client.accountClient.updateWorkspaceRoleBySocialKey(buildSocialIdString(socialKey), role)
     } catch (err: any) {
       ctx.error('Failed to update workspace role', { email, ...socialKey, role, err })
     }
@@ -230,6 +299,7 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('createSocialIdentities', {})
   ctx.info('processing person accounts ', {})
 
+  const socialIdBySocialKey = new Map<string, PersonId | null>()
   const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
     objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
   })
@@ -240,13 +310,17 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
     if (email === '') continue
 
     const socialIdKey = getSocialKeyByOldEmail(email)
-    const socialId: SocialIdentity = {
-      _id: generateId(),
+    const socialKey = buildSocialIdString(socialIdKey)
+    const socialId = await getSocialIdBySocialKey(client, socialKey, socialIdBySocialKey)
+
+    if (socialId == null) continue
+
+    const socialIdObj: SocialIdentity = {
+      _id: socialId as SocialIdentityRef,
       _class: contact.class.SocialIdentity,
       space: contact.space.Contacts,
       ...socialIdKey,
-      key: buildSocialIdString(socialIdKey),
-      confirmed: false,
+      key: socialKey,
 
       attachedTo: pAcc.person,
       attachedToClass: contact.class.Person,
@@ -258,11 +332,52 @@ async function createSocialIdentities (client: MigrationClient): Promise<void> {
       modifiedBy: core.account.ConfigUser
     }
 
-    await client.create(DOMAIN_CHANNEL, socialId)
+    await client.create(DOMAIN_CHANNEL, socialIdObj)
   }
 }
 
+async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact ensureGlobalPersonsForLocalAccounts', {})
+  ctx.info('ensuring global persons for local accounts ', {})
+
+  const personAccountsTxes: any[] = await client.find<TxCUD<Doc>>(DOMAIN_MODEL_TX, {
+    objectClass: 'contact:class:PersonAccount' as Ref<Class<Doc>>
+  })
+  const personAccounts = getAccountsFromTxes(personAccountsTxes)
+
+  let count = 0
+  for (const pAcc of personAccounts) {
+    const email: string = pAcc.email ?? ''
+    if (email === '') continue
+
+    const socialIdKey = getSocialKeyByOldEmail(email)
+    const person = (await client.find<Person>(DOMAIN_CONTACT, { _id: pAcc.person }))[0]
+    const name = person?.name
+    const firstName = getFirstName(name)
+    const lastName = getLastName(name)
+    const effectiveFirstName = firstName === '' ? socialIdKey.value : firstName
+
+    try {
+      await client.accountClient.ensurePerson(socialIdKey.type, socialIdKey.value, effectiveFirstName, lastName)
+      count++
+    } catch (err: any) {
+      ctx.error('Failed to ensure person', { socialIdKey, email: pAcc.email, firstName, lastName, effectiveFirstName })
+      console.error(err)
+    }
+  }
+  ctx.info('finished ensuring global persons for local accounts. Total persons ensured: ', { count })
+}
+
 export const contactOperation: MigrateOperation = {
+  async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
+    await tryMigrate(mode, client, contactId, [
+      {
+        state: 'ensure-accounts-global-persons-v2',
+        mode: 'upgrade',
+        func: (client) => ensureGlobalPersonsForLocalAccounts(client)
+      }
+    ])
+  },
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, contactId, [
       {
@@ -407,19 +522,29 @@ export const contactOperation: MigrateOperation = {
       },
       {
         state: 'create-social-identities',
+        mode: 'upgrade',
         func: createSocialIdentities
       },
       {
         state: 'assign-workspace-roles',
+        mode: 'upgrade',
         func: assignWorkspaceRoles
       },
       {
         state: 'fill-account-uuids',
+        mode: 'upgrade',
         func: fillAccountUuids
       },
       {
         state: 'assign-employee-roles-v1',
+        mode: 'upgrade',
         func: assignEmployeeRoles
+      },
+      // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
+      {
+        state: 'fill-social-identities-ids-v2',
+        mode: 'upgrade',
+        func: fillSocialIdentitiesIds
       }
     ])
   },

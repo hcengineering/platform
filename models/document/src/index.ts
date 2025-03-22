@@ -14,16 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import type {
-  CollectionSize,
-  MarkupBlobRef,
-  Domain,
-  Rank,
-  Ref,
-  Role,
-  RolesAssignment,
-  PersonId
-} from '@hcengineering/core'
+import type { CollectionSize, MarkupBlobRef, Domain, Rank, Ref, Role, RolesAssignment } from '@hcengineering/core'
 import { AccountUuid, AccountRole, IndexKind } from '@hcengineering/core'
 import {
   type Document,
@@ -45,8 +36,8 @@ import {
   TypeNumber,
   TypeRef,
   TypeString,
-  TypePersonId,
-  UX
+  UX,
+  TypeAccountUuid
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -89,9 +80,9 @@ export class TDocument extends TDoc implements Document, Todoable {
   @Hidden()
   declare space: Ref<Teamspace>
 
-  @Prop(TypePersonId(), document.string.LockedBy)
+  @Prop(TypeAccountUuid(), document.string.LockedBy)
   @Hidden()
-    lockedBy?: PersonId
+    lockedBy?: AccountUuid
 
   @Prop(Collection(attachment.class.Embedding), attachment.string.Embeddings)
     embeddings?: number

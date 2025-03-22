@@ -97,7 +97,8 @@ export default mergeIds(viewId, view, {
     ImageViewer: '' as AnyComponent,
     VideoViewer: '' as AnyComponent,
     PDFViewer: '' as AnyComponent,
-    TextViewer: '' as AnyComponent
+    TextViewer: '' as AnyComponent,
+    BaseDocPresenter: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

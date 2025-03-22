@@ -24,8 +24,8 @@ import core, {
   UserStatus
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
-import { getAccountBySocialId, getPerson } from '@hcengineering/server-contact'
-import { aiBotEmailSocialId, AIEventRequest } from '@hcengineering/ai-bot'
+import { getAccountBySocialKey } from '@hcengineering/server-contact'
+import { aiBotEmailSocialKey, AIEventRequest } from '@hcengineering/ai-bot'
 
 import { createAccountRequest, hasAiEndpoint, sendAIEvents } from './utils'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
@@ -35,7 +35,7 @@ async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl)
     return []
   }
 
-  const account = await getAccountBySocialId(control, aiBotEmailSocialId)
+  let account = await getAccountBySocialKey(control, aiBotEmailSocialKey)
 
   if (control.ctx.contextData.account.uuid === account) {
     return []
@@ -67,11 +67,13 @@ async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl)
       }
     }
 
-    const aiBotPerson = await getPerson(control, aiBotEmailSocialId)
+    if (account === undefined) {
+      account = await getAccountBySocialKey(control, aiBotEmailSocialKey)
 
-    if (aiBotPerson === undefined) {
-      await createAccountRequest(control.workspace.uuid, control.ctx)
-      return []
+      if (account === undefined) {
+        await createAccountRequest(control.workspace.uuid, control.ctx)
+        return []
+      }
     }
   }
 
@@ -84,7 +86,7 @@ async function OnMessageSend (originTxs: TxCreateDoc<ChatMessage>[], control: Tr
   }
 
   const { hierarchy } = control
-  const txes = originTxs.filter((it) => it.modifiedBy !== aiBotEmailSocialId)
+  const txes = originTxs.filter((it) => it.modifiedBy !== aiBotEmailSocialKey)
 
   if (txes.length === 0) {
     return []
@@ -153,7 +155,7 @@ async function getMessageDoc (message: ChatMessage, control: TriggerControl): Pr
 
 async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
   const { members } = direct
-  const account = await getAccountBySocialId(control, aiBotEmailSocialId)
+  const account = await getAccountBySocialKey(control, aiBotEmailSocialKey)
 
   if (account == null) {
     return false

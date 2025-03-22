@@ -26,7 +26,6 @@ import core, {
   type CollaborativeDoc,
   type Client as CoreClient,
   DOMAIN_BENCHMARK,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   DOMAIN_STATUS,
@@ -1217,17 +1216,6 @@ export async function removeDuplicateIds (
 //     await updateRefs(txop, newId, doc)
 
 //     await updateArrRefs(txop, newId, doc)
-
-//     // update docIndexState
-//     const docIndexState = await client.findOne(core.class.DocIndexState, { doc: doc._id })
-//     if (docIndexState !== undefined) {
-//       const { _id, space, modifiedBy, modifiedOn, createdBy, createdOn, _class, ...data } = docIndexState
-//       await txop.createDoc(docIndexState._class, docIndexState.space, {
-//         ...data,
-//         removed: false
-//       })
-//       await txop.update(docIndexState, { removed: true, needIndex: true })
-//     }
 
 //     if (domain !== DOMAIN_MODEL) {
 //       const raw = await db.collection(domain).findOne({ _id: doc._id })

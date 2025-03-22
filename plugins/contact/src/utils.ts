@@ -31,11 +31,12 @@ import {
   TxFactory,
   Person as GlobalPerson,
   AccountUuid,
-  notEmpty
+  notEmpty,
+  toIdMap
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
-import contact, { AvatarProvider, AvatarType, Channel, Contact, Employee, Person } from '.'
+import contact, { AvatarProvider, AvatarType, Channel, Contact, Employee, Person, SocialIdentityRef } from '.'
 
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 
@@ -293,8 +294,16 @@ export function includesAny (members: PersonId[], ids: PersonId[]): boolean {
   return members.some((m) => ids.includes(m))
 }
 
+export async function getPersonBySocialKey (client: Client, socialKey: string): Promise<Person | undefined> {
+  const socialId = await client.findOne(contact.class.SocialIdentity, { key: socialKey })
+  if (socialId === undefined) return undefined
+  return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
+}
+
 export async function getPersonBySocialId (client: Client, socialIdString: PersonId): Promise<Person | undefined> {
-  const socialId = await client.findOne(contact.class.SocialIdentity, { key: socialIdString })
+  const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
+
+  if (socialId === undefined) return undefined
 
   return await client.findOne(contact.class.Person, { _id: socialId?.attachedTo, _class: socialId?.attachedToClass })
 }
@@ -303,7 +312,7 @@ export async function getPersonRefBySocialId (
   client: Client,
   socialIdString: PersonId
 ): Promise<Ref<Person> | undefined> {
-  const socialId = await client.findOne(contact.class.SocialIdentity, { key: socialIdString })
+  const socialId = await client.findOne(contact.class.SocialIdentity, { _id: socialIdString as SocialIdentityRef })
 
   return socialId?.attachedTo
 }
@@ -312,11 +321,14 @@ export async function getPersonRefsBySocialIds (
   client: Client,
   ids: PersonId[] = []
 ): Promise<Record<PersonId, Ref<Person>>> {
-  const socialIds = await client.findAll(contact.class.SocialIdentity, ids.length === 0 ? {} : { key: { $in: ids } })
+  const socialIds = await client.findAll(
+    contact.class.SocialIdentity,
+    ids.length === 0 ? {} : { _id: { $in: ids as SocialIdentityRef[] } }
+  )
   const result: Record<PersonId, Ref<Person>> = {}
 
   for (const socialId of socialIds) {
-    result[socialId.key] = socialId.attachedTo
+    result[socialId._id] = socialId.attachedTo
   }
 
   return result
@@ -329,12 +341,12 @@ export async function getPrimarySocialId (client: Client, person: Ref<Person>): 
     return
   }
 
-  return pickPrimarySocialId(socialIds.map((it) => it.key))
+  return pickPrimarySocialId(socialIds.map((it) => it._id))
 }
 
 export async function getAllSocialStringsByPersonId (client: Client, personId: PersonId): Promise<PersonId[]> {
   const socialId = await client.findOne(contact.class.SocialIdentity, {
-    key: personId,
+    _id: personId as SocialIdentityRef,
     attachedToClass: contact.class.Person
   })
 
@@ -344,13 +356,13 @@ export async function getAllSocialStringsByPersonId (client: Client, personId: P
 
   const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: socialId.attachedTo })
 
-  return socialIds.map((it) => it.key)
+  return socialIds.map((it) => it._id)
 }
 
 export async function getAllSocialStringsByPersonRef (client: Client, person: Ref<Person>): Promise<PersonId[]> {
   const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: person })
 
-  return socialIds.map((it) => it.key)
+  return socialIds.map((it) => it._id)
 }
 
 export async function getSocialStringsByEmployee (client: Client): Promise<Record<Ref<Person>, PersonId[]>> {
@@ -359,16 +371,15 @@ export async function getSocialStringsByEmployee (client: Client): Promise<Recor
     attachedTo: { $in: employees.map((it) => it._id) },
     attachedToClass: contact.class.Person
   })
-  const socialStringsByPerson: Record<Ref<Person>, PersonId[]> = {}
+  const socialStringsByPerson: Record<Ref<Employee>, PersonId[]> = {}
 
   for (const socialId of socialIds) {
-    const socialStrings = socialStringsByPerson[socialId.attachedTo]
-    const socialString = buildSocialIdString(socialId)
+    const socialStrings = socialStringsByPerson[socialId.attachedTo as Ref<Employee>]
+
     if (socialStrings === undefined) {
-      socialStringsByPerson[socialId.attachedTo] = [socialString]
-    } else {
-      socialStrings.push(socialString)
+      socialStringsByPerson[socialId.attachedTo as Ref<Employee>] = []
     }
+    socialStrings.push(socialId._id)
   }
 
   return socialStringsByPerson
@@ -403,21 +414,11 @@ export async function ensureEmployee (
   const personByUuid = await client.findOne(contact.class.Person, { personUuid: me.uuid })
   let personRef: Ref<Person> | undefined = personByUuid?._id
   if (personRef === undefined) {
-    const socialIdentity = await client.findOne(contact.class.SocialIdentity, { key: { $in: me.socialIds } })
+    const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
+      _id: { $in: me.socialIds as SocialIdentityRef[] }
+    })
 
-    if (socialIdentity !== undefined && !socialIdentity.confirmed) {
-      const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
-        contact.class.SocialIdentity,
-        contact.space.Contacts,
-        socialIdentity._id,
-        {
-          confirmed: true
-        }
-      )
-
-      await client.tx(updateSocialIdentityTx)
-    }
-
+    // This social id is confirmed globally as we only have ids of confirmed social identities in socialIds array
     personRef = socialIdentity?.attachedTo
   }
 
@@ -450,13 +451,13 @@ export async function ensureEmployee (
     await client.tx(updatePersonTx)
   }
 
-  const existingIdentifiers = await client.findAll(contact.class.SocialIdentity, {
-    attachedTo: personRef,
-    attachedToClass: contact.class.Person
-  })
+  const existingIdentifiers = toIdMap(
+    await client.findAll(contact.class.SocialIdentity, { _id: { $in: me.socialIds as SocialIdentityRef[] } })
+  )
 
   for (const socialId of socialIds) {
-    const existing = existingIdentifiers.find((it) => it.type === socialId.type && it.value === socialId.value)
+    const existing = existingIdentifiers.get(socialId._id as SocialIdentityRef)
+
     if (existing === undefined) {
       await ctx.with('create-social-identity', {}, async () => {
         if (personRef === undefined) {
@@ -470,19 +471,44 @@ export async function ensureEmployee (
           personRef,
           contact.space.Contacts,
           'socialIds',
-          txFactory.createTxCreateDoc(contact.class.SocialIdentity, contact.space.Contacts, {
-            attachedTo: personRef,
-            attachedToClass: contact.class.Person,
-            collection: 'socialIds',
-            type: socialId.type,
-            value: socialId.value,
-            key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
-            confirmed: socialId.verifiedOn !== undefined && socialId.verifiedOn > 0
-          })
+          txFactory.createTxCreateDoc(
+            contact.class.SocialIdentity,
+            contact.space.Contacts,
+            {
+              attachedTo: personRef,
+              attachedToClass: contact.class.Person,
+              collection: 'socialIds',
+              type: socialId.type,
+              value: socialId.value,
+              key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
+              verifiedOn: socialId.verifiedOn
+            },
+            socialId._id as SocialIdentityRef
+          )
         )
 
         await client.tx(createSocialIdTx)
       })
+    } else {
+      // This social identity must be attached to the correct person. If it's not the case, something is wrong.
+      // personRef must be readonly after creation and must NEVER be changed.
+      if (existing.attachedTo !== personRef) {
+        throw new Error('Social identity is attached to the wrong person')
+      }
+
+      // Check and update if needed
+      if (existing.verifiedOn == null) {
+        const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
+          contact.class.SocialIdentity,
+          contact.space.Contacts,
+          existing._id,
+          {
+            verifiedOn: socialId.verifiedOn
+          }
+        )
+
+        await client.tx(updateSocialIdentityTx)
+      }
     }
   }
 

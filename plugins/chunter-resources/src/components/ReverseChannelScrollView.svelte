@@ -251,8 +251,8 @@
 
     if (topOffset < 0) {
       scroller?.scrollBy(topOffset)
-    } else if (topOffset > 0) {
-      scroller?.scrollBy(topOffset)
+    } else if (scrollDiv.scrollTop > 0) {
+      scrollDiv.scroll({ top: 0, behavior: 'instant' })
     }
   }
 

@@ -22,7 +22,6 @@ import core, {
   type Data,
   type Doc,
   type Domain,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_RELATION,
   DOMAIN_TX,
@@ -153,14 +152,6 @@ export function genMinModel (): TxCUD<Doc>[] {
       extends: core.class.Doc,
       kind: ClassifierKind.CLASS,
       domain: DOMAIN_MODEL
-    })
-  )
-  txes.push(
-    createClass(core.class.DocIndexState, {
-      label: 'DocIndexState' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.CLASS,
-      domain: DOMAIN_DOC_INDEX_STATE
     })
   )
 

@@ -22,7 +22,8 @@ import {
   SortingOrder,
   type Class,
   type CollaborativeDoc,
-  type Doc
+  type Doc,
+  type AccountUuid
 } from '@hcengineering/core'
 import { type Document, type DocumentSnapshot, type Teamspace } from '@hcengineering/document'
 import {
@@ -35,7 +36,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import core, { DOMAIN_SPACE, getSocialIdByOldAccount } from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE, getAccountUuidBySocialKey, getSocialKeyByOldAccount } from '@hcengineering/model-core'
 import { DOMAIN_NOTIFICATION } from '@hcengineering/notification'
 import { type Asset } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
@@ -292,7 +293,52 @@ async function migrateRanks (client: MigrationClient): Promise<void> {
 
 async function migrateAccountsToSocialIds (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('document migrateAccountsToSocialIds', {})
-  const socialIdByAccount = await getSocialIdByOldAccount(client)
+  const socialKeyByAccount = await getSocialKeyByOldAccount(client)
+
+  ctx.info('processing document lockedBy ', {})
+  const iterator = await client.traverse(DOMAIN_DOCUMENT, { _class: document.class.Document })
+
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await iterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: { filter: MigrationDocumentQuery<Document>, update: MigrateUpdate<Document> }[] = []
+
+      for (const doc of docs) {
+        const document = doc as Document
+        const newLockedBy: any =
+          document.lockedBy != null ? socialKeyByAccount[document.lockedBy] ?? document.lockedBy : document.lockedBy
+
+        if (newLockedBy === document.lockedBy) continue
+
+        operations.push({
+          filter: { _id: document._id },
+          update: {
+            lockedBy: newLockedBy
+          }
+        })
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_DOCUMENT, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await iterator.close()
+  }
+  ctx.info('finished processing document lockedBy ', {})
+}
+
+async function migrateSocialIdsToGlobalAccounts (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('document migrateSocialIdsToGlobalAccounts', {})
+  const accountUuidBySocialKey = new Map<string, AccountUuid | null>()
 
   ctx.info('processing document lockedBy ', {})
   const iterator = await client.traverse(DOMAIN_DOCUMENT, { _class: document.class.Document })
@@ -310,7 +356,9 @@ async function migrateAccountsToSocialIds (client: MigrationClient): Promise<voi
       for (const doc of docs) {
         const document = doc as Document
         const newLockedBy =
-          document.lockedBy != null ? socialIdByAccount[document.lockedBy] ?? document.lockedBy : document.lockedBy
+          document.lockedBy != null
+            ? (await getAccountUuidBySocialKey(client, document.lockedBy, accountUuidBySocialKey)) ?? document.lockedBy
+            : document.lockedBy
 
         if (newLockedBy === document.lockedBy) continue
 
@@ -413,6 +461,11 @@ export const documentOperation: MigrateOperation = {
         state: 'migrateEmbeddingsRefs',
         mode: 'upgrade',
         func: migrateEmbeddingsRefs
+      },
+      {
+        state: 'social-ids-to-global-accounts',
+        mode: 'upgrade',
+        func: migrateSocialIdsToGlobalAccounts
       }
     ])
   },

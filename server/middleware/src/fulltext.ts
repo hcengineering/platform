@@ -16,7 +16,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   docKey,
-  DOMAIN_DOC_INDEX_STATE,
   isFullTextAttribute,
   isIndexedAttribute,
   toFindResult,
@@ -33,17 +32,9 @@ import core, {
   type Ref,
   type SearchOptions,
   type SearchQuery,
-  type SearchResult,
-  type SessionData,
-  type Tx
+  type SearchResult
 } from '@hcengineering/core'
-import type {
-  IndexedDoc,
-  Middleware,
-  MiddlewareCreator,
-  PipelineContext,
-  TxMiddlewareResult
-} from '@hcengineering/server-core'
+import type { IndexedDoc, Middleware, MiddlewareCreator, PipelineContext } from '@hcengineering/server-core'
 import { BaseMiddleware } from '@hcengineering/server-core'
 /**
  * @public
@@ -51,8 +42,6 @@ import { BaseMiddleware } from '@hcengineering/server-core'
 export class FullTextMiddleware extends BaseMiddleware implements Middleware {
   fulltextEndpoint: string
   contexts = new Map<Ref<Class<Doc>>, FullTextSearchContext>()
-
-  warmupTriggered: boolean = false
 
   constructor (
     context: PipelineContext,
@@ -79,54 +68,10 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
     }
   }
 
-  async handleBroadcast (ctx: MeasureContext<SessionData>): Promise<void> {
-    if (ctx.contextData.fulltextUpdates !== undefined && ctx.contextData.fulltextUpdates.size > 0) {
-      const toUpdate = Array.from(ctx.contextData.fulltextUpdates.values())
-      ctx.contextData.fulltextUpdates.clear()
-      await this.context.lowLevelStorage?.upload(ctx, DOMAIN_DOC_INDEX_STATE, toUpdate)
-      this.sendWarmup()
-    }
-    await super.handleBroadcast(ctx)
-  }
-
   async init (ctx: MeasureContext): Promise<void> {
     this.contexts = new Map(
       this.context.modelDb.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it])
     )
-
-    // Send one warumup so reindex will
-    this.sendWarmup()
-  }
-
-  sendWarmup (): void {
-    if (!this.warmupTriggered) {
-      this.warmupTriggered = true
-      setTimeout(() => {
-        this.warmupTriggered = false
-        void this._sendWarmup().catch(() => {})
-      }, 25)
-    }
-  }
-
-  async _sendWarmup (): Promise<void> {
-    // Just send a warmup to indexer to start do something, or just reindex if some work are pending.
-    try {
-      await fetch(this.fulltextEndpoint + '/api/v1/warmup', {
-        method: 'PUT',
-        keepalive: true,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          token: this.token
-        })
-      })
-    } catch (err: any) {
-      if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
-        return
-      }
-      Analytics.handleError(err)
-    }
   }
 
   async search<T extends Doc>(
@@ -383,10 +328,6 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
       Analytics.handleError(err)
       return { docs: [] }
     }
-  }
-
-  tx (ctx: MeasureContext, txes: Tx[]): Promise<TxMiddlewareResult> {
-    return this.provideTx(ctx, txes)
   }
 
   async close (): Promise<void> {

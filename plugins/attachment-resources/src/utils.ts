@@ -213,3 +213,38 @@ export function showAttachmentPreviewPopup (value: WithLookup<Attachment> | Blob
     getPreviewAlignment(value.type ?? '')
   )
 }
+
+interface ImageDimensions {
+  width: number
+  height: number
+  fit: 'cover' | 'contain'
+}
+
+export function getImageDimensions (
+  size: { width: number, height: number },
+  maxRem: { maxWidth: number, minWidth: number, maxHeight: number, minHeight: number }
+): ImageDimensions {
+  const originalWidth = size.width
+  const originalHeight = size.height
+  const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+  const maxWidthPx = maxRem.maxWidth * fontSize
+  const minWidthPx = maxRem.minWidth * fontSize
+  const maxHeightPx = maxRem.maxHeight * fontSize
+  const minHeightPx = maxRem.minHeight * fontSize
+
+  const ratio = originalHeight / originalWidth
+
+  let width = Math.min(originalWidth, maxWidthPx)
+  let height = Math.ceil(width * ratio)
+
+  const fit = width < minWidthPx || height < minHeightPx ? 'cover' : 'contain'
+
+  if (height > maxHeightPx) {
+    width = maxHeightPx / ratio
+    height = maxHeightPx
+  } else if (height < minHeightPx) {
+    height = minHeightPx
+  }
+
+  return { width: Math.round(width), height: Math.round(height), fit }
+}

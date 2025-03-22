@@ -22,7 +22,6 @@ import core, {
   Data,
   Doc,
   generateId,
-  parseSocialIdString,
   Hierarchy,
   Markup,
   Ref,
@@ -37,10 +36,10 @@ import core, {
   TxUpdateDoc,
   Type,
   type MeasureContext,
-  AccountUuid,
-  buildSocialIdString
+  AccountUuid
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
+import { getPerson } from '@hcengineering/server-contact'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import {
   applyNotificationProviders,
@@ -82,7 +81,7 @@ export async function getPersonNotificationTxes (
 ): Promise<Tx[]> {
   const receiver = reference.attachedTo as Ref<Person>
   const receiverSocialIds = await control.findAll(ctx, contact.class.SocialIdentity, { attachedTo: receiver })
-  const receiverSocialStrings = receiverSocialIds.map(buildSocialIdString)
+  const receiverSocialStrings = receiverSocialIds.map((si) => si._id) as PersonId[]
 
   if (receiverSocialStrings.includes(senderId)) {
     return []
@@ -156,15 +155,11 @@ export async function getPersonNotificationTxes (
     archived: false
   }
 
-  const { type, value } = parseSocialIdString(senderId)
-
-  const senderSocialIds = await control.findAll(ctx, contact.class.SocialIdentity, { type, value })
-  const senderSocialId = senderSocialIds[0]
-
-  const senderPerson =
-    senderId !== undefined
-      ? (await control.findAll(ctx, contact.class.Person, { _id: senderSocialId.attachedTo }, { limit: 1 }))[0]
-      : undefined
+  const senderPerson = await getPerson(control, senderId)
+  const senderSocialIds =
+    senderPerson !== undefined
+      ? await control.findAll(ctx, contact.class.SocialIdentity, { attachedTo: senderPerson._id })
+      : []
 
   const receiverSocialString = pickPrimarySocialId(receiverSocialStrings)
   const receiverInfo = toReceiverInfo(control.hierarchy, {
@@ -178,7 +173,7 @@ export async function getPersonNotificationTxes (
   const senderInfo = {
     _id: senderId,
     person: senderPerson,
-    socialStrings: senderSocialIds.map((si) => si.key)
+    socialStrings: senderSocialIds.map((si) => si._id)
   }
 
   const notifyResult = await shouldNotifyCommon(

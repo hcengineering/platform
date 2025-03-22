@@ -66,6 +66,7 @@ import {
   type DbAdapter,
   type DbAdapterHandler,
   type DomainHelperOperations,
+  type RawFindIterator,
   type ServerFindOptions,
   type TxAdapter
 } from '@hcengineering/server-core'
@@ -1605,6 +1606,54 @@ abstract class PostgresAdapterBase implements DbAdapter {
             hash: this.strimSize((d as any)['%hash%'])
           })
         }
+        return result
+      },
+      close: async () => {
+        await bulk.return([]) // We need to close generator, just in case
+        client?.release()
+        ctx.end()
+      }
+    }
+  }
+
+  rawFind (_ctx: MeasureContext, domain: Domain): RawFindIterator {
+    const ctx = _ctx.newChild('findRaw', { domain })
+
+    let initialized: boolean = false
+    let client: DBClient
+
+    const tdomain = translateDomain(domain)
+    const schema = getSchema(domain)
+
+    const workspaceId = this.workspaceId
+
+    function createBulk (projection: string, limit = 1000): AsyncGenerator<Doc[]> {
+      const sql = `
+        SELECT ${projection}
+        FROM ${tdomain}
+        WHERE "workspaceId" = '${workspaceId}'
+      `
+
+      return createCursorGenerator(client.raw(), sql, undefined, schema, limit)
+    }
+    let bulk: AsyncGenerator<Doc[]>
+
+    return {
+      find: async () => {
+        if (!initialized) {
+          if (client === undefined) {
+            client = await this.client.reserve()
+          }
+          initialized = true
+          bulk = createBulk('*')
+        }
+
+        const docs = await ctx.with('next', {}, () => bulk.next())
+        if (docs.done === true || docs.value.length === 0) {
+          return []
+        }
+        const result: Doc[] = []
+        result.push(...(this.stripHash(docs.value) as Doc[]))
         return result
       },
       close: async () => {

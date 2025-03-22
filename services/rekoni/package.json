@@ -88,7 +88,8 @@
     "morgan": "^1.10.0",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/platform": "^0.6.11"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/analytics-service": "^0.6.0"
   },
   "description": "Document recognition service"
 }

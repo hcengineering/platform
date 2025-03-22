@@ -91,8 +91,7 @@ export type AccountUuid = PersonUuid & { __accountUuid: true }
 
 /**
  * @public
- * String representation of a social id linked to a global person.
- * E.g. email:pied.piper@hcengineering.com or huly:ea3bf257-94b5-4a31-a7da-466d578d850f
+ * Generated identifier of a social id linked to a global person.
  */
 export type PersonId = string & { __personId: true }
 
@@ -422,8 +421,6 @@ export interface TransientConfiguration extends Class<Doc> {
  */
 export const DOMAIN_BLOB = 'blob' as Domain
 
-export const DOMAIN_DOC_INDEX_STATE = 'doc-index-state' as Domain
-
 /**
  * @public
  */
@@ -580,17 +577,6 @@ export interface MigrationState extends Doc {
  */
 export function versionToString (version: Version | Data<Version>): string {
   return `${version?.major}.${version?.minor}.${version?.patch}`
-}
-
-/**
- * @public
- *
- * Define status for full text indexing
- */
-export interface DocIndexState extends Doc {
-  objectClass: Ref<Class<Doc>>
-  needIndex: boolean
-  removed: boolean
 }
 
 /**
@@ -863,11 +849,19 @@ export enum SocialIdType {
   HULY = 'huly',
   TELEGRAM = 'telegram'
 }
+
 export interface SocialId {
-  id: string
+  // generated ID so the actual social ID can be detached from a person w/o losing the ID in the linked database records
+  _id: PersonId
+
+  // Should never be changed after creation
   type: SocialIdType
   value: string
-  key: PersonId
+  key: string // Calculated from type and value. Just for convenience.
+
+  // To be used later when person detaches social id from his account by any means
+  // There should always be only one ACTIVE social id with the same key every time
+  // active: boolean
   verifiedOn?: number
 }
 

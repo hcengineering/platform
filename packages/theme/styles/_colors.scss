@@ -376,6 +376,10 @@
   --theme-state-regular-background-color: rgba(123, 123, 123, 0.1);
   --theme-state-regular-border-color: rgba(123, 123, 123, 0.15);
   --theme-wizard-not-visited-color: #34343c;
+
+  --calendar-event-back-color: #2B2D41;
+  --calendar-event-border-color: rgba(43, 81, 144, 0.2);
+  --calendar-event-handle-color: #2b5190;
 }
 
 /* Light Theme */
@@ -668,4 +672,8 @@
   --theme-state-regular-background-color: rgba(123, 123, 123, 0.1);
   --theme-state-regular-border-color: rgba(123, 123, 123, 0.15);
   --theme-wizard-not-visited-color: #e8e9e9;
+
+  --calendar-event-back-color: #f3f6fb;
+  --calendar-event-border-color: rgba(43, 81, 144, 0.2);
+  --calendar-event-handle-color: #2b5190;
 }

@@ -18,7 +18,6 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Task } from '@hcengineering/task'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { mySocialStringsStore } from '@hcengineering/contact-resources'
   import {
     Component,
     IModeSelector,
@@ -49,8 +48,9 @@
   let search = ''
   const dispatch = createEventDispatcher()
   const me = getCurrentEmployee()
+  const account = getCurrentAccount()
   const assigned = { assignee: me }
-  $: created = { createdBy: { $in: $mySocialStringsStore } }
+  $: created = { createdBy: { $in: account.socialIds } }
   let subscribed = { _id: { $in: [] as Ref<Task>[] } }
   let mode: string | undefined = undefined
   let baseQuery: DocumentQuery<Task> | undefined = undefined

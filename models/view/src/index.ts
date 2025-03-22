@@ -16,7 +16,6 @@
 //
 
 import {
-  type PersonId,
   type Class,
   type Client,
   DOMAIN_MODEL,
@@ -27,7 +26,8 @@ import {
   type Domain,
   type Ref,
   type Space,
-  type AnyAttribute
+  type AnyAttribute,
+  type AccountUuid
 } from '@hcengineering/core'
 import { type Builder, Mixin, Model, UX } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
@@ -119,7 +119,7 @@ export class TFilteredView extends TDoc implements FilteredView {
   viewOptions?: ViewOptions
   filterClass?: Ref<Class<Doc>>
   viewletId?: Ref<Viewlet> | null
-  users!: PersonId[]
+  users!: AccountUuid[]
   attachedTo!: string
   sharable?: boolean
 }
@@ -319,6 +319,7 @@ export class TViewlet extends TDoc implements Viewlet {
   hiddenKeys?: string[]
   viewOptions?: ViewOptionsModel
   props?: Record<string, any>
+  title?: IntlString
 }
 
 @Model(view.class.Action, core.class.Doc, DOMAIN_MODEL)
@@ -1277,6 +1278,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilterPresenter, {
     presenter: view.component.PersonIdFilterValuePresenter
+  })
+
+  builder.mixin(view.class.ViewletDescriptor, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: view.component.BaseDocPresenter
   })
 }
 

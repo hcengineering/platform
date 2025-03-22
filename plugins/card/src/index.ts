@@ -75,7 +75,8 @@ const cardPlugin = plugin(cardId, {
     Tag: '' as Asset,
     Tags: '' as Asset,
     Card: '' as Asset,
-    File: '' as Asset
+    File: '' as Asset,
+    View: '' as Asset
   },
   extensions: {
     EditCardExtension: '' as ComponentExtensionId
@@ -87,7 +88,8 @@ const cardPlugin = plugin(cardId, {
     Tag: '' as IntlString,
     Card: '' as IntlString,
     Cards: '' as IntlString,
-    CardApplication: '' as IntlString
+    CardApplication: '' as IntlString,
+    Views: '' as IntlString
   }
 })
 

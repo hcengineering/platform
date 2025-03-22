@@ -533,6 +533,12 @@ export function createModel (builder: Builder): void {
     label: core.string.Relations,
     component: card.component.RelationsSection
   })
+
+  builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
+    id: 'views',
+    label: card.string.Views,
+    component: card.component.ViewsSection
+  })
 }
 
 export default card
