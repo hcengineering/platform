@@ -1782,12 +1782,16 @@ class PostgresAdapter extends PostgresAdapterBase {
           break
         case core.class.TxUpdateDoc: {
           const updateTx = tx as TxUpdateDoc<Doc>
-          const current = updateGroup.get(updateTx.objectId)
-          if (current !== undefined) {
-            current.operations = { ...current.operations, ...updateTx.operations }
-            updateGroup.set(updateTx.objectId, current)
+          if (isOperator(updateTx.operations)) {
+            ops.updates.push(updateTx)
           } else {
-            updateGroup.set(updateTx.objectId, updateTx)
+            const current = updateGroup.get(updateTx.objectId)
+            if (current !== undefined) {
+              current.operations = { ...current.operations, ...updateTx.operations }
+              updateGroup.set(updateTx.objectId, current)
+            } else {
+              updateGroup.set(updateTx.objectId, updateTx)
+            }
           }
           break
         }
@@ -1804,7 +1808,7 @@ class PostgresAdapter extends PostgresAdapterBase {
           break
       }
     }
-    ops.updates = [...updateGroup.values()]
+    ops.updates.push(...updateGroup.values())
     return ops
   }
 
