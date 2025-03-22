@@ -67,7 +67,6 @@ test.describe('Workspace Migration tests', () => {
       await loginPage2.goto()
       await loginPage2.login('admin', '1234')
       await page.waitForURL((url) => {
-        console.log(url.pathname)
         return url.pathname.startsWith('/login/selectWorkspace') || url.pathname.startsWith('/workbench/')
       })
 
@@ -83,7 +82,7 @@ test.describe('Workspace Migration tests', () => {
       await page2.locator('div:nth-child(4) > .checkbox-container > .checkSVG').click()
 
       await page2.getByRole('button', { name: 'America', exact: true }).click()
-      await page2.getByRole('button', { name: 'europe (hidden)' }).click()
+      await page2.getByRole('button', { name: 'europe' }).click()
       await page2.getByPlaceholder('Search').click()
       await page2.getByPlaceholder('Search').fill(workspaceInfo.workspace)
       await page2.locator(`[id="${workspaceInfo.workspace}"]`).getByRole('button', { name: 'Migrate' }).click()

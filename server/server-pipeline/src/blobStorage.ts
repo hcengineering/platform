@@ -39,6 +39,7 @@ import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
   type DbAdapter,
   type DbAdapterHandler,
+  type RawFindIterator,
   type StorageAdapter,
   type StorageAdapterEx
 } from '@hcengineering/server-core'
@@ -76,6 +77,13 @@ class StorageBlobAdapter implements DbAdapter {
 
   async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
     return []
+  }
+
+  rawFind (ctx: MeasureContext, domain: Domain): RawFindIterator {
+    return {
+      find: async () => [],
+      close: async () => {}
+    }
   }
 
   async rawUpdate<T extends Doc>(

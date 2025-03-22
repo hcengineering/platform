@@ -421,8 +421,6 @@ export interface TransientConfiguration extends Class<Doc> {
  */
 export const DOMAIN_BLOB = 'blob' as Domain
 
-export const DOMAIN_DOC_INDEX_STATE = 'doc-index-state' as Domain
-
 /**
  * @public
  */
@@ -579,17 +577,6 @@ export interface MigrationState extends Doc {
  */
 export function versionToString (version: Version | Data<Version>): string {
   return `${version?.major}.${version?.minor}.${version?.patch}`
-}
-
-/**
- * @public
- *
- * Define status for full text indexing
- */
-export interface DocIndexState extends Doc {
-  objectClass: Ref<Class<Doc>>
-  needIndex: boolean
-  removed: boolean
 }
 
 /**

@@ -1,5 +1,6 @@
+import type { WorkspaceInfoWithStatus, WorkspaceLoginInfo } from '@hcengineering/account'
 import { APIRequestContext } from '@playwright/test'
-import { PlatformURI, LocalUrl, DevUrl } from '../utils'
+import { DevUrl, LocalUrl, PlatformURI } from '../utils'
 
 export class ApiEndpoint {
   private readonly request: APIRequestContext
@@ -45,11 +46,7 @@ export class ApiEndpoint {
     workspaceName: string,
     username: string,
     password: string
-  ): Promise<{
-      workspace: string
-      workspaceId: string
-      workspaceName: string
-    }> {
+  ): Promise<WorkspaceLoginInfo> {
     const token = await this.loginAndGetToken(username, password)
     const url = this.baseUrl
     const payload = {
@@ -58,7 +55,53 @@ export class ApiEndpoint {
     }
     const headers = this.getDefaultHeaders(token)
     const response = await this.request.post(url, { data: payload, headers })
-    return (await response.json()).result
+
+    const wsResult: WorkspaceLoginInfo = (await response.json()).result
+
+    await this.waitWorkspaceReady(token, wsResult.workspaceUrl)
+
+    return wsResult
+  }
+
+  async waitWorkspaceReady (token: string, workspaceUrl: string): Promise<void> {
+    // We need to wait for workspace to be created before we will continue.
+    const headers = this.getDefaultHeaders(token)
+    const url = this.baseUrl
+    const selectWorkspaceResponse: WorkspaceLoginInfo = (
+      await (
+        await this.request.post(url, {
+          data: {
+            method: 'selectWorkspace',
+            params: { workspaceUrl }
+          },
+          headers
+        })
+      ).json()
+    ).result
+
+    const wsToken = selectWorkspaceResponse.token
+    if (wsToken === undefined) {
+      throw new Error('Workspace token is undefined')
+    }
+
+    const headersInfo = this.getDefaultHeaders(wsToken)
+    while (true) {
+      const wsInfo: WorkspaceInfoWithStatus = (
+        await (
+          await this.request.post(url, {
+            data: {
+              method: 'getWorkspaceInfo',
+              params: { updateLastVisit: false }
+            },
+            headers: headersInfo
+          })
+        ).json()
+      ).result
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (wsInfo.status.mode === 'active') {
+        break
+      }
+    }
   }
 
   async createAccount (email: string, password: string, firstName: string, lastName: string): Promise<any> {

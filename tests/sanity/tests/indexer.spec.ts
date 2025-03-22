@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { NewDocument } from './model/documents/types'
 import { LeftSideMenuPage } from './model/left-side-menu-page'
 import { DocumentsPage } from './model/documents/documents-page'
@@ -13,6 +13,7 @@ import { LoginPage } from './model/login-page'
 import { SignUpPage } from './model/signup-page'
 import { SelectWorkspacePage } from './model/select-workspace-page'
 
+const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 test.use({
   storageState: PlatformSetting
 })
@@ -173,7 +174,9 @@ test.describe('Fulltext index', () => {
       await test.step('search by title', async () => {
         await spotlight.open()
         await spotlight.fillSearchInput(titleId)
-        await spotlight.checkSearchResult(newDocument.title, 0)
+        await expect(async () => {
+          await spotlight.checkSearchResult(newDocument.title, 0)
+        }).toPass(retryOptions)
         await spotlight.close()
       })
     })

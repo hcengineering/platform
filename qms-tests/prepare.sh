@@ -16,6 +16,8 @@ if [ "x$DO_CLEAN" == 'xtrue' ]; then
     docker system prune -a -f
 fi
 
+../tests/wait-elastic.sh 9201
+
 # Create user record in accounts
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234

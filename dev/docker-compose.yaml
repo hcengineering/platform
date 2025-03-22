@@ -1,5 +1,5 @@
 services:
-  stream: 
+  stream:
     image: 'hardcoreeng/stream'
     extra_hosts:
       - 'huly.local:host-gateway'
@@ -44,9 +44,66 @@ services:
     volumes:
       - cockroach_db:/cockroach/cockroach-data
     restart: unless-stopped
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+    container_name: redpanda
+    volumes:
+      - redpanda:/var/lib/redpanda/data
+    ports:
+      - 18081:18081
+      - 18082:18082
+      - 19092:19092
+      - 19644:9644
+    healthcheck:
+      test: ['CMD', 'rpk', 'cluster', 'info', '-X', 'user=superuser', '-X', 'pass=secretpassword']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  redpanda_console:
+    image: docker.redpanda.com/redpandadata/console:v2.8.3
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9092"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8081"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+    ports:
+      - 8000:8080
+    depends_on:
+      - redpanda
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    expose:
+      - 9000
+      - 9001
     ports:
       - 9000:9000
       - 9001:9001
@@ -55,9 +112,10 @@ services:
     restart: unless-stopped
   elastic:
     image: 'elasticsearch:7.14.2'
-    command: |
-      /bin/sh -c "./bin/elasticsearch-plugin list | grep -q ingest-attachment || yes | ./bin/elasticsearch-plugin install --silent ingest-attachment;      
-      /usr/local/bin/docker-entrypoint.sh eswrapper"
+    expose:
+      - 9200
+    extra_hosts:
+      - 'huly.local:host-gateway'
     volumes:
       - elastic:/usr/share/elasticsearch/data
     ports:
@@ -67,8 +125,6 @@ services:
       - BITNAMI_DEBUG=true
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
-      - http.cors.enabled=true
-      - http.cors.allow-origin=http://localhost:8082
     healthcheck:
       interval: 20s
       retries: 10
@@ -88,21 +144,20 @@ services:
       - ./branding.json:/var/cfg/branding.json
     environment:
       - ACCOUNT_PORT=3000
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_SECRET=secret
-      - ADMIN_EMAILS=admin
+      - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
       - STATS_URL=http://huly.local:4900
       - WORKSPACE_LIMIT_PER_USER=10000
-      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
+      - DB_URL=${DB_CR_URL}
       # - DB_URL=${MONGO_URL}
       # - DB_NS=account-2
-      # Pass only one region to disallow selection for new workspaces.Ø
+      # Pass only one region to disallow selection for new workspaces.
       - REGION_INFO=|Mongo;cockroach|CockroachDB
-      # - REGION_INFO=cockroach|CockroachDB
       - TRANSACTOR_URL=ws://huly.local:3333,ws://huly.local:3332;;cockroach,
       - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8087
-      - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
       # - WS_LIVENESS_DAYS=1
@@ -133,15 +188,15 @@ services:
     environment:
       - WS_OPERATION=all+backup
       - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - DB_URL=${MONGO_URL}
       - STATS_URL=http://huly.local:4900
       - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
+      - REGION=
       - ACCOUNTS_URL=http://huly.local:3000
       - BRANDING_PATH=/var/cfg/branding.json
-      # - PARALLEL=2
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
       # - INIT_WORKSPACE=staging-dev
@@ -158,19 +213,18 @@ services:
       - ./branding.json:/var/cfg/branding.json
     environment:
       - WS_OPERATION=all+backup
-      - SERVER_SECRET=secret
-      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
-      - STATS_URL=http://huly.local:4900
-      - MAIL_URL=
       - REGION=cockroach
+      - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - DB_URL=${DB_CR_URL}
+      - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://huly.local:3000
       - BRANDING_PATH=/var/cfg/branding.json
-      # - PARALLEL=2
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+      - MAIL_URL=
       # - INIT_WORKSPACE=staging-dev
     restart: unless-stopped
   collaborator:
@@ -236,21 +290,19 @@ services:
       - minio
       - account
       - stats
-      # - apm-server
     ports:
       - 3333:3333
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
-      # - SERVER_PROVIDER=uweb
-      # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
-      - UV_THREADPOOL_SIZE=10
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - REGION=
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
-      - ENABLE_COMPRESSION=false
+      - ENABLE_COMPRESSION=true
       - STATS_URL=http://huly.local:4900
       - FULLTEXT_URL=http://huly.local:4700
-      # - DB_URL=postgresql://postgres:example@postgres:5432
+      # - DB_URL=${DB_CR_URL}
       - DB_URL=${MONGO_URL}
       - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
@@ -258,7 +310,6 @@ services:
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8087
-      # - APM_SERVER_URL=http://apm-server:8200
       - MAIL_URL=''
       - ACCOUNTS_URL=http://huly.local:3000
       - LAST_NAME_FIRST=true
@@ -274,52 +325,38 @@ services:
       - minio
       - account
       - stats
-      # - apm-server
     ports:
       - 3332:3332
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
-      # - SERVER_PROVIDER=uweb
-      # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
-      # - UV_THREADPOOL_SIZE=10
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_PORT=3332
+      - REGION=cockroach
       - SERVER_SECRET=secret
-      - ENABLE_COMPRESSION=false
+      - ENABLE_COMPRESSION=true
       - FULLTEXT_URL=http://huly.local:4702
       - STATS_URL=http://huly.local:4900
-      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
+      - DB_URL=${DB_CR_URL}
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8087
-      # - APM_SERVER_URL=http://apm-server:8200
       - MAIL_URL=''
       - ACCOUNTS_URL=http://huly.local:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4010
     restart: unless-stopped
-  green:
-    image: hardcoreeng/green
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    links:
-      - cockroach
-      - stats
-    ports:
-      - 6767:6767
-    environment:
-      - PORT=6767
-      - AUTH_TOKEN=secret
-      - STATS_URL=http://huly.local:4900
-      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
-    restart: unless-stopped    
   rekoni:
     image: hardcoreeng/rekoni-service
+    extra_hosts:
+      - 'huly.local:host-gateway'
     restart: unless-stopped
     ports:
       - 4004:4004
+    environment:
+      - STATS_URL=http://huly.local:4901
   fulltext:
     image: hardcoreeng/fulltext
     extra_hosts:
@@ -328,10 +365,13 @@ services:
     links:
       - elastic
       - mongodb
+      - rekoni
     ports:
       - 4700:4700
     environment:
+      - PORT=4700
       - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - DB_URL=${MONGO_URL}
       - FULLTEXT_DB_URL=http://huly.local:9200
       - ELASTIC_INDEX_NAME=local_storage_index
@@ -347,18 +387,22 @@ services:
     links:
       - elastic
       - cockroach
+      - rekoni
     ports:
       - 4702:4702
     environment:
       - PORT=4702
+      - REGION=cockroach
       - SERVER_SECRET=secret
-      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - DB_URL=${DB_CR_URL}
       - FULLTEXT_DB_URL=http://huly.local:9200
-      - ELASTIC_INDEX_NAME=local_storage_index
+      - ELASTIC_INDEX_NAME=local_storage_index # Same index for simplicity
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - STATS_URL=http://huly.local:4900
       - REKONI_URL=http://huly.local:4004
       - ACCOUNTS_URL=http://huly.local:3000
+      - SERVER_SECRET=secret
   print:
     image: hardcoreeng/print
     extra_hosts:
@@ -368,6 +412,7 @@ services:
       - 4005:4005
     environment:
       - SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - STATS_URL=http://huly.local:4900
       - ACCOUNTS_URL=http://huly.local:3000
@@ -384,6 +429,7 @@ services:
     environment:
       - SECRET=secret
       - MINIO_ENDPOINT=minio
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - MINIO_ACCESS_KEY=minioadmin
       - ACCOUNTS_URL=http://huly.local:3000
       - MINIO_SECRET_KEY=minioadmin
@@ -391,21 +437,21 @@ services:
       - SERVICE_ID=sign-service
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://huly.local:4900
-#  analytics:
-#    image: hardcoreeng/analytics-collector
-#    extra_hosts:
-#      - 'huly.local:host-gateway'
-#    restart: unless-stopped
-#    ports:
-#      - 4017:4017
-#    environment:
-#      - SECRET=secret
-#      - PORT=4017
-#      - MONGO_URL=${MONGO_URL}
-#      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
-#      - SERVICE_ID=analytics-collector-service
-#      - ACCOUNTS_URL=http://huly.local:3000
-#      - STATS_URL=http://huly.local:4900
+  #  analytics:
+  #    image: hardcoreeng/analytics-collector
+  #    extra_hosts:
+  #      - 'huly.local:host-gateway'
+  #    restart: unless-stopped
+  #    ports:
+  #      - 4017:4017
+  #    environment:
+  #      - SECRET=secret
+  #      - PORT=4017
+  #      - MONGO_URL=${MONGO_URL}
+  #      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
+  #      - SERVICE_ID=analytics-collector-service
+  #      - ACCOUNTS_URL=http://huly.local:3000
+  #      - STATS_URL=http://huly.local:4900
   aiBot:
     image: hardcoreeng/ai-bot
     ports:
@@ -416,6 +462,7 @@ services:
     environment:
       - SERVER_SECRET=secret
       - MONGO_URL=${MONGO_URL}
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FIRST_NAME=Jolie
@@ -424,23 +471,24 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://huly.local:4900
-#      - LOVE_ENDPOINT=http://huly.local:8096
-#      - OPENAI_API_KEY=token
-#  telegram-bot:
-#    image: hardcoreeng/telegram-bot
-#   extra_hosts:
-#     - "huly.local:host-gateway"
-#    restart: unless-stopped
-#    environment:
-#      - PORT=4020
-#      - BOT_TOKEN=token
-#      - MONGO_URL=${MONGO_URL}
-#      - MONGO_DB=telegram-bot
-#      - SECRET=secret
-#      - DOMAIN=domain
-#      - ACCOUNTS_URL=http://huly.local:3000
-#      - SERVICE_ID=telegram-bot-service
-#      - STATS_URL=http://huly.local:4900
+  #      - LOVE_ENDPOINT=http://huly.local:8096
+  #      - OPENAI_API_KEY=token
+  #  telegram-bot:
+  #    image: hardcoreeng/telegram-bot
+  #   extra_hosts:
+  #     - "huly.local:host-gateway"
+  #    restart: unless-stopped
+  #    environment:
+  #      - PORT=4020
+  #      - QUEUE_CONFIG=${QUEUE_CONFIG}
+  #      - BOT_TOKEN=token
+  #      - MONGO_URL=${MONGO_URL}
+  #      - MONGO_DB=telegram-bot
+  #      - SECRET=secret
+  #      - DOMAIN=domain
+  #      - ACCOUNTS_URL=http://huly.local:3000
+  #      - SERVICE_ID=telegram-bot-service
+  #      - STATS_URL=http://huly.local:4900
   export:
     image: hardcoreeng/export
     extra_hosts:
@@ -465,3 +513,4 @@ volumes:
   files:
   elastic:
   cockroach_db:
+  redpanda:

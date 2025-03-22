@@ -24,6 +24,7 @@ import { createRekoniAdapter, type FulltextDBConfiguration } from '@hcengineerin
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { readFileSync } from 'fs'
 import { startIndexer } from './server'
+import { getPlatformQueue } from '@hcengineering/kafka'
 
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
@@ -103,7 +104,10 @@ if (accountsUrl === undefined) {
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 const externalStorage = buildStorageFromConfig(storageConfig)
 
+const queue = getPlatformQueue('fulltext')
+
 const onClose = startIndexer(metricsContext, {
+  queue,
   model,
   config,
   externalStorage,

@@ -11,9 +11,7 @@
       "port": 9229,
       "request": "attach",
       "sourceMaps": true,
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "type": "node"
     },
     {
@@ -25,7 +23,7 @@
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {
-        "PYTORCH_ENABLE_MPS_FALLBACK":"1"
+        "PYTORCH_ENABLE_MPS_FALLBACK": "1"
       }
     },
     {
@@ -54,7 +52,7 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
-        "SERVER_PROVIDER":"ws",
+        "SERVER_PROVIDER": "ws",
         "MODEL_VERSION": "0.7.1",
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
@@ -97,13 +95,14 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
-        "SERVER_PROVIDER":"ws",
-        "MODEL_VERSION": "0.7.1",
+        "SERVER_PROVIDER": "ws",
+        "MODEL_VERSION": "0.7.24",
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
-        "STATS_URL": "http://huly.local:4900"
+        "STATS_URL": "http://huly.local:4900",
+        "QUEUE_CONFIG": "localhost:19092"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -163,8 +162,10 @@
         "REKONI_URL": "http://localhost:4004",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         "ELASTIC_INDEX_NAME": "local_storage_index",
-        "STATS_URL":"http://huly.local:4900",
+        "REGION": "cockroach",
+        "STATS_URL": "http://huly.local:4900",
         "ACCOUNTS_URL": "http://localhost:3000",
+        "QUEUE_CONFIG": "localhost:19092"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -184,7 +185,7 @@
         "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
         "SERVER_SECRET": "secret",
-        "REGION_INFO":"|Mongo;cockroach|CockroachDB",
+        "REGION_INFO": "|Mongo;cockroach|CockroachDB",
         "TRANSACTOR_URL": "ws://huly.local:3333,ws://huly.local:3332;;cockroach",
         "ACCOUNTS_URL": "http://localhost:3000",
         "ACCOUNT_PORT": "3000",
@@ -215,8 +216,8 @@
         "DB_URL": "mongodb://localhost:27018",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "SERVER_SECRET": "secret",
-        "REGION_INFO":"|Mongo;pg|Postgres;cockroach|CockroachDB",
-        "TRANSACTOR_URL": "ws://huly.local:3334;;,ws://huly.local:3335;;europe", 
+        "REGION_INFO": "|Mongo;pg|Postgres;cockroach|CockroachDB",
+        "TRANSACTOR_URL": "ws://huly.local:3334;;,ws://huly.local:3335;;europe",
         "ACCOUNTS_URL": "http://localhost:3003",
         "ACCOUNT_PORT": "3003",
         "FRONT_URL": "http://localhost:8083",
@@ -261,7 +262,7 @@
         "DB_URL": "mongodb://localhost:27017",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
         // "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
-        
+
         "REGION": "",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3333",
@@ -274,7 +275,7 @@
         "MODEL_VERSION": "v0.7.1",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
-        "BACKUP_BUCKET": "dev-backups",
+        "BACKUP_BUCKET": "dev-backups"
         // "INIT_REPO_DIR": "${workspaceRoot}/pods/workspace/init",
         // "INIT_WORKSPACE": "staging-dev"
       },
@@ -307,7 +308,7 @@
         "MODEL_VERSION": "0.7.1",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
-        "BACKUP_BUCKET": "dev-backups",
+        "BACKUP_BUCKET": "dev-backups"
         // "INIT_REPO_DIR": "${workspaceRoot}/pods/workspace/init",
         // "INIT_WORKSPACE": "staging-dev"
       },
@@ -447,7 +448,7 @@
       "name": "Debug tool upgrade PG(Cockroach)",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "upgrade-workspace", "platform" ],
+      "args": ["src/__start.ts", "upgrade-workspace", "platform"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",
@@ -505,8 +506,8 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         "SECRET": "secret",
         "REGION": "cockroach",
-        "BUCKET_NAME":"backups",
-        "INTERVAL":"0"
+        "BUCKET_NAME": "backups",
+        "INTERVAL": "0"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,
@@ -528,7 +529,7 @@
         "DB_URL": "mongodb://localhost:27017",
         "SERVER_SECRET": "secret",
         "SECRET": "secret",
-        "BUCKET_NAME":"backups"
+        "BUCKET_NAME": "backups"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,
@@ -548,7 +549,7 @@
         // "DB_URL": "mongodb://localhost:27017",
         "DB_URL": "postgresql://root@host.docker.internal:26258/defaultdb?sslmode=disable",
         "SERVER_SECRET": "secret",
-        "BUCKET_NAME":"dev-backups"
+        "BUCKET_NAME": "dev-backups"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,
@@ -714,7 +715,7 @@
         "AVATAR_PATH": "./assets/avatar.png",
         "AVATAR_CONTENT_TYPE": ".png",
         "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
-        "LOVE_ENDPOINT": "http://localhost:8096",
+        "LOVE_ENDPOINT": "http://localhost:8096"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -771,14 +772,26 @@
       "urlFilter": "http://localhost:8080/*",
       "port": 9222,
       "sourceMapPathOverrides": {
-        "webpack://*": "${workspaceFolder}/*",
+        "webpack://*": "${workspaceFolder}/*"
       }
     },
     {
       "name": "Debug Notion import",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "import-notion-to-teamspace", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws5", "-ts", "notion", ],
+      "args": [
+        "src/__start.ts",
+        "import-notion-to-teamspace",
+        "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743",
+        "-u",
+        "user1",
+        "-pw",
+        "1234",
+        "-ws",
+        "ws5",
+        "-ts",
+        "notion"
+      ],
       // "args": ["src/__start.ts", "import-notion-with-teamspaces", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
       "env": {
         "FRONT_URL": "http://localhost:8087"
@@ -793,9 +806,19 @@
       "name": "Debug ClickUp import",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "import-clickup-tasks", "/home/anna/work/clickup/aleksandr/debug/mentions.csv", "-u", "user1", "-pw", "1234", "-ws", "ws10"],
+      "args": [
+        "src/__start.ts",
+        "import-clickup-tasks",
+        "/home/anna/work/clickup/aleksandr/debug/mentions.csv",
+        "-u",
+        "user1",
+        "-pw",
+        "1234",
+        "-ws",
+        "ws10"
+      ],
       "env": {
-        "FRONT_URL": "http://localhost:8087",
+        "FRONT_URL": "http://localhost:8087"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -807,7 +830,17 @@
       "name": "Debug Huly import",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "import", "/home/anna/huly/platform/dev/import-tool/docs/huly/example-workspace", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
+      "args": [
+        "src/__start.ts",
+        "import",
+        "/home/anna/huly/platform/dev/import-tool/docs/huly/example-workspace",
+        "-u",
+        "user1",
+        "-pw",
+        "1234",
+        "-ws",
+        "ws1"
+      ],
       "env": {
         "FRONT_URL": "http://localhost:8087"
       },
