@@ -86,5 +86,8 @@
     "ShareWithAudioTooltip": "Condividi lo schermo con l'audio di sistema. Riavvia la condivisione dello schermo per applicare le modifiche.",
     "MicPermission": "Microfono non trovato, controlla le autorizzazioni del browser",
     "CamPermission": "Camera non trovata, controlla le autorizzazioni del browser"
+  },
+  "status": {
+    "RoomRequired": "La stanza è obbligatoria"
   }
 }

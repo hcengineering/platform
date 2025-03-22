@@ -15,11 +15,12 @@
 <script lang="ts">
   import { Calendar, Event, ReccuringEvent, RecurringRule, Visibility, generateEventId } from '@hcengineering/calendar'
   import { Person, PersonAccount } from '@hcengineering/contact'
-  import core, { Class, Doc, Markup, Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, { Class, Doc, Markup, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
+  import { OK, Severity, Status } from '@hcengineering/platform'
   import presentation, {
-    createQuery,
     DocCreateExtComponent,
     DocCreateExtensionManager,
+    createQuery,
     getClient
   } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
@@ -30,11 +31,11 @@
     FocusHandler,
     Icon,
     IconClose,
-    IconMoreH,
+    Scroller,
+    Status as StatusControl,
     createFocusManager,
     getUserTimezone,
-    showPopup,
-    Scroller
+    showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
@@ -85,12 +86,6 @@
     }
   })
 
-  const spaceQ = createQuery()
-  let space: Space | undefined = undefined
-  spaceQ.query(core.class.Space, { _id: calendar.space.Calendar }, (res) => {
-    space = res[0]
-  })
-
   let rules: RecurringRule[] = []
 
   let externalParticipants: string[] = []
@@ -102,7 +97,7 @@
     return title !== undefined && title.trim().length === 0 && participants.length === 0
   }
 
-  async function saveEvent () {
+  async function saveEvent (): Promise<void> {
     let date: number | undefined
     if (startDate != null) date = startDate
     if (date === undefined) return
@@ -163,13 +158,16 @@
         _id
       )
     }
+    const space = await client.findOne(core.class.Space, { _id: calendar.space.Calendar })
     if (space !== undefined) {
       await docCreateManager.commit(client, _id, space, {}, 'post')
+    } else {
+      console.error('calendarspace not found')
     }
     dispatch('close')
   }
 
-  async function allDayChangeHandler () {
+  function allDayChangeHandler (): void {
     if (allDay) {
       startDate = new Date(startDate).setHours(0, 0, 0, 0)
       if (dueDate - startDate < allDayDuration) dueDate = allDayDuration + startDate
@@ -179,13 +177,19 @@
     }
   }
 
-  function setRecurrance () {
+  function setRecurrance (): void {
     showPopup(ReccurancePopup, { rules, startDate }, undefined, (res) => {
       if (res) {
         rules = res
       }
     })
   }
+
+  let status: Status = OK
+
+  const statusStore = docCreateManager.status
+
+  $: status = $statusStore
 
   const manager = createFocusManager()
 </script>
@@ -259,13 +263,13 @@
   </Scroller>
   <div class="antiDivider noMargin" />
   <div class="flex-between p-5 flex-no-shrink">
-    <div />
+    <StatusControl {status} />
     <Button
       kind="primary"
       label={presentation.string.Create}
       focusIndex={10104}
       on:click={saveEvent}
-      disabled={title === ''}
+      disabled={title === '' || status.severity !== Severity.OK}
     />
   </div>
 </div>

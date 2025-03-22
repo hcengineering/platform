@@ -987,12 +987,17 @@ export async function createMeeting (
   store: Record<string, any>,
   phase: DocCreatePhase
 ): Promise<void> {
+  // left logs here, special
+  console.log('try createMeeting', phase, store.room, store.isMeeting)
   if (phase === 'post' && store.room != null && store.isMeeting === true) {
     await client.createMixin<Event, Meeting>(_id, calendar.class.Event, space._id, love.mixin.Meeting, {
       room: store.room as Ref<Room>
     })
     const event = await client.findOne(calendar.class.Event, { _id })
-    if (event === undefined) return
+    if (event === undefined) {
+      console.log('event is undefined')
+      return
+    }
     const navigateUrl = getCurrentLocation()
     navigateUrl.path[2] = loveId
     navigateUrl.query = {

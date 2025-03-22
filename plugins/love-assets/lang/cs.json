@@ -86,5 +86,8 @@
     "ShareWithAudioTooltip": "Sdílejte obrazovku se systémovým zvukem. Restartujte sdílení obrazovky, aby se změny projevily.",
     "MicPermission": "Mikrofon nebyl nalezen, zkontrolujte oprávnění prohlížeče",
     "CamPermission": "Kamera nebyla nalezena, zkontrolujte oprávnění prohlížeče"
+  },
+  "status": {
+    "RoomRequired": "Místnost je povinná"
   }
 }

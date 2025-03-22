@@ -19,15 +19,29 @@
   import { Writable } from 'svelte/store'
   import love from '../plugin'
   import RoomSelector from './RoomSelector.svelte'
+  import { OK, Severity, Status } from '@hcengineering/platform'
 
   export let state: Writable<Record<string, any>>
+  export let setError: (error: Status) => void
 
-  function changeRoom (val: Ref<Room>) {
+  const roomRequired = new Status(Severity.ERROR, love.status.RoomRequired, {})
+
+  function changeRoom (val: Ref<Room>): void {
     $state.room = val
+    if (isMeeting && $state.room === undefined) {
+      setError(roomRequired)
+    } else {
+      setError(OK)
+    }
   }
 
-  function changeIsMeeting () {
+  function changeIsMeeting (): void {
     $state.isMeeting = isMeeting
+    if (isMeeting && $state.room === undefined) {
+      setError(roomRequired)
+    } else {
+      setError(OK)
+    }
   }
 
   let isMeeting = false
