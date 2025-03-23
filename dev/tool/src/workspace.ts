@@ -184,6 +184,7 @@ export async function restoreRemovedDoc (
         const txes = await getObjectTxesAndRelatedTxes(ctx, ops, id, processed, true)
         txes.filter((p) => p._class !== core.class.TxRemoveDoc).sort((a, b) => a.modifiedOn - b.modifiedOn)
         for (const tx of txes) {
+          tx.space = core.space.DerivedTx
           await ops.tx(tx)
         }
         ctx.info('success restored', { id })
