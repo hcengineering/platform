@@ -33,7 +33,7 @@
     const id = await communicationClient.createMessage(card._id, markdown)
 
     for (const file of files) {
-      await communicationClient.createFile(card._id, id, file.blobId, file.type, file.filename)
+      await communicationClient.createFile(card._id, id, file.blobId, file.type, file.filename, file.size)
     }
   }
 </script>

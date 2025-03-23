@@ -69,9 +69,9 @@
     query.query(
       {
         card: card._id,
-        withReplies: true,
-        withFiles: true,
-        withReactions: true,
+        replies: true,
+        files: true,
+        reactions: true,
         order,
         limit,
         created:

@@ -107,4 +107,5 @@ export interface UploadedFile {
   blobId: BlobID
   type: string
   filename: string
+  size: number
 }

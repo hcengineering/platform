@@ -60,7 +60,8 @@
     files.push({
       blobId: uuid,
       type: file.type,
-      filename: file.name
+      filename: file.name,
+      size: file.size
     })
   }
 

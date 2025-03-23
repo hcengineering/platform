@@ -38,7 +38,7 @@
   query.query(
     {
       notifications: {
-        withMessage: true,
+        message: true,
         order: SortingOrder.Descending,
         limit: 10
       },
