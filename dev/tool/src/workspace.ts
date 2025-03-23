@@ -18,6 +18,7 @@ import contact from '@hcengineering/contact'
 import core, {
   DOMAIN_TX,
   getWorkspaceId,
+  TxOperations,
   type BackupClient,
   type BaseWorkspaceInfo,
   type Class,
@@ -160,4 +161,66 @@ export async function backupRestore (
   } finally {
     await storageAdapter.close()
   }
+}
+
+export async function restoreRemovedDoc (
+  ctx: MeasureContext,
+  workspaceId: WorkspaceId,
+  transactorUrl: string,
+  idsVal: string
+): Promise<void> {
+  const ids = idsVal.split(';').map((it) => it.trim()) as Ref<Doc>[]
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup',
+    model: 'upgrade', // Required for force all clients reload after operation will be complete.
+    admin: 'true'
+  })) as unknown as CoreClient & BackupClient
+  try {
+    for (const id of ids) {
+      try {
+        ctx.info('start restoring', { id })
+        const ops = new TxOperations(connection, core.account.System)
+        const processed = new Set<Ref<Doc>>()
+        const txes = await getObjectTxesAndRelatedTxes(ctx, ops, id, processed, true)
+        txes.filter((p) => p._class !== core.class.TxRemoveDoc).sort((a, b) => a.modifiedOn - b.modifiedOn)
+        for (const tx of txes) {
+          await ops.tx(tx)
+        }
+        ctx.info('success restored', { id })
+      } catch (err) {
+        ctx.error('error restoring', { id, err })
+      }
+    }
+  } finally {
+    await connection.sendForceClose()
+    await connection.close()
+  }
+}
+
+async function getObjectTxesAndRelatedTxes (
+  ctx: MeasureContext,
+  client: TxOperations,
+  objectId: Ref<Doc>,
+  processed: Set<Ref<Doc>>,
+  filterRemoved = false
+): Promise<Tx[]> {
+  ctx.info('Find txes for', { objectId })
+  const result: Tx[] = []
+  if (processed.has(objectId)) {
+    return result
+  }
+  processed.add(objectId)
+  let txes = await client.findAll(core.class.TxCUD, { objectId }) as Tx[]
+  if (filterRemoved) {
+    txes = txes.filter((it) => it._class !== core.class.TxRemoveDoc)
+  }
+  result.push(...txes)
+  const relatedTxes = await client.findAll(core.class.TxCUD, { attachedTo: objectId })
+  result.push(...relatedTxes)
+  const relatedIds = new Set(relatedTxes.map((it) => it.objectId))
+  for (const relatedId of relatedIds) {
+    const rel = await getObjectTxesAndRelatedTxes(ctx, client, relatedId, processed)
+    result.push(...rel)
+  }
+  return result
 }
