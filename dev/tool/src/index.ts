@@ -78,7 +78,7 @@ import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv }
 import { program, type Command } from 'commander'
 import { addControlledDocumentRank } from './qms'
 import { clearTelegramHistory } from './telegram'
-import { backupRestore, diffWorkspace, updateField } from './workspace'
+import { backupRestore, diffWorkspace, restoreRemovedDoc, updateField } from './workspace'
 
 import core, {
   AccountRole,
@@ -2294,6 +2294,15 @@ export function devTool (
         const { dbUrl } = prepareTools()
         await updateDataWorkspaceIdToUuid(toolCtx, db, dbUrl, cmd.dryrun)
       })
+    })
+
+  program
+    .command('restore-removed-doc <workspace>')
+    .requiredOption('--ids <objectIds>', 'ids')
+    .action(async (workspace: string, cmd: { ids: string }) => {
+      const wsid = getWorkspaceId(workspace)
+      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+      await restoreRemovedDoc(toolCtx, wsid, endpoint, cmd.ids)
     })
 
   program
