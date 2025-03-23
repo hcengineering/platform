@@ -30,7 +30,7 @@ export const main = async (): Promise<void> => {
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
-  const ctx = initStatisticsContext('msg2file', {})
+  const ctx = initStatisticsContext(config.ServiceID, {})
   const storage = buildStorageFromConfig(storageConfigFromEnv())
   const db = await getDb()
   const server = startServer(ctx, db)

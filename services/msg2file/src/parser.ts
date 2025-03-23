@@ -14,8 +14,8 @@
 //
 
 import { Readable } from 'stream'
-import { FileMessage, Message, ParsedFile } from '@hcengineering/communication-types'
-import { parseYaml } from '@hcengineering/communication-shared'
+import { ParsedFile } from '@hcengineering/communication-types'
+import { parseYaml } from '@hcengineering/communication-yaml'
 
 export async function parseFileStream (stream: Readable): Promise<ParsedFile> {
   return await new Promise((resolve, reject) => {
@@ -37,27 +37,4 @@ export async function parseFileStream (stream: Readable): Promise<ParsedFile> {
       reject(error)
     })
   })
-}
-
-export function toFileMessage (message: Message): FileMessage {
-  return {
-    id: message.id,
-    content: message.content,
-    edited: message.edited,
-    creator: message.creator,
-    created: message.created,
-    thread:
-      message.thread != null
-        ? {
-            thread: message.thread.thread,
-            repliesCount: message.thread.repliesCount,
-            lastReply: message.thread.lastReply
-          }
-        : undefined,
-    reactions: message.reactions.map((reaction) => ({
-      reaction: reaction.reaction,
-      creator: reaction.creator,
-      created: reaction.created
-    }))
-  }
 }

@@ -14,7 +14,7 @@
 //
 
 import postgres from 'postgres'
-import { type CardID, type WorkspaceID } from '@hcengineering/communication-types'
+import { MessageID, type CardID, type WorkspaceID } from '@hcengineering/communication-types'
 
 import config from './config'
 
@@ -28,7 +28,7 @@ export interface SyncRecord {
 export async function getDb (): Promise<PostgresDB> {
   const sql = postgres(config.DbUrl, {
     connection: {
-      application_name: 'msg2file'
+      application_name: config.ServiceID
     },
     fetch_types: true,
     prepare: true
@@ -38,7 +38,9 @@ export async function getDb (): Promise<PostgresDB> {
 }
 
 export class PostgresDB {
-  private readonly table = 'msg2file.sync_record'
+  private readonly syncTable = 'msg2file.sync_record'
+  private readonly messagesTable = 'communication.messages'
+  private readonly patchesTable = 'communication.patches'
 
   constructor (private readonly client: postgres.Sql) {}
 
@@ -66,7 +68,7 @@ export class PostgresDB {
   async getRecords (limit: number, date: Date): Promise<SyncRecord[]> {
     const sql = `
         SELECT workspace, card
-        FROM ${this.table}
+        FROM ${this.syncTable}
         WHERE created < $1::timestamptz
         ORDER BY created 
         LIMIT ${limit};`
@@ -79,9 +81,9 @@ export class PostgresDB {
     })) as SyncRecord[]
   }
 
-  async creteRecord (workspace: WorkspaceID, card: CardID): Promise<void> {
+  async createRecord (workspace: WorkspaceID, card: CardID): Promise<void> {
     const sql = `
-        INSERT INTO ${this.table} (workspace, card, attempt)
+        INSERT INTO ${this.syncTable} (workspace, card, attempt)
         VALUES ($1::uuid, $2::varchar, 0)
         ON CONFLICT DO NOTHING;`
 
@@ -91,7 +93,7 @@ export class PostgresDB {
   async removeRecord (workspace: WorkspaceID, card: CardID): Promise<void> {
     const sql = `
         DELETE
-        FROM ${this.table}
+        FROM ${this.syncTable}
         WHERE workspace = $1::uuid
           AND card = $2::varchar;`
 
@@ -100,12 +102,36 @@ export class PostgresDB {
 
   async increaseAttempt (workspace: WorkspaceID, card: CardID): Promise<void> {
     const sql = `
-        UPDATE ${this.table}
+        UPDATE ${this.syncTable}
         SET attempt = attempt + 1
         WHERE workspace = $1::uuid
           AND card = $2::varchar;`
 
     await this.client.unsafe(sql, [workspace, card])
+  }
+
+  async removeMessages (workspace: WorkspaceID, card: CardID, ids: MessageID[]): Promise<void> {
+    if (ids.length === 0) return
+    const sql = `
+        DELETE
+        FROM ${this.messagesTable}
+        WHERE workspace = $1::uuid
+          AND card = $2::varchar
+          AND id = ANY ($3::bigint[]);`
+
+    await this.client.unsafe(sql, [workspace, card, ids])
+  }
+
+  async removePatches (workspace: WorkspaceID, card: CardID, ids: MessageID[]): Promise<void> {
+    if (ids.length === 0) return
+    const sql = `
+        DELETE
+        FROM ${this.patchesTable}
+        WHERE workspace = $1::uuid
+          AND card = $2::varchar
+          AND message_id = ANY ($3::bigint[]);`
+
+    await this.client.unsafe(sql, [workspace, card, ids])
   }
 
   async close (): Promise<void> {

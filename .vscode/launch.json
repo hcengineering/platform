@@ -880,7 +880,7 @@
         "PORT": "9087",
         "SECRET": "secret",
         "SERVICE_ID": "msg2file-service",
-        "STORAGE_CONFIG": "datalake,datalake|http://localhost:4022"
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],

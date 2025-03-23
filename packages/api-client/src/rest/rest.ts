@@ -34,13 +34,6 @@ import {
   type WithLookup
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import { EventResult, RequestEvent as CommunicationEvent } from '@hcengineering/communication-sdk-types'
-import {
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  Message,
-  MessagesGroup
-} from '@hcengineering/communication-types'
 
 import type { RestClient } from './types'
 import { extractJson, withRetry } from './utils'
@@ -201,55 +194,5 @@ export class RestClientImpl implements RestClient {
       throw new PlatformError(unknownError(response.statusText))
     }
     return await extractJson<TxResult>(response)
-  }
-
-  async event (event: CommunicationEvent): Promise<EventResult> {
-    const response = await fetch(concatLink(this.endpoint, `/api/v1/event/${this.workspace}`), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + this.token
-      },
-      keepalive: true,
-      body: JSON.stringify(event)
-    })
-    if (!response.ok) {
-      throw new PlatformError(unknownError(response.statusText))
-    }
-    return (await response.json()) as EventResult
-  }
-
-  async findMessages (params: FindMessagesParams): Promise<Message[]> {
-    const searchParams = new URLSearchParams()
-    if (Object.keys(params).length > 0) {
-      searchParams.append('params', JSON.stringify(params))
-    }
-    const requestUrl = concatLink(this.endpoint, `/api/v1/find-messages/${this.workspace}?${searchParams.toString()}`)
-
-    return await withRetry(async () => {
-      const response = await fetch(requestUrl, this.requestInit())
-      if (!response.ok) {
-        throw new PlatformError(unknownError(response.statusText))
-      }
-      return await extractJson<MessagesGroup[]>(response)
-    })
-  }
-
-  async findGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    const searchParams = new URLSearchParams()
-    if (Object.keys(params).length > 0) {
-      searchParams.append('params', JSON.stringify(params))
-    }
-    const requestUrl = concatLink(
-      this.endpoint,
-      `/api/v1/find-messages-groups/${this.workspace}?${searchParams.toString()}`
-    )
-    return await withRetry(async () => {
-      const response = await fetch(requestUrl, this.requestInit())
-      if (!response.ok) {
-        throw new PlatformError(unknownError(response.statusText))
-      }
-      return await extractJson<MessagesGroup[]>(response)
-    })
   }
 }

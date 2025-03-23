@@ -18,6 +18,10 @@ import { systemAccountUuid } from '@hcengineering/core'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { createRestClient, RestClient } from '@hcengineering/api-client'
 import { WorkspaceID } from '@hcengineering/communication-types'
+import {
+  createRestClient as createCommunicationRestClient,
+  RestClient as CommunicationRestClient
+} from '@hcengineering/communication-rest-client'
 
 import config from './config'
 
@@ -25,6 +29,12 @@ export async function connectPlatform (workspace: WorkspaceID): Promise<RestClie
   const token = generateToken(systemAccountUuid, workspace, { service: config.ServiceID })
   const endpoint = toHttpUrl(await getTransactorEndpoint(token))
   return createRestClient(endpoint, workspace, token)
+}
+
+export async function connectCommunication (workspace: WorkspaceID): Promise<CommunicationRestClient> {
+  const token = generateToken(systemAccountUuid, workspace, { service: config.ServiceID })
+  const endpoint = toHttpUrl(await getTransactorEndpoint(token))
+  return createCommunicationRestClient(endpoint, workspace, token)
 }
 
 function toHttpUrl (url: string): string {

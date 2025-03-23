@@ -13,13 +13,6 @@
 // limitations under the License.
 //
 
-import { EventResult, RequestEvent as CommunicationEvent } from '@hcengineering/communication-sdk-types'
-import {
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  Message,
-  MessagesGroup
-} from '@hcengineering/communication-types'
 import {
   type Account,
   type Class,
@@ -33,7 +26,7 @@ import {
   type WithLookup
 } from '@hcengineering/core'
 
-export interface RestClient extends Storage, CommunicationRestClient {
+export interface RestClient extends Storage {
   getAccount: () => Promise<Account>
 
   findOne: <T extends Doc>(
@@ -43,10 +36,4 @@ export interface RestClient extends Storage, CommunicationRestClient {
   ) => Promise<WithLookup<T> | undefined>
 
   getModel: () => Promise<{ hierarchy: Hierarchy, model: ModelDb }>
-}
-
-interface CommunicationRestClient {
-  findMessages: (params: FindMessagesParams) => Promise<Message[]>
-  findGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
-  event: (event: CommunicationEvent) => Promise<EventResult>
 }
