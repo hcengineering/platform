@@ -210,7 +210,7 @@ async function getObjectTxesAndRelatedTxes (
     return result
   }
   processed.add(objectId)
-  let txes = await client.findAll(core.class.TxCUD, { objectId }) as Tx[]
+  let txes = (await client.findAll(core.class.TxCUD, { objectId })) as Tx[]
   if (filterRemoved) {
     txes = txes.filter((it) => it._class !== core.class.TxRemoveDoc)
   }
