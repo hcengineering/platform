@@ -20,4 +20,11 @@
   export let masterTag: MasterTag
 </script>
 
-<ClassAttributes ofClass={card.class.Card} _class={masterTag._id} showHierarchy showHeader={false} disabled={false} />
+<ClassAttributes
+  ofClass={card.class.Card}
+  _class={masterTag._id}
+  showHierarchy
+  showHeader={false}
+  disabled={false}
+  isCard
+/>

@@ -67,7 +67,8 @@ const cardPlugin = plugin(cardId, {
     MasterTagEditorSection: '' as Ref<Class<MasterTagEditorSection>>
   },
   types: {
-    File: '' as Ref<MasterTag>
+    File: '' as Ref<MasterTag>,
+    Document: '' as Ref<MasterTag>
   },
   icon: {
     MasterTags: '' as Asset,
@@ -76,7 +77,8 @@ const cardPlugin = plugin(cardId, {
     Tags: '' as Asset,
     Card: '' as Asset,
     File: '' as Asset,
-    View: '' as Asset
+    View: '' as Asset,
+    Document: '' as Asset
   },
   extensions: {
     EditCardExtension: '' as ComponentExtensionId
