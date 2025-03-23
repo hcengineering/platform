@@ -72,7 +72,7 @@
   let doc: Card | undefined
 
   const query = createQuery()
-  query.query(card.class.Card, { _id: value }, (res) => {
+  $: query.query(card.class.Card, { _id: value }, (res) => {
     doc = res[0]
   })
 

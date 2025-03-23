@@ -39,7 +39,8 @@ export default mergeIds(cardId, card, {
     RelationSetting: '' as AnyComponent,
     ViewsSection: '' as AnyComponent,
     EditView: '' as AnyComponent,
-    CardEditor: '' as AnyComponent
+    CardEditor: '' as AnyComponent,
+    CardRefPresenter: '' as AnyComponent
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,

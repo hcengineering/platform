@@ -318,6 +318,10 @@ export function createModel (builder: Builder): void {
     presenter: card.component.CardPresenter
   })
 
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: card.component.CardRefPresenter
+  })
+
   builder.mixin(card.class.Card, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
