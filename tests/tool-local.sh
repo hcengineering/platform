@@ -9,6 +9,7 @@ export ACCOUNTS_URL=http://localhost:3000
 export TRANSACTOR_URL=ws://localhost:3333
 export ELASTIC_URL=http://localhost:9200
 export SERVER_SECRET=secret
+export QUEUE_CONFIG=localhost:19092
 
 # Restore workspace contents in mongo/elastic
 node ../dev/tool/bundle/bundle.js $@

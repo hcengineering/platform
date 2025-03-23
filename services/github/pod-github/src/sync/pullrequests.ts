@@ -701,7 +701,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
     for (const [, txes] of groupedByTodo) {
       const todo = TxProcessor.buildDoc2Doc<ToDo>(txes)
-      if (todo !== undefined && h.hasMixin(todo, github.mixin.GithubTodo)) {
+      if (todo != null && h.hasMixin(todo, github.mixin.GithubTodo)) {
         removedTodos.push(h.as(todo, github.mixin.GithubTodo))
       }
     }

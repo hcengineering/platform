@@ -125,8 +125,8 @@ async function handleVacancyUpdate (control: TriggerControl, cud: TxCUD<Doc>, re
         objectId: updateTx.objectId
       })
     ).filter((it) => it._id !== updateTx._id)
-    const vacancy = TxProcessor.buildDoc2Doc(txes) as Vacancy
-    if (vacancy.company != null) {
+    const vacancy = TxProcessor.buildDoc2Doc<Vacancy>(txes)
+    if (vacancy?.company != null) {
       // We have old value
       res.push(
         control.txFactory.createTxMixin(

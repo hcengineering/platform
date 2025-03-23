@@ -195,7 +195,7 @@ export function startHttpServer (
 
   app.get('/api/v1/profiling', (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
       decodeToken(token)
       const jsonData = {
         profiling
@@ -409,7 +409,7 @@ export function startHttpServer (
 
   app.put('/api/v1/broadcast', (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
       decodeToken(token)
       const ws = sessions.workspaces.get(req.query.workspace as WorkspaceUuid)
       if (ws !== undefined) {

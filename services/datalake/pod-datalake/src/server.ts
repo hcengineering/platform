@@ -22,6 +22,7 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import fileUpload from 'express-fileupload'
 import { mkdtempSync } from 'fs'
 import { type Server } from 'http'
+import morgan from 'morgan'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
@@ -39,6 +40,10 @@ import {
   handleMetaGet,
   handleMetaPut,
   handleMetaPatch,
+  handleMultipartUploadAbort,
+  handleMultipartUploadComplete,
+  handleMultipartUploadPart,
+  handleMultipartUploadStart,
   handleS3CreateBlob,
   handleS3CreateBlobParams,
   handleUploadFormData
@@ -46,8 +51,7 @@ import {
 import { Datalake, Location } from './datalake'
 import { DatalakeImpl } from './datalake/datalake'
 import { Config } from './config'
-import { createBucket, S3Bucket } from './s3'
-import { createClient } from './s3/client'
+import { createBucket, createClient, S3Bucket } from './s3'
 
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
@@ -101,13 +105,18 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
 
   const app = express()
   app.use(cors())
-  app.use(express.json())
-  app.use(
-    fileUpload({
-      useTempFiles: true,
-      tempFileDir
-    })
-  )
+  app.use(express.json({ limit: '50mb' }))
+  app.use(fileUpload({ useTempFiles: true, tempFileDir }))
+
+  const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
+  const requests = ctx.newChild('requests', {}, {}, childLogger)
+  class LogStream {
+    write (text: string): void {
+      requests.info(text)
+    }
+  }
+
+  app.use(morgan('short', { stream: new LogStream() }))
 
   app.get('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, 'listBlobs', datalake, handleBlobList))
 
@@ -178,31 +187,41 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
     wrapRequest(ctx, 's3Upload', datalake, handleS3CreateBlob)
   )
 
-  // // Multipart upload
-  // app.post('/upload/multipart/:workspace/:name',
-  //   withAuthorization,
-  //   withBlob,
-  //   wrapRequest(ctx, handleMultipartUploadStart)
-  // )
+  // Multipart upload
+  app.post(
+    '/upload/multipart/:workspace/:name',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 'multipartUploadStart', datalake, handleMultipartUploadStart)
+  )
 
-  // app.post('/upload/multipart/:workspace/:name/part',
-  //   withAuthorization,
-  //   withBlob,
-  //   wrapRequest(ctx, handleMultipartUploadPart)
-  // )
+  app.put(
+    '/upload/multipart/:workspace/:name/part',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 'multipartUploadPart', datalake, handleMultipartUploadPart)
+  )
 
-  // app.post('/upload/multipart/:workspace/:name/complete',
-  //   withAuthorization,
-  //   withBlob,
-  //   wrapRequest(ctx, handleMultipartUploadComplete)
-  // )
+  app.post(
+    '/upload/multipart/:workspace/:name/complete',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 'multipartUploadComplete', datalake, handleMultipartUploadComplete)
+  )
+
+  app.post(
+    '/upload/multipart/:workspace/:name/abort',
+    withAuthorization,
+    withBlob,
+    wrapRequest(ctx, 'multipartUploadAvort', datalake, handleMultipartUploadAbort)
+  )
 
   // Image
 
   app.get('/image/:transform/:workspace/:name', withBlob, wrapRequest(ctx, 'transformImage', datalake, handleImageGet)) // no auth
 
   app.use((err: any, _req: any, res: any, _next: any) => {
-    console.log(err)
+    ctx.error(err.message, { code: err.code, message: err.message })
     if (err instanceof ApiError) {
       res.status(err.code).send({ code: err.code, message: err.message })
       return

@@ -60,6 +60,7 @@
     "@hcengineering/communication-server": "0.1.84",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/kafka": "^0.6.0",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/mongo": "^0.6.1",

@@ -357,8 +357,13 @@ async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Pr
     const lastName = getLastName(name)
     const effectiveFirstName = firstName === '' ? socialIdKey.value : firstName
 
-    await client.accountClient.ensurePerson(socialIdKey.type, socialIdKey.value, effectiveFirstName, lastName)
-    count++
+    try {
+      await client.accountClient.ensurePerson(socialIdKey.type, socialIdKey.value, effectiveFirstName, lastName)
+      count++
+    } catch (err: any) {
+      ctx.error('Failed to ensure person', { socialIdKey, email: pAcc.email, firstName, lastName, effectiveFirstName })
+      console.error(err)
+    }
   }
   ctx.info('finished ensuring global persons for local accounts. Total persons ensured: ', { count })
 }
@@ -367,7 +372,8 @@ export const contactOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
     await tryMigrate(mode, client, contactId, [
       {
-        state: 'ensure-accounts-global-persons',
+        state: 'ensure-accounts-global-persons-v2',
+        mode: 'upgrade',
         func: (client) => ensureGlobalPersonsForLocalAccounts(client)
       }
     ])
@@ -536,7 +542,7 @@ export const contactOperation: MigrateOperation = {
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
-        state: 'fill-social-identities-ids',
+        state: 'fill-social-identities-ids-v2',
         mode: 'upgrade',
         func: fillSocialIdentitiesIds
       }

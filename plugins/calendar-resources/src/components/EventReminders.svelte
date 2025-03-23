@@ -44,7 +44,7 @@
   }
 </script>
 
-<div class="flex-row-center gap-1-5 pr-1" class:pb-0-5={reminders.length}>
+<div class="flex-row-center gap-1 pr-1" class:pb-0-5={reminders.length}>
   <Icon icon={calendar.icon.Notifications} size="small" />
   <Button
     label={reminders.length > 0 ? calendar.string.AddReminder : calendar.string.Reminders}
@@ -59,7 +59,7 @@
   />
 </div>
 {#if reminders.length}
-  <Scroller padding={'.125rem .25rem 0 1.5rem'} shrink>
+  <Scroller padding={'.125rem .25rem 0 1.25rem'} shrink>
     {#if reminders.length > maxReminders && !shown}
       {#each reminders.slice(0, maxReminders - 2) as reminder, i}
         <EventReminderItem

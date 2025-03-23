@@ -11,6 +11,55 @@ services:
     ports:
       - 27018:27018
     restart: unless-stopped
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9093,external://0.0.0.0:19093
+      - --advertise-kafka-addr internal://redpanda:9093,external://localhost:19093
+      - --pandaproxy-addr internal://0.0.0.0:8084,external://0.0.0.0:18084
+      - --advertise-pandaproxy-addr internal://redpanda:8084,external://localhost:18084
+      - --schema-registry-addr internal://0.0.0.0:8083,external://0.0.0.0:18083
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+    ports:
+      - 18083:18083
+      - 18084:18084
+      - 19093:19093
+      - 19645:9644
+    healthcheck:
+      test: ['CMD', 'rpk', 'cluster', 'info', '-X', 'user=superuser', '-X', 'pass=secretpassword']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  redpanda_console:
+    image: docker.redpanda.com/redpandadata/console:v2.8.3
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9093"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8083"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+    ports:
+      - 8001:8080
+    depends_on:
+      - redpanda
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000"
@@ -51,6 +100,7 @@ services:
     volumes:
       - ./branding-test.json:/var/cfg/branding-test.json
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - ACCOUNT_PORT=3003
       - SERVER_SECRET=secret
       - WORKSPACE_LIMIT_PER_USER=100
@@ -69,6 +119,7 @@ services:
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_SECRET=secret
       - DB_URL=mongodb://mongodb:27018
       - MONGO_URL=mongodb://mongodb:27018
@@ -124,6 +175,7 @@ services:
     volumes:
       - ./branding-test.json:/var/cfg/branding-test.json
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_PROVIDER=${SERVER_PROVIDER}
       - SERVER_PORT=3334
       - SERVER_SECRET=secret
@@ -212,6 +264,7 @@ services:
     ports:
       - 4710:4710
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - PORT=4710
       - SERVER_SECRET=secret
       - DB_URL=mongodb://mongodb:27018

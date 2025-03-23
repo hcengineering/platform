@@ -104,6 +104,10 @@ export abstract class BaseMiddleware implements Middleware {
     return this.next?.handleBroadcast(ctx) ?? emptyBroadcastResult
   }
 
+  provideBroadcast (ctx: MeasureContext<SessionData>): Promise<void> {
+    return this.next?.handleBroadcast(ctx) ?? emptyBroadcastResult
+  }
+
   protected provideTx (ctx: MeasureContext<SessionData>, tx: Tx[]): Promise<TxMiddlewareResult> {
     if (this.next !== undefined) {
       return this.next.tx(ctx, tx)

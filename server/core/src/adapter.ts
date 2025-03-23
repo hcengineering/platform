@@ -14,7 +14,6 @@
 //
 
 import {
-  type WorkspaceIds,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -28,6 +27,7 @@ import {
   type Ref,
   type Tx,
   type TxResult,
+  type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { type StorageAdapter } from './storage'
@@ -61,6 +61,11 @@ export type DbAdapterHandler = (
   count: number,
   helper: DomainHelperOperations
 ) => void
+
+export interface RawFindIterator {
+  find: (ctx: MeasureContext) => Promise<Doc[]>
+  close: () => Promise<void>
+}
 /**
  * @public
  */
@@ -87,6 +92,8 @@ export interface DbAdapter extends LowLevelStorage {
 
   // Allow to register a handler to listen for domain operations
   on?: (handler: DbAdapterHandler) => void
+
+  rawFind: (ctx: MeasureContext, domain: Domain) => RawFindIterator
 }
 
 /**

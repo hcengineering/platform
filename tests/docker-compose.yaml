@@ -1,7 +1,26 @@
 services:
+  stream:
+    image: 'hardcoreeng/stream'
+    pull_policy: always
+    environment:
+      - STREAM_ENDPOINT_URL=s3://localhost:9002
+      - STREAM_INSECURE=true
+      - STREAM_SERVER_SECRET=secret
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadmin
+    ports:
+      - 1081:1080
+    restart: unless-stopped
   mongodb:
     image: 'mongo:7-jammy'
     command: mongod --port 27018
+    healthcheck:
+      test: echo "try { db.currentOp().ok } catch (err) { }" | mongosh --port 27018 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
     environment:
       - PUID=1000
       - PGID=1000
@@ -12,8 +31,54 @@ services:
     image: cockroachdb/cockroach:latest-v24.2
     ports:
       - '26258:26257'
+      - '18089:8080'
     command: start-single-node --insecure
     restart: unless-stopped
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9093,external://0.0.0.0:19093
+      - --advertise-kafka-addr internal://redpanda:9093,external://localhost:19093
+      - --pandaproxy-addr internal://0.0.0.0:8084,external://0.0.0.0:18084
+      - --advertise-pandaproxy-addr internal://redpanda:8084,external://localhost:18084
+      - --schema-registry-addr internal://0.0.0.0:8083,external://0.0.0.0:18083
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+    ports:
+      - 18083:18083
+      - 18084:18084
+      - 19093:19093
+      - 19645:9644
+    healthcheck:
+      test: ['CMD', 'rpk', 'cluster', 'info', '-X', 'user=superuser', '-X', 'pass=secretpassword']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  redpanda_console:
+    image: docker.redpanda.com/redpandadata/console:v2.8.3
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9093"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8083"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
+    ports:
+      - 8001:8080
+    depends_on:
+      - redpanda
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
@@ -51,9 +116,12 @@ services:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
       - ACCOUNT_PORT=3003
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_SECRET=secret
+      - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
       - WORKSPACE_LIMIT_PER_USER=100
-      - DB_URL=mongodb://mongodb:27018
+      - DB_URL=${MONGO_URL}
+      - REGION_INFO=|America
       - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
@@ -65,14 +133,17 @@ services:
       - mongodb
       - cockroach
       - minio
+      - redpanda
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
       - SERVER_SECRET=secret
       - DB_URL=mongodb://mongodb:27018
       - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
+      - REGION=
       - ACCOUNTS_URL=http://account:3003
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://stats:4901
@@ -86,6 +157,7 @@ services:
       - minio
       - elastic
       - collaborator
+      - stats
       - transactor
     ports:
       - 8083:8083
@@ -117,13 +189,17 @@ services:
       - rekoni
       - cockroach
       - account
+      - stats
+      - redpanda
     ports:
       - 3334:3334
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
     environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - REGION=
       - SERVER_PORT=3334
-      - SERVER_SECRET=secret      
+      - SERVER_SECRET=secret
       - DB_URL=mongodb://mongodb:27018
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
@@ -159,7 +235,7 @@ services:
       - 4007:4004
     environment:
       - STATS_URL=http://stats:4901
-    
+
   fulltext:
     image: hardcoreeng/fulltext
     restart: unless-stopped
@@ -168,6 +244,7 @@ services:
       - mongodb
       - cockroach
       - rekoni
+      - redpanda
     ports:
       - 4710:4710
     environment:
@@ -175,6 +252,7 @@ services:
       - SERVER_SECRET=secret
       - DB_URL=mongodb://mongodb:27018
       - FULLTEXT_DB_URL=http://elastic:9200
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
       - ELASTIC_INDEX_NAME=local_storage_index
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REKONI_URL=http://rekoni:4007
@@ -187,4 +265,4 @@ services:
     environment:
       - PORT=4901
       - SERVER_SECRET=secret
-    restart: unless-stopped      
+    restart: unless-stopped

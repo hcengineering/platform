@@ -359,7 +359,7 @@ export class WorkspaceClient {
       })
       const extracted = txes.filter((p) => p._id !== tx._id)
       const ev = TxProcessor.buildDoc2Doc<Event>(extracted)
-      if (ev !== undefined) {
+      if (ev != null) {
         const oldClient = await this.getCalendarClientByCalendar(ev.calendar as Ref<ExternalCalendar>)
         if (oldClient !== undefined) {
           const oldCalendar = this.calendars.byId.get(ev.calendar as Ref<ExternalCalendar>)
@@ -414,7 +414,7 @@ export class WorkspaceClient {
         objectId: tx.objectId
       })
       const ev = TxProcessor.buildDoc2Doc<Event>(txes)
-      if (ev === undefined) return
+      if (ev == null) return
       if (ev.access !== 'owner' && ev.access !== 'writer') return
       const client = await this.getCalendarClientByCalendar(ev?.calendar as Ref<ExternalCalendar>)
       if (client === undefined) {

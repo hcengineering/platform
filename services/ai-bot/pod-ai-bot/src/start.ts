@@ -14,17 +14,19 @@
 //
 import { setMetadata } from '@hcengineering/platform'
 import serverClient, { withRetry } from '@hcengineering/server-client'
-import serverToken, { generateToken } from '@hcengineering/server-token'
 import { initStatisticsContext } from '@hcengineering/server-core'
+import serverToken, { generateToken } from '@hcengineering/server-token'
 
-import config from './config'
-import { getAccountUuid } from './utils/account'
-import { registerLoaders } from './loaders'
-import { getDbStorage } from './storage'
-import { AIControl } from './controller'
-import { createServer, listen } from './server/server'
-import type { SocialId } from '@hcengineering/core'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { SplitLogger } from '@hcengineering/analytics-service'
+import { MeasureMetricsContext, newMetrics, type SocialId } from '@hcengineering/core'
+import { join } from 'path'
+import config from './config'
+import { AIControl } from './controller'
+import { registerLoaders } from './loaders'
+import { createServer, listen } from './server/server'
+import { getDbStorage } from './storage'
+import { getAccountUuid } from './utils/account'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -33,7 +35,19 @@ export const start = async (): Promise<void> => {
 
   registerLoaders()
 
-  const ctx = initStatisticsContext('ai-bot-service', {})
+  const ctx = initStatisticsContext('ai-bot-service', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'ai-bot-service',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('ai-bot-service', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
   ctx.info('AI Bot Service started', { firstName: config.FirstName, lastName: config.LastName })
 
   const personUuid = await withRetry(

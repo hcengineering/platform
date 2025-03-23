@@ -255,6 +255,7 @@ export async function moveAccountDbFromMongoToPG (
       if (exists == null) {
         delete (socialId as any).key
         delete (socialId as any).id
+        delete (socialId as any)._id // Types of _id are incompatible
 
         await pgDb.socialId.insertOne(socialId)
         socialIdsCount++

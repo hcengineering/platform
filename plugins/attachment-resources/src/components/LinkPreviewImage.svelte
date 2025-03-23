@@ -52,7 +52,7 @@
         alt="link-preview"
         width={`${width}px`}
         height={`${height}px`}
-        style:fit
+        style:object-fit={fit}
         on:error={() => {
           refreshPreviewSrc()
         }}
@@ -65,7 +65,7 @@
       alt="link-preview"
       width={`${width}px`}
       height={`${height}px`}
-      style:fit
+      style:object-fit={fit}
       on:error={() => {
         refreshPreviewSrc()
       }}

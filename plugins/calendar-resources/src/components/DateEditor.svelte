@@ -164,11 +164,11 @@
 {#if !withoutTime && difference > 0}
   <div class="divider" />
   {#if fixed === undefined}
-    <div class="p-2 font-regular-14 sunshine-text-color">
+    <div class="p-2 font-regular-14">
       <TimeShiftPresenter value={date - difference} exact />
     </div>
   {:else}
-    <FixedColumn key={fixed + '-duration'} addClass={'p-2 font-regular-14 sunshine-text-color'}>
+    <FixedColumn key={fixed + '-duration'} addClass={'p-2 font-regular-14'}>
       <TimeShiftPresenter value={date - difference} exact />
     </FixedColumn>
   {/if}

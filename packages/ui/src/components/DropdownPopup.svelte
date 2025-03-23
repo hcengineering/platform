@@ -75,7 +75,7 @@
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={onKeydown}>
+<div class="selectPopup popup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={onKeydown}>
   {#if withSearch}
     <div class="header">
       <input
@@ -95,7 +95,7 @@
           {@const item = objects[idx]}
 
           <button
-            class="flex-between menu-item w-full"
+            class="flex-between menu-item withList w-full"
             disabled={item.isSelectable === false}
             on:click={(evt) => {
               handleSelection(evt, idx)
@@ -139,5 +139,8 @@
     img {
       max-width: fit-content;
     }
+  }
+  .popup {
+    padding: 0.5rem 0;
   }
 </style>

@@ -14,7 +14,7 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import { S3 } from '@aws-sdk/client-s3'
+import { S3, UploadPartCommandInput } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import { Readable } from 'stream'
 import { type ReadableStream } from 'stream/web'
@@ -186,10 +186,11 @@ class S3BucketImpl implements S3Bucket {
     body: Readable | Buffer | string,
     options: S3UploadPartOptions
   ): Promise<S3MultipartUploadPart> {
-    const command = {
+    const command: UploadPartCommandInput = {
       Bucket: this.bucket,
       Key: key,
       Body: body,
+      ContentLength: options.size,
       UploadId: multipart.uploadId,
       PartNumber: options.partNumber
     }

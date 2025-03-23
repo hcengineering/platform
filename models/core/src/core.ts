@@ -26,11 +26,9 @@ import {
   type Configuration,
   type ConfigurationElement,
   type Doc,
-  type DocIndexState,
   type Domain,
   DOMAIN_BLOB,
   DOMAIN_CONFIGURATION,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   DOMAIN_RELATION,
@@ -337,22 +335,6 @@ export class TPluginConfiguration extends TDoc implements PluginConfiguration {
   label!: IntlString
   enabled!: boolean
   beta!: boolean
-}
-
-@Model(core.class.DocIndexState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
-export class TDocIndexState extends TDoc implements DocIndexState {
-  @Prop(TypeRef(core.class.Class), core.string.Class)
-  @Index(IndexKind.Indexed)
-  @Hidden()
-    objectClass!: Ref<Class<Doc>>
-
-  @Prop(TypeBoolean(), getEmbeddedLabel('Removed'))
-  @Hidden()
-    removed!: boolean
-
-  @Prop(TypeBoolean(), getEmbeddedLabel('NeedIndexing'))
-  @Hidden()
-    needIndex!: boolean
 }
 
 @Model(core.class.FullTextSearchContext, core.class.Doc, DOMAIN_MODEL)

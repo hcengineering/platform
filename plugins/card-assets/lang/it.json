@@ -21,8 +21,12 @@
     "DeleteMasterTag": "Elimina Tipo",
     "DeleteMasterTagConfirm": "Sei sicuro di voler eliminare questo tipo? Tutti gli oggetti correlati a questo tipo verranno eliminati",
     "UnsetParent": "Rimuovi genitore",
-	  "SetParent": "Imposta genitore",
-	  "CreateChild": "Crea figlio",
-	  "Children": "Figli"
+    "SetParent": "Imposta genitore",
+    "CreateChild": "Crea figlio",
+    "Children": "Figli",
+    "Views": "Viste",
+    "CreateView": "Crea vista",
+    "EditView": "Modifica vista",
+    "SelectViewType": "Seleziona il tipo di vista"
   }
 }

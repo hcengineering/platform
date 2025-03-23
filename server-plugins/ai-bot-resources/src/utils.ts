@@ -38,7 +38,7 @@ export async function createAccountRequest (workspace: WorkspaceUuid, ctx: Measu
       body: JSON.stringify({})
     })
   } catch (err) {
-    ctx.error('Could not send create ai account request', { err })
+    ctx.warn('Could not send create ai account request', { err })
   }
 }
 

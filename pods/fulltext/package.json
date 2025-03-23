@@ -75,6 +75,7 @@
     "@hcengineering/server-client": "^0.6.0",
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/postgres": "^0.6.0",
-    "@hcengineering/mongo": "^0.6.1"
+    "@hcengineering/mongo": "^0.6.1",
+    "@hcengineering/kafka": "^0.6.0"
   }
 }

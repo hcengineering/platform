@@ -16,8 +16,6 @@
 import {
   type Class,
   type Doc,
-  type DocIndexState,
-  type DocumentUpdate,
   type FullTextSearchContext,
   type Hierarchy,
   type ModelDb,
@@ -34,12 +32,3 @@ export interface FullTextPipeline {
 
   cancelling: boolean
 }
-
-/**
- * @public
- */
-export type DocUpdateHandler = (doc: DocIndexState, update: DocumentUpdate<DocIndexState>) => Promise<void>
-
-export const indexes = 'verify-indexes-v2'
-export const fullReindex = 'full-text-indexer-v5'
-export const docStructure = 'full-text-structure-v6'

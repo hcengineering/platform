@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { MeasureContext, Ref, WorkspaceIds } from '@hcengineering/core'
+import { MeasureContext, MeasureMetricsContext, newMetrics, Ref, WorkspaceIds } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
@@ -40,6 +40,8 @@ import config from './config'
 import { saveLiveKitEgressBilling, saveLiveKitSessionBilling } from './billing'
 import { getS3UploadParams, saveFile } from './storage'
 import { WorkspaceClient } from './workspaceClient'
+import { join } from 'path'
+import { SplitLogger } from '@hcengineering/analytics-service'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -62,7 +64,19 @@ export const main = async (): Promise<void> => {
   const s3StorageConfigs: StorageConfiguration | undefined =
     config.S3StorageConfig !== undefined ? storageConfigFromEnv(config.S3StorageConfig) : undefined
 
-  const ctx = initStatisticsContext('love', {})
+  const ctx = initStatisticsContext('love', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'love',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('love', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
 
   const storageConfig = storageConfigs.storages.findLast((p) => p.name === config.StorageProviderName)
   const s3storageConfig = s3StorageConfigs?.storages.findLast((p) => p.kind === 's3')

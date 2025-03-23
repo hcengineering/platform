@@ -43,10 +43,10 @@ describe('rest-api-server', () => {
   let apiWorkspace2: WorkspaceToken
 
   beforeAll(async () => {
-    const config = await loadServerConfig('http://localhost:8083')
+    const config = await loadServerConfig('http://huly.local:8083')
 
     apiWorkspace1 = await getWorkspaceToken(
-      'http://localhost:8083',
+      'http://huly.local:8083',
       {
         email: 'user1',
         password: '1234',
@@ -56,7 +56,7 @@ describe('rest-api-server', () => {
     )
 
     apiWorkspace2 = await getWorkspaceToken(
-      'http://localhost:8083',
+      'http://huly.local:8083',
       {
         email: 'user1',
         password: '1234',

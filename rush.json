@@ -1524,21 +1524,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/server-fulltext",
-      "projectFolder": "server-plugins/fulltext",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-fulltext-resources",
-      "projectFolder": "server-plugins/fulltext-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-server-fulltext",
-      "projectFolder": "models/server-fulltext",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/hr",
       "projectFolder": "plugins/hr",
       "shouldPublish": true
@@ -2426,6 +2411,11 @@
     {
       "packageName": "@hcengineering/server-process-resources",
       "projectFolder": "server-plugins/process-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/kafka",
+      "projectFolder": "server/kafka",
       "shouldPublish": false
     }
   ]
