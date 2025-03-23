@@ -91,7 +91,9 @@
     }
 
     showPopup(TypesPopup, { _class }, getEventPositionElement(ev), (_id) => {
-      if (_id !== undefined) { $settingsStore = { component: CreateAttribute, props: { selectedType: _id, _class, isCard } } }
+      if (_id !== undefined) {
+        $settingsStore = { component: CreateAttribute, props: { selectedType: _id, _class, isCard } }
+      }
     })
   }
 
