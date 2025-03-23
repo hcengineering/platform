@@ -195,7 +195,7 @@
 >
   <div class="hidden-text" bind:this={text} />
   <div class="flex-row-center w-full">
-    <div class="ghost flex-row-center clear-mins" class:focusable class:w-full={fullSize}>
+    <div class="antiEditBox ghost" class:focusable class:w-full={fullSize}>
       <input
         {disabled}
         bind:this={input}
@@ -203,7 +203,7 @@
         bind:value
         placeholder={phTranslate}
         {style}
-        class="search"
+        class="antiEditBoxInput search"
         on:input={(ev) => {
           computeSize(ev.target)
         }}

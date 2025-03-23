@@ -562,7 +562,7 @@ export async function selectWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
   }
 
-  if (accountUuid === systemAccountUuid) {
+  if (accountUuid === systemAccountUuid || extra?.admin === 'true') {
     return {
       account: accountUuid,
       token: generateToken(accountUuid, workspace.uuid, extra),

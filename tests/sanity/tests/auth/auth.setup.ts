@@ -4,6 +4,7 @@ import path from 'path'
 import { PlatformUser, PlatformUserSecond, PlatformWs, PlatformURI, setTestOptions } from '../utils'
 import { LoginPage } from '../model/login-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
+import { existsSync } from 'fs'
 
 const authFile = path.join(__dirname, '../../.auth/storage.json')
 const authFileSecond = path.join(__dirname, '../../.auth/storageSecond.json')
@@ -19,16 +20,20 @@ async function authenticate (page: Page, user: string, password: string): Promis
   })
 }
 
-setup('auth user1', async ({ page }) => {
-  await authenticate(page, PlatformUser, '1234')
-  await setTestOptions(page)
+if (!existsSync(authFile)) {
+  setup('auth user1', async ({ page }) => {
+    await authenticate(page, PlatformUser, '1234')
+    await setTestOptions(page)
 
-  await page.context().storageState({ path: authFile })
-})
+    await page.context().storageState({ path: authFile })
+  })
+}
 
-setup('auth user2', async ({ page }) => {
-  await authenticate(page, PlatformUserSecond, '1234')
-  await setTestOptions(page)
+if (!existsSync(authFileSecond)) {
+  setup('auth user2', async ({ page }) => {
+    await authenticate(page, PlatformUserSecond, '1234')
+    await setTestOptions(page)
 
-  await page.context().storageState({ path: authFileSecond })
-})
+    await page.context().storageState({ path: authFileSecond })
+  })
+}

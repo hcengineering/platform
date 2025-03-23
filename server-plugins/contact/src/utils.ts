@@ -14,7 +14,7 @@
 //
 
 import { TriggerControl } from '@hcengineering/server-core'
-import contact, { Employee, pickPrimarySocialId, SocialIdentityRef, type Person } from '@hcengineering/contact'
+import contact, { Employee, type Person, pickPrimarySocialId, SocialIdentityRef } from '@hcengineering/contact'
 import { AccountUuid, parseSocialIdString, PersonId, type Ref, toIdMap } from '@hcengineering/core'
 
 export async function getCurrentPerson (control: TriggerControl): Promise<Person | undefined> {
@@ -25,14 +25,12 @@ export async function getCurrentPerson (control: TriggerControl): Promise<Person
     return undefined
   }
 
-  const person = (
+  return (
     await control.findAll(control.ctx, contact.class.Person, {
       _id: socialIdentity.attachedTo,
       _class: socialIdentity.attachedToClass
     })
   )[0]
-
-  return person
 }
 
 export async function getSocialStrings (control: TriggerControl, person: Ref<Person>): Promise<PersonId[]> {
@@ -80,10 +78,12 @@ export async function getAllSocialStringsByPersonId (
 }
 
 export async function getPerson (control: TriggerControl, personId: PersonId): Promise<Person | undefined> {
-  const socialId = (await control.findAll(control.ctx, contact.class.SocialIdentity, { key: personId }))[0]
+  const socialId = (
+    await control.findAll(control.ctx, contact.class.SocialIdentity, { _id: personId as SocialIdentityRef })
+  )[0]
 
   if (socialId === undefined) {
-    control.ctx.error('Cannot find social id', { key: personId })
+    control.ctx.error('Cannot find social id', { _id: personId })
     return undefined
   }
 
@@ -114,8 +114,16 @@ export async function getPersonsBySocialIds (
 }
 
 export async function getEmployee (control: TriggerControl, personId: PersonId): Promise<Employee | undefined> {
-  const socialId = (await control.findAll(control.ctx, contact.class.SocialIdentity, { key: personId }))[0]
-  const employee = (
+  const socialId = (
+    await control.findAll(control.ctx, contact.class.SocialIdentity, { _id: personId as SocialIdentityRef })
+  )[0]
+
+  if (socialId === undefined) {
+    control.ctx.error('Cannot find social id', { _id: personId })
+    return undefined
+  }
+
+  return (
     await control.findAll(
       control.ctx,
       contact.mixin.Employee,
@@ -123,8 +131,6 @@ export async function getEmployee (control: TriggerControl, personId: PersonId):
       { limit: 1 }
     )
   )[0]
-
-  return employee
 }
 
 export async function getEmployeeByAcc (control: TriggerControl, account: AccountUuid): Promise<Employee | undefined> {
@@ -132,11 +138,9 @@ export async function getEmployeeByAcc (control: TriggerControl, account: Accoun
 }
 
 export async function getEmployees (control: TriggerControl, accounts: AccountUuid[]): Promise<Employee[]> {
-  const employees = await control.findAll(control.ctx, contact.mixin.Employee, {
+  return await control.findAll(control.ctx, contact.mixin.Employee, {
     personUuid: { $in: accounts }
   })
-
-  return employees
 }
 
 export async function getEmployeesBySocialIds (

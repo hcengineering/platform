@@ -69,7 +69,7 @@
 
 {#if !allDay && rules.length === 0 && myTimezone === timeZone}
   {#if !readOnly}
-    <div class="antiButton ghost x-small sh-no-shape text-11px pl-2 pr-2 pt-1 pb-1 mt-1 ml-5-5 gap-3 w-min">
+    <div class="antiButton ghost x-small sh-no-shape text-11px pl-1 pr-2 pt-1 pb-1 mt-1 ml-5-5 gap-3 w-min">
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="overflow-label cursor-pointer" on:click={() => (allDay = true)}>
@@ -106,12 +106,12 @@
       }}
     />
   </div>
-  <div class="flex-row-center gap-1-5 mt-1">
+  <div class="flex-row-center gap-1 mt-1">
     <Icon icon={calendar.icon.Globe} size={'small'} fill={'var(--theme-dark-color)'} />
     <TimeZoneSelector bind:timeZone disabled={readOnly} />
   </div>
   {#if !noRepeat}
-    <div class="flex-row-center gap-1-5 mt-1">
+    <div class="flex-row-center gap-1 mt-1">
       <Icon icon={calendar.icon.Repeat} size={'small'} fill={'var(--theme-dark-color)'} />
       <Button
         label={rules.length > 0 ? undefined : calendar.string.Repeat}

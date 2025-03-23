@@ -23,6 +23,10 @@
     "UnsetParent": "Odebrat rodiče",
     "SetParent": "Nastavit rodiče",
     "CreateChild": "Vytvořit dítě",
-    "Children": "Děti"
+    "Children": "Děti",
+    "Views": "Zobrazení",
+    "CreateView": "Vytvořit zobrazení",
+    "EditView": "Upravit zobrazení",
+    "SelectViewType": "Vybrat typ zobrazení"
   }
 }

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { generateId, type WorkspaceIds } from '@hcengineering/core'
+import { generateId, MeasureMetricsContext, newMetrics, type WorkspaceIds } from '@hcengineering/core'
 import { StorageConfiguration, initStatisticsContext } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { getClient as getAccountClientRaw, AccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
@@ -26,6 +26,8 @@ import { convertToHtml } from './convert'
 import { ApiError } from './error'
 import { PrintOptions, print, validKinds } from './print'
 import config from './config'
+import { join } from 'path'
+import { SplitLogger } from '@hcengineering/analytics-service'
 
 function getAccountClient (token: string): AccountClient {
   return getAccountClientRaw(config.AccountsUrl, token)
@@ -129,7 +131,19 @@ export function createServer (
   allowedHostnames: string[]
 ): { app: Express, close: () => void } {
   const storageAdapter = buildStorageFromConfig(storageConfig)
-  const measureCtx = initStatisticsContext('print', {})
+  const measureCtx = initStatisticsContext('print', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'print',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('print', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
   const whitelistedHostnames = allowedHostnames.length > 0 ? new Set(allowedHostnames) : null
 
   const app = express()

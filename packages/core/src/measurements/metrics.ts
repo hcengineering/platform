@@ -198,6 +198,7 @@ function printMetricsChildren (params: Record<string, Metrics>, offset: number, 
   if (Object.keys(params).length > 0) {
     r += '\n' + toLen('', ' ', offset)
     r += Object.entries(params)
+      .filter((it) => it[1].value > 0.1)
       .map(([k, vv]) => toString(k, vv, offset, length))
       .join('\n' + toLen('', ' ', offset))
   }
@@ -211,11 +212,13 @@ function printMetricsParams (
 ): string {
   let r = ''
   const joinP = (key: string, data: Record<string, MetricsData>): string[] => {
-    return Object.entries(data).map(([k, vv]) =>
-      `${toLen('', ' ', offset)}${toLen(key + '=' + k, '-', length - offset)}: avg ${
-        vv.value / (vv.operations > 0 ? vv.operations : 1)
-      } total: ${vv.value} ops: ${vv.operations}`.trim()
-    )
+    return Object.entries(data)
+      .filter((it) => it[1].value >= 0.1)
+      .map(([k, vv]) =>
+        `${toLen('', ' ', offset)}${toLen(key + '=' + k, '-', length - offset)}: avg ${
+          Math.round((vv.value / (vv.operations > 0 ? vv.operations : 1)) * 100) / 100
+        } total: ${Math.round(vv.value * 100) / 100} ops: ${vv.operations}`.trim()
+      )
   }
   const joinParams = Object.entries(params).reduce<string[]>((p, c) => [...p, ...joinP(c[0], c[1])], [])
   if (Object.keys(joinParams).length > 0) {
@@ -227,8 +230,8 @@ function printMetricsParams (
 
 function toString (name: string, m: Metrics, offset: number, length: number): string {
   let r = `${toLen('', ' ', offset)}${toLen(name, '-', length - offset)}: avg ${
-    m.value / (m.operations > 0 ? m.operations : 1)
-  } total: ${m.value} ops: ${m.operations}`.trim()
+    Math.round((m.value / (m.operations > 0 ? m.operations : 1)) * 100) / 100
+  } total: ${Math.round(m.value * 100) / 100} ops: ${m.operations}`.trim()
   r += printMetricsParams(m.params, offset + 4, length)
   r += printMetricsChildren(m.measurements, offset + 4, length)
   return r

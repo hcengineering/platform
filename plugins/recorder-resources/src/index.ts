@@ -16,6 +16,8 @@
 import { type Resources } from '@hcengineering/platform'
 import { record } from './recording'
 
+export { ScreenRecorder } from './screen-recorder'
+
 export default async (): Promise<Resources> => ({
   function: {
     Record: record

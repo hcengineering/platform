@@ -159,6 +159,7 @@ Add the following line to your /etc/hosts file
 
 ```plain
 127.0.0.1 huly.local
+::1 huly.local
 ```
 
 Accessing the URL <http://huly.local:8087> will lead you to the app in development mode.

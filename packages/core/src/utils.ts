@@ -27,7 +27,6 @@ import {
   Doc,
   DocData,
   DOMAIN_BLOB,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   FullTextSearchContext,
@@ -673,7 +672,6 @@ export function isClassIndexable (
   }
 
   if (
-    domain === DOMAIN_DOC_INDEX_STATE ||
     domain === DOMAIN_TX ||
     domain === DOMAIN_MODEL ||
     domain === DOMAIN_BLOB ||

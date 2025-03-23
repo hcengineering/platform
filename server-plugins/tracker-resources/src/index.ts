@@ -331,7 +331,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
             objectId: cud.objectId
           })
         ).filter((it) => it._id !== cud._id)
-        const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
+        const doc = TxProcessor.buildDoc2Doc<TimeSpendReport>(logTxes)
 
         const res: Tx[] = []
         const [currentIssue] = await control.findAll(
@@ -340,7 +340,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
           { _id: attachedTo },
           { limit: 1 }
         )
-        if (doc !== undefined) {
+        if (doc != null) {
           res.push(
             control.txFactory.createTxUpdateDoc<Issue>(
               attachedToClass,
@@ -370,8 +370,8 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
             objectId: cud.objectId
           })
         ).filter((it) => it._id !== cud._id)
-        const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
-        if (doc !== undefined) {
+        const doc = TxProcessor.buildDoc2Doc<TimeSpendReport>(logTxes)
+        if (doc != null) {
           const [currentIssue] = await control.findAll(
             control.ctx,
             tracker.class.Issue,

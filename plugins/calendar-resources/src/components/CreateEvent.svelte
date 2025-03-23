@@ -239,7 +239,7 @@
     <div class="block">
       <DocCreateExtComponent manager={docCreateManager} kind={'body'} />
     </div>
-    <div class="block row gap-1-5">
+    <div class="block row">
       <div class="top-icon">
         <Icon icon={calendar.icon.Description} size={'small'} />
       </div>
@@ -257,7 +257,7 @@
       <CalendarSelector bind:value={_calendar} focusIndex={10101} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
-        <VisibilityEditor bind:value={visibility} kind={'tertiary'} size={'small'} focusIndex={10102} withoutIcon />
+        <VisibilityEditor bind:value={visibility} kind="inline" size="medium" focusIndex={10102} withoutIcon />
       </div>
       <EventReminders bind:reminders focusIndex={10103} />
     </div>
@@ -319,6 +319,7 @@
     .top-icon {
       flex-shrink: 0;
       margin-top: 1.375rem;
+      margin-right: 0.125rem;
     }
   }
 </style>

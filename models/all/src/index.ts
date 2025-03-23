@@ -110,7 +110,6 @@ import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
-import { serverFulltextId, createModel as serverFulltextModel } from '@hcengineering/model-server-fulltext'
 import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
 import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
 import { chatId, createModel as chatModel } from '@hcengineering/model-chat'
@@ -505,7 +504,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTrainingModel, serverTrainingId],
     [serverDocumentsModel, serverDocumentsId],
     [serverAiBotModel, serverAiBotId],
-    [serverFulltextModel, serverFulltextId],
     [serverProcessModel, serverProcessId]
   ]
 

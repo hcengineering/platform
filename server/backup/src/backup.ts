@@ -21,7 +21,6 @@ import core, {
   Doc,
   Domain,
   DOMAIN_BLOB,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_MODEL_TX,
   DOMAIN_TRANSIENT,
@@ -36,7 +35,6 @@ import core, {
   TxProcessor,
   type BackupStatus,
   type Blob,
-  type DocIndexState,
   type Tx,
   type TxCUD,
   type WorkspaceIds,
@@ -622,22 +620,6 @@ export async function cloneWorkspace (
   //   }
   // )
 }
-
-// function prepareClonedDocuments (docs: Doc[]): Doc[] {
-//   docs = docs.map((p) => {
-//     // if full text is skipped, we need to clean stages for indexes.
-//     if (p._class === core.class.DocIndexState) {
-//       ;(p as DocIndexState).needIndex = true
-//     }
-
-//     return {
-//       ...p,
-//       modifiedOn: Date.now(),
-//       createdOn: Date.now()
-//     }
-//   })
-//   return docs
-// }
 
 // async function cleanDomain (ctx: MeasureContext, connection: CoreClient & BackupClient, domain: Domain): Promise<void> {
 //   // Load all digest from collection.
@@ -1861,6 +1843,7 @@ export async function restore (
 
   // We do not backup elastic anymore
   domains.delete('fulltext-blob' as Domain)
+  domains.delete('doc-index-state' as Domain)
 
   let uploadedMb = 0
   let uploaded = 0
@@ -1998,11 +1981,6 @@ export async function restore (
             const tx = d as TxCUD<Doc>
             if (tx.objectSpace == null) {
               tx.objectSpace = core.space.Workspace
-            }
-          }
-          if (opt.cleanIndexState === true) {
-            if (d._class === core.class.DocIndexState) {
-              ;(d as DocIndexState).needIndex = true
             }
           }
         }
@@ -2220,34 +2198,10 @@ export async function restore (
         }
       }
     }
-    async function performCleanDocIndexState (docsToRemove: Ref<Doc>[]): Promise<void> {
-      ctx.info('cleanup', { toRemove: docsToRemove.length, workspace: workspaceId, domain: c })
-      while (docsToRemove.length > 0) {
-        const part = docsToRemove.splice(0, 1000)
-        try {
-          const docs = (await connection.loadDocs(DOMAIN_DOC_INDEX_STATE, part)) as DocIndexState[]
-          docs.forEach((it) => {
-            it.needIndex = true
-            it.removed = true
-            it.modifiedOn = Date.now()
-          })
-          await connection.upload(DOMAIN_DOC_INDEX_STATE, docs)
-        } catch (err: any) {
-          ctx.error('failed to clean, will retry', { error: err, workspaceId })
-          docsToRemove.push(...part)
-        }
-      }
-    }
     if (c !== DOMAIN_BLOB) {
       // Clean domain documents if not blob
       if (docsToRemove.length > 0 && opt.merge !== true) {
-        if (c === DOMAIN_DOC_INDEX_STATE) {
-          // We need to create a request to clean fulltext for selected docuemnts.
-          // We need o clean a FULLTEXT domain as well
-          await performCleanDocIndexState([...docsToRemove])
-        } else {
-          await performCleanOfDomain(docsToRemove, c)
-        }
+        await performCleanOfDomain(docsToRemove, c)
       }
     }
   }
