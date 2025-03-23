@@ -96,7 +96,8 @@
         title: `Thread: ${title.slice(0, 100)}${title.length > 100 ? '...' : ''}`,
         rank: makeRank(lastOne?.rank, undefined),
         content: '' as MarkupBlobRef,
-        parentInfo: []
+        parentInfo: [],
+        blobs: {},
       }
 
       threadId = await client.createDoc(chat.masterTag.Thread, core.space.Workspace, data)

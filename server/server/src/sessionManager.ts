@@ -1350,7 +1350,9 @@ export class TSessionManager implements SessionManager {
       const _workspace = service.workspace
       if (helloResponse.account.role !== AccountRole.DocGuest) {
         void ctx
-          .with('set-status', {}, (ctx) => this.trySetStatus(ctx, pipeline, communicationApi, service, true, _workspace.workspaceUuid))
+          .with('set-status', {}, (ctx) =>
+            this.trySetStatus(ctx, pipeline, communicationApi, service, true, _workspace.workspaceUuid)
+          )
           .catch(() => {})
       }
     } catch (err: any) {

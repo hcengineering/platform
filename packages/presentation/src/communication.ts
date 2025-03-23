@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 import {
+  type BlobID,
+  MessageType,
   PatchType,
   type CardID,
   type FindMessagesGroupsParams,
@@ -28,19 +30,18 @@ import {
   type SocialID
 } from '@hcengineering/communication-types'
 import {
-  type CreateAttachmentEvent,
   type CreateMessageEvent,
   type CreateMessageResult,
   type CreatePatchEvent,
   type CreateReactionEvent,
   type EventResult,
-  type RemoveAttachmentEvent,
-  type RemoveMessageEvent,
   type RemoveReactionEvent,
   type RequestEvent,
   RequestEventType,
   type ResponseEvent,
-  type CreateThreadEvent
+  type CreateThreadEvent,
+  type CreateFileEvent,
+  type RemoveFileEvent
 } from '@hcengineering/communication-sdk-types'
 import {
   type Client as PlatformClient,
@@ -85,8 +86,6 @@ export async function setCommunicationClient (platformClient: PlatformClient): P
 }
 
 class Client {
-  onEvent: (event: ResponseEvent) => void = () => {}
-
   constructor (private readonly connection: Connection) {
     connection.pushHandler((...events: any[]) => {
       for (const event of events) {
@@ -97,11 +96,9 @@ class Client {
     })
   }
 
-  private getSocialId (): SocialID {
-    const id = getCurrentAccount().socialIds.find((it) => it.startsWith(SocialIdType.HULY))
-    if (id == null) throw new Error('Huly social id not found')
-    return id
-  }
+  onEvent: (event: ResponseEvent) => void = () => {}
+
+  onRequest: (event: RequestEvent, eventPromise: Promise<EventResult>) => void = () => {}
 
   async createThread (card: CardID, message: MessageID, thread: CardID): Promise<void> {
     const event: CreateThreadEvent = {
@@ -111,27 +108,19 @@ class Client {
       thread
     }
 
-    await this.connection.sendEvent(event)
+    await this.sendEvent(event)
   }
 
   async createMessage (card: CardID, content: RichText): Promise<MessageID> {
     const event: CreateMessageEvent = {
       type: RequestEventType.CreateMessage,
+      messageType: MessageType.Message,
       card,
       content,
       creator: this.getSocialId()
     }
-    const result = await this.connection.sendEvent(event)
+    const result = await this.sendEvent(event)
     return (result as CreateMessageResult).id
-  }
-
-  async removeMessage (card: CardID, message: MessageID): Promise<void> {
-    const event: RemoveMessageEvent = {
-      type: RequestEventType.RemoveMessage,
-      card,
-      message
-    }
-    await this.connection.sendEvent(event)
   }
 
   async updateMessage (card: CardID, message: MessageID, content: RichText): Promise<void> {
@@ -143,7 +132,7 @@ class Client {
       content,
       creator: this.getSocialId()
     }
-    await this.connection.sendEvent(event)
+    await this.sendEvent(event)
   }
 
   async createReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
@@ -154,7 +143,7 @@ class Client {
       reaction,
       creator: this.getSocialId()
     }
-    await this.connection.sendEvent(event)
+    await this.sendEvent(event)
   }
 
   async removeReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
@@ -165,28 +154,39 @@ class Client {
       reaction,
       creator: this.getSocialId()
     }
-    await this.connection.sendEvent(event)
+    await this.sendEvent(event)
   }
 
-  async createAttachment (card: CardID, message: MessageID, attachment: CardID): Promise<void> {
-    const event: CreateAttachmentEvent = {
-      type: RequestEventType.CreateAttachment,
+  async createFile (
+    card: CardID,
+    message: MessageID,
+    blobId: BlobID,
+    fileType: string,
+    filename: string,
+    size: number
+  ): Promise<void> {
+    const event: CreateFileEvent = {
+      type: RequestEventType.CreateFile,
       card,
       message,
-      attachment,
+      blobId,
+      fileType,
+      filename,
+      size,
       creator: this.getSocialId()
     }
-    await this.connection.sendEvent(event)
+    await this.sendEvent(event)
   }
 
-  async removeAttachment (card: CardID, message: MessageID, attachment: CardID): Promise<void> {
-    const event: RemoveAttachmentEvent = {
-      type: RequestEventType.RemoveAttachment,
+  async removeFile (card: CardID, message: MessageID, blobId: BlobID): Promise<void> {
+    const event: RemoveFileEvent = {
+      type: RequestEventType.RemoveFile,
       card,
       message,
-      attachment
+      blobId,
+      creator: this.getSocialId()
     }
-    await this.connection.sendEvent(event)
+    await this.sendEvent(event)
   }
 
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
@@ -214,5 +214,17 @@ class Client {
 
   close (): void {
     // do nothing
+  }
+
+  private async sendEvent (event: RequestEvent): Promise<EventResult> {
+    const eventPromise = this.connection.sendEvent(event)
+    this.onRequest(event, eventPromise)
+    return await eventPromise
+  }
+
+  private getSocialId (): SocialID {
+    const id = getCurrentAccount().socialIds.find((it) => it.startsWith(SocialIdType.HULY))
+    if (id == null) throw new Error('Huly social id not found')
+    return id
   }
 }
