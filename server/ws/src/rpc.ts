@@ -254,6 +254,31 @@ export function registerRPC (
     })
   })
 
+  app.get('/api/v1/find-messages/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session) => {
+      const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
+
+      const result = await session.findMessagesRaw(ctx, params)
+      await sendJson(req, res, result)
+    })
+  })
+  app.get('/api/v1/find-messages-groups/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session) => {
+      const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
+
+      const result = await session.findMessagesGroupsRaw(ctx, params)
+      await sendJson(req, res, result)
+    })
+  })
+  app.post('/api/v1/event/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session) => {
+      const event: any = (await retrieveJson(req)) ?? {}
+
+      const result = await session.eventRaw(ctx, event)
+      await sendJson(req, res, result)
+    })
+  })
+
   // To use in non-js (rust) clients that can't link to @hcengineering/core
   app.get('/api/v1/generate-id/:workspaceId', (req, res) => {
     void withSession(req, res, async () => {

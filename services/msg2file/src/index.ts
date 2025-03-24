@@ -13,14 +13,9 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
+import { config } from 'dotenv'
 
-import ChatApplication from './components/ChatApplication.svelte'
-import ChatWidget from './components/ChatWidget.svelte'
+import { main } from './main'
 
-export default async (): Promise<Resources> => ({
-  component: {
-    ChatApplication,
-    ChatWidget
-  }
-})
+config()
+void main()

@@ -97,7 +97,7 @@
         rank: makeRank(lastOne?.rank, undefined),
         content: '' as MarkupBlobRef,
         parentInfo: [],
-        blobs: {},
+        blobs: {}
       }
 
       threadId = await client.createDoc(chat.masterTag.Thread, core.space.Workspace, data)

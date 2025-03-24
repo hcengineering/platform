@@ -13,14 +13,28 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
+import { Readable } from 'stream'
+import { ParsedFile } from '@hcengineering/communication-types'
+import { parseYaml } from '@hcengineering/communication-yaml'
 
-import ChatApplication from './components/ChatApplication.svelte'
-import ChatWidget from './components/ChatWidget.svelte'
+export async function parseFileStream (stream: Readable): Promise<ParsedFile> {
+  return await new Promise((resolve, reject) => {
+    let yamlData = ''
 
-export default async (): Promise<Resources> => ({
-  component: {
-    ChatApplication,
-    ChatWidget
-  }
-})
+    stream.on('data', (chunk) => {
+      yamlData += chunk.toString()
+    })
+
+    stream.on('end', () => {
+      try {
+        resolve(parseYaml(yamlData))
+      } catch (error) {
+        reject(error)
+      }
+    })
+
+    stream.on('error', (error) => {
+      reject(error)
+    })
+  })
+}

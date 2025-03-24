@@ -15,7 +15,9 @@
 
 import {
   type Account,
+  buildModel,
   type Class,
+  concatLink,
   type Doc,
   type DocumentQuery,
   type FindOptions,
@@ -29,11 +31,8 @@ import {
   type SearchResult,
   type Tx,
   type TxResult,
-  type WithLookup,
-  buildModel,
-  concatLink
+  type WithLookup
 } from '@hcengineering/core'
-
 import { PlatformError, unknownError } from '@hcengineering/platform'
 
 import type { RestClient } from './types'
