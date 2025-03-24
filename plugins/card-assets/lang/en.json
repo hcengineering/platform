@@ -28,6 +28,7 @@
     "CreateView": "Create View",
     "EditView": "Edit View",
     "SelectViewType": "Select View Type",
-    "Document": "Document"
+    "Document": "Document",
+    "ChangeType": "Change type"
   }
 }

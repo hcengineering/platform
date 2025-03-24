@@ -28,6 +28,7 @@
     "CreateView": "Ansicht erstellen",
     "EditView": "Ansicht bearbeiten",
     "SelectViewType": "Ansichtstyp auswählen",
-    "Document": "Dokument"
+    "Document": "Dokument",
+    "ChangeType": "Typ ändern"
   }
 }

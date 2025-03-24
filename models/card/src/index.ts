@@ -438,6 +438,25 @@ export function createModel (builder: Builder): void {
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
     actionProps: {
+      component: card.component.ChangeType,
+      fillProps: {
+        _object: 'value'
+      }
+    },
+    label: card.string.ChangeType,
+    input: 'focus',
+    icon: card.icon.MasterTag,
+    category: setting.category.Settings,
+    target: card.class.Card,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'edit'
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
       component: card.component.CreateTag,
       props: {
         _class: card.class.MasterTag

@@ -28,6 +28,7 @@
     "CreateView": "Vytvořit zobrazení",
     "EditView": "Upravit zobrazení",
     "SelectViewType": "Vybrat typ zobrazení",
-    "Document": "Dokument"
+    "Document": "Dokument",
+    "ChangeType": "Změnit typ"
   }
 }

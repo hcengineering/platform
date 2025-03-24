@@ -28,6 +28,7 @@
     "CreateView": "Criar visualização",
     "EditView": "Editar visualização",
     "SelectViewType": "Selecionar tipo de visualização",
-    "Document": "Documento"
+    "Document": "Documento",
+    "ChangeType": "Alterar tipo"
   }
 }
