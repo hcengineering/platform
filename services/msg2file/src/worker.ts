@@ -108,6 +108,7 @@ async function msg2file (
   storage: StorageAdapter,
   db: PostgresDB
 ): Promise<void> {
+  ctx.info('Processing card', { card: cardId })
   const platformClient = await connectPlatform(workspace)
   const card = await platformClient.findOne<Card>(cardPlugin.class.Card, { _id: cardId as Ref<Card> })
 
@@ -221,7 +222,14 @@ async function newMessages2file (
 
   while (true) {
     const messages = (
-      await client.findMessages({ card: card._id, order: SortingOrder.Ascending, limit: config.MessagesPerFile })
+      await client.findMessages({
+        card: card._id,
+        order: SortingOrder.Ascending,
+        limit: config.MessagesPerFile,
+        reactions: true,
+        replies: true,
+        files: true
+      })
     ).map(deserializeMessage)
 
     if (messages.length === 0) {
@@ -276,7 +284,10 @@ async function createNewGroup (
       created: {
         greaterOrEqual: lastMessage.created,
         lessOrEqual: to
-      }
+      },
+      reactions: true,
+      replies: true,
+      files: true
     })
   )
     .filter((it) => it.id !== lastMessage.id)

@@ -23,7 +23,6 @@ import setting from '@hcengineering/setting'
 import { WidgetType } from '@hcengineering/workbench'
 import view from '@hcengineering/model-view'
 
-
 import chat from './plugin'
 
 export { chatId } from '@hcengineering/chat'

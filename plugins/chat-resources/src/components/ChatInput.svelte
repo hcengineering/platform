@@ -22,7 +22,4 @@
   export let card: Card
 </script>
 
-<MessageInput placeholder={chat.string.MessageIn} placeholderParams={{ title: card.title }} />
-
-<style lang="scss">
-</style>
+<MessageInput cardId={card._id} placeholder={chat.string.MessageIn} placeholderParams={{ title: card.title }} />

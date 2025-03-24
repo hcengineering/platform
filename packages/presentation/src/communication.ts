@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 import {
+  type AccountID,
   type BlobID,
-  MessageType,
-  PatchType,
   type CardID,
+  type ContextID,
   type FindMessagesGroupsParams,
   type FindMessagesParams,
   type FindNotificationContextParams,
@@ -24,12 +24,12 @@ import {
   type Message,
   type MessageID,
   type MessagesGroup,
+  MessageType,
   type Notification,
   type NotificationContext,
+  PatchType,
   type RichText,
-  type SocialID,
-  type ContextID,
-  type AccountID,
+  type SocialID
 } from '@hcengineering/communication-types'
 import {
   type CreateFileEvent,
@@ -50,14 +50,16 @@ import {
   type Client as PlatformClient,
   type ClientConnection as PlatformConnection,
   getCurrentAccount,
-  SocialIdType
+  type SocialId,
+  SocialIdType,
+  generateId
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
 import {
   createMessagesQuery,
+  createNotificationContextsQuery,
   createNotificationsQuery,
-  initLiveQueries,
-  createNotificationContextsQuery
+  initLiveQueries
 } from '@hcengineering/communication-client-query'
 
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
@@ -81,17 +83,24 @@ export function getCommunicationClient (): CommunicationClient {
   return client
 }
 
-export async function setCommunicationClient (platformClient: PlatformClient): Promise<void> {
+export async function setCommunicationClient (platformClient: PlatformClient, socialIds: SocialId[]): Promise<void> {
   const connection = platformClient.getConnection?.()
   if (connection === undefined) {
     return
   }
-  client = new Client(connection as unknown as Connection)
+  client = new Client(connection as unknown as Connection, socialIds)
   initLiveQueries(client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
 }
 
 class Client {
-  constructor (private readonly connection: Connection) {
+  private readonly hulySocialId: SocialId | undefined
+
+  constructor (
+    private readonly connection: Connection,
+    socialIds: SocialId[]
+  ) {
+    this.hulySocialId = socialIds.find((it) => it.type === SocialIdType.HULY && it.verifiedOn !== undefined)
+
     connection.pushHandler((...events: any[]) => {
       for (const event of events) {
         if (event != null && 'type' in event) {
@@ -231,14 +240,18 @@ class Client {
   }
 
   private async sendEvent (event: RequestEvent): Promise<EventResult> {
-    const eventPromise = this.connection.sendEvent(event)
-    this.onRequest(event, eventPromise)
+    const ev: RequestEvent = { ...event, _id: generateId() }
+    const eventPromise = this.connection.sendEvent(ev)
+    this.onRequest(ev, eventPromise)
     return await eventPromise
   }
 
   private getSocialId (): SocialID {
-    const id = getCurrentAccount().socialIds.find((it) => it.startsWith(SocialIdType.HULY))
-    if (id == null) throw new Error('Huly social id not found')
+    const me = getCurrentAccount()
+    const id = this.hulySocialId?._id ?? me.primarySocialId
+    if (id == null || id === '') {
+      throw new Error('Social id not found')
+    }
     return id
   }
 

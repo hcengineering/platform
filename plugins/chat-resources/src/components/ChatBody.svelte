@@ -257,8 +257,6 @@
     if (separatorDiv != null) {
       await tick() // Wait for the DOM to update
       separatorDiv.scrollIntoView({ behavior: 'instant', block: 'start' })
-      // Compensate date selector
-      scroller?.scrollBy(-100)
       isScrollInitialized = true
       updateShouldScrollToNew()
     }

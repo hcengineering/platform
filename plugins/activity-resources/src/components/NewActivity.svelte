@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery, getClient, createMessagesQuery } from '@hcengineering/presentation'
-  import { Grid, Label, Section, Spinner, location, Lazy } from '@hcengineering/ui'
+  import { SortingOrder } from '@hcengineering/core'
+  import { createMessagesQuery } from '@hcengineering/presentation'
+  import { Grid, Section, Spinner } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import activity from '@hcengineering/activity'
   import { Card } from '@hcengineering/card'
@@ -27,11 +27,6 @@
   export let focusIndex: number = -1
   export let boundary: HTMLElement | undefined = undefined
 
-  const isNewestFirst = JSON.parse(localStorage.getItem('activity-newest-first') ?? 'false') === true
-  const order = isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending
-
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const query = createMessagesQuery()
   let isLoading = true
   let isNextLoading = false
@@ -42,15 +37,14 @@
   $: query.query(
     {
       card: object._id,
-      withReplies: true,
-      withFiles: true,
-      withReactions: true,
-      order,
+      replies: true,
+      files: true,
+      reactions: true,
+      order: SortingOrder.Ascending,
       limit: 100
     },
     (res) => {
-      messages = order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()
-      console.log(messages)
+      messages = res.getResult()
       isLoading = false
       window = res
     }
@@ -91,12 +85,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="content">
-      {#if isNewestFirst && showInput}
-        <div class="ref-input newest-first">
-          <MessageInput cardId={object._id} placeholder={activity.string.Message} />
-        </div>
-      {/if}
-      <div class="p-activity select-text" id={activity.string.Activity} class:newest-first={isNewestFirst}>
+      <div class="p-activity select-text" id={activity.string.Activity}>
         {#if messages.length}
           <Grid column={1} rowGap={1}>
             {#each messages as message (message.id)}
@@ -105,7 +94,7 @@
           </Grid>
         {/if}
       </div>
-      {#if showInput && !isNewestFirst}
+      {#if showInput}
         <div class="ref-input oldest-first">
           <MessageInput cardId={object._id} placeholder={activity.string.Message} />
         </div>
@@ -136,10 +125,6 @@
     &:not(.newest-first) {
       margin: 1.75rem 0;
     }
-  }
-
-  .invisible {
-    display: none;
   }
 
   :global(.grid .msgactivity-container.showIcon:last-child::after) {

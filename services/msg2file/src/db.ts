@@ -40,7 +40,7 @@ export async function getDb (): Promise<PostgresDB> {
 export class PostgresDB {
   private readonly syncTable = 'msg2file.sync_record'
   private readonly messagesTable = 'communication.messages'
-  private readonly patchesTable = 'communication.patches'
+  private readonly patchesTable = 'communication.patch'
 
   constructor (private readonly client: postgres.Sql) {}
 
@@ -115,8 +115,8 @@ export class PostgresDB {
     const sql = `
         DELETE
         FROM ${this.messagesTable}
-        WHERE workspace = $1::uuid
-          AND card = $2::varchar
+        WHERE workspace_id = $1::uuid
+          AND card_id = $2::varchar
           AND id = ANY ($3::bigint[]);`
 
     await this.client.unsafe(sql, [workspace, card, ids])
@@ -127,8 +127,8 @@ export class PostgresDB {
     const sql = `
         DELETE
         FROM ${this.patchesTable}
-        WHERE workspace = $1::uuid
-          AND card = $2::varchar
+        WHERE workspace_id = $1::uuid
+          AND card_id = $2::varchar
           AND message_id = ANY ($3::bigint[]);`
 
     await this.client.unsafe(sql, [workspace, card, ids])

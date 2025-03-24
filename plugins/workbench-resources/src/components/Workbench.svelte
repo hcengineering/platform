@@ -273,12 +273,6 @@
   let hasNotificationsFn: ((data: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>) | undefined =
     undefined
   let hasInboxNotifications = false
-  let hasNewInboxNotifications = false
-  const notificationCountQuery = createNotificationsQuery()
-
-  notificationCountQuery.query({ read: false, limit: 1 }, (res) => {
-    hasNewInboxNotifications = res.getResult().length > 0
-  })
 
   void getResource(notification.function.HasInboxNotifications).then((f) => {
     hasNotificationsFn = f
@@ -855,39 +849,6 @@
           direction={$deviceInfo.navigator.direction}
           on:toggleNav={toggleNav}
         />
-      </div>
-      <div
-        class="new-world {$deviceInfo.navigator.direction}"
-        class:vertical-mobile={$deviceInfo.navigator.direction === 'vertical'}
-        class:mini={appsMini}
-      >
-        <NavLink
-          app={inboxId}
-          shrink={0}
-          restoreLastLocation
-          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === inboxId}
-        >
-          <AppItem
-            icon={inbox.icon.Inbox}
-            label={inbox.string.Inbox}
-            selected={currentAppAlias === inboxId || inboxPopup !== undefined}
-            navigator={(currentAppAlias === inboxId || inboxPopup !== undefined) && $deviceInfo.navigator.visible}
-            notify={hasNewInboxNotifications}
-          />
-        </NavLink>
-        <NavLink
-          app={chatId}
-          shrink={0}
-          restoreLastLocation
-          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === chatId}
-        >
-          <AppItem
-            icon={chat.icon.ChatBubble}
-            label={chat.string.Chat}
-            selected={currentAppAlias === chatId}
-            navigator={currentAppAlias === chatId && $deviceInfo.navigator.visible}
-          />
-        </NavLink>
       </div>
       <div
         class="info-box {$deviceInfo.navigator.direction}"
