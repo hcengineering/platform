@@ -109,7 +109,6 @@ async function msg2file (
   db: PostgresDB
 ): Promise<void> {
   const platformClient = await connectPlatform(workspace)
-
   const card = await platformClient.findOne<Card>(cardPlugin.class.Card, { _id: cardId as Ref<Card> })
 
   if (card === undefined) {

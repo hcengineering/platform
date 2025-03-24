@@ -27,21 +27,24 @@ import {
   type Notification,
   type NotificationContext,
   type RichText,
-  type SocialID
+  type SocialID,
+  type ContextID,
+  type AccountID
 } from '@hcengineering/communication-types'
 import {
+  type CreateFileEvent,
   type CreateMessageEvent,
   type CreateMessageResult,
   type CreatePatchEvent,
   type CreateReactionEvent,
+  type CreateThreadEvent,
   type EventResult,
+  type RemoveFileEvent,
   type RemoveReactionEvent,
   type RequestEvent,
   RequestEventType,
   type ResponseEvent,
-  type CreateThreadEvent,
-  type CreateFileEvent,
-  type RemoveFileEvent
+  type UpdateNotificationContextEvent
 } from '@hcengineering/communication-sdk-types'
 import {
   type Client as PlatformClient,
@@ -49,15 +52,17 @@ import {
   getCurrentAccount,
   SocialIdType
 } from '@hcengineering/core'
+import { onDestroy } from 'svelte'
 import {
   createMessagesQuery,
   createNotificationsQuery,
-  initLiveQueries
+  initLiveQueries,
+  createNotificationContextsQuery
 } from '@hcengineering/communication-client-query'
 
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 
-export { createMessagesQuery, createNotificationsQuery }
+export { createMessagesQuery, createNotificationsQuery, createNotificationContextsQuery }
 
 interface Connection extends PlatformConnection {
   findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
@@ -82,7 +87,7 @@ export async function setCommunicationClient (platformClient: PlatformClient): P
     return
   }
   client = new Client(connection as unknown as Connection)
-  initLiveQueries(client, getCurrentWorkspaceUuid(), getFilesUrl())
+  initLiveQueries(client, getCurrentWorkspaceUuid(), getFilesUrl(), onDestroy)
 }
 
 class Client {
@@ -97,7 +102,6 @@ class Client {
   }
 
   onEvent: (event: ResponseEvent) => void = () => {}
-
   onRequest: (event: RequestEvent, eventPromise: Promise<EventResult>) => void = () => {}
 
   async createThread (card: CardID, message: MessageID, thread: CardID): Promise<void> {
@@ -189,6 +193,16 @@ class Client {
     await this.sendEvent(event)
   }
 
+  async updateNotificationContext (context: ContextID, lastView?: Date): Promise<void> {
+    const event: UpdateNotificationContextEvent = {
+      type: RequestEventType.UpdateNotificationContext,
+      context,
+      account: this.getAccount(),
+      lastView
+    }
+    await this.connection.sendEvent(event)
+  }
+
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
     return await this.connection.findMessages(params, queryId)
   }
@@ -226,5 +240,9 @@ class Client {
     const id = getCurrentAccount().socialIds.find((it) => it.startsWith(SocialIdType.HULY))
     if (id == null) throw new Error('Huly social id not found')
     return id
+  }
+
+  private getAccount (): AccountID {
+    return getCurrentAccount().uuid
   }
 }

@@ -15,11 +15,11 @@
 //
 
 import core, {
-  DOMAIN_TX,
   type BackupClient,
   type Class,
   type Client as CoreClient,
   type Doc,
+  DOMAIN_TX,
   type MeasureContext,
   type Ref,
   type Tx,
@@ -32,9 +32,9 @@ import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { createStorageBackupStorage, restore } from '@hcengineering/server-backup'
 import {
   createDummyStorageAdapter,
-  wrapPipeline,
   type PipelineFactory,
-  type StorageAdapter
+  type StorageAdapter,
+  wrapPipeline
 } from '@hcengineering/server-core'
 import { createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { connect } from '@hcengineering/server-tool'
@@ -164,7 +164,7 @@ export async function backupRestore (
         recheck: false,
         storageAdapter: workspaceStorage,
         getConnection: async () => {
-          return wrapPipeline(ctx, await pipelineFactory(ctx, wsUrl, true, () => {}, null), wsUrl)
+          return wrapPipeline(ctx, await pipelineFactory(ctx, wsUrl, true, () => {}, null, null), wsUrl)
         }
       })
     )

@@ -109,7 +109,7 @@ export function createServerPipeline (
   },
   extensions?: Partial<DbConfiguration>
 ): PipelineFactory {
-  return (ctx, workspace, upgrade, broadcast, branding) => {
+  return (ctx, workspace, upgrade, broadcast, branding, communicationApi) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 session', {})
     const conf = getConfig(metrics, dbUrl, wsMetrics, opt, extensions)
@@ -151,7 +151,8 @@ export function createServerPipeline (
       modelDb,
       hierarchy,
       storageAdapter: opt.externalStorage,
-      contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars
+      contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars,
+      communicationApi
     }
     return createPipeline(ctx, middlewares, context)
   }
@@ -172,7 +173,7 @@ export function createBackupPipeline (
     externalStorage: StorageAdapter
   }
 ): PipelineFactory {
-  return (ctx, workspace, upgrade, broadcast, branding) => {
+  return (ctx, workspace, upgrade, broadcast, branding, communicationApi) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 backup', {})
     const conf = getConfig(metrics, dbUrl, wsMetrics, {
@@ -198,7 +199,8 @@ export function createBackupPipeline (
       modelDb,
       hierarchy,
       storageAdapter: opt.externalStorage,
-      contextVars: {}
+      contextVars: {},
+      communicationApi
     }
     return createPipeline(ctx, middlewares, context)
   }
@@ -223,7 +225,8 @@ export async function getServerPipeline (
     queue: opt?.queue
   })
 
-  return await pipelineFactory(ctx, wsUrl, true, () => {}, null)
+  // TODO: Communication API ??
+  return await pipelineFactory(ctx, wsUrl, true, () => {}, null, null)
 }
 
 const txAdapterFactories: Record<string, DbAdapterFactory> = {}

@@ -14,32 +14,31 @@
 -->
 
 <script lang="ts">
-  import cardPlugin, { Card } from '@hcengineering/card'
-  import { createQuery } from '@hcengineering/presentation'
+  import { Card } from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
   import { NavigationList, NavigationSection } from '@hcengineering/ui-next'
   import { languageStore, Scroller } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
+  import { NotificationContext } from '@hcengineering/communication-types'
 
   import { cardsToChatSections, NavigatorState, navigatorStateStore, toggleSection } from '../navigator'
 
   export let card: Card | undefined = undefined
+  export let cards: Card[] = []
+  export let contexts: NotificationContext[] = []
 
   const dispatch = createEventDispatcher()
 
-  const query = createQuery()
-
-  let cards: Card[] = []
   let sections: NavigationSection[] = []
 
-  // TODO: only subscribed cards
-  query.query(cardPlugin.class.Card, {}, (res) => {
-    cards = res
-  })
-
-  $: void updateSections(cards, $languageStore, $navigatorStateStore)
-  async function updateSections (cards: Card[], _lang: string, state: NavigatorState): Promise<void> {
-    sections = await cardsToChatSections(cards, state)
+  $: void updateSections(cards, contexts, $languageStore, $navigatorStateStore)
+  async function updateSections (
+    cards: Card[],
+    contexts: NotificationContext[],
+    _lang: string,
+    state: NavigatorState
+  ): Promise<void> {
+    sections = await cardsToChatSections(cards, contexts, state)
   }
 
   function handleSectionToggle (event: CustomEvent<string>): void {

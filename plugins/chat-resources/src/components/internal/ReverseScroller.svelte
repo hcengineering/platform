@@ -53,5 +53,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background: var(--next-panel-color-background);
   }
 </style>

@@ -120,7 +120,7 @@
     "@hcengineering/model-my-space": "^0.6.0",
     "@hcengineering/model-chat": "^0.6.0",
     "@hcengineering/model-process": "^0.6.0",
-    "@hcengineering/model-server-process": "^0.6.0"
-
+    "@hcengineering/model-server-process": "^0.6.0",
+    "@hcengineering/model-inbox": "^0.6.0"
   }
 }

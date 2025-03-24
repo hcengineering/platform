@@ -15,52 +15,85 @@
 
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { type Message, Window, MessageID } from '@hcengineering/communication-types'
-  import { getCommunicationClient, createMessagesQuery } from '@hcengineering/presentation'
+  import { type Message, MessageID, Window, NotificationContext } from '@hcengineering/communication-types'
+  import { createMessagesQuery, getCommunicationClient } from '@hcengineering/presentation'
   import { MessagesGroup as MessagesGroupPresenter } from '@hcengineering/ui-next'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import { Scroller } from '@hcengineering/ui'
-  import { Markup, SortingOrder } from '@hcengineering/core'
+  import { getCurrentAccount, Markup, SortingOrder } from '@hcengineering/core'
   import { tick } from 'svelte'
   import { markupToMarkdown } from '@hcengineering/text-markdown'
   import { markupToJSON } from '@hcengineering/text'
 
   import ReverseScroller from './internal/ReverseScroller.svelte'
-  import { toDisplayMessages, groupMessagesByDay, MessagesGroup } from '../ui'
+  import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup, toDisplayMessages } from '../ui'
   import { replyToThread, toggleReaction } from '../actions'
+  import ChatLoadingFiller from './ChatLoadingFiller.svelte'
 
   export let card: Card | undefined = undefined
+  export let context: NotificationContext | undefined = undefined
   export let bottomStart: boolean = true
   export let footerHeight: number | undefined = undefined
   export let showDates: boolean = true
 
+  const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
   const query = createMessagesQuery()
 
   const loadPageThreshold = 200
   const scrollToNewThreshold = 50
 
+  const initialLastView = context?.lastView
+  const initialLastUpdate = context?.lastUpdate
+
   let contentDiv: HTMLDivElement | null | undefined = undefined
   let scrollDiv: HTMLDivElement | null | undefined = undefined
   let scroller: Scroller | undefined | null = undefined
 
+  let separatorDiv: HTMLDivElement | null | undefined = undefined
+
+  let messages: Message[] = []
   let groups: MessagesGroup[] = []
   let window: Window<Message> | undefined = undefined
   let isLoading = true
   let messagesCount = 0
 
+  let isScrollInitialized = false
   let isPageLoading = false
   let shouldScrollToNew = true
   let restore: { scrollTop: number, scrollHeight: number } | undefined = undefined
 
   $: if (card != null) {
-    query.query({ card: card._id, order: SortingOrder.Descending, limit: 50 }, (res: Window<Message>) => {
-      window = res
-      const messages = res.getResult().reverse()
-      groups = groupMessagesByDay(messages)
-      isLoading = false
-      void onUpdate(messages)
-    })
+    const limit = 50
+    const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
+    const order = unread ? SortingOrder.Ascending : SortingOrder.Descending
+    query.query(
+      {
+        card: card._id,
+        replies: true,
+        files: true,
+        reactions: true,
+        order,
+        limit,
+        created:
+          unread && initialLastView != null
+            ? {
+                greaterOrEqual: initialLastView
+              }
+            : undefined
+      },
+      (res: Window<Message>) => {
+        window = res
+        messages = order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()
+        if (messages.length < limit && res.hasNextPage()) {
+          void window.loadNextPage()
+        } else if (messages.length < limit && res.hasPrevPage()) {
+          void window.loadPrevPage()
+        }
+        groups = groupMessagesByDay(messages)
+        isLoading = messages.length < limit && (res.hasNextPage() || res.hasPrevPage())
+        void onUpdate(messages)
+      }
+    )
   } else {
     isLoading = true
     window = undefined
@@ -172,14 +205,39 @@
     }
   }
 
-  // $:if (contentDiv != null) {
-  //   createMessagesObserver(contentDiv, () => {})
-  // }
+  let newLastView: Date | undefined = context?.lastView
+  let separatorDate: Date | undefined = undefined
+  let readMessagesTimer: any | undefined = undefined
+
+  function readMessage (date: Date): void {
+    if (readMessagesTimer != null) {
+      clearTimeout(readMessagesTimer)
+      readMessagesTimer = undefined
+    }
+    readMessagesTimer = setTimeout(async () => {
+      if (context == null) return
+      if (context.lastView && context.lastView > date) return
+      await communicationClient.updateNotificationContext(context.id, date)
+    }, 500)
+  }
+
+  $: if (contentDiv != null && isScrollInitialized && context != null) {
+    createMessagesObserver(contentDiv, (messageDiv) => {
+      if (!isScrollInitialized) return
+      const id = messageDiv.id
+      const message = messages.find((it) => it.id === id)
+      if (message === undefined) return
+      const shouldRead = newLastView == null || message.created > newLastView
+      if (shouldRead) {
+        newLastView = message.created
+        readMessage(message.created)
+      }
+    })
+  }
 
   async function handleClickReaction (event: CustomEvent<{ emoji: string, id: MessageID }>): Promise<void> {
     if (window === undefined || card === undefined) return
-    const res = window.getResult()
-    const message = res.find((it) => it.id === event.detail.id)
+    const message = messages.find((it) => it.id === event.detail.id)
     if (message === undefined) return
     await toggleReaction(communicationClient, card._id, message, event.detail.emoji)
   }
@@ -194,9 +252,35 @@
   async function handleReply (event: CustomEvent<{ id: MessageID }>): Promise<void> {
     if (window === undefined || card === undefined) return
     const { id } = event.detail
-    const message = window.getResult().find((it) => it.id === id)
+    const message = messages.find((it) => it.id === id)
     if (message === undefined) return
     await replyToThread(card._id, message)
+  }
+
+  $: void initializeScroll(isLoading, separatorDiv)
+
+  async function initializeScroll (isLoading: boolean, separatorDiv?: HTMLDivElement | null): Promise<void> {
+    if (isLoading || isScrollInitialized) return
+
+    const separatorIndex = initialLastView
+      ? messages.findIndex(({ created, creator }) => !me.socialIds.includes(creator) && created > initialLastView)
+      : -1
+
+    if (separatorIndex === -1) {
+      isScrollInitialized = true
+      separatorDate = undefined
+      return
+    }
+
+    separatorDate = messages[separatorIndex].created
+    if (separatorDiv != null) {
+      await tick() // Wait for the DOM to update
+      separatorDiv.scrollIntoView({ behavior: 'instant', block: 'start' })
+      // Compensate date selector
+      scroller?.scrollBy(-100)
+      isScrollInitialized = true
+      updateShouldScrollToNew()
+    }
   }
 </script>
 
@@ -204,26 +288,40 @@
   bind:scrollDiv
   bind:scroller
   bind:contentDiv
-  isLoading={card != null && isLoading}
+  isLoading={card != null && (isLoading || !isScrollInitialized)}
   {bottomStart}
   onScroll={handleScroll}
 >
   {#if window !== undefined && window.hasPrevPage()}
-    <div class="filler" />
+    <ChatLoadingFiller />
   {/if}
-  {#each groups as group (group.day)}
-    {@const messages = toDisplayMessages(group.messages, $personByPersonIdStore)}
-    <MessagesGroupPresenter
-      date={group.day}
-      {messages}
-      {showDates}
-      on:reaction={handleClickReaction}
-      on:update={handleUpdateMessage}
-      on:reply={handleReply}
-    />
+  {#each groups as group (group.day.toString())}
+    {@const messages = toDisplayMessages(group.messages)}
+    {@const withSeparator = separatorDate != null && getGroupDay(separatorDate) === group.day}
+    {#if withSeparator}
+      <MessagesGroupPresenter
+        bind:separatorDiv
+        date={group.day}
+        {messages}
+        {showDates}
+        {separatorDate}
+        on:reaction={handleClickReaction}
+        on:update={handleUpdateMessage}
+        on:reply={handleReply}
+      />
+    {:else}
+      <MessagesGroupPresenter
+        date={group.day}
+        {messages}
+        {showDates}
+        on:reaction={handleClickReaction}
+        on:update={handleUpdateMessage}
+        on:reply={handleReply}
+      />
+    {/if}
   {/each}
   {#if window !== undefined && window.hasNextPage()}
-    <div class="filler" />
+    <ChatLoadingFiller />
   {/if}
 
   {#if footerHeight != null && footerHeight > 0}
