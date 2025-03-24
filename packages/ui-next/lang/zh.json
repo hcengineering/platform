@@ -1,5 +1,6 @@
 {
   "string": {
+    "Added": "已添加",
     "Attach": "附加",
     "Cancel": "取消",
     "Edit": "编辑",
@@ -11,11 +12,16 @@
     "Mention": "提及",
     "MinutesAgo": "{minutes, plural, =0 {不到一分钟前} =1 {一分钟前} other {#分钟前}}",
     "MonthAt": "{month} 于 {time}",
+    "New": "新",
+    "Removed": "已删除",
     "RepliesCount": "{count} 条回复",
     "Reply": "回复",
     "Send": "发送",
+    "Set": "设置",
     "ShowFormatting": "显示格式",
+    "To": "到",
     "Today": "今天",
+    "Unset": "未设置",
     "WeekdayAt": "{weekday} 于 {time}",
     "YearAt": "{year} 于 {time}",
     "Yesterday": "昨天",

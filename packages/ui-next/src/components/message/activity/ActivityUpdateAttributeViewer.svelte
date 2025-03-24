@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,12 +11,17 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { AttributeModel } from '@hcengineering/view'
+  import { ActivityAttributeUpdate } from '@hcengineering/communication-types'
 
-import { type Message } from '@hcengineering/communication-types'
+  import ActivitySetAttributesViewer from './ActivitySetAttributeViewer.svelte'
 
-import { openThreadInSidebar } from './location'
+  export let model: AttributeModel
+  export let update: ActivityAttributeUpdate
+</script>
 
-export async function replyToThread (message: Message): Promise<void> {
-  await openThreadInSidebar(message)
-}
+{#if update?.set !== undefined}
+  <ActivitySetAttributesViewer {model} value={update.set} />
+{/if}

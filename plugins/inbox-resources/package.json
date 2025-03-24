@@ -40,7 +40,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/card": "^0.6.0",
-    "@hcengineering/communication-types": "0.1.118",
+    "@hcengineering/communication-types": "0.1.132",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
@@ -48,8 +48,6 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/rank": "^0.6.4",
-    "@hcengineering/text": "^0.6.5",
-    "@hcengineering/text-markdown": "^0.6.0",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/ui-next": "^0.6.0",
     "@hcengineering/view": "^0.6.13",

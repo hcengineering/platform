@@ -18,17 +18,16 @@
   import { getClient, createQuery, getCommunicationClient, createMessagesQuery } from '@hcengineering/presentation'
   import cardPlugin, { type Card } from '@hcengineering/card'
   import { Message, CardID } from '@hcengineering/communication-types'
-  import { Message as MessagePresenter, MessageInput, Divider } from '@hcengineering/ui-next'
-  import core, { fillDefaults, type Markup, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
-  import { jsonToMarkup, markupToJSON, markupToText } from '@hcengineering/text'
-  import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
+  import { MessagePresenter, MessageInput, Divider, UploadedFile } from '@hcengineering/ui-next'
+  import core, { fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
+  import { jsonToMarkup, markupToText } from '@hcengineering/text'
+  import { markdownToMarkup } from '@hcengineering/text-markdown'
   import { makeRank } from '@hcengineering/rank'
 
   import { ChatWidgetData } from '../types'
   import chat from '../plugin'
   import ChatHeader from './ChatHeader.svelte'
   import ChatBody from './ChatBody.svelte'
-  import { toDisplayMessage } from '../ui'
 
   export let widget: Widget | undefined
   export let widgetState: WidgetState | undefined
@@ -41,10 +40,12 @@
 
   const messageQuery = createMessagesQuery()
   const threadCardQuery = createQuery()
+  const parentCardQuery = createQuery()
 
   let data: ChatWidgetData | undefined = undefined
 
   let threadCard: Card | undefined = undefined
+  let parentCard: Card | undefined = undefined
   let message: Message | undefined = undefined
 
   $: data = widgetState?.data as ChatWidgetData
@@ -63,9 +64,20 @@
         message = res.getResult()[0]
       }
     )
+
+    parentCardQuery.query(
+      cardPlugin.class.Card,
+      { _id: data.card },
+      (res) => {
+        parentCard = res[0]
+      },
+      { limit: 1 }
+    )
   } else {
     message = undefined
+    parentCard = undefined
     messageQuery.unsubscribe()
+    parentCardQuery.unsubscribe()
   }
 
   $: if (message?.thread != null) {
@@ -86,7 +98,7 @@
     closeWidget(chat.ids.ChatWidget)
   }
 
-  async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
+  async function handleSubmit (markdown: string, files: UploadedFile[]): Promise<void> {
     if (message === undefined || data === undefined) return
     const { card } = data
     if (card === undefined) return
@@ -108,15 +120,16 @@
         },
         chat.masterTag.Thread
       )
-
       threadId = (await client.createDoc(chat.masterTag.Thread, core.space.Workspace, data)) as CardID
 
       await communicationClient.createThread(card, message.id, threadId)
     }
 
     if (threadId != null) {
-      const markdown = markupToMarkdown(markupToJSON(event.detail))
-      await communicationClient.createMessage(threadId, markdown)
+      const id = await communicationClient.createMessage(threadId, markdown)
+      for (const file of files) {
+        await communicationClient.createFile(threadId, id, file.blobId, file.type, file.filename)
+      }
     }
   }
 </script>
@@ -124,10 +137,9 @@
 {#if widget && data && data.message}
   <div class="chat-widget" style:width style:height>
     <ChatHeader card={threadCard} />
-    {#if message}
-      {@const displayMessage = toDisplayMessage({ ...message, thread: undefined })}
+    {#if message && parentCard}
       <div style:padding="0 1rem">
-        <MessagePresenter message={displayMessage} />
+        <MessagePresenter {message} card={parentCard} />
       </div>
       <Divider />
 
@@ -135,7 +147,7 @@
         <ChatBody card={threadCard} bottomStart={false} showDates={false} />
       </div>
       <div style:padding="1rem">
-        <MessageInput on:submit={handleSubmit} />
+        <MessageInput onSubmit={handleSubmit} />
       </div>
     {/if}
   </div>

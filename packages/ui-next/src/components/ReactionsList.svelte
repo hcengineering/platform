@@ -17,12 +17,12 @@
   import { createEventDispatcher } from 'svelte'
   import { EmojiPopup, showPopup } from '@hcengineering/ui'
   import { getCurrentAccount, groupByArray } from '@hcengineering/core'
+  import { Reaction } from '@hcengineering/communication-types'
 
-  import Reaction from './Reaction.svelte'
+  import ReactionPresenter from './ReactionPresenter.svelte'
   import IconEmojiAdd from './icons/IconEmojiAdd.svelte'
-  import { DisplayReaction } from '../types'
 
-  export let reactions: DisplayReaction[] = []
+  export let reactions: Reaction[] = []
 
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()
@@ -37,9 +37,10 @@
       EmojiPopup,
       {},
       event.target as HTMLElement,
-      (emoji) => {
+      (result) => {
+        const emoji = result?.emoji
         emojiPopupOpened = false
-        if (emoji === null || emoji === undefined) {
+        if (emoji == null) {
           return
         }
         dispatch('click', emoji)
@@ -48,20 +49,20 @@
     )
   }
 
-  let reactionsByEmoji = new Map<string, DisplayReaction[]>()
-  $: reactionsByEmoji = groupByArray(reactions, (it) => it.emoji)
+  let reactionsByEmoji = new Map<string, Reaction[]>()
+  $: reactionsByEmoji = groupByArray(reactions, (it) => it.reaction)
 </script>
 
 <div class="reactions">
   {#each reactionsByEmoji as [emoji, reactions] (emoji)}
-    <Reaction
+    <ReactionPresenter
       {emoji}
       selected={reactions.some((it) => me.socialIds.includes(it.creator))}
       count={reactions.length}
       on:click={() => dispatch('click', emoji)}
     />
   {/each}
-  <Reaction icon={IconEmojiAdd} iconSize="small" active={emojiPopupOpened} on:click={handleAdd} />
+  <ReactionPresenter icon={IconEmojiAdd} iconSize="small" active={emojiPopupOpened} on:click={handleAdd} />
 </div>
 
 <style lang="scss">

@@ -317,10 +317,14 @@ export default plugin(activityId, {
     RemovedObject: '' as IntlString,
     ChangedObject: '' as IntlString,
     UnsetObject: '' as IntlString,
-    UpdatedObject: '' as IntlString
+    UpdatedObject: '' as IntlString,
+    NewObjectType: '' as IntlString,
+    RemovedObjectType: '' as IntlString,
+    AttributeSetTo: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,
+    NewActivity: '' as AnyComponent,
     ActivityMessagePresenter: '' as AnyComponent,
     DocUpdateMessagePresenter: '' as AnyComponent,
     ActivityInfoMessagePresenter: '' as AnyComponent,

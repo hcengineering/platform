@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { MessageInput } from '@hcengineering/ui-next'
-  import { Card } from '@hcengineering/card'
+  import { AttributeModel } from '@hcengineering/view'
+  import { ActivityUpdate, ActivityUpdateType } from '@hcengineering/communication-types'
 
-  import chat from '../plugin'
+  import ActivityUpdateTagViewer from './ActivityUpdateTagViewer.svelte'
+  import ActivityUpdateAttributeViewer from './ActivityUpdateAttributeViewer.svelte'
 
-  export let card: Card
+  export let model: AttributeModel | undefined = undefined
+  export let update: ActivityUpdate
 </script>
 
-<MessageInput placeholder={chat.string.MessageIn} placeholderParams={{ title: card.title }} />
-
-<style lang="scss">
-</style>
+{#if update.type === ActivityUpdateType.Attribute && model}
+  <ActivityUpdateAttributeViewer {model} {update} />
+{:else if update.type === ActivityUpdateType.Tag}
+  <ActivityUpdateTagViewer {update} />
+{/if}

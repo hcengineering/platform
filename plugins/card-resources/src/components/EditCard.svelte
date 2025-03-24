@@ -143,6 +143,7 @@
     bind:content
     bind:innerWidth
     floatAside={false}
+    newActivity
     on:open
     on:close={() => dispatch('close')}
   >

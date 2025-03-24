@@ -15,18 +15,16 @@
 
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { type Message, MessageID, Window, NotificationContext } from '@hcengineering/communication-types'
+  import { type Message, Window, NotificationContext } from '@hcengineering/communication-types'
   import { createMessagesQuery, getCommunicationClient } from '@hcengineering/presentation'
   import { MessagesGroup as MessagesGroupPresenter } from '@hcengineering/ui-next'
   import { Scroller } from '@hcengineering/ui'
-  import { getCurrentAccount, Markup, SortingOrder } from '@hcengineering/core'
+  import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { tick } from 'svelte'
-  import { markupToMarkdown } from '@hcengineering/text-markdown'
-  import { markupToJSON } from '@hcengineering/text'
 
   import ReverseScroller from './internal/ReverseScroller.svelte'
-  import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup, toDisplayMessages } from '../ui'
-  import { replyToThread, toggleReaction } from '../actions'
+  import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../ui'
+  import { replyToThread } from '../actions'
   import ChatLoadingFiller from './ChatLoadingFiller.svelte'
 
   export let card: Card | undefined = undefined
@@ -235,26 +233,9 @@
     })
   }
 
-  async function handleClickReaction (event: CustomEvent<{ emoji: string, id: MessageID }>): Promise<void> {
-    if (window === undefined || card === undefined) return
-    const message = messages.find((it) => it.id === event.detail.id)
-    if (message === undefined) return
-    await toggleReaction(communicationClient, card._id, message, event.detail.emoji)
-  }
-
-  async function handleUpdateMessage (event: CustomEvent<{ id: MessageID, text: Markup }>): Promise<void> {
-    if (window === undefined || card === undefined) return
-    const { id, text } = event.detail
-    const markdown = markupToMarkdown(markupToJSON(text))
-    await communicationClient.updateMessage(card._id, id, markdown)
-  }
-
-  async function handleReply (event: CustomEvent<{ id: MessageID }>): Promise<void> {
-    if (window === undefined || card === undefined) return
-    const { id } = event.detail
-    const message = messages.find((it) => it.id === id)
-    if (message === undefined) return
-    await replyToThread(card._id, message)
+  async function handleReply (event: CustomEvent<Message>): Promise<void> {
+    const message = event.detail
+    await replyToThread(message)
   }
 
   $: void initializeScroll(isLoading, separatorDiv)
@@ -292,40 +273,33 @@
   {bottomStart}
   onScroll={handleScroll}
 >
-  {#if window !== undefined && window.hasPrevPage()}
-    <ChatLoadingFiller />
-  {/if}
-  {#each groups as group (group.day.toString())}
-    {@const messages = toDisplayMessages(group.messages)}
-    {@const withSeparator = separatorDate != null && getGroupDay(separatorDate) === group.day}
-    {#if withSeparator}
-      <MessagesGroupPresenter
-        bind:separatorDiv
-        date={group.day}
-        {messages}
-        {showDates}
-        {separatorDate}
-        on:reaction={handleClickReaction}
-        on:update={handleUpdateMessage}
-        on:reply={handleReply}
-      />
-    {:else}
-      <MessagesGroupPresenter
-        date={group.day}
-        {messages}
-        {showDates}
-        on:reaction={handleClickReaction}
-        on:update={handleUpdateMessage}
-        on:reply={handleReply}
-      />
+  {#if card}
+    {#if window !== undefined && window.hasPrevPage()}
+      <ChatLoadingFiller />
     {/if}
-  {/each}
-  {#if window !== undefined && window.hasNextPage()}
-    <ChatLoadingFiller />
-  {/if}
+    {#each groups as group (group.day.toString())}
+      {@const withSeparator = separatorDate != null && getGroupDay(separatorDate) === group.day}
+      {#if withSeparator}
+        <MessagesGroupPresenter
+          bind:separatorDiv
+          {card}
+          date={group.day}
+          messages={group.messages}
+          {showDates}
+          {separatorDate}
+          on:reply={handleReply}
+        />
+      {:else}
+        <MessagesGroupPresenter {card} date={group.day} messages={group.messages} {showDates} on:reply={handleReply} />
+      {/if}
+    {/each}
+    {#if window !== undefined && window.hasNextPage()}
+      <ChatLoadingFiller />
+    {/if}
 
-  {#if footerHeight != null && footerHeight > 0}
-    <div class="filler" style:height={`${footerHeight}px`} />
+    {#if footerHeight != null && footerHeight > 0}
+      <div class="filler" style:height={`${footerHeight}px`} />
+    {/if}
   {/if}
 </ReverseScroller>
 

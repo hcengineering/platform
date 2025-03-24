@@ -15,23 +15,26 @@
 
 <script lang="ts">
   import { getCurrentAccount, Timestamp } from '@hcengineering/core'
+  import { Message } from '@hcengineering/communication-types'
+  import { Card } from '@hcengineering/card'
 
   import DateSeparator from '../DateSeparator.svelte'
-  import { DisplayMessage } from '../../types'
-  import Message from './Message.svelte'
+  import MessagePresenter from './MessagePresenter.svelte'
   import MessagesSeparator from './MessagesSeparator.svelte'
 
+  export let card: Card
   export let date: Timestamp
-  export let messages: DisplayMessage[]
+  export let messages: Message[]
   export let showDates = true
   export let separatorDate: Date | undefined = undefined
   export let separatorDiv: HTMLDivElement | undefined | null = undefined
+
   const me = getCurrentAccount()
 
   $: separatorIndex =
     separatorDate != null
       ? messages.findIndex(
-        ({ created, author }) => separatorDate != null && !me.socialIds.includes(author) && created >= separatorDate
+        ({ created, creator }) => separatorDate != null && !me.socialIds.includes(creator) && created >= separatorDate
       )
       : -1
 </script>
@@ -45,7 +48,7 @@
       {#if index === separatorIndex}
         <MessagesSeparator bind:element={separatorDiv} />
       {/if}
-      <Message {message} on:reaction on:update on:reply />
+      <MessagePresenter {message} {card} on:reply />
     {/each}
   </div>
 </div>
@@ -66,5 +69,7 @@
     align-items: flex-start;
     flex: 1 0 0;
     width: 100%;
+    gap: 1rem;
+    padding: 1rem 0;
   }
 </style>

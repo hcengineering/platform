@@ -29,7 +29,7 @@ import {
   type RichText,
   type SocialID,
   type ContextID,
-  type AccountID
+  type AccountID,
 } from '@hcengineering/communication-types'
 import {
   type CreateFileEvent,
@@ -200,7 +200,7 @@ class Client {
       account: this.getAccount(),
       lastView
     }
-    await this.connection.sendEvent(event)
+    await this.sendEvent(event)
   }
 
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {

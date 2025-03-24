@@ -14,16 +14,19 @@
 -->
 
 <script lang="ts">
-  import { formatName, getCurrentEmployee, getPersonBySocialId, Person } from '@hcengineering/contact'
+  import { formatName, getPersonBySocialId, Person } from '@hcengineering/contact'
   import { createEventDispatcher } from 'svelte'
-  import { MessageViewer, getClient } from '@hcengineering/presentation'
-  import { Markup } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Card } from '@hcengineering/card'
+  import { getCurrentAccount } from '@hcengineering/core'
   import { EmojiPopup, getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
   import { personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
   import { AttachmentPreview } from '@hcengineering/attachment-resources'
+  import { Message, MessageType } from '@hcengineering/communication-types'
 
-  import { AvatarSize, DisplayMessage } from '../../types'
+  import MessageContentViewer from './MessageContentViewer.svelte'
+  import { AvatarSize } from '../../types'
   import Avatar from '../Avatar.svelte'
   import ReactionsList from '../ReactionsList.svelte'
   import MessageInput from './MessageInput.svelte'
@@ -31,17 +34,27 @@
   import Menu from '../Menu.svelte'
   import uiNext from '../../plugin'
   import MessageReplies from './MessageReplies.svelte'
+  import { toMarkup, toggleReaction } from '../../utils'
 
-  export let message: DisplayMessage
+  export let card: Card
+  export let message: Message
   export let editable: boolean = true
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const me = getCurrentAccount()
 
   let isEditing = false
   let author: Person | undefined
 
-  $: void updateAuthor(message.author)
+  $: void updateAuthor(message.creator)
+
+  function canEdit (): boolean {
+    if (!editable) return false
+    if (message.type !== MessageType.Message) return false
+
+    return me.socialIds.includes(message.creator)
+  }
 
   async function updateAuthor (socialId: SocialID): Promise<void> {
     author = $personByPersonIdStore.get(socialId)
@@ -59,33 +72,17 @@
   }
 
   async function handleEdit (): Promise<void> {
-    if (!editable) return
-    if (author === undefined) return
-    const me = getCurrentEmployee()
-    if (me !== author._id) return
+    if (!canEdit()) return
     isEditing = true
   }
 
-  function handleUpdateMessage (event: CustomEvent<Markup>): void {
-    event.preventDefault()
-    event.stopPropagation()
-    if (!editable) return
-    isEditing = false
-    message.text = event.detail
-    dispatch('update', { id: message.id, text: event.detail })
-  }
-
-  function handleCancelUpdateMessage (): void {
-    if (!editable) return
+  function handleCancelEdit (): void {
     isEditing = false
   }
 
   function handleContextMenu (event: MouseEvent): void {
     event.preventDefault()
     event.stopPropagation()
-
-    const me = getCurrentEmployee()
-    const canEdit = editable && author != null && author._id === me
 
     const actions: MenuAction[] = [
       {
@@ -95,12 +92,13 @@
             EmojiPopup,
             {},
             event.target as HTMLElement,
-            (emoji) => {
-              if (emoji === null || emoji === undefined) {
+            async (result) => {
+              const emoji = result?.emoji
+              if (emoji == null) {
                 return
               }
 
-              dispatch('reaction', { emoji, id: message.id })
+              await toggleReaction(message, emoji)
             },
             () => {}
           )
@@ -109,12 +107,12 @@
       {
         label: uiNext.string.Reply,
         action: async (): Promise<void> => {
-          dispatch('reply', { id: message.id })
+          dispatch('reply', message)
         }
       }
     ]
 
-    if (canEdit) {
+    if (canEdit()) {
       actions.unshift({
         label: uiNext.string.Edit,
         action: handleEdit
@@ -122,6 +120,13 @@
     }
 
     showPopup(Menu, { actions }, getEventPositionElement(event), () => {})
+  }
+
+  async function handleReaction (event: CustomEvent<string>): Promise<void> {
+    event.preventDefault()
+    event.stopPropagation()
+    const emoji = event.detail
+    await toggleReaction(message, emoji)
   }
 </script>
 
@@ -143,16 +148,21 @@
         </div>
         {#if message.edited}
           <div class="message__edited-marker">
-            (<Label label={uiNext.string.Edited} />)
+            <Label label={uiNext.string.Edited} />
           </div>
         {/if}
       </div>
       {#if !isEditing}
-        <div class="message__text">
-          <MessageViewer message={message.text} />
+        <div class="message__text overflow-label">
+          <MessageContentViewer {message} {card} />
         </div>
       {:else}
-        <MessageInput content={message.text} on:submit={handleUpdateMessage} onCancel={handleCancelUpdateMessage} />
+        <MessageInput
+          cardId={message.card}
+          messageId={message.id}
+          content={toMarkup(message.content)}
+          onCancel={handleCancelEdit}
+        />
       {/if}
     </div>
   </div>
@@ -165,18 +175,15 @@
   {/if}
   {#if message.reactions.length > 0}
     <div class="message__reactions">
-      <ReactionsList
-        reactions={message.reactions}
-        on:click={(ev) => dispatch('reaction', { emoji: ev.detail, id: message.id })}
-      />
+      <ReactionsList reactions={message.reactions} on:click={handleReaction} />
     </div>
   {/if}
-  {#if message.repliesCount && message.repliesCount > 0 && message.lastReplyDate}
+  {#if message.thread && message.thread.repliesCount > 0}
     <div class="message__replies">
       <MessageReplies
-        count={message.repliesCount}
-        lastReply={message.lastReplyDate}
-        on:click={() => dispatch('reply', { id: message.id })}
+        count={message.thread.repliesCount}
+        lastReply={message.thread.lastReply}
+        on:click={() => dispatch('reply', message)}
       />
     </div>
   {/if}
@@ -185,10 +192,11 @@
 <style lang="scss">
   .message {
     display: flex;
-    padding: 1rem 0;
     flex-direction: column;
     align-items: flex-start;
     align-self: stretch;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .message__body {
@@ -196,6 +204,7 @@
     align-items: flex-start;
     gap: 0.75rem;
     align-self: stretch;
+    min-width: 0;
   }
 
   .message__avatar {
@@ -213,6 +222,8 @@
     align-items: flex-start;
     gap: 0.375rem;
     flex: 1 0 0;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .message__header {
@@ -245,6 +256,11 @@
     font-size: 0.875rem;
     font-style: normal;
     font-weight: 400;
+
+    display: flex;
+    overflow: hidden;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .message__reactions {
