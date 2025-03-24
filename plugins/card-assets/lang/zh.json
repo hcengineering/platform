@@ -28,6 +28,7 @@
     "CreateView": "创建视图",
     "EditView": "编辑视图",
     "SelectViewType": "选择视图类型",
-    "Document": "文档"
+    "Document": "文档",
+    "ChangeType": "更改类型"
   }
 }
