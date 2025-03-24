@@ -15,12 +15,12 @@
 
 // src/__tests__/operations.test.ts
 
-import { AccountRole, MeasureContext, PersonId, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
+import { AccountRole, MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
-import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
+import { decodeTokenVerbose } from '@hcengineering/server-token'
 
-import { AccountDB, WorkspaceInvite } from '../types'
-import { createInvite, createInviteLink, sendInvite, resendInvite, join, checkJoin, signUpJoin } from '../operations'
+import { AccountDB } from '../types'
+import { createInvite, createInviteLink, sendInvite, resendInvite } from '../operations'
 import { accountPlugin } from '../plugin'
 
 // Mock platform
@@ -96,7 +96,7 @@ describe('invite operations', () => {
 
       const result = await createInvite(mockCtx, mockDb, mockBranding, mockToken, {
         exp: expectedExpiration,
-        emailMask: 'test@example.com',
+        email: 'test@example.com',
         limit: 1,
         role: AccountRole.User
       })
@@ -107,7 +107,7 @@ describe('invite operations', () => {
       expect(mockDb.invite.insertOne).toHaveBeenCalledWith({
         workspaceUuid: mockWorkspace.uuid,
         expiresOn: expect.any(Number),
-        emailPattern: 'test@example.com',
+        email: 'test@example.com',
         remainingUses: 1,
         role: AccountRole.User,
         autoJoin: undefined
@@ -127,7 +127,7 @@ describe('invite operations', () => {
       await expect(
         createInvite(mockCtx, mockDb, mockBranding, mockToken, {
           exp: 24 * 60 * 60 * 1000,
-          emailMask: 'test@example.com',
+          email: 'test@example.com',
           limit: 1,
           role: AccountRole.Owner
         })
@@ -327,7 +327,7 @@ describe('invite operations', () => {
       // Verify invite was created with correct parameters
       expect(mockDb.invite.insertOne).toHaveBeenCalledWith(
         expect.objectContaining({
-          emailPattern: mockEmail,
+          email: mockEmail,
           remainingUses: 1,
           role: AccountRole.User,
           expiresOn: expect.any(Number)
@@ -418,7 +418,7 @@ describe('invite operations', () => {
       const existingInvite = {
         id: 'existing-invite-id',
         workspaceUuid: mockWorkspace.uuid,
-        emailPattern: mockEmail
+        email: mockEmail
       }
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
       ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)

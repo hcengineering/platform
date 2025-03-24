@@ -34,6 +34,7 @@
   import ConfirmationSend from './ConfirmationSend.svelte'
   import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
   import Join from './Join.svelte'
+  import AutoJoin from './AutoJoin.svelte'
   import LoginForm from './LoginForm.svelte'
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
@@ -61,12 +62,17 @@
   function updatePageLoc (loc: Location): void {
     const token = getMetadata(presentation.metadata.Token)
     page = (loc.path[1] as Pages) ?? (token != null ? 'selectWorkspace' : 'login')
+    if (page === 'join' && loc.query?.autoJoin != null) {
+      page = 'autoJoin'
+    }
+
     const allowedUnauthPages: Pages[] = [
       'login',
       'signup',
       'password',
       'recovery',
       'join',
+      'autoJoin',
       'confirm',
       'confirmationSend',
       'auth'
@@ -153,6 +159,8 @@
               <SelectWorkspace {navigateUrl} />
             {:else if page === 'join'}
               <Join />
+            {:else if page === 'autoJoin'}
+              <AutoJoin />
             {:else if page === 'confirm'}
               <Confirmation />
             {:else if page === 'confirmationSend'}

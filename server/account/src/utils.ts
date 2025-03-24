@@ -459,7 +459,7 @@ export async function signUpByEmail (
   db: AccountDB,
   branding: Branding | null,
   email: string,
-  password: string,
+  password: string | null,
   firstName: string,
   lastName: string,
   confirmed = false
@@ -494,7 +494,9 @@ export async function signUpByEmail (
   }
 
   await createAccount(db, account, confirmed)
-  await setPassword(ctx, db, branding, account, password)
+  if (password != null) {
+    await setPassword(ctx, db, branding, account, password)
+  }
 
   return { account, socialId }
 }
@@ -751,6 +753,12 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
   ) {
     ctx.error("Invite doesn't allow this email address", { email, ...invite })
     Analytics.handleError(new Error(`Invite link email mask check failed ${invite.id} ${email} ${invite.emailPattern}`))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  if (invite.email != null && invite.email.trim().length > 0 && invite.email !== email) {
+    ctx.error("Invite doesn't allow this email address", { email, ...invite })
+    Analytics.handleError(new Error(`Invite link email check failed ${invite.id} ${email} ${invite.email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 

@@ -841,7 +841,8 @@ export class PostgresAccountDB implements AccountDB {
     return [
       'account_db_v3_add_invite_auto_join',
       `
-      ALTER TABLE ${this.ns}.invite 
+      ALTER TABLE ${this.ns}.invite
+      ADD COLUMN IF NOT EXISTS email STRING,
       ADD COLUMN IF NOT EXISTS auto_join BOOL DEFAULT FALSE;
       `
     ]

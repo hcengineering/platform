@@ -116,6 +116,7 @@ export interface WorkspaceInvite {
   workspaceUuid: WorkspaceUuid
   expiresOn: Timestamp
   emailPattern?: string
+  email?: string
   remainingUses?: number
   role: AccountRole
   autoJoin?: boolean
@@ -247,4 +248,9 @@ export interface OtpInfo {
 export interface RegionInfo {
   region: string
   name: string
+}
+
+export interface WorkspaceInviteInfo {
+  workspace: WorkspaceUuid
+  email?: string
 }

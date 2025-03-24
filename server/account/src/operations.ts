@@ -57,6 +57,7 @@ import type {
   Workspace,
   WorkspaceEvent,
   WorkspaceInfoWithStatus,
+  WorkspaceInviteInfo,
   WorkspaceLoginInfo,
   WorkspaceOperation,
   WorkspaceStatus
@@ -399,13 +400,14 @@ export async function createInvite (
   token: string,
   params: {
     exp: number
-    emailMask: string
+    emailMask?: string
+    email?: string
     limit: number
     role: AccountRole
     autoJoin?: boolean
   }
 ): Promise<string> {
-  const { exp, emailMask, limit, role, autoJoin } = params
+  const { exp, emailMask, email, limit, role, autoJoin } = params
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
@@ -425,11 +427,12 @@ export async function createInvite (
     verifyAllowedServices(['schedule'], extra)
   }
 
-  ctx.info('Creating invite', { workspace, workspaceName: workspace.name, emailMask, limit, autoJoin })
+  ctx.info('Creating invite', { workspace, workspaceName: workspace.name, email, emailMask, limit, autoJoin })
 
   return await db.invite.insertOne({
     workspaceUuid,
     expiresOn: exp < 0 ? -1 : Date.now() + exp,
+    email,
     emailPattern: emailMask,
     remainingUses: limit,
     role,
@@ -520,20 +523,27 @@ export async function createInviteLink (
     }
   }
 
+  const normalizedEmail = cleanEmail(email)
   const expiringInHrs = expHours ?? 48
   const exp = expiringInHrs * 60 * 60 * 1000
 
-  const inviteId = await createInvite(ctx, db, branding, token, { exp, emailMask: email, limit: 1, role, autoJoin })
+  const inviteId = await createInvite(ctx, db, branding, token, {
+    exp,
+    email: normalizedEmail,
+    limit: 1,
+    role,
+    autoJoin
+  })
   let path = `/login/join?inviteId=${inviteId}`
   if (autoJoin === true) {
-    path += `&autoJoin&firstName=${encodeURIComponent(firstName ?? '')}`
+    path += `&autoJoin&firstName=${encodeURIComponent((firstName ?? '').trim())}`
 
     if (lastName != null) {
-      path += `&lastName=${encodeURIComponent(lastName)}`
+      path += `&lastName=${encodeURIComponent(lastName.trim())}`
     }
   }
   if (redirectPath != null) {
-    path += `&redirect=${encodeURIComponent(redirectPath)}`
+    path += `&navigateUrl=${encodeURIComponent(redirectPath.trim())}`
   }
 
   const front = getFrontUrl(branding)
@@ -598,13 +608,13 @@ export async function resendInvite (
   const expHours = 48
   const newExp = Date.now() + expHours * 60 * 60 * 1000
 
-  const invite = await db.invite.findOne({ workspaceUuid, emailPattern: email })
+  const invite = await db.invite.findOne({ workspaceUuid, email })
   let inviteId: string
   if (invite != null) {
     inviteId = invite.id
     await db.invite.updateOne({ id: invite.id }, { expiresOn: newExp, remainingUses: 1, role })
   } else {
-    inviteId = await createInvite(ctx, db, branding, token, { exp: newExp, emailMask: email, limit: 1, role })
+    inviteId = await createInvite(ctx, db, branding, token, { exp: newExp, email, limit: 1, role })
   }
   const front = getFrontUrl(branding)
   const link = concatLink(front, `/login/join?inviteId=${inviteId}`)
@@ -674,13 +684,13 @@ export async function checkJoin (
   params: { inviteId: string }
 ): Promise<WorkspaceLoginInfo> {
   const { inviteId } = params
-  const { account: accountUuid } = decodeTokenVerbose(ctx, token)
 
   const invite = await getWorkspaceInvite(db, inviteId)
   if (invite == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
+  const { account: accountUuid } = decodeTokenVerbose(ctx, token)
   const emailSocialId = await db.socialId.findOne({
     type: SocialIdType.EMAIL,
     personUuid: accountUuid,
@@ -705,6 +715,91 @@ export async function checkJoin (
     ...wsLoginInfo,
     role: invite.role
   }
+}
+
+export async function checkAutoJoin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { inviteId: string, firstName: string, lastName?: string }
+): Promise<WorkspaceLoginInfo | WorkspaceInviteInfo> {
+  const { inviteId, firstName, lastName } = params
+  const invite = await getWorkspaceInvite(db, inviteId)
+  if (invite == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  if (invite.autoJoin !== true) {
+    ctx.error('Not an auto-join invite', invite)
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (invite.role !== AccountRole.Guest) {
+    ctx.error('Auto-join not for guest role is forbidden', invite)
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const normalizedEmail = invite.email != null ? cleanEmail(invite.email) : ''
+  const workspaceUuid = invite.workspaceUuid
+  const workspace = await getWorkspaceById(db, workspaceUuid)
+
+  if (workspace === null) {
+    ctx.error('Workspace not found in auto-joining workflow', { workspaceUuid, email: normalizedEmail, inviteId })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+  }
+
+  if (normalizedEmail == null || normalizedEmail === '') {
+    ctx.error('Malformed auto-join invite', invite)
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const emailSocialId = await db.socialId.findOne({
+    type: SocialIdType.EMAIL,
+    value: normalizedEmail
+  })
+
+  // If it's an existing account we should check for saved token or ask for login to prevent accidental access through shared link
+  if (emailSocialId != null) {
+    const targetAccount = await getAccount(db, emailSocialId.personUuid)
+    if (targetAccount != null) {
+      if (token == null) {
+        // Login required
+        return {
+          workspace: workspace.uuid,
+          email: normalizedEmail
+        }
+      }
+
+      const { account: callerAccount } = decodeTokenVerbose(ctx, token)
+
+      if (callerAccount !== targetAccount.uuid) {
+        // Login with target email required
+        return {
+          workspace: workspace.uuid,
+          email: normalizedEmail
+        }
+      }
+
+      const targetRole = await getWorkspaceRole(db, targetAccount.uuid, workspace.uuid)
+
+      if (targetRole == null || getRolePower(targetRole) < getRolePower(invite.role)) {
+        await db.updateWorkspaceRole(targetAccount.uuid, workspace.uuid, invite.role)
+      }
+
+      return await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
+    }
+  }
+
+  // No account yet, create a new one automatically
+  if (firstName == null || firstName === '') {
+    ctx.error('First name is required for auto-join', { firstName })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const { account } = await signUpByEmail(ctx, db, branding, normalizedEmail, null, firstName, lastName ?? '', true)
+
+  return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
 }
 
 /**
@@ -1890,6 +1985,7 @@ export type AccountMethods =
   | 'selectWorkspace'
   | 'join'
   | 'checkJoin'
+  | 'checkAutoJoin'
   | 'signUpJoin'
   | 'confirm'
   | 'changePassword'
@@ -1941,6 +2037,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     selectWorkspace: wrap(selectWorkspace),
     join: wrap(join),
     checkJoin: wrap(checkJoin),
+    checkAutoJoin: wrap(checkAutoJoin),
     signUpJoin: wrap(signUpJoin),
     confirm: wrap(confirm),
     changePassword: wrap(changePassword),
