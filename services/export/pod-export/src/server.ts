@@ -182,7 +182,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
       }
 
       const platformClient = await createPlatformClient(token)
-      const { account, workspace } = decodeToken(token)
+      const { account } = decodeToken(token)
 
       const txOperations = new TxOperations(platformClient, socialId)
 
@@ -199,23 +199,11 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
           const className = hierarchy.getClass(_class).label
 
           const archiveDir = await fs.mkdtemp(join(tmpdir(), 'export-archive-'))
-          const archiveName = `export-${workspace}-${className}-${format}-${Date.now()}.zip`
+          const archiveName = `export-${wsIds.uuid}-${className}-${format}-${Date.now()}.zip`
           const archivePath = join(archiveDir, archiveName)
 
-          const files = await fs.readdir(exportDir)
-          if (files.length === 0) {
-            throw new ApiError(400, 'No files were exported')
-          }
-
           await saveToArchive(exportDir, archivePath)
-          const exportDrive = await saveToDrive(
-            measureCtx,
-            txOperations,
-            storageAdapter,
-            wsIds,
-            archivePath,
-            account
-          )
+          const exportDrive = await saveToDrive(measureCtx, txOperations, storageAdapter, wsIds, archivePath, account)
 
           await sendSuccessNotification(txOperations, account, exportDrive, archiveName)
         } catch (err: any) {
@@ -258,7 +246,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
         const files = await fs.readdir(exportDir)
         if (files.length === 0) {
-          throw new ApiError(400, 'No files were exported')
+          throw new ApiError(400, 'No data to export')
         }
 
         if (files.length !== 1) {
@@ -435,7 +423,8 @@ async function sendFailureNotification (client: TxOperations, account: AccountUu
     objectId: core.class.Doc,
     objectClass: core.class.Doc,
     icon: exportPlugin.icon.Export,
-    message: exportPlugin.string.ExportFailed,    props: {
+    message: exportPlugin.string.ExportFailed,
+    props: {
       error
     },
     isViewed: false,
