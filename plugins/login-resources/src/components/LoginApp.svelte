@@ -62,7 +62,7 @@
   function updatePageLoc (loc: Location): void {
     const token = getMetadata(presentation.metadata.Token)
     page = (loc.path[1] as Pages) ?? (token != null ? 'selectWorkspace' : 'login')
-    if (page === 'join' && loc.query?.autoJoin != null) {
+    if (page === 'join' && loc.query?.autoJoin !== undefined) {
       page = 'autoJoin'
     }
 

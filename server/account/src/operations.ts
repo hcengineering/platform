@@ -495,11 +495,11 @@ export async function createInviteLink (
     autoJoin?: boolean
     firstName?: string
     lastName?: string
-    redirectPath?: string
+    navigateUrl?: string
     expHours?: number
   }
 ): Promise<string> {
-  const { email, role, autoJoin, firstName, lastName, redirectPath, expHours } = params
+  const { email, role, autoJoin, firstName, lastName, navigateUrl, expHours } = params
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
@@ -542,8 +542,8 @@ export async function createInviteLink (
       path += `&lastName=${encodeURIComponent(lastName.trim())}`
     }
   }
-  if (redirectPath != null) {
-    path += `&navigateUrl=${encodeURIComponent(redirectPath.trim())}`
+  if (navigateUrl != null) {
+    path += `&navigateUrl=${encodeURIComponent(navigateUrl.trim())}`
   }
 
   const front = getFrontUrl(branding)

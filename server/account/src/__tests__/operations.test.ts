@@ -185,7 +185,7 @@ describe('invite operations', () => {
 
     test('should create link with redirect parameter', async () => {
       const inviteId = 'new-invite-id'
-      const redirectPath = '/workspace/calendar'
+      const navigateUrl = '/workspace/calendar'
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
       ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
@@ -194,15 +194,15 @@ describe('invite operations', () => {
       const result = await createInviteLink(mockCtx, mockDb, mockBranding, mockToken, {
         email: 'test@example.com',
         role: AccountRole.User,
-        redirectPath
+        navigateUrl
       })
 
-      expect(result).toBe(`${frontUrl}/login/join?inviteId=${inviteId}&redirect=${encodeURIComponent(redirectPath)}`)
+      expect(result).toBe(`${frontUrl}/login/join?inviteId=${inviteId}&navigateUrl=${encodeURIComponent(navigateUrl)}`)
     })
 
     test('should create link with all parameters', async () => {
       const inviteId = 'new-invite-id'
-      const redirectPath = '/workspace/settings?tab=members'
+      const navigateUrl = '/workspace/settings?tab=members'
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
       ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
@@ -219,11 +219,11 @@ describe('invite operations', () => {
         autoJoin: true,
         firstName: 'John',
         lastName: 'Doe',
-        redirectPath
+        navigateUrl
       })
 
       expect(result).toBe(
-        `${frontUrl}/login/join?inviteId=${inviteId}&autoJoin&firstName=John&lastName=Doe&redirect=${encodeURIComponent(redirectPath)}`
+        `${frontUrl}/login/join?inviteId=${inviteId}&autoJoin&firstName=John&lastName=Doe&navigateUrl=${encodeURIComponent(navigateUrl)}`
       )
     })
 
