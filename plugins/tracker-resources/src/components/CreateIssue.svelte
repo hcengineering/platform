@@ -957,7 +957,7 @@
         addTagRef(evt.detail)
       }}
       on:delete={(evt) => {
-        object.labels = object.labels.filter((it) => it._id !== evt.detail)
+        object.labels = object.labels.filter((it) => it.tag !== evt.detail)
       }}
     />
     <ComponentSelector
