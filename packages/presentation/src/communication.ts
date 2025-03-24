@@ -29,8 +29,7 @@ import {
   type RichText,
   type SocialID,
   type ContextID,
-  type AccountID,
-  type BlobID
+  type AccountID
 } from '@hcengineering/communication-types'
 import {
   type CreateFileEvent,
