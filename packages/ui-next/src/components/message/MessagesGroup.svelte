@@ -14,15 +14,26 @@
 -->
 
 <script lang="ts">
-  import { Timestamp } from '@hcengineering/core'
+  import { getCurrentAccount, Timestamp } from '@hcengineering/core'
 
   import DateSeparator from '../DateSeparator.svelte'
-  import { MessageType } from '../../types'
+  import { DisplayMessage } from '../../types'
   import Message from './Message.svelte'
+  import MessagesSeparator from './MessagesSeparator.svelte'
 
   export let date: Timestamp
-  export let messages: MessageType[]
+  export let messages: DisplayMessage[]
   export let showDates = true
+  export let separatorDate: Date | undefined = undefined
+  export let separatorDiv: HTMLDivElement | undefined | null = undefined
+  const me = getCurrentAccount()
+
+  $: separatorIndex =
+    separatorDate != null
+      ? messages.findIndex(
+        ({ created, author }) => separatorDate != null && !me.socialIds.includes(author) && created >= separatorDate
+      )
+      : -1
 </script>
 
 <div class="messages-group" id={date.toString()}>
@@ -30,7 +41,10 @@
     <DateSeparator {date} />
   {/if}
   <div class="messages-group__messages">
-    {#each messages as message (message.id)}
+    {#each messages as message, index (message.id)}
+      {#if index === separatorIndex}
+        <MessagesSeparator bind:element={separatorDiv} />
+      {/if}
       <Message {message} on:reaction on:update on:reply />
     {/each}
   </div>

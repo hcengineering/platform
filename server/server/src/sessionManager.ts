@@ -528,6 +528,7 @@ export class TSessionManager implements SessionManager {
           workspaceInfo.uuid,
           workspace,
           pipelineFactory,
+          communicationApiFactory,
           ws,
           workspaceInfo.url ?? workspaceInfo.uuid,
           workspaceName
@@ -607,6 +608,7 @@ export class TSessionManager implements SessionManager {
     workspaceUuid: WorkspaceUuid,
     workspace: Workspace,
     pipelineFactory: PipelineFactory,
+    communicationApiFactory: CommunicationApiFactory,
     ws: ConnectionSocket,
     workspaceUrl: string,
     workspaceName: string
@@ -629,19 +631,25 @@ export class TSessionManager implements SessionManager {
       workspace.id = generateId()
       workspace.sessions = new Map()
     }
+
+    const workspaceIds: WorkspaceIds = {
+      uuid: workspace.workspaceUuid,
+      url: workspace.workspaceUrl,
+      dataId: workspace.workspaceDataId
+    }
+    workspace.communicationApi = await communicationApiFactory(ctx, workspaceIds, (ctx, sessionIds, result) => {
+      this.broadcastSessions(ctx, workspace, sessionIds, result)
+    })
     // Re-create pipeline.
     workspace.pipeline = pipelineFactory(
       ctx,
-      {
-        uuid: workspace.workspaceUuid,
-        url: workspace.workspaceUrl,
-        dataId: workspace.workspaceDataId
-      },
+      workspaceIds,
       true,
       (ctx, tx, targets, exclude) => {
         this.broadcastAll(workspace, tx, targets, exclude)
       },
-      workspace.branding
+      workspace.branding,
+      workspace.communicationApi
     )
     return await workspace.pipeline
   }
@@ -771,21 +779,27 @@ export class TSessionManager implements SessionManager {
       dataId: workspaceDataId,
       url: workspaceUrl
     }
-    const workspace: Workspace = {
-      context,
-      id: generateId(),
-      pipeline: pipelineFactory(
+    const communicationApi = communicationApiFactory(pipelineCtx, workspaceIds, (ctx, sessionIds, result) => {
+      this.broadcastSessions(ctx, workspace, sessionIds, result)
+    })
+
+    const factory = async (): Promise<Pipeline> => {
+      return await pipelineFactory(
         pipelineCtx,
         workspaceIds,
         upgrade,
         (ctx, tx, targets, exclude) => {
           this.broadcastAll(workspace, tx, targets, exclude)
         },
-        branding
-      ),
-      communicationApi: communicationApiFactory(pipelineCtx, workspaceIds, (ctx, sessionIds, result) => {
-        this.broadcastSessions(ctx, workspace, sessionIds, result)
-      }),
+        branding,
+        await communicationApi
+      )
+    }
+    const workspace: Workspace = {
+      context,
+      id: generateId(),
+      pipeline: factory(),
+      communicationApi,
       sessions: new Map(),
       softShutdown: workspaceSoftShutdownTicks,
       upgrade,

@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { MessageInput } from '@hcengineering/ui-next'
+  import { MessageInput, UploadedFile } from '@hcengineering/ui-next'
   import { getCommunicationClient } from '@hcengineering/presentation'
   import { Markup } from '@hcengineering/core'
   import { markupToMarkdown } from '@hcengineering/text-markdown'
@@ -27,9 +27,14 @@
 
   const communicationClient = getCommunicationClient()
 
-  async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
-    const markdown = markupToMarkdown(markupToJSON(event.detail))
-    await communicationClient.createMessage(card._id, markdown)
+  async function handleSubmit (event: CustomEvent<{ message: Markup, files: UploadedFile[] }>): Promise<void> {
+    const { message, files } = event.detail
+    const markdown = markupToMarkdown(markupToJSON(message))
+    const id = await communicationClient.createMessage(card._id, markdown)
+
+    for (const file of files) {
+      await communicationClient.createFile(card._id, id, file.blobId, file.type, file.filename, file.size)
+    }
   }
 </script>
 

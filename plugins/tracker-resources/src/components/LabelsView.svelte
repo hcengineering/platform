@@ -43,7 +43,7 @@
     icon: tracker.icon.Labels,
     item: tracker.string.Labels,
     key: 'labels',
-    сreateItemLabel: tracker.string.AddLabel,
+    createItemLabel: tracker.string.AddLabel,
     onTag
   }}
 ></Component>

@@ -80,8 +80,8 @@ export interface AccountClient {
   updateWorkspaceRole: (account: string, role: AccountRole) => Promise<void>
   updateWorkspaceName: (name: string) => Promise<void>
   deleteWorkspace: () => Promise<void>
-  findPersonBySocialKey: (socialKey: string) => Promise<PersonUuid | undefined>
-  findPersonBySocialId: (socialId: PersonId) => Promise<PersonUuid | undefined>
+  findPersonBySocialKey: (socialKey: string, requireAccount?: boolean) => Promise<PersonUuid | undefined>
+  findPersonBySocialId: (socialId: PersonId, requireAccount?: boolean) => Promise<PersonUuid | undefined>
   findSocialIdBySocialKey: (socialKey: string) => Promise<PersonId | undefined>
 
   // Service methods
@@ -532,19 +532,19 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async findPersonBySocialKey (socialString: string): Promise<PersonUuid | undefined> {
+  async findPersonBySocialKey (socialString: string, requireAccount?: boolean): Promise<PersonUuid | undefined> {
     const request = {
       method: 'findPersonBySocialKey' as const,
-      params: { socialString }
+      params: { socialString, requireAccount }
     }
 
     return await this.rpc(request)
   }
 
-  async findPersonBySocialId (socialId: PersonId): Promise<PersonUuid | undefined> {
+  async findPersonBySocialId (socialId: PersonId, requireAccount?: boolean): Promise<PersonUuid | undefined> {
     const request = {
       method: 'findPersonBySocialId' as const,
-      params: { socialId }
+      params: { socialId, requireAccount }
     }
 
     return await this.rpc(request)

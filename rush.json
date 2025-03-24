@@ -2417,6 +2417,26 @@
       "packageName": "@hcengineering/kafka",
       "projectFolder": "server/kafka",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/inbox",
+      "projectFolder": "plugins/inbox",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/inbox-assets",
+      "projectFolder": "plugins/inbox-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/inbox-resources",
+      "projectFolder": "plugins/inbox-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-inbox",
+      "projectFolder": "models/inbox",
+      "shouldPublish": false
     }
   ]
 }

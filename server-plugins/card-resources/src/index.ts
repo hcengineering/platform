@@ -28,6 +28,8 @@ import core, {
 import { TriggerControl } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import view from '@hcengineering/view'
+import { RequestEventType } from '@hcengineering/communication-sdk-types'
+import { getEmployee } from '@hcengineering/server-contact'
 
 async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerControl): Promise<Tx[]> {
   const attr = TxProcessor.createDoc2Doc(ctx[0])
@@ -366,6 +368,20 @@ async function OnCardCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl):
         })
       )
     }
+  }
+
+  const { communicationApi } = control
+  if (communicationApi == null) return []
+
+  for (const tx of ctx) {
+    const employee = await getEmployee(control, tx.modifiedBy)
+    if (employee?.personUuid == null || !employee.active) continue
+    // TODO: add account
+    void communicationApi.event({} as any, {
+      type: RequestEventType.AddCollaborators,
+      card: tx.objectId,
+      collaborators: [employee.personUuid]
+    })
   }
 
   return res

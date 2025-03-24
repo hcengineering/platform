@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { type Data, type Markup, type Ref } from '@hcengineering/core'
+import { type Markup } from '@hcengineering/core'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
-import { type Person, type AvatarInfo } from '@hcengineering/contact'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
+import { type BlobID, type SocialID } from '@hcengineering/communication-types'
 
 export interface NavigationSection {
   id: string
@@ -30,27 +30,31 @@ export interface NavigationSectionItem {
   id: string
   label: string
   icon: IconComponent
+  notificationsCount?: number
 }
 
-export interface MessageType {
+export interface DisplayMessage {
   id: string | number
   text: Markup
-  authorName: string
-  author?: Ref<Person>
-  avatar: Data<AvatarInfo> | undefined
-  date: Date
+  author: SocialID
+  created: Date
   edited?: Date
-  reactions: ReactionType[]
+  reactions: DisplayReaction[]
+  files: DisplayFile[]
   repliesCount?: number
   lastReplyDate?: Date
 }
 
-export interface ReactionType {
+export interface DisplayReaction {
   id: string
   emoji: string
-  count: number
-  selected?: boolean
-  persons: Array<Ref<Person>>
+  creator: SocialID
+}
+
+export interface DisplayFile {
+  blobId: BlobID
+  type: string
+  filename: string
 }
 
 export type IconSize = 'x-small' | 'small' | 'medium' | 'large'
@@ -97,4 +101,11 @@ export interface TextInputAction {
   action: TextInputActionFn
   order: number
   disabled?: boolean
+}
+
+export interface UploadedFile {
+  blobId: BlobID
+  type: string
+  filename: string
+  size: number
 }

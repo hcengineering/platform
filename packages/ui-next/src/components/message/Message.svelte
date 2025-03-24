@@ -14,13 +14,16 @@
 -->
 
 <script lang="ts">
-  import { formatName, getCurrentEmployee } from '@hcengineering/contact'
+  import { formatName, getCurrentEmployee, getPersonBySocialId, Person } from '@hcengineering/contact'
   import { createEventDispatcher } from 'svelte'
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { MessageViewer, getClient } from '@hcengineering/presentation'
   import { Markup } from '@hcengineering/core'
   import { EmojiPopup, getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
+  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import type { SocialID } from '@hcengineering/communication-types'
+  import { AttachmentPreview } from '@hcengineering/attachment-resources'
 
-  import { AvatarSize, MessageType } from '../../types'
+  import { AvatarSize, DisplayMessage } from '../../types'
   import Avatar from '../Avatar.svelte'
   import ReactionsList from '../ReactionsList.svelte'
   import MessageInput from './MessageInput.svelte'
@@ -29,12 +32,24 @@
   import uiNext from '../../plugin'
   import MessageReplies from './MessageReplies.svelte'
 
-  export let message: MessageType
+  export let message: DisplayMessage
   export let editable: boolean = true
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   let isEditing = false
+  let author: Person | undefined
+
+  $: void updateAuthor(message.author)
+
+  async function updateAuthor (socialId: SocialID): Promise<void> {
+    author = $personByPersonIdStore.get(socialId)
+
+    if (author === undefined) {
+      author = await getPersonBySocialId(client, socialId)
+    }
+  }
 
   function formatDate (date: Date): string {
     return date.toLocaleTimeString('default', {
@@ -45,9 +60,9 @@
 
   async function handleEdit (): Promise<void> {
     if (!editable) return
-    if (message.author === undefined) return
+    if (author === undefined) return
     const me = getCurrentEmployee()
-    if (me !== message.author) return
+    if (me !== author._id) return
     isEditing = true
   }
 
@@ -70,7 +85,7 @@
     event.stopPropagation()
 
     const me = getCurrentEmployee()
-    const canEdit = editable && message.author != null && message.author === me
+    const canEdit = editable && author != null && author._id === me
 
     const actions: MenuAction[] = [
       {
@@ -116,15 +131,15 @@
   <div class="message__body">
     <!--TODO: remove  on:contextmenu-->
     <div class="message__avatar" on:contextmenu={handleContextMenu}>
-      <Avatar name={message.authorName} avatar={message.avatar} size={AvatarSize.Small} />
+      <Avatar name={author?.name} avatar={author} size={AvatarSize.Small} />
     </div>
     <div class="message__content">
       <div class="message__header">
         <div class="message__username">
-          {formatName(message.authorName)}
+          {formatName(author?.name ?? '')}
         </div>
         <div class="message__date">
-          {formatDate(message.date)}
+          {formatDate(message.created)}
         </div>
         {#if message.edited}
           <div class="message__edited-marker">
@@ -141,6 +156,13 @@
       {/if}
     </div>
   </div>
+  {#if message.files.length > 0}
+    <div class="message__files">
+      {#each message.files as file (file.blobId)}
+        <AttachmentPreview value={{ file: file.blobId, type: file.type, name: file.filename }} />
+      {/each}
+    </div>
+  {/if}
   {#if message.reactions.length > 0}
     <div class="message__reactions">
       <ReactionsList
@@ -234,5 +256,10 @@
     padding-top: 0.5rem;
     margin-left: 2.75rem;
     padding-bottom: 0;
+  }
+  .message__files {
+    display: flex;
+    gap: 0.375rem;
+    overflow-x: auto;
   }
 </style>

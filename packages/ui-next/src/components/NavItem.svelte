@@ -24,6 +24,7 @@
   export let labelIntl: IntlString | undefined = undefined
   export let icon: IconComponent
   export let selected: boolean = false
+  export let notificationsCount: number = 0
 </script>
 
 <button class="nav-item" class:selected on:click>
@@ -37,6 +38,15 @@
       <Label label={labelIntl} />
     {/if}
   </span>
+  {#if notificationsCount > 0}
+    <span class="nav-item__notifications-count">
+      {#if notificationsCount > 9}
+        9+
+      {:else}
+        {notificationsCount}
+      {/if}
+    </span>
+  {/if}
 </button>
 
 <style lang="scss">
@@ -75,11 +85,25 @@
     justify-content: center;
     align-items: center;
     color: var(--next-label-color-secondary);
+    fill: var(--next-label-color-secondary);
   }
 
   .nav-item__label {
     color: var(--next-text-color-secondary);
     font-size: 0.875rem;
     font-weight: 400;
+  }
+
+  .nav-item__notifications-count {
+    display: flex;
+    margin-left: auto;
+    color: var(--next-text-color-primary);
+    background: var(--color-global-sky-blue);
+    border-radius: 50%;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+    min-width: 1.325rem;
+    align-items: center;
+    justify-content: center;
   }
 </style>
