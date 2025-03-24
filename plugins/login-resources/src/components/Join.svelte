@@ -28,7 +28,7 @@
 
   const location = getCurrentLocation()
   Analytics.handleEvent('invite_link_activated')
-  let page = 'login'
+  let page = 'signUp'
 
   $: fields =
     page === 'login'
