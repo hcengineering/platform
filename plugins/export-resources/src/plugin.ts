@@ -36,8 +36,6 @@ export default mergeIds(exportId, exportPlugin, {
     ExportRequestSuccess: '' as IntlString,
     ExportRequestSuccessMessage: '' as IntlString,
     ExportRequestFailed: '' as IntlString,
-    ExportRequestFailedMessage: '' as IntlString,
-    ExportCompleted: '' as IntlString,
-    ExportFailed: '' as IntlString
+    ExportRequestFailedMessage: '' as IntlString
   }
 })

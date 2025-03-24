@@ -1,0 +1,42 @@
+{
+  "name": "@hcengineering/model-export",
+  "version": "0.6.0",
+  "main": "lib/index.js",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
+  "author": "Copyright © Hardcore Engineering Inc.",
+  "template": "@hcengineering/model-package",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "compile",
+    "build:watch": "compile",
+    "format": "format src",
+    "_phase:build": "compile transpile src",
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
+  },
+  "devDependencies": {
+    "@hcengineering/platform-rig": "^0.6.0",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint": "^8.54.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/model-core": "^0.6.0",
+    "@hcengineering/model": "^0.6.11",
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/workbench": "^0.6.16",
+    "@hcengineering/presentation": "^0.6.3",
+    "@hcengineering/model-presentation": "^0.6.0",
+    "@hcengineering/export-resources": "^0.6.0",
+    "@hcengineering/export": "^0.6.0"
+  }
+}
