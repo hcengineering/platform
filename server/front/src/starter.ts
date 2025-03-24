@@ -24,6 +24,14 @@ import { start } from '.'
 export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
+  const serverSecret = process.env.SERVER_SECRET
+  if (serverSecret === undefined) {
+    console.log('Please provide server secret')
+    process.exit(1)
+  }
+
+  setMetadata(serverToken.metadata.Secret, serverSecret)
+
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
   const storageAdapter = buildStorageFromConfig(storageConfig)
 
@@ -83,12 +91,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
-  const serverSecret = process.env.SERVER_SECRET
-  if (serverSecret === undefined) {
-    console.log('Please provide server secret')
-    process.exit(1)
-  }
-
   let uploadConfig = process.env.UPLOAD_CONFIG
   if (uploadConfig === undefined) {
     uploadConfig = ''
@@ -110,8 +112,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   const brandingUrl = process.env.BRANDING_URL
 
   const linkPreviewUrl = process.env.LINK_PREVIEW_URL
-
-  setMetadata(serverToken.metadata.Secret, serverSecret)
 
   const disableSignUp = process.env.DISABLE_SIGNUP
 
