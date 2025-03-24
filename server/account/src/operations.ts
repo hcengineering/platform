@@ -19,6 +19,7 @@ import {
   buildSocialIdString,
   concatLink,
   Data,
+  generateId,
   isActiveMode,
   isWorkspaceCreating,
   MeasureContext,
@@ -51,6 +52,8 @@ import type {
   AccountDB,
   AccountMethodHandler,
   LoginInfo,
+  Mailbox,
+  MailboxOptions,
   OtpInfo,
   RegionInfo,
   SocialId,
@@ -98,7 +101,8 @@ import {
   verifyPassword,
   wrap,
   getWorkspaceRole,
-  normalizeValue
+  normalizeValue,
+  isEmail
 } from './utils'
 
 // Move to config?
@@ -1971,6 +1975,87 @@ export async function ensurePerson (
   return { uuid: personUuid, socialId: newSocialId }
 }
 
+async function getMailboxOptions (): Promise<MailboxOptions> {
+  // TODO: read from config
+  return {
+    availableDomains: ['example.com', 'huly.app'],
+    minNameLength: 6,
+    maxNameLength: 16,
+    maxMailboxCount: 100
+  }
+}
+
+async function createMailbox (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    name: string
+    domain: string
+  }
+): Promise<void> {
+  const { account } = decodeTokenVerbose(ctx, token)
+  const { name, domain } = params
+  const normalizedName = cleanEmail(name)
+  const normalizedDomain = cleanEmail(domain)
+  const mailbox = normalizedName + '@' + normalizedDomain
+  const opts = await getMailboxOptions()
+
+  if (normalizedName.length === 0 || normalizedDomain.length === 0 || !isEmail(mailbox)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'invalid-name' }))
+  }
+  if (!opts.availableDomains.includes(normalizedDomain)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'domain-not-found' }))
+  }
+  if (normalizedName.length < opts.minNameLength || normalizedName.length > opts.maxNameLength) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'name-rules-violated' }))
+  }
+
+  if ((await db.mailbox.findOne({ mailbox })) !== null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'mailbox-exists' }))
+  }
+  const mailboxes = await db.mailbox.find({ accountUuid: account })
+  if (mailboxes.length >= opts.maxMailboxCount) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'mailbox-count-limit' }))
+  }
+
+  await db.mailbox.insertOne({ accountUuid: account, mailbox })
+  await db.mailboxSecret.insertOne({ mailbox, secret: generateId() })
+}
+
+async function getMailboxes (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<Mailbox[]> {
+  const { account } = decodeTokenVerbose(ctx, token)
+  return await db.mailbox.find({ accountUuid: account })
+}
+
+async function deleteMailbox (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { mailbox: string }
+): Promise<void> {
+  const { account } = decodeTokenVerbose(ctx, token)
+  const { mailbox } = params
+
+  const mb = await db.mailbox.findOne({ mailbox, accountUuid: account })
+  if (mb == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'mailbox-not-found' }))
+  }
+  if (mb.accountUuid !== account) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'mailbox-not-owned' }))
+  }
+
+  await db.mailbox.deleteMany({ mailbox })
+  await db.mailboxSecret.deleteMany({ mailbox })
+}
+
 export type AccountMethods =
   | 'login'
   | 'loginOtp'
@@ -2017,6 +2102,10 @@ export type AccountMethods =
   | 'performWorkspaceOperation'
   | 'updateWorkspaceRoleBySocialKey'
   | 'ensurePerson'
+  | 'getMailboxOptions'
+  | 'createMailbox'
+  | 'getMailboxes'
+  | 'deleteMailbox'
 
 /**
  * @public
@@ -2048,6 +2137,9 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     updateWorkspaceName: wrap(updateWorkspaceName),
     deleteWorkspace: wrap(deleteWorkspace),
     updateWorkspaceRole: wrap(updateWorkspaceRole),
+    createMailbox: wrap(createMailbox),
+    getMailboxes: wrap(getMailboxes),
+    deleteMailbox: wrap(deleteMailbox),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
@@ -2062,6 +2154,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     findPersonBySocialId: wrap(findPersonBySocialId),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
+    getMailboxOptions: wrap(getMailboxOptions),
 
     /* SERVICE METHODS */
     getPendingWorkspace: wrap(getPendingWorkspace),

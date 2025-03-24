@@ -39,7 +39,9 @@ import type {
   WorkspaceStatus,
   WorkspaceStatusData,
   WorkspaceInfoWithStatus,
-  Sort
+  Sort,
+  Mailbox,
+  MailboxSecret
 } from '../types'
 
 function toSnakeCase (str: string): string {
@@ -376,6 +378,8 @@ export class PostgresAccountDB implements AccountDB {
   accountEvent: PostgresDbCollection<AccountEvent>
   otp: PostgresDbCollection<OTP>
   invite: PostgresDbCollection<WorkspaceInvite, 'id'>
+  mailbox: PostgresDbCollection<Mailbox, 'mailbox'>
+  mailboxSecret: PostgresDbCollection<MailboxSecret>
 
   constructor (
     readonly client: Sql,
@@ -389,6 +393,8 @@ export class PostgresAccountDB implements AccountDB {
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client)
     this.otp = new PostgresDbCollection<OTP>('otp', client)
     this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, 'id')
+    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, 'mailbox')
+    this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client)
   }
 
   getWsMembersTableName (): string {

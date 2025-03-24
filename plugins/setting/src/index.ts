@@ -227,7 +227,16 @@ export default plugin(settingId, {
     BackupFiles: '' as IntlString,
     BackupNoBackup: '' as IntlString,
     AddAttribute: '' as IntlString,
-    Mailboxes: '' as IntlString
+    Mailboxes: '' as IntlString,
+    CreateMailbox: '' as IntlString,
+    CreateMailboxPlaceholder: '' as IntlString,
+    MailboxErrorInvalidName: '' as IntlString,
+    MailboxErrorDomainNotFound: '' as IntlString,
+    MailboxErrorNameRulesViolated: '' as IntlString,
+    MailboxErrorMailboxExists: '' as IntlString,
+    MailboxErrorMailboxCountLimit: '' as IntlString,
+    DeleteMailbox: '' as IntlString,
+    MailboxDeleteConfirmation: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
