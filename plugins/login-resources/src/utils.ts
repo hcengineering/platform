@@ -548,7 +548,7 @@ export async function getInviteLinkId (
     return ''
   }
 
-  const inviteLink = await getAccountClient(token).createInviteLink(exp, emailMask, limit, role)
+  const inviteLink = await getAccountClient(token).createInvite(exp, emailMask, limit, role)
 
   Analytics.handleEvent('Get invite link')
 

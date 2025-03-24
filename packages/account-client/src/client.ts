@@ -64,7 +64,7 @@ export interface AccountClient {
     inviteId: string
   ) => Promise<WorkspaceLoginInfo>
   join: (email: string, password: string, inviteId: string) => Promise<WorkspaceLoginInfo>
-  createInviteLink: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
+  createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
   getWorkspaceInfo: (updateLastVisit?: boolean) => Promise<WorkspaceInfoWithStatus>
   getWorkspacesInfo: (workspaces: WorkspaceUuid[]) => Promise<WorkspaceInfoWithStatus[]>
@@ -346,9 +346,9 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async createInviteLink (exp: number, emailMask: string, limit: number, role: AccountRole): Promise<string> {
+  async createInvite (exp: number, emailMask: string, limit: number, role: AccountRole): Promise<string> {
     const request = {
-      method: 'createInviteLink' as const,
+      method: 'createInvite' as const,
       params: { exp, emailMask, limit, role }
     }
 

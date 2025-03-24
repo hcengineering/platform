@@ -631,7 +631,13 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   protected getMigrations (): [string, string][] {
-    return [this.getV1Migration(), this.getV2Migration1(), this.getV2Migration2(), this.getV2Migration3()]
+    return [
+      this.getV1Migration(),
+      this.getV2Migration1(),
+      this.getV2Migration2(),
+      this.getV2Migration3(),
+      this.getV3Migration()
+    ]
   }
 
   // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO ADJUST THE SCHEMA, ADD A NEW MIGRATION.
@@ -827,6 +833,16 @@ export class PostgresAccountDB implements AccountDB {
           CONSTRAINT otp_new_pk PRIMARY KEY (social_id, code),
           CONSTRAINT otp_new_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(_id)
       );
+      `
+    ]
+  }
+
+  private getV3Migration (): [string, string] {
+    return [
+      'account_db_v3_add_invite_auto_join',
+      `
+      ALTER TABLE ${this.ns}.invite 
+      ADD COLUMN IF NOT EXISTS auto_join BOOL DEFAULT FALSE;
       `
     ]
   }

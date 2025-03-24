@@ -1236,13 +1236,11 @@ export function sanitizeEmail (email: string): string {
 export async function getInviteEmail (
   branding: Branding | null,
   email: string,
-  inviteId: string,
+  link: string,
   workspace: Workspace,
   expHours: number,
   resend = false
 ): Promise<EmailInfo> {
-  const front = getFrontUrl(branding)
-  const link = concatLink(front, `/login/join?inviteId=${inviteId}`)
   const ws = sanitizeEmail(workspace.name !== '' ? workspace.name : workspace.url)
   const lang = branding?.language
 

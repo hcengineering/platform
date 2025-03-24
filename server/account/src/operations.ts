@@ -392,7 +392,7 @@ export async function createWorkspace (
   }
 }
 
-export async function createInviteLink (
+export async function createInvite (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -401,11 +401,12 @@ export async function createInviteLink (
     exp: number
     emailMask: string
     limit: number
-    role?: AccountRole
+    role: AccountRole
+    autoJoin?: boolean
   }
 ): Promise<string> {
-  const { exp, emailMask, limit, role } = params
-  const { account, workspace: workspaceUuid } = decodeTokenVerbose(ctx, token)
+  const { exp, emailMask, limit, role, autoJoin } = params
+  const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
   if (currentAccount == null) {
@@ -417,14 +418,22 @@ export async function createInviteLink (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
-  ctx.info('Creating invite link', { workspace, workspaceName: workspace.name, emailMask, limit })
+  const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
+  verifyAllowedRole(callerRole, role, extra)
+
+  if (autoJoin === true) {
+    verifyAllowedServices(['schedule'], extra)
+  }
+
+  ctx.info('Creating invite', { workspace, workspaceName: workspace.name, emailMask, limit, autoJoin })
 
   return await db.invite.insertOne({
     workspaceUuid,
     expiresOn: exp < 0 ? -1 : Date.now() + exp,
     emailPattern: emailMask,
     remainingUses: limit,
-    role
+    role,
+    autoJoin
   })
 }
 
@@ -445,9 +454,10 @@ export async function sendInvite (
   params: {
     email: string
     role: AccountRole
+    expHours?: number
   }
 ): Promise<void> {
-  const { email, role } = params
+  const { email, role, expHours } = params
   const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
 
   const currentAccount = await db.account.findOne({ uuid: account })
@@ -463,17 +473,74 @@ export async function sendInvite (
   const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
   verifyAllowedRole(callerRole, role, extra)
 
-  checkRateLimit(account, workspaceUuid)
-
-  const expHours = 48
-  const exp = expHours * 60 * 60 * 1000
-
-  const inviteId = await createInviteLink(ctx, db, branding, token, { exp, emailMask: email, limit: 1, role })
-  const inviteEmail = await getInviteEmail(branding, email, inviteId, workspace, expHours)
+  const inviteLink = await createInviteLink(ctx, db, branding, token, params)
+  const inviteEmail = await getInviteEmail(branding, email, inviteLink, workspace, expHours ?? 48, false)
 
   await sendEmail(inviteEmail, ctx)
 
   ctx.info('Invite has been sent', { to: inviteEmail.to, workspaceUuid: workspace.uuid, workspaceName: workspace.name })
+}
+
+export async function createInviteLink (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    email: string
+    role: AccountRole
+    autoJoin?: boolean
+    firstName?: string
+    lastName?: string
+    redirectPath?: string
+    expHours?: number
+  }
+): Promise<string> {
+  const { email, role, autoJoin, firstName, lastName, redirectPath, expHours } = params
+  const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
+
+  const currentAccount = await db.account.findOne({ uuid: account })
+  if (currentAccount == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
+  }
+
+  const workspace = await db.workspace.findOne({ uuid: workspaceUuid })
+  if (workspace == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+  }
+
+  const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
+  verifyAllowedRole(callerRole, role, extra)
+
+  if (autoJoin === true) {
+    verifyAllowedServices(['schedule'], extra)
+
+    if (firstName == null || firstName === '') {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+    }
+  }
+
+  const expiringInHrs = expHours ?? 48
+  const exp = expiringInHrs * 60 * 60 * 1000
+
+  const inviteId = await createInvite(ctx, db, branding, token, { exp, emailMask: email, limit: 1, role, autoJoin })
+  let path = `/login/join?inviteId=${inviteId}`
+  if (autoJoin === true) {
+    path += `&autoJoin&firstName=${encodeURIComponent(firstName ?? '')}`
+
+    if (lastName != null) {
+      path += `&lastName=${encodeURIComponent(lastName)}`
+    }
+  }
+  if (redirectPath != null) {
+    path += `&redirect=${encodeURIComponent(redirectPath)}`
+  }
+
+  const front = getFrontUrl(branding)
+  const link = concatLink(front, path)
+  ctx.info(`Created invite link: ${link}`)
+
+  return link
 }
 
 function checkRateLimit (email: string, workspaceName: string): void {
@@ -512,7 +579,7 @@ export async function resendInvite (
   email: string,
   role: AccountRole
 ): Promise<void> {
-  const { account, workspace: workspaceUuid } = decodeTokenVerbose(ctx, token)
+  const { account, workspace: workspaceUuid, extra } = decodeTokenVerbose(ctx, token)
   const currentAccount = await db.account.findOne({ uuid: account })
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
@@ -525,6 +592,9 @@ export async function resendInvite (
 
   checkRateLimit(account, workspaceUuid)
 
+  const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
+  verifyAllowedRole(callerRole, role, extra)
+
   const expHours = 48
   const newExp = Date.now() + expHours * 60 * 60 * 1000
 
@@ -534,10 +604,12 @@ export async function resendInvite (
     inviteId = invite.id
     await db.invite.updateOne({ id: invite.id }, { expiresOn: newExp, remainingUses: 1, role })
   } else {
-    inviteId = await createInviteLink(ctx, db, branding, token, { exp: newExp, emailMask: email, limit: 1, role })
+    inviteId = await createInvite(ctx, db, branding, token, { exp: newExp, emailMask: email, limit: 1, role })
   }
+  const front = getFrontUrl(branding)
+  const link = concatLink(front, `/login/join?inviteId=${inviteId}`)
 
-  const inviteEmail = await getInviteEmail(branding, email, inviteId, workspace, expHours, true)
+  const inviteEmail = await getInviteEmail(branding, email, link, workspace, expHours, true)
   await sendEmail(inviteEmail, ctx)
 
   ctx.info('Invite has been resent', {
@@ -1811,6 +1883,7 @@ export type AccountMethods =
   | 'signUpOtp'
   | 'validateOtp'
   | 'createWorkspace'
+  | 'createInvite'
   | 'createInviteLink'
   | 'sendInvite'
   | 'resendInvite'
@@ -1861,6 +1934,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     ...(hasSignUp ? { signUpOtp: wrap(signUpOtp) } : {}),
     validateOtp: wrap(validateOtp),
     createWorkspace: wrap(createWorkspace),
+    createInvite: wrap(createInvite),
     createInviteLink: wrap(createInviteLink),
     sendInvite: wrap(sendInvite),
     resendInvite: wrap(resendInvite),

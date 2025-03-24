@@ -118,6 +118,7 @@ export interface WorkspaceInvite {
   emailPattern?: string
   remainingUses?: number
   role: AccountRole
+  autoJoin?: boolean
 }
 
 /* ========= S U P P L E M E N T A R Y ========= */
