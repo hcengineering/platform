@@ -13,15 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonIcon, IconAdd, showPopup } from '@hcengineering/ui'
+  import { ButtonIcon, getCurrentResolvedLocation, IconAdd, navigate, showPopup } from '@hcengineering/ui'
   import CreateTag from '../CreateTag.svelte'
   import card from '../../plugin'
+  import { clearSettingsStore } from '@hcengineering/setting-resources'
 
   function handleAdd (): void {
-    showPopup(CreateTag, {
-      parent: undefined,
-      _class: card.class.MasterTag
-    })
+    showPopup(
+      CreateTag,
+      {
+        parent: undefined,
+        _class: card.class.MasterTag
+      },
+      undefined,
+      (res) => {
+        if (res != null) {
+          clearSettingsStore()
+          const loc = getCurrentResolvedLocation()
+          loc.path[3] = 'types'
+          loc.path[4] = res
+          loc.path.length = 5
+          navigate(loc)
+        }
+      }
+    )
   }
 </script>
 

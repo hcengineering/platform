@@ -103,6 +103,7 @@
         {justify}
         type={attribute?.type}
         {maxWidth}
+        {attribute}
         {attributeKey}
         value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
         space={object.space}
@@ -123,6 +124,7 @@
         disabled={isReadonly}
         space={object.space}
         {onChange}
+        {attribute}
         {focus}
         {object}
         {size}

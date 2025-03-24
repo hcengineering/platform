@@ -43,7 +43,7 @@ import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
+import { type Asset, getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
@@ -102,58 +102,43 @@ export class MasterTagEditorSection extends TDoc implements MasterTagEditorSecti
 
 export * from './migration'
 
-export function createModel (builder: Builder): void {
-  builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
+const listConfig: (BuildModelKey | string)[] = [
+  { key: '', props: { showParent: true }, displayProps: { fixed: 'left', key: 'card' } },
+  { key: '_class', displayProps: { fixed: 'left', key: 'type' } },
+  { key: '', displayProps: { grow: true } },
+  {
+    key: '',
+    presenter: view.component.RolePresenter,
+    label: card.string.Tags,
+    props: { fullSize: true },
+    displayProps: { key: 'tags', fixed: 'right' }
+  },
+  {
+    key: 'modifiedOn',
+    displayProps: { fixed: 'right', dividerBefore: true }
+  }
+]
 
+export function createSystemType (
+  builder: Builder,
+  type: Ref<MasterTag>,
+  label: IntlString,
+  icon: Asset = card.icon.MasterTag
+): void {
   builder.createDoc(
     card.class.MasterTag,
     core.space.Model,
     {
-      label: attachment.string.File,
+      label,
       extends: card.class.Card,
-      icon: card.icon.File,
+      icon,
       kind: ClassifierKind.CLASS
     },
-    card.types.File
+    type
   )
 
-  builder.mixin(card.types.File, card.class.MasterTag, setting.mixin.Editable, {
-    value: false
-  })
-
   builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: card.types.File,
-    descriptor: view.viewlet.Table,
-    configOptions: {
-      hiddenKeys: ['content', 'title']
-    },
-    config: [
-      '',
-      '_class',
-      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
-      'modifiedOn'
-    ]
-  })
-
-  const listConfig: (BuildModelKey | string)[] = [
-    { key: '', props: { showParent: true }, displayProps: { fixed: 'left', key: 'card' } },
-    { key: '_class', displayProps: { fixed: 'left', key: 'type' } },
-    { key: '', displayProps: { grow: true } },
-    {
-      key: '',
-      presenter: view.component.RolePresenter,
-      label: card.string.Tags,
-      props: { fullSize: true },
-      displayProps: { key: 'tags', fixed: 'right' }
-    },
-    {
-      key: 'modifiedOn',
-      displayProps: { fixed: 'right', dividerBefore: true }
-    }
-  ]
-
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: card.types.File,
+    attachTo: type,
     descriptor: view.viewlet.List,
     viewOptions: {
       groupBy: ['_class', 'createdBy', 'modifiedBy'],
@@ -168,6 +153,31 @@ export function createModel (builder: Builder): void {
     },
     config: listConfig
   })
+
+  builder.mixin(type, card.class.MasterTag, setting.mixin.Editable, {
+    value: false
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: view.viewlet.Table,
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: [
+      '',
+      '_class',
+      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      'modifiedOn'
+    ]
+  })
+}
+
+export function createModel (builder: Builder): void {
+  builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
+
+  createSystemType(builder, card.types.File, attachment.string.File, card.icon.File)
+  createSystemType(builder, card.types.Document, card.string.Document, card.icon.Document)
 
   builder.createDoc(
     workbench.class.Application,
@@ -209,6 +219,10 @@ export function createModel (builder: Builder): void {
     },
     card.action.SetParent
   )
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: card.component.CardEditor
+  })
 
   createAction(
     builder,
@@ -302,6 +316,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: card.component.CardPresenter
+  })
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: card.component.CardRefPresenter
   })
 
   builder.mixin(card.class.Card, core.class.Class, activity.mixin.ActivityDoc, {})

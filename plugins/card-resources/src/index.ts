@@ -38,6 +38,8 @@ import SetParentActionPopup from './components/SetParentActionPopup.svelte'
 import RelationSetting from './components/settings/RelationSetting.svelte'
 import ViewsSection from './components/settings/view/ViewsSection.svelte'
 import EditView from './components/settings/view/EditView.svelte'
+import CardEditor from './components/CardEditor.svelte'
+import CardRefPresenter from './components/CardRefPresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -57,7 +59,9 @@ export default async (): Promise<Resources> => ({
     SetParentActionPopup,
     RelationSetting,
     ViewsSection,
-    EditView
+    EditView,
+    CardEditor,
+    CardRefPresenter
   },
   completion: {
     CardQuery: queryCard

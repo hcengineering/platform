@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import cardPlugin from '@hcengineering/card'
+  import cardPlugin, { MasterTag } from '@hcengineering/card'
   import core, { Class, ClassifierKind, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Icon, Label } from '@hcengineering/ui'
+  import { Icon, IconWithEmoji, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
 
   export let classes: Ref<Class<Doc>>[] = []
@@ -54,10 +55,14 @@
   })
 
   $: fillDescendants(classes)
+
+  function getMasterTag (cl: Ref<Class<Doc>>): MasterTag {
+    return client.getHierarchy().getClass(cl) as MasterTag
+  }
 </script>
 
 {#each classes as cl}
-  {@const clazz = client.getHierarchy().getClass(cl)}
+  {@const clazz = getMasterTag(cl)}
   <button
     class="hulyTableAttr-content__row justify-start cursor-pointer"
     on:click={() => {
@@ -68,7 +73,11 @@
       class="hulyTableAttr-content__row-label font-medium-14 flex flex-gap-2"
       style:margin-left={`${level * 1.25}rem`}
     >
-      <Icon icon={clazz.icon ?? cardPlugin.icon.Tag} size="small" />
+      <Icon
+        icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz.icon ?? cardPlugin.icon.Tag}
+        iconProps={clazz.icon === view.ids.IconWithEmoji ? { icon: clazz.color, size: 'small' } : {}}
+        size="small"
+      />
       <Label label={clazz.label} />
     </div>
   </button>

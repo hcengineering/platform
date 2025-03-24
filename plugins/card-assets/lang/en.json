@@ -27,6 +27,7 @@
     "Views": "Views",
     "CreateView": "Create View",
     "EditView": "Edit View",
-    "SelectViewType": "Select View Type"
+    "SelectViewType": "Select View Type",
+    "Document": "Document"
   }
 }
