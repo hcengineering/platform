@@ -58,7 +58,6 @@ const metricsContext = initStatisticsContext('transactor', {
 setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 
 const config = serverConfigFromEnv()
-const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
 const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
 
@@ -78,6 +77,8 @@ setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 setMetadata(serverCalendar.metadata.EndpointURL, process.env.CALENDAR_URL)
+
+const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
 const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   fulltextUrl: config.fulltextUrl,
