@@ -17,25 +17,70 @@
   import { IntlString } from '@hcengineering/platform'
   import { Markup, RateLimiter } from '@hcengineering/core'
   import { tick, createEventDispatcher, onDestroy } from 'svelte'
-  import { uploadFile, deleteFile } from '@hcengineering/presentation'
+  import { uploadFile, deleteFile, getCommunicationClient } from '@hcengineering/presentation'
+  import { MessageID, CardID } from '@hcengineering/communication-types'
 
   import TextInput from '../TextInput.svelte'
-  import { defaultMessageInputActions } from '../../utils'
+  import { defaultMessageInputActions, toMarkdown } from '../../utils'
   import uiNext from '../../plugin'
   import IconPlus from '../icons/IconPlus.svelte'
   import { type TextInputAction, UploadedFile } from '../../types'
 
+  export let cardId: CardID | undefined = undefined
+  export let messageId: MessageID | undefined = undefined
   export let content: Markup | undefined = undefined
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParams: Record<string, any> = {}
   export let onCancel: (() => void) | undefined = undefined
+  export let onSubmit: ((markdown: string, files: UploadedFile[]) => Promise<void>) | undefined = undefined
 
   let files: UploadedFile[] = []
-
   let inputElement: HTMLInputElement
 
   let progress = false
+
   const dispatch = createEventDispatcher()
+  const communicationClient = getCommunicationClient()
+
+  async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const message = event.detail
+    const filesToLoad = files
+
+    files = []
+
+    const markdown = toMarkdown(message)
+
+    if (onSubmit !== undefined) {
+      await onSubmit(markdown, filesToLoad)
+    }
+
+    if (messageId === undefined) {
+      await createMessage(markdown, filesToLoad)
+    } else {
+      await editMessage(messageId, markdown, filesToLoad)
+    }
+  }
+
+  async function createMessage (markdown: string, files: UploadedFile[]): Promise<void> {
+    if (cardId === undefined) return
+    const id = await communicationClient.createMessage(cardId, markdown)
+
+    for (const file of files) {
+      await communicationClient.createFile(cardId, id, file.blobId, file.type, file.filename)
+    }
+  }
+
+  async function editMessage (id: MessageID, markdown: string, files: UploadedFile[]): Promise<void> {
+    if (cardId === undefined) return
+    await communicationClient.updateMessage(cardId, id, markdown)
+
+    for (const file of files) {
+      await communicationClient.createFile(cardId, id, file.blobId, file.type, file.filename)
+    }
+  }
 
   async function fileSelected (): Promise<void> {
     progress = true
@@ -79,11 +124,6 @@
       void deleteFile(file.blobId)
     }
   })
-
-  function handleSubmit (event: CustomEvent<Markup>): void {
-    dispatch('submit', { message: event.detail, files })
-    files = []
-  }
 
   async function handleCancel (): Promise<void> {
     onCancel?.()

@@ -19,6 +19,7 @@ export const uiNextId = 'ui-next' as Plugin
 
 export const uiNext = plugin(uiNextId, {
   string: {
+    Added: '' as IntlString,
     Attach: '' as IntlString,
     Cancel: '' as IntlString,
     Edit: '' as IntlString,
@@ -30,11 +31,16 @@ export const uiNext = plugin(uiNextId, {
     Mention: '' as IntlString,
     MinutesAgo: '' as IntlString,
     MonthAt: '' as IntlString,
+    New: '' as IntlString,
+    Removed: '' as IntlString,
     RepliesCount: '' as IntlString,
     Reply: '' as IntlString,
     Send: '' as IntlString,
+    Set: '' as IntlString,
     ShowFormatting: '' as IntlString,
+    To: '' as IntlString,
     Today: '' as IntlString,
+    Unset: '' as IntlString,
     WeekdayAt: '' as IntlString,
     YearAt: '' as IntlString,
     Yesterday: '' as IntlString,

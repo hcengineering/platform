@@ -13,10 +13,7 @@
 // limitations under the License.
 //
 
-import { type Message, type Reaction } from '@hcengineering/communication-types'
-import { jsonToMarkup } from '@hcengineering/text'
-import { markdownToMarkup } from '@hcengineering/text-markdown'
-import { type DisplayMessage, type DisplayReaction } from '@hcengineering/ui-next'
+import { type Message } from '@hcengineering/communication-types'
 
 export interface MessagesGroup {
   day: number
@@ -51,32 +48,6 @@ function findOrCreateGroup (
   }
 
   return group
-}
-
-export function toDisplayMessages (message: Message[]): DisplayMessage[] {
-  return message.map((message) => toDisplayMessage(message))
-}
-
-export function toDisplayMessage (message: Message): DisplayMessage {
-  return {
-    id: message.id,
-    text: jsonToMarkup(markdownToMarkup(message.content)),
-    author: message.creator,
-    created: message.created,
-    edited: message.edited,
-    reactions: toDisplayReactions(message.reactions),
-    files: message.files ?? [],
-    repliesCount: message.thread?.repliesCount,
-    lastReplyDate: message.thread?.lastReply
-  }
-}
-
-function toDisplayReactions (reactions: Reaction[]): DisplayReaction[] {
-  return reactions.map((reaction) => ({
-    id: `${reaction.reaction}-${reaction.creator}`,
-    emoji: reaction.reaction,
-    creator: reaction.creator
-  }))
 }
 
 export function createMessagesObserver (

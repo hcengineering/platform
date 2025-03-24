@@ -24,7 +24,7 @@ export default uiNext
 export { default as Avatar } from './components/Avatar.svelte'
 export { default as Icon } from './components/Icon.svelte'
 export { default as Label } from './components/Label.svelte'
-export { default as Message } from './components/message/Message.svelte'
+export { default as MessagePresenter } from './components/message/MessagePresenter.svelte'
 export { default as MessageInput } from './components/message/MessageInput.svelte'
 export { default as MessagesGroup } from './components/message/MessagesGroup.svelte'
 export { default as NavItem } from './components/NavItem.svelte'

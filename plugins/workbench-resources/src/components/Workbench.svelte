@@ -100,6 +100,7 @@
     WorkbenchTab
   } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
+  import chat, { chatId } from '@hcengineering/chat'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
   import { buildNavModel, logOut, workspacesStore } from '../utils'
@@ -848,9 +849,22 @@
             notify={hasInboxNotifications}
           />
         </NavLink>
+        <Applications
+          {apps}
+          active={currentApplication?._id}
+          direction={$deviceInfo.navigator.direction}
+          on:toggleNav={toggleNav}
+        />
+      </div>
+      <div
+        class="new-world {$deviceInfo.navigator.direction}"
+        class:vertical-mobile={$deviceInfo.navigator.direction === 'vertical'}
+        class:mini={appsMini}
+      >
         <NavLink
           app={inboxId}
           shrink={0}
+          restoreLastLocation
           disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === inboxId}
         >
           <AppItem
@@ -858,28 +872,22 @@
             label={inbox.string.Inbox}
             selected={currentAppAlias === inboxId || inboxPopup !== undefined}
             navigator={(currentAppAlias === inboxId || inboxPopup !== undefined) && $deviceInfo.navigator.visible}
-            on:click={(e) => {
-              if (e.metaKey || e.ctrlKey) return
-              if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === inboxId) {
-                toggleNav()
-              } else if (currentAppAlias === inboxId && lastLoc !== undefined) {
-                e.preventDefault()
-                e.stopPropagation()
-                navigate(lastLoc)
-                lastLoc = undefined
-              } else {
-                lastLoc = $location
-              }
-            }}
             notify={hasNewInboxNotifications}
           />
         </NavLink>
-        <Applications
-          {apps}
-          active={currentApplication?._id}
-          direction={$deviceInfo.navigator.direction}
-          on:toggleNav={toggleNav}
-        />
+        <NavLink
+          app={chatId}
+          shrink={0}
+          restoreLastLocation
+          disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === chatId}
+        >
+          <AppItem
+            icon={chat.icon.ChatBubble}
+            label={chat.string.Chat}
+            selected={currentAppAlias === chatId}
+            navigator={currentAppAlias === chatId && $deviceInfo.navigator.visible}
+          />
+        </NavLink>
       </div>
       <div
         class="info-box {$deviceInfo.navigator.direction}"
@@ -1194,6 +1202,31 @@
       &.mini > *:not(:last-child) {
         margin-bottom: 0.25rem;
       }
+    }
+    &.horizontal {
+      margin-right: 1rem;
+      padding-left: 1rem;
+      border-left: 1px solid var(--theme-navpanel-divider);
+
+      &:not(.mini) > *:not(:last-child) {
+        margin-right: 0.75rem;
+      }
+      &.mini > *:not(:last-child) {
+        margin-right: 0.25rem;
+      }
+    }
+  }
+
+  .new-world {
+    display: flex;
+    align-items: center;
+
+    &.vertical {
+      flex-direction: column;
+      margin-top: auto;
+      border-top: 1px solid var(--theme-navpanel-divider);
+      padding: 0.5rem 0;
+      gap: 0.25rem;
     }
     &.horizontal {
       margin-right: 1rem;

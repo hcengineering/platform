@@ -1,5 +1,6 @@
 {
   "string": {
+    "Added": "Aggiunto" ,
     "Attach": "Allega",
     "Cancel": "Annulla",
     "Edit": "Modifica",
@@ -11,11 +12,16 @@
     "Mention": "Menziona",
     "MinutesAgo": "{minutes, plural, =0 {meno di un minuto fa} =1 {un minuto fa} other {# minuti fa}}",
     "MonthAt": "{month} alle {time}",
+    "New": "Nuovo",
+    "Removed": "Rimosso",
     "RepliesCount": "{count} risposte",
     "Reply": "Rispondi",
     "Send": "Invia",
+    "Set": "Imposta",
     "ShowFormatting": "Mostra la formattazione",
+    "To": "A",
     "Today": "Oggi",
+    "Unset": "Non impostato",
     "WeekdayAt": "{weekday} alle {time}",
     "YearAt": "{year} alle {time}",
     "Yesterday": "Ieri",

@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import { type Markup } from '@hcengineering/core'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
-import { type BlobID, type SocialID } from '@hcengineering/communication-types'
+import { type BlobID } from '@hcengineering/communication-types'
 
 export interface NavigationSection {
   id: string
@@ -31,30 +30,6 @@ export interface NavigationSectionItem {
   label: string
   icon: IconComponent
   notificationsCount?: number
-}
-
-export interface DisplayMessage {
-  id: string | number
-  text: Markup
-  author: SocialID
-  created: Date
-  edited?: Date
-  reactions: DisplayReaction[]
-  files: DisplayFile[]
-  repliesCount?: number
-  lastReplyDate?: Date
-}
-
-export interface DisplayReaction {
-  id: string
-  emoji: string
-  creator: SocialID
-}
-
-export interface DisplayFile {
-  blobId: BlobID
-  type: string
-  filename: string
 }
 
 export type IconSize = 'x-small' | 'small' | 'medium' | 'large'

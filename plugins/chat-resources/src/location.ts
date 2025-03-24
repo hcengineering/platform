@@ -46,17 +46,17 @@ export function navigateToCard (_id: Ref<Card>): void {
   navigate(loc)
 }
 
-export async function openThreadInSidebar (card: Ref<Card>, message: Message): Promise<void> {
+export async function openThreadInSidebar (message: Message): Promise<void> {
   const client = getClient()
 
   const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: chat.ids.ChatWidget })[0]
   if (widget === undefined) return
 
   const data: ChatWidgetData = {
-    id: `${card}-${message.id}`,
+    id: `${message.card}-${message.id}`,
     name: 'Thread',
     message: message.id,
-    card
+    card: message.card as Ref<Card>
   }
 
   openWidget(widget, data)

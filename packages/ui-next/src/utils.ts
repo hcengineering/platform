@@ -13,6 +13,11 @@
 // limitations under the License.
 //
 import { EmojiPopup, showPopup } from '@hcengineering/ui'
+import { getCurrentAccount, type Markup } from '@hcengineering/core'
+import { markupToJSON, jsonToMarkup } from '@hcengineering/text'
+import { markupToMarkdown, markdownToMarkup } from '@hcengineering/text-markdown'
+import { type Message } from '@hcengineering/communication-types'
+import { getCommunicationClient } from '@hcengineering/presentation'
 
 import IconAt from './components/icons/IconAt.svelte'
 import IconEmoji from './components/icons/IconEmoji.svelte'
@@ -60,3 +65,23 @@ export const defaultMessageInputActions: TextInputAction[] = [
     order: 4000
   }
 ]
+
+export function toMarkdown (markup: Markup): string {
+  return markupToMarkdown(markupToJSON(markup))
+}
+
+export function toMarkup (markdown: string): Markup {
+  return jsonToMarkup(markdownToMarkup(markdown))
+}
+
+export async function toggleReaction (message: Message, emoji: string): Promise<void> {
+  const me = getCurrentAccount()
+  const communicationClient = getCommunicationClient()
+  const { socialIds } = me
+  const reaction = message.reactions.find((it) => it.reaction === emoji && socialIds.includes(it.creator))
+  if (reaction !== undefined) {
+    await communicationClient.removeReaction(message.card, message.id, emoji)
+  } else {
+    await communicationClient.createReaction(message.card, message.id, emoji)
+  }
+}

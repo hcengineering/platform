@@ -13,15 +13,16 @@
 // limitations under the License.
 //
 
-import { AccountRole, ClassifierKind } from '@hcengineering/core'
+import { AccountRole, ClassifierKind, type Ref, SortingOrder } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
 import { chatId } from '@hcengineering/chat'
-import card from '@hcengineering/card'
+import card, { type MasterTag } from '@hcengineering/card'
 import setting from '@hcengineering/setting'
-import { createCardTableViewlet } from '@hcengineering/model-card'
 import { WidgetType } from '@hcengineering/workbench'
+import view from '@hcengineering/model-view'
+
 
 import chat from './plugin'
 
@@ -38,7 +39,7 @@ export function createModel (builder: Builder): void {
       icon: chat.icon.ChatBubble,
       alias: chatId,
       accessLevel: AccountRole.User,
-      hidden: false,
+      hidden: true,
       component: chat.component.ChatApplication
     },
     chat.app.Chat
@@ -90,6 +91,48 @@ export function createModel (builder: Builder): void {
     value: true
   })
 
-  createCardTableViewlet(builder, chat.masterTag.Thread)
-  createCardTableViewlet(builder, chat.masterTag.Channel)
+  createViewlet(builder, chat.masterTag.Thread)
+  createViewlet(builder, chat.masterTag.Channel)
+}
+
+function createViewlet (builder: Builder, type: Ref<MasterTag>): void {
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: view.viewlet.Table,
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: [
+      '',
+      '_class',
+      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      'modifiedOn'
+    ]
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: view.viewlet.List,
+    viewOptions: {
+      groupBy: ['_class', 'createdBy', 'modifiedBy'],
+      orderBy: [
+        ['modifiedOn', SortingOrder.Descending],
+        ['rank', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: [
+      { key: '', props: { showParent: true } },
+      '_class',
+      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      { key: '', displayProps: { grow: true } },
+      {
+        key: 'modifiedOn',
+        displayProps: { fixed: 'right', dividerBefore: true }
+      }
+    ]
+  })
 }

@@ -14,29 +14,17 @@
 -->
 
 <script lang="ts">
-  import { Message, Notification } from '@hcengineering/communication-types'
-  import { Message as MessagePresenter, DisplayMessage } from '@hcengineering/ui-next'
-  import { jsonToMarkup } from '@hcengineering/text'
-  import { markdownToMarkup } from '@hcengineering/text-markdown'
+  import { Notification } from '@hcengineering/communication-types'
+  import { MessagePresenter } from '@hcengineering/ui-next'
+  import { Card } from '@hcengineering/card'
 
   export let notification: Notification
-
-  function getDisplayMessage (message: Message): DisplayMessage {
-    return {
-      id: message.id,
-      text: jsonToMarkup(markdownToMarkup(message.content)),
-      author: message.creator,
-      created: message.created,
-      edited: message.edited,
-      reactions: [],
-      files: []
-    }
-  }
+  export let card: Card
 </script>
 
 {#if notification.message}
   <div class="notification">
-    <MessagePresenter editable={false} message={getDisplayMessage(notification.message)} />
+    <MessagePresenter {card} message={notification.message} editable={false} />
   </div>
 {/if}
 

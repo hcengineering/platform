@@ -51,7 +51,7 @@
   <div class="content">
     <div class="notifications">
       {#each displayNotifications as notification (notification.messageId)}
-        <InboxNotification {notification} />
+        <InboxNotification {notification} {card} />
       {/each}
     </div>
   </div>

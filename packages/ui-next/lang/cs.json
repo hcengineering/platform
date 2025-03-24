@@ -1,5 +1,6 @@
 {
   "string": {
+    "Added": "Přidáno",
     "Attach": "Připojit",
     "Cancel": "Zrušit",
     "Edit": "Upravit",
@@ -11,11 +12,16 @@
     "Mention": "Zmínit",
     "MinutesAgo": "{minutes, plural, =0 {před méně než minutou} =1 {před minutou} other {před {#} minutami}}",
     "MonthAt": "{month} v {time}",
+    "New": "Nový",
+    "Removed": "Odstraněno",
     "RepliesCount": "{count} odpovědí",
     "Reply": "Odpovědět",
     "Send": "Odeslat",
+    "Set": "Nastavit",
     "ShowFormatting": "Zobrazit formátování",
+    "To": "Do",
     "Today": "Dnes",
+    "Unset": "Zrušit",
     "WeekdayAt": "{weekday} v {time}",
     "YearAt": "{year} v {time}",
     "Yesterday": "Včera",

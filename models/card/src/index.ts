@@ -50,7 +50,6 @@ import { type BuildModelKey } from '@hcengineering/view'
 import card from './plugin'
 
 export { cardId } from '@hcengineering/card'
-export * from './utils'
 
 @Model(card.class.MasterTag, core.class.Class)
 export class TMasterTag extends TClass implements MasterTag {

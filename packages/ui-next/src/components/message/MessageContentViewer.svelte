@@ -14,15 +14,20 @@
 -->
 
 <script lang="ts">
-  import { MessageInput } from '@hcengineering/ui-next'
+  import { MessageViewer as MarkupMessageViewer } from '@hcengineering/presentation'
+  import { Message, MessageType } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
 
-  import chat from '../plugin'
+  import ActivityMessageViewer from './ActivityMessageViewer.svelte'
+  import { toMarkup } from '../../utils'
+  import { isActivityMessage } from '../../activity'
 
   export let card: Card
+  export let message: Message
 </script>
 
-<MessageInput placeholder={chat.string.MessageIn} placeholderParams={{ title: card.title }} />
-
-<style lang="scss">
-</style>
+{#if message.type === MessageType.Message}
+  <MarkupMessageViewer message={toMarkup(message.content)} />
+{:else if isActivityMessage(message)}
+  <ActivityMessageViewer {message} {card} />
+{/if}
