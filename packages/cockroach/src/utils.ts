@@ -44,6 +44,8 @@ function escape(value: any): string {
       return `'${value.replace(/'/g, "''")}'`
     case 'bigint':
       return value.toString()
+    case 'object':
+      return `'${JSON.stringify(value)}'`
     default:
       throw new Error(`Unsupported value type: ${typeof value}`)
   }

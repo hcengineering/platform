@@ -13,31 +13,47 @@
 // limitations under the License.
 //
 
-export function getCondition (
+export function getCondition(
   table: string,
   dbField: string,
-  index: number,
+  startIndex: number,
   param: any,
   type: string
-): { where: string, value: any } | undefined {
-  if (typeof param === 'object') {
-    if (param.less != null) {
-      return { where: `${table}.${dbField} < $${index}::${type}`, value: param.less }
+): { where: string, values: any[], index: number } | undefined {
+  const conditions: string[] = [];
+  const values: any[] = [];
+  let index = startIndex;
+
+  if (param !== null && typeof param === 'object') {
+    if (param.less !== undefined) {
+      conditions.push(`${table}.${dbField} < $${index}::${type}`);
+      values.push(param.less);
+      index++;
     }
-    if (param.lessOrEqual != null) {
-      return { where: `${table}.${dbField} <= $${index}::${type}`, value: param.lessOrEqual }
+    if (param.lessOrEqual !== undefined) {
+      conditions.push(`${table}.${dbField} <= $${index}::${type}`);
+      values.push(param.lessOrEqual);
+      index++;
     }
-    if (param.greater != null) {
-      return { where: `${table}.${dbField} > $${index}::${type}`, value: param.greater }
+    if (param.greater !== undefined) {
+      conditions.push(`${table}.${dbField} > $${index}::${type}`);
+      values.push(param.greater);
+      index++;
     }
-    if (param.greaterOrEqual != null) {
-      return { where: `${table}.${dbField} >= $${index}::${type}`, value: param.greaterOrEqual }
+    if (param.greaterOrEqual !== undefined) {
+      conditions.push(`${table}.${dbField} >= $${index}::${type}`);
+      values.push(param.greaterOrEqual);
+      index++;
     }
   }
 
-  if (param != null) {
-    return { where: `${table}.${dbField} = $${index}::${type}`, value: param }
+  if (param != null && conditions.length === 0) {
+    conditions.push(`${table}.${dbField} = $${index}::${type}`);
+    values.push(param);
+    index++;
   }
 
-  return undefined
+  if (conditions.length === 0) return undefined;
+
+  return { where: conditions.join(' AND '), values, index };
 }

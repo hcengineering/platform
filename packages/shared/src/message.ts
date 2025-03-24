@@ -15,25 +15,24 @@
 
 import type { MessageID } from '@hcengineering/communication-types'
 
-let lastTimestamp = 0
+let lastTimestamp = 0n
 let counter = 0n
 
 export function generateMessageId(): MessageID {
-  const timestamp = Math.floor(Date.now() / 1000)
+  const timestamp = BigInt(Math.floor(Date.now() / 1000))
 
   if (timestamp !== lastTimestamp) {
     lastTimestamp = timestamp
     counter = 0n
   }
 
-  const id = (BigInt(timestamp) << 20n) | counter
   counter++
+
+  const id = (timestamp << 20n) | (counter << 10n) | BigInt(Math.floor(Math.random() * 1024))
 
   return id.toString() as MessageID
 }
 
 export function parseMessageId(messageId: MessageID): Date {
-  const timestamp = Number(BigInt(messageId) >> 20n)
-
-  return new Date(timestamp * 1000)
+  return new Date(Number(BigInt(messageId) >> 20n) * 1000)
 }

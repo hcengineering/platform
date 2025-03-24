@@ -19,14 +19,26 @@ import type {
   NotificationsQueryCallback,
   QueryCallback
 } from '@hcengineering/communication-sdk-types'
-import { type FindMessagesParams, type FindNotificationsParams } from '@hcengineering/communication-types'
+import {
+  type FindMessagesParams,
+  type FindNotificationContextParams,
+  type FindNotificationsParams,
+  type NotificationContext
+} from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 
 class BaseQuery<P extends Record<string, any>, C extends QueryCallback<any>> {
   private oldQuery: P | undefined
-  private oldCallback: QueryCallback<any> | undefined
+  private oldCallback: C | undefined
 
-  constructor(protected readonly lq: LiveQueries) {}
+  constructor(
+    protected readonly lq: LiveQueries,
+    onDestroy: (fn: () => void) => void
+  ) {
+    onDestroy(() => {
+      this.unsubscribe()
+    })
+  }
 
   unsubscribe: () => void = () => {}
 
@@ -80,5 +92,19 @@ export class NotificationsQuery extends BaseQuery<FindNotificationsParams, Notif
     unsubscribe: () => void
   } {
     return this.lq.queryNotifications(params, callback)
+  }
+}
+
+export class NotificationContextsQuery extends BaseQuery<
+  FindNotificationContextParams,
+  QueryCallback<NotificationContext>
+> {
+  override createQuery(
+    params: FindNotificationContextParams,
+    callback: QueryCallback<NotificationContext>
+  ): {
+    unsubscribe: () => void
+  } {
+    return this.lq.queryNotificationContexts(params, callback)
   }
 }

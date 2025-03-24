@@ -22,22 +22,32 @@ import type {
   Message,
   MessageID,
   NotificationContext,
-  NotificationContextUpdate,
   RichText,
   SocialID,
   Notification,
   BlobID,
   FindMessagesGroupsParams,
   MessagesGroup,
-  WorkspaceID,
   PatchType,
-  Thread
+  Thread,
+  AccountID,
+  Collaborator,
+  MessageType,
+  FindCollaboratorsParams,
+  NotificationID,
+  MessageData
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
-  createMessage(card: CardID, content: RichText, creator: SocialID, created: Date): Promise<MessageID>
-  removeMessage(card: CardID, id: MessageID, socialIds?: SocialID[]): Promise<void>
-  removeMessages(card: CardID, fromId: MessageID, toId: MessageID): Promise<void>
+  createMessage(
+    card: CardID,
+    type: MessageType,
+    content: RichText,
+    creator: SocialID,
+    created: Date,
+    data?: MessageData
+  ): Promise<MessageID>
+  removeMessages(card: CardID, ids: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]>
 
   createPatch(
     card: CardID,
@@ -47,49 +57,47 @@ export interface DbAdapter {
     creator: SocialID,
     created: Date
   ): Promise<void>
-  removePatches(card: CardID, fromId: MessageID, toId: MessageID): Promise<void>
 
-  createMessagesGroup(
-    card: CardID,
-    blobId: BlobID,
-    fromDate: Date,
-    toDate: Date,
-    fromID: MessageID,
-    toID: MessageID,
-    count: number
-  ): Promise<void>
+  createMessagesGroup(card: CardID, blobId: BlobID, fromSec: Date, toSec: Date, count: number): Promise<void>
   removeMessagesGroup(card: CardID, blobId: BlobID): Promise<void>
 
   createReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID, created: Date): Promise<void>
   removeReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void>
 
-  createAttachment(message: MessageID, attachment: CardID, creator: SocialID, created: Date): Promise<void>
-  removeAttachment(message: MessageID, attachment: CardID): Promise<void>
+  createFile(
+    card: CardID,
+    message: MessageID,
+    blobId: BlobID,
+    fileType: string,
+    filename: string,
+    size: number,
+    creator: SocialID,
+    created: Date
+  ): Promise<void>
+  removeFile(card: CardID, message: MessageID, blobId: BlobID): Promise<void>
 
   createThread(card: CardID, message: MessageID, thread: CardID, created: Date): Promise<void>
-  updateThread(thread: CardID, lastReply: Date, op: 'increment' | 'decrement'): Promise<void>
+  updateThread(thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void>
 
   findMessages(params: FindMessagesParams): Promise<Message[]>
   findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
   findThread(thread: CardID): Promise<Thread | undefined>
 
-  createNotification(message: MessageID, context: ContextID): Promise<void>
-  removeNotification(message: MessageID, context: ContextID): Promise<void>
+  addCollaborators(card: CardID, collaborators: AccountID[], date?: Date): Promise<void>
+  removeCollaborators(card: CardID, collaborators: AccountID[]): Promise<void>
+  getCollaboratorsCursor(card: CardID, date: Date, size?: number): AsyncIterable<Collaborator[]>
 
-  createContext(personalWorkspace: WorkspaceID, card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID>
-  updateContext(context: ContextID, update: NotificationContextUpdate): Promise<void>
-  removeContext(context: ContextID): Promise<void>
+  findCollaborators(params: FindCollaboratorsParams): Promise<Collaborator[]>
 
-  findContexts(
-    params: FindNotificationContextParams,
-    personalWorkspaces: WorkspaceID[],
-    workspace?: WorkspaceID
-  ): Promise<NotificationContext[]>
-  findNotifications(
-    params: FindNotificationsParams,
-    personalWorkspace: WorkspaceID,
-    workspace?: WorkspaceID
-  ): Promise<Notification[]>
+  createNotification(context: ContextID, message: MessageID, created: Date): Promise<NotificationID>
+  removeNotification(context: ContextID, account: AccountID, untilDate: Date): Promise<void>
+
+  createContext(account: AccountID, card: CardID, lastUpdate: Date, lastView: Date): Promise<ContextID>
+  updateContext(context: ContextID, account: AccountID, lastUpdate?: Date, lastView?: Date): Promise<void>
+  removeContext(context: ContextID, account: AccountID): Promise<void>
+
+  findContexts(params: FindNotificationContextParams): Promise<NotificationContext[]>
+  findNotifications(params: FindNotificationsParams): Promise<Notification[]>
 
   close(): void
 }

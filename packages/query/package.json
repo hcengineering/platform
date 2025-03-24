@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-query",
-  "version": "0.1.61",
+  "version": "0.1.147",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
@@ -21,6 +21,7 @@
     "@hcengineering/communication-sdk-types": "workspace:*",
     "@hcengineering/communication-shared": "workspace:*",
     "@hcengineering/communication-types": "workspace:*",
+    "@hcengineering/communication-yaml": "workspace:*",
     "fast-equals": "^5.0.1"
   },
   "peerDependencies": {

@@ -13,73 +13,61 @@
 // limitations under the License.
 //
 
+import { type Message, type Patch, type Reaction } from '@hcengineering/communication-types'
 import {
-  type Message,
-  type Patch,
-  type Reaction,
-  type Attachment,
-  type SocialID,
-  type WorkspaceID,
-  PatchType
-} from '@hcengineering/communication-types'
-import {
-  type CreateAttachmentEvent,
-  type AttachmentCreatedEvent,
+  type AddCollaboratorsEvent,
+  type ConnectionInfo,
+  type CreateFileEvent,
   type CreateMessageEvent,
-  type MessageCreatedEvent,
-  type CreatePatchEvent,
-  type PatchCreatedEvent,
-  type CreateReactionEvent,
-  type ReactionCreatedEvent,
-  type RemoveAttachmentEvent,
-  type AttachmentRemovedEvent,
-  type RemoveMessageEvent,
-  type MessageRemovedEvent,
-  type RemoveReactionEvent,
-  type ReactionRemovedEvent,
-  type EventResult,
-  type DbAdapter,
-  type CreateNotificationEvent,
-  type RemoveNotificationEvent,
+  type CreateMessagesGroupEvent,
   type CreateNotificationContextEvent,
-  type RemoveNotificationContextEvent,
-  type UpdateNotificationContextEvent,
-  type NotificationRemovedEvent,
+  type CreateNotificationEvent,
+  type CreatePatchEvent,
+  type CreateReactionEvent,
+  type CreateThreadEvent,
+  type DbAdapter,
+  type EventResult,
+  type FileCreatedEvent,
+  type FileRemovedEvent,
+  type MessageCreatedEvent,
+  type MessagesGroupCreatedEvent,
+  type MessagesRemovedEvent,
   type NotificationContextCreatedEvent,
   type NotificationContextRemovedEvent,
   type NotificationContextUpdatedEvent,
-  type ResponseEvent,
-  RequestEventType,
-  type RequestEvent,
-  ResponseEventType,
-  type CreateMessagesGroupEvent,
+  type NotificationsRemovedEvent,
+  type PatchCreatedEvent,
+  type ReactionCreatedEvent,
+  type ReactionRemovedEvent,
+  type RemoveCollaboratorsEvent,
+  type RemoveFileEvent,
   type RemoveMessagesEvent,
-  type ThreadCreatedEvent,
-  type CreateThreadEvent,
-  type ConnectionInfo,
-  type RemovePatchesEvent,
   type RemoveMessagesGroupEvent,
-  type MessagesGroupCreatedEvent
+  type RemoveNotificationContextEvent,
+  type RemoveNotificationsEvent,
+  type RemoveReactionEvent,
+  type RequestEvent,
+  RequestEventType,
+  type ResponseEvent,
+  ResponseEventType,
+  type ThreadCreatedEvent,
+  type UpdateNotificationContextEvent,
+  type UpdateThreadEvent
 } from '@hcengineering/communication-sdk-types'
-import { systemAccountUuid, type Account } from '@hcengineering/core'
+import { systemAccountUuid } from '@hcengineering/core'
 
 export interface Result {
   responseEvent?: ResponseEvent
-  result: EventResult
+  result?: EventResult
 }
 
 export class EventProcessor {
-  constructor(
-    private readonly db: DbAdapter,
-    private readonly workspace: WorkspaceID
-  ) {}
+  constructor(private readonly db: DbAdapter) {}
 
   async process(info: ConnectionInfo, event: RequestEvent): Promise<Result> {
     switch (event.type) {
       case RequestEventType.CreateMessage:
         return await this.createMessage(event, info)
-      case RequestEventType.RemoveMessage:
-        return await this.removeMessage(event, info)
       case RequestEventType.RemoveMessages:
         return await this.removeMessages(event, info)
       case RequestEventType.CreatePatch:
@@ -88,14 +76,14 @@ export class EventProcessor {
         return await this.createReaction(event, info)
       case RequestEventType.RemoveReaction:
         return await this.removeReaction(event, info)
-      case RequestEventType.CreateAttachment:
-        return await this.createAttachment(event, info)
-      case RequestEventType.RemoveAttachment:
-        return await this.removeAttachment(event, info)
+      case RequestEventType.CreateFile:
+        return await this.createFile(event, info)
+      case RequestEventType.RemoveFile:
+        return await this.removeFile(event, info)
       case RequestEventType.CreateNotification:
         return await this.createNotification(event, info)
-      case RequestEventType.RemoveNotification:
-        return await this.removeNotification(event, info)
+      case RequestEventType.RemoveNotifications:
+        return await this.removeNotifications(event, info)
       case RequestEventType.CreateNotificationContext:
         return await this.createNotificationContext(event, info)
       case RequestEventType.RemoveNotificationContext:
@@ -106,28 +94,82 @@ export class EventProcessor {
         return await this.createMessagesGroup(event, info)
       case RequestEventType.CreateThread:
         return await this.createThread(event, info)
-      case RequestEventType.RemovePatches:
-        return await this.removePatches(event, info)
       case RequestEventType.RemoveMessagesGroup:
         return await this.removeMessagesGroup(event, info)
+      case RequestEventType.AddCollaborators:
+        return await this.addCollaborators(event, info)
+      case RequestEventType.RemoveCollaborators:
+        return await this.removeCollaborators(event, info)
+      case RequestEventType.UpdateThread:
+        return await this.updateThread(event, info)
     }
   }
 
-  private async createMessage(event: CreateMessageEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info.account, event.creator)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async updateThread(event: UpdateThreadEvent, _: ConnectionInfo): Promise<Result> {
+    await this.db.updateThread(event.thread, event.replies, event.lastReply)
+    return {
+      responseEvent: {
+        _id: event._id,
+        type: ResponseEventType.ThreadUpdated,
+        thread: event.thread,
+        replies: event.replies,
+        lastReply: event.lastReply
+      }
+    }
+  }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async addCollaborators(event: AddCollaboratorsEvent, _: ConnectionInfo): Promise<Result> {
+    await this.db.addCollaborators(event.card, event.collaborators, event.date)
+    return {
+      responseEvent: {
+        _id: event._id,
+        type: ResponseEventType.AddedCollaborators,
+        card: event.card,
+        collaborators: event.collaborators
+      }
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async removeCollaborators(event: RemoveCollaboratorsEvent, _: ConnectionInfo): Promise<Result> {
+    await this.db.removeCollaborators(event.card, event.collaborators)
+
+    return {
+      responseEvent: {
+        _id: event._id,
+        type: ResponseEventType.RemovedCollaborators,
+        card: event.card,
+        collaborators: event.collaborators
+      }
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async createMessage(event: CreateMessageEvent, _: ConnectionInfo): Promise<Result> {
     const created = new Date()
-    const id = await this.db.createMessage(event.card, event.content, event.creator, created)
+    const id = await this.db.createMessage(
+      event.card,
+      event.messageType,
+      event.content,
+      event.creator,
+      created,
+      event.data
+    )
     const message: Message = {
       id,
+      type: event.messageType,
       card: event.card,
       content: event.content,
       creator: event.creator,
       created,
+      data: event.data,
       reactions: [],
-      attachments: []
+      files: []
     }
     const responseEvent: MessageCreatedEvent = {
+      _id: event._id,
       type: ResponseEventType.MessageCreated,
       message
     }
@@ -137,69 +179,48 @@ export class EventProcessor {
     }
   }
 
-  private async createPatch(event: CreatePatchEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info.account, event.creator)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async createPatch(event: CreatePatchEvent, _: ConnectionInfo): Promise<Result> {
     const created = new Date()
-    await this.db.createPatch(event.card, event.message, PatchType.update, event.content, event.creator, created)
+    await this.db.createPatch(event.card, event.message, event.patchType, event.content, event.creator, created)
 
     const patch: Patch = {
-      type: PatchType.update,
+      type: event.patchType,
       message: event.message,
       content: event.content,
       creator: event.creator,
       created
     }
     const responseEvent: PatchCreatedEvent = {
+      _id: event._id,
       type: ResponseEventType.PatchCreated,
       card: event.card,
       patch
     }
     return {
-      responseEvent,
-      result: {}
-    }
-  }
-
-  private async removeMessage(event: RemoveMessageEvent, info: ConnectionInfo): Promise<Result> {
-    const socialIds = systemAccountUuid === info.account.uuid ? undefined : info.account.socialIds
-    await this.db.removeMessage(event.card, event.message, socialIds)
-
-    const responseEvent: MessageRemovedEvent = {
-      type: ResponseEventType.MessageRemoved,
-      card: event.card,
-      message: event.message
-    }
-
-    return {
-      responseEvent,
-      result: {}
+      responseEvent
     }
   }
 
   private async removeMessages(event: RemoveMessagesEvent, info: ConnectionInfo): Promise<Result> {
-    if (systemAccountUuid !== info.account.uuid) {
-      throw new Error('Forbidden')
+    const socialIds = systemAccountUuid === info.account.uuid ? undefined : info.account.socialIds
+    const deleted = await this.db.removeMessages(event.card, event.messages, socialIds)
+
+    const responseEvent: MessagesRemovedEvent = {
+      _id: event._id,
+      type: ResponseEventType.MessagesRemoved,
+      card: event.card,
+      messages: deleted
     }
-    await this.db.removeMessages(event.card, event.fromId, event.toId)
 
     return {
-      result: {}
+      responseEvent,
+      result: { messages: deleted }
     }
   }
 
-  private async removePatches(event: RemovePatchesEvent, info: ConnectionInfo): Promise<Result> {
-    if (systemAccountUuid !== info.account.uuid) {
-      throw new Error('Forbidden')
-    }
-    await this.db.removePatches(event.card, event.fromId, event.toId)
-
-    return {
-      result: {}
-    }
-  }
-
-  private async createReaction(event: CreateReactionEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info.account, event.creator)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async createReaction(event: CreateReactionEvent, _: ConnectionInfo): Promise<Result> {
     const created = new Date()
     await this.db.createReaction(event.card, event.message, event.reaction, event.creator, created)
 
@@ -210,20 +231,21 @@ export class EventProcessor {
       created
     }
     const responseEvent: ReactionCreatedEvent = {
+      _id: event._id,
       type: ResponseEventType.ReactionCreated,
       card: event.card,
       reaction
     }
     return {
-      responseEvent,
-      result: {}
+      responseEvent
     }
   }
 
-  private async removeReaction(event: RemoveReactionEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info.account, event.creator)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async removeReaction(event: RemoveReactionEvent, _: ConnectionInfo): Promise<Result> {
     await this.db.removeReaction(event.card, event.message, event.reaction, event.creator)
     const responseEvent: ReactionRemovedEvent = {
+      _id: event._id,
       type: ResponseEventType.ReactionRemoved,
       card: event.card,
       message: event.message,
@@ -231,90 +253,104 @@ export class EventProcessor {
       creator: event.creator
     }
     return {
-      responseEvent,
-      result: {}
-    }
-  }
-
-  private async createAttachment(event: CreateAttachmentEvent, info: ConnectionInfo): Promise<Result> {
-    this.checkCreator(info.account, event.creator)
-    const created = new Date()
-    await this.db.createAttachment(event.message, event.card, event.creator, created)
-
-    const attachment: Attachment = {
-      message: event.message,
-      card: event.card,
-      creator: event.creator,
-      created
-    }
-    const responseEvent: AttachmentCreatedEvent = {
-      type: ResponseEventType.AttachmentCreated,
-      card: event.card,
-      attachment
-    }
-
-    return {
-      responseEvent,
-      result: {}
+      responseEvent
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async removeAttachment(event: RemoveAttachmentEvent, _: ConnectionInfo): Promise<Result> {
-    await this.db.removeAttachment(event.message, event.card)
-    const responseEvent: AttachmentRemovedEvent = {
-      type: ResponseEventType.AttachmentRemoved,
+  private async createFile(event: CreateFileEvent, _: ConnectionInfo): Promise<Result> {
+    const created = new Date()
+    await this.db.createFile(
+      event.card,
+      event.message,
+      event.blobId,
+      event.fileType,
+      event.filename,
+      event.size,
+      event.creator,
+      created
+    )
+    const responseEvent: FileCreatedEvent = {
+      _id: event._id,
+      type: ResponseEventType.FileCreated,
       card: event.card,
-      message: event.message,
-      attachment: event.attachment
+      file: {
+        card: event.card,
+        message: event.message,
+        blobId: event.blobId,
+        type: event.fileType,
+        filename: event.filename,
+        size: event.size,
+        creator: event.creator,
+        created
+      }
     }
     return {
-      responseEvent,
-      result: {}
+      responseEvent
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async removeFile(event: RemoveFileEvent, _: ConnectionInfo): Promise<Result> {
+    await this.db.removeFile(event.card, event.message, event.blobId)
+    const responseEvent: FileRemovedEvent = {
+      _id: event._id,
+      type: ResponseEventType.FileRemoved,
+      card: event.card,
+      message: event.message,
+      blobId: event.blobId,
+      creator: event.creator
+    }
+    return {
+      responseEvent
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async createNotification(event: CreateNotificationEvent, _: ConnectionInfo): Promise<Result> {
-    await this.db.createNotification(event.message, event.context)
+    const id = await this.db.createNotification(event.context, event.message, event.created)
 
     return {
-      result: {}
+      responseEvent: {
+        _id: event._id,
+        type: ResponseEventType.NotificationCreated,
+        notification: {
+          id,
+          context: event.context,
+          messageId: event.message,
+          read: false,
+          created: event.created
+        },
+        account: event.account
+      }
     }
   }
 
-  //eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async removeNotification(event: RemoveNotificationEvent, info: ConnectionInfo): Promise<Result> {
-    await this.db.removeNotification(event.message, event.context)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async removeNotifications(event: RemoveNotificationsEvent, _: ConnectionInfo): Promise<Result> {
+    await this.db.removeNotification(event.context, event.account, event.untilDate)
 
-    const responseEvent: NotificationRemovedEvent = {
-      type: ResponseEventType.NotificationRemoved,
-      // personalWorkspace: info.personalWorkspace,
-      // TODO: add personal workspace
-      personalWorkspace: '' as WorkspaceID,
-      message: event.message,
-      context: event.context
+    const responseEvent: NotificationsRemovedEvent = {
+      _id: event._id,
+      type: ResponseEventType.NotificationsRemoved,
+      context: event.context,
+      account: event.account,
+      untilDate: event.untilDate
     }
     return {
-      responseEvent,
-      result: {}
+      responseEvent
     }
   }
 
-  private async createNotificationContext(
-    event: CreateNotificationContextEvent,
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    info: ConnectionInfo
-  ): Promise<Result> {
-    // TODO: add personal workspace
-    const personalWorkspace = '' as WorkspaceID
-    const id = await this.db.createContext(personalWorkspace, event.card, event.lastView, event.lastUpdate)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async createNotificationContext(event: CreateNotificationContextEvent, _: ConnectionInfo): Promise<Result> {
+    const id = await this.db.createContext(event.account, event.card, event.lastUpdate, event.lastView)
     const responseEvent: NotificationContextCreatedEvent = {
+      _id: event._id,
       type: ResponseEventType.NotificationContextCreated,
       context: {
         id,
-        workspace: this.workspace,
-        personalWorkspace,
+        account: event.account,
         card: event.card,
         lastView: event.lastView,
         lastUpdate: event.lastUpdate
@@ -329,75 +365,63 @@ export class EventProcessor {
   private async removeNotificationContext(
     event: RemoveNotificationContextEvent,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    info: ConnectionInfo
+    _: ConnectionInfo
   ): Promise<Result> {
-    await this.db.removeContext(event.context)
+    await this.db.removeContext(event.context, event.account)
     const responseEvent: NotificationContextRemovedEvent = {
+      _id: event._id,
       type: ResponseEventType.NotificationContextRemoved,
-      // personalWorkspace: info.personalWorkspace,
-      // TODO: add personal workspace
-      personalWorkspace: '' as WorkspaceID,
-      context: event.context
+      context: event.context,
+      account: event.account
     }
     return {
-      responseEvent,
-      result: {}
+      responseEvent
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updateNotificationContext(event: UpdateNotificationContextEvent, info: ConnectionInfo): Promise<Result> {
-    await this.db.updateContext(event.context, event.update)
+  async updateNotificationContext(event: UpdateNotificationContextEvent, _: ConnectionInfo): Promise<Result> {
+    await this.db.updateContext(event.context, event.account, event.lastUpdate, event.lastView)
 
     const responseEvent: NotificationContextUpdatedEvent = {
+      _id: event._id,
       type: ResponseEventType.NotificationContextUpdated,
-      // personalWorkspace: info.personalWorkspace,
-      // TODO: add personal workspace
-      personalWorkspace: '' as WorkspaceID,
       context: event.context,
-      update: event.update
+      account: event.account,
+      lastView: event.lastView,
+      lastUpdate: event.lastUpdate
     }
     return {
-      responseEvent,
-      result: {}
+      responseEvent
     }
   }
 
-  async createMessagesGroup(event: CreateMessagesGroupEvent, info: ConnectionInfo): Promise<Result> {
-    if (systemAccountUuid !== info.account.uuid) {
-      throw new Error('Forbidden')
-    }
-    const { fromDate, toDate, count, fromId, toId, card, blobId } = event.group
-    await this.db.createMessagesGroup(card, blobId, fromDate, toDate, fromId, toId, count)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createMessagesGroup(event: CreateMessagesGroupEvent, _: ConnectionInfo): Promise<Result> {
+    const { fromSec, toSec, count, card, blobId } = event.group
+    await this.db.createMessagesGroup(card, blobId, fromSec, toSec, count)
 
     const responseEvent: MessagesGroupCreatedEvent = {
+      _id: event._id,
       type: ResponseEventType.MessagesGroupCreated,
       group: {
         card,
         blobId,
-        fromDate,
-        toDate,
-        fromId,
-        toId,
+        fromSec,
+        toSec,
         count
       }
     }
     return {
-      responseEvent,
-      result: {}
+      responseEvent
     }
   }
 
-  async removeMessagesGroup(event: RemoveMessagesGroupEvent, info: ConnectionInfo): Promise<Result> {
-    if (systemAccountUuid !== info.account.uuid) {
-      throw new Error('Forbidden')
-    }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async removeMessagesGroup(event: RemoveMessagesGroupEvent, _: ConnectionInfo): Promise<Result> {
     await this.db.removeMessagesGroup(event.card, event.blobId)
 
-    return {
-      responseEvent: undefined,
-      result: {}
-    }
+    return {}
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -405,6 +429,7 @@ export class EventProcessor {
     const date = new Date()
     await this.db.createThread(event.card, event.message, event.thread, date)
     const responseEvent: ThreadCreatedEvent = {
+      _id: event._id,
       type: ResponseEventType.ThreadCreated,
       thread: {
         card: event.card,
@@ -415,14 +440,7 @@ export class EventProcessor {
       }
     }
     return {
-      responseEvent,
-      result: {}
-    }
-  }
-
-  private checkCreator(account: Account, creator: SocialID): void {
-    if (!account.socialIds.includes(creator) && systemAccountUuid !== account.uuid) {
-      throw new Error('Forbidden')
+      responseEvent
     }
   }
 }

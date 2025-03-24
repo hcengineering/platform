@@ -13,5 +13,5 @@
 // limitations under the License.
 //
 
-export { type Client } from '@hcengineering/communication-sdk-types'
-export * from './client'
+export * from './parse.ts'
+export * from './deserialize.ts'

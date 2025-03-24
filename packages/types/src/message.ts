@@ -13,38 +13,73 @@
 // limitations under the License.
 //
 
-import type { Ref, Blob, PersonId, WorkspaceUuid } from '@hcengineering/core'
-import type { Card } from '@hcengineering/card'
+import type { Attribute, Class, Mixin, Ref } from '@hcengineering/core'
+import type { BlobID, CardID, ID, RichText, SocialID } from './core'
+import type { Card, Tag } from '@hcengineering/card'
 
-export type BlobID = Ref<Blob>
-export type CardID = Ref<Card>
-export type SocialID = PersonId
-export type WorkspaceID = WorkspaceUuid
-export type RichText = string
-
-export type ID = string
-export type MessageID = string & { message: true }
+export type MessageID = ID & { message: true }
 
 export interface Message {
   id: MessageID
   card: CardID
+  type: MessageType
   content: RichText
   creator: SocialID
   created: Date
+  data?: MessageData
 
   edited?: Date
   thread?: Thread
   reactions: Reaction[]
-  attachments: Attachment[]
+  files: File[]
+}
+
+export enum MessageType {
+  Message = 'message',
+  Activity = 'activity'
+}
+
+export type MessageData = ActivityMessageData | any
+
+export interface ActivityMessage extends Message {
+  type: MessageType.Activity
+  data: ActivityMessageData
+}
+
+export interface ActivityMessageData {
+  action: 'create' | 'remove' | 'update'
+  update?: ActivityUpdate
+}
+
+export type ActivityUpdate = ActivityAttributeUpdate | ActivityTagUpdate
+export enum ActivityUpdateType {
+  Attribute = 'attribute',
+  Tag = 'tag'
+}
+
+export interface ActivityTagUpdate {
+  type: ActivityUpdateType.Tag
+  tag: Ref<Tag>
+  action: 'add' | 'remove'
+}
+
+type AttributeValue = string | number | null
+
+export interface ActivityAttributeUpdate {
+  type: ActivityUpdateType.Attribute
+  attrKey: string
+  attrClass: Ref<Class<Attribute<Card>>>
+  mixin?: Ref<Mixin<Card>>
+  set?: AttributeValue | AttributeValue[]
+  added?: AttributeValue[]
+  removed?: AttributeValue[]
 }
 
 export interface MessagesGroup {
   card: CardID
   blobId: BlobID
-  fromId: MessageID
-  toId: MessageID
-  fromDate: Date
-  toDate: Date
+  fromSec: Date
+  toSec: Date
   count: number
   patches?: Patch[]
 }
@@ -62,7 +97,9 @@ export enum PatchType {
   addReaction = 'addReaction',
   removeReaction = 'removeReaction',
   addReply = 'addReply',
-  removeReply = 'removeReply'
+  removeReply = 'removeReply',
+  addFile = 'addFile',
+  removeFile = 'removeFile'
 }
 
 export interface Reaction {
@@ -72,9 +109,13 @@ export interface Reaction {
   created: Date
 }
 
-export interface Attachment {
-  message: MessageID
+export interface File {
   card: CardID
+  message: MessageID
+  blobId: BlobID
+  type: string
+  filename: string
+  size: number
   creator: SocialID
   created: Date
 }

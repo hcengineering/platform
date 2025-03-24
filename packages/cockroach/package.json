@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-cockroach",
-  "version": "0.1.61",
+  "version": "0.1.147",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",

@@ -21,12 +21,12 @@ import type {
   Message,
   MessageID,
   NotificationContext,
-  NotificationContextUpdate,
   RichText,
   SocialID,
   Notification,
   FindMessagesGroupsParams,
-  MessagesGroup
+  MessagesGroup,
+  BlobID
 } from '@hcengineering/communication-types'
 import type { FindMessagesParams } from '@hcengineering/communication-types'
 
@@ -40,17 +40,24 @@ export interface Client {
   createReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void>
   removeReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void>
 
-  createAttachment(card: CardID, message: MessageID, attachment: CardID, creator: SocialID): Promise<void>
-  removeAttachment(card: CardID, message: MessageID, attachment: CardID): Promise<void>
+  createFile(
+    card: CardID,
+    message: MessageID,
+    blobId: BlobID,
+    fileType: string,
+    filename: string,
+    creator: SocialID
+  ): Promise<void>
+  removeFile(card: CardID, message: MessageID, blobId: BlobID): Promise<void>
 
   createThread(card: CardID, message: MessageID, thread: CardID, created: Date): Promise<void>
 
   createNotification(message: MessageID, context: ContextID): Promise<void>
   removeNotification(message: MessageID, context: ContextID): Promise<void>
 
-  createNotificationContext(card: CardID, lastView?: Date, lastUpdate?: Date): Promise<ContextID>
+  createNotificationContext(card: CardID, lastView: Date, lastUpdate: Date): Promise<ContextID>
   removeNotificationContext(context: ContextID): Promise<void>
-  updateNotificationContext(context: ContextID, update: NotificationContextUpdate): Promise<void>
+  updateNotificationContext(context: ContextID, lastView?: Date, lastUpdate?: Date): Promise<void>
 
   onEvent(event: ResponseEvent): void
 

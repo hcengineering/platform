@@ -13,4 +13,14 @@
 // limitations under the License.
 //
 
-export * from './adapter.ts'
+import type { Ref, Blob, AccountUuid, WorkspaceUuid, PersonId } from '@hcengineering/core'
+import type { Card } from '@hcengineering/card'
+
+export type BlobID = Ref<Blob>
+export type CardID = Ref<Card>
+export type SocialID = PersonId
+export type WorkspaceID = WorkspaceUuid
+export type RichText = string
+export type AccountID = AccountUuid
+
+export type ID = string

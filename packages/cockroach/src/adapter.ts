@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
-import type { ParameterOrJSON, Row } from 'postgres'
 import type postgres from 'postgres'
 import {
+  type FindCollaboratorsParams,
+  type AccountID,
   type BlobID,
   type CardID,
+  type Collaborator,
   type ContextID,
   type FindMessagesGroupsParams,
   type FindMessagesParams,
@@ -26,14 +28,15 @@ import {
   type Message,
   type MessageID,
   type MessagesGroup,
+  type MessageType,
   type Notification,
   type NotificationContext,
-  type NotificationContextUpdate,
   type PatchType,
   type RichText,
   type SocialID,
+  type Thread,
   type WorkspaceID,
-  type Thread
+  type NotificationID
 } from '@hcengineering/communication-types'
 import type { DbAdapter } from '@hcengineering/communication-sdk-types'
 import { retry } from '@hcengineering/communication-shared'
@@ -41,8 +44,8 @@ import { retry } from '@hcengineering/communication-shared'
 import { MessagesDb } from './db/message'
 import { NotificationsDb } from './db/notification'
 import { connect, type PostgresClientReference } from './connection'
-import { type Options, type Logger, type SqlClient } from './types'
-import { injectVars } from './utils.ts'
+import { type Logger, type Options, type SqlClient, type SqlParams, type SqlRow } from './types'
+import { injectVars } from './utils'
 
 export class CockroachAdapter implements DbAdapter {
   private readonly message: MessagesDb
@@ -58,16 +61,19 @@ export class CockroachAdapter implements DbAdapter {
     this.notification = new NotificationsDb(this.sql, this.workspace, logger, options)
   }
 
-  async createMessage(card: CardID, content: RichText, creator: SocialID, created: Date): Promise<MessageID> {
-    return await this.message.createMessage(card, content, creator, created)
+  async createMessage(
+    card: CardID,
+    type: MessageType,
+    content: RichText,
+    creator: SocialID,
+    created: Date,
+    data?: any
+  ): Promise<MessageID> {
+    return await this.message.createMessage(card, type, content, creator, created, data)
   }
 
-  async removeMessage(card: CardID, message: MessageID, socialIds?: SocialID[]): Promise<void> {
-    await this.message.removeMessage(card, message, socialIds)
-  }
-
-  async removeMessages(card: CardID, fromId: MessageID, toId: MessageID): Promise<void> {
-    await this.message.removeMessages(card, fromId, toId)
+  async removeMessages(card: CardID, messages: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
+    return await this.message.removeMessages(card, messages, socialIds)
   }
 
   async createPatch(
@@ -81,20 +87,8 @@ export class CockroachAdapter implements DbAdapter {
     await this.message.createPatch(card, message, type, content, creator, created)
   }
 
-  async removePatches(card: CardID, fromId: MessageID, toId: MessageID): Promise<void> {
-    await this.message.removePatches(card, fromId, toId)
-  }
-
-  async createMessagesGroup(
-    card: CardID,
-    blobId: BlobID,
-    fromDate: Date,
-    toDate: Date,
-    fromId: MessageID,
-    toId: MessageID,
-    count: number
-  ): Promise<void> {
-    await this.message.createMessagesGroup(card, blobId, fromDate, toDate, fromId, toId, count)
+  async createMessagesGroup(card: CardID, blobId: BlobID, fromDate: Date, toDate: Date, count: number): Promise<void> {
+    await this.message.createMessagesGroup(card, blobId, fromDate, toDate, count)
   }
 
   async removeMessagesGroup(card: CardID, blobId: BlobID): Promise<void> {
@@ -115,48 +109,31 @@ export class CockroachAdapter implements DbAdapter {
     await this.message.removeReaction(card, message, reaction, creator, new Date())
   }
 
-  async createAttachment(message: MessageID, attachment: CardID, creator: SocialID, created: Date): Promise<void> {
-    await this.message.createAttachment(message, attachment, creator, created)
+  async createFile(
+    card: CardID,
+    message: MessageID,
+    blobId: BlobID,
+    fileType: string,
+    filename: string,
+    size: number,
+    creator: SocialID,
+    created: Date
+  ): Promise<void> {
+    await this.message.createFile(card, message, blobId, fileType, filename, size, creator, created)
   }
 
-  async removeAttachment(message: MessageID, attachment: CardID): Promise<void> {
-    await this.message.removeAttachment(message, attachment)
+  async removeFile(card: CardID, message: MessageID, blobId: BlobID): Promise<void> {
+    await this.message.removeFile(card, message, blobId)
   }
 
   async createThread(card: CardID, message: MessageID, thread: CardID, created: Date): Promise<void> {
     await this.message.createThread(card, message, thread, created)
   }
 
-  async updateThread(thread: CardID, lastReply: Date, op: 'increment' | 'decrement'): Promise<void> {
-    await this.message.updateThread(thread, lastReply, op)
+  async updateThread(thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void> {
+    await this.message.updateThread(thread, op, lastReply)
   }
 
-  async createNotification(message: MessageID, context: ContextID): Promise<void> {
-    await this.notification.createNotification(message, context)
-  }
-
-  async removeNotification(message: MessageID, context: ContextID): Promise<void> {
-    await this.notification.removeNotification(message, context)
-  }
-
-  async createContext(
-    personalWorkspace: WorkspaceID,
-    card: CardID,
-    lastView?: Date,
-    lastUpdate?: Date
-  ): Promise<ContextID> {
-    return await this.notification.createContext(personalWorkspace, card, lastView, lastUpdate)
-  }
-
-  async updateContext(context: ContextID, update: NotificationContextUpdate): Promise<void> {
-    await this.notification.updateContext(context, update)
-  }
-
-  async removeContext(context: ContextID): Promise<void> {
-    await this.notification.removeContext(context)
-  }
-
-  // Finds
   async findMessages(params: FindMessagesParams): Promise<Message[]> {
     return await this.message.find(params)
   }
@@ -169,24 +146,52 @@ export class CockroachAdapter implements DbAdapter {
     return await this.message.findThread(thread)
   }
 
-  async findContexts(
-    params: FindNotificationContextParams,
-    personalWorkspaces: WorkspaceID[],
-    workspace?: WorkspaceID
-  ): Promise<NotificationContext[]> {
-    return await this.notification.findContexts(params, personalWorkspaces, workspace)
+  async addCollaborators(card: CardID, collaborators: AccountID[], date?: Date): Promise<void> {
+    await this.notification.addCollaborators(card, collaborators, date)
   }
 
-  async findNotifications(
-    params: FindNotificationsParams,
-    personalWorkspace: WorkspaceID,
-    workspace?: WorkspaceID
-  ): Promise<Notification[]> {
-    return await this.notification.findNotifications(params, personalWorkspace, workspace)
+  async removeCollaborators(card: CardID, collaborators: AccountID[]): Promise<void> {
+    await this.notification.removeCollaborators(card, collaborators)
+  }
+
+  async createNotification(context: ContextID, message: MessageID, messageCreated: Date): Promise<NotificationID> {
+    return await this.notification.createNotification(context, message, messageCreated)
+  }
+
+  async removeNotification(context: ContextID, account: AccountID, untilDate: Date): Promise<void> {
+    await this.notification.removeNotifications(context, account, untilDate)
+  }
+
+  async createContext(account: AccountID, card: CardID, lastUpdate: Date, lastView: Date): Promise<ContextID> {
+    return await this.notification.createContext(account, card, lastUpdate, lastView)
+  }
+
+  async updateContext(context: ContextID, account: AccountID, lastUpdate?: Date, lastView?: Date): Promise<void> {
+    await this.notification.updateContext(context, account, lastUpdate, lastView)
+  }
+
+  async removeContext(context: ContextID, account: AccountID): Promise<void> {
+    await this.notification.removeContext(context, account)
+  }
+
+  async findContexts(params: FindNotificationContextParams): Promise<NotificationContext[]> {
+    return await this.notification.findContexts(params)
+  }
+
+  async findNotifications(params: FindNotificationsParams): Promise<Notification[]> {
+    return await this.notification.findNotifications(params)
+  }
+
+  async findCollaborators(params: FindCollaboratorsParams): Promise<Collaborator[]> {
+    return await this.notification.findCollaborators(params)
   }
 
   close(): void {
     this.sql.close()
+  }
+
+  getCollaboratorsCursor(card: CardID, date: Date, size?: number): AsyncIterable<Collaborator[]> {
+    return this.notification.getCollaboratorsCursor(card, date, size)
   }
 }
 
@@ -197,12 +202,13 @@ export async function createDbAdapter(
   options?: Options
 ): Promise<DbAdapter> {
   const greenUrl = process.env.GREEN_URL ?? ''
+  const connection = connect(connectionString)
+  const sql = await connection.getClient()
+
   if (greenUrl !== '') {
-    const client = new GreenClient(greenUrl)
+    const client = new GreenClient(greenUrl, sql)
     return new CockroachAdapter(client, workspace, logger, options)
   } else {
-    const connection = connect(connectionString)
-    const sql = await connection.getClient()
     const client = new CockroachClient(connection, sql)
 
     return new CockroachAdapter(client, workspace, logger, options)
@@ -212,8 +218,11 @@ export async function createDbAdapter(
 class GreenClient implements SqlClient {
   private readonly url: string
   private readonly token: string
-  constructor(endpoint: string) {
-    const url = new URL(endpoint)
+  constructor(
+    private readonly endpoint: string,
+    private readonly sql: postgres.Sql
+  ) {
+    const url = new URL(this.endpoint)
     this.token = url.searchParams.get('token') ?? 'secret'
 
     const compression = url.searchParams.get('compression') ?? ''
@@ -229,14 +238,21 @@ class GreenClient implements SqlClient {
     this.url = `${url.protocol}//${newHost}${newPathname}${newSearchParams.size > 0 ? '?' + newSearchParams.toString() : ''}`
   }
 
-  async execute<T extends any[] = (Row & Iterable<Row>)[]>(query: string, params?: ParameterOrJSON<any>[]): Promise<T> {
-    return await retry(() => this.fetch<T>(query, params), { retries: 5 })
+  async execute<T = SqlRow>(query: string, params?: SqlParams): Promise<T[]> {
+    return await retry(() => this.fetch<T[]>(query, params), { retries: 5 })
   }
 
-  private async fetch<T extends any[] = (Row & Iterable<Row>)[]>(
-    query: string,
-    params?: ParameterOrJSON<any>[]
-  ): Promise<T> {
+  cursor<T = SqlRow>(query: string, params?: SqlParams, size?: number): AsyncIterable<NonNullable<T[][number]>[]> {
+    const sql = params !== undefined && params.length > 0 ? injectVars(query, params) : query
+
+    return this.sql.unsafe<T[]>(sql).cursor(size)
+  }
+
+  close(): void {
+    // do nothing
+  }
+
+  private async fetch<T = SqlRow>(query: string, params?: SqlParams): Promise<T> {
     const url = this.url.endsWith('/') ? this.url + 'api/v1/sql' : this.url + '/api/v1/sql'
 
     const response = await fetch(url, {
@@ -255,10 +271,6 @@ class GreenClient implements SqlClient {
 
     return await response.json()
   }
-
-  close(): void {
-    // do nothing
-  }
 }
 
 class CockroachClient implements SqlClient {
@@ -267,9 +279,15 @@ class CockroachClient implements SqlClient {
     private readonly sql: postgres.Sql
   ) {}
 
-  async execute<T extends any[] = (Row & Iterable<Row>)[]>(query: string, params?: ParameterOrJSON<any>[]): Promise<T> {
+  async execute<T = SqlRow>(query: string, params?: SqlParams): Promise<T[]> {
     const sql = params !== undefined && params.length > 0 ? injectVars(query, params) : query
-    return await this.sql.unsafe<T>(sql)
+    return await this.sql.unsafe<T[]>(sql)
+  }
+
+  cursor<T = SqlRow>(query: string, params?: SqlParams, size?: number): AsyncIterable<NonNullable<T[][number]>[]> {
+    const sql = params !== undefined && params.length > 0 ? injectVars(query, params) : query
+
+    return this.sql.unsafe<T[]>(sql).cursor(size)
   }
 
   close(): void {

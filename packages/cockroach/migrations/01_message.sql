@@ -8,6 +8,10 @@ CREATE TABLE IF NOT EXISTS communication.messages
     creator      VARCHAR(255) NOT NULL,
     created      TIMESTAMPTZ  NOT NULL,
 
+    type         VARCHAR(255) NOT NULL,
+    data         JSONB        NOT NULL DEFAULT '{}',
+
+
     PRIMARY KEY (workspace_id, card_id, id)
 );
 
@@ -20,10 +24,8 @@ CREATE TABLE IF NOT EXISTS communication.messages_groups
     card_id      VARCHAR(255) NOT NULL,
     blob_id      UUID         NOT NULL,
 
-    from_date    TIMESTAMPTZ  NOT NULL,
-    to_date      TIMESTAMPTZ  NOT NULL,
-    from_id      INT8         NOT NULL,
-    to_id        INT8         NOT NULL,
+    from_sec     TIMESTAMPTZ(0)  NOT NULL,
+    to_sec       TIMESTAMPTZ(0)  NOT NULL,
     count        INT          NOT NULL,
 
     PRIMARY KEY (workspace_id, card_id, blob_id)

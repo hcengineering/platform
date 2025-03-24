@@ -13,4 +13,5 @@
 // limitations under the License.
 //
 
-export * from './lq.ts'
+export * from './lq'
+export type { QueryClient } from './types'

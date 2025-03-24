@@ -13,29 +13,32 @@
 // limitations under the License.
 //
 
-import type { Message, CardID, WorkspaceID } from './message'
+import type { AccountID, CardID, ID } from './core'
+import type { Message, MessageID, MessagesGroup, Patch } from './message'
 
-export type ContextID = string & { context: true }
+export type ContextID = ID & { context: true }
+export type NotificationID = ID & { notification: true }
+
+export interface Collaborator {
+  account: AccountID
+}
 
 export interface Notification {
-  message: Message
+  id: NotificationID
   context: ContextID
   read: boolean
-  archived: boolean
+  created: Date
+  messageId?: MessageID
+  message?: Message
+  messageGroup?: MessagesGroup
+  patches?: Patch[]
 }
 
 export interface NotificationContext {
   id: ContextID
   card: CardID
-  workspace: WorkspaceID
-  personalWorkspace: WorkspaceID
-  archivedFrom?: Date
-  lastView?: Date
-  lastUpdate?: Date
-}
-
-export interface NotificationContextUpdate {
-  archivedFrom?: Date
-  lastView?: Date
-  lastUpdate?: Date
+  account: AccountID
+  lastUpdate: Date
+  lastView: Date
+  notifications?: Notification[]
 }

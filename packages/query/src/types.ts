@@ -14,7 +14,19 @@
 //
 
 import { type ResponseEvent } from '@hcengineering/communication-sdk-types'
-import { SortingOrder, type Window } from '@hcengineering/communication-types'
+import {
+  SortingOrder,
+  type FindMessagesGroupsParams,
+  type FindMessagesParams,
+  type FindNotificationContextParams,
+  type FindNotificationsParams,
+  type Message,
+  type MessagesGroup,
+  type NotificationContext,
+  type Window,
+  type Notification
+} from '@hcengineering/communication-types'
+import type { EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from './result'
 
@@ -37,13 +49,30 @@ export interface PagedQuery<R = any, P = FindParams> {
   readonly params: P
 
   onEvent: (event: ResponseEvent) => Promise<void>
+  onRequest: (event: RequestEvent, promise: Promise<EventResult>) => Promise<void>
+
+  unsubscribe: () => Promise<void>
 
   requestLoadNextPage: () => Promise<void>
   requestLoadPrevPage: () => Promise<void>
 
-  unsubscribe: () => Promise<void>
-
-  setCallback: (callback: (window: Window<R>) => void) => void
   removeCallback: () => void
+  setCallback: (callback: (window: Window<R>) => void) => void
   copyResult: () => QueryResult<R> | undefined
+}
+
+export interface QueryClient {
+  onEvent(event: ResponseEvent): void
+
+  onRequest(event: RequestEvent, promise: Promise<EventResult>): void
+
+  findMessages(params: FindMessagesParams, queryId?: number): Promise<Message[]>
+
+  findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
+
+  findNotificationContexts(params: FindNotificationContextParams, queryId?: number): Promise<NotificationContext[]>
+
+  findNotifications(params: FindNotificationsParams, queryId?: number): Promise<Notification[]>
+
+  unsubscribeQuery(id: number): Promise<void>
 }

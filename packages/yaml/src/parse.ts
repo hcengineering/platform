@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { retry, type RetryOptions } from '@hcengineering/communication-shared'
 import type {
   FileMessage,
   FileMetadata,
@@ -21,8 +22,6 @@ import type {
   WorkspaceID
 } from '@hcengineering/communication-types'
 import yaml from 'js-yaml'
-
-import { retry, type RetryOptions } from './retry'
 
 export async function loadGroupFile(
   workspace: WorkspaceID,
@@ -64,11 +63,13 @@ export function parseYaml(data: string): ParsedFile {
     metadata,
     messages: messages.map((message) => ({
       id: message.id,
+      type: message.type,
       card: metadata.card,
       content: message.content,
       edited: message.edited,
       creator: message.creator,
       created: message.created,
+      data: message.data,
       thread: message.thread
         ? {
             card: metadata.card,
@@ -78,7 +79,11 @@ export function parseYaml(data: string): ParsedFile {
             lastReply: message.thread.lastReply
           }
         : undefined,
-      attachments: [],
+      files: message.files.map((file) => ({
+        ...file,
+        message: message.id,
+        card: metadata.card
+      })),
       reactions: message.reactions.map((reaction) => ({
         message: message.id,
         reaction: reaction.reaction,

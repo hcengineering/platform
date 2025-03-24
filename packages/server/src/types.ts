@@ -13,9 +13,19 @@
 // limitations under the License.
 //
 
-import type { Message, Window, Notification } from '@hcengineering/communication-types'
+import type { Account, MeasureContext } from '@hcengineering/core'
+import type { DbAdapter, EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
+import type { WorkspaceID } from '@hcengineering/communication-types'
 
-export type QueryCallback<T> = (window: Window<T>) => void
+import type { Metadata } from './metadata'
 
-export type MessagesQueryCallback = QueryCallback<Message>
-export type NotificationsQueryCallback = QueryCallback<Notification>
+export interface TriggerCtx {
+  ctx: MeasureContext
+  metadata: Metadata
+  db: DbAdapter
+  workspace: WorkspaceID
+  account: Account
+  execute: (event: RequestEvent) => Promise<EventResult>
+}
+
+export type QueryId = string | number

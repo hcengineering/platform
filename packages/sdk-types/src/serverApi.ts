@@ -16,21 +16,35 @@
 import type {
   FindMessagesGroupsParams,
   FindMessagesParams,
+  FindNotificationContextParams,
+  FindNotificationsParams,
   Message,
-  MessagesGroup
+  MessagesGroup,
+  NotificationContext,
+  Notification
 } from '@hcengineering/communication-types'
 import type { Account } from '@hcengineering/core'
 
 import type { EventResult, RequestEvent } from './requestEvent.ts'
 
 export interface ConnectionInfo {
-  sessionId: string
+  sessionId?: string
   account: Account
 }
 
 export interface ServerApi {
-  findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: number): Promise<Message[]>
+  findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: number | string): Promise<Message[]>
   findMessagesGroups(info: ConnectionInfo, params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
+  findNotificationContexts(
+    info: ConnectionInfo,
+    params: FindNotificationContextParams,
+    queryId?: number | string
+  ): Promise<NotificationContext[]>
+  findNotifications(
+    info: ConnectionInfo,
+    params: FindNotificationsParams,
+    queryId?: number | string
+  ): Promise<Notification[]>
 
   event(info: ConnectionInfo, event: RequestEvent): Promise<EventResult>
 

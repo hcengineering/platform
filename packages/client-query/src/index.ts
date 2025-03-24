@@ -13,30 +13,39 @@
 // limitations under the License.
 //
 
-import { LiveQueries } from '@hcengineering/communication-query'
-import type { QueryClient } from '@hcengineering/communication-sdk-types'
+import { LiveQueries, type QueryClient } from '@hcengineering/communication-query'
 import type { WorkspaceID } from '@hcengineering/communication-types'
 
-import { MessagesQuery, NotificationsQuery } from './query'
+import { MessagesQuery, NotificationContextsQuery, NotificationsQuery } from './query'
 
 let lq: LiveQueries
+let onDestroy: (fn: () => void) => void = () => {}
 
 export function createMessagesQuery(): MessagesQuery {
-  return new MessagesQuery(lq)
+  return new MessagesQuery(lq, onDestroy)
 }
 
 export function createNotificationsQuery(): NotificationsQuery {
-  return new NotificationsQuery(lq)
+  return new NotificationsQuery(lq, onDestroy)
 }
 
-export function initLiveQueries(client: QueryClient, workspace: WorkspaceID, filesUrl: string): void {
+export function createNotificationContextsQuery(): NotificationContextsQuery {
+  return new NotificationContextsQuery(lq, onDestroy)
+}
+
+export function initLiveQueries(
+  client: QueryClient,
+  workspace: WorkspaceID,
+  filesUrl: string,
+  destroyFn?: (fn: () => void) => void
+): void {
   if (lq != null) {
     lq.close()
   }
 
-  lq = new LiveQueries(client, workspace, filesUrl)
-
-  client.onEvent = (event) => {
-    void lq.onEvent(event)
+  if (destroyFn != null) {
+    onDestroy = destroyFn
   }
+
+  lq = new LiveQueries(client, workspace, filesUrl)
 }

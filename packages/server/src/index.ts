@@ -13,13 +13,17 @@
 // limitations under the License.
 //
 
-import type { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext, systemAccountUuid } from '@hcengineering/core'
 import type {
   FindMessagesGroupsParams,
   FindMessagesParams,
+  FindNotificationContextParams,
+  FindNotificationsParams,
   Message,
   MessagesGroup,
-  WorkspaceID
+  NotificationContext,
+  WorkspaceID,
+  Notification
 } from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
 import type {
@@ -30,8 +34,9 @@ import type {
   ServerApi
 } from '@hcengineering/communication-sdk-types'
 
-import { Manager, type BroadcastSessionsFunc } from './manager'
+import { type BroadcastSessionsFunc, Manager } from './manager'
 import { getMetadata, type Metadata } from './metadata'
+import type { QueryId } from './types'
 
 export class Api implements ServerApi {
   private readonly manager: Manager
@@ -52,17 +57,75 @@ export class Api implements ServerApi {
     dbUrl: string,
     broadcast: BroadcastSessionsFunc
   ): Promise<Api> {
-    const db = await createDbAdapter(dbUrl, workspace, ctx, { withLogs: true })
+    const db = await createDbAdapter(dbUrl, workspace, ctx, {
+      withLogs: process.env.COMMUNICATION_TIME_LOGGING_ENABLED === 'true'
+    })
     const metadata = getMetadata()
     return new Api(ctx, metadata, workspace, db, broadcast)
   }
 
-  async findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: number): Promise<Message[]> {
+  async findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
     return await this.manager.findMessages(info, params, queryId)
   }
 
   async findMessagesGroups(info: ConnectionInfo, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
     return await this.manager.findMessagesGroups(info, params)
+  }
+
+  async findNotificationContexts(
+    info: ConnectionInfo,
+    params: FindNotificationContextParams,
+    queryId?: QueryId
+  ): Promise<NotificationContext[]> {
+    const isSystem = info.account.uuid === systemAccountUuid
+
+    if (isSystem) {
+      return await this.manager.findNotificationContexts(info, params, queryId)
+    }
+
+    const accounts = params.account == null || Array.isArray(params.account) ? params.account : [params.account]
+    const withMe = accounts == null || accounts.includes(info.account.uuid)
+
+    if (withMe) {
+      return await this.manager.findNotificationContexts(
+        info,
+        {
+          ...params,
+          account: info.account.uuid
+        },
+        queryId
+      )
+    }
+
+    return []
+  }
+
+  async findNotifications(
+    info: ConnectionInfo,
+    params: FindNotificationsParams,
+    queryId?: QueryId
+  ): Promise<Notification[]> {
+    const isSystem = info.account.uuid === systemAccountUuid
+
+    if (isSystem) {
+      return await this.manager.findNotifications(info, params, queryId)
+    }
+
+    const accounts = params.account == null || Array.isArray(params.account) ? params.account : [params.account]
+    const withMe = accounts == null || accounts.includes(info.account.uuid)
+
+    if (withMe) {
+      return await this.manager.findNotifications(
+        info,
+        {
+          ...params,
+          account: info.account.uuid
+        },
+        queryId
+      )
+    }
+
+    return []
   }
 
   async unsubscribeQuery(info: ConnectionInfo, id: number): Promise<void> {

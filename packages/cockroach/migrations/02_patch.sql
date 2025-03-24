@@ -1,13 +1,14 @@
 CREATE TABLE IF NOT EXISTS communication.patch
 (
-    id           INT8         NOT NULL DEFAULT unique_rowid(),
-    workspace_id UUID         NOT NULL,
-    card_id      VARCHAR(255) NOT NULL,
-    message_id   INT8         NOT NULL,
-    type         VARCHAR(255) NOT NULL,
-    content      TEXT         NOT NULL,
-    creator      VARCHAR(255) NOT NULL,
-    created      TIMESTAMPTZ  NOT NULL,
+    id                  INT8         NOT NULL DEFAULT unique_rowid(),
+    workspace_id        UUID         NOT NULL,
+    card_id             VARCHAR(255) NOT NULL,
+    message_id          INT8         NOT NULL,
+    type                VARCHAR(255) NOT NULL,
+    content             TEXT         NOT NULL,
+    creator             VARCHAR(255) NOT NULL,
+    created             TIMESTAMPTZ  NOT NULL,
+    message_created_sec TIMESTAMPTZ(0)  NOT NULL,
 
     PRIMARY KEY (id)
 );

@@ -17,95 +17,94 @@ import type {
   CardID,
   ContextID,
   MessageID,
-  NotificationContextUpdate,
   RichText,
   SocialID,
   MessagesGroup,
-  BlobID
+  BlobID,
+  AccountID,
+  PatchType,
+  MessageType,
+  MessageData
 } from '@hcengineering/communication-types'
 
 export enum RequestEventType {
   CreateMessage = 'createMessage',
-  RemoveMessage = 'removeMessage',
   RemoveMessages = 'removeMessages',
 
   CreatePatch = 'createPatch',
-  RemovePatches = 'removePatches',
 
   CreateReaction = 'createReaction',
   RemoveReaction = 'removeReaction',
 
-  CreateAttachment = 'createAttachment',
-  RemoveAttachment = 'removeAttachment',
+  CreateFile = 'createFile',
+  RemoveFile = 'removeFile',
 
   CreateThread = 'createThread',
+  UpdateThread = 'updateThread',
 
   CreateMessagesGroup = 'createMessagesGroup',
   RemoveMessagesGroup = 'removeMessagesGroup',
 
+  AddCollaborators = 'addCollaborators',
+  RemoveCollaborators = 'removeCollaborators',
+
   CreateNotification = 'createNotification',
-  RemoveNotification = 'removeNotification',
+  RemoveNotifications = 'removeNotifications',
 
   CreateNotificationContext = 'createNotificationContext',
   RemoveNotificationContext = 'removeNotificationContext',
   UpdateNotificationContext = 'updateNotificationContext'
 }
 
-export type RequestEvent =
-  | CreateMessageEvent
-  | RemoveMessageEvent
-  | RemoveMessagesEvent
-  | CreatePatchEvent
-  | RemovePatchesEvent
-  | CreateReactionEvent
-  | RemoveReactionEvent
-  | CreateAttachmentEvent
-  | RemoveAttachmentEvent
-  | CreateNotificationEvent
-  | RemoveNotificationEvent
-  | CreateNotificationContextEvent
-  | RemoveNotificationContextEvent
-  | UpdateNotificationContextEvent
-  | CreateMessagesGroupEvent
-  | RemoveMessagesGroupEvent
-  | CreateThreadEvent
+type BaseRequestEvent = {
+  _id?: string
+}
 
-export interface CreateMessageEvent {
+export type RequestEvent =
+  | AddCollaboratorsEvent
+  | CreateFileEvent
+  | CreateMessageEvent
+  | CreateMessagesGroupEvent
+  | CreateNotificationContextEvent
+  | CreateNotificationEvent
+  | CreatePatchEvent
+  | CreateReactionEvent
+  | CreateThreadEvent
+  | RemoveFileEvent
+  | RemoveCollaboratorsEvent
+  | RemoveMessagesEvent
+  | RemoveMessagesGroupEvent
+  | RemoveNotificationContextEvent
+  | RemoveNotificationsEvent
+  | RemoveReactionEvent
+  | UpdateNotificationContextEvent
+  | UpdateThreadEvent
+
+export interface CreateMessageEvent extends BaseRequestEvent {
   type: RequestEventType.CreateMessage
+  messageType: MessageType
   card: CardID
   content: RichText
   creator: SocialID
+  data?: MessageData
 }
 
-export interface RemoveMessageEvent {
-  type: RequestEventType.RemoveMessage
-  card: CardID
-  message: MessageID
-}
-
-export interface RemoveMessagesEvent {
+export interface RemoveMessagesEvent extends BaseRequestEvent {
   type: RequestEventType.RemoveMessages
   card: CardID
-  fromId: MessageID
-  toId: MessageID
+  messages: MessageID[]
 }
 
-export interface CreatePatchEvent {
+export interface CreatePatchEvent extends BaseRequestEvent {
   type: RequestEventType.CreatePatch
+  patchType: PatchType
   card: CardID
   message: MessageID
   content: RichText
   creator: SocialID
 }
 
-export interface RemovePatchesEvent {
-  type: RequestEventType.RemovePatches
-  card: CardID
-  fromId: MessageID
-  toId: MessageID
-}
-
-export interface CreateReactionEvent {
+export interface CreateReactionEvent extends BaseRequestEvent {
   type: RequestEventType.CreateReaction
   card: CardID
   message: MessageID
@@ -113,7 +112,7 @@ export interface CreateReactionEvent {
   creator: SocialID
 }
 
-export interface RemoveReactionEvent {
+export interface RemoveReactionEvent extends BaseRequestEvent {
   type: RequestEventType.RemoveReaction
   card: CardID
   message: MessageID
@@ -121,67 +120,98 @@ export interface RemoveReactionEvent {
   creator: SocialID
 }
 
-export interface CreateAttachmentEvent {
-  type: RequestEventType.CreateAttachment
+export interface CreateFileEvent extends BaseRequestEvent {
+  type: RequestEventType.CreateFile
   card: CardID
   message: MessageID
-  attachment: CardID
+  blobId: BlobID
+  size: number
+  fileType: string
+  filename: string
   creator: SocialID
 }
 
-export interface RemoveAttachmentEvent {
-  type: RequestEventType.RemoveAttachment
+export interface RemoveFileEvent extends BaseRequestEvent {
+  type: RequestEventType.RemoveFile
   card: CardID
   message: MessageID
-  attachment: CardID
+  blobId: BlobID
+  creator: SocialID
 }
 
-export interface CreateThreadEvent {
+export interface CreateThreadEvent extends BaseRequestEvent {
   type: RequestEventType.CreateThread
   card: CardID
   message: MessageID
   thread: CardID
 }
 
-export interface CreateNotificationEvent {
+export interface UpdateThreadEvent extends BaseRequestEvent {
+  type: RequestEventType.UpdateThread
+  thread: CardID
+  replies: 'increment' | 'decrement'
+  lastReply?: Date
+}
+
+export interface CreateNotificationEvent extends BaseRequestEvent {
   type: RequestEventType.CreateNotification
-  message: MessageID
   context: ContextID
+  message: MessageID
+  created: Date
+  account: AccountID
 }
 
-export interface RemoveNotificationEvent {
-  type: RequestEventType.RemoveNotification
-  message: MessageID
+export interface RemoveNotificationsEvent extends BaseRequestEvent {
+  type: RequestEventType.RemoveNotifications
   context: ContextID
+  account: AccountID
+  untilDate: Date
 }
 
-export interface CreateNotificationContextEvent {
+export interface CreateNotificationContextEvent extends BaseRequestEvent {
   type: RequestEventType.CreateNotificationContext
   card: CardID
+  account: AccountID
+  lastView: Date
+  lastUpdate: Date
+}
+
+export interface RemoveNotificationContextEvent extends BaseRequestEvent {
+  type: RequestEventType.RemoveNotificationContext
+  context: ContextID
+  account: AccountID
+}
+
+export interface UpdateNotificationContextEvent extends BaseRequestEvent {
+  type: RequestEventType.UpdateNotificationContext
+  context: ContextID
+  account: AccountID
   lastView?: Date
   lastUpdate?: Date
 }
 
-export interface RemoveNotificationContextEvent {
-  type: RequestEventType.RemoveNotificationContext
-  context: ContextID
-}
-
-export interface UpdateNotificationContextEvent {
-  type: RequestEventType.UpdateNotificationContext
-  context: ContextID
-  update: NotificationContextUpdate
-}
-
-export interface CreateMessagesGroupEvent {
+export interface CreateMessagesGroupEvent extends BaseRequestEvent {
   type: RequestEventType.CreateMessagesGroup
   group: MessagesGroup
 }
 
-export interface RemoveMessagesGroupEvent {
+export interface RemoveMessagesGroupEvent extends BaseRequestEvent {
   type: RequestEventType.RemoveMessagesGroup
   card: CardID
   blobId: BlobID
+}
+
+export interface AddCollaboratorsEvent extends BaseRequestEvent {
+  type: RequestEventType.AddCollaborators
+  card: CardID
+  collaborators: AccountID[]
+  date?: Date
+}
+
+export interface RemoveCollaboratorsEvent extends BaseRequestEvent {
+  type: RequestEventType.RemoveCollaborators
+  card: CardID
+  collaborators: AccountID[]
 }
 
 export type EventResult = CreateMessageResult | CreateNotificationContextResult | {}

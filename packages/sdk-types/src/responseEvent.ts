@@ -14,78 +14,97 @@
 //
 
 import type {
-  Attachment,
+  File,
   CardID,
   ContextID,
   Message,
   MessageID,
   NotificationContext,
-  NotificationContextUpdate,
   Patch,
   Reaction,
   SocialID,
   Notification,
   Thread,
-  MessagesGroup
+  MessagesGroup,
+  AccountID,
+  BlobID
 } from '@hcengineering/communication-types'
 
 export enum ResponseEventType {
   MessageCreated = 'messageCreated',
-  MessageRemoved = 'messageRemoved',
+  MessagesRemoved = 'messagesRemoved',
+
   PatchCreated = 'patchCreated',
+
   ReactionCreated = 'reactionCreated',
   ReactionRemoved = 'reactionRemoved',
-  AttachmentCreated = 'attachmentCreated',
-  AttachmentRemoved = 'attachmentRemoved',
+
+  FileCreated = 'fileCreated',
+  FileRemoved = 'fileRemoved',
+
   ThreadCreated = 'threadCreated',
+  ThreadUpdated = 'threadUpdated',
+
   MessagesGroupCreated = 'messagesGroupCreated',
+
   NotificationCreated = 'notificationCreated',
-  NotificationRemoved = 'notificationRemoved',
+  NotificationsRemoved = 'notificationsRemoved',
+
   NotificationContextCreated = 'notificationContextCreated',
   NotificationContextRemoved = 'notificationContextRemoved',
-  NotificationContextUpdated = 'notificationContextUpdated'
+  NotificationContextUpdated = 'notificationContextUpdated',
+
+  AddedCollaborators = 'addedCollaborators',
+  RemovedCollaborators = 'removedCollaborators'
+}
+
+type BaseResponseEvent = {
+  _id?: string
 }
 
 export type ResponseEvent =
   | MessageCreatedEvent
-  | MessageRemovedEvent
+  | MessagesRemovedEvent
   | PatchCreatedEvent
   | ReactionCreatedEvent
   | ReactionRemovedEvent
-  | AttachmentCreatedEvent
-  | AttachmentRemovedEvent
+  | FileCreatedEvent
+  | FileRemovedEvent
   | NotificationCreatedEvent
-  | NotificationRemovedEvent
+  | NotificationsRemovedEvent
   | NotificationContextCreatedEvent
   | NotificationContextRemovedEvent
   | NotificationContextUpdatedEvent
   | ThreadCreatedEvent
   | MessagesGroupCreatedEvent
+  | AddedCollaboratorsEvent
+  | RemovedCollaboratorsEvent
+  | ThreadUpdatedEvent
 
-export interface MessageCreatedEvent {
+export interface MessageCreatedEvent extends BaseResponseEvent {
   type: ResponseEventType.MessageCreated
   message: Message
 }
 
-export interface MessageRemovedEvent {
-  type: ResponseEventType.MessageRemoved
+export interface MessagesRemovedEvent extends BaseResponseEvent {
+  type: ResponseEventType.MessagesRemoved
   card: CardID
-  message: MessageID
+  messages: MessageID[]
 }
 
-export interface PatchCreatedEvent {
+export interface PatchCreatedEvent extends BaseResponseEvent {
   type: ResponseEventType.PatchCreated
   card: CardID
   patch: Patch
 }
 
-export interface ReactionCreatedEvent {
+export interface ReactionCreatedEvent extends BaseResponseEvent {
   type: ResponseEventType.ReactionCreated
   card: CardID
   reaction: Reaction
 }
 
-export interface ReactionRemovedEvent {
+export interface ReactionRemovedEvent extends BaseResponseEvent {
   type: ResponseEventType.ReactionRemoved
   card: CardID
   message: MessageID
@@ -93,56 +112,77 @@ export interface ReactionRemovedEvent {
   creator: SocialID
 }
 
-export interface AttachmentCreatedEvent {
-  type: ResponseEventType.AttachmentCreated
+export interface FileCreatedEvent extends BaseResponseEvent {
+  type: ResponseEventType.FileCreated
   card: CardID
-  attachment: Attachment
+  file: File
 }
 
-export interface AttachmentRemovedEvent {
-  type: ResponseEventType.AttachmentRemoved
+export interface FileRemovedEvent extends BaseResponseEvent {
+  type: ResponseEventType.FileRemoved
   card: CardID
   message: MessageID
-  attachment: CardID
+  blobId: BlobID
+  creator: SocialID
 }
 
-export interface MessagesGroupCreatedEvent {
+export interface MessagesGroupCreatedEvent extends BaseResponseEvent {
   type: ResponseEventType.MessagesGroupCreated
   group: MessagesGroup
 }
 
-export interface ThreadCreatedEvent {
+export interface ThreadCreatedEvent extends BaseResponseEvent {
   type: ResponseEventType.ThreadCreated
   thread: Thread
 }
 
-export interface NotificationCreatedEvent {
+export interface NotificationCreatedEvent extends BaseResponseEvent {
   type: ResponseEventType.NotificationCreated
-  personalWorkspace: string
   notification: Notification
+  account: AccountID
 }
 
-export interface NotificationRemovedEvent {
-  type: ResponseEventType.NotificationRemoved
-  personalWorkspace: string
-  message: MessageID
+export interface NotificationsRemovedEvent extends BaseResponseEvent {
+  type: ResponseEventType.NotificationsRemoved
+  untilDate: Date
   context: ContextID
+  account: AccountID
 }
 
-export interface NotificationContextCreatedEvent {
+export interface NotificationContextCreatedEvent extends BaseResponseEvent {
   type: ResponseEventType.NotificationContextCreated
   context: NotificationContext
 }
 
-export interface NotificationContextRemovedEvent {
+export interface NotificationContextRemovedEvent extends BaseResponseEvent {
   type: ResponseEventType.NotificationContextRemoved
-  personalWorkspace: string
   context: ContextID
+  account: AccountID
 }
 
-export interface NotificationContextUpdatedEvent {
+export interface NotificationContextUpdatedEvent extends BaseResponseEvent {
   type: ResponseEventType.NotificationContextUpdated
-  personalWorkspace: string
   context: ContextID
-  update: NotificationContextUpdate
+  account: AccountID
+  lastView?: Date
+  lastUpdate?: Date
+}
+
+export interface AddedCollaboratorsEvent extends BaseResponseEvent {
+  type: ResponseEventType.AddedCollaborators
+  card: CardID
+  collaborators: AccountID[]
+}
+
+export interface RemovedCollaboratorsEvent extends BaseResponseEvent {
+  type: ResponseEventType.RemovedCollaborators
+  card: CardID
+  collaborators: AccountID[]
+}
+
+export interface ThreadUpdatedEvent extends BaseResponseEvent {
+  type: ResponseEventType.ThreadUpdated
+  thread: CardID
+  replies: 'increment' | 'decrement'
+  lastReply?: Date
 }

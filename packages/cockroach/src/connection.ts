@@ -103,7 +103,7 @@ export function connect(connectionString: string, database?: string): PostgresCl
       database,
       max: 5,
       fetch_types: false,
-      prepare: true,
+      prepare: false,
       ...extraOptions
     })
 

@@ -16,7 +16,7 @@
 import { type ParameterOrJSON, type Row } from 'postgres'
 import type { WorkspaceID } from '@hcengineering/communication-types'
 
-import { type SqlClient, type Logger, type Options } from '../types'
+import { type Logger, type Options, type SqlClient } from '../types'
 
 export class BaseDb {
   constructor (
@@ -26,11 +26,7 @@ export class BaseDb {
     readonly options?: Options
   ) {}
 
-  async execute<T extends any[] = (Row & Iterable<Row>)[]>(
-    sql: string,
-    params?: ParameterOrJSON<any>[],
-    name?: string
-  ): Promise<T> {
+  async execute<T = Row & Iterable<Row>>(sql: string, params?: ParameterOrJSON<any>[], name?: string): Promise<T[]> {
     if (this.options?.withLogs === true && this.logger !== undefined) {
       return await this.executeWithLogs(name ?? 'execute sql', this.logger, sql, params)
     }
@@ -38,16 +34,16 @@ export class BaseDb {
     return await this.client.execute(sql, params)
   }
 
-  private async executeWithLogs<T extends any[] = (Row & Iterable<Row>)[]>(
+  private async executeWithLogs<T = Row & Iterable<Row>>(
     name: string,
     logger: Logger,
     sql: string,
     params?: ParameterOrJSON<any>[]
-  ): Promise<T> {
+  ): Promise<T[]> {
     const start = performance.now()
 
     try {
-      return await this.client.execute(sql, params)
+      return await this.client.execute<T>(sql, params)
     } finally {
       const time = performance.now() - start
       logger.info(name, { time })

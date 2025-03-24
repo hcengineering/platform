@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import type { CardID, Message, MessageID, RichText, SocialID } from './message'
+import type { BlobID, CardID, RichText, SocialID } from './core'
+import type { Message, MessageID, MessageType, MessageData } from './message'
 
 export interface FileMetadata {
   card: CardID
@@ -24,12 +25,24 @@ export interface FileMetadata {
 
 export interface FileMessage {
   id: MessageID
+  type: MessageType
   content: RichText
+  creator: SocialID
+  data?: MessageData
+  created: Date
   edited?: Date
+  reactions: FileReaction[]
+  files: FileBlob[]
+  thread?: FileThread
+}
+
+export interface FileBlob {
+  blobId: BlobID
+  type: string
+  filename: string
+  size: number
   creator: SocialID
   created: Date
-  reactions: FileReaction[]
-  thread?: FileThread
 }
 
 export interface FileReaction {

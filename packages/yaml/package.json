@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/communication-types",
+  "name": "@hcengineering/communication-yaml",
   "version": "0.1.147",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -15,14 +15,16 @@
     "bundle:node": "bun build src/index.ts --target node --format cjs --outfile dist/index.cjs"
   },
   "devDependencies": {
-    "@types/bun": "^1.1.14"
+    "@types/bun": "^1.1.14",
+    "@types/js-yaml": "^4.0.9"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.28",
-    "@hcengineering/card": "^0.7.28"
+    "@hcengineering/communication-types": "workspace:*",
+    "@hcengineering/communication-shared": "workspace:*",
+    "js-yaml": "^4.1.0"
   },
   "repository": {
     "type": "git",

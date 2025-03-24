@@ -74,6 +74,14 @@ export class QueryResult<T> {
     this.objectById = new Map([[this.getId(object), object], ...this.objectById])
   }
 
+  pop(): T | undefined {
+    const array = Array.from(this.objectById.values())
+    const last = array[array.length - 1]
+    if (last === undefined) return
+    this.objectById.delete(this.getId(last))
+    return last
+  }
+
   update(object: T): void {
     this.objectById.set(this.getId(object), object)
   }
@@ -95,6 +103,12 @@ export class QueryResult<T> {
     for (const object of objects) {
       this.objectById.set(this.getId(object), object)
     }
+  }
+
+  sort(compare: (a: T, b: T) => number): void {
+    const current = Array.from(this.objectById.values())
+    const sorted = current.sort(compare)
+    this.objectById = new Map(sorted.map<[ID, T]>((object) => [this.getId(object), object]))
   }
 
   copy(): QueryResult<T> {

@@ -15,6 +15,9 @@
 
 import { type ParameterOrJSON, type Row } from 'postgres'
 
+export type SqlRow = Row & Iterable<Row>
+export type SqlParams = ParameterOrJSON<any>[]
+
 export interface Logger {
   info: (message: string, data?: Record<string, any>) => void
   warn: (message: string, data?: Record<string, any>) => void
@@ -26,6 +29,7 @@ export interface Options {
 }
 
 export interface SqlClient {
-  execute: <T extends any[] = (Row & Iterable<Row>)[]>(query: string, params?: ParameterOrJSON<any>[]) => Promise<T>
+  execute: <T = SqlRow>(query: string, params?: SqlParams) => Promise<T[]>
+  cursor: <T = SqlRow>(query: string, params?: SqlParams, size?: number) => AsyncIterable<NonNullable<T[][number]>[]>
   close: () => void
 }
