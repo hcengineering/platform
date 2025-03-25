@@ -25,7 +25,6 @@ import type {
   ApplicationNavModel,
   HiddenApplication,
   SpaceView,
-  TxSidebarEvent,
   Widget,
   WidgetPreference,
   WidgetTab,
@@ -43,7 +42,6 @@ export const workbenchPlugin = plugin(workbenchId, {
     HiddenApplication: '' as Ref<Class<HiddenApplication>>,
     Widget: '' as Ref<Class<Widget>>,
     WidgetPreference: '' as Ref<Class<WidgetPreference>>,
-    TxSidebarEvent: '' as Ref<Class<TxSidebarEvent<Record<string, any>>>>,
     WorkbenchTab: '' as Ref<Class<WorkbenchTab>>
   },
   mixin: {

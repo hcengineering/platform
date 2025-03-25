@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { AccountRole, AccountUuid, Class, Doc, DocumentQuery, Obj, Ref, Space, Tx } from '@hcengineering/core'
+import type { AccountRole, AccountUuid, Class, Doc, DocumentQuery, Obj, Ref, Space } from '@hcengineering/core'
 import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -94,23 +94,6 @@ export interface WidgetTab {
   objectClass?: Ref<Class<Doc>>
   data?: Record<string, any>
   readonly?: boolean
-}
-
-/** @public */
-export enum SidebarEvent {
-  OpenWidget = 'openWidget'
-}
-
-/** @public */
-export interface OpenSidebarWidgetParams {
-  widget: Ref<Widget>
-  tab?: WidgetTab
-}
-
-/** @public */
-export interface TxSidebarEvent<T extends Record<string, any> = Record<string, any>> extends Tx {
-  event: SidebarEvent
-  params: T
 }
 
 /** @public */

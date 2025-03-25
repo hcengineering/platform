@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Tx } from '@hcengineering/core'
-  import { addTxListener, createQuery, getClient, removeTxListener } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { panelstore } from '@hcengineering/ui'
-  import { OpenSidebarWidgetParams, SidebarEvent, TxSidebarEvent, WidgetPreference } from '@hcengineering/workbench'
-  import { onMount } from 'svelte'
+  import { WidgetPreference } from '@hcengineering/workbench'
 
   import workbench from '../../plugin'
-  import { createWidgetTab, openWidget, sidebarStore, SidebarVariant } from '../../sidebar'
+  import { sidebarStore, SidebarVariant } from '../../sidebar'
   import SidebarExpanded from './SidebarExpanded.svelte'
   import SidebarMini from './SidebarMini.svelte'
 
@@ -36,29 +34,6 @@
 
   $: mini = $sidebarStore.variant === SidebarVariant.MINI
   $: if ((!mini || mini) && $panelstore.panel?.refit !== undefined) $panelstore.panel.refit()
-
-  function txListener (txes: Tx[]): void {
-    const evt = txes.findLast(
-      (it) => it._class === workbench.class.TxSidebarEvent && evt.event === SidebarEvent.OpenWidget
-    ) as TxSidebarEvent
-    if (evt !== undefined) {
-      const params = evt.params as OpenSidebarWidgetParams
-      const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: params.widget })[0]
-      if (widget === undefined) return
-      if (params.tab !== undefined) {
-        createWidgetTab(widget, params.tab)
-      } else {
-        openWidget(widget)
-      }
-    }
-  }
-
-  onMount(() => {
-    addTxListener(txListener)
-    return () => {
-      removeTxListener(txListener)
-    }
-  })
 </script>
 
 <div id="sidebar" class="antiPanel-application vertical sidebar-container" class:mini={mini || $sidebarStore.float}>

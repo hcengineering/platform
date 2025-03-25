@@ -24,17 +24,15 @@ import type {
   ApplicationNavModel,
   HiddenApplication,
   SpaceView,
-  TxSidebarEvent,
   ViewConfiguration,
   Widget,
   WidgetPreference,
   WidgetTab,
   WidgetType,
-  SidebarEvent,
   WorkbenchTab
 } from '@hcengineering/workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import core, { TClass, TDoc, TTx } from '@hcengineering/model-core'
+import core, { TClass, TDoc } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 
 import workbench from './plugin'
@@ -97,12 +95,6 @@ export class TWidgetPreference extends TPreference implements WidgetPreference {
   enabled!: boolean
 }
 
-@Model(workbench.class.TxSidebarEvent, core.class.Doc)
-export class TTxSidebarEvent extends TTx implements TxSidebarEvent {
-  event!: SidebarEvent
-  params!: Record<string, any>
-}
-
 @Model(workbench.class.WorkbenchTab, preference.class.Preference)
 @UX(workbench.string.Tab)
 export class TWorkbenchTab extends TPreference implements WorkbenchTab {
@@ -120,7 +112,6 @@ export function createModel (builder: Builder): void {
     TApplicationNavModel,
     TWidget,
     TWidgetPreference,
-    TTxSidebarEvent,
     TWorkbenchTab
   )
 
