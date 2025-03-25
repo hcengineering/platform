@@ -78,7 +78,8 @@ describe('rest-api-server', () => {
         uuid: apiWorkspace1.info.account,
         role: apiWorkspace1.info.role,
         primarySocialId: pickPrimarySocialId(socialIds)._id,
-        socialIds: socialIds.map((si) => si._id)
+        socialIds: socialIds.map((si) => si._id),
+        fullSocialIds: socialIds
       },
       connect(),
       socialIds,
@@ -91,7 +92,8 @@ describe('rest-api-server', () => {
         uuid: apiWorkspace2.info.account,
         role: apiWorkspace2.info.role,
         primarySocialId: pickPrimarySocialId(socialIds)._id,
-        socialIds: socialIds.map((si) => si._id)
+        socialIds: socialIds.map((si) => si._id),
+        fullSocialIds: socialIds
       },
       connect(apiWorkspace2),
       socialIds,

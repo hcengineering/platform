@@ -185,7 +185,8 @@ export async function connect (title: string): Promise<Client | undefined> {
     uuid: account,
     role: workspaceLoginInfo.role,
     primarySocialId: '' as PersonId,
-    socialIds: []
+    socialIds: [],
+    fullSocialIds: []
   }
 
   if (me !== undefined) {

@@ -90,7 +90,8 @@ export const systemAccount: Account = {
   uuid: systemAccountUuid,
   role: AccountRole.Owner,
   primarySocialId: '' as PersonId,
-  socialIds: []
+  socialIds: [],
+  fullSocialIds: []
 }
 
 export const configUserAccountUuid = '0d94731c-0787-4bcd-aefe-304efc3706b1' as AccountUuid
