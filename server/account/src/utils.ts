@@ -80,14 +80,6 @@ export async function getAccountDB (uri: string, dbNs?: string): Promise<[Accoun
   } else {
     const client = getDBClient(sharedPipelineContextVars, uri)
     const pgClient = await client.getClient()
-
-    // For testing, mailboxes could be stored in a separate database closer to the mailbox service
-    // which is running on a separate non-local node with public IP and real domain name.
-    if (process.env.MAILBOX_DB_URL !== undefined) {
-      const client = getDBClient(sharedPipelineContextVars, process.env.MAILBOX_DB_URL)
-      ;(pgClient as any).mailboxClient = await client.getClient()
-    }
-
     const pgAccount = new PostgresAccountDB(pgClient, dbNs ?? 'global_account')
 
     let error = false
@@ -1290,4 +1282,8 @@ export async function getWorkspaceRole (
   }
 
   return await db.getWorkspaceRole(account, workspace)
+}
+
+export function generatePassword (len: number = 24): string {
+  return randomBytes(len).toString('base64').slice(0, len)
 }

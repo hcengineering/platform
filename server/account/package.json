@@ -50,7 +50,6 @@
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-pipeline": "^0.6.0",
-    "crypto-random-string": "^5.0.0"
+    "@hcengineering/server-pipeline": "^0.6.0"
   }
 }

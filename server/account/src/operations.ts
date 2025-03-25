@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import crypto from 'crypto'
-import cryptoRandomString from 'crypto-random-string'
 import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
@@ -103,7 +100,8 @@ import {
   wrap,
   getWorkspaceRole,
   normalizeValue,
-  isEmail
+  isEmail,
+  generatePassword
 } from './utils'
 
 // Move to config?
@@ -2164,35 +2162,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
     ensurePerson: wrap(ensurePerson)
   }
-}
-
-/**
- * Generates a cryptographically secure random password with specified parameters
- * @param length The length of the password (default: 24)
- * @param includeUppercase Include uppercase letters (default: true)
- * @param includeLowercase Include lowercase letters (default: true)
- * @param includeNumbers Include numbers (default: true)
- * @param includeSpecial Include special characters (default: true)
- * @returns A secure random password string
- */
-function generatePassword (
-  length: number = 24,
-  includeUppercase: boolean = true,
-  includeLowercase: boolean = true,
-  includeNumbers: boolean = true,
-  includeSpecial: boolean = false
-): string {
-  let type = ''
-  if (includeLowercase) type += 'abcdefghijklmnopqrstuvwxyz'
-  if (includeUppercase) type += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  if (includeNumbers) type += '0123456789'
-  if (includeSpecial) type += '!@#$%^&*()-_=+[]{}|;:,.<>?'
-
-  if (type.length === 0) {
-    throw new Error('At least one character set must be included')
-  }
-
-  return cryptoRandomString({ length, characters: type })
 }
 
 export * from './plugin'
