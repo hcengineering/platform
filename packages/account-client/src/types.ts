@@ -26,6 +26,11 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   role: AccountRole
 }
 
+export interface WorkspaceInviteInfo {
+  workspace: WorkspaceUuid
+  email?: string
+}
+
 export interface OtpInfo {
   sent: boolean
   retryOn: Timestamp
