@@ -393,8 +393,15 @@ export class PostgresAccountDB implements AccountDB {
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client)
     this.otp = new PostgresDbCollection<OTP>('otp', client)
     this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, 'id')
-    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, 'mailbox')
-    this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client)
+    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>(
+      'mailbox',
+      (client as any).mailboxClient ?? client,
+      'mailbox'
+    )
+    this.mailboxSecret = new PostgresDbCollection<MailboxSecret>(
+      'mailbox_secrets',
+      (client as any).mailboxClient ?? client
+    )
   }
 
   getWsMembersTableName (): string {

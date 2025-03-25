@@ -140,6 +140,8 @@
     "Mailboxes": "Mailboxes",
     "CreateMailbox": "Create mailbox",
     "CreateMailboxPlaceholder": "my-cool-name",
+    "MailboxNoDomains": "Email domains are not configured",
+    "MailboxLimitReached": "Mailbox limit reached",
     "MailboxErrorInvalidName": "Mailbox name is invalid",
     "MailboxErrorDomainNotFound": "Domain not found",
     "MailboxErrorNameRulesViolated": "Mialbox name must be {minLen} to {maxLen} characters long",

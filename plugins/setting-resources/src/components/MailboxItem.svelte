@@ -56,7 +56,8 @@
         dangerous: true,
         okLabel: setting.string.Delete,
         action: async () => {
-          getAccountClient().deleteMailbox(mailbox.mailbox)
+          getAccountClient()
+            .deleteMailbox(mailbox.mailbox)
             .then(() => {
               reloadRequested()
             })
@@ -84,7 +85,7 @@
 <div class="hulyTableAttr-container" class:mt-6={mailboxIdx > 0}>
   <div class="hulyTableAttr-header heading-medium-16" style="text-transform: unset">
     <Icon icon={setting.icon.Mailbox} size="small" />
-    <span>{mailbox.mailbox}</span>
+    <span style="user-select: text">{mailbox.mailbox}</span>
     <div class="buttons-group tertiary-textColor">
       <ButtonIcon
         kind="tertiary"
@@ -99,4 +100,89 @@
       />
     </div>
   </div>
+  <!-- TODO
+  <div class="hulyTableAttr-content withTitle">
+    <div class="flex-col column">
+      <div class="hulyTableAttr-content__title">
+        <span class="pl-2">
+          Aliases
+        </span>
+      </div>
+      <div class="hulyTableAttr-content__wrapper flex-gap-1">
+        {#each mailbox.aliases ?? [] as alias}
+          <NavItem
+            title={alias}
+            icon={setting.icon.InviteSettings}
+            type="type-link"
+          >
+            <svelte:fragment slot="actions">
+              <ButtonIcon
+                icon={IconDelete}
+                size="extra-small"
+                kind="tertiary"
+                tooltip={{ label: setting.string.Delete, direction: 'top' }}
+                on:click={() => {
+                  deleteAlias(alias)
+                }}
+              />
+            </svelte:fragment>
+          </NavItem>
+        {/each}
+        <NavItem
+          title="Create alias"
+          icon={IconAdd}
+          type="type-link"
+          on:click={createAlias}
+        />
+      </div>
+    </div>
+    <div class="flex-col column">
+      <div class="hulyTableAttr-content__title">
+        <span class="pl-2">
+          App passwords
+        </span>
+      </div>
+      <div class="hulyTableAttr-content__wrapper flex-gap-1">
+        {#each mailbox.appPasswords ?? [] as app}
+          <NavItem
+            title={app}
+            icon={setting.icon.Password}
+            type="type-link"
+          >
+            <svelte:fragment slot="actions">
+              <ButtonIcon
+                icon={IconDelete}
+                size="extra-small"
+                kind="tertiary"
+                tooltip={{ label: setting.string.Delete, direction: 'top' }}
+                on:click={() => {
+                  deletePassword(app)
+                }}
+              />
+            </svelte:fragment>
+          </NavItem>
+        {/each}
+        <NavItem
+          title="Add password"
+          icon={IconAdd}
+          type="type-link"
+          on:click={createPassword}
+        />
+      </div>
+    </div>
+  </div>
+  -->
 </div>
+
+<!-- TODO
+<style lang="scss">
+  .column {
+    flex: 1;
+    padding-bottom: 0.75rem;
+
+    &:first-child {
+      border-right: 1px solid var(--theme-divider-color);
+    }
+  }
+</style>
+-->

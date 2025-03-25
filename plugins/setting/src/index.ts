@@ -230,6 +230,8 @@ export default plugin(settingId, {
     Mailboxes: '' as IntlString,
     CreateMailbox: '' as IntlString,
     CreateMailboxPlaceholder: '' as IntlString,
+    MailboxNoDomains: '' as IntlString,
+    MailboxLimitReached: '' as IntlString,
     MailboxErrorInvalidName: '' as IntlString,
     MailboxErrorDomainNotFound: '' as IntlString,
     MailboxErrorNameRulesViolated: '' as IntlString,

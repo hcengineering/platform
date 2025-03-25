@@ -1976,12 +1976,11 @@ export async function ensurePerson (
 }
 
 async function getMailboxOptions (): Promise<MailboxOptions> {
-  // TODO: read from config
   return {
-    availableDomains: ['example.com', 'huly.app'],
-    minNameLength: 6,
-    maxNameLength: 16,
-    maxMailboxCount: 100
+    availableDomains: process.env.MAILBOX_DOMAINS?.split(',') ?? [],
+    minNameLength: parseInt(process.env.MAILBOX_MIN_NAME_LENGTH ?? '6'),
+    maxNameLength: parseInt(process.env.MAILBOX_MAX_NAME_LENGTH ?? '30'),
+    maxMailboxCount: parseInt(process.env.MAILBOX_MAX_COUNT_PER_ACCOUNT ?? '1')
   }
 }
 

@@ -13,34 +13,64 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Breadcrumb, Header, IconAdd, Loading, ModernButton, Scroller, showPopup } from '@hcengineering/ui'
+  import {
+    Breadcrumb,
+    Header,
+    IconAdd,
+    IconCheck,
+    Label,
+    Loading,
+    ModernButton,
+    Scroller,
+    showPopup
+  } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import MailboxEditorModal from './MailboxEditorModal.svelte'
   import { getAccountClient } from '../utils'
   import { onMount } from 'svelte'
-  import { MailboxInfo } from '@hcengineering/account-client'
+  import { MailboxInfo, MailboxOptions } from '@hcengineering/account-client'
   import MailboxItem from './MailboxItem.svelte'
 
-  let loading = true
+  let boxesLoading = true
+  let optionsLoading = true
   let mailboxes: MailboxInfo[] = []
+  let mailboxOptions: MailboxOptions | undefined
 
   function loadMailboxes (): void {
-    getAccountClient().getMailboxes()
+    getAccountClient()
+      .getMailboxes()
       .then((res) => {
-        loading = false
+        boxesLoading = false
         mailboxes = res
         mailboxes.sort((a, b) => a.mailbox.localeCompare(b.mailbox))
       })
       .catch((err) => {
-        loading = false
+        boxesLoading = false
         mailboxes = []
         console.error('Failed to load mailboxes', err)
       })
   }
 
+  function loadMailboxOptions (): void {
+    getAccountClient()
+      .getMailboxOptions()
+      .then((res) => {
+        optionsLoading = false
+        mailboxOptions = res
+      })
+      .catch((err: any) => {
+        optionsLoading = false
+        console.error('Failed to load mailbox options', err)
+      })
+  }
+
   function create (): void {
-    showPopup(MailboxEditorModal, {}, 'top', (res) => {
-      if (res) {
+    if (mailboxOptions === undefined) {
+      console.warn('Mailbox options not loaded yet')
+      return
+    }
+    showPopup(MailboxEditorModal, { mailboxOptions }, 'top', (res) => {
+      if (res === true) {
         loadMailboxes()
       }
     })
@@ -48,6 +78,7 @@
 
   onMount(() => {
     loadMailboxes()
+    loadMailboxOptions()
   })
 </script>
 
@@ -55,23 +86,40 @@
   <Header adaptive={'disabled'}>
     <Breadcrumb icon={setting.icon.Mailbox} label={setting.string.Mailboxes} size="large" isCurrent />
     <svelte:fragment slot="actions">
-      <ModernButton
-        kind="primary"
-        icon={IconAdd}
-        label={setting.string.CreateMailbox}
-        size="small"
-        on:click={create}
-      />
+      {#if mailboxOptions !== undefined && mailboxOptions.availableDomains.length > 0}
+        {#if mailboxes.length >= mailboxOptions.maxMailboxCount}
+          <ModernButton
+            kind="secondary"
+            icon={IconCheck}
+            label={setting.string.MailboxLimitReached}
+            size="small"
+            disabled
+          />
+        {:else}
+          <ModernButton
+            kind="primary"
+            icon={IconAdd}
+            label={setting.string.CreateMailbox}
+            disabled={boxesLoading}
+            size="small"
+            on:click={create}
+          />
+        {/if}
+      {/if}
     </svelte:fragment>
   </Header>
   <div class="hulyComponent-content__container columns">
     <div class="hulyComponent-content__column p-6">
-      {#if loading}
+      {#if boxesLoading || optionsLoading}
         <Loading />
+      {:else if mailboxOptions !== undefined && mailboxOptions.availableDomains.length === 0}
+        <div class="hulyComponent-content__empty">
+          <Label label={setting.string.MailboxNoDomains} />
+        </div>
       {:else}
         <Scroller>
           {#each mailboxes as mailbox, i}
-            <MailboxItem mailbox={mailbox} mailboxIdx={i} reloadRequested={loadMailboxes} />
+            <MailboxItem {mailbox} mailboxIdx={i} reloadRequested={loadMailboxes} />
           {/each}
         </Scroller>
       {/if}

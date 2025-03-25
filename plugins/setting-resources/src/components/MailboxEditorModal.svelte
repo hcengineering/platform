@@ -17,41 +17,32 @@
   import presentation from '@hcengineering/presentation'
   import { Dropdown, ListItem, Modal, ModernEditbox, Spinner, themeStore } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { getAccountClient } from '../utils'
   import { IntlString, translateCB } from '@hcengineering/platform'
 
+  export let mailboxOptions: MailboxOptions
+
   let name = ''
-  let domain: ListItem | undefined
-  let domains: ListItem[] = []
-  let mailboxOptions: MailboxOptions | undefined
-  let loading = true
+  let loading = false
   let error: string | undefined
+  let domains: ListItem[] = []
+  let domain: ListItem | undefined
 
   const dispatch = createEventDispatcher()
 
-  $: canSave = !loading && domain !== undefined && validateName(name)
+  $: canSave = !loading && validateName(name)
+  $: domains = mailboxOptions.availableDomains.map((d) => ({ _id: d, label: '@' + d }))
 
   function validateName (name: string): boolean {
-    if (name.length === 0) {
-      return false
-    }
     const n = name.trim()
-    if (mailboxOptions !== undefined) {
-      if (n.length < mailboxOptions.minNameLength || n.length > mailboxOptions.maxNameLength) {
-        return false
-      }
-    }
-    return true
+    return n.length >= mailboxOptions.minNameLength && n.length <= mailboxOptions.maxNameLength
   }
 
   async function save (): Promise<void> {
-    if (!canSave || domain === undefined) {
-      return
-    }
     loading = true
     try {
-      await getAccountClient().createMailbox(name, domain._id)
+      await getAccountClient().createMailbox(name, (domain ?? domains[0])._id)
       loading = false
       dispatch('close', true)
     } catch (err: any) {
@@ -72,8 +63,8 @@
         errMsg = setting.string.MailboxErrorDomainNotFound
       } else if (error.includes('name-rules-violated')) {
         errMsg = setting.string.MailboxErrorNameRulesViolated
-        errParams.minLen = mailboxOptions?.minNameLength
-        errParams.maxLen = mailboxOptions?.maxNameLength
+        errParams.minLen = mailboxOptions.minNameLength
+        errParams.maxLen = mailboxOptions.maxNameLength
       } else if (error.includes('mailbox-exists')) {
         errMsg = setting.string.MailboxErrorMailboxExists
       } else if (error.includes('mailbox-count-limit')) {
@@ -89,24 +80,6 @@
       error = r
     })
   }
-
-  onMount(() => {
-    const client = getAccountClient()
-    client.getMailboxOptions()
-      .then((res) => {
-        loading = false
-        mailboxOptions = res
-        domains = res.availableDomains.map((d) => ({ _id: d, label: '@' + d }))
-        if (domains.length > 0) {
-          domain = domains[0]
-        }
-      })
-      .catch((err: any) => {
-        loading = false
-        formatError(err)
-        console.error('Failed to load mailbox options', err)
-      })
-  })
 </script>
 
 <Modal
@@ -115,7 +88,7 @@
   width="small"
   okLabel={presentation.string.Create}
   okAction={save}
-  canSave={canSave}
+  {canSave}
   showCancelButton={false}
   onCancel={() => {
     dispatch('close')
@@ -135,8 +108,7 @@
         size="large"
         placeholder={setting.string.CreateMailbox}
         items={domains}
-        selected={domain}
-        disabled={domains.length === 0}
+        selected={domain ?? domains[0]}
         withSearch={false}
       />
     </div>
