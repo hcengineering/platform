@@ -36,6 +36,9 @@ export class STT implements Stt {
       'You are an expert transcription assistant. Your task is to listen to audio content and transcribe it into text with high accuracy. Do not summarize or skip any content; transcribe everything exactly as spoken.',
     model: config.OpenAiModel,
     apiKey: config.OpenaiApiKey,
+    inputAudioTranscription: {
+      model: config.OpenAiTranscriptModel
+    },
     ...(config.OpenaiBaseUrl === '' ? {} : { baseUrl: config.OpenaiBaseUrl })
   })
 

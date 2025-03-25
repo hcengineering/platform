@@ -16,7 +16,6 @@
   import { MasterTag } from '@hcengineering/card'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ClassHierarchy } from '@hcengineering/setting-resources'
   import { ButtonIcon, getCurrentLocation, Icon, IconAdd, Label, navigate, showPopup } from '@hcengineering/ui'
   import card from '../../plugin'
   import CreateTag from '../CreateTag.svelte'

@@ -15,6 +15,7 @@
 
 import core, {
   Doc,
+  PersonId,
   systemAccountUuid,
   Tx,
   TxCreateDoc,
@@ -26,18 +27,13 @@ import core, {
 import { TriggerControl } from '@hcengineering/server-core'
 import { getAccountBySocialKey } from '@hcengineering/server-contact'
 import { aiBotEmailSocialKey, AIEventRequest } from '@hcengineering/ai-bot'
+import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
+import contact from '@hcengineering/contact'
 
 import { createAccountRequest, hasAiEndpoint, sendAIEvents } from './utils'
-import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
 
 async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl): Promise<Tx[]> {
   if (!hasAiEndpoint()) {
-    return []
-  }
-
-  let account = await getAccountBySocialKey(control, aiBotEmailSocialKey)
-
-  if (control.ctx.contextData.account.uuid === account) {
     return []
   }
 
@@ -67,13 +63,13 @@ async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl)
       }
     }
 
-    if (account === undefined) {
-      account = await getAccountBySocialKey(control, aiBotEmailSocialKey)
+    const socialIdentity = (
+      await control.findAll(control.ctx, contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, { limit: 1 })
+    )[0]
 
-      if (account === undefined) {
-        await createAccountRequest(control.workspace.uuid, control.ctx)
-        return []
-      }
+    if (socialIdentity === undefined) {
+      await createAccountRequest(control.workspace.uuid, control.ctx)
+      return []
     }
   }
 
@@ -84,9 +80,23 @@ async function OnMessageSend (originTxs: TxCreateDoc<ChatMessage>[], control: Tr
   if (!hasAiEndpoint()) {
     return []
   }
+  const { account } = control.ctx.contextData
+  const primaryIdentity = (
+    await control.findAll(control.ctx, contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, { limit: 1 })
+  )[0]
+
+  if (primaryIdentity === undefined) return []
+
+  const allAiSocialIds: PersonId[] = account.socialIds.includes(primaryIdentity._id)
+    ? account.socialIds
+    : (
+        await control.findAll(control.ctx, contact.class.SocialIdentity, {
+          attachedTo: primaryIdentity.attachedTo
+        })
+      ).map((it) => it._id)
 
   const { hierarchy } = control
-  const txes = originTxs.filter((it) => it.modifiedBy !== aiBotEmailSocialKey)
+  const txes = originTxs.filter((it) => !allAiSocialIds.includes(it.modifiedBy))
 
   if (txes.length === 0) {
     return []

@@ -342,7 +342,8 @@ export class TSessionManager implements SessionManager {
           uuid: loginInfo.account,
           role: loginInfo.role,
           primarySocialId: '' as PersonId,
-          socialIds: []
+          socialIds: [],
+          fullSocialIds: []
         }
       }
 
@@ -351,7 +352,8 @@ export class TSessionManager implements SessionManager {
           uuid: loginInfo.account,
           role: loginInfo.role,
           primarySocialId: core.account.System,
-          socialIds: []
+          socialIds: [core.account.System],
+          fullSocialIds: []
         }
       }
 
@@ -361,7 +363,8 @@ export class TSessionManager implements SessionManager {
         uuid: loginInfo.account,
         role: loginInfo.role,
         primarySocialId: pickPrimarySocialId(socialIds)._id,
-        socialIds: socialIds.map((si) => si._id)
+        socialIds: socialIds.map((si) => si._id),
+        fullSocialIds: socialIds
       }
     } catch (err: any) {
       if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {

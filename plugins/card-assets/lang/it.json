@@ -27,6 +27,8 @@
     "Views": "Viste",
     "CreateView": "Crea vista",
     "EditView": "Modifica vista",
-    "SelectViewType": "Seleziona il tipo di vista"
+    "SelectViewType": "Seleziona il tipo di vista",
+    "Document": "Documento",
+    "ChangeType": "Cambia tipo"
   }
 }

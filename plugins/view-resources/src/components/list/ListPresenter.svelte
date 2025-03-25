@@ -55,6 +55,7 @@
       {onChange}
       kind={'list'}
       {compactMode}
+      label={attributeModel.label}
       {...joinProps(attributeModel, docObject, props)}
       on:resize={translateSize}
     />
@@ -65,6 +66,7 @@
     {value}
     {onChange}
     kind={'list'}
+    label={attributeModel.label}
     {compactMode}
     {...joinProps(attributeModel, docObject, props)}
     on:resize={translateSize}

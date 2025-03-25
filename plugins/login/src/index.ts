@@ -35,6 +35,7 @@ export const pages = [
   'selectWorkspace',
   'admin',
   'join',
+  'autoJoin',
   'confirm',
   'confirmationSend',
   'auth',

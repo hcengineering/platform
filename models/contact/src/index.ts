@@ -819,7 +819,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: contact.component.PersonRefPresenter
+    presenter: contact.component.PersonRefPresenter,
+    arrayPresenter: contact.component.ContactArrayEditor
   })
 
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.AttributePresenter, {
@@ -827,7 +828,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: contact.component.EmployeeRefPresenter
+    presenter: contact.component.EmployeeRefPresenter,
+    arrayPresenter: contact.component.EmployeeArrayEditor
   })
 
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.IgnoreActions, {

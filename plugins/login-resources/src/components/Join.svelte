@@ -114,6 +114,7 @@
   async function check (): Promise<void> {
     if (location.query?.inviteId === undefined || location.query?.inviteId === null) return
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+
     const [, result] = await checkJoined(location.query.inviteId)
     status = OK
     if (result != null) {
