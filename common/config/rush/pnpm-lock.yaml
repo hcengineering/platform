@@ -1600,6 +1600,9 @@ importers:
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
+      crypto-random-string:
+        specifier: ^5.0.0
+        version: 5.0.0
       css-loader:
         specifier: ^5.2.1
         version: 5.2.7(webpack@5.97.1)
@@ -3741,7 +3744,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/account@file:projects/account.tgz':
-    resolution: {integrity: sha512-NN+0JN9QcVA0sk5OmSpSwhjf0lhiWqXFztNPSOZbNnyziTzKgufXiLjho7Nwubi+aev+EIL8weUdW93QBYh07A==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-MZD8UjjRyNvtVAoo3gXVrxOV0QpbBt3Et5mAoNYr1mj5pI4cz9fQSc+NuLbNn62cAKlyLXm+frPER4PQ8GUbRA==, tarball: file:projects/account.tgz}
     version: 0.0.0
 
   '@rush-temp/activity-assets@file:projects/activity-assets.tgz':
@@ -7552,6 +7555,10 @@ packages:
 
   crypto-js@4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
+
+  crypto-random-string@5.0.0:
+    resolution: {integrity: sha512-KWjTXWwxFd6a94m5CdRGW/t82Tr8DoBc9dNnPCAbFI1EBweN6v1tv8y4Y1m7ndkp/nkIBRxUxAzpaBnR2k3bcQ==}
+    engines: {node: '>=14.16'}
 
   css-loader@5.2.7:
     resolution: {integrity: sha512-Q7mOvpBNBG7YrVGMxRxcBJZFL75o+cH2abNASdibkj/fffYD8qWbInZrD0S9ccI6vZclF3DsHE7njGlLtaHbhg==}
@@ -13416,13 +13423,13 @@ snapshots:
     dependencies:
       '@aws-crypto/util': 5.2.0
       '@aws-sdk/types': 3.734.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@aws-crypto/crc32c@5.2.0':
     dependencies:
       '@aws-crypto/util': 5.2.0
       '@aws-sdk/types': 3.734.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@aws-crypto/sha1-browser@5.2.0':
     dependencies:
@@ -13431,7 +13438,7 @@ snapshots:
       '@aws-sdk/types': 3.734.0
       '@aws-sdk/util-locate-window': 3.568.0
       '@smithy/util-utf8': 2.3.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@aws-crypto/sha256-browser@5.2.0':
     dependencies:
@@ -13730,30 +13737,14 @@ snapshots:
       '@smithy/protocol-http': 5.0.1
       '@smithy/types': 4.1.0
       '@smithy/util-config-provider': 4.0.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@aws-sdk/middleware-expect-continue@3.734.0':
     dependencies:
       '@aws-sdk/types': 3.734.0
       '@smithy/protocol-http': 5.0.1
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
-
-  '@aws-sdk/middleware-flexible-checksums@3.735.0':
-    dependencies:
-      '@aws-crypto/crc32': 5.2.0
-      '@aws-crypto/crc32c': 5.2.0
-      '@aws-crypto/util': 5.2.0
-      '@aws-sdk/core': 3.734.0
-      '@aws-sdk/types': 3.734.0
-      '@smithy/is-array-buffer': 4.0.0
-      '@smithy/node-config-provider': 4.0.1
-      '@smithy/protocol-http': 5.0.1
-      '@smithy/types': 4.1.0
-      '@smithy/util-middleware': 4.0.1
-      '@smithy/util-stream': 4.0.2
-      '@smithy/util-utf8': 4.0.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@aws-sdk/middleware-host-header@3.734.0':
     dependencies:
@@ -13766,7 +13757,7 @@ snapshots:
     dependencies:
       '@aws-sdk/types': 3.734.0
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@aws-sdk/middleware-logger@3.734.0':
     dependencies:
@@ -13802,7 +13793,7 @@ snapshots:
     dependencies:
       '@aws-sdk/types': 3.734.0
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@aws-sdk/middleware-user-agent@3.734.0':
     dependencies:
@@ -13904,7 +13895,7 @@ snapshots:
 
   '@aws-sdk/util-arn-parser@3.723.0':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@aws-sdk/util-endpoints@3.734.0':
     dependencies:
@@ -13918,7 +13909,7 @@ snapshots:
       '@aws-sdk/types': 3.734.0
       '@smithy/querystring-builder': 4.0.1
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@aws-sdk/util-locate-window@3.568.0':
     dependencies:
@@ -13942,7 +13933,7 @@ snapshots:
   '@aws-sdk/xml-builder@3.734.0':
     dependencies:
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@babel/code-frame@7.23.5':
     dependencies:
@@ -15701,6 +15692,7 @@ snapshots:
       '@types/pg': 8.11.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      crypto-random-string: 5.0.0
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -22792,9 +22784,9 @@ snapshots:
 
   '@rush-temp/s3@file:projects/s3.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
-      '@aws-sdk/client-s3': 3.738.0
-      '@aws-sdk/lib-storage': 3.738.0(@aws-sdk/client-s3@3.738.0)
-      '@aws-sdk/s3-request-presigner': 3.738.0
+      '@aws-sdk/client-s3': 3.772.0
+      '@aws-sdk/lib-storage': 3.772.0(@aws-sdk/client-s3@3.772.0)
+      '@aws-sdk/s3-request-presigner': 3.772.0
       '@smithy/node-http-handler': 4.0.2
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
@@ -26749,11 +26741,11 @@ snapshots:
   '@smithy/chunked-blob-reader-native@4.0.0':
     dependencies:
       '@smithy/util-base64': 4.0.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@smithy/chunked-blob-reader@5.0.0':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@smithy/config-resolver@4.0.1':
     dependencies:
@@ -26793,24 +26785,24 @@ snapshots:
     dependencies:
       '@smithy/eventstream-serde-universal': 4.0.1
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@smithy/eventstream-serde-config-resolver@4.0.1':
     dependencies:
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@smithy/eventstream-serde-node@4.0.1':
     dependencies:
       '@smithy/eventstream-serde-universal': 4.0.1
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@smithy/eventstream-serde-universal@4.0.1':
     dependencies:
       '@smithy/eventstream-codec': 4.0.1
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@smithy/fetch-http-handler@5.0.1':
     dependencies:
@@ -26825,7 +26817,7 @@ snapshots:
       '@smithy/chunked-blob-reader': 5.0.0
       '@smithy/chunked-blob-reader-native': 4.0.0
       '@smithy/types': 4.1.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@smithy/hash-node@4.0.1':
     dependencies:
@@ -26838,7 +26830,7 @@ snapshots:
     dependencies:
       '@smithy/types': 4.1.0
       '@smithy/util-utf8': 4.0.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@smithy/invalid-dependency@4.0.1':
     dependencies:
@@ -26857,7 +26849,7 @@ snapshots:
     dependencies:
       '@smithy/types': 4.1.0
       '@smithy/util-utf8': 4.0.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@smithy/middleware-content-length@4.0.1':
     dependencies:
@@ -29531,6 +29523,10 @@ snapshots:
   crypt@0.0.2: {}
 
   crypto-js@4.2.0: {}
+
+  crypto-random-string@5.0.0:
+    dependencies:
+      type-fest: 2.19.0
 
   css-loader@5.2.7(webpack@5.97.1):
     dependencies:
