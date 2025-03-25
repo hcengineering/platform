@@ -473,6 +473,8 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://huly.local:4900
+#      - LOVE_ENDPOINT=http://huly.local:8096
+#      - OPENAI_API_KEY=token
   msg2file:
     image: hardcoreeng/msg2file
     ports:
