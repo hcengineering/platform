@@ -138,7 +138,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
   const measureCtx = initStatisticsContext('export', {})
 
   const app = express()
-  app.use(cors())
+  app.use(cors({ exposedHeaders: 'Content-Disposition' }))
   app.use(express.json())
 
   app.post(
