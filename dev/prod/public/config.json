@@ -21,5 +21,5 @@
   "PASSWORD_STRICTNESS": "none",
   "STREAM_URL": "http://huly.local:1080/recording",
   "PUBLIC_SCHEDULE_URL": "http://huly.local:8060",
-  "EXPORT_URL": "http://huly.local:4009/export"
+  "EXPORT_URL": "http://huly.local:4009"
 }

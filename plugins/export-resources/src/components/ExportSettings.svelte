@@ -17,24 +17,25 @@
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { MessageBox } from '@hcengineering/presentation'
   import { Breadcrumb, Button, DropdownLabelsIntl, Header, Label, Scroller, showPopup } from '@hcengineering/ui'
-  import setting from '../plugin'
+  import plugin from '../plugin'
 
   const classItems = [
-    { id: 'tracker:class:Issue', label: setting.string.ExportIssues },
-    { id: 'document:class:Document', label: setting.string.ExportDocuments },
-    { id: 'testManagement:class:TestCase', label: setting.string.ExportTestCases },
-    { id: 'testManagement:class:TestRun', label: setting.string.ExportTestRuns },
-    { id: 'testManagement:class:TestPlan', label: setting.string.ExportTestPlans }
+    { id: 'tracker:class:Issue', label: plugin.string.ExportIssues },
+    { id: 'tracker:class:Milestone', label: plugin.string.ExportMilestones },
+    { id: 'document:class:Document', label: plugin.string.ExportDocuments },
+    { id: 'testManagement:class:TestCase', label: plugin.string.ExportTestCases },
+    { id: 'testManagement:class:TestRun', label: plugin.string.ExportTestRuns },
+    { id: 'testManagement:class:TestPlan', label: plugin.string.ExportTestPlans }
   ]
 
   const formatItems = [
-    { id: 'json', label: setting.string.ExportJSON },
-    { id: 'csv', label: setting.string.ExportCSV }
+    { id: 'json', label: plugin.string.ExportJSON },
+    { id: 'csv', label: plugin.string.ExportCSV }
   ]
 
   const detailLevelItems = [
-    { id: 'everything', label: setting.string.ExportEverything },
-    { id: 'attributesOnly', label: setting.string.ExportAttributesOnly }
+    { id: 'everything', label: plugin.string.ExportEverything },
+    { id: 'attributesOnly', label: plugin.string.ExportAttributesOnly }
   ]
 
   let selectedClass: Ref<Class<Doc>> = 'tracker:class:Issue' as Ref<Class<Doc>>
@@ -47,35 +48,37 @@
 
     try {
       isExporting = true
-      const baseUrl = getMetadata(setting.metadata.ExportUrl) ?? ''
+      const baseUrl = getMetadata(plugin.metadata.ExportUrl) ?? ''
       const token = getMetadata(presentation.metadata.Token) ?? ''
       const attributesOnly = selectedDetailLevel === 'attributesOnly'
 
-      const res = await fetch(
-        `${baseUrl}?class=${selectedClass}&type=${selectedFormat}&attributesOnly=${attributesOnly}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: 'Bearer ' + token,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
+      const res = await fetch(`${baseUrl}/exportAsync?format=${selectedFormat}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          _class: selectedClass,
+          attributesOnly,
+          config: {}
+        })
+      })
 
       if (!res.ok) {
         throw new Error('Export failed to start')
       }
 
       showPopup(MessageBox, {
-        label: setting.string.ExportRequestSuccess,
+        label: plugin.string.ExportRequestSuccess,
         kind: 'success',
-        message: setting.string.ExportRequestSuccessMessage
+        message: plugin.string.ExportRequestSuccessMessage
       })
     } catch (err) {
       showPopup(MessageBox, {
-        label: setting.string.ExportRequestFailed,
+        label: plugin.string.ExportRequestFailed,
         kind: 'error',
-        message: setting.string.ExportRequestFailedMessage
+        message: plugin.string.ExportRequestFailedMessage
       })
     } finally {
       isExporting = false
@@ -85,7 +88,7 @@
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb icon={setting.icon.Export} label={setting.string.Export} size={'large'} isCurrent />
+    <Breadcrumb icon={plugin.icon.Export} label={plugin.string.Export} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
@@ -94,7 +97,7 @@
           <div class="p-1 min-w-80">
             <div class="antiGrid-row">
               <div class="antiGrid-row__header">
-                <Label label={setting.string.DataToExport} />
+                <Label label={plugin.string.DataToExport} />
               </div>
               <div class="antiGrid-row__content">
                 <DropdownLabelsIntl items={classItems} bind:selected={selectedClass} />
@@ -102,7 +105,7 @@
             </div>
             <div class="antiGrid-row">
               <div class="antiGrid-row__header">
-                <Label label={setting.string.ExportFormat} />
+                <Label label={plugin.string.ExportFormat} />
               </div>
               <div class="antiGrid-row__content">
                 <DropdownLabelsIntl items={formatItems} bind:selected={selectedFormat} />
@@ -110,7 +113,7 @@
             </div>
             <div class="antiGrid-row">
               <div class="antiGrid-row__header">
-                <Label label={setting.string.ExportIncludeContent} />
+                <Label label={plugin.string.ExportIncludeContent} />
               </div>
               <div class="antiGrid-row__content">
                 <DropdownLabelsIntl items={detailLevelItems} bind:selected={selectedDetailLevel} />
@@ -120,7 +123,7 @@
         </div>
         <div class="flex-row-center p-2">
           <Button
-            label={setting.string.Export}
+            label={plugin.string.Export}
             kind={'primary'}
             size={'medium'}
             disabled={isExporting}

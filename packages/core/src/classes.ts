@@ -646,13 +646,6 @@ export interface FullTextSearchContext extends Doc {
   toClass: Ref<Class<Doc>>
   fullTextSummary?: boolean
   forceIndex?: boolean
-
-  // If defined, will propagate changes to child's with defined set of classes
-  propagate?: Ref<Class<Doc>>[]
-  // If defined, will propagate all document from child's based on class
-  propagateClasses?: Ref<Class<Doc>>[]
-
-  childProcessingAllowed?: boolean
 }
 
 /**

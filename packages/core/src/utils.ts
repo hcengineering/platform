@@ -645,9 +645,7 @@ export function getFullTextContext (
   ctx = {
     toClass: objectClass,
     fullTextSummary: false,
-    forceIndex: false,
-    propagate: [],
-    childProcessingAllowed: true
+    forceIndex: false
   }
   hierarchy.setClassifierProp(objectClass, ctxKey, ctx)
   return ctx
