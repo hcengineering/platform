@@ -20,6 +20,7 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { loveId } from '@hcengineering/love'
 import love from '@hcengineering/love-resources/src/plugin'
+import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 
 export default mergeIds(loveId, love, {
   component: {
@@ -50,5 +51,9 @@ export default mergeIds(loveId, love, {
   },
   function: {
     MeetingMinutesTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
+  },
+  completion: {
+    MeetingMinutesQuery: '' as Resource<ObjectSearchFactory>,
+    MeetingMinutesCategory: '' as Ref<ObjectSearchCategory>
   }
 })
