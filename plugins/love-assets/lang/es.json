@@ -85,6 +85,7 @@
     "WithAudio": "Incluir audio del sistema",
     "ShareWithAudioTooltip": "Comparte tu pantalla con el audio del sistema. Reinicia la pantalla compartida para aplicar los cambios.",
     "MicPermission": "Micrófono no encontrado, comprueba los permisos del navegador",
-    "CamPermission": "Cámara no encontrada, comprueba los permisos del navegador"
+    "CamPermission": "Cámara no encontrada, comprueba los permisos del navegador",
+    "SearchMeetingMinutes": "Buscar minutos de reunión..."
   }
 }

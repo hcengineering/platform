@@ -33,7 +33,8 @@ import {
   stopTranscription,
   toggleMic,
   toggleVideo,
-  getMeetingMinutesTitle
+  getMeetingMinutesTitle,
+  queryMeetingMinutes
 } from './utils'
 
 export { setCustomCreateScreenTracks } from './utils'
@@ -85,5 +86,8 @@ export default async (): Promise<Resources> => ({
     StopTranscribing: stopTranscription,
     ShowRoomSettings: showRoomSettings,
     CopyGuestLink: copyGuestLink
+  },
+  completion: {
+    MeetingMinutesQuery: queryMeetingMinutes
   }
 })

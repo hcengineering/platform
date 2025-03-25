@@ -228,7 +228,8 @@ const love = plugin(loveId, {
     Finished: '' as IntlString,
     StartWithRecording: '' as IntlString,
     Kick: '' as IntlString,
-    EndMeeting: '' as IntlString
+    EndMeeting: '' as IntlString,
+    SearchMeetingMinutes: '' as IntlString
   },
   ids: {
     MainFloor: '' as Ref<Floor>,
@@ -258,7 +259,8 @@ const love = plugin(loveId, {
     FullScreen: '' as Asset,
     ExitFullScreen: '' as Asset,
     Invite: '' as Asset,
-    Kick: '' as Asset
+    Kick: '' as Asset,
+    MeetingMinutes: '' as Asset
   },
   sound: {
     Knock: '' as Asset
