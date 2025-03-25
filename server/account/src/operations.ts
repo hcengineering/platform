@@ -1365,15 +1365,23 @@ export async function findPersonBySocialId (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { socialId: PersonId }
+  params: { socialId: PersonId, requireAccount?: boolean }
 ): Promise<PersonUuid | undefined> {
-  const { socialId } = params
+  const { socialId, requireAccount } = params
   decodeTokenVerbose(ctx, token)
 
   const socialIdObj = await db.socialId.findOne({ _id: socialId })
 
   if (socialIdObj == null) {
     return
+  }
+
+  // TODO: combine into one request with join
+  if (requireAccount === true) {
+    const account = await db.account.findOne({ uuid: socialIdObj.personUuid })
+    if (account == null) {
+      return
+    }
   }
 
   return socialIdObj.personUuid
@@ -1384,15 +1392,23 @@ export async function findSocialIdBySocialKey (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { socialKey: string }
+  params: { socialKey: string, requireAccount?: boolean }
 ): Promise<PersonId | undefined> {
-  const { socialKey } = params
+  const { socialKey, requireAccount } = params
   decodeTokenVerbose(ctx, token)
 
   const socialIdObj = await db.socialId.findOne({ key: socialKey })
 
   if (socialIdObj == null) {
     return
+  }
+
+  // TODO: combine into one request with join
+  if (requireAccount === true) {
+    const account = await db.account.findOne({ uuid: socialIdObj.personUuid })
+    if (account == null) {
+      return
+    }
   }
 
   return socialIdObj._id

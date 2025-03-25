@@ -406,7 +406,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   _clientSet = true
   await ctx.with('set-client', {}, async () => {
     await setClient(newClient)
-    await setCommunicationClient(newClient)
+    await setCommunicationClient(newClient, socialIds)
   })
   await ctx.with('broadcast-connected', {}, async () => {
     await broadcastEvent(plugin.event.NotifyConnection, me)

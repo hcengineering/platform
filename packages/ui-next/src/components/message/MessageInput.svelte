@@ -19,6 +19,7 @@
   import { tick, createEventDispatcher, onDestroy } from 'svelte'
   import { uploadFile, deleteFile, getCommunicationClient } from '@hcengineering/presentation'
   import { MessageID, CardID } from '@hcengineering/communication-types'
+  import { AttachmentPresenter } from '@hcengineering/attachment-resources'
 
   import TextInput from '../TextInput.svelte'
   import { defaultMessageInputActions, toMarkdown } from '../../utils'
@@ -69,7 +70,7 @@
     const id = await communicationClient.createMessage(cardId, markdown)
 
     for (const file of files) {
-      await communicationClient.createFile(cardId, id, file.blobId, file.type, file.filename)
+      await communicationClient.createFile(cardId, id, file.blobId, file.type, file.filename, file.size)
     }
   }
 
@@ -78,7 +79,7 @@
     await communicationClient.updateMessage(cardId, id, markdown)
 
     for (const file of files) {
-      await communicationClient.createFile(cardId, id, file.blobId, file.type, file.filename)
+      await communicationClient.createFile(cardId, id, file.blobId, file.type, file.filename, file.size)
     }
   }
 
@@ -108,6 +109,7 @@
       filename: file.name,
       size: file.size
     })
+    files = files
   }
 
   const attachAction: TextInputAction = {
@@ -153,4 +155,49 @@
   actions={[...defaultMessageInputActions, attachAction]}
   on:submit={handleSubmit}
   onCancel={onCancel ? handleCancel : undefined}
-/>
+>
+  <div slot="header" class="header">
+    {#if files.length > 0}
+      <div class="flex-row-center files-list scroll-divider-color flex-gap-2">
+        {#each files as file (file.blobId)}
+          <div class="item flex">
+            <AttachmentPresenter
+              value={{
+                file: file.blobId,
+                name: file.filename,
+                type: file.type
+              }}
+              removable
+              on:remove={(result) => {
+                if (result !== undefined) {
+                  files = files.filter((it) => it.blobId !== file.blobId)
+                  void deleteFile(file.blobId)
+                }
+              }}
+            />
+          </div>
+        {/each}
+      </div>
+    {/if}
+  </div>
+</TextInput>
+
+<style lang="scss">
+  .header {
+    overflow: hidden;
+    display: flex;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .files-list {
+    padding: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    .item + .item {
+      padding-left: 1rem;
+      border-left: 1px solid var(--theme-divider-color);
+    }
+  }
+</style>

@@ -137,6 +137,9 @@
 </script>
 
 <div class="text-input">
+  {#if $$slots.header}
+    <slot name="header" />
+  {/if}
   <div class="text-input__text">
     <TextEditor
       bind:content

@@ -348,6 +348,7 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4010
       - MSG2FILE_URL=http://huly.local:9087
+      - COMMUNICATION_TIME_LOGGING_ENABLED=true
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service

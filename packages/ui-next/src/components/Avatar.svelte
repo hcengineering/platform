@@ -55,9 +55,15 @@
   $: void update(size, avatar, name)
 </script>
 
-<div class="avatar {size} {shape}">
+<div class="avatar {size} {shape}" style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}>
   {#if url}
     <img src={url} srcset={srcSet} alt="avatar" />
+  {:else}
+    <div
+      class="ava-text"
+      style:color={color ? color.iconText : 'var(--primary-button-color)'}
+      data-name={getAvatarDisplayName(name).toLocaleUpperCase()}
+    />
   {/if}
 </div>
 
@@ -69,6 +75,8 @@
     flex-shrink: 0;
     aspect-ratio: 1;
     pointer-events: none;
+    align-items: center;
+    justify-content: center;
 
     &.circle {
       border-radius: 100%;
@@ -112,6 +120,17 @@
     &.xxx-large {
       width: var(--next-avatar-size-xxxlarge);
       height: var(--next-avatar-size-xxxlarge);
+    }
+  }
+
+  .ava-text {
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    font-size: 1rem;
+
+    &::after {
+      content: attr(data-name);
+      transform: translate(-50%, -50%);
     }
   }
 </style>

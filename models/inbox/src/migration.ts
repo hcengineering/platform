@@ -13,11 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  type MigrateOperation,
-  type MigrationClient,
-  type MigrationUpgradeClient
-} from '@hcengineering/model'
+import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
 
 export const inboxOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {},
