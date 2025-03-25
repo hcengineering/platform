@@ -181,8 +181,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
-    toClass: telegram.class.Message,
-    childProcessingAllowed: true
+    toClass: telegram.class.Message
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

@@ -554,8 +554,9 @@ export async function startIndexer (
   })
 
   const close = (): void => {
-    void txConsumer.shutdown()
-    void workspaceConsumer.shutdown()
+    void txConsumer.close()
+    void workspaceConsumer.close()
+    void workspaceProducer.close()
     clearInterval(shutdownInterval)
     server.close()
   }

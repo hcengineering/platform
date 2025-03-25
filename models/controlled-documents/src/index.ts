@@ -616,8 +616,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: documents.class.Document,
-    fullTextSummary: true,
-    childProcessingAllowed: true
+    fullTextSummary: true
   })
 
   builder.mixin(documents.class.Document, core.class.Class, view.mixin.ClassFilters, {
@@ -1045,9 +1044,7 @@ export function defineSearch (builder: Builder): void {
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: documents.class.DocumentMeta,
-    fullTextSummary: true,
-    childProcessingAllowed: true,
-    propagate: []
+    fullTextSummary: true
   })
 
   builder.createDoc(

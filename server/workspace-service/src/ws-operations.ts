@@ -1,10 +1,11 @@
+import { type AccountClient } from '@hcengineering/account-client'
 import core, {
   Hierarchy,
   ModelDb,
+  systemAccount,
   systemAccountUuid,
   TxOperations,
   versionToString,
-  systemAccount,
   type Branding,
   type Client,
   type Data,
@@ -16,12 +17,18 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateMode, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
-import { SessionDataImpl, wrapPipeline, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
+import {
+  SessionDataImpl,
+  wrapPipeline,
+  type Pipeline,
+  type PlatformQueueProducer,
+  type QueueWorkspaceMessage,
+  type StorageAdapter
+} from '@hcengineering/server-core'
 import { getServerPipeline, getTxAdapterFactory, sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
-import { type AccountClient } from '@hcengineering/account-client'
 
 /**
  * @public
@@ -34,6 +41,7 @@ export async function createWorkspace (
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
   accountClient: AccountClient,
+  queue: PlatformQueueProducer<QueueWorkspaceMessage>,
   handleWsEvent?: (
     event: 'ping' | 'create-started' | 'progress' | 'create-done',
     version: Data<Version>,
@@ -74,7 +82,7 @@ export async function createWorkspace (
     const storageConfig = storageConfigFromEnv()
     const storageAdapter = buildStorageFromConfig(storageConfig)
 
-    const pipeline = await getServerPipeline(ctx, txes, dbUrl, wsIds, storageAdapter)
+    const pipeline = await getServerPipeline(ctx, txes, dbUrl, wsIds, storageAdapter, { queue: queue.getQueue() })
 
     try {
       const txFactory = getTxAdapterFactory(ctx, dbUrl, wsIds, null, {
@@ -146,6 +154,7 @@ export async function createWorkspace (
         client,
         storageAdapter,
         accountClient,
+        queue,
         ctxModellogger,
         async (event, version, value) => {
           ctx.info('upgrade workspace', { event, value })
@@ -181,6 +190,7 @@ export async function upgradeWorkspace (
   accountClient: AccountClient,
   ws: WorkspaceInfoWithStatus,
   logger: ModelLogger = consoleModelLogger,
+  queue: PlatformQueueProducer<QueueWorkspaceMessage>,
   handleWsEvent?: (
     event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
     version: Data<Version>,
@@ -206,7 +216,10 @@ export async function upgradeWorkspace (
         url: ws.url ?? '',
         dataId: ws.dataId
       },
-      storageAdapter
+      storageAdapter,
+      {
+        queue: queue.getQueue()
+      }
     )
     if (pipeline === undefined || storageAdapter === undefined) {
       return
@@ -228,6 +241,7 @@ export async function upgradeWorkspace (
       wrapPipeline(ctx, pipeline, wsUrl),
       storageAdapter,
       accountClient,
+      queue,
       logger,
       handleWsEvent,
       forceUpdate,
@@ -254,6 +268,7 @@ export async function upgradeWorkspaceWith (
   connection: Client,
   storageAdapter: StorageAdapter,
   accountClient: AccountClient,
+  queue: PlatformQueueProducer<QueueWorkspaceMessage>,
   logger: ModelLogger = consoleModelLogger,
   handleWsEvent?: (
     event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
@@ -322,6 +337,7 @@ export async function upgradeWorkspaceWith (
       connection,
       storageAdapter,
       accountClient,
+      queue,
       migrationOperation,
       logger,
       async (value) => {

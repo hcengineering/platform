@@ -654,8 +654,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: love.class.MeetingMinutes,
     fullTextSummary: true,
-    forceIndex: true,
-    propagate: []
+    forceIndex: true
   })
 
   builder.createDoc(

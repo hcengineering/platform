@@ -53,4 +53,8 @@ export class QueueMiddleware extends BaseMiddleware {
       this.txProducer.send(this.context.workspace.uuid, ctx.contextData.broadcast.txes)
     ])
   }
+
+  async close (): Promise<void> {
+    await this.txProducer.close()
+  }
 }
