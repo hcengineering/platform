@@ -15,7 +15,7 @@ export enum QueueTopic {
 }
 
 export interface ConsumerHandle {
-  shutdown: () => Promise<void>
+  close: () => Promise<void>
   isConnected: () => boolean
 }
 
@@ -56,4 +56,6 @@ export interface PlatformQueue {
 export interface PlatformQueueProducer<T> {
   send: (id: WorkspaceUuid | string, msgs: T[]) => Promise<void>
   close: () => Promise<void>
+
+  getQueue: () => PlatformQueue
 }

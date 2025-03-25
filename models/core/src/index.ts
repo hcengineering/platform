@@ -260,8 +260,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
-    toClass: core.class.Space,
-    childProcessingAllowed: false
+    toClass: core.class.Space
   })
 
   definePermissions(builder)

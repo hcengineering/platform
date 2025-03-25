@@ -986,6 +986,8 @@ export class TSessionManager implements SessionManager {
     for (const w of this.workspaces) {
       await this.closeAll(w[0], w[1], 1, 'shutdown')
     }
+    await this.workspaceProducer.close()
+    await this.usersProducer.close()
   }
 
   private async performWorkspaceCloseCheck (workspace: Workspace, wsUuid: WorkspaceUuid): Promise<void> {

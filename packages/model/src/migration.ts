@@ -116,6 +116,8 @@ export interface MigrationClient {
   accountClient: AccountClient
 
   wsIds: WorkspaceIds
+
+  reindex: (domain: Domain, classes: Ref<Class<Doc>>[]) => Promise<void>
 }
 
 /**

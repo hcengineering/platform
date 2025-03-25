@@ -9,10 +9,17 @@ import {
   MeasureMetricsContext,
   ModelDb,
   Ref,
-  WorkspaceIds
+  WorkspaceIds,
+  type Class
 } from '@hcengineering/core'
 import { MigrateUpdate, MigrationClient, MigrationIterator, ModelLogger } from '@hcengineering/model'
-import { Pipeline, StorageAdapter } from '@hcengineering/server-core'
+import {
+  Pipeline,
+  StorageAdapter,
+  workspaceEvents,
+  type PlatformQueueProducer,
+  type QueueWorkspaceMessage
+} from '@hcengineering/server-core'
 import { AccountClient } from '@hcengineering/account-client'
 
 /**
@@ -28,7 +35,8 @@ export class MigrateClientImpl implements MigrationClient {
     readonly logger: ModelLogger,
     readonly storageAdapter: StorageAdapter,
     readonly accountClient: AccountClient,
-    readonly wsIds: WorkspaceIds
+    readonly wsIds: WorkspaceIds,
+    readonly queue: PlatformQueueProducer<QueueWorkspaceMessage>
   ) {
     if (this.pipeline.context.lowLevelStorage === undefined) {
       throw new Error('lowLevelStorage is not defined')
@@ -111,5 +119,9 @@ export class MigrateClientImpl implements MigrationClient {
 
   async deleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
     await this.lowLevel.rawDeleteMany(domain, query)
+  }
+
+  async reindex (domain: Domain, classes: Ref<Class<Doc>>[]): Promise<void> {
+    await this.queue.send(this.wsIds.uuid, [workspaceEvents.reindex(domain, classes)])
   }
 }

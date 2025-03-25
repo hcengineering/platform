@@ -262,6 +262,7 @@ export class WorkspaceWorker {
           this.txes,
           this.migrationOperation,
           accountClient,
+          this.workspaceQueue,
           handleWsEventWithRetry
         )
       } else {
@@ -365,6 +366,7 @@ export class WorkspaceWorker {
         accountClient,
         ws,
         logger,
+        this.workspaceQueue,
         handleWsEventWithRetry,
         opt.force
       )

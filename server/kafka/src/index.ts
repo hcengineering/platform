@@ -66,7 +66,7 @@ class PlatformQueueImpl implements PlatformQueue {
   }
 
   createProducer<T>(ctx: MeasureContext, topic: QueueTopic): PlatformQueueProducer<T> {
-    return new PlatformQueueProducerImpl(ctx, this.kafka, getKafkaTopicId(topic, this.config))
+    return new PlatformQueueProducerImpl(ctx, this.kafka, getKafkaTopicId(topic, this.config), this)
   }
 
   createConsumer<T>(
@@ -102,13 +102,18 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
   constructor (
     readonly ctx: MeasureContext,
     kafka: Kafka,
-    private readonly topic: string
+    private readonly topic: string,
+    private readonly queue: PlatformQueue
   ) {
     this.txProducer = kafka.producer({
       allowAutoTopicCreation: true,
       createPartitioner: Partitioners.DefaultPartitioner
     })
     this.connected = this.ctx.with('connect-broker', {}, () => this.txProducer.connect())
+  }
+
+  getQueue (): PlatformQueue {
+    return this.queue
   }
 
   async send (id: WorkspaceUuid | string, msgs: any[]): Promise<void> {
@@ -231,7 +236,7 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
     return this.connected
   }
 
-  shutdown (): Promise<void> {
+  close (): Promise<void> {
     return this.cc.disconnect()
   }
 }

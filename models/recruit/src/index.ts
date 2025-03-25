@@ -16,7 +16,6 @@
 import activity from '@hcengineering/activity'
 import { AccountRole, SortingOrder, type Lookup, type Ref } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
@@ -1456,31 +1455,19 @@ export function createModel (builder: Builder): void {
   // Allow to use fuzzy search for mixins
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: recruit.class.Vacancy,
-    fullTextSummary: true,
-    childProcessingAllowed: true,
-    propagate: []
+    fullTextSummary: true
   })
 
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: recruit.mixin.Candidate,
-    fullTextSummary: true,
-    propagate: [recruit.class.Applicant],
-    childProcessingAllowed: true,
-    propagateClasses: [
-      tags.class.TagReference,
-      chunter.class.ChatMessage,
-      attachment.class.Attachment,
-      contact.class.Channel
-    ]
+    fullTextSummary: true
   })
 
   // Allow to use fuzzy search for mixins
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: recruit.class.Applicant,
     fullTextSummary: true,
-    forceIndex: true,
-    childProcessingAllowed: true,
-    propagate: []
+    forceIndex: true
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ObjectEditorFooter, {
