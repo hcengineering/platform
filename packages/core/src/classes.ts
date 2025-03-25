@@ -74,6 +74,7 @@ export interface Account {
   role: AccountRole
   primarySocialId: PersonId
   socialIds: PersonId[]
+  fullSocialIds: SocialId[]
 }
 
 /**

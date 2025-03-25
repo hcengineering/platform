@@ -111,7 +111,8 @@ export class WorkspaceClient {
       uuid: this.personUuid,
       role: AccountRole.User,
       primarySocialId: this.primarySocialId._id,
-      socialIds: this.socialIds.map((it) => it._id)
+      socialIds: this.socialIds.map((it) => it._id),
+      fullSocialIds: this.socialIds
     }
     await ensureEmployee(this.ctx, me, client, this.socialIds, async () => await getGlobalPerson(this.token))
   }
