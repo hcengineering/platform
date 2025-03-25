@@ -386,7 +386,7 @@ export class MongoAccountDB implements AccountDB {
     this.accountEvent = new MongoDbCollection<AccountEvent>('accountEvent', db)
     this.otp = new MongoDbCollection<OTP>('otp', db)
     this.invite = new MongoDbCollection<WorkspaceInvite, 'id'>('invite', db, 'id')
-    this.mailbox = new MongoDbCollection<Mailbox, 'mailbox'>('mailbox', db, 'mailbox')
+    this.mailbox = new MongoDbCollection<Mailbox, 'mailbox'>('mailbox', db)
     this.mailboxSecret = new MongoDbCollection<MailboxSecret>('mailboxSecrets', db)
 
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)

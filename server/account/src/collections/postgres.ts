@@ -393,11 +393,7 @@ export class PostgresAccountDB implements AccountDB {
     this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client)
     this.otp = new PostgresDbCollection<OTP>('otp', client)
     this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, 'id')
-    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>(
-      'mailbox',
-      (client as any).mailboxClient ?? client,
-      'mailbox'
-    )
+    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', (client as any).mailboxClient ?? client)
     this.mailboxSecret = new PostgresDbCollection<MailboxSecret>(
       'mailbox_secrets',
       (client as any).mailboxClient ?? client
@@ -877,7 +873,6 @@ export class PostgresAccountDB implements AccountDB {
           mailbox STRING NOT NULL,
           app STRING,
           secret STRING NOT NULL,
-          CONSTRAINT mailbox_secret_pk PRIMARY KEY (mailbox, app),
           CONSTRAINT mailbox_secret_mailbox_fk FOREIGN KEY (mailbox) REFERENCES ${this.ns}.mailbox(mailbox)
       );
       `

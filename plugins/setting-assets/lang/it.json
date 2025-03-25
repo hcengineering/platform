@@ -136,6 +136,18 @@
     "SystemSetupString": "Configurazione del sistema ({day})",
     "DefaultString": "Predefinito ({day})",
     "AddAttribute": "Aggiungi attributo",
-    "WorkspaceNamePattern": "Il nome deve essere di 40 caratteri o meno, non vuoto e non può contenere caratteri speciali (<, >, /)"
+    "WorkspaceNamePattern": "Il nome deve essere di 40 caratteri o meno, non vuoto e non può contenere caratteri speciali (<, >, /)",
+    "Mailboxes": "Mailboxes",
+    "CreateMailbox": "Crea casella di posta",
+    "CreateMailboxPlaceholder": "my-cool-name",
+    "MailboxNoDomains": "I domini di posta elettronica non sono configurati",
+    "MailboxLimitReached": "Limite di caselle di posta raggiunto",
+    "MailboxErrorInvalidName": "Il nome della casella di posta non è valido",
+    "MailboxErrorDomainNotFound": "Dominio non trovato",
+    "MailboxErrorNameRulesViolated": "Il nome della casella di posta deve essere lungo da {minLen} a {maxLen} caratteri",
+    "MailboxErrorMailboxExists": "Questo nome di casella di posta è già occupato",
+    "MailboxErrorMailboxCountLimit": "Limite di conteggio delle caselle di posta raggiunto per il tuo account",
+    "DeleteMailbox": "Elimina casella di posta",
+    "MailboxDeleteConfirmation": "Sei sicuro di voler eliminare questa casella di posta?"
   }
 }

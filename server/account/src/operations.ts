@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
+import crypto from 'crypto'
 import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
   buildSocialIdString,
   concatLink,
   Data,
-  generateId,
   isActiveMode,
   isWorkspaceCreating,
   MeasureContext,
@@ -2020,7 +2020,7 @@ async function createMailbox (
   }
 
   await db.mailbox.insertOne({ accountUuid: account, mailbox })
-  await db.mailboxSecret.insertOne({ mailbox, secret: generateId() })
+  await db.mailboxSecret.insertOne({ mailbox, secret: generatePassword() })
 }
 
 async function getMailboxes (
@@ -2046,9 +2046,6 @@ async function deleteMailbox (
   const mb = await db.mailbox.findOne({ mailbox, accountUuid: account })
   if (mb == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'mailbox-not-found' }))
-  }
-  if (mb.accountUuid !== account) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'mailbox-not-owned' }))
   }
 
   await db.mailbox.deleteMany({ mailbox })
@@ -2166,6 +2163,44 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
     ensurePerson: wrap(ensurePerson)
   }
+}
+
+/**
+ * Generates a cryptographically secure random password with specified parameters
+ * @param length The length of the password (default: 24)
+ * @param includeUppercase Include uppercase letters (default: true)
+ * @param includeLowercase Include lowercase letters (default: true)
+ * @param includeNumbers Include numbers (default: true)
+ * @param includeSpecial Include special characters (default: true)
+ * @returns A secure random password string
+ */
+function generatePassword (
+  length: number = 24,
+  includeUppercase: boolean = true,
+  includeLowercase: boolean = true,
+  includeNumbers: boolean = true,
+  includeSpecial: boolean = false
+): string {
+  let chars = ''
+  if (includeLowercase) chars += 'abcdefghijklmnopqrstuvwxyz'
+  if (includeUppercase) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  if (includeNumbers) chars += '0123456789'
+  if (includeSpecial) chars += '!@#$%^&*()-_=+[]{}|;:,.<>?'
+
+  if (chars.length === 0) {
+    throw new Error('At least one character set must be included')
+  }
+
+  let password = ''
+  const randomBytes = crypto.randomBytes(length * 2) // Get more bytes than needed to prevent bias
+
+  for (let i = 0; i < length; i++) {
+    // Use modulo to select characters, but in a way that doesn't introduce bias
+    const randomIndex = randomBytes.readUInt16BE(i * 2) % chars.length
+    password += chars.charAt(randomIndex)
+  }
+
+  return password
 }
 
 export * from './plugin'

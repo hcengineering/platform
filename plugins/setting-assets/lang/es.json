@@ -127,6 +127,18 @@
     "SystemSetupString": "Configuración del sistema ({day})",
     "DefaultString": "Predeterminado ({day})",
     "AddAttribute": "Añadir atributo",
-    "WorkspaceNamePattern": "El nombre debe tener 40 caracteres o menos, no esté vacío y no puede contener caracteres especiales (<, >, /)"
+    "WorkspaceNamePattern": "El nombre debe tener 40 caracteres o menos, no esté vacío y no puede contener caracteres especiales (<, >, /)",
+    "Mailboxes": "Buzones",
+    "CreateMailbox": "Crear buzón",
+    "CreateMailboxPlaceholder": "mi-nombre-genial",
+    "MailboxNoDomains": "Los dominios de correo electrónico no están configurados",
+    "MailboxLimitReached": "Límite de buzones alcanzado",
+    "MailboxErrorInvalidName": "El nombre del buzón no es válido",
+    "MailboxErrorDomainNotFound": "Dominio no encontrado",
+    "MailboxErrorNameRulesViolated": "El nombre del buzón debe tener entre {minLen} y {maxLen} caracteres",
+    "MailboxErrorMailboxExists": "Este buzón ya está ocupado",
+    "MailboxErrorMailboxCountLimit": "Se ha alcanzado el límite de buzones de su cuenta",
+    "DeleteMailbox": "Eliminar buzón",
+    "MailboxDeleteConfirmation": "¿Está seguro de que desea eliminar este buzón?"
   }
 }
