@@ -45,7 +45,11 @@ export function generateToken (
  * @public
  */
 export function decodeToken (token: string, verify: boolean = true, secret?: string): Token {
-  return decode(token, secret ?? getSecret(), !verify)
+  try {
+    return decode(token, secret ?? getSecret(), !verify)
+  } catch (err: any) {
+    throw new TokenError(err.message)
+  }
 }
 
 /**
