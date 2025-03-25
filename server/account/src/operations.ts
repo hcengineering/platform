@@ -14,6 +14,7 @@
 //
 
 import crypto from 'crypto'
+import cryptoRandomString from 'crypto-random-string'
 import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
@@ -2181,26 +2182,17 @@ function generatePassword (
   includeNumbers: boolean = true,
   includeSpecial: boolean = false
 ): string {
-  let chars = ''
-  if (includeLowercase) chars += 'abcdefghijklmnopqrstuvwxyz'
-  if (includeUppercase) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  if (includeNumbers) chars += '0123456789'
-  if (includeSpecial) chars += '!@#$%^&*()-_=+[]{}|;:,.<>?'
+  let type = ''
+  if (includeLowercase) type += 'abcdefghijklmnopqrstuvwxyz'
+  if (includeUppercase) type += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  if (includeNumbers) type += '0123456789'
+  if (includeSpecial) type += '!@#$%^&*()-_=+[]{}|;:,.<>?'
 
-  if (chars.length === 0) {
+  if (type.length === 0) {
     throw new Error('At least one character set must be included')
   }
 
-  let password = ''
-  const randomBytes = crypto.randomBytes(length * 2) // Get more bytes than needed to prevent bias
-
-  for (let i = 0; i < length; i++) {
-    // Use modulo to select characters, but in a way that doesn't introduce bias
-    const randomIndex = randomBytes.readUInt16BE(i * 2) % chars.length
-    password += chars.charAt(randomIndex)
-  }
-
-  return password
+  return cryptoRandomString({ length, characters: type })
 }
 
 export * from './plugin'
