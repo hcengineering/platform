@@ -30,7 +30,14 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DocWithRank, makeRank } from '@hcengineering/task'
-  import { AnyComponent, AnySvelteComponent, ExpandCollapse, mouseAttractor } from '@hcengineering/ui'
+  import ui, {
+    AnyComponent,
+    AnySvelteComponent,
+    ExpandCollapse,
+    mouseAttractor,
+    Loading,
+    Label
+  } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { fade } from 'svelte/transition'
@@ -463,9 +470,6 @@
       {lastCat}
       {viewOptions}
       {loading}
-      on:more={() => {
-        if (limit !== undefined) limit += 20
-      }}
       on:collapse={() => {
         collapsed = !collapsed
         if (collapsed) {
@@ -508,6 +512,7 @@
         dragstart={dragStartHandler}
       />
     {:else if itemModels != null && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
+      {@const HLimited = lastLevel ? limited.length : itemProj.length}
       {#if limited}
         {#key configurationsVersion}
           {#each limited as docObject, i (docObject._id)}
@@ -518,8 +523,8 @@
               {groupByKey}
               selected={isSelected(docObject, $focusStore)}
               checked={selectedObjectIdsSet.has(docObject._id)}
-              last={i === limited.length - 1}
-              lastCat={i === limited.length - 1 && (oneCat || lastCat)}
+              last={i === limited.length - 1 && HLimited >= itemProj.length}
+              lastCat={i === limited.length - 1 && (oneCat || lastCat) && HLimited >= itemProj.length}
               on:dragstart={(e) => {
                 dragStart(e, docObject, i)
               }}
@@ -554,6 +559,28 @@
               }}
             />
           {/each}
+          {#if HLimited < itemProj.length}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div
+              class="listGrid antiList__row row gap-2 flex-grow hoverable showMore last"
+              class:lastCat={oneCat || lastCat}
+              on:mouseenter={() => {
+                $focusStore.focus = undefined
+              }}
+              on:click={() => {
+                if (limit !== undefined) limit += 50
+              }}
+            >
+              <span class="caption-color"><Label label={ui.string.ShowMore} /></span>
+              {#if loading}
+                <div class="p-1">
+                  <Loading shrink size={'small'} />
+                </div>
+              {:else}
+                <span class="content-halfcontent-color ml-0-5">({HLimited} / {itemProj.length})</span>
+              {/if}
+            </div>
+          {/if}
         {/key}
       {/if}
     {/if}
