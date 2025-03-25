@@ -82,7 +82,8 @@ export const workbenchPlugin = plugin(workbenchId, {
   },
   extensions: {
     WorkbenchExtensions: '' as ComponentExtensionId,
-    WorkbenchTabExtensions: '' as ComponentExtensionId
+    WorkbenchTabExtensions: '' as ComponentExtensionId,
+    SpecialViewAction: '' as ComponentExtensionId
   },
   function: {
     CreateWidgetTab: '' as Resource<(widget: Widget, tab: WidgetTab, newTab: boolean) => Promise<void>>,

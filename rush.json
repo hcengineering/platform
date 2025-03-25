@@ -1909,6 +1909,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/model-export",
+      "projectFolder": "models/export",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export",
+      "projectFolder": "plugins/export",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export-assets",
+      "projectFolder": "plugins/export-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export-resources",
+      "projectFolder": "plugins/export-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/sign",
       "projectFolder": "plugins/sign",
       "shouldPublish": false

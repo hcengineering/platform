@@ -27,6 +27,7 @@ import { desktopPreferencesId } from '@hcengineering/desktop-preferences'
 import { diffviewId } from '@hcengineering/diffview'
 import { documentId } from '@hcengineering/document'
 import { driveId } from '@hcengineering/drive'
+import exportPlugin, { exportId } from '@hcengineering/export'
 import gmail, { gmailId } from '@hcengineering/gmail'
 import guest, { guestId } from '@hcengineering/guest'
 import { hrId } from '@hcengineering/hr'
@@ -76,6 +77,7 @@ import '@hcengineering/desktop-preferences-assets'
 import '@hcengineering/diffview-assets'
 import '@hcengineering/document-assets'
 import '@hcengineering/drive-assets'
+import '@hcengineering/export-assets'
 import '@hcengineering/gmail-assets'
 import '@hcengineering/guest-assets'
 import '@hcengineering/hr-assets'
@@ -208,6 +210,7 @@ function configureI18n (): void {
   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
+  addStringsLoader(exportId, async (lang: string) => await import(`@hcengineering/export-assets/lang/${lang}.json`))
   addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
   addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
@@ -273,6 +276,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(analyticsCollector.metadata.EndpointURL, config.ANALYTICS_COLLECTOR_URL)
   setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)
   setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
+  setMetadata(exportPlugin.metadata.ExportUrl, config.EXPORT_URL ?? '')
 
   const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de']
 
@@ -341,6 +345,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
+  addLocation(exportId, () => import(/* webpackChunkName: "export" */ '@hcengineering/export-resources'))
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
   addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
@@ -376,7 +381,6 @@ export async function configurePlatform (): Promise<void> {
   configureNotifications()
 
   setMetadata(setting.metadata.BackupUrl, config.BACKUP_URL ?? '')
-  setMetadata(setting.metadata.ExportUrl, config.EXPORT_URL ?? '')
 
   if (config.INITIAL_URL !== '') {
     setLocationStorageKey('uberflow_child')
