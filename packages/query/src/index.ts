@@ -874,7 +874,8 @@ export class LiveQuery implements WithTx, Client {
 
   private matchQuerySync (q: Query, tx: TxUpdateDoc<Doc>): boolean {
     const clazz = this.getHierarchy().isMixin(q._class) ? this.getHierarchy().getBaseClass(q._class) : q._class
-    if (!this.client.getHierarchy().isDerived(tx.objectClass, clazz)) {
+    const target = (tx.operations as any)._class ?? tx.objectClass
+    if (!this.client.getHierarchy().isDerived(target, clazz)) {
       return false
     }
     return true
@@ -894,7 +895,7 @@ export class LiveQuery implements WithTx, Client {
     const { $inc, ...ops } = tx.operations
 
     const emptyOps = Object.keys(ops).length === 0
-    let matched = emptyOps
+    let matched = emptyOps || Object.keys(q.query).length === 0
     if (!emptyOps) {
       const virtualTx = {
         ...tx,

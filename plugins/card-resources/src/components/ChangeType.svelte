@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Card, CardEvents, MasterTag } from '@hcengineering/card'
-  import { AnyAttribute, fillDefaults, Ref } from '@hcengineering/core'
+  import { AnyAttribute, Class, Doc, fillDefaults, Ref } from '@hcengineering/core'
   import { Card as CardModal, createQuery, getClient } from '@hcengineering/presentation'
-  import { createFocusManager, DropdownLabelsIntl, FocusHandler } from '@hcengineering/ui'
+  import { DropdownIntlItem, NestedDropdown } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { deepEqual } from 'fast-equals'
   import card from '../plugin'
@@ -86,16 +86,45 @@
     types = res
   })
 
-  const manager = createFocusManager()
+  const dispatch = createEventDispatcher()
 
-  async function select (event: CustomEvent): Promise<void> {
-    selected = event.detail
+  function filterClasses (): [DropdownIntlItem, DropdownIntlItem[]][] {
+    const descendants = hierarchy.getDescendants(card.class.Card).filter((p) => p !== card.class.Card)
+    const added = new Set<Ref<Class<Doc>>>()
+    const base = new Map<Ref<Class<Doc>>, Class<Doc>[]>()
+    for (const _id of descendants) {
+      if (added.has(_id)) continue
+      const _class = hierarchy.getClass(_id)
+      if (_class.label === undefined) continue
+      added.add(_id)
+      const descendants = hierarchy.getDescendants(_id)
+      const toAdd: Class<Doc>[] = []
+      for (const desc of descendants) {
+        if (added.has(desc)) continue
+        const _class = hierarchy.getClass(desc)
+        if (_class.label === undefined) continue
+        added.add(desc)
+        toAdd.push(_class)
+      }
+      base.set(_id, toAdd)
+    }
+    const result: [DropdownIntlItem, DropdownIntlItem[]][] = []
+    for (const [key, value] of base) {
+      try {
+        const clazz = hierarchy.getClass(key)
+        result.push([
+          { id: key, label: clazz.label, icon: clazz.icon },
+          value
+            .map((it) => ({ id: it._id, label: it.label, icon: it.icon }))
+            .sort((a, b) => a.label.localeCompare(b.label))
+        ])
+      } catch {}
+    }
+    return result
   }
 
-  const dispatch = createEventDispatcher()
+  const classes = filterClasses()
 </script>
-
-<FocusHandler {manager} />
 
 <CardModal
   label={card.string.ChangeType}
@@ -107,5 +136,10 @@
   }}
   on:changeContent
 >
-  <DropdownLabelsIntl {items} {selected} focusIndex={0} label={card.string.MasterTag} on:selected={select} />
+  <NestedDropdown
+    items={classes}
+    on:selected={(e) => {
+      selected = e.detail
+    }}
+  />
 </CardModal>
