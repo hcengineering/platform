@@ -16,7 +16,7 @@
 
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
-import { NotificationProviderFunc, TypeMatchFunc } from '@hcengineering/server-notification'
+import { TypeMatchFunc } from '@hcengineering/server-notification'
 import { TemplateFieldServerFunc } from '@hcengineering/server-templates'
 
 /**
@@ -32,13 +32,13 @@ export default plugin(serverTelegramId, {
     BotUrl: '' as Metadata<string>
   },
   trigger: {
-    OnMessageCreate: '' as Resource<TriggerFunc>
+    OnMessageCreate: '' as Resource<TriggerFunc>,
+    NotificationsHandler: '' as Resource<TriggerFunc>
   },
   function: {
     IsIncomingMessageTypeMatch: '' as TypeMatchFunc,
     FindMessages: '' as Resource<ObjectDDParticipantFunc>,
     GetCurrentEmployeeTG: '' as Resource<TemplateFieldServerFunc>,
     GetIntegrationOwnerTG: '' as Resource<TemplateFieldServerFunc>,
-    SendTelegramNotifications: '' as Resource<NotificationProviderFunc>
   }
 })

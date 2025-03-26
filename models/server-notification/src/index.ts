@@ -27,8 +27,6 @@ import serverNotification, {
   type HTMLPresenter,
   type NotificationContentProvider,
   type NotificationPresenter,
-  type NotificationProviderFunc,
-  type NotificationProviderResources,
   type Presenter,
   type TextPresenter,
   type TypeMatch,
@@ -57,19 +55,12 @@ export class TTypeMatch extends TNotificationType implements TypeMatch {
   func!: TypeMatchFunc
 }
 
-@Model(serverNotification.class.NotificationProviderResources, core.class.Doc)
-export class TNotificationProviderResources extends TDoc implements NotificationProviderResources {
-  provider!: Ref<NotificationProvider>
-  fn!: Resource<NotificationProviderFunc>
-}
-
 export function createModel (builder: Builder): void {
   builder.createModel(
     THTMLPresenter,
     TTextPresenter,
     TTypeMatch,
-    TNotificationPresenter,
-    TNotificationProviderResources
+    TNotificationPresenter
   )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

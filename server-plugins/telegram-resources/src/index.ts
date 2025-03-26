@@ -38,7 +38,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
+import { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import {
   getNotificationLink,
   getTextPresenter,
@@ -253,7 +253,7 @@ function hasAttachments (doc: ActivityMessage | undefined, hierarchy: Hierarchy)
 }
 
 const telegramNotificationKey = 'telegram.notification.reported'
-const SendTelegramNotifications: NotificationProviderFunc = async (
+const SendTelegramNotifications = async (
   control: TriggerControl,
   types: BaseNotificationType[],
   doc: Doc,
@@ -316,16 +316,20 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   return []
 }
 
+async function NotificationsHandler (txes: TxCreateDoc<InboxNotification>[], control: TriggerControl): Promise<Tx[]> {
+  return []
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnMessageCreate
+    OnMessageCreate,
+    NotificationsHandler
   },
   function: {
     IsIncomingMessageTypeMatch,
     FindMessages,
     GetCurrentEmployeeTG,
-    GetIntegrationOwnerTG,
-    SendTelegramNotifications
+    GetIntegrationOwnerTG
   }
 })

@@ -60,7 +60,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { getResource, translate } from '@hcengineering/platform'
 import { type TriggerControl } from '@hcengineering/server-core'
-import serverNotification, {
+import {
   NOTIFICATION_BODY_SIZE,
   ReceiverInfo,
   SenderInfo
@@ -140,7 +140,7 @@ export async function getCommonNotificationTxes (
   const res: Tx[] = []
   const notifyContexts = await control.findAll(ctx, notification.class.DocNotifyContext, { objectId: attachedTo })
 
-  const notificationTx = await pushInboxNotifications(
+  await pushInboxNotifications(
     ctx,
     control,
     res,
@@ -156,12 +156,6 @@ export async function getCommonNotificationTxes (
     true,
     tx
   )
-
-  if (notificationTx !== undefined) {
-    const notificationData = TxProcessor.createDoc2Doc(notificationTx)
-
-    await applyNotificationProviders(notificationData, notifyResult, control, res, doc, receiver, sender, _class)
-  }
 
   return res
 }
@@ -534,32 +528,6 @@ export async function pushActivityInboxNotifications (
   )
 }
 
-export async function applyNotificationProviders (
-  data: InboxNotification,
-  notifyResult: NotifyResult,
-  control: TriggerControl,
-  res: Tx[],
-  object: Doc,
-  receiver: ReceiverInfo,
-  sender: SenderInfo,
-  _class = notification.class.ActivityInboxNotification,
-  message?: ActivityMessage
-): Promise<void> {
-  const resources = control.modelDb.findAllSync(serverNotification.class.NotificationProviderResources, {})
-  for (const [provider, types] of notifyResult.entries()) {
-    const resource = resources.find((it) => it.provider === provider)
-
-    if (resource === undefined) continue
-
-    const fn = await getResource(resource.fn)
-
-    const txes = await fn(control, types, object, data, receiver, sender, message)
-    if (txes.length > 0) {
-      res.push(...txes)
-    }
-  }
-}
-
 async function createNotifyContext (
   ctx: MeasureContext,
   control: TriggerControl,
@@ -661,18 +629,6 @@ export async function getNotificationTxes (
           current.set(notificationData._id, providers)
           control.contextCache.set('AvailableNotificationProviders', current)
         }
-
-        await applyNotificationProviders(
-          notificationData,
-          notifyResult,
-          control,
-          res,
-          object,
-          receiver,
-          sender,
-          notificationData._class,
-          message
-        )
       }
     } else {
       const context = getDocNotifyContext(control, docNotifyContexts, message.attachedTo, receiver.account)

@@ -102,21 +102,6 @@ export interface SenderInfo {
   person?: Person
 }
 
-export type NotificationProviderFunc = (
-  control: TriggerControl,
-  types: BaseNotificationType[],
-  object: Doc,
-  data: InboxNotification,
-  receiver: ReceiverInfo,
-  sender: SenderInfo,
-  message?: ActivityMessage
-) => Promise<Tx[]>
-
-export interface NotificationProviderResources extends Doc {
-  provider: Ref<NotificationProvider>
-  fn: Resource<NotificationProviderFunc>
-}
-
 export const NOTIFICATION_BODY_SIZE = 50
 export const PUSH_NOTIFICATION_TITLE_SIZE = 80
 
@@ -129,9 +114,6 @@ export default plugin(serverNotificationId, {
     MailAuthToken: '' as Metadata<string>,
     WebPushUrl: '' as Metadata<string>,
     InboxOnlyNotifications: '' as Metadata<boolean>
-  },
-  class: {
-    NotificationProviderResources: '' as Ref<Class<NotificationProviderResources>>
   },
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
