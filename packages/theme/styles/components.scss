@@ -595,14 +595,33 @@
     }
   }
   &.type-popup {
-    min-width: 45rem;
     background-color: var(--theme-popup-color); // var(--global-surface-02-BackgroundColor);
     border: 1px solid var(--theme-popup-divider); // var(--global-surface-02-BorderColor);
     border-radius: var(--large-BorderRadius);
     box-shadow: var(--global-modal-ShadowX) var(--global-modal-ShadowY) var(--global-modal-ShadowBlur) var(--global-modal-ShadowSpread) var(--global-popover-ShadowColor);
 
+    &.large {
+      width: 45rem;
+    }
+    &.medium {
+      width: 37.5rem;
+    }
+    &.small {
+      width: 30rem;
+    }
+    &.x-small {
+      width: 25rem;
+    }
+    &.menu {
+      width: 17.5rem;
+    }
+    &.full {
+      width: max-content;
+    }
+
     .hulyModal-footer {
       padding: var(--spacing-1_5);
+      align-items: center;
     }
     @media screen and (max-width: 480px) {
       width: 100vw;

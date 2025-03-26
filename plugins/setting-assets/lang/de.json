@@ -136,6 +136,18 @@
     "SystemSetupString": "Systemkonfiguration ({day})",
     "DefaultString": "Stillschweigend ({day})",
     "AddAttribute": "Attribut hinzufügen",
-    "WorkspaceNamePattern": "Name muss 40 Zeichen oder weniger sein, nicht leer sein und keine Sonderzeichen (<, >, /) enthalten"
+    "WorkspaceNamePattern": "Name muss 40 Zeichen oder weniger sein, nicht leer sein und keine Sonderzeichen (<, >, /) enthalten",
+    "Mailboxes": "Postfächer",
+    "CreateMailbox": "Postfach erstellen",
+    "CreateMailboxPlaceholder": "mein-cooler-name",
+    "MailboxNoDomains": "E-Mail-Domänen sind nicht konfiguriert",
+    "MailboxLimitReached": "Postfachlimit erreicht",
+    "MailboxErrorInvalidName": "Postfachname ist ungültig",
+    "MailboxErrorDomainNotFound": "Domäne nicht gefunden",
+    "MailboxErrorNameRulesViolated": "Postfachname muss {minLen} bis {maxLen} Zeichen lang sein",
+    "MailboxErrorMailboxExists": "Dieser Postfachname ist bereits belegt",
+    "MailboxErrorMailboxCountLimit": "Postfachlimit für Ihr Konto erreicht",
+    "DeleteMailbox": "Postfach löschen",
+    "MailboxDeleteConfirmation": "Möchten Sie dieses Postfach wirklich löschen?"
   }
 }

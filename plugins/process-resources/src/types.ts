@@ -1,4 +1,3 @@
-//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,18 +10,13 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
-import { type Resources } from '@hcengineering/platform'
-import ExportButton from './components/ExportButton.svelte'
-import ExportSettings from './components/ExportSettings.svelte'
+import { type DocumentQuery } from '@hcengineering/core'
+import { type IntlString } from '@hcengineering/platform'
+import { type Execution } from '@hcengineering/process'
 
-export { default as ExportButton } from './components/ExportButton.svelte'
-export { default as ExportSettings } from './components/ExportSettings.svelte'
-
-export default async (): Promise<Resources> => ({
-  component: {
-    ExportButton,
-    ExportSettings
-  }
-})
+export interface Special {
+  _id: string
+  label: IntlString
+  baseQuery: DocumentQuery<Execution>
+}

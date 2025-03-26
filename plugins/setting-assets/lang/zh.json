@@ -136,6 +136,18 @@
     "SystemSetupString": "系统设置({day})",
     "DefaultString": "违约({day})",
     "AddAttribute": "添加属性",
-    "WorkspaceNamePattern": "名称必须为 40 个字符或更少，不能为空，不能包含特殊字符（<、>、/）"
+    "WorkspaceNamePattern": "名称必须为 40 个字符或更少，不能为空，不能包含特殊字符（<、>、/）",
+    "Mailboxes": "邮箱",
+    "CreateMailbox": "创建邮箱",
+    "CreateMailboxPlaceholder": "my-cool-name",
+    "MailboxNoDomains": "未配置电子邮件域",
+    "MailboxLimitReached": "已达到邮箱限制",
+    "MailboxErrorInvalidName": "邮箱名称无效",
+    "MailboxErrorDomainNotFound": "未找到域",
+    "MailboxErrorNameRulesViolated": "邮箱名称必须为 {minLen} 到 {maxLen} 个字符长",
+    "MailboxErrorMailboxExists": "此邮箱名称已被占用",
+    "MailboxErrorMailboxCountLimit": "您的帐户已达到邮箱数量限制",
+    "DeleteMailbox": "删除邮箱",
+    "MailboxDeleteConfirmation": "您确定要删除此邮箱吗？"
   }
 }

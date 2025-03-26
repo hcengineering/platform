@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { getClient } from '@hcengineering/presentation'
-  import process from '../plugin'
-  import { Label, Loading } from '@hcengineering/ui'
-  import { Process } from '@hcengineering/process'
-  import { createEventDispatcher } from 'svelte'
   import core, { Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Process } from '@hcengineering/process'
+  import { Label } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+  import process from '../plugin'
 
   export let value: Card
 
@@ -30,19 +30,8 @@
   const mixins = h.getDescendants(value._class).filter((p) => h.hasMixin(value, p))
   const resClasses = [...asc, ...mixins]
 
-  let loading = true
-  let processes: Process[] = []
-
-  void client
-    .findAll(process.class.Process, {})
-    .then((res) => {
-      processes = res.filter((it) => resClasses.includes(it.masterTag))
-      loading = false
-    })
-    .catch((err) => {
-      console.error(err)
-      loading = false
-    })
+  const res = client.getModel().findAllSync(process.class.Process, {})
+  const processes = res.filter((it) => resClasses.includes(it.masterTag))
 
   const dispatch = createEventDispatcher()
 
@@ -63,10 +52,10 @@
 <div class="antiPopup">
   <div class="ap-space x2" />
   <div class="ap-scroll">
-    {#if loading}
-      <Loading />
-    {:else if processes.length === 0}
-      <Label label={process.string.NoProcesses} />
+    {#if processes.length === 0}
+      <div class="flex-row-center p-4">
+        <Label label={process.string.NoProcesses} />
+      </div>
     {:else}
       {#each processes as process}
         <button
