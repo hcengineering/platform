@@ -100,7 +100,7 @@ export async function OnMessageCreate (txes: Tx[], control: TriggerControl): Pro
 export function IsIncomingMessageTypeMatch (
   tx: Tx,
   doc: Doc,
-  person: Person,
+  person: Ref<Person>,
   user: PersonId[],
   type: NotificationType,
   control: TriggerControl

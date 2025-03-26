@@ -20,7 +20,6 @@ import core, {
   concatLink,
   Doc,
   DocumentUpdate,
-  PersonId,
   Ref,
   Space,
   systemAccountUuid,
@@ -34,7 +33,6 @@ import core, {
 } from '@hcengineering/core'
 import { NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
-import { getSocialStrings } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 import { stripTags } from '@hcengineering/text-core'
@@ -89,18 +87,13 @@ export async function issueTextPresenter (doc: Doc): Promise<string> {
   return `${issue.identifier} ${issue.title}`
 }
 
-async function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: PersonId): Promise<boolean> {
-  const socialStrings = await getSocialStrings(control, assignee)
-  return socialStrings.includes(target)
-}
-
 /**
  * @public
  */
 export async function getIssueNotificationContent (
   doc: Doc,
   tx: TxCUD<Doc>,
-  target: PersonId,
+  target: Ref<Person>,
   control: TriggerControl
 ): Promise<NotificationContent> {
   const issue = doc as Issue
@@ -127,7 +120,7 @@ export async function getIssueNotificationContent (
     if (
       updateTx.operations.assignee !== null &&
       updateTx.operations.assignee !== undefined &&
-      (await isSamePerson(control, updateTx.operations.assignee, target))
+      updateTx.operations.assignee === target
     ) {
       body = tracker.string.IssueAssignedToYou
     } else {

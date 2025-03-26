@@ -24,13 +24,13 @@ import { isTxUpdateDoc } from '../utils/isTxUpdateDoc'
 export function TrainingRequestNotificationTypeMatch (
   tx: TxCUD<TrainingRequest>,
   doc: TrainingRequest,
-  person: Person,
+  person: Ref<Person>,
   user: PersonId[],
   type: NotificationType,
   control: TriggerControl
 ): boolean {
   if (isTxCreateDoc(tx)) {
-    return doc.trainees.includes(person._id as Ref<Employee>)
+    return doc.trainees.includes(person as Ref<Employee>)
   }
 
   if (isTxUpdateDoc(tx)) {
@@ -40,7 +40,7 @@ export function TrainingRequestNotificationTypeMatch (
     }
 
     const newTrainees = typeof pushed === 'object' ? pushed.$each : [pushed]
-    return newTrainees.includes(person._id as Ref<Employee>)
+    return newTrainees.includes(person as Ref<Employee>)
   }
 
   return false

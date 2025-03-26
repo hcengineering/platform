@@ -15,9 +15,17 @@
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 import { Analytics } from '@hcengineering/analytics'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import contact, { Employee, formatName, includesAny, Person } from '@hcengineering/contact'
+import contact, {
+  Employee,
+  formatName,
+  includesAny,
+  Person,
+  PersonSpace,
+  SocialIdentity,
+  SocialIdentityRef
+} from '@hcengineering/contact'
 import core, {
-  PersonId,
+  AccountUuid,
   Class,
   concatLink,
   Doc,
@@ -26,15 +34,16 @@ import core, {
   Hierarchy,
   Markup,
   matchQuery,
+  type MeasureContext,
   MixinUpdate,
+  notEmpty,
+  PersonId,
   Ref,
   Space,
   Tx,
   TxCUD,
   TxMixin,
-  TxUpdateDoc,
-  type MeasureContext,
-  AccountUuid
+  TxUpdateDoc
 } from '@hcengineering/core'
 import notification, {
   BaseNotificationType,
@@ -43,18 +52,12 @@ import notification, {
   NotificationContent,
   notificationId,
   NotificationProvider,
-  NotificationType,
   type NotificationProviderSetting,
+  NotificationType,
   type NotificationTypeSetting
 } from '@hcengineering/notification'
 import { getMetadata, getResource, IntlString, translate } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import {
-  getPersonsBySocialIds,
-  getEmployeesBySocialIds,
-  getSocialStringsByPersons,
-  getPerson
-} from '@hcengineering/server-contact'
 import serverNotification, {
   HTMLPresenter,
   NotificationPresenter,
@@ -74,7 +77,7 @@ import { NotifyResult } from './types'
 export function isUserEmployeeInFieldValueTypeMatch (
   _: Tx,
   doc: Doc,
-  person: Person,
+  person: Ref<Person>,
   socialIds: PersonId[],
   type: NotificationType,
   control: TriggerControl
@@ -145,13 +148,13 @@ export async function shouldNotifyCommon (
 
 export function isAllowed (
   control: TriggerControl,
-  receiver: PersonId[],
+  receiverIds: PersonId[],
   type: BaseNotificationType,
   provider: NotificationProvider,
   notificationControl: NotificationProviderControl
 ): boolean {
   const providerSettings = (notificationControl.byProvider.get(provider._id) ?? []).filter(({ createdBy }) =>
-    createdBy !== undefined ? receiver.includes(createdBy) : false
+    createdBy !== undefined ? receiverIds.includes(createdBy) : false
   )
 
   if (providerSettings.length > 0 && providerSettings.every((s) => !s.enabled)) {
@@ -169,7 +172,7 @@ export function isAllowed (
   }
 
   const setting = (notificationControl.settingsByProvider.get(provider._id) ?? []).find(
-    (it) => it.type === type._id && it.createdBy !== undefined && receiver.includes(it.createdBy)
+    (it) => it.type === type._id && it.createdBy !== undefined && receiverIds.includes(it.createdBy)
   )
 
   if (setting !== undefined) {
@@ -189,6 +192,7 @@ export async function isShouldNotifyTx (
   control: TriggerControl,
   tx: TxCUD<Doc>,
   object: Doc,
+  person: Ref<Person>,
   personIds: PersonId[],
   isOwn: boolean,
   isSpace: boolean,
@@ -213,8 +217,6 @@ export async function isShouldNotifyTx (
       const mixin = control.hierarchy.as(type, serverNotification.mixin.TypeMatch)
       if (mixin.func !== undefined) {
         const f = await getResource(mixin.func)
-        const person = await getPerson(control, personIds[0])
-        if (person === undefined) continue
         let res = f(tx, object, person, personIds, type, control)
         if (res instanceof Promise) {
           res = await res
@@ -324,15 +326,15 @@ export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
 }
 
 async function getSenderName (control: TriggerControl, sender: SenderInfo): Promise<string> {
-  if (sender._id === core.account.System || sender._id === core.account.ConfigUser) {
+  if (sender.socialId === core.account.System || sender.socialId === core.account.ConfigUser) {
     return await translate(core.string.System, {})
   }
 
   const { person } = sender
 
   if (person === undefined) {
-    console.error('Cannot find person', { accountId: sender._id })
-    Analytics.handleError(new Error(`Cannot find person ${sender._id}`))
+    console.error('Cannot find person', { socialId: sender.socialId })
+    Analytics.handleError(new Error(`Cannot find person ${sender.socialId}`))
 
     return ''
   }
@@ -407,7 +409,7 @@ function getNotificationPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy
 
 export async function getNotificationContent (
   originTx: TxCUD<Doc>,
-  socialIds: PersonId[],
+  receiver: Ref<Person>,
   sender: SenderInfo,
   object: Doc,
   control: TriggerControl
@@ -425,7 +427,7 @@ export async function getNotificationContent (
 
   if (notificationPresenter !== undefined) {
     const getFuillfillmentParams = await getResource(notificationPresenter.presenter)
-    const updateParams = await getFuillfillmentParams(object, originTx, socialIds[0], control)
+    const updateParams = await getFuillfillmentParams(object, originTx, receiver, control)
     title = updateParams.title
     body = updateParams.body
     data = updateParams.data
@@ -455,74 +457,93 @@ export async function getNotificationContent (
   return content
 }
 
-export async function getUsersInfo (
+export async function getReceiversInfo (
   ctx: MeasureContext,
-  ids: PersonId[],
+  accounts: AccountUuid[],
   control: TriggerControl
-): Promise<Map<PersonId, ReceiverInfo | SenderInfo>> {
-  if (ids.length === 0) return new Map()
-  const uniqueIds = Array.from(new Set(ids))
+): Promise<ReceiverInfo[]> {
+  if (accounts.length === 0) return []
 
-  const employeesBySocialId = await getEmployeesBySocialIds(control, uniqueIds)
-  const presentEmployeeIds = Object.values(employeesBySocialId)
-    .map((it) => it?._id)
-    .filter((it) => it !== undefined)
-  const missingSocialIds = Object.entries(employeesBySocialId)
-    .filter(([, employee]) => employee === undefined)
-    .map(([id]) => id as PersonId)
-  const personsBySocialId = await getPersonsBySocialIds(control, missingSocialIds)
-
-  const employeesIds = new Set(presentEmployeeIds)
-  const spaces = (await control.findAll(ctx, contact.class.PersonSpace, {})).filter((it) =>
-    employeesIds.has(it.person as Ref<Employee>)
+  const employees: Pick<Employee, '_id' | 'personUuid'>[] = await control.findAll(
+    ctx,
+    contact.mixin.Employee,
+    { personUuid: { $in: accounts }, active: true },
+    { projection: { _id: 1, personUuid: 1 } }
   )
-  const spacesByEmployee = groupByArray(spaces, (it) => it.person)
+  if (employees.length === 0) return []
 
-  const persons = [...presentEmployeeIds, ...Object.values(personsBySocialId).map((it) => it._id)]
+  const spaces: Pick<PersonSpace, '_id' | 'person'>[] = await control.queryFind(
+    ctx,
+    contact.class.PersonSpace,
+    {},
+    { projection: { _id: 1, person: 1 } }
+  )
+  if (spaces.length === 0) return []
 
-  const socialStringsByPersons = await getSocialStringsByPersons(control, persons as Ref<Person>[])
+  const socialIds: Pick<SocialIdentity, '_id' | 'attachedTo'>[] = await control.findAll(
+    ctx,
+    contact.class.SocialIdentity,
+    { attachedTo: { $in: employees.map((it) => it._id) } },
+    { projection: { _id: 1, attachedTo: 1 } }
+  )
 
-  return new Map(
-    uniqueIds.map((_id) => {
-      const employee = employeesBySocialId[_id]
-      const space = employee !== undefined ? spacesByEmployee.get(employee._id)?.[0] : undefined
-      const person = employee ?? personsBySocialId[_id]
-      const socialStrings = socialStringsByPersons[person?._id] ?? []
+  const employeeByAccount = new Map(employees.map((it) => [it.personUuid, it]))
+  const spaceByPerson = new Map(spaces.map((it) => [it.person, it]))
+  const socialIdsByEmployee = groupByArray(socialIds, (it) => it.attachedTo)
 
-      return [
-        _id,
-        {
-          _id,
-          person,
-          socialStrings,
-          space: space?._id,
-          account: employee?.personUuid,
-          employee
-        }
-      ]
+  return accounts
+    .map((account) => {
+      const employee = employeeByAccount.get(account)
+      if (employee === undefined) return undefined
+      const space = spaceByPerson.get(employee._id)
+      if (space === undefined) return undefined
+
+      const info: ReceiverInfo = {
+        employee: employee._id,
+        space: space._id,
+        account,
+        socialIds: socialIdsByEmployee.get(employee._id)?.map((it) => it._id) ?? []
+      }
+      return info
     })
-  )
+    .filter(notEmpty)
 }
 
-export function toReceiverInfo (hierarchy: Hierarchy, info?: SenderInfo | ReceiverInfo): ReceiverInfo | undefined {
-  if (info === undefined) return undefined
-  if (info.person === undefined) return undefined
-  if (!('space' in info)) return undefined
-  if (info.space === undefined) return undefined
+export async function getSenderInfo (
+  ctx: MeasureContext,
+  socialId: PersonId,
+  control: TriggerControl
+): Promise<SenderInfo> {
+  const controlAccount = control.ctx.contextData.account
+  let account: AccountUuid | undefined = control.ctx.contextData.socialStringsToUsers.get(socialId)
 
-  const isEmployee = hierarchy.hasMixin(info.person, contact.mixin.Employee)
-  if (!isEmployee) return undefined
+  if (account == null && controlAccount.socialIds.includes(socialId)) {
+    account = controlAccount.uuid
+  }
 
-  const employee = hierarchy.as(info.person, contact.mixin.Employee)
-  if (!employee.active || employee.personUuid == null) return undefined
+  if (account != null) {
+    return {
+      socialId,
+      person: (await control.findAll(ctx, contact.class.Person, { personUuid: account }))[0]
+    }
+  }
+
+  const socialIdentity = (
+    await control.findAll(
+      control.ctx,
+      contact.class.SocialIdentity,
+      { _id: socialId as SocialIdentityRef },
+      { limit: 1, projection: { _id: 1, attachedTo: 1 } }
+    )
+  )[0]
+
+  if (socialIdentity === undefined) {
+    return { socialId }
+  }
 
   return {
-    _id: info._id,
-    person: employee,
-    space: info.space,
-    socialStrings: info.socialStrings,
-    account: employee.personUuid,
-    employee
+    socialId,
+    person: (await control.findAll(ctx, contact.class.Person, { _id: socialIdentity.attachedTo }))[0]
   }
 }
 

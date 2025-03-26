@@ -59,7 +59,7 @@ export type TypeMatchFunc = Resource<
 (
   tx: Tx,
   doc: Doc,
-  person: Person,
+  person: Ref<Person>,
   socialIds: PersonId[],
   type: NotificationType,
   control: TriggerControl
@@ -79,7 +79,7 @@ export interface TypeMatch extends NotificationType {
 export type NotificationContentProvider = (
   doc: Doc,
   tx: TxCUD<Doc>,
-  target: PersonId,
+  person: Ref<Person>,
   control: TriggerControl
 ) => Promise<NotificationContent>
 
@@ -91,19 +91,15 @@ export interface NotificationPresenter extends Class<Doc> {
 }
 
 export interface ReceiverInfo {
-  _id: PersonId
-  person: Person
-  socialStrings: PersonId[]
-
-  space: Ref<PersonSpace>
   account: AccountUuid
-  employee: Employee
+  employee: Ref<Employee>
+  socialIds: PersonId[]
+  space: Ref<PersonSpace>
 }
 
 export interface SenderInfo {
-  _id: PersonId
+  socialId: PersonId
   person?: Person
-  socialStrings: PersonId[]
 }
 
 export type NotificationProviderFunc = (
@@ -152,7 +148,6 @@ export default plugin(serverNotificationId, {
     PushNotificationsHandler: '' as Resource<TriggerFunc>
   },
   function: {
-    IsUserInFieldValueTypeMatch: '' as TypeMatchFunc,
     IsUserEmployeeInFieldValueTypeMatch: '' as TypeMatchFunc
   }
 })
