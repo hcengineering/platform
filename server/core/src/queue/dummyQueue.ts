@@ -12,6 +12,10 @@ class DummyQueueProducer<T> implements PlatformQueueProducer<T> {
   async close (): Promise<void> {
     await Promise.resolve()
   }
+
+  getQueue (): PlatformQueue {
+    return new DummyQueue()
+  }
 }
 
 /**
@@ -43,7 +47,7 @@ export class DummyQueue implements PlatformQueue {
     }
   ): ConsumerHandle {
     return {
-      shutdown: async (): Promise<void> => {
+      close: async (): Promise<void> => {
         await Promise.resolve()
       },
       isConnected: (): boolean => {

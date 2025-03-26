@@ -33,6 +33,9 @@
     "Trim": "截断",
     "FirstValue": "第一个值",
     "LastValue": "最后一个值",
-    "Random": "随机"
+    "Random": "随机",
+    "AllProcesses": "所有过程",
+    "MyProcesses": "我的过程",
+    "ShowDone": "显示已完成"
   }
 }

@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import core, { Doc } from '@hcengineering/core'
   import { AttributeModel } from '@hcengineering/view'
-  import { FixedColumn } from '../..'
+  import { FixedColumn, restrictionStore } from '../..'
   import DividerPresenter from './DividerPresenter.svelte'
 
   export let docObject: Doc
@@ -31,12 +31,21 @@
 
   $: dp = attributeModel?.displayProps
 
-  function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>) {
+  function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>, readonly: boolean) {
+    const readonlyParams =
+      readonly || (attribute?.attribute?.readonly ?? false)
+        ? {
+            readonly: true,
+            disabled: true,
+            editable: false,
+            isEditable: false
+          }
+        : {}
     const clearAttributeProps = attribute.props
     if (attribute.attribute?.type._class === core.class.EnumOf) {
-      return { ...clearAttributeProps, type: attribute.attribute.type, ...props }
+      return { ...clearAttributeProps, type: attribute.attribute.type, ...props, ...readonlyParams }
     }
-    return { object, ...clearAttributeProps, space: object.space, ...props }
+    return { object, ...clearAttributeProps, space: object.space, ...props, ...readonlyParams }
   }
   const translateSize = (e: CustomEvent): void => {
     if (e.detail === undefined) return
@@ -56,7 +65,7 @@
       kind={'list'}
       {compactMode}
       label={attributeModel.label}
-      {...joinProps(attributeModel, docObject, props)}
+      {...joinProps(attributeModel, docObject, props, $restrictionStore.readonly)}
       on:resize={translateSize}
     />
   </FixedColumn>
@@ -68,7 +77,7 @@
     kind={'list'}
     label={attributeModel.label}
     {compactMode}
-    {...joinProps(attributeModel, docObject, props)}
+    {...joinProps(attributeModel, docObject, props, $restrictionStore.readonly)}
     on:resize={translateSize}
   />
 {/if}

@@ -13,19 +13,26 @@
 // limitations under the License.
 //
 
-import { Client, MeasureContext, WorkspaceIds } from '@hcengineering/core'
+import { Client, DocumentQuery, MeasureContext, WorkspaceIds } from '@hcengineering/core'
 import { Class, Doc, Ref, Space } from '@hcengineering/core/types/classes'
 import core from '@hcengineering/model-core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import path from 'path'
 import { UnifiedConverter } from './converter'
-import { UnifiedJsonSerializer } from './json/json-serializer'
 import { UnifiedCsvSerializer } from './csv/csv-serializer'
+import { UnifiedJsonSerializer } from './json/json-serializer'
+import { type TransformConfig } from '@hcengineering/export'
 
-export enum ExportType {
+export enum ExportFormat {
   UNIFIED = 'unified',
   CSV = 'csv',
   JSON = 'json'
+}
+
+export interface ExportOptions {
+  format: ExportFormat
+  attributesOnly: boolean
+  query?: DocumentQuery<Doc>
 }
 
 export class WorkspaceExporter {
@@ -37,20 +44,18 @@ export class WorkspaceExporter {
     context: MeasureContext,
     private readonly client: Client,
     storage: StorageAdapter,
-    wsIds: WorkspaceIds
+    wsIds: WorkspaceIds,
+    config?: TransformConfig
   ) {
     this.jsonSerializer = new UnifiedJsonSerializer()
-    this.csvSerializer = new UnifiedCsvSerializer()
+    this.csvSerializer = new UnifiedCsvSerializer(config)
     this.converter = new UnifiedConverter(context, client, storage, wsIds)
   }
 
-  async export (
-    _class: Ref<Class<Doc>>,
-    outputDir: string,
-    format: ExportType = ExportType.UNIFIED,
-    attributesOnly: boolean = false
-  ): Promise<void> {
-    const docs = await this.client.findAll(_class, {})
+  async export (_class: Ref<Class<Doc>>, outputDir: string, options: ExportOptions): Promise<void> {
+    const { format, attributesOnly, query } = options
+
+    const docs = await this.client.findAll(_class, query ?? {})
     const docsBySpace = new Map<Ref<Space>, Doc[]>()
 
     // Group documents by space
@@ -76,9 +81,9 @@ export class WorkspaceExporter {
       // Convert all docs to UnifiedDoc format
       const unifiedDoc = await Promise.all(spaceDocs.map((doc) => this.converter.convert(doc, attributesOnly)))
 
-      if (format === ExportType.JSON) {
+      if (format === ExportFormat.JSON) {
         await this.jsonSerializer.serializeSpace(unifiedDoc, outputDir, spaceName)
-      } else if (format === ExportType.CSV) {
+      } else if (format === ExportFormat.CSV) {
         await this.csvSerializer.serializeSpace(unifiedDoc, outputDir, spaceName)
       } else {
         throw new Error(`Unsupported format: ${format}`)

@@ -42,6 +42,7 @@
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/templates": "^0.6.11",
-    "@hcengineering/activity": "^0.6.0"
+    "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/export": "^0.6.0"
   }
 }

@@ -519,9 +519,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: card.class.Card,
     fullTextSummary: true,
-    forceIndex: true,
-    childProcessingAllowed: true,
-    propagate: []
+    forceIndex: true
   })
 
   builder.createDoc(

@@ -15,13 +15,15 @@ import { type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import process, { processId } from '@hcengineering/process'
 import { type AnyComponent } from '@hcengineering/ui'
-import { type Viewlet } from '@hcengineering/view'
+import { type ViewQueryAction, type Viewlet } from '@hcengineering/view'
 
 export default mergeIds(processId, process, {
   viewlet: {
+    ExecutionsList: '' as Ref<Viewlet>,
     CardExecutions: '' as Ref<Viewlet>
   },
   component: {
+    Main: '' as AnyComponent,
     ProcessEditor: '' as AnyComponent,
     ProcessesSettingSection: '' as AnyComponent,
     SubProcessEditor: '' as AnyComponent,
@@ -37,7 +39,11 @@ export default mergeIds(processId, process, {
     ExecutonProgressPresenter: '' as AnyComponent,
     NestedContextSelector: '' as AnyComponent,
     RelatedContextSelector: '' as AnyComponent,
-    FunctionSelector: '' as AnyComponent
+    FunctionSelector: '' as AnyComponent,
+    RunProcessCardPopup: '' as AnyComponent
+  },
+  function: {
+    ShowDoneQuery: '' as ViewQueryAction
   },
   string: {
     DeleteProcess: '' as IntlString,
@@ -67,6 +73,9 @@ export default mergeIds(processId, process, {
     Trim: '' as IntlString,
     FirstValue: '' as IntlString,
     LastValue: '' as IntlString,
-    Random: '' as IntlString
+    Random: '' as IntlString,
+    MyProcesses: '' as IntlString,
+    AllProcesses: '' as IntlString,
+    ShowDone: '' as IntlString
   }
 })

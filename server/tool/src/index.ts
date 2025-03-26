@@ -40,7 +40,14 @@ import core, {
   type WithLookup
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate, type MigrateMode } from '@hcengineering/model'
-import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
+import {
+  DomainIndexHelperImpl,
+  Pipeline,
+  StorageAdapter,
+  type DbAdapter,
+  type PlatformQueueProducer,
+  type QueueWorkspaceMessage
+} from '@hcengineering/server-core'
 import { InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
@@ -246,6 +253,7 @@ export async function upgradeModel (
   connection: Client,
   storageAdapter: StorageAdapter,
   accountClient: AccountClient,
+  queue: PlatformQueueProducer<QueueWorkspaceMessage>,
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>,
@@ -267,7 +275,8 @@ export async function upgradeModel (
     logger,
     storageAdapter,
     accountClient,
-    wsIds
+    wsIds,
+    queue
   )
 
   await progress(0)
@@ -300,7 +309,8 @@ export async function upgradeModel (
     logger,
     storageAdapter,
     accountClient,
-    wsIds
+    wsIds,
+    queue
   )
 
   const upgradeIndexes = async (): Promise<void> => {
@@ -387,12 +397,22 @@ async function prepareMigrationClient (
   logger: ModelLogger,
   storageAdapter: StorageAdapter,
   accountClient: AccountClient,
-  wsIds: WorkspaceIds
+  wsIds: WorkspaceIds,
+  queue: PlatformQueueProducer<QueueWorkspaceMessage>
 ): Promise<{
     migrateClient: MigrateClientImpl
     migrateState: Map<string, Set<string>>
   }> {
-  const migrateClient = new MigrateClientImpl(pipeline, hierarchy, model, logger, storageAdapter, accountClient, wsIds)
+  const migrateClient = new MigrateClientImpl(
+    pipeline,
+    hierarchy,
+    model,
+    logger,
+    storageAdapter,
+    accountClient,
+    wsIds,
+    queue
+  )
   const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
 

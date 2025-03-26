@@ -20,6 +20,7 @@
 
   export let label: IntlString
   export let labelProps: Record<string, any> | undefined = undefined
+  export let labelStr: string | undefined = undefined
   export let message: IntlString
   export let richMessage: boolean = false
   export let params: Record<string, any> = {}
@@ -37,7 +38,13 @@
 <FocusHandler {manager} />
 
 <div class="msgbox-container">
-  <div class="overflow-label fs-title mb-4"><Label {label} params={labelProps ?? {}} /></div>
+  <div class="overflow-label fs-title mb-4">
+    {#if labelStr !== undefined}
+      {labelStr}
+    {:else}
+      <Label {label} params={labelProps ?? {}} />
+    {/if}
+  </div>
   <div class="message">
     {#if richMessage}
       {#await translate(message, params) then msg}

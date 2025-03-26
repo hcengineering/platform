@@ -135,7 +135,8 @@ export default plugin(settingId, {
     ManageSpaces: '' as Ref<Doc>,
     Spaces: '' as Ref<Doc>,
     Backup: '' as Ref<Doc>,
-    Export: '' as Ref<Doc>
+    Export: '' as Ref<Doc>,
+    Mailboxes: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -173,7 +174,7 @@ export default plugin(settingId, {
     CreateAttributePopup: '' as AnyComponent,
     CreateRelation: '' as AnyComponent,
     EditRelation: '' as AnyComponent,
-    Export: '' as AnyComponent
+    Mailboxes: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -225,7 +226,19 @@ export default plugin(settingId, {
     BackupFileDownload: '' as IntlString,
     BackupFiles: '' as IntlString,
     BackupNoBackup: '' as IntlString,
-    AddAttribute: '' as IntlString
+    AddAttribute: '' as IntlString,
+    Mailboxes: '' as IntlString,
+    CreateMailbox: '' as IntlString,
+    CreateMailboxPlaceholder: '' as IntlString,
+    MailboxNoDomains: '' as IntlString,
+    MailboxLimitReached: '' as IntlString,
+    MailboxErrorInvalidName: '' as IntlString,
+    MailboxErrorDomainNotFound: '' as IntlString,
+    MailboxErrorNameRulesViolated: '' as IntlString,
+    MailboxErrorMailboxExists: '' as IntlString,
+    MailboxErrorMailboxCountLimit: '' as IntlString,
+    DeleteMailbox: '' as IntlString,
+    MailboxDeleteConfirmation: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
@@ -238,13 +251,13 @@ export default plugin(settingId, {
     Terms: '' as Asset,
     Signout: '' as Asset,
     SelectWorkspace: '' as Asset,
-    Export: '' as Asset,
     Clazz: '' as Asset,
     Enums: '' as Asset,
     InviteSettings: '' as Asset,
     InviteWorkspace: '' as Asset,
     Views: '' as Asset,
-    Relations: '' as Asset
+    Relations: '' as Asset,
+    Mailbox: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>
@@ -256,7 +269,6 @@ export default plugin(settingId, {
     Value: '' as Ref<TemplateField>
   },
   metadata: {
-    BackupUrl: '' as Metadata<string>,
-    ExportUrl: '' as Metadata<string>
+    BackupUrl: '' as Metadata<string>
   }
 })

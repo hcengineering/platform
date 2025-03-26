@@ -1283,3 +1283,7 @@ export async function getWorkspaceRole (
 
   return await db.getWorkspaceRole(account, workspace)
 }
+
+export function generatePassword (len: number = 24): string {
+  return randomBytes(len).toString('base64').slice(0, len)
+}

@@ -199,7 +199,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
     const parts = hostname.split('.')
     if (parts.length > 2) {
-      return '.' + parts.slice(-2).join('.')
+      return '.' + parts.slice(1).join('.')
     }
 
     return hostname

@@ -350,6 +350,11 @@ export function devTool (
         const coreWsInfo = flattenStatus(wsInfo)
         const accountClient = getAccountClient(getToolToken())
 
+        const wsProducer = getPlatformQueue('tool', cmd.region).createProducer<QueueWorkspaceMessage>(
+          toolCtx,
+          QueueTopic.Workspace
+        )
+
         await createWorkspace(
           measureCtx,
           version,
@@ -358,6 +363,7 @@ export function devTool (
           txes,
           migrateOperations,
           accountClient,
+          wsProducer,
           undefined,
           true
         )
@@ -368,10 +374,6 @@ export function devTool (
           progress: 100
         })
 
-        const wsProducer = getPlatformQueue('tool', cmd.region).createProducer<QueueWorkspaceMessage>(
-          toolCtx,
-          QueueTopic.Workspace
-        )
         await wsProducer.send(res.workspaceUuid, [workspaceEvents.created()])
         await wsProducer.close()
 
@@ -431,7 +433,10 @@ export function devTool (
         const coreWsInfo = flattenStatus(wsInfo)
         const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
         const accountClient = getAccountClient(getToolToken(wsInfo.uuid))
-
+        const wsProducer = getPlatformQueue('tool', info.region).createProducer<QueueWorkspaceMessage>(
+          toolCtx,
+          QueueTopic.Workspace
+        )
         await upgradeWorkspace(
           measureCtx,
           version,
@@ -440,6 +445,7 @@ export function devTool (
           accountClient,
           coreWsInfo,
           consoleModelLogger,
+          wsProducer,
           async () => {},
           cmd.force,
           cmd.indexes,
@@ -454,10 +460,7 @@ export function devTool (
         })
 
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
-        const wsProducer = getPlatformQueue('tool', info.region).createProducer<QueueWorkspaceMessage>(
-          toolCtx,
-          QueueTopic.Workspace
-        )
+
         await wsProducer.send(info.uuid, [workspaceEvents.upgraded()])
         await wsProducer.close()
         console.log('upgrade-workspace done')

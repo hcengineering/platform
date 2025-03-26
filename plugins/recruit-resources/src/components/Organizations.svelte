@@ -22,6 +22,7 @@
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateOrganization from './CreateOrganization.svelte'
+  import { ExportButton } from '@hcengineering/export-resources'
   import VacancyListApplicationsPopup from './organizations/VacancyListApplicationsPopup.svelte'
   import VacancyListCountPresenter from './organizations/VacancyListCountPresenter.svelte'
   import VacancyPopup from './organizations/VacancyPopup.svelte'
@@ -214,6 +215,40 @@
     <FilterButton _class={recruit.mixin.VacancyList} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
+    <ExportButton
+      _class={recruit.mixin.VacancyList}
+      query={resultQuery}
+      visible={true}
+      config={{
+        skipAttributes: [
+          '_class',
+          'docUpdateMessages',
+          'space',
+          'notification:mixin:Collaborators',
+          'recruit:mixin:VacancyList'
+        ],
+        attributeKeyMap: { city: 'location' },
+        attributeTransforms: {
+          channels: {
+            operations: [
+              {
+                type: 'group_by',
+                config: {
+                  keyField: 'data.provider',
+                  valueField: 'data.value'
+                }
+              },
+              {
+                type: 'join',
+                config: {
+                  delimiter: ', '
+                }
+              }
+            ]
+          }
+        }
+      }}
+    />
     <Button icon={IconAdd} label={recruit.string.CompanyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
   </svelte:fragment>
 </Header>

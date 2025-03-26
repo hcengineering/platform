@@ -30,76 +30,41 @@
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
   import CardsPopup from './CardsPopup.svelte'
+  import CardSelector from './CardSelector.svelte'
 
-  export let value: Ref<Card>
+  export let value: Ref<Card> | undefined
   export let readonly: boolean = false
   export let label: IntlString = card.string.Card
   export let onChange: (value: any) => void
   export let attribute: AnyAttribute
 
   export let focusIndex: number | undefined = undefined
-  export let shouldShowLabel: boolean = true
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = 'min-content'
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
 
-  const handleOpen = (event: MouseEvent): void => {
-    event.stopPropagation()
-    const _class = (attribute.type as RefTo<Card>).to
-
-    if (readonly) {
-      return
-    }
-
-    showPopup(CardsPopup, { selected: value, _class }, eventToHTMLElement(event), change)
+  const change = (val: Ref<Card> | undefined): void => {
+    dispatch('change', val)
+    onChange(val)
   }
 
-  const change = (val: Card | undefined): void => {
-    if (readonly || val == null || value === val._id) {
-      return
-    }
-
-    value = val._id
-    dispatch('change', value)
-    onChange(value)
-  }
-
-  let doc: Card | undefined
-
-  const query = createQuery()
-  $: query.query(card.class.Card, { _id: value }, (res) => {
-    doc = res[0]
-  })
-
-  $: _classRef = doc?._class ?? (attribute?.type as RefTo<Card>)?.to
-  $: _class = _classRef !== undefined ? (hierarchy.findClass(_classRef) as MasterTag) : undefined
-
-  $: icon = _class?.icon === view.ids.IconWithEmoji ? IconWithEmoji : _class?.icon
-  $: iconProps = _class?.icon === view.ids.IconWithEmoji ? { icon: _class?.color } : {}
+  const _class = (attribute.type as RefTo<Card>).to
 </script>
 
-<Button
-  showTooltip={!readonly ? { label } : undefined}
-  {justify}
+<CardSelector
+  {value}
+  {readonly}
+  {label}
+  {_class}
   {focusIndex}
-  {width}
-  {size}
-  {icon}
-  {iconProps}
   {kind}
-  disabled={readonly}
-  on:click={handleOpen}
->
-  <div slot="content" class="overflow-label">
-    {#if doc}
-      {doc.title}
-    {:else}
-      <Label {label} />
-    {/if}
-  </div>
-</Button>
+  {size}
+  {justify}
+  {width}
+  on:change={(e) => {
+    change(e.detail)
+  }}
+/>

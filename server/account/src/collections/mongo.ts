@@ -49,7 +49,9 @@ import type {
   WorkspaceData,
   WorkspaceInfoWithStatus,
   WorkspaceStatusData,
-  Sort
+  Sort,
+  Mailbox,
+  MailboxSecret
 } from '../types'
 import { isShallowEqual } from '../utils'
 
@@ -369,6 +371,8 @@ export class MongoAccountDB implements AccountDB {
   accountEvent: MongoDbCollection<AccountEvent>
   otp: MongoDbCollection<OTP>
   invite: MongoDbCollection<WorkspaceInvite, 'id'>
+  mailbox: MongoDbCollection<Mailbox, 'mailbox'>
+  mailboxSecret: MongoDbCollection<MailboxSecret>
 
   workspaceMembers: MongoDbCollection<WorkspaceMember>
 
@@ -382,6 +386,8 @@ export class MongoAccountDB implements AccountDB {
     this.accountEvent = new MongoDbCollection<AccountEvent>('accountEvent', db)
     this.otp = new MongoDbCollection<OTP>('otp', db)
     this.invite = new MongoDbCollection<WorkspaceInvite, 'id'>('invite', db, 'id')
+    this.mailbox = new MongoDbCollection<Mailbox, 'mailbox'>('mailbox', db)
+    this.mailboxSecret = new MongoDbCollection<MailboxSecret>('mailboxSecrets', db)
 
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
   }

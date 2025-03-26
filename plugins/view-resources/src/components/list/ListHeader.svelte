@@ -15,8 +15,7 @@
 <script lang="ts">
   import { AggregateValue, Doc, PrimitiveType, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import ui, {
-    ActionIcon,
+  import {
     AnyComponent,
     AnySvelteComponent,
     Button,
@@ -26,7 +25,6 @@
     IconBack,
     IconCheck,
     IconCollapseArrow,
-    IconMoreH,
     Label,
     Loading,
     defaultBackground,
@@ -153,7 +151,7 @@
       {/if}
 
       {#if loading && items.length === 0}
-        <div class="p-1">
+        <div class="ml-2 p-1">
           <Loading shrink size={'small'} />
         </div>
       {:else}
@@ -165,24 +163,13 @@
           </span>
         {/if}
         {#if limited < itemsProj.length}
-          <div class="antiSection-header__counter flex-row-center mx-2">
-            <span class="caption-color">{limited}</span>
-            <span class="text-xs mx-0-5">/</span>
+          <div class="antiSection-header__counter flex-row-center mx-2 content-dark-color">
             {itemsProj.length}
           </div>
           {#if loading}
-            <div class="p-1">
+            <div class="ml-2 p-1">
               <Loading shrink size={'small'} />
             </div>
-          {:else}
-            <ActionIcon
-              size={'small'}
-              icon={IconMoreH}
-              label={ui.string.ShowMore}
-              action={() => {
-                dispatch('more')
-              }}
-            />
           {/if}
         {:else}
           <span class="antiSection-header__counter ml-2">{itemsProj.length}</span>
