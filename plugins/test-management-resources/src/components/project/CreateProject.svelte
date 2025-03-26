@@ -323,7 +323,7 @@
       <Button
         icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? testManagement.icon.Home}
         iconProps={icon === view.ids.IconWithEmoji
-          ? { icon: color, size: 'medium' }
+          ? { icon: color }
           : {
               fill:
                 color !== undefined
