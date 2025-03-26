@@ -1517,6 +1517,8 @@ async function applyUserTxes (ctx: MeasureContext, control: TriggerControl, txes
       } else {
         map.set(notification.user, [tx])
       }
+    } else {
+      res.push(tx)
     }
   }
 
