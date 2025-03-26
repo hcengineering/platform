@@ -65,6 +65,10 @@
     "PasswordMinUpperChars": "{count, plural, =1 {A senha deve conter pelo menos # letra maiúscula} other {A senha deve conter pelo menos # letras maiúsculas}}",
     "PasswordMinLowerChars": "{count, plural, =1 {A senha deve conter pelo menos # letra minúscula} other {A senha deve conter pelo menos # letras minúsculas}}",
     "WorkspaceArchivedDesc": "O espaço de trabalho está arquivado por estar inativo.",
-    "RestoreArchivedWorkspace": "Restaurar"
+    "RestoreArchivedWorkspace": "Restaurar",
+    "Hello": "Olá {name},",
+    "ProcessingInvite": "Processando convite, aguarde...",
+    "SignToProceed": "Por favor, inicie sessão para continuar",
+    "Proceed": "Continuar"
   }
 }

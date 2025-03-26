@@ -18,6 +18,7 @@
   import { OK, Severity, Status } from '@hcengineering/platform'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { Timestamp } from '@hcengineering/core'
+  import { LoginInfo } from '@hcengineering/account-client'
 
   import Tabs from './Tabs.svelte'
   import { BottomAction, doLoginNavigate, validateOtpLogin, OtpLoginSteps, loginOtp } from '../index'
@@ -30,6 +31,8 @@
   export let retryOn: Timestamp
   export let signUpDisabled = false
   export let loginState: 'login' | 'signup' | 'none' = 'none'
+  export let canChangeEmail = true
+  export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -66,13 +69,17 @@
     const [loginStatus, result] = await validateOtpLogin(email, otp)
     status = loginStatus
 
-    await doLoginNavigate(
-      result,
-      (st) => {
-        status = st
-      },
-      navigateUrl
-    )
+    if (onLogin !== undefined) {
+      void onLogin(result, status)
+    } else {
+      await doLoginNavigate(
+        result,
+        (st) => {
+          status = st
+        },
+        navigateUrl
+      )
+    }
   }
 
   function onInput (e: Event): void {
@@ -276,7 +283,9 @@
       </span>
     </span>
 
-    <BottomActionComponent action={changeEmailAction} />
+    {#if canChangeEmail}
+      <BottomActionComponent action={changeEmailAction} />
+    {/if}
     {#if canResend}
       <BottomActionComponent action={resendCodeAction} />
     {/if}

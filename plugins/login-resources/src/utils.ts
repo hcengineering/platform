@@ -451,7 +451,7 @@ export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
 export function navigateToWorkspace (
   workspaceUrl: string,
   loginInfo: WorkspaceLoginInfo | null,
-  navigateUrl?: string,
+  navigateUrl?: string | null,
   replace = false
 ): void {
   if (loginInfo == null) {
@@ -460,7 +460,7 @@ export function navigateToWorkspace (
 
   setLoginInfo(loginInfo)
 
-  if (navigateUrl !== undefined) {
+  if (navigateUrl != null) {
     try {
       const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
       if (loc.path[1] === workspaceUrl) {

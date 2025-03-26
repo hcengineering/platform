@@ -270,6 +270,7 @@ export interface RegionInfo {
 export interface WorkspaceInviteInfo {
   workspace: WorkspaceUuid
   email?: string
+  name?: string
 }
 
 export interface MailboxOptions {

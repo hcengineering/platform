@@ -768,8 +768,11 @@ export async function checkAutoJoin (
     if (targetAccount != null) {
       if (token == null) {
         // Login required
+        const person = await db.person.findOne({ uuid: targetAccount.uuid })
+
         return {
           workspace: workspace.uuid,
+          name: person == null ? '' : getPersonName(person),
           email: normalizedEmail
         }
       }
@@ -778,8 +781,11 @@ export async function checkAutoJoin (
 
       if (callerAccount !== targetAccount.uuid) {
         // Login with target email required
+        const person = await db.person.findOne({ uuid: targetAccount.uuid })
+
         return {
           workspace: workspace.uuid,
+          name: person == null ? '' : getPersonName(person),
           email: normalizedEmail
         }
       }

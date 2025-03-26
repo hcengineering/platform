@@ -69,6 +69,10 @@ export default mergeIds(loginId, login, {
     LoginWithCode: '' as IntlString,
     LoginWithPassword: '' as IntlString,
     SignUpWithCode: '' as IntlString,
-    SignUpWithPassword: '' as IntlString
+    SignUpWithPassword: '' as IntlString,
+    Hello: '' as IntlString,
+    ProcessingInvite: '' as IntlString,
+    SignToProceed: '' as IntlString,
+    Proceed: '' as IntlString
   }
 })

@@ -14,14 +14,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { type IntlString, type Status } from '@hcengineering/platform'
+
   import { type BottomAction, LoginMethods } from '../index'
   import LoginPasswordForm from './LoginPasswordForm.svelte'
   import LoginOtpForm from './LoginOtpForm.svelte'
   import BottomActionComponent from './BottomAction.svelte'
   import login from '../plugin'
+  import { LoginInfo } from '@hcengineering/account-client'
 
   export let navigateUrl: string | undefined = undefined
   export let signUpDisabled = false
+  export let email: string | undefined = undefined
+  export let caption: IntlString | undefined
+  export let subtitle: string | undefined = undefined
+  export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
   let method: LoginMethods = LoginMethods.Otp
 
@@ -45,12 +52,12 @@
 </script>
 
 {#if method === LoginMethods.Otp}
-  <LoginOtpForm {navigateUrl} {signUpDisabled} on:change={changeMethod} />
+  <LoginOtpForm {navigateUrl} {signUpDisabled} {email} {caption} {subtitle} {onLogin} on:change={changeMethod} />
   <div class="action">
     <BottomActionComponent action={loginWithPasswordAction} />
   </div>
 {:else}
-  <LoginPasswordForm {navigateUrl} {signUpDisabled} on:change={changeMethod} />
+  <LoginPasswordForm {navigateUrl} {signUpDisabled} {email} {caption} {subtitle} {onLogin} on:change={changeMethod} />
   <div class="action">
     <BottomActionComponent action={loginWithCodeAction} />
   </div>

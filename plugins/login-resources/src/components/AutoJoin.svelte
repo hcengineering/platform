@@ -15,75 +15,52 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { Analytics } from '@hcengineering/analytics'
-  import { workbenchId } from '@hcengineering/workbench'
-  import { OK, Severity, Status } from '@hcengineering/platform'
-  import { Location, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { logIn, workbenchId } from '@hcengineering/workbench'
+  import { setMetadata, translate } from '@hcengineering/platform'
+  import { Location, Loading, Label, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { type LoginInfo } from '@hcengineering/account-client'
   import { loginId } from '@hcengineering/login'
+  import { themeStore } from '@hcengineering/theme'
+  import presentation from '@hcengineering/presentation'
 
-  import Form from './Form.svelte'
-  import { setLoginInfo, checkAutoJoin, isWorkspaceLoginInfo } from '../utils'
-  import { loginAction, recoveryAction } from '../actions'
+  import { setLoginInfo, checkAutoJoin, isWorkspaceLoginInfo, navigateToWorkspace } from '../utils'
   import login from '../plugin'
+  import LoginForm from './LoginForm.svelte'
 
   const location = getCurrentLocation()
   Analytics.handleEvent('auto_join_invite_link_activated')
 
-  const fields = [
-    { id: 'email', name: 'username', i18n: login.string.Email, disabled: true },
-    {
-      id: 'current-password',
-      name: 'password',
-      i18n: login.string.Password,
-      password: true
-    }
-  ]
-
-  $: object = {
-    username: '',
-    password: ''
-  }
-
-  let status = OK
-
-  $: action = {
-    i18n: login.string.Join,
-    func: async () => {
-      status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-
-      await check()
-    }
-  }
+  let loading = true
+  let email: string | undefined = undefined
+  let name = ''
+  let subtitle = ''
 
   onMount(() => {
     void check()
   })
 
+  $: void updateSubtitle(name, $themeStore.language)
+
+  async function updateSubtitle (name: string, language: string): Promise<void> {
+    if (name != null && name !== '') {
+      subtitle = await translate(login.string.Hello, { name }, language)
+    }
+  }
+
   async function check (): Promise<void> {
     if (location.query?.inviteId == null || location.query?.firstName == null) return
-    status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const [, result] = await checkAutoJoin(
       location.query.inviteId,
       location.query.firstName,
       location.query.lastName ?? ''
     )
-    status = OK
+
     if (result != null) {
       if (isWorkspaceLoginInfo(result)) {
-        setLoginInfo(result)
-
-        if (location.query?.navigateUrl != null) {
-          try {
-            const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
-            if (loc.path[1] === result.workspaceUrl) {
-              navigate(loc)
-              return
-            }
-          } catch (err: any) {
-            // Json parse error could be ignored
-          }
-        }
-        navigate({ path: [workbenchId, result.workspaceUrl] })
+        await logIn(result)
+        navigateToWorkspace(result.workspaceUrl, result, location.query?.navigateUrl)
+        return
       } else {
         if (result.email == null) {
           console.error('No email in auto join info')
@@ -91,18 +68,37 @@
           return
         }
 
-        object.username = result.email
+        email = result.email
+        name = result.name
       }
     }
+    if (loading) {
+      loading = false
+    }
+  }
+
+  async function onLogin (loginInfo: LoginInfo | null): Promise<void> {
+    if (loginInfo?.token == null) {
+      return
+    }
+
+    setMetadata(presentation.metadata.Token, loginInfo.token)
+    await check()
   }
 </script>
 
-<Form
-  caption={login.string.Join}
-  {status}
-  {fields}
-  {object}
-  {action}
-  bottomActions={[loginAction, recoveryAction]}
-  withProviders
-/>
+{#if loading}
+  <div>
+    <div class="title"><Label label={login.string.ProcessingInvite} /></div>
+    <Loading />
+  </div>
+{:else}
+  <LoginForm signUpDisabled {email} caption={login.string.SignToProceed} {subtitle} {onLogin} />
+{/if}
+
+<style lang="scss">
+  .title {
+    color: var(--theme-caption-color);
+    text-align: center;
+  }
+</style>

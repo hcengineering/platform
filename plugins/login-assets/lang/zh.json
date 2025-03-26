@@ -65,6 +65,10 @@
     "PasswordMinUpperChars": "{count, plural, =1 {密码至少需要 # 个大写字母} other {密码至少需要 # 个大写字母}}",
     "PasswordMinLowerChars": "{count, plural, =1 {密码至少需要 # 个小写字母} other {密码至少需要 # 个小写字母}}",
     "WorkspaceArchivedDesc": "工作区已被归档，因为未使用。",
-    "RestoreArchivedWorkspace": "解包"
+    "RestoreArchivedWorkspace": "解包",
+    "Hello": "你好 {name},",
+    "ProcessingInvite": "处理邀请，请稍候...",
+    "SignToProceed": "请登录以继续",
+    "Proceed": "继续"
   }
 }
