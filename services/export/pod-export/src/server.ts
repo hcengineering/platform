@@ -138,7 +138,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
   const measureCtx = initStatisticsContext('export', {})
 
   const app = express()
-  app.use(cors())
+  app.use(cors({ exposedHeaders: 'Content-Disposition' }))
   app.use(express.json())
 
   app.post(
@@ -185,11 +185,6 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
           const archiveDir = await fs.mkdtemp(join(tmpdir(), 'export-archive-'))
           const archiveName = `export-${workspace.name}-${className}-${format}-${Date.now()}.zip`
           const archivePath = join(archiveDir, archiveName)
-
-          const files = await fs.readdir(exportDir)
-          if (files.length === 0) {
-            throw new ApiError(400, 'No files were exported')
-          }
 
           await saveToArchive(exportDir, archivePath)
           const exportDrive = await saveToDrive(
@@ -249,7 +244,7 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
 
         const files = await fs.readdir(exportDir)
         if (files.length === 0) {
-          throw new ApiError(400, 'No files were exported')
+          throw new ApiError(400, 'No data to export')
         }
 
         if (files.length !== 1) {

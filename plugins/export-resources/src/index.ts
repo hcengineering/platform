@@ -17,6 +17,9 @@ import { type Resources } from '@hcengineering/platform'
 import ExportButton from './components/ExportButton.svelte'
 import ExportSettings from './components/ExportSettings.svelte'
 
+export { default as ExportButton } from './components/ExportButton.svelte'
+export { default as ExportSettings } from './components/ExportSettings.svelte'
+
 export default async (): Promise<Resources> => ({
   component: {
     ExportButton,
