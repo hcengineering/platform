@@ -789,7 +789,7 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
 
       setLoginInfo(result)
 
-      navigateToWorkspace(joinedWS[0].uuid, result, undefined, clearQuery)
+      navigateToWorkspace(joinedWS[0].url, result, undefined, clearQuery)
     }
   } else {
     goTo('selectWorkspace', clearQuery)
