@@ -31,6 +31,7 @@
   export let shrink: number = 1
   export let accent: boolean = false
   export let noOverflow: boolean = false
+  export let inlineReference: boolean = false
 
   let _disabled = disabled || $restrictionStore.disableNavigation
   $: _disabled = disabled || $restrictionStore.disableNavigation
@@ -58,6 +59,6 @@
   $: if (object !== undefined) getHref(object)
 </script>
 
-<NavLink disabled={_disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}>
+<NavLink disabled={_disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow} inlineReference={inlineReference}>
   <slot />
 </NavLink>

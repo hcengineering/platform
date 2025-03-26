@@ -394,6 +394,10 @@ export function createModel (builder: Builder): void {
     presenter: documents.component.DocumentMetaPresenter
   })
 
+  builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: documents.function.DocumentMetaTitleProvider
+  })
+
   builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.LinkProvider, {
     encode: documents.function.GetDocumentMetaLinkFragment
   })

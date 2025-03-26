@@ -145,7 +145,7 @@ export class TProject extends TDoc implements Project {
 }
 
 @Model(documents.class.DocumentMeta, core.class.Doc, DOMAIN_DOCUMENTS)
-@UX(documents.string.Document)
+@UX(documents.string.ControlledDocument, documents.icon.Document)
 export class TDocumentMeta extends TDoc implements DocumentMeta {
   @Prop(Collection(documents.class.Document), documents.string.Documents)
     documents!: CollectionSize<Document>

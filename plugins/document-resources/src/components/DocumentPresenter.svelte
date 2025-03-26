@@ -37,7 +37,7 @@
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {accent} {noUnderline} component={document.component.EditDoc} />
+    <ObjectMention object={value} {disabled} component={document.component.EditDoc} />
   {:else if type === 'link'}
     <DocNavLink {disabled} object={value} {accent} {noUnderline} component={document.component.EditDoc}>
       <div

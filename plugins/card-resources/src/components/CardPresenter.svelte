@@ -36,7 +36,7 @@
 </script>
 
 {#if inline && value}
-  <ObjectMention object={value} {disabled} {noUnderline} {onClick} component={card.component.EditCard} />
+  <ObjectMention object={value} {disabled} {onClick} component={card.component.EditCard} />
 {:else if value}
   {#if type === 'link'}
     <div class="flex-row-center">

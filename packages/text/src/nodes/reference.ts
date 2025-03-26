@@ -16,6 +16,7 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { getDataAttribute } from './utils'
 import { Class, Doc, Ref } from '@hcengineering/core'
+import { Attrs } from '@tiptap/pm/model'
 
 export interface ReferenceNodeProps {
   id: Ref<Doc>
@@ -24,7 +25,6 @@ export interface ReferenceNodeProps {
 }
 
 export interface ReferenceOptions {
-  renderLabel: (props: { options: ReferenceOptions, props: ReferenceNodeProps }) => string
   suggestion: { char?: string }
   HTMLAttributes: Record<string, any>
 }
@@ -37,8 +37,6 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
   group: 'inline',
   inline: true,
   selectable: true,
-  atom: true,
-  draggable: true,
 
   addAttributes () {
     return {
@@ -50,10 +48,6 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
 
   addOptions () {
     return {
-      renderLabel ({ options, props }) {
-        // eslint-disable-next-line
-        return `${options.suggestion.char}${props.label ?? props.id}`
-      },
       suggestion: { char: '@' },
       HTMLAttributes: {}
     }
@@ -62,22 +56,14 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
   parseHTML () {
     return [
       {
-        tag: `span[data-type="${this.name}"]`,
-        getAttrs: (el) => {
-          const id = (el as HTMLSpanElement).getAttribute('id')?.trim()
-          const label = (el as HTMLSpanElement).getAttribute('label')?.trim()
-          const objectclass = (el as HTMLSpanElement).getAttribute('objectclass')?.trim()
-
-          if (id == null || label == null || objectclass == null) {
-            return false
-          }
-
-          return {
-            id,
-            label,
-            objectclass
-          }
-        }
+        priority: 60,
+        tag: 'span[data-type="reference"]',
+        getAttrs
+      },
+      {
+        priority: 60,
+        tag: 'a[data-type="reference"]',
+        getAttrs
       }
     ]
   },
@@ -88,20 +74,33 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
       mergeAttributes(
         {
           'data-type': this.name,
+          'data-id': node.attrs.id,
+          'data-objectclass': node.attrs.objectclass,
+          'data-label': node.attrs.label,
           class: 'antiMention'
         },
         this.options.HTMLAttributes,
         HTMLAttributes
       ),
-      this.options.renderLabel({
-        options: this.options,
-        props: node.attrs as ReferenceNodeProps
-      })
+      `${this.options.suggestion.char}${node.attrs.label ?? node.attrs.id}`
     ]
-  },
-
-  renderText ({ node }) {
-    const options = this.options
-    return options.renderLabel({ options, props: node.attrs as ReferenceNodeProps })
   }
 })
+
+function getAttrs (el: HTMLSpanElement): Attrs | false {
+  console.log('getting attrs...', el)
+
+  const id = el.dataset.id?.trim()
+  const label = el.dataset.label?.trim()
+  const objectclass = el.dataset.objectclass?.trim()
+
+  if (id == null || label == null || objectclass == null) {
+    return false
+  }
+
+  return {
+    id,
+    label,
+    objectclass
+  }
+}
