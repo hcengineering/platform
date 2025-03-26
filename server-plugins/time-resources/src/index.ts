@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import contact, { Employee, Person, pickPrimarySocialId } from '@hcengineering/contact'
+import contact, { Employee, Person } from '@hcengineering/contact'
 
 import core, {
   AttachedData,
@@ -37,13 +37,14 @@ import core, {
 import notification, { CommonInboxNotification } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
-import { getSocialStrings, getPerson, getAllSocialStringsByPersonId } from '@hcengineering/server-contact'
+import { getSocialStrings } from '@hcengineering/server-contact'
 import { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import {
   getCommonNotificationTxes,
   getNotificationContent,
   getNotificationProviderControl,
-  isShouldNotifyTx
+  isShouldNotifyTx,
+  getSenderInfo
 } from '@hcengineering/server-notification-resources'
 import serverTime, { OnToDo, ToDoFactory } from '@hcengineering/server-time'
 import task, { makeRank } from '@hcengineering/task'
@@ -295,44 +296,33 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
       continue
     }
 
-    const socialStrings = await getSocialStrings(control, employee._id)
-    const primarySocialString = pickPrimarySocialId(socialStrings)
+    const socialIds = await getSocialStrings(control, employee._id)
     const account = employee.personUuid
 
     if (account == null) {
       continue
     }
 
-    // TODO: Select a proper account
     const receiverInfo: ReceiverInfo = {
-      _id: primarySocialString,
-      person: employee,
-      socialStrings,
-
-      employee,
       account,
-      space: personSpace._id
+      socialIds,
+      space: personSpace._id,
+      employee: employee._id
     }
 
-    const senderPerson = await getPerson(control, tx.modifiedBy)
-    const senderSocialStrings = await getAllSocialStringsByPersonId(control, [tx.modifiedBy])
-
-    const senderInfo: SenderInfo = {
-      _id: tx.modifiedBy,
-      person: senderPerson,
-      socialStrings: senderSocialStrings
-    }
+    const senderInfo: SenderInfo = await getSenderInfo(control.ctx, tx.modifiedBy, control)
     const notificationControl = await getNotificationProviderControl(control.ctx, control)
     const notifyResult = await isShouldNotifyTx(
       control,
       createTx,
       todo,
-      socialStrings,
+      employee._id,
+      socialIds,
       true,
       false,
       notificationControl
     )
-    const content = await getNotificationContent(tx, socialStrings, senderInfo, todo, control)
+    const content = await getNotificationContent(tx, employee._id, senderInfo, todo, control)
     const data: Partial<Data<CommonInboxNotification>> = {
       ...content,
       header: time.string.ToDo,
@@ -361,12 +351,9 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
     await control.apply(control.ctx, txes)
 
     const ids = txes.map((it) => it._id)
-    const personUuid = receiverInfo.person?.personUuid
-    if (personUuid !== undefined) {
-      control.ctx.contextData.broadcast.targets.notifications = (it) => {
-        if (ids.includes(it._id)) {
-          return [personUuid]
-        }
+    control.ctx.contextData.broadcast.targets.notifications = (it) => {
+      if (ids.includes(it._id)) {
+        return [receiverInfo.account]
       }
     }
   }

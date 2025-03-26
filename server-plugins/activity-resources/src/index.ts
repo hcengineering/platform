@@ -48,6 +48,7 @@ import {
   getTextPresenter,
   removeDocInboxNotifications
 } from '@hcengineering/server-notification-resources'
+import { Person } from '@hcengineering/contact'
 
 import { ReferenceTrigger } from './references'
 import { getAttrName, getCollectionAttribute, getDocUpdateAction, getTxAttributesUpdates } from './utils'
@@ -417,7 +418,7 @@ async function OnDocRemoved (txes: TxCUD<Doc>[], control: TriggerControl): Promi
 async function ReactionNotificationContentProvider (
   doc: ActivityMessage,
   originTx: TxCUD<Doc>,
-  _: PersonId,
+  _: Ref<Person>,
   control: TriggerControl
 ): Promise<NotificationContent> {
   const tx = originTx as TxCreateDoc<Reaction>
