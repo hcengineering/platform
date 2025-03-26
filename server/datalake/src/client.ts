@@ -504,11 +504,10 @@ async function fetchSafe (ctx: MeasureContext, url: RequestInfo, init?: RequestI
   }
 
   if (!response.ok) {
-    const text = await response.text()
     if (response.status === 404) {
-      throw new NotFoundError(text)
+      throw new NotFoundError()
     } else {
-      throw new DatalakeError(text)
+      throw new DatalakeError(`${response.status} ${response.statusText}`)
     }
   }
 

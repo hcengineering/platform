@@ -14,14 +14,7 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import {
-  type Blob,
-  type MeasureContext,
-  type Ref,
-  type WorkspaceId,
-  concatLink,
-  RateLimiter
-} from '@hcengineering/core'
+import { type Blob, type MeasureContext, type Ref, type WorkspaceId, RateLimiter } from '@hcengineering/core'
 import { type DatalakeClient } from '@hcengineering/datalake'
 import { type UploadObjectParams } from '@hcengineering/datalake/types/client'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
@@ -381,37 +374,74 @@ export async function copyBlobToDatalake (
   datalake: DatalakeClient
 ): Promise<void> {
   const objectName = blob._id
-  if (blob.size < 1024 * 1024 * 64) {
-    // Handle small file
-    const { endpoint, accessKey: accessKeyId, secretKey: secretAccessKey, region } = config
 
-    const bucketId = adapter.getBucketId(workspaceId)
-    const objectId = adapter.getDocumentKey(workspaceId, encodeURIComponent(objectName))
-    const url = concatLink(endpoint, `${bucketId}/${objectId}`)
+  const stat = await adapter.stat(ctx, workspaceId, objectName)
+  if (stat !== undefined) {
+    const metadata = {
+      lastModified: stat.modifiedOn,
+      name: objectName,
+      type: stat.contentType,
+      size: stat.size
+    }
 
-    const params = { url, accessKeyId, secretAccessKey, region }
-    await datalake.uploadFromS3(ctx, workspaceId, objectName, params)
-  } else {
-    // Handle huge file
-    const stat = await adapter.stat(ctx, workspaceId, objectName)
-    if (stat !== undefined) {
-      const metadata = {
-        lastModified: stat.modifiedOn,
-        name: objectName,
-        type: stat.contentType,
-        size: stat.size
-      }
-
-      const readable = await adapter.get(ctx, workspaceId, objectName)
-      try {
+    const readable = await adapter.get(ctx, workspaceId, objectName)
+    try {
+      if (blob.size < 1024 * 1024 * 10) {
+        await uploadBlob(ctx, datalake, workspaceId, objectName, readable, metadata)
+      } else {
         console.log('uploading huge blob', objectName, Math.round(stat.size / 1024 / 1024), 'MB')
         await uploadMultipart(ctx, datalake, workspaceId, objectName, readable, metadata)
-        console.log('done', objectName)
-      } finally {
-        readable.destroy()
       }
+      console.log('done', objectName, stat.contentType)
+    } finally {
+      readable.destroy()
     }
   }
+}
+
+function uploadBlob (
+  ctx: MeasureContext,
+  datalake: DatalakeClient,
+  workspaceId: WorkspaceId,
+  objectName: string,
+  stream: Readable,
+  metadata: UploadObjectParams
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const passthrough = new PassThrough()
+
+    const cleanup = (): void => {
+      stream.removeAllListeners()
+      passthrough.removeAllListeners()
+      stream.destroy()
+      passthrough.destroy()
+    }
+
+    stream.on('error', (err) => {
+      ctx.error('error reading blob', { err })
+      cleanup()
+      reject(err)
+    })
+    passthrough.on('error', (err) => {
+      ctx.error('error reading blob', { err })
+      cleanup()
+      reject(err)
+    })
+
+    stream.pipe(passthrough)
+
+    datalake
+      .putObject(ctx, workspaceId, objectName, passthrough, metadata)
+      .then(() => {
+        cleanup()
+        resolve()
+      })
+      .catch((err) => {
+        ctx.error('failed to upload blob', { err })
+        cleanup()
+        reject(err)
+      })
+  })
 }
 
 function uploadMultipart (
