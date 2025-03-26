@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type AccountDB, LoginInfo, joinWithProvider, loginOrSignUpWithProvider } from '@hcengineering/account'
+import { type AccountDB } from '@hcengineering/account'
 import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
-import qs from 'querystringify'
 
 import { Passport } from '.'
-import { getHost, safeParseAuthState } from './utils'
+import { getHost, handleProviderAuth, safeParseAuthState } from './utils'
 
 export function registerOpenid (
   measureCtx: MeasureContext,
@@ -90,62 +89,30 @@ export function registerOpenid (
       })(ctx, next)
     },
     async (ctx, next) => {
-      try {
-        const email = ctx.state.user.email
-        const verifiedEmail = (ctx.state.user.email_verified as boolean) ? email : ''
-        const [first, last] = ctx.state.user.name?.split(' ') ?? [ctx.state.user.username, '']
-        measureCtx.info('Provider auth handler', { email, verifiedEmail, type: 'openid' })
+      const email = ctx.state.user.email
+      const verifiedEmail = (ctx.state.user.email_verified as boolean) ? email : ''
+      const [first, last] = ctx.state.user.name?.split(' ') ?? [ctx.state.user.username, '']
 
-        let loginInfo: LoginInfo | null
-        const state = safeParseAuthState(ctx.query?.state)
-        const branding = getBranding(brandings, state?.branding)
-        const db = await dbPromise
-        const socialKey = { type: SocialIdType.OIDC, value: ctx.state.user.sub }
+      const db = await dbPromise
+      const redirectUrl = await handleProviderAuth(
+        measureCtx,
+        db,
+        brandings,
+        frontUrl,
+        'openid',
+        ctx.query?.state,
+        ctx.state?.user,
+        verifiedEmail,
+        first,
+        last,
+        { type: SocialIdType.OIDC, value: ctx.state.user.sub },
+        signUpDisabled
+      )
 
-        if (state.inviteId != null && state.inviteId !== '') {
-          loginInfo = await joinWithProvider(
-            measureCtx,
-            db,
-            null,
-            verifiedEmail,
-            first,
-            last,
-            state.inviteId as any,
-            socialKey,
-            signUpDisabled
-          )
-        } else {
-          loginInfo = await loginOrSignUpWithProvider(
-            measureCtx,
-            db,
-            null,
-            verifiedEmail,
-            first,
-            last,
-            socialKey,
-            signUpDisabled
-          )
-        }
-
-        if (loginInfo === null) {
-          measureCtx.info('Failed to auth: no associated account found', {
-            email,
-            verifiedEmail,
-            type: 'openid',
-            user: ctx.state?.user
-          })
-          ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login'))
-        } else {
-          const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
-          const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
-
-          measureCtx.info('Success auth, redirect', { email, type: 'openid', target: origin })
-          // Successful authentication, redirect to your application
-          ctx.redirect(`${origin}?${query}`)
-        }
-      } catch (err: any) {
-        measureCtx.error('failed to auth', { err, type: 'openid', user: ctx.state?.user })
+      if (redirectUrl !== '') {
+        ctx.redirect(redirectUrl)
       }
+
       await next()
     }
   )

@@ -1,10 +1,9 @@
-import { type AccountDB, LoginInfo, joinWithProvider, loginOrSignUpWithProvider } from '@hcengineering/account'
+import { type AccountDB } from '@hcengineering/account'
 import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
-import qs from 'querystringify'
 import { Passport } from '.'
-import { getHost, safeParseAuthState } from './utils'
+import { getHost, handleProviderAuth, safeParseAuthState } from './utils'
 
 export function registerGoogle (
   measureCtx: MeasureContext,
@@ -68,57 +67,25 @@ export function registerGoogle (
       const email = ctx.state.user.emails?.[0]?.value
       const first = ctx.state.user.name.givenName
       const last = ctx.state.user.name.familyName
-      measureCtx.info('Provider auth handler', { email, type: 'google' })
+      const db = await dbPromise
 
-      try {
-        let loginInfo: LoginInfo | null
-        const state = safeParseAuthState(ctx.query?.state)
-        const branding = getBranding(brandings, state?.branding)
-        const db = await dbPromise
-        const socialKey = { type: SocialIdType.GOOGLE, value: email }
+      const redirectUrl = await handleProviderAuth(
+        measureCtx,
+        db,
+        brandings,
+        frontUrl,
+        'google',
+        ctx.query?.state,
+        ctx.state?.user,
+        email,
+        first,
+        last,
+        { type: SocialIdType.GOOGLE, value: email },
+        signUpDisabled
+      )
 
-        if (state.inviteId != null && state.inviteId !== '') {
-          loginInfo = await joinWithProvider(
-            measureCtx,
-            db,
-            null,
-            email,
-            first,
-            last,
-            state.inviteId as any,
-            socialKey,
-            signUpDisabled
-          )
-        } else {
-          loginInfo = await loginOrSignUpWithProvider(
-            measureCtx,
-            db,
-            null,
-            email,
-            first,
-            last,
-            socialKey,
-            signUpDisabled
-          )
-        }
-
-        if (loginInfo === null) {
-          measureCtx.info('Failed to auth: no associated account found', {
-            email,
-            type: 'google',
-            user: ctx.state?.user
-          })
-          ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login'))
-        } else {
-          const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
-          const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
-
-          // Successful authentication, redirect to your application
-          measureCtx.info('Success auth, redirect', { email, type: 'google', target: origin })
-          ctx.redirect(`${origin}?${query}`)
-        }
-      } catch (err: any) {
-        measureCtx.error('failed to auth', { err, type: 'google', user: ctx.state?.user })
+      if (redirectUrl !== '') {
+        ctx.redirect(redirectUrl)
       }
 
       await next()
