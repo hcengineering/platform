@@ -88,8 +88,6 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
 })
 
 function getAttrs (el: HTMLSpanElement): Attrs | false {
-  console.log('getting attrs...', el)
-
   const id = el.dataset.id?.trim()
   const label = el.dataset.label?.trim()
   const objectclass = el.dataset.objectclass?.trim()
