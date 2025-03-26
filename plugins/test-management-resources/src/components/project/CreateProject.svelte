@@ -114,6 +114,7 @@
       description,
       private: isPrivate,
       icon,
+      color,
       members,
       owners,
       archived: false
@@ -138,6 +139,9 @@
     }
     if (data.icon !== project?.icon) {
       update.icon = data.icon
+    }
+    if (data.color !== project?.color && isColorSelected) {
+      update.color = data.color
     }
     if (data.members.length !== project?.members.length) {
       update.members = data.members
