@@ -142,7 +142,7 @@
     if (data.icon !== project?.icon) {
       update.icon = data.icon
     }
-    if (data.color !== project?.color) {
+    if (data.color !== project?.color && isColorSelected) {
       update.color = data.color
     }
     if (data.members.length !== project?.members.length) {

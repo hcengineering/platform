@@ -128,3 +128,9 @@ export async function RunSelectedTestsAction (docs: TestCase[] | TestCase): Prom
     console.error('No test cases selected')
   }
 }
+
+export async function EditProjectAction (project: TestProject | undefined): Promise<void> {
+  if (project !== undefined) {
+    showPopup(CreateProject, { project })
+  }
+}
