@@ -53,9 +53,12 @@
           kind: 'error',
           message: plugin.string.ExportRequestFailedMessage
         })
+        return
       }
 
-      const filename = `Talants_${new Date().toLocaleDateString()}_${new Date().toLocaleTimeString()}.csv`
+      const contentDisposition = res.headers.get('Content-Disposition')
+      const filename = contentDisposition?.match(/filename="([^"]*)"/)?.[1] ?? 'export.csv'
+
       const blob = await res.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
