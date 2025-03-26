@@ -201,7 +201,6 @@ export class UnifiedConverter {
       // Get all documents of the collection
       const collectionDocs = await this.client.findAll((type as Collection<any>).of, {
         attachedTo: docId,
-        attachedToClass: docClass,
         collection: key
       })
 
