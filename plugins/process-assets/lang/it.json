@@ -33,6 +33,9 @@
     "Trim": "Taglia",
     "FirstValue": "Primo valore",
     "LastValue": "Ultimo valore", 
-    "Random": "Casuale"
+    "Random": "Casuale",
+    "AllProcesses": "Tutti i processi",
+    "MyProcesses": "I miei processi",
+    "ShowDone": "Mostra completato"
   }
 }

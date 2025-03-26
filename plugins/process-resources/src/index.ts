@@ -28,6 +28,9 @@ import ProcessPresenter from './components/ProcessPresenter.svelte'
 import NestedContextSelector from './components/attributeEditors/NestedContextSelector.svelte'
 import RelatedContextSelector from './components/attributeEditors/RelatedContextSelector.svelte'
 import FunctionSelector from './components/attributeEditors/FunctionSelector.svelte'
+import Main from './components/Main.svelte'
+import RunProcessCardPopup from './components/RunProcessCardPopup.svelte'
+import { showDoneQuery } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -46,6 +49,11 @@ export default async (): Promise<Resources> => ({
     ProcessPresenter,
     NestedContextSelector,
     RelatedContextSelector,
-    FunctionSelector
+    FunctionSelector,
+    Main,
+    RunProcessCardPopup
+  },
+  function: {
+    ShowDoneQuery: showDoneQuery
   }
 })

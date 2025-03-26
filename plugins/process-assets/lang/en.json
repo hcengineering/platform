@@ -33,6 +33,9 @@
     "Trim": "Trim",
     "FirstValue": "First value",
     "LastValue": "Last value",
-    "Random": "Random"
+    "Random": "Random",
+    "AllProcesses": "All processes",
+    "MyProcesses": "My processes",
+    "ShowDone": "Show done"
   }
 }
