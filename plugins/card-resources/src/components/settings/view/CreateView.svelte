@@ -16,13 +16,12 @@
   import { createEventDispatcher } from 'svelte'
 
   import { MasterTag, Tag } from '@hcengineering/card'
-  import core, { Association, Data, Ref } from '@hcengineering/core'
+  import core, { Association, Data, Ref, generateId } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Label } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletDescriptor, ViewOptionsModel } from '@hcengineering/view'
+  import view, { MasterDetailConfig, Viewlet, ViewletDescriptor, ViewOptionsModel } from '@hcengineering/view'
   import setting from '@hcengineering/setting'
 
-  import AssociationSelect from './AssociationsSelect.svelte'
   import DescriptorBox from './DescriptorBox.svelte'
   import ViewSettingButton from './ViewSettingButton.svelte'
   import card from '../../../plugin'
@@ -34,6 +33,18 @@
   let title: string
   let descriptor: Ref<ViewletDescriptor> | undefined = undefined
   let association: Association | undefined = undefined
+  $: viewConfigs = [
+    {
+      class: tag?._id,
+      view: view.viewlet.Tree,
+      id: generateId()
+    },
+    {
+      class: tag?._id,
+      view: view.viewlet.Document,
+      id: generateId()
+    }
+  ]
 
   let viewletConfig: Data<Viewlet> | undefined = undefined
   $: viewletConfig = {
@@ -71,13 +82,9 @@
   }
 
   function setMasterDetailConfig (): void {
-    if (viewletConfig === undefined || descriptor !== view.viewlet.MasterDetail || association === undefined) return
+    if (viewletConfig === undefined || descriptor !== view.viewlet.MasterDetail) return
     viewletConfig.masterDetailOptions = {
-      classA: association.classA,
-      classB: association.classB,
-      viewletA: view.viewlet.Tree,
-      viewletB: view.viewlet.Table,
-      associationId: association._id
+      views: viewConfigs
     }
   }
   function onConfigUpdate (items: any[]): void {
@@ -126,7 +133,7 @@
     </div>
   </div>
   {#if descriptor === view.viewlet.MasterDetail}
-    <ViewConfigSection tag={tag} />
+    <ViewConfigSection tag={tag} bind:viewConfigs={viewConfigs} />
   {:else}
     <div class="antiGrid-row">
       <div class="antiGrid-row__header withDesciption">

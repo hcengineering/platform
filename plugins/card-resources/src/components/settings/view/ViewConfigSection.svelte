@@ -15,35 +15,18 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { ObjectBox } from '@hcengineering/view-resources'
-  import { AnyComponent, ButtonIcon, Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
+  import { ButtonIcon, Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import view, { ViewletDescriptor } from '@hcengineering/view'
   import { Doc, Ref, Space, generateId } from '@hcengineering/core'
   import DescriptorBox from './DescriptorBox.svelte'
   import card from '../../../plugin'
   import { MasterTag, Tag } from '@hcengineering/card'
+  import { MasterDetailConfig } from '@hcengineering/view'
 
   export let tag: MasterTag | Tag
 
-  // Define the ViewConfig interface
-  interface ViewConfig {
-    class: Ref<Doc<Space>> | undefined
-    view?: Ref<ViewletDescriptor>
-    id?: string // Unique identifier for each config
-  }
-
-  export let viewConfigs: ViewConfig[] = [
-    {
-      class: tag._id,
-      view: view.viewlet.Tree,
-      id: generateId()
-    },
-    {
-      class: tag._id,
-      view: view.viewlet.Document,
-      id: generateId()
-    }
-  ]
+  export let viewConfigs: MasterDetailConfig[]
   export let sectionIcon: string = setting.icon.Views
 
   const dispatch = createEventDispatcher()
@@ -51,7 +34,7 @@
   // Function to add a new view configuration
   function addViewConfig (): void {
     // Create a new ViewConfig with default empty values and unique ID
-    const newViewConfig: ViewConfig = {
+    const newViewConfig: MasterDetailConfig = {
       class: tag._id,
       id: generateId()
     }

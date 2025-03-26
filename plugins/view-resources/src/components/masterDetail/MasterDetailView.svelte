@@ -39,8 +39,9 @@
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let props: Record<string, any> = {}
 
+  let _id: Ref<Doc> | undefined = undefined
+
   let viewlets: Array<ViewletDescriptor> | undefined = undefined
-  let viewletA: ViewletDescriptor | undefined = undefined
 
   const client = getClient()
 
@@ -48,15 +49,9 @@
 
   async function getViewlets (viewletId: Ref<Viewlet>) {
     if (viewlet === undefined) return
-    console.log('getViewlets', viewletId)
-    const vid = viewlet?.masterDetailOptions?.viewletA
-    viewletA = await client.findOne(
-      view.class.ViewletDescriptor,
-      { _id: viewlet?.masterDetailOptions?.viewletB }
-    )
     viewlets = await client.findAll(
       view.class.ViewletDescriptor,
-      { _id: { $in: [viewlet?.masterDetailOptions?.viewletA, viewlet?.masterDetailOptions?.viewletB] } },
+      { _id: { $in: [viewlet?.masterDetailOptions?.views[0].view, viewlet?.masterDetailOptions?.views[1].view] } },
       {
         lookup: {
           descriptor: view.class.ViewletDescriptor
@@ -68,6 +63,7 @@
 
   function selected (e: CustomEvent<any>): void {
     console.log('selected', e.detail)
+    _id = e.detail
   }
 
   $: console.log('masterDetailOptions', viewlet?.masterDetailOptions)
@@ -79,7 +75,7 @@
     {space}
     mainComponent={viewlets[1].component}
     mainComponentProps={{
-      _class: viewlet?.masterDetailOptions?.classB,
+      _class: viewlet?.masterDetailOptions?.views[0].class,
       space,
       options,
       config: viewlet.config,
@@ -88,11 +84,13 @@
       viewOptionsConfig: viewlet.viewOptions?.other,
       query,
       totalQuery: query,
-      ...viewlet.props
+      ...viewlet.props,
+      _id,
+      embedded: true
     }}
     navigationComponent={viewlets[0].component}
     navigationComponentProps={{
-      _class: viewlet?.masterDetailOptions?.classA
+      _class: viewlet?.masterDetailOptions?.views[1].class
     }}
     on:select={selected}
   />
