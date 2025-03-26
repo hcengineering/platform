@@ -4,7 +4,7 @@
 
   export let size: IconSize = 'small'
 
-  export let fill: number = -1
+  export let fill: number = 21
 
   const dispatch = createEventDispatcher()
 

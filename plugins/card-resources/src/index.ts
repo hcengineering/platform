@@ -42,6 +42,8 @@ import CardEditor from './components/CardEditor.svelte'
 import CardRefPresenter from './components/CardRefPresenter.svelte'
 import ChangeType from './components/ChangeType.svelte'
 
+export { default as CardSelector } from './components/CardSelector.svelte'
+
 export default async (): Promise<Resources> => ({
   component: {
     MasterTags,

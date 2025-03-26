@@ -29,7 +29,6 @@
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import { List, ListSelectionProvider, SelectDirection, ViewletsSettingButton } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
   import process from '../plugin'
   import RunProcessPopup from './RunProcessPopup.svelte'
 

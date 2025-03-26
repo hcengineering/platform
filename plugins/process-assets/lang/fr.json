@@ -33,6 +33,9 @@
     "Trim": "Couper",
     "FirstValue": "Premier valeur",
     "LastValue": "Dernière valeur",
-    "Random": "Aléatoire"
+    "Random": "Aléatoire",
+    "AllProcesses": "Tous les processus",
+    "MyProcesses": "Mes processus",
+    "ShowDone": "Afficher terminé"
   }
 }
