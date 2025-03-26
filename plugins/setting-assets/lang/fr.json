@@ -136,6 +136,18 @@
     "SystemSetupString": "Configuration du système ({day})",
     "DefaultString": "Par défaut ({day})",
     "AddAttribute": "Ajouter un attribut",
-    "WorkspaceNamePattern": "Le nom doit comporter 40 caractères ou moins, ne doit pas être vide et ne doit pas contenir de caractères spéciaux (<, >, /)" 
+    "WorkspaceNamePattern": "Le nom doit comporter 40 caractères ou moins, ne doit pas être vide et ne doit pas contenir de caractères spéciaux (<, >, /)" ,
+    "Mailboxes": "Boîtes aux lettres",
+    "CreateMailbox": "Créer une boîte aux lettres",
+    "CreateMailboxPlaceholder": "my-cool-name",
+    "MailboxNoDomains": "Les domaines de messagerie ne sont pas configurés",
+    "MailboxLimitReached": "Limite de boîtes aux lettres atteinte",
+    "MailboxErrorInvalidName": "Nom de la boîte aux lettres invalide",
+    "MailboxErrorDomainNotFound": "Domaine introuvable",
+    "MailboxErrorNameRulesViolated": "Le nom de la boîte aux lettres doit comporter {minLen} à {maxLen} caractères",
+    "MailboxErrorMailboxExists": "Cette boîte aux lettres est déjà occupée",
+    "MailboxErrorMailboxCountLimit": "Limite de boîtes aux lettres atteinte pour votre compte",
+    "DeleteMailbox": "Supprimer la boîte aux lettres",
+    "MailboxDeleteConfirmation": "Êtes-vous sûr de vouloir supprimer cette boîte aux lettres ?"
   }
 }

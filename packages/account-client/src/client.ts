@@ -31,7 +31,15 @@ import {
   type SocialIdType
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, RegionInfo, WorkspaceOperation } from './types'
+import type {
+  LoginInfo,
+  MailboxOptions,
+  OtpInfo,
+  WorkspaceLoginInfo,
+  RegionInfo,
+  WorkspaceOperation,
+  MailboxInfo
+} from './types'
 
 /** @public */
 export interface AccountClient {
@@ -84,6 +92,10 @@ export interface AccountClient {
   findPersonBySocialKey: (socialKey: string) => Promise<PersonUuid | undefined>
   findPersonBySocialId: (socialId: PersonId) => Promise<PersonUuid | undefined>
   findSocialIdBySocialKey: (socialKey: string) => Promise<PersonId | undefined>
+  getMailboxOptions: () => Promise<MailboxOptions>
+  createMailbox: (name: string, domain: string) => Promise<void>
+  getMailboxes: () => Promise<MailboxInfo[]>
+  deleteMailbox: (mailbox: string) => Promise<void>
 
   // Service methods
   workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
@@ -630,6 +642,42 @@ class AccountClientImpl implements AccountClient {
     }
 
     return await this.rpc(request)
+  }
+
+  async getMailboxOptions (): Promise<MailboxOptions> {
+    const request = {
+      method: 'getMailboxOptions' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async createMailbox (name: string, domain: string): Promise<void> {
+    const request = {
+      method: 'createMailbox' as const,
+      params: { name, domain }
+    }
+
+    await this.rpc(request)
+  }
+
+  async getMailboxes (): Promise<MailboxInfo[]> {
+    const request = {
+      method: 'getMailboxes' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async deleteMailbox (mailbox: string): Promise<void> {
+    const request = {
+      method: 'deleteMailbox' as const,
+      params: { mailbox }
+    }
+
+    await this.rpc(request)
   }
 
   async setCookie (): Promise<void> {

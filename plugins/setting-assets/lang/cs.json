@@ -136,6 +136,18 @@
     "SystemSetupString": "Nastavení systému ({day})",
     "DefaultString": "Výchozí ({day})",
     "AddAttribute": "Přidat atribut",
-    "WorkspaceNamePattern": "Název musí být 40 znaků nebo méně, není prázdný a nesmí obsahovat speciální znaky (<, >, /)"
+    "WorkspaceNamePattern": "Název musí být 40 znaků nebo méně, není prázdný a nesmí obsahovat speciální znaky (<, >, /)",
+    "Mailboxes": "Poštovní schránky",
+    "CreateMailbox": "Vytvořit poštovní schránku",
+    "CreateMailboxPlaceholder": "my-cool-name",
+    "MailboxNoDomains": "E-mailové domény nejsou nakonfigurovány",
+    "MailboxLimitReached": "Dosažen limit poštovních schránek",
+    "MailboxErrorInvalidName": "Název poštovní schránky je neplatný",
+    "MailboxErrorDomainNotFound": "Doména nenalezena",
+    "MailboxErrorNameRulesViolated": "Název schránky musí mít délku {minLen} až {maxLen} znaků",
+    "MailboxErrorMailboxExists": "Tento název poštovní schránky je již obsazen",
+    "MailboxErrorMailboxCountLimit": "Dosažen limit počtu poštovních schránek pro váš účet",
+    "DeleteMailbox": "Smazat poštovní schránku",
+    "MailboxDeleteConfirmation": "Opravdu chcete smazat tuto poštovní schránku?"
   }
 }

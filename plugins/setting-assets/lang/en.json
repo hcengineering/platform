@@ -136,6 +136,18 @@
     "SystemSetupString": "System Setup ({day})",
     "DefaultString": "Default ({day})",
     "AddAttribute": "Add attribute",
-    "WorkspaceNamePattern": "Name must be 40 characters or less, not empty, and cannot contain special characters (<, >, /)"
+    "WorkspaceNamePattern": "Name must be 40 characters or less, not empty, and cannot contain special characters (<, >, /)",
+    "Mailboxes": "Mailboxes",
+    "CreateMailbox": "Create mailbox",
+    "CreateMailboxPlaceholder": "my-cool-name",
+    "MailboxNoDomains": "Email domains are not configured",
+    "MailboxLimitReached": "Mailbox limit reached",
+    "MailboxErrorInvalidName": "Mailbox name is invalid",
+    "MailboxErrorDomainNotFound": "Domain not found",
+    "MailboxErrorNameRulesViolated": "Mialbox name must be {minLen} to {maxLen} characters long",
+    "MailboxErrorMailboxExists": "This mailbox name is already occupied",
+    "MailboxErrorMailboxCountLimit": "Mailbox count limit reached for your account",
+    "DeleteMailbox": "Delete mailbox",
+    "MailboxDeleteConfirmation": "Are you sure you want to delete this mailbox?"
   }
 }

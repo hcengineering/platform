@@ -42,3 +42,16 @@ export interface RegionInfo {
 }
 
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
+
+export interface MailboxOptions {
+  availableDomains: string[]
+  minNameLength: number
+  maxNameLength: number
+  maxMailboxCount: number
+}
+
+export interface MailboxInfo {
+  mailbox: string
+  aliases: string[]
+  appPasswords: string[]
+}

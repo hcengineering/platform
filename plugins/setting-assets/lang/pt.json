@@ -127,6 +127,18 @@
     "SystemSetupString": "Configuração do sistema ({day})",
     "DefaultString": "Predefinição ({day})",
     "AddAttribute": "Adicionar atributo",
-    "WorkspaceNamePattern": "O nome deve ter 40 caracteres ou menos, não está vazio e não pode conter caracteres especiais (<, >, /)"
+    "WorkspaceNamePattern": "O nome deve ter 40 caracteres ou menos, não está vazio e não pode conter caracteres especiais (<, >, /)",
+    "Mailboxes": "Caixas de correio",
+    "CreateMailbox": "Criar caixa de correio",
+    "CreateMailboxPlaceholder": "o-meu-nome-cool",
+    "MailboxNoDomains": "Os domínios de e-mail não estão configurados",
+    "MailboxLimitReached": "Limite de caixa de correio atingido",
+    "MailboxErrorInvalidName": "O nome da caixa de correio é inválido",
+    "MailboxErrorDomainNotFound": "Domínio não encontrado",
+    "MailboxErrorNameRulesViolated": "O nome da caixa de correio deve ter {minLen} a {maxLen} caracteres",
+    "MailboxErrorMailboxExists": "Este nome de caixa de correio já está ocupado",
+    "MailboxErrorMailboxCountLimit": "O limite de contagem de caixas de correio foi atingido para a sua conta",
+    "DeleteMailbox": "Apagar caixa de correio",
+    "MailboxDeleteConfirmation": "Tem a certeza de que pretende eliminar esta caixa de correio?"
   }
 }
