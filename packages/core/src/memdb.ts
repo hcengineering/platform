@@ -150,13 +150,13 @@ export abstract class MemDb extends TxProcessor implements Storage {
   private async fillAssociations<T extends Doc>(docs: T[], associations: AssociationQuery[]): Promise<WithLookup<T>[]> {
     const withLookup: WithLookup<T>[] = []
     for (const doc of docs) {
-      const result = await this.getAssoctionValue(doc, associations)
+      const result = await this.getAssociationValue(doc, associations)
       withLookup.push(Object.assign({}, doc, { $associations: result }))
     }
     return withLookup
   }
 
-  private async getAssoctionValue<T extends Doc>(
+  private async getAssociationValue<T extends Doc>(
     doc: T,
     associations: AssociationQuery[]
   ): Promise<Record<string, Doc[]>> {

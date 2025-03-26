@@ -130,6 +130,8 @@
     "HideArchived": "Archivierte ausblenden",
     "RemoveRelation": "Beziehung entfernen",  
     "RemoveRelationConfirmation": "Möchten Sie die Beziehung entfernen?",
-    "MasterDetail": "Master-detail"
+    "MasterDetail": "Master-detail",
+    "Tree": "Baum",
+    "Document": "Dokument"
   }
 }

@@ -27,6 +27,8 @@
     "Views": "Views",
     "CreateView": "Create View",
     "EditView": "Edit View",
-    "SelectViewType": "Select View Type"
+    "SelectViewType": "Select View Type",
+    "MasterDetailViews": "Master Detail Views",
+    "SelectType": "Select Type"
   }
 }

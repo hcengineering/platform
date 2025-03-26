@@ -125,6 +125,8 @@
     "HideArchived": "Nascondi archiviato",
     "RemoveRelation": "Rimuovere relazione",  
     "RemoveRelationConfirmation": "Vuoi rimuovere la relazione?",
-    "MasterDetail": "Master-detail"
+    "MasterDetail": "Master-detail",
+    "Tree": "Albero",
+    "Document": "Documento"
   }
 }

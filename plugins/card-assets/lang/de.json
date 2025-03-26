@@ -27,6 +27,8 @@
     "Views": "Ansichten",
     "CreateView": "Ansicht erstellen",
     "EditView": "Ansicht bearbeiten",
-    "SelectViewType": "Ansichtstyp auswählen"
+    "SelectViewType": "Ansichtstyp auswählen",
+    "MasterDetailViews": "Master-Detail-Ansichten",
+    "SelectType": "Typ auswählen"
   }
 }

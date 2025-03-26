@@ -27,6 +27,8 @@
     "Views": "Visualizações",
     "CreateView": "Criar visualização",
     "EditView": "Editar visualização",
-    "SelectViewType": "Selecionar tipo de visualização"
+    "SelectViewType": "Selecionar tipo de visualização",
+    "MasterDetailViews": "Visualizações Master-Detail",
+    "SelectType": "Selecionar tipo"
   }
 }

@@ -65,7 +65,9 @@ loadMetadata(view.icon, {
   File: `${icons}#file`,
   PinTack: `${icons}#pin-tack`,
   Feather: `${icons}#feather`,
-  MasterDetail: `${icons}#master-detail`
+  MasterDetail: `${icons}#master-detail`,
+  Tree: `${icons}#tree`,
+  Document: `${icons}#document`
 })
 loadMetadata(core.icon, {
   TypeString: `${icons}#string`,

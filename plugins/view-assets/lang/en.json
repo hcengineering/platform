@@ -130,6 +130,8 @@
     "HideArchived": "Hide archived",
     "RemoveRelation": "Remove relation",
     "RemoveRelationConfirmation": "Do you want to remove relation?",
-    "MasterDetail": "Master-detail"
+    "MasterDetail": "Master-detail",
+    "Tree": "Tree",
+    "Document": "Document"
   }
 }

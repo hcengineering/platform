@@ -612,6 +612,28 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Tree,
+      icon: view.icon.Tree,
+      component: view.component.TreeView
+    },
+    view.viewlet.Tree
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Document,
+      icon: view.icon.Document,
+      component: view.component.EditDoc
+    },
+    view.viewlet.Document
+  )
+
+  builder.createDoc(
     presentation.class.PresentationMiddlewareFactory,
     core.space.Model,
     {
@@ -1289,6 +1311,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilterPresenter, {
     presenter: view.component.PersonIdFilterValuePresenter
+  })
+
+  builder.mixin(core.class.Association, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: view.component.AssociationPresenter
   })
 
   builder.mixin(view.class.ViewletDescriptor, core.class.Class, view.mixin.ObjectPresenter, {

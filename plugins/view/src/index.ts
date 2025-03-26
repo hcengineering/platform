@@ -156,7 +156,9 @@ const view = plugin(viewId, {
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
     List: '' as Ref<ViewletDescriptor>,
-    MasterDetail: '' as Ref<ViewletDescriptor>
+    MasterDetail: '' as Ref<ViewletDescriptor>,
+    Tree: '' as Ref<ViewletDescriptor>,
+    Document: '' as Ref<ViewletDescriptor>
   },
   component: {
     ActionsPopup: '' as AnyComponent,
@@ -224,7 +226,9 @@ const view = plugin(viewId, {
     DeleteObjectConfirm: '' as IntlString,
     RemoveRelationConfirmation: '' as IntlString,
     RemoveRelation: '' as IntlString,
-    MasterDetail: '' as IntlString
+    MasterDetail: '' as IntlString,
+    Tree: '' as IntlString,
+    Document: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -273,7 +277,9 @@ const view = plugin(viewId, {
     File: '' as Asset,
     PinTack: '' as Asset,
     Feather: '' as Asset,
-    MasterDetail: '' as Asset
+    MasterDetail: '' as Asset,
+    Tree: '' as Asset,
+    Document: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

@@ -99,7 +99,9 @@ export default mergeIds(viewId, view, {
     PDFViewer: '' as AnyComponent,
     TextViewer: '' as AnyComponent,
     BaseDocPresenter: '' as AnyComponent,
-    MasterDetailView: '' as AnyComponent
+    MasterDetailView: '' as AnyComponent,
+    AssociationPresenter: '' as AnyComponent,
+    TreeView: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

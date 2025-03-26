@@ -71,6 +71,8 @@ export default mergeIds(cardId, card, {
     Children: '' as IntlString,
     CreateView: '' as IntlString,
     EditView: '' as IntlString,
-    SelectViewType: '' as IntlString
+    SelectViewType: '' as IntlString,
+    MasterDetailViews: '' as IntlString,
+    SelectType: '' as IntlString
   }
 })

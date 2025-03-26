@@ -27,6 +27,8 @@
     "Views": "Vistas",
     "CreateView": "Crear vista",
     "EditView": "Editar vista",
-    "SelectViewType": "Seleccionar tipo de vista"
+    "SelectViewType": "Seleccionar tipo de vista",
+    "MasterDetailViews": "Vistas Maestro-Detalle",
+    "SelectType": "Seleccionar tipo"
   }
 }
