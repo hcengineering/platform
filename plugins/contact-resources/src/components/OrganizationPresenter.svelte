@@ -34,11 +34,7 @@
 
 {#if value}
   {#if inline}
-    <ObjectMention
-      object={value}
-      {disabled}
-      component={contact.component.EditOrganizationPanel}
-    />
+    <ObjectMention object={value} {disabled} component={contact.component.EditOrganizationPanel} />
   {:else if type === 'link'}
     <DocNavLink {disabled} object={value} {accent} {noUnderline} component={contact.component.EditOrganizationPanel}>
       <div class="flex-presenter" style:max-width={maxWidth} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
