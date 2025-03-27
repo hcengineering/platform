@@ -26,6 +26,7 @@
   export let shrink: number = 1
   export let accent: boolean = false
   export let noOverflow: boolean = false
+  export let inlineReference: boolean = false
 
   function clickHandler (e: MouseEvent): void {
     if (disabled) return
@@ -72,6 +73,7 @@
     class:noOverflow
     class:inline
     class:colorInherit
+    class:antiMention={inlineReference}
     class:fs-bold={accent}
     style:flex-shrink={shrink}
     on:click={clickHandler}
@@ -85,6 +87,7 @@
     class:noOverflow
     class:inline
     class:colorInherit
+    class:antiMention={inlineReference}
     class:fs-bold={accent}
     style:flex-shrink={shrink}
     on:click={clickHandler}
@@ -95,7 +98,7 @@
 
 <style lang="scss">
   span,
-  a {
+  a:not(.antiMention) {
     min-width: 0;
     font-weight: inherit;
 

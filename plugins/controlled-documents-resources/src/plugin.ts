@@ -249,6 +249,7 @@ export default mergeIds(documentsId, documents, {
     CanOpenDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanPrintDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanTransferDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    ControlledDocumentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
+    ControlledDocumentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    DocumentMetaTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })
