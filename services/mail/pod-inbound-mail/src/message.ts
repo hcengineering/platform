@@ -71,10 +71,12 @@ export async function createMessages (
   const accountClient = getClient(config.accountsUrl, generateToken())
 
   const [firstName, lastName] = fromName.split(' ')
-  const {
-    uuid: fromPersonUuid,
-    socialId: fromSocialId
-  } = await accountClient.ensurePerson(SocialIdType.EMAIL, fromAddress, firstName, lastName)
+  const { uuid: fromPersonUuid, socialId: fromSocialId } = await accountClient.ensurePerson(
+    SocialIdType.EMAIL,
+    fromAddress,
+    firstName,
+    lastName
+  )
   for (const to of tos) {
     try {
       console.log(`Sending message ${fromAddress} --> ${to}`)

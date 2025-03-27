@@ -66,9 +66,7 @@ export const main = async (): Promise<void> => {
   })
 }
 
-const getMailInfo = (
-  body: any
-): MailInfo | undefined => {
+const getMailInfo = (body: any): MailInfo | undefined => {
   try {
     const from = body.envelope.from.address
     const to = body.envelope.to.map((recipient: any) => recipient.address)

@@ -47,12 +47,16 @@ export async function handleMtaHook (req: Request, res: Response): Promise<void>
 
     let mailId = mta.message.headers.find((header) => header[0] === 'Message-ID')?.[1].trim()
     if (mailId === undefined) {
-      mailId = createHash('sha256').update(JSON.stringify({
-        fromAddress,
-        to,
-        subject,
-        content
-      })).digest('hex')
+      mailId = createHash('sha256')
+        .update(
+          JSON.stringify({
+            fromAddress,
+            to,
+            subject,
+            content
+          })
+        )
+        .digest('hex')
     }
 
     await createMessages(mailId, fromAddress, fromName, to, subject, content, inReplyTo)
