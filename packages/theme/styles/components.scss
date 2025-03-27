@@ -595,27 +595,34 @@
     }
   }
   &.type-popup {
+    min-width: 45rem;
     background-color: var(--theme-popup-color); // var(--global-surface-02-BackgroundColor);
     border: 1px solid var(--theme-popup-divider); // var(--global-surface-02-BorderColor);
     border-radius: var(--large-BorderRadius);
     box-shadow: var(--global-modal-ShadowX) var(--global-modal-ShadowY) var(--global-modal-ShadowBlur) var(--global-modal-ShadowSpread) var(--global-popover-ShadowColor);
 
     &.large {
+      min-width: unset;
       width: 45rem;
     }
     &.medium {
+      min-width: unset;
       width: 37.5rem;
     }
     &.small {
+      min-width: unset;
       width: 30rem;
     }
     &.x-small {
+      min-width: unset;
       width: 25rem;
     }
     &.menu {
+      min-width: unset;
       width: 17.5rem;
     }
     &.full {
+      min-width: unset;
       width: max-content;
     }
 
