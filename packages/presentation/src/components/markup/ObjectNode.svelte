@@ -40,7 +40,7 @@
 
 {#if !doc}
   <span class="antiMention">
-    {#if icon}<Icon icon={icon} size="small" />{' '}{:else}@{/if}{title}
+    {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{title}
   </span>
 {:else}
   <Component

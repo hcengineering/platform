@@ -57,9 +57,8 @@
     doc = object
   }
 
-  $: icon = doc !== undefined && !hierarchy.isDerived(doc._class, contact.class.Contact)
-    ? classIcon(client, doc._class)
-    : null
+  $: icon =
+    doc !== undefined && !hierarchy.isDerived(doc._class, contact.class.Contact) ? classIcon(client, doc._class) : null
 
   $: void updateDocTitle(doc)
   $: void updateDocTooltip(doc)
@@ -116,19 +115,9 @@
 </script>
 
 {#if displayTitle}
-  <span
-    data-type={'reference'}
-    data-id={doc?._id}
-    data-objectclass={doc?._class}
-    data-label={displayTitle}>
-    <DocNavLink
-      object={doc}
-      component={docComponent}
-      {disabled}
-      inlineReference
-      {onClick}
-    >
-      {#if icon}<Icon icon={icon} size="small" />{' '}{:else}@{/if}{displayTitle}
-  </DocNavLink>
+  <span data-type={'reference'} data-id={doc?._id} data-objectclass={doc?._class} data-label={displayTitle}>
+    <DocNavLink object={doc} component={docComponent} {disabled} inlineReference {onClick}>
+      {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{displayTitle}
+    </DocNavLink>
   </span>
 {/if}
