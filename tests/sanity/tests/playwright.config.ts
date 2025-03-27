@@ -35,12 +35,13 @@ const config: PlaywrightTestConfig = {
       dependencies: ['setup']
     }
   ],
-  retries: 2,
+  retries: 0,
   timeout: 60000,
   maxFailures,
   expect: {
     timeout: 15000
   },
+  testMatch: ['mentions.spec.ts'],
   reporter: [
     ['list'],
     ['html'],

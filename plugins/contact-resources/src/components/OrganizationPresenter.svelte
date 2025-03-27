@@ -37,8 +37,6 @@
     <ObjectMention
       object={value}
       {disabled}
-      {accent}
-      {noUnderline}
       component={contact.component.EditOrganizationPanel}
     />
   {:else if type === 'link'}
