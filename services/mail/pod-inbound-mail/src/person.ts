@@ -1,52 +1,84 @@
-// import { generateId, PersonId, PersonUuid, TxOperations } from '@hcengineering/core'
-// import contact, { AvatarType, combineName } from '@hcengineering/contact'
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+import { generateId, PersonId, PersonUuid, SocialIdType, TxOperations } from '@hcengineering/core'
+import contact, { AvatarType, combineName } from '@hcengineering/contact'
 
-// export async function ensureLocalPerson (
-//     personUuid: PersonUuid,
-//     socialId: PersonId,
-//     firstName: string,
-//     lastName: string,
-//     client: TxOperations
-// ) {
-//     let person = await client.findOne(
-//       contact.class.Person,
-//       {
-//         personUuid
-//       },
-//       {
-//         projection: { name: 1 }
-//       }
-//     )
-//     console.log('PERSON', person)
-//     if (person === undefined) {
-//       const newPersonId = await client.createDoc(
-//         contact.class.Person,
-//         contact.space.Contacts,
-//         {
-//           avatarType: AvatarType.COLOR,
-//           name: combineName(firstName, lastName),
-//           personUuid
-//         },
-//         generateId(),
-//       )
-//       person = await client.findOne(contact.class.Person, { _id: newPersonId })
-//       console.log('PERSON_NEW', person)
-//       if (person === undefined) {
-//         throw new Error(`Failed to create local person for ${personUuid}`)
-//       }
-//       await client.addCollection(
-//         contact.class.SocialIdentity,
-//         contact.space.Contacts,
-//         person._id,
-//         contact.class.Person,
-//         'socialIds',
-//         {
-//           key: guestSocialId,
-//           type: SocialIdType.EMAIL,
-//           value: req.booking.email,
-//         },
-//         generateId()
-//       )
-//     }
-//   }
-// }
+export async function ensureLocalPerson (
+  client: TxOperations,
+  personUuid: PersonUuid,
+  socialId: PersonId,
+  email: string,
+  firstName: string,
+  lastName: string
+): Promise<void> {
+  let person = await client.findOne(
+    contact.class.Person,
+    {
+      personUuid
+    },
+    {
+      projection: { name: 1 }
+    }
+  )
+  if (person === undefined) {
+    const newPersonId = await client.createDoc(
+      contact.class.Person,
+      contact.space.Contacts,
+      {
+        avatarType: AvatarType.COLOR,
+        name: combineName(firstName, lastName),
+        personUuid
+      },
+      generateId()
+    )
+    person = await client.findOne(contact.class.Person, { _id: newPersonId })
+    if (person === undefined) {
+      throw new Error(`Failed to create local person for ${personUuid}`)
+    }
+    await client.addCollection(
+      contact.class.SocialIdentity,
+      contact.space.Contacts,
+      person._id,
+      contact.class.Person,
+      'socialIds',
+      {
+        key: socialId,
+        type: SocialIdType.EMAIL,
+        value: email
+      },
+      generateId()
+    )
+  }
+  const channel = await client.findOne(contact.class.Channel, {
+    attachedTo: person._id,
+    attachedToClass: contact.class.Person,
+    provider: contact.channelProvider.Email,
+    value: email
+  })
+  if (channel === undefined) {
+    await client.addCollection(
+      contact.class.Channel,
+      contact.space.Contacts,
+      person._id,
+      contact.class.Person,
+      'channels',
+      {
+        provider: contact.channelProvider.Email,
+        value: email
+      },
+      generateId()
+    )
+  }
+}

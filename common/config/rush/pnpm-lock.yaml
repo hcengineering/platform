@@ -1672,6 +1672,9 @@ importers:
       email-addresses:
         specifier: ^5.0.0
         version: 5.0.0
+      eml-parse-js:
+        specifier: ^1.2.0-beta.0
+        version: 1.2.0-beta.0
       emojibase:
         specifier: ^16.0.0
         version: 16.0.0
@@ -4284,7 +4287,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-process@file:projects/model-process.tgz':
-    resolution: {integrity: sha512-ITHTesVu40defmcmB6wso0mRb3Yb9bPLxfRg3oNxo4tE2y1ZFDJtLteL0eHbUMHdyKmtkew/Dn5pNwEPo9GEyQ==, tarball: file:projects/model-process.tgz}
+    resolution: {integrity: sha512-6kPxJqCYNcG1l1eHYYCxRGV2BGNFEob8nrSjlJXYPbpq3ZOkRSx5am1LyqmdF2I+Flq/HOBSLHyel0gFkIk8ZQ==, tarball: file:projects/model-process.tgz}
     version: 0.0.0
 
   '@rush-temp/model-products@file:projects/model-products.tgz':
@@ -4608,7 +4611,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
-    resolution: {integrity: sha512-+WRKU9Ejnuehhj+sis2wQBlrQB+OOj4qUPmXWNXxKm/SNmDusa58vA6YnKoWqI+Sttz4YtnWlVSBVUaEaMlMqw==, tarball: file:projects/pod-inbound-mail.tgz}
+    resolution: {integrity: sha512-FuOsskUAEuJTwmzbAERgGwfGVM2og6ktStc9PSq+gXOMVer5B2hum8Qjn1bSNlUXWZhjSoCc3f3sqE/N6+PevQ==, tarball: file:projects/pod-inbound-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -4692,7 +4695,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/process-resources@file:projects/process-resources.tgz':
-    resolution: {integrity: sha512-pCcsKyA9USfFOyuQ9TEY22sx2CdSI3oPCnIaRvnAJbltCZesjg/QsCJJTJ+taGA9aqSTbwsLVtpmG5LeKbPE3g==, tarball: file:projects/process-resources.tgz}
+    resolution: {integrity: sha512-ZUhW+nxxAlPdXaL99Tdd5iKav4paqRvB1t4zOs5Pd4ez2K9EVIe0/OFbZAn1ic0MClrp5TxmLSPbu//YrFT3VQ==, tarball: file:projects/process-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/process@file:projects/process.tgz':
@@ -5410,6 +5413,9 @@ packages:
 
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
+
+  '@sinonjs/text-encoding@0.7.3':
+    resolution: {integrity: sha512-DE427ROAphMQzU4ENbliGYrBSYPXF+TtLg9S8vzeA+OF4ZKzoDdzfL8sxuMUGS/lgRhM6j1URSk9ghf7Xo1tyA==}
 
   '@smithy/abort-controller@4.0.1':
     resolution: {integrity: sha512-fiUIYgIgRjMWznk6iLJz35K2YxSLHzLBA/RC6lBrKfQ8fHbPfvk7Pk9UvpKoHgJjI18MnbPuEju53zcVy6KF1g==}
@@ -8208,6 +8214,9 @@ packages:
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
     engines: {node: '>=12'}
+
+  eml-parse-js@1.2.0-beta.0:
+    resolution: {integrity: sha512-fDA5OcT9DmU+6Qiv6Ki6/+fIjrZ97SE6KIB0PUK2r0nnRqBbnbaWm844l8SLTd4mc3rF0T3izc8E7E/qXFCthA==}
 
   emoji-regex@10.3.0:
     resolution: {integrity: sha512-QpLs9D9v9kArv4lfDEgg1X/gN5XLnf/A6l9cs8SPZLRZR3ZkY9+kwIQTxm+fsSej5UMYGE8fdoaZVIBlqG0XTw==}
@@ -21278,6 +21287,7 @@ snapshots:
       cors: 2.8.5
       cross-env: 7.0.3
       dotenv: 16.0.3
+      eml-parse-js: 1.2.0-beta.0
       esbuild: 0.24.2
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
@@ -26793,6 +26803,8 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
+  '@sinonjs/text-encoding@0.7.3': {}
+
   '@smithy/abort-controller@4.0.1':
     dependencies:
       '@smithy/types': 4.1.0
@@ -30286,6 +30298,11 @@ snapshots:
   email-addresses@5.0.0: {}
 
   emittery@0.13.1: {}
+
+  eml-parse-js@1.2.0-beta.0:
+    dependencies:
+      '@sinonjs/text-encoding': 0.7.3
+      js-base64: 3.7.7
 
   emoji-regex@10.3.0: {}
 

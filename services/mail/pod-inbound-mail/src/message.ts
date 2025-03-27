@@ -11,15 +11,26 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+//
 import { encode } from 'jwt-simple'
-import { type TxOperations, generateId, RateLimiter, buildSocialIdString, SocialIdType, systemAccountUuid, PersonId } from '@hcengineering/core'
+import {
+  type PersonId,
+  type Ref,
+  type TxOperations,
+  generateId,
+  RateLimiter,
+  buildSocialIdString,
+  SocialIdType,
+  systemAccountUuid
+} from '@hcengineering/core'
 import { type AccountClient, getClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
+import { type Card } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
 import mail from '@hcengineering/mail'
 import config from './config'
+import { ensureLocalPerson } from './person'
 
 function generateToken (): string {
   return encode(
@@ -31,16 +42,16 @@ function generateToken (): string {
   )
 }
 
-async function getTxClient (accountClient: AccountClient, mail: string): Promise<TxOperations> {
-  const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: mail })
+async function getTxClient (accountClient: AccountClient, email: string): Promise<TxOperations> {
+  const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
   const personUuid = await accountClient.findPersonBySocialKey(socialKey)
   if (personUuid === undefined) {
-    throw new Error(`Account not found for ${mail}`)
+    throw new Error(`Account not found for ${email}`)
   }
   const workspaces = await accountClient.getPersonWorkspaces(personUuid)
   const workspace = workspaces.find((w) => w.workspace === config.workspaceUuid)
   if (workspace === undefined) {
-    throw new Error(`Account ${mail} is not a member of workspace ${config.workspaceUuid}`)
+    throw new Error(`Account ${email} is not a member of workspace ${config.workspaceUuid}`)
   }
   const wsInfo = await accountClient.selectWorkspace(workspace.workspaceUrl)
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
@@ -54,7 +65,8 @@ export async function createMessages (
   fromName: string,
   tos: string[],
   subject: string,
-  content: string
+  content: string,
+  inReplyTo?: string
 ): Promise<void> {
   const accountClient = getClient(config.accountsUrl, generateToken())
 
@@ -63,36 +75,12 @@ export async function createMessages (
     uuid: fromPersonUuid,
     socialId: fromSocialId
   } = await accountClient.ensurePerson(SocialIdType.EMAIL, fromAddress, firstName, lastName)
-  console.log('FROM_PERSON_GLOBAL', fromPersonUuid, fromSocialId)
-
-  // const guestChannel = await client.findOne(contact.class.Channel, {
-  //   attachedTo: guestPerson._id,
-  //   attachedToClass: contact.class.Person,
-  //   provider: contact.channelProvider.Email,
-  //   value: req.booking.email
-  // })
-  // if (guestChannel === undefined) {
-  //   await client.addCollection(
-  //     contact.class.Channel,
-  //     contact.space.Contacts,
-  //     guestPerson._id,
-  //     contact.class.Person,
-  //     'channels',
-  //     {
-  //       provider: contact.channelProvider.Email,
-  //       value: req.booking.email
-  //     },
-  //     generateId(),
-  //     now.getTime(),
-  //     hostSocialId._id
-  //   )
-  // }
-
   for (const to of tos) {
     try {
       console.log(`Sending message ${fromAddress} --> ${to}`)
       const client = await getTxClient(accountClient, to)
-      await createMessage(client, mailId, to, subject, content, fromSocialId)
+      await ensureLocalPerson(client, fromPersonUuid, fromSocialId, fromAddress, firstName, lastName)
+      await createMessage(client, mailId, fromSocialId, to, subject, content, inReplyTo)
     } catch (err) {
       console.error(`Failed to send message ${fromAddress} --> ${to}`, err)
     }
@@ -102,15 +90,14 @@ export async function createMessages (
 async function createMessage (
   client: TxOperations,
   mailId: string,
+  from: PersonId,
   to: string,
   subject: string,
   content: string,
-  from: PersonId
+  inReplyTo?: string
 ): Promise<void> {
   const socialIds = await client.findAll(contact.class.SocialIdentity, { type: SocialIdType.EMAIL, value: to })
-  // console.log('SOCIAL_IDS', socialIds)
   const personRefs = socialIds.map((socialId) => socialId.attachedTo)
-  // console.log('PERSON_REFS', personRefs)
   const personSpaces = await client.findAll(contact.class.PersonSpace, { person: { $in: personRefs } })
   if (personSpaces.length === 0) {
     throw new Error('Personal space not found')
@@ -121,31 +108,40 @@ async function createMessage (
     await rateLimiter.add(async () => {
       console.log('Saving message to space', space._id)
 
-      const mailRoute = await client.findOne(
-        mail.class.MailRoute,
-        { mailId },
-        { projection: { _id: 1 } }
-      )
-      if (mailRoute !== undefined) {
-        console.log('Message is already in the thread, skip', mailRoute._id)
+      const route = await client.findOne(mail.class.MailRoute, { mailId })
+      if (route !== undefined) {
+        console.log('Message is already in the thread, skip', route._id)
         return
       }
 
-      const threadId = await client.createDoc(
-        mail.class.MailThread,
-        space._id,
-        {
-          mailThreadId: mailId,
-          title: subject,
-          description: content,
-          private: true,
-          members: [space.members[0]],
-          archived: false
-        },
-        generateId(),
-        undefined,
-        from
-      )
+      let threadId: Ref<Card> | undefined
+      if (inReplyTo !== undefined) {
+        const route = await client.findOne(mail.class.MailRoute, { mailId: inReplyTo })
+        if (route !== undefined) {
+          threadId = route.threadId as Ref<Card>
+          console.log('Found existing mail thread', threadId)
+        }
+      }
+      if (threadId === undefined) {
+        const newThreadId = await client.createDoc(
+          mail.class.MailThread,
+          space._id,
+          {
+            title: subject,
+            description: content,
+            private: true,
+            members: [from, ...socialIds.map((si) => si._id)],
+            archived: false,
+            createdBy: from,
+            modifiedBy: from
+          },
+          generateId(),
+          undefined,
+          from
+        )
+        threadId = newThreadId as Ref<Card>
+        console.log('Created new mail thread', threadId)
+      }
 
       await client.addCollection(
         chunter.class.ChatMessage,
@@ -174,47 +170,3 @@ async function createMessage (
   }
   await rateLimiter.waitProcessing()
 }
-
-// async function getOrCreateMailThread (
-//   client: TxOperations,
-//   message: MailInfo,
-//   personSpace: PersonSpace,
-//   personId: AccountUuid
-// ): Promise<Ref<Card>> {
-//   // const threadId = await findThread(client, message)
-//   // if (threadId !== undefined) {
-//   //   console.log('Existing mail thread found', threadId)
-//   //   return threadId
-//   // }
-
-//   console.log('Creating new mail thread')
-//   const newRef = await client.createDoc(
-//     mail.class.MailThread,
-//     personSpace._id,
-//     {
-//       mailThreadId: message.messageId,
-//       title: message.subject ?? '',
-//       description: getContent(message),
-//       private: true,
-//       members: [personId],
-//       archived: false
-//     },
-//     generateId()
-//   )
-//   return newRef as Ref<Card>
-// }
-
-// export async function findThread(client: TxRestClient, message: Email): Promise<Ref<Card> | undefined> {
-//   try {
-//     const reply = message.inReplyTo
-//     if (reply === undefined) {
-//       return undefined
-//     }
-//     const route = await client.findOne(mail.class.MailRoute, { mailId: reply })
-//     console.log('Route:', route)
-//     return route?.threadId as Ref<Card>
-//   } catch (err: any) {
-//     console.error('Failed to find thread')
-//     throw err
-//   }
-// }
