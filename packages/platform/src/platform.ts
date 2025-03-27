@@ -147,6 +147,7 @@ export default plugin(platformId, {
     InternalServerError: '' as StatusCode,
     MaintenanceWarning: '' as StatusCode<{ time: number }>,
     AccountNotFound: '' as StatusCode<{ account?: string }>,
+    AccountMismatch: '' as StatusCode<{ account?: string, requiredAccount?: string }>,
     AccountNotConfirmed: '' as StatusCode,
     WorkspaceNotFound: '' as StatusCode<{ workspaceUuid?: string, workspaceName?: string, workspaceUrl?: string }>,
     WorkspaceArchived: '' as StatusCode<{ workspaceUuid: string }>,
