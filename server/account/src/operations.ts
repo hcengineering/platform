@@ -2564,7 +2564,7 @@ export async function sendInvite (
   const expHours = 48
   const exp = expHours * 60 * 60 * 1000
 
-  const inviteId = await getInviteLink(ctx, db, branding, token, exp, email, 1)
+  const inviteId = await getInviteLink(ctx, db, branding, token, exp, email, 1, role, personId)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
   const ws = sanitizeEmail(workspace.workspaceName ?? workspace.workspaceUrl ?? workspace.workspace)
