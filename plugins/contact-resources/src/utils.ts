@@ -334,14 +334,6 @@ export const myEmployeeStore = derived(
 export const personByIdStore = writable<IdMap<WithLookup<Person>>>(new Map())
 export const socialIdsStore = writable<Array<WithLookup<SocialIdentity>>>([])
 
-// NOTE
-// In-workspace social ids of the current employee
-// Should not be used except some rare cases
-// Use getCurrentAccount().socialIds instead
-export const mySocialIdsStore = derived([currentEmployeeRefStore, socialIdsStore], ([myEmployeeRef, socialIds]) => {
-  return socialIds.filter((si) => si.attachedTo === myEmployeeRef)
-})
-
 /**
  * [Ref<Person> => SocialIdentity[]] mapping
  */
