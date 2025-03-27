@@ -50,6 +50,7 @@ export interface SocialId extends SocialIdBase {
 
 export interface Account {
   uuid: PersonUuid
+  automatic?: boolean
   timezone?: string
   locale?: string
   hash?: Buffer | null

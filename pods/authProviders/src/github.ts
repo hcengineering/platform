@@ -3,7 +3,7 @@ import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } fr
 import Router from 'koa-router'
 import { Strategy as GitHubStrategy } from 'passport-github2'
 import { Passport } from '.'
-import { getHost, handleProviderAuth, safeParseAuthState } from './utils'
+import { encodeState, handleProviderAuth, safeParseAuthState } from './utils'
 
 export function registerGithub (
   measureCtx: MeasureContext,
@@ -36,14 +36,7 @@ export function registerGithub (
 
   router.get('/auth/github', async (ctx, next) => {
     measureCtx.info('try auth via', { provider: 'github' })
-    const host = getHost(ctx.request.headers)
-    const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
-    const state = encodeURIComponent(
-      JSON.stringify({
-        inviteId: ctx.query?.inviteId,
-        branding
-      })
-    )
+    const state = encodeState(ctx, brandings)
 
     passport.authenticate('github', { scope: ['user:email'], session: true, state })(ctx, next)
   })

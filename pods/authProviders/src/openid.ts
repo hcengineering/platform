@@ -18,7 +18,7 @@ import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
 
 import { Passport } from '.'
-import { getHost, handleProviderAuth, safeParseAuthState } from './utils'
+import { encodeState, handleProviderAuth, safeParseAuthState } from './utils'
 
 export function registerOpenid (
   measureCtx: MeasureContext,
@@ -63,14 +63,7 @@ export function registerOpenid (
 
   router.get('/auth/openid', async (ctx, next) => {
     measureCtx.info('try auth via', { provider: 'openid' })
-    const host = getHost(ctx.request.headers)
-    const brandingKey = host !== undefined ? brandings[host]?.key ?? undefined : undefined
-    const state = encodeURIComponent(
-      JSON.stringify({
-        inviteId: ctx.query?.inviteId,
-        branding: brandingKey
-      })
-    )
+    const state = encodeState(ctx, brandings)
 
     await passport.authenticate('oidc', {
       scope: 'openid profile email',

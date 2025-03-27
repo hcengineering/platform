@@ -30,6 +30,8 @@ export function getHost (headers: IncomingHttpHeaders): string | undefined {
 export interface AuthState {
   inviteId?: string
   branding?: string
+  autoJoin?: boolean
+  navigateUrl?: string
 }
 
 export function safeParseAuthState (rawState: string | undefined): AuthState {
@@ -42,6 +44,19 @@ export function safeParseAuthState (rawState: string | undefined): AuthState {
   } catch {
     return {}
   }
+}
+
+export function encodeState (ctx: any, brandings: BrandingMap): string {
+  const host = getHost(ctx.request.headers)
+  const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
+  const state: AuthState = {
+    inviteId: ctx.query?.inviteId,
+    branding,
+    autoJoin: ctx.query?.autoJoin !== undefined,
+    navigateUrl: ctx.query?.navigateUrl
+  }
+
+  return encodeURIComponent(JSON.stringify(state))
 }
 
 export async function handleProviderAuth (
@@ -64,7 +79,7 @@ export async function handleProviderAuth (
     const state = safeParseAuthState(rawState)
     const branding = getBranding(brandings, state?.branding)
 
-    if (state.inviteId != null && state.inviteId !== '') {
+    if (state.inviteId != null && state.inviteId !== '' && state.autoJoin == null) {
       loginInfo = await joinWithProvider(
         measureCtx,
         db,
@@ -77,7 +92,16 @@ export async function handleProviderAuth (
         signUpDisabled
       )
     } else {
-      loginInfo = await loginOrSignUpWithProvider(measureCtx, db, null, email, first, last, socialKey, signUpDisabled)
+      loginInfo = await loginOrSignUpWithProvider(
+        measureCtx,
+        db,
+        null,
+        email,
+        first,
+        last,
+        socialKey,
+        signUpDisabled === true || state.autoJoin != null
+      )
     }
 
     if (loginInfo === null) {
@@ -89,7 +113,14 @@ export async function handleProviderAuth (
       return concatLink(branding?.front ?? frontUrl, '/login')
     } else {
       const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
-      const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
+      const queryObj: any = { token: loginInfo.token }
+      if (state.autoJoin != null) {
+        queryObj.autoJoin = state.autoJoin
+        queryObj.inviteId = state.inviteId
+        queryObj.navigateUrl = state.navigateUrl
+      }
+
+      const query = encodeURIComponent(qs.stringify(queryObj))
 
       // Successful authentication, redirect to your application
       measureCtx.info('Success auth, redirect', { email, type: providerType, target: origin })

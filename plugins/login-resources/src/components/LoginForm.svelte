@@ -26,7 +26,7 @@
   export let navigateUrl: string | undefined = undefined
   export let signUpDisabled = false
   export let email: string | undefined = undefined
-  export let caption: IntlString | undefined
+  export let caption: IntlString | undefined = undefined
   export let subtitle: string | undefined = undefined
   export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 

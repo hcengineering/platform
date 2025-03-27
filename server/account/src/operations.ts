@@ -725,7 +725,7 @@ export async function checkAutoJoin (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { inviteId: string, firstName: string, lastName?: string }
+  params: { inviteId: string, firstName?: string, lastName?: string }
 ): Promise<WorkspaceLoginInfo | WorkspaceInviteInfo> {
   const { inviteId, firstName, lastName } = params
   const invite = await getWorkspaceInvite(db, inviteId)
@@ -792,7 +792,9 @@ export async function checkAutoJoin (
 
       const targetRole = await getWorkspaceRole(db, targetAccount.uuid, workspace.uuid)
 
-      if (targetRole == null || getRolePower(targetRole) < getRolePower(invite.role)) {
+      if (targetRole == null) {
+        await db.assignWorkspace(targetAccount.uuid, workspace.uuid, invite.role)
+      } else if (getRolePower(targetRole) < getRolePower(invite.role)) {
         await db.updateWorkspaceRole(targetAccount.uuid, workspace.uuid, invite.role)
       }
 
@@ -806,7 +808,17 @@ export async function checkAutoJoin (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { account } = await signUpByEmail(ctx, db, branding, normalizedEmail, null, firstName, lastName ?? '', true)
+  const { account } = await signUpByEmail(
+    ctx,
+    db,
+    branding,
+    normalizedEmail,
+    null,
+    firstName,
+    lastName ?? '',
+    true,
+    true
+  )
 
   return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
 }

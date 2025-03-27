@@ -512,7 +512,7 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
 
 export async function checkAutoJoin (
   inviteId: string,
-  firstName: string,
+  firstName?: string,
   lastName?: string
 ): Promise<[Status, WorkspaceInviteInfo | WorkspaceLoginInfo | null]> {
   const token = getMetadata(presentation.metadata.Token)
@@ -810,6 +810,22 @@ export async function getLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | 
 
     throw err
   }
+}
+
+export function getAutoJoinInfo (): any {
+  const query = getCurrentLocation().query
+
+  if (query == null) {
+    return null
+  }
+
+  const { token, autoJoin, inviteId, navigateUrl } = query
+
+  if (token == null || autoJoin === undefined || inviteId == null) {
+    return null
+  }
+
+  return { token, autoJoin, inviteId, navigateUrl }
 }
 
 export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLoginInfo | null> {

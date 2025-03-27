@@ -48,30 +48,44 @@
   }
 
   async function check (): Promise<void> {
-    if (location.query?.inviteId == null || location.query?.firstName == null) return
+    if (location.query?.inviteId == null || (location.query?.firstName == null && location.query?.token == null)) return
 
-    const [, result] = await checkAutoJoin(
-      location.query.inviteId,
-      location.query.firstName,
-      location.query.lastName ?? ''
-    )
+    if (location.query?.token != null) {
+      setMetadata(presentation.metadata.Token, location.query.token)
 
-    if (result != null) {
-      if (isWorkspaceLoginInfo(result)) {
-        await logIn(result)
-        navigateToWorkspace(result.workspaceUrl, result, location.query?.navigateUrl)
-        return
-      } else {
-        if (result.email == null) {
-          console.error('No email in auto join info')
-          navigate({ path: [loginId, 'login'] })
-          return
-        }
-
-        email = result.email
-        name = result.name
-      }
+      delete location.query.token
+      navigate(location, true)
     }
+
+    try {
+      const [, result] = await checkAutoJoin(
+        location.query.inviteId,
+        location.query.firstName ?? '',
+        location.query.lastName ?? ''
+      )
+
+      if (result != null) {
+        if (isWorkspaceLoginInfo(result)) {
+          await logIn(result)
+          navigateToWorkspace(result.workspaceUrl, result, location.query?.navigateUrl)
+          return
+        } else {
+          if (result.email == null) {
+            console.error('No email in auto join info')
+            navigate({ path: [loginId, 'login'] })
+            return
+          }
+
+          email = result.email
+          name = result.name
+        }
+      }
+    } catch (err: any) {
+      console.error('Failed to check auto join', err)
+      navigate({ path: [loginId, 'login'] })
+      return
+    }
+
     if (loading) {
       loading = false
     }

@@ -3,7 +3,7 @@ import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } fr
 import Router from 'koa-router'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Passport } from '.'
-import { getHost, handleProviderAuth, safeParseAuthState } from './utils'
+import { encodeState, handleProviderAuth, safeParseAuthState } from './utils'
 
 export function registerGoogle (
   measureCtx: MeasureContext,
@@ -36,14 +36,7 @@ export function registerGoogle (
 
   router.get('/auth/google', async (ctx, next) => {
     measureCtx.info('try auth via', { provider: 'google' })
-    const host = getHost(ctx.request.headers)
-    const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
-    const state = encodeURIComponent(
-      JSON.stringify({
-        inviteId: ctx.query?.inviteId,
-        branding
-      })
-    )
+    const state = encodeState(ctx, brandings)
 
     passport.authenticate('google', { scope: ['profile', 'email'], session: true, state })(ctx, next)
   })
