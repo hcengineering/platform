@@ -55,7 +55,7 @@
 
       await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
 
-      const mail = email.trim()
+      const mail = email.trim().toLowerCase()
 
       await client.createDoc(contact.class.PersonAccount, core.space.Model, {
         email: mail,
@@ -64,7 +64,7 @@
       })
 
       const sendInvite = await getResource(login.function.SendInvite)
-      await sendInvite(email.trim(), id, AccountRole.Guest)
+      await sendInvite(mail, id, AccountRole.Guest)
 
       for (const channel of channels) {
         await client.addCollection(
