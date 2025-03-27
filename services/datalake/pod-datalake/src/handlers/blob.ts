@@ -19,7 +19,7 @@ import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
 
 import { cacheControl } from '../const'
-import { type Datalake } from '../datalake'
+import { type Datalake, wrapETag } from '../datalake'
 import { getBufferSha256, getStreamSha256 } from '../hash'
 
 interface BlobParentRequest {
@@ -70,11 +70,11 @@ export async function handleBlobGet (
   )
   res.setHeader('Cache-Control', blob.cacheControl ?? cacheControl)
   res.setHeader('Last-Modified', new Date(blob.lastModified).toUTCString())
-  res.setHeader('ETag', blob.etag)
+  res.setHeader('ETag', wrapETag(blob.etag))
 
   if (range != null && blob.bodyRange !== undefined) {
     res.setHeader('Content-Range', blob.bodyRange)
-    res.setHeader('ETag', blob.bodyLength !== blob.size ? blob.bodyEtag : blob.etag)
+    res.setHeader('ETag', wrapETag(blob.bodyLength !== blob.size ? blob.bodyEtag : blob.etag))
   }
 
   const status = range != null && blob.bodyLength !== blob.size ? 206 : 200
@@ -120,7 +120,7 @@ export async function handleBlobHead (
   res.setHeader('Content-Disposition', filename !== undefined ? `attachment; filename="${filename}"` : 'attachment')
   res.setHeader('Cache-Control', head.cacheControl ?? cacheControl)
   res.setHeader('Last-Modified', new Date(head.lastModified).toUTCString())
-  res.setHeader('ETag', head.etag)
+  res.setHeader('ETag', wrapETag(head.etag))
 
   res.status(200).send()
 }
