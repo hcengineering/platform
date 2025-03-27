@@ -23,6 +23,7 @@ import {
   DomainFindMiddleware,
   DomainTxMiddleware,
   FullTextMiddleware,
+  IdentityMiddleware,
   LiveQueryMiddleware,
   LookupMiddleware,
   LowLevelMiddleware,
@@ -111,6 +112,7 @@ export function createServerPipeline (
 
     const middlewares: MiddlewareCreator[] = [
       LookupMiddleware.create,
+      IdentityMiddleware.create,
       ModifiedMiddleware.create,
       PrivateMiddleware.create,
       NotificationsMiddleware.create,
