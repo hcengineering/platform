@@ -35,4 +35,5 @@
   docQuery={{
     _id: { $in: supportedTypes }
   }}
+  on:change
 />

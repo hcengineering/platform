@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup } from '@hcengineering/core'
+  import core, { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { AnyComponent } from '@hcengineering/ui'
   import view, { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
@@ -40,6 +40,7 @@
   export let props: Record<string, any> = {}
 
   let _id: Ref<Doc> | undefined = undefined
+  let childProps: Record<string, any> = {}
 
   let viewlets: Array<ViewletDescriptor> | undefined = undefined
 
@@ -61,9 +62,34 @@
     console.log('viewlets', viewlets)
   }
 
-  function selected (e: CustomEvent<any>): void {
+  async function selected (e: CustomEvent<any>): void {
     console.log('selected', e.detail)
-    _id = e.detail
+    if (viewlets?.[1] === undefined) return
+    if (viewlets?.[1]._id === view.viewlet.Document) {
+      childProps = {
+        _id: e.detail
+      }
+    } else {
+      let association = await client.findOne(core.class.Association, {
+        classA: viewlet?.masterDetailOptions?.views[0].class,
+        classB: viewlet?.masterDetailOptions?.views[1].class
+      })
+      association = association ?? await client.findOne(core.class.Association, {
+        classB: viewlet?.masterDetailOptions?.views[0].class,
+        classA: viewlet?.masterDetailOptions?.views[1].class
+      })
+      if (association === undefined) return
+      const relations = await client.findAll(core.class.Relation, {
+        association: association._id,
+        docA: e.detail
+      })
+      const ids = relations.map(r => r._id)
+      childProps = {
+        query: {
+          _id: { $in: ids }
+        }
+      }
+    }
   }
 
   $: console.log('masterDetailOptions', viewlet?.masterDetailOptions)
@@ -75,22 +101,21 @@
     {space}
     mainComponent={viewlets[1].component}
     mainComponentProps={{
-      _class: viewlet?.masterDetailOptions?.views[0].class,
+      _class: viewlet?.masterDetailOptions?.views[1].class,
       space,
       options,
       config: viewlet.config,
       viewlet,
       viewOptions,
       viewOptionsConfig: viewlet.viewOptions?.other,
-      query,
       totalQuery: query,
       ...viewlet.props,
-      _id,
-      embedded: true
+      embedded: true,
+      ...childProps
     }}
     navigationComponent={viewlets[0].component}
     navigationComponentProps={{
-      _class: viewlet?.masterDetailOptions?.views[1].class
+      _class: viewlet?.masterDetailOptions?.views[0].class
     }}
     on:select={selected}
   />

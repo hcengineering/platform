@@ -133,7 +133,7 @@
     </div>
   </div>
   {#if descriptor === view.viewlet.MasterDetail}
-    <ViewConfigSection tag={tag} bind:viewConfigs={viewConfigs} />
+    <ViewConfigSection tag={tag} {viewConfigs} onChange={onConfigUpdate}/>
   {:else}
     <div class="antiGrid-row">
       <div class="antiGrid-row__header withDesciption">

@@ -23,6 +23,7 @@
   import card from '../../../plugin'
   import { MasterTag, Tag } from '@hcengineering/card'
   import { MasterDetailConfig } from '@hcengineering/view'
+  import RelatedTagSelect from './RelatedTagSelect.svelte'
 
   export let tag: MasterTag | Tag
 
@@ -40,25 +41,25 @@
     }
 
     viewConfigs = [...viewConfigs, newViewConfig]
-    dispatch('change', { viewConfigs })
+    dispatch('change', viewConfigs)
   }
 
   function updateViewClass (index: number, value: Ref<Doc<Space>>): void {
     viewConfigs[index].class = value
     viewConfigs = [...viewConfigs] // Trigger reactivity
-    dispatch('change', { viewConfigs })
+    dispatch('change', viewConfigs)
   }
 
   function updateViewConfig (index: number, value: Ref<ViewletDescriptor>): void {
     viewConfigs[index].view = value
     viewConfigs = [...viewConfigs] // Trigger reactivity
-    dispatch('change', { viewConfigs })
+    dispatch('change', viewConfigs)
   }
 
   // Function to remove a view configuration
   function removeViewConfig (index: number): void {
     viewConfigs = viewConfigs.filter((_, i) => i !== index)
-    dispatch('change', { viewConfigs })
+    dispatch('change', viewConfigs)
   }
 
 
@@ -72,14 +73,13 @@
   </div>
 
   {#if viewConfigs.length > 0}
-    <div class="hulyTableAttr-content task">
       {#each viewConfigs as config, index}
-        <div class="config-row">
-          <div class="config-inputs">
+        <div class="hulyTableAttr-content task">
+          <div class="hulyTableAttr-content__row justify-between">
             <div class="config-input">
-              <ObjectBox
+              <RelatedTagSelect
                 label={card.string.SelectType}
-                _class={card.class.MasterTag}
+                tag={index > 0 ? viewConfigs[index - 1].class : tag._id}
                 value={config.class}
                 on:change={(e) => { updateViewClass(index, e.detail) }}
               />
@@ -92,56 +92,18 @@
                 on:change={(e) => { updateViewConfig(index, e.detail) }}
               />
             </div>
+            <div class="config-input">
+              <ButtonIcon
+                kind={'tertiary'}
+                icon={IconDelete}
+                size="small"
+                disabled={viewConfigs.length === 1}
+                on:click={() => { removeViewConfig(index) }}
+              />
+            </div>
           </div>
-          <ButtonIcon
-            kind={'tertiary'}
-            icon={IconDelete}
-            size="small"
-            on:click={() => { removeViewConfig(index) }}
-          />
-          <ButtonIcon
-            icon="times"
-            size="small"
-            kind="ghost"
-            on:click={() => { removeViewConfig(index) }}
-          />
         </div>
       {/each}
-    </div>
-  {:else}
-    <div class="empty-state">
-      <p>No view configurations added yet. Click the + button to add one.</p>
-    </div>
   {/if}
 </div>
 
-<style>
-  .config-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem;
-    border-bottom: 1px solid #e0e4e8;
-    width: 100%;
-  }
-
-  .config-inputs {
-    display: flex;
-    gap: 1rem;
-    flex: 1;
-  }
-
-  .config-input {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    flex: 1;
-  }
-
-  .empty-state {
-    padding: 1rem;
-    text-align: center;
-    color: #5d6b82;
-    font-style: italic;
-  }
-</style>

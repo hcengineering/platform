@@ -33,33 +33,6 @@ function getClassLabel (_class: Ref<Class<Doc>>): IntlString {
 }
 </script>
 
-<div class="association-row cursor-pointer">
-  <span class="association-name">{value.nameA}</span>
-  <span class="association-class">(<Label label={getClassLabel(value.classA)} />)</span>
-  <span class="association-separator">↔</span>
-  <span class="association-name">{value.nameB}</span>
-  <span class="association-class">(<Label label={getClassLabel(value.classB)} />)</span>
+<div class="hulyTableAttr-content__row-label cursor-pointer">
+  {value.nameA} (<Label label={getClassLabel(value.classA)} />) - {value.nameB} (<Label label={getClassLabel(value.classB)}/>)
 </div>
-
-<style>
-  .association-row {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0;
-  }
-
-  .association-name {
-    font-weight: 500;
-    color: #2c3e50;
-  }
-
-  .association-class {
-    color: #5d6b82;
-  }
-
-  .association-separator {
-    margin: 0 0.25rem;
-    color: #7f8c8d;
-  }
-</style>
