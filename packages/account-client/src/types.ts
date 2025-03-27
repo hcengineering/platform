@@ -41,6 +41,12 @@ export interface RegionInfo {
   name: string
 }
 
+export interface PersonWorkspaceInfo {
+  workspace: WorkspaceUuid
+  workspaceUrl: string
+  endpoint?: string
+}
+
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 
 export interface MailboxOptions {

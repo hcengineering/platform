@@ -16,40 +16,23 @@ import { config as dotenvConfig } from 'dotenv'
 
 dotenvConfig()
 
-export interface Config {
+interface Config {
   port: number
+  secret: string
   accountsUrl: string
-  workspaceId: string
+  workspaceUuid: string
 }
 
-const envMap = {
-  Port: 'PORT',
-  AccountsUrl: 'ACCOUNTS_URL',
-  WorkspaceId: 'WORKSPACE_ID'
+const config: Config = {
+  port: parseInt(process.env.PORT ?? '4050'),
+  secret: process.env.SECRET ?? 'secret',
+  accountsUrl: process.env.ACCOUNTS_URL ?? 'http://localhost:3000',
+  workspaceUuid: (() => {
+    if (process.env.WORKSPACE_UUID !== undefined) {
+      return process.env.WORKSPACE_UUID
+    }
+    throw Error('WORKSPACE_UUID env var is not set')
+  })()
 }
-
-const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
-
-const config: Config = (() => {
-  const port = parseNumber(process.env[envMap.Port])
-  if (port === undefined) {
-    throw Error('Missing env variable: PORT')
-  }
-  const accountsUrl = process.env[envMap.AccountsUrl]
-  if (accountsUrl === undefined) {
-    throw Error('Missing env variable: ACCOUNTS_URL')
-  }
-  const workspaceId = process.env[envMap.WorkspaceId]
-  if (workspaceId === undefined) {
-    throw Error('Missing env variable: WORKSPACE_ID')
-  }
-  const params: Config = {
-    port,
-    accountsUrl,
-    workspaceId
-  }
-
-  return params
-})()
 
 export default config

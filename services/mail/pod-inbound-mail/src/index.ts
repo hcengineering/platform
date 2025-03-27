@@ -13,10 +13,61 @@
 // limitations under the License.
 //
 
-import { main } from './main'
+import cors from 'cors'
+import express, { NextFunction, Request, Response } from 'express'
+import { handleMtaHook } from './handlerMta'
+import config from './config'
+
+type RequestHandler = (req: Request, res: Response, next?: NextFunction) => Promise<void>
+
+const catchError = (fn: RequestHandler) => (req: Request, res: Response, next: NextFunction) => {
+  void (async () => {
+    try {
+      await fn(req, res, next)
+    } catch (err: unknown) {
+      console.error(req.method, req.path, err)
+      next(err)
+    }
+  })()
+}
+
+async function main (): Promise<void> {
+  const app = express()
+
+  app.use(cors())
+  app.use(express.json())
+
+  app.post('/mta-hook', catchError(handleMtaHook))
+
+  app.use((_req, res, _next) => {
+    res.status(404).send({ message: 'Not found' })
+  })
+
+  app.use((err: any, _req: any, res: any, _next: any) => {
+    res.status(500).send({ message: err.message })
+  })
+
+  const server = app.listen(config.port, () => {
+    console.log(`server started on port ${config.port}`)
+    console.log({ ...config, secret: '(stripped)' })
+  })
+
+  const shutdown = (): void => {
+    server.close(() => {
+      process.exit()
+    })
+  }
+
+  process.on('SIGINT', shutdown)
+  process.on('SIGTERM', shutdown)
+  process.on('uncaughtException', (e) => {
+    console.error(e)
+  })
+  process.on('unhandledRejection', (e) => {
+    console.error(e)
+  })
+}
 
 void main().catch((err) => {
-  if (err != null) {
-    console.error(err)
-  }
+  console.error(err)
 })

@@ -122,6 +122,12 @@ export interface WorkspaceInvite {
   autoJoin?: boolean
 }
 
+export interface PersonWorkspaceInfo {
+  workspace: WorkspaceUuid
+  workspaceUrl: string
+  endpoint?: string
+}
+
 export interface Mailbox {
   accountUuid: PersonUuid
   mailbox: string
