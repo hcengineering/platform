@@ -28,6 +28,7 @@
   import MilestoneEditor from '../milestones/MilestoneEditor.svelte'
 
   export let issue: WithLookup<IssueTemplate>
+  export let labelIds: TagElement[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -48,16 +49,14 @@
 
   let labelRefs: TagReference[] = []
 
-  $: labelIds = issue?.$lookup?.labels ?? []
-
   $: if (labelIds !== undefined) {
     labelRefs = (Array.isArray(labelIds) ? labelIds : [labelIds]).map(
       (it) => ({ ...(it as unknown as TagReference), _id: generateId(), tag: it._id }) as unknown as TagReference
     )
   }
 
-  const onTagDelete = async (evt: CustomEvent<Ref<TagReference>>): Promise<void> => {
-    const itm = labelRefs.find((it) => it._id === evt.detail)
+  const onTagDelete = async (evt: CustomEvent<TagElement>): Promise<void> => {
+    const itm = labelRefs.find((it) => it.tag === evt.detail._id)
     if (itm !== undefined) {
       await client.update(issue, {
         $pull: { labels: itm.tag as unknown as Ref<TagElement> }
