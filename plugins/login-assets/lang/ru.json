@@ -65,6 +65,10 @@
     "PasswordMinUpperChars": "{count, plural, =1 {Пароль должен содержать минимум # заглавную букву} other {Пароль должен содержать минимум # заглавных букв}}",
     "PasswordMinLowerChars": "{count, plural, =1 {Пароль должен содержать минимум # строчную букву} other {Пароль должен содержать минимум # строчных букв}}",
     "WorkspaceArchivedDesc": "Рабочее пространство архивировано из-за неиспользования.",
-    "RestoreArchivedWorkspace": "Восстановить"
+    "RestoreArchivedWorkspace": "Восстановить",
+    "Hello": "Привет {name},",
+    "ProcessingInvite": "Обработка приглашения, пожалуйста, подождите...",
+    "SignToProceed": "Пожалуйста, войдите, чтобы продолжить",
+    "Proceed": "Продолжить"
   }
 }

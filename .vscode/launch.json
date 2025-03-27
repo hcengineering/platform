@@ -182,8 +182,8 @@
       "args": ["src/__start.ts"],
       "env": {
         "MONGO_URL": "mongodb://localhost:27017",
-        "DB_URL": "mongodb://localhost:27017",
-        // "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
+        // "DB_URL": "mongodb://localhost:27017",
+        "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
         "SERVER_SECRET": "secret",
         "REGION_INFO": "|Mongo;cockroach|CockroachDB",
         "TRANSACTOR_URL": "ws://huly.local:3333,ws://huly.local:3332;;cockroach",

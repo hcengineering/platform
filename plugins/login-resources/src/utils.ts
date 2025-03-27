@@ -451,7 +451,7 @@ export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
 export function navigateToWorkspace (
   workspaceUrl: string,
   loginInfo: WorkspaceLoginInfo | null,
-  navigateUrl?: string,
+  navigateUrl?: string | null,
   replace = false
 ): void {
   if (loginInfo == null) {
@@ -460,7 +460,7 @@ export function navigateToWorkspace (
 
   setLoginInfo(loginInfo)
 
-  if (navigateUrl !== undefined) {
+  if (navigateUrl != null) {
     try {
       const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
       if (loc.path[1] === workspaceUrl) {
@@ -512,7 +512,7 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
 
 export async function checkAutoJoin (
   inviteId: string,
-  firstName: string,
+  firstName?: string,
   lastName?: string
 ): Promise<[Status, WorkspaceInviteInfo | WorkspaceLoginInfo | null]> {
   const token = getMetadata(presentation.metadata.Token)
@@ -789,7 +789,7 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
 
       setLoginInfo(result)
 
-      navigateToWorkspace(joinedWS[0].uuid, result, undefined, clearQuery)
+      navigateToWorkspace(joinedWS[0].url, result, undefined, clearQuery)
     }
   } else {
     goTo('selectWorkspace', clearQuery)
@@ -810,6 +810,22 @@ export async function getLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | 
 
     throw err
   }
+}
+
+export function getAutoJoinInfo (): any {
+  const query = getCurrentLocation().query
+
+  if (query == null) {
+    return null
+  }
+
+  const { token, autoJoin, inviteId, navigateUrl } = query
+
+  if (token == null || autoJoin === undefined || inviteId == null) {
+    return null
+  }
+
+  return { token, autoJoin, inviteId, navigateUrl }
 }
 
 export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLoginInfo | null> {

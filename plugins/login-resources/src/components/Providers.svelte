@@ -45,11 +45,20 @@
 
   function getLink (provider: Provider): string {
     const inviteId = location.query?.inviteId
+    const autoJoin = location.query?.autoJoin !== undefined
+    const navigateUrl = location.query?.navigateUrl
     const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
     let path = `/auth/${provider.name}`
     if (inviteId != null) {
       path += `?inviteId=${inviteId}`
+      if (autoJoin) {
+        path += '&autoJoin'
+      }
+      if (navigateUrl != null) {
+        path += `&navigateUrl=${navigateUrl}`
+      }
     }
+
     return concatLink(accountsUrl, path)
   }
 </script>

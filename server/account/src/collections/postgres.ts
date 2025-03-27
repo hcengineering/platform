@@ -846,11 +846,14 @@ export class PostgresAccountDB implements AccountDB {
 
   private getV3Migration (): [string, string] {
     return [
-      'account_db_v3_add_invite_auto_join',
+      'account_db_v3_add_invite_auto_join_final',
       `
       ALTER TABLE ${this.ns}.invite
       ADD COLUMN IF NOT EXISTS email STRING,
       ADD COLUMN IF NOT EXISTS auto_join BOOL DEFAULT FALSE;
+
+      ALTER TABLE ${this.ns}.account
+      ADD COLUMN IF NOT EXISTS automatic BOOL;
       `
     ]
   }

@@ -435,6 +435,7 @@ export async function createAccount (
   db: AccountDB,
   personUuid: PersonUuid,
   confirmed = false,
+  automatic = false,
   createdOn = Date.now()
 ): Promise<void> {
   // Create Huly social id and account
@@ -446,7 +447,7 @@ export async function createAccount (
     personUuid,
     ...(confirmed ? { verifiedOn: Date.now() } : {})
   })
-  await db.account.insertOne({ uuid: personUuid })
+  await db.account.insertOne({ uuid: personUuid, automatic })
   await db.accountEvent.insertOne({
     accountUuid: personUuid,
     eventType: AccountEventType.ACCOUNT_CREATED,
@@ -462,7 +463,8 @@ export async function signUpByEmail (
   password: string | null,
   firstName: string,
   lastName: string,
-  confirmed = false
+  confirmed = false,
+  automatic = false
 ): Promise<{ account: PersonUuid, socialId: PersonId }> {
   const normalizedEmail = cleanEmail(email)
 
@@ -493,7 +495,7 @@ export async function signUpByEmail (
     })
   }
 
-  await createAccount(db, account, confirmed)
+  await createAccount(db, account, confirmed, automatic)
   if (password != null) {
     await setPassword(ctx, db, branding, account, password)
   }
