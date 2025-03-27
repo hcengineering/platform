@@ -47,7 +47,7 @@
     getClient,
     getMarkup
   } from '@hcengineering/presentation'
-  import tags, { TagElement, TagReference } from '@hcengineering/tags'
+  import tags, { TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
@@ -94,6 +94,7 @@
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
   import MilestoneSelector from './milestones/MilestoneSelector.svelte'
   import ProjectPresenter from './projects/ProjectPresenter.svelte'
+  import { TagElement } from '@hcengineering/tags-resources'
 
   export let space: Ref<Project> | undefined
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -957,7 +958,7 @@
         addTagRef(evt.detail)
       }}
       on:delete={(evt) => {
-        object.labels = object.labels.filter((it) => it._id !== evt.detail)
+        object.labels = object.labels.filter((it) => it.tag !== evt.detail._id)
       }}
     />
     <ComponentSelector
