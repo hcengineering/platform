@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/pod-hook",
+  "name": "@hcengineering/pod-inbound-mail",
   "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
@@ -17,11 +17,11 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "node ../../../common/scripts/esbuild.js",
-    "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/hook",
-    "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/hook staging",
-    "docker:abuild": "docker build -t hardcoreeng/hook . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/hook",
-    "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/hook",
+    "bundle": "node ../../../common/scripts/esbuild.js --external=ws",
+    "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/inbound-mail",
+    "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/inbound-mail staging",
+    "docker:abuild": "docker build -t hardcoreeng/inbound-mail . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/inbound-mail",
+    "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/inbound-mail",
     "run-local": "ts-node src/index.ts",
     "format": "format src",
     "_phase:build": "compile transpile src",
@@ -53,8 +53,21 @@
     "eslint-plugin-node": "^11.1.0"
   },
   "dependencies": {
+    "@hcengineering/account-client": "^0.6.0",
+    "@hcengineering/api-client": "^0.6.0",
+    "@hcengineering/attachment": "^0.6.14",
+    "@hcengineering/card": "^0.6.0",
+    "@hcengineering/chunter": "^0.6.20",
+    "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/mail": "^0.6.0",
+    "@hcengineering/text-html": "^0.6.0",
+    "@types/uuid": "^8.3.1",
+    "eml-parse-js": "^1.2.0-beta.0",
+    "uuid": "^8.3.2",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "dotenv": "~16.0.0"
+    "dotenv": "~16.0.0",
+    "jwt-simple": "^0.5.6"
   }
 }
