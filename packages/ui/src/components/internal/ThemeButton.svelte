@@ -17,33 +17,33 @@
   import FontSize from './icons/FontSize.svelte'
   import CheckCircled from './icons/CheckCircled.svelte'
 
-  export let size: string
+  export let theme: string
   export let focused: string
 
   let btn: HTMLButtonElement
 
   onMount(() => {
-    if (focused === size) btn.focus()
+    if (focused === theme) btn.focus()
   })
 </script>
 
 <button
   bind:this={btn}
   class="antiButton regular sh-no-shape jf-center bs-none no-focus statusPopupThemeButton"
-  class:focused={focused === size}
-  class:both={size === 'theme-system'}
+  class:focused={theme === focused}
+  class:both={theme === 'theme-system'}
 >
-  {#if size === 'theme-light' || size === 'theme-system'}
+  {#if theme === 'theme-light' || theme === 'theme-system'}
     <div class="light-container">
-      <div class="paper"><FontSize /></div>
+      <div class="paper"><FontSize size={'small'} /></div>
     </div>
   {/if}
-  {#if size === 'theme-dark' || size === 'theme-system'}
+  {#if theme === 'theme-dark' || theme === 'theme-system'}
     <div class="dark-container">
-      <div class="paper"><FontSize /></div>
+      <div class="paper"><FontSize size={'small'} /></div>
     </div>
   {/if}
-  {#if focused === size}
+  {#if focused === theme}
     <CheckCircled />
   {/if}
 </button>
