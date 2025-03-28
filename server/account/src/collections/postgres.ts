@@ -865,8 +865,7 @@ export class PostgresAccountDB implements AccountDB {
       CREATE TABLE IF NOT EXISTS ${this.ns}.mailbox (
           account_uuid UUID NOT NULL,
           mailbox STRING NOT NULL,
-          CONSTRAINT mailbox_pk PRIMARY KEY (mailbox),
-          CONSTRAINT mailbox_account_fk FOREIGN KEY (account_uuid) REFERENCES ${this.ns}.account(uuid)
+          CONSTRAINT mailbox_pk PRIMARY KEY (mailbox)
       );
 
       CREATE TABLE IF NOT EXISTS ${this.ns}.mailbox_secrets (
