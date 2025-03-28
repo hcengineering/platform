@@ -13,36 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup, mergeQueries } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
-  import { AnyComponent } from '@hcengineering/ui'
-  import view, { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
-  // import { ComponentNavigator } from '@hcengineering/workbench-resources'
+  import core, { Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup, mergeQueries } from '@hcengineering/core'
+  import view, { ViewOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
   import SplitView from './SplitView.svelte'
+  import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 
-  export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
   export let options: FindOptions<Doc> | undefined = undefined
-  export let config: Array<string | BuildModelKey>
   export let viewlet: WithLookup<Viewlet>
 
   // Per _class configuration, if supported.
-  export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
-  export let createItemDialog: AnyComponent | undefined
-  export let createItemDialogProps: Record<string, any> | undefined = undefined
-  export let createItemLabel: IntlString | undefined
-  export let createItemEvent: string | undefined
   export let viewOptions: ViewOptions
-
-  export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
-  export let props: Record<string, any> = {}
 
   let _id: Ref<Doc> | undefined = undefined
   let _query: DocumentQuery<Doc> = {}
 
-  let viewlets: Array<ViewletDescriptor> | undefined = undefined
+  let parentView: ViewletDescriptor | undefined = undefined
+  let childView: ViewletDescriptor | undefined = undefined
 
   const client = getClient()
 
@@ -50,31 +39,33 @@
 
   async function getViewlets (viewletId: Ref<Viewlet>) {
     if (viewlet === undefined) return
-    viewlets = await client.findAll(
+    const { masterDetailOptions: { views } } = viewlet
+    const results = await client.findAll(
       view.class.ViewletDescriptor,
-      { _id: { $in: [viewlet?.masterDetailOptions?.views[0].view, viewlet?.masterDetailOptions?.views[1].view] } },
+      { _id: { $in: [views[0].view, views[1].view] } },
       {
         lookup: {
           descriptor: view.class.ViewletDescriptor
         }
       }
     )
-    console.log('viewlets', viewlets)
+    parentView = results.find(v => v._id === views[0].view)
+    childView = results.find(v => v._id === views[1].view)
   }
 
   async function selected (e: CustomEvent<any>): Promise<void> {
-    console.log('selected', e.detail)
-    if (viewlets?.[1] === undefined) return
-    if (viewlets?.[1]._id === view.viewlet.Document) {
+    const { masterDetailOptions: { views } } = viewlet
+    if (childView === undefined) return
+    if (childView?._id === view.viewlet.Document) {
       _id = e.detail
     } else {
       let association = await client.findOne(core.class.Association, {
-        classA: viewlet?.masterDetailOptions?.views[0].class,
-        classB: viewlet?.masterDetailOptions?.views[1].class
+        classA: views[0].class,
+        classB: views[1].class
       })
       association = association ?? await client.findOne(core.class.Association, {
-        classB: viewlet?.masterDetailOptions?.views[0].class,
-        classA: viewlet?.masterDetailOptions?.views[1].class
+        classB: views[0].class,
+        classA: views[1].class
       })
       if (association === undefined) return
       const relations = await client.findAll(core.class.Relation, {
@@ -88,27 +79,48 @@
       )
     }
   }
+
+  // Reactive stores for nested components
+  $: remainingViews = viewlet?.masterDetailOptions?.views.slice(1)
+  $: isSimpleView = viewlet?.masterDetailOptions?.views.length <= 2
+  $: childViewComponent = isSimpleView ? childView?.component : viewlet?.$lookup?.descriptor?.component ?? SplitView
+  $: nestedViewlet = isSimpleView ? undefined : {
+    ...viewlet,
+    masterDetailOptions: {
+      ...viewlet?.masterDetailOptions,
+      views: remainingViews
+    }
+  }
+  $: childProps = isSimpleView
+    ? {
+        _class: viewlet?.masterDetailOptions?.views[1].class,
+        space,
+        options,
+        config: viewlet.config,
+        viewlet,
+        viewOptions, 
+        viewOptionsConfig: viewlet.viewOptions?.other,
+        totalQuery: _query,
+        ...viewlet.props,
+        embedded: true,
+        _id
+      }
+    : {
+        space,
+        query: _query,
+        options,
+        viewlet: nestedViewlet,
+        viewOptions
+      }
 </script>
 
-{#if viewlet !== undefined && viewlets !== undefined && viewlets.length > 1}
+{#if viewlet !== undefined && parentView !== undefined && childView !== undefined}
   <SplitView
     query={_query}
     {space}
-    mainComponent={viewlets[1].component}
-    mainComponentProps={{
-      _class: viewlet?.masterDetailOptions?.views[1].class,
-      space,
-      options,
-      config: viewlet.config,
-      viewlet,
-      viewOptions,
-      viewOptionsConfig: viewlet.viewOptions?.other,
-      totalQuery: _query,
-      ...viewlet.props,
-      embedded: true,
-      _id
-    }}
-    navigationComponent={viewlets[0].component}
+    mainComponent={childViewComponent}
+    mainComponentProps={childProps}
+    navigationComponent={parentView.component}
     navigationComponentProps={{
       _class: viewlet?.masterDetailOptions?.views[0].class
     }}

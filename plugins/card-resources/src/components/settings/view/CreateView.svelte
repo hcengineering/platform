@@ -91,6 +91,10 @@
     if (viewletConfig === undefined) return
     updateViewletConfig(viewletConfig, items)
   }
+  function onMasterDetailUpdate (items: MasterDetailConfig[]): void {
+    if (viewletConfig === undefined) return
+    viewConfigs = items
+  }
 </script>
 
 <Card
@@ -133,7 +137,7 @@
     </div>
   </div>
   {#if descriptor === view.viewlet.MasterDetail}
-    <ViewConfigSection tag={tag} {viewConfigs} onChange={onConfigUpdate}/>
+    <ViewConfigSection tag={tag} {viewConfigs} on:change={(e) => { onMasterDetailUpdate(e.detail) }}/>
   {:else}
     <div class="antiGrid-row">
       <div class="antiGrid-row__header withDesciption">
