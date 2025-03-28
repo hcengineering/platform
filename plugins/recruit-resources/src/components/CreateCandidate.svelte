@@ -702,7 +702,7 @@
         addTagRef(evt.detail)
       }}
       on:delete={(evt) => {
-        object.skills = object.skills.filter((it) => it._id !== evt.detail)
+        object.skills = object.skills.filter((it) => it.tag !== evt.detail._id)
       }}
     />
     {#if object.skills.length > 0}

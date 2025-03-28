@@ -20,7 +20,7 @@
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import tags from '@hcengineering/tags'
+  import tags, { type TagElement, type TagReference } from '@hcengineering/tags'
   import { IssueTemplate, IssueTemplateChild, Project } from '@hcengineering/tracker'
   import { Button, EditBox, IconMoreH, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -74,8 +74,18 @@
         }
         currentProject = template.$lookup?.space
       },
-      { lookup: { space: tracker.class.Project, labels: tags.class.TagElement } }
+      { lookup: { space: tracker.class.Project } }
     )
+  let labels: TagElement[] = []
+
+  const tagsQuery = createQuery()
+  $: if ((template?.labels ?? []).length > 0) {
+    tagsQuery.query(tags.class.TagElement, { _id: { $in: template?.labels ?? [] } }, (res) => {
+      labels = res
+    })
+  } else {
+    tagsQuery.unsubscribe()
+  }
 
   $: canSave = title.trim().length > 0
 
@@ -210,7 +220,7 @@
 
     <svelte:fragment slot="custom-attributes">
       {#if template !== undefined && currentProject}
-        <TemplateControlPanel issue={template} />
+        <TemplateControlPanel issue={template} labelIds={labels} />
       {/if}
     </svelte:fragment>
   </Panel>
