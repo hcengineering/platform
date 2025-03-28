@@ -1522,6 +1522,9 @@ importers:
       '@types/toposort':
         specifier: ^2.0.3
         version: 2.0.7
+      '@types/uuid':
+        specifier: ^8.3.1
+        version: 8.3.4
       '@types/web-push':
         specifier: ^3.6.4
         version: 3.6.4
@@ -4601,7 +4604,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
-    resolution: {integrity: sha512-n4VnGysazaqkKBetIgZUnCnSBWtgf0JA989KoREfa2U2SAkeyU1i/8F3NBr69cSeI+NkTzypXYHQY+FrtW3+yw==, tarball: file:projects/pod-inbound-mail.tgz}
+    resolution: {integrity: sha512-aRbv7vSb4jFYBQc+EroIkXWtJK21XAmGCYeMdCuhyKU862V5Ik3Dag68jW7pNLRupf4dw9gzJ2/0LlSr89FvgQ==, tarball: file:projects/pod-inbound-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -6359,9 +6362,6 @@ packages:
 
   '@types/unist@2.0.10':
     resolution: {integrity: sha512-IfYcSBWE3hLpBg8+X2SEa8LVkJdJEkT2Ese2aaLs3ptGdVtABxndrMaxuFlQ1qdFf9Q5rDvDpxI3WwgvKFAsQA==}
-
-  '@types/uuid@10.0.0':
-    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
 
   '@types/uuid@8.3.4':
     resolution: {integrity: sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==}
@@ -21233,7 +21233,7 @@ snapshots:
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
-      '@types/uuid': 10.0.0
+      '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
       cors: 2.8.5
@@ -27931,8 +27931,6 @@ snapshots:
   '@types/trusted-types@2.0.7': {}
 
   '@types/unist@2.0.10': {}
-
-  '@types/uuid@10.0.0': {}
 
   '@types/uuid@8.3.4': {}
 
