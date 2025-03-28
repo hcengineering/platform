@@ -148,7 +148,7 @@
       >
         <div class="flex-between flex-grow">
           <div class="flex-row-center">
-            <div class="icon mr-2"><Icon icon={FontSize} size={'16px'} /></div>
+            <div class="icon mr-2"><FontSize size={'16px'} /></div>
             <span class="label font-medium"><Label label={ui.string.FontSize} /></span>
           </div>
           <div class="flex-row-center pr-4">
@@ -184,7 +184,7 @@
             <span class="label font-medium"><Label label={ui.string.Language} /></span>
           </div>
           <div class="flex-row-center pr-4">
-            <div class="label text-lg">
+            <div class="label text-lgd">
               <Html value={language.logo} />
             </div>
           </div>
