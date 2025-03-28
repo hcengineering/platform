@@ -36,6 +36,7 @@
   }
 
   function changeIsMeeting (): void {
+    isMeeting = !isMeeting
     $state.isMeeting = isMeeting
     if (isMeeting && $state.room === undefined) {
       setError(roomRequired)
@@ -48,14 +49,13 @@
 </script>
 
 <div class="flex-row-center gap-1-5 mt-1">
-  <CheckBox bind:checked={isMeeting} kind={'primary'} on:value={changeIsMeeting} />
+  <CheckBox checked={isMeeting} kind={'primary'} on:value={changeIsMeeting} />
   <Button
     label={love.string.CreateMeeting}
     kind={'ghost'}
     padding={'0 .5rem'}
     justify={'left'}
     on:click={() => {
-      isMeeting = !isMeeting
       changeIsMeeting()
     }}
   />
