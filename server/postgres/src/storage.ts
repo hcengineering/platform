@@ -923,10 +923,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const res = this.getLookupValue(modelJoin.path, lookup)
         if (res === undefined) continue
         const { obj, key } = res
-        const val = this.getModelLookupValue<T>(doc, modelJoin, simpleJoins)
+        const val = this.getModelLookupValue<T>(doc, modelJoin, [...simpleJoins, ...modelJoins])
         if (val !== undefined && modelJoin.toClass !== undefined) {
           const res = this.modelDb.findAllSync(modelJoin.toClass, {
-            [modelJoin.toField]: (doc as any)[modelJoin.fromField]
+            [modelJoin.toField]: val
           })
           obj[key] = modelJoin.isReverse ? res : res[0]
         }
@@ -970,11 +970,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
   }
 
-  private getModelLookupValue<T extends Doc>(doc: WithLookup<T>, join: JoinProps, simpleJoins: JoinProps[]): any {
+  private getModelLookupValue<T extends Doc>(doc: WithLookup<T>, join: JoinProps, otherJoins: JoinProps[]): any {
     if (join.fromAlias.startsWith('lookup_')) {
-      const simple = simpleJoins.find((j) => j.toAlias === join.fromAlias)
-      if (simple !== undefined) {
-        const val = this.getLookupValue(simple.path, doc.$lookup ?? {})
+      const other = otherJoins.find((j) => j.toAlias === join.fromAlias)
+      if (other !== undefined) {
+        const val = this.getLookupValue(other.path, doc.$lookup ?? {})
         if (val !== undefined) {
           const data = val.obj[val.key]
           return data[join.fromField]
