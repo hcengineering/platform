@@ -643,7 +643,8 @@ export class PostgresAccountDB implements AccountDB {
       this.getV2Migration2(),
       this.getV2Migration3(),
       this.getV3Migration(),
-      this.getV4Migration()
+      this.getV4Migration(),
+      this.getV4Migration1()
     ]
   }
 
@@ -865,7 +866,8 @@ export class PostgresAccountDB implements AccountDB {
       CREATE TABLE IF NOT EXISTS ${this.ns}.mailbox (
           account_uuid UUID NOT NULL,
           mailbox STRING NOT NULL,
-          CONSTRAINT mailbox_pk PRIMARY KEY (mailbox)
+          CONSTRAINT mailbox_pk PRIMARY KEY (mailbox),
+          CONSTRAINT mailbox_account_fk FOREIGN KEY (account_uuid) REFERENCES ${this.ns}.account(uuid)
       );
 
       CREATE TABLE IF NOT EXISTS ${this.ns}.mailbox_secrets (
@@ -874,6 +876,16 @@ export class PostgresAccountDB implements AccountDB {
           secret STRING NOT NULL,
           CONSTRAINT mailbox_secret_mailbox_fk FOREIGN KEY (mailbox) REFERENCES ${this.ns}.mailbox(mailbox)
       );
+      `
+    ]
+  }
+
+  private getV4Migration1 (): [string, string] {
+    return [
+      'account_db_v4_remove_mailbox_account_fk',
+      `
+      ALTER TABLE ${this.ns}.mailbox
+      DROP CONSTRAINT IF EXISTS mailbox_account_fk;
       `
     ]
   }
