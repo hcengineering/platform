@@ -37,12 +37,14 @@
     {
       class: tag?._id,
       view: view.viewlet.Tree,
-      id: generateId()
+      id: generateId(),
+      createComponent: card.component.CreateCardButton
     },
     {
       class: tag?._id,
       view: view.viewlet.Document,
-      id: generateId()
+      id: generateId(),
+      createComponent: card.component.CreateCardButton
     }
   ]
 
@@ -100,7 +102,7 @@
 <Card
   label={card.string.CreateView}
   okAction={save}
-  canSave={descriptor !== undefined}
+  canSave={descriptor !== undefined && (descriptor !== view.viewlet.MasterDetail || (viewConfigs.length > 0 && viewConfigs.every((config) => config.class !== undefined && config.view !== undefined)))}
   on:close={() => {
     dispatch('close')
   }}

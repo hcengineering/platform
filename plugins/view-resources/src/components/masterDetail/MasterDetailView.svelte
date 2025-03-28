@@ -121,9 +121,14 @@
     {space}
     mainComponent={childViewComponent}
     mainComponentProps={childProps}
+    createComponent={viewlet?.masterDetailOptions?.views[1]?.createComponent}
+    createComponentProps={ { _class: viewlet?.masterDetailOptions?.views[1].class } }
+    mainHeaderComponent={viewlet?.masterDetailOptions?.views[0]?.createComponent}
+    createChildComponentProps={ { _class: viewlet?.masterDetailOptions?.views[1].class } }
     navigationComponent={parentView.component}
     navigationComponentProps={{
-      _class: viewlet?.masterDetailOptions?.views[0].class
+      _class: viewlet?.masterDetailOptions?.views[0].class,
+      plainList: true
     }}
     isNested={!isSimpleView}
     on:select={selected}

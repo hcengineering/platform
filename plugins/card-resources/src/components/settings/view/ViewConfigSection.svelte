@@ -14,15 +14,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { ObjectBox } from '@hcengineering/view-resources'
   import { ButtonIcon, Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
-  import view, { ViewletDescriptor } from '@hcengineering/view'
   import { Doc, Ref, Space, generateId } from '@hcengineering/core'
   import DescriptorBox from './DescriptorBox.svelte'
   import card from '../../../plugin'
   import { MasterTag, Tag } from '@hcengineering/card'
-  import { MasterDetailConfig } from '@hcengineering/view'
+  import { MasterDetailConfig, ViewletDescriptor } from '@hcengineering/view'
   import RelatedTagSelect from './RelatedTagSelect.svelte'
 
   export let tag: MasterTag | Tag
@@ -37,7 +35,8 @@
     // Create a new ViewConfig with default empty values and unique ID
     const newViewConfig: MasterDetailConfig = {
       class: tag._id,
-      id: generateId()
+      id: generateId(),
+      createComponent: card.component.CreateCardButton
     }
 
     viewConfigs = [...viewConfigs, newViewConfig]
@@ -61,8 +60,6 @@
     viewConfigs = viewConfigs.filter((_, i) => i !== index)
     dispatch('change', viewConfigs)
   }
-
-
 </script>
 
 <div class="hulyTableAttr-container">
@@ -79,7 +76,8 @@
             <div class="config-input">
               <RelatedTagSelect
                 label={card.string.SelectType}
-                tag={index > 0 ? viewConfigs[index - 1].class : tag._id}
+                parentTag={index > 0 ? viewConfigs[index - 1].class : tag._id}
+                childTag={index < viewConfigs.length - 1 ? viewConfigs[index + 1].class : tag._id}
                 value={config.class}
                 on:change={(e) => { updateViewClass(index, e.detail) }}
               />
@@ -92,18 +90,21 @@
                 on:change={(e) => { updateViewConfig(index, e.detail) }}
               />
             </div>
-            <div class="config-input">
-              <ButtonIcon
-                kind={'tertiary'}
-                icon={IconDelete}
-                size="small"
-                disabled={viewConfigs.length === 1}
-                on:click={() => { removeViewConfig(index) }}
-              />
-            </div>
+            <ButtonIcon
+              kind={'tertiary'}
+              icon={IconDelete}
+              size="small"
+              disabled={viewConfigs.length === 1}
+              on:click={() => { removeViewConfig(index) }}
+            />
           </div>
         </div>
       {/each}
   {/if}
 </div>
 
+<style lang="scss">
+  .config-input {
+    min-width: 7rem
+  }
+</style>

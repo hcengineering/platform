@@ -19,21 +19,24 @@
   import { getClient } from '@hcengineering/presentation'
   import { ObjectBox } from '@hcengineering/view-resources'
 
-  export let tag: Ref<Doc<Space>>
+  export let parentTag: Ref<Doc<Space>> | undefined
+  export let childTag: Ref<Doc<Space>> | undefined
   export let value: Ref<Doc<Space>>
   export let label: IntlString
 
   let query: DocumentQuery<Doc> = {}
 
-  $: void getAssociations(tag)
+  $: void getAssociations(parentTag)
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  async function getAssociations (tagId: Ref<Doc<Space>>): Promise<void> {
-    const descendants = hierarchy.getDescendants(tagId)
-    const leftAssociations = await client.findAll(core.class.Association, { classA: { $in: descendants } })
-    const rightAssociations = await client.findAll(core.class.Association, { classB: { $in: descendants } })
+  async function getAssociations (tagId: Ref<Doc<Space>> | undefined): Promise<void> {
+    const descendants = parentTag !== undefined ? hierarchy.getDescendants(parentTag) : []
+    const children = childTag !== undefined ? hierarchy.getDescendants(childTag) : []
+    const descendantsAndChildren = descendants.concat(children)
+    const leftAssociations = await client.findAll(core.class.Association, { classA: { $in: descendantsAndChildren } })
+    const rightAssociations = await client.findAll(core.class.Association, { classB: { $in: descendantsAndChildren } })
 
     const associations = leftAssociations.concat(rightAssociations)
 

@@ -45,6 +45,7 @@
   export let navigationComponentIcon: Asset | undefined = undefined
   export let createComponent: AnyComponent | undefined = undefined
   export let createComponentProps: Record<string, any> = {}
+  export let createChildComponentProps: Record<string, any> = {}
   export let mainComponentLabel: IntlString | undefined = undefined
   export let mainComponentIcon: Asset | undefined = undefined
   export let mainHeaderComponent: AnyComponent | undefined = undefined
@@ -81,11 +82,6 @@
     dispatch('select', e.detail)
     if (syncWithLocationQuery) return
     parentQuery = { [parentKey]: e.detail }
-  }
-
-  function showCreateDialog (): void {
-    if (createComponent === undefined) return
-    showPopup(createComponent, { ...createComponentProps, space }, 'top')
   }
 
   defineSeparators('parentsNavigator', twoPanelsSeparators)
@@ -141,15 +137,9 @@
           {/if}
           <svelte:fragment slot="actions">
             {#if createComponent}
-              <Button
-                icon={IconAdd}
-                kind={'icon'}
-                showTooltip={navigationComponentProps?.createLabel !== undefined
-                  ? { label: navigationComponentProps.createLabel }
-                  : undefined}
-                on:click={() => {
-                  showCreateDialog()
-                }}
+              <Component
+                is={createComponent}
+                props={createComponentProps}
               />
             {/if}
           </svelte:fragment>
@@ -193,10 +183,7 @@
         {#if mainHeaderComponent}
           <Component
             is={mainHeaderComponent}
-            props={{
-              query: resultQuery,
-              space
-            }}
+            props={createChildComponentProps}
           />
         {/if}
       </svelte:fragment>
