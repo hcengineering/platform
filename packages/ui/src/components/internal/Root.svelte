@@ -4,14 +4,15 @@
   import type { AnyComponent, WidthType } from '../../types'
   import { deviceSizes, deviceWidths } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
-  import { Theme } from '@hcengineering/theme'
+  import { Theme, themeStore } from '@hcengineering/theme'
   import {
     IconArrowLeft,
     IconArrowRight,
     checkMobile,
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching,
-    getLocalWeekStart
+    getLocalWeekStart,
+    updateEmojis
   } from '../../'
   import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
@@ -87,8 +88,12 @@
   $: $deviceInfo.isMobile = isMobile
   $: $deviceInfo.minWidth = docWidth <= 480
   $: $deviceInfo.twoRows = docWidth <= 680
+  $: $deviceInfo.language = $themeStore.language
+  $: $deviceInfo.fontSize = $themeStore.fontSize
 
   $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
+
+  $: void updateEmojis($themeStore.language)
 
   let doubleTouchStartTimestamp = 0
   document.addEventListener('touchstart', (event) => {

@@ -27,6 +27,7 @@
     ModernPopup,
     showPopup,
     deviceOptionsStore as deviceInfo,
+    modalStore,
     eventToHTMLElement
   } from '../..'
 
@@ -82,6 +83,7 @@
     if (currentFontSize === size) return
     currentFontSize = size
     setFontSize(size)
+    $modalStore = $modalStore
   }
 
   function selectTheme (theme: string): void {
@@ -96,7 +98,6 @@
     setLanguage(language)
   }
 
-  $: $deviceInfo.fontSize = fontsize.size
   $: $deviceInfo.theme = currentTheme
   $: fontsize = fontsizes.find((fs) => fs.id === currentFontSize) ?? fontsizes[0]
   $: language = langs.find((lang) => lang.id === currentLanguage) ?? langs[0]
