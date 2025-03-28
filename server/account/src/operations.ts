@@ -2020,6 +2020,7 @@ async function createMailbox (
 
   await db.mailbox.insertOne({ accountUuid: account, mailbox })
   await db.mailboxSecret.insertOne({ mailbox, secret: generatePassword() })
+  await db.socialId.insertOne({ personUuid: account, type: SocialIdType.EMAIL, value: mailbox })
 }
 
 async function getMailboxes (
