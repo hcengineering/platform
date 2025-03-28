@@ -22,8 +22,8 @@
   export let withSingleViews: boolean = false
   export let label: IntlString
   $: supportedTypes = withSingleViews
-    ? [view.viewlet.Table, view.viewlet.List, view.viewlet.MasterDetail, view.viewlet.Document]
-    : [view.viewlet.Table, view.viewlet.List, view.viewlet.MasterDetail]
+    ? [view.viewlet.Table, view.viewlet.List, view.viewlet.Tree, view.viewlet.MasterDetail, view.viewlet.Document]
+    : [view.viewlet.Table, view.viewlet.List, view.viewlet.Tree, view.viewlet.MasterDetail]
 
 </script>
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import card, { MasterTag, Tag } from '@hcengineering/card'
+  import card from '@hcengineering/card'
   import core, { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -56,4 +56,5 @@
   docQuery={query}
   bind:value={value}
   on:change
+  showNavigate={false}
 />

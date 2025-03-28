@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup } from '@hcengineering/core'
+  import core, { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup, mergeQueries } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { AnyComponent } from '@hcengineering/ui'
   import view, { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
@@ -40,7 +40,7 @@
   export let props: Record<string, any> = {}
 
   let _id: Ref<Doc> | undefined = undefined
-  let childProps: Record<string, any> = {}
+  let _query: DocumentQuery<Doc> = {}
 
   let viewlets: Array<ViewletDescriptor> | undefined = undefined
 
@@ -62,13 +62,11 @@
     console.log('viewlets', viewlets)
   }
 
-  async function selected (e: CustomEvent<any>): void {
+  async function selected (e: CustomEvent<any>): Promise<void> {
     console.log('selected', e.detail)
     if (viewlets?.[1] === undefined) return
     if (viewlets?.[1]._id === view.viewlet.Document) {
-      childProps = {
-        _id: e.detail
-      }
+      _id = e.detail
     } else {
       let association = await client.findOne(core.class.Association, {
         classA: viewlet?.masterDetailOptions?.views[0].class,
@@ -83,21 +81,18 @@
         association: association._id,
         docA: e.detail
       })
-      const ids = relations.map(r => r._id)
-      childProps = {
-        query: {
-          _id: { $in: ids }
-        }
-      }
+      const ids = relations.flatMap(r => [r.docA, r.docB])
+      _query = mergeQueries(
+        query ?? {},
+        { _id: { $in: ids } }
+      )
     }
   }
-
-  $: console.log('masterDetailOptions', viewlet?.masterDetailOptions)
 </script>
 
 {#if viewlet !== undefined && viewlets !== undefined && viewlets.length > 1}
   <SplitView
-    query={query}
+    query={_query}
     {space}
     mainComponent={viewlets[1].component}
     mainComponentProps={{
@@ -108,10 +103,10 @@
       viewlet,
       viewOptions,
       viewOptionsConfig: viewlet.viewOptions?.other,
-      totalQuery: query,
+      totalQuery: _query,
       ...viewlet.props,
       embedded: true,
-      ...childProps
+      _id
     }}
     navigationComponent={viewlets[0].component}
     navigationComponentProps={{
