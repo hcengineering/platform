@@ -18,8 +18,8 @@ import {
   type Ref,
   type TxOperations,
   generateId,
+  PersonUuid,
   RateLimiter,
-  SocialIdType,
   systemAccountUuid
 } from '@hcengineering/core'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
@@ -56,40 +56,40 @@ export async function createMessages (
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
   const client = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
 
-  const fromPersonId = await ensureGlobalPerson(accountClient, mailId, from)
-  if (fromPersonId === undefined) {
+  const fromPerson = await ensureGlobalPerson(accountClient, mailId, from)
+  if (fromPerson === undefined) {
     console.error(`[${mailId}] Unable to create message without a proper FROM`)
     return
   }
 
-  const toPersons: { address: string, socialId: PersonId }[] = []
+  const toPersons: { address: string, uuid: PersonUuid, socialId: PersonId }[] = []
   for (const to of tos) {
-    const toPersonId = await ensureGlobalPerson(accountClient, mailId, to)
-    if (toPersonId === undefined) {
+    const toPerson = await ensureGlobalPerson(accountClient, mailId, to)
+    if (toPerson === undefined) {
       continue
     }
-    toPersons.push({ address: to.address, socialId: toPersonId })
+    toPersons.push({ address: to.address, ...toPerson })
   }
   if (toPersons.length === 0) {
     console.error(`[${mailId}] Unable to create message without a proper TO`)
     return
   }
 
-  const modifiedBy = fromPersonId
-  const participants = [fromPersonId, ...toPersons.map((p) => p.socialId)]
+  const modifiedBy = fromPerson.socialId
+  const participants = [fromPerson.socialId, ...toPersons.map((p) => p.socialId)]
 
   try {
-    const spaces = await getPersonSpaces(client, mailId, fromPersonId, from.address)
+    const spaces = await getPersonSpaces(client, mailId, fromPerson.uuid, from.address)
     if (spaces.length > 0) {
       await saveMessageToSpaces(client, mailId, spaces, participants, modifiedBy, subject, content, inReplyTo)
     }
   } catch (err) {
-    console.error(`[${mailId}] Failed to save message to personal spaces of ${fromPersonId} (${from.address})`, err)
+    console.error(`[${mailId}] Failed to save message to personal spaces of ${fromPerson.uuid} (${from.address})`, err)
   }
 
   for (const to of toPersons) {
     try {
-      const spaces = await getPersonSpaces(client, mailId, to.socialId, to.address)
+      const spaces = await getPersonSpaces(client, mailId, to.uuid, to.address)
       if (spaces.length > 0) {
         await saveMessageToSpaces(client, mailId, spaces, participants, modifiedBy, subject, content, inReplyTo)
       }
@@ -102,14 +102,14 @@ export async function createMessages (
 async function getPersonSpaces (
   client: TxOperations,
   mailId: string,
-  personId: PersonId,
+  personUuid: PersonUuid,
   email: string
 ): Promise<PersonSpace[]> {
-  const socialIdents = await client.findAll(contact.class.SocialIdentity, { type: SocialIdType.EMAIL, value: email })
-  const personRefs = socialIdents.map((socialId) => socialId.attachedTo)
+  const persons = await client.findAll(contact.class.Person, { personUuid }, { projection: { _id: 1 } })
+  const personRefs = persons.map((p) => p._id)
   const spaces = await client.findAll(contact.class.PersonSpace, { person: { $in: personRefs } })
   if (spaces.length === 0) {
-    console.log(`[${mailId}] No personal space found for ${personId} (${email}), skip`)
+    console.log(`[${mailId}] No personal space found for ${personUuid} (${email}), skip`)
   }
   return spaces
 }
