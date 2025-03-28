@@ -15,6 +15,7 @@
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
   import { AccountRole, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
   import { Card, isAdminUser } from '@hcengineering/presentation'
   import ui, { Button, Label } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
@@ -28,6 +29,8 @@
   export let deleteAction: () => void | Promise<void>
   export let skipCheck: boolean = false
   export let canDeleteExtra: boolean = true
+  export let confirmation: IntlString | undefined = undefined
+
   const objectArray = Array.isArray(object) ? object : [object]
   const owners: PersonAccount[] = Array.from($personAccountByIdStore.values()).filter(
     (acc) => acc.role === AccountRole.Owner
@@ -58,7 +61,7 @@
   <div class="flex-grow flex-col">
     {#if canDelete}
       <div class="mb-2">
-        <Label label={view.string.DeleteObjectConfirm} params={{ count: objectArray.length }} />
+        <Label label={confirmation ?? view.string.DeleteObjectConfirm} params={{ count: objectArray.length }} />
         <div class="mt-2">
           {#if objectArray.length === 1}
             <ObjectPresenter _class={objectArray[0]._class} objectId={objectArray[0]._id} value={objectArray[0]} />

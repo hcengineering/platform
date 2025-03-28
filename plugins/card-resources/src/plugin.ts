@@ -15,7 +15,8 @@
 
 import card, { cardId } from '@hcengineering/card'
 import { type Ref } from '@hcengineering/core'
-import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Viewlet } from '@hcengineering/view'
 
@@ -33,10 +34,21 @@ export default mergeIds(cardId, card, {
     ProperitiesSection: '' as AnyComponent,
     TagsSection: '' as AnyComponent,
     ChildsSection: '' as AnyComponent,
-    RelationsSection: '' as AnyComponent
+    RelationsSection: '' as AnyComponent,
+    SetParentActionPopup: '' as AnyComponent,
+    RelationSetting: '' as AnyComponent,
+    CardEditor: '' as AnyComponent,
+    CardRefPresenter: '' as AnyComponent,
+    ChangeType: '' as AnyComponent
+  },
+  completion: {
+    CardQuery: '' as Resource<ObjectSearchFactory>,
+    CardCategory: '' as Ref<ObjectSearchCategory>
   },
   viewlet: {
-    CardTable: '' as Ref<Viewlet>
+    CardTable: '' as Ref<Viewlet>,
+    CardList: '' as Ref<Viewlet>,
+    CardChildList: '' as Ref<Viewlet>
   },
   string: {
     CreateMasterTag: '' as IntlString,
@@ -53,6 +65,12 @@ export default mergeIds(cardId, card, {
     DeleteTagConfirm: '' as IntlString,
     DeleteMasterTag: '' as IntlString,
     DeleteMasterTagConfirm: '' as IntlString,
-    TagRelations: '' as IntlString
+    TagRelations: '' as IntlString,
+    UnsetParent: '' as IntlString,
+    SetParent: '' as IntlString,
+    CreateChild: '' as IntlString,
+    Children: '' as IntlString,
+    Document: '' as IntlString,
+    ChangeType: '' as IntlString
   }
 })

@@ -34,6 +34,13 @@ import ProperitiesSection from './components/settings/ProperitiesSection.svelte'
 import TagsSection from './components/settings/TagsSection.svelte'
 import RelationsSection from './components/settings/RelationsSection.svelte'
 import ChildsSection from './components/settings/ChildsSection.svelte'
+import SetParentActionPopup from './components/SetParentActionPopup.svelte'
+import RelationSetting from './components/settings/RelationSetting.svelte'
+import CardEditor from './components/CardEditor.svelte'
+import CardRefPresenter from './components/CardRefPresenter.svelte'
+import ChangeType from './components/ChangeType.svelte'
+
+export { default as CardSelector } from './components/CardSelector.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -49,7 +56,12 @@ export default async (): Promise<Resources> => ({
     ProperitiesSection,
     TagsSection,
     RelationsSection,
-    ChildsSection
+    ChildsSection,
+    SetParentActionPopup,
+    RelationSetting,
+    CardEditor,
+    CardRefPresenter,
+    ChangeType
   },
   completion: {
     CardQuery: queryCard

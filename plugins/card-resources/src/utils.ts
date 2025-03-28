@@ -36,66 +36,27 @@ import { type LocationData } from '@hcengineering/workbench'
 import CardSearchItem from './components/CardSearchItem.svelte'
 import card from './plugin'
 
-export async function deleteMasterTag (tag: MasterTag | undefined): Promise<void> {
+export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: () => void): Promise<void> {
   if (tag !== undefined) {
     const client = getClient()
-    const objects = await client.findAll(tag._id, {})
-    if (objects.length > 0) {
-      if (tag._class === card.class.MasterTag) {
-        showPopup(MessageBox, {
-          label: card.string.DeleteMasterTag,
-          message: card.string.DeleteMasterTagConfirm,
-          action: async () => {
-            const cards = await client.findAll(tag._id, {})
-            const hierarchy = client.getHierarchy()
-            const ops = client.apply(undefined, 'delete-master-tag')
-            for (const obj of cards) {
-              await ops.remove(obj)
-            }
-            const desc = hierarchy.getDescendants(tag._id)
-            for (const obj of desc) {
-              const desc = hierarchy.getClass(obj)
-              await ops.remove(desc)
-            }
-            await ops.commit()
-            await client.remove(tag)
-          }
-        })
-      } else {
-        showPopup(MessageBox, {
-          label: card.string.DeleteTag,
-          message: card.string.DeleteTagConfirm,
-          action: async () => {
-            const cards = await client.findAll(tag._id, {})
-            const ops = client.apply(undefined, 'delete-tag')
-            const hierarchy = client.getHierarchy()
-            const desc = hierarchy.getDescendants(tag._id)
-            for (const obj of desc) {
-              const desc = hierarchy.getClass(obj)
-              await ops.remove(desc)
-            }
-            const update: Record<string, boolean> = {}
-            for (const des of desc) {
-              update[des] = true
-            }
-            for (const obj of cards) {
-              await ops.update(obj, { $unset: update })
-            }
-            await ops.commit()
-            await client.remove(tag)
-          }
-        })
-      }
+    if (tag._class === card.class.MasterTag) {
+      showPopup(MessageBox, {
+        label: card.string.DeleteMasterTag,
+        message: card.string.DeleteMasterTagConfirm,
+        action: async () => {
+          onDelete?.()
+          await client.update(tag, { removed: true })
+        }
+      })
     } else {
-      const ops = client.apply(undefined, 'delete-tag')
-      const hierarchy = client.getHierarchy()
-      const desc = hierarchy.getDescendants(tag._id)
-      for (const obj of desc) {
-        const desc = hierarchy.getClass(obj)
-        await ops.remove(desc)
-      }
-      await ops.commit()
-      await client.remove(tag)
+      showPopup(MessageBox, {
+        label: card.string.DeleteTag,
+        message: card.string.DeleteTagConfirm,
+        action: async () => {
+          onDelete?.()
+          await client.remove(tag)
+        }
+      })
     }
   }
 }

@@ -11,23 +11,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Class, Mixin, Doc, Ref, MarkupBlobRef, Rank } from '@hcengineering/core'
+import { Blobs, Class, Doc, Domain, MarkupBlobRef, Mixin, Rank, Ref } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
 export * from './analytics'
 
-export interface MasterTag extends Class<Card> {}
+export interface MasterTag extends Class<Card> {
+  color?: number
+  removed?: boolean
+}
 
-export interface Tag extends Mixin<Card> {}
+export interface Tag extends MasterTag, Mixin<Card> {}
 
 export interface Card extends Doc {
-  attachments?: number
   _class: Ref<MasterTag>
   title: string
   content: MarkupBlobRef
+  blobs: Blobs
+  children?: number
+  attachments?: number
+  parentInfo: ParentInfo[]
   parent?: Ref<Card> | null
   rank: Rank
+}
+
+export interface ParentInfo {
+  _id: Ref<Card>
+  _class: Ref<MasterTag>
+  title: string
 }
 
 export interface MasterTagEditorSection extends Doc {
@@ -42,6 +54,8 @@ export interface MasterTagEditorSection extends Doc {
  */
 export const cardId = 'card' as Plugin
 
+export const DOMAIN_CARD = 'card' as Domain
+
 /**
  * @public
  */
@@ -52,12 +66,21 @@ const cardPlugin = plugin(cardId, {
     Tag: '' as Ref<Class<Tag>>,
     MasterTagEditorSection: '' as Ref<Class<MasterTagEditorSection>>
   },
+  types: {
+    File: '' as Ref<MasterTag>,
+    Document: '' as Ref<MasterTag>
+  },
   icon: {
     MasterTags: '' as Asset,
     MasterTag: '' as Asset,
     Tag: '' as Asset,
     Tags: '' as Asset,
-    Card: '' as Asset
+    Card: '' as Asset,
+    File: '' as Asset,
+    Document: '' as Asset
+  },
+  extensions: {
+    EditCardExtension: '' as ComponentExtensionId
   },
   string: {
     MasterTag: '' as IntlString,

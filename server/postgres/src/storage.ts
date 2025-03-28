@@ -1462,7 +1462,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       const isReverse = association[1] === -1
       const _class = isReverse ? assoc.classA : assoc.classB
-      const tagetDomain = translateDomain(this.hierarchy.getDomain(_class))
+      const domain = this.hierarchy.findDomain(_class)
+      if (domain === undefined) continue
+      const tagetDomain = translateDomain(domain)
       const keyA = isReverse ? 'docB' : 'docA'
       const keyB = isReverse ? 'docA' : 'docB'
       const wsId = vars.add(this.workspaceId.name, '::uuid')
@@ -1472,7 +1474,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
           JOIN ${translateDomain(DOMAIN_RELATION)} as relation 
           ON relation."${keyB}" = assoc."_id" 
           AND relation."workspaceId" = ${wsId}
-          WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" 
+          WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id"
+          AND relation.association = '${_id}'
           AND assoc."workspaceId" = ${wsId}) AS assoc_${tagetDomain}_${association[0]}`
       )
     }
@@ -2120,7 +2123,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
         SELECT * 
         FROM "${translateDomain(DOMAIN_MODEL_TX)}" 
         WHERE "workspaceId" = $1::uuid 
-        ORDER BY _id::text ASC, "modifiedOn"::bigint ASC
+        ORDER BY "modifiedOn"::bigint ASC, _id::text ASC
       `
       return client.execute(query, [this.workspaceId.name])
     })

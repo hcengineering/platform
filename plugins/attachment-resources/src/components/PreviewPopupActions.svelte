@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Blob, Ref } from '@hcengineering/core'
-  import { BlobMetadata } from '@hcengineering/presentation'
+  import type { BlobMetadata, Blob, Ref } from '@hcengineering/core'
   import { Button, closePopup, closeTooltip, IconToDetails } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
 

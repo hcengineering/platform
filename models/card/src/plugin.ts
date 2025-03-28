@@ -18,10 +18,9 @@ import card from '@hcengineering/card-resources/src/plugin'
 import type { Client, Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { mergeIds, type Resource } from '@hcengineering/platform'
-import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
 import { type LocationData } from '@hcengineering/workbench'
-import { type Action, type ViewAction } from '@hcengineering/view'
+import { type ActionCategory, type Action, type ViewAction } from '@hcengineering/view'
 
 export default mergeIds(cardId, card, {
   app: {
@@ -31,16 +30,17 @@ export default mergeIds(cardId, card, {
     DeleteMasterTag: '' as ViewAction
   },
   action: {
-    DeleteMasterTag: '' as Ref<Action>
+    DeleteMasterTag: '' as Ref<Action>,
+    SetParent: '' as Ref<Action<Doc, any>>,
+    UnsetParent: '' as Ref<Action<Doc, any>>
+  },
+  category: {
+    Card: '' as Ref<ActionCategory>
   },
   ids: {
     MasterTags: '' as Ref<Doc>,
     ManageMasterTags: '' as Ref<Doc>,
     TagRelations: '' as Ref<Doc>
-  },
-  completion: {
-    CardQuery: '' as Resource<ObjectSearchFactory>,
-    CardCategory: '' as Ref<ObjectSearchCategory>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>,

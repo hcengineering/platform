@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment, BlobMetadata } from '@hcengineering/attachment'
+  import { Attachment } from '@hcengineering/attachment'
   import {
     Account,
+    BlobMetadata,
     Class,
     Doc,
     generateId,

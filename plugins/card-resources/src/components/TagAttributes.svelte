@@ -69,19 +69,19 @@
       size={'medium'}
       showTooltip={{ label: setting.string.AddAttribute }}
       on:click={(ev) => {
-        showPopup(setting.component.CreateAttributePopup, { _class: tag._id }, 'top')
+        showPopup(setting.component.CreateAttributePopup, { _class: tag._id, isCard: true }, 'top')
       }}
     />
     <Button
       icon={setting.icon.Setting}
       kind={'link'}
       size={'medium'}
-      showTooltip={{ label: setting.string.ClassSetting }}
+      showTooltip={{ label: setting.string.Setting }}
       on:click={(ev) => {
         ev.stopPropagation()
         const loc = getCurrentResolvedLocation()
         loc.path[2] = settingId
-        loc.path[3] = 'masterTags'
+        loc.path[3] = 'types'
         loc.path[4] = tag._id
         loc.path.length = 5
         loc.fragment = undefined

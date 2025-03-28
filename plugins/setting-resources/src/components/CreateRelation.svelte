@@ -23,6 +23,7 @@
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
 
+  export let aClass: Ref<Class<Doc>> | undefined = undefined
   export let _classes: Ref<Class<Doc>>[] = [core.class.Doc]
   export let exclude: Ref<Class<Doc>>[] = [cardPlugin.class.Card]
 
@@ -57,25 +58,34 @@
       if (added.has(_id) || ignore.has(_id)) continue
       const _class = hierarchy.getClass(_id)
       if (_class.label === undefined) continue
-      if (viewlets.has(hierarchy.getBaseClass(_id))) {
-        added.add(_id)
-        const descendants = hierarchy.getDescendants(_id)
-        const toAdd: Class<Doc>[] = []
-        for (const desc of descendants) {
-          if (added.has(desc) || ignore.has(desc)) continue
-          const _class = hierarchy.getClass(desc)
-          if (_class.label === undefined) continue
-          added.add(desc)
-          toAdd.push(_class)
+      try {
+        if (viewlets.has(hierarchy.getBaseClass(_id))) {
+          added.add(_id)
+          const descendants = hierarchy.getDescendants(_id)
+          const toAdd: Class<Doc>[] = []
+          for (const desc of descendants) {
+            if (added.has(desc) || ignore.has(desc)) continue
+            const _class = hierarchy.getClass(desc)
+            if (_class.label === undefined) continue
+            added.add(desc)
+            toAdd.push(_class)
+          }
+          base.set(_id, toAdd)
         }
-        base.set(_id, toAdd)
+      } catch (err) {
+        ignore.add(_id)
       }
     }
     const result: [DropdownIntlItem, DropdownIntlItem[]][] = []
     for (const [key, value] of base) {
       try {
         const clazz = hierarchy.getClass(key)
-        result.push([{ id: key, label: clazz.label }, value.map((it) => ({ id: it._id, label: it.label }))])
+        result.push([
+          { id: key, label: clazz.label, icon: clazz.icon },
+          value
+            .map((it) => ({ id: it._id, label: it.label, icon: it.icon }))
+            .sort((a, b) => a.label.localeCompare(b.label))
+        ])
       } catch {}
     }
     return result
@@ -83,7 +93,7 @@
 
   const classes = filterClasses(descendants, viewlets, exclude)
 
-  let classARef: Ref<Class<Doc>> | undefined = undefined
+  let classARef: Ref<Class<Doc>> | undefined = aClass
   let classBRef: Ref<Class<Doc>> | undefined = undefined
   let nameA: string = ''
   let nameB: string = ''
@@ -92,14 +102,14 @@
     if (classBRef === undefined || classARef === undefined) {
       return
     }
-    await client.createDoc(core.class.Association, core.space.Model, {
+    const _id = await client.createDoc(core.class.Association, core.space.Model, {
       classA: classARef,
       classB: classBRef,
       type: mode,
       nameA,
       nameB
     })
-    dispatch('close')
+    dispatch('close', _id)
   }
 
   const items: DropdownIntlItem[] = [
@@ -118,6 +128,19 @@
   ]
 
   let mode: '1:1' | '1:N' | 'N:N' = 'N:N' as '1:1' | '1:N' | 'N:N'
+
+  $: classA = getAClass(aClass)
+  function getAClass (aClass: Ref<Class<Doc>> | undefined): DropdownIntlItem | undefined {
+    if (aClass === undefined) {
+      return undefined
+    }
+    const clazz = hierarchy.getClass(aClass)
+    return {
+      id: clazz._id,
+      label: clazz.label,
+      icon: clazz.icon
+    }
+  }
 </script>
 
 <Card
@@ -134,12 +157,16 @@
         <EditBox bind:value={nameA} placeholder={core.string.Name} kind={'default'} />
       </div>
       <div>
-        <NestedDropdown
-          items={classes}
-          on:selected={(e) => {
-            classARef = e.detail
-          }}
-        />
+        {#if classA !== undefined}
+          <DropdownLabelsIntl items={[classA]} selected={classA.id} disabled />
+        {:else}
+          <NestedDropdown
+            items={classes}
+            on:selected={(e) => {
+              classARef = e.detail
+            }}
+          />
+        {/if}
       </div>
     </div>
 
