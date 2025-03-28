@@ -53,7 +53,6 @@ import type {
   Mailbox,
   MailboxOptions,
   OtpInfo,
-  PersonWorkspaceInfo,
   RegionInfo,
   SocialId,
   Workspace,
@@ -1506,38 +1505,6 @@ export async function getPersonInfo (
   }
 }
 
-export async function getPersonWorkspaces (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { account: PersonUuid }
-): Promise<PersonWorkspaceInfo[]> {
-  const { account } = params
-  const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['mail'], extra)
-
-  const person = await db.person.findOne({ uuid: account })
-
-  if (person == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
-  }
-
-  const wses = (await db.getAccountWorkspaces(account)).filter(
-    (ws) => !ws.status.isDisabled || isWorkspaceCreating(ws.status.mode)
-  )
-
-  if (wses.length === 0) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
-  }
-
-  return wses.map((w) => ({
-    workspace: w.uuid,
-    workspaceUrl: w.url,
-    endpoint: getEndpoint(ctx, w.uuid, w.region, EndpointKind.External)
-  }))
-}
-
 export async function findPersonBySocialKey (
   ctx: MeasureContext,
   db: AccountDB,
@@ -2122,7 +2089,6 @@ export type AccountMethods =
   | 'assignWorkspace'
   | 'getPerson'
   | 'getPersonInfo'
-  | 'getPersonWorkspaces'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
   | 'findPersonBySocialKey'
@@ -2179,7 +2145,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),
     getPersonInfo: wrap(getPersonInfo),
-    getPersonWorkspaces: wrap(getPersonWorkspaces),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     findPersonBySocialId: wrap(findPersonBySocialId),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),

@@ -36,7 +36,6 @@ import type {
   MailboxOptions,
   OtpInfo,
   WorkspaceLoginInfo,
-  PersonWorkspaceInfo,
   RegionInfo,
   WorkspaceOperation,
   MailboxInfo
@@ -85,7 +84,6 @@ export interface AccountClient {
   login: (email: string, password: string) => Promise<LoginInfo>
   getPerson: () => Promise<Person>
   getPersonInfo: (account: PersonUuid) => Promise<PersonInfo>
-  getPersonWorkspaces: (account: PersonUuid) => Promise<PersonWorkspaceInfo[]>
   getSocialIds: () => Promise<SocialId[]>
   getWorkspaceMembers: () => Promise<WorkspaceMemberInfo[]>
   updateWorkspaceRole: (account: string, role: AccountRole) => Promise<void>
@@ -463,15 +461,6 @@ class AccountClientImpl implements AccountClient {
   async getPersonInfo (account: PersonUuid): Promise<PersonInfo> {
     const request = {
       method: 'getPersonInfo' as const,
-      params: { account }
-    }
-
-    return await this.rpc(request)
-  }
-
-  async getPersonWorkspaces (account: PersonUuid): Promise<PersonWorkspaceInfo[]> {
-    const request = {
-      method: 'getPersonWorkspaces' as const,
       params: { account }
     }
 

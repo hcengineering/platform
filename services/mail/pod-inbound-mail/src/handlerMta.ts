@@ -37,10 +37,24 @@ export async function handleMtaHook (req: Request, res: Response): Promise<void>
   try {
     const mta: MtaMessage = req.body
 
-    const fromAddress = mta.envelope.from.address
-    const fromHeader = mta.message.headers.find((header) => header[0] === 'From')?.[1] ?? ''
-    const fromName = extractContactName(fromHeader)
-    const to = mta.envelope.to.map((to) => to.address)
+    const from = { address: mta.envelope.from.address, name: '' }
+    const fromHeader = mta.message.headers.find((header) => header[0] === 'From')?.[1]
+    if (fromHeader !== undefined) {
+      from.name = extractContactName(fromHeader)
+    }
+
+    const tos = mta.envelope.to.map((to) => ({ address: to.address, name: '' }))
+    const toHeader = mta.message.headers.find((header) => header[0] === 'To')?.[1]
+    if (toHeader !== undefined) {
+      for (const part of toHeader.split(',')) {
+        for (const to of tos) {
+          if (part.includes(to.address)) {
+            to.name = extractContactName(part)
+          }
+        }
+      }
+    }
+
     const subject = (mta.message.headers.find((header) => header[0] === 'Subject')?.[1] ?? '').trim()
     const inReplyTo = mta.message.headers.find((header) => header[0] === 'In-Reply-To')?.[1]?.trim()
     const content = await getContent(mta)
@@ -50,8 +64,8 @@ export async function handleMtaHook (req: Request, res: Response): Promise<void>
       mailId = createHash('sha256')
         .update(
           JSON.stringify({
-            fromAddress,
-            to,
+            from: from.address,
+            to: tos.map((to) => to.address),
             subject,
             content
           })
@@ -59,7 +73,7 @@ export async function handleMtaHook (req: Request, res: Response): Promise<void>
         .digest('hex')
     }
 
-    await createMessages(mailId, fromAddress, fromName, to, subject, content, inReplyTo)
+    await createMessages(mailId, from, tos, subject, content, inReplyTo)
   } catch (err) {
     console.error('mta-hook', err)
   } finally {

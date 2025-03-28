@@ -12,8 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { generateId, PersonId, PersonUuid, SocialIdType, TxOperations } from '@hcengineering/core'
+import { buildSocialIdString, generateId, PersonId, PersonUuid, SocialIdType, TxOperations } from '@hcengineering/core'
 import contact, { AvatarType, combineName } from '@hcengineering/contact'
+import { AccountClient } from '@hcengineering/account-client'
+
+export async function ensureGlobalPerson (
+  client: AccountClient,
+  mailId: string,
+  contact: { address: string, name: string }
+): Promise<PersonId | undefined> {
+  const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: contact.address })
+  const personId = await client.findSocialIdBySocialKey(socialKey)
+  if (personId !== undefined) {
+    console.log(`[${mailId}] Found global person for ${contact.address}: ${personId}`)
+    return personId
+  }
+  const [firstName, lastName] = contact.name.split(' ')
+  try {
+    const globalPerson = await client.ensurePerson(SocialIdType.EMAIL, contact.address, firstName, lastName)
+    return globalPerson.socialId
+  } catch (err) {
+    console.error(`[${mailId}] Failed to create global person for ${contact.address}`, err)
+  }
+  return undefined
+}
 
 export async function ensureLocalPerson (
   client: TxOperations,

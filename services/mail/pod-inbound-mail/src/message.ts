@@ -19,18 +19,17 @@ import {
   type TxOperations,
   generateId,
   RateLimiter,
-  buildSocialIdString,
   SocialIdType,
   systemAccountUuid
 } from '@hcengineering/core'
-import { type AccountClient, getClient } from '@hcengineering/account-client'
+import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 import { type Card } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
-import contact from '@hcengineering/contact'
+import contact, { PersonSpace } from '@hcengineering/contact'
 import mail from '@hcengineering/mail'
 import config from './config'
-import { ensureLocalPerson } from './person'
+import { ensureGlobalPerson } from './person'
 
 function generateToken (): string {
   return encode(
@@ -42,77 +41,97 @@ function generateToken (): string {
   )
 }
 
-async function getTxClient (accountClient: AccountClient, email: string): Promise<TxOperations> {
-  const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
-  const personUuid = await accountClient.findPersonBySocialKey(socialKey)
-  if (personUuid === undefined) {
-    throw new Error(`Account not found for ${email}`)
-  }
-  const workspaces = await accountClient.getPersonWorkspaces(personUuid)
-  const workspace = workspaces.find((w) => w.workspace === config.workspaceUuid)
-  if (workspace === undefined) {
-    throw new Error(`Account ${email} is not a member of workspace ${config.workspaceUuid}`)
-  }
-  const wsInfo = await accountClient.selectWorkspace(workspace.workspaceUrl)
-  const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
-  console.log('Transactor URL:', transactorUrl)
-  return await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
-}
-
 export async function createMessages (
   mailId: string,
-  fromAddress: string,
-  fromName: string,
-  tos: string[],
+  from: { address: string, name: string },
+  tos: { address: string, name: string }[],
   subject: string,
   content: string,
   inReplyTo?: string
 ): Promise<void> {
-  const accountClient = getClient(config.accountsUrl, generateToken())
+  console.log(`[${mailId}] Sending message ${from.address} --> ${tos.map((to) => to.address).join(',')}`)
 
-  const [firstName, lastName] = fromName.split(' ')
-  const { uuid: fromPersonUuid, socialId: fromSocialId } = await accountClient.ensurePerson(
-    SocialIdType.EMAIL,
-    fromAddress,
-    firstName,
-    lastName
-  )
+  const accountClient = getAccountClient(config.accountsUrl, generateToken())
+  const wsInfo = await accountClient.selectWorkspace(config.workspaceUrl)
+  const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
+  const client = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
+
+  const fromPersonId = await ensureGlobalPerson(accountClient, mailId, from)
+  if (fromPersonId === undefined) {
+    console.error(`[${mailId}] Unable to create message without a proper FROM`)
+    return
+  }
+
+  const toPersons: { address: string, socialId: PersonId }[] = []
   for (const to of tos) {
+    const toPersonId = await ensureGlobalPerson(accountClient, mailId, to)
+    if (toPersonId === undefined) {
+      continue
+    }
+    toPersons.push({ address: to.address, socialId: toPersonId })
+  }
+  if (toPersons.length === 0) {
+    console.error(`[${mailId}] Unable to create message without a proper TO`)
+    return
+  }
+
+  const modifiedBy = fromPersonId
+  const participants = [fromPersonId, ...toPersons.map((p) => p.socialId)]
+
+  try {
+    const spaces = await getPersonSpaces(client, mailId, fromPersonId, from.address)
+    if (spaces.length > 0) {
+      await saveMessageToSpaces(client, mailId, spaces, participants, modifiedBy, subject, content, inReplyTo)
+    }
+  } catch (err) {
+    console.error(`[${mailId}] Failed to save message to personal spaces of ${fromPersonId} (${from.address})`, err)
+  }
+
+  for (const to of toPersons) {
     try {
-      console.log(`Sending message ${fromAddress} --> ${to}`)
-      const client = await getTxClient(accountClient, to)
-      await ensureLocalPerson(client, fromPersonUuid, fromSocialId, fromAddress, firstName, lastName)
-      await createMessage(client, mailId, fromSocialId, to, subject, content, inReplyTo)
+      const spaces = await getPersonSpaces(client, mailId, to.socialId, to.address)
+      if (spaces.length > 0) {
+        await saveMessageToSpaces(client, mailId, spaces, participants, modifiedBy, subject, content, inReplyTo)
+      }
     } catch (err) {
-      console.error(`Failed to send message ${fromAddress} --> ${to}`, err)
+      console.error(`[${mailId}] Failed to save message spaces of ${to.socialId} (${to.address})`, err)
     }
   }
 }
 
-async function createMessage (
+async function getPersonSpaces (
   client: TxOperations,
   mailId: string,
-  from: PersonId,
-  to: string,
+  personId: PersonId,
+  email: string
+): Promise<PersonSpace[]> {
+  const socialIdents = await client.findAll(contact.class.SocialIdentity, { type: SocialIdType.EMAIL, value: email })
+  const personRefs = socialIdents.map((socialId) => socialId.attachedTo)
+  const spaces = await client.findAll(contact.class.PersonSpace, { person: { $in: personRefs } })
+  if (spaces.length === 0) {
+    console.log(`[${mailId}] No personal space found for ${personId} (${email}), skip`)
+  }
+  return spaces
+}
+
+async function saveMessageToSpaces (
+  client: TxOperations,
+  mailId: string,
+  spaces: PersonSpace[],
+  participants: PersonId[],
+  modifiedBy: PersonId,
   subject: string,
   content: string,
   inReplyTo?: string
 ): Promise<void> {
-  const socialIds = await client.findAll(contact.class.SocialIdentity, { type: SocialIdType.EMAIL, value: to })
-  const personRefs = socialIds.map((socialId) => socialId.attachedTo)
-  const personSpaces = await client.findAll(contact.class.PersonSpace, { person: { $in: personRefs } })
-  if (personSpaces.length === 0) {
-    throw new Error('Personal space not found')
-  }
-
   const rateLimiter = new RateLimiter(10)
-  for (const space of personSpaces) {
+  for (const space of spaces) {
     await rateLimiter.add(async () => {
-      console.log('Saving message to space', space._id)
+      console.log(`[${mailId}] Saving message to space ${space._id}`)
 
       const route = await client.findOne(mail.class.MailRoute, { mailId })
       if (route !== undefined) {
-        console.log('Message is already in the thread, skip', route._id)
+        console.log(`[${mailId}] Message is already in the thread ${route.threadId}, skip`)
         return
       }
 
@@ -121,7 +140,7 @@ async function createMessage (
         const route = await client.findOne(mail.class.MailRoute, { mailId: inReplyTo })
         if (route !== undefined) {
           threadId = route.threadId as Ref<Card>
-          console.log('Found existing mail thread', threadId)
+          console.log(`[${mailId}] Found existing thread ${threadId}`)
         }
       }
       if (threadId === undefined) {
@@ -132,17 +151,17 @@ async function createMessage (
             title: subject,
             description: content,
             private: true,
-            members: [from, ...socialIds.map((si) => si._id)],
+            members: participants,
             archived: false,
-            createdBy: from,
-            modifiedBy: from
+            createdBy: modifiedBy,
+            modifiedBy
           },
           generateId(),
           undefined,
-          from
+          modifiedBy
         )
         threadId = newThreadId as Ref<Card>
-        console.log('Created new mail thread', threadId)
+        console.log(`[${mailId}] Created new thread ${threadId}`)
       }
 
       await client.addCollection(
@@ -154,7 +173,7 @@ async function createMessage (
         { message: content },
         generateId(),
         undefined,
-        from
+        modifiedBy
       )
 
       await client.createDoc(
@@ -166,7 +185,7 @@ async function createMessage (
         },
         generateId(),
         undefined,
-        from
+        modifiedBy
       )
     })
   }

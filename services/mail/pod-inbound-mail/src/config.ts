@@ -20,18 +20,18 @@ interface Config {
   port: number
   secret: string
   accountsUrl: string
-  workspaceUuid: string
+  workspaceUrl: string
 }
 
 const config: Config = {
   port: parseInt(process.env.PORT ?? '4050'),
   secret: process.env.SECRET ?? 'secret',
   accountsUrl: process.env.ACCOUNTS_URL ?? 'http://localhost:3000',
-  workspaceUuid: (() => {
-    if (process.env.WORKSPACE_UUID !== undefined) {
-      return process.env.WORKSPACE_UUID
+  workspaceUrl: (() => {
+    if (process.env.WORKSPACE_URL !== undefined) {
+      return process.env.WORKSPACE_URL
     }
-    throw Error('WORKSPACE_UUID env var is not set')
+    throw Error('WORKSPACE_URL env var is not set')
   })()
 }
 
