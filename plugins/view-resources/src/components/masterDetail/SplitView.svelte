@@ -54,6 +54,7 @@
   export let mainComponentProps = {}
   export let showNavigator: boolean = false
   export let parentKey: string = 'attachedTo'
+  export let isNested: boolean = false
 
   const FLOAT_LIMIT = 760
   let container: HTMLDivElement
@@ -64,7 +65,7 @@
   let resultQuery: DocumentQuery<Doc> = {}
   let spaceQuery: DocumentQuery<Doc> = {}
   $: spaceQuery = space !== undefined ? { space } : {}
-  $: resultQuery = mergeQueries(query, mergeQueries(spaceQuery, parentQuery)) ?? {}
+  $: resultQuery = isNested ? parentQuery : mergeQueries(query, mergeQueries(spaceQuery, parentQuery)) ?? {}
 
   if (syncWithLocationQuery) {
     parentQuery = getLocation()?.query as any

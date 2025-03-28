@@ -21,6 +21,7 @@
 
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
+  export let parentQuery: DocumentQuery<Doc> = {}
   export let options: FindOptions<Doc> | undefined = undefined
   export let viewlet: WithLookup<Viewlet>
 
@@ -98,7 +99,7 @@
         options,
         config: viewlet.config,
         viewlet,
-        viewOptions, 
+        viewOptions,
         viewOptionsConfig: viewlet.viewOptions?.other,
         totalQuery: _query,
         ...viewlet.props,
@@ -107,7 +108,7 @@
       }
     : {
         space,
-        query: _query,
+        parentQuery: _query,
         options,
         viewlet: nestedViewlet,
         viewOptions
@@ -124,6 +125,7 @@
     navigationComponentProps={{
       _class: viewlet?.masterDetailOptions?.views[0].class
     }}
+    isNested={!isSimpleView}
     on:select={selected}
   />
 {/if}
