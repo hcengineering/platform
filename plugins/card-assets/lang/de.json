@@ -5,10 +5,10 @@
     "Cards": "Karten",
     "Content": "Inhalt",
     "CreateCard": "Karte erstellen",
-    "CreateMasterTag": "Master-Tag erstellen",
+    "CreateMasterTag": "Typ erstellen",
     "CreateTag": "Tag erstellen",
-    "MasterTag": "Master-Tag",
-    "MasterTags": "Master-Tags",
+    "MasterTag": "Typ",
+    "MasterTags": "Typen",
     "Parent": "Eltern",
     "Tags": "Tags",
     "Tag": "Tag",
@@ -18,7 +18,17 @@
     "TagRelations": "Tag-Beziehungen",
     "DeleteTag": "Tag löschen",
     "DeleteTagConfirm": "Möchten Sie diesen Tag wirklich löschen? Alle zugehörigen Eigenschaften werden gelöscht",
-    "DeleteMasterTag": "Master-Tag löschen",
-    "DeleteMasterTagConfirm": "Möchten Sie diesen Master-Tag wirklich löschen? Alle mit diesem Master-Tag verbundenen Objekte werden gelöscht"
+    "DeleteMasterTag": "Typ löschen",
+    "DeleteMasterTagConfirm": "Möchten Sie diesen Typ wirklich löschen? Alle mit diesem Typ verbundenen Objekte werden gelöscht",
+    "UnsetParent": "Elternteil entfernen",
+    "SetParent": "Elternteil setzen",
+    "CreateChild": "Kind erstellen",
+    "Children": "Kinder",
+    "Views": "Ansichten",
+    "CreateView": "Ansicht erstellen",
+    "EditView": "Ansicht bearbeiten",
+    "SelectViewType": "Ansichtstyp auswählen",
+    "Document": "Dokument",
+    "ChangeType": "Typ ändern"
   }
 }

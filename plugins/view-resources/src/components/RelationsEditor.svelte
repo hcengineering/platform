@@ -42,6 +42,11 @@
 
   $: getAssociations(object)
 
+  const q = createQuery()
+  $: q.query(core.class.Association, {}, () => {
+    getAssociations(object)
+  })
+
   let relationsA: Record<Ref<Association>, Doc[]> = {}
   let relationsB: Record<Ref<Association>, Doc[]> = {}
 

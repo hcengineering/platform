@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import card, { MasterTag } from '@hcengineering/card'
-  import contact from '@hcengineering/contact'
+  import { CardEvents, MasterTag } from '@hcengineering/card'
   import core, { Association, Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -22,6 +21,8 @@
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import { ButtonIcon, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
+  import CreateRelation from './CreateRelation.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let masterTag: MasterTag
 
@@ -38,15 +39,28 @@
   })
 
   function getClassLabel (_class: Ref<Class<Doc>>): IntlString {
-    const _classLabel = hierarchy.getClass(_class)
-    return _classLabel.label
+    try {
+      const _classLabel = hierarchy.getClass(_class)
+      return _classLabel.label
+    } catch (err) {
+      console.error(err)
+      return core.string.Class
+    }
   }
 
   function addRelation (): void {
-    showPopup(setting.component.CreateRelation, {
-      exclude: [],
-      _classes: [card.class.Card, contact.class.Contact]
-    })
+    showPopup(
+      CreateRelation,
+      {
+        aClass: masterTag._id
+      },
+      undefined,
+      (res) => {
+        if (res !== undefined) {
+          Analytics.handleEvent(CardEvents.RelationCreated)
+        }
+      }
+    )
   }
 
   const handleSelect = (association: Association): void => {

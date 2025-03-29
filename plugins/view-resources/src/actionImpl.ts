@@ -92,6 +92,7 @@ function Delete (
   props?: {
     skipCheck?: boolean
     afterDelete?: () => Promise<void>
+    confirmation?: IntlString
   }
 ): void {
   const skipCheck = props?.skipCheck ?? false
@@ -100,6 +101,7 @@ function Delete (
     {
       object,
       skipCheck,
+      confirmation: props?.confirmation,
       deleteAction: async () => {
         try {
           const objs = Array.isArray(object) ? object : [object]

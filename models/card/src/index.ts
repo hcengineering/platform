@@ -12,15 +12,16 @@
 // limitations under the License.
 
 import activity from '@hcengineering/activity'
-import { CardEvents, cardId, type Card, type MasterTag, type Tag } from '@hcengineering/card'
+import { cardId, DOMAIN_CARD, type Card, type MasterTag, type ParentInfo, type Tag } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
-import contact from '@hcengineering/contact'
 import core, {
   AccountRole,
+  ClassifierKind,
   DOMAIN_MODEL,
   IndexKind,
+  SortingOrder,
+  type Blobs,
   type CollectionSize,
-  type Domain,
   type MarkupBlobRef,
   type Rank,
   type Ref
@@ -33,6 +34,7 @@ import {
   TypeCollaborativeDoc,
   TypeRef,
   TypeString,
+  UX,
   type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -41,22 +43,27 @@ import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
+import { type Asset, getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { type BuildModelKey } from '@hcengineering/view'
 import card from './plugin'
 
 export { cardId } from '@hcengineering/card'
 
-const DOMAIN_CARD = 'card' as Domain
-
 @Model(card.class.MasterTag, core.class.Class)
-export class TMasterTag extends TClass implements MasterTag {}
+export class TMasterTag extends TClass implements MasterTag {
+  color?: number
+  removed?: boolean
+}
 
 @Model(card.class.Tag, core.class.Mixin)
-export class TTag extends TMixin implements Tag {}
+export class TTag extends TMixin implements Tag {
+  color?: number
+}
 
 @Model(card.class.Card, core.class.Doc, DOMAIN_CARD)
+@UX(card.string.Card, card.icon.Card)
 export class TCard extends TDoc implements Card {
   @Prop(TypeRef(card.class.MasterTag), card.string.MasterTag)
   declare _class: Ref<MasterTag>
@@ -68,7 +75,10 @@ export class TCard extends TDoc implements Card {
   @Prop(TypeCollaborativeDoc(), card.string.Content)
     content!: MarkupBlobRef
 
-  parent?: Ref<Card> | null
+  blobs!: Blobs
+
+  @Prop(TypeRef(card.class.Card), card.string.Parent)
+    parent?: Ref<Card> | null
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
@@ -77,6 +87,10 @@ export class TCard extends TDoc implements Card {
 
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
+
+  children?: number
+
+  parentInfo!: ParentInfo[]
 }
 
 @Model(card.class.MasterTagEditorSection, core.class.Doc, DOMAIN_MODEL)
@@ -86,8 +100,84 @@ export class MasterTagEditorSection extends TDoc implements MasterTagEditorSecti
   component!: AnyComponent
 }
 
+export * from './migration'
+
+const listConfig: (BuildModelKey | string)[] = [
+  { key: '', props: { showParent: true }, displayProps: { fixed: 'left', key: 'card' } },
+  { key: '_class', displayProps: { fixed: 'left', key: 'type' } },
+  { key: '', displayProps: { grow: true } },
+  {
+    key: '',
+    presenter: view.component.RolePresenter,
+    label: card.string.Tags,
+    props: { fullSize: true },
+    displayProps: { key: 'tags', fixed: 'right' }
+  },
+  {
+    key: 'modifiedOn',
+    displayProps: { fixed: 'right', dividerBefore: true }
+  }
+]
+
+export function createSystemType (
+  builder: Builder,
+  type: Ref<MasterTag>,
+  label: IntlString,
+  icon: Asset = card.icon.MasterTag
+): void {
+  builder.createDoc(
+    card.class.MasterTag,
+    core.space.Model,
+    {
+      label,
+      extends: card.class.Card,
+      icon,
+      kind: ClassifierKind.CLASS
+    },
+    type
+  )
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: view.viewlet.List,
+    viewOptions: {
+      groupBy: ['_class', 'createdBy', 'modifiedBy'],
+      orderBy: [
+        ['modifiedOn', SortingOrder.Descending],
+        ['rank', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: listConfig
+  })
+
+  builder.mixin(type, card.class.MasterTag, setting.mixin.Editable, {
+    value: false
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: view.viewlet.Table,
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: [
+      '',
+      '_class',
+      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      'modifiedOn'
+    ]
+  })
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
+
+  createSystemType(builder, card.types.File, attachment.string.File, card.icon.File)
+  createSystemType(builder, card.types.Document, card.string.Document, card.icon.Document)
 
   builder.createDoc(
     workbench.class.Application,
@@ -105,6 +195,60 @@ export function createModel (builder: Builder): void {
     card.app.Card
   )
 
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: card.component.SetParentActionPopup,
+        element: 'top',
+        fillProps: {
+          _objects: 'value'
+        }
+      },
+      label: card.string.SetParent,
+      icon: card.icon.MasterTag,
+      input: 'none',
+      category: card.category.Card,
+      target: card.class.Card,
+      context: {
+        mode: ['context'],
+        application: card.app.Card,
+        group: 'associate'
+      }
+    },
+    card.action.SetParent
+  )
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: card.component.CardEditor
+  })
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.UpdateDocument,
+      actionProps: {
+        key: 'parent',
+        value: null
+      },
+      query: {
+        parent: { $ne: null, $exists: true }
+      },
+      label: card.string.UnsetParent,
+      icon: card.icon.MasterTag,
+      input: 'none',
+      category: card.category.Card,
+      target: card.class.Card,
+      context: {
+        mode: ['context'],
+        application: card.app.Card,
+        group: 'associate'
+      }
+    },
+    card.action.UnsetParent
+  )
+
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -112,7 +256,7 @@ export function createModel (builder: Builder): void {
       attachTo: card.class.Card,
       descriptor: view.viewlet.Table,
       configOptions: {
-        hiddenKeys: ['description', 'title']
+        hiddenKeys: ['content', 'title']
       },
       config: [
         '',
@@ -124,8 +268,58 @@ export function createModel (builder: Builder): void {
     card.viewlet.CardTable
   )
 
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: card.class.Card,
+      descriptor: view.viewlet.List,
+      viewOptions: {
+        groupBy: ['_class', 'createdBy', 'modifiedBy'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending]
+        ],
+        other: []
+      },
+      configOptions: {
+        hiddenKeys: ['content', 'title']
+      },
+      config: listConfig
+    },
+    card.viewlet.CardList
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: card.class.Card,
+      descriptor: view.viewlet.List,
+      variant: 'child',
+      viewOptions: {
+        groupBy: ['_class', 'createdBy', 'modifiedBy'],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending]
+        ],
+        other: []
+      },
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['content', 'title']
+      },
+      config: listConfig
+    },
+    card.viewlet.CardChildList
+  )
+
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: card.component.CardPresenter
+  })
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: card.component.CardRefPresenter
   })
 
   builder.mixin(card.class.Card, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -223,8 +417,7 @@ export function createModel (builder: Builder): void {
       context: {
         mode: ['context', 'browser'],
         group: 'remove'
-      },
-      analyticsEvent: CardEvents.MasterTagRemoved
+      }
     },
     card.action.DeleteMasterTag
   )
@@ -239,8 +432,26 @@ export function createModel (builder: Builder): void {
     context: {
       mode: ['context', 'browser'],
       group: 'remove'
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: card.component.ChangeType,
+      fillProps: {
+        _object: 'value'
+      }
     },
-    analyticsEvent: CardEvents.MasterTagRemoved
+    label: card.string.ChangeType,
+    input: 'focus',
+    icon: card.icon.MasterTag,
+    category: setting.category.Settings,
+    target: card.class.Card,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'edit'
+    }
   })
 
   createAction(builder, {
@@ -272,8 +483,7 @@ export function createModel (builder: Builder): void {
       name: 'tagrelation',
       label: card.string.TagRelations,
       icon: setting.icon.Relations,
-      props: { _classes: [card.class.Card, contact.class.Contact], exclude: [] },
-      component: setting.component.RelationSetting,
+      component: card.component.RelationSetting,
       group: 'settings-editor',
       role: AccountRole.Maintainer,
       order: 4501
@@ -285,7 +495,7 @@ export function createModel (builder: Builder): void {
     setting.class.SettingsCategory,
     core.space.Model,
     {
-      name: 'masterTags',
+      name: 'types',
       label: card.string.MasterTags,
       icon: card.icon.Card,
       component: card.component.ManageMasterTagsContent,
@@ -309,9 +519,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
     toClass: card.class.Card,
     fullTextSummary: true,
-    forceIndex: true,
-    childProcessingAllowed: true,
-    propagate: []
+    forceIndex: true
   })
 
   builder.createDoc(

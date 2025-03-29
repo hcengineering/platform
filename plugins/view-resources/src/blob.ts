@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Blob, type Ref } from '@hcengineering/core'
-import { type BlobMetadata, getImageSize } from '@hcengineering/presentation'
+import { type BlobMetadata, type Blob, type Ref } from '@hcengineering/core'
+import { getImageSize } from '@hcengineering/presentation'
 
 export async function blobImageMetadata (file: File, blob: Ref<Blob>): Promise<BlobMetadata | undefined> {
   if (file.size === 0) {

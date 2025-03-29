@@ -14,9 +14,10 @@
 // limitations under the License.
 //
 
-import { type BlobMetadata, type Attachment, type Drawing } from '@hcengineering/attachment'
+import { type Attachment, type Drawing } from '@hcengineering/attachment'
 import core, {
   SortingOrder,
+  type BlobMetadata,
   type Blob,
   type Class,
   type TxOperations as Client,
@@ -24,7 +25,8 @@ import core, {
   type Doc,
   type Ref,
   type Space,
-  type WithLookup
+  type WithLookup,
+  type BlobType
 } from '@hcengineering/core'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import {
@@ -116,7 +118,7 @@ export function getType (
   return 'other'
 }
 
-export async function openAttachmentInSidebar (value: Attachment): Promise<void> {
+export async function openAttachmentInSidebar (value: Attachment | BlobType): Promise<void> {
   closeTooltip()
   await openFilePreviewInSidebar(value.file, value.name, value.type, value.metadata)
 }
@@ -151,10 +153,14 @@ export async function openFilePreviewInSidebar (
   await createFn(widget, tab, true)
 }
 
-export function showAttachmentPreviewPopup (value: WithLookup<Attachment>): PopupResult {
+export function isAttachment (value: Attachment | BlobType): value is WithLookup<Attachment> {
+  return (value as Attachment)._id !== undefined
+}
+
+export function showAttachmentPreviewPopup (value: WithLookup<Attachment> | BlobType): PopupResult {
   const props: Record<string, any> = {}
 
-  if (value?.type?.startsWith('image/')) {
+  if (value?.type?.startsWith('image/') && isAttachment(value)) {
     props.drawingAvailable = true
     props.loadDrawings = async (): Promise<Drawing[] | undefined> => {
       const client = getClient()

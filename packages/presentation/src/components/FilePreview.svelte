@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
+  import { BlobMetadata, type Blob, type Ref } from '@hcengineering/core'
   import {
     Button,
     Component,
@@ -28,7 +28,7 @@
   import { getFileUrl } from '../file'
   import { getPreviewType, previewTypes } from '../filetypes'
   import { imageSizeToRatio } from '../image'
-  import { BlobMetadata, FilePreviewExtension } from '../types'
+  import { FilePreviewExtension } from '../types'
 
   export let file: Ref<Blob>
   export let name: string

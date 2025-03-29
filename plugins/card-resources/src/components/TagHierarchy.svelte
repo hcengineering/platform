@@ -16,10 +16,11 @@
   import { MasterTag } from '@hcengineering/card'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { NavItem } from '@hcengineering/ui'
-  import { NavLink, showMenu } from '@hcengineering/view-resources'
+  import { IconWithEmoji, NavItem } from '@hcengineering/ui'
+  import { NavLink } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
+  import view from '@hcengineering/view'
 
   export let classes: MasterTag[] = []
   export let allClasses: MasterTag[] = []
@@ -41,7 +42,7 @@
         result.push(cls)
       }
     }
-    return result
+    return result.sort((a, b) => a.label.localeCompare(b.label))
   }
 
   function fillDescendants (classes: MasterTag[]): void {
@@ -59,7 +60,8 @@
     <NavItem
       _id={clazz._id}
       label={clazz.label}
-      icon={clazz.icon}
+      icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz.icon}
+      iconProps={clazz.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
       isFold
       empty
       {level}
@@ -67,12 +69,9 @@
       on:click={() => {
         dispatch('select', clazz._id)
       }}
-      on:contextmenu={(evt) => {
-        showMenu(evt, { object: clazz })
-      }}
     />
   </NavLink>
   {#if (descendants.get(clazz._id)?.length ?? 0) > 0}
-    <svelte:self classes={descendants.get(clazz._id) ?? []} {_class} level={level + 1} on:select />
+    <svelte:self classes={descendants.get(clazz._id) ?? []} {_class} {allClasses} level={level + 1} on:select />
   {/if}
 {/each}

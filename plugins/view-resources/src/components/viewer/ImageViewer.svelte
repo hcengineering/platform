@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
-  import { DrawingBoard, getBlobRef, imageSizeToRatio, type BlobMetadata } from '@hcengineering/presentation'
+  import { type BlobMetadata, type Blob, type Ref } from '@hcengineering/core'
+  import { DrawingBoard, getBlobRef, imageSizeToRatio } from '@hcengineering/presentation'
   import { Loading } from '@hcengineering/ui'
 
   export let value: Ref<Blob>

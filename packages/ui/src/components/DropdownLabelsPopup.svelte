@@ -45,14 +45,13 @@
       return
     }
     if (multiselect && Array.isArray(selected)) {
-      const index = selected.indexOf(item.id)
-      if (index !== -1) {
-        selected.splice(index, 1)
-        selected = selected
+      const set = new Set(selected)
+      if (set.has(item.id)) {
+        set.delete(item.id)
       } else {
-        selected = selected === undefined ? [item.id] : [...selected, item.id]
+        set.add(item.id)
       }
-      dispatch('update', selected)
+      selected = Array.from(set)
     } else {
       dispatch('close', item.id)
     }

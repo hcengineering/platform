@@ -42,6 +42,8 @@
   import { IconPicker } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
+  export let isCard: boolean = false
+
   let selectedType: Ref<Class<Type<PropertyType>>> | undefined = undefined
 
   let name: string
@@ -159,6 +161,7 @@
           props={{
             type,
             defaultValue,
+            isCard,
             kind: 'regular',
             size: 'large'
           }}
