@@ -25,7 +25,7 @@ export function findSearchPresenter (hierarchy: Hierarchy, _class: Ref<Class<Doc
       return searchMixin
     }
     return undefined
-  } catch { }
+  } catch {}
 }
 
 /**
