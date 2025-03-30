@@ -15,11 +15,11 @@
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
 
-  import type { WithLookup } from '@hcengineering/core'
+  import type { BlobType, WithLookup } from '@hcengineering/core'
   import { getFileUrl } from '@hcengineering/presentation'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
-  export let value: WithLookup<Attachment>
+  export let value: WithLookup<Attachment> | BlobType
   export let preload = true
 
   const maxSizeRem = 20
@@ -28,7 +28,7 @@
 
   $: dimensions = getDimensions(value)
 
-  function getDimensions (value: Attachment): { width: number, height: number } {
+  function getDimensions (value: Attachment | BlobType): { width: number, height: number } {
     const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
 
     if (!value.metadata) {

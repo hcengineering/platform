@@ -13,15 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MasterTag, Tag } from '@hcengineering/card'
-  import core, { Class, ClassifierKind, Data, Doc, Ref, generateId } from '@hcengineering/core'
+  import { CardEvents, MasterTag, Tag } from '@hcengineering/card'
+  import core, { Class, ClassifierKind, Data, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting'
   import { EditBox, Icon, Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let parent: MasterTag | Tag | undefined = undefined
   export let _class: Ref<Class<MasterTag>> | Ref<Class<Tag>>
@@ -39,32 +38,11 @@
       kind: isMasterTag ? ClassifierKind.CLASS : ClassifierKind.MIXIN,
       icon: isMasterTag ? card.icon.MasterTag : card.icon.Tag
     }
-    const baseViewlet = client.getModel().getObject(card.viewlet.CardTable)
-    const base = extractObjectProps(baseViewlet)
-    const id = generateId<Class<MasterTag>>()
-    const ops = client.apply('tag')
-    await ops.createDoc(_class, core.space.Model, data, id)
-    await ops.createMixin(id, core.class.Mixin, core.space.Model, setting.mixin.Editable, {
-      value: true
-    })
-    await ops.createMixin(id, core.class.Mixin, core.space.Model, setting.mixin.UserMixin, {})
-    await ops.createDoc(view.class.Viewlet, core.space.Model, {
-      ...base,
-      attachTo: id
-    })
-    await ops.commit()
-    dispatch('close')
-  }
 
-  function extractObjectProps<T extends Doc> (doc: T): Data<T> {
-    const data: any = {}
-    for (const key in doc) {
-      if (key === '_id') {
-        continue
-      }
-      data[key] = doc[key]
-    }
-    return data as Data<T>
+    const id = await client.createDoc(_class, core.space.Model, data)
+    Analytics.handleEvent(isMasterTag ? CardEvents.TypeCreated : CardEvents.TagCreated)
+
+    dispatch('close', id)
   }
 </script>
 

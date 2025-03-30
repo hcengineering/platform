@@ -122,6 +122,8 @@
     "Join": "Unisciti",
     "Copied": "Copiato",
     "Title": "Titolo",
-    "HideArchived": "Nascondi archiviato"
+    "HideArchived": "Nascondi archiviato",
+    "RemoveRelation": "Rimuovere relazione",  
+    "RemoveRelationConfirmation": "Vuoi rimuovere la relazione?"
   }
 }

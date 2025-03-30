@@ -19,6 +19,16 @@
     "TagRelations": "Relations d'étiquettes",
     "DeleteTagConfirm": "Êtes-vous sûr de vouloir supprimer cette étiquette ? Toutes les propriétés associées seront supprimées",
     "DeleteMasterTag": "Supprimer le type",
-    "DeleteMasterTagConfirm": "Êtes-vous sûr de vouloir supprimer ce type ? Tous les objets liés à ce type seront supprimés"
+    "DeleteMasterTagConfirm": "Êtes-vous sûr de vouloir supprimer ce type ? Tous les objets liés à ce type seront supprimés",
+    "UnsetParent": "Désassocier le parent",
+    "SetParent": "Associer un parent",
+    "CreateChild": "Créer un enfant",
+    "Children": "Enfants",
+    "Views": "Vues",
+    "CreateView": "Créer une vue",
+    "EditView": "Modifier la vue",
+    "SelectViewType": "Sélectionner le type de vue",
+    "Document": "Document",
+    "ChangeType": "Changer de type"
   }
 }

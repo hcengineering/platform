@@ -151,6 +151,7 @@ export function getUppy (options: FileUploadOptions): Uppy<UppyMeta, UppyBody> {
           await onFileUploaded({
             uuid,
             name: file.name,
+            type: file.type ?? file.meta.type ?? '',
             file: file.data,
             path: file.meta.relativePath,
             metadata

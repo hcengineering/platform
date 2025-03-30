@@ -696,6 +696,25 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: view.actionImpl.Delete,
+      actionProps: {
+        confirmation: view.string.RemoveRelationConfirmation
+      },
+      label: view.string.RemoveRelation,
+      icon: view.icon.Delete,
+      keyBinding: ['Meta + Backspace'],
+      category: view.category.General,
+      override: [view.action.Delete],
+      input: 'any',
+      target: core.class.Relation,
+      context: { mode: ['context', 'browser'], group: 'remove' }
+    },
+    view.action.RemoveRelation
+  )
+
+  createAction(
+    builder,
+    {
       action: view.actionImpl.Archive,
       label: view.string.Archive,
       icon: view.icon.Archive,

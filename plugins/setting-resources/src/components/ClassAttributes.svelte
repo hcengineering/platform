@@ -46,6 +46,7 @@
   export let showTitle: boolean = !showHierarchy
   export let showHeader: boolean = true
   export let disabled: boolean = true
+  export let isCard: boolean = false
   export let attributeMapper:
   | {
     component: AnySvelteComponent
@@ -90,7 +91,9 @@
     }
 
     showPopup(TypesPopup, { _class }, getEventPositionElement(ev), (_id) => {
-      if (_id !== undefined) $settingsStore = { component: CreateAttribute, props: { selectedType: _id, _class } }
+      if (_id !== undefined) {
+        $settingsStore = { component: CreateAttribute, props: { selectedType: _id, _class, isCard } }
+      }
     })
   }
 

@@ -19,6 +19,16 @@
     "TagRelations": "Relações de Tag",
     "DeleteTagConfirm": "Tem certeza que deseja excluir esta tag? Todas as propriedades relacionadas serão excluídas",
     "DeleteMasterTag": "Excluir Tipo",
-    "DeleteMasterTagConfirm": "Tem certeza que deseja excluir este tipo? Todos os objetos relacionados a este tipo serão excluídos"
+    "DeleteMasterTagConfirm": "Tem certeza que deseja excluir este tipo? Todos os objetos relacionados a este tipo serão excluídos",
+    "UnsetParent": "Remover pai",
+    "SetParent": "Definir pai",
+    "CreateChild": "Criar filho",
+    "Children": "Filhos",
+    "Views": "Visualizações",
+    "CreateView": "Criar visualização",
+    "EditView": "Editar visualização",
+    "SelectViewType": "Selecionar tipo de visualização",
+    "Document": "Documento",
+    "ChangeType": "Alterar tipo"
   }
 }

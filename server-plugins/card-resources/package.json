@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/view": "^0.6.13",
+    "@hcengineering/setting": "^0.6.17",
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",

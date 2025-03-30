@@ -76,6 +76,7 @@
       {focus}
       {focusIndex}
       {editKind}
+      {attribute}
     />
   {/await}
 {/if}

@@ -16,29 +16,30 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import attachment, { Attachment } from '@hcengineering/attachment'
+  import { Attachments } from '@hcengineering/attachment-resources'
   import { Card, CardEvents } from '@hcengineering/card'
-  import { Doc, Mixin, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
+  import { Doc, Mixin, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
-  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Heading } from '@hcengineering/text-editor'
-  import { TableOfContents } from '@hcengineering/text-editor-resources'
-  import { Button, EditBox, FocusHandler, IconMoreH, createFocusManager, navigate } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { getResource } from '@hcengineering/platform'
+  import { ComponentExtensions, createQuery, getClient } from '@hcengineering/presentation'
   import {
-    ParentsNavigator,
-    RelationsEditor,
-    getDocMixins,
-    getObjectLinkFragment,
-    showMenu
-  } from '@hcengineering/view-resources'
+    Button,
+    EditBox,
+    FocusHandler,
+    IconMoreH,
+    createFocusManager,
+    getCurrentLocation,
+    navigate
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { ParentsNavigator, RelationsEditor, getDocMixins, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import card from '../plugin'
   import CardAttributeEditor from './CardAttributeEditor.svelte'
   import CardPresenter from './CardPresenter.svelte'
-  import ContentEditor from './ContentEditor.svelte'
+  import Childs from './Childs.svelte'
+  import Content from './Content.svelte'
   import TagsEditor from './TagsEditor.svelte'
 
   export let _id: Ref<Card>
@@ -61,16 +62,11 @@
   let title = ''
   let innerWidth: number
 
-  let headings: Heading[] = []
-
-  let loadedDocumentContent = false
-
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   $: read(_id)
   function read (_id: Ref<Doc>): void {
     if (lastId !== _id) {
-      loadedDocumentContent = false
       const prev = lastId
       lastId = _id
       void notificationClient.then((client) => client.readDoc(prev))
@@ -81,42 +77,16 @@
     void notificationClient.then((client) => client.readDoc(_id))
   })
 
-  async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
-    if (doc === undefined) {
-      return undefined
-    }
-
-    try {
-      const uploadFile = await getResource(attachment.helper.UploadFile)
-      const uuid = await uploadFile(file)
-      const attachmentId: Ref<Attachment> = generateId()
-
-      await client.addCollection(
-        attachment.class.Embedding,
-        doc.space,
-        doc._id,
-        doc._class,
-        'embeddings',
-        {
-          file: uuid,
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          lastModified: file.lastModified
-        },
-        attachmentId
-      )
-
-      return { file: uuid, type: file.type }
-    } catch (err: any) {
-      await setPlatformStatus(unknownError(err))
-    }
-  }
-
   $: _id !== undefined &&
     query.query(card.class.Card, { _id }, async (result) => {
-      ;[doc] = result
-      title = doc?.title ?? ''
+      if (result.length > 0) {
+        ;[doc] = result
+        title = doc?.title ?? ''
+      } else {
+        const loc = getCurrentLocation()
+        loc.path.length = 3
+        navigate(loc)
+      }
     })
 
   $: canSave = title.trim().length > 0
@@ -144,17 +114,10 @@
     localStorage.setItem('document.useMaxWidth', useMaxWidth.toString())
   }
 
-  let sideContentSpace = 0
-
-  function updateSizeContentSpace (width: number): void {
-    sideContentSpace = width
-  }
-
   onMount(() => {
     Analytics.handleEvent(CardEvents.CardOpened, { id: _id })
   })
 
-  let editor: ContentEditor
   let content: HTMLElement
 
   const manager = createFocusManager()
@@ -168,14 +131,12 @@
 
 {#if doc !== undefined}
   <Panel
-    withoutActivity={!loadedDocumentContent}
     object={doc}
     allowClose={!embedded}
     isAside={false}
     isHeader={false}
     isSub={false}
     bind:useMaxWidth
-    {sideContentSpace}
     printHeader={false}
     {embedded}
     adaptive={'default'}
@@ -192,69 +153,27 @@
 
     <div class="container">
       <div class="title flex-row-center">
-        <EditBox
-          focusIndex={1}
-          bind:value={title}
-          placeholder={card.string.Card}
-          on:blur={(evt) => saveTitle(evt)}
-          on:keydown={(evt) => {
-            if (evt.key === 'Enter' || evt.key === 'ArrowDown') {
-              editor.focus('start')
-            }
-          }}
-        />
+        <EditBox focusIndex={1} bind:value={title} placeholder={card.string.Card} on:blur={(evt) => saveTitle(evt)} />
       </div>
 
       <TagsEditor {doc} />
 
       <CardAttributeEditor value={doc} {mixins} {readonly} ignoreKeys={['title', 'content', 'parent']} />
 
-      <div class="content select-text mt-4">
-        <div class="toc-container">
-          <div class="toc">
-            <TableOfContents
-              items={headings}
-              on:select={(evt) => {
-                const heading = evt.detail
-                const element = window.document.getElementById(heading.id)
-                element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }}
-            />
-          </div>
-        </div>
-
-        {#key doc._id}
-          <ContentEditor
-            focusIndex={30}
-            object={doc}
-            {readonly}
-            boundary={content}
-            overflow={'none'}
-            editorAttributes={{ style: 'padding: 0 2em 2em; margin: 0 -2em; min-height: 30vh' }}
-            requestSideSpace={updateSizeContentSpace}
-            attachFile={async (file) => {
-              return await createEmbedding(file)
-            }}
-            on:headings={(evt) => {
-              headings = evt.detail
-            }}
-            on:open-document={async (event) => {
-              const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
-              if (doc != null) {
-                const location = await getObjectLinkFragment(client.getHierarchy(), doc, {}, view.component.EditDoc)
-                navigate(location)
-              }
-            }}
-            on:loaded={() => {
-              loadedDocumentContent = true
-            }}
-            bind:this={editor}
-          />
-        {/key}
-      </div>
+      <Content {doc} {readonly} bind:content />
     </div>
 
+    <ComponentExtensions
+      extension={card.extensions.EditCardExtension}
+      props={{
+        card: doc
+      }}
+    />
+
+    <Childs object={doc} {readonly} />
     <RelationsEditor object={doc} {readonly} />
+
+    <Attachments objectId={doc._id} _class={doc._class} space={doc.space} attachments={doc.attachments ?? 0} />
 
     <svelte:fragment slot="utils">
       {#if !readonly}
@@ -278,27 +197,6 @@
     flex-direction: column;
     width: 100%;
     margin: auto;
-  }
-
-  .toc-container {
-    position: absolute;
-    pointer-events: none;
-    inset: 0;
-    z-index: 1;
-  }
-
-  .toc {
-    width: 1rem;
-    pointer-events: all;
-    margin-left: -3rem;
-    position: sticky;
-    top: 0;
-  }
-
-  .content {
-    position: relative;
-    color: var(--content-color);
-    line-height: 150%;
   }
   .title {
     font-size: 2.25rem;

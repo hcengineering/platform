@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment, BlobMetadata, AttachmentsEvents } from '@hcengineering/attachment'
+  import attachment, { Attachment, AttachmentsEvents } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
-  import core, { Account, Doc, Ref, Space, generateId, type Blob } from '@hcengineering/core'
+  import core, { Account, BlobMetadata, Doc, Ref, Space, generateId, type Blob } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     FileOrBlob,
