@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Card, CardEvents, MasterTag } from '@hcengineering/card'
-  import { AnyAttribute, Class, Doc, fillDefaults, Ref } from '@hcengineering/core'
+  import { AnyAttribute, Class, ClassifierKind, Doc, fillDefaults, Ref } from '@hcengineering/core'
   import { Card as CardModal, createQuery, getClient } from '@hcengineering/presentation'
   import { DropdownIntlItem, NestedDropdown } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -96,6 +96,7 @@
       if (added.has(_id)) continue
       const _class = hierarchy.getClass(_id)
       if (_class.label === undefined) continue
+      if (_class.kind !== ClassifierKind.CLASS) continue
       added.add(_id)
       const descendants = hierarchy.getDescendants(_id)
       const toAdd: Class<Doc>[] = []
@@ -103,6 +104,7 @@
         if (added.has(desc)) continue
         const _class = hierarchy.getClass(desc)
         if (_class.label === undefined) continue
+        if (_class.kind !== ClassifierKind.CLASS) continue
         added.add(desc)
         toAdd.push(_class)
       }
