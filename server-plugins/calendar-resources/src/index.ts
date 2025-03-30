@@ -29,6 +29,7 @@ import core, {
   Tx,
   TxCreateDoc,
   TxCUD,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -145,10 +146,34 @@ async function OnEvent (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
       result.push(...(await onEventUpdate(ctx as TxUpdateDoc<Event>, control)))
     } else if (ctx._class === core.class.TxRemoveDoc) {
       result.push(...(await onRemoveEvent(ctx as TxRemoveDoc<Event>, control)))
+    } else if (ctx._class === core.class.TxMixin) {
+      result.push(...(await onEventMixin(ctx as TxMixin<Event, Event>, control)))
     }
   }
 
   return result
+}
+
+async function onEventMixin (ctx: TxMixin<Event, Event>, control: TriggerControl): Promise<Tx[]> {
+  const ops = ctx.attributes
+  const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: ctx.objectId }, { limit: 1 }))[0]
+  if (event === undefined) return []
+  if (event.access !== 'owner') return []
+  const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
+  const res: Tx[] = []
+  for (const ev of events) {
+    if (ev._id === event._id) continue
+    const innerTx = control.txFactory.createTxMixin(ev._id, ev._class, ev.space, ctx.mixin, { ...ops })
+    const outerTx = control.txFactory.createTxCollectionCUD(
+      ev.attachedToClass,
+      ev.attachedTo,
+      ev.space,
+      ev.collection,
+      innerTx
+    )
+    res.push(outerTx)
+  }
+  return res
 }
 
 async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl): Promise<Tx[]> {
