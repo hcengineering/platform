@@ -55,7 +55,8 @@
       {
         key: buildSocialIdString({ type: SocialIdType.EMAIL, value: mailbox }),
         type: SocialIdType.EMAIL,
-        value: mailbox
+        value: mailbox,
+        verifiedOn: Date.now()
       },
       socialId as any as Ref<SocialIdentity>
     )
