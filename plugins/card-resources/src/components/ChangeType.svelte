@@ -16,8 +16,8 @@
   import { Analytics } from '@hcengineering/analytics'
   import { Card, CardEvents, MasterTag } from '@hcengineering/card'
   import { AnyAttribute, Class, ClassifierKind, Doc, fillDefaults, Ref } from '@hcengineering/core'
-  import { Card as CardModal, createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, NestedDropdown } from '@hcengineering/ui'
+  import { Card as CardModal, getClient } from '@hcengineering/presentation'
+  import { DropdownIntlItem, Label, NestedDropdown } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { deepEqual } from 'fast-equals'
   import card from '../plugin'
@@ -53,13 +53,6 @@
     }
   }
 
-  let types: MasterTag[] = []
-
-  $: items = types.map((x) => ({
-    id: x._id,
-    label: x.label
-  }))
-
   function buildMapping (selected: Ref<MasterTag> | undefined, current: Ref<MasterTag>): Record<string, AnyAttribute> {
     if (selected === undefined || selected === current) return {}
     const selectedAttributes = hierarchy.getAllAttributes(selected, card.class.Card)
@@ -79,12 +72,6 @@
     }
     return res
   }
-
-  const clQuery = createQuery()
-
-  clQuery.query(card.class.MasterTag, { _class: card.class.MasterTag }, (res) => {
-    types = res
-  })
 
   const dispatch = createEventDispatcher()
 
@@ -138,6 +125,9 @@
   }}
   on:changeContent
 >
+  <div class="mb-2">
+    <Label label={card.string.ChangeTypeWarning} />
+  </div>
   <NestedDropdown
     items={classes}
     on:selected={(e) => {
