@@ -174,30 +174,33 @@
   }
 
   const dayRanges = {
-    Today: 1,
-    'Tree Days': 3,
-    Week: 7,
-    Month: 30,
-    'Two Months': 60,
-    'Tree Months': 90,
-    'Six Month': 182,
-    'Nine Months': 270,
-    Year: 365,
-    FewOrMoreYears: 10000000
+    Today: [-1, 1],
+    Week: [1, 7],
+    Weeks: [7, 30],
+    Month: [30, 90],
+    Months: [90, 180],
+    'Six Month': [180, 270],
+    'Nine Months': [270, 365],
+    Years: [365, 10000000]
   }
 
   let limit = 50
 
   $: groupped = groupByArray(sortedWorkspaces, (it) => {
     const lastUsageDays = Math.round((now - (it.lastVisit ?? 0)) / (1000 * 3600 * 24))
-    return Object.entries(dayRanges).find(([_k, v]) => lastUsageDays <= v)?.[0] ?? 'Other'
+    return Object.entries(dayRanges).find(([_k, v]) => v[0] < lastUsageDays && lastUsageDays < v[1])?.[0] ?? 'Other'
   })
 
   let regionInfo: RegionInfo[] = []
 
+  let regionTitles: Record<string, string> = {}
+
   let selectedRegionId: string = ''
   void getRegionInfo().then((_regionInfo) => {
     regionInfo = _regionInfo ?? []
+    regionTitles = Object.fromEntries(
+      regionInfo.map((it) => [it.region, it.name.length !== 0 ? it.name : it.region.length > 0 ? it.region : 'Default'])
+    )
     if (selectedRegionId === '' && regionInfo.length > 0) {
       selectedRegionId = regionInfo[0].region
     }
@@ -217,6 +220,11 @@
       return isActiveMode(it.mode) && lastUsed < 1
     }),
     (it) => versionToString({ major: it.versionMajor, minor: it.versionMinor, patch: it.versionPatch })
+  )
+
+  $: byRegion = groupByArray(
+    workspaces.filter((it) => isActiveMode(it.mode)),
+    (it) => regionTitles[it.region ?? '']
   )
 
   let superAdminMode = false
@@ -242,6 +250,13 @@
         {#each byVersion.entries() as [k, v]}
           <div class="p-1">
             {k}: {v.length}
+          </div>
+        {/each}
+      </div>
+      <div class="flex-row-center">
+        {#each byRegion.entries() as [k, v]}
+          <div class="p-1">
+            {k ?? ''}: {v.length}
           </div>
         {/each}
       </div>
@@ -313,6 +328,7 @@
             {@const archivedV = v.filter((it) => isArchivingMode(it.mode))}
             {@const deletedV = v.filter((it) => isDeletingMode(it.mode))}
             {@const maintenance = v.length - activeAll.length - archivedV.length - deletedV.length}
+            {@const grByRegion = groupByArray(v, (it) => regionTitles[it.region ?? ''])}
             {#if v.length > 0}
               <Expandable expandable={true} bordered={true} expanded={search.trim().length > 0}>
                 <svelte:fragment slot="title">
@@ -325,6 +341,13 @@
                     {/if}
                     {#if maintenance > 0}
                       - maitenance: {maintenance}
+                    {/if}
+                    {#if grByRegion.size > 1}
+                      {#each grByRegion.entries() as [k, v]}
+                        <div class="p-1">
+                          {k ?? ''}: {v.length}
+                        </div>
+                      {/each}
                     {/if}
                   </span>
                 </svelte:fragment>
