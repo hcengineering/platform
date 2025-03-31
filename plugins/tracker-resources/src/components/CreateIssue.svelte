@@ -47,7 +47,7 @@
     getClient,
     getMarkup
   } from '@hcengineering/presentation'
-  import tags, { TagElement, TagReference } from '@hcengineering/tags'
+  import tags, { TagReference, type TagElement } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
@@ -957,7 +957,7 @@
         addTagRef(evt.detail)
       }}
       on:delete={(evt) => {
-        object.labels = object.labels.filter((it) => it._id !== evt.detail)
+        object.labels = object.labels.filter((it) => it.tag !== evt.detail._id)
       }}
     />
     <ComponentSelector

@@ -89,6 +89,9 @@
     if (page === 'auth') {
       // token handled by auth page
       return
+    } else if (page === 'autoJoin') {
+      // there's a separate workflow for auto join
+      return
     }
 
     if (getMetadata(presentation.metadata.Token) == null) {

@@ -231,7 +231,7 @@ async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promi
       ...verified
     })
 
-    await createAccount(accountDB, personUuid, account.confirmed, account.createdOn)
+    await createAccount(accountDB, personUuid, account.confirmed, false, account.createdOn)
     if (account.hash != null && account.salt != null) {
       await accountDB.account.updateOne({ uuid: personUuid }, { hash: account.hash, salt: account.salt })
     }

@@ -154,6 +154,10 @@
       _class={tracker.class.Project}
       label={tracker.string.Project}
       bind:space={_space}
+      on:object={(evt) => {
+        currentProject = evt.detail ?? undefined
+      }}
+      readonly={true}
       kind={'regular'}
       size={'large'}
       component={ProjectPresenter}
@@ -225,7 +229,7 @@
         addTagRef(evt.detail)
       }}
       on:delete={(evt) => {
-        labels = labels.filter((it) => it._id !== evt.detail)
+        labels = labels.filter((it) => it._id !== evt.detail._id)
       }}
     />
     <EstimationEditor kind={'regular'} size={'large'} value={object} />

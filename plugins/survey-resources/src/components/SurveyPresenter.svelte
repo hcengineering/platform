@@ -35,7 +35,7 @@
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {accent} {noUnderline} {colorInherit} onClick={onEdit} />
+    <ObjectMention object={value} {disabled} onClick={onEdit} />
   {:else if type === 'link'}
     <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {colorInherit} {accent} noOverflow>
       <div class="flex-presenter" style:max-width={maxWidth}>

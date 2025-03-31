@@ -13,11 +13,20 @@
 // limitations under the License.
 //
 
-export class ApiError extends Error {
-  constructor (
-    readonly code: string,
-    readonly message: string
-  ) {
-    super(message)
+export function unwrapETag (etag: string): string {
+  if (etag.startsWith('W/')) {
+    etag = etag.substring(2)
   }
+
+  if (etag.startsWith('"') && etag.endsWith('"')) {
+    etag = etag.slice(1, -1)
+  }
+
+  return etag
+}
+
+export function wrapETag (etag: string, weak: boolean = false): string {
+  etag = unwrapETag(etag)
+  const quoted = etag.startsWith('"') ? etag : `"${etag}"`
+  return weak ? `W/${quoted}` : quoted
 }

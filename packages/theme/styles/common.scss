@@ -518,14 +518,28 @@
   }
 }
 
-.antiMention {
-  display: inline-flex;
+.antiMention, .antiMention:visited {
+  display: inline;
+  font-weight: normal;
   padding: 0 .25rem;
-  width: fit-content;
   color: var(--theme-link-color);
   background-color: var(--theme-mention-bg-color);
+  text-decoration: none;
   border-radius: .25rem;
   cursor: pointer;
+  user-select: text;
+
+  &:hover {
+    text-decoration: none !important;
+    background-color: var(--theme-mention-focused-bg-color);
+  }
+
+  > svg {
+    display: inline-block;
+    vertical-align: sub;
+    margin-bottom: 1px;
+    width: .875rem;
+  }
 }
 
 .antiDivider {

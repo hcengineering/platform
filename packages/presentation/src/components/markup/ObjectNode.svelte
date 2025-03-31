@@ -14,18 +14,22 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Component } from '@hcengineering/ui'
+  import { Component, Icon } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
-  import { createQuery } from '../../utils'
+  import { createQuery, getClient } from '../../utils'
 
   export let _id: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
   export let title: string = ''
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
   const docQuery = createQuery()
 
   let doc: Doc | undefined = undefined
+
+  $: icon = _class !== undefined ? hierarchy.getClass(_class).icon : null
 
   $: if (_class != null && _id != null) {
     docQuery.query(_class, { _id }, (r) => {
@@ -35,7 +39,9 @@
 </script>
 
 {#if !doc}
-  <span class="antiMention">@{title}</span>
+  <span class="antiMention">
+    {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{title}
+  </span>
 {:else}
   <Component
     is={view.component.ObjectMention}

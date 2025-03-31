@@ -74,7 +74,7 @@ export interface AccountClient {
   join: (email: string, password: string, inviteId: string) => Promise<WorkspaceLoginInfo>
   createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
-  checkAutoJoin: (inviteId: string, firstName: string, lastName?: string) => Promise<WorkspaceLoginInfo>
+  checkAutoJoin: (inviteId: string, firstName?: string, lastName?: string) => Promise<WorkspaceLoginInfo>
   getWorkspaceInfo: (updateLastVisit?: boolean) => Promise<WorkspaceInfoWithStatus>
   getWorkspacesInfo: (workspaces: WorkspaceUuid[]) => Promise<WorkspaceInfoWithStatus[]>
   getRegionInfo: () => Promise<RegionInfo[]>
@@ -377,7 +377,7 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async checkAutoJoin (inviteId: string, firstName: string, lastName?: string): Promise<WorkspaceLoginInfo> {
+  async checkAutoJoin (inviteId: string, firstName?: string, lastName?: string): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'checkAutoJoin' as const,
       params: { inviteId, firstName, lastName }

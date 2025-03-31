@@ -32,7 +32,7 @@
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {noUnderline} {accent} />
+    <ObjectMention object={value} {disabled} />
   {:else if type === 'link'}
     <DocNavLink object={value} {disabled} {noUnderline} {accent}>
       <div class="flex-presenter">

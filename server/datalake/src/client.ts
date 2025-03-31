@@ -19,6 +19,7 @@ import fetch, { type RequestInfo, type RequestInit, type Response } from 'node-f
 import { Readable } from 'stream'
 
 import { DatalakeError, NetworkError, NotFoundError } from './error'
+import { unwrapETag } from './utils'
 
 /** @public */
 export interface ObjectMetadata {
@@ -191,7 +192,7 @@ export class DatalakeClient {
       lastModified: isNaN(lastModified) ? 0 : lastModified,
       size: isNaN(size) ? 0 : size,
       type: headers.get('Content-Type') ?? '',
-      etag: headers.get('ETag') ?? ''
+      etag: unwrapETag(headers.get('ETag') ?? '')
     }
   }
 

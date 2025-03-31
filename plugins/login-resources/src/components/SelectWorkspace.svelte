@@ -135,7 +135,6 @@
   let search: string = ''
 </script>
 
-<!-- TODO: show some social login instead of account.account -->
 <form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="fs-title">

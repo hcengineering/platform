@@ -45,7 +45,7 @@ import TestPlanItemPresenter from './components/test-plan/TestPlanItemPresenter.
 import CreateTestRunButton from './components/test-run/CreateTestRunButton.svelte'
 import RunTestPlanButton from './components/test-plan/RunTestPlanButton.svelte'
 
-import { CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction } from './utils'
+import { CreateChildTestSuiteAction, EditTestSuiteAction, RunSelectedTestsAction, EditProjectAction } from './utils'
 import { resolveLocation, getAttachedObjectLink } from './navigation'
 
 export default async (): Promise<Resources> => ({
@@ -92,6 +92,7 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateChildTestSuite: CreateChildTestSuiteAction,
     EditTestSuite: EditTestSuiteAction,
-    RunSelectedTests: RunSelectedTestsAction
+    RunSelectedTests: RunSelectedTestsAction,
+    EditProject: EditProjectAction
   }
 })

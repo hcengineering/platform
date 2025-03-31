@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,16 +11,29 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { showPopup } from '../..'
+  import SettingsPopup from './SettingsPopup.svelte'
+  import Settings from './icons/Settings.svelte'
 
-import { NextFunction, Request, Response } from 'express'
+  let pressed: boolean = false
+  let btn: HTMLButtonElement
 
-export type RequestType = 'get' | 'post'
+  function showSettings (): void {
+    pressed = true
+    showPopup(SettingsPopup, {}, btn, () => {
+      pressed = false
+    })
+  }
+</script>
 
-export type RequestHandler = (req: Request, res: Response, next?: NextFunction) => Promise<void>
-
-export interface Endpoint {
-  endpoint: string
-  type: RequestType
-  handler: RequestHandler
-}
+<button
+  bind:this={btn}
+  class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
+  class:pressed
+  style:color={'var(--theme-dark-color)'}
+  on:click={showSettings}
+>
+  <Settings />
+</button>

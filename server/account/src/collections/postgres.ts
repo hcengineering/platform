@@ -643,7 +643,8 @@ export class PostgresAccountDB implements AccountDB {
       this.getV2Migration2(),
       this.getV2Migration3(),
       this.getV3Migration(),
-      this.getV4Migration()
+      this.getV4Migration(),
+      this.getV4Migration1()
     ]
   }
 
@@ -846,11 +847,14 @@ export class PostgresAccountDB implements AccountDB {
 
   private getV3Migration (): [string, string] {
     return [
-      'account_db_v3_add_invite_auto_join',
+      'account_db_v3_add_invite_auto_join_final',
       `
       ALTER TABLE ${this.ns}.invite
       ADD COLUMN IF NOT EXISTS email STRING,
       ADD COLUMN IF NOT EXISTS auto_join BOOL DEFAULT FALSE;
+
+      ALTER TABLE ${this.ns}.account
+      ADD COLUMN IF NOT EXISTS automatic BOOL;
       `
     ]
   }
@@ -872,6 +876,16 @@ export class PostgresAccountDB implements AccountDB {
           secret STRING NOT NULL,
           CONSTRAINT mailbox_secret_mailbox_fk FOREIGN KEY (mailbox) REFERENCES ${this.ns}.mailbox(mailbox)
       );
+      `
+    ]
+  }
+
+  private getV4Migration1 (): [string, string] {
+    return [
+      'account_db_v4_remove_mailbox_account_fk',
+      `
+      ALTER TABLE ${this.ns}.mailbox
+      DROP CONSTRAINT IF EXISTS mailbox_account_fk;
       `
     ]
   }

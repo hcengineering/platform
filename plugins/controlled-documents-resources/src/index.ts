@@ -114,7 +114,8 @@ import {
   getVisibleFilters,
   isFolder,
   renameFolder,
-  sortDocumentStates
+  sortDocumentStates,
+  getDocumentMetaTitle
 } from './utils'
 
 export { DocumentStatusTag, DocumentTitle, DocumentVersionPresenter, StatePresenter }
@@ -462,6 +463,7 @@ export default async (): Promise<Resources> => ({
     ControlledDocumentReferenceObjectProvider: controlledDocumentReferenceObjectProvider,
     ProjectDocumentReferenceObjectProvider: projectDocumentReferenceObjectProvider,
     ControlledDocumentTitleProvider: getControlledDocumentTitle,
+    DocumentMetaTitleProvider: getDocumentMetaTitle,
     Comment: comment,
     IsCommentVisible: isCommentVisible
   },

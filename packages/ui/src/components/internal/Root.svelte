@@ -4,14 +4,15 @@
   import type { AnyComponent, WidthType } from '../../types'
   import { deviceSizes, deviceWidths } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
-  import { Theme } from '@hcengineering/theme'
+  import { Theme, themeStore } from '@hcengineering/theme'
   import {
     IconArrowLeft,
     IconArrowRight,
     checkMobile,
     deviceOptionsStore as deviceInfo,
     checkAdaptiveMatching,
-    getLocalWeekStart
+    getLocalWeekStart,
+    updateEmojis
   } from '../../'
   import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
@@ -19,10 +20,8 @@
   import Label from '../Label.svelte'
   import StatusComponent from '../Status.svelte'
   import Clock from './Clock.svelte'
-  import FontSizeSelector from './FontSizeSelector.svelte'
-  import LangSelector from './LangSelector.svelte'
   import RootBarExtension from './RootBarExtension.svelte'
-  import ThemeSelector from './ThemeSelector.svelte'
+  import Settings from './Settings.svelte'
 
   let application: AnyComponent | undefined
 
@@ -89,8 +88,12 @@
   $: $deviceInfo.isMobile = isMobile
   $: $deviceInfo.minWidth = docWidth <= 480
   $: $deviceInfo.twoRows = docWidth <= 680
+  $: $deviceInfo.language = $themeStore.language
+  $: $deviceInfo.fontSize = $themeStore.fontSize
 
   $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
+
+  $: void updateEmojis($themeStore.language)
 
   let doubleTouchStartTimestamp = 0
   document.addEventListener('touchstart', (event) => {
@@ -155,7 +158,7 @@
 <Theme>
   <div id="ui-root" class:mobile-theme={isMobile}>
     <div class="antiStatusBar">
-      <div class="flex-row-center h-full content-color gap-3 pl-4">
+      <div class="flex-row-center h-full content-color gap-3 px-4">
         {#if desktopPlatform}
           <div class="history-box flex-row-center gap-3">
             <button
@@ -201,17 +204,13 @@
             <StatusComponent {status} />
           {/if}
         </div>
-        <div class="flex-row-reverse" style:-webkit-app-region={'no-drag'}>
-          <div class="clock">
-            <Clock />
-          </div>
+        <div class="flex-row-reverse flex-gap-2" style:-webkit-app-region={'no-drag'}>
+          <Settings />
+          <Clock />
           <div class="flex-row-center gap-statusbar">
             {#if !secondRow}
               <RootBarExtension position="right" />
             {/if}
-            <FontSizeSelector />
-            <ThemeSelector />
-            <LangSelector />
           </div>
         </div>
       </div>
@@ -281,9 +280,6 @@
         font-weight: 500;
         font-size: 14px;
         color: var(--theme-content-color);
-      }
-      .clock {
-        margin: 0 12px 0 8px;
       }
 
       .second-row {

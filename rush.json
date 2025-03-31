@@ -2389,11 +2389,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-hook",
-      "projectFolder": "services/hook/pod-hook",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/pod-msg2file",
       "projectFolder": "services/msg2file",
       "shouldPublish": false
@@ -2456,6 +2451,11 @@
     {
       "packageName": "@hcengineering/model-inbox",
       "projectFolder": "models/inbox",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-inbound-mail",
+      "projectFolder": "services/mail/pod-inbound-mail",
       "shouldPublish": false
     }
   ]

@@ -189,6 +189,11 @@ jobs:
           path: ${{ env.CacheFolders}}
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Prepare server
         run: |
@@ -231,6 +236,12 @@ jobs:
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
@@ -354,6 +365,12 @@ jobs:
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -425,6 +442,11 @@ jobs:
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -499,6 +521,11 @@ jobs:
       - name: Build sanity-tests suite
         run: node common/scripts/install-run-rush.js build -t @hcengineering/tests-sanity
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -597,6 +624,12 @@ jobs:
 
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Docker build
         run: node common/scripts/install-run-rush.js docker:build -v

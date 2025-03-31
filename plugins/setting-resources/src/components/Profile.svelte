@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { combineName, getCurrentEmployee, getFirstName, getLastName } from '@hcengineering/contact'
-  import { ChannelsEditor, EditableAvatar, personByIdStore, mySocialIdsStore } from '@hcengineering/contact-resources'
+  import { ChannelsEditor, EditableAvatar, personByIdStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -36,11 +36,11 @@
   const client = getClient()
   const account = getCurrentAccount()
   const me = getCurrentEmployee()
+  const employee = $personByIdStore.get(me)
+  const email = account.fullSocialIds.find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
 
-  $: employee = $personByIdStore.get(me)
-  $: firstName = employee !== undefined ? getFirstName(employee.name) : ''
-  $: lastName = employee !== undefined ? getLastName(employee.name) : ''
-  $: email = $mySocialIdsStore.find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
+  let firstName = employee !== undefined ? getFirstName(employee.name) : ''
+  let lastName = employee !== undefined ? getLastName(employee.name) : ''
 
   let avatarEditor: EditableAvatar
   async function onAvatarDone (e: any): Promise<void> {

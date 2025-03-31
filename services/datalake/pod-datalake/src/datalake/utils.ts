@@ -13,10 +13,27 @@
 // limitations under the License.
 //
 
-import { main } from './main'
-
-void main().catch((err) => {
-  if (err != null) {
-    console.error(err)
+export function unwrapETag (etag: string): string {
+  // Remove weak validator prefix 'W/'
+  if (etag.startsWith('W/')) {
+    etag = etag.substring(2)
   }
-})
+
+  // Remove surrounding quotes
+  if (etag.startsWith('"') && etag.endsWith('"')) {
+    etag = etag.slice(1, -1)
+  }
+
+  return etag
+}
+
+export function wrapETag (etag: string, weak: boolean = false): string {
+  // Remove any existing wrapping first to ensure clean wrap
+  etag = unwrapETag(etag)
+
+  // Add quotes if not present
+  const quoted = etag.startsWith('"') ? etag : `"${etag}"`
+
+  // Add weak prefix if requested
+  return weak ? `W/${quoted}` : quoted
+}

@@ -1302,7 +1302,7 @@ describe('account utils', () => {
         personUuid,
         verifiedOn: undefined
       })
-      expect(mockDb.account.insertOne).toHaveBeenCalledWith({ uuid: personUuid })
+      expect(mockDb.account.insertOne).toHaveBeenCalledWith({ uuid: personUuid, automatic: false })
       expect(mockDb.setPassword).toHaveBeenCalledWith(personUuid, expect.any(Buffer), expect.any(Buffer))
     })
 
@@ -1326,7 +1326,7 @@ describe('account utils', () => {
 
       expect(result.account).toBe(personUuid)
       expect(mockDb.person.updateOne).toHaveBeenCalledWith({ uuid: personUuid }, { firstName, lastName })
-      expect(mockDb.account.insertOne).toHaveBeenCalledWith({ uuid: personUuid })
+      expect(mockDb.account.insertOne).toHaveBeenCalledWith({ uuid: personUuid, automatic: false })
       expect(mockDb.setPassword).toHaveBeenCalledWith(personUuid, expect.any(Buffer), expect.any(Buffer))
     })
 

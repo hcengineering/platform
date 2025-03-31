@@ -272,5 +272,5 @@ export function listen (e: Express, port: number, host?: string): Server {
 }
 
 function getConvertId (file: string, etag: string): string {
-  return `${file}@${etag}`
+  return `${file}@${etag.replaceAll('"', '')}`
 }

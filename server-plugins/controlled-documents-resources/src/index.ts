@@ -6,7 +6,6 @@ import core, {
   AccountRole,
   combineAttributes,
   DocumentQuery,
-  includesAny,
   PersonId,
   Ref,
   SortingOrder,
@@ -21,7 +20,7 @@ import core, {
   systemAccountUuid
 } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
-import { getEmployees, getSocialStrings, getSocialStringsByPersons } from '@hcengineering/server-contact'
+import { getEmployees, getSocialStrings } from '@hcengineering/server-contact'
 import { TriggerControl } from '@hcengineering/server-core'
 
 import documents, {
@@ -391,7 +390,7 @@ export async function documentTextPresenter (doc: ControlledDocument): Promise<s
 async function CoAuthorsTypeMatch (
   originTx: TxCUD<ControlledDocument>,
   _doc: Doc,
-  person: Person,
+  person: Ref<Person>,
   socialIds: PersonId[],
   _type: NotificationType,
   control: TriggerControl
@@ -402,15 +401,13 @@ async function CoAuthorsTypeMatch (
     const employees = Array.isArray(tx.operations.coAuthors)
       ? tx.operations.coAuthors ?? []
       : (combineAttributes([tx.operations], 'coAuthors', '$push', '$each') as Ref<Employee>[])
-    const employeeSocialStrings = Object.values(await getSocialStringsByPersons(control, employees)).flat()
 
-    return includesAny(socialIds, employeeSocialStrings)
+    return employees.some((it) => it === person)
   } else if (originTx._class === core.class.TxCreateDoc) {
     const tx = originTx as TxCreateDoc<ControlledDocument>
     const employees = tx.attributes.coAuthors
-    const employeeSocialStrings = Object.values(await getSocialStringsByPersons(control, employees)).flat()
 
-    return includesAny(socialIds, employeeSocialStrings)
+    return employees.some((it) => it === person)
   }
 
   return false

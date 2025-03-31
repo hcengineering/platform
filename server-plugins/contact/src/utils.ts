@@ -202,6 +202,16 @@ export async function getPrimarySocialIdsByAccounts (
 }
 
 export async function getAccountBySocialId (control: TriggerControl, socialId: PersonId): Promise<AccountUuid | null> {
+  const contextAccount = control.ctx.contextData.socialStringsToUsers.get(socialId)
+  if (contextAccount != null) {
+    return contextAccount
+  }
+
+  const controlAccount = control.ctx.contextData.account
+  if (controlAccount.socialIds.includes(socialId)) {
+    return controlAccount.uuid
+  }
+
   const socialIdentity = await control.findAll(
     control.ctx,
     contact.class.SocialIdentity,

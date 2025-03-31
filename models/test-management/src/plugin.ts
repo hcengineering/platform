@@ -24,7 +24,8 @@ export default mergeIds(testManagementId, testManganement, {
   category: {
     TestSuite: '' as Ref<ActionCategory>,
     TestCase: '' as Ref<ActionCategory>,
-    TestResult: '' as Ref<ActionCategory>
+    TestResult: '' as Ref<ActionCategory>,
+    TestProject: '' as Ref<ActionCategory>
   },
   component: {
     CreateTestCase: '' as AnyComponent,

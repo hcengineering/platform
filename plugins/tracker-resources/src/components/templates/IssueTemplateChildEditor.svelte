@@ -201,7 +201,7 @@
           addTagRef(evt.detail)
         }}
         on:delete={(evt) => {
-          labels = labels.filter((it) => it._id !== evt.detail)
+          labels = labels.filter((it) => it._id !== evt.detail._id)
         }}
       />
     </div>

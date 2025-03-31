@@ -50,6 +50,7 @@ export interface SocialId extends SocialIdBase {
 
 export interface Account {
   uuid: PersonUuid
+  automatic?: boolean
   timezone?: string
   locale?: string
   hash?: Buffer | null
@@ -270,6 +271,7 @@ export interface RegionInfo {
 export interface WorkspaceInviteInfo {
   workspace: WorkspaceUuid
   email?: string
+  name?: string
 }
 
 export interface MailboxOptions {

@@ -14,56 +14,60 @@
 //
 
 import cors from 'cors'
-import express, { Express, NextFunction, Request, Response } from 'express'
-import { Server } from 'http'
+import express, { NextFunction, Request, Response } from 'express'
+import { handleMtaHook } from './handlerMta'
+import config from './config'
 
-import { Endpoint, RequestHandler } from './types'
-import { ApiError } from './error'
+type RequestHandler = (req: Request, res: Response, next?: NextFunction) => Promise<void>
 
 const catchError = (fn: RequestHandler) => (req: Request, res: Response, next: NextFunction) => {
   void (async () => {
     try {
       await fn(req, res, next)
     } catch (err: unknown) {
+      console.error(req.method, req.path, err)
       next(err)
     }
   })()
 }
 
-export function createServer (endpoints: Endpoint[]): Express {
+async function main (): Promise<void> {
   const app = express()
 
   app.use(cors())
   app.use(express.json())
 
-  endpoints.forEach((endpoint) => {
-    if (endpoint.type === 'get') {
-      app.get(endpoint.endpoint, catchError(endpoint.handler))
-    } else if (endpoint.type === 'post') {
-      app.post(endpoint.endpoint, catchError(endpoint.handler))
-    }
-  })
+  app.post('/mta-hook', catchError(handleMtaHook))
 
   app.use((_req, res, _next) => {
     res.status(404).send({ message: 'Not found' })
   })
 
   app.use((err: any, _req: any, res: any, _next: any) => {
-    if (err instanceof ApiError) {
-      res.status(400).send({ code: err.code, message: err.message })
-      return
-    }
-
     res.status(500).send({ message: err.message })
   })
 
-  return app
-}
+  const server = app.listen(config.port, () => {
+    console.log(`server started on port ${config.port}`)
+    console.log({ ...config, secret: '(stripped)' })
+  })
 
-export function listen (e: Express, port: number, host?: string): Server {
-  const cb = (): void => {
-    console.log(`Hook service has been started at ${host ?? '*'}:${port}`)
+  const shutdown = (): void => {
+    server.close(() => {
+      process.exit()
+    })
   }
 
-  return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
+  process.on('SIGINT', shutdown)
+  process.on('SIGTERM', shutdown)
+  process.on('uncaughtException', (e) => {
+    console.error(e)
+  })
+  process.on('unhandledRejection', (e) => {
+    console.error(e)
+  })
 }
+
+void main().catch((err) => {
+  console.error(err)
+})

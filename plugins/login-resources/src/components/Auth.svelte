@@ -3,9 +3,22 @@
   import { logIn } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
 
-  import { afterConfirm, getLoginInfoFromQuery, goTo, isWorkspaceLoginInfo, navigateToWorkspace } from '../utils'
+  import {
+    afterConfirm,
+    getLoginInfoFromQuery,
+    getAutoJoinInfo,
+    goTo,
+    isWorkspaceLoginInfo,
+    navigateToWorkspace
+  } from '../utils'
 
   onMount(async () => {
+    const autoJoinInfo = getAutoJoinInfo()
+    if (autoJoinInfo != null) {
+      goTo('autoJoin')
+      return
+    }
+
     const result = await getLoginInfoFromQuery()
 
     if (result != null) {

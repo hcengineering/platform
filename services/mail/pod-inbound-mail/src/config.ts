@@ -16,26 +16,25 @@ import { config as dotenvConfig } from 'dotenv'
 
 dotenvConfig()
 
-export interface Config {
+interface Config {
   port: number
+  secret: string
+  accountsUrl: string
+  workspaceUrl: string
+  ignoredAddresses: string[]
 }
 
-const envMap = {
-  Port: 'PORT'
+const config: Config = {
+  port: parseInt(process.env.PORT ?? '4050'),
+  secret: process.env.SECRET ?? 'secret',
+  accountsUrl: process.env.ACCOUNTS_URL ?? 'http://localhost:3000',
+  workspaceUrl: (() => {
+    if (process.env.WORKSPACE_URL !== undefined) {
+      return process.env.WORKSPACE_URL
+    }
+    throw Error('WORKSPACE_URL env var is not set')
+  })(),
+  ignoredAddresses: process.env.IGNORED_ADDRESSES?.split(',') ?? []
 }
-
-const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
-
-const config: Config = (() => {
-  const port = parseNumber(process.env[envMap.Port])
-  if (port === undefined) {
-    throw Error('Missing env variable: Port')
-  }
-  const params: Config = {
-    port
-  }
-
-  return params
-})()
 
 export default config

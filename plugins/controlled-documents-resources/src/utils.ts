@@ -716,6 +716,18 @@ export async function documentIdentifierProvider (client: Client, ref: Ref<Docum
   return document.code
 }
 
+export async function getDocumentMetaTitle (
+  client: Client,
+  ref: Ref<DocumentMeta>,
+  doc?: DocumentMeta
+): Promise<string> {
+  const object = doc ?? (await client.findOne(documents.class.DocumentMeta, { _id: ref }))
+
+  if (object === undefined) return ''
+
+  return object.title
+}
+
 export async function controlledDocumentReferenceObjectProvider (
   client: Client,
   ref: Ref<ControlledDocument>,
