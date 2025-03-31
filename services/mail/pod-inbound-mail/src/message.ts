@@ -62,7 +62,15 @@ export async function createMessages (
     return
   }
   try {
-    await ensureLocalPerson(client, mailId, fromPerson.uuid, fromPerson.socialId, from.address, fromPerson.firstName, fromPerson.lastName)
+    await ensureLocalPerson(
+      client,
+      mailId,
+      fromPerson.uuid,
+      fromPerson.socialId,
+      from.address,
+      fromPerson.firstName,
+      fromPerson.lastName
+    )
   } catch (err) {
     console.error(`[${mailId}] Failed to ensure local FROM person`, err)
     console.error(`[${mailId}] Unable to create message without a proper FROM`)
@@ -76,7 +84,15 @@ export async function createMessages (
       continue
     }
     try {
-      await ensureLocalPerson(client, mailId, toPerson.uuid, toPerson.socialId, to.address, toPerson.firstName, toPerson.lastName)
+      await ensureLocalPerson(
+        client,
+        mailId,
+        toPerson.uuid,
+        toPerson.socialId,
+        to.address,
+        toPerson.firstName,
+        toPerson.lastName
+      )
     } catch (err) {
       console.error(`[${mailId}] Failed to ensure local TO person, skip`, err)
       continue

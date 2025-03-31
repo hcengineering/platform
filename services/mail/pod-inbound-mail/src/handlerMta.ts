@@ -18,7 +18,6 @@ import { Request, Response } from 'express'
 import { htmlToMarkup } from '@hcengineering/text-html'
 import { createMessages } from './message'
 import config from './config'
-import { th } from 'date-fns/locale'
 
 interface MtaMessage {
   envelope: {
@@ -145,9 +144,7 @@ function decodeMimeWord (text: string): string {
         // Quoted-printable encoding
         const decoded = content
           .replace(/_/g, ' ')
-          .replace(/=([0-9A-F]{2})/gi, (_: any, hex: string) =>
-            String.fromCharCode(parseInt(hex, 16))
-          )
+          .replace(/=([0-9A-F]{2})/gi, (_: any, hex: string) => String.fromCharCode(parseInt(hex, 16)))
         return Buffer.from(decoded).toString(charset as BufferEncoding)
       }
       return match

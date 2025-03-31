@@ -2060,7 +2060,12 @@ async function createMailbox (
 
   await db.mailbox.insertOne({ accountUuid: account, mailbox })
   await db.mailboxSecret.insertOne({ mailbox, secret: generatePassword() })
-  const socialId: PersonId = await db.socialId.insertOne({ personUuid: account, type: SocialIdType.EMAIL, value: mailbox, verifiedOn: Date.now() })
+  const socialId: PersonId = await db.socialId.insertOne({
+    personUuid: account,
+    type: SocialIdType.EMAIL,
+    value: mailbox,
+    verifiedOn: Date.now()
+  })
   ctx.info('Mailbox created', { mailbox, account, socialId })
   return { mailbox, socialId }
 }

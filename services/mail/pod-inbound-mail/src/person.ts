@@ -12,7 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { buildSocialIdString, generateId, PersonId, PersonUuid, Ref, SocialIdType, TxOperations } from '@hcengineering/core'
+import {
+  buildSocialIdString,
+  generateId,
+  PersonId,
+  PersonUuid,
+  Ref,
+  SocialIdType,
+  TxOperations
+} from '@hcengineering/core'
 import contact, { AvatarType, combineName, SocialIdentity } from '@hcengineering/contact'
 import { AccountClient } from '@hcengineering/account-client'
 
