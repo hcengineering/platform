@@ -29,6 +29,7 @@
     "EditView": "Edit View",
     "SelectViewType": "Select View Type",
     "Document": "Document",
-    "ChangeType": "Change type"
+    "ChangeType": "Change type",
+    "ChangeTypeWarning": "Warning: Changing the Type of a Card will remove all data for any attributes that do not exist on the target Type. Previous attribute data can be restored by changing the Card back to a previous Type. Card content will not be affected."
   }
 }
