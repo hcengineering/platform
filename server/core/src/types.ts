@@ -52,6 +52,7 @@ import { type Readable } from 'stream'
 import type { DbAdapter, DomainHelper } from './adapter'
 import type { StatisticsElement } from './stats'
 import { type StorageAdapter } from './storage'
+import { type PlatformQueue } from './queue'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   domain?: Domain // Allow to find for Doc's in specified domain only.
@@ -179,6 +180,7 @@ export interface PipelineContext {
   serviceAdapterManager?: ServiceAdaptersManager
   lowLevelStorage?: LowLevelStorage
   liveQuery?: LiveQuery
+  queue?: PlatformQueue
 
   // Entry point for derived data procvessing
   derived?: Middleware
@@ -245,6 +247,7 @@ export interface TriggerControl {
   lowLevel: LowLevelStorage
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
+  queue?: PlatformQueue
 
   // Cache per workspace
   cache: Map<string, any>

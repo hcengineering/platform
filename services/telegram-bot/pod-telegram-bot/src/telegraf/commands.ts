@@ -21,6 +21,7 @@ import { Context, Telegraf } from 'telegraf'
 import config from '../config'
 import { PlatformWorker } from '../worker'
 import { TgContext } from './types'
+import { getAccountPerson } from '../account'
 
 export enum Command {
   Start = 'start',
@@ -68,22 +69,25 @@ export async function getCommandsHelp (lang: string): Promise<string> {
 async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
   const id = ctx.from?.id
   const lang = ctx.from?.language_code ?? 'en'
-  const record = id !== undefined ? await worker.getUserRecord(id) : undefined
+  const record = id !== undefined ? await worker.getUserByTgId(id) : undefined
 
   const commandsHelp = await getCommandsHelp(lang)
   const welcomeMessage = await translate(telegram.string.WelcomeMessage, { app: config.App }, lang)
 
   if (record !== undefined) {
+    const person = await getAccountPerson(record.account)
+    if (person === undefined) return
     const connectedMessage = await translate(
       telegram.string.ConnectedDescriptionHtml,
-      { email: record.email, app: config.App },
+      { name: `${person.firstName} ${person.lastName}`, app: config.App },
       lang
     )
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectedMessage
 
     await ctx.replyWithHTML(message)
-    if (record.telegramUsername !== ctx.from?.username) {
-      await worker.updateTelegramUsername(record, ctx.from?.username)
+    const username = ctx.from?.username
+    if (record.telegramUsername !== username && username !== undefined) {
+      await worker.updateTelegramUsername(record.account, record.telegramId, username)
     }
   } else {
     const minutes = Math.round(config.OtpTimeToLiveSec / 60)
@@ -117,14 +121,14 @@ async function onSyncChannels (ctx: Context, worker: PlatformWorker, onlyStarred
     return
   }
 
-  const record = await worker.getUserRecord(id)
+  const record = await worker.getUserByTgId(id)
 
   if (record === undefined) return
 
   const workspaces = record.workspaces
 
   for (const workspace of workspaces) {
-    await worker.syncChannels(record.email, workspace, onlyStarred)
+    await worker.syncChannels(record.account, workspace, onlyStarred)
   }
 
   await ctx.reply('List of channels updated')
@@ -138,12 +142,14 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
     return
   }
 
-  const account = await worker.getUserRecord(id)
+  const userRecord = await worker.getUserByTgId(id)
 
-  if (account !== undefined) {
+  if (userRecord !== undefined) {
+    const person = await getAccountPerson(userRecord.account)
+    if (person === undefined) return
     const reply = await translate(
       telegram.string.AccountAlreadyConnectedHtml,
-      { email: account.email, app: config.App },
+      { name: `${person.firstName} ${person.lastName}`, app: config.App },
       lang
     )
     await ctx.replyWithHTML(reply)

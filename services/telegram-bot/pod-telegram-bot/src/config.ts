@@ -14,20 +14,23 @@
 //
 
 export interface Config {
-  Port: number
-  BotToken: string
-  MongoURL: string
-  MongoDB: string
-  ServiceId: string
-  Secret: string
-  Domain: string
-  BotPort: number
-  App: string
-  OtpTimeToLiveSec: number
-  OtpRetryDelaySec: number
-  AccountsUrl: string
-  SentryDSN: string
   AccountsURL: string
+  AccountsUrl: string
+  App: string
+  BotPort: number
+  BotToken: string
+  DbUrl: string
+  Domain: string
+  MongoDB: string
+  MongoURL: string
+  OtpRetryDelaySec: number
+  OtpTimeToLiveSec: number
+  Port: number
+  QueueConfig: string
+  QueueRegion: string
+  Secret: string
+  SentryDSN: string
+  ServiceId: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -36,10 +39,11 @@ const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4020,
     BotToken: process.env.BOT_TOKEN,
-    MongoURL: process.env.MONGO_URL,
-    MongoDB: process.env.MONGO_DB,
+    // TODO: remove mongo
+    MongoURL: process.env.MONGO_URL ?? '',
+    MongoDB: process.env.MONGO_DB ?? '',
     AccountsUrl: process.env.ACCOUNTS_URL,
-    ServiceId: process.env.SERVICE_ID,
+    ServiceId: process.env.SERVICE_ID ?? 'telegram-bot',
     Secret: process.env.SECRET,
     Domain: process.env.DOMAIN ?? '',
     BotPort: parseNumber(process.env.BOT_PORT) ?? 8443,
@@ -48,7 +52,10 @@ const config: Config = (() => {
     OtpTimeToLiveSec: parseNumber(process.env.OTP_TIME_TO_LIVE_SEC) ?? 5 * 60,
     OtpRetryDelaySec: parseNumber(process.env.OTP_RETRY_DELAY_SEC) ?? 60,
     SentryDSN: process.env.SENTRY_DSN ?? '',
-    AccountsURL: process.env.ACCOUNTS_URL
+    AccountsURL: process.env.ACCOUNTS_URL,
+    DbUrl: process.env.DB_URL,
+    QueueRegion: process.env.QUEUE_REGION,
+    QueueConfig: process.env.QUEUE_CONFIG
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

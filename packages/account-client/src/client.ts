@@ -126,6 +126,13 @@ export interface AccountClient {
     firstName: string,
     lastName: string
   ) => Promise<{ uuid: PersonUuid, socialId: PersonId }>
+  createSocialId: (
+    personUuid: PersonUuid,
+    type: SocialIdType,
+    value: string,
+    displayValue?: string,
+    verified?: boolean
+  ) => Promise<{ uuid: PersonUuid, socialId: PersonId }>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -641,6 +648,20 @@ class AccountClientImpl implements AccountClient {
       params: { socialType, socialValue, firstName, lastName }
     }
 
+    return await this.rpc(request)
+  }
+
+  async createSocialId (
+    personUuid: PersonUuid,
+    type: SocialIdType,
+    value: string,
+    displayValue?: string,
+    verified?: boolean
+  ): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
+    const request = {
+      method: 'createSocialId' as const,
+      params: { personUuid, type, value, displayValue, verified }
+    }
     return await this.rpc(request)
   }
 

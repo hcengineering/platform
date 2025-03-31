@@ -152,6 +152,7 @@ export function createServerPipeline (
       branding,
       modelDb,
       hierarchy,
+      queue: opt.queue,
       storageAdapter: opt.externalStorage,
       contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars
     }

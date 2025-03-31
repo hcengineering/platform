@@ -15,24 +15,26 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { MeasureMetricsContext, WorkspaceUuid, newMetrics } from '@hcengineering/core'
 import { setMetadata, translate } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
-import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { initStatisticsContext, QueueTopic } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
-import telegram from '@hcengineering/telegram'
 import { join } from 'path'
-import { Telegraf } from 'telegraf'
+import { getPlatformQueue } from '@hcengineering/kafka'
+import { TelegramQueueMessage, TelegramQueueMessageType } from '@hcengineering/server-telegram'
+import telegram from '@hcengineering/telegram'
 
 import config from './config'
-import { Limiter } from './limiter'
 import { registerLoaders } from './loaders'
 import { createServer, listen } from './server'
 import { setUpBot } from './telegraf/bot'
-import { Command } from './telegraf/commands'
-import { TgContext } from './telegraf/types'
 import { PlatformWorker } from './worker'
+import { Telegraf } from 'telegraf'
+import { TgContext } from './telegraf/types'
+import { Limiter } from './limiter'
+import { MongoDb } from './mongoDb'
+import { Command } from './telegraf/commands'
 
 const ctx = initStatisticsContext('telegram-bot', {
   factory: () =>
@@ -51,15 +53,16 @@ const ctx = initStatisticsContext('telegram-bot', {
 configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'telegram-bot-service')
 
-export async function requestReconnect (
-  bot: Telegraf<TgContext>,
-  worker: PlatformWorker,
-  limiter: Limiter
-): Promise<void> {
-  const toReconnect = await worker.getUsersToDisconnect()
+export async function requestReconnect (bot: Telegraf<TgContext>, limiter: Limiter): Promise<void> {
+  if (config.MongoDB === '' || config.MongoURL === '') {
+    return
+  }
+
+  const mongoDb = await MongoDb.create()
+  const toReconnect = await mongoDb.getAllUsers()
 
   if (toReconnect.length > 0) {
-    ctx.info('Disconnecting users', { users: toReconnect.map((it) => it.email) })
+    ctx.info('Disconnecting users', { users: toReconnect.map((it) => [it.telegramUsername, it.email]) })
     const message = await translate(telegram.string.DisconnectMessage, { app: config.App, command: Command.Connect })
     for (const userRecord of toReconnect) {
       try {
@@ -67,10 +70,11 @@ export async function requestReconnect (
           await bot.telegram.sendMessage(userRecord.telegramId, message)
         })
       } catch (e) {
-        ctx.error('Failed to send message', { user: userRecord.email, error: e })
+        ctx.error('Failed to send message', { email: userRecord.email, tg: userRecord.telegramUsername, error: e })
       }
     }
-    await worker.disconnectUsers()
+    await mongoDb.removeAllUsers()
+    await mongoDb.close()
   }
 }
 
@@ -80,13 +84,11 @@ export const start = async (): Promise<void> => {
   setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()
 
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig)
-
-  const worker = await PlatformWorker.create(ctx, storageAdapter)
+  const worker = await PlatformWorker.create(ctx)
   const bot = await setUpBot(worker)
-  const limiter = new Limiter()
-  const app = createServer(bot, worker, ctx, limiter)
+
+  const app = createServer(bot, worker, ctx)
+  const queue = getPlatformQueue('telegramBotService', config.QueueRegion)
 
   if (config.Domain === '') {
     ctx.info('Starting bot with polling')
@@ -108,11 +110,35 @@ export const start = async (): Promise<void> => {
     res.status(200).send()
   })
 
-  await requestReconnect(bot, worker, limiter)
+  await requestReconnect(bot, worker.limiter)
   const server = listen(app, ctx, config.Port)
 
+  const consumer = queue.createConsumer<TelegramQueueMessage>(
+    ctx,
+    QueueTopic.TelegramBot,
+    queue.getClientId(),
+    async (msg) => {
+      for (const m of msg) {
+        const id = m.id as WorkspaceUuid
+        const records = m.value
+        for (const record of records) {
+          switch (record.type) {
+            case TelegramQueueMessageType.Notification:
+              await worker.processNotification(id, record, bot)
+              break
+            case TelegramQueueMessageType.WorkspaceSubscription:
+              await worker.processWorkspaceSubscription(id, record)
+              break
+          }
+        }
+      }
+    }
+  )
+
   const onClose = (): void => {
-    server.close(() => process.exit())
+    void Promise.all([consumer.close(), worker.close(), server.close()]).then(() => {
+      process.exit()
+    })
   }
 
   process.once('SIGINT', () => {

@@ -80,4 +80,11 @@ export function createModel (builder: Builder): void {
       objectClass: notification.class.InboxNotification
     }
   })
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTelegram.trigger.ProviderSettingsHandler,
+    isAsync: true,
+    txMatch: {
+      objectClass: notification.class.NotificationProviderSetting
+    }
+  })
 }

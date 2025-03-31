@@ -644,7 +644,8 @@ export class PostgresAccountDB implements AccountDB {
       this.getV2Migration3(),
       this.getV3Migration(),
       this.getV4Migration(),
-      this.getV4Migration1()
+      this.getV4Migration1(),
+      this.getV5Migration1()
     ]
   }
 
@@ -886,6 +887,16 @@ export class PostgresAccountDB implements AccountDB {
       `
       ALTER TABLE ${this.ns}.mailbox
       DROP CONSTRAINT IF EXISTS mailbox_account_fk;
+      `
+    ]
+  }
+
+  private getV5Migration1 (): [string, string] {
+    return [
+      'social_id_db_v5_add_display_value',
+      `
+      ALTER TABLE ${this.ns}.social_id
+      ADD COLUMN IF NOT EXISTS display_value TEXT;
       `
     ]
   }

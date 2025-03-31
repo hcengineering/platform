@@ -4636,7 +4636,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-telegram-bot@file:projects/pod-telegram-bot.tgz':
-    resolution: {integrity: sha512-QcNX6QCVKgZ6cV4ZkPBzdPH0Nu1F1sQ7yIMYQ4ikoR/BWWBB2U4E/YWd10I3c34QV3DUbKo3CID8EtkzrXadYQ==, tarball: file:projects/pod-telegram-bot.tgz}
+    resolution: {integrity: sha512-j08OCWsLAcBq3aElbkz0CbG2Ib0/CgHHHimwLZ7zpU7Php3ddqkAgaZFKoghv+zag8aSXG/eH34AMSSnraZ5HQ==, tarball: file:projects/pod-telegram-bot.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-telegram@file:projects/pod-telegram.tgz':
@@ -5036,11 +5036,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-telegram-resources@file:projects/server-telegram-resources.tgz':
-    resolution: {integrity: sha512-VsEVxoPM/hyelQa9/rQFzo+vbS8ixxU4RvVWdM0ae9HJuaEyszX4y9GheG/SDMa0NzCtyOOLf9KqL3ohGpkWRg==, tarball: file:projects/server-telegram-resources.tgz}
+    resolution: {integrity: sha512-sMiJ2rj5FQC6jNLypYdwCgUSj96/pz96QESWwmn0UoTVbg/SBKgFTZgF4CTUHmnr0ZE2vioiEkSZnsEiNuhU5Q==, tarball: file:projects/server-telegram-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-telegram@file:projects/server-telegram.tgz':
-    resolution: {integrity: sha512-99mvNi29b6C/lZr6MpKHmXDCm9FmOpg7AoWzLvkBpBd6rQJBK1Y9bRyuqHpH/VE1UgVtBR31wPpvKdMzTyluWA==, tarball: file:projects/server-telegram.tgz}
+    resolution: {integrity: sha512-KG0Q+p6leEECVhmFiwKm0CCQyFpT0lDnirzpeXW8LiqQfKnxQo2xfcIopr5PrExgkSJMdBe7tc05pqlCmbxZLg==, tarball: file:projects/server-telegram.tgz}
     version: 0.0.0
 
   '@rush-temp/server-templates@file:projects/server-templates.tgz':
@@ -21572,6 +21572,7 @@ snapshots:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       mongodb: 6.12.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.2.2)(socks@2.8.3)
       otp-generator: 4.0.1
+      postgres: 3.4.5
       prettier: 3.2.5
       telegraf: 4.16.3(encoding@0.1.13)
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)

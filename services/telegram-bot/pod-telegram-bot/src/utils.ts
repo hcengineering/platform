@@ -13,31 +13,33 @@
 // limitations under the License.
 //
 
-import { Collection } from 'mongodb'
 import otpGenerator from 'otp-generator'
 import { Message } from 'telegraf/typings/core/types/typegram'
-import { TelegramNotificationRequest } from '@hcengineering/telegram'
 import { Parser } from 'htmlparser2'
 import { MediaGroup } from 'telegraf/typings/telegram-types'
 import { InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo } from 'telegraf/src/core/types/typegram'
 import { Context, Input } from 'telegraf'
+import { TelegramNotificationQueueMessage } from '@hcengineering/server-telegram'
 
-import { OtpRecord, PlatformFileInfo, TelegramFileInfo } from './types'
+import { PlatformFileInfo, TelegramFileInfo } from './types'
+import { PostgresDB } from './db'
+import { systemAccountUuid } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 
-export async function getNewOtp (otpCollection: Collection<OtpRecord>): Promise<string> {
+export async function getNewOtp (db: PostgresDB): Promise<string> {
   let otp = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
     lowerCaseAlphabets: false,
     specialChars: false
   })
 
-  let exist = await otpCollection.findOne({ otp })
+  let exist = await db.getOtpByCode(otp)
 
   while (exist != null) {
     otp = otpGenerator.generate(6, {
       lowerCaseAlphabets: false
     })
-    exist = await otpCollection.findOne({ otp })
+    exist = await db.getOtpByCode(otp)
   }
 
   return otp
@@ -48,7 +50,7 @@ const maxQuoteLength = 500
 const maxBodyLength = 2000
 const maxSenderLength = 100
 
-export function toTelegramHtml (record: TelegramNotificationRequest): {
+export function toTelegramHtml (record: TelegramNotificationQueueMessage): {
   full: string
   short: string
 } {
@@ -303,4 +305,8 @@ export async function toTelegramFileInfo (
   }
 
   return undefined
+}
+
+export function serviceToken (): string {
+  return generateToken(systemAccountUuid, undefined, { service: 'telegram-bot' })
 }

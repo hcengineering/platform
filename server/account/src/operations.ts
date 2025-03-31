@@ -1992,6 +1992,68 @@ export async function ensurePerson (
   return { uuid: personUuid, socialId: newSocialId }
 }
 
+export async function createSocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    personUuid: PersonUuid
+    type: SocialIdType
+    value: string
+    displayValue?: string
+    verified?: boolean
+  }
+): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  const allowedService = verifyAllowedServices(['tool', 'telegram-bot'], extra, false)
+
+  if (!allowedService) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { personUuid, type, value, verified, displayValue } = params
+  const normalizedValue = normalizeValue(value ?? '')
+
+  if (!Object.values(SocialIdType).includes(type) || normalizedValue.length === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const person = await db.person.findOne({ uuid: personUuid })
+
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: personUuid }))
+  }
+
+  const socialId = await db.socialId.findOne({ type, value: normalizedValue })
+
+  if (socialId?.personUuid !== personUuid && socialId?.verifiedOn !== undefined) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.SocialIdAlreadyConfirmed, { socialId: normalizedValue, type })
+    )
+  }
+
+  if (socialId?.personUuid === personUuid) {
+    if (verified === true && socialId.verifiedOn === undefined) {
+      await db.socialId.updateOne({ _id: socialId._id }, { verifiedOn: Date.now(), displayValue })
+    } else if (socialId.displayValue !== displayValue) {
+      await db.socialId.updateOne({ _id: socialId._id }, { displayValue })
+    }
+    return { uuid: personUuid, socialId: socialId._id }
+  }
+
+  const verifiedOn = verified === true ? Date.now() : undefined
+  const newSocialId = await db.socialId.insertOne({
+    type,
+    value: normalizedValue,
+    personUuid,
+    verifiedOn,
+    displayValue
+  })
+
+  return { uuid: personUuid, socialId: newSocialId }
+}
+
 async function getMailboxOptions (): Promise<MailboxOptions> {
   return {
     availableDomains: process.env.MAILBOX_DOMAINS?.split(',') ?? [],
@@ -2120,6 +2182,7 @@ export type AccountMethods =
   | 'createMailbox'
   | 'getMailboxes'
   | 'deleteMailbox'
+  | 'createSocialId'
 
 /**
  * @public
@@ -2179,7 +2242,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     listWorkspaces: wrap(listWorkspaces),
     performWorkspaceOperation: wrap(performWorkspaceOperation),
     updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
-    ensurePerson: wrap(ensurePerson)
+    ensurePerson: wrap(ensurePerson),
+    createSocialId: wrap(createSocialId)
   }
 }
 

@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import { type Builder, Mixin, Model } from '@hcengineering/model'
+import { type Builder, Mixin } from '@hcengineering/model'
 
 import contact from '@hcengineering/contact'
-import core, { type Ref } from '@hcengineering/core'
-import { TClass, TDoc } from '@hcengineering/model-core'
+import core from '@hcengineering/core'
+import { TClass } from '@hcengineering/model-core'
 import { TNotificationType } from '@hcengineering/model-notification'
-import notification, { type NotificationProvider } from '@hcengineering/notification'
+import notification from '@hcengineering/notification'
 import { type Resource } from '@hcengineering/platform'
 import serverCore from '@hcengineering/server-core'
 import serverNotification, {
@@ -56,12 +56,7 @@ export class TTypeMatch extends TNotificationType implements TypeMatch {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(
-    THTMLPresenter,
-    TTextPresenter,
-    TTypeMatch,
-    TNotificationPresenter
-  )
+  builder.createModel(THTMLPresenter, TTextPresenter, TTypeMatch, TNotificationPresenter)
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnAttributeCreate,

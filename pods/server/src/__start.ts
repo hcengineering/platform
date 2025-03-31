@@ -25,7 +25,6 @@ import serverCore, {
 } from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverTelegram from '@hcengineering/server-telegram'
 import serverToken from '@hcengineering/server-token'
 import { startHttpServer } from '@hcengineering/server-ws'
 import { join } from 'path'
@@ -87,7 +86,6 @@ setMetadata(serverToken.metadata.Secret, config.serverSecret)
 setMetadata(serverNotification.metadata.MailUrl, config.mailUrl ?? '')
 setMetadata(serverNotification.metadata.MailAuthToken, config.mailAuthToken)
 setMetadata(serverNotification.metadata.WebPushUrl, config.webPushUrl)
-setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 setMetadata(serverCalendar.metadata.EndpointURL, process.env.CALENDAR_URL)
 

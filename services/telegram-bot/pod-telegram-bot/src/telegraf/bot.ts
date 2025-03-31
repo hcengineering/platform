@@ -20,15 +20,14 @@ import { htmlToMarkup, isEmptyMarkup, jsonToMarkup, MarkupNodeType } from '@hcen
 import { toHTML } from '@telegraf/entity'
 import { CallbackQuery, Message, Update } from 'telegraf/typings/core/types/typegram'
 import { translate } from '@hcengineering/platform'
-import { ObjectId, WithId } from 'mongodb'
+import { AccountUuid, WorkspaceUuid } from '@hcengineering/core'
 
 import config from '../config'
 import { PlatformWorker } from '../worker'
 import { TgContext, ReplyMessage } from './types'
 import { toTelegramFileInfo } from '../utils'
 import { Command, defineCommands } from './commands'
-import { ChannelRecord, MessageRecord, TelegramFileInfo, UserRecord, WorkspaceInfo } from '../types'
-import { WorkspaceUuid } from '@hcengineering/core'
+import { ChannelId, ChannelRecord, MessageRecord, TelegramFileInfo, UserRecord, WorkspaceInfo } from '../types'
 
 function encodeChannelId (channelId: string): string {
   return `@${channelId}`
@@ -44,45 +43,45 @@ const getPrevActionId = (workspace: string, page: number): string => `prev_${wor
 
 async function findMessageRecord (
   worker: PlatformWorker,
-  from: number,
+  fromTgUser: number,
   replyTo: number,
-  email: string
+  account: AccountUuid
 ): Promise<MessageRecord | undefined> {
-  const record = await worker.getNotificationRecord(replyTo, email)
+  const record = await worker.getMessageRecordByTelegramId(account, replyTo)
 
   if (record !== undefined) {
     return record
   }
 
-  const reply = await worker.getReply(from, replyTo)
+  const reply = await worker.getReply(fromTgUser, replyTo)
 
   if (reply === undefined) {
     return undefined
   }
 
-  return await worker.findMessageRecord(email, reply.notificationId, reply.messageId)
+  return await worker.getMessageRecordByRef(account, reply.messageId)
 }
 
 async function onReply (
   ctx: Context,
-  from: number,
+  fromTgUser: number,
   message: ReplyMessage,
   messageId: number,
   replyTo: number,
   worker: PlatformWorker,
   username?: string
 ): Promise<boolean> {
-  const userRecord = await worker.getUserRecord(from)
+  const userRecord = await worker.getUserByTgId(fromTgUser)
 
   if (userRecord === undefined) {
     return false
   }
 
-  if (userRecord.telegramUsername !== username) {
-    await worker.updateTelegramUsername(userRecord, username)
+  if (userRecord.telegramUsername !== username && username !== undefined) {
+    void worker.updateTelegramUsername(userRecord.account, userRecord.telegramId, username)
   }
 
-  const messageRecord = await findMessageRecord(worker, from, replyTo, userRecord.email)
+  const messageRecord = await findMessageRecord(worker, fromTgUser, replyTo, userRecord.account)
 
   if (messageRecord === undefined) {
     return false
@@ -90,15 +89,14 @@ async function onReply (
 
   await worker.saveReply({
     replyId: messageId,
-    telegramId: from,
-    notificationId: messageRecord.notificationId,
+    telegramUserId: fromTgUser,
     messageId: messageRecord.messageId
   })
 
   const file = await toTelegramFileInfo(ctx, message)
   const files: TelegramFileInfo[] = file !== undefined ? [file] : []
 
-  return await worker.reply(messageRecord, htmlToMarkup(toHTML(message)), files)
+  return await worker.reply(userRecord, messageRecord, htmlToMarkup(toHTML(message)), files)
 }
 
 async function handleSelectChannel (
@@ -112,12 +110,12 @@ async function handleSelectChannel (
   const id = ctx.chat?.id
   if (id === undefined) return ['', false]
 
-  const userRecord = await worker.getUserRecord(id)
+  const userRecord = await worker.getUserByTgId(id)
   if (userRecord === undefined) return ['', false]
 
   const channelId = decodeChannelId(match)
   if (channelId === undefined || channelId === '') return ['', false]
-  const channel = await worker.getChannel(userRecord.email, new ObjectId(channelId))
+  const channel = await worker.getChannel(userRecord.account, channelId as ChannelId)
 
   if (channel === undefined) return ['', false]
 
@@ -131,7 +129,10 @@ async function handleSelectChannel (
     })
   }
 
-  return [channel.name, await worker.sendMessage(channel, userMessage.message_id, text, file)]
+  return [
+    channel.name,
+    await worker.sendMessage(channel, userRecord.account, userRecord.socialId, userMessage.message_id, text, file)
+  ]
 }
 
 async function showNoChannelsMessage (ctx: Context, worker: PlatformWorker, workspace: WorkspaceUuid): Promise<void> {
@@ -148,7 +149,7 @@ async function createSelectChannelKeyboard (
   userRecord: UserRecord,
   workspace: WorkspaceUuid
 ): Promise<void> {
-  const channels = await worker.getChannels(userRecord.email, workspace)
+  const channels = await worker.getChannels(userRecord.account, workspace)
 
   if (channels.length === 0) {
     const ws = await worker.getWorkspaceInfo(workspace)
@@ -237,7 +238,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
     if (id === undefined) return
     if ('reply_to_message' in ctx.message) return
 
-    const userRecord = await worker.getUserRecord(id)
+    const userRecord = await worker.getUserByTgId(id)
     if (userRecord === undefined) return
 
     const workspaces = userRecord.workspaces as any // TODO: FIXME
@@ -337,7 +338,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
 
 const channelsPerPage = 10
 
-const getPageChannels = (channels: WithId<ChannelRecord>[], page: number): WithId<ChannelRecord>[] => {
+const getPageChannels = (channels: ChannelRecord[], page: number): ChannelRecord[] => {
   return channels.slice(page * channelsPerPage, (page + 1) * channelsPerPage)
 }
 
@@ -350,10 +351,10 @@ const editChannelKeyboard = async (
   const id = ctx.chat?.id
   if (id === undefined) return
 
-  const userRecord = await worker.getUserRecord(id)
+  const userRecord = await worker.getUserByTgId(id)
   if (userRecord === undefined) return
 
-  const channels = await worker.getChannels(userRecord.email, workspace)
+  const channels = await worker.getChannels(userRecord.account, workspace)
 
   if (channels.length === 0) {
     await showNoChannelsMessage(ctx, worker, workspace)

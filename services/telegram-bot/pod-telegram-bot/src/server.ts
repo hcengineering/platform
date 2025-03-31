@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
 import { MeasureContext } from '@hcengineering/core'
 import { Telegraf } from 'telegraf'
-import telegram, { TelegramNotificationRequest } from '@hcengineering/telegram'
+import telegram from '@hcengineering/telegram'
 import { translate } from '@hcengineering/platform'
 import { extractToken } from '@hcengineering/server-client'
+import { Readable } from 'stream'
+import type { ReadableStream } from 'stream/web'
 
 import { ApiError } from './error'
 import { PlatformWorker } from './worker'
-import { Limiter } from './limiter'
 import config from './config'
-import { toTelegramHtml, toMediaGroups } from './utils'
 import { TgContext } from './telegraf/types'
+import { getAccountPerson } from './account'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
@@ -54,12 +54,7 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   void handleRequest(fn, req, res, next)
 }
 
-export function createServer (
-  bot: Telegraf<TgContext>,
-  worker: PlatformWorker,
-  ctx: MeasureContext,
-  limiter: Limiter
-): Express {
+export function createServer (bot: Telegraf<TgContext>, worker: PlatformWorker, ctx: MeasureContext): Express {
   const app = express()
 
   app.use(cors())
@@ -68,166 +63,98 @@ export function createServer (
   app.post(
     '/test',
     wrapRequest(async (_, res, token) => {
-      // TODO: FIXME
-      throw new Error('Not implemented')
-      // const record = await worker.getUserRecordByEmail(token.email)
-      // if (record === undefined) {
-      //   throw new ApiError(404)
-      // }
+      const record = await worker.getUserByAccount(token.account)
+      if (record === undefined) {
+        throw new ApiError(404)
+      }
 
-      // await limiter.add(record.telegramId, async () => {
-      //   ctx.info('Sending test message', { email: token.email, username: record.telegramUsername })
-      //   const testMessage = await translate(telegram.string.TestMessage, { app: config.App })
-      //   await bot.telegram.sendMessage(record.telegramId, testMessage)
-      // })
+      await worker.limiter.add(record.telegramId, async () => {
+        ctx.info('Sending test message', { account: token.account, username: record.telegramUsername })
+        const testMessage = await translate(telegram.string.TestMessage, { app: config.App })
+        await bot.telegram.sendMessage(record.telegramId, testMessage)
+      })
 
-      // res.status(200)
-      // res.json({})
-    })
-  )
-
-  app.post(
-    '/updateWorkspace',
-    wrapRequest(async (req, res, token) => {
-      // TODO: FIXME
-      throw new Error('Not implemented')
-      // if (req.body == null || typeof req.body !== 'object' || req.body.enabled == null) {
-      //   throw new ApiError(400)
-      // }
-
-      // const enabled: boolean = req.body.enabled
-      // const record = await worker.getUserRecordByEmail(token.email)
-
-      // if (record === undefined) {
-      //   return
-      // }
-
-      // if (enabled && !record.workspaces.includes(token.workspace.name)) {
-      //   await worker.addWorkspace(token.email, token.workspace.name)
-      // }
-
-      // if (!enabled && record.workspaces.includes(token.workspace.name)) {
-      //   await worker.removeWorkspace(token.email, token.workspace.name)
-      // }
-
-      // res.status(200)
-      // res.json({})
+      res.status(200)
+      res.json({})
     })
   )
 
   app.post(
     '/auth',
     wrapRequest(async (req, res, token) => {
-      // TODO: FIXME
-      throw new Error('Not implemented')
-      // if (req.body == null || typeof req.body !== 'object') {
-      //   throw new ApiError(400)
-      // }
+      if (req.body == null || typeof req.body !== 'object') {
+        throw new ApiError(400)
+      }
 
-      // const { code } = req.body
+      const { code } = req.body
 
-      // if (code == null || code === '' || typeof code !== 'string') {
-      //   throw new ApiError(400)
-      // }
+      if (code == null || code === '' || typeof code !== 'string') {
+        throw new ApiError(400)
+      }
 
-      // const record = await worker.getUserRecordByEmail(token.email)
+      const record = await worker.getUserByAccount(token.account)
 
-      // if (record !== undefined) {
-      //   throw new ApiError(409, 'User already authorized')
-      // }
+      if (record !== undefined) {
+        throw new ApiError(409, 'User already authorized')
+      }
 
-      // const newRecord = await worker.authorizeUser(code, token.email, token.workspace.name)
+      const person = await getAccountPerson(token.account)
+      if (person === undefined) {
+        throw new ApiError(404, 'Person not found')
+      }
 
-      // if (newRecord === undefined) {
-      //   throw new ApiError(500)
-      // }
+      const newRecord = await worker.authorizeUser(code, token.account, token.workspace)
+      if (newRecord === undefined) {
+        throw new ApiError(500)
+      }
 
-      // void limiter.add(newRecord.telegramId, async () => {
-      //   ctx.info('Connected account', { email: token.email, username: newRecord.telegramUsername })
-      //   const message = await translate(telegram.string.AccountConnectedHtml, { app: config.App, email: token.email })
-      //   await bot.telegram.sendMessage(newRecord.telegramId, message, { parse_mode: 'HTML' })
-      // })
+      void worker.limiter.add(newRecord.telegramId, async () => {
+        ctx.info('Connected account', { account: token.account, username: newRecord.telegramUsername })
+        const message = await translate(telegram.string.AccountConnectedHtml, {
+          app: config.App,
+          name: `${person.firstName} ${person.lastName}`
+        })
+        await bot.telegram.sendMessage(newRecord.telegramId, message, { parse_mode: 'HTML' })
+      })
 
-      // res.status(200)
-      // res.json({})
+      res.status(200)
+      res.json({})
     })
   )
 
   app.get(
     '/info',
-    wrapRequest(async (_, res) => {
-      const me = await bot.telegram.getMe()
+    wrapRequest(async (req, res) => {
+      const me = bot.botInfo ?? (await bot.telegram.getMe())
       const profilePhotos = await bot.telegram.getUserProfilePhotos(me.id)
-      const photoId = profilePhotos.photos[0]?.[0]?.file_id
+      const photoId = profilePhotos.photos[0]?.[0]?.file_id ?? ''
 
-      let photoUrl = ''
-
-      if (photoId !== undefined) {
-        photoUrl = (await bot.telegram.getFileLink(photoId)).toString()
-      }
       res.status(200)
-      res.json({ username: me.username, name: me.first_name, photoUrl })
+      res.json({ username: me.username, name: me.first_name, photoId })
     })
   )
 
-  app.post(
-    '/notify',
-    wrapRequest(async (req, res, token) => {
-      // TODO: FIXME
-      throw new Error('Not implemented')
-      // if (req.body == null || !Array.isArray(req.body)) {
-      //   ctx.error('Invalid request body', { body: req.body, email: token.email })
-      //   throw new ApiError(400)
-      // }
+  app.get(
+    '/photo/:fileId',
+    wrapRequest(async (req, res) => {
+      const { fileId } = req.params
+      const fileLink = await bot.telegram.getFileLink(fileId)
 
-      // const notificationRequests = req.body as TelegramNotificationRequest[]
-      // const userRecord = await worker.getUserRecordByEmail(token.email)
+      const response = await fetch(fileLink.toString())
+      if (!response.ok) {
+        res.status(response.status).send(response.statusText)
+        return
+      }
 
-      // if (userRecord === undefined) {
-      //   ctx.error('User not found', { email: token.email })
-      //   throw new ApiError(404)
-      // }
+      if (response.body != null) {
+        res.setHeader('Content-Type', response.headers.get('Content-Type') ?? 'application/octet-stream')
+        res.setHeader('Content-Length', response.headers.get('Content-Length') ?? '0')
 
-      // ctx.info('Received notification', {
-      //   email: token.email,
-      //   username: userRecord.telegramUsername,
-      //   ids: notificationRequests.map((it) => it.notificationId)
-      // })
-
-      // for (const request of notificationRequests) {
-      //   void limiter.add(userRecord.telegramId, async () => {
-      //     const { full: fullMessage, short: shortMessage } = toTelegramHtml(request)
-      //     const files = await worker.getFiles(request)
-      //     const messageIds: number[] = []
-
-      //     if (files.length === 0) {
-      //       const message = await bot.telegram.sendMessage(userRecord.telegramId, fullMessage, {
-      //         parse_mode: 'HTML'
-      //       })
-
-      //       messageIds.push(message.message_id)
-      //     } else {
-      //       const groups = toMediaGroups(files, fullMessage, shortMessage)
-      //       for (const group of groups) {
-      //         const mediaGroup = await bot.telegram.sendMediaGroup(userRecord.telegramId, group)
-      //         messageIds.push(...mediaGroup.map((it) => it.message_id))
-      //       }
-      //     }
-
-      //     for (const messageId of messageIds) {
-      //       await worker.addNotificationRecord({
-      //         messageId: request.messageId,
-      //         notificationId: request.notificationId,
-      //         email: userRecord.email,
-      //         workspace: request.workspace,
-      //         telegramId: messageId
-      //       })
-      //     }
-      //   })
-      // }
-
-      // res.status(200)
-      // res.json({})
+        const stream = Readable.fromWeb(response.body as ReadableStream<any>)
+        stream.pipe(res)
+      } else {
+        res.status(500).send('Failed to fetch photo')
+      }
     })
   )
 

@@ -12,57 +12,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import core, {
-  PersonId,
+  AccountUuid,
   Blob,
   Class,
-  Client,
   Doc,
   generateId,
   Hierarchy,
   Markup,
   MeasureContext,
+  PersonId,
   Ref,
   Space,
-  systemAccountUuid,
   TxFactory,
-  WorkspaceUuid,
-  AccountUuid
+  WorkspaceUuid
 } from '@hcengineering/core'
-import { generateToken } from '@hcengineering/server-token'
 import notification, { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import chunter, { ChatMessage, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
 import contact, { Person } from '@hcengineering/contact'
-import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import { getTransactorEndpoint } from '@hcengineering/server-client'
 import activity, { ActivityMessage } from '@hcengineering/activity'
 import attachment, { Attachment } from '@hcengineering/attachment'
 import { StorageAdapter } from '@hcengineering/server-core'
-import { isEmptyMarkup } from '@hcengineering/text'
+import { createRestClient, RestClient } from '@hcengineering/api-client'
 
 import { ChannelRecord, MessageRecord, PlatformFileInfo, TelegramFileInfo } from './types'
+import { isEmptyMarkup } from '@hcengineering/text'
+import { serviceToken } from './utils'
 
 export class WorkspaceClient {
-  hierarchy: Hierarchy
   private constructor (
     private readonly ctx: MeasureContext,
-    private readonly storageAdapter: StorageAdapter,
-    private readonly client: Client,
-    private readonly token: string,
+    private readonly storage: StorageAdapter,
+    private readonly client: RestClient,
+    readonly hierarchy: Hierarchy,
     private readonly workspace: WorkspaceUuid
-  ) {
-    this.hierarchy = client.getHierarchy()
-  }
+  ) {}
 
   static async create (
     workspace: WorkspaceUuid,
     ctx: MeasureContext,
-    storageAdapter: StorageAdapter
+    storage: StorageAdapter
   ): Promise<WorkspaceClient> {
-    const token = generateToken(systemAccountUuid, workspace)
-    const client = await connectPlatform(token)
+    const token = serviceToken()
+    const endpoint = await getTransactorEndpoint(token)
+    const client = createRestClient(endpoint, workspace, token)
+    const model = await client.getModel()
 
-    return new WorkspaceClient(ctx, storageAdapter, client, token, workspace)
+    return new WorkspaceClient(ctx, storage, client, model.hierarchy, workspace)
   }
 
   async createAttachments (
@@ -79,7 +76,7 @@ export class WorkspaceClient {
         const response = await fetch(file.url)
         const buffer = Buffer.from(await response.arrayBuffer())
         const uuid = generateId()
-        await this.storageAdapter.put(this.ctx, this.workspace as any, uuid, buffer, file.type, file.size) // TODO: FIXME
+        await this.storage.put(this.ctx, this.workspace as any, uuid, buffer, file.type, file.size) // TODO: FIXME
         const tx = factory.createTxCollectionCUD<ChatMessage, Attachment>(
           _class,
           _id,
@@ -146,189 +143,135 @@ export class WorkspaceClient {
 
   async createThreadMessage (
     message: ActivityMessage,
-    account: any,
+    account: AccountUuid,
+    socialId: PersonId,
     text: string,
     files: TelegramFileInfo[]
   ): Promise<boolean> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const txFactory = new TxFactory(account._id)
-    // const hierarchy = this.hierarchy
+    const txFactory = new TxFactory(socialId)
+    const hierarchy = this.hierarchy
 
-    // const isAvailable = await this.isReplyAvailable(account._id, message)
+    const isAvailable = await this.isReplyAvailable(account, message)
 
-    // if (!isAvailable) {
-    //   return false
-    // }
+    if (!isAvailable) {
+      return false
+    }
 
-    // const messageId = generateId<ThreadMessage>()
-    // const attachments = await this.createAttachments(
-    //   txFactory,
-    //   messageId,
-    //   chunter.class.ThreadMessage,
-    //   message.space,
-    //   files
-    // )
+    const messageId = generateId<ThreadMessage>()
+    const attachments = await this.createAttachments(
+      txFactory,
+      messageId,
+      chunter.class.ThreadMessage,
+      message.space,
+      files
+    )
 
-    // if (attachments === 0 && isEmptyMarkup(text)) {
-    //   return false
-    // }
+    if (attachments === 0 && isEmptyMarkup(text)) {
+      return false
+    }
 
-    // if (hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    //   const thread = message as ThreadMessage
-    //   const collectionTx = txFactory.createTxCollectionCUD(
-    //     thread.attachedToClass,
-    //     thread.attachedTo,
-    //     message.space,
-    //     'replies',
-    //     txFactory.createTxCreateDoc(
-    //       chunter.class.ThreadMessage,
-    //       message.space,
-    //       {
-    //         attachedTo: thread.attachedTo,
-    //         attachedToClass: thread.attachedToClass,
-    //         objectId: thread.objectId,
-    //         objectClass: thread.objectClass,
-    //         message: text,
-    //         attachments,
-    //         collection: 'replies',
-    //         provider: contact.channelProvider.Telegram
-    //       },
-    //       messageId
-    //     )
-    //   )
-    //   await this.client.tx(collectionTx)
-    // } else {
-    //   const collectionTx = txFactory.createTxCollectionCUD(
-    //     message._class,
-    //     message._id,
-    //     message.space,
-    //     'replies',
-    //     txFactory.createTxCreateDoc(
-    //       chunter.class.ThreadMessage,
-    //       message.space,
-    //       {
-    //         attachedTo: message._id,
-    //         attachedToClass: message._class,
-    //         objectId: message.attachedTo,
-    //         objectClass: message.attachedToClass,
-    //         message: text,
-    //         attachments,
-    //         collection: 'replies',
-    //         provider: contact.channelProvider.Telegram
-    //       },
-    //       messageId
-    //     )
-    //   )
-    //   await this.client.tx(collectionTx)
-    // }
+    if (hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
+      const thread = message as ThreadMessage
+      const collectionTx = txFactory.createTxCollectionCUD(
+        thread.attachedToClass,
+        thread.attachedTo,
+        message.space,
+        'replies',
+        txFactory.createTxCreateDoc(
+          chunter.class.ThreadMessage,
+          message.space,
+          {
+            attachedTo: thread.attachedTo,
+            attachedToClass: thread.attachedToClass,
+            objectId: thread.objectId,
+            objectClass: thread.objectClass,
+            message: text,
+            attachments,
+            collection: 'replies',
+            provider: contact.channelProvider.Telegram
+          },
+          messageId
+        )
+      )
+      await this.client.tx(collectionTx)
+    } else {
+      const collectionTx = txFactory.createTxCollectionCUD(
+        message._class,
+        message._id,
+        message.space,
+        'replies',
+        txFactory.createTxCreateDoc(
+          chunter.class.ThreadMessage,
+          message.space,
+          {
+            attachedTo: message._id,
+            attachedToClass: message._class,
+            objectId: message.attachedTo,
+            objectClass: message.attachedToClass,
+            message: text,
+            attachments,
+            collection: 'replies',
+            provider: contact.channelProvider.Telegram
+          },
+          messageId
+        )
+      )
+      await this.client.tx(collectionTx)
+    }
 
-    // return true
+    return true
   }
 
   async replyToActivityNotification (
     it: ActivityInboxNotification,
-    account: any,
+    account: AccountUuid,
+    socialId: PersonId,
     text: string,
     files: TelegramFileInfo[]
   ): Promise<boolean> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const message = await this.client.findOne(it.attachedToClass, { _id: it.attachedTo })
+    const message = await this.client.findOne(it.attachedToClass, { _id: it.attachedTo })
 
-    // if (message !== undefined) {
-    //   return await this.createThreadMessage(message, account, text, files)
-    // }
+    if (message !== undefined) {
+      return await this.createThreadMessage(message, account, socialId, text, files)
+    }
 
-    // return false
+    return false
   }
 
   async replyToMention (
     it: MentionInboxNotification,
-    account: any,
+    account: AccountUuid,
+    socialId: PersonId,
     text: string,
     files: TelegramFileInfo[]
   ): Promise<boolean> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const hierarchy = this.hierarchy
+    if (!this.hierarchy.isDerived(it.mentionedInClass, activity.class.ActivityMessage)) {
+      return false
+    }
 
-    // if (!hierarchy.isDerived(it.mentionedInClass, activity.class.ActivityMessage)) {
-    //   return false
-    // }
+    const message = (await this.client.findOne(it.mentionedInClass, { _id: it.mentionedIn })) as ActivityMessage
 
-    // const message = (await this.client.findOne(it.mentionedInClass, { _id: it.mentionedIn })) as ActivityMessage
+    if (message !== undefined) {
+      return await this.createThreadMessage(message, account, socialId, text, files)
+    }
 
-    // if (message !== undefined) {
-    //   return await this.createThreadMessage(message, account, text, files)
-    // }
-
-    // return false
+    return false
   }
 
-  async replyToNotification (
-    account: any,
+  async replyToMessage (
+    account: AccountUuid,
+    socialId: PersonId,
     record: MessageRecord,
     text: string,
     files: TelegramFileInfo[]
   ): Promise<boolean> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const inboxNotification = await this.client.findOne(notification.class.InboxNotification, {
-    //   _id: record.notificationId
-    // })
+    const message = await this.client.findOne(activity.class.ActivityMessage, { _id: record.messageId })
 
-    // if (inboxNotification === undefined) {
-    //   return false
-    // }
-    // const hierarchy = this.hierarchy
-    // if (hierarchy.isDerived(inboxNotification._class, notification.class.ActivityInboxNotification)) {
-    //   return await this.replyToActivityNotification(
-    //     inboxNotification as ActivityInboxNotification,
-    //     account,
-    //     text,
-    //     files
-    //   )
-    // } else if (hierarchy.isDerived(inboxNotification._class, notification.class.MentionInboxNotification)) {
-    //   return await this.replyToMention(inboxNotification as MentionInboxNotification, account, text, files)
-    // }
+    if (message === undefined) {
+      return false
+    }
 
-    // return false
-  }
-
-  async replyToMessage (account: any, record: MessageRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const message = await this.client.findOne(activity.class.ActivityMessage, { _id: record.messageId })
-
-    // if (message === undefined) {
-    //   return false
-    // }
-
-    // return await this.createThreadMessage(message, account, text, files)
-  }
-
-  public async reply (record: MessageRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const account = await this.client.getModel().findOne(contact.class.PersonAccount, { email: record.email })
-    // if (account === undefined) {
-    //   return false
-    // }
-
-    // if (record.messageId != null) {
-    //   return await this.replyToMessage(account, record, text, files)
-    // }
-
-    // if (record.notificationId != null) {
-    //   return await this.replyToNotification(account, record, text, files)
-    // }
-
-    // return false
-  }
-
-  async close (): Promise<void> {
-    await this.client.close()
+    return await this.createThreadMessage(message, account, socialId, text, files)
   }
 
   async getFiles (_id: Ref<ActivityMessage>): Promise<PlatformFileInfo[]> {
@@ -336,8 +279,9 @@ export class WorkspaceClient {
     const res: PlatformFileInfo[] = []
     for (const attachment of attachments) {
       if (attachment.type === 'application/link-preview') continue
-      const chunks = await this.storageAdapter.read(this.ctx, this.workspace as any, attachment.file) // TODO: FIXME
-      const buffer = Buffer.concat(chunks)
+      const chunks: Buffer[] = await this.storage.read(this.ctx, this.workspace as any, attachment.file)
+      const uint8Chunks: Uint8Array[] = chunks.map((chunk) => new Uint8Array(chunk))
+      const buffer = Buffer.concat(uint8Chunks)
       if (buffer.length > 0) {
         res.push({
           buffer,
@@ -349,103 +293,82 @@ export class WorkspaceClient {
     return res
   }
 
-  async getChannels (email: string, onlyStarred: boolean): Promise<ChunterSpace[]> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const account = await this.client.findOne(contact.class.PersonAccount, { email })
-    // if (account === undefined) return []
+  async getChannels (account: AccountUuid, onlyStarred: boolean): Promise<ChunterSpace[]> {
+    if (!onlyStarred) {
+      return await this.client.findAll(chunter.class.ChunterSpace, {
+        members: account
+      })
+    }
 
-    // if (!onlyStarred) {
-    //   return await this.client.findAll(chunter.class.ChunterSpace, {
-    //     members: account._id
-    //   })
-    // }
+    const contexts = await this.client.findAll(notification.class.DocNotifyContext, {
+      objectClass: { $in: [chunter.class.Channel, chunter.class.DirectMessage] },
+      isPinned: true,
+      user: account
+    })
 
-    // const contexts = await this.client.findAll(notification.class.DocNotifyContext, {
-    //   objectClass: { $in: [chunter.class.Channel, chunter.class.DirectMessage] },
-    //   isPinned: true,
-    //   user: account._id
-    // })
+    if (contexts.length === 0) {
+      return []
+    }
 
-    // if (contexts.length === 0) {
-    //   return []
-    // }
-
-    // return await this.client.findAll(chunter.class.ChunterSpace, {
-    //   _id: { $in: contexts.map((context) => context.objectId as Ref<ChunterSpace>) },
-    //   members: account._id
-    // })
+    return await this.client.findAll(chunter.class.ChunterSpace, {
+      _id: { $in: contexts.map((context) => context.objectId as Ref<ChunterSpace>) },
+      members: account
+    })
   }
 
-  async getPersons (_ids: AccountUuid[], myEmail: string): Promise<Person[]> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const me = await this.client.findOne(contact.class.PersonAccount, { email: myEmail })
-    // const accounts = this.client.getModel().findAllSync(contact.class.PersonAccount, { _id: { $in: _ids } })
-    // const persons = accounts.filter((account) => account.person !== me?.person).map(({ person }) => person)
-    // return await this.client.findAll(contact.class.Person, { _id: { $in: persons } })
+  async getPersons (_ids: AccountUuid[]): Promise<Person[]> {
+    return (await this.client.findAll(contact.class.Person, { personUuid: { $in: _ids } })) as Person[]
   }
 
   async sendMessage (
     channel: ChannelRecord,
+    account: AccountUuid,
+    socialId: PersonId,
     text: Markup,
     file?: TelegramFileInfo
   ): Promise<Ref<ChatMessage> | undefined> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const account = await this.client.getModel().findOne(contact.class.PersonAccount, { email: channel.email })
+    const doc = await this.client.findOne(channel._class, { _id: channel._id, members: account })
 
-    // if (account === undefined) {
-    //   return undefined
-    // }
+    if (doc === undefined) {
+      return undefined
+    }
 
-    // const doc = await this.client.findOne(channel.channelClass, { _id: channel.channelId, members: account._id })
+    const txFactory = new TxFactory(socialId)
+    const messageId = generateId<ChatMessage>()
+    const attachments = await this.createAttachments(
+      txFactory,
+      messageId,
+      chunter.class.ChatMessage,
+      channel._id,
+      file !== undefined ? [file] : []
+    )
 
-    // if (doc === undefined) {
-    //   return undefined
-    // }
+    if (attachments === 0 && isEmptyMarkup(text)) {
+      return undefined
+    }
 
-    // const txFactory = new TxFactory(account._id)
-    // const messageId = generateId<ChatMessage>()
-    // const attachments = await this.createAttachments(
-    //   txFactory,
-    //   messageId,
-    //   chunter.class.ChatMessage,
-    //   channel.channelId,
-    //   file !== undefined ? [file] : []
-    // )
+    const collectionTx = txFactory.createTxCollectionCUD(
+      channel._class,
+      channel._id,
+      channel._id,
+      'messages',
+      txFactory.createTxCreateDoc(
+        chunter.class.ChatMessage,
+        channel._id,
+        {
+          message: text,
+          attachments,
+          attachedTo: channel._id,
+          attachedToClass: channel._class,
+          collection: 'messages',
+          provider: contact.channelProvider.Telegram
+        },
+        messageId
+      )
+    )
 
-    // if (attachments === 0 && isEmptyMarkup(text)) {
-    //   return undefined
-    // }
+    await this.client.tx(collectionTx)
 
-    // const collectionTx = txFactory.createTxCollectionCUD(
-    //   channel.channelClass,
-    //   channel.channelId,
-    //   channel.channelId,
-    //   'messages',
-    //   txFactory.createTxCreateDoc(
-    //     chunter.class.ChatMessage,
-    //     channel.channelId,
-    //     {
-    //       message: text,
-    //       attachments,
-    //       attachedTo: channel.channelId,
-    //       attachedToClass: channel.channelClass,
-    //       collection: 'messages',
-    //       provider: contact.channelProvider.Telegram
-    //     },
-    //     messageId
-    //   )
-    // )
-
-    // await this.client.tx(collectionTx)
-
-    // return messageId
+    return messageId
   }
-}
-
-async function connectPlatform (token: string): Promise<Client> {
-  const endpoint = await getTransactorEndpoint(token)
-  return await createClient(endpoint, token)
 }

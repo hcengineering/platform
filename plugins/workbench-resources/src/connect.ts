@@ -366,7 +366,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   Analytics.setUser(account)
   Analytics.setTag('workspace', wsUrl)
-  console.log(`Logged in with account ${me.uuid} as ${me.role}`)
+  console.log('Logged in with account: ', me)
   setCurrentAccount(me)
   setCurrentEmployee(employee)
 
