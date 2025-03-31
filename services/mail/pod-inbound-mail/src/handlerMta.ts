@@ -18,6 +18,7 @@ import { Request, Response } from 'express'
 import { htmlToMarkup } from '@hcengineering/text-html'
 import { createMessages } from './message'
 import config from './config'
+import { th } from 'date-fns/locale'
 
 interface MtaMessage {
   envelope: {
@@ -36,6 +37,13 @@ interface MtaMessage {
 
 export async function handleMtaHook (req: Request, res: Response): Promise<void> {
   try {
+    if (config.hookToken !== undefined) {
+      const token = req.headers['x-hook-token']
+      if (token !== config.hookToken) {
+        throw new Error('Invalid hook token')
+      }
+    }
+
     const mta: MtaMessage = req.body
 
     const from = { address: mta.envelope.from.address, name: '' }
