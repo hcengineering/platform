@@ -123,8 +123,8 @@
               {mailbox}
               mailboxIdx={i}
               reloadRequested={loadMailboxes}
-              loadingRequested={(loading) => {
-                boxesLoading = loading
+              loadingRequested={() => {
+                boxesLoading = true
               }}
             />
           {/each}
