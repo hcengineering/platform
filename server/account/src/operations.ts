@@ -2032,7 +2032,7 @@ async function createMailbox (
     name: string
     domain: string
   }
-): Promise<void> {
+): Promise<{ mailbox: string, socialId: PersonId }> {
   const { account } = decodeTokenVerbose(ctx, token)
   const { name, domain } = params
   const normalizedName = cleanEmail(name)
@@ -2060,7 +2060,9 @@ async function createMailbox (
 
   await db.mailbox.insertOne({ accountUuid: account, mailbox })
   await db.mailboxSecret.insertOne({ mailbox, secret: generatePassword() })
-  await db.socialId.insertOne({ personUuid: account, type: SocialIdType.EMAIL, value: mailbox })
+  const socialId: PersonId = await db.socialId.insertOne({ personUuid: account, type: SocialIdType.EMAIL, value: mailbox, verifiedOn: Date.now() })
+  ctx.info('Mailbox created', { mailbox, account, socialId })
+  return { mailbox, socialId }
 }
 
 async function getMailboxes (
@@ -2081,15 +2083,33 @@ async function deleteMailbox (
   params: { mailbox: string }
 ): Promise<void> {
   const { account } = decodeTokenVerbose(ctx, token)
-  const { mailbox } = params
+  const mailbox = cleanEmail(params.mailbox)
+
+  if (!isEmail(mailbox)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'invalid-name' }))
+  }
 
   const mb = await db.mailbox.findOne({ mailbox, accountUuid: account })
   if (mb == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'mailbox-not-found' }))
   }
 
-  await db.mailbox.deleteMany({ mailbox })
   await db.mailboxSecret.deleteMany({ mailbox })
+  await db.mailbox.deleteMany({ mailbox })
+  await releaseSocialId(db, account, SocialIdType.EMAIL, mailbox)
+  ctx.info('Mailbox deleted', { mailbox, account })
+}
+
+async function releaseSocialId (
+  db: AccountDB,
+  personUuid: PersonUuid,
+  type: SocialIdType,
+  value: string
+): Promise<void> {
+  const socialIds = await db.socialId.find({ personUuid, type, value })
+  for (const socialId of socialIds) {
+    await db.socialId.updateOne({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}` })
+  }
 }
 
 export type AccountMethods =
