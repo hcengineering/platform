@@ -42,7 +42,7 @@ export interface SmtpConfig {
   Password: string | undefined
   TlsMode: TlsOptions
   DebugLog?: boolean
-  allowSelfSigned?: boolean
+  AllowSelfSigned?: boolean
 }
 
 export interface TlsSettings {
@@ -58,7 +58,7 @@ export function getTlsSettings (config: SmtpConfig): TlsSettings {
     secure: config.TlsMode === TlsOptions.SECURE,
     ignoreTLS: config.TlsMode === TlsOptions.IGNORE
   }
-  if (config.allowSelfSigned === true) {
+  if (config.AllowSelfSigned === true) {
     tlsConfig.tls = {
       rejectUnauthorized: false
     }
@@ -79,7 +79,7 @@ const envMap = {
   SmtpPassword: 'SMTP_PASSWORD',
   SmtpTlsMode: 'SMTP_TLS_MODE', // TLS mode: secure - always use TLS, upgrade - use TLS if server supports TLS upgrade, ignore - do not use TLS, not recommended for production use
   SmtpDebugLog: 'SMTP_DEBUG_LOG', // Enable debug logging for SMTP
-  SmtpAllowSelfSigned: 'SMTP_ALLOW_SELF_SIGNED' // Allow self-signed certificates
+  SmtpAllowSelfSigned: 'SMTP_ALLOW_SELF_SIGNED' // Allow self-signed certificates, not recommended for production use
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -133,7 +133,7 @@ const buildSmtpConfig = (): SmtpConfig => {
     Password: password,
     TlsMode: tlsMode ?? TlsOptions.UPGRADE,
     DebugLog: debugLog,
-    allowSelfSigned
+    AllowSelfSigned: allowSelfSigned
   }
 }
 

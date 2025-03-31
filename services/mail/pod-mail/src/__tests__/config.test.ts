@@ -48,7 +48,7 @@ describe('Config', () => {
       Password: undefined,
       TlsMode: 'upgrade',
       DebugLog: false,
-      allowSelfSigned: false
+      AllowSelfSigned: false
     })
   })
 
@@ -80,7 +80,7 @@ describe('Config', () => {
 
     expect(config.smtpConfig).toMatchObject({
       DebugLog: true,
-      allowSelfSigned: true
+      AllowSelfSigned: true
     })
     const tlsSettings = getTlsSettings(config.smtpConfig)
     expect(tlsSettings).toEqual({
