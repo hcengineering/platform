@@ -17,7 +17,6 @@
   import view, { ViewOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
   import SplitView from './SplitView.svelte'
-  import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
@@ -38,9 +37,11 @@
 
   $: void getViewlets(viewlet?._id)
 
-  async function getViewlets (viewletId: Ref<Viewlet>) {
+  async function getViewlets (viewletId: Ref<Viewlet>): Promise<void> {
     if (viewlet === undefined) return
-    const { masterDetailOptions: { views } } = viewlet
+    const {
+      masterDetailOptions: { views }
+    } = viewlet
     const results = await client.findAll(
       view.class.ViewletDescriptor,
       { _id: { $in: [views[0].view, views[1].view] } },
@@ -50,12 +51,14 @@
         }
       }
     )
-    parentView = results.find(v => v._id === views[0].view)
-    childView = results.find(v => v._id === views[1].view)
+    parentView = results.find((v) => v._id === views[0].view)
+    childView = results.find((v) => v._id === views[1].view)
   }
 
   async function selected (e: CustomEvent<any>): Promise<void> {
-    const { masterDetailOptions: { views } } = viewlet
+    const {
+      masterDetailOptions: { views }
+    } = viewlet
     if (childView === undefined) return
     if (childView?._id === view.viewlet.Document) {
       _id = e.detail
@@ -64,20 +67,19 @@
         classA: views[0].class,
         classB: views[1].class
       })
-      association = association ?? await client.findOne(core.class.Association, {
-        classB: views[0].class,
-        classA: views[1].class
-      })
+      association =
+        association ??
+        (await client.findOne(core.class.Association, {
+          classB: views[0].class,
+          classA: views[1].class
+        }))
       if (association === undefined) return
       const relations = await client.findAll(core.class.Relation, {
         association: association._id,
         docA: e.detail
       })
-      const ids = relations.flatMap(r => [r.docA, r.docB])
-      _query = mergeQueries(
-        query ?? {},
-        { _id: { $in: ids } }
-      )
+      const ids = relations.flatMap((r) => [r.docA, r.docB])
+      _query = mergeQueries(query ?? {}, { _id: { $in: ids } })
     }
   }
 
@@ -85,13 +87,15 @@
   $: remainingViews = viewlet?.masterDetailOptions?.views.slice(1)
   $: isSimpleView = viewlet?.masterDetailOptions?.views.length <= 2
   $: childViewComponent = isSimpleView ? childView?.component : viewlet?.$lookup?.descriptor?.component ?? SplitView
-  $: nestedViewlet = isSimpleView ? undefined : {
-    ...viewlet,
-    masterDetailOptions: {
-      ...viewlet?.masterDetailOptions,
-      views: remainingViews
-    }
-  }
+  $: nestedViewlet = isSimpleView
+    ? undefined
+    : {
+        ...viewlet,
+        masterDetailOptions: {
+          ...viewlet?.masterDetailOptions,
+          views: remainingViews
+        }
+      }
   $: childProps = isSimpleView
     ? {
         _class: viewlet?.masterDetailOptions?.views[1].class,
@@ -115,16 +119,18 @@
       }
 </script>
 
-{#if viewlet !== undefined && parentView !== undefined && childView !== undefined}
+{#if viewlet !== undefined && parentView !== undefined && childView !== undefined && viewlet.masterDetailOptions !== undefined}
   <SplitView
     query={_query}
     {space}
     mainComponent={childViewComponent}
     mainComponentProps={childProps}
     createComponent={viewlet?.masterDetailOptions?.views[1]?.createComponent}
-    createComponentProps={ { _class: viewlet?.masterDetailOptions?.views[1].class } }
+    createComponentProps={{ _class: viewlet?.masterDetailOptions?.views[1].class }}
     mainHeaderComponent={viewlet?.masterDetailOptions?.views[0]?.createComponent}
-    createChildComponentProps={ { _class: viewlet?.masterDetailOptions?.views[1].class } }
+    createChildComponentProps={{ _class: viewlet?.masterDetailOptions?.views[1].class }}
+    childClass={viewlet.masterDetailOptions.views[1].class}
+    parentClass={viewlet.masterDetailOptions.views[0].class}
     navigationComponent={parentView.component}
     navigationComponentProps={{
       _class: viewlet?.masterDetailOptions?.views[0].class,

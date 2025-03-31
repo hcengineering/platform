@@ -18,16 +18,12 @@
   import {
     AnyComponent,
     AnySvelteComponent,
-    Button,
-    Breadcrumb,
     Component,
-    IconAdd,
     IconMenuOpen,
     IconMenuClose,
     ButtonIcon,
     Header,
     Separator,
-    showPopup,
     getLocation,
     resolvedLocationStore,
     deviceOptionsStore as deviceInfo,
@@ -35,19 +31,15 @@
     twoPanelsSeparators,
     resizeObserver
   } from '@hcengineering/ui'
-  import { Doc, DocumentQuery, Ref, Space, mergeQueries } from '@hcengineering/core'
-  import { IntlString, Asset } from '@hcengineering/platform'
+  import { Class, Doc, DocumentQuery, Ref, Space, mergeQueries } from '@hcengineering/core'
+  import ClassHeader from './ClassHeader.svelte'
 
   export let space: Ref<Space> | undefined = undefined
   export let navigationComponent: AnyComponent
   export let navigationComponentProps: Record<string, any> | undefined = undefined
-  export let navigationComponentLabel: IntlString | undefined = undefined
-  export let navigationComponentIcon: Asset | undefined = undefined
   export let createComponent: AnyComponent | undefined = undefined
   export let createComponentProps: Record<string, any> = {}
   export let createChildComponentProps: Record<string, any> = {}
-  export let mainComponentLabel: IntlString | undefined = undefined
-  export let mainComponentIcon: Asset | undefined = undefined
   export let mainHeaderComponent: AnyComponent | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
   export let syncWithLocationQuery: boolean = true
@@ -56,6 +48,8 @@
   export let showNavigator: boolean = false
   export let parentKey: string = 'attachedTo'
   export let isNested: boolean = false
+  export let parentClass: Ref<Class<Doc>>
+  export let childClass: Ref<Class<Doc>>
 
   const FLOAT_LIMIT = 760
   let container: HTMLDivElement
@@ -77,7 +71,7 @@
     )
   }
 
-  function onSelected (e: CustomEvent<any>): void {
+  function onSelected(e: CustomEvent<any>): void {
     console.log('onSelected', e.detail)
     dispatch('select', e.detail)
     if (syncWithLocationQuery) return
@@ -132,15 +126,10 @@
     >
       <div class="hulyComponent-content__column">
         <Header adaptive={'disabled'}>
-          {#if mainComponentLabel !== undefined}
-            <Breadcrumb icon={navigationComponentIcon} label={navigationComponentLabel} size={'large'} isCurrent />
-          {/if}
+          <ClassHeader _class={parentClass} />
           <svelte:fragment slot="actions">
             {#if createComponent}
-              <Component
-                is={createComponent}
-                props={createComponentProps}
-              />
+              <Component is={createComponent} props={createComponentProps} />
             {/if}
           </svelte:fragment>
         </Header>
@@ -176,15 +165,12 @@
         />
       </svelte:fragment>
 
-      {#if mainComponentLabel !== undefined}
-        <Breadcrumb icon={mainComponentIcon} label={mainComponentLabel} size={'large'} isCurrent />
+      {#if !isNested}
+        <ClassHeader _class={childClass} />
       {/if}
       <svelte:fragment slot="actions">
-        {#if mainHeaderComponent}
-          <Component
-            is={mainHeaderComponent}
-            props={createChildComponentProps}
-          />
+        {#if mainHeaderComponent !== undefined && !isNested}
+          <Component is={mainHeaderComponent} props={createChildComponentProps} />
         {/if}
       </svelte:fragment>
     </Header>

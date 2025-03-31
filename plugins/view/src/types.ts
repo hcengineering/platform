@@ -827,12 +827,12 @@ export interface ViewOptionsModel {
  * @public
  */
 export interface MasterDetailModel {
-  views?: MasterDetailConfig[]
+  views: MasterDetailConfig[]
 }
 
 export interface MasterDetailConfig {
   id?: string
-  class: Ref<Doc<Space>> | undefined
+  class: Ref<Class<Doc>>
   view?: Ref<ViewletDescriptor>
   associationId?: Ref<Class<Doc>>
   props?: Record<string, any>

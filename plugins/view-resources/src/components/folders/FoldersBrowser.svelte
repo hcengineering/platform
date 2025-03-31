@@ -49,13 +49,7 @@
   const foldersStore = createFoldersStore()
   let foldersState: FoldersState = emptyFoldersState()
 
-  const foldersManager = getFoldersManager(
-    foldersStore,
-    titleKey,
-    parentKey,
-    noParentId,
-    plainList
-  )
+  const foldersManager = getFoldersManager(foldersStore, titleKey, parentKey, noParentId, plainList)
 
   foldersStore.subscribe((newState) => {
     foldersState = newState
