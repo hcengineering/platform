@@ -26,7 +26,8 @@ import contact, {
   formatName,
   getFirstName,
   getLastName,
-  getName
+  getName,
+  type UserProfile
 } from '@hcengineering/contact'
 import core, {
   Doc,
@@ -41,8 +42,13 @@ import core, {
   concatLink,
   type Space,
   SocialIdType,
-  AccountUuid
+  AccountUuid,
+  TxCreateDoc,
+  SortingOrder,
+  MarkupBlobRef
 } from '@hcengineering/core'
+import { makeRank } from '@hcengineering/rank'
+import card from '@hcengineering/card'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import { getAccountBySocialId, getCurrentPerson } from '@hcengineering/server-contact'
@@ -108,6 +114,32 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
       })
       result.push(pushTx)
     }
+  }
+  return result
+}
+
+export async function OnPersonCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of _txes) {
+    const ctx = tx as TxCreateDoc<Person>
+    const lastOne = (
+      await control.findAll(control.ctx, card.class.Card, {}, { sort: { rank: SortingOrder.Descending }, limit: 1 })
+    )[0]
+    const userProfileTx = control.txFactory.createTxCreateDoc<UserProfile>(contact.class.UserProfile, ctx.space, {
+      person: ctx.objectId,
+      title: formatName(ctx.attributes.name),
+      rank: makeRank(lastOne?.rank, undefined),
+      content: '' as MarkupBlobRef,
+      parentInfo: [],
+      blobs: {}
+    })
+
+    result.push(userProfileTx)
+    result.push(
+      control.txFactory.createTxUpdateDoc<Person>(ctx.objectClass, ctx.space, ctx.objectId, {
+        profile: userProfileTx.objectId
+      })
+    )
   }
   return result
 }
@@ -337,6 +369,7 @@ export async function getContactFirstName (
 export default async () => ({
   trigger: {
     OnEmployeeCreate,
+    OnPersonCreate,
     OnContactDelete,
     OnChannelUpdate,
     OnSpaceTypeMembers

@@ -68,9 +68,11 @@
   let doc: Card | undefined
 
   const query = createQuery()
-  $: query.query(card.class.Card, { _id: value }, (res) => {
-    doc = res[0]
-  })
+  $: if (value !== undefined) {
+    query.query(card.class.Card, { _id: value }, (res) => {
+      doc = res[0]
+    })
+  }
 
   $: _classRef = doc?._class ?? _class
   $: clazz = _classRef !== undefined ? (hierarchy.findClass(_classRef) as MasterTag) : undefined

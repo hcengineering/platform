@@ -165,6 +165,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [viewModel, viewId],
     [workbenchModel, workbenchId],
     [
+      cardModel,
+      cardId,
+      {
+        label: card.string.Cards,
+        description: card.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        icon: card.icon.Card,
+        classFilter: defaultFilter
+      }
+    ],
+    [
       contactModel,
       contactId,
       {
@@ -369,18 +381,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [printModel, printId],
     [exportModel, exportId],
     [aiBotModel, aiBotId],
-    [
-      cardModel,
-      cardId,
-      {
-        label: card.string.Cards,
-        description: card.string.ConfigDescription,
-        enabled: true,
-        beta: true,
-        icon: card.icon.Card,
-        classFilter: defaultFilter
-      }
-    ],
     [
       processModel,
       processId,
