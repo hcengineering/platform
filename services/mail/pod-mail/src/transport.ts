@@ -15,7 +15,7 @@
 import nodemailer, { type Transporter } from 'nodemailer'
 import aws from '@aws-sdk/client-ses'
 
-import type { Config, SmtpConfig, SesConfig } from './config'
+import { type Config, type SmtpConfig, type SesConfig, getTlsSettings } from './config'
 
 function smtp (config: SmtpConfig): Transporter {
   const auth =
@@ -25,10 +25,14 @@ function smtp (config: SmtpConfig): Transporter {
           pass: config.Password
         }
       : undefined
+  const tlsSettings = getTlsSettings(config)
   return nodemailer.createTransport({
     host: config.Host,
     port: config.Port,
-    auth
+    auth,
+    logger: true,
+    debug: config.DebugLog,
+    ...tlsSettings
   })
 }
 

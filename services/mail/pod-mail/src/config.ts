@@ -29,11 +29,41 @@ export interface SesConfig {
   Region: string
 }
 
+export enum TlsOptions {
+  SECURE = 'secure', // Always use TLS (implicit TLS)
+  UPGRADE = 'upgrade', // Start unencrypted, upgrade to TLS if supported (STARTTLS)
+  IGNORE = 'ignore' // Do not use TLS (not recommended for production use)
+}
+
 export interface SmtpConfig {
   Host: string
   Port: number
   Username: string | undefined
   Password: string | undefined
+  TlsMode: TlsOptions
+  DebugLog?: boolean
+  AllowSelfSigned?: boolean
+}
+
+export interface TlsSettings {
+  secure: boolean
+  ignoreTLS: boolean
+  tls?: {
+    rejectUnauthorized: boolean
+  }
+}
+
+export function getTlsSettings (config: SmtpConfig): TlsSettings {
+  const tlsConfig: TlsSettings = {
+    secure: config.TlsMode === TlsOptions.SECURE || config.Port === 465,
+    ignoreTLS: config.TlsMode === TlsOptions.IGNORE
+  }
+  if (config.AllowSelfSigned === true) {
+    tlsConfig.tls = {
+      rejectUnauthorized: false
+    }
+  }
+  return tlsConfig
 }
 
 const envMap = {
@@ -46,11 +76,24 @@ const envMap = {
   SmtpHost: 'SMTP_HOST',
   SmtpPort: 'SMTP_PORT',
   SmtpUsername: 'SMTP_USERNAME',
-  SmtpPassword: 'SMTP_PASSWORD'
+  SmtpPassword: 'SMTP_PASSWORD',
+  SmtpTlsMode: 'SMTP_TLS_MODE', // TLS mode, see TlsOptions for possible values
+  SmtpDebugLog: 'SMTP_DEBUG_LOG', // Enable debug logging for SMTP
+  SmtpAllowSelfSigned: 'SMTP_ALLOW_SELF_SIGNED' // Allow self-signed certificates (not recommended for production use)
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 const isEmpty = (str: string | undefined): boolean => str === undefined || str.trim().length === 0
+
+const normalizeTlsMode = (mode: string | undefined): TlsOptions | undefined => {
+  if (mode === undefined || mode === '') return undefined
+  const normalized = mode.toLowerCase()
+  const value: TlsOptions | undefined = Object.values(TlsOptions).find((opt) => opt.toLowerCase() === normalized)
+  if (value === undefined) {
+    throw Error('Invalid SMTP_TLS_MODE value. Must be one of: secure, upgrade, ignore')
+  }
+  return value
+}
 
 const buildSesConfig = (): SesConfig => {
   const accessKey = process.env[envMap.SesAccessKey]
@@ -78,10 +121,12 @@ const buildSmtpConfig = (): SmtpConfig => {
   const port = parseNumber(process.env[envMap.SmtpPort])
   const username = process.env[envMap.SmtpUsername]
   const password = process.env[envMap.SmtpPassword]
+  const tlsMode = normalizeTlsMode(process.env[envMap.SmtpTlsMode])
+  const debugLog = process.env[envMap.SmtpDebugLog]?.toLowerCase() === 'true'
+  const allowSelfSigned = process.env[envMap.SmtpAllowSelfSigned]?.toLowerCase() === 'true'
 
   if (isEmpty(host) || port === undefined) {
     const missingKeys = [isEmpty(host) && 'SMTP_HOST', port === undefined && 'SMTP_PORT'].filter(Boolean)
-
     throw Error(`Missing env variables for SMTP configuration: ${missingKeys.join(', ')}`)
   }
 
@@ -89,7 +134,10 @@ const buildSmtpConfig = (): SmtpConfig => {
     Host: host as string,
     Port: port,
     Username: username,
-    Password: password
+    Password: password,
+    TlsMode: tlsMode ?? TlsOptions.UPGRADE,
+    DebugLog: debugLog,
+    AllowSelfSigned: allowSelfSigned
   }
 }
 
