@@ -29,7 +29,7 @@ import chunter from '@hcengineering/chunter'
 import contact, { PersonSpace } from '@hcengineering/contact'
 import mail from '@hcengineering/mail'
 import config from './config'
-import { ensureGlobalPerson } from './person'
+import { ensureGlobalPerson, ensureLocalPerson } from './person'
 
 function generateToken (): string {
   return encode(
@@ -61,11 +61,24 @@ export async function createMessages (
     console.error(`[${mailId}] Unable to create message without a proper FROM`)
     return
   }
+  try {
+    await ensureLocalPerson(client, mailId, fromPerson.uuid, fromPerson.socialId, from.address, fromPerson.firstName, fromPerson.lastName)
+  } catch (err) {
+    console.error(`[${mailId}] Failed to ensure local FROM person`, err)
+    console.error(`[${mailId}] Unable to create message without a proper FROM`)
+    return
+  }
 
   const toPersons: { address: string, uuid: PersonUuid, socialId: PersonId }[] = []
   for (const to of tos) {
     const toPerson = await ensureGlobalPerson(accountClient, mailId, to)
     if (toPerson === undefined) {
+      continue
+    }
+    try {
+      await ensureLocalPerson(client, mailId, toPerson.uuid, toPerson.socialId, to.address, toPerson.firstName, toPerson.lastName)
+    } catch (err) {
+      console.error(`[${mailId}] Failed to ensure local TO person, skip`, err)
       continue
     }
     toPersons.push({ address: to.address, ...toPerson })
