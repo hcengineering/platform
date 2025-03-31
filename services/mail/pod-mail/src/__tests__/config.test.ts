@@ -45,7 +45,50 @@ describe('Config', () => {
       Host: 'smtp.example.com',
       Port: 587,
       Username: 'user',
-      Password: undefined
+      Password: undefined,
+      TlsMode: 'upgrade',
+      DebugLog: false,
+      allowSelfSigned: false
+    })
+  })
+
+  test('should properly configure TLS settings', () => {
+    process.env.PORT = '1025'
+    process.env.SMTP_HOST = 'smtp.example.com'
+    process.env.SMTP_PORT = '587'
+    process.env.SMTP_TLS_MODE = 'secure'
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { default: config, getTlsSettings } = require('../config')
+    const tlsSettings = getTlsSettings(config.smtpConfig)
+
+    expect(tlsSettings).toEqual({
+      secure: true,
+      ignoreTLS: false
+    })
+  })
+
+  test('should handle debug and self-signed certificate settings', () => {
+    process.env.PORT = '1025'
+    process.env.SMTP_HOST = 'smtp.example.com'
+    process.env.SMTP_PORT = '587'
+    process.env.SMTP_DEBUG_LOG = 'true'
+    process.env.SMTP_ALLOW_SELF_SIGNED = 'true'
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { default: config, getTlsSettings } = require('../config')
+
+    expect(config.smtpConfig).toMatchObject({
+      DebugLog: true,
+      allowSelfSigned: true
+    })
+    const tlsSettings = getTlsSettings(config.smtpConfig)
+    expect(tlsSettings).toEqual({
+      secure: false,
+      ignoreTLS: false,
+      tls: {
+        rejectUnauthorized: false
+      }
     })
   })
 
