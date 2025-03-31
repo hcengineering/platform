@@ -17,6 +17,12 @@ SMTP settings:
 - `SMTP_PORT`: Port number of the SMTP server.
 - `SMTP_USERNAME`: Username for authenticating with the SMTP server. Refer to your SMTP server documentation for the appropriate format.
 - `SMTP_PASSWORD`: Password for authenticating with the SMTP server. Refer to your SMTP server documentation for the appropriate format.
+- `SMTP_TLS_MODE`: TLS mode for SMTP connection. Possible values:
+  - `secure`: Always use TLS (implicit TLS)
+  - `upgrade`: Start unencrypted, upgrade to TLS if supported (STARTTLS)
+  - `ignore`: Do not use TLS (not recommended for production use)
+- `SMTP_DEBUG_LOG`: Enable debug logging for SMTP connection. Set to 'true' to enable.
+- `SMTP_ALLOW_SELF_SIGNED`: Allow self-signed certificates for TLS connections. Set to 'true' to enable (not recommended for production use).
 
 SES settings:
 - `SES_ACCESS_KEY`: AWS SES access key for authentication.

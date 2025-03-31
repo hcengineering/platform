@@ -30,9 +30,9 @@ export interface SesConfig {
 }
 
 export enum TlsOptions {
-  SECURE = 'secure',
-  UPGRADE = 'upgrade',
-  IGNORE = 'ignore' // not recommended for production use
+  SECURE = 'secure', // Always use TLS (implicit TLS)
+  UPGRADE = 'upgrade', // Start unencrypted, upgrade to TLS if supported (STARTTLS)
+  IGNORE = 'ignore' // Do not use TLS (not recommended for production use)
 }
 
 export interface SmtpConfig {
@@ -77,9 +77,9 @@ const envMap = {
   SmtpPort: 'SMTP_PORT',
   SmtpUsername: 'SMTP_USERNAME',
   SmtpPassword: 'SMTP_PASSWORD',
-  SmtpTlsMode: 'SMTP_TLS_MODE', // TLS mode: secure - always use TLS, upgrade - use TLS if server supports TLS upgrade, ignore - do not use TLS, not recommended for production use
+  SmtpTlsMode: 'SMTP_TLS_MODE', // TLS mode, see TlsOptions for possible values
   SmtpDebugLog: 'SMTP_DEBUG_LOG', // Enable debug logging for SMTP
-  SmtpAllowSelfSigned: 'SMTP_ALLOW_SELF_SIGNED' // Allow self-signed certificates, not recommended for production use
+  SmtpAllowSelfSigned: 'SMTP_ALLOW_SELF_SIGNED' // Allow self-signed certificates (not recommended for production use)
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -88,7 +88,11 @@ const isEmpty = (str: string | undefined): boolean => str === undefined || str.t
 const normalizeTlsMode = (mode: string | undefined): TlsOptions | undefined => {
   if (mode === undefined || mode === '') return undefined
   const normalized = mode.toLowerCase()
-  return Object.values(TlsOptions).find((opt) => opt.toLowerCase() === normalized)
+  const value: TlsOptions | undefined = Object.values(TlsOptions).find((opt) => opt.toLowerCase() === normalized)
+  if (value === undefined) {
+    throw Error('Invalid SMTP_TLS_MODE value. Must be one of: secure, upgrade, ignore')
+  }
+  return value
 }
 
 const buildSesConfig = (): SesConfig => {

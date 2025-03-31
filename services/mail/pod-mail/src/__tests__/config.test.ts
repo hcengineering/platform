@@ -124,4 +124,13 @@ describe('Config', () => {
 
     expect(() => require('../config')).toThrow('Both SMTP and SES configuration are specified, please specify only one')
   })
+
+  test('should throw an error if invalid TLS mode is provided', () => {
+    process.env.PORT = '1025'
+    process.env.SMTP_HOST = 'smtp.example.com'
+    process.env.SMTP_PORT = '587'
+    process.env.SMTP_TLS_MODE = 'invalid'
+
+    expect(() => require('../config')).toThrow('Invalid SMTP_TLS_MODE value. Must be one of: secure, upgrade, ignore')
+  })
 })
