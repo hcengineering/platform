@@ -124,6 +124,7 @@ import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
 import '@hcengineering/chat-assets'
 import '@hcengineering/inbox-assets'
+import '@hcengineering/mail-assets'
 import '@hcengineering/github-assets'
 
 import { coreId } from '@hcengineering/core'
