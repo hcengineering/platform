@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_CARD } from '@hcengineering/card'
-import { chunterId } from '@hcengineering/chunter'
+import { cardId, DOMAIN_CARD } from '@hcengineering/card'
 import core, { TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
 import {
   tryMigrate,
@@ -28,7 +27,7 @@ import card from '.'
 
 export const cardOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
-    await tryMigrate(mode, client, chunterId, [
+    await tryMigrate(mode, client, cardId, [
       {
         state: 'set-parent-info',
         mode: 'upgrade',
@@ -37,7 +36,7 @@ export const cardOperation: MigrateOperation = {
     ])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
-    await tryUpgrade(mode, state, client, chunterId, [
+    await tryUpgrade(mode, state, client, cardId, [
       {
         state: 'migrateViewlets-v2',
         func: migrateViewlets
