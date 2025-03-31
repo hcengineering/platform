@@ -21,6 +21,7 @@ interface Config {
   secret: string
   accountsUrl: string
   workspaceUrl: string
+  ignoredAddresses: string[]
 }
 
 const config: Config = {
@@ -32,7 +33,8 @@ const config: Config = {
       return process.env.WORKSPACE_URL
     }
     throw Error('WORKSPACE_URL env var is not set')
-  })()
+  })(),
+  ignoredAddresses: process.env.IGNORED_ADDRESSES?.split(',') ?? []
 }
 
 export default config

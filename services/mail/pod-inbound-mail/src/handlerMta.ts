@@ -17,6 +17,7 @@ import { readEml, ReadedEmlJson } from 'eml-parse-js'
 import { Request, Response } from 'express'
 import { htmlToMarkup } from '@hcengineering/text-html'
 import { createMessages } from './message'
+import config from './config'
 
 interface MtaMessage {
   envelope: {
@@ -38,6 +39,10 @@ export async function handleMtaHook (req: Request, res: Response): Promise<void>
     const mta: MtaMessage = req.body
 
     const from = { address: mta.envelope.from.address, name: '' }
+    if (config.ignoredAddresses.includes(from.address)) {
+      console.log(`Ignoring message from ${from.address}`)
+      return
+    }
     const fromHeader = mta.message.headers.find((header) => header[0] === 'From')?.[1]
     if (fromHeader !== undefined) {
       from.name = extractContactName(fromHeader)

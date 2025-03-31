@@ -20,17 +20,18 @@ export async function ensureGlobalPerson (
   client: AccountClient,
   mailId: string,
   contact: { address: string, name: string }
-): Promise<PersonId | undefined> {
+): Promise<{ socialId: PersonId, uuid: PersonUuid } | undefined> {
   const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: contact.address })
-  const personId = await client.findSocialIdBySocialKey(socialKey)
-  if (personId !== undefined) {
-    console.log(`[${mailId}] Found global person for ${contact.address}: ${personId}`)
-    return personId
+  const socialId = await client.findSocialIdBySocialKey(socialKey)
+  const uuid = await client.findPersonBySocialKey(socialKey)
+  if (socialId !== undefined && uuid !== undefined) {
+    console.log(`[${mailId}] Found global person for ${contact.address}: ${uuid}`)
+    return { socialId, uuid }
   }
   const [firstName, lastName] = contact.name.split(' ')
   try {
     const globalPerson = await client.ensurePerson(SocialIdType.EMAIL, contact.address, firstName, lastName)
-    return globalPerson.socialId
+    return globalPerson
   } catch (err) {
     console.error(`[${mailId}] Failed to create global person for ${contact.address}`, err)
   }
