@@ -15,6 +15,7 @@
 <script lang="ts">
   import { type IntlString, getMetadata } from '@hcengineering/platform'
   import { getContext } from 'svelte'
+  import { type Readable } from 'svelte/store'
 
   import FontSize from './icons/FontSize.svelte'
   import Language from './icons/Language.svelte'
@@ -31,17 +32,19 @@
     eventToHTMLElement
   } from '../..'
 
-  const fontSizeContext = getContext<{ currentFontSize: string, setFontSize: (value: string) => void }>('fontsize')
-  const setFontSize = fontSizeContext.setFontSize
-  let currentFontSize = fontSizeContext.currentFontSize
+  const { currentFontSize, setFontSize } = getContext<{
+    currentFontSize: Readable<string>
+    setFontSize: (value: string) => void
+  }>('fontsize')
 
-  const themeContext = getContext<{ currentTheme: string, setTheme: (theme: string) => void }>('theme')
-  const setTheme = themeContext.setTheme
-  let currentTheme = themeContext.currentTheme
+  const { currentTheme, setTheme } = getContext<{ currentTheme: Readable<string>, setTheme: (theme: string) => void }>(
+    'theme'
+  )
 
-  const languageContext = getContext<{ currentLanguage: string, setLanguage: (language: string) => void }>('lang')
-  const setLanguage = languageContext.setLanguage
-  let currentLanguage = languageContext.currentLanguage
+  const { currentLanguage, setLanguage } = getContext<{
+    currentLanguage: Readable<string>
+    setLanguage: (language: string) => void
+  }>('lang')
 
   const fontsizes: Array<{ id: string, label: IntlString, size: number }> = [
     { id: 'normal-font', label: ui.string.Spacious, size: 16 },
@@ -67,7 +70,7 @@
     { id: 'de', label: ui.string.German, logo: '&#x1F1E9;&#x1F1EA;' }
   ].filter((lang) => uiLangs.has(lang.id))
 
-  if (langs.findIndex((l) => l.id === currentLanguage) < 0 && langs.length !== 0) {
+  if (langs.findIndex((l) => l.id === $currentLanguage) < 0 && langs.length !== 0) {
     setLanguage(langs[0].id)
   }
 
@@ -80,27 +83,24 @@
   }
 
   function selectFontSize (size: string): void {
-    if (currentFontSize === size) return
-    currentFontSize = size
+    if ($currentFontSize === size) return
     setFontSize(size)
     $modalStore = $modalStore
   }
 
   function selectTheme (theme: string): void {
-    if (currentTheme === theme) return
-    currentTheme = theme
+    if ($currentTheme === theme) return
     setTheme(theme)
   }
 
   function selectLanguage (language: string): void {
-    if (currentLanguage === language) return
-    currentLanguage = language
+    if ($currentLanguage === language) return
     setLanguage(language)
   }
 
-  $: $deviceInfo.theme = currentTheme
-  $: fontsize = fontsizes.find((fs) => fs.id === currentFontSize) ?? fontsizes[0]
-  $: language = langs.find((lang) => lang.id === currentLanguage) ?? langs[0]
+  $: $deviceInfo.theme = $currentTheme
+  $: fontsize = fontsizes.find((fs) => fs.id === $currentFontSize) ?? fontsizes[0]
+  $: language = langs.find((lang) => lang.id === $currentLanguage) ?? langs[0]
 </script>
 
 <div class="antiPopup">
@@ -108,7 +108,7 @@
     <div class="ap-box">
       <div class="flex-row-center m-4">
         {#each themes as theme}
-          {@const selected = currentTheme === theme.id}
+          {@const selected = $currentTheme === theme.id}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
@@ -118,7 +118,7 @@
               selectTheme(theme.id)
             }}
           >
-            <ThemeButton theme={theme.id} focused={currentTheme} />
+            <ThemeButton theme={theme.id} focused={$currentTheme} />
             <span class="label overflow-label">
               <Label label={theme.label} />
             </span>
