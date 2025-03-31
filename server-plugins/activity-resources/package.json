@@ -38,6 +38,8 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/card": "^0.6.0",
+    "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/platform": "^0.6.11",
@@ -46,6 +48,7 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-notification-resources": "^0.6.0",
     "@hcengineering/text-core": "^0.6.0",
-    "@hcengineering/contact": "^0.6.24"
+    "@hcengineering/communication-sdk-types": "0.1.147",
+    "@hcengineering/communication-types": "0.1.147"
   }
 }

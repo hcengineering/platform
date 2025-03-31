@@ -35,7 +35,7 @@ import { DocumentClassQuery, Tx, TxApplyResult, TxCUD, TxFactory, TxProcessor } 
  *
  * `notify` is not supported by TxOperations.
  */
-export class TxOperations implements Omit<Client, 'notify'> {
+export class TxOperations implements Omit<Client, 'notify' | 'getConnection'> {
   readonly txFactory: TxFactory
 
   constructor (

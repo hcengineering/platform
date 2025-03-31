@@ -64,6 +64,8 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       return { docs: [] }
     }
 
+    pushHandler = (): void => {}
+
     async tx (tx: Tx): Promise<TxResult> {
       if (tx.objectSpace === core.space.Model) {
         hierarchy.tx(tx)

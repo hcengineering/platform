@@ -76,6 +76,10 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -226,6 +230,10 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -350,6 +358,10 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -423,6 +435,10 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -494,6 +510,10 @@ jobs:
 
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
+
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
@@ -595,6 +615,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -667,6 +691,10 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Prepare .npmrc for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install --purge

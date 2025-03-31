@@ -244,7 +244,7 @@ export function restoreLocation (loc: PlatformLocation, app: Plugin): void {
   if (last !== null) {
     const newLocation: PlatformLocation = JSON.parse(last)
 
-    if (newLocation.path[3] != null) {
+    if (newLocation.path[1] === loc.path[1] && newLocation.path[3] != null) {
       loc.path[3] = newLocation.path[3] as Ref<Space>
       loc.path[4] = newLocation.path[4]
       if (loc.path[4] == null) {

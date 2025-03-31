@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Channel": "频道",
+    "Channels": "频道",
+    "Chat": "聊天",
+    "Description": "描述",
+    "Loading": "加载中...",
+    "MessageIn": "在 #{title} 的消息",
+    "Thread": "讨论串",
+    "Threads": "讨论串",
+    "Title": "标题"
+  }
+}

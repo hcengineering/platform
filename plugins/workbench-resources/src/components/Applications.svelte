@@ -15,11 +15,13 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import core, { getCurrentAccount, type Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createNotificationsQuery, createQuery } from '@hcengineering/presentation'
   import { Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
+  import inbox, { inboxId } from '@hcengineering/inbox'
+  import chat, { chatId } from '@hcengineering/chat'
 
   import { isAppAllowed } from '../utils'
   import AppItem from './AppItem.svelte'
@@ -44,10 +46,20 @@
     }
   )
 
+  let hasNewInboxNotifications = false
+  const notificationCountQuery = createNotificationsQuery()
+
+  notificationCountQuery.query({ read: false, limit: 1 }, (res) => {
+    hasNewInboxNotifications = res.getResult().length > 0
+  })
+
   const me = getCurrentAccount()
 
   $: topApps = apps.filter((it) => it.position === 'top')
   $: bottomdApps = apps.filter((it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me) && it.position !== 'top')
+
+  const chatApp = chatId as any as Ref<Application>
+  const inboxApp = inboxId as any as Ref<Application>
 </script>
 
 <div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">
@@ -88,6 +100,34 @@
           />
         </NavLink>
       {/each}
+      <div class="divider" />
+      <NavLink
+        app={inboxId}
+        shrink={0}
+        restoreLastLocation
+        disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && active === inboxApp}
+      >
+        <AppItem
+          icon={inbox.icon.Inbox}
+          label={inbox.string.Inbox}
+          selected={active === inboxApp}
+          navigator={active === inboxApp && $deviceInfo.navigator.visible}
+          notify={hasNewInboxNotifications}
+        />
+      </NavLink>
+      <NavLink
+        app={chatId}
+        shrink={0}
+        restoreLastLocation
+        disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && active === chatApp}
+      >
+        <AppItem
+          icon={chat.icon.ChatBubble}
+          label={chat.string.Chat}
+          selected={active === chatApp}
+          navigator={active === chatApp && $deviceInfo.navigator.visible}
+        />
+      </NavLink>
       <div class="apps-space-{direction}" />
     </Scroller>
   {/if}

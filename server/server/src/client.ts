@@ -52,6 +52,19 @@ import {
   type Workspace
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
+import {
+  FindMessagesGroupsParams,
+  FindMessagesParams,
+  Message,
+  MessagesGroup,
+  FindNotificationContextParams,
+  FindNotificationsParams
+} from '@hcengineering/communication-types'
+import {
+  RequestEvent as CommunicationEvent,
+  ConnectionInfo as CommunicationCtx,
+  EventResult
+} from '@hcengineering/communication-sdk-types'
 
 const useReserveContext = (process.env.USE_RESERVE_CTX ?? 'true') === 'true'
 
@@ -365,5 +378,62 @@ export class ClientSession implements Session {
       return
     }
     await ctx.sendResponse(ctx.requestId, {})
+  }
+
+  async eventRaw (ctx: ClientSessionCtx, event: CommunicationEvent): Promise<EventResult> {
+    this.lastRequest = Date.now()
+    return await ctx.communicationApi.event(this.getCommunicationCtx(), event)
+  }
+
+  async event (ctx: ClientSessionCtx, event: CommunicationEvent): Promise<void> {
+    const result = await this.eventRaw(ctx, event)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findMessagesRaw (ctx: ClientSessionCtx, params: FindMessagesParams, queryId?: number): Promise<Message[]> {
+    this.lastRequest = Date.now()
+    return await ctx.communicationApi.findMessages(this.getCommunicationCtx(), params, queryId)
+  }
+
+  async findMessages (ctx: ClientSessionCtx, params: FindMessagesParams, queryId?: number): Promise<void> {
+    const result = await this.findMessagesRaw(ctx, params, queryId)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findMessagesGroupsRaw (ctx: ClientSessionCtx, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+    this.lastRequest = Date.now()
+    return await ctx.communicationApi.findMessagesGroups(this.getCommunicationCtx(), params)
+  }
+
+  async findMessagesGroups (ctx: ClientSessionCtx, params: FindMessagesGroupsParams): Promise<void> {
+    const result = await this.findMessagesGroupsRaw(ctx, params)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findNotifications (ctx: ClientSessionCtx, params: FindNotificationsParams): Promise<void> {
+    const result = await ctx.communicationApi.findNotifications(this.getCommunicationCtx(), params)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findNotificationContexts (
+    ctx: ClientSessionCtx,
+    params: FindNotificationContextParams,
+    queryId?: number
+  ): Promise<void> {
+    const result = await ctx.communicationApi.findNotificationContexts(this.getCommunicationCtx(), params, queryId)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async unsubscribeQuery (ctx: ClientSessionCtx, id: number): Promise<void> {
+    this.lastRequest = Date.now()
+    await ctx.communicationApi.unsubscribeQuery(this.getCommunicationCtx(), id)
+    await ctx.sendResponse(ctx.requestId, {})
+  }
+
+  private getCommunicationCtx (): CommunicationCtx {
+    return {
+      sessionId: this.sessionId,
+      account: this.account
+    }
   }
 }

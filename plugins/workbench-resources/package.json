@@ -40,6 +40,7 @@
     "svelte": "^4.2.19",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/chat": "^0.6.0",
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/ui": "^0.6.15",
@@ -59,6 +60,7 @@
     "@hcengineering/view-resources": "^0.6.0",
     "fast-copy": "^3.0.2",
     "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/account-client": "^0.6.0"
+    "@hcengineering/account-client": "^0.6.0",
+    "@hcengineering/inbox": "^0.6.0"
   }
 }

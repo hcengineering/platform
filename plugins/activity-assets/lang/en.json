@@ -50,6 +50,9 @@
     "RemovedObject": "Removed {object}",
     "ChangedObject": "Changed {object}",
     "UnsetObject": "Unset {object}",
-    "UpdatedObject": "Updated {object}"
+    "UpdatedObject": "Updated {object}",
+    "NewObjectType": "New {type}: {title}",
+    "RemovedObjectType": "Removed {type} : {title}",
+    "AttributeSetTo": "{name} set to {value}"
   }
 }

@@ -347,6 +347,8 @@ services:
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4010
+      - MSG2FILE_URL=http://huly.local:9087
+      - COMMUNICATION_TIME_LOGGING_ENABLED=true
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
@@ -471,24 +473,22 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://huly.local:4900
-  #      - LOVE_ENDPOINT=http://huly.local:8096
-  #      - OPENAI_API_KEY=token
-  #  telegram-bot:
-  #    image: hardcoreeng/telegram-bot
-  #   extra_hosts:
-  #     - "huly.local:host-gateway"
-  #    restart: unless-stopped
-  #    environment:
-  #      - PORT=4020
-  #      - QUEUE_CONFIG=${QUEUE_CONFIG}
-  #      - BOT_TOKEN=token
-  #      - MONGO_URL=${MONGO_URL}
-  #      - MONGO_DB=telegram-bot
-  #      - SECRET=secret
-  #      - DOMAIN=domain
-  #      - ACCOUNTS_URL=http://huly.local:3000
-  #      - SERVICE_ID=telegram-bot-service
-  #      - STATS_URL=http://huly.local:4900
+#      - LOVE_ENDPOINT=http://huly.local:8096
+#      - OPENAI_API_KEY=token
+  msg2file:
+    image: hardcoreeng/msg2file
+    ports:
+      - 9087:9087
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    restart: unless-stopped
+    environment:
+      - ACCOUNTS_URL=http://huly.local:3000
+      - DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable
+      - PORT=9087
+      - SECRET=secret
+      - SERVICE_ID=msg2file-service
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
   export:
     image: hardcoreeng/export
     extra_hosts:

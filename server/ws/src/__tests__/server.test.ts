@@ -96,6 +96,9 @@ describe('server', () => {
         loadModel: async (ctx, lastModelTx, hash) => []
       }
     },
+    communicationApiFactory: async () => {
+      return {} as any
+    },
     sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
     port,
     brandingMap: {},
@@ -207,6 +210,9 @@ describe('server', () => {
           },
           loadModel: async (ctx, lastModelTx, hash) => []
         }
+      },
+      communicationApiFactory: async () => {
+        return {} as any
       },
       sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
       port: port + 1,
