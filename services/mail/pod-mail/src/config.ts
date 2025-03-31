@@ -55,7 +55,7 @@ export interface TlsSettings {
 
 export function getTlsSettings (config: SmtpConfig): TlsSettings {
   const tlsConfig: TlsSettings = {
-    secure: config.TlsMode === TlsOptions.SECURE,
+    secure: config.TlsMode === TlsOptions.SECURE || config.Port === 465,
     ignoreTLS: config.TlsMode === TlsOptions.IGNORE
   }
   if (config.AllowSelfSigned === true) {
