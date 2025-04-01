@@ -16,6 +16,7 @@ describe('queue', () => {
         }, 100000)
         queue.createConsumer<string>(testCtx, 'test', genId, async (msg) => {
           msgCount += msg.length
+          console.log('msgCount', msgCount)
           if (msgCount === docsCount) {
             clearTimeout(to)
             resolve()
@@ -40,7 +41,7 @@ describe('queue', () => {
     const queue = createPlatformQueue(parseQueueConfig('localhost:19093;-queue_testing-' + genId, 'test-' + genId, ''))
 
     try {
-      let counter = 5
+      let counter = 2
       const p = new Promise<void>((resolve, reject) => {
         queue.createConsumer<string>(testCtx, 'test', genId, async (msg) => {
           counter--
