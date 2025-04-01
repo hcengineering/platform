@@ -19,16 +19,11 @@
   import { IntlString } from '@hcengineering/platform'
 
   export let value: Ref<ViewletDescriptor> | undefined = undefined
-<<<<<<< HEAD
   export let withSingleViews: boolean = false
   export let label: IntlString
   $: supportedTypes = withSingleViews
     ? [view.viewlet.Table, view.viewlet.List, view.viewlet.Tree, view.viewlet.MasterDetail, view.viewlet.Document]
     : [view.viewlet.Table, view.viewlet.List, view.viewlet.Tree, view.viewlet.MasterDetail]
-=======
-  export let supportedTypes: Ref<ViewletDescriptor>[] = [view.viewlet.Table, view.viewlet.List]
-  export let label: IntlString
->>>>>>> a226f9aa0eebf69caf8020c2aa5098d42f039d91
 </script>
 
 <ObjectBox
@@ -39,8 +34,5 @@
   docQuery={{
     _id: { $in: supportedTypes }
   }}
-<<<<<<< HEAD
   on:change
-=======
->>>>>>> a226f9aa0eebf69caf8020c2aa5098d42f039d91
 />

@@ -16,33 +16,22 @@
   import { createEventDispatcher } from 'svelte'
 
   import { MasterTag, Tag } from '@hcengineering/card'
-<<<<<<< HEAD
   import core, { Association, Data, Ref, generateId } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Label } from '@hcengineering/ui'
   import view, { MasterDetailConfig, Viewlet, ViewletDescriptor, ViewOptionsModel } from '@hcengineering/view'
   import setting from '@hcengineering/setting'
-=======
-  import core, { Data, Ref } from '@hcengineering/core'
-  import { Card, getClient } from '@hcengineering/presentation'
-  import { EditBox, Label } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletDescriptor, ViewOptionsModel } from '@hcengineering/view'
->>>>>>> a226f9aa0eebf69caf8020c2aa5098d42f039d91
 
   import DescriptorBox from './DescriptorBox.svelte'
   import ViewSettingButton from './ViewSettingButton.svelte'
   import card from '../../../plugin'
   import { updateViewletConfig } from './utils'
-<<<<<<< HEAD
   import ViewConfigSection from './ViewConfigSection.svelte'
-=======
->>>>>>> a226f9aa0eebf69caf8020c2aa5098d42f039d91
 
   export let tag: MasterTag | Tag
 
   let title: string
   let descriptor: Ref<ViewletDescriptor> | undefined = undefined
-<<<<<<< HEAD
   const association: Association | undefined = undefined
   let viewConfigs: MasterDetailConfig[] = []
   $: viewConfigs = [
@@ -59,8 +48,6 @@
       createComponent: card.component.CreateCardButton
     }
   ]
-=======
->>>>>>> a226f9aa0eebf69caf8020c2aa5098d42f039d91
 
   let viewletConfig: Data<Viewlet> | undefined = undefined
   $: viewletConfig = {
@@ -93,7 +80,6 @@
   async function save (): Promise<void> {
     dispatch('close')
     if (descriptor === undefined || viewletConfig === undefined) return
-<<<<<<< HEAD
     setMasterDetailConfig()
     await client.createDoc(view.class.Viewlet, core.space.Model, viewletConfig)
   }
@@ -104,15 +90,10 @@
       views: viewConfigs
     }
   }
-=======
-    await client.createDoc(view.class.Viewlet, core.space.Model, viewletConfig)
-  }
->>>>>>> a226f9aa0eebf69caf8020c2aa5098d42f039d91
   function onConfigUpdate (items: any[]): void {
     if (viewletConfig === undefined) return
     updateViewletConfig(viewletConfig, items)
   }
-<<<<<<< HEAD
   function onMasterDetailUpdate (items: MasterDetailConfig[]): void {
     if (viewletConfig === undefined) return
     viewConfigs = items
@@ -126,14 +107,6 @@
     (descriptor !== view.viewlet.MasterDetail ||
       (viewConfigs.length > 0 &&
         viewConfigs.every((config) => config.class !== undefined && config.view !== undefined)))}
-=======
-</script>
-
-<Card
-  label={card.string.EditView}
-  okAction={save}
-  canSave={descriptor !== undefined}
->>>>>>> a226f9aa0eebf69caf8020c2aa5098d42f039d91
   on:close={() => {
     dispatch('close')
   }}
@@ -148,7 +121,6 @@
       </div>
     {/if}
   </svelte:fragment>
-<<<<<<< HEAD
   <div class="antiGrid-row">
     <div class="antiGrid-row__header">
       <Label label={view.string.Title} />
@@ -189,17 +161,4 @@
       </div>
     </div>
   {/if}
-=======
-  <div class="mb-2"><EditBox autoFocus bind:value={title} placeholder={view.string.Title} /></div>
-  <svelte:fragment slot="pool">
-    <DescriptorBox label={card.string.SelectViewType} bind:value={descriptor} />
-    <ViewSettingButton
-      viewlet={viewletConfig}
-      disabled={descriptor === undefined}
-      on:save={(event) => {
-        onConfigUpdate(event.detail ?? [])
-      }}
-    />
-  </svelte:fragment>
->>>>>>> a226f9aa0eebf69caf8020c2aa5098d42f039d91
 </Card>
