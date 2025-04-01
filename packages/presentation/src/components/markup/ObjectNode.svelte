@@ -29,20 +29,20 @@
 
   let doc: Doc | undefined = undefined
 
-  $: icon = _class !== undefined ? hierarchy.getClass(_class).icon : null
+  $: icon = _class !== undefined && hierarchy.hasClass(_class) ? hierarchy.getClass(_class).icon : null
 
-  $: if (_class != null && _id != null) {
+  $: if (_class != null && _id != null && hierarchy.hasClass(_class)) {
     docQuery.query(_class, { _id }, (r) => {
       doc = r.shift()
     })
   }
 </script>
 
-{#if !doc}
+{#if !doc && title}
   <span class="antiMention">
     {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{title}
   </span>
-{:else}
+{:else if doc}
   <Component
     is={view.component.ObjectMention}
     showLoading={false}
