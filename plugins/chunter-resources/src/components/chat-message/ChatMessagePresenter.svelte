@@ -49,7 +49,7 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let withShowMore: boolean = true
   export let attachmentImageSize: AttachmentImageSize = 'auto'
-  export let videoPreload = true
+  export let videoPreload = false
   export let hideLink = false
   export let compact = false
   export let readonly = false

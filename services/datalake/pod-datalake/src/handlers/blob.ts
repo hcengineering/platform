@@ -227,6 +227,8 @@ export async function handleUploadFormData (
           lastModified: Date.now()
         })
 
+        ctx.info('uploaded', { workspace, name, etag: metadata.etag, type: contentType })
+
         return { key, metadata }
       } catch (err: any) {
         const error = err instanceof Error ? err.message : String(err)

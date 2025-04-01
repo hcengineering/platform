@@ -38,7 +38,7 @@
   export let withShowMore: boolean = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let attachmentImageSize: AttachmentImageSize = 'x-large'
-  export let videoPreload = true
+  export let videoPreload = false
   export let readonly = false
   export let onClick: (() => void) | undefined = undefined
 
