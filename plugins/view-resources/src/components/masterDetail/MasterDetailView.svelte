@@ -42,10 +42,7 @@
   async function getViewlets (viewletId: Ref<Viewlet>): Promise<void> {
     if (viewlet === undefined) return
     const views: MasterDetailConfig[] = viewlet?.masterDetailOptions?.views ?? []
-    const results = await client.findAll(
-      view.class.ViewletDescriptor,
-      { _id: { $in: [views[0].view, views[1].view] } }
-    )
+    const results = await client.findAll(view.class.ViewletDescriptor, { _id: { $in: [views[0].view, views[1].view] } })
     parentView = results.find((v) => v._id === views[0].view)
     detailView = results.find((v) => v._id === views[1].view)
   }
@@ -78,7 +75,9 @@
 
   $: remainingViews = viewlet?.masterDetailOptions?.views?.slice(1) ?? []
   $: isSimpleView = (viewlet?.masterDetailOptions?.views?.length ?? 0) <= 2
-  $: detailViewComponent = isSimpleView ? detailView?.component : viewlet?.$lookup?.descriptor?.component ?? view.component.MasterDetailBrowser
+  $: detailViewComponent = isSimpleView
+    ? detailView?.component
+    : viewlet?.$lookup?.descriptor?.component ?? view.component.MasterDetailBrowser
   $: nestedViewlet = isSimpleView
     ? undefined
     : {

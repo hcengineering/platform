@@ -42,7 +42,7 @@
 
     const classIds = new Set<Ref<Doc>>()
     classIds.add(tagId)
-    associations.forEach(association => {
+    associations.forEach((association) => {
       classIds.add(association.classA)
       classIds.add(association.classB)
     })
@@ -53,11 +53,4 @@
   }
 </script>
 
-<ObjectBox
-  {label}
-  _class={card.class.MasterTag}
-  docQuery={query}
-  bind:value={value}
-  on:change
-  showNavigate={false}
-/>
+<ObjectBox {label} _class={card.class.MasterTag} docQuery={query} bind:value on:change showNavigate={false} />

@@ -71,7 +71,7 @@
     )
   }
 
-  function onSelected(e: CustomEvent<any>): void {
+  function onSelected (e: CustomEvent<any>): void {
     dispatch('select', e.detail)
     if (syncWithLocationQuery) return
     parentQuery = { [parentKey]: e.detail }

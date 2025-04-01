@@ -32,7 +32,7 @@
 
   let title: string
   let descriptor: Ref<ViewletDescriptor> | undefined = undefined
-  let association: Association | undefined = undefined
+  const association: Association | undefined = undefined
   $: viewConfigs = [
     {
       class: tag?._id,
@@ -102,7 +102,10 @@
 <Card
   label={card.string.CreateView}
   okAction={save}
-  canSave={descriptor !== undefined && (descriptor !== view.viewlet.MasterDetail || (viewConfigs.length > 0 && viewConfigs.every((config) => config.class !== undefined && config.view !== undefined)))}
+  canSave={descriptor !== undefined &&
+    (descriptor !== view.viewlet.MasterDetail ||
+      (viewConfigs.length > 0 &&
+        viewConfigs.every((config) => config.class !== undefined && config.view !== undefined)))}
   on:close={() => {
     dispatch('close')
   }}
@@ -122,12 +125,7 @@
       <Label label={view.string.Title} />
     </div>
     <div class="padding">
-      <EditBox
-        bind:value={title}
-        placeholder={view.string.Title}
-        kind={'large-style'}
-        autoFocus
-      />
+      <EditBox bind:value={title} placeholder={view.string.Title} kind={'large-style'} autoFocus />
     </div>
   </div>
   <div class="antiGrid-row">
@@ -139,7 +137,13 @@
     </div>
   </div>
   {#if descriptor === view.viewlet.MasterDetail}
-    <ViewConfigSection tag={tag} {viewConfigs} on:change={(e) => { onMasterDetailUpdate(e.detail) }}/>
+    <ViewConfigSection
+      {tag}
+      {viewConfigs}
+      on:change={(e) => {
+        onMasterDetailUpdate(e.detail)
+      }}
+    />
   {:else}
     <div class="antiGrid-row">
       <div class="antiGrid-row__header withDesciption">

@@ -38,10 +38,9 @@
     console.log(leftAssociations)
     console.log(rightAssociations)
 
-    associations = leftAssociations.concat(rightAssociations)
-      .filter((value, index, self) =>
-        index === self.findIndex((obj) => obj._id === value._id)
-      )
+    associations = leftAssociations
+      .concat(rightAssociations)
+      .filter((value, index, self) => index === self.findIndex((obj) => obj._id === value._id))
     associationIds = associations.map((value) => value._id)
   }
   function onSelect (event: CustomEvent<Ref<Association>>): void {

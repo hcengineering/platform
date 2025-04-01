@@ -18,12 +18,7 @@
   import core, { Class, Data, Doc, fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { makeRank } from '@hcengineering/rank'
-  import {
-    ButtonIcon,
-    getCurrentLocation,
-    IconAdd,
-    navigate
-  } from '@hcengineering/ui'
+  import { ButtonIcon, getCurrentLocation, IconAdd, navigate } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import card from '../plugin'
 
@@ -58,10 +53,4 @@
   }
 </script>
 
-<ButtonIcon
-  kind="primary"
-  icon={IconAdd}
-  size="small"
-  dataId={'btnCreateCard'}
-  on:click={createCard}
-/>
+<ButtonIcon kind="primary" icon={IconAdd} size="small" dataId={'btnCreateCard'} on:click={createCard} />

@@ -70,41 +70,47 @@
   </div>
 
   {#if viewConfigs.length > 0}
-      {#each viewConfigs as config, index}
-        <div class="hulyTableAttr-content task">
-          <div class="hulyTableAttr-content__row justify-between">
-            <div class="config-input">
-              <RelatedTagSelect
-                label={card.string.SelectType}
-                parentTag={index > 0 ? viewConfigs[index - 1].class : tag._id}
-                childTag={index < viewConfigs.length - 1 ? viewConfigs[index + 1].class : tag._id}
-                value={config.class}
-                on:change={(e) => { updateViewClass(index, e.detail) }}
-              />
-            </div>
-            <div class="config-input">
-              <DescriptorBox
-                label={card.string.SelectViewType}
-                value={config.view}
-                withSingleViews
-                on:change={(e) => { updateViewConfig(index, e.detail) }}
-              />
-            </div>
-            <ButtonIcon
-              kind={'tertiary'}
-              icon={IconDelete}
-              size="small"
-              disabled={viewConfigs.length === 1}
-              on:click={() => { removeViewConfig(index) }}
+    {#each viewConfigs as config, index}
+      <div class="hulyTableAttr-content task">
+        <div class="hulyTableAttr-content__row justify-between">
+          <div class="config-input">
+            <RelatedTagSelect
+              label={card.string.SelectType}
+              parentTag={index > 0 ? viewConfigs[index - 1].class : tag._id}
+              childTag={index < viewConfigs.length - 1 ? viewConfigs[index + 1].class : tag._id}
+              value={config.class}
+              on:change={(e) => {
+                updateViewClass(index, e.detail)
+              }}
             />
           </div>
+          <div class="config-input">
+            <DescriptorBox
+              label={card.string.SelectViewType}
+              value={config.view}
+              withSingleViews
+              on:change={(e) => {
+                updateViewConfig(index, e.detail)
+              }}
+            />
+          </div>
+          <ButtonIcon
+            kind={'tertiary'}
+            icon={IconDelete}
+            size="small"
+            disabled={viewConfigs.length === 1}
+            on:click={() => {
+              removeViewConfig(index)
+            }}
+          />
         </div>
-      {/each}
+      </div>
+    {/each}
   {/if}
 </div>
 
 <style lang="scss">
   .config-input {
-    min-width: 7rem
+    min-width: 7rem;
   }
 </style>
