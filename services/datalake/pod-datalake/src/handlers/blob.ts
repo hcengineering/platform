@@ -227,10 +227,6 @@ export async function handleUploadFormData (
           lastModified: Date.now()
         })
 
-        if (contentType.startsWith('video/')) {
-          void requestHLS(ctx, workspace, name)
-        }
-
         ctx.info('uploaded', { workspace, name, etag: metadata.etag, type: contentType })
 
         return { key, metadata }

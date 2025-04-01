@@ -147,11 +147,6 @@ export async function handleMultipartUploadAbort (
 
   ctx.info('multipart-abort', { workspace, name, uuid, uploadId })
 
-  const contentType = req.headers['content-type'] ?? 'application/octet-stream'
-  if (contentType.startsWith('video/')) {
-    void requestHLS(ctx, workspace, name)
-  }
-
   res.status(204).send()
 }
 

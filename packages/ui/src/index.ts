@@ -286,7 +286,6 @@ export { default as NestedDropdown } from './components/NestedDropdown.svelte'
 
 export { default as Dock } from './components/Dock.svelte'
 
-export { default as Image } from './components/Image.svelte'
 export { default as Video } from './components/Video.svelte'
 export { default as HlsVideo } from './components/HlsVideo.svelte'
 

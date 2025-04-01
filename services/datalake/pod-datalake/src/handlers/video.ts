@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { systemAccountUuid, MeasureContext } from '@hcengineering/core'
+import { type MeasureContext, getWorkspaceId, systemAccountEmail } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 
 import config from '../config'
@@ -39,7 +39,7 @@ async function postTranscodingTask (ctx: MeasureContext, workspace: string, name
     return
   }
   const streamReq: StreamRequest = { format: 'hls', source: name, workspace }
-  const token = generateToken(systemAccountUuid, undefined, { iss: 'datalake', aud: 'stream' })
+  const token = generateToken(systemAccountEmail, getWorkspaceId(''), { iss: 'datalake', aud: 'stream' })
 
   const request = new Request(config.StreamUrl, {
     method: 'POST',

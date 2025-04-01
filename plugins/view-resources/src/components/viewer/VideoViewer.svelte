@@ -36,17 +36,12 @@
   style:max-height={fit ? '100%' : maxHeight}
 >
   {#await getVideoMeta(value, name) then meta}
-    {@const src = getFileUrl(value, name)}
-    <HlsVideo {src} hlsSrc={src} preload={true} />
-  {:else}
-    {#await getVideoMeta(value, name) then meta}
-      {#if meta?.hls?.source !== undefined}
-        {@const src = getFileUrl(value, name)}
-        <HlsVideo {src} {name} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
-      {:else}
-        {@const src = getFileUrl(value, name)}
-        <Video {src} {name} />
-      {/if}
-    {/await}
-  {/if}
+    {#if meta?.hls?.source !== undefined}
+      {@const src = getFileUrl(value, name)}
+      <HlsVideo {src} {name} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
+    {:else}
+      {@const src = getFileUrl(value, name)}
+      <Video {src} {name} />
+    {/if}
+  {/await}
 </div>
