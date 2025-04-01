@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
-  import HLS from 'hls.js'
+  import HLS, { LoadPolicy } from 'hls.js'
   import { onDestroy, onMount } from 'svelte'
+  import Plyr from 'plyr'
 
   export let src: string
   export let hlsSrc: string
-  export let hlsThumbnail: string
-  export let name: string = ''
+  export let hlsThumbnail = ''
+  export let name: string | undefined = undefined
   export let preload = true
 
   let video: HTMLVideoElement | null = null
@@ -124,26 +126,28 @@
   $: initialize(src)
 
   onMount(() => {
-    if (HLS.isSupported()) {
-      hls?.destroy()
-      hls = new HLS({ autoStartLoad: false })
-      hls.loadSource(hlsSrc)
-      hls.attachMedia(video)
-
-      video.poster = hlsThumbnail
-      video.onplay = () => {
-        // autoStartLoad disables autoplay, so we need to enable it manually
-        video.onplay = null
-        hls.startLoad()
-      }
-    } else {
-      video.src = src
-    }
+    initialize(src)
   })
 
   onDestroy(() => {
     hls?.destroy()
+    player?.destroy()
   })
+
+  function updateQuality (newQuality: number): void {
+    if (hls === null) {
+      return
+    }
+    if (newQuality === 0) {
+      hls.currentLevel = -1
+    } else {
+      hls.levels.forEach((level, levelIndex) => {
+        if (level.height === newQuality && hls !== null) {
+          hls.currentLevel = levelIndex
+        }
+      })
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-media-has-caption -->
@@ -162,4 +166,5 @@
   video::-webkit-media-controls-enclosure {
     visibility: visible;
   }
+  @import 'plyr/dist/plyr.css';
 </style>
