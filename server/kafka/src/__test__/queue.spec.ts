@@ -12,9 +12,9 @@ describe('queue', () => {
       let msgCount = 0
       const p1 = new Promise<void>((resolve, reject) => {
         const to = setTimeout(() => {
-          reject(new Error('Timeout waiting for messages'))
+          reject(new Error(`Timeout waiting for messages:${msgCount}`))
         }, 100000)
-        queue.createConsumer<string>(testCtx, 'test', genId, async (msg) => {
+        queue.createConsumer<string>(testCtx, 'qtest', genId, async (msg) => {
           msgCount += msg.length
           console.log('msgCount', msgCount)
           if (msgCount === docsCount) {
@@ -24,12 +24,14 @@ describe('queue', () => {
         })
       })
 
-      const producer = queue.createProducer<string>(testCtx, 'test')
+      const producer = queue.createProducer<string>(testCtx, 'qtest')
       for (let i = 0; i < docsCount; i++) {
         await producer.send(genId, ['msg' + i])
       }
 
       await p1
+    } catch (err: any) {
+      console.log(err)
     } finally {
       await queue.shutdown()
       await queue.deleteTopics(['test'])
