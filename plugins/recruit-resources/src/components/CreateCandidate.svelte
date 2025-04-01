@@ -23,7 +23,7 @@
     findContacts,
     Person
   } from '@hcengineering/contact'
-  import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
+  import { EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import core, {
     Account,
     AttachedData,
@@ -43,127 +43,56 @@
     Card,
     createQuery,
     deleteFile,
-    DraftController,
-    FilePreviewPopup,
     getClient,
     InlineAttributeBar,
     KeyedAttribute,
-    MessageBox,
-    MultipleDraftController
+    MessageBox
   } from '@hcengineering/presentation'
   import { Candidate, CandidateDraft, RecruitEvents } from '@hcengineering/recruit'
-  import { recognizeDocument } from '@hcengineering/rekoni'
-  import tags, { findTagCategory, TagElement, TagReference } from '@hcengineering/tags'
+  import tags, { TagElement, TagCategory } from '@hcengineering/tags'
   import {
     Button,
     Component,
     createFocusManager,
-    EditBox,
-    IconFile as FileIcon,
     FocusHandler,
-    getColorNumberByText,
-    IconAttachment,
     IconInfo,
     Label,
-    MiniToggle,
-    showPopup,
-    Spinner,
-    ActionIcon
+    showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import { getCandidateIdentifier } from '../utils'
-  import YesNo from './YesNo.svelte'
-  import IconShuffle from './icons/Shuffle.svelte'
+  import { CandidateDraftService } from '../services/candidateDraftService'
+  import { CandidateRecognitionService } from '../services/candidateRecognitionService'
+  import CandidatePersonalInfo from './candidate/CandidatePersonalInfo.svelte'
+  import CandidateChannels from './candidate/CandidateChannels.svelte'
+  import CandidateWorkPreferences from './candidate/CandidateWorkPreferences.svelte'
+  import CandidateSkills from './candidate/CandidateSkills.svelte'
+  import CandidateResume from './candidate/CandidateResume.svelte'
 
   export let shouldSaveDraft: boolean = true
 
-  const mDraftController = new MultipleDraftController(recruit.mixin.Candidate)
+  const draftService = new CandidateDraftService(shouldSaveDraft)
+  const recognitionService = new CandidateRecognitionService()
   const id: Ref<Candidate> = generateId()
-  const draftController = new DraftController<CandidateDraft>(
-    shouldSaveDraft ? mDraftController.getNext() ?? id : undefined,
-    recruit.mixin.Candidate
-  )
 
-  function getEmptyCandidate (id: Ref<Candidate> | undefined = undefined): CandidateDraft {
-    return {
-      _id: id ?? generateId(),
-      firstName: '',
-      lastName: '',
-      title: '',
-      channels: [],
-      skills: [],
-      city: ''
-    }
-  }
-  const empty = {}
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const ignoreKeys = ['onsite', 'remote', 'title']
-
-  let draft = shouldSaveDraft ? draftController.get() : undefined
-  let object = draft ?? getEmptyCandidate(id)
-  onDestroy(
-    draftController.subscribe((val) => {
-      draft = shouldSaveDraft ? val : undefined
-    })
-  )
-
-  function objectChange (object: CandidateDraft, empty: any) {
-    if (shouldSaveDraft) {
-      draftController.save(object, empty)
-    }
-  }
-
-  $: objectChange(object, empty)
-
-  interface resumeFile {
-    name: string
-    uuid: string
-    size: number
-    type: string
-    lastModified: number
-  }
-
-  export function canClose (): boolean {
-    return true
-  }
-
+  let draft = shouldSaveDraft ? draftService.getDraft() : undefined
+  let object = draft ?? draftService.getEmptyCandidate(id)
   let avatarEditor: EditableAvatar
-
-  fillDefaults(hierarchy, empty, recruit.mixin.Candidate)
-  fillDefaults(hierarchy, object, recruit.mixin.Candidate)
-
-  function resumeDraft () {
-    return {
-      uuid: object?.resumeUuid,
-      name: object?.resumeName,
-      size: object?.resumeSize,
-      type: object?.resumeType,
-      lastModified: object?.resumeLastModified
-    }
-  }
-
-  const dispatch = createEventDispatcher()
-
   let inputFile: HTMLInputElement
   let loading = false
   let dragover = false
   let shouldCreateNewSkills = false
-
-  let avatar: File | undefined = draft?.avatar
-
   let matches: WithLookup<Person>[] = []
   let matchedChannels: AttachedData<Channel>[] = []
 
   const key: KeyedAttribute = {
     key: 'skills',
-    attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'skills')
+    attr: getClient().getHierarchy().getAttribute(recruit.mixin.Candidate, 'skills')
   }
 
   let elements = new Map<Ref<TagElement>, TagElement>()
   let namedElements = new Map<string, TagElement>()
-
   const newElements: TagElement[] = []
 
   const elementQuery = createQuery()
@@ -188,7 +117,51 @@
     )
   })
 
-  async function createCandidate (): Promise<void> {
+  onDestroy(
+    draftService.subscribe((val) => {
+      draft = shouldSaveDraft ? val : undefined
+    })
+  )
+
+  function objectChange(object: CandidateDraft, empty: any) {
+    if (shouldSaveDraft) {
+      draftService.saveDraft(object, empty)
+    }
+  }
+
+  $: objectChange(object, empty)
+
+  export function canClose(): boolean {
+    return true
+  }
+
+  const ignoreKeys = ['createdOn', 'avatar']
+
+  const empty = {
+    firstName: '',
+    lastName: '',
+    title: '',
+    city: '',
+    channels: [],
+    skills: [],
+    onsite: false,
+    remote: false
+  }
+
+  fillDefaults(getClient().getHierarchy(), empty, recruit.mixin.Candidate)
+  fillDefaults(getClient().getHierarchy(), object, recruit.mixin.Candidate)
+
+  function findTagCategory(title: string, categories: TagCategory[]): Ref<TagCategory> {
+    const lowerTitle = title.toLowerCase()
+    for (const category of categories) {
+      if (category.title.toLowerCase() === lowerTitle) {
+        return category._id
+      }
+    }
+    return categories[0]?._id ?? generateId()
+  }
+
+  async function createCandidate(): Promise<void> {
     const _id: Ref<Person> = generateId()
     const candidate: Data<Person> = {
       name: combineName(object.firstName ?? '', object.lastName ?? ''),
@@ -210,7 +183,7 @@
     // Store all extra values.
     for (const [k, v] of Object.entries(object)) {
       if (v != null && k !== 'createdOn' && k !== 'avatar') {
-        const attr = hierarchy.findAttribute(recruit.mixin.Candidate, k)
+        const attr = getClient().getHierarchy().findAttribute(recruit.mixin.Candidate, k)
         if (attr === undefined) continue
         if (attr.attributeOf === recruit.mixin.Candidate) {
           if ((candidateData as any)[k] === undefined) {
@@ -224,7 +197,7 @@
       }
     }
 
-    const applyOps = client.apply(undefined, 'create-candidate')
+    const applyOps = getClient().apply(undefined, 'create-candidate')
 
     await applyOps.createDoc(contact.class.Person, contact.space.Contacts, candidate, _id)
     await applyOps.createMixin(
@@ -238,7 +211,13 @@
     Analytics.handleEvent(RecruitEvents.TalentCreated, { _id: candidateIdentifier })
 
     if (object.resumeUuid !== undefined) {
-      const resume = resumeDraft() as resumeFile
+      const resume = {
+        uuid: object.resumeUuid,
+        name: object.resumeName ?? '',
+        size: object.resumeSize ?? 0,
+        type: object.resumeType ?? '',
+        lastModified: object.resumeLastModified ?? 0
+      }
       await applyOps.addCollection(
         attachment.class.Attachment,
         contact.space.Contacts,
@@ -255,6 +234,7 @@
       )
       Analytics.handleEvent(AttachmentsEvents.FilesAttached, { object: candidateIdentifier, count: 1 })
     }
+
     for (const channel of object.channels) {
       await applyOps.addCollection(
         contact.class.Channel,
@@ -269,15 +249,15 @@
       )
     }
 
-    const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
+    const categories = await getClient().findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
     // Tag elements
     const skillTagElements = toIdMap(
-      await client.findAll(tags.class.TagElement, { _id: { $in: object.skills.map((it) => it.tag) } })
+      await getClient().findAll(tags.class.TagElement, { _id: { $in: object.skills.map((it) => it.tag) } })
     )
     for (const skill of object.skills) {
       // Create update tag if missing
       if (!skillTagElements.has(skill.tag)) {
-        skill.tag = await client.createDoc(tags.class.TagElement, skill.space, {
+        skill.tag = await getClient().createDoc(tags.class.TagElement, skill.space, {
           title: skill.title,
           color: skill.color,
           targetClass: recruit.mixin.Candidate,
@@ -295,172 +275,12 @@
     }
 
     await applyOps.commit()
-    draftController.remove()
+    draftService.removeDraft()
     dispatch('close', _id)
     resetObject()
   }
 
-  function isUndef (value?: string): boolean {
-    return value === undefined || value === ''
-  }
-
-  function addChannel (channels: AttachedData<Channel>[], type: Ref<ChannelProvider>, value?: string): void {
-    if (value !== undefined) {
-      const provider = channels.find((e) => e.provider === type)
-      if (provider === undefined) {
-        channels.push({
-          provider: type,
-          value
-        })
-      } else {
-        if (isUndef(provider.value)) {
-          provider.value = value
-        }
-      }
-    }
-  }
-
-  async function recognize (file: File): Promise<void> {
-    const token = getMetadata(presentation.metadata.Token) ?? ''
-
-    try {
-      const doc = await recognizeDocument(token, file)
-
-      if (isUndef(object.title) && doc.title !== undefined) {
-        object.title = doc.title
-      }
-
-      if (isUndef(object.firstName) && doc.firstName !== undefined) {
-        object.firstName = doc.firstName
-      }
-
-      if (isUndef(object.lastName) && doc.lastName !== undefined) {
-        object.lastName = doc.lastName
-      }
-
-      if (isUndef(object.city) && doc.city !== undefined) {
-        object.city = doc.city
-      }
-
-      if (!object.avatar && doc.avatar !== undefined) {
-        // We had avatar, let's try to upload it.
-        const data = atob(doc.avatar)
-        let n = data.length
-        const u8arr = new Uint8Array(n)
-        while (n--) {
-          u8arr[n] = data.charCodeAt(n)
-        }
-        avatar = new File([u8arr], doc.avatarName ?? 'avatar.png', { type: doc.avatarFormat ?? 'image/png' })
-      }
-
-      const newChannels = [...object.channels]
-      addChannel(newChannels, contact.channelProvider.Email, doc.email)
-      addChannel(newChannels, contact.channelProvider.GitHub, doc.github)
-      addChannel(newChannels, contact.channelProvider.LinkedIn, doc.linkedin)
-      addChannel(newChannels, contact.channelProvider.Phone, doc.phone)
-      addChannel(newChannels, contact.channelProvider.Telegram, doc.telegram)
-      addChannel(newChannels, contact.channelProvider.Twitter, doc.twitter)
-      addChannel(newChannels, contact.channelProvider.Facebook, doc.facebook)
-      object.channels = newChannels
-
-      // Create skills
-      await elementsPromise
-
-      const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
-      const categoriesMap = toIdMap(categories)
-
-      const newSkills: TagReference[] = []
-      const formattedSkills = (doc.skills.map((s) => s.toLowerCase()) ?? []).filter(
-        (skill) => !namedElements.has(skill)
-      )
-      const refactoredSkills: any[] = []
-      if (formattedSkills.length > 0) {
-        const existingTags = Array.from(namedElements.keys()).filter((x) => x.length > 2)
-        const regex = /\S+(?:[-+]\S+)+/g
-        const regexForEmpty = /^((?![a-zA-Zа-яА-Я]).)*$/g
-        for (let sk of formattedSkills) {
-          sk = sk.toLowerCase()
-          const toReplace = [...new Set([...existingTags, ...refactoredSkills])]
-            .filter((s) => sk.includes(s))
-            .sort((a, b) => b.length - a.length)
-          if (toReplace.length > 0) {
-            for (const replacing of toReplace) {
-              if (namedElements.has(replacing)) {
-                refactoredSkills.push(replacing)
-                sk = sk.replace(replacing, '').trim()
-              }
-            }
-          }
-          if (sk.includes(' ')) {
-            const skSplit = sk.split(' ')
-            for (const spl of skSplit) {
-              const fixedTitle = regex.test(spl) ? spl.replaceAll(/[+-]/g, '') : spl
-              if (namedElements.has(fixedTitle)) {
-                refactoredSkills.push(fixedTitle)
-                sk = sk.replace(spl, '').trim()
-              }
-              if ([...doc.skills, ...refactoredSkills].includes(fixedTitle)) {
-                sk = sk.replace(spl, '').trim()
-              }
-            }
-          }
-          if (regex.test(sk)) {
-            const fixedTitle = sk.replaceAll(/[+-]/g, '')
-            if (namedElements.has(fixedTitle)) {
-              refactoredSkills.push(fixedTitle)
-              sk = ''
-            }
-          }
-          if (!regexForEmpty.test(sk) && !refactoredSkills.includes(sk)) {
-            refactoredSkills.push(sk)
-          }
-        }
-      }
-      const skillsToAdd = [...new Set([...doc.skills.map((s) => s.toLowerCase()), ...refactoredSkills])]
-      // Create missing tag elemnts
-      for (const s of skillsToAdd) {
-        const title = s.trim().toLowerCase()
-        let e = namedElements.get(title)
-        if (e === undefined && shouldCreateNewSkills) {
-          // No yet tag with title
-          const category = findTagCategory(s, categories)
-          const cinstance = categoriesMap.get(category)
-          e = TxProcessor.createDoc2Doc(
-            client.txFactory.createTxCreateDoc(tags.class.TagElement, core.space.Workspace, {
-              title,
-              description: `Imported skill ${s} of ${cinstance?.label ?? ''}`,
-              color: getColorNumberByText(s),
-              targetClass: recruit.mixin.Candidate,
-              category
-            })
-          )
-          namedElements.set(title, e)
-          elements.set(e._id, e)
-          newElements.push(e)
-        }
-        if (e !== undefined) {
-          newSkills.push(
-            TxProcessor.createDoc2Doc(
-              client.txFactory.createTxCreateDoc(tags.class.TagReference, core.space.Workspace, {
-                title: e.title,
-                color: e.color,
-                tag: e._id,
-                attachedTo: '' as Ref<Doc>,
-                attachedToClass: recruit.mixin.Candidate,
-                collection: 'skills'
-              })
-            )
-          )
-        }
-      }
-      object.skills = [...object.skills, ...newSkills]
-    } catch (err: any) {
-      Analytics.handleError(err)
-      console.error(err)
-    }
-  }
-
-  async function deleteResume (): Promise<void> {
+  async function deleteResume(): Promise<void> {
     if (object.resumeUuid) {
       try {
         await deleteFile(object.resumeUuid)
@@ -470,7 +290,7 @@
     }
   }
 
-  async function createAttachment (file: File) {
+  async function createAttachment(file: File) {
     loading = true
     try {
       const uploadFile = await getResource(attachment.helper.UploadFile)
@@ -481,7 +301,7 @@
       object.resumeType = file.type
       object.resumeLastModified = file.lastModified
 
-      await recognize(file)
+      await recognitionService.recognize(file, object)
     } catch (err: any) {
       Analytics.handleError(err)
       setPlatformStatus(unknownError(err))
@@ -490,44 +310,9 @@
     }
   }
 
-  function drop (event: DragEvent) {
-    dragover = false
-    const droppedFile = event.dataTransfer?.files[0]
-    if (droppedFile !== undefined) {
-      createAttachment(droppedFile)
-    }
-  }
-
-  function fileSelected () {
-    const file = inputFile.files?.[0]
-    if (file !== undefined) {
-      createAttachment(file)
-    }
-    manager.setFocusPos(102)
-  }
-
-  function addTagRef (tag: TagElement): void {
-    object.skills = [
-      ...object.skills,
-      {
-        _class: tags.class.TagReference,
-        _id: generateId(),
-        attachedTo: '' as Ref<Doc>,
-        attachedToClass: recruit.mixin.Candidate,
-        collection: 'skills',
-        space: core.space.Workspace,
-        modifiedOn: 0,
-        modifiedBy: '' as PersonId,
-        title: tag.title,
-        tag: tag._id,
-        color: tag.color
-      }
-    ]
-  }
-
   $: if (object.firstName != null && object.lastName != null) {
     void findContacts(
-      client,
+      getClient(),
       contact.class.Person,
       combineName(object.firstName.trim(), object.lastName.trim()),
       object.channels
@@ -539,19 +324,19 @@
 
   const manager = createFocusManager()
 
-  function resetObject (): void {
-    object = getEmptyCandidate()
-    fillDefaults(hierarchy, object, recruit.mixin.Candidate)
+  function resetObject(): void {
+    object = draftService.getEmptyCandidate()
+    fillDefaults(getClient().getHierarchy(), object, recruit.mixin.Candidate)
   }
 
-  export async function onOutsideClick (): Promise<void> {
+  export async function onOutsideClick(): Promise<void> {
     if (shouldSaveDraft) {
-      draftController.save(object, empty)
+      draftService.saveDraft(object, empty)
     }
   }
 
-  async function showConfirmationDialog (): Promise<void> {
-    draftController.save(object, empty)
+  async function showConfirmationDialog(): Promise<void> {
+    draftService.saveDraft(object, empty)
     const isFormEmpty = draft === undefined
 
     if (isFormEmpty) {
@@ -565,7 +350,7 @@
           action: async () => {
             await deleteResume()
             resetObject()
-            draftController.remove()
+            draftService.removeDraft()
           }
         },
         'top',
@@ -577,6 +362,8 @@
       )
     }
   }
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <FocusHandler {manager} />
@@ -595,146 +382,13 @@
   <svelte:fragment slot="header">
     <Button icon={contact.icon.Person} label={contact.string.Person} size={'large'} disabled on:click={() => {}} />
   </svelte:fragment>
-  <div class="flex-between">
-    <div class="flex-col">
-      <EditBox
-        disabled={loading}
-        placeholder={recruit.string.PersonFirstNamePlaceholder}
-        bind:value={object.firstName}
-        kind={'large-style'}
-        autoFocus
-        maxWidth={'30rem'}
-        focusIndex={1}
-      />
-      <EditBox
-        disabled={loading}
-        placeholder={recruit.string.PersonLastNamePlaceholder}
-        bind:value={object.lastName}
-        maxWidth={'30rem'}
-        kind={'large-style'}
-        focusIndex={2}
-      />
-      <div class="mt-1">
-        <EditBox
-          disabled={loading}
-          placeholder={recruit.string.Title}
-          bind:value={object.title}
-          kind={'small-style'}
-          focusIndex={3}
-          maxWidth={'30rem'}
-        />
-      </div>
-      <EditBox
-        disabled={loading}
-        placeholder={recruit.string.Location}
-        bind:value={object.city}
-        kind={'small-style'}
-        focusIndex={4}
-        maxWidth={'30rem'}
-      />
-    </div>
-    <div class="flex-col items-center flex-gap-2 ml-4">
-      <EditableAvatar
-        disabled={loading}
-        bind:this={avatarEditor}
-        bind:direct={object.avatar}
-        person={{
-          avatarType: AvatarType.COLOR
-        }}
-        size={'large'}
-        name={combineName(object?.firstName?.trim() ?? '', object?.lastName?.trim() ?? '')}
-      />
-      <ActionIcon
-        icon={IconShuffle}
-        label={recruit.string.SwapFirstAndLastNames}
-        size={'medium'}
-        action={() => {
-          const first = object.firstName
-          object.firstName = object.lastName
-          object.lastName = first
-        }}
-      />
-    </div>
-  </div>
+
+  <CandidatePersonalInfo {object} {loading} bind:avatarEditor />
+
   <svelte:fragment slot="pool">
-    <ChannelsDropdown
-      editable={!loading}
-      focusIndex={10}
-      bind:value={object.channels}
-      highlighted={matchedChannels.map((it) => it.provider)}
-      kind={'regular'}
-      size={'large'}
-    />
-    <YesNo
-      disabled={loading}
-      focusIndex={100}
-      label={recruit.string.Onsite}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.onsite}
-      kind={'regular'}
-      size={'large'}
-    />
-    <YesNo
-      disabled={loading}
-      focusIndex={101}
-      label={recruit.string.Remote}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.remote}
-      kind={'regular'}
-      size={'large'}
-    />
-    <Component
-      is={tags.component.TagsDropdownEditor}
-      props={{
-        disabled: loading,
-        focusIndex: 102,
-        items: object.skills,
-        key,
-        targetClass: recruit.mixin.Candidate,
-        showTitle: false,
-        elements,
-        newElements,
-        countLabel: recruit.string.NumberSkills,
-        kind: 'regular',
-        size: 'large'
-      }}
-      on:open={(evt) => {
-        addTagRef(evt.detail)
-      }}
-      on:delete={(evt) => {
-        object.skills = object.skills.filter((it) => it.tag !== evt.detail._id)
-      }}
-    />
-    {#if object.skills.length > 0}
-      <div class="antiComponent antiEmphasized w-full flex-grow mt-2">
-        <Component
-          is={tags.component.TagsEditor}
-          props={{
-            disabled: loading,
-            focusIndex: 102,
-            items: object.skills,
-            key,
-            targetClass: recruit.mixin.Candidate,
-            showTitle: false,
-            elements,
-            newElements,
-            countLabel: recruit.string.NumberSkills
-          }}
-          on:open={(evt) => {
-            addTagRef(evt.detail)
-          }}
-          on:delete={(evt) => {
-            object.skills = object.skills.filter((it) => it._id !== evt.detail)
-          }}
-          on:change={(evt) => {
-            evt.detail.tag.weight = evt.detail.weight
-            object.skills = object.skills
-          }}
-        />
-      </div>
-    {:else}
-      <div class="flex-grow w-full" style="margin: 0" />
-    {/if}
+    <CandidateChannels {object} {loading} {matchedChannels} />
+    <CandidateWorkPreferences {object} {loading} />
+    <CandidateSkills {object} {loading} {elements} {newElements} {key} />
     <InlineAttributeBar
       _class={recruit.mixin.Candidate}
       {object}
@@ -748,60 +402,14 @@
   </svelte:fragment>
 
   <svelte:fragment slot="footer">
-    <div
-      class="flex-center resume"
-      class:solid={dragover || object.resumeUuid}
-      on:dragover|preventDefault={() => {
-        dragover = true
-      }}
-      on:dragleave={() => {
-        dragover = false
-      }}
-      on:drop|preventDefault|stopPropagation={drop}
-    >
-      {#if loading && object.resumeUuid}
-        <Button label={recruit.string.Parsing} icon={Spinner} disabled />
-      {:else}
-        {#if loading}
-          <Button label={recruit.string.Uploading} icon={Spinner} disabled />
-        {:else if object.resumeUuid}
-          <Button
-            disabled={loading}
-            focusIndex={103}
-            icon={FileIcon}
-            on:click={() => {
-              showPopup(
-                FilePreviewPopup,
-                {
-                  file: object.resumeUuid,
-                  contentType: object.resumeType,
-                  name: object.resumeName
-                },
-                object.resumeType?.startsWith('image/') ? 'centered' : 'float'
-              )
-            }}
-          >
-            <svelte:fragment slot="content">
-              <span class="overflow-label disabled">{object.resumeName}</span>
-            </svelte:fragment>
-          </Button>
-        {:else}
-          <Button
-            focusIndex={103}
-            label={recruit.string.AddDropHere}
-            icon={IconAttachment}
-            notSelected
-            on:click={() => {
-              inputFile.click()
-            }}
-          />
-        {/if}
-        <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
-      {/if}
-      <div class="ml-1">
-        <MiniToggle bind:on={shouldCreateNewSkills} label={recruit.string.CreateNewSkills} />
-      </div>
-    </div>
+    <CandidateResume
+      {object}
+      {loading}
+      {dragover}
+      {shouldCreateNewSkills}
+      bind:inputFile
+      on:createAttachment={(event: { detail: File }) => createAttachment(event.detail)}
+    />
     {#if matches.length > 0}
       <div class="flex-col-stretch flex-grow error-color">
         <div class="flex mb-1">
@@ -815,21 +423,3 @@
     {/if}
   </svelte:fragment>
 </Card>
-
-<style lang="scss">
-  .resume {
-    box-shadow: 0 0 0 0 var(--primary-button-outline);
-    border-radius: 0.25rem;
-    transition: box-shadow 0.15s ease-in-out;
-
-    &.solid {
-      box-shadow: 0 0 0 2px var(--primary-button-outline);
-    }
-  }
-  .skills-box {
-    padding: 0.5rem 0.75rem;
-    background: var(--theme-comp-header-color);
-    border: 1px dashed var(--theme-divider-color);
-    border-radius: 0.5rem;
-  }
-</style>
