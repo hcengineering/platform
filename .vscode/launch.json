@@ -871,6 +871,25 @@
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/export/pod-export"
+    },
+    {
+      "name": "Msg2File",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
+        "PORT": "9087",
+        "SECRET": "secret",
+        "SERVICE_ID": "msg2file-service",
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/services/msg2file"
     }
   ]
 }

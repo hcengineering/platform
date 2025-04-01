@@ -14,8 +14,8 @@
 //
 
 import {
-  type AccountUuid,
   type Account,
+  type AccountUuid,
   type Branding,
   type Class,
   type Doc,
@@ -49,6 +49,18 @@ import type { LiveQuery } from '@hcengineering/query'
 import type { ReqId, Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
+import {
+  type FindMessagesGroupsParams,
+  type MessagesGroup,
+  type FindMessagesParams,
+  type Message
+} from '@hcengineering/communication-types'
+import {
+  type RequestEvent as CommunicationEvent,
+  type ServerApi as CommunicationApi,
+  type EventResult
+} from '@hcengineering/communication-sdk-types'
+
 import type { DbAdapter, DomainHelper } from './adapter'
 import type { StatisticsElement } from './stats'
 import { type StorageAdapter } from './storage'
@@ -125,6 +137,8 @@ export type BroadcastFunc = (
   exclude?: string[]
 ) => void
 
+export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
+
 /**
  * @public
  */
@@ -189,6 +203,7 @@ export interface PipelineContext {
   contextVars: Record<string, any>
 
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
+  communicationApi: CommunicationApi | null
 }
 /**
  * @public
@@ -226,8 +241,15 @@ export type PipelineFactory = (
   ws: WorkspaceIds,
   upgrade: boolean,
   broadcast: BroadcastFunc,
-  branding: Branding | null
+  branding: Branding | null,
+  communicationApi: CommunicationApi | null
 ) => Promise<Pipeline>
+
+export type CommunicationApiFactory = (
+  ctx: MeasureContext,
+  ws: WorkspaceIds,
+  broadcastSessions: BroadcastSessionsFunc
+) => Promise<CommunicationApi>
 
 /**
  * @public
@@ -247,7 +269,10 @@ export interface TriggerControl {
   lowLevel: LowLevelStorage
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
+
   queue?: PlatformQueue
+
+  communicationApi: CommunicationApi | null
 
   // Cache per workspace
   cache: Map<string, any>
@@ -516,6 +541,8 @@ export interface ClientSessionCtx {
   ctx: MeasureContext
 
   pipeline: Pipeline
+  communicationApi: CommunicationApi
+
   socialStringsToUsers: Map<PersonId, AccountUuid>
   requestId: ReqId | undefined
   sendResponse: (id: ReqId | undefined, msg: any) => Promise<void>
@@ -594,6 +621,10 @@ export interface Session {
   clean: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 
   includeSessionContext: (ctx: ClientSessionCtx) => void
+
+  eventRaw: (ctx: ClientSessionCtx, event: CommunicationEvent) => Promise<EventResult>
+  findMessagesRaw: (ctx: ClientSessionCtx, params: FindMessagesParams) => Promise<Message[]>
+  findMessagesGroupsRaw: (ctx: ClientSessionCtx, params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
 }
 
 /**
@@ -640,6 +671,8 @@ export interface Workspace {
   id: string
   token: string // Account workspace update token.
   pipeline: Promise<Pipeline> | Pipeline
+  communicationApi: Promise<CommunicationApi> | CommunicationApi
+
   tickHash: number
 
   tickHandlers: Map<string, TickHandler>
@@ -686,6 +719,7 @@ export interface SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
+    communicationApiFactory: CommunicationApiFactory,
     sessionId: string | undefined
   ) => Promise<AddSessionResponse>
 
@@ -719,6 +753,7 @@ export interface SessionManager {
     request: Request<any>,
     workspace: WorkspaceUuid
   ) => Promise<void>
+
   handleRPC: <S extends Session>(
     requestCtx: MeasureContext,
     service: S,
@@ -730,6 +765,7 @@ export interface SessionManager {
     ctx: MeasureContext,
     sendCtx: MeasureContext,
     pipeline: Pipeline,
+    communicationApi: CommunicationApi,
     requestId: Request<any>['id'],
     service: Session,
     ws: ConnectionSocket
@@ -756,6 +792,7 @@ export type ServerFactory = (
   handleRequest: HandleRequestFunction,
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
+  communicationApiFactory: CommunicationApiFactory,
   port: number,
   accountsUrl: string,
   externalStorage: StorageAdapter

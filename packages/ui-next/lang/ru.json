@@ -1,0 +1,29 @@
+{
+  "string": {
+    "Added": "Добавлено",
+    "Attach": "Прикрепить",
+    "Cancel": "Отмена",
+    "Edit": "Редактировать",
+    "Edited": "Отредактировано",
+    "Emoji": "Эмодзи",
+    "HoursAgo": "{hours, plural, =0 {менее часа назад} =1 {час назад} other {# часов назад}}",
+    "JustNow": "Только что",
+    "LastReply": "Последний ответ",
+    "Mention": "Упомянуть",
+    "MinutesAgo": "{minutes, plural, =0 {менее минуты назад} =1 {минуту назад} other {# минут назад}}",
+    "MonthAt": "{month} в {time}",
+    "New": "Новый",
+    "Removed": "Удалено",
+    "RepliesCount": "{count} ответов",
+    "Reply": "Ответить",
+    "Send": "Отправить",
+    "Set": "Установлено",
+    "ShowFormatting": "Показать форматирование",
+    "To": "В",
+    "Today": "Сегодня",
+    "WeekdayAt": "{weekday} в {time}",
+    "YearAt": "{year} в {time}",
+    "Yesterday": "Вчера",
+    "YesterdayAt": "Вчера в {time}"
+  }
+}

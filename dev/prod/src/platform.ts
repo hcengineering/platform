@@ -64,13 +64,16 @@ import { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import { trainingId } from '@hcengineering/training'
 import uiPlugin from '@hcengineering/ui'
+import {uiNextId} from '@hcengineering/ui-next'
 import { uploaderId } from '@hcengineering/uploader'
 import recorder, { recorderId } from '@hcengineering/recorder'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 import { mailId } from '@hcengineering/mail'
-
+import { chatId } from '@hcengineering/chat'
+import github, { githubId } from '@hcengineering/github'
 import { bitrixId } from '@hcengineering/bitrix'
+import {inboxId} from '@hcengineering/inbox'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -119,8 +122,8 @@ import '@hcengineering/uploader-assets'
 import '@hcengineering/recorder-assets'
 import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
-
-import github, { githubId } from '@hcengineering/github'
+import '@hcengineering/chat-assets'
+import '@hcengineering/inbox-assets'
 import '@hcengineering/github-assets'
 
 import { coreId } from '@hcengineering/core'
@@ -267,6 +270,7 @@ function configureI18n(): void {
     async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`)
   )
   addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
+  addStringsLoader(uiNextId, async (lang: string) => await import(`@hcengineering/ui-next/lang/${lang}.json`))
   addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
   addStringsLoader(recorderId, async (lang: string) => await import(`@hcengineering/recorder-assets/lang/${lang}.json`))
   addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
@@ -349,7 +353,9 @@ function configureI18n(): void {
   addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
   addStringsLoader(mySpaceId, async (lang: string) => await import(`@hcengineering/my-space-assets/lang/${lang}.json`))
   addStringsLoader(mailId, async (lang: string) => await import(`@hcengineering/mail-assets/lang/${lang}.json`))
+  addStringsLoader(chatId, async (lang: string) => await import(`@hcengineering/chat-assets/lang/${lang}.json`))
   addStringsLoader(processId, async (lang: string) => await import(`@hcengineering/process-assets/lang/${lang}.json`))
+  addStringsLoader(inboxId, async (lang: string) => await import(`@hcengineering/inbox-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -546,7 +552,9 @@ export async function configurePlatform() {
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
   addLocation(mySpaceId, () => import(/* webpackChunkName: "card" */ '@hcengineering/my-space-resources'))
   addLocation(mailId, () => import(/* webpackChunkName: "card" */ '@hcengineering/mail-resources'))
+  addLocation(chatId, () => import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
   addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
+  addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

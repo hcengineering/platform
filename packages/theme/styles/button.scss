@@ -553,7 +553,7 @@
 
   &.statusButton {
     padding: 0 8px;
-    height: 20px;
+    height: 28px;
     min-width: 20px;
     font-size: 13px;
     border-radius: 4px;
@@ -561,7 +561,7 @@
     &.square {
       flex-shrink: 0;
       padding: 2px;
-      width: 20px;
+      width: 28px;
     }
   }
   &:focus { z-index: 1; }

@@ -1,0 +1,30 @@
+{
+  "string": {
+    "Added": "Added",
+    "Attach": "Attach",
+    "Cancel": "Cancel",
+    "Edit": "Edit",
+    "Edited": "Edited",
+    "Emoji": "Emoji",
+    "HoursAgo": "{hours, plural, =0 {less than an hour ago} =1 {an hour ago} other {# hours ago}}",
+    "JustNow": "Just now",
+    "LastReply": "Last reply",
+    "Mention": "Mention",
+    "MinutesAgo": "{minutes, plural, =0 {less than a minute ago} =1 {a minute ago} other {# minutes ago}}",
+    "MonthAt": "{month} at {time}",
+    "New": "New",
+    "Removed": "Removed",
+    "RepliesCount": "{count} replies",
+    "Reply": "Reply",
+    "Send": "Send",
+    "Set": "Set",
+    "ShowFormatting": "Show formatting",
+    "To": "To",
+    "Today": "Today",
+    "Unset": "Unset",
+    "WeekdayAt": "{weekday} at {time}",
+    "YearAt": "{year} at {time}",
+    "Yesterday": "Yesterday",
+    "YesterdayAt": "Yesterday at {time}"
+  }
+}

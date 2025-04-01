@@ -42,6 +42,8 @@
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-core": "^0.6.1"
+    "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/communication-sdk-types": "0.1.147",
+    "@hcengineering/server-contact": "^0.6.1"
   }
 }

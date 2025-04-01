@@ -50,6 +50,9 @@
     "RemovedObject": "Odstraněný {object}",
     "ChangedObject": "Změněný {object}",
     "UnsetObject": "Zrušený {object}",
-    "UpdatedObject": "Aktualizovaný {object}"
+    "UpdatedObject": "Aktualizovaný {object}",
+    "NewObjectType": "Nový {type}: {title}",
+    "RemovedObjectType": "Odstraněný {type} : {title}",
+    "AttributeSetTo": "{name} nastaveno na {value}"
   }
 }
