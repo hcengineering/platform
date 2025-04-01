@@ -35,8 +35,6 @@
     const descendants = hierarchy.getDescendants(_tag._id)
     const leftAssociations = await client.findAll(core.class.Association, { classA: { $in: descendants } })
     const rightAssociations = await client.findAll(core.class.Association, { classB: { $in: descendants } })
-    console.log(leftAssociations)
-    console.log(rightAssociations)
 
     associations = leftAssociations
       .concat(rightAssociations)
