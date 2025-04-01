@@ -766,27 +766,29 @@ export async function checkAutoJoin (
   if (emailSocialId != null) {
     const targetAccount = await getAccount(db, emailSocialId.personUuid)
     if (targetAccount != null) {
-      if (token == null) {
-        // Login required
-        const person = await db.person.findOne({ uuid: targetAccount.uuid })
+      if (targetAccount.automatic == null || !targetAccount.automatic) {
+        if (token == null) {
+          // Login required
+          const person = await db.person.findOne({ uuid: targetAccount.uuid })
 
-        return {
-          workspace: workspace.uuid,
-          name: person == null ? '' : getPersonName(person),
-          email: normalizedEmail
+          return {
+            workspace: workspace.uuid,
+            name: person == null ? '' : getPersonName(person),
+            email: normalizedEmail
+          }
         }
-      }
 
-      const { account: callerAccount } = decodeTokenVerbose(ctx, token)
+        const { account: callerAccount } = decodeTokenVerbose(ctx, token)
 
-      if (callerAccount !== targetAccount.uuid) {
-        // Login with target email required
-        const person = await db.person.findOne({ uuid: targetAccount.uuid })
+        if (callerAccount !== targetAccount.uuid) {
+          // Login with target email required
+          const person = await db.person.findOne({ uuid: targetAccount.uuid })
 
-        return {
-          workspace: workspace.uuid,
-          name: person == null ? '' : getPersonName(person),
-          email: normalizedEmail
+          return {
+            workspace: workspace.uuid,
+            name: person == null ? '' : getPersonName(person),
+            email: normalizedEmail
+          }
         }
       }
 
