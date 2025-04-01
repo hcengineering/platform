@@ -122,14 +122,16 @@ const listConfig: (BuildModelKey | string)[] = [
 export function createSystemType (
   builder: Builder,
   type: Ref<MasterTag>,
+  icon: Asset = card.icon.MasterTag,
   label: IntlString,
-  icon: Asset = card.icon.MasterTag
+  pluralLabel?: IntlString
 ): void {
   builder.createDoc(
     card.class.MasterTag,
     core.space.Model,
     {
       label,
+      pluralLabel,
       extends: card.class.Card,
       icon,
       kind: ClassifierKind.CLASS
@@ -176,8 +178,8 @@ export function createSystemType (
 export function createModel (builder: Builder): void {
   builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
 
-  createSystemType(builder, card.types.File, attachment.string.File, card.icon.File)
-  createSystemType(builder, card.types.Document, card.string.Document, card.icon.Document)
+  createSystemType(builder, card.types.File, card.icon.File, attachment.string.File, attachment.string.Files)
+  createSystemType(builder, card.types.Document, card.icon.Document, card.string.Document, card.string.Documents)
 
   builder.createDoc(
     workbench.class.Application,

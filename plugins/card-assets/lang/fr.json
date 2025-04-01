@@ -29,6 +29,7 @@
     "EditView": "Modifier la vue",
     "SelectViewType": "Sélectionner le type de vue",
     "Document": "Document",
+    "Documents": "Documents",
     "ChangeType": "Changer de type",
     "ChangeTypeWarning": "Avertissement : Changer le type d'une carte supprimera toutes les données pour tous les attributs qui ne sont pas dans le type cible. Les données précédentes de l'attribut peuvent être restaurées en changeant la carte en arrière. Le contenu de la carte ne sera pas affecté."
   }
