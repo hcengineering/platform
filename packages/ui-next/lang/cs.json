@@ -1,0 +1,30 @@
+{
+  "string": {
+    "Added": "Přidáno",
+    "Attach": "Připojit",
+    "Cancel": "Zrušit",
+    "Edit": "Upravit",
+    "Edited": "Upraveno",
+    "Emoji": "Emoji",
+    "HoursAgo": "{hours, plural, =0 {před méně než hodinou} =1 {před hodinou} other {před {#} hodinami}}",
+    "JustNow": "Právě teď",
+    "LastReply": "Poslední odpověď",
+    "Mention": "Zmínit",
+    "MinutesAgo": "{minutes, plural, =0 {před méně než minutou} =1 {před minutou} other {před {#} minutami}}",
+    "MonthAt": "{month} v {time}",
+    "New": "Nový",
+    "Removed": "Odstraněno",
+    "RepliesCount": "{count} odpovědí",
+    "Reply": "Odpovědět",
+    "Send": "Odeslat",
+    "Set": "Nastavit",
+    "ShowFormatting": "Zobrazit formátování",
+    "To": "Do",
+    "Today": "Dnes",
+    "Unset": "Zrušit",
+    "WeekdayAt": "{weekday} v {time}",
+    "YearAt": "{year} v {time}",
+    "Yesterday": "Včera",
+    "YesterdayAt": "Včera v {time}"
+  }
+}

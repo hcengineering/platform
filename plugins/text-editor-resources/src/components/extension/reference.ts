@@ -26,6 +26,7 @@ import { getMetadata, getResource } from '@hcengineering/platform'
 import presentation, { createQuery, getClient } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
 
+import contact from '@hcengineering/contact'
 import { parseLocation, type Location } from '@hcengineering/ui'
 import workbench, { type Application } from '@hcengineering/workbench'
 
@@ -38,10 +39,6 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
   addOptions () {
     return {
       HTMLAttributes: {},
-      renderLabel ({ options, props }) {
-        // eslint-disable-next-line
-        return `${options.suggestion.char}${props.label ?? props.id}`
-      },
       suggestion: {
         char: '@',
         allowSpaces: true,
@@ -86,19 +83,21 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
 
   addNodeView () {
     return ({ node, HTMLAttributes }) => {
-      const span = document.createElement('span')
-      span.setAttribute('data-type', this.name)
-      span.className = 'antimention'
+      const root = document.createElement('span')
+      root.className = 'antiMention'
       const attributes = mergeAttributes(
         {
           'data-type': this.name,
+          'data-id': node.attrs.id,
+          'data-objectclass': node.attrs.objectclass,
+          'data-label': node.attrs.label,
           class: 'antiMention'
         },
         this.options.HTMLAttributes,
         HTMLAttributes
       )
 
-      span.addEventListener('click', (event) => {
+      root.addEventListener('click', (event) => {
         if (event.button !== 0) return
 
         const link = (event.target as HTMLElement)?.closest('span')
@@ -112,20 +111,40 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
       })
 
       Object.entries(attributes).forEach(([key, value]) => {
-        span.setAttribute(key, value)
+        root.setAttribute(key, value)
       })
+
+      const client = getClient()
+      const hierarchy = client.getHierarchy()
 
       const query = createQuery(true)
       const options = this.options
 
       const renderLabel = (props: ReferenceNodeProps): void => {
-        span.setAttribute('data-label', props.label)
-        span.innerText = options.renderLabel({ options, props: props ?? (node.attrs as ReferenceNodeProps) })
+        root.setAttribute('data-label', props.label)
+        titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${props.label ?? props.id}`
       }
 
       const id = node.attrs.id
       const objectclass: Ref<Class<Doc>> = node.attrs.objectclass
 
+      const icon =
+        objectclass !== undefined && !hierarchy.isDerived(objectclass, contact.class.Contact)
+          ? hierarchy.getClass(objectclass).icon
+          : undefined
+
+      const iconUrl = typeof icon === 'string' ? getMetadata(icon) ?? 'https://anticrm.org/logo.svg' : ''
+
+      if (iconUrl !== '') {
+        const svg = root.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))
+        root.appendChild(document.createTextNode(' '))
+        svg.setAttribute('class', 'svg-small')
+        svg.setAttribute('fill', 'currentColor')
+        const use = svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'use'))
+        use.setAttributeNS('http://www.w3.org/1999/xlink', 'href', iconUrl)
+      }
+
+      const titleSpan = root.appendChild(document.createElement('span'))
       renderLabel({ id, objectclass, label: node.attrs.label })
 
       if (id !== undefined && objectclass !== undefined) {
@@ -141,7 +160,7 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
       }
 
       return {
-        dom: span,
+        dom: root,
         update (node, decorations) {
           renderLabel({ id, objectclass, label: node.attrs.label })
           return true

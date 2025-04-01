@@ -16,52 +16,62 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import client, {
+  type ClientFactoryOptions,
   ClientSocket,
   ClientSocketReadyState,
   pingConst,
-  pongConst,
-  type ClientFactoryOptions
+  pongConst
 } from '@hcengineering/client'
 import core, {
   Account,
   Class,
   ClientConnectEvent,
   ClientConnection,
+  clone,
+  Handler,
   Doc,
   DocChunk,
   DocumentQuery,
   Domain,
   FindOptions,
   FindResult,
+  generateId,
   LoadModelResponse,
+  type MeasureContext,
   MeasureMetricsContext,
+  type PersonUuid,
   Ref,
   SearchOptions,
   SearchQuery,
   SearchResult,
   Timestamp,
+  toFindResult,
   Tx,
   TxApplyIf,
   TxHandler,
   TxResult,
-  clone,
-  generateId,
-  toFindResult,
-  type MeasureContext,
-  type PersonUuid,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, {
+  broadcastEvent,
+  getMetadata,
   PlatformError,
   Severity,
   Status,
-  UNAUTHORIZED,
-  broadcastEvent,
-  getMetadata
+  UNAUTHORIZED
 } from '@hcengineering/platform'
 import { uncompress } from 'snappyjs'
-
-import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
+import { HelloRequest, HelloResponse, ReqId, type Response, RPCHandler } from '@hcengineering/rpc'
+import { EventResult } from '@hcengineering/communication-sdk-types'
+import {
+  FindMessagesGroupsParams,
+  FindMessagesParams,
+  FindNotificationContextParams,
+  FindNotificationsParams,
+  Message,
+  MessagesGroup,
+  NotificationContext
+} from '@hcengineering/communication-types'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -123,10 +133,12 @@ class Connection implements ClientConnection {
 
   lastHash?: string
 
+  handlers: Handler[] = []
+
   constructor (
     private readonly ctx: MeasureContext,
     private readonly url: string,
-    private readonly handler: TxHandler,
+    handler: TxHandler,
     readonly workspace: WorkspaceUuid,
     readonly user: PersonUuid,
     readonly opt?: ClientFactoryOptions
@@ -150,10 +162,14 @@ class Connection implements ClientConnection {
       this.sessionId = generateId()
     }
     this.rpcHandler = opt?.useGlobalRPCHandler === true ? globalRPCHandler : new RPCHandler()
-
+    this.pushHandler(handler)
     this.onConnect = opt?.onConnect
 
     this.scheduleOpen(this.ctx, false)
+  }
+
+  pushHandler (handler: Handler): void {
+    this.handlers.push(handler)
   }
 
   async getLastHash (ctx: MeasureContext): Promise<string | undefined> {
@@ -455,7 +471,9 @@ class Connection implements ClientConnection {
           return
         }
       }
-      this.handler(...txArr)
+      this.handlers.forEach((handler) => {
+        handler(...txArr)
+      })
 
       clearTimeout(this.incomingTimer)
       void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1).catch((err) => {
@@ -842,6 +860,33 @@ class Connection implements ClientConnection {
 
   sendForceClose (): Promise<void> {
     return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false, overrideId: -2, once: true })
+  }
+
+  async sendEvent (event: Event): Promise<EventResult> {
+    return await this.sendRequest({ method: 'event', params: [event] })
+  }
+
+  async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
+    return await this.sendRequest({ method: 'findMessages', params: [params, queryId] })
+  }
+
+  async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+    return await this.sendRequest({ method: 'findMessagesGroups', params: [params] })
+  }
+
+  async findNotificationContexts (
+    params: FindNotificationContextParams,
+    queryId?: number
+  ): Promise<NotificationContext[]> {
+    return await this.sendRequest({ method: 'findNotificationContexts', params: [params, queryId] })
+  }
+
+  async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
+    return await this.sendRequest({ method: 'findNotifications', params: [params, queryId] })
+  }
+
+  async unsubscribeQuery (id: number): Promise<void> {
+    await this.sendRequest({ method: 'unsubscribeQuery', params: [id] })
   }
 }
 

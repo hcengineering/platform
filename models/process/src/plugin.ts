@@ -18,6 +18,9 @@ import process from '@hcengineering/process-resources/src/plugin'
 import { type Action } from '@hcengineering/view'
 
 export default mergeIds(processId, process, {
+  app: {
+    Process: '' as Ref<Doc>
+  },
   ids: {
     ProcessSettings: '' as Ref<Doc>
   },

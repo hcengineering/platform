@@ -57,6 +57,7 @@ export interface S3CreateMultipartUploadOptions {
 }
 
 export interface S3UploadPartOptions {
+  size: number
   partNumber: number
 }
 

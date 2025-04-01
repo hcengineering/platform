@@ -16,11 +16,13 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getResource, translateCB } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnyComponent, LabelAndProps, themeStore, tooltip } from '@hcengineering/ui'
+  import { AnyComponent, Icon, LabelAndProps, themeStore, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
   import { getReferenceLabel } from '@hcengineering/text-editor-resources/src/components/extension/reference'
+  import { classIcon } from '../utils'
   import DocNavLink from './DocNavLink.svelte'
+  import contact from '@hcengineering/contact'
 
   export let _id: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
@@ -28,9 +30,6 @@
   export let title: string = ''
   export let component: AnyComponent | undefined = undefined
   export let disabled: boolean = false
-  export let accent: boolean = false
-  export let noUnderline: boolean = false
-  export let colorInherit: boolean = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
 
   const client = getClient()
@@ -57,6 +56,9 @@
     docQuery.unsubscribe()
     doc = object
   }
+
+  $: icon =
+    doc !== undefined && !hierarchy.isDerived(doc._class, contact.class.Contact) ? classIcon(client, doc._class) : null
 
   $: void updateDocTitle(doc)
   $: void updateDocTooltip(doc)
@@ -113,19 +115,9 @@
 </script>
 
 {#if displayTitle}
-  <DocNavLink
-    object={doc}
-    component={docComponent}
-    {disabled}
-    {accent}
-    {colorInherit}
-    {noUnderline}
-    inline
-    noOverflow
-    {onClick}
-  >
-    <span class="antiMention" class:reference={!disabled} use:tooltip={disabled ? undefined : docTooltip}>
-      @{displayTitle}
-    </span>
-  </DocNavLink>
+  <span data-type={'reference'} data-id={doc?._id} data-objectclass={doc?._class} data-label={displayTitle}>
+    <DocNavLink object={doc} component={docComponent} {disabled} inlineReference {onClick}>
+      {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{displayTitle}
+    </DocNavLink>
+  </span>
 {/if}

@@ -83,7 +83,7 @@
   }
 </script>
 
-<div class="flex-row-center gap-1-5 pb-0-5 pr-1">
+<div class="flex-row-center flex-gap-1 container flex-no-shrink">
   <Icon icon={calendar.icon.Participants} size="small" />
   <AddParticipant
     {placeholder}

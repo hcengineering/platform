@@ -525,6 +525,10 @@ export function start (
             )
           }
         } catch (error: any) {
+          if (error instanceof TokenError) {
+            res.status(401).send()
+            return
+          }
           if (
             error?.code === 'NoSuchKey' ||
             error?.code === 'NotFound' ||
@@ -633,6 +637,10 @@ export function start (
 
       res.status(200).send()
     } catch (error: any) {
+      if (error instanceof TokenError) {
+        res.status(401).send()
+        return
+      }
       Analytics.handleError(error)
       ctx.error('failed to delete', { url: req.url })
       res.status(500).send()

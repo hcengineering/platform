@@ -508,6 +508,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/ui-next",
+      "projectFolder": "packages/ui-next",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/uploader",
       "projectFolder": "plugins/uploader",
       "shouldPublish": false
@@ -1519,21 +1524,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/server-fulltext",
-      "projectFolder": "server-plugins/fulltext",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/server-fulltext-resources",
-      "projectFolder": "server-plugins/fulltext-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-server-fulltext",
-      "projectFolder": "models/server-fulltext",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/hr",
       "projectFolder": "plugins/hr",
       "shouldPublish": true
@@ -1921,6 +1911,26 @@
     {
       "packageName": "@hcengineering/model-print",
       "projectFolder": "models/print",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-export",
+      "projectFolder": "models/export",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export",
+      "projectFolder": "plugins/export",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export-assets",
+      "projectFolder": "plugins/export-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export-resources",
+      "projectFolder": "plugins/export-resources",
       "shouldPublish": false
     },
     {
@@ -2356,11 +2366,31 @@
     {
       "packageName": "@hcengineering/pod-mail",
       "projectFolder": "services/mail/pod-mail",
+      "shouldPublish": false,
+    },
+    {
+      "packageName": "@hcengineering/chat",
+      "projectFolder": "plugins/chat",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-hook",
-      "projectFolder": "services/hook/pod-hook",
+      "packageName": "@hcengineering/chat-assets",
+      "projectFolder": "plugins/chat-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/chat-resources",
+      "projectFolder": "plugins/chat-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-chat",
+      "projectFolder": "models/chat",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-msg2file",
+      "projectFolder": "services/msg2file",
       "shouldPublish": false
     },
     {
@@ -2396,6 +2426,36 @@
     {
       "packageName": "@hcengineering/server-process-resources",
       "projectFolder": "server-plugins/process-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/kafka",
+      "projectFolder": "server/kafka",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/inbox",
+      "projectFolder": "plugins/inbox",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/inbox-assets",
+      "projectFolder": "plugins/inbox-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/inbox-resources",
+      "projectFolder": "plugins/inbox-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-inbox",
+      "projectFolder": "models/inbox",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-inbound-mail",
+      "projectFolder": "services/mail/pod-inbound-mail",
       "shouldPublish": false
     }
   ]

@@ -24,6 +24,7 @@ import presentation, {
   purgeClient,
   refreshClient,
   setClient,
+  setCommunicationClient,
   setPresentationCookie,
   uiContext,
   upgradeDownloadProgress
@@ -348,7 +349,8 @@ export async function connect (title: string): Promise<Client | undefined> {
     uuid: account,
     role: workspaceLoginInfo.role,
     primarySocialId: pickPrimarySocialId(socialIds)._id,
-    socialIds: socialIds.map((si) => si._id)
+    socialIds: socialIds.map((si) => si._id),
+    fullSocialIds: socialIds
   }
 
   // Ensure employee and social identifiers
@@ -405,6 +407,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   _clientSet = true
   await ctx.with('set-client', {}, async () => {
     await setClient(newClient)
+    await setCommunicationClient(newClient, socialIds)
   })
   await ctx.with('broadcast-connected', {}, async () => {
     await broadcastEvent(plugin.event.NotifyConnection, me)

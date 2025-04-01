@@ -16,7 +16,6 @@
 import { DocUpdateMessage } from '@hcengineering/activity'
 import core, { Doc, Tx, TxCUD, TxCreateDoc, TxProcessor, TxUpdateDoc, type MeasureContext } from '@hcengineering/core'
 import notification from '@hcengineering/notification'
-import { getPrimarySocialIdsByAccounts } from '@hcengineering/server-contact'
 import { getResource, translate } from '@hcengineering/platform'
 import request, { Request, RequestStatus } from '@hcengineering/request'
 import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
@@ -25,9 +24,9 @@ import {
   getCollaborators,
   getNotificationProviderControl,
   getNotificationTxes,
-  getTextPresenter,
-  getUsersInfo,
-  toReceiverInfo
+  getReceiversInfo,
+  getSenderInfo,
+  getTextPresenter
 } from '@hcengineering/server-notification-resources'
 
 /**
@@ -146,35 +145,18 @@ async function getRequestNotificationTx (
   const notifyContexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
     objectId: doc._id
   })
-  const collaboratorsPrimarySocialStringsByAccounts = await getPrimarySocialIdsByAccounts(
-    control,
-    Array.from(collaborators)
-  )
-  const usersInfo = await getUsersInfo(
-    control.ctx,
-    [...Object.values(collaboratorsPrimarySocialStringsByAccounts), tx.modifiedBy],
-    control
-  )
-  const senderInfo = usersInfo.get(tx.modifiedBy) ?? {
-    _id: tx.modifiedBy,
-    socialStrings: []
-  }
+  const receiverInfos = await getReceiversInfo(ctx, Array.from(collaborators), control)
+  const senderInfo = await getSenderInfo(ctx, tx.modifiedBy, control)
 
   const notificationControl = await getNotificationProviderControl(ctx, control)
 
-  for (const target of collaborators) {
-    const targetInfo = toReceiverInfo(
-      control.hierarchy,
-      usersInfo.get(collaboratorsPrimarySocialStringsByAccounts[target])
-    )
-    if (targetInfo === undefined) continue
-
+  for (const receiver of receiverInfos) {
     const txes = await getNotificationTxes(
       ctx,
       control,
       request,
       tx,
-      targetInfo,
+      receiver,
       senderInfo,
       { isOwn: true, isSpace: false, shouldUpdateTimestamp: true },
       notifyContexts,

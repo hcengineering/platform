@@ -28,7 +28,6 @@ import type {
   Configuration,
   ConfigurationElement,
   Doc,
-  DocIndexState,
   DomainIndexConfiguration,
   Enum,
   EnumOf,
@@ -91,7 +90,8 @@ export const systemAccount: Account = {
   uuid: systemAccountUuid,
   role: AccountRole.Owner,
   primarySocialId: '' as PersonId,
-  socialIds: []
+  socialIds: [],
+  fullSocialIds: []
 }
 
 export const configUserAccountUuid = '0d94731c-0787-4bcd-aefe-304efc3706b1' as AccountUuid
@@ -149,7 +149,6 @@ export default plugin(coreId, {
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
     UserStatus: '' as Ref<Class<UserStatus>>,
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
-    DocIndexState: '' as Ref<Class<DocIndexState>>,
     DomainIndexConfiguration: '' as Ref<Class<DomainIndexConfiguration>>,
 
     Configuration: '' as Ref<Class<Configuration>>,

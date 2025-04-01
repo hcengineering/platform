@@ -137,7 +137,7 @@ async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerCon
 
   const person = await getPerson(control, originTx.modifiedBy)
   if (person === undefined) {
-    return []
+    return [lastReplyTx]
   }
 
   if ((message.repliedPersons ?? []).includes(person._id)) {
@@ -307,7 +307,7 @@ export async function ChunterTrigger (txes: TxCUD<Doc>[], control: TriggerContro
 export async function getChunterNotificationContent (
   _: Doc,
   tx: TxCUD<Doc>,
-  target: PersonId,
+  target: Ref<Person>,
   control: TriggerControl
 ): Promise<NotificationContent> {
   let title: IntlString = notification.string.CommonNotificationTitle
@@ -494,7 +494,7 @@ async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl)
   return []
 }
 
-function JoinChannelTypeMatch (originTx: Tx, _: Doc, person: Person, user: PersonId[]): boolean {
+function JoinChannelTypeMatch (originTx: Tx, _: Doc, person: Ref<Person>, user: PersonId[]): boolean {
   if (user.includes(originTx.modifiedBy)) return false
   if (originTx._class !== core.class.TxUpdateDoc) return false
 

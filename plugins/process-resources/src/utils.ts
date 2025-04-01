@@ -20,7 +20,8 @@ import core, {
   type Doc,
   type Ref,
   type RefTo,
-  type Type
+  type Type,
+  type DocumentQuery
 } from '@hcengineering/core'
 import process, {
   type Context,
@@ -177,4 +178,11 @@ export function getValueReduceFunc (source: AnyAttribute, target: AnyAttribute):
   if (source.type._class !== core.class.ArrOf) return undefined
   if (target.type._class === core.class.ArrOf) return undefined
   return process.function.FirstValue
+}
+
+export function showDoneQuery (value: any, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+  if (value === false) {
+    return { ...query, done: false }
+  }
+  return query
 }

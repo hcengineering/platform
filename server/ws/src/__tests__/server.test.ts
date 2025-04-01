@@ -41,7 +41,7 @@ import {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { ClientSession, startSessionManager } from '@hcengineering/server'
-import { createDummyStorageAdapter } from '@hcengineering/server-core'
+import { createDummyQueue, createDummyStorageAdapter } from '@hcengineering/server-core'
 import { startHttpServer } from '../server_http'
 import { genMinModel } from './minmodel'
 
@@ -96,12 +96,16 @@ describe('server', () => {
         loadModel: async (ctx, lastModelTx, hash) => []
       }
     },
+    communicationApiFactory: async () => {
+      return {} as any
+    },
     sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
     port,
     brandingMap: {},
     serverFactory: startHttpServer,
     accountsUrl: '',
-    externalStorage: createDummyStorageAdapter()
+    externalStorage: createDummyStorageAdapter(),
+    queue: createDummyQueue()
   })
 
   function connect (): WebSocket {
@@ -207,12 +211,16 @@ describe('server', () => {
           loadModel: async (ctx, lastModelTx, hash) => []
         }
       },
+      communicationApiFactory: async () => {
+        return {} as any
+      },
       sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
       port: port + 1,
       brandingMap: {},
       serverFactory: startHttpServer,
       accountsUrl: '',
-      externalStorage: createDummyStorageAdapter()
+      externalStorage: createDummyStorageAdapter(),
+      queue: createDummyQueue()
     })
 
     async function findClose (token: string, timeoutPromise: Promise<void>, code: number): Promise<string> {

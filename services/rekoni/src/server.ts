@@ -31,6 +31,9 @@ import { extractDocument } from './process'
 import { type ReconiDocument } from './types'
 import serverToken from '@hcengineering/server-token'
 import { setMetadata } from '@hcengineering/platform'
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { join } from 'path'
+import { SplitLogger } from '@hcengineering/analytics-service'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 
 const extractToken = (header: IncomingHttpHeaders): any => {
@@ -45,7 +48,19 @@ export const startServer = async (): Promise<void> => {
   const app = express()
 
   setMetadata(serverToken.metadata.Secret, process.env.SECRET)
-  const ctx = initStatisticsContext('rekoni', {})
+  const ctx = initStatisticsContext('rekoni', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'rekoni',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('rekoni', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
 
   class MyStream {
     write (text: string): void {

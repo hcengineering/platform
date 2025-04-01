@@ -28,6 +28,9 @@
     "CreateView": "Crea vista",
     "EditView": "Modifica vista",
     "SelectViewType": "Seleziona il tipo di vista",
+    "Document": "Documento",
+    "ChangeType": "Cambia tipo",
+    "ChangeTypeWarning": "Avviso: Cambiare il tipo di un'scheda rimuoverà tutti i dati per qualsiasi attributo che non esistono nel tipo di destinazione. I dati precedenti dell'attributo possono essere ripristinati modificando nuovamente il carta in un tipo precedente. Il contenuto della scheda non sarà influenzato.",
     "MasterDetailViews": "Viste Master-Detail",
     "SelectType": "Seleziona il tipo"
   }

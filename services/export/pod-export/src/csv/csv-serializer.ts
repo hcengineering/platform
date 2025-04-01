@@ -13,20 +13,27 @@
 // limitations under the License.
 //
 
+import { stringify } from 'csv-stringify/sync'
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
+import { Transformer } from '../transformer'
 import { UnifiedAttachment, UnifiedDoc } from '../types'
-import { stringify } from 'csv-stringify/sync'
+import { type TransformConfig } from '@hcengineering/export'
 
 export class UnifiedCsvSerializer {
+  private readonly transformer: Transformer
+
+  constructor (config?: TransformConfig) {
+    this.transformer = new Transformer(config)
+  }
+
   async serializeSpace (docs: UnifiedDoc[], outputPath: string, spaceName: string): Promise<void> {
-    const jsonData = docs.map((doc) => this.createCsvData(doc))
+    const csvData = docs.map((doc) => this.createCsvData(doc))
     const filePath = join(outputPath, `${spaceName}.csv`)
 
-    // Get all unique headers
-    const headers = Array.from(new Set(jsonData.flatMap((obj) => Object.keys(obj)))).sort()
+    const headers = Array.from(new Set(csvData.flatMap((obj) => Object.keys(obj)))).sort()
 
-    const csvContent = stringify(jsonData, {
+    const csvContent = stringify(csvData, {
       header: true,
       columns: headers
     })
@@ -41,29 +48,14 @@ export class UnifiedCsvSerializer {
   }
 
   private createCsvData (doc: UnifiedDoc): object {
-    const { data, attachments, collectionFields = [] } = doc
+    const { data, attachments = [] } = doc
     const csvData: Record<string, any> = {}
 
     Object.entries(data).forEach(([key, value]) => {
-      if (Array.isArray(value) && collectionFields.includes(key)) {
-        // Convert arrays to JSON string
-        csvData[key] = value
-          .map((item) => {
-            if (this.isUnifiedDoc(item)) {
-              return JSON.stringify(this.createCsvData(item))
-            }
-            return String(item)
-          })
-          .join('; ')
-        return
-      }
-
-      if (this.isUnifiedDoc(value)) {
-        csvData[key] = JSON.stringify(this.createCsvData(value))
-        return
-      }
-
-      csvData[key] = value
+      const formatted = this.transformer.transformAttribute(key, value)
+      Object.entries(formatted).forEach(([formattedKey, formattedValue]) => {
+        csvData[formattedKey] = formattedValue
+      })
     })
 
     if (attachments !== undefined && attachments.length > 0) {
@@ -99,9 +91,5 @@ export class UnifiedCsvSerializer {
     }
 
     return paths
-  }
-
-  private isUnifiedDoc (value: any): value is UnifiedDoc {
-    return value !== null && typeof value === 'object' && '_class' in value && 'data' in value
   }
 }

@@ -19,6 +19,7 @@ import fetch, { type RequestInfo, type RequestInit, type Response } from 'node-f
 import { Readable } from 'stream'
 
 import { DatalakeError, NetworkError, NotFoundError } from './error'
+import { unwrapETag } from './utils'
 
 /** @public */
 export interface ObjectMetadata {
@@ -64,7 +65,6 @@ interface BlobUploadSuccess {
 type BlobUploadResult = BlobUploadSuccess | BlobUploadError
 
 interface MultipartUpload {
-  key: string
   uploadId: string
 }
 
@@ -192,7 +192,7 @@ export class DatalakeClient {
       lastModified: isNaN(lastModified) ? 0 : lastModified,
       size: isNaN(size) ? 0 : size,
       type: headers.get('Content-Type') ?? '',
-      etag: headers.get('ETag') ?? ''
+      etag: unwrapETag(headers.get('ETag') ?? '')
     }
   }
 
@@ -236,8 +236,8 @@ export class DatalakeClient {
           this.uploadWithFormData(ctx, workspace, objectName, stream, { ...params, size })
         )
       } else {
-        return await ctx.with('signed-url-upload', {}, (ctx) =>
-          this.uploadWithSignedURL(ctx, workspace, objectName, stream, { ...params, size })
+        return await ctx.with('multipart-upload', {}, (ctx) =>
+          this.uploadWithMultipart(ctx, workspace, objectName, stream, { ...params, size })
         )
       }
     } catch (err) {
@@ -287,7 +287,7 @@ export class DatalakeClient {
     return uploadResult.metadata
   }
 
-  async uploadMultipart (
+  async uploadWithMultipart (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
     objectName: string,
@@ -313,35 +313,6 @@ export class DatalakeClient {
       await this.multipartUploadAbort(ctx, workspace, objectName, multipart)
       throw err
     }
-  }
-
-  async uploadWithSignedURL (
-    ctx: MeasureContext,
-    workspace: WorkspaceUuid,
-    objectName: string,
-    stream: Readable | Buffer | string,
-    params: UploadObjectParams
-  ): Promise<ObjectMetadata> {
-    const url = await this.signObjectSign(ctx, workspace, objectName)
-
-    try {
-      await fetchSafe(ctx, url, {
-        body: stream,
-        method: 'PUT',
-        headers: {
-          ...this.headers,
-          'Content-Type': params.type,
-          'Content-Length': params.size?.toString() ?? '0'
-          // 'x-amz-meta-last-modified': metadata.lastModified.toString()
-        }
-      })
-    } catch (err) {
-      ctx.error('failed to upload via signed url', { workspace, objectName, err })
-      await this.signObjectDelete(ctx, workspace, objectName)
-      throw new DatalakeError('Failed to upload via signed URL')
-    }
-
-    return await this.signObjectComplete(ctx, workspace, objectName)
   }
 
   // S3
@@ -399,49 +370,6 @@ export class DatalakeClient {
     })
   }
 
-  // Signed URL
-
-  private async signObjectSign (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<string> {
-    try {
-      const url = this.getSignObjectUrl(workspace, objectName)
-      const response = await fetchSafe(ctx, url, { method: 'POST', headers: { ...this.headers } })
-      return await response.text()
-    } catch (err: any) {
-      ctx.error('failed to sign object', { workspace, objectName, err })
-      throw new DatalakeError('Failed to sign URL')
-    }
-  }
-
-  private async signObjectComplete (
-    ctx: MeasureContext,
-    workspace: WorkspaceUuid,
-    objectName: string
-  ): Promise<ObjectMetadata> {
-    try {
-      const url = this.getSignObjectUrl(workspace, objectName)
-      const res = await fetchSafe(ctx, url, { method: 'PUT', headers: { ...this.headers } })
-      return (await res.json()) as ObjectMetadata
-    } catch (err: any) {
-      ctx.error('failed to complete signed url upload', { workspace, objectName, err })
-      throw new DatalakeError('Failed to complete signed URL upload')
-    }
-  }
-
-  private async signObjectDelete (ctx: MeasureContext, workspace: WorkspaceUuid, objectName: string): Promise<void> {
-    try {
-      const url = this.getSignObjectUrl(workspace, objectName)
-      await fetchSafe(ctx, url, { method: 'DELETE', headers: { ...this.headers } })
-    } catch (err: any) {
-      ctx.error('failed to abort signed url upload', { workspace, objectName, err })
-      throw new DatalakeError('Failed to abort signed URL upload')
-    }
-  }
-
-  private getSignObjectUrl (workspace: WorkspaceUuid, objectName: string): string {
-    const path = `/upload/signed-url/${workspace}/${encodeURIComponent(objectName)}`
-    return concatLink(this.endpoint, path)
-  }
-
   // Multipart
 
   private async multipartUploadStart (
@@ -478,13 +406,12 @@ export class DatalakeClient {
   ): Promise<MultipartUploadPart> {
     const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/part`
     const url = new URL(concatLink(this.endpoint, path))
-    url.searchParams.append('key', multipart.key)
-    url.searchParams.append('uploadId', multipart.uploadId)
-    url.searchParams.append('partNumber', partNumber.toString())
+    url.searchParams.set('uploadId', multipart.uploadId)
+    url.searchParams.set('partNumber', partNumber.toString())
 
     try {
       const response = await fetchSafe(ctx, url, {
-        method: 'POST',
+        method: 'PUT',
         body,
         headers: { ...this.headers }
       })
@@ -504,14 +431,16 @@ export class DatalakeClient {
   ): Promise<ObjectMetadata> {
     const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/complete`
     const url = new URL(concatLink(this.endpoint, path))
-    url.searchParams.append('key', multipart.key)
-    url.searchParams.append('uploadId', multipart.uploadId)
+    url.searchParams.set('uploadId', multipart.uploadId)
 
     try {
       const res = await fetchSafe(ctx, url, {
         method: 'POST',
         body: JSON.stringify({ parts }),
-        headers: { ...this.headers }
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.headers
+        }
       })
       return (await res.json()) as ObjectMetadata
     } catch (err: any) {
@@ -528,8 +457,7 @@ export class DatalakeClient {
   ): Promise<void> {
     const path = `/upload/multipart/${workspace}/${encodeURIComponent(objectName)}/abort`
     const url = new URL(concatLink(this.endpoint, path))
-    url.searchParams.append('key', multipart.key)
-    url.searchParams.append('uploadId', multipart.uploadId)
+    url.searchParams.set('uploadId', multipart.uploadId)
 
     try {
       await fetchSafe(ctx, url, { method: 'POST', headers: { ...this.headers } })

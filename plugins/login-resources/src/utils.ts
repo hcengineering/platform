@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import type { AccountClient, LoginInfo, OtpInfo, RegionInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
+import type {
+  AccountClient,
+  LoginInfo,
+  OtpInfo,
+  RegionInfo,
+  WorkspaceLoginInfo,
+  WorkspaceInviteInfo
+} from '@hcengineering/account-client'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import {
@@ -444,7 +451,7 @@ export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
 export function navigateToWorkspace (
   workspaceUrl: string,
   loginInfo: WorkspaceLoginInfo | null,
-  navigateUrl?: string,
+  navigateUrl?: string | null,
   replace = false
 ): void {
   if (loginInfo == null) {
@@ -453,7 +460,7 @@ export function navigateToWorkspace (
 
   setLoginInfo(loginInfo)
 
-  if (navigateUrl !== undefined) {
+  if (navigateUrl != null) {
     try {
       const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
       if (loc.path[1] === workspaceUrl) {
@@ -493,6 +500,27 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
     const workspaceLoginInfo = await getAccountClient(token).checkJoin(inviteId)
 
     return [OK, workspaceLoginInfo]
+  } catch (err: any) {
+    if (err instanceof PlatformError) {
+      return [err.status, null]
+    } else {
+      Analytics.handleError(err)
+      return [unknownError(err), null]
+    }
+  }
+}
+
+export async function checkAutoJoin (
+  inviteId: string,
+  firstName?: string,
+  lastName?: string
+): Promise<[Status, WorkspaceInviteInfo | WorkspaceLoginInfo | null]> {
+  const token = getMetadata(presentation.metadata.Token)
+
+  try {
+    const autoJoinResult = await getAccountClient(token).checkAutoJoin(inviteId, firstName, lastName)
+
+    return [OK, autoJoinResult]
   } catch (err: any) {
     if (err instanceof PlatformError) {
       return [err.status, null]
@@ -548,7 +576,7 @@ export async function getInviteLinkId (
     return ''
   }
 
-  const inviteLink = await getAccountClient(token).createInviteLink(exp, emailMask, limit, role)
+  const inviteLink = await getAccountClient(token).createInvite(exp, emailMask, limit, role)
 
   Analytics.handleEvent('Get invite link')
 
@@ -761,7 +789,7 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
 
       setLoginInfo(result)
 
-      navigateToWorkspace(joinedWS[0].uuid, result, undefined, clearQuery)
+      navigateToWorkspace(joinedWS[0].url, result, undefined, clearQuery)
     }
   } else {
     goTo('selectWorkspace', clearQuery)
@@ -782,6 +810,22 @@ export async function getLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | 
 
     throw err
   }
+}
+
+export function getAutoJoinInfo (): any {
+  const query = getCurrentLocation().query
+
+  if (query == null) {
+    return null
+  }
+
+  const { token, autoJoin, inviteId, navigateUrl } = query
+
+  if (token == null || autoJoin === undefined || inviteId == null) {
+    return null
+  }
+
+  return { token, autoJoin, inviteId, navigateUrl }
 }
 
 export async function getLoginInfoFromQuery (): Promise<LoginInfo | WorkspaceLoginInfo | null> {
@@ -900,8 +944,10 @@ export async function doLoginNavigate (
   }
 }
 
-export function isWorkspaceLoginInfo (info: WorkspaceLoginInfo | LoginInfo | null): info is WorkspaceLoginInfo {
-  return (info as any)?.workspace !== undefined
+export function isWorkspaceLoginInfo (
+  info: WorkspaceLoginInfo | LoginInfo | WorkspaceInviteInfo | null
+): info is WorkspaceLoginInfo {
+  return (info as any)?.workspace !== undefined && (info as any)?.token !== undefined
 }
 
 export function getAccountDisplayName (loginInfo: LoginInfo | null): string {

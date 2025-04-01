@@ -28,6 +28,9 @@
     "CreateView": "Crear vista",
     "EditView": "Editar vista",
     "SelectViewType": "Seleccionar tipo de vista",
+    "Document": "Documento",
+    "ChangeType": "Cambiar tipo",
+    "ChangeTypeWarning": "Advertencia: Cambiar el tipo de una tarjeta eliminará todos los datos para cualquier atributo que no exista en el tipo de destino. Los datos previos del atributo pueden ser restaurados cambiando la tarjeta de nuevo a un tipo anterior. El contenido de la tarjeta no será afectado.",
     "MasterDetailViews": "Vistas Maestro-Detalle",
     "SelectType": "Seleccionar tipo"
   }

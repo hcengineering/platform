@@ -23,6 +23,7 @@
   import ui from '..'
 
   export let type: 'type-aside' | 'type-popup' | 'type-component'
+  export let width: 'large' | 'medium' | 'small' | 'x-small' | 'menu' | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let labelProps: any | undefined = undefined
   export let okAction: () => Promise<void> | void = () => {}
@@ -57,7 +58,7 @@
 
 <svelte:window on:keydown={onKeyDown} />
 
-<div class="hulyModal-container {type}" class:hidden class:noTopIndent>
+<div class="hulyModal-container {type} {width ?? ''}" class:hidden class:noTopIndent>
   <Header
     {type}
     {allowFullsize}
@@ -107,6 +108,9 @@
           label={ui.string.Cancel}
           on:click={onCancel}
         />
+      {/if}
+      {#if $$slots.buttons}
+        <slot name="buttons" />
       {/if}
     </div>
   {/if}

@@ -7,16 +7,20 @@ import contact, { getCurrentEmployee, getName, type Person } from '@hcengineerin
 import { personByIdStore } from '@hcengineering/contact-resources'
 import core, {
   AccountRole,
+  type Client,
   concatLink,
   type Data,
   type Doc,
+  type DocumentQuery,
   generateId,
   getCurrentAccount,
   type Hierarchy,
   type IdMap,
   type Ref,
+  type RelatedDocument,
   type Space,
-  type TxOperations
+  type TxOperations,
+  type WithLookup
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import {
@@ -43,7 +47,8 @@ import presentation, {
   copyTextToClipboard,
   createQuery,
   type DocCreatePhase,
-  getClient
+  getClient,
+  type ObjectSearchResult
 } from '@hcengineering/presentation'
 import {
   closePanel,
@@ -87,6 +92,7 @@ import { sendMessage } from './broadcast'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
 import { $myPreferences, currentMeetingMinutes, currentRoom, myOffice, selectedRoomPlace } from './stores'
+import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svelte'
 
 export const selectedCamId = 'selectedDevice_cam'
 export const selectedMicId = 'selectedDevice_mic'
@@ -1161,3 +1167,28 @@ export async function getMeetingMinutesTitle (
 
   return meeting?.title ?? ''
 }
+
+export async function queryMeetingMinutes (
+  client: Client,
+  search: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+): Promise<ObjectSearchResult[]> {
+  const q: DocumentQuery<MeetingMinutes> = { title: { $like: `%${search}%` } }
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
+    q._id = {}
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<MeetingMinutes>)
+    }
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<MeetingMinutes>)
+    }
+  }
+  return (await client.findAll(love.class.MeetingMinutes, q, { limit: 200 })).map(toMeetingMinutesObjectSearchResult)
+}
+
+const toMeetingMinutesObjectSearchResult = (e: WithLookup<MeetingMinutes>): ObjectSearchResult => ({
+  doc: e,
+  title: e.title,
+  icon: love.icon.MeetingMinutes,
+  component: MeetingMinutesSearchItem
+})

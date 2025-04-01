@@ -154,6 +154,7 @@
           label={field.i18n}
           name={field.id}
           password={field.password}
+          disabled={field.disabled}
           bind:value={object[field.name]}
           on:input={() => validate($themeStore.language)}
           on:blur={() => {

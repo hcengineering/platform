@@ -306,7 +306,7 @@ export function getAccountsFromTxes (accTxes: TxCUD<Doc>[]): any {
 
   return Object.values(byAccounts)
     .map((txes) => TxProcessor.buildDoc2Doc(txes))
-    .filter((it) => it !== undefined)
+    .filter((it) => it != null)
 }
 
 export async function getSocialKeyByOldAccount (client: MigrationClient): Promise<Record<string, string>> {
@@ -1121,7 +1121,7 @@ export const coreOperation: MigrateOperation = {
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
-        state: 'created-by-to-gen-social-ids',
+        state: 'created-by-to-gen-social-ids-v2',
         mode: 'upgrade',
         func: migrateCreatedByToGenSocialIds
       }

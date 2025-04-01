@@ -33,7 +33,8 @@ export default plugin(serverActivityId, {
     ActivityMessagesHandler: '' as Resource<TriggerFunc>,
     OnDocRemoved: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
-    ReferenceTrigger: '' as Resource<TriggerFunc>
+    ReferenceTrigger: '' as Resource<TriggerFunc>,
+    HandleCardActivity: '' as Resource<TriggerFunc>
   },
   function: {
     ReactionNotificationContentProvider: '' as Resource<NotificationContentProvider>,

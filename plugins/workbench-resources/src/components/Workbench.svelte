@@ -36,7 +36,8 @@
     createQuery,
     getClient,
     isAdminUser,
-    reduceCalls
+    reduceCalls,
+    createNotificationsQuery
   } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { supportLink, SupportStatus } from '@hcengineering/support'
@@ -99,6 +100,7 @@
     WorkbenchTab
   } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
+  import chat, { chatId } from '@hcengineering/chat'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
   import { buildNavModel, logOut, workspacesStore } from '../utils'
@@ -125,6 +127,7 @@
     tabsStore
   } from '../workbench'
   import { get } from 'svelte/store'
+  import inbox, { inboxId } from '@hcengineering/inbox'
 
   const HIDE_NAVIGATOR = 720
   const FLOAT_ASIDE = 1024 // lg
@@ -1160,6 +1163,31 @@
       &.mini > *:not(:last-child) {
         margin-bottom: 0.25rem;
       }
+    }
+    &.horizontal {
+      margin-right: 1rem;
+      padding-left: 1rem;
+      border-left: 1px solid var(--theme-navpanel-divider);
+
+      &:not(.mini) > *:not(:last-child) {
+        margin-right: 0.75rem;
+      }
+      &.mini > *:not(:last-child) {
+        margin-right: 0.25rem;
+      }
+    }
+  }
+
+  .new-world {
+    display: flex;
+    align-items: center;
+
+    &.vertical {
+      flex-direction: column;
+      margin-top: auto;
+      border-top: 1px solid var(--theme-navpanel-divider);
+      padding: 0.5rem 0;
+      gap: 0.25rem;
     }
     &.horizontal {
       margin-right: 1rem;

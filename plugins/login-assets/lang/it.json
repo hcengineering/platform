@@ -65,6 +65,10 @@
     "PasswordMinUpperChars": "{count, plural, =1 {La password deve contenere almeno # lettera maiuscola} other {La password deve contenere almeno # lettere maiuscole}}",
     "PasswordMinLowerChars": "{count, plural, =1 {La password deve contenere almeno # lettera minuscola} other {La password deve contenere almeno # lettere minuscole}}",
     "WorkspaceArchivedDesc": "Il workspace è stato archiviato perché inutilizzato.",
-    "RestoreArchivedWorkspace": "Un archiviato workspace"
+    "RestoreArchivedWorkspace": "Un archiviato workspace",
+    "Hello": "Ciao {name},",
+    "ProcessingInvite": "Elaborazione invito, attendere prego...",
+    "SignToProceed": "Accedi per procedere",
+    "Proceed": "Procedere"
   }
 }

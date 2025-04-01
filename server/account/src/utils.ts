@@ -435,6 +435,7 @@ export async function createAccount (
   db: AccountDB,
   personUuid: PersonUuid,
   confirmed = false,
+  automatic = false,
   createdOn = Date.now()
 ): Promise<void> {
   // Create Huly social id and account
@@ -446,7 +447,7 @@ export async function createAccount (
     personUuid,
     ...(confirmed ? { verifiedOn: Date.now() } : {})
   })
-  await db.account.insertOne({ uuid: personUuid })
+  await db.account.insertOne({ uuid: personUuid, automatic })
   await db.accountEvent.insertOne({
     accountUuid: personUuid,
     eventType: AccountEventType.ACCOUNT_CREATED,
@@ -459,10 +460,11 @@ export async function signUpByEmail (
   db: AccountDB,
   branding: Branding | null,
   email: string,
-  password: string,
+  password: string | null,
   firstName: string,
   lastName: string,
-  confirmed = false
+  confirmed = false,
+  automatic = false
 ): Promise<{ account: PersonUuid, socialId: PersonId }> {
   const normalizedEmail = cleanEmail(email)
 
@@ -493,8 +495,10 @@ export async function signUpByEmail (
     })
   }
 
-  await createAccount(db, account, confirmed)
-  await setPassword(ctx, db, branding, account, password)
+  await createAccount(db, account, confirmed, automatic)
+  if (password != null) {
+    await setPassword(ctx, db, branding, account, password)
+  }
 
   return { account, socialId }
 }
@@ -562,7 +566,7 @@ export async function selectWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
   }
 
-  if (accountUuid === systemAccountUuid) {
+  if (accountUuid === systemAccountUuid || extra?.admin === 'true') {
     return {
       account: accountUuid,
       token: generateToken(accountUuid, workspace.uuid, extra),
@@ -751,6 +755,12 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
   ) {
     ctx.error("Invite doesn't allow this email address", { email, ...invite })
     Analytics.handleError(new Error(`Invite link email mask check failed ${invite.id} ${email} ${invite.emailPattern}`))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  if (invite.email != null && invite.email.trim().length > 0 && invite.email !== email) {
+    ctx.error("Invite doesn't allow this email address", { email, ...invite })
+    Analytics.handleError(new Error(`Invite link email check failed ${invite.id} ${email} ${invite.email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -1236,13 +1246,11 @@ export function sanitizeEmail (email: string): string {
 export async function getInviteEmail (
   branding: Branding | null,
   email: string,
-  inviteId: string,
+  link: string,
   workspace: Workspace,
   expHours: number,
   resend = false
 ): Promise<EmailInfo> {
-  const front = getFrontUrl(branding)
-  const link = concatLink(front, `/login/join?inviteId=${inviteId}`)
   const ws = sanitizeEmail(workspace.name !== '' ? workspace.name : workspace.url)
   const lang = branding?.language
 
@@ -1276,4 +1284,8 @@ export async function getWorkspaceRole (
   }
 
   return await db.getWorkspaceRole(account, workspace)
+}
+
+export function generatePassword (len: number = 24): string {
+  return randomBytes(len).toString('base64').slice(0, len)
 }

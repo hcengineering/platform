@@ -89,6 +89,7 @@ import { serverGithubId, createModel as serverGithubModel } from '@hcengineering
 import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/model-server-time'
 import love, { loveId, createModel as loveModel } from '@hcengineering/model-love'
 import { printId, createModel as printModel } from '@hcengineering/model-print'
+import { exportId, createModel as exportModel } from '@hcengineering/model-export'
 import { analyticsCollectorId, createModel as analyticsCollectorModel } from '@hcengineering/model-analytics-collector'
 import { serverLoveId, createModel as serverLoveModel } from '@hcengineering/model-server-love'
 import { serverProcessId, createModel as serverProcessModel } from '@hcengineering/model-server-process'
@@ -110,11 +111,11 @@ import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
-import { serverFulltextId, createModel as serverFulltextModel } from '@hcengineering/model-server-fulltext'
 import { surveyId, createModel as surveyModel } from '@hcengineering/model-survey'
 import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
+import { chatId, createModel as chatModel } from '@hcengineering/model-chat'
 import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
-
+import { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
 import { type Plugin } from '@hcengineering/platform'
 
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
@@ -367,6 +368,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [printModel, printId],
+    [exportModel, exportId],
     [aiBotModel, aiBotId],
     [
       cardModel,
@@ -460,6 +462,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [mailModel, mailId],
+    [chatModel, chatId],
+    [inboxModel, inboxId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
@@ -493,7 +497,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTrainingModel, serverTrainingId],
     [serverDocumentsModel, serverDocumentsId],
     [serverAiBotModel, serverAiBotId],
-    [serverFulltextModel, serverFulltextId],
     [serverProcessModel, serverProcessId]
   ]
 

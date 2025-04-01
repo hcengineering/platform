@@ -84,11 +84,6 @@ export class UnifiedConverter {
         continue
       }
 
-      // Skip mixins if attributesOnly
-      if (attributesOnly && hierarchy.isMixin(key as Ref<Mixin<Doc>>)) {
-        continue
-      }
-
       // Process mixin or add raw value
       if (hierarchy.isMixin(key as Ref<Mixin<Doc>>) && hierarchy.hasMixin(doc, key as Ref<Mixin<Doc>>)) {
         const mixinAttrs = hierarchy.getAllAttributes(key as Ref<Mixin<Doc>>)
@@ -195,7 +190,7 @@ export class UnifiedConverter {
     }
 
     if (type._class === core.class.Collection) {
-      if (attributesOnly || value.length === 0) {
+      if (value.length === 0) {
         return undefined
       }
 
@@ -212,7 +207,7 @@ export class UnifiedConverter {
       return await Promise.all(collectionDocs.map(async (doc) => await this.convert(doc)))
     }
 
-    if (type._class === core.class.TypeTimestamp) {
+    if (type._class === core.class.TypeTimestamp || type._class === core.class.TypeDate) {
       return this.formatTimestamp(value as number)
     }
 

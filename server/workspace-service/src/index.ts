@@ -25,6 +25,7 @@ import {
 import { type MigrateOperation } from '@hcengineering/model'
 import { setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
+import { QueueTopic, type PlatformQueue, type QueueWorkspaceMessage } from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import { createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken from '@hcengineering/server-token'
@@ -37,6 +38,7 @@ export * from './ws-operations'
  */
 export function serveWorkspaceAccount (
   measureCtx: MeasureContext,
+  queue: PlatformQueue,
   version: Data<Version>,
   txes: Tx[],
   migrateOperations: [string, MigrateOperation][],
@@ -121,7 +123,9 @@ export function serveWorkspaceAccount (
 
   let canceled = false
 
+  const wsProducer = queue.createProducer<QueueWorkspaceMessage>(measureCtx, QueueTopic.Workspace)
   const worker = new WorkspaceWorker(
+    wsProducer,
     version,
     txes,
     migrateOperations,
@@ -154,6 +158,7 @@ export function serveWorkspaceAccount (
 
   const close = (): void => {
     canceled = true
+    void wsProducer.close()
     onClose?.()
   }
 

@@ -11,6 +11,7 @@ import core, {
 } from '@hcengineering/core'
 import type {
   ClientSessionCtx,
+  CommunicationApiFactory,
   ConnectionSocket,
   PipelineFactory,
   Session,
@@ -101,7 +102,8 @@ export function registerRPC (
   app: Express,
   sessions: SessionManager,
   ctx: MeasureContext,
-  pipelineFactory: PipelineFactory
+  pipelineFactory: PipelineFactory,
+  communicationApiFactory: CommunicationApiFactory
 ): void {
   const rpcSessions = new Map<string, RPCClientInfo>()
 
@@ -134,7 +136,15 @@ export function registerRPC (
 
       if (transactorRpc === undefined) {
         const cs: ConnectionSocket = createClosingSocket(token, rpcSessions)
-        const s = await sessions.addSession(ctx, cs, decodedToken, token, pipelineFactory, token)
+        const s = await sessions.addSession(
+          ctx,
+          cs,
+          decodedToken,
+          token,
+          pipelineFactory,
+          communicationApiFactory,
+          token
+        )
         if (!('session' in s)) {
           sendError(res, 401, {
             message: 'Failed to create session',
@@ -240,6 +250,31 @@ export function registerRPC (
         limit: req.query.limit !== undefined ? parseInt(req.query.limit as string) : undefined
       }
       const result = await session.searchFulltextRaw(ctx, query, options)
+      await sendJson(req, res, result)
+    })
+  })
+
+  app.get('/api/v1/find-messages/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session) => {
+      const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
+
+      const result = await session.findMessagesRaw(ctx, params)
+      await sendJson(req, res, result)
+    })
+  })
+  app.get('/api/v1/find-messages-groups/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session) => {
+      const params = req.query.params !== undefined ? JSON.parse(req.query.params as string) : {}
+
+      const result = await session.findMessagesGroupsRaw(ctx, params)
+      await sendJson(req, res, result)
+    })
+  })
+  app.post('/api/v1/event/:workspaceId', (req, res) => {
+    void withSession(req, res, async (ctx, session) => {
+      const event: any = (await retrieveJson(req)) ?? {}
+
+      const result = await session.eventRaw(ctx, event)
       await sendJson(req, res, result)
     })
   })

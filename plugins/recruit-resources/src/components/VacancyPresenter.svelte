@@ -41,7 +41,7 @@
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {accent} {noUnderline} component={recruit.component.EditVacancy} />
+    <ObjectMention object={value} {disabled} component={recruit.component.EditVacancy} />
   {:else if type === 'link'}
     <div class="flex-between flex-gap-2 w-full">
       <DocNavLink {disabled} object={value} {accent} {noUnderline} component={recruit.component.EditVacancy}>

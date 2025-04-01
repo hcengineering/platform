@@ -39,6 +39,9 @@ export default mergeIds(cardId, card, {
     RelationSetting: '' as AnyComponent,
     ViewsSection: '' as AnyComponent,
     EditView: '' as AnyComponent,
+    CardEditor: '' as AnyComponent,
+    CardRefPresenter: '' as AnyComponent,
+    ChangeType: '' as AnyComponent,
     CreateCardButton: '' as AnyComponent
   },
   completion: {
@@ -73,6 +76,9 @@ export default mergeIds(cardId, card, {
     CreateView: '' as IntlString,
     EditView: '' as IntlString,
     SelectViewType: '' as IntlString,
+    Document: '' as IntlString,
+    ChangeType: '' as IntlString,
+    ChangeTypeWarning: '' as IntlString,
     MasterDetailViews: '' as IntlString,
     SelectType: '' as IntlString
   }

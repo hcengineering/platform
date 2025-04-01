@@ -4,22 +4,24 @@ import type {
   Class,
   Doc,
   DocumentQuery,
+  Domain,
   IndexingUpdateEvent,
   MeasureContext,
   Ref,
   SearchOptions,
   SearchQuery,
   Tx,
+  TxCUD,
   TxWorkspaceEvent,
-  WorkspaceUuid,
-  WorkspaceIds
+  WorkspaceIds,
+  WorkspaceUuid
 } from '@hcengineering/core'
 import core, {
-  DOMAIN_DOC_INDEX_STATE,
   generateId,
   Hierarchy,
   ModelDb,
   systemAccountUuid,
+  TxProcessor,
   WorkspaceEvent
 } from '@hcengineering/core'
 import {
@@ -44,15 +46,22 @@ import {
   setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
-import serverClientPlugin, { getTransactorEndpoint, getAccountClient } from '@hcengineering/server-client'
+import serverClientPlugin, { getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import serverCore, {
   createContentAdapter,
   createPipeline,
+  QueueTopic,
+  QueueWorkspaceEvent,
+  workspaceEvents,
+  type ConsumerControl,
   type ContentTextAdapter,
   type FullTextAdapter,
   type MiddlewareCreator,
   type Pipeline,
   type PipelineContext,
+  type PlatformQueue,
+  type QueueWorkspaceMessage,
+  type QueueWorkspaceReindexMessage,
   type StorageAdapter
 } from '@hcengineering/server-core'
 import { FullTextIndexPipeline, searchFulltext, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
@@ -66,11 +75,30 @@ import {
   setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
-import serverToken, { decodeToken, generateToken, type Token } from '@hcengineering/server-token'
+import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
+
+function fulltextModelFilter (h: Hierarchy, model: Tx[]): Tx[] {
+  const allowedClasess: Ref<Class<Doc>>[] = [
+    core.class.Class,
+    core.class.Attribute,
+    core.class.Mixin,
+    core.class.Type,
+    core.class.Status,
+    core.class.Permission,
+    core.class.Space,
+    core.class.Tx,
+    core.class.FullTextSearchContext
+  ]
+  return model.filter(
+    (it) =>
+      TxProcessor.isExtendsCUD(it._class) &&
+      allowedClasess.some((cl) => h.isDerived((it as TxCUD<Doc>).objectClass, cl))
+  )
+}
 
 class WorkspaceIndexer {
   fulltext!: FullTextIndexPipeline
@@ -100,7 +128,7 @@ class WorkspaceIndexer {
       ContextNameMiddleware.create,
       DomainFindMiddleware.create,
       DBAdapterInitMiddleware.create,
-      ModelMiddleware.create(model),
+      ModelMiddleware.create(model, fulltextModelFilter), // TODO: Add filtration of only class structure and FullTextSearchContext
       DBAdapterMiddleware.create(dbConf)
     ]
 
@@ -113,7 +141,9 @@ class WorkspaceIndexer {
       modelDb,
       hierarchy,
       storageAdapter: externalStorage,
-      contextVars: {}
+      contextVars: {},
+      // TODO: Communication API ??
+      communicationApi: null
     }
     result.pipeline = await createPipeline(ctx, middlewares, context)
 
@@ -153,40 +183,37 @@ class WorkspaceIndexer {
         }
         // Send tx to pipeline
         // TODO: Fix me
-        void fetch(transactorEndpoint + `/api/v1/broadcast?token=${token}&workspace=${workspace.uuid}`, {
+        void fetch(transactorEndpoint + `/api/v1/broadcast?workspace=${workspace.uuid}`, {
           method: 'PUT',
+          keepalive: true,
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
           body: JSON.stringify(tx)
         })
-      },
-      async () => {
-        const helper = result.pipeline.context.adapterManager?.domainHelper
-        if (helper !== undefined) {
-          const dhelper = result.pipeline.context.adapterManager?.getAdapter(DOMAIN_DOC_INDEX_STATE, true).helper?.()
-          if (dhelper !== undefined) {
-            // Force creation of indexes for search domain
-            await helper.checkDomain(ctx, DOMAIN_DOC_INDEX_STATE, 10000, dhelper)
-          }
-        }
       }
     )
-    await result.fulltext.startIndexing(() => {
-      result.lastUpdate = Date.now()
-    })
     return result
   }
 
-  async reindex (onlyDrop: boolean): Promise<void> {
-    await this.fulltext.cancel()
-    await this.fulltext.clearIndex(onlyDrop)
-    if (!onlyDrop) {
-      await this.fulltext.startIndexing(() => {
-        this.lastUpdate = Date.now()
-      })
-    }
+  async reindex (
+    ctx: MeasureContext,
+    domain: Domain,
+    classes: Ref<Class<Doc>>[],
+    control?: ConsumerControl
+  ): Promise<void> {
+    await this.fulltext.reindex(ctx, domain, classes, control)
+  }
+
+  async dropWorkspace (): Promise<void> {
+    await this.fulltext.dropWorkspace()
+  }
+
+  async getIndexClassess (): Promise<{ domain: Domain, classes: Ref<Class<Doc>>[] }[]> {
+    return await this.fulltext.getIndexClassess()
   }
 
   async close (): Promise<void> {
-    await this.fulltext.cancel()
     await this.pipeline.close()
   }
 }
@@ -229,6 +256,7 @@ process.on('exit', () => {
 export async function startIndexer (
   ctx: MeasureContext,
   opt: {
+    queue: PlatformQueue
     model: Tx[]
     dbURL: string
     config: FulltextDBConfiguration
@@ -292,16 +320,89 @@ export async function startIndexer (
     }
   }, closeTimeout) // Every 5 minutes we should close unused indexes.
 
+  const workspaceProducer = opt.queue.createProducer<QueueWorkspaceMessage>(ctx, QueueTopic.Workspace)
+
+  const workspaceConsumer = opt.queue.createConsumer<QueueWorkspaceMessage>(
+    ctx,
+    QueueTopic.Workspace,
+    opt.queue.getClientId(),
+    async (msg, control) => {
+      for (const m of msg) {
+        ctx.info('workspace message', { message: m })
+        const ws = m.id as WorkspaceUuid
+
+        for (const mm of m.value) {
+          if (
+            mm.type === QueueWorkspaceEvent.Created ||
+            mm.type === QueueWorkspaceEvent.Restored ||
+            mm.type === QueueWorkspaceEvent.FullReindex
+          ) {
+            const indexer = await getIndexer(ctx, ws, generateToken(systemAccountUuid, ws), true)
+            if (indexer !== undefined) {
+              await indexer.dropWorkspace() // TODO: Add heartbeat
+              const classes = await indexer.getIndexClassess()
+              await workspaceProducer.send(
+                ws,
+                classes.map((it) => workspaceEvents.reindex(it.domain, it.classes))
+              )
+            }
+          } else if (
+            mm.type === QueueWorkspaceEvent.Deleted ||
+            mm.type === QueueWorkspaceEvent.Archived ||
+            mm.type === QueueWorkspaceEvent.ClearIndex
+          ) {
+            const token = generateToken(systemAccountUuid, ws)
+            const accountClient = getAccountClient(token)
+            const workspaceInfo = await accountClient.getWorkspaceInfo(false)
+            if (workspaceInfo !== undefined) {
+              if (workspaceInfo.dataId != null) {
+                await fulltextAdapter.clean(ctx, workspaceInfo.dataId as unknown as WorkspaceUuid)
+              }
+              await fulltextAdapter.clean(ctx, workspaceInfo.uuid)
+            }
+          } else if (mm.type === QueueWorkspaceEvent.Reindex) {
+            const indexer = await getIndexer(ctx, ws, generateToken(systemAccountUuid, ws), true)
+            const mmd = mm as QueueWorkspaceReindexMessage
+            await indexer?.reindex(ctx, mmd.domain, mmd.classes, control)
+          }
+        }
+      }
+    }
+  )
+
+  let txInformer: any
+  let txMessages: number = 0
+  const txConsumer = opt.queue.createConsumer<TxCUD<Doc>>(
+    ctx,
+    QueueTopic.Tx,
+    opt.queue.getClientId(),
+    async (msg, control) => {
+      clearTimeout(txInformer)
+      txInformer = setTimeout(() => {
+        ctx.info('tx message', { count: txMessages })
+        txMessages = 0
+      }, 5000)
+
+      txMessages += msg.length
+      for (const m of msg) {
+        const ws = m.id as WorkspaceUuid
+
+        const indexer = await getIndexer(ctx, ws, generateToken(systemAccountUuid, ws), true)
+        await indexer?.fulltext.processDocuments(ctx, m.value, control)
+      }
+    }
+  )
+
   async function getIndexer (
     ctx: MeasureContext,
     workspace: WorkspaceUuid,
-    token: string,
+    token: string | undefined,
     create: boolean = false
   ): Promise<WorkspaceIndexer | undefined> {
-    const accountClient = getAccountClient(token)
-    const workspaceInfo = await accountClient.getWorkspaceInfo(false)
     let idx = indexers.get(workspace)
     if (idx === undefined && create) {
+      const accountClient = getAccountClient(token)
+      const workspaceInfo = await accountClient.getWorkspaceInfo(false)
       if (workspaceInfo === undefined) {
         ctx.error('Workspace not available for token')
         return
@@ -339,7 +440,8 @@ export async function startIndexer (
   router.put('/api/v1/search', async (req, res) => {
     try {
       const request = req.request.body as Search
-      const decoded = decodeToken(request.token) // Just to be safe
+      const token = request.token ?? req.headers.authorization?.split(' ')[1]
+      const decoded = decodeToken(token) // Just to be safe
 
       ctx.info('search', { classes: request._classes, query: request.query, workspace: decoded.workspace })
       await ctx.with('search', {}, async (ctx) => {
@@ -348,8 +450,6 @@ export async function startIndexer (
         )
         req.body = docs
       })
-
-      void triggerIndexer(decoded, request.token)
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
@@ -361,7 +461,8 @@ export async function startIndexer (
   router.put('/api/v1/full-text-search', async (req, res) => {
     try {
       const request = req.request.body as FulltextSearch
-      const decoded = decodeToken(request.token) // Just to be safe
+      const token = request.token ?? req.headers.authorization?.split(' ')[1]
+      const decoded = decodeToken(token) // Just to be safe
       ctx.info('fulltext-search', { ...request.query, workspace: decoded.workspace })
       await ctx.with('full-text-search', {}, async (ctx) => {
         const result = await ctx.with('searchFulltext', {}, (ctx) =>
@@ -369,24 +470,6 @@ export async function startIndexer (
         )
         req.body = result
       })
-
-      void triggerIndexer(decoded, request.token)
-    } catch (err: any) {
-      Analytics.handleError(err)
-      console.error(err)
-      req.res.writeHead(404, {})
-      req.res.end()
-    }
-  })
-
-  router.put('/api/v1/warmup', async (req, res) => {
-    try {
-      const request = req.request.body as IndexDocuments
-      const decoded = decodeToken(request.token) // Just to be safe
-      req.body = {}
-
-      ctx.info('warm-up', { workspace: decoded.workspace })
-      void triggerIndexer(decoded, request.token, true)
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
@@ -398,7 +481,8 @@ export async function startIndexer (
   router.put('/api/v1/close', async (req, res) => {
     try {
       const request = req.request.body as IndexDocuments
-      const decoded = decodeToken(request.token) // Just to be safe
+      const token = request.token ?? req.headers.authorization?.split(' ')[1]
+      const decoded = decodeToken(token) // Just to be safe
       req.body = {}
 
       ctx.info('close', { workspace: decoded.workspace })
@@ -422,12 +506,14 @@ export async function startIndexer (
   router.put('/api/v1/index-documents', async (req, res) => {
     try {
       const request = req.request.body as IndexDocuments
-      const decoded = decodeToken(request.token) // Just to be safe
+      const token = request.token ?? req.headers.authorization?.split(' ')[1]
+      const decoded = decodeToken(token) // Just to be safe
 
-      const indexer = await getIndexer(ctx, decoded.workspace, request.token)
+      const indexer = await getIndexer(ctx, decoded.workspace, token)
       if (indexer !== undefined) {
         indexer.lastUpdate = Date.now()
-        await ctx.with('index-documents', {}, (ctx) => indexer.fulltext.indexDocuments(ctx, request.requests))
+        // TODO: Fixme
+        // await ctx.with('index-documents', {}, (ctx) => indexer.fulltext.indexDocuments(ctx, request.requests))
       }
       req.body = {}
     } catch (err: any) {
@@ -441,14 +527,19 @@ export async function startIndexer (
   router.put('/api/v1/reindex', async (req, res) => {
     try {
       const request = req.request.body as Reindex
-      const decoded = decodeToken(request.token) // Just to be safe
+      const token = request.token ?? req.headers.authorization?.split(' ')[1]
+      const decoded = decodeToken(token) // Just to be safe
       req.body = {}
 
       ctx.info('reindex', { workspace: decoded.workspace })
-      const indexer = await getIndexer(ctx, decoded.workspace, request.token, true)
+      const indexer = await getIndexer(ctx, decoded.workspace, token, true)
       if (indexer !== undefined) {
         indexer.lastUpdate = Date.now()
-        await indexer.reindex(request?.onlyDrop ?? false)
+        if (request?.onlyDrop ?? false) {
+          await workspaceProducer.send(decoded.workspace, [workspaceEvents.clearIndex()])
+        } else {
+          await workspaceProducer.send(decoded.workspace, [workspaceEvents.fullReindex()])
+        }
       }
     } catch (err: any) {
       Analytics.handleError(err)
@@ -465,19 +556,12 @@ export async function startIndexer (
   })
 
   const close = (): void => {
+    void txConsumer.close()
+    void workspaceConsumer.close()
+    void workspaceProducer.close()
     clearInterval(shutdownInterval)
     server.close()
   }
 
   return close
-
-  async function triggerIndexer (decoded: Token, token: string, trigger: boolean = false): Promise<void> {
-    const indexer = await getIndexer(ctx, decoded.workspace, token, trigger)
-    if (indexer !== undefined) {
-      indexer.lastUpdate = Date.now()
-      if (trigger) {
-        indexer.fulltext.triggerIndexing()
-      }
-    }
-  }
 }

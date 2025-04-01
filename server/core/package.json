@@ -35,14 +35,16 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/communication-sdk-types": "0.1.147",
+    "@hcengineering/communication-types": "0.1.147",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/rpc": "^0.6.5",
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/query": "^0.6.12",
-    "fast-equals": "^5.2.2",
+    "@hcengineering/rpc": "^0.6.5",
+    "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/storage": "^0.6.0",
+    "fast-equals": "^5.2.2",
     "uuid": "^8.3.2"
   }
 }

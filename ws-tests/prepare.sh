@@ -37,3 +37,5 @@ fi
 ./tool-europe.sh create-workspace api-tests-cr email:user1 --region 'europe'
 ./tool.sh assign-workspace user1 api-tests
 ./tool.sh assign-workspace user1 api-tests-cr
+
+rm -rf ./sanity/.auth

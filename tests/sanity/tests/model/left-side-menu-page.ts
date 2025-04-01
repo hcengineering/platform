@@ -13,7 +13,7 @@ export class LeftSideMenuPage extends CommonPage {
   buttonContacts = (): Locator => this.page.locator('button[id$="Contacts"]')
   buttonTracker = (): Locator => this.page.locator('button[id$="TrackerApplication"]')
   buttonRecruiting = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
-  buttonNotification = (): Locator => this.page.locator('button[id$="Inbox"]')
+  buttonNotification = (): Locator => this.page.locator('button[id$="app-notification:string:Inbox"]')
   buttonDocuments = (): Locator => this.page.locator('button[id$="document:string:DocumentApplication"]')
   buttonPlanner = (): Locator => this.page.locator('button[id$="app-time:string:Planner"]')
   buttonTeam = (): Locator => this.page.locator('button[id$="app-time:string:Team"]')

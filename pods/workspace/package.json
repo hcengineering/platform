@@ -56,6 +56,7 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/model-all": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/analytics-service": "^0.6.0"
+    "@hcengineering/analytics-service": "^0.6.0",
+    "@hcengineering/kafka": "^0.6.0"
   }
 }

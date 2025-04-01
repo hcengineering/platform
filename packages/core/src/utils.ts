@@ -27,7 +27,6 @@ import {
   Doc,
   DocData,
   DOMAIN_BLOB,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   FullTextSearchContext,
@@ -646,9 +645,7 @@ export function getFullTextContext (
   ctx = {
     toClass: objectClass,
     fullTextSummary: false,
-    forceIndex: false,
-    propagate: [],
-    childProcessingAllowed: true
+    forceIndex: false
   }
   hierarchy.setClassifierProp(objectClass, ctxKey, ctx)
   return ctx
@@ -673,7 +670,6 @@ export function isClassIndexable (
   }
 
   if (
-    domain === DOMAIN_DOC_INDEX_STATE ||
     domain === DOMAIN_TX ||
     domain === DOMAIN_MODEL ||
     domain === DOMAIN_BLOB ||
@@ -894,14 +890,20 @@ export class TimeRateLimiter {
 export function combineAttributes (
   attributes: any[],
   key: string,
-  operator: '$push' | '$pull',
-  arrayKey: '$each' | '$in'
+  operator: '$push' | '$pull' | '$unset',
+  arrayKey?: '$each' | '$in'
 ): any[] {
   return Array.from(
     new Set(
-      attributes.flatMap((attr) =>
-        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
-      )
+      attributes.flatMap((attr) => {
+        if (arrayKey === undefined) {
+          return attr[operator]?.[key]
+        }
+
+        return Array.isArray(attr[operator]?.[key]?.[arrayKey])
+          ? attr[operator]?.[key]?.[arrayKey]
+          : attr[operator]?.[key]
+      })
     )
   ).filter((v) => v != null)
 }

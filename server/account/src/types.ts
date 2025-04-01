@@ -50,6 +50,7 @@ export interface SocialId extends SocialIdBase {
 
 export interface Account {
   uuid: PersonUuid
+  automatic?: boolean
   timezone?: string
   locale?: string
   hash?: Buffer | null
@@ -116,8 +117,25 @@ export interface WorkspaceInvite {
   workspaceUuid: WorkspaceUuid
   expiresOn: Timestamp
   emailPattern?: string
+  email?: string
   remainingUses?: number
   role: AccountRole
+  autoJoin?: boolean
+}
+
+export interface Mailbox {
+  accountUuid: PersonUuid
+  mailbox: string
+}
+
+export interface MailboxSecret {
+  mailbox: string
+  app?: string
+  secret: string
+}
+
+export interface MailboxInfo {
+  mailbox: string
 }
 
 /* ========= S U P P L E M E N T A R Y ========= */
@@ -145,6 +163,8 @@ export interface AccountDB {
   accountEvent: DbCollection<AccountEvent>
   otp: DbCollection<OTP>
   invite: DbCollection<WorkspaceInvite>
+  mailbox: DbCollection<Mailbox>
+  mailboxSecret: DbCollection<MailboxSecret>
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
@@ -246,4 +266,17 @@ export interface OtpInfo {
 export interface RegionInfo {
   region: string
   name: string
+}
+
+export interface WorkspaceInviteInfo {
+  workspace: WorkspaceUuid
+  email?: string
+  name?: string
+}
+
+export interface MailboxOptions {
+  availableDomains: string[]
+  minNameLength: number
+  maxNameLength: number
+  maxMailboxCount: number
 }

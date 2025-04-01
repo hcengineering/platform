@@ -111,7 +111,7 @@ export class TResource extends TDoc implements Resource {
 }
 
 @Model(drive.class.Folder, drive.class.Resource, DOMAIN_DRIVE)
-@UX(drive.string.Folder)
+@UX(drive.string.Folder, drive.icon.Folder)
 export class TFolder extends TResource implements Folder {
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)
@@ -126,7 +126,7 @@ export class TFolder extends TResource implements Folder {
 }
 
 @Model(drive.class.File, drive.class.Resource, DOMAIN_DRIVE)
-@UX(drive.string.File)
+@UX(drive.string.File, drive.icon.File)
 export class TFile extends TResource implements File {
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)

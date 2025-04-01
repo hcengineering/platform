@@ -3,5 +3,6 @@ export enum CardEvents {
   TagCreated = 'card.card.TagCreated',
   RelationCreated = 'card.card.RelationCreated',
   CardCreated = 'card.card.Created',
-  CardOpened = 'card.card.Opened'
+  CardOpened = 'card.card.Opened',
+  TypeChanged = 'card.card.TypeChanged'
 }

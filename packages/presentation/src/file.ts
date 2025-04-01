@@ -92,7 +92,7 @@ export function parseUploadConfig (config: string, uploadUrl: string): UploadCon
   return uploadConfig
 }
 
-function getFilesUrl (): string {
+export function getFilesUrl (): string {
   const filesUrl = getMetadata(plugin.metadata.FilesURL) ?? defaultFilesUrl
   const frontUrl = getMetadata(plugin.metadata.FrontUrl) ?? window.location.origin
 

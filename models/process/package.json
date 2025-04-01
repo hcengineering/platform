@@ -42,6 +42,7 @@
     "@hcengineering/process-resources": "^0.6.0",
     "@hcengineering/model-presentation": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
+    "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/card": "^0.6.0"
   }
 }

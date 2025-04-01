@@ -17,7 +17,6 @@ import {
   DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
   DOMAIN_CONFIGURATION,
-  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MIGRATION,
   DOMAIN_SPACE,
   DOMAIN_STATUS,
@@ -38,7 +37,6 @@ import {
   TConfiguration,
   TConfigurationElement,
   TDoc,
-  TDocIndexState,
   TDomainIndexConfiguration,
   TEnum,
   TEnumOf,
@@ -149,7 +147,6 @@ export function createModel (builder: Builder): void {
     TEnum,
     TTypeAny,
     TTypeRelatedDocument,
-    TDocIndexState,
     TFullTextSearchContext,
     TConfiguration,
     TConfigurationElement,
@@ -262,33 +259,8 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
-    domain: DOMAIN_DOC_INDEX_STATE,
-    indexes: [
-      {
-        keys: { needIndex: 1, objectClass: 1 }
-      }
-    ],
-    disabled: [
-      { attachedToClass: 1 },
-      { stages: 1 },
-      { space: 1 },
-      { _class: 1 },
-      { needIndex: 1 },
-      { objectClass: 1 },
-      { _class: 1 },
-      { attachedTo: 1 },
-      { modifiedBy: 1 },
-      { modifiedOn: 1 },
-      { createdBy: 1 },
-      { createdBy: -1 },
-      { createdOn: -1 }
-    ]
-  })
-
   builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
-    toClass: core.class.Space,
-    childProcessingAllowed: false
+    toClass: core.class.Space
   })
 
   definePermissions(builder)

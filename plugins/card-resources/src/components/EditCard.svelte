@@ -143,6 +143,7 @@
     bind:content
     bind:innerWidth
     floatAside={false}
+    newActivity
     on:open
     on:close={() => dispatch('close')}
   >
@@ -160,15 +161,15 @@
 
       <CardAttributeEditor value={doc} {mixins} {readonly} ignoreKeys={['title', 'content', 'parent']} />
 
-      <ComponentExtensions
-        extension={card.extensions.EditCardExtension}
-        props={{
-          card: doc
-        }}
-      />
-
       <Content {doc} {readonly} bind:content />
     </div>
+
+    <ComponentExtensions
+      extension={card.extensions.EditCardExtension}
+      props={{
+        card: doc
+      }}
+    />
 
     <Childs object={doc} {readonly} />
     <RelationsEditor object={doc} {readonly} />

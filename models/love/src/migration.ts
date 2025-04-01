@@ -168,6 +168,12 @@ export const loveOperation: MigrateOperation = {
             { status: MeetingStatus.Finished }
           )
         }
+      },
+      {
+        state: 'meeting-minutes-reindex-v1',
+        func: async (client) => {
+          await client.reindex(DOMAIN_MEETING_MINUTES, [love.class.MeetingMinutes])
+        }
       }
     ])
   },

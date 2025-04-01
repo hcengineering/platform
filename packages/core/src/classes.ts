@@ -74,6 +74,7 @@ export interface Account {
   role: AccountRole
   primarySocialId: PersonId
   socialIds: PersonId[]
+  fullSocialIds: SocialId[]
 }
 
 /**
@@ -421,8 +422,6 @@ export interface TransientConfiguration extends Class<Doc> {
  */
 export const DOMAIN_BLOB = 'blob' as Domain
 
-export const DOMAIN_DOC_INDEX_STATE = 'doc-index-state' as Domain
-
 /**
  * @public
  */
@@ -583,17 +582,6 @@ export function versionToString (version: Version | Data<Version>): string {
 
 /**
  * @public
- *
- * Define status for full text indexing
- */
-export interface DocIndexState extends Doc {
-  objectClass: Ref<Class<Doc>>
-  needIndex: boolean
-  removed: boolean
-}
-
-/**
- * @public
  */
 export interface Sequence extends Doc {
   attachedTo: Ref<Class<Doc>>
@@ -658,13 +646,6 @@ export interface FullTextSearchContext extends Doc {
   toClass: Ref<Class<Doc>>
   fullTextSummary?: boolean
   forceIndex?: boolean
-
-  // If defined, will propagate changes to child's with defined set of classes
-  propagate?: Ref<Class<Doc>>[]
-  // If defined, will propagate all document from child's based on class
-  propagateClasses?: Ref<Class<Doc>>[]
-
-  childProcessingAllowed?: boolean
 }
 
 /**

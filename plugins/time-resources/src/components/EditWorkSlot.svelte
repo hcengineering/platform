@@ -122,8 +122,10 @@
     <EventTimeEditor {allDay} bind:startDate bind:dueDate disabled={readOnly} focusIndex={10004} />
   </div>
   <div class="block flex-no-shrink">
-    <div class="flex-row-center gap-1-5 mb-1">
-      <Icon icon={calendar.icon.Description} size={'small'} />
+    <div class="flex mb-1">
+      <div class="top-icon">
+        <Icon icon={calendar.icon.Description} size={'small'} />
+      </div>
       <StyledTextBox
         alwaysEdit={true}
         kind={'indented'}
@@ -140,7 +142,7 @@
     <CalendarSelector bind:value={_calendar} disabled={readOnly} focusIndex={10007} />
     <div class="flex-row-center flex-gap-1">
       <Icon icon={calendar.icon.Hidden} size={'small'} />
-      <VisibilityEditor bind:value={visibility} kind={'tertiary'} withoutIcon disabled={readOnly} focusIndex={10008} />
+      <VisibilityEditor bind:value={visibility} kind="inline" withoutIcon disabled={readOnly} focusIndex={10008} />
     </div>
     <EventReminders bind:reminders disabled={readOnly} focusIndex={10009} />
   </div>
@@ -189,6 +191,11 @@
       &.rightCropPadding {
         padding: 0.75rem 1rem 0.75rem 1.25rem;
       }
+    }
+    .top-icon {
+      flex-shrink: 0;
+      margin-top: 1.375rem;
+      margin-right: 0.125rem;
     }
   }
 </style>

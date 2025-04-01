@@ -47,6 +47,7 @@ import {
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
 import { updateField } from './workspace'
@@ -81,11 +82,15 @@ import {
   createPostgresTxAdapter,
   shutdownPostgres
 } from '@hcengineering/postgres'
-import type { StorageAdapter } from '@hcengineering/server-core'
+import {
+  QueueTopic,
+  workspaceEvents,
+  type QueueWorkspaceMessage,
+  type StorageAdapter
+} from '@hcengineering/server-core'
 import { getAccountDBUrl, getMongoDBUrl } from './__start'
 // import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import { changeConfiguration } from './configuration'
-import { reindexWorkspace } from './fulltext'
 
 import { moveAccountDbFromMongoToPG } from './db'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
@@ -345,6 +350,11 @@ export function devTool (
         const coreWsInfo = flattenStatus(wsInfo)
         const accountClient = getAccountClient(getToolToken())
 
+        const wsProducer = getPlatformQueue('tool', cmd.region).createProducer<QueueWorkspaceMessage>(
+          toolCtx,
+          QueueTopic.Workspace
+        )
+
         await createWorkspace(
           measureCtx,
           version,
@@ -353,6 +363,7 @@ export function devTool (
           txes,
           migrateOperations,
           accountClient,
+          wsProducer,
           undefined,
           true
         )
@@ -362,6 +373,9 @@ export function devTool (
           version,
           progress: 100
         })
+
+        await wsProducer.send(res.workspaceUuid, [workspaceEvents.created()])
+        await wsProducer.close()
 
         console.log('create-workspace done')
       })
@@ -419,7 +433,10 @@ export function devTool (
         const coreWsInfo = flattenStatus(wsInfo)
         const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
         const accountClient = getAccountClient(getToolToken(wsInfo.uuid))
-
+        const wsProducer = getPlatformQueue('tool', info.region).createProducer<QueueWorkspaceMessage>(
+          toolCtx,
+          QueueTopic.Workspace
+        )
         await upgradeWorkspace(
           measureCtx,
           version,
@@ -428,6 +445,7 @@ export function devTool (
           accountClient,
           coreWsInfo,
           consoleModelLogger,
+          wsProducer,
           async () => {},
           cmd.force,
           cmd.indexes,
@@ -442,6 +460,9 @@ export function devTool (
         })
 
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
+
+        await wsProducer.send(info.uuid, [workspaceEvents.upgraded()])
+        await wsProducer.close()
         console.log('upgrade-workspace done')
       })
     })
@@ -1121,6 +1142,12 @@ export function devTool (
             storageAdapter: workspaceStorage,
             historyFile: cmd.historyFile
           })
+          const wsProducer = getPlatformQueue('tool', ws.region).createProducer<QueueWorkspaceMessage>(
+            toolCtx,
+            QueueTopic.Workspace
+          )
+          await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+          await wsProducer.close()
           await workspaceStorage?.close()
         })
       }
@@ -2063,7 +2090,12 @@ export function devTool (
         }
 
         console.log('reindex workspace', workspace)
-        await reindexWorkspace(toolCtx, fulltextUrl, getToolToken(ws?.uuid))
+        const wsProducer = getPlatformQueue('tool', ws.region).createProducer<QueueWorkspaceMessage>(
+          toolCtx,
+          QueueTopic.Workspace
+        )
+        await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
+        await wsProducer.close()
         console.log('done', workspace)
       })
     })
@@ -2366,6 +2398,15 @@ export function devTool (
   //       await fillGithubUsers(toolCtx, db, cmd.token)
   //     })
   //   })
+
+  program
+    .command('queue-init-topics')
+    .description('create required kafka topics')
+    .option('-tx <tx>', 'Number of TX partitions', '5')
+    .action(async (cmd: { tx: string }) => {
+      const queue = getPlatformQueue('tool')
+      await queue.createTopics(parseInt(cmd.tx ?? '1'))
+    })
 
   extendProgram?.(program)
 

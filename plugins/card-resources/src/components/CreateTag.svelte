@@ -39,10 +39,10 @@
       icon: isMasterTag ? card.icon.MasterTag : card.icon.Tag
     }
 
-    await client.createDoc(_class, core.space.Model, data)
+    const id = await client.createDoc(_class, core.space.Model, data)
     Analytics.handleEvent(isMasterTag ? CardEvents.TypeCreated : CardEvents.TagCreated)
 
-    dispatch('close')
+    dispatch('close', id)
   }
 </script>
 

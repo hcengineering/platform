@@ -31,7 +31,15 @@ import {
   type SocialIdType
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import type { LoginInfo, OtpInfo, WorkspaceLoginInfo, RegionInfo, WorkspaceOperation } from './types'
+import type {
+  LoginInfo,
+  MailboxOptions,
+  OtpInfo,
+  WorkspaceLoginInfo,
+  RegionInfo,
+  WorkspaceOperation,
+  MailboxInfo
+} from './types'
 
 /** @public */
 export interface AccountClient {
@@ -64,8 +72,9 @@ export interface AccountClient {
     inviteId: string
   ) => Promise<WorkspaceLoginInfo>
   join: (email: string, password: string, inviteId: string) => Promise<WorkspaceLoginInfo>
-  createInviteLink: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
+  createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
+  checkAutoJoin: (inviteId: string, firstName?: string, lastName?: string) => Promise<WorkspaceLoginInfo>
   getWorkspaceInfo: (updateLastVisit?: boolean) => Promise<WorkspaceInfoWithStatus>
   getWorkspacesInfo: (workspaces: WorkspaceUuid[]) => Promise<WorkspaceInfoWithStatus[]>
   getRegionInfo: () => Promise<RegionInfo[]>
@@ -80,9 +89,13 @@ export interface AccountClient {
   updateWorkspaceRole: (account: string, role: AccountRole) => Promise<void>
   updateWorkspaceName: (name: string) => Promise<void>
   deleteWorkspace: () => Promise<void>
-  findPersonBySocialKey: (socialKey: string) => Promise<PersonUuid | undefined>
-  findPersonBySocialId: (socialId: PersonId) => Promise<PersonUuid | undefined>
+  findPersonBySocialKey: (socialKey: string, requireAccount?: boolean) => Promise<PersonUuid | undefined>
+  findPersonBySocialId: (socialId: PersonId, requireAccount?: boolean) => Promise<PersonUuid | undefined>
   findSocialIdBySocialKey: (socialKey: string) => Promise<PersonId | undefined>
+  getMailboxOptions: () => Promise<MailboxOptions>
+  createMailbox: (name: string, domain: string) => Promise<{ mailbox: string, socialId: PersonId }>
+  getMailboxes: () => Promise<MailboxInfo[]>
+  deleteMailbox: (mailbox: string) => Promise<void>
 
   // Service methods
   workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
@@ -346,9 +359,9 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async createInviteLink (exp: number, emailMask: string, limit: number, role: AccountRole): Promise<string> {
+  async createInvite (exp: number, emailMask: string, limit: number, role: AccountRole): Promise<string> {
     const request = {
-      method: 'createInviteLink' as const,
+      method: 'createInvite' as const,
       params: { exp, emailMask, limit, role }
     }
 
@@ -359,6 +372,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'checkJoin' as const,
       params: { inviteId }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async checkAutoJoin (inviteId: string, firstName?: string, lastName?: string): Promise<WorkspaceLoginInfo> {
+    const request = {
+      method: 'checkAutoJoin' as const,
+      params: { inviteId, firstName, lastName }
     }
 
     return await this.rpc(request)
@@ -532,19 +554,19 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async findPersonBySocialKey (socialString: string): Promise<PersonUuid | undefined> {
+  async findPersonBySocialKey (socialString: string, requireAccount?: boolean): Promise<PersonUuid | undefined> {
     const request = {
       method: 'findPersonBySocialKey' as const,
-      params: { socialString }
+      params: { socialString, requireAccount }
     }
 
     return await this.rpc(request)
   }
 
-  async findPersonBySocialId (socialId: PersonId): Promise<PersonUuid | undefined> {
+  async findPersonBySocialId (socialId: PersonId, requireAccount?: boolean): Promise<PersonUuid | undefined> {
     const request = {
       method: 'findPersonBySocialId' as const,
-      params: { socialId }
+      params: { socialId, requireAccount }
     }
 
     return await this.rpc(request)
@@ -620,6 +642,42 @@ class AccountClientImpl implements AccountClient {
     }
 
     return await this.rpc(request)
+  }
+
+  async getMailboxOptions (): Promise<MailboxOptions> {
+    const request = {
+      method: 'getMailboxOptions' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async createMailbox (name: string, domain: string): Promise<{ mailbox: string, socialId: PersonId }> {
+    const request = {
+      method: 'createMailbox' as const,
+      params: { name, domain }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async getMailboxes (): Promise<MailboxInfo[]> {
+    const request = {
+      method: 'getMailboxes' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async deleteMailbox (mailbox: string): Promise<void> {
+    const request = {
+      method: 'deleteMailbox' as const,
+      params: { mailbox }
+    }
+
+    await this.rpc(request)
   }
 
   async setCookie (): Promise<void> {

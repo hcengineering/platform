@@ -73,7 +73,10 @@
   })
 
   onMount(() => {
-    closeWrongTabs(getCurrentLocation())
+    // We need to wait for location to be updated
+    setTimeout(() => {
+      closeWrongTabs(getCurrentLocation())
+    }, 100)
   })
 
   onDestroy(() => {

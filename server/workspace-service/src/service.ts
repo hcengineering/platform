@@ -14,13 +14,13 @@
 //
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import {
+  DOMAIN_BLOB,
   getBranding,
   isArchivingMode,
   isMigrationMode,
   isRestoringMode,
   systemAccountUuid,
   type BrandingMap,
-  DOMAIN_BLOB,
   type Data,
   type MeasureContext,
   type Tx,
@@ -53,7 +53,13 @@ import {
   shutdownPostgres
 } from '@hcengineering/postgres'
 import { doBackupWorkspace, doRestoreWorkspace } from '@hcengineering/server-backup'
-import type { PipelineFactory, StorageAdapter } from '@hcengineering/server-core'
+import {
+  workspaceEvents,
+  type PipelineFactory,
+  type PlatformQueueProducer,
+  type QueueWorkspaceMessage,
+  type StorageAdapter
+} from '@hcengineering/server-core'
 import {
   createBackupPipeline,
   getConfig,
@@ -101,6 +107,7 @@ export class WorkspaceWorker {
   resolveBusy: (() => void) | null = null
 
   constructor (
+    readonly workspaceQueue: PlatformQueueProducer<QueueWorkspaceMessage>,
     readonly version: Data<Version>,
     readonly txes: Tx[],
     readonly migrationOperation: [string, MigrateOperation][],
@@ -255,6 +262,7 @@ export class WorkspaceWorker {
           this.txes,
           this.migrationOperation,
           accountClient,
+          this.workspaceQueue,
           handleWsEventWithRetry
         )
       } else {
@@ -270,6 +278,8 @@ export class WorkspaceWorker {
         region: this.region,
         time: Date.now() - t
       })
+
+      await this.workspaceQueue.send(ws.uuid, [workspaceEvents.created()])
     } catch (err: any) {
       await opt.errorHandler(ws, err)
 
@@ -285,6 +295,7 @@ export class WorkspaceWorker {
         region: this.region,
         time: Date.now() - t
       })
+      await this.workspaceQueue.send(ws.uuid, [workspaceEvents.createFailed()])
     } finally {
       if (!opt.console) {
         ;(logger as FileModelLogger).close()
@@ -355,6 +366,7 @@ export class WorkspaceWorker {
         accountClient,
         ws,
         logger,
+        this.workspaceQueue,
         handleWsEventWithRetry,
         opt.force
       )
@@ -365,6 +377,7 @@ export class WorkspaceWorker {
         region: this.region,
         time: Date.now() - t
       })
+      await this.workspaceQueue.send(ws.uuid, [workspaceEvents.upgraded()])
     } catch (err: any) {
       await opt.errorHandler(ws, err)
 
@@ -381,6 +394,7 @@ export class WorkspaceWorker {
         region: this.region,
         time: Date.now() - t
       })
+      await this.workspaceQueue.send(ws.uuid, [workspaceEvents.upgradeFailed()])
     } finally {
       if (!opt.console) {
         ;(logger as FileModelLogger).close()
@@ -396,32 +410,7 @@ export class WorkspaceWorker {
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
     await adapter.deleteWorkspace(ctx, sharedPipelineContextVars, workspace.uuid, workspace.dataId)
 
-    await this.doReindexFulltext(ctx, workspace, cleanIndexes)
-  }
-
-  private async doReindexFulltext (
-    ctx: MeasureContext,
-    workspace: WorkspaceInfoWithStatus,
-    cleanIndexes: boolean
-  ): Promise<void> {
-    if (this.fulltextUrl !== undefined) {
-      const token = generateToken(systemAccountUuid, workspace.uuid, { service: 'workspace' })
-
-      try {
-        const res = await fetch(this.fulltextUrl + '/api/v1/reindex', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ token, onlyDrop: cleanIndexes })
-        })
-        if (!res.ok) {
-          throw new Error(`HTTP Error ${res.status} ${res.statusText}`)
-        }
-      } catch (err: any) {
-        ctx.error('failed to reset index', { err })
-      }
-    }
+    await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.clearIndex()])
   }
 
   async sendTransactorMaitenance (token: string, ws: WorkspaceUuid): Promise<void> {
@@ -490,6 +479,7 @@ export class WorkspaceWorker {
           return
         }
         await sendEvent('archiving-clean-done', 100)
+        await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.archived()])
         break
       }
       case 'pending-deletion':
@@ -504,6 +494,7 @@ export class WorkspaceWorker {
           return
         }
         await sendEvent('delete-done', 100)
+        await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.deleted()])
         break
       }
 
@@ -537,8 +528,8 @@ export class WorkspaceWorker {
         await sendEvent('restore-started', 0)
         if (await this.doRestore(ctx, workspace, opt)) {
           // We should reindex fulltext
-          await this.doReindexFulltext(ctx, workspace, false)
           await sendEvent('restore-done', 100)
+          await this.workspaceQueue.send(workspace.uuid, [workspaceEvents.restored()])
         }
         break
       default:

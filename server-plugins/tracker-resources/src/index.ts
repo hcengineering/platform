@@ -20,7 +20,6 @@ import core, {
   concatLink,
   Doc,
   DocumentUpdate,
-  PersonId,
   Ref,
   Space,
   systemAccountUuid,
@@ -34,7 +33,6 @@ import core, {
 } from '@hcengineering/core'
 import { NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
-import { getSocialStrings } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 import { stripTags } from '@hcengineering/text-core'
@@ -89,18 +87,13 @@ export async function issueTextPresenter (doc: Doc): Promise<string> {
   return `${issue.identifier} ${issue.title}`
 }
 
-async function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: PersonId): Promise<boolean> {
-  const socialStrings = await getSocialStrings(control, assignee)
-  return socialStrings.includes(target)
-}
-
 /**
  * @public
  */
 export async function getIssueNotificationContent (
   doc: Doc,
   tx: TxCUD<Doc>,
-  target: PersonId,
+  target: Ref<Person>,
   control: TriggerControl
 ): Promise<NotificationContent> {
   const issue = doc as Issue
@@ -127,7 +120,7 @@ export async function getIssueNotificationContent (
     if (
       updateTx.operations.assignee !== null &&
       updateTx.operations.assignee !== undefined &&
-      (await isSamePerson(control, updateTx.operations.assignee, target))
+      updateTx.operations.assignee === target
     ) {
       body = tracker.string.IssueAssignedToYou
     } else {
@@ -331,7 +324,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
             objectId: cud.objectId
           })
         ).filter((it) => it._id !== cud._id)
-        const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
+        const doc = TxProcessor.buildDoc2Doc<TimeSpendReport>(logTxes)
 
         const res: Tx[] = []
         const [currentIssue] = await control.findAll(
@@ -340,7 +333,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
           { _id: attachedTo },
           { limit: 1 }
         )
-        if (doc !== undefined) {
+        if (doc != null) {
           res.push(
             control.txFactory.createTxUpdateDoc<Issue>(
               attachedToClass,
@@ -370,8 +363,8 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: Trigger
             objectId: cud.objectId
           })
         ).filter((it) => it._id !== cud._id)
-        const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
-        if (doc !== undefined) {
+        const doc = TxProcessor.buildDoc2Doc<TimeSpendReport>(logTxes)
+        if (doc != null) {
           const [currentIssue] = await control.findAll(
             control.ctx,
             tracker.class.Issue,

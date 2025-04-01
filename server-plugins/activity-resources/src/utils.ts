@@ -1,4 +1,6 @@
 import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
+import cardPlugin, { Card, Tag } from '@hcengineering/card'
+import { ActivityUpdate, ActivityUpdateType } from '@hcengineering/communication-types'
 import core, {
   AttachedDoc,
   type Attribute,
@@ -40,7 +42,12 @@ function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): stri
     const hiddenAttrs = getHiddenAttrs(hierarchy, _class)
 
     return Object.entries(updateTx.operations)
-      .flatMap(([id, val]) => (['$push', '$pull'].includes(id) ? Object.keys(val) : id))
+      .flatMap(([id, val]) => {
+        if (['$push', '$pull', '$unset'].includes(id)) {
+          return Object.keys(val)
+        }
+        return id
+      })
       .filter((id) => !id.startsWith('$') && !hiddenAttrs.has(id))
   }
 
@@ -176,20 +183,20 @@ export async function getAttributeDiff (
   prevDoc: Doc | undefined,
   attrKey: string,
   attrClass: Ref<Class<Doc>>,
-  isMixin: boolean
+  mixin?: Ref<Mixin<Doc>>
 ): Promise<AttributeDiff> {
   const { hierarchy } = control
 
   let actualDoc: Doc | undefined = doc
   let actualPrevDoc: Doc | undefined = prevDoc
 
-  if (isMixin && hierarchy.isDerived(attrClass, notification.mixin.Collaborators)) {
+  if (mixin != null && hierarchy.isDerived(attrClass, notification.mixin.Collaborators)) {
     return await getCollaboratorsDiff(control, doc, prevDoc)
   }
 
-  if (isMixin) {
-    actualDoc = hierarchy.as(doc, attrClass)
-    actualPrevDoc = prevDoc === undefined ? undefined : hierarchy.as(prevDoc, attrClass)
+  if (mixin != null) {
+    actualDoc = hierarchy.as(doc, mixin)
+    actualPrevDoc = prevDoc === undefined ? undefined : hierarchy.as(prevDoc, mixin)
   }
 
   const value = (actualDoc as any)[attrKey] ?? []
@@ -293,7 +300,7 @@ export async function getTxAttributesUpdates (
     }
 
     if (Array.isArray(attrValue) && docDiff?.doc !== undefined) {
-      const diff = await getAttributeDiff(control, docDiff.doc, docDiff.prevDoc, key, attrClass, isMixin)
+      const diff = await getAttributeDiff(control, docDiff.doc, docDiff.prevDoc, key, attrClass, mixin)
       added.push(...diff.added)
       removed.push(...diff.removed)
       attrValue = []
@@ -394,4 +401,93 @@ export function getCollectionAttribute (
   }
 
   return undefined
+}
+
+export async function getNewActivityUpdates (
+  control: TriggerControl,
+  originTx: TxCUD<Card>,
+  card: Card
+): Promise<ActivityUpdate[]> {
+  if (![core.class.TxMixin, core.class.TxUpdateDoc].includes(originTx._class)) {
+    return []
+  }
+
+  const tx = originTx as TxUpdateDoc<Card> | TxMixin<Card, Card>
+  const { hierarchy } = control
+
+  const keys = getAvailableAttributesKeys(tx, hierarchy)
+  const result: ActivityUpdate[] = []
+  const mixin = hierarchy.isDerived(tx._class, core.class.TxMixin) ? (tx as TxMixin<Card, Card>).mixin : undefined
+
+  if (mixin != null && Object.keys((tx as TxMixin<Card, Card>).attributes).length === 0) {
+    const clazz = hierarchy.getClass(mixin)
+    if (hierarchy.isDerived(clazz._class, cardPlugin.class.Tag)) {
+      result.push({
+        type: ActivityUpdateType.Tag,
+        tag: mixin,
+        action: 'add'
+      })
+    }
+  }
+
+  if (keys.length === 0) return result
+  const modifiedAttributes = getModifiedAttributes(tx, hierarchy)
+
+  for (const key of keys) {
+    const attrValue = modifiedAttributes[key]
+
+    const added = combineAttributes([modifiedAttributes], key, '$push', '$each')
+    const removed = combineAttributes([modifiedAttributes], key, '$pull', '$in')
+    const isUnset = combineAttributes([modifiedAttributes], key, '$unset')[0] === true
+
+    if (isUnset && hierarchy.isMixin(key as any)) {
+      const tag = key as Ref<Tag>
+      const clazz = hierarchy.getClass(tag)
+      console.log('d', hierarchy.isDerived(clazz._class, cardPlugin.class.Tag))
+      if (hierarchy.isDerived(clazz._class, cardPlugin.class.Tag)) {
+        result.push({
+          type: ActivityUpdateType.Tag,
+          tag,
+          action: 'remove'
+        })
+      }
+    }
+
+    let attrClass: Ref<Class<Doc>> | undefined
+    const clazz = hierarchy.findAttribute(mixin ?? card._class, key)
+
+    if (clazz !== undefined && 'to' in clazz.type) {
+      attrClass = clazz.type.to as Ref<Class<Doc>>
+    } else if (clazz !== undefined && hierarchy.isDerived(clazz.type._class, core.class.ArrOf)) {
+      attrClass = (clazz.type as ArrOf<Doc>).of._class
+    } else if (clazz !== undefined && 'of' in clazz?.type) {
+      attrClass = (clazz.type.of as RefTo<Doc>).to
+    }
+
+    if (attrClass == null && clazz?.type?._class !== undefined) {
+      attrClass = clazz.type._class
+    }
+
+    if (attrClass === undefined) {
+      continue
+    }
+
+    if (Array.isArray(attrValue)) {
+      const diff = await getAttributeDiff(control, card, undefined, key, attrClass, mixin)
+      added.push(...diff.added)
+      removed.push(...diff.removed)
+    }
+
+    result.push({
+      type: ActivityUpdateType.Attribute,
+      attrKey: key,
+      attrClass,
+      set: attrValue,
+      added,
+      removed,
+      mixin
+    })
+  }
+
+  return result
 }

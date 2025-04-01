@@ -12,38 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts" context="module">
-  import contact, { AvatarProvider, getAvatarColorForId, type AvatarInfo } from '@hcengineering/contact'
-  import { AccountUuid, PersonUuid, Ref, type Data, type WithLookup } from '@hcengineering/core'
-  import { getClient, sizeToWidth } from '@hcengineering/presentation'
-
-  const providers = new Map<string, AvatarProvider | null>()
-
-  async function getProvider (providerId: Ref<AvatarProvider>): Promise<AvatarProvider | undefined> {
-    const p = providers.get(providerId)
-    if (p !== undefined) {
-      return p ?? undefined
-    }
-    const res = await getClient().findOne(contact.class.AvatarProvider, { _id: providerId })
-    providers.set(providerId, res ?? null)
-    return res
-  }
-</script>
 
 <script lang="ts">
-  import { getAvatarProviderId, getFirstName, getLastName, Person } from '@hcengineering/contact'
-  import { Asset, getMetadata, getResource } from '@hcengineering/platform'
-  import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
+  import {
+    type AvatarInfo,
+    AvatarProvider,
+    getAvatarColorForId,
+    getAvatarDisplayName,
+    getAvatarProvider,
+    getAvatarProviderId,
+    Person
+  } from '@hcengineering/contact'
+  import { Asset, getResource } from '@hcengineering/platform'
+  import { getBlobURL, getClient, reduceCalls, sizeToWidth } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     ColorDefinition,
-    IconSize,
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
     getPlatformColor,
+    IconSize,
     themeStore
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+  import { AccountUuid, type Data, PersonUuid, Ref, type WithLookup } from '@hcengineering/core'
 
   import { loadUsersStatus, statusByUserStore } from '../utils'
   import AvatarInstance from './AvatarInstance.svelte'
@@ -71,20 +63,8 @@
   let element: HTMLElement
   let avatarInst: AvatarInstance
 
-  $: displayName = getDisplayName(name)
+  $: displayName = getAvatarDisplayName(name)
   $: bColor = borderColor !== undefined ? getPlatformColor(borderColor, $themeStore.dark) : undefined
-
-  function getDisplayName (name: string | null | undefined): string {
-    if (name == null) {
-      return ''
-    }
-
-    const lastFirst = getMetadata(contact.metadata.LastNameFirst) === true
-    const fname = getFirstName(name ?? '').trim()[0] ?? ''
-    const lname = getLastName(name ?? '').trim()[0] ?? ''
-
-    return lastFirst ? lname + fname : fname + lname
-  }
 
   const update = reduceCalls(async function (
     size: IconSize,
@@ -99,8 +79,9 @@
       avatarProvider = undefined
       srcSet = undefined
     } else if (avatar != null) {
+      const client = getClient()
       const avatarProviderId = getAvatarProviderId(avatar.avatarType)
-      avatarProvider = avatarProviderId !== undefined ? await getProvider(avatarProviderId) : undefined
+      avatarProvider = avatarProviderId !== undefined ? await getAvatarProvider(client, avatarProviderId) : undefined
 
       if (avatarProvider === undefined) {
         url = undefined

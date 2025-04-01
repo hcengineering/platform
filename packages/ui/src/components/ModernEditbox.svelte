@@ -22,6 +22,7 @@
   export let autoFocus: boolean = false
   export let autoAction: boolean = true
   export let width: string = ''
+  export let style: string = ''
 
   const dispatch = createEventDispatcher()
 
@@ -64,6 +65,7 @@
   class="editbox-wrapper {kind} {size}"
   class:error
   class:disabled
+  {style}
   style:width
   on:click|stopPropagation={() => {
     if (!autoAction) element?.focus()
@@ -78,6 +80,7 @@
       type="password"
       class="font-regular-14"
       class:labeled
+      {style}
       style:width
       bind:value
       autocomplete="off"
@@ -99,6 +102,7 @@
       type="text"
       class="font-regular-14"
       class:labeled
+      {style}
       style:width
       bind:value
       autocomplete="off"

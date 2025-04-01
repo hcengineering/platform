@@ -19,11 +19,13 @@ import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
 import { ClientSession, startSessionManager } from '@hcengineering/server'
 import {
+  type CommunicationApiFactory,
   type ServerFactory,
   type Session,
   type SessionManager,
   type StorageConfiguration,
-  type Workspace
+  type Workspace,
+  type PlatformQueue
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
@@ -39,6 +41,7 @@ import {
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
 import { uncompress } from 'snappy'
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
 
 import {
   createMongoAdapter,
@@ -76,6 +79,7 @@ export function start (
   metrics: MeasureContext,
   dbUrl: string,
   opt: {
+    queue: PlatformQueue
     fulltextUrl: string
     storageConfig: StorageConfiguration
     port: number
@@ -120,23 +124,33 @@ export function start (
     metrics,
     dbUrl,
     model,
-    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl) },
+    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl), queue: opt.queue },
     {}
   )
   const sessionFactory = (token: Token, workspace: Workspace, account: Account): Session => {
     return new ClientSession(token, workspace, account, token.extra?.mode === 'backup')
   }
+  const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
+    return await CommunicationApi.create(
+      ctx.newChild('💬 communication api', {}),
+      workspace.uuid,
+      dbUrl,
+      broadcastSessions
+    )
+  }
 
   const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {
     pipelineFactory,
     sessionFactory,
+    communicationApiFactory,
     port: opt.port,
     brandingMap: opt.brandingMap,
     serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
     externalStorage,
-    profiling: opt.profiling
+    profiling: opt.profiling,
+    queue: opt.queue
   })
   return {
     shutdown: async () => {

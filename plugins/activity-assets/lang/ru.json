@@ -50,6 +50,9 @@
     "RemovedObject": "Удален(ы) {object}",
     "ChangedObject": "Изменил(а) {object}",
     "UnsetObject": "Сбросил(а) {object}",
-    "UpdatedObject": "Обновил(а) {object}"
+    "UpdatedObject": "Обновил(а) {object}",
+    "NewObjectType": "Новый(ые) {type}: {title}",
+    "RemovedObjectType": "Удален(ы) {type} : {title}",
+    "AttributeSetTo": "{name} установлен на {value}"
   }
 }

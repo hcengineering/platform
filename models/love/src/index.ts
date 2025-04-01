@@ -201,7 +201,14 @@ export class TMeeting extends TEvent implements Meeting {
 }
 
 @Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_MEETING_MINUTES)
-@UX(love.string.MeetingMinutes, love.icon.Cam, undefined, 'createdOn', undefined, love.string.MeetingsMinutes)
+@UX(
+  love.string.MeetingMinutes,
+  love.icon.MeetingMinutes,
+  undefined,
+  'createdOn',
+  undefined,
+  love.string.MeetingsMinutes
+)
 export class TMeetingMinutes extends TAttachedDoc implements MeetingMinutes, Todoable {
   @Prop(TypeRef(core.class.Doc), love.string.Room, { editor: love.component.MeetingMinutesDocEditor })
   @Index(IndexKind.Indexed)
@@ -643,6 +650,27 @@ export function createModel (builder: Builder): void {
   builder.mixin(love.class.MeetingMinutes, core.class.Class, view.mixin.ObjectPanelFooter, {
     editor: love.component.PanelControlBar
   })
+
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: love.class.MeetingMinutes,
+    fullTextSummary: true,
+    forceIndex: true
+  })
+
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: love.icon.MeetingMinutes,
+      label: love.string.SearchMeetingMinutes,
+      title: love.string.MeetingMinutes,
+      query: love.completion.MeetingMinutesQuery,
+      context: ['search', 'mention', 'spotlight'],
+      classToSearch: love.class.MeetingMinutes,
+      priority: 600
+    },
+    love.completion.MeetingMinutesCategory
+  )
 
   createAttributePresenter(
     builder,

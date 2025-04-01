@@ -496,14 +496,13 @@ async function migrateSocialKeysToSocialIds (client: MigrationClient): Promise<v
             createBy: newCreateBy
           }
         })
+        processed++
       }
 
       if (operations.length > 0) {
         await client.bulk(DOMAIN_REACTION, operations)
+        ctx.info('...processed', { count: processed })
       }
-
-      processed += docs.length
-      ctx.info('...processed', { count: processed })
     }
   } finally {
     await iterator.close()
@@ -602,7 +601,7 @@ export const activityOperation: MigrateOperation = {
       },
       // ONLY FOR STAGING. REMOVE IT BEFORE MERGING TO PRODUCTION
       {
-        state: 'social-keys-to-social-ids',
+        state: 'social-keys-to-social-ids-v2',
         mode: 'upgrade',
         func: migrateSocialKeysToSocialIds
       }

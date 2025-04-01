@@ -24,6 +24,7 @@ import workbench from '@hcengineering/model-workbench'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
 import { type ViewOptionsModel } from '@hcengineering/view'
+import contact from '@hcengineering/contact'
 
 import { testManagementId, type TestPlanItem, type TestResult } from '@hcengineering/test-management'
 
@@ -335,6 +336,25 @@ function defineTestSuite (builder: Builder): void {
       }
     },
     testManagement.action.RunSelectedTests
+  )
+
+  createAction(
+    builder,
+    {
+      action: testManagement.actionImpl.EditProject,
+      label: testManagement.string.EditProject,
+      icon: contact.icon.Edit,
+      input: 'focus',
+      category: testManagement.category.TestProject,
+      target: testManagement.class.TestProject,
+      visibilityTester: view.function.CanEditSpace,
+      query: {},
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      }
+    },
+    testManagement.action.EditProject
   )
 }
 

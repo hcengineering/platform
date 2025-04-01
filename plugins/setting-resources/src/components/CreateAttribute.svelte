@@ -46,6 +46,7 @@
 
   export let _id: Ref<Class<Type<PropertyType>>> | undefined = undefined
   export let _class: Ref<Class<Doc>>
+  export let isCard: boolean = false
 
   let name: string
   let icon: Asset | undefined
@@ -93,19 +94,20 @@
   const items = getTypes()
   export let selectedType: Ref<Class<Type<PropertyType>>> | undefined = undefined
 
-  $: selectedType && selectType(selectedType)
+  $: selectType(selectedType)
 
-  function selectType (type: Ref<Class<Type<PropertyType>>>): void {
+  function selectType (type: Ref<Class<Type<PropertyType>>> | undefined): void {
+    if (type === undefined) return
     const _class = hierarchy.getClass(type)
     const editor = hierarchy.as(_class, view.mixin.ObjectEditor)
     if (editor.editor !== undefined) {
       is = editor.editor
     }
   }
-  const handleSelection = (e: { detail: Ref<Class<Type<any>>> }) => {
+  const handleSelection = (e: { detail: Ref<Class<Type<any>>> }): void => {
     selectType(e.detail)
   }
-  const handleChange = (e: any) => {
+  const handleChange = (e: any): void => {
     type = e.detail?.type
     index = e.detail?.index
     defaultValue = e.detail?.defaultValue
@@ -169,6 +171,7 @@
         props={{
           type,
           defaultValue,
+          isCard,
           kind: 'regular',
           size: 'large'
         }}

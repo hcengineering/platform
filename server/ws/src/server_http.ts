@@ -48,7 +48,8 @@ import {
   type HandleRequestFunction,
   type PipelineFactory,
   type SessionManager,
-  type StorageAdapter
+  type StorageAdapter,
+  type CommunicationApiFactory
 } from '@hcengineering/server-core'
 import { decodeToken, type Token } from '@hcengineering/server-token'
 import cors from 'cors'
@@ -102,6 +103,7 @@ export function startHttpServer (
   handleRequest: HandleRequestFunction,
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
+  communicationApiFactory: CommunicationApiFactory,
   port: number,
   accountsUrl: string,
   externalStorage: StorageAdapter
@@ -193,7 +195,7 @@ export function startHttpServer (
 
   app.get('/api/v1/profiling', (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
       decodeToken(token)
       const jsonData = {
         profiling
@@ -403,11 +405,11 @@ export function startHttpServer (
     })
   )
 
-  registerRPC(app, sessions, ctx, pipelineFactory)
+  registerRPC(app, sessions, ctx, pipelineFactory, communicationApiFactory)
 
   app.put('/api/v1/broadcast', (req, res) => {
     try {
-      const token = req.query.token as string
+      const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
       decodeToken(token)
       const ws = sessions.workspaces.get(req.query.workspace as WorkspaceUuid)
       if (ws !== undefined) {
@@ -468,7 +470,7 @@ export function startHttpServer (
       connectionSocket: cs,
       payload: token,
       token: rawToken,
-      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, sessionId),
+      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, communicationApiFactory, sessionId),
       url: ''
     }
 

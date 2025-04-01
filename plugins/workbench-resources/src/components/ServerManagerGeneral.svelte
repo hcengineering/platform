@@ -35,7 +35,14 @@
   let profiling = false
 
   async function fetchStats (time: number): Promise<void> {
-    await fetch(endpoint + `/api/v1/profiling?token=${token}`, {})
+    await fetch(endpoint + '/api/v1/profiling', {
+      method: 'GET',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      }
+    })
       .then(async (json) => {
         data = await json.json()
         profiling = data?.profiling ?? false
