@@ -46,6 +46,7 @@ import { NotificationsDb } from './db/notification'
 import { connect, type PostgresClientReference } from './connection'
 import { type Logger, type Options, type SqlClient, type SqlParams, type SqlRow } from './types'
 import { injectVars } from './utils'
+import { initSchema } from './init'
 
 export class CockroachAdapter implements DbAdapter {
   private readonly message: MessagesDb
@@ -204,6 +205,7 @@ export async function createDbAdapter(
   const greenUrl = process.env.GREEN_URL ?? ''
   const connection = connect(connectionString)
   const sql = await connection.getClient()
+  await initSchema(sql)
 
   if (greenUrl !== '') {
     const client = new GreenClient(greenUrl, sql)

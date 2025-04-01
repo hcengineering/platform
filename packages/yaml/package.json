@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-yaml",
-  "version": "0.1.147",
+  "version": "0.1.150",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
