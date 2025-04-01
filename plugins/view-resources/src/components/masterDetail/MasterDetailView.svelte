@@ -14,9 +14,11 @@
 -->
 <script lang="ts">
   import core, { Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup, mergeQueries } from '@hcengineering/core'
-  import view, { ViewOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
+  import { MasterDetailConfig, ViewOptions, Viewlet, ViewletDescriptor } from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
-  import SplitView from './SplitView.svelte'
+
+  import MasterDetailBrowser from './MasterDetailBrowser.svelte'
+  import view from '../../plugin'
 
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
@@ -31,7 +33,7 @@
   let _query: DocumentQuery<Doc> = {}
 
   let parentView: ViewletDescriptor | undefined = undefined
-  let childView: ViewletDescriptor | undefined = undefined
+  let detailView: ViewletDescriptor | undefined = undefined
 
   const client = getClient()
 
@@ -39,28 +41,19 @@
 
   async function getViewlets (viewletId: Ref<Viewlet>): Promise<void> {
     if (viewlet === undefined) return
-    const {
-      masterDetailOptions: { views }
-    } = viewlet
+    const views: MasterDetailConfig[] = viewlet?.masterDetailOptions?.views ?? []
     const results = await client.findAll(
       view.class.ViewletDescriptor,
-      { _id: { $in: [views[0].view, views[1].view] } },
-      {
-        lookup: {
-          descriptor: view.class.ViewletDescriptor
-        }
-      }
+      { _id: { $in: [views[0].view, views[1].view] } }
     )
     parentView = results.find((v) => v._id === views[0].view)
-    childView = results.find((v) => v._id === views[1].view)
+    detailView = results.find((v) => v._id === views[1].view)
   }
 
   async function selected (e: CustomEvent<any>): Promise<void> {
-    const {
-      masterDetailOptions: { views }
-    } = viewlet
-    if (childView === undefined) return
-    if (childView?._id === view.viewlet.Document) {
+    const views: MasterDetailConfig[] = viewlet?.masterDetailOptions?.views ?? []
+    if (detailView === undefined) return
+    if (detailView?._id === view.viewlet.Document) {
       _id = e.detail
     } else {
       let association = await client.findOne(core.class.Association, {
@@ -83,10 +76,9 @@
     }
   }
 
-  // Reactive stores for nested components
-  $: remainingViews = viewlet?.masterDetailOptions?.views.slice(1)
-  $: isSimpleView = viewlet?.masterDetailOptions?.views.length <= 2
-  $: childViewComponent = isSimpleView ? childView?.component : viewlet?.$lookup?.descriptor?.component ?? SplitView
+  $: remainingViews = viewlet?.masterDetailOptions?.views?.slice(1) ?? []
+  $: isSimpleView = (viewlet?.masterDetailOptions?.views?.length ?? 0) <= 2
+  $: detailViewComponent = isSimpleView ? detailView?.component : viewlet?.$lookup?.descriptor?.component ?? view.component.MasterDetailBrowser
   $: nestedViewlet = isSimpleView
     ? undefined
     : {
@@ -96,7 +88,7 @@
           views: remainingViews
         }
       }
-  $: childProps = isSimpleView
+  $: detailProps = isSimpleView
     ? {
         _class: viewlet?.masterDetailOptions?.views[1].class,
         space,
@@ -119,23 +111,23 @@
       }
 </script>
 
-{#if viewlet !== undefined && parentView !== undefined && childView !== undefined && viewlet.masterDetailOptions !== undefined}
-  <SplitView
+{#if viewlet !== undefined && parentView !== undefined && detailView !== undefined && viewlet.masterDetailOptions !== undefined}
+  <MasterDetailBrowser
     query={_query}
     {space}
-    mainComponent={childViewComponent}
-    mainComponentProps={childProps}
-    createComponent={viewlet?.masterDetailOptions?.views[1]?.createComponent}
-    createComponentProps={{ _class: viewlet?.masterDetailOptions?.views[1].class }}
-    mainHeaderComponent={viewlet?.masterDetailOptions?.views[0]?.createComponent}
-    createChildComponentProps={{ _class: viewlet?.masterDetailOptions?.views[1].class }}
-    childClass={viewlet.masterDetailOptions.views[1].class}
-    parentClass={viewlet.masterDetailOptions.views[0].class}
-    navigationComponent={parentView.component}
-    navigationComponentProps={{
+    detailComponent={detailViewComponent}
+    detailComponentProps={detailProps}
+    masterComponent={parentView.component}
+    masterComponentProps={{
       _class: viewlet?.masterDetailOptions?.views[0].class,
       plainList: true
     }}
+    createMasterComponent={viewlet?.masterDetailOptions?.views[1]?.createComponent}
+    createMasterComponentProps={{ _class: viewlet?.masterDetailOptions?.views[0].class }}
+    createDetailComponent={viewlet?.masterDetailOptions?.views[0]?.createComponent}
+    createDetailComponentProps={{ _class: viewlet?.masterDetailOptions?.views[1].class }}
+    detailClass={viewlet.masterDetailOptions.views[1].class}
+    parentClass={viewlet.masterDetailOptions.views[0].class}
     isNested={!isSimpleView}
     on:select={selected}
   />

@@ -833,7 +833,7 @@ export interface MasterDetailModel {
 export interface MasterDetailConfig {
   id?: string
   class: Ref<Class<Doc>>
-  view?: Ref<ViewletDescriptor>
+  view: Ref<ViewletDescriptor>
   associationId?: Ref<Class<Doc>>
   props?: Record<string, any>
   createComponent?: AnyComponent

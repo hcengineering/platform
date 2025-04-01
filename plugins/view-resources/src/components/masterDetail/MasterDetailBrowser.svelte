@@ -35,21 +35,21 @@
   import ClassHeader from './ClassHeader.svelte'
 
   export let space: Ref<Space> | undefined = undefined
-  export let navigationComponent: AnyComponent
-  export let navigationComponentProps: Record<string, any> | undefined = undefined
-  export let createComponent: AnyComponent | undefined = undefined
-  export let createComponentProps: Record<string, any> = {}
-  export let createChildComponentProps: Record<string, any> = {}
-  export let mainHeaderComponent: AnyComponent | undefined = undefined
+  export let masterComponent: AnyComponent
+  export let masterComponentProps: Record<string, any> | undefined = undefined
+  export let createMasterComponent: AnyComponent | undefined = undefined
+  export let createMasterComponentProps: Record<string, any> = {}
+  export let createDetailComponentProps: Record<string, any> = {}
+  export let createDetailComponent: AnyComponent | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
   export let syncWithLocationQuery: boolean = true
-  export let mainComponent: AnyComponent | AnySvelteComponent
-  export let mainComponentProps = {}
+  export let detailComponent: AnyComponent | AnySvelteComponent
+  export let detailComponentProps = {}
   export let showNavigator: boolean = false
   export let parentKey: string = 'attachedTo'
   export let isNested: boolean = false
   export let parentClass: Ref<Class<Doc>>
-  export let childClass: Ref<Class<Doc>>
+  export let detailClass: Ref<Class<Doc>>
 
   const FLOAT_LIMIT = 760
   let container: HTMLDivElement
@@ -72,7 +72,6 @@
   }
 
   function onSelected(e: CustomEvent<any>): void {
-    console.log('onSelected', e.detail)
     dispatch('select', e.detail)
     if (syncWithLocationQuery) return
     parentQuery = { [parentKey]: e.detail }
@@ -128,15 +127,15 @@
         <Header adaptive={'disabled'}>
           <ClassHeader _class={parentClass} />
           <svelte:fragment slot="actions">
-            {#if createComponent}
-              <Component is={createComponent} props={createComponentProps} />
+            {#if createMasterComponent}
+              <Component is={createMasterComponent} props={createMasterComponentProps} />
             {/if}
           </svelte:fragment>
         </Header>
         <Component
-          is={navigationComponent}
+          is={masterComponent}
           props={{
-            ...navigationComponentProps,
+            ...masterComponentProps,
             query: spaceQuery
           }}
           on:select={onSelected}
@@ -166,18 +165,18 @@
       </svelte:fragment>
 
       {#if !isNested}
-        <ClassHeader _class={childClass} />
+        <ClassHeader _class={detailClass} />
       {/if}
       <svelte:fragment slot="actions">
-        {#if mainHeaderComponent !== undefined && !isNested}
-          <Component is={mainHeaderComponent} props={createChildComponentProps} />
+        {#if createDetailComponent !== undefined && !isNested}
+          <Component is={createDetailComponent} props={createDetailComponentProps} />
         {/if}
       </svelte:fragment>
     </Header>
     <Component
-      is={mainComponent}
+      is={detailComponent}
       props={{
-        ...(mainComponentProps ?? {}),
+        ...(detailComponentProps ?? {}),
         query: resultQuery,
         totalQuery: resultQuery
       }}
