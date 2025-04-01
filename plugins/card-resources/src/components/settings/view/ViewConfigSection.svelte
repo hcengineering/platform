@@ -16,17 +16,18 @@
   import { createEventDispatcher } from 'svelte'
   import { ButtonIcon, Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
-  import { Doc, Ref, Space, generateId } from '@hcengineering/core'
+  import { Class, Doc, Ref, generateId } from '@hcengineering/core'
   import DescriptorBox from './DescriptorBox.svelte'
   import card from '../../../plugin'
   import { MasterTag, Tag } from '@hcengineering/card'
-  import { MasterDetailConfig, ViewletDescriptor } from '@hcengineering/view'
+  import view, { MasterDetailConfig, ViewletDescriptor } from '@hcengineering/view'
   import RelatedTagSelect from './RelatedTagSelect.svelte'
+  import { Asset } from '@hcengineering/platform'
 
   export let tag: MasterTag | Tag
 
   export let viewConfigs: MasterDetailConfig[]
-  export let sectionIcon: string = setting.icon.Views
+  export let sectionIcon: Asset = setting.icon.Views
 
   const dispatch = createEventDispatcher()
 
@@ -36,14 +37,15 @@
     const newViewConfig: MasterDetailConfig = {
       class: tag._id,
       id: generateId(),
-      createComponent: card.component.CreateCardButton
+      createComponent: card.component.CreateCardButton,
+      view: view.viewlet.List
     }
 
     viewConfigs = [...viewConfigs, newViewConfig]
     dispatch('change', viewConfigs)
   }
 
-  function updateViewClass (index: number, value: Ref<Doc<Space>>): void {
+  function updateViewClass (index: number, value: Ref<Class<Doc>>): void {
     viewConfigs[index].class = value
     viewConfigs = [...viewConfigs] // Trigger reactivity
     dispatch('change', viewConfigs)
@@ -55,7 +57,6 @@
     dispatch('change', viewConfigs)
   }
 
-  // Function to remove a view configuration
   function removeViewConfig (index: number): void {
     viewConfigs = viewConfigs.filter((_, i) => i !== index)
     dispatch('change', viewConfigs)

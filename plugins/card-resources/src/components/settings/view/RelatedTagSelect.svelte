@@ -14,43 +14,53 @@
 -->
 <script lang="ts">
   import card from '@hcengineering/card'
-  import core, { Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import core, { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { ObjectBox } from '@hcengineering/view-resources'
+  import { Loading } from '@hcengineering/ui'
 
-  export let parentTag: Ref<Doc<Space>> | undefined
-  export let childTag: Ref<Doc<Space>> | undefined
-  export let value: Ref<Doc<Space>>
+  export let parentTag: Ref<Class<Doc>>
+  export let childTag: Ref<Class<Doc>>
+  export let value: Ref<Class<Doc>>
   export let label: IntlString
 
   let query: DocumentQuery<Doc> = {}
+  let isLoading = true
 
   $: void getAssociations(parentTag)
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  async function getAssociations (tagId: Ref<Doc<Space>> | undefined): Promise<void> {
-    const descendants = parentTag !== undefined ? hierarchy.getDescendants(parentTag) : []
-    const children = childTag !== undefined ? hierarchy.getDescendants(childTag) : []
-    const descendantsAndChildren = descendants.concat(children)
-    const leftAssociations = await client.findAll(core.class.Association, { classA: { $in: descendantsAndChildren } })
-    const rightAssociations = await client.findAll(core.class.Association, { classB: { $in: descendantsAndChildren } })
+  async function getAssociations (tagId: Ref<Class<Doc>>): Promise<void> {
+    try {
+      const descendants = parentTag !== undefined ? hierarchy.getDescendants(parentTag) : []
+      const children = childTag !== undefined ? hierarchy.getDescendants(childTag) : []
+      const descendantsAndChildren = descendants.concat(children)
+      const leftAssociations = await client.findAll(core.class.Association, { classA: { $in: descendantsAndChildren } })
+      const rightAssociations = await client.findAll(core.class.Association, { classB: { $in: descendantsAndChildren } })
 
-    const associations = leftAssociations.concat(rightAssociations)
+      const associations = leftAssociations.concat(rightAssociations)
 
-    const classIds = new Set<Ref<Doc>>()
-    classIds.add(tagId)
-    associations.forEach((association) => {
-      classIds.add(association.classA)
-      classIds.add(association.classB)
-    })
+      const classIds = new Set<Ref<Class<Doc>>>()
+      classIds.add(tagId)
+      associations.forEach((association) => {
+        classIds.add(association.classA)
+        classIds.add(association.classB)
+      })
 
-    query = {
-      _id: { $in: Array.from(classIds) }
+      query = {
+        _id: { $in: Array.from(classIds) }
+      }
+    } finally {
+      isLoading = false
     }
   }
 </script>
 
-<ObjectBox {label} _class={card.class.MasterTag} docQuery={query} bind:value on:change showNavigate={false} />
+{#if isLoading}
+  <Loading />
+{:else}
+  <ObjectBox {label} _class={card.class.MasterTag} docQuery={query} bind:value on:change showNavigate={false} />
+{/if}
