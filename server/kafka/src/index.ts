@@ -48,7 +48,7 @@ export function parseQueueConfig (config: string, serviceId: string, region: str
   }
 }
 
-function getKafkaTopicId (topic: QueueTopic, config: QueueConfig): string {
+function getKafkaTopicId (topic: QueueTopic | string, config: QueueConfig): string {
   if (config.region !== '') {
     return `${config.region}.${topic}${config.postfix ?? ''}`
   }
@@ -56,6 +56,8 @@ function getKafkaTopicId (topic: QueueTopic, config: QueueConfig): string {
 }
 
 class PlatformQueueImpl implements PlatformQueue {
+  consumers: ConsumerHandle[] = []
+  producers: PlatformQueueProducerImpl[] = []
   constructor (
     private readonly kafka: Kafka,
     readonly config: QueueConfig
@@ -65,33 +67,84 @@ class PlatformQueueImpl implements PlatformQueue {
     return this.config.clientId
   }
 
-  createProducer<T>(ctx: MeasureContext, topic: QueueTopic): PlatformQueueProducer<T> {
-    return new PlatformQueueProducerImpl(ctx, this.kafka, getKafkaTopicId(topic, this.config), this)
+  async shutdown (): Promise<void> {
+    for (const p of this.producers) {
+      try {
+        await p.close()
+      } catch (err: any) {
+        console.error('failed to close producer', err)
+      }
+    }
+    for (const c of this.consumers) {
+      try {
+        await c.close()
+      } catch (err: any) {
+        console.error('failed to close consumer', err)
+      }
+    }
+  }
+
+  createProducer<T>(ctx: MeasureContext, topic: QueueTopic | string): PlatformQueueProducer<T> {
+    const result = new PlatformQueueProducerImpl(ctx, this.kafka, getKafkaTopicId(topic, this.config), this)
+    this.producers.push(result)
+    return result
   }
 
   createConsumer<T>(
     ctx: MeasureContext,
-    topic: QueueTopic,
+    topic: QueueTopic | string,
     groupId: string,
     onMessage: (msg: ConsumerMessage<T>[], queue: ConsumerControl) => Promise<void>,
     options?: {
       fromBegining?: boolean
     }
   ): ConsumerHandle {
-    return new PlatformQueueConsumerImpl(ctx, this.kafka, this.config, topic, groupId, onMessage, options)
+    const result = new PlatformQueueConsumerImpl(ctx, this.kafka, this.config, topic, groupId, onMessage, options)
+    this.consumers.push(result)
+    return result
+  }
+
+  async checkCreateTopic (topic: QueueTopic, topics: Set<string>, numPartitions?: number): Promise<void> {
+    const kTopic = getKafkaTopicId(topic, this.config)
+    if (!topics.has(kTopic)) {
+      try {
+        await this.kafka.admin().createTopics({ topics: [{ topic: kTopic, numPartitions: numPartitions ?? 1 }] })
+      } catch (err: any) {
+        console.error('Failed to create topic', kTopic, err)
+      }
+    }
   }
 
   async createTopics (tx: number): Promise<void> {
     const topics = new Set(await this.kafka.admin({}).listTopics())
-    if (!topics.has(QueueTopic.Tx)) {
-      await this.kafka.admin().createTopics({
-        topics: [
-          {
-            topic: getKafkaTopicId(QueueTopic.Tx, this.config),
-            numPartitions: tx
-          }
-        ]
-      })
+    await this.checkCreateTopic(QueueTopic.Tx, topics, tx)
+    await this.checkCreateTopic(QueueTopic.Fulltext, topics, 1)
+    await this.checkCreateTopic(QueueTopic.Workspace, topics, 1)
+    await this.checkCreateTopic(QueueTopic.Users, topics, 1)
+  }
+
+  async checkDeleteTopic (topic: QueueTopic | string, topics: Set<string>): Promise<void> {
+    const kTopic = getKafkaTopicId(topic, this.config)
+    if (topics.has(kTopic)) {
+      try {
+        await this.kafka.admin().deleteTopics({ topics: [kTopic] })
+      } catch (err: any) {
+        console.error('Failed to delete topic', kTopic, err)
+      }
+    }
+  }
+
+  async deleteTopics (topics?: (QueueTopic | string)[]): Promise<void> {
+    const existing = new Set(await this.kafka.admin({}).listTopics())
+    if (topics !== undefined) {
+      for (const t of topics) {
+        await this.checkDeleteTopic(t, existing)
+      }
+    } else {
+      await this.checkDeleteTopic(QueueTopic.Tx, existing)
+      await this.checkDeleteTopic(QueueTopic.Fulltext, existing)
+      await this.checkDeleteTopic(QueueTopic.Workspace, existing)
+      await this.checkDeleteTopic(QueueTopic.Users, existing)
     }
   }
 }
@@ -144,7 +197,7 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
     readonly ctx: MeasureContext,
     readonly kafka: Kafka,
     readonly config: QueueConfig,
-    private readonly topic: QueueTopic,
+    private readonly topic: QueueTopic | string,
     groupId: string,
     private readonly onMessage: (msg: ConsumerMessage<any>[], queue: ConsumerControl) => Promise<void>,
     private readonly options?: {
@@ -164,18 +217,22 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
 
     await this.cc.run({
       eachMessage: async ({ topic, message, pause, heartbeat }) => {
-        await this.onMessage(
-          [
-            {
-              id: message.key?.toString() ?? '',
-              value: [JSON.parse(message.value?.toString() ?? '{}')]
+        const msgKey = message.key?.toString() ?? ''
+        const msgData = JSON.parse(message.value?.toString() ?? '{}')
+        let to = 1
+        while (true) {
+          try {
+            await this.onMessage([{ id: msgKey, value: [msgData] }], { heartbeat, pause })
+            break
+          } catch (err: any) {
+            this.ctx.error('failed to process message', { err, msgKey, msgData })
+            await heartbeat()
+            await new Promise((resolve) => setTimeout(resolve, to * 1000))
+            if (to < 10) {
+              to++
             }
-          ],
-          {
-            heartbeat,
-            pause
           }
-        )
+        }
       }
       // , // TODO: Finish testinf
       // eachBatch: async ({ batch, pause, heartbeat, resolveOffset }) => {

@@ -200,7 +200,7 @@ jobs:
           cd ./tests
           ./prepare-tests.sh
       - name: Testing...
-        run: node common/scripts/install-run-rush.js test
+        run: node common/scripts/install-run-rush.js test --verbose
         env:
           DB_URL: 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
           ELASTIC_URL: 'http://localhost:9201'

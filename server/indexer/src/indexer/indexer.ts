@@ -21,7 +21,6 @@ import core, {
   type AttachedDoc,
   type Blob,
   type Class,
-  DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   type Doc,
   type Domain,
@@ -29,7 +28,6 @@ import core, {
   type Hierarchy,
   type IdMap,
   type MeasureContext,
-  type MigrationState,
   type ModelDb,
   type Ref,
   type Space,
@@ -37,9 +35,7 @@ import core, {
   TxProcessor,
   type WorkspaceIds,
   type WorkspaceUuid,
-  coreId,
   docKey,
-  generateId,
   getFullTextIndexableAttributes,
   groupByArray,
   isClassIndexable,
@@ -56,6 +52,7 @@ import type {
   ContentTextAdapter,
   DbAdapter,
   FullTextAdapter,
+  FulltextListener,
   IndexedDoc,
   StorageAdapter
 } from '@hcengineering/server-core'
@@ -179,7 +176,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     readonly model: ModelDb,
     readonly storageAdapter: StorageAdapter,
     readonly contentAdapter: ContentTextAdapter,
-    readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void
+    readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void,
+    readonly listener?: FulltextListener
   ) {
     this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
   }
@@ -277,27 +275,21 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   broadcastClasses = new Set<Ref<Class<Doc>>>()
   broadcasts: number = 0
 
-  private async addMigration (ctx: MeasureContext, state: string): Promise<void> {
-    const mstate: MigrationState = {
-      _class: core.class.MigrationState,
-      _id: generateId(),
-      modifiedBy: core.account.System,
-      modifiedOn: Date.now(),
-      space: core.space.Configuration,
-      plugin: coreId,
-      state
-    }
-    await this.storage.upload(ctx, DOMAIN_MIGRATION, [mstate])
+  cancel (): void {
+    this.cancelling = true
+    clearTimeout(this.broadCastTimeout)
   }
+
+  broadCastTimeout: any
 
   scheduleBroadcast (): void {
     if (!this.cancelling) {
       // We need to send index update event
       if (this.broadcasts === 0) {
         this.broadcasts++
-        setTimeout(() => {
+        this.broadCastTimeout = setTimeout(() => {
           this.broadcasts = 0
-          if (this.broadcastClasses.size > 0) {
+          if (this.broadcastClasses.size > 0 && !this.cancelling) {
             const toSend = Array.from(this.broadcastClasses.values())
             this.broadcastClasses.clear()
             this.broadcastUpdate(this.metrics, toSend)
@@ -454,6 +446,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             indexedDoc.id = doc._id
             indexedDoc.space = doc.space
 
+            if (this.listener?.onIndexing !== undefined) {
+              await this.listener.onIndexing(indexedDoc)
+            }
             await pushQueue.push(indexedDoc)
           } catch (err: any) {
             ctx.error('failed to process document', {
@@ -508,11 +503,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         for (const _cl of new Set(toRemove.values().map((it) => it._class))) {
           this.broadcastClasses.add(_cl)
         }
-        await this.fulltextAdapter.remove(
-          ctx,
-          this.workspace.uuid,
-          toRemove.map((it) => it._id)
-        )
+        const ids = toRemove.map((it) => it._id)
+        if (this.listener?.onClean !== undefined) {
+          await this.listener.onClean(ids)
+        }
+        await this.fulltextAdapter.remove(ctx, this.workspace.uuid, ids)
       }
     } catch (err: any) {
       Analytics.handleError(err)

@@ -316,6 +316,7 @@ export class AccountPostgresDbCollection
         a.uuid,
         a.timezone,
         a.locale,
+        a.automatic,
         p.hash,
         p.salt
       FROM ${this.getTableName()} as a

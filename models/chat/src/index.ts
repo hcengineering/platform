@@ -13,15 +13,13 @@
 // limitations under the License.
 //
 
-import { AccountRole, ClassifierKind, type Ref, SortingOrder } from '@hcengineering/core'
+import { AccountRole } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
 import { chatId } from '@hcengineering/chat'
-import card, { type MasterTag } from '@hcengineering/card'
-import setting from '@hcengineering/setting'
 import { WidgetType } from '@hcengineering/workbench'
-import view from '@hcengineering/model-view'
+import { createSystemType } from '@hcengineering/model-card'
 
 import chat from './plugin'
 
@@ -56,82 +54,6 @@ export function createModel (builder: Builder): void {
     chat.ids.ChatWidget
   )
 
-  builder.createDoc(
-    card.class.MasterTag,
-    core.space.Model,
-    {
-      extends: card.class.Card,
-      label: chat.string.Thread,
-      kind: ClassifierKind.CLASS,
-      icon: chat.icon.Thread,
-      pluralLabel: chat.string.Threads
-    },
-    chat.masterTag.Thread
-  )
-
-  builder.createDoc(
-    card.class.MasterTag,
-    core.space.Model,
-    {
-      extends: card.class.Card,
-      label: chat.string.Channel,
-      kind: ClassifierKind.CLASS,
-      icon: chat.icon.Channel,
-      pluralLabel: chat.string.Channels
-    },
-    chat.masterTag.Channel
-  )
-
-  builder.mixin(chat.masterTag.Thread, core.class.Class, setting.mixin.Editable, {
-    value: true
-  })
-
-  builder.mixin(chat.masterTag.Channel, core.class.Class, setting.mixin.Editable, {
-    value: true
-  })
-
-  createViewlet(builder, chat.masterTag.Thread)
-  createViewlet(builder, chat.masterTag.Channel)
-}
-
-function createViewlet (builder: Builder, type: Ref<MasterTag>): void {
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: type,
-    descriptor: view.viewlet.Table,
-    configOptions: {
-      hiddenKeys: ['content', 'title']
-    },
-    config: [
-      '',
-      '_class',
-      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
-      'modifiedOn'
-    ]
-  })
-
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: type,
-    descriptor: view.viewlet.List,
-    viewOptions: {
-      groupBy: ['_class', 'createdBy', 'modifiedBy'],
-      orderBy: [
-        ['modifiedOn', SortingOrder.Descending],
-        ['rank', SortingOrder.Ascending]
-      ],
-      other: []
-    },
-    configOptions: {
-      hiddenKeys: ['content', 'title']
-    },
-    config: [
-      { key: '', props: { showParent: true } },
-      '_class',
-      { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
-      { key: '', displayProps: { grow: true } },
-      {
-        key: 'modifiedOn',
-        displayProps: { fixed: 'right', dividerBefore: true }
-      }
-    ]
-  })
+  createSystemType(builder, chat.masterTag.Thread, chat.icon.Thread, chat.string.Thread, chat.string.Threads)
+  createSystemType(builder, chat.masterTag.Channel, chat.icon.Channel, chat.string.Channel, chat.string.Channels)
 }

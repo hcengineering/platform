@@ -244,6 +244,7 @@ describe('AccountPostgresDbCollection', () => {
         a.uuid,
         a.timezone,
         a.locale,
+        a.automatic,
         p.hash,
         p.salt
       FROM global_account.account as a
