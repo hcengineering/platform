@@ -49,7 +49,7 @@ async function main (): Promise<void> {
 
   const server = app.listen(config.port, () => {
     console.log(`server started on port ${config.port}`)
-    console.log({ ...config, secret: '(stripped)' })
+    console.log({ ...config, secret: '(stripped)', hookToken: '(stripped)' })
   })
 
   const shutdown = (): void => {

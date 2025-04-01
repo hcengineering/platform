@@ -36,6 +36,13 @@ interface MtaMessage {
 
 export async function handleMtaHook (req: Request, res: Response): Promise<void> {
   try {
+    if (config.hookToken !== undefined) {
+      const token = req.headers['x-hook-token']
+      if (token !== config.hookToken) {
+        throw new Error('Invalid hook token')
+      }
+    }
+
     const mta: MtaMessage = req.body
 
     const from = { address: mta.envelope.from.address, name: '' }
@@ -119,5 +126,31 @@ async function getContent (mta: MtaMessage): Promise<string> {
 function extractContactName (fromHeader: string): string {
   // Match name part that appears before an email in angle brackets
   const nameMatch = fromHeader.match(/^\s*"?([^"<]+?)"?\s*<.+?>/)
-  return nameMatch?.[1].trim() ?? ''
+  const name = nameMatch?.[1].trim() ?? ''
+  if (name.length > 0) {
+    return decodeMimeWord(name)
+  }
+  return ''
+}
+
+function decodeMimeWord (text: string): string {
+  return text.replace(/=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi, (match, charset, encoding, content) => {
+    try {
+      if (encoding.toUpperCase() === 'B') {
+        // Base64 encoding
+        const buffer = Buffer.from(content, 'base64')
+        return buffer.toString(charset as BufferEncoding)
+      } else if (encoding.toUpperCase() === 'Q') {
+        // Quoted-printable encoding
+        const decoded = content
+          .replace(/_/g, ' ')
+          .replace(/=([0-9A-F]{2})/gi, (_: any, hex: string) => String.fromCharCode(parseInt(hex, 16)))
+        return Buffer.from(decoded).toString(charset as BufferEncoding)
+      }
+      return match
+    } catch (error) {
+      console.warn('Failed to decode encoded word:', match, error)
+      return match
+    }
+  })
 }

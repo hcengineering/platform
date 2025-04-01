@@ -93,7 +93,7 @@ export interface AccountClient {
   findPersonBySocialId: (socialId: PersonId, requireAccount?: boolean) => Promise<PersonUuid | undefined>
   findSocialIdBySocialKey: (socialKey: string) => Promise<PersonId | undefined>
   getMailboxOptions: () => Promise<MailboxOptions>
-  createMailbox: (name: string, domain: string) => Promise<void>
+  createMailbox: (name: string, domain: string) => Promise<{ mailbox: string, socialId: PersonId }>
   getMailboxes: () => Promise<MailboxInfo[]>
   deleteMailbox: (mailbox: string) => Promise<void>
 
@@ -653,13 +653,13 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async createMailbox (name: string, domain: string): Promise<void> {
+  async createMailbox (name: string, domain: string): Promise<{ mailbox: string, socialId: PersonId }> {
     const request = {
       method: 'createMailbox' as const,
       params: { name, domain }
     }
 
-    await this.rpc(request)
+    return await this.rpc(request)
   }
 
   async getMailboxes (): Promise<MailboxInfo[]> {

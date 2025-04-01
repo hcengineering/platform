@@ -89,6 +89,7 @@ import '@hcengineering/lead-assets'
 import '@hcengineering/login-assets'
 import '@hcengineering/love-assets'
 import '@hcengineering/notification-assets'
+import '@hcengineering/my-space-assets'
 import '@hcengineering/preference-assets'
 import '@hcengineering/print-assets'
 import '@hcengineering/process-assets'
@@ -361,6 +362,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(mySpaceId, () => import(/* webpackChunkName: "card" */ '@hcengineering/my-space-resources'))
   addLocation(chatId, () => import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
   addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
+  addLocation(mailId, () => import(/* webpackChunkName: "card" */ '@hcengineering/mail-resources'))
   addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')

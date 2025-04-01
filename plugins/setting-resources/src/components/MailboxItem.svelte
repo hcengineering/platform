@@ -25,29 +25,19 @@
   } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import { MailboxInfo } from '@hcengineering/account-client'
-  import { MessageBox } from '@hcengineering/presentation'
+  import { getClient, MessageBox } from '@hcengineering/presentation'
   import { getAccountClient } from '../utils'
+  import contact, { getCurrentEmployee } from '@hcengineering/contact'
+  import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
 
   export let mailbox: MailboxInfo
   export let mailboxIdx: number
+  export let loadingRequested: () => void
   export let reloadRequested: () => void
 
   let opened = false
 
-  function getMenuItems (mailbox: MailboxInfo): (DropdownIntlItem & { action: () => void })[] {
-    return [
-      {
-        id: 'delete',
-        icon: IconDelete,
-        label: setting.string.DeleteMailbox,
-        action: () => {
-          deleteMailbox(mailbox)
-        }
-      }
-    ]
-  }
-
-  function deleteMailbox (mailbox: MailboxInfo): void {
+  function deleteMailboxAction (): void {
     showPopup(
       MessageBox,
       {
@@ -56,24 +46,71 @@
         dangerous: true,
         okLabel: setting.string.Delete,
         action: async () => {
-          getAccountClient()
-            .deleteMailbox(mailbox.mailbox)
-            .then(() => {
-              reloadRequested()
-            })
-            .catch((err: any) => {
-              console.error('Failed to delete mailbox', err)
-            })
+          loadingRequested()
+          try {
+            await deleteMailbox()
+          } catch (err) {
+            console.error('Failed to delete mailbox', err)
+          }
+          reloadRequested()
         }
       },
       undefined
     )
   }
 
-  const openMailboxMenu = (mailbox: MailboxInfo, ev: MouseEvent): void => {
+  async function deleteMailbox (): Promise<void> {
+    await getAccountClient().deleteMailbox(mailbox.mailbox)
+    const client = getClient()
+    const currentUser = getCurrentEmployee()
+    const socialIds = await client.findAll(contact.class.SocialIdentity, {
+      attachedTo: currentUser,
+      type: SocialIdType.EMAIL,
+      value: mailbox.mailbox
+    })
+    for (const socialId of socialIds) {
+      const value = `${socialId.value}#${socialId._id}`
+      await client.updateCollection(
+        socialId._class,
+        socialId.space,
+        socialId._id,
+        socialId.attachedTo,
+        socialId.attachedToClass,
+        socialId.collection,
+        {
+          value,
+          key: buildSocialIdString({ type: SocialIdType.EMAIL, value })
+        }
+      )
+    }
+    const channels = await client.findAll(contact.class.Channel, {
+      attachedTo: currentUser,
+      provider: contact.channelProvider.Email,
+      value: mailbox.mailbox
+    })
+    for (const channel of channels) {
+      await client.removeCollection(
+        channel._class,
+        channel.space,
+        channel._id,
+        channel.attachedTo,
+        channel.attachedToClass,
+        channel.collection
+      )
+    }
+  }
+
+  const openMailboxMenu = (ev: MouseEvent): void => {
     if (!opened) {
       opened = true
-      const items = getMenuItems(mailbox)
+      const items: (DropdownIntlItem & { action: () => void })[] = [
+        {
+          id: 'delete',
+          icon: IconDelete,
+          label: setting.string.DeleteMailbox,
+          action: deleteMailboxAction
+        }
+      ]
       showPopup(ModernPopup, { items }, eventToHTMLElement(ev), (result) => {
         items.find((it) => it.id === result)?.action()
         opened = false
@@ -94,9 +131,7 @@
         pressed={opened}
         inheritColor
         hasMenu
-        on:click={(ev) => {
-          openMailboxMenu(mailbox, ev)
-        }}
+        on:click={openMailboxMenu}
       />
     </div>
   </div>

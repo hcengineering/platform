@@ -119,7 +119,14 @@
       {:else}
         <Scroller>
           {#each mailboxes as mailbox, i}
-            <MailboxItem {mailbox} mailboxIdx={i} reloadRequested={loadMailboxes} />
+            <MailboxItem
+              {mailbox}
+              mailboxIdx={i}
+              reloadRequested={loadMailboxes}
+              loadingRequested={() => {
+                boxesLoading = true
+              }}
+            />
           {/each}
         </Scroller>
       {/if}

@@ -14,12 +14,14 @@
 -->
 <script lang="ts">
   import { MailboxOptions } from '@hcengineering/account-client'
-  import presentation from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { Dropdown, ListItem, Modal, ModernEditbox, Spinner, themeStore } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import { createEventDispatcher } from 'svelte'
   import { getAccountClient } from '../utils'
   import { IntlString, translateCB } from '@hcengineering/platform'
+  import contact, { getCurrentEmployee, SocialIdentity } from '@hcengineering/contact'
+  import { buildSocialIdString, Ref, SocialIdType } from '@hcengineering/core'
 
   export let mailboxOptions: MailboxOptions
 
@@ -39,10 +41,42 @@
     return n.length >= mailboxOptions.minNameLength && n.length <= mailboxOptions.maxNameLength
   }
 
+  async function createMailbox (): Promise<void> {
+    const { mailbox, socialId } = await getAccountClient().createMailbox(name, (domain ?? domains[0])._id)
+    console.log('Mailbox created', mailbox, socialId)
+    const currentUser = getCurrentEmployee()
+    const client = getClient()
+    await client.addCollection(
+      contact.class.SocialIdentity,
+      contact.space.Contacts,
+      currentUser,
+      contact.class.Person,
+      'socialIds',
+      {
+        key: buildSocialIdString({ type: SocialIdType.EMAIL, value: mailbox }),
+        type: SocialIdType.EMAIL,
+        value: mailbox,
+        verifiedOn: Date.now()
+      },
+      socialId as any as Ref<SocialIdentity>
+    )
+    await client.addCollection(
+      contact.class.Channel,
+      contact.space.Contacts,
+      currentUser,
+      contact.class.Person,
+      'channels',
+      {
+        provider: contact.channelProvider.Email,
+        value: mailbox
+      }
+    )
+  }
+
   async function save (): Promise<void> {
     loading = true
     try {
-      await getAccountClient().createMailbox(name, (domain ?? domains[0])._id)
+      await createMailbox()
       loading = false
       dispatch('close', true)
     } catch (err: any) {
