@@ -131,6 +131,21 @@ export function start (
     return new ClientSession(token, workspace, account, token.extra?.mode === 'backup')
   }
   const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
+    if (dbUrl.startsWith('mongodb')) {
+      return {
+        findMessages: async () => [],
+        findMessagesGroups: async () => [],
+        findNotificationContexts: async () => [],
+        findNotifications: async () => [],
+        unsubscribeQuery: async () => {},
+        event: async () => {
+          return {}
+        },
+        closeSession: async () => {},
+        close: async () => {}
+      }
+    }
+
     return await CommunicationApi.create(
       ctx.newChild('💬 communication api', {}),
       workspace.uuid,

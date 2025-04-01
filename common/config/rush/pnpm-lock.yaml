@@ -4782,7 +4782,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
-    resolution: {integrity: sha512-J0IouHQ9sjpW7Bc7VkCMeOHzJwxKGddUWomqtz/o5A+H9DXI2Hs5M7BUjXQm8Py7sovN1l6Vt1GljrwDbUo9Jw==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-oEG3AsN/BgmKq+Ek8r/repf0Tr6wRTd+C4fFPcTVxFxVIgYYy1ZcKx34RPEeRPODqsQckASvjgU69u6sZwuurg==, tarball: file:projects/pod-server.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-ses@file:projects/pod-ses.tgz':
@@ -21977,6 +21977,7 @@ snapshots:
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(utf-8-validate@6.0.4)':
     dependencies:
+      '@hcengineering/communication-sdk-types': 0.1.150(typescript@5.3.3)
       '@hcengineering/communication-server': 0.1.150(typescript@5.3.3)
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
