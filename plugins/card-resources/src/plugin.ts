@@ -76,6 +76,7 @@ export default mergeIds(cardId, card, {
     EditView: '' as IntlString,
     SelectViewType: '' as IntlString,
     Document: '' as IntlString,
+    Documents: '' as IntlString,
     ChangeType: '' as IntlString,
     ChangeTypeWarning: '' as IntlString
   }
