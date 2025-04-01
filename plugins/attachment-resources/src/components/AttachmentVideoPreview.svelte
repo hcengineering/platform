@@ -70,7 +70,7 @@
     {#if meta?.hls?.source !== undefined}
       <HlsVideo {src} {preload} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} {name} />
     {:else}
-      <Video {src} {preload} {name} />
+      <Video {src} {name} preload />
     {/if}
   {/await}
 </div>
