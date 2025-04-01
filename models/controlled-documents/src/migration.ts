@@ -459,8 +459,8 @@ async function migrateDocumentMetaInternalCode (client: MigrationClient): Promis
 }
 
 export const documentsOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, documentsId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, documentsId, [
       {
         state: 'migrateSpaceTypes',
         func: migrateSpaceTypes
@@ -490,8 +490,8 @@ export const documentsOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, documentsId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, documentsId, [
       {
         state: 'init-documents',
         func: async (client) => {

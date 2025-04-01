@@ -153,6 +153,7 @@
         {exclude}
         {_classes}
         association={selected}
+        on:create
         on:close={() => {
           selected = undefined
         }}

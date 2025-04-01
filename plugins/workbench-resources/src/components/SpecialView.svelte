@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, ComponentExtensions } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Breadcrumb,
@@ -38,8 +38,7 @@
     ViewletSelector,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
-  import { ParentsNavigationModel } from '@hcengineering/workbench'
-
+  import workbench, { ParentsNavigationModel } from '@hcengineering/workbench'
   import ComponentNavigator from './ComponentNavigator.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -56,6 +55,8 @@
   export let baseQuery: DocumentQuery<Doc> | undefined = undefined
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined = undefined
+  export let actionConfig: Record<string, any> = {}
+  export let actionVisible: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -63,7 +64,6 @@
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
   let filterVisible: boolean = false
-
   let preference: ViewletPreference | undefined
   let viewlets: Array<WithLookup<Viewlet>> = []
   let viewOptions: ViewOptions | undefined
@@ -131,6 +131,10 @@
     <FilterButton {_class} bind:visible={filterVisible} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
+    <ComponentExtensions
+      extension={workbench.extensions.SpecialViewAction}
+      props={{ _class, visible: actionVisible, query: resultQuery, config: actionConfig }}
+    />
     {#if createLabel && createComponent}
       <Button
         icon={IconAdd}

@@ -285,22 +285,25 @@ export async function migrateNotificationsObject (client: MigrationClient): Prom
 }
 
 export const notificationOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, notificationId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, notificationId, [
       {
         state: 'delete-hidden-notifications',
+        mode: 'upgrade',
         func: async (client) => {
           await removeNotifications(client, { hidden: true })
         }
       },
       {
         state: 'delete-invalid-notifications',
+        mode: 'upgrade',
         func: async (client) => {
           await removeNotifications(client, { attachedToClass: 'chunter:class:Comment' as Ref<Class<Doc>> })
         }
       },
       {
         state: 'remove-old-classes',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
           await client.deleteMany(DOMAIN_TX, { objectClass: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
@@ -308,6 +311,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'removeDeprecatedSpace',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'notification:space:Notifications' as Ref<Space>, core.space.Workspace, [
             DOMAIN_NOTIFICATION
@@ -316,34 +320,40 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-setting',
+        mode: 'upgrade',
         func: migrateSettings
       },
       {
         state: 'move-doc-notify',
+        mode: 'upgrade',
         func: async (client) => {
           await client.move(DOMAIN_NOTIFICATION, { _class: notification.class.DocNotifyContext }, DOMAIN_DOC_NOTIFY)
         }
       },
       {
         state: 'remove-last-view',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:LastView' as any })
         }
       },
       {
         state: 'remove-notification',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:Notification' as any })
         }
       },
       {
         state: 'remove-email-notification',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:EmailNotification' as any })
         }
       },
       {
         state: 'move-user',
+        mode: 'upgrade',
         func: async (client) => {
           await client.move(
             DOMAIN_NOTIFICATION,
@@ -354,6 +364,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'fill-notification-archived-field-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update<InboxNotification>(
             DOMAIN_NOTIFICATION,
@@ -374,6 +385,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'fill-contexts-pinned-field-v1',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update<DocNotifyContext>(
             DOMAIN_DOC_NOTIFY,
@@ -384,10 +396,12 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-notifications-space-v1',
+        mode: 'upgrade',
         func: migrateNotificationsSpace
       },
       {
         state: 'migrate-employee-space-v1',
+        mode: 'upgrade',
         func: async () => {
           await client.update<DocNotifyContext>(
             DOMAIN_DOC_NOTIFY,
@@ -398,6 +412,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-wrong-spaces-v1',
+        mode: 'upgrade',
         func: async () => {
           await client.update<DocNotifyContext>(
             DOMAIN_DOC_NOTIFY,
@@ -418,10 +433,12 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-duplicated-contexts-v3',
+        mode: 'upgrade',
         func: migrateDuplicateContexts
       },
       {
         state: 'set-default-hidden',
+        mode: 'upgrade',
         func: async () => {
           await client.update(
             DOMAIN_DOC_NOTIFY,
@@ -432,6 +449,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'remove-update-txes-docnotify-ctx-v2',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany(DOMAIN_TX, {
             _class: core.class.TxUpdateDoc,
@@ -451,6 +469,7 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'remove-browser-notification-v2',
+        mode: 'upgrade',
         func: async (client) => {
           await client.deleteMany<BrowserNotification>(DOMAIN_USER_NOTIFY, {
             _class: notification.class.BrowserNotification
@@ -463,12 +482,14 @@ export const notificationOperation: MigrateOperation = {
       },
       {
         state: 'migrate-dnc-space',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(DOMAIN_DOC_NOTIFY, { space: core.space.Space }, { space: core.space.Workspace })
         }
       },
       {
         state: 'migrate-notifications-object',
+        mode: 'upgrade',
         func: migrateNotificationsObject
       }
     ])

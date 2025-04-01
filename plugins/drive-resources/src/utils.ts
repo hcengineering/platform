@@ -244,13 +244,13 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
     return current
   }
 
-  const callback: FileUploadCallback = async ({ uuid, name, file, path, metadata }) => {
+  const callback: FileUploadCallback = async ({ uuid, name, type, file, path, metadata }) => {
     const folder = await findParent(path)
     try {
       const data = {
         file: uuid,
         size: file.size,
-        type: file.type,
+        type: type ?? file.type,
         lastModified: file instanceof File ? file.lastModified : Date.now(),
         title: name,
         metadata

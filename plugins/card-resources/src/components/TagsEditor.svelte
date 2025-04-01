@@ -16,21 +16,20 @@
 -->
 <script lang="ts">
   import card, { Card, Tag } from '@hcengineering/card'
+  import { Class, Doc, fillDefaults, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     ButtonIcon,
     CircleButton,
+    eventToHTMLElement,
     IconAdd,
     IconClose,
     Label,
-    showPopup,
+    ScrollerBar,
     SelectPopup,
-    SelectPopupValueType,
-    eventToHTMLElement,
-    ScrollerBar
+    showPopup
   } from '@hcengineering/ui'
   import MasterTagSelector from './MasterTagSelector.svelte'
-  import { fillDefaults } from '@hcengineering/core'
 
   export let doc: Card
 
@@ -50,11 +49,23 @@
   }
 
   $: ancestors = hierarchy.getAncestors(doc._class)
-  $: possibleMixins = tags.filter(
-    (p) =>
-      !hierarchy.hasMixin(doc, p._id) &&
-      (hierarchy.isDerived(p._id, doc._class) || ancestors.includes(hierarchy.getBaseClass(p._id)))
-  )
+  $: possibleMixins = getPossibleMixins(doc._class, tags)
+
+  function getPossibleMixins (_class: Ref<Class<Doc>>, tags: Tag[]): Tag[] {
+    const res: Tag[] = []
+    for (const p of tags) {
+      try {
+        if (hierarchy.hasMixin(doc, p._id)) continue
+        const base = hierarchy.getBaseClass(p._id)
+        if (_class === base || ancestors.includes(base)) {
+          res.push(p)
+        }
+      } catch (err) {
+        console.log('error', err, p._id)
+      }
+    }
+    return res
+  }
   $: dropdownItems = possibleMixins.map((mixin) => ({ id: mixin._id, label: mixin.label }))
   function add (e: MouseEvent): void {
     showPopup(

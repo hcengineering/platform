@@ -86,5 +86,8 @@
     "ShareWithAudioTooltip": "Share your screen with system audio. Restart screen share to apply changes.",
     "MicPermission": "Microphone not found, check browser permissions",
     "CamPermission": "Camera not found, check browser permissions"
+  },
+  "status": {
+    "RoomRequired": "Room is required"
   }
 }

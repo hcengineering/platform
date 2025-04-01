@@ -132,6 +132,10 @@
     "BackupFiles": "Soubory záloh",
     "BackupNoBackup": "V současné době nejsou k dispozici žádné zálohy.",
     "AddAttribute": "Přidat atribut",
-    "WorkspaceNamePattern": "Název musí být 40 znaků nebo méně, není prázdný a nesmí obsahovat speciální znaky (<, >, /)"
+    "WorkspaceNamePattern": "Název musí být 40 znaků nebo méně, není prázdný a nesmí obsahovat speciální znaky (<, >, /)",
+    "DisablePermissions": "Zakázat řízení přístupu na základě rolí",
+    "EnablePermissions": "Povolit řízení přístupu na základě rolí",
+    "DisablePermissionsConfirmation": "Opravdu chcete zakázat řízení přístupu na základě rolí? Všechny role a oprávnění budou deaktivovány.",
+    "EnablePermissionsConfirmation": "Opravdu chcete povolit řízení přístupu na základě rolí? Všechny role a oprávnění budou aktivovány."
   }
 }

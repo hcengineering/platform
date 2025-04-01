@@ -86,5 +86,8 @@
     "ShareWithAudioTooltip": "与系统音频一起共享屏幕。重新启动屏幕共享以应用更改。",
     "MicPermission": "未找到麦克风，请检查浏览器权限",
     "CamPermission": "未找到摄像头，请检查浏览器权限"
+  },
+  "status": {
+    "RoomRequired": "房间是必需的"
   }
 }

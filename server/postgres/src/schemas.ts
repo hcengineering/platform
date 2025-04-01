@@ -101,6 +101,11 @@ const relationSchema: Schema = {
     type: 'text',
     notNull: true,
     index: true
+  },
+  association: {
+    type: 'text',
+    notNull: true,
+    index: true
   }
 }
 

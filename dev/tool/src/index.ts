@@ -78,7 +78,7 @@ import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv }
 import { program, type Command } from 'commander'
 import { addControlledDocumentRank } from './qms'
 import { clearTelegramHistory } from './telegram'
-import { backupRestore, diffWorkspace, updateField } from './workspace'
+import { backupRestore, diffWorkspace, restoreRemovedDoc, updateField } from './workspace'
 
 import core, {
   AccountRole,
@@ -86,7 +86,6 @@ import core, {
   generateId,
   getWorkspaceId,
   isActiveMode,
-  isArchivingMode,
   MeasureMetricsContext,
   metricsToString,
   RateLimiter,
@@ -1389,25 +1388,14 @@ export function devTool (
 
       toolCtx.info('using datalake', { datalake: datalakeConfig })
 
-      let workspaces: Workspace[] = []
-      await withAccountDatabase(async (db) => {
-        workspaces = await listWorkspacesPure(db)
-        workspaces = workspaces
-          .filter((p) => isActiveMode(p.mode) || isArchivingMode(p.mode))
-          .filter((p) => cmd.workspace === '' || p.workspace === cmd.workspace)
-          // .sort((a, b) => b.lastVisit - a.lastVisit)
-          .sort((a, b) => {
-            if (a.backupInfo !== undefined && b.backupInfo !== undefined) {
-              return b.backupInfo.blobsSize - a.backupInfo.blobsSize
-            } else if (b.backupInfo !== undefined) {
-              return 1
-            } else if (a.backupInfo !== undefined) {
-              return -1
-            } else {
-              return b.lastVisit - a.lastVisit
-            }
-          })
-      })
+      const token = generateToken(systemAccountEmail, getWorkspaceId(''))
+      const workspaces = (await listAccountWorkspaces(token))
+        .sort((a, b) => {
+          const bsize = b.backupInfo?.blobsSize ?? 0
+          const asize = a.backupInfo?.blobsSize ?? 0
+          return bsize - asize
+        })
+        .filter((it) => cmd.workspace === '' || cmd.workspace === it.workspace)
 
       const count = workspaces.length
       console.log('found workspaces', count)
@@ -2294,6 +2282,15 @@ export function devTool (
         const { dbUrl } = prepareTools()
         await updateDataWorkspaceIdToUuid(toolCtx, db, dbUrl, cmd.dryrun)
       })
+    })
+
+  program
+    .command('restore-removed-doc <workspace>')
+    .requiredOption('--ids <objectIds>', 'ids')
+    .action(async (workspace: string, cmd: { ids: string }) => {
+      const wsid = getWorkspaceId(workspace)
+      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+      await restoreRemovedDoc(toolCtx, wsid, endpoint, cmd.ids)
     })
 
   program

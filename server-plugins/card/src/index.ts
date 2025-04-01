@@ -27,6 +27,13 @@ export const serverCardId = 'server-card' as Plugin
  */
 export default plugin(serverCardId, {
   trigger: {
-    OnAttribute: '' as Resource<TriggerFunc>
+    OnAttribute: '' as Resource<TriggerFunc>,
+    OnAttributeRemove: '' as Resource<TriggerFunc>,
+    OnMasterTagCreate: '' as Resource<TriggerFunc>,
+    OnTagRemove: '' as Resource<TriggerFunc>,
+    OnMasterTagRemove: '' as Resource<TriggerFunc>,
+    OnCardCreate: '' as Resource<TriggerFunc>,
+    OnCardUpdate: '' as Resource<TriggerFunc>,
+    OnCardRemove: '' as Resource<TriggerFunc>
   }
 })

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { Asset, IntlString, Plugin, StatusCode } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Mixin, Version, type Rank } from '.'
 import type { BenchmarkDoc } from './benchmark'
@@ -271,5 +271,8 @@ export default plugin(coreId, {
   },
   role: {
     Admin: '' as Ref<Role>
+  },
+  metadata: {
+    DisablePermissions: '' as Metadata<boolean>
   }
 })

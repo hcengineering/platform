@@ -150,7 +150,7 @@ export async function createControlledDocMetadata (
   }> {
   const projectId = project ?? documents.ids.NoProject
 
-  const ops = client.apply()
+  const ops = client.apply('create-qms-document')
 
   ops.notMatch(documents.class.Document, {
     template: templateId,
@@ -303,7 +303,7 @@ export async function createDocumentTemplateMetadata (
     path = await getParentPath(client, parent)
   }
 
-  const ops = client.apply()
+  const ops = client.apply('create-qms-document')
 
   ops.notMatch(documents.class.Document, {
     template: { $exists: false },

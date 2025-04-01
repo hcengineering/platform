@@ -38,6 +38,13 @@ import { tmpdir } from 'os'
 const cacheControlValue = 'public, no-cache, must-revalidate, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
+const KEEP_ALIVE_TIMEOUT = 5 // seconds
+const KEEP_ALIVE_MAX = 1000
+const KEEP_ALIVE_HEADERS = {
+  Connection: 'keep-alive',
+  'Keep-Alive': `timeout=${KEEP_ALIVE_TIMEOUT}, max=${KEEP_ALIVE_MAX}`
+}
+
 async function storageUpload (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
@@ -108,8 +115,7 @@ async function getFileRange (
           {}
         )
         res.writeHead(206, {
-          Connection: 'keep-alive',
-          'Keep-Alive': 'timeout=5',
+          ...KEEP_ALIVE_HEADERS,
           'Content-Range': `bytes ${start}-${end}/${size}`,
           'Accept-Ranges': 'bytes',
           'Content-Length': end - start + 1,
@@ -174,12 +180,11 @@ async function getFile (
   ) {
     // Matched, return not modified
     res.writeHead(304, {
+      ...KEEP_ALIVE_HEADERS,
       'content-type': stat.contentType,
       etag: stat.etag,
       'last-modified': new Date(stat.modifiedOn).toISOString(),
-      'cache-control': cacheControlValue,
-      connection: 'keep-alive',
-      'keep-alive': 'timeout=5, max=1000'
+      'cache-control': cacheControlValue
     })
     res.end()
     return
@@ -187,12 +192,11 @@ async function getFile (
   if (preConditions.IfUnmodifiedSince(req.headers, { lastModified: new Date(stat.modifiedOn) }) === 'failed') {
     // Send 412 (Precondition Failed)
     res.writeHead(412, {
+      ...KEEP_ALIVE_HEADERS,
       'content-type': stat.contentType,
       etag: stat.etag,
       'last-modified': new Date(stat.modifiedOn).toISOString(),
-      'cache-control': cacheControlValue,
-      connection: 'keep-alive',
-      'keep-alive': 'timeout=5, max=1000'
+      'cache-control': cacheControlValue
     })
     res.end()
     return
@@ -343,7 +347,7 @@ export function start (
     res.status(200)
     res.set('Cache-Control', cacheControlNoCache)
     res.set('Connection', 'keep-alive')
-    res.set('Keep-Alive', 'timeout=5')
+    res.set('Keep-Alive', `timeout=${KEEP_ALIVE_TIMEOUT}, max=${KEEP_ALIVE_MAX}`)
     res.json(data)
   })
 
@@ -403,7 +407,7 @@ export function start (
             res.setHeader('Cache-Control', cacheControlNoCache)
           }
           res.setHeader('Connection', 'keep-alive')
-          res.setHeader('Keep-Alive', 'timeout=5')
+          res.setHeader('Keep-Alive', `timeout=${KEEP_ALIVE_TIMEOUT}, max=${KEEP_ALIVE_MAX}`)
         }
       }
     })
@@ -786,9 +790,8 @@ export function start (
   })
 
   const server = app.listen(port)
-
-  server.keepAliveTimeout = 60 * 1000 + 1000
-  server.headersTimeout = 60 * 1000 + 2000
+  server.keepAliveTimeout = KEEP_ALIVE_TIMEOUT * 1000 + 1000
+  server.headersTimeout = KEEP_ALIVE_TIMEOUT * 1000 + 2000
   return () => {
     server.close()
   }
@@ -859,6 +862,9 @@ async function getGeneratePreview (
         return blob
       }
       sharp.cache(false)
+
+      // auto orient image based on exif to prevent resize use wrong orientation
+      pipeline = pipeline.rotate()
 
       pipeline = pipeline.resize({
         width: size,

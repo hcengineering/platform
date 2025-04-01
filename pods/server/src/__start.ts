@@ -58,7 +58,6 @@ const metricsContext = initStatisticsContext('transactor', {
 setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 
 const config = serverConfigFromEnv()
-const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
 const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
 
@@ -71,13 +70,15 @@ setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
 setMetadata(serverCore.metadata.FrontUrl, config.frontUrl)
 setMetadata(serverCore.metadata.FilesUrl, config.filesUrl)
 setMetadata(serverToken.metadata.Secret, config.serverSecret)
-setMetadata(serverNotification.metadata.SesUrl, config.sesUrl ?? '')
-setMetadata(serverNotification.metadata.SesAuthToken, config.sesAuthToken)
-setMetadata(serverNotification.metadata.WebPushUrl, config.webPushUrl ?? config.sesUrl)
+setMetadata(serverNotification.metadata.MailUrl, config.mailUrl ?? '')
+setMetadata(serverNotification.metadata.MailAuthToken, config.mailAuthToken)
+setMetadata(serverNotification.metadata.WebPushUrl, config.webPushUrl)
 setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 setMetadata(serverCalendar.metadata.EndpointURL, process.env.CALENDAR_URL)
+
+const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
 const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   fulltextUrl: config.fulltextUrl,

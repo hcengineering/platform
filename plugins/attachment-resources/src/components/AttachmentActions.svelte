@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { type Attachment } from '@hcengineering/attachment'
-  import type { WithLookup } from '@hcengineering/core'
+  import type { BlobType, WithLookup } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import presentation, { canPreviewFile, getFileUrl, previewTypes } from '@hcengineering/presentation'
   import { IconMoreH, Menu, Action as UIAction, showPopup, tooltip } from '@hcengineering/ui'
@@ -24,9 +24,9 @@
   import AttachmentAction from './AttachmentAction.svelte'
   import FileDownload from './icons/FileDownload.svelte'
   import attachmentPlugin from '../plugin'
-  import { openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
+  import { isAttachment, openAttachmentInSidebar, showAttachmentPreviewPopup } from '../utils'
 
-  export let attachment: WithLookup<Attachment>
+  export let attachment: WithLookup<Attachment> | BlobType
   export let isSaved = false
   export let removable = false
 
@@ -87,22 +87,28 @@
         await openAttachmentInSidebar(attachment)
       }
     })
-    actions.push({
-      label: saveAttachmentAction.label,
-      icon: saveAttachmentAction.icon,
-      action: async (props: any, evt: Event) => {
-        const impl = await getResource(saveAttachmentAction.action)
-        await impl(attachment, evt)
-      }
-    })
-    if (removable) {
+    if (isAttachment(attachment)) {
       actions.push({
-        label: attachmentPlugin.string.DeleteFile,
+        label: saveAttachmentAction.label,
+        icon: saveAttachmentAction.icon,
         action: async (props: any, evt: Event) => {
-          const impl = await getResource(attachmentPlugin.actionImpl.DeleteAttachment)
-          await impl(attachment, evt)
+          if (isAttachment(attachment)) {
+            const impl = await getResource(saveAttachmentAction.action)
+            await impl(attachment, evt)
+          }
         }
       })
+      if (removable) {
+        actions.push({
+          label: attachmentPlugin.string.DeleteFile,
+          action: async (props: any, evt: Event) => {
+            if (isAttachment(attachment)) {
+              const impl = await getResource(attachmentPlugin.actionImpl.DeleteAttachment)
+              await impl(attachment, evt)
+            }
+          }
+        })
+      }
     }
     showPopup(
       Menu,

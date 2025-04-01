@@ -192,8 +192,10 @@
                   {#if isArchivingMode(ws.mode)}
                     - <Label label={presentation.string.Archived} />
                   {/if}
-                  {#if ws.region != null && ws.region !== ''}
-                    - ({ws.region})
+                  {#if isAdmin}
+                    {#if ws.region != null && ws.region !== ''}
+                      - ({ws.region})
+                    {/if}
                   {/if}
                   {#if isAdmin && ws.lastVisit != null && ws.lastVisit !== 0}
                     <div class="text-sm">

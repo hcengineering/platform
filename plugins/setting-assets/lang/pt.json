@@ -123,6 +123,10 @@
     "BackupFiles": "Arquivos de Backup",
     "BackupNoBackup": "Não há backups disponíveis no momento.",
     "AddAttribute": "Adicionar atributo",
-    "WorkspaceNamePattern": "O nome deve ter 40 caracteres ou menos, não está vazio e não pode conter caracteres especiais (<, >, /)"
+    "WorkspaceNamePattern": "O nome deve ter 40 caracteres ou menos, não está vazio e não pode conter caracteres especiais (<, >, /)",
+    "DisablePermissions": "Desativar controle de acesso baseado em funções",
+    "EnablePermissions": "Ativar controle de acesso baseado em funções",
+    "DisablePermissionsConfirmation": "Tem certeza de que deseja desativar o controle de acesso baseado em funções? Todos os papéis e permissões serão desativados.",
+    "EnablePermissionsConfirmation": "Tem certeza de que deseja ativar o controle de acesso baseado em funções? Todos os papéis e permissões serão ativados."
   }
 }

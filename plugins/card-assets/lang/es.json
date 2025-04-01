@@ -19,6 +19,17 @@
     "TagRelations": "Relaciones de Etiquetas",
     "DeleteTagConfirm": "¿Estás seguro de que quieres eliminar esta etiqueta? Todas las propiedades relacionadas serán eliminadas",
     "DeleteMasterTag": "Eliminar Tipo",
-    "DeleteMasterTagConfirm": "¿Estás seguro de que quieres eliminar este tipo? Todos los objetos relacionados con este tipo serán eliminados"
+    "DeleteMasterTagConfirm": "¿Estás seguro de que quieres eliminar este tipo? Todos los objetos relacionados con este tipo serán eliminados",
+    "UnsetParent": "Desasignar padre",
+    "SetParent": "Asignar padre",
+    "CreateChild": "Crear hijo",
+    "Children": "Hijos",
+    "Views": "Vistas",
+    "CreateView": "Crear vista",
+    "EditView": "Editar vista",
+    "SelectViewType": "Seleccionar tipo de vista",
+    "Document": "Documento",
+    "ChangeType": "Cambiar tipo",
+    "ChangeTypeWarning": "Advertencia: Cambiar el tipo de una tarjeta eliminará todos los datos para cualquier atributo que no exista en el tipo de destino. Los datos previos del atributo pueden ser restaurados cambiando la tarjeta de nuevo a un tipo anterior. El contenido de la tarjeta no será afectado."
   }
 }

@@ -17,7 +17,7 @@
   import { OK, Severity, Status, getEmbeddedLabel } from '@hcengineering/platform'
 
   import { LoginInfo } from '@hcengineering/login'
-  import { ButtonMenu, DropdownLabels, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { ButtonMenu, getCurrentLocation, navigate } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import login from '../plugin'

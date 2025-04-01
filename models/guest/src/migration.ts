@@ -13,17 +13,17 @@ import {
   tryMigrate,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient,
-  type ModelLogger
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { GUEST_DOMAIN } from '.'
 
 export const guestOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
-    await tryMigrate(client, guestId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, guestId, [
       {
         state: 'migrateRoles',
+        mode: 'upgrade',
         func: async (client) => {
           const stateMap = {
             0: AccountRole.User,
@@ -68,6 +68,7 @@ export const guestOperation: MigrateOperation = {
       },
       {
         state: 'removeDeprecatedSpace',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'guest:space:Links' as Ref<Space>, core.space.Workspace, [GUEST_DOMAIN])
         }

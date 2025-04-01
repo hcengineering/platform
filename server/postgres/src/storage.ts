@@ -726,7 +726,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           })) as FindResult<T>
         } catch (err) {
           const sqlFull = vars.injectVars(fquery)
-          ctx.error('Error in findAll', { err, sql: fquery, sqlFull })
+          ctx.error('Error in findAll', { err, sql: fquery, sqlFull, query })
           throw err
         }
       },
@@ -923,10 +923,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const res = this.getLookupValue(modelJoin.path, lookup)
         if (res === undefined) continue
         const { obj, key } = res
-        const val = this.getModelLookupValue<T>(doc, modelJoin, simpleJoins)
+        const val = this.getModelLookupValue<T>(doc, modelJoin, [...simpleJoins, ...modelJoins])
         if (val !== undefined && modelJoin.toClass !== undefined) {
           const res = this.modelDb.findAllSync(modelJoin.toClass, {
-            [modelJoin.toField]: (doc as any)[modelJoin.fromField]
+            [modelJoin.toField]: val
           })
           obj[key] = modelJoin.isReverse ? res : res[0]
         }
@@ -970,11 +970,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
   }
 
-  private getModelLookupValue<T extends Doc>(doc: WithLookup<T>, join: JoinProps, simpleJoins: JoinProps[]): any {
+  private getModelLookupValue<T extends Doc>(doc: WithLookup<T>, join: JoinProps, otherJoins: JoinProps[]): any {
     if (join.fromAlias.startsWith('lookup_')) {
-      const simple = simpleJoins.find((j) => j.toAlias === join.fromAlias)
-      if (simple !== undefined) {
-        const val = this.getLookupValue(simple.path, doc.$lookup ?? {})
+      const other = otherJoins.find((j) => j.toAlias === join.fromAlias)
+      if (other !== undefined) {
+        const val = this.getLookupValue(other.path, doc.$lookup ?? {})
         if (val !== undefined) {
           const data = val.obj[val.key]
           return data[join.fromField]
@@ -1316,6 +1316,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     } else if (typeof value === 'object' && !Array.isArray(value)) {
       // we can have multiple criteria for one field
       const res: string[] = []
+      const nonOperator: Record<string, any> = {}
       for (const operator in value) {
         let val = value[operator]
         if (tkeyData && (Array.isArray(val) || (typeof val !== 'object' && typeof val !== 'string'))) {
@@ -1402,9 +1403,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
             break
           default:
-            res.push(`${tkey} @> '[${JSON.stringify(value)}]'`)
+            nonOperator[operator] = value[operator]
             break
         }
+      }
+      if (Object.keys(nonOperator).length > 0) {
+        const qkey = tkey.replace('#>>', '->').replace('{', '').replace('}', '')
+        res.push(`(${qkey} @> '${JSON.stringify(nonOperator)}' or ${qkey} @> '[${JSON.stringify(nonOperator)}]')`)
       }
       return res.length === 0 ? undefined : res.join(' AND ')
     }
@@ -1457,7 +1462,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       const isReverse = association[1] === -1
       const _class = isReverse ? assoc.classA : assoc.classB
-      const tagetDomain = translateDomain(this.hierarchy.getDomain(_class))
+      const domain = this.hierarchy.findDomain(_class)
+      if (domain === undefined) continue
+      const tagetDomain = translateDomain(domain)
       const keyA = isReverse ? 'docB' : 'docA'
       const keyB = isReverse ? 'docA' : 'docB'
       const wsId = vars.add(this.workspaceId.name, '::uuid')
@@ -1467,7 +1474,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
           JOIN ${translateDomain(DOMAIN_RELATION)} as relation 
           ON relation."${keyB}" = assoc."_id" 
           AND relation."workspaceId" = ${wsId}
-          WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" 
+          WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id"
+          AND relation.association = '${_id}'
           AND assoc."workspaceId" = ${wsId}) AS assoc_${tagetDomain}_${association[0]}`
       )
     }
@@ -1762,26 +1770,49 @@ class PostgresAdapter extends PostgresAdapterBase {
     this._helper.domains = new Set(resultDomains as Domain[])
   }
 
-  private process (ops: OperationBulk, tx: Tx): void {
-    switch (tx._class) {
-      case core.class.TxCreateDoc:
-        ops.add.push(TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>))
-        break
-      case core.class.TxUpdateDoc:
-        ops.updates.push(tx as TxUpdateDoc<Doc>)
-        break
-      case core.class.TxRemoveDoc:
-        ops.removes.push(tx as TxRemoveDoc<Doc>)
-        break
-      case core.class.TxMixin:
-        ops.mixins.push(tx as TxMixin<Doc, Doc>)
-        break
-      case core.class.TxApplyIf:
-        return undefined
-      default:
-        console.error('Unknown/Unsupported operation:', tx._class, tx)
-        break
+  private process (txes: Tx[]): OperationBulk {
+    const ops: OperationBulk = {
+      add: [],
+      mixins: [],
+      removes: [],
+      updates: []
     }
+    const updateGroup = new Map<Ref<Doc>, TxUpdateDoc<Doc>>()
+    for (const tx of txes) {
+      switch (tx._class) {
+        case core.class.TxCreateDoc:
+          ops.add.push(TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>))
+          break
+        case core.class.TxUpdateDoc: {
+          const updateTx = tx as TxUpdateDoc<Doc>
+          if (isOperator(updateTx.operations)) {
+            ops.updates.push(updateTx)
+          } else {
+            const current = updateGroup.get(updateTx.objectId)
+            if (current !== undefined) {
+              current.operations = { ...current.operations, ...updateTx.operations }
+              updateGroup.set(updateTx.objectId, current)
+            } else {
+              updateGroup.set(updateTx.objectId, updateTx)
+            }
+          }
+          break
+        }
+        case core.class.TxRemoveDoc:
+          ops.removes.push(tx as TxRemoveDoc<Doc>)
+          break
+        case core.class.TxMixin:
+          ops.mixins.push(tx as TxMixin<Doc, Doc>)
+          break
+        case core.class.TxApplyIf:
+          break
+        default:
+          console.error('Unknown/Unsupported operation:', tx._class, tx)
+          break
+      }
+    }
+    ops.updates.push(...updateGroup.values())
+    return ops
   }
 
   private async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>, schemaFields: SchemaAndFields): Promise<TxResult> {
@@ -1830,15 +1861,8 @@ class PostgresAdapter extends PostgresAdapterBase {
       if (domain === undefined) {
         continue
       }
-      const ops: OperationBulk = {
-        add: [],
-        mixins: [],
-        removes: [],
-        updates: []
-      }
-      for (const tx of txs) {
-        this.process(ops, tx)
-      }
+
+      const ops = this.process(txs)
 
       const domainFields = getSchemaAndFields(domain)
       if (ops.add.length > 0) {
@@ -2099,7 +2123,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
         SELECT * 
         FROM "${translateDomain(DOMAIN_MODEL_TX)}" 
         WHERE "workspaceId" = $1::uuid 
-        ORDER BY _id::text ASC, "modifiedOn"::bigint ASC
+        ORDER BY "modifiedOn"::bigint ASC, _id::text ASC
       `
       return client.execute(query, [this.workspaceId.name])
     })

@@ -49,6 +49,8 @@ export interface Account {
   githubId?: string
   githubUser?: string
   openId?: string
+
+  workspaceLimit?: number
 }
 
 /**

@@ -26,10 +26,11 @@ import training, { trainingId } from '@hcengineering/training'
 import { DOMAIN_TRAINING } from './types'
 
 export const trainingOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, trainingId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, trainingId, [
       {
         state: 'migrateSequnce',
+        mode: 'upgrade',
         func: async (client: MigrationClient) => {
           await client.update(
             DOMAIN_TRAINING,
@@ -41,8 +42,8 @@ export const trainingOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, trainingId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, trainingId, [
       {
         state: 'create-defaults',
         func: async (client) => {

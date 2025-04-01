@@ -132,6 +132,10 @@
     "BackupFiles": "备份文件",
     "BackupNoBackup": "当前没有可用的备份。",
     "AddAttribute": "添加属性",
-    "WorkspaceNamePattern": "名称必须为 40 个字符或更少，不能为空，不能包含特殊字符（<、>、/）"
+    "WorkspaceNamePattern": "名称必须为 40 个字符或更少，不能为空，不能包含特殊字符（<、>、/）",
+    "DisablePermissions": "禁用基于角色的访问控制",
+    "EnablePermissions": "启用基于角色的访问控制",
+    "DisablePermissionsConfirmation": "您确定要禁用基于角色的访问控制吗？所有角色和权限都将被禁用。",
+    "EnablePermissionsConfirmation": "您确定要启用基于角色的访问控制吗？所有角色和权限都将被启用。"
   }
 }

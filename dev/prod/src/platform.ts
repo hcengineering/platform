@@ -30,6 +30,7 @@ import { desktopPreferencesId } from '@hcengineering/desktop-preferences'
 import { diffviewId } from '@hcengineering/diffview'
 import { documentId } from '@hcengineering/document'
 import { driveId } from '@hcengineering/drive'
+import exportPlugin, { exportId } from '@hcengineering/export'
 import gmail, { gmailId } from '@hcengineering/gmail'
 import guest, { guestId } from '@hcengineering/guest'
 import { hrId } from '@hcengineering/hr'
@@ -81,6 +82,7 @@ import '@hcengineering/desktop-preferences-assets'
 import '@hcengineering/diffview-assets'
 import '@hcengineering/document-assets'
 import '@hcengineering/drive-assets'
+import '@hcengineering/export-assets'
 import '@hcengineering/gmail-assets'
 import '@hcengineering/guest-assets'
 import '@hcengineering/hr-assets'
@@ -169,6 +171,7 @@ export interface Config {
   USE_BINARY_PROTOCOL?: boolean
   TRANSACTOR_OVERRIDE?: string
   BACKUP_URL?: string
+  EXPORT_URL?: string
 }
 
 export interface Branding {
@@ -313,6 +316,7 @@ function configureI18n(): void {
   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
+  addStringsLoader(exportId, async (lang: string) => await import(`@hcengineering/export-assets/lang/${lang}.json`))
   addStringsLoader(
     analyticsCollectorId,
     async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`)
@@ -424,6 +428,7 @@ export async function configurePlatform() {
   setMetadata(print.metadata.PrintURL, config.PRINT_URL)
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
   setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
+  setMetadata(exportPlugin.metadata.ExportUrl, config.EXPORT_URL ?? '')
 
   const languages = myBranding.languages
     ? (myBranding.languages as string).split(',').map((l) => l.trim())
@@ -502,6 +507,7 @@ export async function configurePlatform() {
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
+  addLocation(exportId, () => import(/* webpackChunkName: "export" */ '@hcengineering/export-resources'))
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
   addLocation(

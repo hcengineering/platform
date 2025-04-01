@@ -32,6 +32,67 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnAttributeRemove,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: core.class.Attribute
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnTagRemove,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: card.class.Tag
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnMasterTagRemove,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: card.class.MasterTag,
+      'operations.removed': true
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnMasterTagCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: { $in: [card.class.MasterTag, card.class.Tag] }
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnCardRemove,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: card.class.Card
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnCardCreate,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: card.class.Card
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnCardUpdate,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: card.class.Card
+    }
+  })
+
   builder.mixin(card.class.Card, core.class.Class, serverCore.mixin.SearchPresenter, {
     searchIcon: card.icon.Card,
     title: [['title']]

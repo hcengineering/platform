@@ -55,10 +55,12 @@ import { workbenchOperation } from '@hcengineering/model-workbench'
 import { testManagementOperation } from '@hcengineering/model-test-management'
 import { surveyOperation } from '@hcengineering/model-survey'
 import { aiBotId, aiBotOperation } from '@hcengineering/model-ai-bot'
+import { cardOperation } from '@hcengineering/model-card'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
   ['activity', activityOperation],
+  ['card', cardOperation],
   ['chunter', chunterOperation],
   ['calendar', calendarOperation],
   ['gmail', gmailOperation],

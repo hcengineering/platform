@@ -252,6 +252,7 @@
     "Name": "Název",
     "DraftRevision": "Revize konceptu",
     "CreateNewDraft": "Vytvořit nový koncept",
+    "RestoreDraft": "Obnovit koncept",
     "ChangeSeverity": "Změnit závažnost",
     "Reference": "Reference",
     "History": "Historie",
@@ -302,7 +303,10 @@
     "MakeDocumentObsoleteDialog": "Označit {count, plural, one {dokument jako zastaralý} other {dokumenty jako zastaralé}}",
     "MakeDocumentObsoleteConfirm": "Opravdu chcete označit následující dokumenty jako zastaralé: {titles}?",
 
-    "LatestVersionHint": "nejnovější"
+    "LatestVersionHint": "nejnovější",
+
+    "CannotDeleteFolder": "Složku nelze smazat",
+    "CannotDeleteFolderHint": "Před odstraněním složky prosím přesuňte všechny podřízené dokumenty na jiné místo."
   },
   "controlledDocStates": {
     "Empty": "",

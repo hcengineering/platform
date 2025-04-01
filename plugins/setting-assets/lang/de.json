@@ -132,6 +132,10 @@
     "BackupFiles": "Sicherungsdateien",
     "BackupNoBackup": "Derzeit sind keine Sicherungen verfügbar.",
     "AddAttribute": "Attribut hinzufügen",
-    "WorkspaceNamePattern": "Name muss 40 Zeichen oder weniger sein, nicht leer sein und keine Sonderzeichen (<, >, /) enthalten"
+    "WorkspaceNamePattern": "Name muss 40 Zeichen oder weniger sein, nicht leer sein und keine Sonderzeichen (<, >, /) enthalten",
+    "DisablePermissions": "Rollenbasierte Zugriffskontrolle deaktivieren",
+    "EnablePermissions": "Rollenbasierte Zugriffskontrolle aktivieren",
+    "DisablePermissionsConfirmation": "Sind Sie sicher, dass Sie die rollenbasierte Zugriffskontrolle deaktivieren möchten? Alle Rollen und Berechtigungen werden deaktiviert.",
+    "EnablePermissionsConfirmation": "Sind Sie sicher, dass Sie die rollenbasierte Zugriffskontrolle aktivieren möchten? Alle Rollen und Berechtigungen werden aktiviert."
   }
 }

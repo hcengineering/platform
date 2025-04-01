@@ -13,15 +13,17 @@
 // limitations under the License.
 //
 
+import { MeasureContext } from '@hcengineering/core'
+import { translate } from '@hcengineering/platform'
+import { extractToken } from '@hcengineering/server-client'
 import { Token } from '@hcengineering/server-token'
+import telegram, { TelegramNotificationRequest } from '@hcengineering/telegram'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
-import { MeasureContext } from '@hcengineering/core'
 import { Telegraf } from 'telegraf'
-import telegram, { TelegramNotificationRequest } from '@hcengineering/telegram'
-import { translate } from '@hcengineering/platform'
-import { extractToken } from '@hcengineering/server-client'
+import { Readable } from 'stream'
+import type { ReadableStream } from 'stream/web'
 
 import { ApiError } from './error'
 import { PlatformWorker } from './worker'
@@ -149,18 +151,37 @@ export function createServer (
 
   app.get(
     '/info',
-    wrapRequest(async (_, res) => {
+    wrapRequest(async (req, res) => {
       const me = await bot.telegram.getMe()
       const profilePhotos = await bot.telegram.getUserProfilePhotos(me.id)
-      const photoId = profilePhotos.photos[0]?.[0]?.file_id
+      const photoId = profilePhotos.photos[0]?.[0]?.file_id ?? ''
 
-      let photoUrl = ''
-
-      if (photoId !== undefined) {
-        photoUrl = (await bot.telegram.getFileLink(photoId)).toString()
-      }
       res.status(200)
-      res.json({ username: me.username, name: me.first_name, photoUrl })
+      res.json({ username: me.username, name: me.first_name, photoId })
+    })
+  )
+
+  app.get(
+    '/photo/:fileId',
+    wrapRequest(async (req, res) => {
+      const { fileId } = req.params
+      const fileLink = await bot.telegram.getFileLink(fileId)
+
+      const response = await fetch(fileLink.toString())
+      if (!response.ok) {
+        res.status(response.status).send(response.statusText)
+        return
+      }
+
+      if (response.body != null) {
+        res.setHeader('Content-Type', response.headers.get('Content-Type') ?? 'application/octet-stream')
+        res.setHeader('Content-Length', response.headers.get('Content-Length') ?? '0')
+
+        const stream = Readable.fromWeb(response.body as ReadableStream<any>)
+        stream.pipe(res)
+      } else {
+        res.status(500).send('Failed to fetch photo')
+      }
     })
   )
 

@@ -36,6 +36,7 @@ import {
   type WorkspaceSetting
 } from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
+import exportPlugin from '@hcengineering/export'
 import setting from './plugin'
 
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
@@ -335,6 +336,20 @@ export function createModel (builder: Builder): void {
       order: 4700
     },
     setting.ids.InviteSettings
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'export',
+      label: exportPlugin.string.Export,
+      icon: exportPlugin.icon.Export,
+      component: exportPlugin.component.ExportSettings,
+      group: 'settings-editor',
+      role: AccountRole.User,
+      order: 4800
+    },
+    setting.ids.Export
   )
   // Currently remove Support item from settings
   // builder.createDoc(

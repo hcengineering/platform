@@ -7,10 +7,10 @@ import {
   type Domain,
   DOMAIN_TX,
   generateId,
+  groupByArray,
   type Ref,
   type Space,
-  TxOperations,
-  groupByArray
+  TxOperations
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -19,7 +19,6 @@ import {
   type MigrationClient,
   type MigrationDocumentQuery,
   type MigrationUpgradeClient,
-  type ModelLogger,
   tryMigrate,
   tryUpgrade
 } from '@hcengineering/model'
@@ -27,9 +26,9 @@ import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
 
-import contact, { contactId, DOMAIN_CONTACT } from './index'
-import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/notification'
 import { DOMAIN_CHUNTER } from '@hcengineering/model-chunter'
+import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/notification'
+import contact, { contactId, DOMAIN_CONTACT } from './index'
 
 async function createEmployeeEmail (client: TxOperations): Promise<void> {
   const employees = await client.findAll(contact.mixin.Employee, {})
@@ -185,10 +184,11 @@ async function mergePersonSpaces (client: MigrationClient): Promise<void> {
 }
 
 export const contactOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
-    await tryMigrate(client, contactId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, contactId, [
       {
         state: 'employees',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_TX,
@@ -297,6 +297,7 @@ export const contactOperation: MigrateOperation = {
       },
       {
         state: 'removeEmployeeSpace',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_CONTACT,
@@ -311,12 +312,14 @@ export const contactOperation: MigrateOperation = {
       },
       {
         state: 'avatars',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateAvatars(client)
         }
       },
       {
         state: 'avatarsKind',
+        mode: 'upgrade',
         func: async (client) => {
           await client.update(
             DOMAIN_CONTACT,
@@ -335,8 +338,8 @@ export const contactOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, contactId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, contactId, [
       {
         state: 'createSpace-v2',
         func: async (client) => {

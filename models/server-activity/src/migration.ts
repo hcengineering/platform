@@ -32,7 +32,8 @@ import {
   type MigrateOperation,
   type MigrationClient,
   type MigrationIterator,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  type MigrateMode
 } from '@hcengineering/model'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import {
@@ -263,10 +264,11 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
 }
 
 export const activityServerOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, serverActivityId, [
+  async migrate (client: MigrationClient, mode: MigrateMode): Promise<void> {
+    await tryMigrate(mode, client, serverActivityId, [
       {
         state: 'doc-update-messages',
+        mode: 'upgrade',
         func: async (client) => {
           // Recreate activity to avoid duplicates
           await client.deleteMany(DOMAIN_ACTIVITY, {

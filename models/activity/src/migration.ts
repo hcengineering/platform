@@ -182,18 +182,21 @@ async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
 }
 
 export const activityOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, activityId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, activityId, [
       {
         state: 'reactions',
+        mode: 'upgrade',
         func: migrateReactions
       },
       {
         state: 'markup',
+        mode: 'upgrade',
         func: migrateMarkup
       },
       {
         state: 'migrate-doc-update-messages-space',
+        mode: 'upgrade',
         func: async (client) => {
           await migrateMessagesSpace(
             client,
@@ -205,6 +208,7 @@ export const activityOperation: MigrateOperation = {
       },
       {
         state: 'migrate-employee-space-v1',
+        mode: 'upgrade',
         func: async () => {
           await client.update<ActivityMessage>(
             DOMAIN_ACTIVITY,
@@ -215,10 +219,12 @@ export const activityOperation: MigrateOperation = {
       },
       {
         state: 'migrate-activity-markup',
+        mode: 'upgrade',
         func: migrateActivityMarkup
       },
       {
         state: 'move-reactions',
+        mode: 'upgrade',
         func: async (client: MigrationClient): Promise<void> => {
           await client.move(DOMAIN_ACTIVITY, { _class: activity.class.Reaction }, DOMAIN_REACTION)
           await client.move(DOMAIN_ACTIVITY, { _class: activity.class.UserMentionInfo }, DOMAIN_USER_MENTION)

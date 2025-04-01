@@ -62,7 +62,7 @@
      * The default value is false to avoid legacy compatibility issues.
      * It is strongly recommended to set strictPeerDependencies=true.
      */
-    "strictPeerDependencies": false,
+    "strictPeerDependencies": false
 
     /**
      * Configures the strategy used to select versions during installation.
@@ -247,14 +247,12 @@
     //   "[^@]+@users\\.noreply\\.github\\.com",
     //   "travis@example\\.org"
     // ],
-
     /**
      * When Rush reports that the address is malformed, the notice can include an example
      * of a recommended email.  Make sure it conforms to one of the allowedEmailRegExps
      * expressions.
      */
     // "sampleEmail": "mrexample@users.noreply.github.com",
-
     /**
      * The commit message to use when committing changes during 'rush publish'.
      *
@@ -263,7 +261,6 @@
      * in the commit message, and then customize Rush's message to contain that string.
      */
     // "versionBumpCommitMessage": "Applying package updates. [skip-ci]",
-
     /**
      * The commit message to use when committing changes during 'rush version'.
      *
@@ -1892,6 +1889,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/model-export",
+      "projectFolder": "models/export",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export",
+      "projectFolder": "plugins/export",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export-assets",
+      "projectFolder": "plugins/export-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/export-resources",
+      "projectFolder": "plugins/export-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/sign",
       "projectFolder": "plugins/sign",
       "shouldPublish": false
@@ -2087,6 +2104,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-datalake",
+      "projectFolder": "services/datalake/pod-datalake",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-love",
       "projectFolder": "services/love",
       "shouldPublish": false
@@ -2094,6 +2116,11 @@
     {
       "packageName": "@hcengineering/pod-print",
       "projectFolder": "services/print/pod-print",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-export",
+      "projectFolder": "services/export/pod-export",
       "shouldPublish": false
     },
     {
@@ -2187,11 +2214,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/cloud-branding",
-      "projectFolder": "workers/branding",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/scripts",
       "projectFolder": "common/scripts",
       "shouldPublish": false
@@ -2234,11 +2256,6 @@
     {
       "packageName": "@hcengineering/survey-resources",
       "projectFolder": "plugins/survey-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/cloud-transactor",
-      "projectFolder": "workers/transactor",
       "shouldPublish": false
     },
     {

@@ -15,6 +15,7 @@
 
 import core, {
   Domain,
+  DOMAIN_MODEL,
   groupByArray,
   TxProcessor,
   withContext,
@@ -86,20 +87,29 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
           const deleteByDomain = groupByArray(toDelete, (it) => this.context.hierarchy.getDomain(it.objectClass))
 
           for (const [domain, domainTxes] of deleteByDomain.entries()) {
-            const todel = await ctx.with(
-              'adapter-load',
-              {},
-              () =>
-                adapter.load(
-                  ctx,
-                  domain,
-                  domainTxes.map((it) => it.objectId)
-                ),
-              { count: toDelete.length }
-            )
+            if (domain === DOMAIN_MODEL) {
+              for (const tx of domainTxes) {
+                const ddoc = this.context.modelDb.findObject(tx.objectId)
+                if (ddoc !== undefined) {
+                  ctx.contextData.removedMap.set(ddoc._id, ddoc)
+                }
+              }
+            } else {
+              const todel = await ctx.with(
+                'adapter-load',
+                {},
+                () =>
+                  adapter.load(
+                    ctx,
+                    domain,
+                    domainTxes.map((it) => it.objectId)
+                  ),
+                { count: toDelete.length }
+              )
 
-            for (const ddoc of todel) {
-              ctx.contextData.removedMap.set(ddoc._id, ddoc)
+              for (const ddoc of todel) {
+                ctx.contextData.removedMap.set(ddoc._id, ddoc)
+              }
             }
           }
         }
@@ -128,7 +138,8 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
         ctx.error('Unsupported transaction', tx)
         continue
       }
-      const domain = this.context.hierarchy.getDomain(txCUD.objectClass)
+      const domain = this.context.hierarchy.findDomain(txCUD.objectClass)
+      if (domain === undefined) continue
       domains.add(domain)
       const adapterName = this.adapterManager.getAdapterName(domain)
 

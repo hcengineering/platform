@@ -564,6 +564,11 @@ export interface Sequence extends Doc {
 
 /**
  * @public
+ */
+export type BlobMetadata = Record<string, any>
+
+/**
+ * @public
  *
  * A blob document to manage blob attached documents.
  *
@@ -621,6 +626,18 @@ export interface ConfigurationElement extends Class<Doc> {
   // Group for grouping.
   group: IntlString
 }
+
+export interface BlobType {
+  file: Ref<Blob>
+
+  type: string
+
+  name: string
+
+  metadata?: BlobMetadata
+}
+
+export type Blobs = Record<string, BlobType>
 
 /**
  * @public

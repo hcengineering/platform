@@ -19,6 +19,17 @@
     "TagRelations": "Vztahy štítků",
     "DeleteTagConfirm": "Opravdu chcete smazat tento štítek? Všechny související vlastnosti budou smazány",
     "DeleteMasterTag": "Smazat typ",
-    "DeleteMasterTagConfirm": "Opravdu chcete smazat tento typ? Všechny objekty související s tímto typem budou smazány"
+    "DeleteMasterTagConfirm": "Opravdu chcete smazat tento typ? Všechny objekty související s tímto typem budou smazány",
+    "UnsetParent": "Odebrat rodiče",
+    "SetParent": "Nastavit rodiče",
+    "CreateChild": "Vytvořit dítě",
+    "Children": "Děti",
+    "Views": "Zobrazení",
+    "CreateView": "Vytvořit zobrazení",
+    "EditView": "Upravit zobrazení",
+    "SelectViewType": "Vybrat typ zobrazení",
+    "Document": "Dokument",
+    "ChangeType": "Změnit typ",
+    "ChangeTypeWarning": "Varování: Změna typu karty odstraní všechna data pro jakýkoliv atribut, který v cílovém typu neexistuje. Předchozí data atributu mohou být obnoveny změnou karty zpět na předchozí typ. Obsah karty nebude ovlivněn."
   }
 }

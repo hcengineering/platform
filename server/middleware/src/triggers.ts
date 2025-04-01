@@ -292,9 +292,14 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
         continue
       }
       result.push(...(await this.deleteClassCollections(ctx, object._class, rtx.objectId, findAll)))
-      const mixins = this.getMixins(object._class, object)
-      for (const mixin of mixins) {
-        result.push(...(await this.deleteClassCollections(ctx, mixin, rtx.objectId, findAll, object._class)))
+      const _class = this.context.hierarchy.findClass(object._class)
+      if (_class !== undefined) {
+        const mixins = this.getMixins(object._class, object)
+        for (const mixin of mixins) {
+          result.push(...(await this.deleteClassCollections(ctx, mixin, rtx.objectId, findAll, object._class)))
+        }
+
+        result.push(...(await this.deleteRelatedDocuments(ctx, object, findAll)))
       }
 
       result.push(...(await this.deleteRelatedDocuments(ctx, object, findAll)))

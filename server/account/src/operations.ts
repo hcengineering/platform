@@ -94,6 +94,10 @@ import {
 } from './utils'
 
 import MD5 from 'crypto-js/md5'
+
+const workspaceLimitPerUser =
+  process.env.WORKSPACE_LIMIT_PER_USER != null ? parseInt(process.env.WORKSPACE_LIMIT_PER_USER) : 10
+
 function buildGravatarId (email: string): string {
   return MD5(email.trim().toLowerCase()).toString()
 }
@@ -175,9 +179,9 @@ async function getAccountInfo (
   return toAccountInfo(account)
 }
 
-async function sendOtpEmail (branding: Branding | null, otp: string, email: string): Promise<void> {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+async function sendOtpEmail (ctx: MeasureContext, branding: Branding | null, otp: string, email: string): Promise<void> {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     console.info('Please provide email service url to enable email otp.')
     return
   }
@@ -190,7 +194,7 @@ async function sendOtpEmail (branding: Branding | null, otp: string, email: stri
   const subject = await translate(accountPlugin.string.OtpSubject, { code: otp, app }, lang)
 
   const to = email
-  await fetch(concatLink(sesURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -202,6 +206,12 @@ async function sendOtpEmail (branding: Branding | null, otp: string, email: stri
       to
     })
   })
+  if (!response.ok) {
+    ctx.error('Failed to send OTP email', {
+      email,
+      error: response.statusText
+    })
+  }
 }
 
 export async function getAccountInfoByToken (
@@ -314,7 +324,7 @@ export async function sendOtp (
   const expires = now + timeToLive
   const otp = await getNewOtp(db)
 
-  await sendOtpEmail(branding, otp, email)
+  await sendOtpEmail(ctx, branding, otp, email)
   await db.otp.insertOne({ account: account._id, otp, expires, createdOn: now })
 
   return { sent: true, retryOn: now + retryDelay * 1000 }
@@ -645,8 +655,8 @@ export async function confirm (
 }
 
 async function sendConfirmation (branding: Branding | null, account: Account): Promise<void> {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     console.info('Please provide email service url to enable email confirmations.')
     return
   }
@@ -671,9 +681,9 @@ async function sendConfirmation (branding: Branding | null, account: Account): P
   const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link }, lang)
   const subject = await translate(accountPlugin.string.ConfirmationSubject, { name }, lang)
 
-  if (sesURL !== undefined && sesURL !== '') {
+  if (mailURL !== undefined && mailURL !== '') {
     const to = account.email
-    await fetch(concatLink(sesURL, '/send'), {
+    await fetch(concatLink(mailURL, '/send'), {
       method: 'post',
       headers: {
         'Content-Type': 'application/json'
@@ -705,7 +715,7 @@ export async function signUpJoin (
   console.log(`signup join:${email} ${first} ${last}`)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(ctx, invite, email)
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
   await createAcc(
     ctx,
     db,
@@ -714,7 +724,7 @@ export async function signUpJoin (
     password,
     first,
     last,
-    invite?.emailMask === email || invite?.personId !== undefined || sesURL === undefined || sesURL === ''
+    invite?.emailMask === email || invite?.personId !== undefined || mailURL === undefined || mailURL === ''
   )
   const ws = await assignAccountToWs(
     ctx,
@@ -781,9 +791,9 @@ export async function createAcc (
   if (newAccount === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, { account: email }))
   }
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
   if (!confirmed && shouldConfirm) {
-    if (sesURL !== undefined && sesURL !== '') {
+    if (mailURL !== undefined && mailURL !== '') {
       await sendConfirmation(branding, newAccount)
     } else {
       ctx.info('Please provide email service url to enable email confirmations.')
@@ -807,7 +817,7 @@ export async function createAccount (
   last: string
 ): Promise<LoginInfo> {
   const email = cleanEmail(_email)
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
   const account = await createAcc(
     ctx,
     db,
@@ -816,7 +826,7 @@ export async function createAccount (
     password,
     first,
     last,
-    sesURL === undefined || sesURL === ''
+    mailURL === undefined || mailURL === ''
   )
 
   const result = {
@@ -1566,6 +1576,16 @@ export async function createUserWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
   }
 
+  // Get a list of created workspaces
+  const created = (await db.workspace.find({ createdBy: email })).length
+
+  if (created >= (userAccount.workspaceLimit ?? workspaceLimitPerUser)) {
+    ctx.warn('created-by-limit', { email, workspace: workspaceName, limit: userAccount.workspaceLimit })
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceLimitReached, { workspace: workspaceName })
+    )
+  }
+
   if (userAccount.lastWorkspace !== undefined && userAccount.admin === false) {
     if (Date.now() - userAccount.lastWorkspace < 60 * 1000) {
       throw new PlatformError(
@@ -2261,8 +2281,8 @@ export async function requestPassword (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     throw new Error('Please provide email service url')
   }
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
@@ -2285,7 +2305,7 @@ export async function requestPassword (
   const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
 
   const to = account.email
-  await fetch(concatLink(sesURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
@@ -2297,7 +2317,15 @@ export async function requestPassword (
       to
     })
   })
-  ctx.info('recovery email sent', { email, accountEmail: account.email })
+  if (response.ok) {
+    ctx.info('recovery email sent', { email, accountEmail: account.email })
+  } else {
+    ctx.error('Failed to send reset password email', {
+      email,
+      accountEmail: account.email,
+      error: response.statusText
+    })
+  }
 }
 
 /**
@@ -2524,8 +2552,8 @@ export async function sendInvite (
   }
   await checkSendRateLimit(currentAccount, tokenData.workspace.name, db)
 
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     throw new Error('Please provide email service url')
   }
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
@@ -2536,7 +2564,7 @@ export async function sendInvite (
   const expHours = 48
   const exp = expHours * 60 * 60 * 1000
 
-  const inviteId = await getInviteLink(ctx, db, branding, token, exp, email, 1)
+  const inviteId = await getInviteLink(ctx, db, branding, token, exp, email, 1, role, personId)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
   const ws = sanitizeEmail(workspace.workspaceName ?? workspace.workspaceUrl ?? workspace.workspace)
@@ -2547,7 +2575,7 @@ export async function sendInvite (
   const subject = await translate(accountPlugin.string.InviteSubject, { ws }, lang)
 
   const to = email
-  await fetch(concatLink(sesURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
@@ -2559,7 +2587,16 @@ export async function sendInvite (
       to
     })
   })
-  ctx.info('Invite sent', { email, workspace, link })
+  if (response.ok) {
+    ctx.info('Invite sent', { email, workspace, link })
+  } else {
+    ctx.error('Failed to send invite email', {
+      email,
+      workspace,
+      link,
+      error: response.statusText
+    })
+  }
 }
 
 async function checkSendRateLimit (currentAccount: Account, workspace: string, db: AccountDB): Promise<void> {
@@ -2614,8 +2651,8 @@ export async function resendInvite (
 
   await checkSendRateLimit(currentAccount, workspace.name, db)
 
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  if (mailURL === undefined || mailURL === '') {
     throw new Error('Please provide email service url')
   }
   const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
@@ -2631,7 +2668,7 @@ export async function resendInvite (
   const subject = await translate(accountPlugin.string.ResendInviteSubject, { ws }, lang)
 
   const to = emailMask
-  await fetch(concatLink(sesURL, '/send'), {
+  const response = await fetch(concatLink(mailURL, '/send'), {
     method: 'post',
     headers: {
       'Content-Type': 'application/json'
@@ -2643,7 +2680,16 @@ export async function resendInvite (
       to
     })
   })
-  ctx.info('Invite resend and email sent', { email: emailMask, workspace: wsPromise.workspace, link })
+  if (response.ok) {
+    ctx.info('Invite resend and email sent', { email: emailMask, workspace: wsPromise.workspace, link })
+  } else {
+    ctx.error('Failed to send invite resend email', {
+      email: emailMask,
+      workspace: wsPromise.workspace,
+      link,
+      error: response.statusText
+    })
+  }
 }
 
 async function deactivatePersonAccount (

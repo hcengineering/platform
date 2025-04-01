@@ -85,6 +85,7 @@ services:
     environment:
       - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
+      - WORKSPACE_LIMIT_PER_USER=10000
       - STATS_URL=http://host.docker.internal:4900
       # - DB_URL=postgresql://postgres:example@postgres:5432
       - DB_URL=${MONGO_URL}
@@ -93,7 +94,7 @@ services:
       - REGION_INFO=|Mongo;pg|Postgres;cockroach|CockroachDB
       # - REGION_INFO=cockroach|CockroachDB
       - TRANSACTOR_URL=ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg,ws://host.docker.internal:3332;;cockroach,
-      - SES_URL=
+      - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
@@ -131,7 +132,7 @@ services:
       - SERVER_SECRET=secret
       - DB_URL=${MONGO_URL}
       - STATS_URL=http://host.docker.internal:4900
-      - SES_URL=
+      - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
@@ -157,7 +158,7 @@ services:
       - SERVER_SECRET=secret
       - DB_URL=postgresql://postgres:example@postgres:5432
       - STATS_URL=http://host.docker.internal:4900
-      - SES_URL=
+      - MAIL_URL=
       - REGION=pg
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
@@ -185,7 +186,7 @@ services:
       - SERVER_SECRET=secret
       - DB_URL=postgresql://root@host.docker.internal:26257/defaultdb?sslmode=disable
       - STATS_URL=http://host.docker.internal:4900
-      - SES_URL=
+      - MAIL_URL=
       - REGION=cockroach
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - RESERVED_DB_NAMES=telegram,gmail,github
@@ -282,7 +283,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
       # - APM_SERVER_URL=http://apm-server:8200
-      - SES_URL=''
+      - MAIL_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
@@ -318,7 +319,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
       # - APM_SERVER_URL=http://apm-server:8200
-      - SES_URL=''
+      - MAIL_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
@@ -352,7 +353,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
       # - APM_SERVER_URL=http://apm-server:8200
-      - SES_URL=''
+      - MAIL_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - LAST_NAME_FIRST=true
       - BRANDING_PATH=/var/cfg/branding.json
@@ -519,6 +520,24 @@ services:
 #      - ACCOUNTS_URL=http://host.docker.internal:3000
 #      - SERVICE_ID=telegram-bot-service
 #      - STATS_URL=http://host.docker.internal:4900
+  export:
+    image: hardcoreeng/export
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    links:
+      - mongodb
+      - minio
+      - stats
+    ports:
+      - 4009:4009
+    environment:
+      - PORT=4009
+      - SECRET=secret
+      - SERVICE_ID=export-service
+      - DB_URL=${MONGO_URL}
+      - STATS_URL=http://host.docker.internal:4900
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - ACCOUNTS_URL=http://host.docker.internal:3000
 volumes:
   db:
   dbpg:

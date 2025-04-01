@@ -22,10 +22,11 @@ import {
 import attachment, { attachmentId, DOMAIN_ATTACHMENT } from '.'
 
 export const attachmentOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, attachmentId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, attachmentId, [
       {
         state: 'fix-attachedTo',
+        mode: 'upgrade',
         func: async (client: MigrationClient): Promise<void> => {
           await client.update(
             DOMAIN_ATTACHMENT,

@@ -36,7 +36,7 @@
 
   $: selected = value !== undefined ? items.find((p) => p._id === value) : undefined
 
-  function change (id: Ref<Room>) {
+  function change (id: Ref<Room>): void {
     if (value !== id) {
       dispatch('change', id)
       value = id

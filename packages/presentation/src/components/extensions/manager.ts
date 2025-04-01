@@ -7,9 +7,9 @@ import {
   type Space,
   type TxOperations
 } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
+import { getResource, OK, type Status } from '@hcengineering/platform'
 import { onDestroy } from 'svelte'
-import { get, writable, type Writable } from 'svelte/store'
+import { derived, get, writable, type Writable } from 'svelte/store'
 import { type LiveQuery } from '../..'
 import presentation from '../../plugin'
 import { type DocCreatePhase, type DocCreateExtension } from '../../types'
@@ -20,6 +20,9 @@ export class DocCreateExtensionManager {
   _extensions: DocCreateExtension[] = []
   extensions: Writable<DocCreateExtension[]> = writable([])
   states = new Map<Ref<DocCreateExtension>, Writable<any>>()
+  errors = writable<Record<Ref<DocCreateExtension>, Status>>({})
+
+  status = derived(this.errors, (it) => Object.values(it).find((p) => p !== OK) ?? OK)
 
   static create (_class: Ref<Class<Doc>>): DocCreateExtensionManager {
     const mgr = new DocCreateExtensionManager(_class)
@@ -36,6 +39,12 @@ export class DocCreateExtensionManager {
       this.states.set(ref, state)
     }
     return state
+  }
+
+  setErrors (ref: Ref<DocCreateExtension>, error: Status): void {
+    const errors = get(this.errors)
+    errors[ref] = error
+    this.errors.set(errors)
   }
 
   private constructor (readonly _class: Ref<Class<Doc>>) {

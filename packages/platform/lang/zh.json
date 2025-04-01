@@ -19,6 +19,7 @@
     "AccountAlreadyConfirmed": "账户已确认",
     "WorkspaceAlreadyExists": "工作区已存在",
     "InvalidOtp": "无效的代码",
-    "InviteNotFound": "未找到 id 为 {email} 的邀请。"
+    "InviteNotFound": "未找到 id 为 {email} 的邀请。",
+    "WorkspaceLimitReached": "您已达到工作区限制。请联系我们..."
   }
 }

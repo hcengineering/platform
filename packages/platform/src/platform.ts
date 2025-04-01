@@ -147,6 +147,7 @@ export default plugin(platformId, {
     InternalServerError: '' as StatusCode,
     MaintenanceWarning: '' as StatusCode<{ time: number }>,
     AccountNotFound: '' as StatusCode<{ account: string }>,
+    AccountMismatch: '' as StatusCode<{ account?: string, requiredAccount?: string }>,
     AccountNotConfirmed: '' as StatusCode<{ account: string }>,
     WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
     WorkspaceArchived: '' as StatusCode<{ workspace: string }>,
@@ -156,6 +157,7 @@ export default plugin(platformId, {
     AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     WorkspaceRateLimit: '' as StatusCode<{ workspace: string }>,
+    WorkspaceLimitReached: '' as StatusCode<{ workspace: string }>,
     InvalidOtp: '' as StatusCode,
     InviteNotFound: '' as StatusCode<{ email: string }>
   },

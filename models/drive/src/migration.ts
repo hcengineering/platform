@@ -123,8 +123,8 @@ async function renameFields (client: MigrationClient): Promise<void> {
 }
 
 export const driveOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, driveId, [
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, driveId, [
       {
         state: 'file-versions',
         func: migrateFileVersions
@@ -136,7 +136,7 @@ export const driveOperation: MigrateOperation = {
     ])
   },
 
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, driveId, [])
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
+    await tryUpgrade(mode, state, client, driveId, [])
   }
 }

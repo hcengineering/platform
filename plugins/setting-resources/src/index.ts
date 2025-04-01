@@ -75,7 +75,9 @@ export {
   ClassSetting,
   filterDescendants,
   SpaceTypeGeneralSectionEditor,
-  ClassHierarchy
+  ClassHierarchy,
+  RelationSetting,
+  CreateRelation
 }
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {

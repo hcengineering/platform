@@ -19,6 +19,7 @@
     "AccountAlreadyConfirmed": "Аккаунт уже подтвержден",
     "WorkspaceAlreadyExists": "Рабочее пространство уже существует",
     "InvalidOtp": "Неверный код",
-    "InviteNotFound": "Приглашение с email:{email} не найдено."
+    "InviteNotFound": "Приглашение с email:{email} не найдено.",
+    "WorkspaceLimitReached": "Вы достигли лимита рабочих пространств. Свяжитесь с нами..."
   }
 }

@@ -114,6 +114,10 @@ export default mergeIds(settingId, setting, {
     DeleteSpaceTypeConfirm: '' as IntlString,
     WorkspaceName: '' as IntlString,
     Workspace: '' as IntlString,
-    WorkspaceNamePattern: '' as IntlString
+    WorkspaceNamePattern: '' as IntlString,
+    DisablePermissions: '' as IntlString,
+    EnablePermissions: '' as IntlString,
+    DisablePermissionsConfirmation: '' as IntlString,
+    EnablePermissionsConfirmation: '' as IntlString
   }
 })

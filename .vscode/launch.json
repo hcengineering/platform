@@ -147,7 +147,7 @@
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
         "STATS_URL": "http://host.docker.internal:4900",
-        "SES_URL": "",
+        "MAIL_URL": "",
         // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
         "MINIO_ACCESS_KEY": "minioadmin",
@@ -180,7 +180,7 @@
         "ACCOUNT_PORT": "3003",
         "FRONT_URL": "http://localhost:8083",
         "STATS_URL": "http://host.docker.internal:4901",
-        "SES_URL": "",
+        "MAIL_URL": "",
         // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
         "MINIO_ACCESS_KEY": "minioadmin",
@@ -228,7 +228,7 @@
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNTS_URL": "http://localhost:3000",
         "FRONT_URL": "http://localhost:8080",
-        "SES_URL": "",
+        "MAIL_URL": "",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
@@ -261,7 +261,7 @@
         "TRANSACTOR_URL": "ws://localhost:3332",
         "ACCOUNTS_URL": "http://localhost:3000",
         "FRONT_URL": "http://localhost:8080",
-        "SES_URL": "",
+        "MAIL_URL": "",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
@@ -708,6 +708,25 @@
       "cwd": "${workspaceRoot}/services/telegram-bot/pod-telegram-bot"
     },
     {
+      "name": "Debug datalake",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4030",
+        "SECRET": "secret",
+        "DB_URL": "",
+        "BUCKETS": "",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "STATS_URL": "http://huly.local:4900",
+        "STREAM_URL": "http://huly.local:1080/recording"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/datalake/pod-datalake"
+    },
+    {
       "type": "chrome",
       "name": "Attach to Browser",
       "request": "attach",
@@ -760,5 +779,24 @@
       "outputCapture": "std",
       "cwd": "${workspaceRoot}/dev/import-tool"
     },
+    {
+      "name": "Debug Export service",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4009",
+        "SECRET": "secret",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "MINIO_ENDPOINT": "localhost",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "TRANSACTOR_URL": "ws://localhost:3333",
+        "SERVICE_ID": "export-service"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/export/pod-export"
+    }
   ]
 }

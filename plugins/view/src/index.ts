@@ -150,7 +150,8 @@ const view = plugin(viewId, {
 
     // Edit document
     Open: '' as Ref<Action>,
-    OpenInNewTab: '' as Ref<Action>
+    OpenInNewTab: '' as Ref<Action>,
+    RemoveRelation: '' as Ref<Action>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
@@ -218,7 +219,9 @@ const view = plugin(viewId, {
     And: '' as IntlString,
     Title: '' as IntlString,
     DeleteObject: '' as IntlString,
-    DeleteObjectConfirm: '' as IntlString
+    DeleteObjectConfirm: '' as IntlString,
+    RemoveRelationConfirmation: '' as IntlString,
+    RemoveRelation: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

@@ -14,7 +14,7 @@
 //
 
 import love, { loveId } from '@hcengineering/love'
-import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
+import { mergeIds, type StatusCode, type IntlString, type Resource } from '@hcengineering/platform'
 import { type DocCreateFunction } from '@hcengineering/presentation/src/types'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type ViewActionAvailabilityFunction } from '@hcengineering/view'
@@ -35,6 +35,9 @@ export default mergeIds(loveId, love, {
     PanelControlBar: '' as AnyComponent,
     MeetingMinutesDocEditor: '' as AnyComponent,
     MeetingMinutesStatusPresenter: '' as AnyComponent
+  },
+  status: {
+    RoomRequired: '' as StatusCode
   },
   function: {
     CreateMeeting: '' as Resource<DocCreateFunction>,

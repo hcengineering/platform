@@ -29,6 +29,7 @@ import core, {
   Tx,
   TxCreateDoc,
   TxCUD,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -111,8 +112,16 @@ export async function OnPersonAccountCreate (txes: Tx[], control: TriggerControl
   return result
 }
 
-function getCalendar (calendars: Calendar[], person: Ref<PersonAccount>): Ref<Calendar> | undefined {
+function getCalendar (
+  calendars: Calendar[],
+  person: Ref<PersonAccount>,
+  targetCalendar: Ref<Calendar> | undefined
+): Ref<Calendar> | undefined {
   const filtered = calendars.filter((c) => (c.createdBy ?? c.modifiedBy) === person)
+  if (targetCalendar !== undefined) {
+    const target = filtered.find((c) => c._id === targetCalendar)
+    if (target !== undefined) return target._id
+  }
   const defaultExternal = filtered.find((c) => (c as ExternalCalendar).default)
   if (defaultExternal !== undefined) return defaultExternal._id
   return filtered[0]?._id
@@ -137,10 +146,34 @@ async function OnEvent (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
       result.push(...(await onEventUpdate(ctx as TxUpdateDoc<Event>, control)))
     } else if (ctx._class === core.class.TxRemoveDoc) {
       result.push(...(await onRemoveEvent(ctx as TxRemoveDoc<Event>, control)))
+    } else if (ctx._class === core.class.TxMixin) {
+      result.push(...(await onEventMixin(ctx as TxMixin<Event, Event>, control)))
     }
   }
 
   return result
+}
+
+async function onEventMixin (ctx: TxMixin<Event, Event>, control: TriggerControl): Promise<Tx[]> {
+  const ops = ctx.attributes
+  const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: ctx.objectId }, { limit: 1 }))[0]
+  if (event === undefined) return []
+  if (event.access !== 'owner') return []
+  const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
+  const res: Tx[] = []
+  for (const ev of events) {
+    if (ev._id === event._id) continue
+    const innerTx = control.txFactory.createTxMixin(ev._id, ev._class, ev.space, ctx.mixin, { ...ops })
+    const outerTx = control.txFactory.createTxCollectionCUD(
+      ev.attachedToClass,
+      ev.attachedTo,
+      ev.space,
+      ev.collection,
+      innerTx
+    )
+    res.push(outerTx)
+  }
+  return res
 }
 
 async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl): Promise<Tx[]> {
@@ -205,8 +238,9 @@ async function eventForNewParticipants (
     const acc = accounts.find((a) => a.person === part)
     if (acc === undefined) continue
     if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
-    const calendar = getCalendar(calendars, acc._id)
+    const calendar = getCalendar(calendars, acc._id, event.calendar)
     if (calendar === undefined) continue
+    if (calendar === event.calendar) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
@@ -279,8 +313,9 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
     const acc = accounts.find((a) => a.person === part)
     if (acc === undefined) continue
     if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
-    const calendar = getCalendar(calendars, acc._id)
+    const calendar = getCalendar(calendars, acc._id, event.calendar)
     if (calendar === undefined) continue
+    if (calendar === event.calendar) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,

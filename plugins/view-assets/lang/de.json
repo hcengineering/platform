@@ -127,6 +127,8 @@
     "Join": "Beitreten",
     "Copied": "Kopiert",
     "Title": "Titel",
-    "HideArchived": "Archivierte ausblenden"
+    "HideArchived": "Archivierte ausblenden",
+    "RemoveRelation": "Beziehung entfernen",  
+    "RemoveRelationConfirmation": "Möchten Sie die Beziehung entfernen?"  
   }
 }

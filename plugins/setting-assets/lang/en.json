@@ -1,7 +1,7 @@
 {
   "string": {
     "Setting": "Setting",
-    "Spaces": "Spaces", 
+    "Spaces": "Spaces",
     "Integrations": "Integrations",
     "Support": "Support",
     "Privacy": "Privacy",
@@ -132,6 +132,10 @@
     "BackupFiles": "Backup Files",
     "BackupNoBackup": "No backups are currently available.",
     "AddAttribute": "Add attribute",
-    "WorkspaceNamePattern": "Name must be 40 characters or less, not empty, and cannot contain special characters (<, >, /)"
+    "WorkspaceNamePattern": "Name must be 40 characters or less, not empty, and cannot contain special characters (<, >, /)",
+    "DisablePermissions": "Disable role-based access control",
+    "EnablePermissions": "Enable role-based access control",
+    "DisablePermissionsConfirmation": "Are you sure you want to disable role-based access control? All roles and permissions will be disabled.",
+    "EnablePermissionsConfirmation": "Are you sure you want to enable role-based access control? All roles and permissions will be enabled."
   }
 }

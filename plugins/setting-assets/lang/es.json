@@ -123,6 +123,10 @@
     "BackupFiles": "Archivos de copia de seguridad",
     "BackupNoBackup": "No hay copias de seguridad disponibles actualmente.",
     "AddAttribute": "Añadir atributo",
-    "WorkspaceNamePattern": "El nombre debe tener 40 caracteres o menos, no esté vacío y no puede contener caracteres especiales (<, >, /)"
+    "WorkspaceNamePattern": "El nombre debe tener 40 caracteres o menos, no esté vacío y no puede contener caracteres especiales (<, >, /)",
+    "DisablePermissions": "Desactivar el control de acceso basado en roles",
+    "EnablePermissions": "Activar el control de acceso basado en roles",
+    "DisablePermissionsConfirmation": "¿Está seguro de que desea desactivar el control de acceso basado en roles? Todos los roles y permisos serán desactivados.",
+    "EnablePermissionsConfirmation": "¿Está seguro de que desea activar el control de acceso basado en roles? Todos los roles y permisos serán activados."
   }
 }
