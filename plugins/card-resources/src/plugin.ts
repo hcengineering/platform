@@ -71,6 +71,7 @@ export default mergeIds(cardId, card, {
     CreateChild: '' as IntlString,
     Children: '' as IntlString,
     Document: '' as IntlString,
-    ChangeType: '' as IntlString
+    ChangeType: '' as IntlString,
+    ChangeTypeWarning: '' as IntlString
   }
 })

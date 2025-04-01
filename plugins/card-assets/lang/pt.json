@@ -29,6 +29,7 @@
     "EditView": "Editar visualização",
     "SelectViewType": "Selecionar tipo de visualização",
     "Document": "Documento",
-    "ChangeType": "Alterar tipo"
+    "ChangeType": "Alterar tipo",
+    "ChangeTypeWarning": "Aviso: Alterar o tipo de um cartão irá remover todos os dados para quaisquer atributos que não existem no tipo de destino. Dados anteriores do atributo podem ser restaurados alterando o cartão de volta para um tipo anterior. O conteúdo do cartão não será afetado."
   }
 }
