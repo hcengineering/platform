@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,48 +13,65 @@
 // limitations under the License.
 //
 
-import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, Room } from '@livekit/rtc-node'
-import * as openai from '@livekit/agents-plugin-openai'
-import { multimodal } from '@livekit/agents'
+import { AudioStream, RemoteParticipant, RemoteTrack, RemoteTrackPublication, Room } from '@livekit/rtc-node'
+import WebSocket from 'ws'
 
 import { Stt } from '../type'
 import config from '../config.js'
 
+interface Session {
+  expireAt: number
+}
+
+const prompt =
+  'Please transcribe the speech accurately and clearly. Ignore background noise, unintelligible sounds, and irrelevant words. Use the language spoken by the user without translating it. Preserve punctuation and sentence structure where possible.'
+
 export class STT implements Stt {
   private isInProgress = false
+  private language: string = 'en'
 
   private readonly trackBySid = new Map<string, RemoteTrack>()
+  private readonly streamBySid = new Map<string, AudioStream>()
   private readonly participantBySid = new Map<string, RemoteParticipant>()
 
-  private readonly connectionBySid = new Map<string, openai.realtime.RealtimeSession>()
+  private readonly connectionBySid = new Map<string, WebSocket>()
+  private readonly sessionBySid = new Map<string, any>()
 
   private transcriptionCount = 0
-
-  private readonly model = new openai.realtime.RealtimeModel({
-    modalities: ['text'],
-    instructions:
-      'You are an expert transcription assistant. Your task is to listen to audio content and transcribe it into text with high accuracy. Do not summarize or skip any content; transcribe everything exactly as spoken.',
-    model: config.OpenAiModel,
-    apiKey: config.OpenaiApiKey,
-    inputAudioTranscription: {
-      model: config.OpenAiTranscriptModel
-    },
-    ...(config.OpenaiBaseUrl === '' ? {} : { baseUrl: config.OpenaiBaseUrl })
-  })
 
   constructor (readonly room: Room) {}
 
   updateLanguage (language: string): void {
-    /* noop */
+    if (language === this.language) return
+    if (!config.OpenaiProvideLanguage) return
+    this.language = language
+
+    for (const [, connection] of this.connectionBySid) {
+      try {
+        connection.send(
+          JSON.stringify({
+            type: 'transcription_session.update',
+            session: {
+              input_audio_transcription: {
+                model: config.OpenAiTranscriptModel,
+                prompt,
+                language
+              }
+            }
+          })
+        )
+      } catch (e) {
+        console.error(e)
+      }
+    }
   }
 
-  async start (): Promise<void> {
+  start (): void {
     if (this.isInProgress) return
-    console.log('Starting transcription', this.room.name)
     this.isInProgress = true
 
     for (const sid of this.trackBySid.keys()) {
-      await this.subscribeOpenai(sid)
+      this.processTrack(sid)
     }
   }
 
@@ -63,23 +80,19 @@ export class STT implements Stt {
     console.log('Stopping transcription', this.room.name)
     this.isInProgress = false
     for (const sid of this.trackBySid.keys()) {
-      this.unsubscribeOpenai(sid)
+      this.stopWs(sid)
     }
   }
 
-  async subscribe (
-    track: RemoteTrack,
-    publication: RemoteTrackPublication,
-    participant: RemoteParticipant
-  ): Promise<void> {
+  subscribe (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant): void {
+    console.log('subscribe', track.kind, publication.sid, participant.identity)
     const sid = publication.sid
     if (sid === undefined) return
-
     if (this.trackBySid.has(sid)) return
     this.trackBySid.set(sid, track)
     this.participantBySid.set(sid, participant)
     if (this.isInProgress) {
-      await this.subscribeOpenai(sid)
+      this.processTrack(sid)
     }
   }
 
@@ -88,41 +101,144 @@ export class STT implements Stt {
     if (sid === undefined) return
     this.trackBySid.delete(sid)
     this.participantBySid.delete(sid)
-    this.unsubscribeOpenai(sid)
+    this.stopWs(sid)
   }
 
-  unsubscribeOpenai (sid: string): void {
-    const connection = this.connectionBySid.get(sid)
-    if (connection !== undefined) {
-      connection.removeAllListeners()
-      void connection.close()
+  stopWs (sid: string): void {
+    try {
+      const stream = this.streamBySid.get(sid)
+      if (stream !== undefined) {
+        stream.close()
+      }
+
+      const connection: WebSocket | undefined = this.connectionBySid.get(sid)
+
+      this.connectionBySid.delete(sid)
+      this.streamBySid.delete(sid)
+      this.sessionBySid.delete(sid)
+
+      if (connection !== undefined) {
+        connection.close()
+      }
+    } catch (e) {
+      console.error(e)
     }
-
-    this.connectionBySid.delete(sid)
   }
 
-  async subscribeOpenai (sid: string): Promise<void> {
+  processTrack (sid: string): void {
     const track = this.trackBySid.get(sid)
     if (track === undefined) return
     if (this.connectionBySid.has(sid)) return
-    const participant = this.participantBySid.get(sid)
-    if (participant === undefined) return
 
-    const agent = new multimodal.MultimodalAgent({
-      model: this.model
+    const stream = new AudioStream(track, 16000)
+    const ws = new WebSocket('wss://api.openai.com/v1/realtime?intent=transcription', {
+      headers: {
+        Authorization: 'Bearer ' + config.OpenaiApiKey,
+        'OpenAI-Beta': 'realtime=v1',
+        'User-Agent': 'LiveKit-Agents'
+      }
+    })
+    console.log('Starting openai transcription for track', this.room.name, sid)
+
+    this.streamBySid.set(sid, stream)
+    this.connectionBySid.set(sid, ws)
+
+    ws.on('open', () => {
+      ws.send(
+        JSON.stringify({
+          type: 'transcription_session.update',
+          session: {
+            input_audio_format: 'pcm16',
+            input_audio_transcription: {
+              model: config.OpenAiTranscriptModel,
+              prompt,
+              language: config.OpenaiProvideLanguage ? (this.language ?? 'en') : undefined
+            },
+            turn_detection: {
+              type: 'server_vad',
+              threshold: 0.7,
+              prefix_padding_ms: 1000,
+              silence_duration_ms: 2000
+            }
+          }
+        })
+      )
     })
 
-    const session = await agent
-      .start(this.room, participant)
-      .then((session) => session as openai.realtime.RealtimeSession)
+    ws.on('message', (message: any) => {
+      this.handleWsMessage(sid, message)
+    })
 
-    session.on('input_speech_transcription_completed', (res) => {
-      if (res.transcript !== '') {
-        void this.sendToPlatform(res.transcript, sid)
+    ws.on('close', () => {
+      console.log('Connection closing...')
+      const session = this.sessionBySid.get(sid)
+      this.stopWs(sid)
+      if (session !== undefined) {
+        console.log('Session expired, recreating connection...')
+        this.processTrack(sid)
       }
     })
 
-    this.connectionBySid.set(sid, session)
+    ws.on('error', (err: any) => {
+      console.error(err)
+    })
+
+    void this.streamToOpenai(sid, stream)
+  }
+
+  private handleWsMessage (sid: string, message: any): void {
+    try {
+      const data = JSON.parse(message.toString())
+      switch (data.type) {
+        case 'transcription_session.created':
+          this.onSessionCreated(sid, data)
+          break
+        case 'transcription_session.updated':
+          console.log('session updated', data)
+          break
+        case 'error':
+          console.error(data)
+          break
+        case 'conversation.item.input_audio_transcription.completed':
+          this.onTranscriptCompleted(sid, data)
+          break
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  private onTranscriptCompleted (sid: string, data: any): void {
+    if (data.transcript == null || data.transcript.trim() === '') return
+    void this.sendToPlatform(data.transcript, sid)
+  }
+
+  private onSessionCreated (sid: string, data: any): void {
+    const session: Session = {
+      expireAt: data.session.expires_at * 1000
+    }
+
+    console.log('Session created', data)
+    this.sessionBySid.set(sid, session)
+  }
+
+  async streamToOpenai (sid: string, stream: AudioStream): Promise<void> {
+    for await (const frame of stream) {
+      if (!this.isInProgress) continue
+      const ws = this.connectionBySid.get(sid)
+      if (ws === undefined) {
+        stream.close()
+        return
+      }
+      if (ws.readyState !== WebSocket.OPEN) continue
+      const buf = Buffer.from(frame.data.buffer)
+      ws.send(
+        JSON.stringify({
+          type: 'input_audio_buffer.append',
+          audio: buf.toString('base64')
+        })
+      )
+    }
   }
 
   async sendToPlatform (transcript: string, sid: string): Promise<void> {
@@ -141,6 +257,7 @@ export class STT implements Stt {
     try {
       await fetch(`${config.PlatformUrl}/love/transcript`, {
         method: 'POST',
+        keepalive: true,
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer ' + config.PlatformToken
@@ -156,7 +273,7 @@ export class STT implements Stt {
     this.trackBySid.clear()
     this.participantBySid.clear()
     for (const sid of this.connectionBySid.keys()) {
-      this.unsubscribeOpenai(sid)
+      this.stopWs(sid)
     }
   }
 }

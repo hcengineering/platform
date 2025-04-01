@@ -109,25 +109,29 @@ export class STT implements Stt {
   }
 
   stopDeepgram (sid: string): void {
-    const stream = this.streamBySid.get(sid)
-    if (stream !== undefined) {
-      stream.close()
-    }
+    try {
+      const stream = this.streamBySid.get(sid)
+      if (stream !== undefined) {
+        stream.close()
+      }
 
-    const dgConnection = this.dgConnectionBySid.get(sid)
-    if (dgConnection !== undefined) {
-      dgConnection.removeAllListeners()
-      dgConnection.disconnect()
-    }
+      const dgConnection = this.dgConnectionBySid.get(sid)
+      if (dgConnection !== undefined) {
+        dgConnection.removeAllListeners()
+        dgConnection.disconnect()
+      }
 
-    const interval = this.intervalBySid.get(sid)
-    if (interval !== undefined) {
-      clearInterval(interval)
-    }
+      const interval = this.intervalBySid.get(sid)
+      if (interval !== undefined) {
+        clearInterval(interval)
+      }
 
-    this.intervalBySid.delete(sid)
-    this.dgConnectionBySid.delete(sid)
-    this.streamBySid.delete(sid)
+      this.intervalBySid.delete(sid)
+      this.dgConnectionBySid.delete(sid)
+      this.streamBySid.delete(sid)
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   processTrack (sid: string): void {
@@ -191,8 +195,7 @@ export class STT implements Stt {
         return
       }
       if (dgConnection.getReadyState() !== SOCKET_STATES.open) continue
-      const buf = Buffer.from(frame.data.buffer)
-      dgConnection.send(buf)
+      dgConnection.send(frame.data.buffer)
     }
   }
 
