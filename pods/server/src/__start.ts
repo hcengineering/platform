@@ -135,6 +135,7 @@ getUsers = () => {
 const close = (): void => {
   console.trace('Exiting from server')
   console.log('Shutdown request accepted')
+  void queue.shutdown()
   void shutdown().then(() => {
     process.exit(0)
   })

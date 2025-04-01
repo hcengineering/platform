@@ -352,6 +352,11 @@ export interface SearchStringResult {
   total?: number
 }
 
+export interface FulltextListener {
+  onIndexing?: (doc: IndexedDoc) => Promise<void>
+  onClean?: (doc: Ref<Doc>[]) => Promise<void>
+}
+
 /**
  * @public
  */
