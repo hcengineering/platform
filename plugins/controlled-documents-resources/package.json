@@ -67,7 +67,7 @@
     "@hcengineering/controlled-documents": "^0.1.0",
     "@hcengineering/training": "^0.1.0",
     "@hcengineering/training-resources": "^0.1.0",
-    "@tiptap/core": "^2.11.3",
+    "@tiptap/core": "^2.11.7",
     "effector": "~22.8.7",
     "svelte": "^4.2.19",
     "slugify": "^1.6.6",

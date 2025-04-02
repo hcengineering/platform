@@ -56,8 +56,8 @@
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
-    "@tiptap/core": "^2.11.3",
-    "@tiptap/pm": "^2.11.3",
+    "@tiptap/core": "^2.11.7",
+    "@tiptap/pm": "^2.11.7",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.19"
   },
