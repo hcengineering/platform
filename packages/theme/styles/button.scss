@@ -1,22 +1,44 @@
 .hulyButton {
   display: inline-flex;
-  justify-content: center;
   align-items: center;
-  flex-shrink: 0;
-  gap: var(--spacing-1);
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  @include prevent-overflow;
+  height: var(--button-height);
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height);
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
   border: 1px solid transparent;
+  border-radius: var(--small-focus-BorderRadius);
+  transition: all var(--transition-duration) var(--transition-timing);
+
+  &.full {
+    @include full-width;
+  }
+
+  &.fit {
+    @include fit-width;
+  }
+
+  &.fixed {
+    @include fixed-width(var(--button-width));
+  }
 
   &:not(:disabled, .disabled, .loading) { cursor: pointer; }
   &.inheritFont { font: inherit; }
 
   .icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    @include flex-center;
     min-width: var(--spacing-2_5);
     min-height: var(--spacing-2_5);
   }
-  span { white-space: nowrap; }
+  span { @include ellipsis; }
 
   &:focus {
     outline: 2px solid var(--global-focus-BorderColor);
@@ -192,10 +214,8 @@
   cursor: pointer;
 
   &-label {
-    white-space: nowrap;
+    @include ellipsis;
     word-break: break-all;
-    text-overflow: ellipsis;
-    overflow: hidden;
     min-width: 0;
     font-weight: 500;
   }

@@ -101,9 +101,7 @@
 
       &-dragMenu,
       &-icon-wrapper {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        @include flex-center;
         flex-shrink: 0;
       }
       &-dragMenu {
@@ -149,10 +147,8 @@
         min-height: 0;
       }
       &-label {
-        overflow: hidden;
-        white-space: nowrap;
+        @include ellipsis;
         word-break: break-all;
-        text-overflow: ellipsis;
         text-align: left;
         flex-shrink: 1;
         min-width: 0;
@@ -287,5 +283,45 @@
     align-items: stretch;
 
     .hulyTableAttr-content__wrapper:empty { display: none; }
+  }
+}
+
+.hulyTable {
+  display: flex;
+  flex-direction: column;
+  @include full-width;
+  border-collapse: collapse;
+
+  .hulyTable-row {
+    display: flex;
+    align-items: center;
+    @include full-width;
+    min-height: var(--table-row-height);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-bottom: 1px solid var(--theme-divider-color);
+
+    &.header {
+      font-weight: var(--font-weight-medium);
+      background-color: var(--theme-table-header-color);
+    }
+  }
+
+  .hulyTable-cell {
+    display: flex;
+    align-items: center;
+    @include prevent-overflow;
+    padding: 0 var(--spacing-2);
+
+    &.fixed {
+      @include fixed-width(var(--cell-width));
+    }
+
+    &.fit {
+      @include fit-width;
+    }
+
+    &.full {
+      @include full-width;
+    }
   }
 }

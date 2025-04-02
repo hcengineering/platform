@@ -39,3 +39,40 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+@mixin full-width {
+  width: 100%;
+  min-width: 0;
+}
+
+@mixin fit-width {
+  width: fit-content;
+  min-width: 0;
+}
+
+@mixin fixed-width($width, $min: null, $max: null) {
+  width: $width;
+  @if $min {
+    min-width: $min;
+  }
+  @if $max {
+    max-width: $max;
+  }
+}
+
+@mixin min-width($width) {
+  min-width: $width;
+  width: auto;
+  flex-shrink: 1;
+}
+
+@mixin max-width($width) {
+  max-width: $width;
+  width: auto;
+}
+
+@mixin prevent-overflow {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}

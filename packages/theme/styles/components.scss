@@ -20,16 +20,16 @@
   flex-grow: 1;
   height: 100%;
   min-height: 0;
-  min-width: 0;
-  border: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
+  @include prevent-overflow;
+  border: 1px solid var(--theme-divider-color);
   border-radius: var(--small-focus-BorderRadius);
 
   &:not(.modal) {
-    background-color: var(--theme-panel-color); // var(--global-surface-02-BackgroundColor);
+    background-color: var(--theme-panel-color);
   }
   &.modal {
     overflow: hidden;
-    background-color: var(--theme-comp-header-color); // var(--global-surface-02-BackgroundColor);
+    background-color: var(--theme-comp-header-color);
   }
   &.beforeAside {
     border-right: none;
@@ -47,8 +47,7 @@
 .hulyComponent-content__header,
 .hulyComponent-content__navHeader {
   display: flex;
-  width: 100%;
-  min-width: 0;
+  @include full-width;
   min-height: 0;
 }
 .hulyComponent-content {
@@ -56,7 +55,7 @@
     flex-shrink: 0;
   }
   &:not(.withoutMaxWidth) {
-    max-width: 64rem;
+    @include max-width(64rem);
   }
   &.gap {
     gap: var(--spacing-4);
@@ -94,9 +93,7 @@
       border-bottom: 1px solid var(--theme-navpanel-divider);
     }
     &-menu {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      @include flex-center;
       flex-shrink: 0;
       padding: var(--spacing-2);
       width: var(--global-extra-large-Size);
@@ -120,9 +117,7 @@
 /* Avatar */
 .hulyAvatar-container {
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @include flex-center;
   min-width: 0;
   min-height: 0;
   flex-shrink: 0;
@@ -193,63 +188,63 @@
 
 /* Avatar sizes */
 .hulyAvatarSize-xx-small {
-  width: .75rem; // 12 - 10
+  width: .75rem;
   .small-font & { width: 10px; }
 
   .ava-text { font-size: .375rem; }
 }
 .hulyAvatarSize-inline {
-  width: .875rem; // 14 - 12
+  width: .875rem;
   .small-font & { width: 12px; }
 
   .ava-text { font-size: .525rem; }
 }
 .hulyAvatarSize-tiny {
-  width: 1.125rem; // 18 - 16
+  width: 1.125rem;
   .small-font & { width: 16px; }
 
   .ava-text { font-size: .625rem; }
 }
 .hulyAvatarSize-card {
-  width: 1.25rem; // 20 - 18
+  width: 1.25rem;
   .small-font & { width: 18px; }
 
   .ava-text { font-size: .75rem; }
 }
 .hulyAvatarSize-x-small {
-  width: 1.5rem; // 24 - 22
+  width: 1.5rem;
   .small-font & { width: 22px; }
 
   .ava-text { font-size: .875rem; }
 }
 .hulyAvatarSize-smaller {
-  width: 1.75rem; // 28 - 25
+  width: 1.75rem;
   .small-font & { width: 25px; }
 
   .ava-text { font-size: 1rem; }
 }
 .hulyAvatarSize-small {
-  width: 2rem; // 32 - 28
+  width: 2rem;
 
   .ava-text { font-size: 1.125rem; }
 }
 .hulyAvatarSize-medium {
-  width: 2.5rem; // 40 - 35
+  width: 2.5rem;
 
   .ava-text { font-size: 1.375rem; }
 }
 .hulyAvatarSize-large {
-  width: 4.5rem; // 72 - 63
+  width: 4.5rem;
 
   .ava-text { font-size: 2.75rem; }
 }
 .hulyAvatarSize-x-large {
-  width: 7.5rem; // 120 - 105
+  width: 7.5rem;
 
   .ava-text { font-size: 4.5rem; }
 }
 .hulyAvatarSize-2x-large {
-  width: 10rem; // 160 - 140
+  width: 10rem;
 
   .ava-text { font-size: 6rem; }
 }
@@ -393,7 +388,7 @@
     min-height: var(--spacing-6_5);
   }
   &:not(.hideSeparator) {
-    border-bottom: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
+    border-bottom: 1px solid var(--theme-divider-color);
   }
   &.topIndent { margin-top: 1px; }
   .hulyHeader-row {
@@ -439,7 +434,7 @@
     margin: 0 var(--spacing-2);
     width: 1px;
     height: var(--spacing-4);
-    background-color: var(--theme-divider-color); // var(--global-surface-02-BorderColor);
+    background-color: var(--theme-divider-color);
     
     &.short {
       margin: 0 var(--spacing-1);
@@ -517,8 +512,7 @@
 .hulyModal-container .hulyModal-footer {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  min-width: 0;
+  @include full-width;
   min-height: 0;
 }
 .hulyModal-container {
@@ -579,7 +573,7 @@
     flex-direction: row-reverse;
     flex-shrink: 0;
     gap: var(--spacing-1);
-    border-top: 1px solid var(--theme-divider-color); // var(--global-surface-01-BorderColor);
+    border-top: 1px solid var(--theme-divider-color);
   }
 
   &.type-aside {
@@ -595,35 +589,29 @@
     }
   }
   &.type-popup {
-    min-width: 45rem;
-    background-color: var(--theme-popup-color); // var(--global-surface-02-BackgroundColor);
-    border: 1px solid var(--theme-popup-divider); // var(--global-surface-02-BorderColor);
+    @include min-width(45rem);
+    background-color: var(--theme-popup-color);
+    border: 1px solid var(--theme-popup-divider);
     border-radius: var(--large-BorderRadius);
     box-shadow: var(--global-modal-ShadowX) var(--global-modal-ShadowY) var(--global-modal-ShadowBlur) var(--global-modal-ShadowSpread) var(--global-popover-ShadowColor);
 
     &.large {
-      min-width: unset;
-      width: 45rem;
+      @include fixed-width(45rem);
     }
     &.medium {
-      min-width: unset;
-      width: 37.5rem;
+      @include fixed-width(37.5rem);
     }
     &.small {
-      min-width: unset;
-      width: 30rem;
+      @include fixed-width(30rem);
     }
     &.x-small {
-      min-width: unset;
-      width: 25rem;
+      @include fixed-width(25rem);
     }
     &.menu {
-      min-width: unset;
-      width: 17.5rem;
+      @include fixed-width(17.5rem);
     }
     &.full {
-      min-width: unset;
-      width: max-content;
+      @include fit-width;
     }
 
     .hulyModal-footer {
@@ -649,8 +637,8 @@
     }
   }
   &.type-component {
-    background-color: var(--theme-comp-header-color); // var(--global-surface-02-BackgroundColor);
-    border: 1px solid var(--theme-navpanel-divider); // var(--global-surface-02-BorderColor);
+    background-color: var(--theme-comp-header-color);
+    border: 1px solid var(--theme-navpanel-divider);
     border-radius: var(--small-focus-BorderRadius);
   }
   textarea {
@@ -675,7 +663,7 @@
   &.second:not(.isOpen),
   &.border,
   &.default:not(.nested) {
-    border-bottom: 1px solid var(--theme-navpanel-divider); // var(--global-surface-01-BorderColor);
+    border-bottom: 1px solid var(--theme-navpanel-divider);
   }
   &.default.nested:not(:last-child) {
     border-bottom: 1px dashed var(--theme-navpanel-divider);
