@@ -159,7 +159,8 @@ export class STT implements Stt {
               threshold: 0.7,
               prefix_padding_ms: 1000,
               silence_duration_ms: 2000
-            }
+            },
+            include: ['item.input_audio_transcription.logprobs']
           }
         })
       )
@@ -210,7 +211,10 @@ export class STT implements Stt {
 
   private onTranscriptCompleted (sid: string, data: any): void {
     if (data.transcript == null || data.transcript.trim() === '') return
-    void this.sendToPlatform(data.transcript, sid)
+    const score = data.logprobs != null && Array.isArray(data.logprobs) ? getTranscriptProbability(data.logprobs.map((lp: any) => lp.logprob)) : undefined
+    const result = score !== undefined ? `${data.transcript} (${score.toFixed(2)})` : data.transcript
+
+    void this.sendToPlatform(result, sid)
   }
 
   private onSessionCreated (sid: string, data: any): void {
@@ -276,4 +280,9 @@ export class STT implements Stt {
       this.stopWs(sid)
     }
   }
+}
+
+function getTranscriptProbability (logprobs: number[]): number {
+  const sum = logprobs.reduce((acc, lp) => acc + lp, 0)
+  return Math.exp(sum)
 }

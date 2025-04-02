@@ -34,10 +34,9 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@deepgram/sdk": "^3.11.2",
+    "@deepgram/sdk": "^3.11.3",
     "@livekit/agents": "^0.7.1",
-    "@livekit/rtc-node": "^0.13.8",
-    "@livekit/agents-plugin-openai": "^0.9.0",
+    "@livekit/rtc-node": "^0.13.10",
     "dotenv": "^16.4.5",
     "ws": "^8.18.0"
   }
