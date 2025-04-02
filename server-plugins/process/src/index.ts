@@ -39,7 +39,11 @@ export default plugin(serverProcessId, {
     Random: '' as Resource<TransformFunc>,
     UpperCase: '' as Resource<TransformFunc>,
     LowerCase: '' as Resource<TransformFunc>,
-    Trim: '' as Resource<TransformFunc>
+    Trim: '' as Resource<TransformFunc>,
+    Add: '' as Resource<TransformFunc>,
+    Subtract: '' as Resource<TransformFunc>,
+    Offset: '' as Resource<TransformFunc>,
+    FirstWorkingDayAfter: '' as Resource<TransformFunc>
   },
   trigger: {
     OnExecutionCreate: '' as Resource<TriggerFunc>,

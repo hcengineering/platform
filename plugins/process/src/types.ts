@@ -19,6 +19,11 @@ export interface RelatedContext {
   attributes: AnyAttribute[]
 }
 
+export interface Func {
+  func: Ref<ProcessFunction>
+  props: Record<string, any>
+}
+
 interface BaseSelectedContext {
   type: 'attribute' | 'relation' | 'nested'
   // attribute key
@@ -28,7 +33,7 @@ interface BaseSelectedContext {
   sourceFunction?: Ref<ProcessFunction>
 
   // process one by one
-  functions?: Array<Ref<ProcessFunction>>
+  functions?: Func[]
 
   fallbackValue?: any
 }
