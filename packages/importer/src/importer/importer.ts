@@ -72,11 +72,12 @@ import view from '@hcengineering/view'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
 import { Logger } from './logger'
-
+import { UnifiedDoc } from '../types'
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
   spaces?: ImportSpace<ImportDoc>[]
   attachments?: ImportAttachment[]
+  unifiedDocs?: UnifiedDoc<Doc<Space>>[]
 }
 
 export interface ImportProjectType {

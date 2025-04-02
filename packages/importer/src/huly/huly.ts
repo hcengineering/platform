@@ -14,10 +14,17 @@
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Attachment } from '@hcengineering/attachment'
-import contact, { Employee, SocialIdentity, type Person } from '@hcengineering/contact'
-import {
+import card, { MasterTag } from '@hcengineering/card'
+import contact, { Employee, type Person, SocialIdentity } from '@hcengineering/contact'
+import documents, {
+  ControlledDocument,
+  DocumentCategory,
+  DocumentMeta,
+  DocumentState
+} from '@hcengineering/controlled-documents'
+import core, {
   AccountUuid,
-  buildSocialIdString,
+  Attribute,
   type Class,
   type Doc,
   generateId,
@@ -35,6 +42,7 @@ import sizeOf from 'image-size'
 import * as yaml from 'js-yaml'
 import { contentType } from 'mime-types'
 import * as path from 'path'
+import { IntlString } from '../../../platform/types'
 import { ImportWorkspaceBuilder } from '../importer/builder'
 import {
   type ImportAttachment,
@@ -44,22 +52,17 @@ import {
   type ImportDocument,
   ImportDrawing,
   type ImportIssue,
+  ImportOrgSpace,
   type ImportProject,
   type ImportProjectType,
   type ImportTeamspace,
   type ImportWorkspace,
-  WorkspaceImporter,
-  ImportOrgSpace
+  WorkspaceImporter
 } from '../importer/importer'
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
-import documents, {
-  DocumentState,
-  DocumentCategory,
-  ControlledDocument,
-  DocumentMeta
-} from '@hcengineering/controlled-documents'
+import { UnifiedDoc } from '../types'
 
 export interface HulyComment {
   author: string
@@ -335,6 +338,7 @@ interface AttachmentMetadata {
 export class HulyFormatImporter {
   private readonly importerEmailPlaceholder = 'newuser@huly.io'
   private readonly importerNamePlaceholder = 'New User'
+
   private readonly pathById = new Map<Ref<Doc>, string>()
   private readonly refMetaByPath = new Map<string, ReferenceMetadata>()
   private readonly fileMetaByPath = new Map<string, AttachmentMetadata>()
@@ -343,6 +347,7 @@ export class HulyFormatImporter {
   private personsByName = new Map<string, Ref<Person>>()
   private employeesByName = new Map<string, Ref<Employee>>()
   private accountsByEmail = new Map<string, AccountUuid>()
+
   private readonly personIdByEmail = new Map<string, PersonId>()
 
   constructor (
@@ -351,7 +356,8 @@ export class HulyFormatImporter {
     private readonly logger: Logger,
     private readonly importerSocialId?: PersonId,
     private readonly importerPerson?: Ref<Person>
-  ) {}
+  ) {
+  }
 
   private async initCaches (): Promise<void> {
     await this.cachePersonsByNames()
@@ -521,6 +527,23 @@ export class HulyFormatImporter {
             break
           }
 
+          case card.class.MasterTag: {
+            const masterTag = await this.processMasterTag(spaceConfig)
+            const { _id: masterTagId } = masterTag.props
+            if (masterTagId === undefined) {
+              throw new Error('Master tag ID is undefined')
+            }
+            builder.addMasterTag(spacePath, masterTag)
+
+            const attributesByLabel = await this.processMasterTagAttributes(spaceConfig, masterTagId)
+            builder.addMasterTagAttributes(spacePath, Array.from(attributesByLabel.values()))
+
+            if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
+              await this.processCardsRecursively(builder, spacePath, spacePath, masterTagId as Ref<MasterTag>, attributesByLabel)
+            }
+            break
+          }
+
           default: {
             throw new Error(`Unknown space class ${spaceConfig.class} in ${spaceName}`)
           }
@@ -532,6 +555,102 @@ export class HulyFormatImporter {
     }
 
     return builder.build()
+  }
+
+  private async processMasterTag (yamlData: Record<string, any>): Promise<UnifiedDoc<Doc<Space>>> {
+    const { class: _class, title } = yamlData
+    if (_class !== card.class.MasterTag) {
+      throw new Error('Invalid master tag data')
+    }
+
+    const masterTag: UnifiedDoc<MasterTag> = {
+      _class: card.class.MasterTag,
+      props: {
+        _id: generateId<MasterTag>(),
+        space: core.space.Model,
+        extends: card.class.Card,
+        label: 'embedded:embedded:' + title as IntlString, // todo: check if it's correct
+        kind: 0,
+        icon: card.icon.MasterTag
+      }
+    }
+
+    return masterTag
+  }
+
+  private async processMasterTagAttributes (yamlConfig: Record<string, any>, masterTagId: Ref<MasterTag>): Promise<Map<string, UnifiedDoc<Attribute<MasterTag>>>> {
+    const { properties } = yamlConfig
+
+    const attributesByLabel = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
+    for (const property of properties) {
+      const attr: UnifiedDoc<Attribute<MasterTag>> = {
+        _class: core.class.Attribute,
+        props: {
+          space: core.space.Model,
+          attributeOf: masterTagId,
+          name: generateId(core.class.Attribute),
+          label: 'embedded:embedded:' + property.label as IntlString, // todo: check if it's correct
+          isCustom: true,
+          type: {
+            _class: 'core:class:Type' + property.type
+          },
+          defaultValue: property.defaultValue ?? null
+        }
+      }
+      attributesByLabel.set(property.label, attr)
+    }
+    return attributesByLabel
+  }
+
+  private async processCardsRecursively ( // todo: process masterTag children recursively
+    builder: ImportWorkspaceBuilder,
+    tagPath: string,
+    currentPath: string,
+    masterTagId: Ref<MasterTag>,
+    attributesByLabel: Map<string, UnifiedDoc<Attribute<MasterTag>>>
+  ): Promise<void> {
+    const cardFiles = fs.readdirSync(currentPath).filter((f) => f.endsWith('.md'))
+
+    for (const cardFile of cardFiles) {
+      const cardPath = path.join(currentPath, cardFile)
+      const cardHeader = (await this.readYamlHeader(cardPath)) as Record<string, any>
+
+      if (cardHeader.class === undefined) { // means it's a card of class MasterTag
+        const card = await this.processCard(cardHeader, cardPath, masterTagId, attributesByLabel)
+        builder.addCard(tagPath, card)
+      } else {
+        // todo: check if it's a child master tag, or else throw error
+        throw new Error(`Unknown card class ${cardHeader.class} in ${cardFile}`)
+      }
+
+      if (fs.existsSync(cardPath) && fs.statSync(cardPath).isDirectory()) {
+        await this.processCardsRecursively(builder, tagPath, cardPath, masterTagId, attributesByLabel)
+      }
+    }
+  }
+
+  private async processCard (cardHeader: Record<string, any>, cardPath: string, masterTagId: Ref<MasterTag>, attributesByTitle: Map<string, UnifiedDoc<Attribute<MasterTag>>>): Promise<UnifiedDoc> {
+    const { _class, title, ...customProperties } = cardHeader
+
+    const props: Record<string, any> = {
+      _id: generateId(),
+      space: core.space.Workspace,
+      title
+    }
+
+    for (const [key, value] of Object.entries(customProperties)) {
+      const attributeName = attributesByTitle.get(key)?.props.name
+      if (attributeName === undefined) {
+        throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
+      }
+      props[attributeName] = value
+    }
+
+    return {
+      _class: masterTagId,
+      contentProvider: () => this.readMarkdownContent(cardPath),
+      props
+    }
   }
 
   private async processIssuesRecursively (

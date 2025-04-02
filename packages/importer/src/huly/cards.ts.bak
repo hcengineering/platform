@@ -1,0 +1,75 @@
+import { TxOperations } from '@hcengineering/core'
+import { readFileSync } from 'fs'
+import { parse as parseFrontmatter } from 'gray-matter'
+import { join } from 'path'
+import { parse as parseYaml } from 'yaml'
+import { type Logger } from '../importer/logger'
+import { ImportContext } from '../types'
+import { CardConverter, MasterTagConverter } from './converters'
+
+export class CardsImporter {
+  private readonly converters = new Map<string, any>()
+  private readonly context: ImportContext = {
+    vars: {},
+    defaults: new Map()
+  }
+
+  constructor (
+    private readonly client: TxOperations,
+    private readonly logger: Logger
+  ) {
+    // Register converters
+    this.converters.set('card:class:MasterTag', new MasterTagConverter())
+    this.converters.set('card:class:Card', new CardConverter())
+  }
+
+  async importFromDirectory (dir: string): Promise<void> {
+    this.logger.log('Starting cards import from directory: ' + dir)
+
+    // Read all yaml files for MasterTags
+    const files = await this.readDirectory(dir)
+
+    for (const file of files) {
+      if (file.endsWith('.yaml')) {
+        this.logger.log('Processing YAML file: ' + file)
+        const content = readFileSync(join(dir, file), 'utf-8')
+        const data = parseYaml(content)
+        const converter = this.converters.get(data.class)
+        if (converter !== undefined) {
+          const unifiedDoc = converter.convert(data, this.context)
+          this.logger.log('Converted to UnifiedDoc: ' + JSON.stringify(unifiedDoc, null, 2))
+        } else {
+          this.logger.log('No converter found for class: ' + data.class)
+        }
+      } else if (file.endsWith('.md')) {
+        this.logger.log('Processing Markdown file: ' + file)
+        const content = readFileSync(join(dir, file), 'utf-8')
+        const { data } = parseFrontmatter(content)
+        const converter = this.converters.get(data.class)
+        if (converter !== undefined) {
+          const unifiedDoc = converter.convert(data, this.context)
+          this.logger.log('Converted to UnifiedDoc: ' + JSON.stringify(unifiedDoc, null, 2))
+        } else {
+          this.logger.log('No converter found for class: ' + data.class)
+        }
+      }
+    }
+  }
+
+  private async readDirectory (dir: string): Promise<string[]> {
+    const entries = fs.readdirSync(dir, { withFileTypes: true })
+    const files: string[] = []
+
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name)
+      if (entry.isDirectory() === true) {
+        const subFiles = await this.readDirectory(fullPath)
+        files.push(...subFiles)
+      } else if (entry.isFile() === true && (entry.name.endsWith('.yaml') || entry.name.endsWith('.md'))) {
+        files.push(fullPath)
+      }
+    }
+
+    return files
+  }
+}

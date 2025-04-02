@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import card, { Card, MasterTag } from '@hcengineering/card'
 import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
-import { type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
+import { Attribute, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
@@ -28,6 +29,7 @@ import {
   type ImportTeamspace,
   type ImportWorkspace
 } from './importer'
+import { UnifiedDoc } from '../types'
 
 export interface ValidationError {
   path: string
@@ -55,6 +57,11 @@ export class ImportWorkspaceBuilder {
   private readonly qmsTemplates = new Map<Ref<ControlledDocument>, string>()
   private readonly qmsDocsBySpace = new Map<string, Map<string, ImportControlledDoc>>()
   private readonly qmsDocsParents = new Map<string, string>()
+
+  private readonly masterTags = new Map<string, UnifiedDoc<MasterTag>>()
+  private readonly masterTagAttributes = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
+  private readonly cards = new Map<string, UnifiedDoc<Card>>()
+  // private readonly cardParents = new Map<string, string>()
 
   private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
@@ -221,10 +228,28 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addMasterTag (path: string, masterTag: UnifiedDoc<MasterTag>): this {
+    this.validateAndAdd('masterTag', path, masterTag, (mt) => this.validateMasterTag(mt), this.masterTags, path)
+    return this
+  }
+
+  addMasterTagAttributes (path: string, attributes: UnifiedDoc<Attribute<MasterTag>>[]): this {
+    for (const attribute of attributes) {
+      this.validateAndAdd('masterTagAttribute', path, attribute, (a) => this.validateMasterTagAttribute(a), this.masterTags, path)
+    }
+    return this
+  }
+
+  addCard (path: string, card: UnifiedDoc<Card>): this {
+    this.validateAndAdd('card', path, card, (c) => this.validateCard(c), this.cards, path)
+    return this
+  }
+
   validate (): ValidationResult {
     // Perform cross-entity validation
     this.validateSpacesReferences()
     this.validateDocumentsReferences()
+    this.validateCardsReferences()
 
     return {
       isValid: this.errors.size === 0,
@@ -287,7 +312,13 @@ export class ImportWorkspaceBuilder {
       spaces: [
         ...Array.from(this.projects.values()),
         ...Array.from(this.teamspaces.values()),
-        ...Array.from(this.qmsSpaces.values())
+        ...Array.from(this.qmsSpaces.values()),
+        ...Array.from(this.cards.values())
+      ],
+      unifiedDocs: [
+        ...Array.from(this.masterTags.values()),
+        ...Array.from(this.masterTagAttributes.values()),
+        ...Array.from(this.cards.values())
       ],
       attachments: []
     }
@@ -570,6 +601,13 @@ export class ImportWorkspaceBuilder {
     }
   }
 
+  private validateCardsReferences (): void {
+    // TODO: Validate cards references (master tag, attributes? parent-child, field references?)
+    // for (const [cardPath] of this.cards) {
+    // Check parent document exists
+    // }
+  }
+
   private addError (path: string, error: string): void {
     this.errors.set(path, { path, error })
   }
@@ -672,6 +710,36 @@ export class ImportWorkspaceBuilder {
           break
       }
     }
+    return errors
+  }
+
+  private validateMasterTag (masterTag: UnifiedDoc<MasterTag>): string[] {
+    const errors: string[] = []
+
+    if (masterTag._class !== card.class.MasterTag) {
+      errors.push('Invalid class: ' + masterTag._class)
+    }
+
+    // todo: validate master tag
+    return errors
+  }
+
+  private validateMasterTagAttribute (attribute: UnifiedDoc<Attribute<MasterTag>>): string[] {
+    const errors: string[] = []
+
+    // todo: validate master tag attribute
+    return errors
+  }
+
+  private validateCard (card: UnifiedDoc<Card>): string[] { // todo: pass validator separately (same level as converter)
+    const errors: string[] = []
+
+    // if (card._class !== card.class.Card) {
+    // validate class is a ref to master tag
+    //   errors.push('Invalid class: ' + card._class)
+    // }
+
+    // todo: validate card
     return errors
   }
 
