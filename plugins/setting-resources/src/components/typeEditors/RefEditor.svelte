@@ -46,7 +46,9 @@
         .reduce((a, b) => a.concat(b))
         .filter((p) => p !== card.class.Card)
     )
-    const excluded = new Set()
+    // exclude removed card types
+    const removedTypes = client.getModel().findAllSync(card.class.MasterTag, { removed: true })
+    const excluded = new Set(removedTypes.map((p) => p._id))
     for (const _class of exclude) {
       const desc = hierarchy.getDescendants(_class)
       for (const _id of desc) {

@@ -84,6 +84,7 @@
       const _class = hierarchy.getClass(_id)
       if (_class.label === undefined) continue
       if (_class.kind !== ClassifierKind.CLASS) continue
+      if ((_class as MasterTag).removed === true) continue
       added.add(_id)
       const descendants = hierarchy.getDescendants(_id)
       const toAdd: Class<Doc>[] = []
