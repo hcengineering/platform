@@ -30,7 +30,8 @@ export default mergeIds(viewId, view, {
     FilterTypePopup: '' as AnyComponent,
     ProxyPresenter: '' as AnyComponent,
     ArrayEditor: '' as AnyComponent,
-    SpaceTypeSelector: '' as AnyComponent
+    SpaceTypeSelector: '' as AnyComponent,
+    MasterDetailBrowser: '' as AnyComponent
   },
   string: {
     Contains: '' as IntlString,

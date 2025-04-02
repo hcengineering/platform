@@ -139,23 +139,6 @@ export function createSystemType (
     type
   )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: type,
-    descriptor: view.viewlet.List,
-    viewOptions: {
-      groupBy: ['_class', 'createdBy', 'modifiedBy'],
-      orderBy: [
-        ['modifiedOn', SortingOrder.Descending],
-        ['rank', SortingOrder.Ascending]
-      ],
-      other: []
-    },
-    configOptions: {
-      hiddenKeys: ['content', 'title']
-    },
-    config: listConfig
-  })
-
   builder.mixin(type, card.class.MasterTag, setting.mixin.Editable, {
     value: false
   })
@@ -172,6 +155,23 @@ export function createSystemType (
       { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
       'modifiedOn'
     ]
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: view.viewlet.List,
+    viewOptions: {
+      groupBy: ['_class', 'createdBy', 'modifiedBy'],
+      orderBy: [
+        ['modifiedOn', SortingOrder.Descending],
+        ['rank', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: listConfig
   })
 }
 
@@ -224,6 +224,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributeEditor, {
     inlineEditor: card.component.CardEditor
+  })
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: card.component.CardArrayEditor
   })
 
   createAction(
@@ -321,7 +325,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: card.component.CardRefPresenter
+    presenter: card.component.CardRefPresenter,
+    arrayPresenter: card.component.CardArrayEditor
   })
 
   builder.mixin(card.class.Card, core.class.Class, activity.mixin.ActivityDoc, {})

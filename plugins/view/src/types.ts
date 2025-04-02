@@ -433,6 +433,7 @@ export interface Viewlet extends Doc {
   config: (BuildModelKey | string)[]
   configOptions?: ViewletConfigOptions
   viewOptions?: ViewOptionsModel
+  masterDetailOptions?: MasterDetailModel
   variant?: string
   props?: Record<string, any>
   title?: string
@@ -820,6 +821,31 @@ export interface ViewOptionsModel {
   other: ViewOptionModel[]
   groupDepth?: number
   storageKey?: string
+}
+
+/**
+ * @public
+ */
+export interface MasterDetailModel {
+  views: MasterDetailConfig[]
+}
+
+export interface MasterDetailConfig {
+  id?: string
+  class: Ref<Class<Doc>>
+  view: Ref<ViewletDescriptor>
+  associationId?: Ref<Class<Doc>>
+  props?: Record<string, any>
+  createComponent?: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface MasterDetailOption {
+  class: Ref<Class<Doc>>
+  viewlet?: Ref<Viewlet>
+  associationId?: Ref<Class<Doc>>
 }
 
 /**

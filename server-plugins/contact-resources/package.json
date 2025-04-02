@@ -41,6 +41,8 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/card": "^0.6.0",
+    "@hcengineering/rank": "^0.6.4",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/login": "^0.6.12",
     "@hcengineering/workbench": "^0.6.16",

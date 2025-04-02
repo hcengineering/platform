@@ -31,6 +31,7 @@
   import card from '../plugin'
   import CardsPopup from './CardsPopup.svelte'
   import CardSelector from './CardSelector.svelte'
+  import CardPresenter from './CardPresenter.svelte'
 
   export let value: Ref<Card> | undefined
   export let readonly: boolean = false
@@ -54,17 +55,21 @@
   const _class = (attribute.type as RefTo<Card>).to
 </script>
 
-<CardSelector
-  {value}
-  {readonly}
-  {label}
-  {_class}
-  {focusIndex}
-  {kind}
-  {size}
-  {justify}
-  {width}
-  on:change={(e) => {
-    change(e.detail)
-  }}
-/>
+{#if readonly || attribute.readonly}
+  <CardPresenter {value} noUnderline />
+{:else}
+  <CardSelector
+    {value}
+    {readonly}
+    {label}
+    {_class}
+    {focusIndex}
+    {kind}
+    {size}
+    {justify}
+    {width}
+    on:change={(e) => {
+      change(e.detail)
+    }}
+  />
+{/if}

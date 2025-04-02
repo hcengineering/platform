@@ -18,10 +18,13 @@
   import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
   import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+  import { getClient } from '@hcengineering/presentation'
+  import { Ref } from '@hcengineering/core'
+
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import card from '../plugin'
 
-  export let value: Card | undefined
+  export let value: Card | Ref<Card> | undefined
   export let disabled: boolean = false
   export let onClick: (() => void) | undefined = undefined
   export let shouldShowAvatar: boolean = false
@@ -33,18 +36,33 @@
   export let kind: 'list' | undefined = undefined
   export let type: ObjectPresenterType = 'link'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+
+  const client = getClient()
+  let cardObj: Card | undefined = undefined
+
+  $: {
+    if (typeof value === 'string') {
+      void readCard(value)
+    } else {
+      cardObj = value
+    }
+  }
+
+  async function readCard (ref: Ref<Card>): Promise<void> {
+    cardObj = await client.findOne(card.class.Card, { _id: ref })
+  }
 </script>
 
-{#if inline && value}
-  <ObjectMention object={value} {disabled} {onClick} component={card.component.EditCard} />
-{:else if value}
+{#if inline && cardObj}
+  <ObjectMention object={cardObj} {disabled} {onClick} component={card.component.EditCard} />
+{:else if cardObj}
   {#if type === 'link'}
     <div class="flex-row-center">
       {#if showParent}
-        <ParentNamesPresenter {value} />
+        <ParentNamesPresenter value={cardObj} />
       {/if}
       <DocNavLink
-        object={value}
+        object={cardObj}
         {onClick}
         {disabled}
         {noUnderline}
@@ -59,16 +77,16 @@
               <Icon icon={icon ?? card.icon.Card} size={'small'} />
             </div>
           {/if}
-          <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
-            {value.title}
+          <span class="overflow-label" class:select-text={!noSelect} title={cardObj?.title}>
+            {cardObj.title}
             <slot name="details" />
           </span>
         </span>
       </DocNavLink>
     </div>
   {:else}
-    <span class="overflow-label" class:select-text={!noSelect} use:tooltip={{ label: getEmbeddedLabel(value.title) }}>
-      {value.title}
+    <span class="overflow-label" class:select-text={!noSelect} use:tooltip={{ label: getEmbeddedLabel(cardObj.title) }}>
+      {cardObj.title}
     </span>
   {/if}
 {/if}

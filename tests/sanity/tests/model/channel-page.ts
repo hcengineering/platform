@@ -101,9 +101,20 @@ export class ChannelPage extends CommonPage {
     await this.buttonSendMessage().click()
   }
 
-  async sendMention (message: string): Promise<void> {
-    await this.inputMessage().fill(`@${message}`)
-    await this.selectMention(message)
+  async sendMention (message: string, categoryName?: string): Promise<void> {
+    for (let i = 0; i < 3; i++) {
+      try {
+        await this.inputMessage().fill(`@${message}`)
+        await this.selectMention(message, categoryName)
+        break
+      } catch (error: any) {
+        if (i === 2) {
+          throw error
+        }
+        await this.page.waitForTimeout(1000)
+      }
+    }
+
     await this.buttonSendMessage().click()
   }
 

@@ -181,6 +181,7 @@
   min-height: 0;
 }
 .hulyStatusBarButton {
+  overflow: hidden;
   gap: var(--spacing-1);
   padding: var(--spacing-0_25) var(--spacing-0_25) var(--spacing-0_25) var(--spacing-1);
   height: 1.625rem;

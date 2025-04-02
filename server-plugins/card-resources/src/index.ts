@@ -113,6 +113,7 @@ async function OnAttributeRemove (ctx: TxRemoveDoc<AnyAttribute>[], control: Tri
 
 async function OnMasterTagRemove (ctx: TxUpdateDoc<MasterTag>[], control: TriggerControl): Promise<Tx[]> {
   const updateTx = ctx[0]
+  if (updateTx.space === core.space.DerivedTx) return []
   if (updateTx.operations.removed !== true) return []
   const res: Tx[] = []
   const desc = control.hierarchy.getDescendants(updateTx.objectId)
