@@ -26,6 +26,9 @@ interface Config {
   PlatformToken: string
   PlatformUrl: string
   SttProvider: SttProvider
+  VadSilenceDurationMs: number
+  VadPrefixPaddingMs: number
+  VadThreshold: number
 }
 
 const config: Config = (() => {
@@ -39,7 +42,10 @@ const config: Config = (() => {
     OpenaiProvideLanguage: (process.env.OPENAI_PROVIDE_LANGUAGE ?? 'true') === 'true',
     PlatformToken: process.env.PLATFORM_TOKEN,
     PlatformUrl: process.env.PLATFORM_URL,
-    SttProvider: (process.env.STT_PROVIDER as SttProvider) ?? 'deepgram'
+    SttProvider: (process.env.STT_PROVIDER as SttProvider) ?? 'deepgram',
+    VadSilenceDurationMs: parseInt(process.env.SILENCE_DURATION_MS ?? '1000'),
+    VadPrefixPaddingMs: parseInt(process.env.PREFIX_PADDING_MS ?? '1000'),
+    VadThreshold: parseFloat(process.env.VAD_THRESHOLD ?? '0.5')
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

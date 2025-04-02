@@ -156,9 +156,9 @@ export class STT implements Stt {
             },
             turn_detection: {
               type: 'server_vad',
-              threshold: 0.7,
-              prefix_padding_ms: 1000,
-              silence_duration_ms: 2000
+              threshold: config.VadThreshold,
+              prefix_padding_ms: config.VadPrefixPaddingMs,
+              silence_duration_ms: config.VadSilenceDurationMs
             },
             include: ['item.input_audio_transcription.logprobs']
           }
@@ -211,8 +211,12 @@ export class STT implements Stt {
 
   private onTranscriptCompleted (sid: string, data: any): void {
     if (data.transcript == null || data.transcript.trim() === '') return
-    const score = data.logprobs != null && Array.isArray(data.logprobs) ? getTranscriptProbability(data.logprobs.map((lp: any) => lp.logprob)) : undefined
-    const result = score !== undefined ? `${data.transcript} (${score.toFixed(2)})` : data.transcript
+    const logprobs: number[] =
+      data.logprobs != null && Array.isArray(data.logprobs) ? data.logprobs.map((lp: any) => lp.logprob) : []
+    const probability = getAvgProbability(logprobs)
+    const perplexity = getPerplexity(logprobs)
+
+    const result = probability !== undefined ? `${data.transcript} (${probability}, ${perplexity})` : data.transcript
 
     void this.sendToPlatform(result, sid)
   }
@@ -282,7 +286,12 @@ export class STT implements Stt {
   }
 }
 
-function getTranscriptProbability (logprobs: number[]): number {
-  const sum = logprobs.reduce((acc, lp) => acc + lp, 0)
-  return Math.exp(sum)
+function getAvgProbability (logprobs: number[]): string {
+  const avgLogProb = logprobs.reduce((acc, lp) => acc + lp, 0) / logprobs.length
+  return Math.exp(avgLogProb).toFixed(2)
+}
+
+function getPerplexity (logprobs: number[]): string {
+  const avgLogProb = logprobs.reduce((acc, lp) => acc + lp, 0) / logprobs.length
+  return Math.exp(-avgLogProb).toFixed(2)
 }
