@@ -6,8 +6,10 @@ import {
   type Contact,
   type SocialIdentity,
   type SocialIdentityRef,
+  type UserProfile,
   getFirstName,
-  getLastName
+  getLastName,
+  formatName
 } from '@hcengineering/contact'
 import {
   AccountRole,
@@ -17,9 +19,12 @@ import {
   type Domain,
   DOMAIN_MODEL_TX,
   DOMAIN_TX,
+  generateId,
+  type MarkupBlobRef,
   MeasureMetricsContext,
   type PersonId,
   type Ref,
+  SortingOrder,
   type Space,
   type TxCUD
 } from '@hcengineering/core'
@@ -34,9 +39,11 @@ import {
   tryMigrate,
   tryUpgrade
 } from '@hcengineering/model'
+import { makeRank } from '@hcengineering/rank'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import core, { getAccountsFromTxes, getSocialIdBySocialKey, getSocialKeyByOldEmail } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
+import card, { type Card, DOMAIN_CARD } from '@hcengineering/card'
 
 import contact, { contactId, DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
 
@@ -368,6 +375,65 @@ async function ensureGlobalPersonsForLocalAccounts (client: MigrationClient): Pr
   ctx.info('finished ensuring global persons for local accounts. Total persons ensured: ', { count })
 }
 
+async function createUserProfiles (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('contact createUserProfiles', {})
+  ctx.info('creating user profiles for persons...')
+
+  const persons = await client.traverse<Person>(DOMAIN_CONTACT, {
+    _class: contact.class.Person,
+    profile: { $exists: false }
+  })
+
+  const lastCard = (
+    await client.find<Card>(
+      DOMAIN_CARD,
+      { _class: card.class.Card },
+      { sort: { rank: SortingOrder.Descending }, limit: 1 }
+    )
+  )[0]
+  let prevRank = lastCard?.rank
+
+  try {
+    while (true) {
+      const docs = await persons.next(200)
+      if (docs === null || docs?.length === 0) {
+        break
+      }
+
+      for (const d of docs) {
+        if (d.profile != null) continue
+
+        const title = d.name != null && d.name !== '' ? formatName(d.name) : 'Profile'
+        const userProfile: UserProfile = {
+          _id: generateId(),
+          _class: contact.class.UserProfile,
+          space: contact.space.Contacts,
+
+          person: d._id,
+          title,
+          rank: makeRank(prevRank, undefined),
+          content: '' as MarkupBlobRef,
+          parentInfo: [],
+          blobs: {},
+
+          modifiedOn: Date.now(),
+          createdBy: core.account.ConfigUser,
+          createdOn: Date.now(),
+          modifiedBy: core.account.ConfigUser
+        }
+
+        prevRank = userProfile.rank
+
+        await client.create(DOMAIN_CARD, userProfile)
+        await client.update(DOMAIN_CONTACT, { _id: d._id }, { profile: userProfile._id })
+      }
+    }
+  } finally {
+    await persons.close()
+    ctx.info('finished creating user profiles for persons...')
+  }
+}
+
 export const contactOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
     await tryMigrate(mode, client, contactId, [
@@ -545,6 +611,11 @@ export const contactOperation: MigrateOperation = {
         state: 'fill-social-identities-ids-v2',
         mode: 'upgrade',
         func: fillSocialIdentitiesIds
+      },
+      {
+        state: 'create-user-profiles',
+        mode: 'upgrade',
+        func: createUserProfiles
       }
     ])
   },

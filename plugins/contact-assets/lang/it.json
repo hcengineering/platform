@@ -112,6 +112,7 @@
     "SocialId": "ID sociale",
     "SocialIds": "ID social",
     "Type": "Tipo",
-    "Confirmed": "Confermato"
+    "Confirmed": "Confermato",
+    "UserProfile": "Profilo utente"
   }
 }

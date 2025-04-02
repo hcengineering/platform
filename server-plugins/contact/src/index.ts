@@ -35,6 +35,7 @@ export default plugin(serverContactId, {
     OnContactDelete: '' as Resource<TriggerFunc>,
     OnChannelUpdate: '' as Resource<TriggerFunc>,
     OnEmployeeCreate: '' as Resource<TriggerFunc>,
+    OnPersonCreate: '' as Resource<TriggerFunc>,
     OnSpaceTypeMembers: '' as Resource<TriggerFunc>
   },
   function: {

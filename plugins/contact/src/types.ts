@@ -15,6 +15,7 @@
 
 import { Permission, Ref, Space } from '@hcengineering/core'
 import { ColorDefinition } from '@hcengineering/ui'
+import { type Card } from '@hcengineering/card'
 
 import { Person } from './index'
 
@@ -56,3 +57,5 @@ export interface PermissionsStore {
   ap: PersonsByPermission
   whitelist: Set<Ref<Space>>
 }
+
+export type UserProfile = Card & { person: Ref<Person> }

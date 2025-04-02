@@ -387,7 +387,7 @@ test.describe('Channel tests', () => {
     await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('general')
     const mentionName = `${newUser2.lastName} ${newUser2.firstName}`
-    await channelPage.sendMention(mentionName)
+    await channelPage.sendMention(mentionName, 'EMPLOYEES')
     await channelPage.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
 
     await channelPageSecond.clickChannel('general')
