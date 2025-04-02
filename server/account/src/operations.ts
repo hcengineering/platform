@@ -101,7 +101,8 @@ import {
   getWorkspaceRole,
   normalizeValue,
   isEmail,
-  generatePassword
+  generatePassword,
+  addSocialId
 } from './utils'
 
 // Move to config?
@@ -2107,6 +2108,21 @@ async function deleteMailbox (
   ctx.info('Mailbox deleted', { mailbox, account })
 }
 
+export async function addSocialIdToPerson (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { person: PersonUuid, type: SocialIdType, value: string, confirmed: boolean }
+): Promise<PersonId> {
+  const { person, type, value, confirmed } = params
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  verifyAllowedServices(['github'], extra)
+
+  return await addSocialId(db, person, type, value, confirmed)
+}
+
 async function releaseSocialId (
   db: AccountDB,
   personUuid: PersonUuid,
@@ -2169,6 +2185,7 @@ export type AccountMethods =
   | 'createMailbox'
   | 'getMailboxes'
   | 'deleteMailbox'
+  | 'addSocialIdToPerson'
 
 /**
  * @public
@@ -2228,7 +2245,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     listWorkspaces: wrap(listWorkspaces),
     performWorkspaceOperation: wrap(performWorkspaceOperation),
     updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
-    ensurePerson: wrap(ensurePerson)
+    ensurePerson: wrap(ensurePerson),
+    addSocialIdToPerson: wrap(addSocialIdToPerson)
   }
 }
 

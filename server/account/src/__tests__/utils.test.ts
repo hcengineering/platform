@@ -62,7 +62,8 @@ import {
   getSocialIdByKey,
   getWorkspaceInvite,
   loginOrSignUpWithProvider,
-  sendEmail
+  sendEmail,
+  addSocialId
 } from '../utils'
 // eslint-disable-next-line import/no-named-default
 import platform, { getMetadata, PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -1923,6 +1924,123 @@ describe('account utils', () => {
         html: expect.any(String),
         subject: expect.any(String),
         to: 'test@example.com'
+      })
+    })
+  })
+
+  describe('addSocialId', () => {
+    const mockDb = {
+      person: {
+        findOne: jest.fn()
+      },
+      socialId: {
+        findOne: jest.fn(),
+        insertOne: jest.fn()
+      }
+    } as unknown as AccountDB
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    test('should add new social id', async () => {
+      const value = 'test@example.com'
+      const type = SocialIdType.EMAIL
+      const person = 'test-person-uuid' as PersonUuid
+      const confirmed = false
+      const normalizedValue = 'test@example.com'
+      const newPersonId = 'new-person-id' as PersonId
+
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({})
+      ;(mockDb.socialId.insertOne as jest.Mock).mockResolvedValue(newPersonId)
+
+      const result = await addSocialId(mockDb, person, type, value, confirmed)
+
+      expect(mockDb.socialId.insertOne).toHaveBeenCalledWith({
+        type,
+        value: normalizedValue,
+        personUuid: person,
+        verifiedOn: undefined
+      })
+      expect(result).toBe(newPersonId)
+
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        type,
+        value: normalizedValue
+      })
+    })
+
+    test('should add confirmed social id with verification timestamp', async () => {
+      const value = 'test@example.com'
+      const type = SocialIdType.EMAIL
+      const person = 'test-person-uuid' as PersonUuid
+      const confirmed = true
+      const newPersonId = 'new-person-id' as PersonId
+
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({})
+      ;(mockDb.socialId.insertOne as jest.Mock).mockResolvedValue(newPersonId)
+
+      const result = await addSocialId(mockDb, person, type, value, confirmed)
+
+      expect(mockDb.socialId.insertOne).toHaveBeenCalledWith({
+        type,
+        value,
+        personUuid: person,
+        verifiedOn: expect.any(Number)
+      })
+      expect(result).toBe(newPersonId)
+    })
+
+    test('should throw error if person is not found', async () => {
+      const value = 'test@example.com'
+      const type = SocialIdType.EMAIL
+      const person = 'test-person-uuid' as PersonUuid
+
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(null)
+
+      await expect(addSocialId(mockDb, person, type, value, false)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person }))
+      )
+    })
+
+    test('should throw error if social id already exists', async () => {
+      const value = 'test@example.com'
+      const type = SocialIdType.EMAIL
+      const person = 'test-person-uuid' as PersonUuid
+      const existingSocialId = {
+        type,
+        value,
+        personUuid: 'other-person-uuid' as PersonUuid
+      }
+
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({})
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(existingSocialId)
+
+      await expect(addSocialId(mockDb, person, type, value, false)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+      )
+    })
+
+    test('should normalize value', async () => {
+      const value = '  TEST@EXAMPLE.COM  '
+      const normalizedValue = 'test@example.com'
+      const type = SocialIdType.EMAIL
+      const person = 'test-person-uuid' as PersonUuid
+      const newPersonId = 'new-person-id' as PersonId
+
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({})
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.insertOne as jest.Mock).mockResolvedValue(newPersonId)
+
+      const result = await addSocialId(mockDb, person, type, value, false)
+
+      expect(mockDb.socialId.insertOne).toHaveBeenCalledWith(expect.objectContaining({ value: normalizedValue }))
+      expect(result).toBe(newPersonId)
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        type,
+        value: normalizedValue
       })
     })
   })
