@@ -224,6 +224,10 @@ export function createModel (builder: Builder): void {
     inlineEditor: card.component.CardEditor
   })
 
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: card.component.CardArrayEditor
+  })
+
   createAction(
     builder,
     {
@@ -319,7 +323,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: card.component.CardRefPresenter
+    presenter: card.component.CardRefPresenter,
+    arrayPresenter: card.component.CardArrayEditor
   })
 
   builder.mixin(card.class.Card, core.class.Class, activity.mixin.ActivityDoc, {})
