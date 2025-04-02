@@ -4082,7 +4082,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/contact@file:projects/contact.tgz':
-    resolution: {integrity: sha512-79dZ9DTczWnB5eBmX1XH8d/mw8RjbGeCK+ryNpym3Bh3kykq7RwuTeTRvIlPTzk+vkCCXzb34A/zSdaslTyfnw==, tarball: file:projects/contact.tgz}
+    resolution: {integrity: sha512-mbni7SPWQvWylU2uoM88r+eOGhktRpU70B26/2smq4B8TMd3GnHKDnjzKmVE7Ck6kh43z/9B9f2t203UAR0Tpg==, tarball: file:projects/contact.tgz}
     version: 0.0.0
 
   '@rush-temp/controlled-documents-assets@file:projects/controlled-documents-assets.tgz':
@@ -4394,7 +4394,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-contact@file:projects/model-contact.tgz':
-    resolution: {integrity: sha512-xIr8DSFUT2GSZ/4VvDc1zrlab+WhjCCM2tN/TNBEGroVUL2QW0/3VqODWs0UorvniaVWVoQNAj13cPZpE7yEfw==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-R5QhJlkccqefuHjHaIg/POYsrtnWCYDPE6MwNTQ+1F/CxGYuCJ2kDfEZMlKZiLitiruAkKbvq8xBo/nl2/PNfw==, tarball: file:projects/model-contact.tgz}
     version: 0.0.0
 
   '@rush-temp/model-controlled-documents@file:projects/model-controlled-documents.tgz':
@@ -4802,7 +4802,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
-    resolution: {integrity: sha512-Pe9caEvUqRjYn0v2OLgkG7J/wHTWRLRpIArwZoh98HljoB0Z0lsh2T8smqrw9kAkw9JRZ1Xi14ZNVhKD887Lhw==, tarball: file:projects/pod-inbound-mail.tgz}
+    resolution: {integrity: sha512-AUKPM2FBTj0I2baAcnQVRI8vDJRdKEfPGwGLsxJSfvMyx2KhtZQi2if6h7mwS3lN+hFBHEqjRsj4VG9Ag8x7tg==, tarball: file:projects/pod-inbound-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -4890,7 +4890,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/process-resources@file:projects/process-resources.tgz':
-    resolution: {integrity: sha512-ZUhW+nxxAlPdXaL99Tdd5iKav4paqRvB1t4zOs5Pd4ez2K9EVIe0/OFbZAn1ic0MClrp5TxmLSPbu//YrFT3VQ==, tarball: file:projects/process-resources.tgz}
+    resolution: {integrity: sha512-A97floT9oEaheLWcX3NSIqoX0b8ZpGmGJpvsGxZ4aMLP3tbVyVD9x8wvWywv8O5LlLHe6qVMI9U75OB4EOC2+g==, tarball: file:projects/process-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/process@file:projects/process.tgz':
@@ -5070,7 +5070,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-contact-resources@file:projects/server-contact-resources.tgz':
-    resolution: {integrity: sha512-6R2S1cbwLtDKCesTPG9tJVy7mJB6EJogkf8TDAv9RFPRqxBkzdQh6OlgkLQsRMgpuneoJjwmSxXFHhX3btVnug==, tarball: file:projects/server-contact-resources.tgz}
+    resolution: {integrity: sha512-NrPPkOfgwC2q7Dw5MKB+lQwUAWpsI/F/C0n8KHOlPT6ZASxXkR0TPNxtul1oQl2EnxCN+Z6NmUAi+2rbHOOtXQ==, tarball: file:projects/server-contact-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/server-contact@file:projects/server-contact.tgz':
@@ -14902,7 +14902,7 @@ snapshots:
       '@hcengineering/communication-types': 0.1.155(typescript@5.3.3)
       '@hcengineering/core': 0.7.28
       snappyjs: 0.7.0
-      typescript: 5.7.3
+      typescript: 5.3.3
 
   '@hcengineering/communication-rest-client@0.1.155(typescript@5.7.3)':
     dependencies:
@@ -21971,9 +21971,9 @@ snapshots:
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/communication-rest-client': 0.1.147(typescript@5.7.3)
-      '@hcengineering/communication-sdk-types': 0.1.147(typescript@5.7.3)
-      '@hcengineering/communication-types': 0.1.147(typescript@5.7.3)
+      '@hcengineering/communication-rest-client': 0.1.155(typescript@5.7.3)
+      '@hcengineering/communication-sdk-types': 0.1.155(typescript@5.7.3)
+      '@hcengineering/communication-types': 0.1.155(typescript@5.7.3)
       '@tsconfig/node16': 1.0.4
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
