@@ -23,9 +23,14 @@ import {
   systemAccountUuid
 } from '@hcengineering/core'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
+import {
+  type RestClient as CommunicationClient,
+  createRestClient as getCommunicationClient
+} from '@hcengineering/communication-rest-client'
+import { type CreateMessageEvent, RequestEventType } from '@hcengineering/communication-sdk-types'
+import { MessageType } from '@hcengineering/communication-types'
 import { createRestTxOperations } from '@hcengineering/api-client'
 import { type Card } from '@hcengineering/card'
-import chunter from '@hcengineering/chunter'
 import contact, { PersonSpace } from '@hcengineering/contact'
 import mail from '@hcengineering/mail'
 import config from './config'
@@ -54,7 +59,8 @@ export async function createMessages (
   const accountClient = getAccountClient(config.accountsUrl, generateToken())
   const wsInfo = await accountClient.selectWorkspace(config.workspaceUrl)
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
-  const client = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
+  const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
+  const msgClient = getCommunicationClient(wsInfo.endpoint, wsInfo.workspace, wsInfo.token)
 
   const fromPerson = await ensureGlobalPerson(accountClient, mailId, from)
   if (fromPerson === undefined) {
@@ -63,7 +69,7 @@ export async function createMessages (
   }
   try {
     await ensureLocalPerson(
-      client,
+      txClient,
       mailId,
       fromPerson.uuid,
       fromPerson.socialId,
@@ -85,7 +91,7 @@ export async function createMessages (
     }
     try {
       await ensureLocalPerson(
-        client,
+        txClient,
         mailId,
         toPerson.uuid,
         toPerson.socialId,
@@ -108,9 +114,19 @@ export async function createMessages (
   const participants = [fromPerson.socialId, ...toPersons.map((p) => p.socialId)]
 
   try {
-    const spaces = await getPersonSpaces(client, mailId, fromPerson.uuid, from.address)
+    const spaces = await getPersonSpaces(txClient, mailId, fromPerson.uuid, from.address)
     if (spaces.length > 0) {
-      await saveMessageToSpaces(client, mailId, spaces, participants, modifiedBy, subject, content, inReplyTo)
+      await saveMessageToSpaces(
+        txClient,
+        msgClient,
+        mailId,
+        spaces,
+        participants,
+        modifiedBy,
+        subject,
+        content,
+        inReplyTo
+      )
     }
   } catch (err) {
     console.error(`[${mailId}] Failed to save message to personal spaces of ${fromPerson.uuid} (${from.address})`, err)
@@ -118,9 +134,19 @@ export async function createMessages (
 
   for (const to of toPersons) {
     try {
-      const spaces = await getPersonSpaces(client, mailId, to.uuid, to.address)
+      const spaces = await getPersonSpaces(txClient, mailId, to.uuid, to.address)
       if (spaces.length > 0) {
-        await saveMessageToSpaces(client, mailId, spaces, participants, modifiedBy, subject, content, inReplyTo)
+        await saveMessageToSpaces(
+          txClient,
+          msgClient,
+          mailId,
+          spaces,
+          participants,
+          modifiedBy,
+          subject,
+          content,
+          inReplyTo
+        )
       }
     } catch (err) {
       console.error(`[${mailId}] Failed to save message spaces of ${to.socialId} (${to.address})`, err)
@@ -145,6 +171,7 @@ async function getPersonSpaces (
 
 async function saveMessageToSpaces (
   client: TxOperations,
+  msgClient: CommunicationClient,
   mailId: string,
   spaces: PersonSpace[],
   participants: PersonId[],
@@ -193,17 +220,17 @@ async function saveMessageToSpaces (
         console.log(`[${mailId}] Created new thread ${threadId}`)
       }
 
-      await client.addCollection(
-        chunter.class.ChatMessage,
-        space._id,
-        threadId,
-        mail.class.MailThread,
-        'messages',
-        { message: content },
-        generateId(),
-        undefined,
-        modifiedBy
-      )
+      const event: CreateMessageEvent = {
+        type: RequestEventType.CreateMessage,
+        messageType: MessageType.Message,
+        card: threadId,
+        content,
+        creator: modifiedBy
+      }
+
+      await msgClient.event(event)
+
+      // TODO: process attachments
 
       await client.createDoc(
         mail.class.MailRoute,

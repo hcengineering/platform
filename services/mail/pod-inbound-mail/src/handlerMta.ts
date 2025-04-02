@@ -15,7 +15,8 @@
 import { createHash } from 'crypto'
 import { readEml, ReadedEmlJson } from 'eml-parse-js'
 import { Request, Response } from 'express'
-import { htmlToMarkup } from '@hcengineering/text-html'
+import TurndownService from 'turndown'
+import DOMPurify from 'isomorphic-dompurify'
 import { createMessages } from './message'
 import config from './config'
 
@@ -47,7 +48,6 @@ export async function handleMtaHook (req: Request, res: Response): Promise<void>
 
     const from = { address: mta.envelope.from.address, name: '' }
     if (config.ignoredAddresses.includes(from.address)) {
-      console.log(`Ignoring message from ${from.address}`)
       return
     }
     const fromHeader = mta.message.headers.find((header) => header[0] === 'From')?.[1]
@@ -112,10 +112,10 @@ async function getContent (mta: MtaMessage): Promise<string> {
   })
   if (email.html !== undefined) {
     try {
-      // Some mailers (e.g. Google) use divs instead of paragraphs
-      const html = email.html.replaceAll('<div', '<p').replaceAll('</div>', '</p>')
-      const markup = htmlToMarkup(html)
-      return JSON.stringify(markup)
+      const html = DOMPurify.sanitize(email.html)
+      const tds = new TurndownService()
+      const md = tds.turndown(html)
+      return md
     } catch (err) {
       console.warn('Failed to parse html content', err)
     }
