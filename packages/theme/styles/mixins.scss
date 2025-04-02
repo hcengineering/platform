@@ -11,3 +11,31 @@
   background: $color;
   opacity: $opacity;
 }
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'small' {
+    @media (max-width: 600px) {
+      @content;
+    }
+  } @else if $breakpoint == 'medium' {
+    @media (max-width: 900px) {
+      @content;
+    }
+  } @else if $breakpoint == 'large' {
+    @media (max-width: 1200px) {
+      @content;
+    }
+  }
+}
+
+@mixin ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
