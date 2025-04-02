@@ -31,12 +31,12 @@ table.proseTable {
   border-collapse: collapse;
   table-layout: fixed;
   position: relative;
-  width: 100%;
+  @include full-width;
   margin: 0;
 
   td,
   th {
-    min-width: 1rem;
+    @include min-width(1rem);
     height: 2rem;
     border: 1px solid var(--text-editor-table-border-color);
     padding: .25rem .5rem;
@@ -61,7 +61,6 @@ table.proseTable {
   td,
   th {
     // cell selection
-
     &.table-cell-selected {
       &::before {
         content: '';
@@ -93,7 +92,6 @@ table.proseTable {
     }
 
     // row and col handlers
-
     .table-col-handle,
     .table-row-handle {
       cursor: pointer;
@@ -186,7 +184,7 @@ table.proseTable {
 
     .table-row-handle {
       position: absolute;
-      width: var(--table-handle-size);
+      @include fixed-width(var(--table-handle-size));
       top: -1px;
       bottom: -1px;
       left: var(--table-handle-row-indent);
@@ -195,38 +193,12 @@ table.proseTable {
       border-bottom-right-radius: 0;
 
       button {
-        width: 100%;
+        @include full-width;
         padding: 4px 0;
-
-        svg {
-          transform: rotate(90deg);
-        }
-      }
-
-      &:hover {
-        &:not(.table-row-handle__selected) {}
-
-        button {
-          opacity: 1;
-        }
-      }
-
-      &__selected {
-        top: 0;
-
-        &::before {
-          bottom: 0;
-          left: 0;
-          right: 0;
-          border-right-width: 0;
-          border-top-right-radius: 0;
-          border-bottom-right-radius: 0;
-        }
       }
     }
 
     // row and col insert
-
     .table-col-insert,
     .table-row-insert {
       position: absolute;
@@ -567,4 +539,106 @@ pre.proseCodeBlock>pre.proseCode {
 
 .theme-light {
   @import './github-light.scss';
+}
+
+.prose {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  @include full-width;
+  overflow: hidden;
+
+  table {
+    @include full-width;
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  .tableWrapper {
+    position: relative;
+    overflow-x: auto;
+    @include full-width;
+  }
+
+  .selectedCell {
+    position: relative;
+    border-style: solid;
+    border-color: var(--table-selection-border-color);
+    border-width: 0;
+
+    &.top {
+      border-top-width: var(--table-selection-border-width);
+    }
+    &.bottom {
+      border-bottom-width: var(--table-selection-border-width);
+    }
+    &.left {
+      border-left-width: var(--table-selection-border-width);
+    }
+    &.right {
+      border-right-width: var(--table-selection-border-width);
+    }
+  }
+
+  .column-resize-handle {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: 0;
+    @include fixed-width(var(--table-handle-size));
+    cursor: col-resize;
+    z-index: 20;
+  }
+
+  .tableWrapper {
+    padding: 1rem 0;
+    overflow-x: auto;
+
+    table {
+      @include full-width;
+      border-collapse: collapse;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    td, th {
+      position: relative;
+      min-width: 1em;
+      border: 1px solid var(--theme-divider-color);
+      padding: 3px 5px;
+      vertical-align: top;
+      box-sizing: border-box;
+
+      > * { margin-bottom: 0; }
+    }
+
+    th {
+      font-weight: bold;
+      text-align: left;
+      background-color: var(--theme-table-header-color);
+    }
+
+    .selectedCell:after {
+      z-index: 2;
+      position: absolute;
+      content: "";
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--table-selection-background-color);
+      pointer-events: none;
+    }
+
+    .column-resize-handle {
+      position: absolute;
+      right: -2px;
+      top: 0;
+      bottom: 0;
+      @include fixed-width(var(--table-handle-size));
+      cursor: col-resize;
+      z-index: 20;
+    }
+  }
 }

@@ -18,7 +18,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  @include full-width;
   height: 100vh;
   background-color: var(--theme-overlay-color);
   pointer-events: all;
@@ -53,16 +53,14 @@
       overflow-x: auto;
       display: flex;
       align-items: center;
-      min-width: 0;
+      @include prevent-overflow;
 
       & > *:not(:last-child) { margin-right: .5rem; }
     }
     &__title {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+      @include ellipsis;
       user-select: none;
-      min-width: 0;
+      @include prevent-overflow;
       line-height: 150%;
       color: var(--theme-caption-color);
 
@@ -70,7 +68,7 @@
     }
     &__divider { color: var(--theme-dark-color); }
     &__error {
-      min-width: 0;
+      @include prevent-overflow;
       flex-grow: 1;
       position: absolute;
       display: flex;
@@ -89,7 +87,7 @@
     align-items: center;
     flex-shrink: 0;
     padding: .5rem 1.5rem 1.5rem;
-    min-width: 0;
+    @include prevent-overflow;
     min-height: 0;
   }
 
@@ -98,9 +96,8 @@
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
-    // margin: 1.5rem 1.5rem .5rem;
     height: fit-content;
-    min-width: 0;
+    @include prevent-overflow;
     min-height: 0;
   }
 
@@ -110,13 +107,13 @@
     align-items: center;
     flex-wrap: wrap;
     margin: .5rem 1.5rem 1.5rem;
-    min-width: 0;
+    @include prevent-overflow;
     font-size: .8125rem;
     color: var(--theme-caption-color);
 
     &::after {
       content: '';
-      width: 100%;
+      @include full-width;
       order: 0;
     }
     &__separator {
@@ -127,7 +124,7 @@
     }
     & > * { margin: .5rem .5rem 0 0; }
     .new-line {
-      min-width: 0;
+      @include prevent-overflow;
       order: 1;
     }
   }
@@ -141,7 +138,7 @@
     display: flex;
     flex-direction: column;
     height: fit-content;
-    min-width: 0;
+    @include prevent-overflow;
     min-height: 0;
   }
 
@@ -178,7 +175,7 @@
       flex-grow: 1;
       display: flex;
       margin-left: .375rem;
-      min-width: 0;
+      @include prevent-overflow;
       font-weight: 500;
       font-size: .75rem;
       color: var(--system-error-color);
@@ -193,7 +190,7 @@
     flex-shrink: 0;
     margin: 0 .5rem;
     padding: .25rem .5rem;
-    min-width: 0;
+    @include prevent-overflow;
     min-height: 2.5rem;
     border-radius: .25rem;
 
@@ -371,4 +368,62 @@
     border-top: 1px solid var(--theme-popup-divider);
     border-radius: 0 0 .5rem .5rem;
   }
+}
+
+.hulyDialog {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  @include full-width;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hulyDialog-header {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  @include prevent-overflow;
+}
+
+.hulyDialog-header__content {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  @include prevent-overflow;
+}
+
+.hulyDialog-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  @include prevent-overflow;
+  overflow: hidden;
+}
+
+.hulyDialog-content__container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  @include prevent-overflow;
+  overflow: hidden;
+}
+
+.hulyDialog-content__wrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  @include prevent-overflow;
+  overflow: hidden;
+}
+
+.hulyDialog-content__header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  @include full-width;
 }

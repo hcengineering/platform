@@ -1,3 +1,53 @@
+.floorGrid {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  @include full-width;
+  overflow: hidden;
+
+  &-container {
+    position: relative;
+    container-type: inline-size;
+    container-name: floorGridContainer;
+    @include prevent-overflow;
+  }
+
+  &-room {
+    .floorGrid-room__field {
+      .hulyAvatar-container.hulyAvatarSize-large {
+        img {
+          @include full-width;
+        }
+      }
+    }
+
+    &.floorGrid-room__empty {
+      .floorGrid-room__field {
+        .hulyAvatar-container {
+          @include fixed-width(90%);
+        }
+      }
+    }
+
+    &.floorGrid-room__occupied {
+      .floorGrid-room__field {
+        .hulyAvatar-container {
+          @include fixed-width(var(--huly-floor-roomWidth));
+        }
+      }
+    }
+  }
+
+  @container floorGridContainer (max-width: 800px) {
+    .floorGrid-room {
+      svg {
+        @include fixed-width(0.75rem);
+      }
+    }
+  }
+}
+
 .floorGrid-room,
 .floorGrid-configureRoom {
   position: relative;
