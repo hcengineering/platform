@@ -73,37 +73,35 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/api/v1/installation', async (req, res) => {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const payloadData: {
-    //   installationId: number
-    //   accountId: PersonId
-    //   token: string
-    // } = req.body
-    // try {
-    //   const decodedToken = decodeToken(payloadData.token)
-    //   ctx.info('/api/v1/installation', {
-    //     email: decodedToken.email,
-    //     workspaceName: decodedToken.workspace,
-    //     body: req.body
-    //   })
+    const payloadData: {
+      installationId: number
+      accountId: PersonId
+      token: string
+    } = req.body
+    try {
+      const decodedToken = decodeToken(payloadData.token)
+      ctx.info('/api/v1/installation', {
+        email: decodedToken.account,
+        workspaceName: decodedToken.workspace,
+        body: req.body
+      })
 
-    //   await ctx.with('map-installation', {}, (ctx) =>
-    //     worker.mapInstallation(ctx, decodedToken.workspace, payloadData.installationId, payloadData.accountId)
-    //   )
-    //   res.status(200)
-    //   res.json({})
-    // } catch (err: any) {
-    //   Analytics.handleError(err)
-    //   const tok = decodeToken(payloadData.token, false)
-    //   ctx.error('failed to map-installation', {
-    //     workspace: tok.workspace,
-    //     installationid: payloadData.installationId,
-    //     email: tok?.email
-    //   })
-    //   res.status(401)
-    //   res.json({ error: err.message })
-    // }
+      await ctx.with('map-installation', {}, (ctx) =>
+        worker.mapInstallation(ctx, decodedToken.workspace, payloadData.installationId, payloadData.accountId)
+      )
+      res.status(200)
+      res.json({})
+    } catch (err: any) {
+      Analytics.handleError(err)
+      const tok = decodeToken(payloadData.token, false)
+      ctx.error('failed to map-installation', {
+        workspace: tok.workspace,
+        installationid: payloadData.installationId,
+        email: tok?.account
+      })
+      res.status(401)
+      res.json({ error: err.message })
+    }
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -148,35 +146,33 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/api/v1/installation-remove', async (req, res) => {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // try {
-    //   const payloadData: {
-    //     installationId: number
-    //     token: string
-    //   } = req.body
+    try {
+      const payloadData: {
+        installationId: number
+        token: string
+      } = req.body
 
-    //   const decodedToken = decodeToken(payloadData.token)
-    //   ctx.info('/api/v1/installation-remove', {
-    //     email: decodedToken.email,
-    //     workspaceName: decodedToken.workspace,
-    //     body: req.body
-    //   })
+      const decodedToken = decodeToken(payloadData.token)
+      ctx.info('/api/v1/installation-remove', {
+        email: decodedToken.account,
+        workspaceName: decodedToken.workspace,
+        body: req.body
+      })
 
-    //   ctx.info('remove-installation', {
-    //     workspace: decodedToken.workspace,
-    //     installationId: payloadData.installationId
-    //   })
-    //   await ctx.with('remove-installation', {}, (ctx) =>
-    //     worker.removeInstallation(ctx, decodedToken.workspace, payloadData.installationId)
-    //   )
-    //   res.status(200)
-    //   res.json({})
-    // } catch (err: any) {
-    //   Analytics.handleError(err)
-    //   res.status(401)
-    //   res.json({ error: err.message })
-    // }
+      ctx.info('remove-installation', {
+        workspace: decodedToken.workspace,
+        installationId: payloadData.installationId
+      })
+      await ctx.with('remove-installation', {}, (ctx) =>
+        worker.removeInstallation(ctx, decodedToken.workspace, payloadData.installationId)
+      )
+      res.status(200)
+      res.json({})
+    } catch (err: any) {
+      Analytics.handleError(err)
+      res.status(401)
+      res.json({ error: err.message })
+    }
   })
 
   const server = app.listen(port, () => {
