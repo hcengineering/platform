@@ -234,7 +234,10 @@ const calendarPlugin = plugin(calendarId, {
     ScheduleTitlePlaceholder: '' as IntlString,
     ScheduleUnavailable: '' as IntlString,
     MeetingDuration: '' as IntlString,
-    MeetingInterval: '' as IntlString
+    MeetingInterval: '' as IntlString,
+    Day: '' as IntlString,
+    Week: '' as IntlString,
+    Month: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler

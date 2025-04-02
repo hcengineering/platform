@@ -72,10 +72,11 @@ export interface Method<T extends Doc> extends Doc {
   presenter?: AnyComponent
 }
 
-// add impl in server
 export interface ProcessFunction extends Doc {
   of: Ref<Class<Doc>>
-  category?: AttributeCategory
+  editor?: AnyComponent
+  category: AttributeCategory | undefined
+  allowMany?: boolean
   label: IntlString
 }
 
@@ -113,6 +114,10 @@ export default plugin(processId, {
     Random: '' as Ref<ProcessFunction>,
     UpperCase: '' as Ref<ProcessFunction>,
     LowerCase: '' as Ref<ProcessFunction>,
-    Trim: '' as Ref<ProcessFunction>
+    Trim: '' as Ref<ProcessFunction>,
+    Add: '' as Ref<ProcessFunction>,
+    Subtract: '' as Ref<ProcessFunction>,
+    Offset: '' as Ref<ProcessFunction>,
+    FirstWorkingDayAfter: '' as Ref<ProcessFunction>
   }
 })

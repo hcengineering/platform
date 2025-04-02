@@ -139,7 +139,10 @@ export const uis = plugin(uiId, {
     UseMaxWidth: '' as IntlString,
     Sidebar: '' as IntlString,
     FontSize: '' as IntlString,
-    Language: '' as IntlString
+    Language: '' as IntlString,
+    DaysWOValue: '' as IntlString,
+    WeeksWOValue: '' as IntlString,
+    MonthsWOValue: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,

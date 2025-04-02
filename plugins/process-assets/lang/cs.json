@@ -36,6 +36,10 @@
     "Random": "Náhodné",
     "AllProcesses": "Všechny procesy",
     "MyProcesses": "Moje procesy",
-    "ShowDone": "Zobrazit hotovo"
+    "ShowDone": "Zobrazit hotovo",
+    "Add": "Přidat",
+    "Subtract": "Odečíst",
+    "Offset": "Posunout",
+    "FirstWorkingDayAfter": "První pracovní den po"
   }
 }

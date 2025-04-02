@@ -139,9 +139,13 @@ export class TState extends TDoc implements State {
 @Model(process.class.ProcessFunction, core.class.Doc, DOMAIN_MODEL)
 export class TProcessFunction extends TDoc implements ProcessFunction {
   of!: Ref<Class<Doc<Space>>>
-  category?: AttributeCategory | undefined
+  category: AttributeCategory | undefined
   label!: IntlString
+  editor?: AnyComponent
+  allowMany?: boolean
 }
+
+export * from './migration'
 
 export function createModel (builder: Builder): void {
   builder.createModel(TProcess, TExecution, TProcessToDo, TMethod, TState, TProcessFunction)
@@ -218,6 +222,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       of: core.class.ArrOf,
+      category: undefined,
       label: process.string.FirstValue
     },
     process.function.FirstValue
@@ -228,6 +233,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       of: core.class.ArrOf,
+      category: undefined,
       label: process.string.LastValue
     },
     process.function.LastValue
@@ -238,9 +244,59 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       of: core.class.ArrOf,
+      category: undefined,
       label: process.string.Random
     },
     process.function.Random
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Add,
+      allowMany: true,
+      editor: process.component.NumberOffsetEditor
+    },
+    process.function.Add
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Subtract,
+      allowMany: true,
+      editor: process.component.NumberOffsetEditor
+    },
+    process.function.Subtract
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      category: 'attribute',
+      label: process.string.Offset,
+      editor: process.component.DateOffsetEditor
+    },
+    process.function.Offset
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      category: 'attribute',
+      label: process.string.FirstWorkingDayAfter
+    },
+    process.function.FirstWorkingDayAfter
   )
 
   builder.mixin(process.class.Process, core.class.Class, view.mixin.AttributePresenter, {

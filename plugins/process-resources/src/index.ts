@@ -31,6 +31,8 @@ import FunctionSelector from './components/attributeEditors/FunctionSelector.sve
 import Main from './components/Main.svelte'
 import RunProcessCardPopup from './components/RunProcessCardPopup.svelte'
 import { showDoneQuery } from './utils'
+import DateOffsetEditor from './components/contextEditors/DateOffsetEditor.svelte'
+import NumberOffsetEditor from './components/contextEditors/NumberOffsetEditor.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -51,7 +53,9 @@ export default async (): Promise<Resources> => ({
     RelatedContextSelector,
     FunctionSelector,
     Main,
-    RunProcessCardPopup
+    RunProcessCardPopup,
+    DateOffsetEditor,
+    NumberOffsetEditor
   },
   function: {
     ShowDoneQuery: showDoneQuery

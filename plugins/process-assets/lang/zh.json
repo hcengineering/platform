@@ -36,6 +36,10 @@
     "Random": "随机",
     "AllProcesses": "所有过程",
     "MyProcesses": "我的过程",
-    "ShowDone": "显示已完成"
+    "ShowDone": "显示已完成",
+    "Add": "添加",
+    "Subtract": "减去",
+    "Offset": "偏移",
+    "FirstWorkingDayAfter": "在之后的第一个工作日"
   }
 }
