@@ -14,7 +14,7 @@
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Attachment } from '@hcengineering/attachment'
-import card, { MasterTag } from '@hcengineering/card'
+import card, { Card, MasterTag } from '@hcengineering/card'
 import contact, { Employee, type Person, SocialIdentity } from '@hcengineering/contact'
 import documents, {
   ControlledDocument,
@@ -62,7 +62,7 @@ import {
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
-import { UnifiedDoc } from '../types'
+import { Props, UnifiedDoc } from '../types'
 
 export interface HulyComment {
   author: string
@@ -529,7 +529,7 @@ export class HulyFormatImporter {
 
           case card.class.MasterTag: {
             const masterTag = await this.processMasterTag(spaceConfig)
-            const { _id: masterTagId } = masterTag.props
+            const masterTagId = masterTag.props._id as Ref<MasterTag>
             if (masterTagId === undefined) {
               throw new Error('Master tag ID is undefined')
             }
@@ -539,7 +539,7 @@ export class HulyFormatImporter {
             builder.addMasterTagAttributes(spacePath, Array.from(attributesByLabel.values()))
 
             if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
-              await this.processCardsRecursively(builder, spacePath, spacePath, masterTagId as Ref<MasterTag>, attributesByLabel)
+              await this.processCardsRecursively(builder, spacePath, spacePath, masterTagId, attributesByLabel)
             }
             break
           }
@@ -557,7 +557,7 @@ export class HulyFormatImporter {
     return builder.build()
   }
 
-  private async processMasterTag (yamlData: Record<string, any>): Promise<UnifiedDoc<Doc<Space>>> {
+  private async processMasterTag (yamlData: Record<string, any>): Promise<UnifiedDoc<MasterTag>> {
     const { class: _class, title } = yamlData
     if (_class !== card.class.MasterTag) {
       throw new Error('Invalid master tag data')
@@ -629,7 +629,12 @@ export class HulyFormatImporter {
     }
   }
 
-  private async processCard (cardHeader: Record<string, any>, cardPath: string, masterTagId: Ref<MasterTag>, attributesByTitle: Map<string, UnifiedDoc<Attribute<MasterTag>>>): Promise<UnifiedDoc> {
+  private async processCard (
+    cardHeader: Record<string, any>,
+    cardPath: string,
+    masterTagId: Ref<MasterTag>,
+    attributesByTitle: Map<string, UnifiedDoc<Attribute<MasterTag>>>
+  ): Promise<UnifiedDoc<Card>> {
     const { _class, title, ...customProperties } = cardHeader
 
     const props: Record<string, any> = {
@@ -649,7 +654,7 @@ export class HulyFormatImporter {
     return {
       _class: masterTagId,
       contentProvider: () => this.readMarkdownContent(cardPath),
-      props
+      props: props as Props<Card> // todo: what is the correct props type?
     }
   }
 

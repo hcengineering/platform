@@ -16,4 +16,3 @@ export interface ImportContext {
 }
 
 export type contentProvider = () => Promise<string>
-export type converter = (data: Record<string, any>, contentProvider?: contentProvider) => UnifiedDoc<Doc>[]

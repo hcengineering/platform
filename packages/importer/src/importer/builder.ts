@@ -312,8 +312,7 @@ export class ImportWorkspaceBuilder {
       spaces: [
         ...Array.from(this.projects.values()),
         ...Array.from(this.teamspaces.values()),
-        ...Array.from(this.qmsSpaces.values()),
-        ...Array.from(this.cards.values())
+        ...Array.from(this.qmsSpaces.values())
       ],
       unifiedDocs: [
         ...Array.from(this.masterTags.values()),
