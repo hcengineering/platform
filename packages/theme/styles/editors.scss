@@ -2,7 +2,7 @@
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 0;
+  @include prevent-overflow;
 
   .large-style {
     font-weight: 400;
@@ -35,7 +35,7 @@
       position: absolute;
       top: 0;
       left: -0.75rem;
-      width: calc(100% + 1.5rem);
+      @include fixed-width(calc(100% + 1.5rem));
       height: 100%;
       border: 1px solid var(--theme-editbox-focus-border);
       border-radius: 0.25rem;
@@ -46,7 +46,7 @@
   .antiEditBoxInput {
     margin: 0;
     padding: 0;
-    min-width: 0;
+    @include prevent-overflow;
     color: var(--theme-caption-color);
     border: none;
     border-radius: 2px;
@@ -57,7 +57,7 @@
       display: none !important;
       pointer-events: none;
       height: 0;
-      width: 0;
+      @include fixed-width(0);
       margin: 0;
     }
     &.number::-webkit-outer-spin-button,

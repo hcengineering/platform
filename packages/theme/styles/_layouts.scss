@@ -15,7 +15,7 @@
 
 /* CLEAR */
 a {
-  min-width: 0;
+  @include prevent-overflow;
   font: inherit;
   font-weight: 500;
   text-decoration: none;
@@ -45,7 +45,7 @@ a {
   &.stealth {
     display: inline-flex;
     align-items: center;
-    width: 100%;
+    @include full-width;
   }
 }
 
@@ -64,7 +64,7 @@ button {
   user-select: none;
 }
 input {
-  min-width: 0;
+  @include prevent-overflow;
   font: inherit;
   background-color: transparent;
   outline: none;
@@ -137,13 +137,12 @@ p {
     &:visited { color: var(--theme-link-color); }  
   }
 }
-p:first-child { margin-block-start: 0; } // First and last padding
+p:first-child { margin-block-start: 0; }
 p:last-child { margin-block-end: 0; }
 
 .p-inline {
   overflow-wrap: break-word;
   word-wrap: break-word;
-  // hyphens: auto;
   line-height: 150%;
 
   &.contrast { color: var(--global-primary-TextColor); }
@@ -180,7 +179,7 @@ a.noBold {
 
 .float-left-box {
   box-sizing: border-box;
-  width: 100%;
+  @include full-width;
   float: left;
 }
 

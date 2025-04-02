@@ -30,8 +30,7 @@
 
   &:not(.noPadding) { padding: 1px; }
   &:not(.autoWidth) {
-    min-width: 16.5rem;
-    max-width: 16.5rem;
+    @include fixed-width(16.5rem);
   }
   .hulyPopup-row {
     display: flex;
@@ -40,7 +39,7 @@
     align-self: stretch;
     gap: var(--spacing-1);
     padding: var(--spacing-1_5);
-    min-width: 0;
+    @include prevent-overflow;
     min-height: 0;
     text-align: left;
     border-radius: var(--extra-small-BorderRadius);
@@ -54,7 +53,7 @@
 
     &__icon {
       flex-shrink: 0;
-      width: var(--global-min-Size);
+      @include fixed-width(var(--global-min-Size));
       height: var(--global-min-Size);
       color: var(--global-primary-TextColor);
     }
@@ -63,7 +62,7 @@
       flex-direction: column;
       flex-grow: 1;
       gap: var(--spacing-0_25);
-      min-width: 0;
+      @include prevent-overflow;
       min-height: 0;
     }
     &__label {
@@ -92,7 +91,7 @@
 
       .key {
         padding: var(--spacing-0_5);
-        min-width: var(--global-extra-small-Size);
+        @include min-width(var(--global-extra-small-Size));
         font-size: 0.75rem;
         color: var(--global-primary-TextColor);
         background-color: var(--theme-tooltip-key-bg);
@@ -122,7 +121,7 @@
   }
   .hulyPopup-divider {
     flex-shrink: 0;
-    width: 100%;
+    @include full-width;
     height: 1px;
     background-color: var(--theme-popup-divider);
   }
@@ -133,9 +132,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  width: fit-content;
-  min-width: 12.5rem;
-  max-width: 17rem;
+  @include fit-width;
+  @include min-width(12.5rem);
+  @include max-width(17rem);
   max-height: 22rem;
 
   &:focus {
@@ -165,8 +164,7 @@
     background: none;
     border-radius: 0;
     box-shadow: none;
-    width: 100%;
-    max-width: 100%;
+    @include full-width;
   }
   
   &.maxHeight { height: 22rem; }
@@ -175,11 +173,10 @@
     height: auto;
   }
   &.width-40 {
-    max-width: 40rem !important;
-    width: 40rem !important;
+    @include fixed-width(40rem, null, 40rem);
   }
   &.max-width-40 {
-    max-width: 40rem !important;
+    @include max-width(40rem);
   }
   .header {
     flex-shrink: 0;
@@ -193,7 +190,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      width: .75rem;
+      @include fixed-width(0.75rem);
       height: .75rem;
       border-radius: 50%;
   

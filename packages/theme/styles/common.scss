@@ -111,15 +111,14 @@
   
   &.vertical {
     flex-direction: column;
-    min-width: var(--app-panel-width);
-    width: var(--app-panel-width);
+    @include fixed-width(var(--app-panel-width));
     height: 100%;
     border-right: 1px solid var(--theme-navpanel-divider);
   }
   &.horizonatl {
     min-height: var(--app-panel-width);
     height: var(--app-panel-width);
-    width: 100%;
+    @include full-width;
     border-top: 1px solid var(--theme-navpanel-divider);
   }
   &.lastDivider { border-color: var(--theme-navpanel-border); }
@@ -132,6 +131,7 @@
   display: flex;
   height: 100%;
   min-height: 0;
+  @include prevent-overflow;
   
   &.header { background-color: var(--theme-comp-header-color); }
   &.filled { background-color: var(--theme-bg-color); }
@@ -141,9 +141,7 @@
 }
 .antiPanel-navigator {
   position: relative;
-  min-width: 12.5rem;
-  max-width: 22.5rem;
-  width: 17.5rem;
+  @include fixed-width(17.5rem, 12.5rem, 22.5rem);
   
   &:not(.second) { background-color: var(--theme-navpanel-color); }
   &.second.float {
@@ -196,15 +194,8 @@
 
       .antiSeparator { display: none; }
       &.fly {
-        width: calc(100% - 3.5rem) !important;
+        @include fixed-width(calc(100% - 3.5rem));
         filter: var(--theme-navpanel-shadow-mobile);
-      }
-      &.second.float.fly {
-        height: calc(100% - var(--status-bar-height) - var(--app-panel-width) - 3.5rem);
-      }
-      &.fly:not(.second) {
-        top: var(--status-bar-height);
-        height: calc(100% - var(--status-bar-height) - var(--app-panel-width));
       }
     }
   }
