@@ -139,23 +139,6 @@ export function createSystemType (
     type
   )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: type,
-    descriptor: view.viewlet.List,
-    viewOptions: {
-      groupBy: ['_class', 'createdBy', 'modifiedBy'],
-      orderBy: [
-        ['modifiedOn', SortingOrder.Descending],
-        ['rank', SortingOrder.Ascending]
-      ],
-      other: []
-    },
-    configOptions: {
-      hiddenKeys: ['content', 'title']
-    },
-    config: listConfig
-  })
-
   builder.mixin(type, card.class.MasterTag, setting.mixin.Editable, {
     value: false
   })
@@ -172,6 +155,23 @@ export function createSystemType (
       { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
       'modifiedOn'
     ]
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: view.viewlet.List,
+    viewOptions: {
+      groupBy: ['_class', 'createdBy', 'modifiedBy'],
+      orderBy: [
+        ['modifiedOn', SortingOrder.Descending],
+        ['rank', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: listConfig
   })
 }
 
