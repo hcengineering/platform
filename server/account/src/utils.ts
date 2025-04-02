@@ -1274,6 +1274,42 @@ export async function getInviteEmail (
   }
 }
 
+export async function addSocialId (
+  db: AccountDB,
+  personUuid: PersonUuid,
+  type: SocialIdType,
+  value: string,
+  confirmed: boolean
+): Promise<PersonId> {
+  const normalizedValue = normalizeValue(value ?? '')
+
+  if (!Object.values(SocialIdType).includes(type) || normalizedValue.length === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const person = await db.person.findOne({ uuid: personUuid })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: personUuid }))
+  }
+
+  const socialId = await db.socialId.findOne({ type, value: normalizedValue })
+  if (socialId != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+  }
+
+  const newSocialId: Omit<SocialId, '_id' | 'key'> = {
+    type,
+    value: normalizedValue,
+    personUuid
+  }
+
+  if (confirmed) {
+    newSocialId.verifiedOn = Date.now()
+  }
+
+  return await db.socialId.insertOne(newSocialId)
+}
+
 export async function getWorkspaceRole (
   db: AccountDB,
   account: PersonUuid,

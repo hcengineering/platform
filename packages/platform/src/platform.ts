@@ -163,7 +163,8 @@ export default plugin(platformId, {
     WorkspaceLimitReached: '' as StatusCode<{ workspace: string }>,
     InvalidOtp: '' as StatusCode,
     InviteNotFound: '' as StatusCode<{ email: string }>,
-    MailboxError: '' as StatusCode<{ reason: string }>
+    MailboxError: '' as StatusCode<{ reason: string }>,
+    SocialIdAlreadyExists: '' as StatusCode
   },
   metadata: {
     locale: '' as Metadata<string>,
