@@ -40,7 +40,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/card": "^0.6.0",
-    "@hcengineering/communication-types": "0.1.147",
+    "@hcengineering/communication-types": "0.1.150",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
