@@ -4078,7 +4078,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/importer@file:projects/importer.tgz':
-    resolution: {integrity: sha512-nd4QEoFM7LFj37X/9PCtKl2HTaQl3xnpCbJL+FBuYPJhimHzG4KTvb3E5vZ31OZxgAzYBBLZb1KsswqqlXAJ9A==, tarball: file:projects/importer.tgz}
+    resolution: {integrity: sha512-jApdKeT5h/FEtXviuENXrD2pT5vphLHvE/7b8wt93xNAgwj61aVtsyT+CfaQCnzPSFYBvx0ECq1MNTwtvVzB0Q==, tarball: file:projects/importer.tgz}
     version: 0.0.0
 
   '@rush-temp/inventory-assets@file:projects/inventory-assets.tgz':
@@ -18574,6 +18574,7 @@ snapshots:
       '@types/js-yaml': 4.0.9
       '@types/mime-types': 2.1.4
       '@types/node': 20.11.19
+      '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.6.2)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
       commander: 8.3.0
@@ -18590,6 +18591,7 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.6.2)
       typescript: 5.6.2
+      uuid: 8.3.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
