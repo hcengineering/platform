@@ -16,11 +16,13 @@
 export interface Metadata {
   msg2fileUrl: string
   accountsUrl: string
+  secret?: string
 }
 
 export function getMetadata(): Metadata {
   return {
     msg2fileUrl: process.env.MSG2FILE_URL ?? '',
-    accountsUrl: process.env.ACCOUNTS_URL ?? ''
+    accountsUrl: process.env.ACCOUNTS_URL ?? '',
+    secret: process.env.SERVER_SECRET
   }
 }

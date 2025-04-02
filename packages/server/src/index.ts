@@ -33,6 +33,9 @@ import type {
   RequestEvent,
   ServerApi
 } from '@hcengineering/communication-sdk-types'
+import {setMetadata} from "@hcengineering/platform";
+import serverToken from "@hcengineering/server-token";
+
 
 import { type BroadcastSessionsFunc, Manager } from './manager'
 import { getMetadata, type Metadata } from './metadata'
@@ -60,7 +63,11 @@ export class Api implements ServerApi {
     const db = await createDbAdapter(dbUrl, workspace, ctx, {
       withLogs: process.env.COMMUNICATION_TIME_LOGGING_ENABLED === 'true'
     })
+
     const metadata = getMetadata()
+
+    setMetadata(serverToken.metadata.Secret, metadata.secret)
+
     return new Api(ctx, metadata, workspace, db, broadcast)
   }
 

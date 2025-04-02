@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-server",
-  "version": "0.1.150",
+  "version": "0.1.155",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
@@ -25,7 +25,8 @@
     "@hcengineering/communication-sdk-types": "workspace:*",
     "@hcengineering/communication-types": "workspace:*",
     "@hcengineering/core": "^0.7.28",
-    "@hcengineering/server-token": "^0.7.28"
+    "@hcengineering/server-token": "^0.7.28",
+    "@hcengineering/platform": "^0.7.28"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"

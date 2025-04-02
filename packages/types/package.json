@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-types",
-  "version": "0.1.150",
+  "version": "0.1.155",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",

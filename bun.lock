@@ -16,7 +16,7 @@
     },
     "packages/client-query": {
       "name": "@hcengineering/communication-client-query",
-      "version": "0.1.150",
+      "version": "0.1.155",
       "dependencies": {
         "@hcengineering/communication-query": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -32,7 +32,7 @@
     },
     "packages/cockroach": {
       "name": "@hcengineering/communication-cockroach",
-      "version": "0.1.150",
+      "version": "0.1.155",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -49,7 +49,7 @@
     },
     "packages/query": {
       "name": "@hcengineering/communication-query",
-      "version": "0.1.150",
+      "version": "0.1.155",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -67,7 +67,7 @@
     },
     "packages/rest-client": {
       "name": "@hcengineering/communication-rest-client",
-      "version": "0.1.150",
+      "version": "0.1.155",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -85,7 +85,7 @@
     },
     "packages/sdk-types": {
       "name": "@hcengineering/communication-sdk-types",
-      "version": "0.1.150",
+      "version": "0.1.155",
       "dependencies": {
         "@hcengineering/communication-types": "workspace:*",
         "@hcengineering/core": "^0.7.28",
@@ -99,13 +99,14 @@
     },
     "packages/server": {
       "name": "@hcengineering/communication-server",
-      "version": "0.1.150",
+      "version": "0.1.155",
       "dependencies": {
         "@hcengineering/account-client": "^0.7.28",
         "@hcengineering/communication-cockroach": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
         "@hcengineering/core": "^0.7.28",
+        "@hcengineering/platform": "^0.7.28",
         "@hcengineering/server-token": "^0.7.28",
       },
       "devDependencies": {
@@ -120,7 +121,7 @@
     },
     "packages/shared": {
       "name": "@hcengineering/communication-shared",
-      "version": "0.1.150",
+      "version": "0.1.155",
       "dependencies": {
         "@hcengineering/communication-types": "workspace:*",
       },
@@ -133,7 +134,7 @@
     },
     "packages/types": {
       "name": "@hcengineering/communication-types",
-      "version": "0.1.150",
+      "version": "0.1.155",
       "dependencies": {
         "@hcengineering/card": "^0.7.28",
         "@hcengineering/core": "^0.7.28",
@@ -147,7 +148,7 @@
     },
     "packages/yaml": {
       "name": "@hcengineering/communication-yaml",
-      "version": "0.1.150",
+      "version": "0.1.155",
       "dependencies": {
         "@hcengineering/communication-shared": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
