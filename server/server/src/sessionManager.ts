@@ -1437,7 +1437,7 @@ export function startSessionManager (
     opt.brandingMap,
     {
       pingTimeout: opt.pingTimeout ?? 10000,
-      reconnectTimeout: 5 // seconds to reconnect
+      reconnectTimeout: 30 // seconds to reconnect
     },
     opt.profiling,
     opt.accountsUrl,

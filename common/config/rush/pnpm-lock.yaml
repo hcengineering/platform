@@ -69,10 +69,10 @@ importers:
         version: 5.0.0
       '@livekit/krisp-noise-filter':
         specifier: ^0.2.16
-        version: 0.2.16(livekit-client@2.9.0)
+        version: 0.2.16(livekit-client@2.9.9)
       '@livekit/track-processors':
         specifier: ^0.3.3
-        version: 0.3.3(livekit-client@2.9.0)
+        version: 0.3.3(livekit-client@2.9.9)
       '@octokit/types':
         specifier: ^12.0.0
         version: 12.6.0
@@ -1886,11 +1886,11 @@ importers:
         specifier: ^1.9.46
         version: 1.10.56
       livekit-client:
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.9.9
+        version: 2.9.9
       livekit-server-sdk:
-        specifier: ^2.0.10
-        version: 2.6.0
+        specifier: ^2.11.0
+        version: 2.11.0
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
@@ -3331,11 +3331,11 @@ packages:
   '@livekit/mutex@1.1.1':
     resolution: {integrity: sha512-EsshAucklmpuUAfkABPxJNhzj9v2sG7JuzFDL4ML1oJQSV14sqrpTYnsaOudMAw9yOaW53NU3QQTlUQoRs4czw==}
 
-  '@livekit/protocol@1.19.1':
-    resolution: {integrity: sha512-PQYIuqRv++fRik9tKulJ0C0tT5O4cNviBA7OxwLTCBFDxJpve8ua8/JZ+nK+7r4j2KbLfVjsJYop9wcTCgRn7Q==}
+  '@livekit/protocol@1.34.0':
+    resolution: {integrity: sha512-bU7pCLAMRVTVZb1KSxA46q55bhOc4iATrY/gccy2/oX1D57tiZEI+8wGRWHeDwBb0UwnABu6JXzC4tTFkdsaOg==}
 
-  '@livekit/protocol@1.33.0':
-    resolution: {integrity: sha512-361mBlFgI3nvn8oSQIL38gDUBGbOSwsEOqPgX0c1Jwz75/sD/TTvPeAM4zAz6OrV5Q4vI4Ruswecnyv5SG4oig==}
+  '@livekit/protocol@1.36.1':
+    resolution: {integrity: sha512-nN3QnITAQ5yXk7UKfotH7CRWIlEozNWeKVyFJ0/+dtSzvWP/ib+10l1DDnRYi3A1yICJOGAKFgJ5d6kmi1HCUA==}
 
   '@livekit/track-processors@0.3.3':
     resolution: {integrity: sha512-C5mBWe34ie0pfhCf9zAD65D26ZytzW/xGrj8Zc1BGh5kLISFDVQlefO78LZWw9K5saTamk60O4fzSCKqWMPMLA==}
@@ -4082,7 +4082,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/desktop@file:projects/desktop.tgz':
-    resolution: {integrity: sha512-kJTxaXhLxQPR7NO0NoDa7YOHKOgOZvjbHWB20eH2ge7hj16MkXlH8q4aqrizcNk1Wy7Q19lhQifgkdDYc0xy7w==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-NRGUfSBDrN51EFhP3stfuJIzVvP1AmsFzCI8QK3TE5F50Dfdxz2sydyJyIqeWXxsnyMtDxPEc8ZfR3KUq592xA==, tarball: file:projects/desktop.tgz}
     version: 0.0.0
 
   '@rush-temp/devmodel-resources@file:projects/devmodel-resources.tgz':
@@ -4282,7 +4282,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz':
-    resolution: {integrity: sha512-mNrDaH4UuKvs9Qk030LXdpFGVk6u9PQaXSwnbMT7JihP2pdoMwG116biNgqzvr0jXQ9f12Gp4Q6Y7wj5oM9jvg==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-QwIExQO3uKy0+BzkpPCisqKBwhOd5X2CHERdWnOmfkyT2yfulDBl4lZxA/ulKJRqB1VWTjVBKgiBBv2d1yGxjw==, tarball: file:projects/love-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/love@file:projects/love.tgz':
@@ -4750,7 +4750,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-fulltext@file:projects/pod-fulltext.tgz':
-    resolution: {integrity: sha512-za9dXz8LTdV3Mwyr3Lbno6Ys7c0tKu2F9+QH0D75THvniEMYUK1mG4Pt/7hByNzTB1VqzIaozs6Id+DfXYqS2Q==, tarball: file:projects/pod-fulltext.tgz}
+    resolution: {integrity: sha512-S2ckiQldx/CxnPtFCronyk0qvRUqNXe2Q/AckrZlSvy93L5tk4x1ZfBlllUKCGf5XzUcxaM9YAcLqG/cAuz/5w==, tarball: file:projects/pod-fulltext.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-github@file:projects/pod-github.tgz':
@@ -4766,7 +4766,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
-    resolution: {integrity: sha512-K9Hvwm8QesWBTSx/A+swmRDUOy0RY8y4tNJkrW85Zh5wMUxHzeYrX/tQL+usk+cRrvPCw9C8yag1gxsKqPkWIQ==, tarball: file:projects/pod-love.tgz}
+    resolution: {integrity: sha512-WD3sCFrKIu3k1n/ee8IzncRpekaEaCi1dxqYKrzQTHoepsVcy61Vjn6D6uJ0iY0W8p/DaGezJOh/fCXOM69ttQ==, tarball: file:projects/pod-love.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-mail@file:projects/pod-mail.tgz':
@@ -4782,7 +4782,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
-    resolution: {integrity: sha512-oEG3AsN/BgmKq+Ek8r/repf0Tr6wRTd+C4fFPcTVxFxVIgYYy1ZcKx34RPEeRPODqsQckASvjgU69u6sZwuurg==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-J0IouHQ9sjpW7Bc7VkCMeOHzJwxKGddUWomqtz/o5A+H9DXI2Hs5M7BUjXQm8Py7sovN1l6Vt1GljrwDbUo9Jw==, tarball: file:projects/pod-server.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-ses@file:projects/pod-ses.tgz':
@@ -10339,12 +10339,12 @@ packages:
   linkifyjs@4.2.0:
     resolution: {integrity: sha512-pCj3PrQyATaoTYKHrgWRF3SJwsm61udVh+vuls/Rl6SptiDhgE7ziUIudAedRY9QEfynmM7/RmLEfPUyw1HPCw==}
 
-  livekit-client@2.9.0:
-    resolution: {integrity: sha512-7YwDXKb1aA/W1fedghc6Vn/ykHdoVHFr5ujOIja+YR4dsqjpWHNjQzZNbrMFu37R5cBiJ/7zK/Zs7r/amHjBMA==}
+  livekit-client@2.9.9:
+    resolution: {integrity: sha512-Mrm9Z/kPmJP5r4EMbzXPfB27gRP+tZtU7Zzen2o8u6w5N6FxaqXerRFqtXddGXaVzZouJOAg51/5A9u3saC/2A==}
 
-  livekit-server-sdk@2.6.0:
-    resolution: {integrity: sha512-lt9VZN8vTPG/P5tj4ofwLj/HTbt343AThbAWFk70OYbQucAOdv+8w00Wv9RjMndSkHaXheXOQHg8fhGOlYXmug==}
-    engines: {node: '>=19'}
+  livekit-server-sdk@2.11.0:
+    resolution: {integrity: sha512-SmUkVHwO9lYUstsJgt3rw9aC4E3dFBfreTLGXqxEWWegjaqcVDxropfYX57Tfs8eRiawd8ndk+AavF5QJGiWpg==}
+    engines: {node: '>=18'}
 
   load-bmfont@1.4.2:
     resolution: {integrity: sha512-qElWkmjW9Oq1F9EI5Gt7aD9zcdHb9spJCW1L/dmPf7KzCCEJxq8nhHz5eCgI9aMf7vrG/wyaCqdsI+Iy9ZTlog==}
@@ -10498,8 +10498,8 @@ packages:
     resolution: {integrity: sha512-CdaO738xRapbKIMVn2m4F6KTj4j7ooJ8POVnebSgKo3KBz5axNXRAL7ZdRjIV6NOr2Uf4vjtRkxrFETOioCqSA==}
     engines: {node: '>= 12.0.0'}
 
-  loglevel@1.9.1:
-    resolution: {integrity: sha512-hP3I3kCrDIMuRwAwHltphhDM1r8i55H33GgqjXbrisuJhF4kRhW1dNuxsRklp4bXl8DSdLaNLuiL4A/LWRfxvg==}
+  loglevel@1.9.2:
+    resolution: {integrity: sha512-HgMmCqIJSAKqo68l0rS2AanEWfkxaZ5wNiEFb5ggm08lDs9Xl2KxBlX3PTcaD2chBM1gXAYf491/M2Rv8Jwayg==}
     engines: {node: '>= 0.6.0'}
 
   loose-envify@1.4.0:
@@ -12104,8 +12104,8 @@ packages:
     resolution: {integrity: sha512-L0jRsrPpjdckP3oPug3/VxNKt2trR8TcabrM6FOAAlvC/9Phcmm+cuAgTlxBqdBR1WJx7Naj9WHw+aOmheSVbw==}
     engines: {node: '>= 12.13.0'}
 
-  sdp-transform@2.14.2:
-    resolution: {integrity: sha512-icY6jVao7MfKCieyo1AyxFYm1baiM+fA00qW/KrNNVlkxHAd34riEKuEkUe4bBb3gJwLJZM+xT60Yj1QL8rHiA==}
+  sdp-transform@2.15.0:
+    resolution: {integrity: sha512-KrOH82c/W+GYQ0LHqtr3caRpM3ITglq3ljGUIb8LTki7ByacJZ9z+piSGiwZDsRyhQbYBOBJgr2k6X4BZXi3Kw==}
     hasBin: true
 
   sdp@3.2.0:
@@ -15346,25 +15346,25 @@ snapshots:
 
   '@lifeomic/attempt@3.0.3': {}
 
-  '@livekit/krisp-noise-filter@0.2.16(livekit-client@2.9.0)':
+  '@livekit/krisp-noise-filter@0.2.16(livekit-client@2.9.9)':
     dependencies:
-      livekit-client: 2.9.0
+      livekit-client: 2.9.9
 
   '@livekit/mutex@1.1.1': {}
 
-  '@livekit/protocol@1.19.1':
+  '@livekit/protocol@1.34.0':
     dependencies:
       '@bufbuild/protobuf': 1.10.0
 
-  '@livekit/protocol@1.33.0':
+  '@livekit/protocol@1.36.1':
     dependencies:
       '@bufbuild/protobuf': 1.10.0
 
-  '@livekit/track-processors@0.3.3(livekit-client@2.9.0)':
+  '@livekit/track-processors@0.3.3(livekit-client@2.9.9)':
     dependencies:
       '@mediapipe/holistic': 0.5.1675471629
       '@mediapipe/tasks-vision': 0.10.9
-      livekit-client: 2.9.0
+      livekit-client: 2.9.9
 
   '@malept/cross-spawn-promise@2.0.0':
     dependencies:
@@ -17722,7 +17722,7 @@ snapshots:
       file-loader: 6.2.0(webpack@5.97.1)
       fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.3.3)(webpack@5.97.1)
       html-webpack-plugin: 5.6.0(webpack@5.97.1)
-      livekit-client: 2.9.0
+      livekit-client: 2.9.9
       mini-css-extract-plugin: 2.8.0(webpack@5.97.1)
       node-loader: 2.0.0(webpack@5.97.1)
       postcss: 8.4.35
@@ -19301,8 +19301,8 @@ snapshots:
 
   '@rush-temp/love-resources@file:projects/love-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
-      '@livekit/krisp-noise-filter': 0.2.16(livekit-client@2.9.0)
-      '@livekit/track-processors': 0.3.3(livekit-client@2.9.0)
+      '@livekit/krisp-noise-filter': 0.2.16(livekit-client@2.9.9)
+      '@livekit/track-processors': 0.3.3(livekit-client@2.9.9)
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -19313,7 +19313,7 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      livekit-client: 2.9.0
+      livekit-client: 2.9.9
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
       sass: 1.71.1
@@ -21831,7 +21831,7 @@ snapshots:
       express: 4.21.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       jwt-simple: 0.5.6
-      livekit-server-sdk: 2.6.0
+      livekit-server-sdk: 2.11.0
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -21977,7 +21977,6 @@ snapshots:
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(utf-8-validate@6.0.4)':
     dependencies:
-      '@hcengineering/communication-sdk-types': 0.1.150(typescript@5.3.3)
       '@hcengineering/communication-server': 0.1.150(typescript@5.3.3)
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
@@ -33501,21 +33500,22 @@ snapshots:
 
   linkifyjs@4.2.0: {}
 
-  livekit-client@2.9.0:
+  livekit-client@2.9.9:
     dependencies:
       '@livekit/mutex': 1.1.1
-      '@livekit/protocol': 1.33.0
+      '@livekit/protocol': 1.34.0
       events: 3.3.0
-      loglevel: 1.9.1
-      sdp-transform: 2.14.2
+      loglevel: 1.9.2
+      sdp-transform: 2.15.0
       ts-debounce: 4.0.0
       tslib: 2.8.1
       typed-emitter: 2.1.0
       webrtc-adapter: 9.0.1
 
-  livekit-server-sdk@2.6.0:
+  livekit-server-sdk@2.11.0:
     dependencies:
-      '@livekit/protocol': 1.19.1
+      '@bufbuild/protobuf': 1.10.0
+      '@livekit/protocol': 1.36.1
       camelcase-keys: 9.1.3
       jose: 5.6.3
 
@@ -33666,7 +33666,7 @@ snapshots:
       safe-stable-stringify: 2.4.3
       triple-beam: 1.4.1
 
-  loglevel@1.9.1: {}
+  loglevel@1.9.2: {}
 
   loose-envify@1.4.0:
     dependencies:
@@ -35355,7 +35355,7 @@ snapshots:
       ajv-formats: 2.1.1
       ajv-keywords: 5.1.0(ajv@8.12.0)
 
-  sdp-transform@2.14.2: {}
+  sdp-transform@2.15.0: {}
 
   sdp@3.2.0: {}
 
