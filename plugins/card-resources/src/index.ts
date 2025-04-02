@@ -39,6 +39,7 @@ import RelationSetting from './components/settings/RelationSetting.svelte'
 import CardEditor from './components/CardEditor.svelte'
 import CardRefPresenter from './components/CardRefPresenter.svelte'
 import ChangeType from './components/ChangeType.svelte'
+import CardArrayEditor from './components/CardArrayEditor.svelte'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
 
@@ -61,7 +62,8 @@ export default async (): Promise<Resources> => ({
     RelationSetting,
     CardEditor,
     CardRefPresenter,
-    ChangeType
+    ChangeType,
+    CardArrayEditor
   },
   completion: {
     CardQuery: queryCard

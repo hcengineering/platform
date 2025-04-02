@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
-  import { Ref, isOwnerOrMaintainer } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { ClassAttributes, ClassHierarchy, clearSettingsStore } from '@hcengineering/setting-resources'
   import {
