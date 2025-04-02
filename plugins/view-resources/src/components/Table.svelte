@@ -454,6 +454,7 @@
                       value={getValue(attribute, object)}
                       onChange={getOnChange(object, attribute)}
                       label={attribute.label}
+                      attribute={attribute.attribute}
                       {...joinProps(attribute, object, readonly || $restrictionStore.readonly)}
                     />
                   </div>

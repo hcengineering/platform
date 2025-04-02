@@ -65,6 +65,7 @@
       kind={'list'}
       {compactMode}
       label={attributeModel.label}
+      attribute={attributeModel.attribute}
       {...joinProps(attributeModel, docObject, props, $restrictionStore.readonly)}
       on:resize={translateSize}
     />
@@ -77,6 +78,7 @@
     kind={'list'}
     label={attributeModel.label}
     {compactMode}
+    attribute={attributeModel.attribute}
     {...joinProps(attributeModel, docObject, props, $restrictionStore.readonly)}
     on:resize={translateSize}
   />
