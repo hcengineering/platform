@@ -14,7 +14,9 @@
 // limitations under the License.
 //
 
+import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import {
+  addEmployeeListenrer,
   AvatarType,
   type Channel,
   type ChannelProvider,
@@ -22,27 +24,31 @@ import {
   contactId,
   type Employee,
   formatName,
+  getCurrentEmployee,
   getFirstName,
   getLastName,
   getName,
-  getCurrentEmployee,
-  currentEmployeePromise,
-  type Person,
-  type SocialIdentity,
-  type PermissionsStore,
   type PermissionsBySpace,
-  type PersonsByPermission
+  type PermissionsStore,
+  type Person,
+  type PersonsByPermission,
+  type SocialIdentity
 } from '@hcengineering/contact'
 import core, {
+  type AccountUuid,
   type AggregateValue,
   type Class,
   type Client,
   type Doc,
   type DocumentQuery,
+  getCurrentAccount,
   type Hierarchy,
   type IdMap,
+  notEmpty,
   type ObjQueryType,
   type Permission,
+  type PersonId,
+  pickPrimarySocialId,
   type Ref,
   SocialIdType,
   type Space,
@@ -51,18 +57,13 @@ import core, {
   type TxOperations,
   type TypedSpace,
   type UserStatus,
-  type WithLookup,
-  type AccountUuid,
-  notEmpty,
-  getCurrentAccount,
-  pickPrimarySocialId,
-  type PersonId
+  type WithLookup
 } from '@hcengineering/core'
+import login from '@hcengineering/login'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
-import { type IntlString, getEmbeddedLabel, getMetadata, getResource, translate } from '@hcengineering/platform'
+import { getEmbeddedLabel, getMetadata, getResource, type IntlString, translate } from '@hcengineering/platform'
 import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
-import login from '@hcengineering/login'
 import {
   getCurrentResolvedLocation,
   getPanelURI,
@@ -73,9 +74,8 @@ import {
 } from '@hcengineering/ui'
 import view, { type Filter, type GrouppingManager } from '@hcengineering/view'
 import { accessDeniedStore, FilterQuery } from '@hcengineering/view-resources'
-import { derived, get, type Readable, writable } from 'svelte/store'
 import { type LocationData } from '@hcengineering/workbench'
-import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
+import { derived, get, type Readable, writable } from 'svelte/store'
 
 import contact from './plugin'
 
@@ -311,15 +311,17 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
   }
 }
 
-const currentEmployeeRefStore = writable<Ref<Employee> | undefined>()
-void currentEmployeePromise.then((employee) => {
-  currentEmployeeRefStore.set(employee)
-})
-
 /**
  * [Ref<Employee> => Employee] mapping
  */
 export const employeeByIdStore = writable<IdMap<WithLookup<Employee>>>(new Map())
+
+export const currentEmployeeRefStore = writable<Ref<Employee> | undefined>(getCurrentEmployee())
+
+addEmployeeListenrer((ref) => {
+  currentEmployeeRefStore.set(ref)
+})
+
 export const myEmployeeStore = derived(
   [currentEmployeeRefStore, employeeByIdStore],
   ([currentEmployeeRef, employeeById]) => {

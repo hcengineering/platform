@@ -16,6 +16,7 @@
 import {
   Account,
   AccountRole,
+  AccountUuid,
   AttachedData,
   buildSocialIdString,
   Class,
@@ -23,16 +24,15 @@ import {
   Doc,
   FindResult,
   generateId,
+  Person as GlobalPerson,
   Hierarchy,
   MeasureContext,
+  notEmpty,
   PersonId,
   Ref,
   SocialId,
-  TxFactory,
-  Person as GlobalPerson,
-  AccountUuid,
-  notEmpty,
-  toIdMap
+  toIdMap,
+  TxFactory
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
@@ -42,11 +42,7 @@ import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 
 let currentEmployee: Ref<Employee>
 
-let resolveEmployee: (employee: Ref<Employee>) => void
-export const currentEmployeePromise = new Promise<Ref<Employee>>((resolve) => {
-  resolveEmployee = resolve
-})
-
+const employeeListeners: ((ref: Ref<Employee>) => void)[] = []
 /**
  * @public
  * @returns
@@ -55,13 +51,19 @@ export function getCurrentEmployee (): Ref<Employee> {
   return currentEmployee
 }
 
+export function addEmployeeListenrer (l: (ref: Ref<Employee>) => void): void {
+  employeeListeners.push(l)
+}
+
 /**
  * @public
  * @param employee -
  */
 export function setCurrentEmployee (employee: Ref<Employee>): void {
   currentEmployee = employee
-  resolveEmployee(employee)
+  for (const l of employeeListeners) {
+    l(employee)
+  }
 }
 
 /**
