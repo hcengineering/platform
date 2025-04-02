@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@hcengineering/account-client": "^0.6.0",
+    "@hcengineering/analytics-service": "^0.6.0",
     "@hcengineering/api-client": "^0.6.0",
     "@hcengineering/card": "^0.6.0",
     "@hcengineering/communication-rest-client": "0.1.147",
@@ -63,6 +64,8 @@
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/mail": "^0.6.0",
+    "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/server-storage": "^0.6.0",
     "@types/uuid": "^8.3.1",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
