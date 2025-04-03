@@ -20,8 +20,8 @@
   import { createEventDispatcher } from 'svelte'
   import { getAccountClient } from '../utils'
   import { IntlString, translateCB } from '@hcengineering/platform'
-  import contact, { getCurrentEmployee, SocialIdentity } from '@hcengineering/contact'
-  import { buildSocialIdString, Ref, SocialIdType } from '@hcengineering/core'
+  import contact, { getCurrentEmployee, SocialIdentityRef } from '@hcengineering/contact'
+  import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
 
   export let mailboxOptions: MailboxOptions
 
@@ -38,7 +38,7 @@
 
   function validateName (name: string): boolean {
     const n = name.trim()
-    return n.length >= mailboxOptions.minNameLength && n.length <= mailboxOptions.maxNameLength
+    return n.length >= mailboxOptions.minNameLength && n.length <= mailboxOptions.maxNameLength && !name.includes('+')
   }
 
   async function createMailbox (): Promise<void> {
@@ -58,7 +58,7 @@
         value: mailbox,
         verifiedOn: Date.now()
       },
-      socialId as any as Ref<SocialIdentity>
+      socialId as SocialIdentityRef
     )
     await client.addCollection(
       contact.class.Channel,

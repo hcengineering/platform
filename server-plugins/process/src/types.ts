@@ -13,4 +13,9 @@ export interface ExecuteResult {
   rollback: Tx[] | undefined
 }
 
-export type TransformFunc = (value: any) => any
+export type TransformFunc = (
+  value: any,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+) => Promise<any>
