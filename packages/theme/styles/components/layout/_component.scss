@@ -15,8 +15,7 @@
 
 /* Huly Component */
 .hulyComponent {
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   flex-grow: 1;
   height: 100%;
   min-height: 0;
@@ -40,16 +39,23 @@
     border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
   }
 }
+
+// Общие стили для компонентов контента
+%huly-flex-base {
+  display: flex;
+  @include full-width;
+  min-height: 0;
+}
+
 .hulyComponent-content,
 .hulyComponent-content__container,
 .hulyComponent-content__column,
 .hulyComponent-content__column-group,
 .hulyComponent-content__header,
 .hulyComponent-content__navHeader {
-  display: flex;
-  @include full-width;
-  min-height: 0;
+  @extend %huly-flex-base;
 }
+
 .hulyComponent-content {
   &:not(.noShrink) {
     flex-shrink: 0;
@@ -69,7 +75,7 @@
     flex-direction: column;
   }
   &__column {
-    flex-direction: column;
+    @include flex-column;
     height: 100%;
 
     &.navigation .hulyNavItem-container,
@@ -80,13 +86,13 @@
       align-items: stretch;
     }
     &-group {
-      flex-direction: column;
+      @include flex-column;
       flex-shrink: 0;
       height: fit-content;
     }
   }
   &__navHeader {
-    flex-direction: column;
+    @include flex-column;
     flex-shrink: 0;
 
     &.divide {
@@ -104,7 +110,7 @@
     }
   }
   &__header {
-    justify-content: space-between;
+    @include flex-between;
     align-self: stretch;
     padding: 0 0 var(--spacing-1) var(--spacing-1_5);
   }

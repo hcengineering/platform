@@ -13,6 +13,62 @@
 // limitations under the License.
 //
 
+/* Карта размеров аватаров */
+$avatar-sizes: (
+  'xx-small': (.75rem, .375rem, 10px),
+  'inline': (.875rem, .525rem, 12px),
+  'tiny': (1.125rem, .625rem, 16px),
+  'card': (1.25rem, .75rem, 18px),
+  'x-small': (1.5rem, .875rem, 22px),
+  'smaller': (1.75rem, 1rem, 25px),
+  'small': (2rem, 1.125rem, null),
+  'medium': (2.5rem, 1.375rem, null),
+  'large': (4.5rem, 2.75rem, null),
+  'x-large': (7.5rem, 4.5rem, null),
+  '2x-large': (10rem, 6rem, null),
+  'full': (100%, inherit, null)
+);
+
+/* Используем определения переменных из core/_variables.scss */
+/* Дополнительные размеры только для аватара */
+$avatar-small-font-sizes: (
+  'xx-small': 10px,
+  'inline': 12px,
+  'tiny': 16px,
+  'card': 18px,
+  'x-small': 22px,
+  'smaller': 25px,
+);
+
+/* Карта размеров статусных маркеров */
+$status-sizes: (
+  'xx-small': (4px, 3px, 0, 0),
+  'inline': (4px, 4px, 0, 0),
+  'tiny': (6px, 5px, 0, 0),
+  'card': (6px, 6px, 0, 0),
+  'x-small': (8px, 7px, 0, 0),
+  'smaller': (9px, 8px, 0, 0),
+  'small': (10px, 9px, 0, 0),
+  'medium': (13px, 11px, 0, 0),
+  'large': (36.5%, 37%, -.125rem, -2px)
+);
+
+/* Карта смещений для комбинированных аватаров */
+$combine-margins: (
+  'inline': 0.875rem,
+  'tiny': 1.13rem,
+  'card': 1.25rem,
+  'x-small': 1.5rem,
+  'smaller': 1.75rem,
+  'small': 2rem,
+  'medium': 2.25rem,
+  'large': 4.5rem,
+  'x-large': 7.5rem
+);
+
+/* Маленькие аватары для маскирования */
+$small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
+
 /* Avatar */
 .hulyAvatar-container {
   position: relative;
@@ -48,11 +104,15 @@
     outline: 2px solid var(--border-color);
 
     & > img { border: 1px solid var(--theme-bg-color); }
+    
+    /* Маленькие аватары */
     &.hulyAvatarSize-xx-small,
     &.hulyAvatarSize-inline,
     &.hulyAvatarSize-tiny,
     &.hulyAvatarSize-card,
     &.hulyAvatarSize-x-small { outline-width: 1px; }
+    
+    /* Большие аватары */
     &.hulyAvatarSize-large,
     &.hulyAvatarSize-x-large,
     &.hulyAvatarSize-2x-large {
@@ -86,70 +146,22 @@
 }
 
 /* Avatar sizes */
-.hulyAvatarSize-xx-small {
-  width: .75rem;
-  .small-font & { width: 10px; }
-
-  .ava-text { font-size: .375rem; }
+@each $size, $values in $avatar-sizes {
+  $width: nth($values, 1);
+  $font-size: nth($values, 2);
+  
+  .hulyAvatarSize-#{$size} {
+    @include avatar-size($width, $font-size);
+    
+    @if map-has-key($avatar-small-font-sizes, $size) {
+      .small-font & { width: map-get($avatar-small-font-sizes, $size); }
+    }
+  }
 }
-.hulyAvatarSize-inline {
-  width: .875rem;
-  .small-font & { width: 12px; }
 
-  .ava-text { font-size: .525rem; }
-}
-.hulyAvatarSize-tiny {
-  width: 1.125rem;
-  .small-font & { width: 16px; }
-
-  .ava-text { font-size: .625rem; }
-}
-.hulyAvatarSize-card {
-  width: 1.25rem;
-  .small-font & { width: 18px; }
-
-  .ava-text { font-size: .75rem; }
-}
-.hulyAvatarSize-x-small {
-  width: 1.5rem;
-  .small-font & { width: 22px; }
-
-  .ava-text { font-size: .875rem; }
-}
-.hulyAvatarSize-smaller {
-  width: 1.75rem;
-  .small-font & { width: 25px; }
-
-  .ava-text { font-size: 1rem; }
-}
-.hulyAvatarSize-small {
-  width: 2rem;
-
-  .ava-text { font-size: 1.125rem; }
-}
-.hulyAvatarSize-medium {
-  width: 2.5rem;
-
-  .ava-text { font-size: 1.375rem; }
-}
-.hulyAvatarSize-large {
-  width: 4.5rem;
-
-  .ava-text { font-size: 2.75rem; }
-}
-.hulyAvatarSize-x-large {
-  width: 7.5rem;
-
-  .ava-text { font-size: 4.5rem; }
-}
-.hulyAvatarSize-2x-large {
-  width: 10rem;
-
-  .ava-text { font-size: 6rem; }
-}
+/* Особый случай для full-size аватара, которого нет в общей карте */
 .hulyAvatarSize-full {
   width: 100%;
-
   .ava-text { font-size: inherit; }
 }
 
@@ -165,6 +177,8 @@
   &.relative {
     position: relative;
   }
+  
+  /* Общее свойство для маркеров маленьких размеров */
   &.xx-small,
   &.inline,
   &.tiny,
@@ -176,38 +190,41 @@
     right: 0;
     bottom: 0;
   }
-  .small-font &.xx-small { width: 3px; }
-  &.xx-small,
-  &.inline,
-  .small-font &.inline { width: 4px; }
-  .small-font &.tiny { width: 5px; }
-  &.tiny,
-  &.card,
-  .small-font &.card { width: 6px; }
-  .small-font &.x-small { width: 7px; }
-  &.x-small,
-  .small-font &.smaller { width: 8px; }
-  &.smaller,
-  .small-font &.small { width: 9px; }
-  &.small { width: 10px; }
-  .small-font &.medium { width: 11px; }
-  &.medium { width: 13px; }
-  &.large {
-    right: -.125rem;
-    bottom: -.125rem;
-    width: 36.5%;
-
-    .small-font & { 
-      right: -2px;
-      bottom: -2px;
-      width: 37%;
+  
+  /* Генерация размеров маркеров */
+  @each $size, $values in $status-sizes {
+    $width: nth($values, 1);
+    $small-font-width: nth($values, 2);
+    $right: nth($values, 3);
+    $small-font-right: nth($values, 4);
+    
+    &.#{$size} { 
+      width: $width; 
+      
+      @if $right != 0 {
+        right: $right;
+        bottom: $right;
+        
+        @if $small-font-right != 0 {
+          .small-font & { 
+            right: $small-font-right;
+            bottom: $small-font-right;
+            width: $small-font-width;
+          }
+        }
+      } @else if $small-font-width != $width {
+        .small-font & { width: $small-font-width; }
+      }
     }
   }
+  
   &.online { background-color: var(--global-online-color); }
   &.offline {
     border: 1px solid var(--global-offline-color);
 
-    &:not(.xx-small, .inline, .tiny, .card, .x-small, .smaller, .small, .medium) { border-width: 2px; }
+    &:not(.xx-small, .inline, .tiny, .card, .x-small, .smaller, .small, .medium) { 
+      border-width: 2px; 
+    }
   }
 }
 
@@ -217,29 +234,30 @@
   align-items: center;
 
   .hulyCombineAvatar {
-    &.inline:not(:first-child)  { margin-left: calc(1px - (0.875rem / 2)); }
-    &.tiny:not(:first-child)    { margin-left: calc(1px - (1.13rem / 2)); }
-    &.card:not(:first-child)    { margin-left: calc(1px - (1.25rem / 2)); }
-    &.x-small:not(:first-child) { margin-left: calc(1px - (1.5rem / 2)); }
-    &.smaller:not(:first-child) { margin-left: calc(1px - (1.75rem / 2)); }
-    &.small:not(:first-child)   { margin-left: calc(1px - 1rem); }
-    &.medium:not(:first-child)  { margin-left: calc(1px - (2.25rem / 2)); }
-    &.large:not(:first-child)   { margin-left: calc(1px - (4.5rem / 2)); }
-    &.x-large:not(:first-child) { margin-left: calc(1px - (7.5rem / 2)); }
-
+    /* Генерация отступов для комбинированных аватаров */
+    @each $size, $values in $avatar-sizes {
+      $width: nth($values, 1);
+      &.#{$size}:not(:first-child) { 
+        margin-left: calc(1px - (#{$width} / 2)); 
+      }
+    }
+    
+    /* Общий стиль для маленьких аватаров */
     &.inline,
     &.tiny,
     &.card,
-    &.x-small { font-size: 0.625rem; }
+    &.x-small { 
+      font-size: 0.625rem; 
+    }
   
-    &.inline,
-    &.tiny,
-    &.card,
-    &.x-small,
-    &.smaller,
-    &.small {
-      &:not(:last-child) {
-        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16,24.5v-17c0-3.2,1.8-6.1,4.5-7.5H8C3.6,0,0,3.6,0,8v16c0,4.4,3.6,8,8,8h12.5C17.8,30.6,16,27.7,16,24.5z'/%3E%3C/svg%3E%0A") no-repeat;
+    /* Маскирование для всех кроме последнего */
+    $mask-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16,24.5v-17c0-3.2,1.8-6.1,4.5-7.5H8C3.6,0,0,3.6,0,8v16c0,4.4,3.6,8,8,8h12.5C17.8,30.6,16,27.7,16,24.5z'/%3E%3C/svg%3E%0A");
+    
+    @each $size in $small-avatars {
+      &.#{$size} {
+        &:not(:last-child) {
+          mask: $mask-url no-repeat;
+        }
       }
     }
 

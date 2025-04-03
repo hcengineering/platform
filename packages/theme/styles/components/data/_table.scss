@@ -1,0 +1,148 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* 
+ * Общие стили для таблиц
+ * Эти стили должны быть общими для всех таблиц в приложении
+ */
+
+// Миксины для стилей таблиц
+@mixin table-container {
+  @include flex-column;
+  align-items: flex-start;
+  align-self: stretch;
+  background-color: var(--theme-table-row-color);
+  border: 1px solid var(--theme-divider-color);
+  border-radius: var(--large-BorderRadius);
+}
+
+@mixin table-header {
+  @include flex-between;
+  align-self: stretch;
+  flex-shrink: 0;
+  min-height: var(--global-max-Size);
+  text-transform: uppercase;
+  color: var(--global-secondary-TextColor);
+}
+
+@mixin table-content {
+  display: flex;
+  align-items: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  @include prevent-overflow;
+  min-height: 0;
+  border-top: 1px solid var(--theme-divider-color);
+}
+
+@mixin table-row {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex-grow: 1;
+  margin: 0;
+  @include prevent-overflow;
+  border-radius: var(--small-BorderRadius);
+  border: none;
+  outline: none;
+}
+
+@mixin table-row-hover {
+  &.hovered,
+  &:not(.disableMouseOver):hover {
+    background-color: var(--theme-table-header-color);
+  }
+}
+
+@mixin table-row-selected {
+  background-color: var(--theme-table-header-color);
+
+  .hulyTableAttr-content__row-icon,
+  .hulyTableAttr-content__row-arrow,
+  .hulyTableAttr-content__row-label {
+    color: var(--global-primary-LinkColor);
+  }
+  .hulyTableAttr-content__row-type {
+    color: var(--global-primary-TextColor);
+  }
+}
+
+// Стили для компонентов стандартной таблицы
+.hulyTable {
+  &-container {
+    @include table-container;
+  }
+  
+  &-header {
+    @include table-header;
+    
+    &.withButton {
+      padding: var(--spacing-2);
+    }
+    &:not(.withButton) {
+      padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-2_5);
+
+      span {
+        margin-left: var(--spacing-1_5);
+      }
+    }
+    
+    span {
+      flex-grow: 1;
+    }
+    
+    .icon {
+      flex-shrink: 0;
+      @include fixed-width(var(--global-min-Size));
+      height: var(--global-min-Size);
+    }
+    
+    .buttons-group {
+      @include flex-center;
+      gap: var(--spacing-1);
+      @include prevent-overflow;
+      min-height: 0;
+    }
+  }
+  
+  &-content {
+    @include table-content;
+    
+    &:not(.withTitle) {
+      flex-direction: column;
+    }
+    
+    &.withTitle {
+      gap: var(--spacing-1);
+    }
+    
+    &__row {
+      @include table-row;
+      
+      &.selected {
+        @include table-row-selected;
+      }
+      
+      &:hover {
+        @include table-row-hover;
+      }
+    }
+  }
+}
+
+/* 
+ * Экспортируем эти миксины для использования в других компонентах,
+ * которые хотят выглядеть как таблицы, но имеют свою специфику
+ */

@@ -3,25 +3,15 @@
 // Licensed under the Eclipse Public License v2.0 (SPDX: EPL-2.0).
 //
 
+// Импортируем миксины таблиц
+@import 'components/data/table';
+
 /* Huly Attribute Table */
 .hulyTableAttr-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  align-self: stretch;
-  background-color: var(--theme-table-row-color);
-  border: 1px solid var(--theme-divider-color);
-  border-radius: var(--large-BorderRadius);
+  @include table-container;
 
   .hulyTableAttr-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    align-self: stretch;
-    flex-shrink: 0;
-    min-height: var(--global-max-Size);
-    text-transform: uppercase;
-    color: var(--global-secondary-TextColor);
+    @include table-header;
     
     &.withButton {
       padding: var(--spacing-2);
@@ -50,13 +40,7 @@
     }
   }
   .hulyTableAttr-content {
-    display: flex;
-    align-items: flex-start;
-    align-self: stretch;
-    flex-shrink: 0;
-    @include prevent-overflow;
-    min-height: 0;
-    border-top: 1px solid var(--theme-divider-color);
+    @include table-content;
     
     &:not(.withTitle) {
       flex-direction: column;
@@ -88,15 +72,7 @@
       }
     }
     &__row {
-      display: flex;
-      align-items: center;
-      align-self: stretch;
-      flex-grow: 1;
-      margin: 0;
-      @include prevent-overflow;
-      border-radius: var(--small-BorderRadius);
-      border: none;
-      outline: none;
+      @include table-row;
 
       &-dragMenu,
       &-icon-wrapper {
@@ -184,19 +160,10 @@
     &.task .hulyTableAttr-content__row {
       &.hovered,
       &:not(.disableMouseOver):hover {
-        background-color: var(--theme-table-header-color);
+        @include table-row-hover;
       }
       &.selected {
-        background-color: var(--theme-table-header-color);
-
-        .hulyTableAttr-content__row-icon,
-        .hulyTableAttr-content__row-arrow,
-        .hulyTableAttr-content__row-label {
-          color: var(--global-primary-LinkColor);
-        }
-        .hulyTableAttr-content__row-type {
-          color: var(--global-primary-TextColor);
-        }
+        @include table-row-selected;
       }
     }
     &.options,
