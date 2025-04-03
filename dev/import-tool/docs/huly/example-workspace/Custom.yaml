@@ -5,3 +5,32 @@ properties:
     type: TypeString # human readable format + core:class^
   - label: bbb
     type: TypeBoolean
+
+# Property types:
+#  - TypeString
+#  - TypeHyperlink
+#  - TypeNumber
+#  - TypeBoolean
+#  - TypeDate
+#  - TypeBlob ?
+#  - TypeRelation ?
+#  - TypeRecord ?
+#  - TypeRank ?
+#  - TypePersonId ?
+#  - TypeAccountUuid ?
+#  - TypeCollaborativeDoc ?
+#  - TypeRef ?
+#  - TypeEnum ?
+#  - TypeFileSize ?
+#  - TypeIntlString ?
+#  - TypeMarkup ?
+#  - TypeTimestamp ?
+#  - TypeDate ?
+#  - TypeRefTo ?
+#  - TypeCollection ?
+#  - TypeCollaborativeDoc ?
+#  - TypeRank ?
+#  - TypePersonId ?
+#  - TypeAccountUuid ?
+ 
+ 
