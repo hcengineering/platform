@@ -61,6 +61,15 @@ export interface AccountClient {
   requestPasswordReset: (email: string) => Promise<void>
   sendInvite: (email: string, role: AccountRole) => Promise<void>
   resendInvite: (email: string, role: AccountRole) => Promise<void>
+  createInviteLink: (
+    email: string,
+    role: AccountRole,
+    autoJoin: boolean,
+    firstName: string,
+    lastName: string,
+    navigateUr?: string,
+    expHours?: number
+  ) => Promise<string>
   leaveWorkspace: (account: string) => Promise<LoginInfo | null>
   changeUsername: (first: string, last: string) => Promise<void>
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>
@@ -307,6 +316,23 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async createInviteLink (
+    email: string,
+    role: AccountRole,
+    autoJoin: boolean,
+    firstName: string,
+    lastName: string,
+    navigateUr?: string,
+    expHours?: number
+  ): Promise<string> {
+    const request = {
+      method: 'createInviteLink' as const,
+      params: { email, role, autoJoin, firstName, lastName, navigateUr, expHours }
+    }
+
+    return await this.rpc(request)
   }
 
   async leaveWorkspace (account: string): Promise<LoginInfo | null> {
