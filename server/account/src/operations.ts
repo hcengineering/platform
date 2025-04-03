@@ -802,6 +802,9 @@ export async function checkAutoJoin (
         await db.updateWorkspaceRole(targetAccount.uuid, workspace.uuid, invite.role)
       }
 
+      if (token === undefined || token === null) {
+        token = generateToken(targetAccount.uuid)
+      }
       return await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
     }
   }
