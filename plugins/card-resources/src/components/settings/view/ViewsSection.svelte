@@ -17,7 +17,7 @@
 
   import { MasterTag } from '@hcengineering/card'
   import { WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import { ButtonIcon, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
@@ -29,14 +29,12 @@
   export let masterTag: MasterTag
 
   let viewlets: WithLookup<Viewlet>[] = []
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   const query = createQuery()
 
   $: query.query(
     view.class.Viewlet,
-    { attachTo: { $in: hierarchy.getDescendants(masterTag._id) } },
+    { attachTo: masterTag._id, variant: { $exists: false } },
     (res) => {
       viewlets = res
     },

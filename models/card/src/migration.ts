@@ -40,8 +40,24 @@ export const cardOperation: MigrateOperation = {
       {
         state: 'migrateViewlets-v2',
         func: migrateViewlets
+      },
+      {
+        state: 'removeVariantViewlets',
+        func: removeVariantViewlets
       }
     ])
+  }
+}
+
+async function removeVariantViewlets (client: Client): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const desc = client
+    .getHierarchy()
+    .getDescendants(card.class.Card)
+    .filter((c) => c !== card.class.Card)
+  const viewlets = await client.findAll(view.class.Viewlet, { attachTo: { $in: desc }, variant: { $exists: true } })
+  for (const viewlet of viewlets) {
+    await txOp.remove(viewlet)
   }
 }
 
