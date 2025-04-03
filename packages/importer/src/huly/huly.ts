@@ -353,7 +353,7 @@ export class HulyFormatImporter {
 
   private readonly personIdByEmail = new Map<string, PersonId>()
 
-  private readonly unifiedDocImporter: UnifiedDocProcessor
+  private readonly unifiedDocImporter = new UnifiedDocProcessor()
 
   constructor (
     private readonly client: TxOperations,
@@ -362,7 +362,6 @@ export class HulyFormatImporter {
     private readonly importerSocialId?: PersonId,
     private readonly importerPerson?: Ref<Person>
   ) {
-    this.unifiedDocImporter = new UnifiedDocProcessor(this.client, this.logger)
   }
 
   private async initCaches (): Promise<void> {

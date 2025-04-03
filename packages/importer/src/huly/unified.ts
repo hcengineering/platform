@@ -6,23 +6,16 @@ import core, {
   type Doc,
   generateId,
   type Ref,
-  type TxOperations
 } from '@hcengineering/core'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as yaml from 'js-yaml'
-import { Logger } from '../importer/logger'
 import { IntlString } from '../../../platform/types'
 import { readMarkdownContent, readYamlHeader } from './parsing'
 
 export type UnifiedDocProcessResult = Map<string, Array<UnifiedDoc<Doc>>>
 
 export class UnifiedDocProcessor {
-  constructor (
-    private readonly client: TxOperations,
-    private readonly logger: Logger
-  ) {}
-
   async importFromDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
     const unifiedDocs: UnifiedDocProcessResult = new Map()
     await this.processDirectory(directoryPath, unifiedDocs)
