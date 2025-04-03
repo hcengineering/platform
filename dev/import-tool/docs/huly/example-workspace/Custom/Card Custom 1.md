@@ -1,16 +1,9 @@
 ---
-class: documents:mixin:DocumentTemplate
-title: 'Standard Operating Procedure Template'
-docPrefix: SOP
-category: DOC
-author: John Appleseed
-owner: John Appleseed
-abstract: Template for Standard Operating Procedures
-reviewers:
-  - John Appleseed
-approvers:
-  - John Appleseed
+title: Custom Card 1
+aaa: some text
+bbb: true
 ---
+
 # Standard Operating Procedure
 
 ## 1. Purpose
