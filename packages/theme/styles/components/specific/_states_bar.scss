@@ -1,0 +1,90 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* StatesBar */
+.antiStatesBar {
+  overflow-x: auto;
+  display: flex;
+  align-items: center;
+  flex: 1 0;
+  min-width: 0;
+
+  &::-webkit-scrollbar:horizontal { height: 0; }
+  &::-webkit-scrollbar-track { margin: 0.25rem; }
+  &::-webkit-scrollbar-thumb { background-color: var(--scrollbar-bar-color); }
+
+  &.mask-none { mask-image: none }
+  &.mask-left { mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 2rem); }
+  &.mask-right { mask-image: linear-gradient(to left, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 2rem); }
+  &.mask-both {
+    mask-image: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0) 0,
+      rgba(0, 0, 0, 1) 2rem,
+      rgba(0, 0, 0, 1) calc(100% - 2rem),
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+
+  .asb-bar {
+    flex: 1 0 auto;
+    position: relative;
+    display: flex;
+    min-width: 0;
+    width: auto;
+
+    &.noGap {
+      flex: none;
+    }
+
+    &__back {
+      padding: 1px 0.5px;
+      height: calc(1.5rem + 2px);
+      // height: 1.5rem;
+    }
+    &__element {
+      fill: var(--theme-button-default);
+      stroke: var(--theme-button-border);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+
+      &:hover { fill: var(--theme-button-hovered); }
+    }
+    &__selected { fill: var(--theme-button-pressed); }
+    &__disabled { pointer-events: none; }
+
+    .asb-label__container {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      top: 0;
+      left: .5rem;
+      right: .5rem;
+      min-width: 0;
+      width: calc(100% - 1rem);
+      height: 100%;
+      font-weight: 500;
+      font-size: 0.8125rem;
+      color: var(--theme-dark-color);
+
+      &.disabled { pointer-events: none; }
+
+      &.selected {
+        color: var(--theme-caption-color);
+      }
+    }
+  }
+}

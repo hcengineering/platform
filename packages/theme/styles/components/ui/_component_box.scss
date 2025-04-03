@@ -13,8 +13,11 @@
 // limitations under the License.
 //
 
-// DEPRECATED: Этот файл будет удален в будущих версиях.
-// Пожалуйста, используйте импорты конкретных компонентов из директории components/
-// Например: @import 'components/ui/avatar';
-
-@import 'components/index';
+/* Component Box */
+.antiComponentBox {
+  padding: 1rem 1.5rem 1.5rem;
+  background-color: var(--theme-comp-header-color);
+  border-radius: 0.75rem;
+  border: 1px solid var(--theme-comp-header-border);
+  color: var(--theme-caption-color);
+} 

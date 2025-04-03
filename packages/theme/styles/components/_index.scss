@@ -1,0 +1,42 @@
+// Основной файл, импортирующий все компоненты
+// Сгенерировано автоматически в рамках декомпозиции components.scss
+
+// Ядро
+@import 'core/variables';
+@import 'core/mixins';
+@import 'core/base';
+
+// Компоненты макета
+@import 'layout/component';
+@import 'layout/header';
+@import 'layout/modal';
+
+// UI компоненты
+@import 'ui/avatar';
+@import 'ui/accordion';
+@import 'ui/chip';
+@import 'ui/hotkey';
+@import 'ui/antiComponent';
+@import 'ui/component_box';
+
+// Формы
+@import 'forms/radio';
+@import 'forms/select';
+@import 'forms/wrapper';
+
+// Данные
+@import 'data/table';
+@import 'data/list';
+@import 'data/todo';
+@import 'data/presenter';
+@import 'data/list_view';
+@import 'data/column';
+
+// Специфичные компоненты
+@import 'specific/inbox';
+@import 'specific/kanban';
+@import 'specific/states_bar';
+@import 'specific/contact_card';
+
+// Утилиты
+@import 'util/wrapper'; 

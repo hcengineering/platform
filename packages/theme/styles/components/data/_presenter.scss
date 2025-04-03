@@ -13,8 +13,27 @@
 // limitations under the License.
 //
 
-// DEPRECATED: Этот файл будет удален в будущих версиях.
-// Пожалуйста, используйте импорты конкретных компонентов из директории components/
-// Например: @import 'components/ui/avatar';
+/* Presenters */
+.antiPresenter {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
 
-@import 'components/index';
+  .ap-icon {
+    display: flex;
+    align-items: center;
+    color: var(--theme-dark-color);
+    height: 100%;
+    aspect-ratio: 1;
+  }
+  .ap-label {
+    min-width: 0;
+    text-align: left;
+    color: var(--theme-caption-color);
+
+    &.colorInherit { color: inherit; }
+  }
+  &:hover .ap-icon,
+  &:hover .ap-label { color: var(--theme-caption-color); }
+}

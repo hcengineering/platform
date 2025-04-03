@@ -1,0 +1,148 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+.hulyToDoLine-draggable {
+  position: relative;
+  width: 100%;
+
+  &.is-dragging-over-up::before {
+    position: absolute;
+    content: '';
+    inset: 0;
+    border-top: 1px solid var(--global-focus-BorderColor);
+  }
+  &.is-dragging-over-down::before {
+    position: absolute;
+    content: '';
+    inset: 0;
+    border-bottom: 1px solid var(--global-focus-BorderColor);
+  }
+  &.dragging > * {
+    opacity: .5;
+  }
+}
+
+/* ToDo Line */
+.hulyToDoLine-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-1);
+  margin: 0;
+  padding: var(--spacing-0_75) var(--spacing-1) var(--spacing-0_75) var(--spacing-0_75);
+  width: 100%;
+  min-width: 0;
+  color: var(--global-secondary-TextColor);
+  border: none;
+  border-radius: var(--medium-BorderRadius);
+  outline: none;
+
+  .hulyToDoLine-title { color: var(--global-primary-TextColor); }
+  &.isDone {
+    .hulyToDoLine-title {
+      color: var(--global-tertiary-TextColor);
+      text-decoration: line-through;
+    }
+  }
+
+  .hulyToDoLine-statusPriority,
+  .hulyToDoLine-dragbox,
+  .hulyToDoLine-checkbox {
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .hulyToDoLine-dragbox {
+    display: none;
+    padding: 0;
+    width: var(--global-min-Size);
+    height: var(--global-min-Size);
+    color: inherit;
+    border: none;
+    outline: none;
+    cursor: grab;
+  }
+  .hulyToDoLine-statusPriority {
+    position: relative;
+    margin-right: var(--spacing-0_25);
+    min-width: var(--global-min-Size);
+
+    &.isNew::after {
+      position: absolute;
+      content: '';
+      top: var(--spacing-1_25);
+      right: calc(-1 * var(--spacing-0_75));
+      width: var(--spacing-0_5);
+      height: var(--spacing-0_5);
+      background-color: var(--global-primary-LinkColor);
+      border-radius: 50%;
+    }
+  }
+  .hulyToDoLine-checkbox {
+    display: none;
+    width: var(--global-extra-small-Size);
+    height: var(--global-extra-small-Size);
+  }
+  .hulyToDoLine-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    width: var(--global-min-Size);
+    height: var(--global-extra-small-Size);
+  }
+  .hulyToDoLine-label {
+    flex-grow: 1;
+    flex-shrink: 1;
+    color: var(--global-secondary-TextColor);
+
+    &:not(.large) {
+      height: var(--global-extra-small-Size);
+    }
+  }
+
+  &.hovered,
+  &:hover {
+    background-color: var(--global-surface-01-hover-BackgroundColor);
+
+    .priority-container {
+      display: none;
+    }
+    .hulyToDoLine-dragbox,
+    .hulyToDoLine-checkbox {
+      display: flex;
+    }
+  }
+
+  &.isDrag {
+    .priority-container {
+      display: flex;
+    }
+    .hulyToDoLine-dragbox {
+      display: none;
+    }
+  }
+}
+
+/* ToDos in Calendar (WorkSlot) */
+.toDos-container .task-item.dragged {
+  overflow: hidden;
+  background-color: var(--theme-bg-dark-color);
+  border-color: var(--theme-divider-color);
+  border-radius: .125rem;
+  opacity: .75;
+
+  .hideOnDrag { opacity: 0 !important; }
+}

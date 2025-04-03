@@ -13,8 +13,15 @@
 // limitations under the License.
 //
 
-// DEPRECATED: Этот файл будет удален в будущих версиях.
-// Пожалуйста, используйте импорты конкретных компонентов из директории components/
-// Например: @import 'components/ui/avatar';
+.hulyChip-item {
+  padding: var(--spacing-0_25) var(--spacing-0_5);
+  width: fit-content;
+  text-transform: uppercase;
+  color: var(--global-tertiary-TextColor);
+  background-color: var(--global-ui-BackgroundColor);
+  border-radius: var(--extra-small-BorderRadius);
 
-@import 'components/index';
+  &.error {
+    color: var(--button-negative-loading-LabelColor);
+  }
+}

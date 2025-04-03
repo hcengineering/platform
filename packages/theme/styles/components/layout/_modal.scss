@@ -1,0 +1,157 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Modal */
+.hulyModal-container,
+.hulyModal-container .hulyModal-content,
+.hulyModal-container .hulyModal-content__titleGroup,
+.hulyModal-container .hulyModal-content__settingsSet,
+.hulyModal-container .hulyModal-footer {
+  display: flex;
+  flex-direction: column;
+  @include full-width;
+  min-height: 0;
+}
+.hulyModal-container {
+  height: 100%;
+  visibility: visible;
+  
+  &:not(.noTopIndent) { border-top: 1px solid transparent; }
+  &.hidden {
+    visibility: hidden;
+  }
+
+  .hulyModal-content {
+    height: 100%;
+
+    &__titleGroup {
+      flex-shrink: 0;
+      padding: var(--spacing-2) var(--spacing-0_5) 0;
+
+      .hulyChip-item {
+        margin: 0 0 var(--spacing-0_75) var(--spacing-1_5);
+      }
+    }
+    &__settingsSet {
+      flex-shrink: 0;
+
+      &:not(.table) {
+        padding: var(--spacing-4) var(--spacing-2_5) 0;
+      }
+      &.table {
+        padding: var(--spacing-4) var(--spacing-1_5) 0;
+      }
+      &-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+        padding: var(--spacing-1_5) 0;
+        width: 100%;
+        min-width: 0;
+        min-height: var(--global-max-Size);
+        border-bottom: 1px solid var(--global-subtle-ui-BorderColor);
+
+        &:first-child {
+          border-top: 1px solid var(--global-subtle-ui-BorderColor);
+        }
+        .label {
+          text-transform: uppercase;
+          font-weight: 500;
+          font-size: .75rem;
+          font-style: normal;
+          line-height: 1rem;
+          color: var(--global-secondary-TextColor);
+        }
+      }
+    }
+  }
+  .hulyModal-footer {
+    flex-direction: row-reverse;
+    flex-shrink: 0;
+    gap: var(--spacing-1);
+    border-top: 1px solid var(--theme-divider-color);
+  }
+
+  &.type-aside {
+    .hulyHeader-container {
+      border-radius: 0 var(--small-focus-BorderRadius) 0 0;
+
+      .hulyHeader-buttonsGroup {
+        gap: var(--spacing-0_5);
+      }
+    }
+    .hulyModal-footer {
+      padding: var(--spacing-2) var(--spacing-2_5);
+    }
+  }
+  &.type-popup {
+    @include min-width(45rem);
+    background-color: var(--theme-popup-color);
+    border: 1px solid var(--theme-popup-divider);
+    border-radius: var(--large-BorderRadius);
+    box-shadow: var(--global-modal-ShadowX) var(--global-modal-ShadowY) var(--global-modal-ShadowBlur) var(--global-modal-ShadowSpread) var(--global-popover-ShadowColor);
+
+    &.large {
+      @include fixed-width(45rem);
+    }
+    &.medium {
+      @include fixed-width(37.5rem);
+    }
+    &.small {
+      @include fixed-width(30rem);
+    }
+    &.x-small {
+      @include fixed-width(25rem);
+    }
+    &.menu {
+      @include fixed-width(17.5rem);
+    }
+    &.full {
+      @include fit-width;
+    }
+
+    .hulyModal-footer {
+      padding: var(--spacing-1_5);
+      align-items: center;
+    }
+    @media screen and (max-width: 480px) {
+      width: 100vw;
+      height: var(--app-height);
+      min-width: 20rem;
+    }
+  }
+  &.type-aside,
+  &.type-popup {
+    .hulyHeader-container .hulyHeader-titleGroup {
+      text-transform: uppercase;
+      font-family: var(--font-family);
+      font-weight: 500;
+      font-size: .75rem;
+      font-style: normal;
+      line-height: 1rem;
+      color: var(--global-secondary-TextColor);
+    }
+  }
+  &.type-component {
+    background-color: var(--theme-comp-header-color);
+    border: 1px solid var(--theme-navpanel-divider);
+    border-radius: var(--small-focus-BorderRadius);
+  }
+  textarea {
+    font-weight: 400 !important;
+    color: var(--global-tertiary-TextColor) !important;
+  }
+}

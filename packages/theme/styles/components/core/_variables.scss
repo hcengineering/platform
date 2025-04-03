@@ -1,0 +1,42 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+// Карта размеров аватаров
+$avatar-sizes: (
+  "xx-small": (.75rem, .375rem),
+  "inline": (.875rem, .525rem),
+  "tiny": (1.125rem, .625rem),
+  "card": (1.25rem, .75rem),
+  "x-small": (1.5rem, .875rem),
+  "smaller": (1.75rem, 1rem),
+  "small": (2rem, 1.125rem),
+  "medium": (2.5rem, 1.375rem),
+  "large": (4.5rem, 2.75rem),
+  "x-large": (7.5rem, 4.5rem),
+  "2x-large": (10rem, 6rem)
+);
+
+// Переменные для стандартных отступов
+$spacing: (
+  "0_25": 0.25rem,
+  "0_5": 0.5rem, 
+  "0_75": 0.75rem,
+  "1": 1rem,
+  "1_5": 1.5rem,
+  "2": 2rem,
+  "2_5": 2.5rem,
+  "3": 3rem,
+  "4": 4rem
+);

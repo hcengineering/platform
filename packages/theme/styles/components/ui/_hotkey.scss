@@ -13,8 +13,20 @@
 // limitations under the License.
 //
 
-// DEPRECATED: Этот файл будет удален в будущих версиях.
-// Пожалуйста, используйте импорты конкретных компонентов из директории components/
-// Например: @import 'components/ui/avatar';
-
-@import 'components/index';
+.hulyHotKey-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-0_25) var(--spacing-0_5);
+  height: var(--global-min-Size);
+  min-width: var(--global-min-Size);
+  text-align: center;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: .625rem;
+  font-style: normal;
+  line-height: normal;
+  color: var(--global-primary-TextColor);
+  background: var(--button-secondary-hover-BackgroundColor);
+  border-radius: var(--extra-small-BorderRadius);
+}

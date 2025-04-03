@@ -1,0 +1,115 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Huly Component */
+.hulyComponent {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100%;
+  min-height: 0;
+  @include prevent-overflow;
+  border: 1px solid var(--theme-divider-color);
+  border-radius: var(--small-focus-BorderRadius);
+
+  &:not(.modal) {
+    background-color: var(--theme-panel-color);
+  }
+  &.modal {
+    overflow: hidden;
+    background-color: var(--theme-comp-header-color);
+  }
+  &.beforeAside {
+    border-right: none;
+    border-radius: var(--small-focus-BorderRadius) 0 0 var(--small-focus-BorderRadius);
+  }
+  &.aside {
+    border-left: none;
+    border-radius: 0 var(--small-focus-BorderRadius) var(--small-focus-BorderRadius) 0;
+  }
+}
+.hulyComponent-content,
+.hulyComponent-content__container,
+.hulyComponent-content__column,
+.hulyComponent-content__column-group,
+.hulyComponent-content__header,
+.hulyComponent-content__navHeader {
+  display: flex;
+  @include full-width;
+  min-height: 0;
+}
+.hulyComponent-content {
+  &:not(.noShrink) {
+    flex-shrink: 0;
+  }
+  &:not(.withoutMaxWidth) {
+    @include max-width(64rem);
+  }
+  &.gap {
+    gap: var(--spacing-4);
+  }
+  &__container {
+    justify-content: stretch;
+    height: 100%;
+  }
+  &__container:not(.columns),
+  &:not(.columns) {
+    flex-direction: column;
+  }
+  &__column {
+    flex-direction: column;
+    height: 100%;
+
+    &.navigation .hulyNavItem-container,
+    .hulyNavItem-container {
+      margin: 0 0.75rem;
+    }
+    &.content {
+      align-items: stretch;
+    }
+    &-group {
+      flex-direction: column;
+      flex-shrink: 0;
+      height: fit-content;
+    }
+  }
+  &__navHeader {
+    flex-direction: column;
+    flex-shrink: 0;
+
+    &.divide {
+      border-bottom: 1px solid var(--theme-navpanel-divider);
+    }
+    &-menu {
+      @include flex-center;
+      flex-shrink: 0;
+      padding: var(--spacing-2);
+      width: var(--global-extra-large-Size);
+      height: var(--global-extra-large-Size);
+    }
+    &-hint {
+      margin: var(--spacing-0_25) var(--spacing-3) var(--spacing-3) var(--spacing-2);
+    }
+  }
+  &__header {
+    justify-content: space-between;
+    align-self: stretch;
+    padding: 0 0 var(--spacing-1) var(--spacing-1_5);
+  }
+  textarea {
+    font-weight: 400 !important;
+    color: var(--global-tertiary-TextColor) !important;
+  }
+}

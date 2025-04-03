@@ -1,0 +1,125 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Wrapper component */
+.antiWrapper {
+  display: grid;
+  row-gap: 0.5rem;
+  position: relative;
+
+  &.full {
+    width: 100%;
+  }
+
+  &__label {
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    &-title {
+      display: flex;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--theme-content-color);
+      a {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .icon {
+      margin-right: 0.25rem;
+      width: 0.75rem;
+      height: 0.75rem;
+      color: var(--theme-content-color);
+    }
+  }
+
+  &__description {
+    margin-top: -0.25rem;
+    font-size: 0.75rem;
+    color: var(--theme-dark-color);
+  }
+
+  &__tip {
+    position: absolute;
+    margin-top: 0;
+    z-index: 1;
+    background-color: var(--theme-bg-color);
+    border: 1px solid var(--theme-button-border);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--theme-content-color);
+    border-radius: 0.25rem;
+    max-width: 12rem;
+
+    &-icon {
+      position: absolute;
+      z-index: 1;
+      top: -2px;
+      left: calc(1rem - 4px);
+      transform: rotate(45deg);
+      width: 8px;
+      height: 8px;
+      background-color: inherit;
+      border-top: 1px solid var(--theme-button-border);
+      border-left: 1px solid var(--theme-button-border);
+    }
+  }
+
+  &__error {
+    padding-top: 0.25rem;
+    padding-left: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 0.875rem;
+    color: var(--theme-status-critical);
+  }
+
+  &__note {
+    padding-top: 0.25rem;
+    padding-left: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 0.875rem;
+    color: var(--theme-dark-color);
+  }
+
+  &-focus {
+    >.focused {
+      outline: 1px solid var(--primary-button-default);
+      outline-offset: -1px;
+      box-shadow: var(--focus-shadow);
+    }
+  }
+
+  input,
+  select,
+  textarea {
+    transition-property: box-shadow, border-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 0.15s;
+  }
+
+  &.invalid {
+    input,
+    select,
+    textarea,
+    .antiSelect {
+      outline: 1px solid var(--theme-status-critical);
+      outline-offset: -1px;
+    }
+  }
+}
