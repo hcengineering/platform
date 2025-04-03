@@ -111,6 +111,9 @@
     "UseMaxWidth": "Maximale Breite",
     "Sidebar": "Seitenleiste",
     "FontSize": "Schriftgröße",
-    "Language": "Sprache"
+    "Language": "Sprache",
+    "DaysWOValue": "{days, plural, =1 {Tag} other {Tage}}",
+    "WeeksWOValue": "{weeks, plural, =1 {Woche} other {Wochen}}",
+    "MonthsWOValue": "{months, plural, =1 {Monat} other {Monate}}"
   }
 }

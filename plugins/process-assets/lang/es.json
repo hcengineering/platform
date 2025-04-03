@@ -36,6 +36,10 @@
     "Random": "Aleatorio",
     "AllProcesses": "Todos los procesos",
     "MyProcesses": "Mis procesos",
-    "ShowDone": "Mostrar hecho"
+    "ShowDone": "Mostrar hecho",
+    "Add": "Agregar",
+    "Subtract": "Restar",
+    "Offset": "Desplazar",
+    "FirstWorkingDayAfter": "Primer día de trabajo después"
   }
 }

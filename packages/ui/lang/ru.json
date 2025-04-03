@@ -112,6 +112,9 @@
     "UseMaxWidth": "Максимальная ширина",
     "Sidebar": "Боковая панель",
     "FontSize": "Размер шрифта",
-    "Language": "Язык"
+    "Language": "Язык",
+    "DaysWOValue": "{days, plural, one {день} few {дня} other {дней}}",
+    "WeeksWOValue": "{weeks, plural, one {неделя} few {недели} other {недель}}",
+    "MonthsWOValue": "{months, plural, one {месяц} few {месяца} other {месяцев}}"
   }
 }

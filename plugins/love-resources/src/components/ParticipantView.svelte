@@ -97,7 +97,7 @@
     .ava {
       overflow: hidden;
       position: absolute;
-      width: 6rem;
+      height: 50%;
       aspect-ratio: 1;
       border-radius: 50%;
     }

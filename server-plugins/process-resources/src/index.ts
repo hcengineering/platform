@@ -22,6 +22,7 @@ import core, {
   Ref,
   RefTo,
   SortingOrder,
+  Timestamp,
   Tx,
   TxCreateDoc,
   TxProcessor,
@@ -162,19 +163,24 @@ async function executeAction<T extends Doc> (
   }
 }
 
-async function fillValue (value: any, context: SelectedContext, control: TriggerControl): Promise<any> {
+async function fillValue (
+  value: any,
+  context: SelectedContext,
+  control: TriggerControl,
+  execution: Execution
+): Promise<any> {
   if (value === undefined) {
     // we should add error to execution
     throw new Error('Value not found')
   }
   for (const func of context.functions ?? []) {
     try {
-      const transform = control.modelDb.findObject(func)
+      const transform = control.modelDb.findObject(func.func)
       if (transform === undefined) continue
       if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) continue
       const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
       const f = await getResource(funcImpl.func)
-      value = f(value)
+      value = await f(value, func.props, control, execution)
     } catch (err: any) {
       control.ctx.error(err)
     }
@@ -211,7 +217,7 @@ async function getNestedValue (control: TriggerControl, execution: Execution, co
     if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) return
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
-    const reduced = f(target)
+    const reduced = await f(target, {}, control, execution)
     return getObjectValue(context.key, reduced)
   }
   return getObjectValue(context.key, target[0])
@@ -238,7 +244,7 @@ async function getRelationValue (
     if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) return
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
-    const reduced = f(target)
+    const reduced = await f(target, {}, control, execution)
     return getObjectValue(context.key, reduced)
   }
   return getObjectValue(context.key, target[0])
@@ -252,22 +258,27 @@ async function fillParams<T extends Doc> (
   const res: MethodParams<T> = {}
   for (const key in params) {
     const value = (params as any)[key]
-    const context = parseContext(value)
-    if (context !== undefined) {
-      let value = context.fallbackValue
-      if (context.type === 'attribute') {
-        value = await getAttributeValue(control, execution, context)
-      } else if (context.type === 'relation') {
-        value = await getRelationValue(control, execution, context)
-      } else if (context.type === 'nested') {
-        value = await getNestedValue(control, execution, context)
-      }
-      ;(res as any)[key] = await fillValue(value === undefined ? context.fallbackValue : value, context, control)
-    } else {
-      ;(res as any)[key] = value
-    }
+    const valueResult = await getContextValue(value, control, execution)
+    ;(res as any)[key] = valueResult
   }
   return res
+}
+
+async function getContextValue (value: any, control: TriggerControl, execution: Execution): Promise<any> {
+  const context = parseContext(value)
+  if (context !== undefined) {
+    let value = context.fallbackValue
+    if (context.type === 'attribute') {
+      value = await getAttributeValue(control, execution, context)
+    } else if (context.type === 'relation') {
+      value = await getRelationValue(control, execution, context)
+    } else if (context.type === 'nested') {
+      value = await getNestedValue(control, execution, context)
+    }
+    return await fillValue(value === undefined ? context.fallbackValue : value, context, control, execution)
+  } else {
+    return value
+  }
 }
 
 async function changeState (
@@ -479,6 +490,69 @@ export function Trim (value: string): string {
   return value.trim()
 }
 
+export async function Add (
+  value: number,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.offset)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const offset = await getAttributeValue(control, execution, context)
+      return value + offset
+    }
+  } else if (typeof value === 'number') {
+    return value + props.offset
+  }
+  return value
+}
+
+export async function Subtract (
+  value: number,
+  props: Record<string, any>,
+  control: TriggerControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.offset)
+  if (context !== undefined) {
+    if (context.type === 'attribute') {
+      const offset = await getAttributeValue(control, execution, context)
+      return value - offset
+    }
+  } else if (typeof value === 'number') {
+    return value - props.offset
+  }
+  return value
+}
+
+export function Offset (val: Timestamp, props: Record<string, any>): Timestamp {
+  if (typeof val !== 'number') return val
+  const value = new Date(val)
+  const offset = props.offset * (props.direction === 'after' ? 1 : -1)
+  switch (props.offsetType) {
+    case 'days':
+      return value.setDate(value.getDate() + offset)
+    case 'weeks':
+      return value.setDate(value.getDate() + 7 * offset)
+    case 'months':
+      return value.setMonth(value.getMonth() + offset)
+  }
+  return val
+}
+
+export function FirstWorkingDayAfter (val: Timestamp): Timestamp {
+  if (typeof val !== 'number') return val
+  const value = new Date(val)
+  const day = value.getUTCDay()
+  if (day === 6 || day === 0) {
+    const date = value.getDate() + (day === 6 ? 2 : 1)
+    const res = value.setDate(date)
+    return res
+  }
+  return val
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   func: {
@@ -492,7 +566,11 @@ export default async () => ({
     Random,
     UpperCase,
     LowerCase,
-    Trim
+    Trim,
+    Add,
+    Subtract,
+    Offset,
+    FirstWorkingDayAfter
   },
   trigger: {
     OnExecutionCreate,

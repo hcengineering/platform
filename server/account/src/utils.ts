@@ -1310,6 +1310,18 @@ export async function addSocialId (
   return await db.socialId.insertOne(newSocialId)
 }
 
+export async function releaseSocialId (
+  db: AccountDB,
+  personUuid: PersonUuid,
+  type: SocialIdType,
+  value: string
+): Promise<void> {
+  const socialIds = await db.socialId.find({ personUuid, type, value })
+  for (const socialId of socialIds) {
+    await db.socialId.updateOne({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
+  }
+}
+
 export async function getWorkspaceRole (
   db: AccountDB,
   account: PersonUuid,

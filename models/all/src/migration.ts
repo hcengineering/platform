@@ -58,6 +58,7 @@ import { cardOperation } from '@hcengineering/model-card'
 import { aiBotId, aiBotOperation } from '@hcengineering/model-ai-bot'
 import { chatId, chatOperation } from '@hcengineering/model-chat'
 import { inboxId, inboxOperation } from '@hcengineering/model-inbox'
+import { processId, processOperation } from '@hcengineering/model-process'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -104,5 +105,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['survey', surveyOperation],
   [aiBotId, aiBotOperation],
   [chatId, chatOperation],
-  [inboxId, inboxOperation]
+  [inboxId, inboxOperation],
+  [processId, processOperation]
 ]

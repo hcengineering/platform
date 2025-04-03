@@ -216,7 +216,10 @@ async function OnMasterTagCreate (ctx: TxCreateDoc<MasterTag | Tag>[], control: 
     control.txFactory.createTxMixin(createTx.objectId, core.class.Mixin, core.space.Model, setting.mixin.UserMixin, {})
   )
   if (tag._class === card.class.MasterTag) {
-    const viewlets = await control.findAll(control.ctx, view.class.Viewlet, { attachTo: tag.extends })
+    const viewlets = await control.findAll(control.ctx, view.class.Viewlet, {
+      attachTo: tag.extends,
+      variant: { $exists: false }
+    })
     for (const viewlet of viewlets) {
       const base = extractObjectProps(viewlet)
       res.push(

@@ -13,16 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonIcon, IconClose, Label, resizeObserver, Scroller, Submenu } from '@hcengineering/ui'
+  import {
+    ButtonIcon,
+    closeTooltip,
+    eventToHTMLElement,
+    IconClose,
+    IconSettings,
+    Label,
+    resizeObserver,
+    Scroller,
+    showPopup,
+    Submenu
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import core, { Class, Doc, Ref } from '@hcengineering/core'
-  import { Context, ProcessFunction, SelectedContext } from '@hcengineering/process'
+  import core, { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
+  import { Context, Func, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import { getClient } from '@hcengineering/presentation'
   import { AttributeCategory } from '@hcengineering/view'
 
   export let contextValue: SelectedContext
   export let context: Context
+  export let attribute: AnyAttribute
   export let attrClass: Ref<Class<Doc>>
   export let category: AttributeCategory
   export let onChange: (contextValue: SelectedContext) => void
@@ -58,14 +70,14 @@
 
   function getAvailableFunctions (
     context: Context,
-    functions: Ref<ProcessFunction>[] | undefined,
+    functions: Func[] | undefined,
     attrClass: Ref<Class<Doc>>,
     category: AttributeCategory
   ): Ref<ProcessFunction>[] {
     const result: Ref<ProcessFunction>[] = []
     const allFunctions = client.getModel().findAllSync(plugin.class.ProcessFunction, { of: attrClass, category })
     for (const f of allFunctions) {
-      if (functions === undefined || functions.findIndex((p) => p === f._id) === -1) {
+      if (functions === undefined || f.allowMany === true || functions.findIndex((p) => p.func === f._id) === -1) {
         result.push(f._id)
       }
     }
@@ -74,9 +86,47 @@
 
   function onFallback (): void {}
 
+  $: funcs = client
+    .getModel()
+    .findAllSync(plugin.class.ProcessFunction, { _id: { $in: contextValue.functions?.map((it) => it.func) } })
+
+  $: sourceFunc =
+    contextValue.sourceFunction !== undefined
+      ? client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: contextValue.sourceFunction })[0]
+      : undefined
+
+  $: functionButtonIndex = functionsLength + (sourceFunc !== undefined ? 1 : 0)
+
   function onFunctionSelect (e: Ref<ProcessFunction>): void {
+    // if editor is undefined
+    const func = client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: e })[0]
+    if (func.editor === undefined) {
+      addFunction(e, {})
+      closeTooltip()
+    } else {
+      showPopup(
+        func.editor,
+        {
+          func,
+          context,
+          attribute
+        },
+        elements[functionButtonIndex],
+        (res) => {
+          if (res != null) {
+            addFunction(e, res)
+          }
+        }
+      )
+    }
+  }
+
+  function addFunction (func: Ref<ProcessFunction>, props: Record<string, any>): void {
     const arr = contextValue.functions ?? []
-    arr.push(e)
+    arr.push({
+      func,
+      props
+    })
     contextValue.functions = arr
     onChange(contextValue)
   }
@@ -88,7 +138,7 @@
 
   function onFunctionChange (e: Ref<ProcessFunction>, i: number): void {
     if (contextValue.functions === undefined) return
-    contextValue.functions[i] = e
+    contextValue.functions[i].func = e
     contextValue.functions = contextValue.functions
     onChange(contextValue)
   }
@@ -99,9 +149,8 @@
     }
   }
 
-  function onFunctionRemove (id: Ref<ProcessFunction>): void {
+  function onFunctionRemove (pos: number): void {
     const arr = contextValue.functions ?? []
-    const pos = arr.findIndex((p) => p === id)
     if (pos !== -1) {
       arr.splice(pos, 1)
     }
@@ -109,12 +158,33 @@
     onChange(contextValue)
   }
 
-  $: funcs = client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: { $in: contextValue.functions } })
-
-  $: sourceFunc =
-    contextValue.sourceFunction !== undefined
-      ? client.getModel().findAllSync(plugin.class.ProcessFunction, { _id: contextValue.sourceFunction })[0]
-      : undefined
+  function onConfigure (e: MouseEvent, func: ProcessFunction, pos: number): void {
+    if (contextValue.functions === undefined || func.editor === undefined) return
+    const val = contextValue.functions[pos]
+    showPopup(
+      func.editor,
+      {
+        func,
+        context,
+        attribute,
+        props: val?.props ?? {}
+      },
+      eventToHTMLElement(e),
+      (res) => {
+        if (res != null) {
+          if (contextValue.functions !== undefined) {
+            const func = contextValue.functions[pos]
+            if (func === undefined) return
+            func.props = res
+            contextValue.functions[pos] = func
+            contextValue.functions = contextValue.functions
+            console.log(contextValue.functions)
+            onChange(contextValue)
+          }
+        }
+      }
+    )
+  }
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -175,12 +245,22 @@
               <Label label={f.label} />
             </div>
             <div>
+              {#if f.editor}
+                <ButtonIcon
+                  icon={IconSettings}
+                  size="small"
+                  kind="tertiary"
+                  on:click={(e) => {
+                    onConfigure(e, f, i)
+                  }}
+                />
+              {/if}
               <ButtonIcon
                 icon={IconClose}
                 size="small"
                 kind="tertiary"
                 on:click={() => {
-                  onFunctionRemove(f._id)
+                  onFunctionRemove(i)
                 }}
               />
             </div>
@@ -189,12 +269,12 @@
       {/each}
       {#if availableFunctions.length > 0}
         <Submenu
-          bind:element={elements[functionsLength + (sourceFunc !== undefined ? 1 : 0)]}
+          bind:element={elements[functionButtonIndex]}
           on:keydown={(event) => {
-            keyDown(event, functionsLength + (sourceFunc !== undefined ? 1 : 0))
+            keyDown(event, functionButtonIndex)
           }}
           on:mouseover={() => {
-            elements[functionsLength + (sourceFunc !== undefined ? 1 : 0)]?.focus()
+            elements[functionButtonIndex]?.focus()
           }}
           label={plugin.string.Functions}
           props={{

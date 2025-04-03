@@ -51,7 +51,7 @@ export function getContext (
   attr?: Ref<AnyAttribute>
 ): Context {
   let attributes = getClassAttributes(client, process.masterTag, target, category)
-  if (attr !== undefined) {
+  if (attr !== undefined && category === 'object') {
     attributes = attributes.filter((it) => it._id !== attr)
   }
   const nested: Record<string, NestedContext> = {}
