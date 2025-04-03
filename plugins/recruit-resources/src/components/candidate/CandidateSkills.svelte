@@ -1,16 +1,16 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
+  Copyright © 2020 Anticrm Platform Contributors.
+
+  Licensed under the Eclipse Public License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License. You may
+  obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+  See the License for the specific language governing permissions and
+  limitations under the License.
 -->
 <script lang="ts">
   import { Component } from '@hcengineering/ui'
@@ -60,11 +60,11 @@
     kind: 'regular',
     size: 'large'
   }}
-  on:open={(evt: { detail: TagElement }) => {
-    addTagRef(evt.detail)
+  on:open={({ detail }) => {
+    addTagRef(detail)
   }}
-  on:delete={(evt: { detail: { _id: Ref<TagElement> } }) => {
-    object.skills = object.skills.filter((it: TagReference) => it.tag !== evt.detail._id)
+  on:delete={({ detail }) => {
+    object.skills = object.skills.filter((it) => it.tag !== detail._id)
   }}
 />
 {#if object.skills.length > 0}
@@ -82,14 +82,14 @@
         newElements,
         countLabel: recruit.string.NumberSkills
       }}
-      on:open={(evt: { detail: TagElement }) => {
-        addTagRef(evt.detail)
+      on:open={({ detail }) => {
+        addTagRef(detail)
       }}
-      on:delete={(evt: { detail: Ref<TagReference> }) => {
-        object.skills = object.skills.filter((it: TagReference) => it._id !== evt.detail)
+      on:delete={({ detail }) => {
+        object.skills = object.skills.filter((it) => it._id !== detail)
       }}
-      on:change={(evt: { detail: { tag: { weight: number } } }) => {
-        evt.detail.tag.weight = evt.detail.tag.weight
+      on:change={({ detail }) => {
+        detail.tag.weight = detail.tag.weight
         object.skills = object.skills
       }}
     />
