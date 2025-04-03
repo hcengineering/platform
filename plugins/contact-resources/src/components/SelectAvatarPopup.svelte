@@ -227,7 +227,7 @@
           avatarProps: selectedAvatarProps
         }}
         direct={selectedAvatarType === AvatarType.IMAGE ? selectedFile : undefined}
-        size={'2x-large'}
+        size={'xxl'}
         {icon}
         {name}
       />
