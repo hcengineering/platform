@@ -15,6 +15,7 @@
 <script lang="ts">
   import {
     ButtonIcon,
+    CheckBox,
     closeTooltip,
     eventToHTMLElement,
     IconClose,
@@ -31,6 +32,7 @@
   import { Context, Func, ProcessFunction, SelectedContext } from '@hcengineering/process'
   import { getClient } from '@hcengineering/presentation'
   import { AttributeCategory } from '@hcengineering/view'
+  import FallbackEditor from '../contextEditors/FallbackEditor.svelte'
 
   export let contextValue: SelectedContext
   export let context: Context
@@ -84,8 +86,6 @@
     return result
   }
 
-  function onFallback (): void {}
-
   $: funcs = client
     .getModel()
     .findAllSync(plugin.class.ProcessFunction, { _id: { $in: contextValue.functions?.map((it) => it.func) } })
@@ -96,6 +96,20 @@
       : undefined
 
   $: functionButtonIndex = functionsLength + (sourceFunc !== undefined ? 1 : 0)
+
+  function onFallback (): void {
+    showPopup(FallbackEditor, { contextValue, attribute }, elements[functionButtonIndex + 1], (res) => {
+      if (res != null) {
+        if (res.value !== undefined) {
+          contextValue.fallbackValue = res.value
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete contextValue.fallbackValue
+        }
+        onChange(contextValue)
+      }
+    })
+  }
 
   function onFunctionSelect (e: Ref<ProcessFunction>): void {
     // if editor is undefined
@@ -184,6 +198,15 @@
         }
       }
     )
+  }
+
+  function onFallbackChange (): void {
+    if (contextValue.fallbackValue === undefined) {
+      contextValue.fallbackValue = null
+    } else {
+      contextValue.fallbackValue = undefined
+    }
+    onChange(contextValue)
   }
 </script>
 
@@ -287,22 +310,47 @@
         <!-- <div class="menu-separator" /> -->
       {/if}
     {/if}
+    <div class="menu-separator" />
     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-    <!-- <button
-      bind:this={elements[functionsLength + 1 + (sourceFunc !== undefined ? 1 : 0)]}
+    <button
+      bind:this={elements[functionButtonIndex + 1]}
       on:keydown={(event) => {
-        keyDown(event, functionsLength + 1 + (sourceFunc !== undefined ? 1 : 0))
+        keyDown(event, functionButtonIndex + 1)
       }}
       on:mouseover={() => {
-        elements[functionsLength + 1 + (sourceFunc !== undefined ? 1 : 0)]?.focus()
+        elements[functionButtonIndex + 1]?.focus()
       }}
-      on:click={onFallback}
-      class="menu-item"
+      on:click={onFallbackChange}
+      class="menu-item flex-gap-2 fallback"
     >
-      <span class="overflow-label pr-1">
-        <Label label={plugin.string.FallbackValue} />
-      </span>
-    </button> -->
+      <div>
+        <div class="label">
+          <Label label={plugin.string.Required} />
+        </div>
+        <div class="text-sm">
+          <Label label={plugin.string.FallbackValueError} />
+        </div>
+      </div>
+      <CheckBox checked={contextValue.fallbackValue === undefined} size={'medium'} kind={'primary'} />
+    </button>
+    {#if contextValue.fallbackValue !== undefined}
+      <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+      <button
+        bind:this={elements[functionButtonIndex + 2]}
+        on:keydown={(event) => {
+          keyDown(event, functionButtonIndex + 2)
+        }}
+        on:mouseover={() => {
+          elements[functionButtonIndex + 2]?.focus()
+        }}
+        on:click={onFallback}
+        class="menu-item"
+      >
+        <span class="overflow-label pr-1">
+          <Label label={plugin.string.FallbackValue} />
+        </span>
+      </button>
+    {/if}
   </Scroller>
   <div class="menu-space" />
 </div>
@@ -313,5 +361,9 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+  }
+
+  .fallback {
+    padding-right: 1.25rem;
   }
 </style>
