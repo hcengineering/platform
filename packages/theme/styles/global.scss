@@ -16,6 +16,7 @@
 @import "./_vars.scss";
 @import "./_colors.scss";
 @import "./_lumia-colors.scss";
+@import "./mixins.scss";
 @import "./_layouts.scss";
 @import "./_print.scss";
 @import "./common.scss";
@@ -24,7 +25,6 @@
 @import "./components.scss";
 @import "./dialogs.scss";
 @import "./popups.scss";
-@import "./mixins.scss";
 @import "./panel.scss";
 @import "./prose.scss";
 @import "./tables.scss";
