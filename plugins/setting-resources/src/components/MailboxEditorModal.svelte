@@ -38,7 +38,7 @@
 
   function validateName (name: string): boolean {
     const n = name.trim()
-    return n.length >= mailboxOptions.minNameLength && n.length <= mailboxOptions.maxNameLength
+    return n.length >= mailboxOptions.minNameLength && n.length <= mailboxOptions.maxNameLength && !name.includes('+')
   }
 
   async function createMailbox (): Promise<void> {
