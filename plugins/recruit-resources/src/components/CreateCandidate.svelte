@@ -371,8 +371,7 @@
 <Card
   label={recruit.string.CreateTalent}
   okAction={createCandidate}
-  canSave={!loading &&
-    ((object.firstName?.length ?? 0) > 0 || (object.lastName?.length ?? 0) > 0 || object.channels.length > 0)}
+  canSave={!loading && (((object.firstName && object.firstName.length > 0) || (object.lastName && object.lastName.length > 0)) || (object.channels && object.channels.length > 0))}
   on:close={() => {
     dispatch('close')
   }}
