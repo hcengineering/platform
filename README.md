@@ -40,6 +40,7 @@ You can find API usage examples in the [Huly examples](https://github.com/hcengi
   - [Verification](#verification)
   - [Fast start](#fast-start)
   - [Branches \& Contributing](#branches--contributing)
+  - [Authentication](#authentication)
   - [Installation](#installation)
   - [Build and run](#build-and-run)
   - [Run in development mode](#run-in-development-mode)
