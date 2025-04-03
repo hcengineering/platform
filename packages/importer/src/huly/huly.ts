@@ -27,8 +27,8 @@ import core, {
   Attribute,
   type Class,
   type Doc,
-  isId,
   generateId,
+  isId,
   PersonId,
   type Ref,
   SocialIdType,
@@ -43,7 +43,6 @@ import sizeOf from 'image-size'
 import * as yaml from 'js-yaml'
 import { contentType } from 'mime-types'
 import * as path from 'path'
-import { IntlString } from '../../../platform/types'
 import { ImportWorkspaceBuilder } from '../importer/builder'
 import {
   type ImportAttachment,
@@ -63,7 +62,7 @@ import {
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
-import { Props, UnifiedDoc } from '../types'
+import { UnifiedDoc } from '../types'
 import { readMarkdownContent, readYamlHeader } from './parsing'
 import { UnifiedDocProcessor } from './unified'
 
@@ -571,161 +570,6 @@ export class HulyFormatImporter {
     }
 
     return builder.build()
-  }
-
-  private async processSubTagsRecursively (
-    builder: ImportWorkspaceBuilder,
-    tagPath: string,
-    currentPath: string,
-    parentMasterTagId: Ref<MasterTag>,
-    parentAttributesByLabel: Map<string, UnifiedDoc<Attribute<MasterTag>>>
-  ): Promise<void> {
-    // Ищем YAML файлы, которые могут быть дочерними мастер-тегами
-    const yamlFiles = fs.readdirSync(currentPath).filter((f) => f.endsWith('.yaml'))
-
-    for (const yamlFile of yamlFiles) {
-      const yamlPath = path.join(currentPath, yamlFile)
-      const dirName = path.basename(yamlFile, '.yaml')
-      const dirPath = path.join(currentPath, dirName)
-
-      try {
-        // Читаем конфигурацию YAML файла
-        const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
-
-        // Проверяем, является ли файл мастер-тегом
-        if (yamlConfig.class !== card.class.MasterTag) {
-          continue // Пропускаем, если это не мастер-тег
-        }
-
-        // Создаем дочерний мастер-тег с передачей parentMasterTagId
-        const childMasterTag = await this.processMasterTag(yamlConfig, parentMasterTagId)
-        const childMasterTagId = childMasterTag.props._id as Ref<MasterTag>
-        if (childMasterTagId === undefined) {
-          throw new Error('Child master tag ID is undefined')
-        }
-
-        // Добавляем мастер-тег в билдер
-        builder.addMasterTag(yamlPath, childMasterTag)
-
-        // Обрабатываем атрибуты дочернего мастер-тега
-        const childAttributesByLabel = await this.processMasterTagAttributes(yamlConfig, childMasterTagId)
-        builder.addMasterTagAttributes(yamlPath, Array.from(childAttributesByLabel.values()))
-
-        // Проверяем наличие директории для обработки карточек и сабтегов
-        if (fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) {
-          // Рекурсивно обрабатываем содержимое директории дочернего мастер-тега
-          // Сначала обрабатываем сабтеги
-          await this.processSubTagsRecursively(builder, yamlPath, dirPath, childMasterTagId, childAttributesByLabel)
-          // Затем обрабатываем карточки
-          await this.processCardsRecursively(builder, yamlPath, dirPath, childMasterTagId, childAttributesByLabel)
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
-        this.logger.error(`Invalid master tag configuration in ${yamlFile}: ${message}`)
-      }
-    }
-  }
-
-  private async processMasterTag (yamlData: Record<string, any>, parentMasterTagId?: Ref<MasterTag>): Promise<UnifiedDoc<MasterTag>> {
-    const { class: _class, title } = yamlData
-    if (_class !== card.class.MasterTag) {
-      throw new Error('Invalid master tag data')
-    }
-
-    const masterTag: UnifiedDoc<MasterTag> = {
-      _class: card.class.MasterTag,
-      props: {
-        _id: generateId<MasterTag>(),
-        space: core.space.Model,
-        extends: parentMasterTagId ?? card.class.Card,
-        label: 'embedded:embedded:' + title as IntlString, // todo: check if it's correct
-        kind: 0,
-        icon: card.icon.MasterTag
-      }
-    }
-
-    return masterTag
-  }
-
-  private async processMasterTagAttributes (yamlConfig: Record<string, any>, masterTagId: Ref<MasterTag>): Promise<Map<string, UnifiedDoc<Attribute<MasterTag>>>> {
-    const { properties } = yamlConfig
-
-    const attributesByLabel = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
-    for (const property of properties) {
-      const attr: UnifiedDoc<Attribute<MasterTag>> = {
-        _class: core.class.Attribute,
-        props: {
-          space: core.space.Model,
-          attributeOf: masterTagId,
-          name: generateId<Attribute<MasterTag>>(),
-          label: 'embedded:embedded:' + property.label as IntlString, // todo: check if it's correct
-          isCustom: true,
-          type: {
-            _class: 'core:class:' + property.type
-          },
-          defaultValue: property.defaultValue ?? null
-        }
-      }
-      attributesByLabel.set(property.label, attr)
-    }
-    return attributesByLabel
-  }
-
-  private async processCardsRecursively ( // todo: process masterTag children recursively
-    builder: ImportWorkspaceBuilder,
-    tagPath: string,
-    currentPath: string,
-    masterTagId: Ref<MasterTag>,
-    attributesByLabel: Map<string, UnifiedDoc<Attribute<MasterTag>>>
-  ): Promise<void> {
-    const cardFiles = fs.readdirSync(currentPath).filter((f) => f.endsWith('.md'))
-
-    for (const cardFile of cardFiles) {
-      const cardPath = path.join(currentPath, cardFile)
-      const cardHeader = await readYamlHeader(cardPath)
-
-      if (cardHeader.class === undefined) { // means it's a card of class MasterTag
-        const card = await this.processCard(cardHeader, cardPath, masterTagId, attributesByLabel)
-        builder.addCard(tagPath, card)
-      } else {
-        // todo: check if it's a child master tag, or else throw error
-        throw new Error(`Unknown card class ${cardHeader.class} in ${cardFile}`)
-      }
-
-      if (fs.existsSync(cardPath) && fs.statSync(cardPath).isDirectory()) {
-        await this.processCardsRecursively(builder, tagPath, cardPath, masterTagId, attributesByLabel)
-      }
-    }
-  }
-
-  private async processCard (
-    cardHeader: Record<string, any>,
-    cardPath: string,
-    masterTagId: Ref<MasterTag>,
-    attributesByTitle: Map<string, UnifiedDoc<Attribute<MasterTag>>>
-  ): Promise<UnifiedDoc<Card>> {
-    const { _class, title, ...customProperties } = cardHeader
-
-    const props: Record<string, any> = {
-      _id: generateId(),
-      space: core.space.Workspace,
-      title
-    }
-
-    for (const [key, value] of Object.entries(customProperties)) {
-      const attributeName = attributesByTitle.get(key)?.props.name
-      if (attributeName === undefined) {
-        throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
-      }
-      props[attributeName] = value
-    }
-
-    return {
-      _class: masterTagId,
-      collabField: 'content',
-      contentProvider: () => readMarkdownContent(cardPath),
-      props: props as Props<Card> // todo: what is the correct props type?
-    }
   }
 
   private async processIssuesRecursively (
