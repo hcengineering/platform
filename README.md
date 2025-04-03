@@ -94,14 +94,14 @@ This project uses GitHub Packages for dependency management. To successfully dow
 
 Follow these steps:
 
-1. **Generate a GitHub Token:**
+1. Generate a GitHub Token:
 - Log in to your GitHub account
-- Go to **Settings** > **Developer settings** > **[Personal access tokens](https://github.com/settings/personal-access-tokens)**
+- Go to **Settings** > **Developer settings** > **Personal access tokens** (https://github.com/settings/personal-access-tokens)
 - Click **Generate new token**
 - Select the required scopes (at least `read:packages`)
 - Generate the token and copy it
 
-2. **Authenticate with npm:**
+2. Authenticate with npm:
 ```bash
 npm login --registry=https://npm.pkg.github.com
 ```
