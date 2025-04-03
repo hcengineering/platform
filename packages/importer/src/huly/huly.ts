@@ -27,6 +27,7 @@ import core, {
   Attribute,
   type Class,
   type Doc,
+  isId,
   generateId,
   PersonId,
   type Ref,
@@ -63,6 +64,8 @@ import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
 import { Props, UnifiedDoc } from '../types'
+import { readMarkdownContent, readYamlHeader } from './parsing'
+import { UnifiedDocProcessor } from './unified'
 
 export interface HulyComment {
   author: string
@@ -350,6 +353,8 @@ export class HulyFormatImporter {
 
   private readonly personIdByEmail = new Map<string, PersonId>()
 
+  private readonly unifiedDocImporter: UnifiedDocProcessor
+
   constructor (
     private readonly client: TxOperations,
     private readonly fileUploader: FileUploader,
@@ -357,6 +362,7 @@ export class HulyFormatImporter {
     private readonly importerSocialId?: PersonId,
     private readonly importerPerson?: Ref<Person>
   ) {
+    this.unifiedDocImporter = new UnifiedDocProcessor(this.client, this.logger)
   }
 
   private async initCaches (): Promise<void> {
@@ -482,6 +488,29 @@ export class HulyFormatImporter {
       }
     }
 
+    // Импортируем UnifiedDoc сущности
+    const unifiedResult = await this.unifiedDocImporter.importFromDirectory(folderPath)
+
+    // Разбираем и добавляем в билдер по классу
+    for (const [path, docs] of unifiedResult.entries()) {
+      for (const doc of docs) {
+        switch (doc._class) {
+          case card.class.MasterTag:
+            builder.addMasterTag(path, doc as UnifiedDoc<MasterTag>)
+            break
+          case core.class.Attribute:
+            builder.addMasterTagAttributes(path, [doc as UnifiedDoc<Attribute<MasterTag>>])
+            break
+          default:
+            if (isId(doc._class)) {
+              builder.addCard(path, doc as UnifiedDoc<Card>)
+            } else {
+              this.logger.error(`Unknown doc class ${String(doc._class)} for path ${path}`)
+            }
+        }
+      }
+    }
+
     // Process all yaml files first
     const yamlFiles = fs.readdirSync(folderPath).filter((f) => f.endsWith('.yaml') && f !== 'settings.yaml')
 
@@ -528,22 +557,7 @@ export class HulyFormatImporter {
           }
 
           case card.class.MasterTag: {
-            const masterTag = await this.processMasterTag(spaceConfig)
-            const masterTagId = masterTag.props._id as Ref<MasterTag>
-            if (masterTagId === undefined) {
-              throw new Error('Master tag ID is undefined')
-            }
-            builder.addMasterTag(spacePath, masterTag)
-
-            const attributesByLabel = await this.processMasterTagAttributes(spaceConfig, masterTagId)
-            builder.addMasterTagAttributes(spacePath, Array.from(attributesByLabel.values()))
-
-            if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
-              // Сначала обрабатываем дочерние мастер-теги
-              await this.processSubTagsRecursively(builder, spacePath, spacePath, masterTagId, attributesByLabel)
-              // Затем обрабатываем карточки
-              await this.processCardsRecursively(builder, spacePath, spacePath, masterTagId, attributesByLabel)
-            }
+            this.logger.log(`Skipping ${spaceName}: master tag already processed`)
             break
           }
 
@@ -669,7 +683,7 @@ export class HulyFormatImporter {
 
     for (const cardFile of cardFiles) {
       const cardPath = path.join(currentPath, cardFile)
-      const cardHeader = (await this.readYamlHeader(cardPath)) as Record<string, any>
+      const cardHeader = await readYamlHeader(cardPath)
 
       if (cardHeader.class === undefined) { // means it's a card of class MasterTag
         const card = await this.processCard(cardHeader, cardPath, masterTagId, attributesByLabel)
@@ -710,7 +724,7 @@ export class HulyFormatImporter {
     return {
       _class: masterTagId,
       collabField: 'content',
-      contentProvider: () => this.readMarkdownContent(cardPath),
+      contentProvider: () => readMarkdownContent(cardPath),
       props: props as Props<Card> // todo: what is the correct props type?
     }
   }
@@ -726,7 +740,7 @@ export class HulyFormatImporter {
 
     for (const issueFile of issueFiles) {
       const issuePath = path.join(currentPath, issueFile)
-      const issueHeader = (await this.readYamlHeader(issuePath)) as HulyIssueHeader
+      const issueHeader = (await readYamlHeader(issuePath)) as HulyIssueHeader
 
       if (issueHeader.class === undefined) {
         this.logger.error(`Skipping ${issueFile}: not an issue`)
@@ -750,7 +764,7 @@ export class HulyFormatImporter {
           class: tracker.class.Issue,
           title: issueHeader.title,
           number: parseInt(issueNumber ?? 'NaN'),
-          descrProvider: async () => await this.readMarkdownContent(issuePath),
+          descrProvider: async () => await readMarkdownContent(issuePath),
           status: { name: issueHeader.status },
           priority: issueHeader.priority,
           estimation: issueHeader.estimation,
@@ -838,7 +852,7 @@ export class HulyFormatImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = (await this.readYamlHeader(docPath)) as HulyDocumentHeader
+      const docHeader = (await readYamlHeader(docPath)) as HulyDocumentHeader
 
       if (docHeader.class === undefined) {
         this.logger.error(`Skipping ${docFile}: not a document`)
@@ -859,7 +873,7 @@ export class HulyFormatImporter {
           id: docMeta.id as Ref<Document>,
           class: document.class.Document,
           title: docHeader.title,
-          descrProvider: async () => await this.readMarkdownContent(docPath),
+          descrProvider: async () => await readMarkdownContent(docPath),
           subdocs: [] // Will be added via builder
         }
 
@@ -886,7 +900,7 @@ export class HulyFormatImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = (await this.readYamlHeader(docPath)) as
+      const docHeader = (await readYamlHeader(docPath)) as
         | HulyControlledDocumentHeader
         | HulyDocumentTemplateHeader
 
@@ -1087,7 +1101,7 @@ export class HulyFormatImporter {
       reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
       approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
       coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
-      descrProvider: async () => await this.readMarkdownContent(docPath),
+      descrProvider: async () => await readMarkdownContent(docPath),
       ccReason: header.changeControl?.reason,
       ccImpact: header.changeControl?.impact,
       ccDescription: header.changeControl?.description,
@@ -1125,28 +1139,12 @@ export class HulyFormatImporter {
       reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
       approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
       coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
-      descrProvider: async () => await this.readMarkdownContent(docPath),
+      descrProvider: async () => await readMarkdownContent(docPath),
       ccReason: header.changeControl?.reason,
       ccImpact: header.changeControl?.impact,
       ccDescription: header.changeControl?.description,
       subdocs: []
     }
-  }
-
-  private async readYamlHeader (filePath: string): Promise<any> {
-    this.logger.log('Read YAML header from: ' + filePath)
-    const content = fs.readFileSync(filePath, 'utf8')
-    const match = content.match(/^---\n([\s\S]*?)\n---/)
-    if (match != null) {
-      return yaml.load(match[1])
-    }
-    return {}
-  }
-
-  private async readMarkdownContent (filePath: string): Promise<string> {
-    const content = fs.readFileSync(filePath, 'utf8')
-    const match = content.match(/^---\n[\s\S]*?\n---\n(.*)$/s)
-    return match != null ? match[1] : content
   }
 
   private async cacheAccountsByEmails (): Promise<void> {
