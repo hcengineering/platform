@@ -324,12 +324,12 @@ class AccountClientImpl implements AccountClient {
     autoJoin: boolean,
     firstName: string,
     lastName: string,
-    navigateUr?: string,
+    navigateUrl?: string,
     expHours?: number
   ): Promise<string> {
     const request = {
       method: 'createInviteLink' as const,
-      params: { email, role, autoJoin, firstName, lastName, navigateUr, expHours }
+      params: { email, role, autoJoin, firstName, lastName, navigateUrl, expHours }
     }
 
     return await this.rpc(request)
