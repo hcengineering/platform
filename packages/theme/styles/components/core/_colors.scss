@@ -1,0 +1,137 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+// Импортируем глобальные цвета
+@import '../../_colors';
+
+/* 
+ * Единая система цветовых переменных для компонентов
+ * Эти переменные должны использоваться во всех компонентах
+ */
+
+// Базовые цвета компонентов
+$huly-colors: (
+  // Основные цвета фона
+  'bg': (
+    'default': var(--theme-bg-color),
+    'accent': var(--theme-bg-accent-color),
+    'dark': var(--theme-bg-dark-color),
+    'panel': var(--theme-panel-color),
+    'comp-header': var(--theme-comp-header-color),
+    'navpanel': var(--theme-navpanel-color),
+    'popup': var(--theme-popup-color),
+    'table-header': var(--theme-table-header-color),
+    'table-row': var(--theme-table-row-color)
+  ),
+  
+  // Основные цвета текста
+  'text': (
+    'primary': var(--theme-content-color),
+    'secondary': var(--theme-dark-color),
+    'tertiary': var(--theme-halfcontent-color),
+    'caption': var(--theme-caption-color),
+    'disabled': var(--theme-trans-color),
+    'link': var(--theme-link-color)
+  ),
+  
+  // Цвета границ и разделителей
+  'border': (
+    'default': var(--theme-button-border),
+    'divider': var(--theme-divider-color),
+    'navpanel': var(--theme-navpanel-divider),
+    'focus': var(--theme-editbox-focus-border),
+    'table': var(--theme-table-border-color)
+  ),
+  
+  // Цвета кнопок
+  'button': (
+    'default': var(--theme-button-default),
+    'hovered': var(--theme-button-hovered),
+    'pressed': var(--theme-button-pressed),
+    'focused': var(--theme-button-focused),
+    'disabled': var(--theme-button-disabled),
+    'primary-text': var(--primary-button-color),
+    'primary-default': var(--primary-button-default),
+    'primary-hovered': var(--primary-button-hovered),
+    'primary-pressed': var(--primary-button-pressed)
+  ),
+  
+  // Статусы
+  'status': (
+    'online': var(--activity-status-active),
+    'offline': var(--activity-status-away),
+    'busy': var(--activity-status-busy),
+    'dnd': var(--activity-status-dnd)
+  )
+);
+
+// Функция для получения цвета из карты
+@function huly-color($category, $type) {
+  @return map-get(map-get($huly-colors, $category), $type);
+}
+
+// Цветовые переменные для использования в компонентах
+$bg-default: huly-color('bg', 'default');
+$bg-panel: huly-color('bg', 'panel');
+$bg-comp-header: huly-color('bg', 'comp-header');
+$bg-navpanel: huly-color('bg', 'navpanel');
+$bg-popup: huly-color('bg', 'popup');
+$bg-table-header: huly-color('bg', 'table-header');
+$bg-table-row: huly-color('bg', 'table-row');
+
+$text-primary: huly-color('text', 'primary');
+$text-secondary: huly-color('text', 'secondary');
+$text-tertiary: huly-color('text', 'tertiary');
+$text-caption: huly-color('text', 'caption');
+$text-disabled: huly-color('text', 'disabled');
+$text-link: huly-color('text', 'link');
+
+$border-default: huly-color('border', 'default');
+$border-divider: huly-color('border', 'divider');
+$border-navpanel: huly-color('border', 'navpanel');
+$border-focus: huly-color('border', 'focus');
+$border-table: huly-color('border', 'table');
+
+$button-default: huly-color('button', 'default');
+$button-hovered: huly-color('button', 'hovered');
+$button-pressed: huly-color('button', 'pressed');
+$button-focused: huly-color('button', 'focused');
+$button-disabled: huly-color('button', 'disabled');
+$button-primary-text: huly-color('button', 'primary-text');
+$button-primary-default: huly-color('button', 'primary-default');
+$button-primary-hovered: huly-color('button', 'primary-hovered');
+$button-primary-pressed: huly-color('button', 'primary-pressed');
+
+$status-online: huly-color('status', 'online');
+$status-offline: huly-color('status', 'offline');
+$status-busy: huly-color('status', 'busy');
+$status-dnd: huly-color('status', 'dnd');
+
+// Миксины для цветов
+@mixin bg-color($type: 'default') {
+  background-color: huly-color('bg', $type);
+}
+
+@mixin text-color($type: 'primary') {
+  color: huly-color('text', $type);
+}
+
+@mixin border-color($type: 'default') {
+  border-color: huly-color('border', $type);
+}
+
+@mixin button-color($type: 'default') {
+  background-color: huly-color('button', $type);
+} 

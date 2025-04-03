@@ -20,15 +20,15 @@
   height: 100%;
   min-height: 0;
   @include prevent-overflow;
-  border: 1px solid var(--theme-divider-color);
+  border: 1px solid $border-divider;
   border-radius: var(--small-focus-BorderRadius);
 
   &:not(.modal) {
-    background-color: var(--theme-panel-color);
+    @include bg-color('panel');
   }
   &.modal {
     overflow: hidden;
-    background-color: var(--theme-comp-header-color);
+    @include bg-color('comp-header');
   }
   &.beforeAside {
     border-right: none;
@@ -96,7 +96,7 @@
     flex-shrink: 0;
 
     &.divide {
-      border-bottom: 1px solid var(--theme-navpanel-divider);
+      border-bottom: 1px solid $border-navpanel;
     }
     &-menu {
       @include flex-center;
@@ -116,6 +116,6 @@
   }
   textarea {
     font-weight: 400 !important;
-    color: var(--global-tertiary-TextColor) !important;
+    @include text-color('tertiary');
   }
 }

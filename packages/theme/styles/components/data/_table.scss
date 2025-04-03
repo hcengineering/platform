@@ -23,8 +23,8 @@
   @include flex-column;
   align-items: flex-start;
   align-self: stretch;
-  background-color: var(--theme-table-row-color);
-  border: 1px solid var(--theme-divider-color);
+  @include bg-color('table-row');
+  border: 1px solid $border-divider;
   border-radius: var(--large-BorderRadius);
 }
 
@@ -34,7 +34,7 @@
   flex-shrink: 0;
   min-height: var(--global-max-Size);
   text-transform: uppercase;
-  color: var(--global-secondary-TextColor);
+  @include text-color('secondary');
 }
 
 @mixin table-content {
@@ -44,7 +44,7 @@
   flex-shrink: 0;
   @include prevent-overflow;
   min-height: 0;
-  border-top: 1px solid var(--theme-divider-color);
+  border-top: 1px solid $border-divider;
 }
 
 @mixin table-row {
@@ -62,20 +62,20 @@
 @mixin table-row-hover {
   &.hovered,
   &:not(.disableMouseOver):hover {
-    background-color: var(--theme-table-header-color);
+    @include bg-color('table-header');
   }
 }
 
 @mixin table-row-selected {
-  background-color: var(--theme-table-header-color);
+  @include bg-color('table-header');
 
   .hulyTableAttr-content__row-icon,
   .hulyTableAttr-content__row-arrow,
   .hulyTableAttr-content__row-label {
-    color: var(--global-primary-LinkColor);
+    color: $text-link;
   }
   .hulyTableAttr-content__row-type {
-    color: var(--global-primary-TextColor);
+    @include text-color('primary');
   }
 }
 

@@ -3,8 +3,9 @@
 // Licensed under the Eclipse Public License v2.0 (SPDX: EPL-2.0).
 //
 
-// Импортируем миксины таблиц
+// Импортируем миксины таблиц и цвета
 @import 'components/data/table';
+@import 'components/core/colors';
 
 /* Huly Attribute Table */
 .hulyTableAttr-container {
@@ -152,7 +153,7 @@
         flex-shrink: 0;
         @include fixed-width(var(--global-min-Size));
         height: var(--global-min-Size);
-        color: var(--global-primary-LinkColor);
+        color: $text-link;
       }
     }
     &.options .hulyTableAttr-content__row,
@@ -214,7 +215,7 @@
         }
       }
       .hulyTableAttr-content__row + .hulyTableAttr-content__row {
-        border-top: 1px solid var(--theme-divider-color);
+        border-top: 1px solid $border-divider;
       }
     }
     &.automation {
@@ -237,7 +238,7 @@
         }
       }
       .hulyTableAttr-content__row + .hulyTableAttr-content__row {
-        border-top: 1px solid var(--theme-divider-color);
+        border-top: 1px solid $border-divider;
       }
     }
   }
@@ -261,11 +262,11 @@
     @include full-width;
     min-height: var(--table-row-height);
     padding: var(--spacing-2) var(--spacing-4);
-    border-bottom: 1px solid var(--theme-divider-color);
+    border-bottom: 1px solid $border-divider;
 
     &.header {
       font-weight: var(--font-weight-medium);
-      background-color: var(--theme-table-header-color);
+      @include bg-color('table-header');
     }
   }
 

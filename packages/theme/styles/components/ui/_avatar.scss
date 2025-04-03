@@ -77,7 +77,7 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
   min-height: 0;
   flex-shrink: 0;
   aspect-ratio: 1;
-  background-color: var(--theme-button-default);
+  background-color: $button-default;
   pointer-events: none;
 
   &.withStatus {
@@ -92,18 +92,18 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
   &.roundedRect img.ava-image { border-radius: 20%; }
 
   &.no-img {
-    color: var(--primary-button-color);
+    color: $button-primary-text;
     border-color: transparent;
   }
   &.bordered {
-    color: var(--theme-dark-color);
-    border: 1px solid var(--theme-button-border);
+    @include text-color('secondary');
+    border: 1px solid $border-default;
   }
   &.border {
-    border: 1px solid var(--theme-bg-color);
+    border: 1px solid $bg-default;
     outline: 2px solid var(--border-color);
 
-    & > img { border: 1px solid var(--theme-bg-color); }
+    & > img { border: 1px solid $bg-default; }
     
     /* Маленькие аватары */
     &.hulyAvatarSize-xx-small,
@@ -218,9 +218,9 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
     }
   }
   
-  &.online { background-color: var(--global-online-color); }
+  &.online { background-color: $status-online; }
   &.offline {
-    border: 1px solid var(--global-offline-color);
+    border: 1px solid $status-offline;
 
     &:not(.xx-small, .inline, .tiny, .card, .x-small, .smaller, .small, .medium) { 
       border-width: 2px; 
@@ -269,7 +269,7 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
         position: absolute;
         top: 50%;
         left: 50%;
-        color: var(--theme-caption-color);
+        @include text-color('caption');
         transform: translate(-53%, -52%);
         z-index: 2;
       }
@@ -280,8 +280,8 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: var(--theme-bg-color);
-        border: 1px solid var(--theme-divider-color);
+        @include bg-color('default');
+        border: 1px solid $border-divider;
         border-radius: 0.25rem;
         opacity: 0.9;
         z-index: 1;
