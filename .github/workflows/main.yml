@@ -43,7 +43,7 @@ env:
     workers
     ws-tests
   PublishTempFolder: publish_artifacts
-  INIT_SCRIPTS_BRANCH: 'unified-init-scripts'
+  INIT_SCRIPTS_BRANCH: 'main'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
