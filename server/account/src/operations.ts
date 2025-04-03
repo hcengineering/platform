@@ -102,7 +102,8 @@ import {
   normalizeValue,
   isEmail,
   generatePassword,
-  addSocialId
+  addSocialId,
+  releaseSocialId
 } from './utils'
 
 // Move to config?
@@ -2063,12 +2064,7 @@ async function createMailbox (
 
   await db.mailbox.insertOne({ accountUuid: account, mailbox })
   await db.mailboxSecret.insertOne({ mailbox, secret: generatePassword() })
-  const socialId: PersonId = await db.socialId.insertOne({
-    personUuid: account,
-    type: SocialIdType.EMAIL,
-    value: mailbox,
-    verifiedOn: Date.now()
-  })
+  const socialId = await addSocialId(db, account, SocialIdType.EMAIL, mailbox, true)
   ctx.info('Mailbox created', { mailbox, account, socialId })
   return { mailbox, socialId }
 }
@@ -2121,18 +2117,6 @@ export async function addSocialIdToPerson (
   verifyAllowedServices(['github'], extra)
 
   return await addSocialId(db, person, type, value, confirmed)
-}
-
-async function releaseSocialId (
-  db: AccountDB,
-  personUuid: PersonUuid,
-  type: SocialIdType,
-  value: string
-): Promise<void> {
-  const socialIds = await db.socialId.find({ personUuid, type, value })
-  for (const socialId of socialIds) {
-    await db.socialId.updateOne({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}` })
-  }
 }
 
 export type AccountMethods =

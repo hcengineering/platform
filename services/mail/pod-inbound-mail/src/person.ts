@@ -18,11 +18,10 @@ import {
   generateId,
   PersonId,
   PersonUuid,
-  Ref,
   SocialIdType,
   TxOperations
 } from '@hcengineering/core'
-import contact, { AvatarType, combineName, SocialIdentity } from '@hcengineering/contact'
+import contact, { AvatarType, combineName, SocialIdentityRef } from '@hcengineering/contact'
 import { AccountClient } from '@hcengineering/account-client'
 
 export async function ensureGlobalPerson (
@@ -100,7 +99,7 @@ export async function ensureLocalPerson (
         type: SocialIdType.EMAIL,
         value: email
       },
-      personId as any as Ref<SocialIdentity>
+      personId as SocialIdentityRef
     )
     ctx.info('Created local socialId', { mailId, personUuid, email })
   }
