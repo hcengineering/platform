@@ -1145,12 +1145,10 @@ export class WorkspaceImporter {
     const { _class, props } = unifiedDoc
     const _id = props._id ?? generateId<Doc<Space>>()
     if (unifiedDoc.collabField !== undefined) {
-      if ((props as any)[unifiedDoc.collabField] !== undefined) {
-        const collabId = makeCollabId(_class, _id, unifiedDoc.collabField)
-        const collabContent = await unifiedDoc.contentProvider?.() ?? ''
-        const res = await this.createCollaborativeContent(_id, collabId, collabContent, props.space)
-        ;(props as any)[unifiedDoc.collabField] = res
-      }
+      const collabId = makeCollabId(_class, _id, unifiedDoc.collabField)
+      const collabContent = await unifiedDoc.contentProvider?.() ?? ''
+      const res = await this.createCollaborativeContent(_id, collabId, collabContent, props.space)
+      ;(props as any)[unifiedDoc.collabField] = res
     }
     await this.client.createDoc(_class, props.space, props as Data<Doc<Space>>, _id)
   }

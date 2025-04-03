@@ -653,6 +653,7 @@ export class HulyFormatImporter {
 
     return {
       _class: masterTagId,
+      collabField: 'content',
       contentProvider: () => this.readMarkdownContent(cardPath),
       props: props as Props<Card> // todo: what is the correct props type?
     }
