@@ -88,6 +88,26 @@ sh ./scripts/fast-start.sh
 
 We periodically merge `develop` into `staging` to perform testing builds. Once we are satisfied with the build quality in our pre-release deployment, we merge changes into `main` and release a new version to the community.
 
+## Authentication
+
+This project uses GitHub Packages for dependency management. To successfully download dependencies, you need to generate a GitHub personal access token and log in to npm using that token.
+
+Follow these steps:
+
+1. **Generate a GitHub Token:**
+- Log in to your GitHub account
+- Go to **Settings** > **Developer settings** > **[Personal access tokens](https://github.com/settings/personal-access-tokens)**
+- Click **Generate new token**
+- Select the required scopes (at least `read:packages`)
+- Generate the token and copy it
+
+2. **Authenticate with npm:**
+```bash
+npm login --registry=https://npm.pkg.github.com
+```
+
+When prompted, enter your GitHub username, use the generated token as your password
+
 ## Installation
 
 You need Microsoft's [rush](https://rushjs.io) to install the application.
