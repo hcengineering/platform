@@ -76,3 +76,50 @@
   max-width: 100%;
   overflow: hidden;
 }
+
+// Дополнительные миксины из components/core/_mixins.scss
+@mixin flex($direction: row, $justify: flex-start, $align: flex-start, $wrap: nowrap) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+  flex-wrap: $wrap;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Миксины для размеров аватара
+@mixin avatar-size($width, $font-size) {
+  width: $width;
+  
+  .ava-text { 
+    font-size: $font-size; 
+  }
+}
+
+// Миксины для таблиц
+@mixin table-cell-base($padding-h: 1.5rem, $padding-v: .5rem) {
+  padding: $padding-v $padding-h;
+  text-align: left;
+}
+
+@mixin table-header-cell {
+  @include table-cell-base;
+  height: 3rem;
+  font-weight: 600;
+  font-size: .625rem;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--theme-dark-color);
+  box-shadow: inset 0 -1px 0 0 var(--theme-table-border-color);
+  user-select: none;
+}
