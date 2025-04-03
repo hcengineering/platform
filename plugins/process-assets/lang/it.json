@@ -40,6 +40,8 @@
     "Add": "Aggiungi",
     "Subtract": "Sottrai",
     "Offset": "Offset",
-    "FirstWorkingDayAfter": "Primo giorno lavorativo dopo"
+    "FirstWorkingDayAfter": "Primo giorno lavorativo dopo",
+    "FallbackValueError": "Mostra errore se vuoto",
+    "Required": "Obbligatorio"
   }
 }

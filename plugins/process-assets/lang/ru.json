@@ -41,6 +41,8 @@
     "Add": "Добавить",
     "Subtract": "Вычесть",
     "Offset": "Смещение",
-    "FirstWorkingDayAfter": "Первый рабочий день после"
+    "FirstWorkingDayAfter": "Первый рабочий день после",
+    "FallbackValueError": "Показывать ошибку, если недоступно",
+    "Required": "Обязательно"
   }
 }
