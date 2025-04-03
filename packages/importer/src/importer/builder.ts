@@ -235,7 +235,8 @@ export class ImportWorkspaceBuilder {
 
   addMasterTagAttributes (path: string, attributes: UnifiedDoc<Attribute<MasterTag>>[]): this {
     for (const attribute of attributes) {
-      this.validateAndAdd('masterTagAttribute', path, attribute, (a) => this.validateMasterTagAttribute(a), this.masterTags, path)
+      const key = path + '/' + attribute.props.name
+      this.validateAndAdd('masterTagAttribute', key, attribute, (a) => this.validateMasterTagAttribute(a), this.masterTagAttributes, key)
     }
     return this
   }

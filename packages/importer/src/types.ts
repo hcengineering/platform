@@ -3,7 +3,6 @@ import { Class, Data, Doc, Ref, Space } from '@hcengineering/core'
 export interface UnifiedDoc<T extends Doc> {
   _class: Ref<Class<T>>
   props: Props<T>
-  markdownFields?: string[]
   collabField?: string
   contentProvider?: () => Promise<string>
 }

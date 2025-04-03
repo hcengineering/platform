@@ -588,11 +588,11 @@ export class HulyFormatImporter {
         props: {
           space: core.space.Model,
           attributeOf: masterTagId,
-          name: generateId(core.class.Attribute),
+          name: generateId<Attribute<MasterTag>>(),
           label: 'embedded:embedded:' + property.label as IntlString, // todo: check if it's correct
           isCustom: true,
           type: {
-            _class: 'core:class:Type' + property.type
+            _class: 'core:class:' + property.type
           },
           defaultValue: property.defaultValue ?? null
         }

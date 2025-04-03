@@ -48,7 +48,8 @@ import core, {
   type Timestamp,
   type TxOperations,
   type PersonId,
-  type AccountUuid
+  type AccountUuid,
+  AttachedDoc
 } from '@hcengineering/core'
 import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
 import task, {
@@ -72,7 +73,7 @@ import view from '@hcengineering/view'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
 import { Logger } from './logger'
-import { UnifiedDoc } from '../types'
+import { Props, UnifiedDoc } from '../types'
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
   spaces?: ImportSpace<ImportDoc>[]
@@ -242,6 +243,7 @@ export class WorkspaceImporter {
     await this.importProjectTypes()
     await this.importSpaces()
     await this.importAttachments()
+    await this.importUnifiedDocs()
   }
 
   private async importProjectTypes (): Promise<void> {
@@ -1129,5 +1131,27 @@ export class WorkspaceImporter {
     }
 
     return await this.client.createDoc(documents.class.ChangeControl, spaceId, changeControlData)
+  }
+
+  private async importUnifiedDocs (): Promise<void> {
+    if (this.workspaceData.unifiedDocs === undefined) return
+
+    for (const unifiedDoc of this.workspaceData.unifiedDocs) {
+      await this.importUnifiedDoc(unifiedDoc)
+    }
+  }
+
+  private async importUnifiedDoc (unifiedDoc: UnifiedDoc<Doc<Space>>): Promise<void> {
+    const { _class, props } = unifiedDoc
+    const _id = props._id ?? generateId<Doc<Space>>()
+    if (unifiedDoc.collabField !== undefined) {
+      if ((props as any)[unifiedDoc.collabField] !== undefined) {
+        const collabId = makeCollabId(_class, _id, unifiedDoc.collabField)
+        const collabContent = await unifiedDoc.contentProvider?.() ?? ''
+        const res = await this.createCollaborativeContent(_id, collabId, collabContent, props.space)
+        ;(props as any)[unifiedDoc.collabField] = res
+      }
+    }
+    await this.client.createDoc(_class, props.space, props as Data<Doc<Space>>, _id)
   }
 }
