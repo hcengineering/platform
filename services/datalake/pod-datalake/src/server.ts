@@ -25,6 +25,7 @@ import { type Server } from 'http'
 import morgan from 'morgan'
 import { tmpdir } from 'os'
 import { join } from 'path'
+import onHeaders from 'on-headers'
 
 import { cacheControl } from './const'
 import { createDb } from './datalake/db'
@@ -67,7 +68,21 @@ const handleRequest = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    await ctx.with(name, {}, (ctx) => fn(ctx, req, res, datalake))
+    await ctx.with(name, {}, (ctx) => {
+      onHeaders(res, () => {
+        const measurements = ctx.metrics?.measurements
+        if (measurements !== undefined) {
+          const values = []
+          for (const [k, v] of Object.entries(measurements)) {
+            values.push(`${k};dur=${v.value.toFixed(2)}`)
+          }
+          if (values.length > 0) {
+            res.setHeader('Server-Timing', values.join(', '))
+          }
+        }
+      })
+      return fn(ctx, req, res, datalake)
+    })
   } catch (err: unknown) {
     next(err)
   }
