@@ -84,7 +84,8 @@ import {
   RoomEvent,
   type ScreenShareCaptureOptions,
   Track,
-  type VideoCaptureOptions
+  type VideoCaptureOptions,
+  type Participant
 } from 'livekit-client'
 import { get, writable } from 'svelte/store'
 
@@ -187,6 +188,8 @@ export const isFullScreen = writable<boolean>(false)
 export const isShareWithSound = writable<boolean>(false)
 export const isMicAllowed = writable<boolean>(false)
 export const isCamAllowed = writable<boolean>(false)
+
+export const currentRoomAudioLevels = writable<Map<Ref<Person>, number>>(new Map())
 
 function handleTrackSubscribed (
   track: RemoteTrack,
@@ -398,8 +401,13 @@ lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
   }
 })
 
+lk.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
+  currentRoomAudioLevels.set(new Map(speakers.map((it) => [it.identity as Ref<Person>, it.audioLevel])))
+})
+
 lk.on(RoomEvent.Connected, () => {
   isConnected.set(true)
+  currentRoomAudioLevels.set(new Map())
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(true)
   isRecording.set(lk.isRecording)
@@ -494,6 +502,7 @@ export async function disconnect (): Promise<void> {
   isMicEnabled.set(false)
   isCameraEnabled.set(false)
   isSharingEnabled.set(false)
+  currentRoomAudioLevels.set(new Map())
   sendMessage({ type: 'mic', value: false })
   sendMessage({ type: 'cam', value: false })
   sendMessage({ type: 'share', value: false })

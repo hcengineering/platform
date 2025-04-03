@@ -17,7 +17,8 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { Loading } from '@hcengineering/ui'
-  import love from '../plugin'
+
+  import { currentRoomAudioLevels } from '../utils'
   import MicDisabled from './icons/MicDisabled.svelte'
 
   export let _id: string
@@ -53,9 +54,13 @@
   }
 
   $: user = $personByIdStore.get(_id as Ref<Person>)
+  $: level = $currentRoomAudioLevels.get(_id as Ref<Person>) ?? 0
+
+  $: pulseIntensity = (level * 40) + 'px'
+  $: borderOpacity = level * 0.8
 </script>
 
-<div id={_id} class="parent">
+<div id={_id} class="parent" style="--pulse-intensity: {pulseIntensity}; --border-opacity: {borderOpacity}">
   <div class="label">
     <span class="overflow-label">{formatName(name)}</span>
   </div>
@@ -71,6 +76,18 @@
 </div>
 
 <style lang="scss">
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 var(--pulse-intensity) rgba(59,130,246, var(--border-opacity));
+    }
+    50% {
+      box-shadow: 0 0 calc(var(--pulse-intensity) * 2) rgba(59,130,246, 1);
+    }
+    100% {
+      box-shadow: 0 0 0 var(--pulse-intensity) rgba(59,130,246, var(--border-opacity));
+    }
+  }
+
   :global(.video) {
     object-fit: cover;
     border-radius: 0.75rem;
@@ -115,6 +132,8 @@
     height: max-content;
     min-height: 0;
     max-height: 100%;
+    animation: pulse 1.5s infinite;
+    border-radius: 0.75rem;
 
     .label,
     .icon {
