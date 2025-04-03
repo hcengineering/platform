@@ -1537,6 +1537,9 @@ importers:
       '@types/nodemailer':
         specifier: ^6.4.17
         version: 6.4.17
+      '@types/on-headers':
+        specifier: ^1.0.2
+        version: 1.0.3
       '@types/otp-generator':
         specifier: ^4.0.2
         version: 4.0.2
@@ -1951,6 +1954,9 @@ importers:
       octokit:
         specifier: ^3.1.1
         version: 3.2.1
+      on-headers:
+        specifier: ^1.0.2
+        version: 1.0.2
       openai:
         specifier: ^4.56.0
         version: 4.56.0(encoding@0.1.13)(zod@3.23.8)
@@ -4778,7 +4784,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-datalake@file:projects/pod-datalake.tgz':
-    resolution: {integrity: sha512-1PcFGTST50Pzr5m2AnzgLsrPbXvQfut8yPaVZOuKHrLkYcYmT9EqXGaHhApLYPK/CLZosdUZxS3PHF7tbd3p4w==, tarball: file:projects/pod-datalake.tgz}
+    resolution: {integrity: sha512-Z3Ff08zRduMDnaFBJXDSslm5XRsuBsOrtfcV6h2KY7yr59AbEv61PIVcx4eoOFANazLdRYEiJ8uYgqlUTbauvQ==, tarball: file:projects/pod-datalake.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-export@file:projects/pod-export.tgz':
@@ -6458,6 +6464,9 @@ packages:
 
   '@types/oauth@0.9.4':
     resolution: {integrity: sha512-qk9orhti499fq5XxKCCEbd0OzdPZuancneyse3KtR+vgMiHRbh+mn8M4G6t64ob/Fg+GZGpa565MF/2dKWY32A==}
+
+  '@types/on-headers@1.0.3':
+    resolution: {integrity: sha512-jvGNvFo8uOL6fiBGvD4Ul4lT8mZoJ57l3h0ZN/a1oHziTTXUV3slaRcYm2K1wvvLX1fhIg9AvKykxKFt3mM+Xg==}
 
   '@types/otp-generator@4.0.2':
     resolution: {integrity: sha512-9+qqWzuFb332hXPbLgjUyOXlbcaTQkmkmqQjTduvNuOmPV5fW+iLv70JsVEhdUy0DWi4kY34++HDCaWl6N0AYg==}
@@ -21675,6 +21684,7 @@ snapshots:
       '@types/jest': 29.5.12
       '@types/morgan': 1.9.9
       '@types/node': 20.11.19
+      '@types/on-headers': 1.0.3
       '@types/sharp': 0.32.0
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
@@ -21692,6 +21702,7 @@ snapshots:
       express-fileupload: 1.5.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       morgan: 1.10.0
+      on-headers: 1.0.2
       postgres: 3.4.5
       prettier: 3.2.5
       sharp: 0.32.6
@@ -28653,6 +28664,10 @@ snapshots:
       '@types/node': 20.11.19
 
   '@types/oauth@0.9.4':
+    dependencies:
+      '@types/node': 20.11.19
+
+  '@types/on-headers@1.0.3':
     dependencies:
       '@types/node': 20.11.19
 
