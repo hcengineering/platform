@@ -1,5 +1,5 @@
 class: card:class:MasterTag
-title: Custom Type 4
+title: Master Tag 1
 properties:
   - label: aaa # embedded:embedded:aaa
     type: TypeString # human readable format + core:class^

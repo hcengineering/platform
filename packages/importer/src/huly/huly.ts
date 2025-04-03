@@ -539,6 +539,9 @@ export class HulyFormatImporter {
             builder.addMasterTagAttributes(spacePath, Array.from(attributesByLabel.values()))
 
             if (fs.existsSync(spacePath) && fs.statSync(spacePath).isDirectory()) {
+              // Сначала обрабатываем дочерние мастер-теги
+              await this.processSubTagsRecursively(builder, spacePath, spacePath, masterTagId, attributesByLabel)
+              // Затем обрабатываем карточки
               await this.processCardsRecursively(builder, spacePath, spacePath, masterTagId, attributesByLabel)
             }
             break
@@ -557,7 +560,60 @@ export class HulyFormatImporter {
     return builder.build()
   }
 
-  private async processMasterTag (yamlData: Record<string, any>): Promise<UnifiedDoc<MasterTag>> {
+  private async processSubTagsRecursively (
+    builder: ImportWorkspaceBuilder,
+    tagPath: string,
+    currentPath: string,
+    parentMasterTagId: Ref<MasterTag>,
+    parentAttributesByLabel: Map<string, UnifiedDoc<Attribute<MasterTag>>>
+  ): Promise<void> {
+    // Ищем YAML файлы, которые могут быть дочерними мастер-тегами
+    const yamlFiles = fs.readdirSync(currentPath).filter((f) => f.endsWith('.yaml'))
+
+    for (const yamlFile of yamlFiles) {
+      const yamlPath = path.join(currentPath, yamlFile)
+      const dirName = path.basename(yamlFile, '.yaml')
+      const dirPath = path.join(currentPath, dirName)
+
+      try {
+        // Читаем конфигурацию YAML файла
+        const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
+
+        // Проверяем, является ли файл мастер-тегом
+        if (yamlConfig.class !== card.class.MasterTag) {
+          continue // Пропускаем, если это не мастер-тег
+        }
+
+        // Создаем дочерний мастер-тег с передачей parentMasterTagId
+        const childMasterTag = await this.processMasterTag(yamlConfig, parentMasterTagId)
+        const childMasterTagId = childMasterTag.props._id as Ref<MasterTag>
+        if (childMasterTagId === undefined) {
+          throw new Error('Child master tag ID is undefined')
+        }
+
+        // Добавляем мастер-тег в билдер
+        builder.addMasterTag(yamlPath, childMasterTag)
+
+        // Обрабатываем атрибуты дочернего мастер-тега
+        const childAttributesByLabel = await this.processMasterTagAttributes(yamlConfig, childMasterTagId)
+        builder.addMasterTagAttributes(yamlPath, Array.from(childAttributesByLabel.values()))
+
+        // Проверяем наличие директории для обработки карточек и сабтегов
+        if (fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) {
+          // Рекурсивно обрабатываем содержимое директории дочернего мастер-тега
+          // Сначала обрабатываем сабтеги
+          await this.processSubTagsRecursively(builder, yamlPath, dirPath, childMasterTagId, childAttributesByLabel)
+          // Затем обрабатываем карточки
+          await this.processCardsRecursively(builder, yamlPath, dirPath, childMasterTagId, childAttributesByLabel)
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        this.logger.error(`Invalid master tag configuration in ${yamlFile}: ${message}`)
+      }
+    }
+  }
+
+  private async processMasterTag (yamlData: Record<string, any>, parentMasterTagId?: Ref<MasterTag>): Promise<UnifiedDoc<MasterTag>> {
     const { class: _class, title } = yamlData
     if (_class !== card.class.MasterTag) {
       throw new Error('Invalid master tag data')
@@ -568,7 +624,7 @@ export class HulyFormatImporter {
       props: {
         _id: generateId<MasterTag>(),
         space: core.space.Model,
-        extends: card.class.Card,
+        extends: parentMasterTagId ?? card.class.Card,
         label: 'embedded:embedded:' + title as IntlString, // todo: check if it's correct
         kind: 0,
         icon: card.icon.MasterTag
