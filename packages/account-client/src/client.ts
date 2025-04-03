@@ -67,7 +67,7 @@ export interface AccountClient {
     autoJoin: boolean,
     firstName: string,
     lastName: string,
-    navigateUr?: string,
+    navigateUrl?: string,
     expHours?: number
   ) => Promise<string>
   leaveWorkspace: (account: string) => Promise<LoginInfo | null>
