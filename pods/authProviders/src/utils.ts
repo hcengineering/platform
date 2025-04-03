@@ -79,7 +79,7 @@ export async function handleProviderAuth (
     const state = safeParseAuthState(rawState)
     const branding = getBranding(brandings, state?.branding)
 
-    if (state.inviteId != null && state.inviteId !== '' && state.autoJoin == null) {
+    if (state.inviteId != null && state.inviteId !== '' && state.autoJoin !== true) {
       loginInfo = await joinWithProvider(
         measureCtx,
         db,
@@ -100,7 +100,7 @@ export async function handleProviderAuth (
         first,
         last,
         socialKey,
-        signUpDisabled === true || state.autoJoin != null
+        signUpDisabled === true || state.autoJoin === true
       )
     }
 
