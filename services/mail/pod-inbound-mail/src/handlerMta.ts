@@ -56,7 +56,7 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       from.name = extractContactName(ctx, fromHeader)
     }
 
-    const tos = mta.envelope.to.map((to) => ({ address: to.address, name: '' }))
+    const tos = mta.envelope.to.map((to) => ({ address: stripTags(to.address), name: '' }))
     const toHeader = mta.message.headers.find((header) => header[0] === 'To')?.[1]
     if (toHeader !== undefined) {
       for (const part of toHeader.split(',')) {
@@ -191,4 +191,14 @@ function decodeMimeWord (ctx: MeasureContext, text: string): string {
       return match
     }
   })
+}
+
+function stripTags (email: string): string {
+  const [name, domain] = email.split('@')
+  const tagStart = name.indexOf('+')
+  if (tagStart === -1) {
+    return email
+  }
+  const clearName = name.substring(0, tagStart)
+  return `${clearName}@${domain}`
 }
