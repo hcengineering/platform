@@ -217,7 +217,8 @@ class BackupWorker {
         avgTime,
         index,
         Elapsed: (Date.now() - startTime) / 1000,
-        ETA: Math.round((workspaces.length - processed) * avgTime)
+        ETA: Math.round((workspaces.length - processed) * avgTime),
+        active: rateLimiter.processingQueue.size
       })
     }, 10000)
 
@@ -244,7 +245,11 @@ class BackupWorker {
         })
       }
 
+      ctx.info('waiting for rate limiter to finish processing', { active: rateLimiter.processingQueue.size })
       await rateLimiter.waitProcessing()
+    } catch (err: any) {
+      ctx.error('Backup failed', { err })
+      throw err
     } finally {
       clearInterval(infoTo)
     }

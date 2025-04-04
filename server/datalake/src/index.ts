@@ -134,25 +134,27 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('stat')
   async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
-    try {
-      const result = await this.client.statObject(ctx, workspaceId, objectName)
-      if (result !== undefined) {
-        return {
-          provider: '',
-          _class: core.class.Blob,
-          _id: objectName as Ref<Blob>,
-          contentType: result.type,
-          size: result.size ?? 0,
-          etag: result.etag ?? '',
-          space: core.space.Configuration,
-          modifiedBy: core.account.System,
-          modifiedOn: result.lastModified,
-          version: null
+    return await withRetry(ctx, 5, async () => {
+      try {
+        const result = await this.client.statObject(ctx, workspaceId, objectName)
+        if (result !== undefined) {
+          return {
+            provider: '',
+            _class: core.class.Blob,
+            _id: objectName as Ref<Blob>,
+            contentType: result.type,
+            size: result.size ?? 0,
+            etag: result.etag ?? '',
+            space: core.space.Configuration,
+            modifiedBy: core.account.System,
+            modifiedOn: result.lastModified,
+            version: null
+          }
         }
+      } catch (err) {
+        ctx.error('failed to stat object', { error: err, objectName, workspaceId: workspaceId.name })
       }
-    } catch (err) {
-      ctx.error('failed to stat object', { error: err, objectName, workspaceId: workspaceId.name })
-    }
+    })
   }
 
   @withContext('get')
