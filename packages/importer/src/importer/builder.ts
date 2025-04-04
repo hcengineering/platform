@@ -14,7 +14,7 @@
 //
 import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
-import { Attribute, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
+import core, { Attribute, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
@@ -62,7 +62,7 @@ export class ImportWorkspaceBuilder {
   private readonly masterTagAttributes = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
   private readonly tags = new Map<string, UnifiedDoc<Tag>>()
   private readonly cards = new Map<string, UnifiedDoc<Card>>()
-  // private readonly cardParents = new Map<string, string>()
+  private readonly cardParents = new Map<string, string>()
 
   private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
@@ -247,8 +247,13 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
-  addCard (path: string, card: UnifiedDoc<Card>): this {
+  addCard (path: string, card: UnifiedDoc<Card>, parentCardPath?: string): this {
     this.validateAndAdd('card', path, card, (c) => this.validateCard(c), this.cards, path)
+
+    if (parentCardPath !== undefined) {
+      this.cardParents.set(path, parentCardPath)
+    }
+
     return this
   }
 
@@ -256,6 +261,7 @@ export class ImportWorkspaceBuilder {
     // Perform cross-entity validation
     this.validateSpacesReferences()
     this.validateDocumentsReferences()
+    this.validateTagsReferences()
     this.validateCardsReferences()
 
     return {
@@ -312,6 +318,14 @@ export class ImportWorkspaceBuilder {
 
         space.docs = rootDocPaths.map((path) => qmsDocs.get(path)).filter(Boolean) as ImportControlledDocument[]
       }
+    }
+
+    // Добавляем обработку иерархии карточек
+    const rootCardPaths = Array.from(this.cards.keys())
+      .filter(cardPath => !this.cardParents.has(cardPath))
+
+    for (const rootPath of rootCardPaths) {
+      this.buildCardHierarchy(rootPath, this.cards)
     }
 
     return {
@@ -609,10 +623,88 @@ export class ImportWorkspaceBuilder {
   }
 
   private validateCardsReferences (): void {
-    // TODO: Validate cards references (master tag, attributes? parent-child, field references?)
-    // for (const [cardPath] of this.cards) {
-    // Check parent document exists
-    // }
+    // Проверка существования атрибутов
+    for (const [cardPath, card] of this.cards) {
+      if (card._class !== undefined) {
+        const masterTag = this.masterTags.get(card._class)
+        if (masterTag !== undefined) {
+          const attributes = Array.from(this.masterTagAttributes.values())
+            .filter(a => a.props.attributeOf === card._class)
+
+          // Проверяем, что все используемые атрибуты существуют
+          for (const [attrName] of Object.entries(card.props)) {
+            if (attrName !== 'title' && !attributes.some(a => a.props.name === attrName)) {
+              this.addError(cardPath, `Card uses non-existent attribute: ${attrName}`)
+            }
+          }
+        }
+      }
+
+      // Проверка существования родительской карточки по ID
+      if (card.props.parentId !== undefined) {
+        const parentExists = Array.from(this.cards.values()).some(c => c.props.id === card.props.parentId)
+        if (!parentExists) {
+          this.addError(cardPath, `Parent card with ID ${card.props.parentId} does not exist`)
+        }
+      }
+
+      // Проверка на циклические зависимости
+      if (card.props.parentId !== undefined) {
+        let currentCard = card
+        const visitedIds = new Set<string>()
+
+        while (currentCard.props.parentId !== undefined) {
+          if (visitedIds.has(currentCard.props.parentId)) {
+            this.addError(cardPath, 'Circular dependency detected in card hierarchy')
+            break
+          }
+
+          visitedIds.add(currentCard.props.parentId)
+          const parentCard = Array.from(this.cards.values()).find(c => c.props.id === currentCard.props.parentId)
+          if (!parentCard) break
+          currentCard = parentCard
+        }
+      }
+    }
+  }
+
+  private validateTagsReferences (): void {
+    // Проверка ссылок MasterTag
+    for (const [path, masterTag] of this.masterTags) {
+      if (masterTag.props.extends !== undefined) {
+        if (masterTag.props.extends !== card.class.Card &&
+            !this.masterTags.has(masterTag.props.extends)) {
+          this.addError(path, `Invalid extends reference: ${masterTag.props.extends}`)
+        }
+      }
+    }
+
+    // Проверка ссылок Tag
+    for (const [path, tag] of this.tags) {
+      if (tag.props.extends === undefined) {
+        this.addError(path, 'extends (MasterTag reference) is required')
+      } else if (!this.masterTags.has(tag.props.extends)) {
+        this.addError(path, `Invalid MasterTag reference: ${tag.props.extends}`)
+      }
+    }
+
+    // Проверка ссылок атрибутов
+    for (const [path, attribute] of this.masterTagAttributes) {
+      if (attribute.props.attributeOf === undefined) {
+        this.addError(path, 'attributeOf (MasterTag reference) is required')
+      } else if (!this.masterTags.has(attribute.props.attributeOf)) {
+        this.addError(path, `Invalid MasterTag reference: ${attribute.props.attributeOf}`)
+      }
+    }
+
+    // Проверка ссылок карточек
+    for (const [path, card] of this.cards) {
+      if (card._class === undefined) {
+        this.addError(path, 'class (MasterTag reference) is required')
+      } else if (!this.masterTags.has(card._class)) {
+        this.addError(path, `Invalid MasterTag reference: ${card._class}`)
+      }
+    }
   }
 
   private addError (path: string, error: string): void {
@@ -723,41 +815,159 @@ export class ImportWorkspaceBuilder {
   private validateMasterTag (masterTag: UnifiedDoc<MasterTag>): string[] {
     const errors: string[] = []
 
+    // Проверка класса
     if (masterTag._class !== card.class.MasterTag) {
       errors.push('Invalid class: ' + masterTag._class)
     }
 
-    // todo: validate master tag
+    // Проверка обязательных полей
+    if (!this.validateStringDefined(masterTag.props.label)) {
+      errors.push('label is required')
+    }
+
+    // Проверка уникальности имени
+    const existingTags = Array.from(this.masterTags.values())
+      .filter(tag => tag.props.label === masterTag.props.label)
+    if (existingTags.length > 0) {
+      errors.push(`MasterTag with label "${masterTag.props.label}" already exists`)
+    }
+
     return errors
   }
 
   private validateTag (tag: UnifiedDoc<Tag>): string[] {
     const errors: string[] = []
 
+    // Проверка класса
     if (tag._class !== card.class.Tag) {
       errors.push('Invalid class: ' + tag._class)
     }
 
-    // todo: validate tag
+    // Проверка обязательных полей
+    if (!this.validateStringDefined(tag.props.label)) {
+      errors.push('label is required')
+    }
+
+    // Проверка уникальности имени в рамках MasterTag
+    const existingTags = Array.from(this.tags.values())
+      .filter(t => t.props.extends === tag.props.extends &&
+                   t.props.label === tag.props.label)
+    if (existingTags.length > 0) {
+      errors.push(`Tag with label "${tag.props.label}" already exists for this MasterTag`)
+    }
+
     return errors
   }
 
   private validateMasterTagAttribute (attribute: UnifiedDoc<Attribute<MasterTag>>): string[] {
     const errors: string[] = []
 
-    // todo: validate master tag attribute
+    // Проверка класса
+    if (attribute._class !== core.class.Attribute) {
+      errors.push('Invalid class: ' + attribute._class)
+    }
+
+    // Проверка обязательных полей
+    if (!this.validateStringDefined(attribute.props.name)) {
+      errors.push('name is required')
+    }
+    if (!this.validateStringDefined(attribute.props.label)) {
+      errors.push('label is required')
+    }
+
+    // Проверка связи с MasterTag
+    if (attribute.props.attributeOf === undefined) {
+      errors.push('attributeOf (MasterTag reference) is required')
+    } else if (!this.masterTags.has(attribute.props.attributeOf)) {
+      errors.push(`Invalid MasterTag reference: ${attribute.props.attributeOf}`)
+    }
+
+    // Проверка типа атрибута
+    if (attribute.props.type === undefined) {
+      errors.push('type is required')
+    } else {
+      const validTypes = [ // todo: double check valid types
+        'TypeString', 'TypeNumber', 'TypeBoolean', 'TypeDate',
+        'TypeHyperlink', 'TypeEnum', 'TypeFileSize', 'TypeIntlString',
+        'TypeMarkup', 'TypeTimestamp', 'TypeRef', 'TypeCollection'
+      ]
+      if (!validTypes.includes(attribute.props.type)) {
+        errors.push(`Invalid attribute type: ${attribute.props.type}`)
+      }
+    }
+
+    // Проверка уникальности имени атрибута в рамках MasterTag
+    const existingAttributes = Array.from(this.masterTagAttributes.values())
+      .filter(a => a.props.attributeOf === attribute.props.attributeOf &&
+                   a.props.name === attribute.props.name)
+    if (existingAttributes.length > 0) {
+      errors.push(`Attribute with name "${attribute.props.name}" already exists for this MasterTag`)
+    }
+
     return errors
   }
 
-  private validateCard (card: UnifiedDoc<Card>): string[] { // todo: pass validator separately (same level as converter)
+  private validateCard (card: UnifiedDoc<Card>): string[] {
     const errors: string[] = []
 
-    // if (card._class !== card.class.Card) {
-    // validate class is a ref to master tag
-    //   errors.push('Invalid class: ' + card._class)
-    // }
+    // Проверка класса (должен быть ссылкой на MasterTag)
+    if (card._class === undefined) {
+      errors.push('class (MasterTag reference) is required')
+    } else if (!this.masterTags.has(card._class)) {
+      errors.push(`Invalid MasterTag reference: ${card._class}`)
+    }
 
-    // todo: validate card
+    // Проверка обязательных полей
+    if (!this.validateStringDefined(card.props.title)) {
+      errors.push('title is required')
+    }
+
+    // Получаем MasterTag и его атрибуты
+    const masterTag = this.masterTags.get(card._class)
+    if (masterTag !== undefined) {
+      const attributes = Array.from(this.masterTagAttributes.values())
+        .filter(a => a.props.attributeOf === card._class)
+
+      // Проверяем значения атрибутов
+      for (const attribute of attributes) {
+        const value = (card.props as Record<string, unknown>)[attribute.props.name]
+
+        // Проверка обязательных атрибутов
+        // todo: check if required attribute is missing
+        // if (attribute.props.required && value === undefined) {
+        //   errors.push(`Required attribute "${attribute.props.label}" is missing`)
+        //   continue
+        // }
+
+        // Проверка типов данных
+        if (value !== undefined) {
+          switch (attribute.props.type) {
+            case 'TypeString':
+              if (typeof value !== 'string') {
+                errors.push(`Attribute "${attribute.props.label}" must be a string`)
+              }
+              break
+            case 'TypeNumber':
+              if (typeof value !== 'number') {
+                errors.push(`Attribute "${attribute.props.label}" must be a number`)
+              }
+              break
+            case 'TypeBoolean':
+              if (typeof value !== 'boolean') {
+                errors.push(`Attribute "${attribute.props.label}" must be a boolean`)
+              }
+              break
+            case 'TypeDate':
+              if (!(value instanceof Date)) {
+                errors.push(`Attribute "${attribute.props.label}" must be a date`)
+              }
+              break
+            // todo: add other types as needed
+          }
+        }
+      }
+    }
+
     return errors
   }
 
