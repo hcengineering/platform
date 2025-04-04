@@ -1349,7 +1349,7 @@ export async function setTimezoneIfNotDefined (
 ): Promise<void> {
   try {
     if (meta?.timezone === undefined) return
-    const existingAccount = account ?? await db.account.findOne({ uuid: accountId })
+    const existingAccount = account ?? (await db.account.findOne({ uuid: accountId }))
     if (existingAccount === undefined || existingAccount === null) {
       ctx.warn('Failed to find account')
       return

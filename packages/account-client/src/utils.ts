@@ -19,8 +19,13 @@ export function isWorkspaceLoginInfo (loginInfo: LoginInfo | WorkspaceLoginInfo)
   return (loginInfo as WorkspaceLoginInfo).workspace != null
 }
 
-export function getTimezoneHeader (): Record<string, string> {
-  return {
-    'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone
+export function getTimezoneHeader (): Record<string, string> | undefined {
+  try {
+    return {
+      'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone
+    }
+  } catch (err: any) {
+    console.error('Failed to get client timezone', err)
+    return undefined
   }
 }
