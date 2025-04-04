@@ -2048,7 +2048,7 @@ export async function restore (
                   }
                 }
               } catch (err: any) {
-                ctx.warn('failed to upload blob', { _id: blob._id, err, workspace: workspaceId.name })
+                ctx.warn('failed to upload blob', { _id: blob._id, err, workspace: wsIds.uuid })
                 next(err)
               }
             }
