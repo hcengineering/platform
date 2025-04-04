@@ -18,7 +18,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  @include full-width;
+  width: $full-width; min-width: 0;
   height: 100vh;
   background-color: var(--theme-overlay-color);
   pointer-events: all;
@@ -113,7 +113,7 @@
 
     &::after {
       content: '';
-      @include full-width;
+      width: $full-width; min-width: 0;
       order: 0;
     }
     &__separator {
@@ -375,7 +375,7 @@
   flex-direction: column;
   flex-grow: 1;
   flex-shrink: 1;
-  @include full-width;
+  width: $full-width; min-width: 0;
   height: 100%;
   overflow: hidden;
 }
@@ -425,5 +425,5 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  @include full-width;
+  width: $full-width; min-width: 0;
 }

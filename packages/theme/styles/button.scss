@@ -19,11 +19,11 @@
   transition: all var(--transition-duration) var(--transition-timing);
 
   &.full {
-    @include full-width;
+    width: $full-width; min-width: 0;
   }
 
   &.fit {
-    @include fit-width;
+    width: $fit-width; min-width: 0;
   }
 
   &.fixed {

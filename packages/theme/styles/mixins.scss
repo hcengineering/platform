@@ -1,5 +1,21 @@
 @import 'vars';
 
+/**
+ * ВАЖНО: Некоторые миксины были заменены переменными из _vars.scss:
+ * - Вместо @include full-width используйте width: $full-width; min-width: 0;
+ * - Вместо @include fit-width используйте width: $fit-width; min-width: 0;
+ * - Миксин avatar-size теперь принимает имя размера вместо конкретных значений
+ *
+ * Для работы с картами переменных используйте map-get напрямую:
+ * - font-size: map-get($font-sizes, 'sm');
+ * - gap: map-get($gaps, 'md');
+ * - border-radius: map-get($border-radius, 'sm');
+ * - height: map-get($form-heights, 'medium');
+ * - padding: map-get($spacing, '0_5') map-get($spacing, '1');
+ */
+
+// Устаревшие миксины, оставлены для обратной совместимости
+// TODO: В будущем обновить все компоненты и удалить эти миксины
 
 @mixin bg-fullsize {
   position: absolute;
@@ -21,6 +37,7 @@
   align-items: center;
 }
 
+// Используем переменные из $breakpoints
 @mixin respond-to($breakpoint) {
   $value: map-get($breakpoints, $breakpoint);
   @if $value {
@@ -84,6 +101,7 @@
   flex-direction: column;
 }
 
+// Используем значения из $avatar-sizes
 @mixin avatar-size($size) {
   $size-values: map-get($avatar-sizes, $size);
   @if $size-values {
@@ -99,6 +117,7 @@
   }
 }
 
+// Используем значения из $spacing
 @mixin table-cell-base($padding-h-key: "1_5", $padding-v-key: "0_5") {
   $padding-h: map-get($spacing, $padding-h-key);
   $padding-v: map-get($spacing, $padding-v-key);

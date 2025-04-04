@@ -21,7 +21,7 @@
 .hulyModal-container .hulyModal-footer {
   display: flex;
   flex-direction: column;
-  @include full-width;
+  width: $full-width; min-width: 0;
   min-height: 0;
 }
 .hulyModal-container {
@@ -120,7 +120,7 @@
       @include fixed-width(17.5rem);
     }
     &.full {
-      @include fit-width;
+      width: $fit-width; min-width: 0;
     }
 
     .hulyModal-footer {

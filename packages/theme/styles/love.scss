@@ -3,7 +3,7 @@
   flex-direction: column;
   flex-grow: 1;
   flex-shrink: 1;
-  @include full-width;
+  width: $full-width; min-width: 0;
   overflow: hidden;
 
   &-container {
@@ -17,7 +17,7 @@
     .floorGrid-room__field {
       .hulyAvatar-container.hulyAvatarSize-large {
         img {
-          @include full-width;
+          width: $full-width; min-width: 0;
         }
       }
     }

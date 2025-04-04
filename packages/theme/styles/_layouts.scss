@@ -21,6 +21,7 @@ a {
   text-decoration: none;
   color: var(--theme-content-color);
   outline: none;
+  cursor: pointer;
   
   &:hover {
     color: var(--theme-caption-color);
@@ -45,7 +46,8 @@ a {
   &.stealth {
     display: inline-flex;
     align-items: center;
-    @include full-width;
+    width: $full-width;
+    min-width: 0;
   }
 }
 
@@ -179,7 +181,8 @@ a.noBold {
 
 .float-left-box {
   box-sizing: border-box;
-  @include full-width;
+  width: $full-width;
+  min-width: 0;
   float: left;
 }
 

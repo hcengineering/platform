@@ -31,7 +31,7 @@ table.proseTable {
   border-collapse: collapse;
   table-layout: fixed;
   position: relative;
-  @include full-width;
+  width: $full-width; min-width: 0;
   margin: 0;
 
   td,
@@ -193,7 +193,7 @@ table.proseTable {
       border-bottom-right-radius: 0;
 
       button {
-        @include full-width;
+        width: $full-width; min-width: 0;
         padding: 4px 0;
       }
     }
@@ -546,11 +546,11 @@ pre.proseCodeBlock>pre.proseCode {
   flex-direction: column;
   flex-grow: 1;
   flex-shrink: 1;
-  @include full-width;
+  width: $full-width; min-width: 0;
   overflow: hidden;
 
   table {
-    @include full-width;
+    width: $full-width; min-width: 0;
     border-collapse: collapse;
     border-spacing: 0;
   }
@@ -558,7 +558,7 @@ pre.proseCodeBlock>pre.proseCode {
   .tableWrapper {
     position: relative;
     overflow-x: auto;
-    @include full-width;
+    width: $full-width; min-width: 0;
   }
 
   .selectedCell {
@@ -596,7 +596,7 @@ pre.proseCodeBlock>pre.proseCode {
     overflow-x: auto;
 
     table {
-      @include full-width;
+      width: $full-width; min-width: 0;
       border-collapse: collapse;
       margin: 0;
       overflow: hidden;

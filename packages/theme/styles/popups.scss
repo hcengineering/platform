@@ -121,7 +121,7 @@
   }
   .hulyPopup-divider {
     flex-shrink: 0;
-    @include full-width;
+    width: $full-width; min-width: 0;
     height: 1px;
     background-color: var(--theme-popup-divider);
   }
@@ -132,7 +132,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  @include fit-width;
+  width: $fit-width; min-width: 0;
   @include min-width(12.5rem);
   @include max-width(17rem);
   max-height: 22rem;
@@ -164,7 +164,7 @@
     background: none;
     border-radius: 0;
     box-shadow: none;
-    @include full-width;
+    width: $full-width; min-width: 0;
   }
   
   &.maxHeight { height: 22rem; }

@@ -16,7 +16,8 @@
 /* Huly Panels */
 .hulyPanels-container {
   display: flex;
-  @include full-width;
+  width: $full-width;
+  min-width: 0;
   height: 100%;
   min-height: 0;
   background-color: var(--theme-navpanel-color);
@@ -33,7 +34,10 @@
   @include prevent-overflow;
   min-height: 0;
 
-  button.type-link { @include full-width; }
+  button.type-link { 
+    width: $full-width;
+    min-width: 0;
+  }
 }
 
 .hulyNavPanel-container .hulyNavItem-container,
@@ -67,7 +71,8 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  @include full-width;
+  width: $full-width;
+  min-width: 0;
   min-height: 0;
 
   .hulyNavGroup-header {
@@ -215,7 +220,7 @@
     .ap-header {
       flex-shrink: 0;
       padding: 1.5rem 1.75rem .5rem;
-      @include full-width;
+      width: $full-width; min-width: 0;
       min-height: 0;
     }
   }
@@ -251,7 +256,7 @@
 .popupPanel {
   overflow: hidden;
   display: flex;
-  @include full-width;
+  width: $full-width; min-width: 0;
   height: 100%;
   @include prevent-overflow;
   min-height: 0;
@@ -318,7 +323,7 @@
     display: flex;
     @include prevent-overflow;
     min-height: 0;
-    @include full-width;
+    width: $full-width; min-width: 0;
     height: 100%;
     background-color: var(--theme-panel-color);
     border-top: none;
@@ -384,7 +389,7 @@
         justify-content: center;
         align-items: center;
         flex-shrink: 0;
-        @include full-width;
+        width: $full-width; min-width: 0;
         min-height: 3.5rem;
         border-bottom: 1px solid var(--theme-divider-color);
       }
@@ -402,7 +407,7 @@
       &.mobile {
         flex-shrink: 0;
         padding: .5rem .75rem .75rem;
-        @include full-width;
+        width: $full-width; min-width: 0;
         @include min-width(320px);
       }
 
@@ -411,7 +416,7 @@
       .header-row {
         display: flex;
         align-items: center;
-        @include full-width;
+        width: $full-width; min-width: 0;
         flex-wrap: wrap;
 
         &.between { justify-content: space-between; }
@@ -496,7 +501,7 @@
       &-content {
         display: flex;
         flex-direction: column;
-        @include full-width;
+        width: $full-width; min-width: 0;
         @include prevent-overflow;
         min-height: 0;
         padding: 1.25rem 2rem;
@@ -519,7 +524,7 @@
     @include watermark;
 
     top: 0;
-    @include full-width;
+    width: $full-width; min-width: 0;
     visibility: hidden;
   }
   
@@ -527,7 +532,7 @@
     @include watermark;
 
     bottom: 0;
-    @include full-width;
+    width: $full-width; min-width: 0;
     visibility: hidden;
   }
 
@@ -560,7 +565,7 @@
   flex-direction: column;
   flex-grow: 1;
   height: 100%;
-  @include full-width;
+  width: $full-width; min-width: 0;
   overflow: hidden;
 }
 
@@ -572,7 +577,7 @@
   @include prevent-overflow;
   overflow: hidden;
 
-  button.type-link { @include full-width; }
+  button.type-link { width: $full-width; min-width: 0; }
 }
 
 .panel-content {
@@ -588,7 +593,7 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  @include full-width;
+  width: $full-width; min-width: 0;
   overflow: hidden;
 }
 
@@ -645,7 +650,7 @@
   flex-direction: column;
   flex-grow: 1;
   flex-shrink: 1;
-  @include full-width;
+  width: $full-width; min-width: 0;
   overflow: hidden;
 }
 
@@ -663,6 +668,6 @@
   flex-direction: column;
   flex-grow: 1;
   flex-shrink: 1;
-  @include full-width;
+  width: $full-width; min-width: 0;
   overflow: hidden;
 }

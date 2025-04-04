@@ -118,7 +118,7 @@
   &.horizonatl {
     min-height: var(--app-panel-width);
     height: var(--app-panel-width);
-    @include full-width;
+    width: $full-width; min-width: 0;
     border-top: 1px solid var(--theme-navpanel-divider);
   }
   &.lastDivider { border-color: var(--theme-navpanel-border); }

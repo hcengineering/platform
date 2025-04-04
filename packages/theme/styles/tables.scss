@@ -253,13 +253,13 @@
 .hulyTable {
   display: flex;
   flex-direction: column;
-  @include full-width;
+  width: $full-width; min-width: 0;
   border-collapse: collapse;
 
   .hulyTable-row {
     display: flex;
     align-items: center;
-    @include full-width;
+    width: $full-width; min-width: 0;
     min-height: var(--table-row-height);
     padding: var(--spacing-2) var(--spacing-4);
     border-bottom: 1px solid $border-divider;
@@ -281,11 +281,11 @@
     }
 
     &.fit {
-      @include fit-width;
+      width: $fit-width; min-width: 0;
     }
 
     &.full {
-      @include full-width;
+      width: $full-width; min-width: 0;
     }
   }
 }

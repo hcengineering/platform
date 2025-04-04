@@ -43,7 +43,7 @@
 // Common styles for content components
 %huly-flex-base {
   display: flex;
-  @include full-width;
+  width: $full-width; min-width: 0;
   min-height: 0;
 }
 
