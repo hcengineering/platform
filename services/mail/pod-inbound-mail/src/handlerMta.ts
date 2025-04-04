@@ -16,7 +16,7 @@ import { createHash, randomUUID } from 'crypto'
 import { readEml, ReadedEmlJson } from 'eml-parse-js'
 import { Request, Response } from 'express'
 import TurndownService from 'turndown'
-import DOMPurify from 'isomorphic-dompurify'
+import sanitizeHtml from 'sanitize-html'
 import { MeasureContext } from '@hcengineering/core'
 import { type Attachment, createMessages } from './message'
 import config from './config'
@@ -120,11 +120,10 @@ async function parseContent (
   let isMarkdown = false
   if (email.html !== undefined) {
     try {
-      const html = DOMPurify.sanitize(email.html)
+      const html = sanitizeHtml(email.html)
       const tds = new TurndownService()
       content = tds.turndown(html)
       isMarkdown = true
-      console.log('Markdown:\n', content)
     } catch (error) {
       ctx.warn('Failed to parse html content', { error })
     }
@@ -133,7 +132,6 @@ async function parseContent (
   const attachments: Attachment[] = []
   if (config.storageConfig !== undefined) {
     for (const a of email.attachments ?? []) {
-      console.log('Attachment', a)
       if (a.name === undefined || a.name.length === 0) {
         // EML parser returns attachments with empty name for parts of content
         // that do not have "Content-Disposition: attachment" e.g. for part
