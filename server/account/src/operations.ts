@@ -15,6 +15,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
+  AccountInfo,
   buildSocialIdString,
   concatLink,
   Data,
@@ -161,6 +162,7 @@ export async function login (
 
     const extraToken: Record<string, string> = isAdminEmail(email) ? { admin: 'true' } : {}
     ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
+    void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, existingAccount, meta)
 
     return {
       account: existingAccount.uuid,
@@ -202,7 +204,7 @@ export async function loginOtp (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  await setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, account, meta)
+  void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, account, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -242,7 +244,7 @@ export async function signUp (
     await confirmEmail(ctx, db, account, email)
   }
 
-  await setTimezoneIfNotDefined(ctx, db, account, null, meta)
+  void setTimezoneIfNotDefined(ctx, db, account, null, meta)
   return {
     account,
     name: getPersonName(person),
@@ -287,7 +289,7 @@ export async function signUpOtp (
     const emailSocialIdId = await db.socialId.insertOne(newSocialId)
     emailSocialId = { ...newSocialId, _id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
   }
-  await setTimezoneIfNotDefined(ctx, db, personUuid, null, meta)
+  void setTimezoneIfNotDefined(ctx, db, personUuid, null, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -875,7 +877,7 @@ export async function signUpJoin (
   }
 
   const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last, true)
-  await setTimezoneIfNotDefined(ctx, db, account, null, meta)
+  void setTimezoneIfNotDefined(ctx, db, account, null, meta)
 
   return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
 }
@@ -2135,6 +2137,21 @@ export async function addSocialIdToPerson (
   return await addSocialId(db, person, type, value, confirmed)
 }
 
+export async function getAccountInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountId: PersonUuid }
+): Promise<AccountInfo> {
+  const { accountId } = params
+  const account = await getAccount(db, accountId)
+  if (account === undefined || account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+  return { timezone: account?.timezone, locale: account?.locale }
+}
+
 export type AccountMethods =
   | 'login'
   | 'loginOtp'
@@ -2186,6 +2203,7 @@ export type AccountMethods =
   | 'getMailboxes'
   | 'deleteMailbox'
   | 'addSocialIdToPerson'
+  | 'getAccountInfo'
 
 /**
  * @public
@@ -2235,6 +2253,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
     getMailboxOptions: wrap(getMailboxOptions),
+    getAccountInfo: wrap(getAccountInfo),
 
     /* SERVICE METHODS */
     getPendingWorkspace: wrap(getPendingWorkspace),

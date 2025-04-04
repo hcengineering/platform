@@ -14,6 +14,7 @@
 //
 import {
   type AccountRole,
+  type AccountInfo,
   BackupStatus,
   Data,
   type Person,
@@ -137,6 +138,7 @@ export interface AccountClient {
     lastName: string
   ) => Promise<{ uuid: PersonUuid, socialId: PersonId }>
   addSocialIdToPerson: (person: PersonUuid, type: SocialIdType, value: string, confirmed: boolean) => Promise<PersonId>
+  getAccountInfo: (uuid: PersonUuid) => Promise<AccountInfo>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -725,6 +727,15 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async getAccountInfo (uuid: PersonUuid): Promise<AccountInfo> {
+    const request = {
+      method: 'getAccountInfo' as const,
+      params: { accountId: uuid }
+    }
+
+    return await this.rpc(request)
   }
 
   async setCookie (): Promise<void> {
