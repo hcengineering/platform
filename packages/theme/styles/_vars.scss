@@ -54,6 +54,63 @@ $spacing: (
   "4": 4rem
 );
 
+// New variables
+// Transition speeds
+$transition-speeds: (
+  "fast": 0.15s,
+  "normal": 0.3s,
+  "slow": 0.45s
+);
+
+// Z-index levels
+$z-indexes: (
+  "base": 1,
+  "dropdown": 1000,
+  "sticky": 1020,
+  "modal": 1030,
+  "popover": 1040,
+  "tooltip": 1050
+);
+
+// Typography
+$font-weights: (
+  "normal": 400,
+  "medium": 500,
+  "semibold": 600,
+  "bold": 700
+);
+
+$font-sizes: (
+  "xs": 0.75rem,  // 12px
+  "sm": 0.875rem, // 14px
+  "md": 1rem,     // 16px
+  "lg": 1.125rem, // 18px
+  "xl": 1.25rem,  // 20px
+  "2xl": 1.5rem   // 24px
+);
+
+$line-heights: (
+  "tight": 1.25,
+  "normal": 1.5,
+  "loose": 1.75
+);
+
+// Grid system
+$grid-columns: 12;
+$grid-gaps: (
+  "sm": 0.5rem,
+  "md": 1rem,
+  "lg": 2rem
+);
+
+// Aspect ratios
+$aspect-ratios: (
+  "square": 1/1,
+  "portrait": 3/4,
+  "landscape": 16/9,
+  "widescreen": 21/9
+);
+
 * {
   /** Space & Dimensions **/
 
@@ -114,4 +171,57 @@ $spacing: (
   --global-modal-ShadowSpread: 0.25rem;
   --global-modal-ShadowX: 0;
   --global-modal-ShadowY: 1.5rem;
+
+  /** Transitions **/
+  --transition-fast: 0.15s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.45s;
+  
+  /** Z-index layers **/
+  --z-base: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-modal: 1030;
+  --z-popover: 1040;
+  --z-tooltip: 1050;
+  
+  /** Typography **/
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-loose: 1.75;
+  
+  /** Grid system **/
+  --grid-columns: 12;
+  --grid-gap-sm: 0.5rem;
+  --grid-gap-md: 1rem;
+  --grid-gap-lg: 2rem;
+  
+  /** Aspect ratios **/
+  --aspect-ratio-square: 1/1;
+  --aspect-ratio-portrait: 3/4;
+  --aspect-ratio-landscape: 16/9;
+  --aspect-ratio-widescreen: 21/9;
+  
+  /** Focus states **/
+  --focus-ring-color: rgba(81, 144, 236, 0.5);
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+  
+  /** Scrollbars **/
+  --scrollbar-width: 6px;
+  --scrollbar-track-color: transparent;
+  --scrollbar-thumb-color: var(--theme-navpanel-divider);
+  --scrollbar-thumb-hover-color: var(--theme-navpanel-border);
 }

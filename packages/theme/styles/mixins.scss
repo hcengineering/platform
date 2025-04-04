@@ -14,8 +14,7 @@
  * - padding: map-get($spacing, '0_5') map-get($spacing, '1');
  */
 
-// Устаревшие миксины, оставлены для обратной совместимости
-// TODO: В будущем обновить все компоненты и удалить эти миксины
+
 
 @mixin bg-fullsize {
   position: absolute;

@@ -124,25 +124,25 @@
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-width);
 }
 ::-webkit-scrollbar:horizontal {
-  height: 6px;
+  height: var(--scrollbar-width);
 }
 ::-webkit-scrollbar-track, .panel-instance .scroll .scroll::-webkit-scrollbar-track {
   margin: 6px;
-  // background-color: var(--scrollbar-bar-color);
+  background-color: var(--scrollbar-track-color);
 }
 ::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-bar-color);
+  background-color: var(--scrollbar-thumb-color);
   border-radius: .25rem;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--scrollbar-bar-hover);
+  background-color: var(--scrollbar-thumb-hover-color);
   border-radius: .25rem;
 }
 ::-webkit-scrollbar-corner {
-  background-color: var(--scrollbar-bar-color);
+  background-color: var(--scrollbar-thumb-color);
   border-radius: .25rem;
 }
 .kanban-container .scroll::-webkit-scrollbar-track {

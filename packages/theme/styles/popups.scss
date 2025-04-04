@@ -27,6 +27,7 @@
     var(--global-popover-ShadowBlur)
     var(--global-popover-ShadowSpread)
     var(--global-popover-ShadowColor);
+  z-index: var(--z-popover);
 
   &:not(.noPadding) { padding: 1px; }
   &:not(.autoWidth) {
@@ -44,6 +45,7 @@
     text-align: left;
     border-radius: var(--extra-small-BorderRadius);
     border: none;
+    transition: background-color var(--transition-fast) ease;
 
     &.withKeys {
       align-items: center;
