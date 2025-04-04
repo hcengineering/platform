@@ -55,3 +55,22 @@ export interface MailboxInfo {
   aliases: string[]
   appPasswords: string[]
 }
+
+export interface Integration {
+  socialId: PersonId
+  kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
+  workspaceUuid?: WorkspaceUuid
+  data?: Record<string, any>
+}
+
+export type IntegrationKey = Omit<Integration, 'data'>
+
+export interface IntegrationSecret {
+  socialId: PersonId
+  kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
+  workspaceUuid?: WorkspaceUuid
+  key: string // Key for the secret in the integration. Different secrets for the same integration must have different keys. Can be any string. E.g. '', 'user_app_1' etc.
+  secret: string
+}
+
+export type IntegrationSecretKey = Omit<IntegrationSecret, 'secret'>

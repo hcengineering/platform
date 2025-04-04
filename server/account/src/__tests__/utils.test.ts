@@ -932,7 +932,7 @@ describe('account utils', () => {
           await expect(confirmEmail(mockCtx, mockDb, account, email)).rejects.toThrow(
             new PlatformError(
               new Status(Severity.ERROR, platform.status.SocialIdNotFound, {
-                socialId: email,
+                value: email,
                 type: SocialIdType.EMAIL
               })
             )

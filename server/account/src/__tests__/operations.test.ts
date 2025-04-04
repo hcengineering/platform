@@ -13,13 +13,12 @@
 // limitations under the License.
 //
 
-import { AccountRole, MeasureContext, PersonId, PersonUuid, SocialIdType, WorkspaceUuid } from '@hcengineering/core'
+import { AccountRole, MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
-import * as utils from '../utils'
 
 import { AccountDB } from '../types'
-import { createInvite, createInviteLink, sendInvite, resendInvite, addSocialIdToPerson } from '../operations'
+import { createInvite, createInviteLink, sendInvite, resendInvite } from '../operations'
 import { accountPlugin } from '../plugin'
 
 // Mock platform
@@ -451,108 +450,6 @@ describe('invite operations', () => {
 
       expect(mockDb.invite.insertOne).toHaveBeenCalled()
       expect(global.fetch).toHaveBeenCalled()
-    })
-  })
-
-  describe('addSocialIdToPerson', () => {
-    const mockCtx = {
-      error: jest.fn()
-    } as unknown as MeasureContext
-
-    const mockDb = {} as unknown as AccountDB
-    const mockBranding = null
-    const mockToken = 'test-token'
-
-    // Create spy only for this test suite
-    const addSocialIdSpy = jest.spyOn(utils, 'addSocialId')
-
-    beforeEach(() => {
-      jest.clearAllMocks()
-    })
-
-    afterAll(() => {
-      // Restore the original implementation
-      addSocialIdSpy.mockRestore()
-    })
-
-    test('should allow github service to add social id', async () => {
-      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        extra: { service: 'github' }
-      })
-      const newSocialId = 'new-social-id' as PersonId
-      addSocialIdSpy.mockResolvedValue(newSocialId)
-
-      const params = {
-        person: 'test-person' as PersonUuid,
-        type: SocialIdType.GITHUB,
-        value: 'test-value',
-        confirmed: true
-      }
-
-      const result = await addSocialIdToPerson(mockCtx, mockDb, mockBranding, mockToken, params)
-
-      expect(result).toBe(newSocialId)
-      expect(addSocialIdSpy).toHaveBeenCalledWith(mockDb, params.person, params.type, params.value, params.confirmed)
-    })
-
-    test('should allow admin to add social id', async () => {
-      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        extra: { admin: 'true' }
-      })
-      const newSocialId = 'new-social-id' as PersonId
-      addSocialIdSpy.mockResolvedValue(newSocialId)
-
-      const params = {
-        person: 'test-person' as PersonUuid,
-        type: SocialIdType.GITHUB,
-        value: 'test-value',
-        confirmed: false
-      }
-
-      const result = await addSocialIdToPerson(mockCtx, mockDb, mockBranding, mockToken, params)
-
-      expect(result).toBe(newSocialId)
-      expect(addSocialIdSpy).toHaveBeenCalledWith(mockDb, params.person, params.type, params.value, params.confirmed)
-    })
-
-    test('should throw error for unauthorized service', async () => {
-      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        extra: { service: 'other-service' }
-      })
-
-      const params = {
-        person: 'test-person' as PersonUuid,
-        type: SocialIdType.GITHUB,
-        value: 'test-value',
-        confirmed: false
-      }
-
-      await expect(addSocialIdToPerson(mockCtx, mockDb, mockBranding, mockToken, params)).rejects.toThrow(
-        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-      )
-
-      expect(addSocialIdSpy).not.toHaveBeenCalled()
-    })
-
-    test('should throw error for regular user', async () => {
-      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        account: 'test-account',
-        workspace: 'test-workspace',
-        extra: {}
-      })
-
-      const params = {
-        person: 'test-person' as PersonUuid,
-        type: SocialIdType.GITHUB,
-        value: 'test-value',
-        confirmed: false
-      }
-
-      await expect(addSocialIdToPerson(mockCtx, mockDb, mockBranding, mockToken, params)).rejects.toThrow(
-        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-      )
-
-      expect(addSocialIdSpy).not.toHaveBeenCalled()
     })
   })
 })
