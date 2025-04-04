@@ -62,7 +62,6 @@ export class ImportWorkspaceBuilder {
   private readonly masterTagAttributes = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
   private readonly tags = new Map<string, UnifiedDoc<Tag>>()
   private readonly cards = new Map<string, UnifiedDoc<Card>>()
-  private readonly cardParents = new Map<string, string>()
 
   private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
@@ -247,13 +246,8 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
-  addCard (path: string, card: UnifiedDoc<Card>, parentCardPath?: string): this {
+  addCard (path: string, card: UnifiedDoc<Card>): this {
     this.validateAndAdd('card', path, card, (c) => this.validateCard(c), this.cards, path)
-
-    if (parentCardPath !== undefined) {
-      this.cardParents.set(path, parentCardPath)
-    }
-
     return this
   }
 
@@ -318,14 +312,6 @@ export class ImportWorkspaceBuilder {
 
         space.docs = rootDocPaths.map((path) => qmsDocs.get(path)).filter(Boolean) as ImportControlledDocument[]
       }
-    }
-
-    // Добавляем обработку иерархии карточек
-    const rootCardPaths = Array.from(this.cards.keys())
-      .filter(cardPath => !this.cardParents.has(cardPath))
-
-    for (const rootPath of rootCardPaths) {
-      this.buildCardHierarchy(rootPath, this.cards)
     }
 
     return {
@@ -637,32 +623,6 @@ export class ImportWorkspaceBuilder {
               this.addError(cardPath, `Card uses non-existent attribute: ${attrName}`)
             }
           }
-        }
-      }
-
-      // Проверка существования родительской карточки по ID
-      if (card.props.parentId !== undefined) {
-        const parentExists = Array.from(this.cards.values()).some(c => c.props.id === card.props.parentId)
-        if (!parentExists) {
-          this.addError(cardPath, `Parent card with ID ${card.props.parentId} does not exist`)
-        }
-      }
-
-      // Проверка на циклические зависимости
-      if (card.props.parentId !== undefined) {
-        let currentCard = card
-        const visitedIds = new Set<string>()
-
-        while (currentCard.props.parentId !== undefined) {
-          if (visitedIds.has(currentCard.props.parentId)) {
-            this.addError(cardPath, 'Circular dependency detected in card hierarchy')
-            break
-          }
-
-          visitedIds.add(currentCard.props.parentId)
-          const parentCard = Array.from(this.cards.values()).find(c => c.props.id === currentCard.props.parentId)
-          if (!parentCard) break
-          currentCard = parentCard
         }
       }
     }
