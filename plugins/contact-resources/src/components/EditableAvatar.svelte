@@ -37,6 +37,8 @@
   $: selectedAvatar = person?.avatar
   $: selectedAvatarProps = person?.avatarProps
 
+  console.log('EditableAvatar')
+
   export async function createAvatar (): Promise<Data<AvatarInfo>> {
     const result: Data<AvatarInfo> = {
       avatarType: selectedAvatarType,
@@ -75,6 +77,7 @@
   const dispatch = createEventDispatcher()
 
   async function showSelectionPopup (e: MouseEvent) {
+    console.log('showSelectionPopup', disabled)
     if (!disabled) {
       showPopup(SelectAvatarPopup, {
         avatar: selectedAvatar,

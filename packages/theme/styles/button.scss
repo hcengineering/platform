@@ -168,6 +168,34 @@
     }
   }
 
+  &.ghost {
+    border-color: var(--button-secondary-BorderColor);
+    background-color: transparent;
+
+    &:not(.inheritColor) .icon { color: var(--theme-content-color); }
+    &.inheritColor {
+      color: inherit;
+
+      .icon { color: currentColor; }
+    }
+    span { color: var(--theme-content-color); }
+
+    &:not(.disabled, :disabled):hover { background-color: var(--button-tertiary-hover-BackgroundColor); }
+    &:not(.disabled, :disabled):active,
+    &.pressed:not(.disabled, :disabled) { background-color: var(--button-tertiary-active-BackgroundColor); }
+    &.menu:not(.disabled, :disabled):active,
+    &.pressed:not(.disabled, :disabled) { border-color: var(--button-menu-active-BorderColor); }
+    &.loading {
+      background-color: var(--button-tertiary-active-BackgroundColor);
+
+      span { color: var(--button-disabled-LabelColor); }
+    }
+  }
+
+  &.full-width {
+    width: 100%;
+  }
+
   & > * { pointer-events: none; }
 }
 

@@ -150,7 +150,7 @@ export interface RadioItem {
 
 export type ButtonBaseType = 'type-button' | 'type-button-icon'
 
-export type ButtonBaseKind = 'primary' | 'secondary' | 'tertiary' | 'negative'
+export type ButtonBaseKind = 'primary' | 'secondary' | 'tertiary' | 'negative' | 'ghost'
 
 export type ButtonBaseSize = 'large' | 'medium' | 'small' | 'extra-small' | 'min'
 
@@ -306,6 +306,7 @@ export interface LabelAndProps {
   kind?: 'tooltip' | 'submenu' | 'popup'
   keys?: string[]
   timeout?: number
+  style?: 'default' | 'modern'
 }
 
 export interface ListItem {

@@ -290,6 +290,12 @@ export const contactPlugin = plugin(contactId, {
     Contacts: '' as Asset,
     Viber: '' as Asset
   },
+  image: {
+    ProfileBackground: '' as Asset,
+    Achievement1: '' as Asset,
+    Achievement2: '' as Asset,
+    Achievement3: '' as Asset
+  },
   space: {
     Contacts: '' as Ref<Space>
   },

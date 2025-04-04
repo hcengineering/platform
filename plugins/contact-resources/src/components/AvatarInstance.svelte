@@ -29,6 +29,7 @@
   export let withStatus: boolean = false
   export let element: HTMLElement
   export let adaptiveName: boolean = false
+  export let disabled: boolean = false
 
   export function pulse (): void {
     if (element === undefined) return
@@ -50,6 +51,9 @@
   }
 
   $: hasImg = url != null && !imgError
+  $: background = disabled
+    ? '#666'
+    : (color && !hasImg ? color.icon : 'var(--theme-button-default)')
 </script>
 
 {#if (size === 'full' || adaptiveName) && !url && displayName && displayName !== ''}
@@ -61,7 +65,7 @@
     class:border={bColor !== undefined}
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !hasImg ? color.icon : 'var(--theme-button-default)'}
+    style:background-color={background}
     use:resizeObserver={(element) => {
       fontSize = element.clientWidth * 0.6
     }}
@@ -82,14 +86,14 @@
     class:border={bColor !== undefined}
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !hasImg ? color.icon : 'var(--theme-button-default)'}
+    style:background-color={background}
   >
     {#if url && !imgError}
       <img class="hulyAvatarSize-{size} ava-image" src={url} {srcset} alt={''} on:error={handleImgError} />
     {:else if displayName && displayName !== ''}
       <div
         class="ava-text"
-        style:color={color ? color.iconText : 'var(--primary-button-color)'}
+        style:color={disabled ? 'white' : color ? color.iconText : 'var(--primary-button-color)'}
         data-name={displayName.toLocaleUpperCase()}
       />
     {:else}

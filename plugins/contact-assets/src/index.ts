@@ -46,3 +46,15 @@ loadMetadata(contact.icon, {
   Contacts: `${icons}#contacts`
 })
 addStringsLoader(contactId, async (lang: string) => await import(`../lang/${lang}.json`))
+
+const profileBackground = require('../assets/profile-background.png') as string // eslint-disable-line
+const achievement1 = require('../assets/achievement-1.png') as string // eslint-disable-line
+const achievement2 = require('../assets/achievement-2.png') as string // eslint-disable-line
+const achievement3 = require('../assets/achievement-3.png') as string // eslint-disable-line
+
+loadMetadata(contact.image, {
+  ProfileBackground: profileBackground,
+  Achievement1: achievement1,
+  Achievement2: achievement2,
+  Achievement3: achievement3
+})

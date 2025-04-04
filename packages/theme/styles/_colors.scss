@@ -676,4 +676,12 @@
   --calendar-event-back-color: #f3f6fb;
   --calendar-event-border-color: rgba(43, 81, 144, 0.2);
   --calendar-event-handle-color: #2b5190;
+
+  --theme-button-contrast-color: #fff;
+  --theme-button-contrast-enabled: rgba(0, 0, 0, .8);
+  --theme-button-contrast-hovered: #000;
+  --theme-button-contrast-pressed: rgba(0, 0, 0, .6);
+  --theme-button-contrast-disabled: rgba(0, 0, 0, .6);
+  --theme-button-contrast-disabled-color: rgba(255, 255, 255, .5);
+  --theme-button-contrast-border: rgba(0, 0, 0, .2);
 }

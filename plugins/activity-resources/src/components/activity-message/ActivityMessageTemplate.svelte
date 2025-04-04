@@ -196,7 +196,7 @@
           {#if $$slots.icon}
             <slot name="icon" />
           {:else if person}
-            <Avatar size="medium" {person} name={person.name} />
+            <Avatar size="medium" {person} name={person.name} showPreview />
           {:else}
             <SystemAvatar size="medium" />
           {/if}

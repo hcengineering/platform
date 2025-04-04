@@ -32,15 +32,17 @@
     getPlatformAvatarColorForTextDef,
     getPlatformColor,
     IconSize,
-    themeStore
+    themeStore,
+    tooltip
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import { AccountUuid, type Data, PersonUuid, Ref, type WithLookup } from '@hcengineering/core'
 
   import { loadUsersStatus, statusByUserStore } from '../utils'
   import AvatarInstance from './AvatarInstance.svelte'
+  import { getPreviewPopup } from './person/utils'
 
-  export let person: (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person>, personUuid?: PersonUuid }) | undefined =
+  export let person: (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person>, personUuid?: PersonUuid }) | Person | undefined =
     undefined
   export let name: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
@@ -50,6 +52,8 @@
   export let borderColor: number | undefined = undefined
   export let showStatus: boolean = false
   export let adaptiveName: boolean = false
+  export let showPreview: boolean = false
+  export let disabled: boolean = false
 
   export function pulse (): void {
     avatarInst.pulse()
@@ -112,8 +116,30 @@
     person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid as AccountUuid)?.online === true
 </script>
 
-{#if showStatus && person}
-  <div class="relative">
+<div
+  class="flex-presenter"
+  use:tooltip={getPreviewPopup(person, showPreview)}
+>
+  {#if showStatus && person}
+    <div class="relative">
+      <AvatarInstance
+        bind:this={avatarInst}
+        {url}
+        srcset={srcSet}
+        {displayName}
+        {size}
+        {icon}
+        {variant}
+        {color}
+        {bColor}
+        bind:element
+        withStatus
+        {adaptiveName}
+        {disabled}
+      />
+      <div class="hulyAvatar-statusMarker {size}" class:online={isOnline} class:offline={!isOnline} />
+    </div>
+  {:else}
     <AvatarInstance
       bind:this={avatarInst}
       {url}
@@ -125,23 +151,8 @@
       {color}
       {bColor}
       bind:element
-      withStatus
       {adaptiveName}
+      {disabled}
     />
-    <div class="hulyAvatar-statusMarker {size}" class:online={isOnline} class:offline={!isOnline} />
-  </div>
-{:else}
-  <AvatarInstance
-    bind:this={avatarInst}
-    {url}
-    srcset={srcSet}
-    {displayName}
-    {size}
-    {icon}
-    {variant}
-    {color}
-    {bColor}
-    bind:element
-    {adaptiveName}
-  />
-{/if}
+  {/if}
+</div>

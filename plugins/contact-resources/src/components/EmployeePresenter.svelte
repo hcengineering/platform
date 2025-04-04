@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { Employee, Person } from '@hcengineering/contact'
+  import { Person } from '@hcengineering/contact'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import ui, { IconSize, LabelAndProps } from '@hcengineering/ui'
-  import { PersonLabelTooltip, employeeByIdStore, personByIdStore } from '..'
+  import ui, { IconSize } from '@hcengineering/ui'
+  import { PersonLabelTooltip, personByIdStore } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
-  import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
+  import { getPreviewPopup } from './person/utils'
 
   export let value: Ref<Person> | WithLookup<Person> | null | undefined
   export let showPopup: boolean = true
@@ -36,23 +36,14 @@
 
   $: active = employeeValue?.active ?? false
 
-  function getPreviewPopup (active: boolean, value: Employee | undefined): LabelAndProps | undefined {
-    if (!active || value === undefined || !showPopup) {
-      return undefined
-    }
-    return {
-      component: EmployeePreviewPopup,
-      props: { employeeId: value._id },
-      timeout: 300
-    }
-  }
+  console.log('shouldShowAvatar', shouldShowAvatar)
 </script>
 
 <PersonPresenter
   value={employeeValue}
   {tooltipLabels}
   onEdit={onEmployeeEdit}
-  customTooltip={getPreviewPopup(active, employeeValue)}
+  customTooltip={getPreviewPopup(employeeValue, showPopup)}
   {shouldShowAvatar}
   {shouldShowName}
   {avatarSize}

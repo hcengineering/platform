@@ -44,6 +44,7 @@
   export let shape: 'rectangle' | 'round' = 'rectangle'
   export let id: string | undefined = undefined
   export let dataId: string | undefined = undefined
+  export let width: string | undefined = undefined
 
   let actualIconSize: IconSize = 'small'
 
@@ -102,6 +103,7 @@
   class:no-print={noPrint}
   disabled={loading || disabled}
   data-id={dataId}
+  style:width
   use:tp={tooltip}
   on:click|stopPropagation|preventDefault
   on:keydown
