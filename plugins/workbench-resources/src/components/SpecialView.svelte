@@ -13,7 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space, WithLookup } from '@hcengineering/core'
+  import {
+    AccountRole,
+    Class,
+    Doc,
+    DocumentQuery,
+    FindOptions,
+    getCurrentAccount,
+    hasAccountRole,
+    Ref,
+    Space,
+    WithLookup
+  } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { getClient, ComponentExtensions } from '@hcengineering/presentation'
   import {
@@ -49,6 +60,7 @@
   export let createLabel: IntlString | undefined = undefined
   export let createComponent: AnyComponent | undefined = undefined
   export let createComponentProps: Record<string, any> = {}
+  export let createComponentAccess: AccountRole | undefined = undefined
   export let createButton: AnyComponent | undefined = undefined
   export let isCreationDisabled = false
   export let descriptors: Array<Ref<ViewletDescriptor>> | undefined = undefined
@@ -135,25 +147,27 @@
       extension={workbench.extensions.SpecialViewAction}
       props={{ _class, visible: actionVisible, query: resultQuery, config: actionConfig }}
     />
-    {#if createLabel && createComponent}
-      <Button
-        icon={IconAdd}
-        label={createLabel}
-        kind={'primary'}
-        disabled={isCreationDisabled}
-        event={createEvent}
-        on:click={() => {
-          showCreateDialog()
-        }}
-      />
-    {:else if createButton !== undefined}
-      <Component
-        is={createButton}
-        props={{
-          ...createComponentProps,
-          space
-        }}
-      />
+    {#if createComponentAccess === undefined || hasAccountRole(getCurrentAccount(), createComponentAccess)}
+      {#if createLabel && createComponent}
+        <Button
+          icon={IconAdd}
+          label={createLabel}
+          kind={'primary'}
+          disabled={isCreationDisabled}
+          event={createEvent}
+          on:click={() => {
+            showCreateDialog()
+          }}
+        />
+      {:else if createButton !== undefined}
+        <Component
+          is={createButton}
+          props={{
+            ...createComponentProps,
+            space
+          }}
+        />
+      {/if}
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="extra">

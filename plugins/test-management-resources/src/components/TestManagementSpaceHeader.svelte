@@ -101,31 +101,44 @@
 
 {#if loading}
   <Loading shrink />
-{:else}
+{:else if hasAccountRole(getCurrentAccount(), AccountRole.User) || hasProject}
   <div class="antiNav-subheader">
-    {#if hasProject}
-      <ButtonWithDropdown
-        icon={IconAdd}
-        justify={'left'}
-        kind={'primary'}
-        label={testManagement.string.CreateTestCase}
-        dropdownIcon={IconDropdown}
-        {dropdownItems}
-        disabled={currentSpace === undefined}
-        on:click={handleCreateTestCase}
-        on:dropdown-selected={(ev) => {
-          void handleDropdownItemSelected(ev.detail)
-        }}
-      />
-    {:else}
+    {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
+      {#if hasProject}
+        <ButtonWithDropdown
+          icon={IconAdd}
+          justify={'left'}
+          kind={'primary'}
+          label={testManagement.string.CreateTestCase}
+          dropdownIcon={IconDropdown}
+          {dropdownItems}
+          disabled={currentSpace === undefined}
+          on:click={handleCreateTestCase}
+          on:dropdown-selected={(ev) => {
+            void handleDropdownItemSelected(ev.detail)
+          }}
+        />
+      {:else}
+        <Button
+          icon={IconAdd}
+          label={testManagement.string.CreateProject}
+          justify={'left'}
+          width={'100%'}
+          kind={'primary'}
+          gap={'large'}
+          on:click={showCreateProjectPopup}
+        />
+      {/if}
+    {:else if hasProject}
       <Button
+        id={'new-document'}
         icon={IconAdd}
-        label={testManagement.string.CreateProject}
+        label={testManagement.string.CreateTestCase}
         justify={'left'}
         width={'100%'}
         kind={'primary'}
         gap={'large'}
-        on:click={showCreateProjectPopup}
+        on:click={handleCreateTestCase}
       />
     {/if}
   </div>
