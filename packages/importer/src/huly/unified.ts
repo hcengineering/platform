@@ -16,6 +16,8 @@ import { readMarkdownContent, readYamlHeader } from './parsing'
 export type UnifiedDocProcessResult = Map<string, Array<UnifiedDoc<Doc>>>
 
 export class UnifiedDocProcessor {
+  private tagPaths: Map<string, Ref<Tag>> = new Map()
+
   async importFromDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
     const unifiedDocs: UnifiedDocProcessResult = new Map()
     await this.processDirectory(directoryPath, unifiedDocs)
@@ -60,9 +62,10 @@ export class UnifiedDocProcessor {
           throw new Error('Tag should be inside master tag folder: ' + currentPath) // todo: confirm this error message
         }
 
-        const tag = await this.createTag(yamlConfig, parentMasterTagId)
+        const tagId = this.tagPaths.get(yamlPath) ?? generateId<Tag>()
+        const tag = await this.createTag(yamlConfig, tagId, parentMasterTagId)
+        this.tagPaths.set(yamlPath, tagId)
 
-        const tagId = tag.props._id as Ref<Tag>
         const attributes = await this.createAttributes(yamlConfig, tagId)
 
         const docs = result.get(yamlPath) ?? []
@@ -116,6 +119,7 @@ export class UnifiedDocProcessor {
 
   private async createTag (
     data: Record<string, any>,
+    tagId: Ref<Tag>,
     parentMasterTagId: Ref<MasterTag>
   ): Promise<UnifiedDoc<Tag>> {
     const { class: _class, title } = data
@@ -126,7 +130,7 @@ export class UnifiedDocProcessor {
     return {
       _class: card.class.Tag,
       props: {
-        _id: generateId<Tag>(),
+        _id: tagId,
         space: core.space.Model,
         extends: parentMasterTagId,
         label: 'embedded:embedded:' + title as IntlString, // todo: check if it's correct
@@ -185,6 +189,20 @@ export class UnifiedDocProcessor {
         throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
       }
       props[attributeName] = value
+    }
+
+    if (cardHeader.tags !== undefined) {
+      const tagIds: Ref<Tag>[] = []
+      for (const tagPath of cardHeader.tags) {
+        let tagId = this.tagPaths.get(tagPath)
+        if (tagId === undefined) {
+          // Если тег еще не обработан, генерируем ID и сохраняем его
+          tagId = generateId<Tag>()
+          this.tagPaths.set(tagPath, tagId)
+        }
+        tagIds.push(tagId)
+      }
+      props.tags = tagIds
     }
 
     return {

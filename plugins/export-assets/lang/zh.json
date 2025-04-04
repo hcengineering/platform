@@ -1,26 +1,145 @@
 {
-  "string": {
-    "WorkspaceNamePattern": "名称必须为 40 个字符或更少，不能为空，不能包含特殊字符（<、>、/）",
-    "Export": "导出",
-    "DataToExport": "要导出的数据",
-    "ExportDocuments": "文档",
-    "ExportMilestones": "里程碑",
-    "ExportIssues": "问题",
-    "ExportTestCases": "测试用例",
-    "ExportTestRuns": "测试运行",
-    "ExportTestPlans": "测试计划",
-    "ExportFormat": "导出格式",
-    "ExportJSON": "JSON",
-    "ExportCSV": "CSV",
-    "ExportUnifiedFormat": "Huly 统一格式",
-    "ExportIncludeContent": "包含内容",
-    "ExportEverything": "所有内容",
-    "ExportAttributesOnly": "仅属性",
-    "ExportRequestSuccess": "导出已开始。",
-    "ExportRequestSuccessMessage": "导出已开始。完成后您将在收件箱中收到通知。",
-    "ExportRequestFailed": "提交导出失败。",
-    "ExportRequestFailedMessage": "提交导出时发生错误。请稍后重试。",
-    "ExportCompleted": "导出完成。您的文件已准备就绪。您可以从驱动器下载它们。",
-    "ExportFailed": "导出数据失败。请稍后重试。"
-  }
+  "projectTypes": [],
+  "spaces": [],
+  "unifiedDocs": [
+    {
+      "_class": "card:class:MasterTag",
+      "props": {
+        "_id": "67ef664b667b87c74d9a3fc5",
+        "space": "core:space:Model",
+        "extends": "card:class:Card",
+        "label": "embedded:embedded:Master Tag 4",
+        "kind": 0,
+        "icon": "card:icon:MasterTag"
+      }
+    },
+    {
+      "_class": "card:class:MasterTag",
+      "props": {
+        "_id": "67ef664b667b87c74d9a3fc8",
+        "space": "core:space:Model",
+        "extends": "67ef664b667b87c74d9a3fc5",
+        "label": "embedded:embedded:Child Type 2",
+        "kind": 0,
+        "icon": "card:icon:MasterTag"
+      }
+    },
+    {
+      "_class": "card:class:MasterTag",
+      "props": {
+        "_id": "67ef664b667b87c74d9a3fcb",
+        "space": "core:space:Model",
+        "extends": "67ef664b667b87c74d9a3fc8",
+        "label": "embedded:embedded:Child Child Type 2",
+        "kind": 0,
+        "icon": "card:icon:MasterTag"
+      }
+    },
+    {
+      "_class": "core:class:Attribute",
+      "props": {
+        "space": "core:space:Model",
+        "attributeOf": "67ef664b667b87c74d9a3fc5",
+        "name": "67ef664b667b87c74d9a3fc6",
+        "label": "embedded:embedded:aaa",
+        "isCustom": true,
+        "type": { "_class": "core:class:TypeString" },
+        "defaultValue": null
+      }
+    },
+    {
+      "_class": "core:class:Attribute",
+      "props": {
+        "space": "core:space:Model",
+        "attributeOf": "67ef664b667b87c74d9a3fc5",
+        "name": "67ef664b667b87c74d9a3fc7",
+        "label": "embedded:embedded:bbb",
+        "isCustom": true,
+        "type": { "_class": "core:class:TypeBoolean" },
+        "defaultValue": null
+      }
+    },
+    {
+      "_class": "core:class:Attribute",
+      "props": {
+        "space": "core:space:Model",
+        "attributeOf": "67ef664b667b87c74d9a3fc8",
+        "name": "67ef664b667b87c74d9a3fc9",
+        "label": "embedded:embedded:ccc",
+        "isCustom": true,
+        "type": { "_class": "core:class:TypeString" },
+        "defaultValue": null
+      }
+    },
+    {
+      "_class": "core:class:Attribute",
+      "props": {
+        "space": "core:space:Model",
+        "attributeOf": "67ef664b667b87c74d9a3fc8",
+        "name": "67ef664b667b87c74d9a3fca",
+        "label": "embedded:embedded:ddd",
+        "isCustom": true,
+        "type": { "_class": "core:class:TypeString" },
+        "defaultValue": null
+      }
+    },
+    {
+      "_class": "core:class:Attribute",
+      "props": {
+        "space": "core:space:Model",
+        "attributeOf": "67ef664b667b87c74d9a3fcb",
+        "name": "67ef664b667b87c74d9a3fcc",
+        "label": "embedded:embedded:ccc",
+        "isCustom": true,
+        "type": { "_class": "core:class:TypeString" },
+        "defaultValue": null
+      }
+    },
+    {
+      "_class": "core:class:Attribute",
+      "props": {
+        "space": "core:space:Model",
+        "attributeOf": "67ef664b667b87c74d9a3fcb",
+        "name": "67ef664b667b87c74d9a3fcd",
+        "label": "embedded:embedded:ddd",
+        "isCustom": true,
+        "type": { "_class": "core:class:TypeString" },
+        "defaultValue": null
+      }
+    },
+    {
+      "_class": "67ef664b667b87c74d9a3fcb",
+      "collabField": "content",
+      "props": {
+        "_id": "67ef664b667b87c74d9a3fce",
+        "space": "core:space:Workspace",
+        "title": "Card from Child 2",
+        "67ef664b667b87c74d9a3fcc": "ccc",
+        "67ef664b667b87c74d9a3fcd": "ddd"
+      }
+    },
+    {
+      "_class": "67ef664b667b87c74d9a3fc8",
+      "collabField": "content",
+      "props": {
+        "_id": "67ef664b667b87c74d9a3fcf",
+        "space": "core:space:Workspace",
+        "title": "Card from Child 2",
+        "67ef664b667b87c74d9a3fc9": "ccc",
+        "67ef664b667b87c74d9a3fca": "ddd"
+      }
+    },
+    {
+      "_class": "67ef664b667b87c74d9a3fc5",
+      "collabField": "content",
+      "props": {
+        "_id": "67ef664b667b87c74d9a3fd0",
+        "space": "core:space:Workspace",
+        "title": "Card of MT 1",
+        "67ef664b667b87c74d9a3fc6": "some text",
+        "67ef664b667b87c74d9a3fc7": true
+      }
+    }
+  ],
+  "attachments": []
 }
