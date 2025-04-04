@@ -98,7 +98,9 @@
     }
   }
   &.type-popup {
-    @include min-width(45rem);
+    min-width: 45rem;
+    width: auto;
+    flex-shrink: 1;
     background-color: var(--theme-popup-color);
     border: 1px solid var(--theme-popup-divider);
     border-radius: var(--large-BorderRadius);

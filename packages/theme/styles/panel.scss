@@ -141,7 +141,8 @@
       gap: var(--spacing-0_5);
       margin-left: var(--spacing-1);
       @include prevent-overflow;
-      @include max-width(50%);
+      max-width: 50%;
+      width: auto;
     }
     &__arrow {
       margin-left: var(--spacing-0_5);
@@ -198,7 +199,9 @@
 /* Dialogs */
 .antiPanel {
   overflow: hidden;
-  @include min-width(400px);
+  min-width: 400px;
+  width: auto;
+  flex-shrink: 1;
   background-color: var(--theme-popup-color);
   border: 1px solid var(--theme-popup-divider);
   border-radius: .5rem;
@@ -365,16 +368,19 @@
         margin-left: auto;
         margin-right: auto;
         @include fixed-width(calc(100% - 7.5rem));
-        @include max-width(54rem);
+        max-width: 54rem;
+        width: auto;
 
         &.side-content-space {
           --side-content-space: 21rem;
-          @include max-width(calc(54rem + var(--side-content-space)));
+          max-width: calc(54rem + var(--side-content-space));
+          width: auto;
           padding-right: var(--side-content-space);
         }
 
         &.max {
-          @include max-width(100%);
+          max-width: 100%;
+          width: auto;
         }
       }
     }
@@ -398,17 +404,21 @@
         @include fixed-width(calc(100% - 5rem));
         height: 100%;
         @include prevent-overflow;
-        @include max-width(900px);
+        max-width: 900px;
+        width: auto;
 
         &.max {
-          @include max-width(100%);
+          max-width: 100%;
+          width: auto;
         }
       }
       &.mobile {
         flex-shrink: 0;
         padding: .5rem .75rem .75rem;
         width: $full-width; min-width: 0;
-        @include min-width(320px);
+        min-width: 320px;
+        width: auto;
+        flex-shrink: 1;
       }
 
       &.bottom-divider { border-bottom: 1px solid var(--theme-divider-color); }
@@ -425,12 +435,16 @@
     }
     .popupPanel-body__mobile-content {
       padding: .5rem;
-      @include min-width(320px);
+      min-width: 320px;
+      width: auto;
+      flex-shrink: 1;
     }
 
     &__aside {
       @include fixed-width(25%);
-      @include min-width(var(--panel-aside-width));
+      min-width: var(--panel-aside-width);
+      width: auto;
+      flex-shrink: 1;
       
       &.float {
         position: absolute;
@@ -609,7 +623,8 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  @include max-width(50%);
+  max-width: 50%;
+  width: auto;
   overflow: hidden;
 }
 
@@ -632,7 +647,9 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  @include min-width(400px);
+  min-width: 400px;
+  width: auto;
+  flex-shrink: 1;
   overflow: hidden;
 }
 
@@ -671,3 +688,58 @@
   width: $full-width; min-width: 0;
   overflow: hidden;
 }
+
+.panel-companion {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-width: 50%;
+  width: auto;
+  background-color: var(--theme-bg-color);
+  
+  // ... existing code ...
+}
+
+.panel-instance--content {
+  // ... existing code ...
+  
+  &.panel-instance--content-xl {
+    max-width: 54rem;
+    width: auto;
+    
+    &.with-side-content {
+      max-width: calc(54rem + var(--side-content-space));
+      width: auto;
+    }
+
+    &.no-width-limit {
+      max-width: 100%;
+      width: auto;
+    }
+  }
+}
+
+.panel-instance--content-wrapper {
+  // ... existing code ...
+  
+  &.with-side-content {
+    max-width: 900px;
+    width: auto;
+  }
+
+  &.no-side-content {
+    max-width: 100%;
+    width: auto;
+  }
+}
+
+// ... existing code ...
+
+.panel-instance--wrapper.is-chat {
+  // ... existing code ...
+  min-width: 400px;
+  width: auto;
+  flex-shrink: 1;
+}
+
+// ... existing code ...

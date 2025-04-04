@@ -36,7 +36,9 @@ table.proseTable {
 
   td,
   th {
-    @include min-width(1rem);
+    min-width: 1rem;
+    width: auto;
+    flex-shrink: 1;
     height: 2rem;
     border: 1px solid var(--text-editor-table-border-color);
     padding: .25rem .5rem;

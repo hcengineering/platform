@@ -61,7 +61,8 @@
     flex-shrink: 0;
   }
   &:not(.withoutMaxWidth) {
-    @include max-width(64rem);
+    max-width: 64rem;
+    width: auto;
   }
   &.gap {
     gap: var(--spacing-4);

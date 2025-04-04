@@ -93,7 +93,9 @@
 
       .key {
         padding: var(--spacing-0_5);
-        @include min-width(var(--global-extra-small-Size));
+        min-width: var(--global-extra-small-Size);
+        width: auto;
+        flex-shrink: 1;
         font-size: 0.75rem;
         color: var(--global-primary-TextColor);
         background-color: var(--theme-tooltip-key-bg);
@@ -134,9 +136,12 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  width: $fit-width; min-width: 0;
-  @include min-width(12.5rem);
-  @include max-width(17rem);
+  width: $fit-width;
+  min-width: 12.5rem;
+  width: auto;
+  flex-shrink: 1;
+  max-width: 17rem;
+  width: auto;
   max-height: 22rem;
 
   &:focus {
@@ -178,7 +183,8 @@
     @include fixed-width(40rem, null, 40rem);
   }
   &.max-width-40 {
-    @include max-width(40rem);
+    max-width: 40rem;
+    width: auto;
   }
   .header {
     flex-shrink: 0;
