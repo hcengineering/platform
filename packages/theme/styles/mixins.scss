@@ -77,7 +77,6 @@
   overflow: hidden;
 }
 
-// Дополнительные миксины из components/core/_mixins.scss
 @mixin flex($direction: row, $justify: flex-start, $align: flex-start, $wrap: nowrap) {
   display: flex;
   flex-direction: $direction;
@@ -97,7 +96,6 @@
   flex-direction: column;
 }
 
-// Миксины для размеров аватара
 @mixin avatar-size($width, $font-size) {
   width: $width;
   
@@ -106,7 +104,6 @@
   }
 }
 
-// Миксины для таблиц
 @mixin table-cell-base($padding-h: 1.5rem, $padding-v: .5rem) {
   padding: $padding-v $padding-h;
   text-align: left;

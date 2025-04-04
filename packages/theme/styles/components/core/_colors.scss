@@ -13,17 +13,17 @@
 // limitations under the License.
 //
 
-// Импортируем глобальные цвета
+// Import global colors
 @import '../../_colors';
 
 /* 
- * Единая система цветовых переменных для компонентов
- * Эти переменные должны использоваться во всех компонентах
+ * Unified color variable system for components
+ * These variables should be used in all components
  */
 
-// Базовые цвета компонентов
+// Base component colors
 $huly-colors: (
-  // Основные цвета фона
+  // Main background colors
   'bg': (
     'default': var(--theme-bg-color),
     'accent': var(--theme-bg-accent-color),
@@ -36,7 +36,7 @@ $huly-colors: (
     'table-row': var(--theme-table-row-color)
   ),
   
-  // Основные цвета текста
+  // Main text colors
   'text': (
     'primary': var(--theme-content-color),
     'secondary': var(--theme-dark-color),
@@ -46,7 +46,7 @@ $huly-colors: (
     'link': var(--theme-link-color)
   ),
   
-  // Цвета границ и разделителей
+  // Border and divider colors
   'border': (
     'default': var(--theme-button-border),
     'divider': var(--theme-divider-color),
@@ -55,7 +55,7 @@ $huly-colors: (
     'table': var(--theme-table-border-color)
   ),
   
-  // Цвета кнопок
+  // Button colors
   'button': (
     'default': var(--theme-button-default),
     'hovered': var(--theme-button-hovered),
@@ -68,7 +68,7 @@ $huly-colors: (
     'primary-pressed': var(--primary-button-pressed)
   ),
   
-  // Статусы
+  // Status colors
   'status': (
     'online': var(--activity-status-active),
     'offline': var(--activity-status-away),
@@ -77,12 +77,12 @@ $huly-colors: (
   )
 );
 
-// Функция для получения цвета из карты
+// Function to get color from the map
 @function huly-color($category, $type) {
   @return map-get(map-get($huly-colors, $category), $type);
 }
 
-// Цветовые переменные для использования в компонентах
+// Color variables for use in components
 $bg-default: huly-color('bg', 'default');
 $bg-panel: huly-color('bg', 'panel');
 $bg-comp-header: huly-color('bg', 'comp-header');
@@ -119,7 +119,7 @@ $status-offline: huly-color('status', 'offline');
 $status-busy: huly-color('status', 'busy');
 $status-dnd: huly-color('status', 'dnd');
 
-// Миксины для цветов
+// Mixins for colors
 @mixin bg-color($type: 'default') {
   background-color: huly-color('bg', $type);
 }

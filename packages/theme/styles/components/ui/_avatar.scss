@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-/* Карта размеров аватаров */
+/* Map of avatar sizes */
 $avatar-sizes: (
   'xx-small': (.75rem, .375rem, 10px),
   'inline': (.875rem, .525rem, 12px),
@@ -29,8 +29,8 @@ $avatar-sizes: (
   'full': (100%, inherit, null)
 );
 
-/* Используем определения переменных из core/_variables.scss */
-/* Дополнительные размеры только для аватара */
+/* Use definitions from core/_variables.scss */
+/* Additional sizes only for avatar */
 $avatar-small-font-sizes: (
   'xx-small': 10px,
   'inline': 12px,
@@ -40,7 +40,7 @@ $avatar-small-font-sizes: (
   'smaller': 25px,
 );
 
-/* Карта размеров статусных маркеров */
+/* Map of status marker sizes */
 $status-sizes: (
   'xx-small': (4px, 3px, 0, 0),
   'inline': (4px, 4px, 0, 0),
@@ -53,7 +53,7 @@ $status-sizes: (
   'large': (36.5%, 37%, -.125rem, -2px)
 );
 
-/* Карта смещений для комбинированных аватаров */
+/* Map of offsets for combined avatars */
 $combine-margins: (
   'inline': 0.875rem,
   'tiny': 1.13rem,
@@ -66,7 +66,7 @@ $combine-margins: (
   'x-large': 7.5rem
 );
 
-/* Маленькие аватары для маскирования */
+/* Small avatars for masking */
 $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
 
 /* Avatar */
@@ -105,14 +105,14 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
 
     & > img { border: 1px solid $bg-default; }
     
-    /* Маленькие аватары */
+    /* Small avatars */
     &.hulyAvatarSize-xx-small,
     &.hulyAvatarSize-inline,
     &.hulyAvatarSize-tiny,
     &.hulyAvatarSize-card,
     &.hulyAvatarSize-x-small { outline-width: 1px; }
     
-    /* Большие аватары */
+    /* Large avatars */
     &.hulyAvatarSize-large,
     &.hulyAvatarSize-x-large,
     &.hulyAvatarSize-xxl {
@@ -159,7 +159,7 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
   }
 }
 
-/* Особый случай для full-size аватара, которого нет в общей карте */
+/* Special case for full-size avatar, which is not in the general map */
 .hulyAvatarSize-full {
   width: 100%;
   .ava-text { font-size: inherit; }
@@ -178,7 +178,7 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
     position: relative;
   }
   
-  /* Общее свойство для маркеров маленьких размеров */
+  /* Common property for small marker sizes */
   &.xx-small,
   &.inline,
   &.tiny,
@@ -191,7 +191,7 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
     bottom: 0;
   }
   
-  /* Генерация размеров маркеров */
+  /* Generating marker sizes */
   @each $size, $values in $status-sizes {
     $width: nth($values, 1);
     $small-font-width: nth($values, 2);
@@ -234,7 +234,7 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
   align-items: center;
 
   .hulyCombineAvatar {
-    /* Генерация отступов для комбинированных аватаров */
+    /* Generating offsets for combined avatars */
     @each $size, $values in $avatar-sizes {
       $width: nth($values, 1);
       &.#{$size}:not(:first-child) { 
@@ -242,7 +242,7 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
       }
     }
     
-    /* Общий стиль для маленьких аватаров */
+    /* Common style for small avatars */
     &.inline,
     &.tiny,
     &.card,
@@ -250,7 +250,7 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
       font-size: 0.625rem; 
     }
   
-    /* Маскирование для всех кроме последнего */
+    /* Masking for all except the last one */
     $mask-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16,24.5v-17c0-3.2,1.8-6.1,4.5-7.5H8C3.6,0,0,3.6,0,8v16c0,4.4,3.6,8,8,8h12.5C17.8,30.6,16,27.7,16,24.5z'/%3E%3C/svg%3E%0A");
     
     @each $size in $small-avatars {
