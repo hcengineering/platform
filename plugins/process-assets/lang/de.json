@@ -40,6 +40,8 @@
     "Add": "Hinzufügen",
     "Subtract": "Subtrahieren",
     "Offset": "Verschieben",
-    "FirstWorkingDayAfter": "Erste Arbeitstag nach"
+    "FirstWorkingDayAfter": "Erste Arbeitstag nach",
+    "FallbackValueError": "Fehler anzeigen, wenn leer",
+    "Required": "Erforderlich"
   }
 }

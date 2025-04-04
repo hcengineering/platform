@@ -85,6 +85,8 @@ export default mergeIds(processId, process, {
     Subtract: '' as IntlString,
     Offset: '' as IntlString,
     Value: '' as IntlString,
-    FirstWorkingDayAfter: '' as IntlString
+    FirstWorkingDayAfter: '' as IntlString,
+    FallbackValueError: '' as IntlString,
+    Required: '' as IntlString
   }
 })

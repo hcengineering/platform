@@ -40,6 +40,8 @@
     "Add": "Přidat",
     "Subtract": "Odečíst",
     "Offset": "Posunout",
-    "FirstWorkingDayAfter": "První pracovní den po"
+    "FirstWorkingDayAfter": "První pracovní den po",
+    "FallbackValueError": "Zobrazit chybu, pokud není k dispozici",
+    "Required": "Povinné"
   }
 }
