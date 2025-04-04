@@ -1,6 +1,6 @@
 // unified.ts
 import { UnifiedDoc, Props } from '../types'
-import card, { Card, MasterTag } from '@hcengineering/card'
+import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Attribute,
   type Doc,
@@ -40,9 +40,9 @@ export class UnifiedDocProcessor {
       if (yamlConfig?.class === card.class.MasterTag) {
         const masterTag = await this.createMasterTag(yamlConfig, parentMasterTagId)
         const masterTagId = masterTag.props._id as Ref<MasterTag>
-        const attributesByLabel = await this.createMasterTagAttributes(yamlConfig, masterTagId)
+        const attributesByLabel = await this.createAttributes(yamlConfig, masterTagId)
 
-        // Добавляем мастер-тег и его атрибуты
+        // Add master tag and its attributes
         const docs = result.get(yamlPath) ?? []
         docs.push(
           masterTag,
@@ -50,11 +50,24 @@ export class UnifiedDocProcessor {
         )
         result.set(yamlPath, docs)
 
-        // Рекурсивно обрабатываем содержимое директории мастер-тега
-        const tagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
-        if (fs.existsSync(tagDir) && fs.statSync(tagDir).isDirectory()) {
-          await this.processDirectory(tagDir, result, masterTagId, attributesByLabel)
+        // Recursively process the master tag directory
+        const masterTagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
+        if (fs.existsSync(masterTagDir) && fs.statSync(masterTagDir).isDirectory()) {
+          await this.processDirectory(masterTagDir, result, masterTagId, attributesByLabel)
         }
+      } else if (yamlConfig?.class === card.class.Tag) {
+        if (parentMasterTagId === undefined) {
+          throw new Error('Tag should be inside master tag folder: ' + currentPath) // todo: confirm this error message
+        }
+
+        const tag = await this.createTag(yamlConfig, parentMasterTagId)
+
+        const tagId = tag.props._id as Ref<Tag>
+        const attributes = await this.createAttributes(yamlConfig, tagId)
+
+        const docs = result.get(yamlPath) ?? []
+        docs.push(tag, ...Array.from(attributes.values()))
+        result.set(yamlPath, docs)
       }
     }
 
@@ -101,7 +114,29 @@ export class UnifiedDocProcessor {
     }
   }
 
-  private async createMasterTagAttributes (
+  private async createTag (
+    data: Record<string, any>,
+    parentMasterTagId: Ref<MasterTag>
+  ): Promise<UnifiedDoc<Tag>> {
+    const { class: _class, title } = data
+    if (_class !== card.class.Tag) {
+      throw new Error('Invalid tag data')
+    }
+
+    return {
+      _class: card.class.Tag,
+      props: {
+        _id: generateId<Tag>(),
+        space: core.space.Model,
+        extends: parentMasterTagId,
+        label: 'embedded:embedded:' + title as IntlString, // todo: check if it's correct
+        kind: 2,
+        icon: card.icon.Tag
+      }
+    }
+  }
+
+  private async createAttributes ( // todo: check if it's the same structure for tags and master tag attributes
     data: Record<string, any>,
     masterTagId: Ref<MasterTag>
   ): Promise<Map<string, UnifiedDoc<Attribute<MasterTag>>>> {

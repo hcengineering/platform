@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import card, { Card, MasterTag } from '@hcengineering/card'
+import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
 import { Attribute, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
@@ -60,6 +60,7 @@ export class ImportWorkspaceBuilder {
 
   private readonly masterTags = new Map<string, UnifiedDoc<MasterTag>>()
   private readonly masterTagAttributes = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
+  private readonly tags = new Map<string, UnifiedDoc<Tag>>()
   private readonly cards = new Map<string, UnifiedDoc<Card>>()
   // private readonly cardParents = new Map<string, string>()
 
@@ -233,6 +234,11 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addTag (path: string, tag: UnifiedDoc<Tag>): this {
+    this.validateAndAdd('tag', path, tag, (t) => this.validateTag(t), this.tags, path)
+    return this
+  }
+
   addMasterTagAttributes (path: string, attributes: UnifiedDoc<Attribute<MasterTag>>[]): this {
     for (const attribute of attributes) {
       const key = path + '/' + attribute.props.name
@@ -318,6 +324,7 @@ export class ImportWorkspaceBuilder {
       unifiedDocs: [
         ...Array.from(this.masterTags.values()),
         ...Array.from(this.masterTagAttributes.values()),
+        ...Array.from(this.tags.values()),
         ...Array.from(this.cards.values())
       ],
       attachments: []
@@ -721,6 +728,17 @@ export class ImportWorkspaceBuilder {
     }
 
     // todo: validate master tag
+    return errors
+  }
+
+  private validateTag (tag: UnifiedDoc<Tag>): string[] {
+    const errors: string[] = []
+
+    if (tag._class !== card.class.Tag) {
+      errors.push('Invalid class: ' + tag._class)
+    }
+
+    // todo: validate tag
     return errors
   }
 

@@ -14,7 +14,7 @@
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Attachment } from '@hcengineering/attachment'
-import card, { Card, MasterTag } from '@hcengineering/card'
+import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import contact, { Employee, type Person, SocialIdentity } from '@hcengineering/contact'
 import documents, {
   ControlledDocument,
@@ -495,6 +495,9 @@ export class HulyFormatImporter {
         switch (doc._class) {
           case card.class.MasterTag:
             builder.addMasterTag(path, doc as UnifiedDoc<MasterTag>)
+            break
+          case card.class.Tag:
+            builder.addTag(path, doc as UnifiedDoc<Tag>)
             break
           case core.class.Attribute:
             builder.addMasterTagAttributes(path, [doc as UnifiedDoc<Attribute<MasterTag>>])
