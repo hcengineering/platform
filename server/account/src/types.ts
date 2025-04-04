@@ -281,3 +281,7 @@ export interface MailboxOptions {
   maxNameLength: number
   maxMailboxCount: number
 }
+
+export interface LoginMeta {
+  timezone?: string
+}

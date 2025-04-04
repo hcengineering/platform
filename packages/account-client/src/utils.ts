@@ -18,3 +18,9 @@ import type { LoginInfo, WorkspaceLoginInfo } from './types'
 export function isWorkspaceLoginInfo (loginInfo: LoginInfo | WorkspaceLoginInfo): loginInfo is WorkspaceLoginInfo {
   return (loginInfo as WorkspaceLoginInfo).workspace != null
 }
+
+export function getTimezoneHeader (): Record<string, string> {
+  return {
+    'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone
+  }
+}

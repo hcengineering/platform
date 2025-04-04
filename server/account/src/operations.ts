@@ -50,6 +50,7 @@ import type {
   AccountDB,
   AccountMethodHandler,
   LoginInfo,
+  LoginMeta,
   Mailbox,
   MailboxOptions,
   OtpInfo,
@@ -103,7 +104,8 @@ import {
   isEmail,
   generatePassword,
   addSocialId,
-  releaseSocialId
+  releaseSocialId,
+  setTimezoneIfNotDefined
 } from './utils'
 
 // Move to config?
@@ -127,7 +129,8 @@ export async function login (
   params: {
     email: string
     password: string
-  }
+  },
+  meta?: LoginMeta
 ): Promise<LoginInfo> {
   const { email, password } = params
   const normalizedEmail = cleanEmail(email)
@@ -180,7 +183,8 @@ export async function loginOtp (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { email: string }
+  params: { email: string },
+  meta?: LoginMeta
 ): Promise<OtpInfo> {
   const { email } = params
 
@@ -197,6 +201,8 @@ export async function loginOtp (
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
+
+  await setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, account, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -215,7 +221,8 @@ export async function signUp (
     password: string
     firstName: string
     lastName: string
-  }
+  },
+  meta?: LoginMeta
 ): Promise<LoginInfo> {
   const { email, password, firstName, lastName } = params
   const { account, socialId } = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName)
@@ -235,6 +242,7 @@ export async function signUp (
     await confirmEmail(ctx, db, account, email)
   }
 
+  await setTimezoneIfNotDefined(ctx, db, account, null, meta)
   return {
     account,
     name: getPersonName(person),
@@ -252,7 +260,8 @@ export async function signUpOtp (
     email: string
     firstName: string
     lastName: string
-  }
+  },
+  meta?: LoginMeta
 ): Promise<OtpInfo> {
   const { email, firstName, lastName } = params
   // Note: can support OTP based on any other social logins later
@@ -278,6 +287,7 @@ export async function signUpOtp (
     const emailSocialIdId = await db.socialId.insertOne(newSocialId)
     emailSocialId = { ...newSocialId, _id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
   }
+  await setTimezoneIfNotDefined(ctx, db, personUuid, null, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -648,7 +658,8 @@ export async function join (
     email: string
     password: string
     inviteId: string
-  }
+  },
+  meta?: LoginMeta
 ): Promise<WorkspaceLoginInfo | LoginInfo> {
   const { email, password, inviteId } = params
   const normalizedEmail = cleanEmail(email)
@@ -666,7 +677,7 @@ export async function join (
 
   ctx.info('Joining a workspace using invite', { email, normalizedEmail, ...invite })
 
-  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password })
+  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password }, meta)
 
   if (token == null) {
     return {
@@ -844,7 +855,8 @@ export async function signUpJoin (
     first: string
     last: string
     inviteId: string
-  }
+  },
+  meta?: LoginMeta
 ): Promise<WorkspaceLoginInfo> {
   const { email, password, first, last, inviteId } = params
   const normalizedEmail = cleanEmail(email)
@@ -863,6 +875,7 @@ export async function signUpJoin (
   }
 
   const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last, true)
+  await setTimezoneIfNotDefined(ctx, db, account, null, meta)
 
   return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
 }

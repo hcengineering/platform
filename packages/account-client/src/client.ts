@@ -40,6 +40,7 @@ import type {
   WorkspaceOperation,
   MailboxInfo
 } from './types'
+import { getTimezoneHeader } from './utils'
 
 /** @public */
 export interface AccountClient {
@@ -258,7 +259,8 @@ class AccountClientImpl implements AccountClient {
   async loginOtp (email: string): Promise<OtpInfo> {
     const request = {
       method: 'loginOtp' as const,
-      params: { email }
+      params: { email },
+      headers: getTimezoneHeader()
     }
 
     return await this.rpc(request)
@@ -371,7 +373,8 @@ class AccountClientImpl implements AccountClient {
   ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'signUpJoin' as const,
-      params: { email, password, first, last, inviteId }
+      params: { email, password, first, last, inviteId },
+      headers: getTimezoneHeader()
     }
 
     return await this.rpc(request)
@@ -452,7 +455,8 @@ class AccountClientImpl implements AccountClient {
   async signUpOtp (email: string, firstName: string, lastName: string): Promise<OtpInfo> {
     const request = {
       method: 'signUpOtp' as const,
-      params: { email, firstName, lastName }
+      params: { email, firstName, lastName },
+      headers: getTimezoneHeader()
     }
 
     return await this.rpc(request)
@@ -461,7 +465,8 @@ class AccountClientImpl implements AccountClient {
   async signUp (email: string, password: string, firstName: string, lastName: string): Promise<LoginInfo> {
     const request = {
       method: 'signUp' as const,
-      params: { email, password, firstName, lastName }
+      params: { email, password, firstName, lastName },
+      headers: getTimezoneHeader()
     }
 
     return await this.rpc(request)
@@ -470,7 +475,8 @@ class AccountClientImpl implements AccountClient {
   async login (email: string, password: string): Promise<LoginInfo> {
     const request = {
       method: 'login' as const,
-      params: { email, password }
+      params: { email, password },
+      headers: getTimezoneHeader()
     }
 
     return await this.rpc(request)
