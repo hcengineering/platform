@@ -164,7 +164,8 @@ body {
   color: var(--content-color);
   background-color: var(--theme-bg-color);
   user-select: none;
-  @include full-width;
+  width: $full-width;
+  min-width: 0;
   height: 100%;
   margin: 0;
   padding: 0;
@@ -173,7 +174,8 @@ body {
 
 html {
   height: 100%;
-  @include full-width;
+  width: $full-width;
+  min-width: 0;
   font-family: var(--font-family);
   font-size: var(--font-size);
   font-weight: var(--font-weight);
@@ -190,17 +192,20 @@ html {
   display: flex;
   flex-direction: column;
   height: 100%;
-  @include full-width;
+  width: $full-width;
+  min-width: 0;
   overflow: hidden;
 }
 
 /* Utility classes */
 .full-width {
-  @include full-width;
+  width: $full-width;
+  min-width: 0;
 }
 
 .fit-width {
-  @include fit-width;
+  width: $fit-width;
+  min-width: 0;
 }
 
 .prevent-overflow {

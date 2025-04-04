@@ -1,3 +1,12 @@
+@import 'vars';
+
+/**
+ * ВАЖНО: Некоторые миксины были заменены переменными из _vars.scss:
+ * - Вместо @include full-width используйте width: $full-width; min-width: 0;
+ * - Вместо @include fit-width используйте width: $fit-width; min-width: 0;
+ * - Миксин avatar-size теперь принимает имя размера вместо конкретных значений
+ */
+
 @mixin bg-fullsize {
   position: absolute;
   top: 0;
@@ -19,18 +28,13 @@
 }
 
 @mixin respond-to($breakpoint) {
-  @if $breakpoint == 'small' {
-    @media (max-width: 600px) {
+  $value: map-get($breakpoints, $breakpoint);
+  @if $value {
+    @media (max-width: $value) {
       @content;
     }
-  } @else if $breakpoint == 'medium' {
-    @media (max-width: 900px) {
-      @content;
-    }
-  } @else if $breakpoint == 'large' {
-    @media (max-width: 1200px) {
-      @content;
-    }
+  } @else {
+    @warn "Unknown breakpoint `#{$breakpoint}`. Available: small, medium, large";
   }
 }
 
@@ -38,16 +42,6 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-@mixin full-width {
-  width: 100%;
-  min-width: 0;
-}
-
-@mixin fit-width {
-  width: fit-content;
-  min-width: 0;
 }
 
 @mixin fixed-width($width, $min: null, $max: null) {
@@ -96,15 +90,35 @@
   flex-direction: column;
 }
 
-@mixin avatar-size($width, $font-size) {
-  width: $width;
-  
-  .ava-text { 
-    font-size: $font-size; 
+@mixin avatar-size($size) {
+  $size-values: map-get($avatar-sizes, $size);
+  @if $size-values {
+    $width: nth($size-values, 1);
+    $font-size: nth($size-values, 2);
+    
+    width: $width;
+    .ava-text { 
+      font-size: $font-size; 
+    }
+  } @else {
+    @warn "Unknown avatar size `#{$size}`. Check $avatar-sizes in _vars.scss";
   }
 }
 
-@mixin table-cell-base($padding-h: 1.5rem, $padding-v: .5rem) {
+@mixin table-cell-base($padding-h-key: "1_5", $padding-v-key: "0_5") {
+  $padding-h: map-get($spacing, $padding-h-key);
+  $padding-v: map-get($spacing, $padding-v-key);
+  
+  @if not $padding-h {
+    $padding-h: 1.5rem;
+    @warn "Unknown spacing key `#{$padding-h-key}`. Using default 1.5rem";
+  }
+  
+  @if not $padding-v {
+    $padding-v: .5rem;
+    @warn "Unknown spacing key `#{$padding-v-key}`. Using default .5rem";
+  }
+  
   padding: $padding-v $padding-h;
   text-align: left;
 }

@@ -147,11 +147,8 @@ $small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
 
 /* Avatar sizes */
 @each $size, $values in $avatar-sizes {
-  $width: nth($values, 1);
-  $font-size: nth($values, 2);
-  
   .hulyAvatarSize-#{$size} {
-    @include avatar-size($width, $font-size);
+    @include avatar-size($size);
     
     @if map-has-key($avatar-small-font-sizes, $size) {
       .small-font & { width: map-get($avatar-small-font-sizes, $size); }
