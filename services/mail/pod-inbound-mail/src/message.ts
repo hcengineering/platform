@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { encode } from 'jwt-simple'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 import { type Card } from '@hcengineering/card'
@@ -36,6 +35,7 @@ import {
 } from '@hcengineering/core'
 import mail from '@hcengineering/mail'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { generateToken } from '@hcengineering/server-token'
 import config from './config'
 import { ensureGlobalPerson, ensureLocalPerson } from './person'
 
@@ -44,16 +44,6 @@ export interface Attachment {
   name: string
   data: Buffer
   contentType: string
-}
-
-function generateToken (): string {
-  return encode(
-    {
-      account: systemAccountUuid,
-      extra: { service: 'mail' }
-    },
-    config.secret
-  )
 }
 
 export async function createMessages (
@@ -68,7 +58,8 @@ export async function createMessages (
 ): Promise<void> {
   ctx.info('Sending message', { mailId, from: from.address, to: tos.map((to) => to.address).join(',') })
 
-  const accountClient = getAccountClient(config.accountsUrl, generateToken())
+  const token = generateToken(systemAccountUuid, undefined, { service: 'mail' })
+  const accountClient = getAccountClient(config.accountsUrl, token)
   const wsInfo = await accountClient.selectWorkspace(config.workspaceUrl)
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
   const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
@@ -129,7 +120,7 @@ export async function createMessages (
 
   const attachedBlobs: Attachment[] = []
   if (config.storageConfig !== undefined) {
-    const storageConfig = storageConfigFromEnv()
+    const storageConfig = storageConfigFromEnv(config.storageConfig)
     const storageAdapter = buildStorageFromConfig(storageConfig)
     try {
       for (const a of attachments ?? []) {
@@ -237,21 +228,22 @@ async function saveMessageToSpaces (
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)
   for (const space of spaces) {
+    const spaceId = space._id
     await rateLimiter.add(async () => {
-      ctx.info('Saving message to space', { mailId, space: space._id })
+      ctx.info('Saving message to space', { mailId, space: spaceId })
 
-      const route = await client.findOne(mail.class.MailRoute, { mailId })
+      const route = await client.findOne(mail.class.MailRoute, { mailId, space: spaceId })
       if (route !== undefined) {
-        ctx.info('Message is already in the thread, skip', { mailId, threadId: route.threadId })
+        ctx.info('Message is already in the thread, skip', { mailId, threadId: route.threadId, spaceId })
         return
       }
 
       let threadId: Ref<Card> | undefined
       if (inReplyTo !== undefined) {
-        const route = await client.findOne(mail.class.MailRoute, { mailId: inReplyTo })
+        const route = await client.findOne(mail.class.MailRoute, { mailId: inReplyTo, space: spaceId })
         if (route !== undefined) {
           threadId = route.threadId as Ref<Card>
-          ctx.info('Found existing thread', { mailId, threadId })
+          ctx.info('Found existing thread', { mailId, threadId, spaceId })
         }
       }
       if (threadId === undefined) {
@@ -272,7 +264,7 @@ async function saveMessageToSpaces (
           modifiedBy
         )
         threadId = newThreadId as Ref<Card>
-        ctx.info('Created new thread', { mailId, threadId })
+        ctx.info('Created new thread', { mailId, threadId, spaceId })
       }
 
       const msgEvent: CreateMessageEvent = {
@@ -283,7 +275,7 @@ async function saveMessageToSpaces (
         creator: modifiedBy
       }
       const { id: messageId } = (await msgClient.event(msgEvent)) as any
-      ctx.info('Created message', { mailId, messageId })
+      ctx.info('Created message', { mailId, messageId, threadId })
 
       for (const a of attachments) {
         const fileEvent: CreateFileEvent = {
