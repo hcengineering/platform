@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import card, { Card, Tag } from '@hcengineering/card'
-  import { Class, Doc, fillDefaults, Ref } from '@hcengineering/core'
+  import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     ButtonIcon,
@@ -77,14 +77,17 @@
       async (res) => {
         if (res !== undefined) {
           await client.createMixin(doc._id, doc._class, doc.space, res, {})
-          const updated = fillDefaults(hierarchy, hierarchy.clone(doc), res)
-          await client.diffUpdate(doc, updated)
         }
       }
     )
   }
 
   let divScroll: HTMLElement
+
+  function isRemoveable (mixinId: Ref<Mixin<Doc>>, activeTags: Tag[]): boolean {
+    const desc = hierarchy.getDescendants(mixinId)
+    return !desc.some((p) => hierarchy.hasMixin(doc, p) && p !== mixinId)
+  }
 </script>
 
 <div class="container py-4 gap-2">
@@ -94,9 +97,12 @@
     <ScrollerBar gap={'none'} bind:scroller={divScroll}>
       <div class="tags gap-2">
         {#each activeTags as mixin}
-          <div class="tag no-word-wrap">
+          {@const removable = isRemoveable(mixin._id, activeTags)}
+          <div class="tag no-word-wrap" class:removable>
             <Label label={mixin.label} />
-            <ButtonIcon icon={IconClose} size="extra-small" kind="tertiary" on:click={() => removeTag(mixin._id)} />
+            {#if removable}
+              <ButtonIcon icon={IconClose} size="extra-small" kind="tertiary" on:click={() => removeTag(mixin._id)} />
+            {/if}
           </div>
         {/each}
         {#if dropdownItems.length > 0}
@@ -114,7 +120,7 @@
     align-items: center;
 
     .tag {
-      padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+      padding: 0.25rem 0.5rem;
       height: 1.5rem;
       border: 1px solid var(--theme-content-color);
 
@@ -126,6 +132,10 @@
       align-items: center;
       justify-content: center;
       gap: 0.25rem;
+
+      &.removable {
+        padding-right: 0.25rem;
+      }
     }
   }
 
