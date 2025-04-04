@@ -1,27 +1,34 @@
 // unified.ts
-import { UnifiedDoc, Props } from '../types'
 import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Attribute,
-  type Doc,
+  Doc,
   generateId,
-  type Ref,
+  Mixin,
+  Ref
 } from '@hcengineering/core'
 import * as fs from 'fs'
-import * as path from 'path'
 import * as yaml from 'js-yaml'
+import * as path from 'path'
 import { IntlString } from '../../../platform/types'
+import { Props, UnifiedDoc, UnifiedMixin } from '../types'
 import { readMarkdownContent, readYamlHeader } from './parsing'
 
-export type UnifiedDocProcessResult = Map<string, Array<UnifiedDoc<Doc>>>
+export interface UnifiedDocProcessResult {
+  docs: Map<string, Array<UnifiedDoc<Doc>>>
+  mixins: Map<string, Array<UnifiedMixin<Doc, Doc>>>
+}
 
 export class UnifiedDocProcessor {
-  private tagPaths: Map<string, Ref<Tag>> = new Map()
+  private readonly tagPaths = new Map<string, Ref<Tag>>()
 
   async importFromDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
-    const unifiedDocs: UnifiedDocProcessResult = new Map()
-    await this.processDirectory(directoryPath, unifiedDocs)
-    return unifiedDocs
+    const result: UnifiedDocProcessResult = {
+      docs: new Map(),
+      mixins: new Map()
+    }
+    await this.processDirectory(directoryPath, result)
+    return result
   }
 
   private async processDirectory (
@@ -45,12 +52,12 @@ export class UnifiedDocProcessor {
         const attributesByLabel = await this.createAttributes(yamlConfig, masterTagId)
 
         // Add master tag and its attributes
-        const docs = result.get(yamlPath) ?? []
+        const docs = result.docs.get(yamlPath) ?? []
         docs.push(
           masterTag,
           ...Array.from(attributesByLabel.values())
         )
-        result.set(yamlPath, docs)
+        result.docs.set(yamlPath, docs)
 
         // Recursively process the master tag directory
         const masterTagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
@@ -68,29 +75,31 @@ export class UnifiedDocProcessor {
 
         const attributes = await this.createAttributes(yamlConfig, tagId)
 
-        const docs = result.get(yamlPath) ?? []
+        const docs = result.docs.get(yamlPath) ?? []
         docs.push(tag, ...Array.from(attributes.values()))
-        result.set(yamlPath, docs)
+        result.docs.set(yamlPath, docs)
       }
     }
 
     if (parentMasterTagId === undefined || parentAttributesByLabel === undefined) {
-      // means we are in the root directory
+      // Means we are in the root directory
       return
     }
 
-    // Затем обрабатываем markdown файлы (карточки)
+    // Then process markdown files (cards)
     for (const entry of entries) {
       if (!entry.isFile() || !entry.name.endsWith('.md')) continue
 
       const cardPath = path.join(currentPath, entry.name)
       const cardHeader = await readYamlHeader(cardPath)
-      const unifiedDoc = await this.createCard(cardHeader, cardPath, parentMasterTagId, parentAttributesByLabel)
+      const card = await this.createCard(cardHeader, cardPath, parentMasterTagId, parentAttributesByLabel)
 
-      if (unifiedDoc != null) {
-        const docs = result.get(cardPath) ?? []
-        docs.push(unifiedDoc)
-        result.set(cardPath, docs)
+      if (card != null) {
+        const docs = result.docs.get(cardPath) ?? []
+        docs.push(card)
+        result.docs.set(cardPath, docs)
+
+        await this.applyTags(card, cardHeader, cardPath, result)
       }
     }
   }
@@ -133,14 +142,14 @@ export class UnifiedDocProcessor {
         _id: tagId,
         space: core.space.Model,
         extends: parentMasterTagId,
-        label: 'embedded:embedded:' + title as IntlString, // todo: check if it's correct
+        label: 'embedded:embedded:' + title as IntlString,
         kind: 2,
         icon: card.icon.Tag
       }
     }
   }
 
-  private async createAttributes ( // todo: check if it's the same structure for tags and master tag attributes
+  private async createAttributes (
     data: Record<string, any>,
     masterTagId: Ref<MasterTag>
   ): Promise<Map<string, UnifiedDoc<Attribute<MasterTag>>>> {
@@ -156,7 +165,7 @@ export class UnifiedDocProcessor {
           space: core.space.Model,
           attributeOf: masterTagId,
           name: generateId<Attribute<MasterTag>>(),
-          label: 'embedded:embedded:' + property.label as IntlString, // todo: check if it's correct
+          label: 'embedded:embedded:' + property.label as IntlString,
           isCustom: true,
           type: {
             _class: 'core:class:' + property.type
@@ -184,25 +193,11 @@ export class UnifiedDocProcessor {
     }
 
     for (const [key, value] of Object.entries(customProperties)) {
-      const attributeName = attributesByLabel.get(key)?.props.name
+      const attributeName = attributesByLabel.get(key)?.props.name // todo: handle tag attributes separately
       if (attributeName === undefined) {
         throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
       }
       props[attributeName] = value
-    }
-
-    if (cardHeader.tags !== undefined) {
-      const tagIds: Ref<Tag>[] = []
-      for (const tagPath of cardHeader.tags) {
-        let tagId = this.tagPaths.get(tagPath)
-        if (tagId === undefined) {
-          // Если тег еще не обработан, генерируем ID и сохраняем его
-          tagId = generateId<Tag>()
-          this.tagPaths.set(tagPath, tagId)
-        }
-        tagIds.push(tagId)
-      }
-      props.tags = tagIds
     }
 
     return {
@@ -210,6 +205,39 @@ export class UnifiedDocProcessor {
       collabField: 'content',
       contentProvider: () => readMarkdownContent(cardPath),
       props: props as Props<Card> // todo: what is the correct props type?
+    }
+  }
+
+  private async applyTags (
+    card: UnifiedDoc<Card>,
+    cardHeader: Record<string, any>,
+    cardPath: string,
+    result: UnifiedDocProcessResult
+  ): Promise<void> {
+    if (cardHeader.tags === undefined) return
+
+    const mixins: UnifiedMixin<Card, Tag>[] = []
+    for (const tagPath of cardHeader.tags) {
+      let tagId = this.tagPaths.get(tagPath)
+      if (tagId === undefined) {
+        tagId = generateId<Tag>()
+        this.tagPaths.set(tagPath, tagId)
+      }
+
+      const mixin: UnifiedMixin<Card, Tag> = {
+        _id: card.props._id as Ref<Card>,
+        _class: card._class,
+        space: card.props.space,
+        mixin: tagId,
+        props: {
+          __mixin: 'true'
+        }
+      }
+      mixins.push(mixin)
+    }
+
+    if (mixins.length > 0) {
+      result.mixins.set(cardPath, mixins)
     }
   }
 }
