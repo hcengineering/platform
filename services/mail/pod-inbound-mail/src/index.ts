@@ -18,7 +18,9 @@ import express, { NextFunction, Request, Response } from 'express'
 import { join } from 'path'
 import { SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureContext, MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { setMetadata } from '@hcengineering/platform'
 import { initStatisticsContext } from '@hcengineering/server-core'
+import serverToken from '@hcengineering/server-token'
 import { handleMtaHook } from './handlerMta'
 import config from './config'
 
@@ -38,6 +40,8 @@ async function main (): Promise<void> {
         })
       )
   })
+
+  setMetadata(serverToken.metadata.Secret, config.secret)
 
   const app = express()
 
@@ -77,7 +81,12 @@ async function main (): Promise<void> {
   })
 
   const server = app.listen(config.port, () => {
-    ctx.info('server started', { ...config, secret: '(stripped)', hookToken: '(stripped)' })
+    ctx.info('server started', {
+      ...config,
+      secret: config.secret !== undefined ? '(stripped)' : undefined,
+      hookToken: config.hookToken !== undefined ? '(stripped)' : undefined,
+      storageConfig: config.storageConfig !== undefined ? '(stripped)' : undefined
+    })
   })
 
   const shutdown = (): void => {
