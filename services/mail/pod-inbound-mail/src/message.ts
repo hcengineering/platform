@@ -237,21 +237,22 @@ async function saveMessageToSpaces (
 ): Promise<void> {
   const rateLimiter = new RateLimiter(10)
   for (const space of spaces) {
+    const spaceId = space._id
     await rateLimiter.add(async () => {
-      ctx.info('Saving message to space', { mailId, space: space._id })
+      ctx.info('Saving message to space', { mailId, space: spaceId })
 
-      const route = await client.findOne(mail.class.MailRoute, { mailId })
+      const route = await client.findOne(mail.class.MailRoute, { mailId, space: spaceId })
       if (route !== undefined) {
-        ctx.info('Message is already in the thread, skip', { mailId, threadId: route.threadId })
+        ctx.info('Message is already in the thread, skip', { mailId, threadId: route.threadId, spaceId })
         return
       }
 
       let threadId: Ref<Card> | undefined
       if (inReplyTo !== undefined) {
-        const route = await client.findOne(mail.class.MailRoute, { mailId: inReplyTo })
+        const route = await client.findOne(mail.class.MailRoute, { mailId: inReplyTo, space: spaceId })
         if (route !== undefined) {
           threadId = route.threadId as Ref<Card>
-          ctx.info('Found existing thread', { mailId, threadId })
+          ctx.info('Found existing thread', { mailId, threadId, spaceId })
         }
       }
       if (threadId === undefined) {
@@ -272,7 +273,7 @@ async function saveMessageToSpaces (
           modifiedBy
         )
         threadId = newThreadId as Ref<Card>
-        ctx.info('Created new thread', { mailId, threadId })
+        ctx.info('Created new thread', { mailId, threadId, spaceId })
       }
 
       const msgEvent: CreateMessageEvent = {
@@ -283,7 +284,7 @@ async function saveMessageToSpaces (
         creator: modifiedBy
       }
       const { id: messageId } = (await msgClient.event(msgEvent)) as any
-      ctx.info('Created message', { mailId, messageId })
+      ctx.info('Created message', { mailId, messageId, threadId })
 
       for (const a of attachments) {
         const fileEvent: CreateFileEvent = {
