@@ -2160,7 +2160,7 @@ async function createPersonAccount (
         return
       }
     }
-    const shouldCreateEmployee = roleOrder[role] >= roleOrder[AccountRole.Guest]
+    const shouldCreateEmployee = roleOrder[role] >= roleOrder[AccountRole.User]
     const existingAccount = await ops.findOne(contact.class.PersonAccount, { email: account.email })
     if (existingAccount === undefined) {
       let person: Ref<Person> | undefined

@@ -89,32 +89,45 @@
 
 {#if loading}
   <Loading shrink />
-{:else}
+{:else if hasAccountRole(getCurrentAccount(), AccountRole.User) || hasTeamspace}
   <div class="antiNav-subheader">
-    {#if hasTeamspace}
-      <ButtonWithDropdown
-        icon={IconAdd}
-        justify={'left'}
-        kind={'primary'}
-        label={document.string.CreateDocument}
-        on:click={newDocument}
-        mainButtonId={'new-document'}
-        dropdownIcon={IconDropdown}
-        {dropdownItems}
-        on:dropdown-selected={(ev) => {
-          void dropdownItemSelected(ev.detail)
-        }}
-      />
-    {:else}
+    {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
+      {#if hasTeamspace}
+        <ButtonWithDropdown
+          icon={IconAdd}
+          justify={'left'}
+          kind={'primary'}
+          label={document.string.CreateDocument}
+          on:click={newDocument}
+          mainButtonId={'new-document'}
+          dropdownIcon={IconDropdown}
+          {dropdownItems}
+          on:dropdown-selected={(ev) => {
+            void dropdownItemSelected(ev.detail)
+          }}
+        />
+      {:else}
+        <Button
+          id={'new-teamspace'}
+          icon={IconAdd}
+          label={document.string.CreateTeamspace}
+          justify={'left'}
+          width={'100%'}
+          kind={'primary'}
+          gap={'large'}
+          on:click={newTeamspace}
+        />
+      {/if}
+    {:else if hasTeamspace}
       <Button
-        id={'new-teamspace'}
+        id={'new-document'}
         icon={IconAdd}
-        label={document.string.CreateTeamspace}
+        label={document.string.CreateDocument}
         justify={'left'}
         width={'100%'}
         kind={'primary'}
         gap={'large'}
-        on:click={newTeamspace}
+        on:click={newDocument}
       />
     {/if}
   </div>
