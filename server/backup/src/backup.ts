@@ -238,18 +238,22 @@ async function verifyDigest (
               chunks.push(chunk)
             })
             stream.on('end', () => {
-              const bf = Buffer.concat(chunks as any)
-              const doc = JSON.parse(bf.toString()) as Doc
-              if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
-                const data = migradeBlobData(doc as Blob, '')
-                const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
-                if (d === undefined) {
-                  blobs.set(bname, { doc, buffer: undefined })
-                } else {
-                  blobs.delete(bname)
+              try {
+                const bf = Buffer.concat(chunks as any)
+                const doc = JSON.parse(bf.toString()) as Doc
+                if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
+                  const data = migradeBlobData(doc as Blob, '')
+                  const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
+                  if (d === undefined) {
+                    blobs.set(bname, { doc, buffer: undefined })
+                  } else {
+                    blobs.delete(bname)
+                  }
                 }
+                validDocs.add(bname as Ref<Doc>)
+              } catch (err: any) {
+                // Ignore not json
               }
-              validDocs.add(bname as Ref<Doc>)
               next()
             })
           } else {
@@ -2005,7 +2009,7 @@ export async function restore (
         const requiredDocs = new Map(Array.from(sDigest.entries()).filter(([it]) => docsToAdd.has(it)))
 
         let lastSendTime = Date.now()
-        async function sendBlob (blob: Blob, data: Buffer, next: () => void): Promise<void> {
+        async function sendBlob (blob: Blob, data: Buffer, next: (err?: any) => void): Promise<void> {
           await blobUploader.add(async () => {
             next()
             let needSend = true
@@ -2026,6 +2030,7 @@ export async function restore (
                 }
               } catch (err: any) {
                 ctx.warn('failed to upload blob', { _id: blob._id, err, workspace: workspaceId.name })
+                next(err)
               }
             }
             docsToAdd.delete(blob._id)
@@ -2122,10 +2127,15 @@ export async function restore (
                       }
                     } else {
                       ;(doc as any)['%hash%'] = changeset.get(doc._id)
-                      void sendChunk(doc, bf.length).finally(() => {
-                        requiredDocs.delete(doc._id)
-                        next()
-                      })
+                      void sendChunk(doc, bf.length)
+                        .finally(() => {
+                          requiredDocs.delete(doc._id)
+                          next()
+                        })
+                        .catch((err) => {
+                          ctx.error('failed to sendChunk', { err })
+                          next(err)
+                        })
                     }
                   })
                 } else {
@@ -2304,6 +2314,7 @@ async function verifyDocsFromSnapshot (
                 try {
                   doc = JSON.parse(bf.toString()) as Doc
                 } catch (err) {
+                  // Do not failure on this.
                   next()
                   return
                 }
@@ -2318,10 +2329,15 @@ async function verifyDocsFromSnapshot (
                   validDocs.add(bname as Ref<Doc>)
 
                   if (result.length > chunkSize) {
-                    void verify(result).then(() => {
-                      result = []
-                      next()
-                    })
+                    void verify(result)
+                      .then(() => {
+                        result = []
+                        next()
+                      })
+                      .catch((err) => {
+                        ctx.error('failed to verify', { err })
+                        next(err)
+                      })
                   } else {
                     next()
                   }
@@ -2592,10 +2608,14 @@ export async function compactBackup (
                       const d = blobs.get(name)
                       blobs.delete(name)
                       const doc = d?.doc as Blob
-                      void sendChunk(doc, bf.length, { [doc._id]: bf }).finally(() => {
-                        requiredDocs.delete(doc._id)
-                        next()
-                      })
+                      void sendChunk(doc, bf.length, { [doc._id]: bf })
+                        .finally(() => {
+                          requiredDocs.delete(doc._id)
+                          next()
+                        })
+                        .catch((err) => {
+                          next(err)
+                        })
                     }
                   })
                 } else if (name.endsWith('.json') && requiredDocs.has(name.substring(0, name.length - 5) as Ref<Doc>)) {
@@ -2615,17 +2635,27 @@ export async function compactBackup (
                       } else {
                         blobs.delete(bname)
                         ;(doc as any)['%hash%'] = digest.get(doc._id)
-                        void sendChunk(doc, bf.length, { [doc._id]: d?.buffer as Buffer }).finally(() => {
-                          requiredDocs.delete(doc._id)
-                          next()
-                        })
+                        void sendChunk(doc, bf.length, { [doc._id]: d?.buffer as Buffer })
+                          .finally(() => {
+                            requiredDocs.delete(doc._id)
+                            next()
+                          })
+                          .catch((err) => {
+                            ctx.error('failed to sendChunk', { err })
+                            next(err)
+                          })
                       }
                     } else {
                       ;(doc as any)['%hash%'] = digest.get(doc._id)
-                      void sendChunk(doc, bf.length, {}).finally(() => {
-                        requiredDocs.delete(doc._id)
-                        next()
-                      })
+                      void sendChunk(doc, bf.length, {})
+                        .finally(() => {
+                          requiredDocs.delete(doc._id)
+                          next()
+                        })
+                        .catch((err) => {
+                          ctx.error('failed to sendChunk', { err })
+                          next(err)
+                        })
                     }
                   })
                 } else {
