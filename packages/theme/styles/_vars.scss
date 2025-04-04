@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-// Общие переменные для компонентов и стилей
+// Common variables for components and styles
 
-// Map of avatar sizes (перенесено из components/core/_variables.scss)
+// Map of avatar sizes (moved from components/core/_variables.scss)
 $avatar-sizes: (
   "xx-small": (.75rem, .375rem),
   "inline": (.875rem, .525rem),
@@ -30,18 +30,18 @@ $avatar-sizes: (
   "xxl": (10rem, 6rem)
 );
 
-// Переменные для замены простых миксинов размеров
+// Variables for replacing simple mixins for sizes
 $full-width: 100%;
 $fit-width: fit-content;
 
-// Брейкпоинты для медиа-запросов
+// Breakpoints for media queries
 $breakpoints: (
   "small": 600px,
   "medium": 900px,
   "large": 1200px
 );
 
-// Variables for standard spacing (перенесено из components/core/_variables.scss)
+// Variables for standard spacing (moved from components/core/_variables.scss)
 $spacing: (
   "0_25": 0.25rem,
   "0_5": 0.5rem, 

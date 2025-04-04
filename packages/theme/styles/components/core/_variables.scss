@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-// Импортируем общие переменные
+// Import common variables
 @import '../../vars';
 
-// Дополнительные переменные, специфичные для компонентов
-// Переменные $avatar-sizes и $spacing перенесены в _vars.scss
+// Additional variables, specific to components
+// Variables $avatar-sizes and $spacing moved to _vars.scss
 
-// Дополнительные размеры только для аватаров
+// Additional sizes only for avatars
 $avatar-small-font-sizes: (
   'xx-small': 10px,
   'inline': 12px,

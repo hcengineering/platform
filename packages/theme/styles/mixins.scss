@@ -1,11 +1,5 @@
 @import 'vars';
 
-/**
- * ВАЖНО: Некоторые миксины были заменены переменными из _vars.scss:
- * - Вместо @include full-width используйте width: $full-width; min-width: 0;
- * - Вместо @include fit-width используйте width: $fit-width; min-width: 0;
- * - Миксин avatar-size теперь принимает имя размера вместо конкретных значений
- */
 
 @mixin bg-fullsize {
   position: absolute;
