@@ -30,6 +30,7 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeAny,
   TypeBoolean,
   TypeRecord,
   TypeRef,
@@ -43,6 +44,7 @@ import workbench from '@hcengineering/model-workbench'
 import { type IntlString } from '@hcengineering/platform'
 import {
   type Execution,
+  type ExecutionError,
   type Method,
   type Process,
   type ProcessFunction,
@@ -102,6 +104,10 @@ export class TExecution extends TDoc implements Execution {
   @Prop(TypeRef(card.class.Card), card.string.Card)
   @ReadOnly()
     card!: Ref<Card>
+
+  @Prop(TypeAny(process.component.ErrorPresenter, process.string.Error), process.string.Error)
+  @ReadOnly()
+    error?: ExecutionError[] | null
 }
 
 @Model(process.class.ProcessToDo, time.class.ToDo)
@@ -168,6 +174,25 @@ export function createModel (builder: Builder): void {
       }
     },
     process.action.RunProcess
+  )
+
+  createAction(
+    builder,
+    {
+      action: process.actionImpl.ContinueExecution,
+      query: {
+        error: { $exists: true, $ne: null }
+      },
+      label: process.string.Continue,
+      icon: process.icon.Process,
+      input: 'focus',
+      category: view.category.General,
+      target: process.class.Execution,
+      context: {
+        mode: ['context', 'browser']
+      }
+    },
+    process.action.ContinueExecution
   )
 
   builder.createDoc(
@@ -310,6 +335,9 @@ export function createModel (builder: Builder): void {
       variant: 'cardExecutions',
       attachTo: process.class.Execution,
       descriptor: view.viewlet.List,
+      props: {
+        baseMenuClass: process.class.Execution
+      },
       viewOptions: {
         groupBy: ['process', 'assignee', 'done'],
         orderBy: [
@@ -369,6 +397,9 @@ export function createModel (builder: Builder): void {
     {
       attachTo: process.class.Execution,
       descriptor: view.viewlet.List,
+      props: {
+        baseMenuClass: process.class.Execution
+      },
       viewOptions: {
         groupBy: ['process', 'assignee', 'done'],
         orderBy: [

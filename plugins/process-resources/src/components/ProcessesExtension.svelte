@@ -122,6 +122,7 @@
           bind:this={list}
           _class={process.class.Execution}
           {viewOptions}
+          baseMenuClass={process.class.Execution}
           viewOptionsConfig={viewlet.viewOptions?.other}
           config={preference?.config ?? viewlet.config}
           configurations={undefined}
