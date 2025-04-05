@@ -38,7 +38,11 @@ import type {
   WorkspaceLoginInfo,
   RegionInfo,
   WorkspaceOperation,
-  MailboxInfo
+  MailboxInfo,
+  Integration,
+  IntegrationKey,
+  IntegrationSecret,
+  IntegrationSecretKey
 } from './types'
 
 /** @public */
@@ -136,6 +140,25 @@ export interface AccountClient {
     lastName: string
   ) => Promise<{ uuid: PersonUuid, socialId: PersonId }>
   addSocialIdToPerson: (person: PersonUuid, type: SocialIdType, value: string, confirmed: boolean) => Promise<PersonId>
+  createIntegration: (integration: Integration) => Promise<void>
+  updateIntegration: (integration: Integration) => Promise<void>
+  deleteIntegration: (integrationKey: IntegrationKey) => Promise<void>
+  getIntegration: (integrationKey: IntegrationKey) => Promise<Integration | null>
+  listIntegrations: (filter: {
+    socialId?: PersonId
+    kind?: string
+    workspaceUuid?: WorkspaceUuid | null
+  }) => Promise<Integration[]>
+  addIntegrationSecret: (integrationSecret: IntegrationSecret) => Promise<void>
+  updateIntegrationSecret: (integrationSecret: IntegrationSecret) => Promise<void>
+  deleteIntegrationSecret: (integrationSecretKey: IntegrationSecretKey) => Promise<void>
+  getIntegrationSecret: (integrationSecretKey: IntegrationSecretKey) => Promise<IntegrationSecret | null>
+  listIntegrationsSecrets: (filter: {
+    socialId?: PersonId
+    kind?: string
+    workspaceUuid?: WorkspaceUuid | null
+    key?: string
+  }) => Promise<IntegrationSecret[]>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -719,6 +742,105 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async createIntegration (integration: Integration): Promise<void> {
+    const request = {
+      method: 'createIntegration' as const,
+      params: integration
+    }
+
+    await this.rpc(request)
+  }
+
+  async updateIntegration (integration: Integration): Promise<void> {
+    const request = {
+      method: 'updateIntegration' as const,
+      params: integration
+    }
+
+    await this.rpc(request)
+  }
+
+  async deleteIntegration (integrationKey: IntegrationKey): Promise<void> {
+    const request = {
+      method: 'deleteIntegration' as const,
+      params: integrationKey
+    }
+
+    await this.rpc(request)
+  }
+
+  async getIntegration (integrationKey: IntegrationKey): Promise<Integration | null> {
+    const request = {
+      method: 'getIntegration' as const,
+      params: integrationKey
+    }
+
+    return await this.rpc(request)
+  }
+
+  async listIntegrations (filter: {
+    socialId?: PersonId
+    kind?: string
+    workspaceUuid?: WorkspaceUuid | null
+  }): Promise<Integration[]> {
+    const request = {
+      method: 'listIntegrations' as const,
+      params: filter
+    }
+
+    return await this.rpc(request)
+  }
+
+  async addIntegrationSecret (integrationSecret: IntegrationSecret): Promise<void> {
+    const request = {
+      method: 'addIntegrationSecret' as const,
+      params: integrationSecret
+    }
+
+    await this.rpc(request)
+  }
+
+  async updateIntegrationSecret (integrationSecret: IntegrationSecret): Promise<void> {
+    const request = {
+      method: 'updateIntegrationSecret' as const,
+      params: integrationSecret
+    }
+
+    await this.rpc(request)
+  }
+
+  async deleteIntegrationSecret (integrationSecretKey: IntegrationSecretKey): Promise<void> {
+    const request = {
+      method: 'deleteIntegrationSecret' as const,
+      params: integrationSecretKey
+    }
+
+    await this.rpc(request)
+  }
+
+  async getIntegrationSecret (integrationSecretKey: IntegrationSecretKey): Promise<IntegrationSecret | null> {
+    const request = {
+      method: 'getIntegrationSecret' as const,
+      params: integrationSecretKey
+    }
+
+    return await this.rpc(request)
+  }
+
+  async listIntegrationsSecrets (filter: {
+    socialId?: PersonId
+    kind?: string
+    workspaceUuid?: WorkspaceUuid | null
+    key?: string
+  }): Promise<IntegrationSecret[]> {
+    const request = {
+      method: 'listIntegrationsSecrets' as const,
+      params: filter
+    }
+
+    return await this.rpc(request)
   }
 
   async setCookie (): Promise<void> {
