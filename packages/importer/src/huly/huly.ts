@@ -502,12 +502,8 @@ export class HulyFormatImporter {
           case core.class.Attribute:
             builder.addMasterTagAttributes(path, [doc as UnifiedDoc<Attribute<MasterTag>>])
             break
-          case 'card:types:File':
-          case 'card:types:Document':
-            builder.addCard(path, doc as UnifiedDoc<Card>)
-            break
           default:
-            if (isId(doc._class) || (doc._class as string).startsWith('card:type:')) { // todo: fix system cards validation
+            if (isId(doc._class) || (doc._class as string).startsWith('card:types:')) { // todo: fix system cards validation
               builder.addCard(path, doc as UnifiedDoc<Card>)
             } else {
               this.logger.error(`Unknown doc class ${String(doc._class)} for path ${path}`)
@@ -515,6 +511,8 @@ export class HulyFormatImporter {
         }
       }
     }
+
+    // todo: attachments
 
     for (const [path, mixins] of unifiedMixins.entries()) {
       for (const mixin of mixins) {

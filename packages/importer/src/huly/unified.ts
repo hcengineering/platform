@@ -91,10 +91,11 @@ export class UnifiedDocProcessor {
       const cardPath = path.join(currentDir, entry.name)
       const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
 
-      // todo: supported types
-      if (cardType === card.types.File || cardType === card.types.Document) {
-        await this.processCard(result, cardPath, cardProps, cardType, new Map()) // todo: get right master tag attributes
+      if (cardType.startsWith('card:types:') === false) {
+        throw new Error('Unsupported card type: ' + cardType)
       }
+
+      await this.processCard(result, cardPath, cardProps, cardType, new Map()) // todo: get right master tag attributes
     }
   }
 
