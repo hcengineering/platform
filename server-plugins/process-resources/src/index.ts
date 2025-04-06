@@ -445,10 +445,24 @@ export async function RunSubProcess (
   control: TriggerControl
 ): Promise<ExecuteResult | undefined> {
   if (params._id === undefined) return
+  const processId = params._id as Ref<Process>
+  const target = control.modelDb.findObject(processId)
+  if (target === undefined) return
+  if (target.parallelExecutionForbidden === true) {
+    const currentExecution = await control.findAll(control.ctx, process.class.Execution, {
+      process: target._id,
+      card: execution.card,
+      done: false
+    })
+    if (currentExecution.length > 0) {
+      // todo, show erro after merge another pr
+      return
+    }
+  }
   const res: Tx[] = []
   res.push(
     control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
-      process: params._id as Ref<Process>,
+      process: processId,
       currentState: null,
       currentToDo: null,
       card: execution.card,

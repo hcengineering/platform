@@ -42,6 +42,7 @@
     "Offset": "偏移",
     "FirstWorkingDayAfter": "在之后的第一个工作日",
     "FallbackValueError": "显示错误，如果为空",
-    "Required": "必需"
+    "Required": "必需",
+    "ParallelExecutionForbidden": "禁止并行执行"
   }
 }

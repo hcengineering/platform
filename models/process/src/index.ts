@@ -71,6 +71,9 @@ export class TProcess extends TDoc implements Process {
 
   @Prop(ArrOf(TypeRef(process.class.State)), process.string.States)
     states!: Ref<State>[]
+
+  @Prop(TypeBoolean(), process.string.ParallelExecutionForbidden)
+    parallelExecutionForbidden?: boolean
 }
 
 @Model(process.class.Execution, core.class.Doc, DOMAIN_PROCESS)

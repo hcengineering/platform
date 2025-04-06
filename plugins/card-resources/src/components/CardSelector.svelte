@@ -35,6 +35,7 @@
   export let readonly: boolean = false
   export let label: IntlString = card.string.Card
   export let _class: Ref<Class<Card>>
+  export let ignoreObjects: Ref<Card>[] | undefined = undefined
 
   export let focusIndex: number | undefined = undefined
   export let kind: ButtonKind = 'no-border'
@@ -53,7 +54,7 @@
       return
     }
 
-    showPopup(CardsPopup, { selected: value, _class }, eventToHTMLElement(event), change)
+    showPopup(CardsPopup, { selected: value, _class, ignoreObjects }, eventToHTMLElement(event), change)
   }
 
   const change = (val: Card | undefined): void => {

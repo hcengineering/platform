@@ -43,6 +43,7 @@
     "Offset": "Смещение",
     "FirstWorkingDayAfter": "Первый рабочий день после",
     "FallbackValueError": "Показывать ошибку, если недоступно",
-    "Required": "Обязательно"
+    "Required": "Обязательно",
+    "ParallelExecutionForbidden": "Одновременное выполнение запрещено"
   }
 }

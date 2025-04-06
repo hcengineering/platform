@@ -42,6 +42,7 @@
     "Offset": "Deslocar",
     "FirstWorkingDayAfter": "Primeiro Dia de Trabalho Após",
     "FallbackValueError": "Mostrar erro se vazio",
-    "Required": "Obrigatório"
+    "Required": "Obrigatório",
+    "ParallelExecutionForbidden": "Execução Paralela Proibida"
   }
 }

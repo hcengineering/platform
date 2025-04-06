@@ -42,6 +42,7 @@
     "Offset": "Décalage",
     "FirstWorkingDayAfter": "Premier jour de travail après",
     "FallbackValueError": "Afficher l'erreur si vide",
-    "Required": "Requis"
+    "Required": "Requis",
+    "ParallelExecutionForbidden": "Exécution parallèle interdite"
   }
 }
