@@ -4,7 +4,6 @@ import core, {
   Attribute,
   Doc,
   generateId,
-  Mixin,
   Ref
 } from '@hcengineering/core'
 import * as fs from 'fs'
@@ -184,7 +183,7 @@ export class UnifiedDocProcessor {
     masterTagId: Ref<MasterTag>,
     attributesByLabel: Map<string, UnifiedDoc<Attribute<MasterTag>>>
   ): Promise<UnifiedDoc<Card>> {
-    const { _class, title, ...customProperties } = cardHeader
+    const { _class, title, tags, ...customProperties } = cardHeader
 
     const props: Record<string, any> = {
       _id: generateId(),
@@ -218,18 +217,20 @@ export class UnifiedDocProcessor {
 
     const mixins: UnifiedMixin<Card, Tag>[] = []
     for (const tagPath of cardHeader.tags) {
-      let tagId = this.tagPaths.get(tagPath)
+      const cardDir = path.dirname(cardPath)
+      const fullTagPath = path.resolve(cardDir, tagPath)
+      let tagId = this.tagPaths.get(fullTagPath)
       if (tagId === undefined) {
         tagId = generateId<Tag>()
-        this.tagPaths.set(tagPath, tagId)
+        this.tagPaths.set(fullTagPath, tagId)
       }
 
       const mixin: UnifiedMixin<Card, Tag> = {
         _class: card._class,
         mixin: tagId,
         props: {
-          _id: tagId,
-          space: core.space.Model,
+          _id: card.props._id as Ref<Card>,
+          space: core.space.Workspace,
           __mixin: 'true'
         } as unknown as Props<Tag> // todo: what is the correct props type?
       }

@@ -1,7 +1,10 @@
 ---
-title: Card of MT 1
+title: Card of MT 6
+tags:
+    - ./Tag.yaml
 aaa: some text
 bbb: true
+# x: oololo
 ---
 
 # Standard Operating Procedure
