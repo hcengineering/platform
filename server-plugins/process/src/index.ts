@@ -50,6 +50,7 @@ export default plugin(serverProcessId, {
     OnStateRemove: '' as Resource<TriggerFunc>,
     OnProcessRemove: '' as Resource<TriggerFunc>,
     OnProcessToDoClose: '' as Resource<TriggerFunc>,
-    OnProcessToDoRemove: '' as Resource<TriggerFunc>
+    OnProcessToDoRemove: '' as Resource<TriggerFunc>,
+    OnExecutionContinue: '' as Resource<TriggerFunc>
   }
 })
