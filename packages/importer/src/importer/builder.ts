@@ -14,7 +14,7 @@
 //
 import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
-import core, { Attribute, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
+import core, { Attribute, Doc, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
@@ -29,7 +29,7 @@ import {
   type ImportTeamspace,
   type ImportWorkspace
 } from './importer'
-import { UnifiedDoc } from '../types'
+import { UnifiedDoc, UnifiedMixin } from '../types'
 
 export interface ValidationError {
   path: string
@@ -62,6 +62,7 @@ export class ImportWorkspaceBuilder {
   private readonly masterTagAttributes = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
   private readonly tags = new Map<string, UnifiedDoc<Tag>>()
   private readonly cards = new Map<string, UnifiedDoc<Card>>()
+  private readonly mixins = new Map<string, UnifiedMixin<Doc, Doc>>()
 
   private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
@@ -251,6 +252,11 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addTagMixin (path: string, mixin: UnifiedMixin<Doc, Doc>): this {
+    this.validateAndAdd('tagMixin', path, mixin, (m) => this.validateTagMixin(m), this.mixins, path)
+    return this
+  }
+
   validate (): ValidationResult {
     // Perform cross-entity validation
     this.validateSpacesReferences()
@@ -327,6 +333,7 @@ export class ImportWorkspaceBuilder {
         ...Array.from(this.tags.values()),
         ...Array.from(this.cards.values())
       ],
+      mixins: Array.from(this.mixins.values()),
       attachments: []
     }
   }
@@ -937,6 +944,14 @@ export class ImportWorkspaceBuilder {
         }
       }
     }
+
+    return errors
+  }
+
+  private validateTagMixin (mixin: UnifiedMixin<Doc, Doc>): string[] {
+    const errors: string[] = []
+
+    // todo: validate tag mixin
 
     return errors
   }

@@ -487,10 +487,10 @@ export class HulyFormatImporter {
     }
 
     // Импортируем UnifiedDoc сущности
-    const unifiedResult = await this.unifiedDocImporter.importFromDirectory(folderPath)
+    const { docs: unifiedDocs, mixins: unifiedMixins } = await this.unifiedDocImporter.importFromDirectory(folderPath)
 
     // Разбираем и добавляем в билдер по классу
-    for (const [path, docs] of unifiedResult.entries()) {
+    for (const [path, docs] of unifiedDocs.entries()) {
       for (const doc of docs) {
         switch (doc._class) {
           case card.class.MasterTag:
@@ -509,6 +509,12 @@ export class HulyFormatImporter {
               this.logger.error(`Unknown doc class ${String(doc._class)} for path ${path}`)
             }
         }
+      }
+    }
+
+    for (const [path, mixins] of unifiedMixins.entries()) {
+      for (const mixin of mixins) {
+        builder.addTagMixin(path, mixin)
       }
     }
 

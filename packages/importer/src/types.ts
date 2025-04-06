@@ -10,9 +10,7 @@ export interface UnifiedDoc<T extends Doc> {
 }
 
 export interface UnifiedMixin<T extends Doc, M extends T> {
-  _id: Ref<T>
   _class: Ref<Class<T>>
-  space: Ref<Space>
   mixin: Ref<Mixin<M>>
   props: Props<M>
 }

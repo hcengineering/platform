@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import attachment, { Drawing, type Attachment } from '@hcengineering/attachment'
+import attachment, { type Attachment, Drawing } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { Employee, type Person } from '@hcengineering/contact'
 import documents, {
@@ -30,6 +30,7 @@ import documents, {
   useDocumentTemplate
 } from '@hcengineering/controlled-documents'
 import core, {
+  type AccountUuid,
   type AttachedData,
   type Class,
   type CollaborativeDoc,
@@ -39,6 +40,7 @@ import core, {
   generateId,
   makeCollabId,
   type Mixin,
+  type PersonId,
   type Blob as PlatformBlob,
   type Ref,
   RolesAssignment,
@@ -46,10 +48,7 @@ import core, {
   type Space,
   type Status,
   type Timestamp,
-  type TxOperations,
-  type PersonId,
-  type AccountUuid,
-  AttachedDoc
+  type TxOperations
 } from '@hcengineering/core'
 import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
 import task, {
@@ -70,15 +69,16 @@ import tracker, {
   TimeReportDayType
 } from '@hcengineering/tracker'
 import view from '@hcengineering/view'
+import { UnifiedDoc, UnifiedMixin } from '../types'
+import { Logger } from './logger'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
-import { Logger } from './logger'
-import { Props, UnifiedDoc } from '../types'
 export interface ImportWorkspace {
   projectTypes?: ImportProjectType[]
   spaces?: ImportSpace<ImportDoc>[]
   attachments?: ImportAttachment[]
   unifiedDocs?: UnifiedDoc<Doc<Space>>[]
+  mixins?: UnifiedMixin<Doc<Space>, Doc<Space>>[]
 }
 
 export interface ImportProjectType {
@@ -244,6 +244,7 @@ export class WorkspaceImporter {
     await this.importSpaces()
     await this.importAttachments()
     await this.importUnifiedDocs()
+    await this.importUnifiedMixins()
   }
 
   private async importProjectTypes (): Promise<void> {
@@ -1151,5 +1152,19 @@ export class WorkspaceImporter {
       ;(props as any)[unifiedDoc.collabField] = res
     }
     await this.client.createDoc(_class, props.space, props as Data<Doc<Space>>, _id)
+  }
+
+  private async importUnifiedMixins (): Promise<void> {
+    if (this.workspaceData.mixins === undefined) return
+
+    for (const mixin of this.workspaceData.mixins) {
+      await this.importUnifiedMixin(mixin)
+    }
+  }
+
+  private async importUnifiedMixin (mixin: UnifiedMixin<Doc<Space>, Doc<Space>>): Promise<void> {
+    const { _class, mixin: mixinClass, props } = mixin
+    const { _id, space, ...data } = props
+    await this.client.createMixin(_id ?? generateId<Doc<Space>>(), _class, space, mixinClass, data as Data<Doc<Space>>)
   }
 }
