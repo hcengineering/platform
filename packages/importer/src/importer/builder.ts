@@ -647,41 +647,41 @@ export class ImportWorkspaceBuilder {
 
   private validateTagsReferences (): void {
     // Проверка ссылок MasterTag
-    for (const [path, masterTag] of this.masterTags) {
-      if (masterTag.props.extends !== undefined) {
-        if (masterTag.props.extends !== card.class.Card &&
-            !this.masterTags.has(masterTag.props.extends)) {
-          this.addError(path, `Invalid extends reference: ${masterTag.props.extends}`)
-        }
-      }
-    }
+    // for (const [path, masterTag] of this.masterTags) {
+    //   if (masterTag.props.extends !== undefined) {
+    //     if (masterTag.props.extends !== card.class.Card &&
+    //         !this.masterTags.has(masterTag.props.extends)) {
+    //       this.addError(path, `Invalid extends reference: ${masterTag.props.extends}`)
+    //     }
+    //   }
+    // }
 
-    // Проверка ссылок Tag
-    for (const [path, tag] of this.tags) {
-      if (tag.props.extends === undefined) {
-        this.addError(path, 'extends (MasterTag reference) is required')
-      } else if (!this.masterTags.has(tag.props.extends)) {
-        this.addError(path, `Invalid MasterTag reference: ${tag.props.extends}`)
-      }
-    }
+    // // Проверка ссылок Tag
+    // for (const [path, tag] of this.tags) {
+    //   if (tag.props.extends === undefined) {
+    //     this.addError(path, 'extends (MasterTag reference) is required')
+    //   } else if (!this.masterTags.has(tag.props.extends)) {
+    //     this.addError(path, `Invalid MasterTag reference: ${tag.props.extends}`)
+    //   }
+    // }
 
-    // Проверка ссылок атрибутов
-    for (const [path, attribute] of this.masterTagAttributes) {
-      if (attribute.props.attributeOf === undefined) {
-        this.addError(path, 'attributeOf (MasterTag reference) is required')
-      } else if (!this.masterTags.has(attribute.props.attributeOf)) {
-        this.addError(path, `Invalid MasterTag reference: ${attribute.props.attributeOf}`)
-      }
-    }
+    // // Проверка ссылок атрибутов
+    // for (const [path, attribute] of this.masterTagAttributes) {
+    //   if (attribute.props.attributeOf === undefined) {
+    //     this.addError(path, 'attributeOf (MasterTag reference) is required')
+    //   } else if (!this.masterTags.has(attribute.props.attributeOf)) {
+    //     this.addError(path, `Invalid MasterTag reference: ${attribute.props.attributeOf}`)
+    //   }
+    // }
 
-    // Проверка ссылок карточек
-    for (const [path, card] of this.cards) {
-      if (card._class === undefined) {
-        this.addError(path, 'class (MasterTag reference) is required')
-      } else if (!this.masterTags.has(card._class)) {
-        this.addError(path, `Invalid MasterTag reference: ${card._class}`)
-      }
-    }
+    // // Проверка ссылок карточек
+    // for (const [path, card] of this.cards) {
+    //   if (card._class === undefined) {
+    //     this.addError(path, 'class (MasterTag reference) is required')
+    //   } else if (!this.masterTags.has(card._class)) {
+    //     this.addError(path, `Invalid MasterTag reference: ${card._class}`)
+    //   }
+    // }
   }
 
   private addError (path: string, error: string): void {
@@ -852,26 +852,26 @@ export class ImportWorkspaceBuilder {
       errors.push('label is required')
     }
 
-    // Проверка связи с MasterTag
-    if (attribute.props.attributeOf === undefined) {
-      errors.push('attributeOf (MasterTag reference) is required')
-    } else if (!this.masterTags.has(attribute.props.attributeOf)) {
-      errors.push(`Invalid MasterTag reference: ${attribute.props.attributeOf}`)
-    }
+    // todo: fix Проверка связи с MasterTag
+    // if (attribute.props.attributeOf === undefined) {
+    //   errors.push('attributeOf (MasterTag reference) is required')
+    // } else if (!this.masterTags.has(attribute.props.attributeOf)) {
+    //   errors.push(`Invalid MasterTag reference: ${attribute.props.attributeOf}`)
+    // }
 
-    // Проверка типа атрибута
-    if (attribute.props.type === undefined) {
-      errors.push('type is required')
-    } else {
-      const validTypes = [ // todo: double check valid types
-        'TypeString', 'TypeNumber', 'TypeBoolean', 'TypeDate',
-        'TypeHyperlink', 'TypeEnum', 'TypeFileSize', 'TypeIntlString',
-        'TypeMarkup', 'TypeTimestamp', 'TypeRef', 'TypeCollection'
-      ]
-      if (!validTypes.includes(attribute.props.type)) {
-        errors.push(`Invalid attribute type: ${attribute.props.type}`)
-      }
-    }
+    // todo: fix Проверка типа атрибута
+    // if (attribute.props.type === undefined) {
+    //   errors.push('type is required')
+    // } else {
+    //   const validTypes = [ // todo: double check valid types
+    //     'TypeString', 'TypeNumber', 'TypeBoolean', 'TypeDate',
+    //     'TypeHyperlink', 'TypeEnum', 'TypeFileSize', 'TypeIntlString',
+    //     'TypeMarkup', 'TypeTimestamp', 'TypeRef', 'TypeCollection'
+    //   ]
+    //   if (!validTypes.includes(attribute.props.type)) {
+    //     errors.push(`Invalid attribute type: ${attribute.props.type}`)
+    //   }
+    // }
 
     // Проверка уникальности имени атрибута в рамках MasterTag
     const existingAttributes = Array.from(this.masterTagAttributes.values())
@@ -888,11 +888,11 @@ export class ImportWorkspaceBuilder {
     const errors: string[] = []
 
     // Проверка класса (должен быть ссылкой на MasterTag)
-    if (card._class === undefined) {
-      errors.push('class (MasterTag reference) is required')
-    } else if (!this.masterTags.has(card._class)) {
-      errors.push(`Invalid MasterTag reference: ${card._class}`)
-    }
+    // if (card._class === undefined) {
+    //   errors.push('class (MasterTag reference) is required')
+    // } else if (!this.masterTags.has(card._class)) {
+    //   errors.push(`Invalid MasterTag reference: ${card._class}`)
+    // }
 
     // Проверка обязательных полей
     if (!this.validateStringDefined(card.props.title)) {
