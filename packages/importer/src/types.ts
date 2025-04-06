@@ -9,7 +9,7 @@ export interface UnifiedDoc<T extends Doc> {
   contentProvider?: () => Promise<string>
 }
 
-export interface UnifiedMixin<T extends Doc, M extends T> {
+export interface UnifiedMixin<T extends Doc, M extends Doc> { // todo: extends T
   _class: Ref<Class<T>>
   mixin: Ref<Mixin<M>>
   props: Props<M>

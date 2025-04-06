@@ -225,13 +225,13 @@ export class UnifiedDocProcessor {
       }
 
       const mixin: UnifiedMixin<Card, Tag> = {
-        _id: card.props._id as Ref<Card>,
         _class: card._class,
-        space: card.props.space,
         mixin: tagId,
         props: {
+          _id: tagId,
+          space: core.space.Model,
           __mixin: 'true'
-        }
+        } as unknown as Props<Tag> // todo: what is the correct props type?
       }
       mixins.push(mixin)
     }

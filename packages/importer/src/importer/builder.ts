@@ -633,15 +633,15 @@ export class ImportWorkspaceBuilder {
         }
       }
 
-      // Проверка существования тегов
-      if (card.props.tags !== undefined) {
-        for (const tagId of card.props.tags) {
-          const tagExists = Array.from(this.tags.values()).some(t => t.props._id === tagId)
-          if (!tagExists) {
-            this.addError(cardPath, `Card references non-existent tag: ${tagId}`)
-          }
-        }
-      }
+      // todo: check if tags are valid
+      // if (card.props.tags !== undefined) {
+      //   for (const tagId of card.props.tags) {
+      //     const tagExists = Array.from(this.tags.values()).some(t => t.props._id === tagId)
+      //     if (!tagExists) {
+      //       this.addError(cardPath, `Card references non-existent tag: ${tagId}`)
+      //     }
+      //   }
+      // }
     }
   }
 
