@@ -182,7 +182,9 @@ async function fillValue (
   for (const func of context.functions ?? []) {
     const transform = control.modelDb.findObject(func.func)
     if (transform === undefined) throw processError(process.error.MethodNotFound, { methodId: func.func }, {}, true)
-    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) { throw processError(process.error.MethodNotFound, { methodId: func.func }, {}, true) }
+    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) {
+      throw processError(process.error.MethodNotFound, { methodId: func.func }, {}, true)
+    }
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
     value = await f(value, func.props, control, execution)
@@ -232,8 +234,12 @@ async function getNestedValue (
   const nested = control.hierarchy.findAttribute(targetClass, context.key)
   if (context.sourceFunction !== undefined) {
     const transform = control.modelDb.findObject(context.sourceFunction)
-    if (transform === undefined) { throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true) }
-    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) { throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true) }
+    if (transform === undefined) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
+    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
     const reduced = await f(target, {}, control, execution)
@@ -278,8 +284,12 @@ async function getRelationValue (
   if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: name })
   if (context.sourceFunction !== undefined) {
     const transform = control.modelDb.findObject(context.sourceFunction)
-    if (transform === undefined) { throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true) }
-    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) { throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true) }
+    if (transform === undefined) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
+    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
     const reduced = await f(target, {}, control, execution)
