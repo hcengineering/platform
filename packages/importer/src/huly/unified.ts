@@ -73,46 +73,59 @@ export class UnifiedDocProcessor {
     }
 
     if (parentMasterTagId === undefined || parentMasterTagAttrs === undefined) {
-      // Means we are in the root directory
-      return
+      await this.processSystemCards(currentPath, result)
+    } else {
+      // Then process markdown files (cards)
+      await this.processCardDirectory(result, currentPath, parentMasterTagId, parentMasterTagAttrs)
     }
+  }
 
-    // Then process markdown files (cards)
-    await this.processCardDirectory(currentPath, result, parentMasterTagId, parentMasterTagAttrs)
+  private async processSystemCards (
+    currentDir: string,
+    result: UnifiedDocProcessResult
+  ): Promise<void> {
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true })
+
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith('.md')) continue
+      const cardPath = path.join(currentDir, entry.name)
+      const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
+
+      // todo: supported types
+      if (cardType === card.types.File || cardType === card.types.Document) {
+        await this.processCard(result, cardPath, cardProps, cardType, new Map()) // todo: get right master tag attributes
+      }
+    }
   }
 
   private async processCard (
-    cardPath: string,
     result: UnifiedDocProcessResult,
+    cardPath: string,
+    cardProps: Record<string, any>,
     masterTagId: Ref<MasterTag>,
     masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
-    const cardHeader = await readYamlHeader(cardPath)
-    const card = await this.createCard(cardHeader, cardPath, masterTagId, masterTagAttrs, parentCardId)
+    const card = await this.createCard(cardProps, cardPath, masterTagId, masterTagAttrs, parentCardId)
 
     if (card != null) {
-      if (parentCardId !== undefined) {
-        card.props.parent = parentCardId
-      }
-
       const docs = result.docs.get(cardPath) ?? []
       docs.push(card)
       result.docs.set(cardPath, docs)
 
-      await this.applyTags(card, cardHeader, cardPath, result)
+      await this.applyTags(card, cardProps, cardPath, result)
 
       // Проверяем наличие дочерних карточек
       const cardDir = path.join(path.dirname(cardPath), path.basename(cardPath, '.md'))
       if (fs.existsSync(cardDir) && fs.statSync(cardDir).isDirectory()) {
-        await this.processCardDirectory(cardDir, result, masterTagId, masterTagAttrs, card.props._id as Ref<Card>)
+        await this.processCardDirectory(result, cardDir, masterTagId, masterTagAttrs, card.props._id as Ref<Card>)
       }
     }
   }
 
   private async processCardDirectory (
-    cardDir: string,
     result: UnifiedDocProcessResult,
+    cardDir: string,
     masterTagId: Ref<MasterTag>,
     masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
@@ -122,7 +135,8 @@ export class UnifiedDocProcessor {
     for (const entry of entries) {
       if (!entry.isFile() || !entry.name.endsWith('.md')) continue
       const childCardPath = path.join(cardDir, entry.name)
-      await this.processCard(childCardPath, result, masterTagId, masterTagAttrs, parentCardId)
+      const { class: cardClass, ...cardProps } = await readYamlHeader(childCardPath)
+      await this.processCard(result, childCardPath, cardProps, masterTagId, masterTagAttrs, parentCardId)
     }
   }
 
