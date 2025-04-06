@@ -42,6 +42,7 @@
     "Offset": "Offset",
     "FirstWorkingDayAfter": "Primo giorno lavorativo dopo",
     "FallbackValueError": "Mostra errore se vuoto",
-    "Required": "Obbligatorio"
+    "Required": "Obbligatorio",
+    "StartAutomatically": "Avvia automaticamente"
   }
 }

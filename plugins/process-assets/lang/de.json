@@ -42,6 +42,7 @@
     "Offset": "Verschieben",
     "FirstWorkingDayAfter": "Erste Arbeitstag nach",
     "FallbackValueError": "Fehler anzeigen, wenn leer",
-    "Required": "Erforderlich"
+    "Required": "Erforderlich",
+    "StartAutomatically": "Automatisch starten"
   }
 }

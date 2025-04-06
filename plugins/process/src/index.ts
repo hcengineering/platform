@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Card, MasterTag } from '@hcengineering/card'
+import { Card, MasterTag, Tag } from '@hcengineering/card'
 import { Employee } from '@hcengineering/contact'
 import { Class, Doc, DocumentUpdate, ObjQueryType, Ref, Tx } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin } from '@hcengineering/platform'
@@ -25,10 +25,11 @@ import { AttributeCategory } from '@hcengineering/view'
 export const processId = 'process' as Plugin
 
 export interface Process extends Doc {
-  masterTag: Ref<MasterTag>
+  masterTag: Ref<MasterTag | Tag>
   name: string
   description: string
   states: Ref<State>[]
+  autoStart?: boolean
 }
 
 export interface Execution extends Doc {

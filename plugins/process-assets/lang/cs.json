@@ -42,6 +42,7 @@
     "Offset": "Posunout",
     "FirstWorkingDayAfter": "První pracovní den po",
     "FallbackValueError": "Zobrazit chybu, pokud není k dispozici",
-    "Required": "Povinné"
+    "Required": "Povinné",
+    "StartAutomatically": "Spustit automaticky"
   }
 }
