@@ -34,7 +34,7 @@ export class UnifiedDocProcessor {
     currentPath: string,
     result: UnifiedDocProcessResult,
     parentMasterTagId?: Ref<MasterTag>,
-    parentAttributesByLabel?: Map<string, UnifiedDoc<Attribute<MasterTag>>>
+    parentMasterTagAttrs?: Map<string, UnifiedDoc<Attribute<MasterTag>>>
   ): Promise<void> {
     const entries = fs.readdirSync(currentPath, { withFileTypes: true })
 
@@ -48,20 +48,20 @@ export class UnifiedDocProcessor {
       if (yamlConfig?.class === card.class.MasterTag) {
         const masterTag = await this.createMasterTag(yamlConfig, parentMasterTagId)
         const masterTagId = masterTag.props._id as Ref<MasterTag>
-        const attributesByLabel = await this.createAttributes(yamlConfig, masterTagId)
+        const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
 
         // Add master tag and its attributes
         const docs = result.docs.get(yamlPath) ?? []
         docs.push(
           masterTag,
-          ...Array.from(attributesByLabel.values())
+          ...Array.from(masterTagAttrs.values())
         )
         result.docs.set(yamlPath, docs)
 
         // Recursively process the master tag directory
         const masterTagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
         if (fs.existsSync(masterTagDir) && fs.statSync(masterTagDir).isDirectory()) {
-          await this.processDirectory(masterTagDir, result, masterTagId, attributesByLabel)
+          await this.processDirectory(masterTagDir, result, masterTagId, masterTagAttrs)
         }
       } else if (yamlConfig?.class === card.class.Tag) {
         if (parentMasterTagId === undefined) {
@@ -80,26 +80,57 @@ export class UnifiedDocProcessor {
       }
     }
 
-    if (parentMasterTagId === undefined || parentAttributesByLabel === undefined) {
+    if (parentMasterTagId === undefined || parentMasterTagAttrs === undefined) {
       // Means we are in the root directory
       return
     }
 
     // Then process markdown files (cards)
+    await this.processCardDirectory(currentPath, result, parentMasterTagId, parentMasterTagAttrs)
+  }
+
+  private async processCard (
+    cardPath: string,
+    result: UnifiedDocProcessResult,
+    masterTagId: Ref<MasterTag>,
+    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
+    parentCardId?: Ref<Card>
+  ): Promise<void> {
+    const cardHeader = await readYamlHeader(cardPath)
+    const card = await this.createCard(cardHeader, cardPath, masterTagId, masterTagAttrs, parentCardId)
+
+    if (card != null) {
+      if (parentCardId !== undefined) {
+        card.props.parent = parentCardId
+      }
+
+      const docs = result.docs.get(cardPath) ?? []
+      docs.push(card)
+      result.docs.set(cardPath, docs)
+
+      await this.applyTags(card, cardHeader, cardPath, result)
+
+      // Проверяем наличие дочерних карточек
+      const cardDir = path.join(path.dirname(cardPath), path.basename(cardPath, '.md'))
+      if (fs.existsSync(cardDir) && fs.statSync(cardDir).isDirectory()) {
+        await this.processCardDirectory(cardDir, result, masterTagId, masterTagAttrs, card.props._id as Ref<Card>)
+      }
+    }
+  }
+
+  private async processCardDirectory (
+    cardDir: string,
+    result: UnifiedDocProcessResult,
+    masterTagId: Ref<MasterTag>,
+    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
+    parentCardId?: Ref<Card>
+  ): Promise<void> {
+    const entries = fs.readdirSync(cardDir, { withFileTypes: true })
+
     for (const entry of entries) {
       if (!entry.isFile() || !entry.name.endsWith('.md')) continue
-
-      const cardPath = path.join(currentPath, entry.name)
-      const cardHeader = await readYamlHeader(cardPath)
-      const card = await this.createCard(cardHeader, cardPath, parentMasterTagId, parentAttributesByLabel)
-
-      if (card != null) {
-        const docs = result.docs.get(cardPath) ?? []
-        docs.push(card)
-        result.docs.set(cardPath, docs)
-
-        await this.applyTags(card, cardHeader, cardPath, result)
-      }
+      const childCardPath = path.join(cardDir, entry.name)
+      await this.processCard(childCardPath, result, masterTagId, masterTagAttrs, parentCardId)
     }
   }
 
@@ -181,22 +212,24 @@ export class UnifiedDocProcessor {
     cardHeader: Record<string, any>,
     cardPath: string,
     masterTagId: Ref<MasterTag>,
-    attributesByLabel: Map<string, UnifiedDoc<Attribute<MasterTag>>>
+    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
+    parentCardId?: Ref<Card>
   ): Promise<UnifiedDoc<Card>> {
     const { _class, title, tags, ...customProperties } = cardHeader
 
     const props: Record<string, any> = {
       _id: generateId(),
       space: core.space.Workspace,
-      title
+      title,
+      parent: parentCardId
     }
 
     for (const [key, value] of Object.entries(customProperties)) {
-      const attributeName = attributesByLabel.get(key)?.props.name // todo: handle tag attributes separately
-      if (attributeName === undefined) {
+      const attrName = masterTagAttrs.get(key)?.props.name // todo: handle tag attributes separately
+      if (attrName === undefined) {
         throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
       }
-      props[attributeName] = value
+      props[attrName] = value
     }
 
     return {
