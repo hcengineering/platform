@@ -40,6 +40,13 @@ export interface Execution extends Doc {
   card: Ref<Card>
   done: boolean
   rollback: Record<Ref<State>, Tx[]>
+  error?: ExecutionError[] | null
+}
+
+export interface ExecutionError {
+  error: IntlString
+  props: Record<string, any>
+  intlProps: Record<string, IntlString>
 }
 
 export interface ProcessToDo extends ToDo {
@@ -102,7 +109,18 @@ export default plugin(processId, {
     Method: '' as IntlString,
     Execution: '' as IntlString,
     Process: '' as IntlString,
-    Step: '' as IntlString
+    Step: '' as IntlString,
+    Error: '' as IntlString
+  },
+  error: {
+    MethodNotFound: '' as IntlString,
+    InternalServerError: '' as IntlString,
+    EmptyRelatedObjectValue: '' as IntlString,
+    RelatedObjectNotFound: '' as IntlString,
+    RelationNotExists: '' as IntlString,
+    EmptyAttributeContextValue: '' as IntlString,
+    ObjectNotFound: '' as IntlString,
+    AttributeNotExists: '' as IntlString
   },
   icon: {
     Process: '' as Asset,

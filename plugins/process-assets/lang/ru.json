@@ -1,4 +1,3 @@
-
 {
   "string": {
     "Method": "Метод",
@@ -44,6 +43,18 @@
     "FirstWorkingDayAfter": "Первый рабочий день после",
     "FallbackValueError": "Показывать ошибку, если недоступно",
     "Required": "Обязательно",
-    "StartAutomatically": "Запускать автоматически"
+    "StartAutomatically": "Запускать автоматически",
+    "Error": "Ошибка",
+    "Continue": "Продолжить"
+  },
+  "error": {
+    "MethodNotFound": "Метод не найден: {methodId}",
+    "InternalServerError": "Внутренняя ошибка сервера, свяжитесь с поддержкой, идентификатор ошибки: {errorId}",
+    "EmptyRelatedObjectValue": "Пустое значение {attr} для связанного объекта: {parent}",
+    "RelatedObjectNotFound": "Связанный объект не найден: {attr}",
+    "RelationNotExists": "Связь не существует: {association}",
+    "EmptyAttributeContextValue": "Пустое значение атрибута: {attr}",
+    "ObjectNotFound": "Объект не найден: {_id}",
+    "AttributeNotExists": "Атрибут не существует: {key}"
   }
 }

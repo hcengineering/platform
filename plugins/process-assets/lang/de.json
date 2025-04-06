@@ -43,6 +43,18 @@
     "FirstWorkingDayAfter": "Erste Arbeitstag nach",
     "FallbackValueError": "Fehler anzeigen, wenn leer",
     "Required": "Erforderlich",
-    "StartAutomatically": "Automatisch starten"
+    "StartAutomatically": "Automatisch starten",
+    "Error": "Fehler",
+    "Continue": "Fortsetzen"
+  },  
+  "error": {
+    "MethodNotFound": "Methode nicht gefunden: {methodId}",
+    "AttributeNotExists": "Attribut existiert nicht: {key}",
+    "RelatedObjectNotFound": "Verwandtes Objekt nicht gefunden: {attr}",
+    "RelationNotExists": "Beziehung existiert nicht: {association}",
+    "EmptyAttributeContextValue": "Leerer Attributwert: {attr}",
+    "ObjectNotFound": "Objekt nicht gefunden: {_id}",
+    "EmptyRelatedObjectValue": "Leerer verwandtes Objekt {parent} Wert: {attr}",
+    "InternalServerError": "Interner Serverfehler, bitte kontaktieren Sie den Support, Fehler-ID: {errorId}"
   }
 }

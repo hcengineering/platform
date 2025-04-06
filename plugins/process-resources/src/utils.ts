@@ -23,6 +23,7 @@ import core, {
   type Type,
   type DocumentQuery
 } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
 import process, {
   type Context,
   type NestedContext,
@@ -30,7 +31,8 @@ import process, {
   type Method,
   type Process,
   type Step,
-  type ProcessFunction
+  type ProcessFunction,
+  type Execution
 } from '@hcengineering/process'
 import { type AttributeCategory } from '@hcengineering/view'
 
@@ -185,4 +187,10 @@ export function showDoneQuery (value: any, query: DocumentQuery<Doc>): DocumentQ
     return { ...query, done: false }
   }
   return query
+}
+
+export async function continueExecution (value: Execution): Promise<void> {
+  if (value.error == null) return
+  const client = getClient()
+  await client.update(value, { error: null })
 }

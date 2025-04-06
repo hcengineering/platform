@@ -43,6 +43,18 @@
     "FirstWorkingDayAfter": "First working day after",
     "FallbackValueError": "Show error if empty",
     "Required": "Required",
-    "StartAutomatically": "Start automatically"
+    "StartAutomatically": "Start automatically",
+    "Error": "Error",
+    "Continue": "Continue"
+  },
+  "error": {
+    "MethodNotFound": "Method not found: {methodId}",
+    "AttributeNotExists": "Attribute not exists: {key}",
+    "RelatedObjectNotFound": "Related object not found: {attr}",
+    "RelationNotExists": "Relation not exists: {association}",
+    "EmptyAttributeContextValue": "Empty attribute value: {attr}",
+    "ObjectNotFound": "Object not found: {_id}",
+    "EmptyRelatedObjectValue": "Empty related object {parent} value: {attr}",
+    "InternalServerError": "Internal server error, contact support, error id: {errorId}"
   }
 }
