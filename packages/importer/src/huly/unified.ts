@@ -65,18 +65,10 @@ export class UnifiedDocProcessor {
         }
       } else if (yamlConfig?.class === card.class.Tag) {
         if (parentMasterTagId === undefined) {
-          throw new Error('Tag should be inside master tag folder: ' + currentPath) // todo: confirm this error message
+          throw new Error('Tag should be inside master tag folder: ' + currentPath)
         }
 
-        const tagId = this.tagPaths.get(yamlPath) ?? generateId<Tag>()
-        const tag = await this.createTag(yamlConfig, tagId, parentMasterTagId)
-        this.tagPaths.set(yamlPath, tagId)
-
-        const attributes = await this.createAttributes(yamlConfig, tagId)
-
-        const docs = result.docs.get(yamlPath) ?? []
-        docs.push(tag, ...Array.from(attributes.values()))
-        result.docs.set(yamlPath, docs)
+        await this.processTag(yamlPath, yamlConfig, result, parentMasterTagId)
       }
     }
 
@@ -156,10 +148,54 @@ export class UnifiedDocProcessor {
     }
   }
 
+  private async processTag (
+    tagPath: string,
+    tagConfig: Record<string, any>,
+    result: UnifiedDocProcessResult,
+    masterTagId: Ref<MasterTag>,
+    parentTagId?: Ref<Tag>
+  ): Promise<void> {
+    const tagId = this.tagPaths.get(tagPath) ?? generateId<Tag>()
+    const tag = await this.createTag(tagConfig, tagId, masterTagId, parentTagId)
+    this.tagPaths.set(tagPath, tagId)
+
+    const attributes = await this.createAttributes(tagConfig, tagId)
+
+    const docs = result.docs.get(tagPath) ?? []
+    docs.push(tag, ...Array.from(attributes.values()))
+    result.docs.set(tagPath, docs)
+
+    // Обрабатываем дочерние теги
+    const tagDir = path.join(path.dirname(tagPath), path.basename(tagPath, '.yaml'))
+    if (fs.existsSync(tagDir) && fs.statSync(tagDir).isDirectory()) {
+      await this.processTagDirectory(tagDir, result, masterTagId, tagId)
+    }
+  }
+
+  private async processTagDirectory (
+    tagDir: string,
+    result: UnifiedDocProcessResult,
+    parentMasterTagId: Ref<MasterTag>,
+    parentTagId: Ref<Tag>
+  ): Promise<void> {
+    const entries = fs.readdirSync(tagDir, { withFileTypes: true })
+
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith('.yaml')) continue
+      const childTagPath = path.join(tagDir, entry.name)
+      const childTagConfig = yaml.load(fs.readFileSync(childTagPath, 'utf8')) as Record<string, any>
+
+      if (childTagConfig?.class === card.class.Tag) {
+        await this.processTag(childTagPath, childTagConfig, result, parentMasterTagId, parentTagId)
+      }
+    }
+  }
+
   private async createTag (
     data: Record<string, any>,
     tagId: Ref<Tag>,
-    parentMasterTagId: Ref<MasterTag>
+    masterTagId: Ref<MasterTag>,
+    parentTagId?: Ref<Tag>
   ): Promise<UnifiedDoc<Tag>> {
     const { class: _class, title } = data
     if (_class !== card.class.Tag) {
@@ -171,7 +207,7 @@ export class UnifiedDocProcessor {
       props: {
         _id: tagId,
         space: core.space.Model,
-        extends: parentMasterTagId,
+        extends: parentTagId ?? masterTagId,
         label: 'embedded:embedded:' + title as IntlString,
         kind: 2,
         icon: card.icon.Tag
