@@ -62,11 +62,20 @@
   }
 
   function onAdd (e: MouseEvent): void {
-    showPopup(SelectPopup, { value: possibleAttrs.map((p) => { return { id: p.name, label: p.label } }) }, eventToHTMLElement(e), (res) => {
-      if (res != null) {
-        addKey(res)
+    showPopup(
+      SelectPopup,
+      {
+        value: possibleAttrs.map((p) => {
+          return { id: p.name, label: p.label }
+        })
+      },
+      eventToHTMLElement(e),
+      (res) => {
+        if (res != null) {
+          addKey(res)
+        }
       }
-    })
+    )
   }
 
   function remove (e: CustomEvent<any>): void {
@@ -81,7 +90,16 @@
   }
 </script>
 
-<ParamsEditor _class={process.masterTag} {process} {state} {keys} {params} allowRemove on:remove={remove} on:change={change} />
+<ParamsEditor
+  _class={process.masterTag}
+  {process}
+  {state}
+  {keys}
+  {params}
+  allowRemove
+  on:remove={remove}
+  on:change={change}
+/>
 {#if possibleAttrs.length > 0}
   <div class="flex-center mt-4">
     <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />

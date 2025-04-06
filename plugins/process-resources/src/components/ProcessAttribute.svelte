@@ -15,7 +15,16 @@
 <script lang="ts">
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
   import { Context, parseContext, SelectedContext } from '@hcengineering/process'
-  import { AnySvelteComponent, Button, eventToHTMLElement, IconAdd, IconClose, Label, showPopup, tooltip } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Button,
+    eventToHTMLElement,
+    IconAdd,
+    IconClose,
+    Label,
+    showPopup,
+    tooltip
+  } from '@hcengineering/ui'
   import { AttributeCategory } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import ContextSelectorPopup from './attributeEditors/ContextSelectorPopup.svelte'
