@@ -24,6 +24,7 @@ import documents, {
 } from '@hcengineering/controlled-documents'
 import core, {
   AccountUuid,
+  Association,
   Attribute,
   type Class,
   type Doc,
@@ -502,6 +503,9 @@ export class HulyFormatImporter {
           case core.class.Attribute:
             builder.addMasterTagAttributes(path, [doc as UnifiedDoc<Attribute<MasterTag>>])
             break
+          case core.class.Association:
+            builder.addAssociation(path, doc as UnifiedDoc<Association>)
+            break
           default:
             if (isId(doc._class) || (doc._class as string).startsWith('card:types:')) { // todo: fix system cards validation
               builder.addCard(path, doc as UnifiedDoc<Card>)
@@ -565,6 +569,7 @@ export class HulyFormatImporter {
             break
           }
 
+          case core.class.Association:
           case card.class.MasterTag: {
             this.logger.log(`Skipping ${spaceName}: master tag already processed`)
             break

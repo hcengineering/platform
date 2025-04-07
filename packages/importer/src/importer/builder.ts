@@ -14,7 +14,7 @@
 //
 import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
-import core, { Attribute, Doc, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
+import core, { Association, Attribute, Doc, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
@@ -62,6 +62,7 @@ export class ImportWorkspaceBuilder {
   private readonly masterTagAttributes = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
   private readonly tags = new Map<string, UnifiedDoc<Tag>>()
   private readonly cards = new Map<string, UnifiedDoc<Card>>()
+  private readonly associations = new Map<string, UnifiedDoc<Association>>()
   private readonly mixins = new Map<string, UnifiedMixin<Doc, Doc>>()
 
   private readonly projectTypes = new Map<string, ImportProjectType>()
@@ -252,6 +253,11 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addAssociation (path: string, association: UnifiedDoc<Association>): this {
+    this.validateAndAdd('association', path, association, (a) => this.validateAssociation(a), this.associations, path)
+    return this
+  }
+
   addTagMixin (path: string, mixin: UnifiedMixin<Doc, Doc>): this {
     this.validateAndAdd('tagMixin', path, mixin, (m) => this.validateTagMixin(m), this.mixins, path)
     return this
@@ -331,7 +337,8 @@ export class ImportWorkspaceBuilder {
         ...Array.from(this.masterTags.values()),
         ...Array.from(this.masterTagAttributes.values()),
         ...Array.from(this.tags.values()),
-        ...Array.from(this.cards.values())
+        ...Array.from(this.cards.values()),
+        ...Array.from(this.associations.values())
       ],
       mixins: Array.from(this.mixins.values()),
       attachments: []
@@ -880,6 +887,14 @@ export class ImportWorkspaceBuilder {
     if (existingAttributes.length > 0) {
       errors.push(`Attribute with name "${attribute.props.name}" already exists for this MasterTag`)
     }
+
+    return errors
+  }
+
+  private validateAssociation (association: UnifiedDoc<Association>): string[] {
+    const errors: string[] = []
+
+    // todo: validate association
 
     return errors
   }

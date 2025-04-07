@@ -1,6 +1,7 @@
 // unified.ts
 import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
+  Association,
   Attribute,
   Doc,
   generateId,
@@ -20,6 +21,7 @@ export interface UnifiedDocProcessResult {
 
 export class UnifiedDocProcessor {
   private readonly tagPaths = new Map<string, Ref<Tag>>()
+  private readonly masterTagPaths = new Map<string, Ref<MasterTag>>()
 
   async importFromDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
     const result: UnifiedDocProcessResult = {
@@ -45,30 +47,41 @@ export class UnifiedDocProcessor {
       const yamlPath = path.join(currentPath, entry.name)
       const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
 
-      if (yamlConfig?.class === card.class.MasterTag) {
-        const masterTag = await this.createMasterTag(yamlConfig, parentMasterTagId)
-        const masterTagId = masterTag.props._id as Ref<MasterTag>
-        const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
+      switch (yamlConfig?.class) {
+        case card.class.MasterTag: {
+          const masterTagId = this.masterTagPaths.get(yamlPath) ?? generateId<MasterTag>()
+          this.masterTagPaths.set(yamlPath, masterTagId)
+          const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
+          const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
 
-        // Add master tag and its attributes
-        const docs = result.docs.get(yamlPath) ?? []
-        docs.push(
-          masterTag,
-          ...Array.from(masterTagAttrs.values())
-        )
-        result.docs.set(yamlPath, docs)
+          const docs = result.docs.get(yamlPath) ?? []
+          docs.push(
+            masterTag,
+            ...Array.from(masterTagAttrs.values())
+          )
+          result.docs.set(yamlPath, docs)
 
-        // Recursively process the master tag directory
-        const masterTagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
-        if (fs.existsSync(masterTagDir) && fs.statSync(masterTagDir).isDirectory()) {
-          await this.processDirectory(masterTagDir, result, masterTagId, masterTagAttrs)
+          const masterTagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
+          if (fs.existsSync(masterTagDir) && fs.statSync(masterTagDir).isDirectory()) {
+            await this.processDirectory(masterTagDir, result, masterTagId, masterTagAttrs)
+          }
+          break
         }
-      } else if (yamlConfig?.class === card.class.Tag) {
-        if (parentMasterTagId === undefined) {
-          throw new Error('Tag should be inside master tag folder: ' + currentPath)
-        }
+        case card.class.Tag: {
+          if (parentMasterTagId === undefined) {
+            throw new Error('Tag should be inside master tag folder: ' + currentPath)
+          }
 
-        await this.processTag(yamlPath, yamlConfig, result, parentMasterTagId)
+          await this.processTag(yamlPath, yamlConfig, result, parentMasterTagId)
+          break
+        }
+        case core.class.Association: {
+          const association = await this.createAssociation(currentPath, yamlConfig)
+          result.docs.set(yamlPath, [association])
+          break
+        }
+        default:
+          throw new Error('Unsupported class: ' + yamlConfig?.class) // todo: handle default case just convert to UnifiedDoc
       }
     }
 
@@ -143,6 +156,7 @@ export class UnifiedDocProcessor {
 
   private async createMasterTag (
     data: Record<string, any>,
+    masterTagId: Ref<MasterTag>,
     parentMasterTagId?: Ref<MasterTag>
   ): Promise<UnifiedDoc<MasterTag>> {
     const { class: _class, title } = data
@@ -153,7 +167,7 @@ export class UnifiedDocProcessor {
     return {
       _class: card.class.MasterTag,
       props: {
-        _id: generateId<MasterTag>(),
+        _id: masterTagId,
         space: core.space.Model,
         extends: parentMasterTagId ?? card.class.Card,
         label: 'embedded:embedded:' + title as IntlString, // todo: check if it's correct
@@ -323,6 +337,38 @@ export class UnifiedDocProcessor {
 
     if (mixins.length > 0) {
       result.mixins.set(cardPath, mixins)
+    }
+  }
+
+  private async createAssociation (
+    currentPath: string,
+    yamlConfig: Record<string, any>
+  ): Promise<UnifiedDoc<Association>> {
+    const { class: _class, typeA, typeB, ...otherProps } = yamlConfig
+
+    const typeAPath = path.resolve(currentPath, typeA)
+    let typeAId = this.masterTagPaths.get(typeAPath)
+    if (typeAId === undefined) {
+      typeAId = generateId<MasterTag>()
+      this.masterTagPaths.set(typeAPath, typeAId)
+    }
+
+    const typeBPath = path.resolve(currentPath, typeB)
+    let typeBId = this.masterTagPaths.get(typeBPath)
+    if (typeBId === undefined) {
+      typeBId = generateId<MasterTag>()
+      this.masterTagPaths.set(typeBPath, typeBId)
+    }
+
+    return {
+      _class: core.class.Association,
+      props: {
+        _id: generateId(),
+        space: core.space.Model,
+        classA: typeAId,
+        classB: typeBId,
+        ...otherProps
+      } as unknown as Props<Association>
     }
   }
 }

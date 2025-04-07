@@ -1,0 +1,6 @@
+class: card:class:MasterTag
+title: Master Card 4
+properties:
+  - label: aaa
+    type: TypeString
+    defaultValue: ""

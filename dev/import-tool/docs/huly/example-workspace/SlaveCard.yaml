@@ -1,0 +1,9 @@
+class: card:class:MasterTag
+title: Slave Card 4
+properties:
+  - label: Sex
+    type: TypeBoolean
+    defaultValue: false
+  - label: color
+    type: TypeString
+    defaultValue: "black" # todo: is default value supported?

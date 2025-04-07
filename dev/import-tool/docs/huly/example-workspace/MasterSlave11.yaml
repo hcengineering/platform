@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: MasterCard.yaml
+typeB: SlaveCard.yaml
+nameA: Main Master
+nameB: Main Slave
+type: 1:1
