@@ -1,0 +1,5 @@
+class: card:class:Tag
+title: Familiar
+properties:
+  - label: x
+    type: TypeString

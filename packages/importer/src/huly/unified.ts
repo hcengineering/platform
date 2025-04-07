@@ -21,7 +21,6 @@ export interface UnifiedDocProcessResult {
 
 export class UnifiedDocProcessor {
   private readonly tagPaths = new Map<string, Ref<Tag>>()
-  private readonly masterTagPaths = new Map<string, Ref<MasterTag>>()
 
   async importFromDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
     const result: UnifiedDocProcessResult = {
@@ -49,8 +48,8 @@ export class UnifiedDocProcessor {
 
       switch (yamlConfig?.class) {
         case card.class.MasterTag: {
-          const masterTagId = this.masterTagPaths.get(yamlPath) ?? generateId<MasterTag>()
-          this.masterTagPaths.set(yamlPath, masterTagId)
+          const masterTagId = this.tagPaths.get(yamlPath) ?? generateId<MasterTag>()
+          this.tagPaths.set(yamlPath, masterTagId)
           const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
           const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
 
@@ -347,17 +346,17 @@ export class UnifiedDocProcessor {
     const { class: _class, typeA, typeB, ...otherProps } = yamlConfig
 
     const typeAPath = path.resolve(currentPath, typeA)
-    let typeAId = this.masterTagPaths.get(typeAPath)
+    let typeAId = this.tagPaths.get(typeAPath)
     if (typeAId === undefined) {
       typeAId = generateId<MasterTag>()
-      this.masterTagPaths.set(typeAPath, typeAId)
+      this.tagPaths.set(typeAPath, typeAId)
     }
 
     const typeBPath = path.resolve(currentPath, typeB)
-    let typeBId = this.masterTagPaths.get(typeBPath)
+    let typeBId = this.tagPaths.get(typeBPath)
     if (typeBId === undefined) {
       typeBId = generateId<MasterTag>()
-      this.masterTagPaths.set(typeBPath, typeBId)
+      this.tagPaths.set(typeBPath, typeBId)
     }
 
     return {

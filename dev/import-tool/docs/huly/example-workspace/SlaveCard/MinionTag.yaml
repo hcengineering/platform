@@ -1,0 +1,5 @@
+class: card:class:Tag
+title: Minion
+properties:
+  - label: x
+    type: TypeString
