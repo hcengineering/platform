@@ -43,6 +43,7 @@
     "FirstWorkingDayAfter": "Premier jour de travail après",
     "FallbackValueError": "Afficher l'erreur si vide",
     "Required": "Requis",
+    "StartAutomatically": "Démarrer automatiquement",
     "Error": "Erreur",
     "Continue": "Continuer"
   },

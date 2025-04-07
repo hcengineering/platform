@@ -25,6 +25,7 @@ import core, {
   Timestamp,
   Tx,
   TxCreateDoc,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -635,6 +636,63 @@ export function FirstWorkingDayAfter (val: Timestamp): Timestamp {
   return val
 }
 
+export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxCreateDoc) continue
+    const createTx = tx as TxCreateDoc<Card>
+    if (!control.hierarchy.isDerived(createTx.objectClass, card.class.Card)) continue
+    const ancestors = control.hierarchy
+      .getAncestors(createTx.objectClass)
+      .filter((p) => control.hierarchy.isDerived(p, card.class.Card))
+
+    const processes = control.modelDb.findAllSync(process.class.Process, {
+      masterTag: { $in: ancestors },
+      autoStart: true
+    })
+    for (const proc of processes) {
+      res.push(
+        control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
+          process: proc._id,
+          currentState: null,
+          card: createTx.objectId,
+          done: false,
+          rollback: {},
+          currentToDo: null,
+          assignee: null
+        })
+      )
+    }
+  }
+  return res
+}
+
+export async function OnTagAdd (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxMixin) continue
+    const mixinTx = tx as TxMixin<Card, Card>
+    if (!control.hierarchy.isDerived(mixinTx.objectClass, card.class.Card)) continue
+    if (Object.keys(mixinTx.attributes).length !== 0) continue
+
+    const processes = control.modelDb.findAllSync(process.class.Process, { masterTag: mixinTx.mixin, autoStart: true })
+    for (const proc of processes) {
+      res.push(
+        control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
+          process: proc._id,
+          currentState: null,
+          card: mixinTx.objectId,
+          done: false,
+          rollback: {},
+          currentToDo: null,
+          assignee: null
+        })
+      )
+    }
+  }
+  return res
+}
+
 export async function OnExecutionContinue (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
@@ -679,6 +737,8 @@ export default async () => ({
     FirstWorkingDayAfter
   },
   trigger: {
+    OnCardCreate,
+    OnTagAdd,
     OnExecutionCreate,
     OnStateRemove,
     OnProcessRemove,

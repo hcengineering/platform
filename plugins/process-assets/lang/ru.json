@@ -43,6 +43,7 @@
     "FirstWorkingDayAfter": "Первый рабочий день после",
     "FallbackValueError": "Показывать ошибку, если недоступно",
     "Required": "Обязательно",
+    "StartAutomatically": "Запускать автоматически",
     "Error": "Ошибка",
     "Continue": "Продолжить"
   },

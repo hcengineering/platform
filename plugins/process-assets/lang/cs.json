@@ -43,6 +43,7 @@
     "FirstWorkingDayAfter": "První pracovní den po",
     "FallbackValueError": "Zobrazit chybu, pokud není k dispozici",
     "Required": "Povinné",
+    "StartAutomatically": "Spustit automaticky",
     "Error": "Chyba",
     "Continue": "Pokračovat"
   },

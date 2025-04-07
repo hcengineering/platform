@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import card, { type Card, type MasterTag } from '@hcengineering/card'
+import card, { type Tag, type Card, type MasterTag } from '@hcengineering/card'
 import contact, { type Employee } from '@hcengineering/contact'
 import core, {
   AccountRole,
@@ -68,11 +68,14 @@ export class TProcess extends TDoc implements Process {
   @Prop(TypeString(), core.string.Description)
     description!: string
 
-  @Prop(TypeRef(card.class.MasterTag), core.string.Name)
-    masterTag!: Ref<MasterTag>
+  @Prop(TypeRef(card.class.MasterTag), card.string.MasterTag)
+    masterTag!: Ref<MasterTag | Tag>
 
   @Prop(ArrOf(TypeRef(process.class.State)), process.string.States)
     states!: Ref<State>[]
+
+  @Prop(TypeBoolean(), process.string.StartAutomatically)
+    autoStart: boolean | undefined
 }
 
 @Model(process.class.Execution, core.class.Doc, DOMAIN_PROCESS)

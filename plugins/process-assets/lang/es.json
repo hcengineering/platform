@@ -43,6 +43,7 @@
     "FirstWorkingDayAfter": "Primer día de trabajo después",
     "FallbackValueError": "Mostrar error si está vacío",
     "Required": "Requerido",
+    "StartAutomatically": "Iniciar automáticamente",
     "Error": "Error",
     "Continue": "Continuar"
   },
