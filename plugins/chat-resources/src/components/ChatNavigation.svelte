@@ -18,7 +18,7 @@
   import { createEventDispatcher } from 'svelte'
   import { NavigationList, NavigationSection } from '@hcengineering/ui-next'
   import { languageStore, Scroller } from '@hcengineering/ui'
-  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { Ref, SortingOrder, Class } from '@hcengineering/core'
   import { NotificationContext } from '@hcengineering/communication-types'
   import { SavedView } from '@hcengineering/workbench-resources'
   import { chatId } from '@hcengineering/chat'
@@ -58,13 +58,13 @@
       cardsQueryByType.set(type._id, { query, limit })
 
       query.query(
-        type._id,
+        type._id as Ref<Class<Card>>,
         {},
         (res) => {
           if (res.length === 0) {
             cardsByType.delete(type._id)
           } else {
-            cardsByType.set(type._id, { cards: res as any, total: res.total })
+            cardsByType.set(type._id, { cards: res, total: res.total })
           }
 
           cardsByType = cardsByType
