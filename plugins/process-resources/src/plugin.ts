@@ -89,6 +89,7 @@ export default mergeIds(processId, process, {
     FirstWorkingDayAfter: '' as IntlString,
     FallbackValueError: '' as IntlString,
     Required: '' as IntlString,
+    ParallelExecutionForbidden: '' as IntlString,
     StartAutomatically: '' as IntlString,
     Continue: '' as IntlString
   }

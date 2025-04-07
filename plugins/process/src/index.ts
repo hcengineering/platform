@@ -29,6 +29,7 @@ export interface Process extends Doc {
   name: string
   description: string
   states: Ref<State>[]
+  parallelExecutionForbidden?: boolean
   autoStart?: boolean
 }
 

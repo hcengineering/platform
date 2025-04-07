@@ -43,6 +43,7 @@
     "FirstWorkingDayAfter": "Primeiro Dia de Trabalho Após",
     "FallbackValueError": "Mostrar erro se vazio",
     "Required": "Obrigatório",
+    "ParallelExecutionForbidden": "Execução Paralela Proibida",
     "StartAutomatically": "Iniciar automaticamente",
     "Error": "Erro",
     "Continue": "Continuar"

@@ -33,6 +33,31 @@
   const res = client.getModel().findAllSync(process.class.Process, {})
   const processes = res.filter((it) => resClasses.includes(it.masterTag))
 
+  async function filterProcesses (processes: Process[]): Promise<Process[]> {
+    const res: Process[] = []
+    const shouldCheck: Process[] = []
+    for (const val of processes) {
+      if (val.parallelExecutionForbidden === true) {
+        shouldCheck.push(val)
+      } else {
+        res.push(val)
+      }
+    }
+    if (shouldCheck.length === 0) return res
+
+    const executions = await client.findAll(process.class.Execution, {
+      process: { $in: shouldCheck.map((it) => it._id) },
+      done: false
+    })
+    const notAllowed = new Set(executions.map((it) => it.process))
+    for (const val of shouldCheck) {
+      if (!notAllowed.has(val._id)) {
+        res.push(val)
+      }
+    }
+    return res
+  }
+
   const dispatch = createEventDispatcher()
 
   async function runProcess (_id: Ref<Process>): Promise<void> {
@@ -57,16 +82,18 @@
         <Label label={process.string.NoProcesses} />
       </div>
     {:else}
-      {#each processes as process}
-        <button
-          class="ap-menuItem flex-row-center withIcon w-full"
-          on:click|preventDefault|stopPropagation={async () => {
-            await runProcess(process._id)
-          }}
-        >
-          {process.name}
-        </button>
-      {/each}
+      {#await filterProcesses(processes) then processes}
+        {#each processes as process}
+          <button
+            class="ap-menuItem flex-row-center withIcon w-full"
+            on:click|preventDefault|stopPropagation={async () => {
+              await runProcess(process._id)
+            }}
+          >
+            {process.name}
+          </button>
+        {/each}
+      {/await}
     {/if}
   </div>
   <div class="ap-space x2" />

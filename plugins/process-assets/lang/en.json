@@ -43,6 +43,7 @@
     "FirstWorkingDayAfter": "First working day after",
     "FallbackValueError": "Show error if empty",
     "Required": "Required",
+    "ParallelExecutionForbidden": "Parallel execution forbidden",
     "StartAutomatically": "Start automatically",
     "Error": "Error",
     "Continue": "Continue"

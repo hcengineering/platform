@@ -50,6 +50,30 @@
   }
 
   $: selectedProcess = processes.find((p) => p._id === process)
+
+  let ignoreObjects: Ref<Card>[] = []
+
+  $: void filter(process)
+
+  async function filter (process: Ref<Process> | undefined): Promise<void> {
+    if (process === undefined) {
+      ignoreObjects = []
+      return
+    }
+    const pr = client.getModel().findObject(process)
+    if (pr === undefined) {
+      ignoreObjects = []
+      return
+    }
+    if (pr.parallelExecutionForbidden !== true) {
+      ignoreObjects = []
+      return
+    }
+
+    const executions = await client.findAll(plugin.class.Execution, { process, done: false }, {})
+    const cards = new Set(executions.map((it) => it.card))
+    ignoreObjects = [...cards]
+  }
 </script>
 
 <CardPopup
@@ -74,6 +98,12 @@
     />
   </div>
   {#if selectedProcess !== undefined}
-    <CardSelector kind={'regular'} size={'medium'} bind:value={card} _class={selectedProcess.masterTag} />
+    <CardSelector
+      kind={'regular'}
+      size={'medium'}
+      bind:value={card}
+      {ignoreObjects}
+      _class={selectedProcess.masterTag}
+    />
   {/if}
 </CardPopup>
