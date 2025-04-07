@@ -33,8 +33,7 @@
     Scroller,
     secondNavSeparators,
     Separator,
-    showPopup,
-    ToggleWithLabel
+    showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import process from '../plugin'
