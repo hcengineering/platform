@@ -1,6 +1,6 @@
 ---
 title: simple slave
 sex: true
-mainMaster: ../MasterCard/master.md
+mainMaster: ../MasterCard/SubMasterCard/submaster.md
 ---
 nksdnflksj
