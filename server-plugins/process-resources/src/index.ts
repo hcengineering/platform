@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -25,13 +25,15 @@ import core, {
   Timestamp,
   Tx,
   TxCreateDoc,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
+import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
 import process, {
   Execution,
+  ExecutionError,
   MethodParams,
   parseContext,
   Process,
@@ -45,6 +47,7 @@ import process, {
 import { TriggerControl } from '@hcengineering/server-core'
 import serverProcess, { ExecuteResult } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
+import { isError, parseError, ProcessError, processError } from './errors'
 
 export async function OnStateRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
@@ -147,19 +150,27 @@ async function executeAction<T extends Doc> (
   action: Step<T>,
   execution: Execution,
   control: TriggerControl
-): Promise<ExecuteResult | undefined> {
+): Promise<ExecuteResult> {
   try {
     const method = control.modelDb.findObject(action.methodId)
-    if (method === undefined) return undefined
+    if (method === undefined) throw processError(process.error.MethodNotFound, { methodId: action.methodId }, {}, true)
     const impl = control.hierarchy.as(method, serverProcess.mixin.MethodImpl)
-    if (impl === undefined) return undefined
-    const f = await getResource(impl.func)
+    if (impl === undefined) throw processError(process.error.MethodNotFound, { methodId: action.methodId }, {}, true)
     const params = await fillParams(action.params, execution, control)
+    const f = await getResource(impl.func)
     const res = await f(params, execution, control)
     return res
   } catch (err) {
-    control.ctx.error(err instanceof Error ? err.message : String(err))
-    return undefined
+    if (err instanceof ProcessError) {
+      if (err.shouldLog) {
+        control.ctx.error(err.message, { props: err.props })
+      }
+      return parseError(err)
+    } else {
+      const errorId = generateId()
+      control.ctx.error(err instanceof Error ? err.message : String(err), { errorId })
+      return parseError(processError(process.error.InternalServerError, { errorId }))
+    }
   }
 }
 
@@ -169,21 +180,15 @@ async function fillValue (
   control: TriggerControl,
   execution: Execution
 ): Promise<any> {
-  if (value === undefined) {
-    // we should add error to execution
-    throw new Error('Value not found')
-  }
   for (const func of context.functions ?? []) {
-    try {
-      const transform = control.modelDb.findObject(func.func)
-      if (transform === undefined) continue
-      if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) continue
-      const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
-      const f = await getResource(funcImpl.func)
-      value = await f(value, func.props, control, execution)
-    } catch (err: any) {
-      control.ctx.error(err)
+    const transform = control.modelDb.findObject(func.func)
+    if (transform === undefined) throw processError(process.error.MethodNotFound, { methodId: func.func }, {}, true)
+    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) {
+      throw processError(process.error.MethodNotFound, { methodId: func.func }, {}, true)
     }
+    const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
+    const f = await getResource(funcImpl.func)
+    value = await f(value, func.props, control, execution)
   }
   return value
 }
@@ -195,32 +200,69 @@ async function getAttributeValue (
 ): Promise<any> {
   const cardValue = await control.findAll(control.ctx, card.class.Card, { _id: execution.card }, { limit: 1 })
   if (cardValue.length > 0) {
-    return getObjectValue(context.key, cardValue[0])
+    const val = getObjectValue(context.key, cardValue[0])
+    if (val == null) {
+      const attr = control.hierarchy.findAttribute(cardValue[0]._class, context.key)
+      throw processError(
+        process.error.EmptyAttributeContextValue,
+        {},
+        { attr: attr?.label ?? getEmbeddedLabel(context.key) }
+      )
+    }
+    return val
+  } else {
+    throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
   }
 }
 
-async function getNestedValue (control: TriggerControl, execution: Execution, context: SelectedNested): Promise<any> {
+async function getNestedValue (
+  control: TriggerControl,
+  execution: Execution,
+  context: SelectedNested
+): Promise<any | ExecutionError> {
   const cardValue = await control.findAll(control.ctx, card.class.Card, { _id: execution.card }, { limit: 1 })
-  if (cardValue.length === 0) return
+  if (cardValue.length === 0) throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
   const attr = control.hierarchy.findAttribute(cardValue[0]._class, context.path)
-  if (attr === undefined) return
+  if (attr === undefined) throw processError(process.error.AttributeNotExists, { key: context.path })
   const nestedValue = getObjectValue(context.path, cardValue[0])
-  if (nestedValue === undefined) return
+  if (nestedValue === undefined) throw processError(process.error.EmptyAttributeContextValue, {}, { attr: attr.label })
   const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
   const targetClass = parentType._class === core.class.RefTo ? (parentType as RefTo<Doc>).to : parentType._class
   const target = await control.findAll(control.ctx, targetClass, {
     _id: { $in: Array.isArray(nestedValue) ? nestedValue : [nestedValue] }
   })
+  if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, {}, { attr: attr.label })
+  const nested = control.hierarchy.findAttribute(targetClass, context.key)
   if (context.sourceFunction !== undefined) {
     const transform = control.modelDb.findObject(context.sourceFunction)
-    if (transform === undefined) return
-    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) return
+    if (transform === undefined) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
+    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
     const reduced = await f(target, {}, control, execution)
-    return getObjectValue(context.key, reduced)
+    const val = getObjectValue(context.key, reduced)
+    if (val == null) {
+      throw processError(
+        process.error.EmptyRelatedObjectValue,
+        {},
+        { parent: attr.label, attr: nested?.label ?? getEmbeddedLabel(context.key) }
+      )
+    }
+    return val
   }
-  return getObjectValue(context.key, target[0])
+  const val = getObjectValue(context.key, target[0])
+  if (val == null) {
+    throw processError(
+      process.error.EmptyRelatedObjectValue,
+      {},
+      { parent: attr.label, attr: nested?.label ?? getEmbeddedLabel(context.key) }
+    )
+  }
+  return val
 }
 
 async function getRelationValue (
@@ -229,25 +271,48 @@ async function getRelationValue (
   context: SelectedRelation
 ): Promise<any> {
   const assoc = control.modelDb.findObject(context.association)
-  if (assoc === undefined) return
+  if (assoc === undefined) throw processError(process.error.RelationNotExists, {})
   const targetClass = context.direction === 'A' ? assoc.classA : assoc.classB
   const q = context.direction === 'A' ? { docB: execution.card } : { docA: execution.card }
   const relations = await control.findAll(control.ctx, core.class.Relation, { association: assoc._id, ...q })
-  if (relations.length === 0) return
+  const name = context.direction === 'A' ? assoc.nameA : assoc.nameB
+  if (relations.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: name })
   const ids = relations.map((it) => {
     return context.direction === 'A' ? it.docA : it.docB
   })
   const target = await control.findAll(control.ctx, targetClass, { _id: { $in: ids } })
+  const attr = control.hierarchy.findAttribute(targetClass, context.key)
+  if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: name })
   if (context.sourceFunction !== undefined) {
     const transform = control.modelDb.findObject(context.sourceFunction)
-    if (transform === undefined) return
-    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) return
+    if (transform === undefined) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
+    if (!control.hierarchy.hasMixin(transform, serverProcess.mixin.FuncImpl)) {
+      throw processError(process.error.MethodNotFound, { methodId: context.sourceFunction }, {}, true)
+    }
     const funcImpl = control.hierarchy.as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
     const reduced = await f(target, {}, control, execution)
-    return getObjectValue(context.key, reduced)
+    const val = getObjectValue(context.key, reduced)
+    if (val == null) {
+      throw processError(
+        process.error.EmptyRelatedObjectValue,
+        { parent: name },
+        { attr: attr?.label ?? getEmbeddedLabel(context.key) }
+      )
+    }
+    return val
   }
-  return getObjectValue(context.key, target[0])
+  const val = getObjectValue(context.key, target[0])
+  if (val == null) {
+    throw processError(
+      process.error.EmptyRelatedObjectValue,
+      { parent: name },
+      { attr: attr?.label ?? getEmbeddedLabel(context.key) }
+    )
+  }
+  return val
 }
 
 async function fillParams<T extends Doc> (
@@ -267,15 +332,22 @@ async function fillParams<T extends Doc> (
 async function getContextValue (value: any, control: TriggerControl, execution: Execution): Promise<any> {
   const context = parseContext(value)
   if (context !== undefined) {
-    let value = context.fallbackValue
-    if (context.type === 'attribute') {
-      value = await getAttributeValue(control, execution, context)
-    } else if (context.type === 'relation') {
-      value = await getRelationValue(control, execution, context)
-    } else if (context.type === 'nested') {
-      value = await getNestedValue(control, execution, context)
+    let value: any | undefined
+    try {
+      if (context.type === 'attribute') {
+        value = await getAttributeValue(control, execution, context)
+      } else if (context.type === 'relation') {
+        value = await getRelationValue(control, execution, context)
+      } else if (context.type === 'nested') {
+        value = await getNestedValue(control, execution, context)
+      }
+      return await fillValue(value, context, control, execution)
+    } catch (err: any) {
+      if (err instanceof ProcessError && context.fallbackValue !== undefined) {
+        return await fillValue(context.fallbackValue, context, control, execution)
+      }
+      throw err
     }
-    return await fillValue(value === undefined ? context.fallbackValue : value, context, control, execution)
   } else {
     return value
   }
@@ -287,40 +359,51 @@ async function changeState (
   control: TriggerControl,
   isDone: boolean = false
 ): Promise<Tx[]> {
+  const errors: ExecutionError[] = []
   const res: Tx[] = []
   const rollback: Tx[] = []
   for (const action of state.actions) {
     const actionResult = await executeAction(action, execution, control)
-    if (actionResult === undefined) continue
-    if (actionResult.rollback !== undefined) {
-      rollback.push(...actionResult.rollback)
-    }
-    res.push(...actionResult.txes)
-  }
-  if (state.endAction != null) {
-    const actionResult = await executeAction(state.endAction, execution, control)
-    if (actionResult !== undefined) {
+    if (isError(actionResult)) {
+      errors.push(actionResult)
+    } else {
       if (actionResult.rollback !== undefined) {
         rollback.push(...actionResult.rollback)
       }
       res.push(...actionResult.txes)
     }
   }
-  if (rollback.length > 0) {
-    execution.rollback[state._id] = rollback
+  if (state.endAction != null) {
+    const actionResult = await executeAction(state.endAction, execution, control)
+    if (isError(actionResult)) {
+      errors.push(actionResult)
+    } else {
+      if (actionResult.rollback !== undefined) {
+        rollback.push(...actionResult.rollback)
+      }
+      res.push(...actionResult.txes)
+    }
+  }
+
+  if (errors.length === 0) {
+    if (rollback.length > 0) {
+      execution.rollback[state._id] = rollback
+      res.push(
+        control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+          rollback: execution.rollback
+        })
+      )
+    }
     res.push(
       control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-        rollback: execution.rollback
+        currentState: state._id,
+        done: isDone
       })
     )
+    return res
+  } else {
+    return [control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, { error: errors })]
   }
-  res.push(
-    control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-      currentState: state._id,
-      done: isDone
-    })
-  )
-  return res
 }
 
 export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -553,6 +636,87 @@ export function FirstWorkingDayAfter (val: Timestamp): Timestamp {
   return val
 }
 
+export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxCreateDoc) continue
+    const createTx = tx as TxCreateDoc<Card>
+    if (!control.hierarchy.isDerived(createTx.objectClass, card.class.Card)) continue
+    const ancestors = control.hierarchy
+      .getAncestors(createTx.objectClass)
+      .filter((p) => control.hierarchy.isDerived(p, card.class.Card))
+
+    const processes = control.modelDb.findAllSync(process.class.Process, {
+      masterTag: { $in: ancestors },
+      autoStart: true
+    })
+    for (const proc of processes) {
+      res.push(
+        control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
+          process: proc._id,
+          currentState: null,
+          card: createTx.objectId,
+          done: false,
+          rollback: {},
+          currentToDo: null,
+          assignee: null
+        })
+      )
+    }
+  }
+  return res
+}
+
+export async function OnTagAdd (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxMixin) continue
+    const mixinTx = tx as TxMixin<Card, Card>
+    if (!control.hierarchy.isDerived(mixinTx.objectClass, card.class.Card)) continue
+    if (Object.keys(mixinTx.attributes).length !== 0) continue
+
+    const processes = control.modelDb.findAllSync(process.class.Process, { masterTag: mixinTx.mixin, autoStart: true })
+    for (const proc of processes) {
+      res.push(
+        control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
+          process: proc._id,
+          currentState: null,
+          card: mixinTx.objectId,
+          done: false,
+          rollback: {},
+          currentToDo: null,
+          assignee: null
+        })
+      )
+    }
+  }
+  return res
+}
+
+export async function OnExecutionContinue (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxUpdateDoc) continue
+    const updateTx = tx as TxUpdateDoc<Execution>
+    if (!control.hierarchy.isDerived(updateTx.objectClass, process.class.Execution)) continue
+    if (updateTx.operations.error !== null) continue
+    const execution = (
+      await control.findAll(control.ctx, process.class.Execution, { _id: updateTx.objectId }, { limit: 1 })
+    )[0]
+    if (execution === undefined) continue
+    const _process = await control.modelDb.findOne(process.class.Process, { _id: execution.process })
+    if (_process === undefined) continue
+    const currentIndex = _process.states.findIndex((it) => it === execution.currentState)
+    const nextState = _process.states[currentIndex + 1]
+    if (nextState === undefined) continue
+    const states = await control.findAll(control.ctx, process.class.State, { _id: nextState })
+    if (states.length === 0) continue
+    const isDone = _process.states[currentIndex + 2] === undefined
+    res.push(...(await changeState(execution, states[0], control, isDone)))
+  }
+  return res
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   func: {
@@ -573,10 +737,13 @@ export default async () => ({
     FirstWorkingDayAfter
   },
   trigger: {
+    OnCardCreate,
+    OnTagAdd,
     OnExecutionCreate,
     OnStateRemove,
     OnProcessRemove,
     OnProcessToDoClose,
-    OnProcessToDoRemove
+    OnProcessToDoRemove,
+    OnExecutionContinue
   }
 })

@@ -615,6 +615,53 @@ export async function selectWorkspace (
   }
 }
 
+export async function updateWorkspaceRole (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    targetAccount: PersonUuid
+    targetRole: AccountRole
+  }
+): Promise<void> {
+  const { targetAccount, targetRole } = params
+
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
+
+  if (
+    accRole == null ||
+    getRolePower(accRole) < getRolePower(AccountRole.Maintainer) ||
+    getRolePower(accRole) < getRolePower(targetRole)
+  ) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const currentRole = await db.getWorkspaceRole(targetAccount, workspace)
+
+  if (currentRole == null || getRolePower(accRole) < getRolePower(currentRole)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  if (currentRole === targetRole) return
+
+  if (currentRole === AccountRole.Owner) {
+    // Check if there are other owners
+    const owners = (await db.getWorkspaceMembers(workspace)).filter((m) => m.role === AccountRole.Owner)
+    if (owners.length === 1) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  await db.updateWorkspaceRole(targetAccount, workspace, targetRole)
+}
+
 /**
  * Convert workspace name to a URL-friendly string following these rules:
  *
@@ -837,7 +884,7 @@ export async function confirmEmail (
     ctx.error('Email social id not found', { account, normalizedEmail })
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.SocialIdNotFound, {
-        socialId: normalizedEmail,
+        value: normalizedEmail,
         type: SocialIdType.EMAIL
       })
     )

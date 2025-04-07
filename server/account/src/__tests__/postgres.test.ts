@@ -31,6 +31,8 @@ interface TestWorkspace {
   lastProcessingTime?: number
 }
 
+const ns = 'global_account'
+
 describe('PostgresDbCollection', () => {
   let mockClient: any
   let collection: PostgresDbCollection<TestWorkspace, 'uuid'>
@@ -40,7 +42,7 @@ describe('PostgresDbCollection', () => {
       unsafe: jest.fn().mockResolvedValue([]) // Default to empty array result
     }
 
-    collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, 'uuid')
+    collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, 'uuid', ns)
   })
 
   describe('getTableName', () => {
@@ -208,7 +210,7 @@ describe('AccountPostgresDbCollection', () => {
       unsafe: jest.fn().mockResolvedValue([])
     }
 
-    collection = new AccountPostgresDbCollection(mockClient as Sql)
+    collection = new AccountPostgresDbCollection(mockClient as Sql, ns)
   })
 
   describe('getTableName', () => {

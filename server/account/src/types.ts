@@ -139,6 +139,25 @@ export interface MailboxInfo {
   mailbox: string
 }
 
+export interface Integration {
+  socialId: PersonId
+  kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
+  workspaceUuid?: WorkspaceUuid
+  data?: Record<string, any>
+}
+
+export type IntegrationKey = Omit<Integration, 'data'>
+
+export interface IntegrationSecret {
+  socialId: PersonId
+  kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
+  workspaceUuid?: WorkspaceUuid
+  key: string // Key for the secret in the integration. Different secrets for the same integration must have different keys. Can be any string. E.g. '', 'user_app_1' etc.
+  secret: string
+}
+
+export type IntegrationSecretKey = Omit<IntegrationSecret, 'secret'>
+
 /* ========= S U P P L E M E N T A R Y ========= */
 
 export interface WorkspaceInfoWithStatus extends Workspace {
@@ -166,6 +185,8 @@ export interface AccountDB {
   invite: DbCollection<WorkspaceInvite>
   mailbox: DbCollection<Mailbox>
   mailboxSecret: DbCollection<MailboxSecret>
+  integration: DbCollection<Integration>
+  integrationSecret: DbCollection<IntegrationSecret>
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>

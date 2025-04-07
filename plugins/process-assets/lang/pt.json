@@ -42,6 +42,19 @@
     "Offset": "Deslocar",
     "FirstWorkingDayAfter": "Primeiro Dia de Trabalho Após",
     "FallbackValueError": "Mostrar erro se vazio",
-    "Required": "Obrigatório"
+    "Required": "Obrigatório",
+    "StartAutomatically": "Iniciar automaticamente",
+    "Error": "Erro",
+    "Continue": "Continuar"
+  },
+  "error": {
+    "MethodNotFound": "Método não encontrado: {methodId}",
+    "AttributeNotExists": "Atributo não existe: {key}",
+    "RelatedObjectNotFound": "Objeto relacionado não encontrado: {attr}",
+    "RelationNotExists": "Relação não existe: {association}",
+    "EmptyAttributeContextValue": "Valor de atributo vazio: {attr}",
+    "ObjectNotFound": "Objeto não encontrado: {_id}",
+    "EmptyRelatedObjectValue": "Valor de objeto relacionado vazio: {parent} {attr}",
+    "InternalServerError": "Erro interno do servidor, contate o suporte, id de erro: {errorId}"
   }
 }

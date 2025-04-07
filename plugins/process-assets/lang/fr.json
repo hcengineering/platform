@@ -42,6 +42,19 @@
     "Offset": "Décalage",
     "FirstWorkingDayAfter": "Premier jour de travail après",
     "FallbackValueError": "Afficher l'erreur si vide",
-    "Required": "Requis"
+    "Required": "Requis",
+    "StartAutomatically": "Démarrer automatiquement",
+    "Error": "Erreur",
+    "Continue": "Continuer"
+  },
+  "error": {
+    "MethodNotFound": "Méthode introuvable : {methodId}",
+    "AttributeNotExists": "Attribut inexistant : {key}",
+    "RelatedObjectNotFound": "Objet lié introuvable : {attr}",
+    "RelationNotExists": "Relation inexistante : {association}",
+    "EmptyAttributeContextValue": "Valeur d'attribut vide : {attr}",
+    "ObjectNotFound": "Objet introuvable : {_id}",
+    "EmptyRelatedObjectValue": "Valeur d'objet lié vide : {parent} {attr}",
+    "InternalServerError": "Erreur interne du serveur, contactez le support, id d'erreur : {errorId}"
   }
 }

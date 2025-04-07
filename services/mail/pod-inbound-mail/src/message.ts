@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { encode } from 'jwt-simple'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
 import { type Card } from '@hcengineering/card'
@@ -36,6 +35,7 @@ import {
 } from '@hcengineering/core'
 import mail from '@hcengineering/mail'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { generateToken } from '@hcengineering/server-token'
 import config from './config'
 import { ensureGlobalPerson, ensureLocalPerson } from './person'
 
@@ -44,16 +44,6 @@ export interface Attachment {
   name: string
   data: Buffer
   contentType: string
-}
-
-function generateToken (): string {
-  return encode(
-    {
-      account: systemAccountUuid,
-      extra: { service: 'mail' }
-    },
-    config.secret
-  )
 }
 
 export async function createMessages (
@@ -68,7 +58,8 @@ export async function createMessages (
 ): Promise<void> {
   ctx.info('Sending message', { mailId, from: from.address, to: tos.map((to) => to.address).join(',') })
 
-  const accountClient = getAccountClient(config.accountsUrl, generateToken())
+  const token = generateToken(systemAccountUuid, undefined, { service: 'mail' })
+  const accountClient = getAccountClient(config.accountsUrl, token)
   const wsInfo = await accountClient.selectWorkspace(config.workspaceUrl)
   const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
   const txClient = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
@@ -129,7 +120,7 @@ export async function createMessages (
 
   const attachedBlobs: Attachment[] = []
   if (config.storageConfig !== undefined) {
-    const storageConfig = storageConfigFromEnv()
+    const storageConfig = storageConfigFromEnv(config.storageConfig)
     const storageAdapter = buildStorageFromConfig(storageConfig)
     try {
       for (const a of attachments ?? []) {

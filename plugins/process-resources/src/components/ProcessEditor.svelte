@@ -29,6 +29,7 @@
     IconDescription,
     navigate,
     NavItem,
+    ToggleWithLabel,
     Scroller,
     secondNavSeparators,
     Separator,
@@ -74,6 +75,12 @@
   async function saveName (): Promise<void> {
     if (value !== undefined) {
       await client.update(value, { name: value.name })
+    }
+  }
+
+  async function saveAutoStart (e: CustomEvent<boolean>): Promise<void> {
+    if (value !== undefined) {
+      await client.update(value, { autoStart: e.detail })
     }
   }
 
@@ -159,6 +166,13 @@
           <div class="header flex-between">
             <EditBox bind:value={value.name} on:change={saveName} placeholder={process.string.Untitled} />
             <ButtonIcon icon={IconDelete} size="small" kind="secondary" on:click={handleDelete} />
+          </div>
+          <div>
+            <ToggleWithLabel
+              on={value.autoStart ?? false}
+              on:change={saveAutoStart}
+              label={process.string.StartAutomatically}
+            />
           </div>
           <div class="hulyComponent-content flex-col-center">
             <div class="flex-col-center">

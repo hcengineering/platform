@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 */
-
 import { Metadata, PluginLoader, PluginModule, Resources } from '.'
 
 /**
@@ -152,9 +151,13 @@ export default plugin(platformId, {
     WorkspaceNotFound: '' as StatusCode<{ workspaceUuid?: string, workspaceName?: string, workspaceUrl?: string }>,
     WorkspaceArchived: '' as StatusCode<{ workspaceUuid: string }>,
     WorkspaceMigration: '' as StatusCode<{ workspaceUuid: string }>,
-    SocialIdNotFound: '' as StatusCode<{ socialId: string, type: string }>,
+    SocialIdNotFound: '' as StatusCode<{ value?: string, type?: string, _id?: string }>,
     SocialIdNotConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
     SocialIdAlreadyConfirmed: '' as StatusCode<{ socialId: string, type: string }>,
+    IntegrationAlreadyExists: '' as StatusCode,
+    IntegrationNotFound: '' as StatusCode,
+    IntegrationSecretAlreadyExists: '' as StatusCode,
+    IntegrationSecretNotFound: '' as StatusCode,
     PersonNotFound: '' as StatusCode<{ person: string }>,
     InvalidPassword: '' as StatusCode<{ account: string }>,
     AccountAlreadyExists: '' as StatusCode,

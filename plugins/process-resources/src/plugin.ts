@@ -42,7 +42,8 @@ export default mergeIds(processId, process, {
     FunctionSelector: '' as AnyComponent,
     RunProcessCardPopup: '' as AnyComponent,
     DateOffsetEditor: '' as AnyComponent,
-    NumberOffsetEditor: '' as AnyComponent
+    NumberOffsetEditor: '' as AnyComponent,
+    ErrorPresenter: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction
@@ -87,6 +88,8 @@ export default mergeIds(processId, process, {
     Value: '' as IntlString,
     FirstWorkingDayAfter: '' as IntlString,
     FallbackValueError: '' as IntlString,
-    Required: '' as IntlString
+    Required: '' as IntlString,
+    StartAutomatically: '' as IntlString,
+    Continue: '' as IntlString
   }
 })

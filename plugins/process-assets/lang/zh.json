@@ -42,6 +42,19 @@
     "Offset": "偏移",
     "FirstWorkingDayAfter": "在之后的第一个工作日",
     "FallbackValueError": "显示错误，如果为空",
-    "Required": "必需"
+    "Required": "必需",
+    "StartAutomatically": "自动启动",
+    "Error": "错误",
+    "Continue": "继续"
+  },
+  "error": {
+    "MethodNotFound": "找不到方法：{methodId}",
+    "AttributeNotExists": "属性不存在：{key}",
+    "RelatedObjectNotFound": "找不到相关对象：{attr}",
+    "RelationNotExists": "关系不存在：{association}",
+    "EmptyAttributeContextValue": "空属性上下文值：{attr}",
+    "ObjectNotFound": "找不到对象：{_id}",
+    "EmptyRelatedObjectValue": "空相关对象值：{parent} {attr}",
+    "InternalServerError": "内部服务器错误，请联系支持，错误 ID：{errorId}"
   }
 }
