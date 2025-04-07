@@ -14,7 +14,13 @@
 //
 
 import { TriggerControl } from '@hcengineering/server-core'
-import contact, { Employee, type Person, pickPrimarySocialId, SocialIdentityRef } from '@hcengineering/contact'
+import contact, {
+  Employee,
+  type Person,
+  PersonSpace,
+  pickPrimarySocialId,
+  SocialIdentityRef
+} from '@hcengineering/contact'
 import { AccountUuid, parseSocialIdString, PersonId, type Ref, toIdMap } from '@hcengineering/core'
 
 export async function getCurrentPerson (control: TriggerControl): Promise<Person | undefined> {
@@ -258,4 +264,8 @@ export async function getAccountBySocialKey (control: TriggerControl, socialKey:
   )
 
   return employee[0]?.personUuid ?? null
+}
+
+export async function getPersonSpaces (control: TriggerControl): Promise<Pick<PersonSpace, '_id' | 'person'>[]> {
+  return await control.queryFind(control.ctx, contact.class.PersonSpace, {}, { projection: { _id: 1, person: 1 } })
 }
