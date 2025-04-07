@@ -61,7 +61,6 @@ import { uploaderId } from '@hcengineering/uploader'
 import recorder, { recorderId } from '@hcengineering/recorder'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
-import { mySpaceId } from '@hcengineering/my-space'
 import { mailId } from '@hcengineering/mail'
 import { chatId } from '@hcengineering/chat'
 import { inboxId } from '@hcengineering/inbox'
@@ -89,7 +88,6 @@ import '@hcengineering/lead-assets'
 import '@hcengineering/login-assets'
 import '@hcengineering/love-assets'
 import '@hcengineering/notification-assets'
-import '@hcengineering/my-space-assets'
 import '@hcengineering/preference-assets'
 import '@hcengineering/print-assets'
 import '@hcengineering/process-assets'
@@ -222,7 +220,6 @@ function configureI18n (): void {
   addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
   addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
   addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
-  addStringsLoader(mySpaceId, async (lang: string) => await import(`@hcengineering/my-space-assets/lang/${lang}.json`))
   addStringsLoader(mailId, async (lang: string) => await import(`@hcengineering/mail-assets/lang/${lang}.json`))
   addStringsLoader(chatId, async (lang: string) => await import(`@hcengineering/chat-assets/lang/${lang}.json`))
   addStringsLoader(inboxId, async (lang: string) => await import(`@hcengineering/inbox-assets/lang/${lang}.json`))
@@ -359,7 +356,6 @@ export async function configurePlatform (): Promise<void> {
   addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources'))
   addLocation(surveyId, () => import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
   addLocation(cardId, () => import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
-  addLocation(mySpaceId, () => import(/* webpackChunkName: "card" */ '@hcengineering/my-space-resources'))
   addLocation(chatId, () => import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
   addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
   addLocation(mailId, () => import(/* webpackChunkName: "card" */ '@hcengineering/mail-resources'))
