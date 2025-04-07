@@ -1,5 +1,5 @@
 import { Doc, Tx } from '@hcengineering/core'
-import { Execution, MethodParams } from '@hcengineering/process'
+import { Execution, ExecutionError, MethodParams } from '@hcengineering/process'
 import { TriggerControl } from '@hcengineering/server-core'
 
 export type ExecuteFunc = (
@@ -8,7 +8,9 @@ export type ExecuteFunc = (
   control: TriggerControl
 ) => Promise<ExecuteResult>
 
-export interface ExecuteResult {
+export type ExecuteResult = SuccessExecutionResult | ExecutionError
+
+export interface SuccessExecutionResult {
   txes: Tx[]
   rollback: Tx[] | undefined
 }

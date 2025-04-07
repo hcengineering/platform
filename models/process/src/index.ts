@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import card, { type Card, type MasterTag } from '@hcengineering/card'
+import card, { type Tag, type Card, type MasterTag } from '@hcengineering/card'
 import contact, { type Employee } from '@hcengineering/contact'
 import core, {
   AccountRole,
@@ -30,6 +30,7 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeAny,
   TypeBoolean,
   TypeRecord,
   TypeRef,
@@ -43,6 +44,7 @@ import workbench from '@hcengineering/model-workbench'
 import { type IntlString } from '@hcengineering/platform'
 import {
   type Execution,
+  type ExecutionError,
   type Method,
   type Process,
   type ProcessFunction,
@@ -66,14 +68,17 @@ export class TProcess extends TDoc implements Process {
   @Prop(TypeString(), core.string.Description)
     description!: string
 
-  @Prop(TypeRef(card.class.MasterTag), core.string.Name)
-    masterTag!: Ref<MasterTag>
+  @Prop(TypeRef(card.class.MasterTag), card.string.MasterTag)
+    masterTag!: Ref<MasterTag | Tag>
 
   @Prop(ArrOf(TypeRef(process.class.State)), process.string.States)
     states!: Ref<State>[]
 
   @Prop(TypeBoolean(), process.string.ParallelExecutionForbidden)
     parallelExecutionForbidden?: boolean
+
+  @Prop(TypeBoolean(), process.string.StartAutomatically)
+    autoStart: boolean | undefined
 }
 
 @Model(process.class.Execution, core.class.Doc, DOMAIN_PROCESS)
@@ -105,6 +110,10 @@ export class TExecution extends TDoc implements Execution {
   @Prop(TypeRef(card.class.Card), card.string.Card)
   @ReadOnly()
     card!: Ref<Card>
+
+  @Prop(TypeAny(process.component.ErrorPresenter, process.string.Error), process.string.Error)
+  @ReadOnly()
+    error?: ExecutionError[] | null
 }
 
 @Model(process.class.ProcessToDo, time.class.ToDo)
@@ -171,6 +180,25 @@ export function createModel (builder: Builder): void {
       }
     },
     process.action.RunProcess
+  )
+
+  createAction(
+    builder,
+    {
+      action: process.actionImpl.ContinueExecution,
+      query: {
+        error: { $exists: true, $ne: null }
+      },
+      label: process.string.Continue,
+      icon: process.icon.Process,
+      input: 'focus',
+      category: view.category.General,
+      target: process.class.Execution,
+      context: {
+        mode: ['context', 'browser']
+      }
+    },
+    process.action.ContinueExecution
   )
 
   builder.createDoc(
@@ -313,6 +341,9 @@ export function createModel (builder: Builder): void {
       variant: 'cardExecutions',
       attachTo: process.class.Execution,
       descriptor: view.viewlet.List,
+      props: {
+        baseMenuClass: process.class.Execution
+      },
       viewOptions: {
         groupBy: ['process', 'assignee', 'done'],
         orderBy: [
@@ -372,6 +403,9 @@ export function createModel (builder: Builder): void {
     {
       attachTo: process.class.Execution,
       descriptor: view.viewlet.List,
+      props: {
+        baseMenuClass: process.class.Execution
+      },
       viewOptions: {
         groupBy: ['process', 'assignee', 'done'],
         orderBy: [

@@ -43,6 +43,19 @@
     "FirstWorkingDayAfter": "Primer día de trabajo después",
     "FallbackValueError": "Mostrar error si está vacío",
     "Required": "Requerido",
-    "ParallelExecutionForbidden": "Ejecución paralela prohibida"
+    "ParallelExecutionForbidden": "Ejecución paralela prohibida",
+    "StartAutomatically": "Iniciar automáticamente",
+    "Error": "Error",
+    "Continue": "Continuar"
+  },
+  "error": {
+    "MethodNotFound": "Método no encontrado: {methodId}",
+    "AttributeNotExists": "Atributo no existe: {key}",
+    "RelatedObjectNotFound": "Objeto relacionado no encontrado: {attr}",
+    "RelationNotExists": "Relación no existe: {association}",
+    "EmptyAttributeContextValue": "Valor de atributo vacío: {attr}",
+    "ObjectNotFound": "Objeto no encontrado: {_id}",
+    "EmptyRelatedObjectValue": "Valor de objeto relacionado vacío: {parent} {attr}",
+    "InternalServerError": "Error interno del servidor, contacte con el soporte, id de error: {errorId}"
   }
 }

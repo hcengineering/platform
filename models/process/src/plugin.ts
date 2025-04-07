@@ -15,7 +15,7 @@ import { type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { processId } from '@hcengineering/process'
 import process from '@hcengineering/process-resources/src/plugin'
-import { type Action } from '@hcengineering/view'
+import { type ViewAction, type Action } from '@hcengineering/view'
 
 export default mergeIds(processId, process, {
   app: {
@@ -24,8 +24,12 @@ export default mergeIds(processId, process, {
   ids: {
     ProcessSettings: '' as Ref<Doc>
   },
+  actionImpl: {
+    ContinueExecution: '' as ViewAction
+  },
   action: {
-    RunProcess: '' as Ref<Action<Doc, any>>
+    RunProcess: '' as Ref<Action<Doc, any>>,
+    ContinueExecution: '' as Ref<Action<Doc, any>>
   },
   string: {
     Done: '' as IntlString,

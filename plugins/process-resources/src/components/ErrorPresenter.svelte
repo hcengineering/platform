@@ -13,21 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { Execution } from '@hcengineering/process'
-  import ErrorPresenter from './ErrorPresenter.svelte'
+  import { ExecutionError } from '@hcengineering/process'
+  import { IconError, tooltip } from '@hcengineering/ui'
+  import ErrorTooltip from './ErrorTooltip.svelte'
 
-  export let value: WithLookup<Execution>
-
-  const client = getClient()
-
-  $: process = value?.$lookup?.process ?? client.getModel().findObject(value.process)
+  export let value: ExecutionError[] | null | undefined
 </script>
 
-{#if process}
-  <div class="flex-row-center flex-gap-2">
-    <ErrorPresenter value={value.error} />
-    {process.name}
+{#if value}
+  <div use:tooltip={{ component: ErrorTooltip, props: { value } }} class="error">
+    <IconError size="medium" />
   </div>
 {/if}

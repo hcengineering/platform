@@ -29,6 +29,7 @@
     IconDescription,
     navigate,
     NavItem,
+    ToggleWithLabel,
     Scroller,
     secondNavSeparators,
     Separator,
@@ -81,6 +82,12 @@
   async function saveRestriction (e: CustomEvent<boolean>): Promise<void> {
     if (value !== undefined) {
       await client.update(value, { parallelExecutionForbidden: e.detail })
+    }
+  }
+
+  async function saveAutoStart (e: CustomEvent<boolean>): Promise<void> {
+    if (value !== undefined) {
+      await client.update(value, { autoStart: e.detail })
     }
   }
 
@@ -172,6 +179,13 @@
               on={value.parallelExecutionForbidden ?? false}
               on:change={saveRestriction}
               label={process.string.ParallelExecutionForbidden}
+            />
+          </div>
+          <div>
+            <ToggleWithLabel
+              on={value.autoStart ?? false}
+              on:change={saveAutoStart}
+              label={process.string.StartAutomatically}
             />
           </div>
           <div class="hulyComponent-content flex-col-center">
