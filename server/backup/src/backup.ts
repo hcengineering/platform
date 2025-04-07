@@ -701,11 +701,7 @@ export async function backup (
     backupSize: 0
   }
   const workspaceId = wsIds.uuid
-  ctx = ctx.newChild('backup', {
-    workspaceId,
-    force: options.force,
-    timeout: options.timeout
-  })
+  ctx = ctx.newChild('backup', {})
 
   let _canceled = false
   const canceled = (): boolean => {
