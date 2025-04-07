@@ -10,6 +10,7 @@ It supports sending emails with multiple recipients, along with optional CC, BCC
 Environment variables should be set to configure the Mail Service:
 - `PORT`: The port on which the mail service listens for incoming HTTP requests.
 - `API_KEY`: An API key that clients must pass. The parameter is optional, should be provided when external access to the service is allowed.
+- `SENTRY_DSN`: (optional) The Data Source Name for Sentry error tracking. This is optional and should be set if you wish to enable error tracking with Sentry.
 
 Settings for SMTP or SES email service should be specified, simultaneous use of both protocols is not supported
 
