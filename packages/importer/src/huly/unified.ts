@@ -322,7 +322,10 @@ export class UnifiedDocProcessor {
     masterTagRelations: Map<string, RelationMetadata>, // todo: rename to masterTagsAssociations
     parentCardId?: Ref<Card>
   ): Promise<UnifiedDoc<Doc>[]> {
-    const { _class, title, tags, ...customProperties } = cardHeader
+    const { _class, title, tags: rawTags, ...customProperties } = cardHeader
+
+    // Приводим tags к массиву
+    const tags = rawTags !== undefined ? (Array.isArray(rawTags) ? rawTags : [rawTags]) : []
 
     const cardId = this.metadataStorage.getIdByFullPath(cardPath) as Ref<Card>
     const cardProps: Record<string, any> = {
