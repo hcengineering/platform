@@ -13,6 +13,7 @@ import * as path from 'path'
 import { IntlString } from '../../../platform/types'
 import { Props, UnifiedDoc, UnifiedMixin } from '../types'
 import { readMarkdownContent, readYamlHeader } from './parsing'
+import { PathToRefResolver } from './resolver'
 
 export interface UnifiedDocProcessResult {
   docs: Map<string, Array<UnifiedDoc<Doc>>>
@@ -20,7 +21,7 @@ export interface UnifiedDocProcessResult {
 }
 
 export class UnifiedDocProcessor {
-  private readonly tagPaths = new Map<string, Ref<Tag>>()
+  private readonly pathToRefResolver = new PathToRefResolver()
 
   async importFromDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
     const result: UnifiedDocProcessResult = {
@@ -43,13 +44,12 @@ export class UnifiedDocProcessor {
     for (const entry of entries) {
       if (!entry.isFile() || !entry.name.endsWith('.yaml')) continue // todo: filter entries by extension
 
-      const yamlPath = path.join(currentPath, entry.name)
+      const yamlPath = path.resolve(currentPath, entry.name)
       const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
 
       switch (yamlConfig?.class) {
         case card.class.MasterTag: {
-          const masterTagId = this.tagPaths.get(yamlPath) ?? generateId<MasterTag>()
-          this.tagPaths.set(yamlPath, masterTagId)
+          const masterTagId = this.pathToRefResolver.getIdByFullPath(yamlPath) as Ref<MasterTag>
           const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
           const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
 
@@ -75,7 +75,7 @@ export class UnifiedDocProcessor {
           break
         }
         case core.class.Association: {
-          const association = await this.createAssociation(currentPath, yamlConfig)
+          const association = await this.createAssociation(yamlPath, yamlConfig)
           result.docs.set(yamlPath, [association])
           break
         }
@@ -183,9 +183,8 @@ export class UnifiedDocProcessor {
     masterTagId: Ref<MasterTag>,
     parentTagId?: Ref<Tag>
   ): Promise<void> {
-    const tagId = this.tagPaths.get(tagPath) ?? generateId<Tag>()
+    const tagId = this.pathToRefResolver.getIdByFullPath(tagPath) as Ref<Tag>
     const tag = await this.createTag(tagConfig, tagId, masterTagId, parentTagId)
-    this.tagPaths.set(tagPath, tagId)
 
     const attributes = await this.createAttributes(tagConfig, tagId)
 
@@ -281,8 +280,9 @@ export class UnifiedDocProcessor {
   ): Promise<UnifiedDoc<Card>> {
     const { _class, title, tags, ...customProperties } = cardHeader
 
+    const cardId = this.pathToRefResolver.getIdByFullPath(cardPath) as Ref<Card>
     const props: Record<string, any> = {
-      _id: generateId(),
+      _id: cardId,
       space: core.space.Workspace,
       title,
       parent: parentCardId
@@ -290,9 +290,9 @@ export class UnifiedDocProcessor {
 
     for (const [key, value] of Object.entries(customProperties)) {
       const attrName = masterTagAttrs.get(key)?.props.name // todo: handle tag attributes separately
-      if (attrName === undefined) {
-        throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
-      }
+      // if (attrName === undefined) {
+      //   throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
+      // }
       props[attrName] = value
     }
 
@@ -316,11 +316,7 @@ export class UnifiedDocProcessor {
     for (const tagPath of cardHeader.tags) {
       const cardDir = path.dirname(cardPath)
       const fullTagPath = path.resolve(cardDir, tagPath)
-      let tagId = this.tagPaths.get(fullTagPath)
-      if (tagId === undefined) {
-        tagId = generateId<Tag>()
-        this.tagPaths.set(fullTagPath, tagId)
-      }
+      const tagId = this.pathToRefResolver.getIdByFullPath(fullTagPath) as Ref<Tag>
 
       const mixin: UnifiedMixin<Card, Tag> = {
         _class: card._class,
@@ -340,29 +336,20 @@ export class UnifiedDocProcessor {
   }
 
   private async createAssociation (
-    currentPath: string,
+    yamlPath: string,
     yamlConfig: Record<string, any>
   ): Promise<UnifiedDoc<Association>> {
     const { class: _class, typeA, typeB, ...otherProps } = yamlConfig
 
-    const typeAPath = path.resolve(currentPath, typeA)
-    let typeAId = this.tagPaths.get(typeAPath)
-    if (typeAId === undefined) {
-      typeAId = generateId<MasterTag>()
-      this.tagPaths.set(typeAPath, typeAId)
-    }
+    const currentPath = path.dirname(yamlPath)
+    const typeAId = this.pathToRefResolver.getIdByRelativePath(currentPath, typeA) as Ref<MasterTag>
+    const typeBId = this.pathToRefResolver.getIdByRelativePath(currentPath, typeB) as Ref<MasterTag>
 
-    const typeBPath = path.resolve(currentPath, typeB)
-    let typeBId = this.tagPaths.get(typeBPath)
-    if (typeBId === undefined) {
-      typeBId = generateId<MasterTag>()
-      this.tagPaths.set(typeBPath, typeBId)
-    }
-
+    const associationId = this.pathToRefResolver.getIdByFullPath(yamlPath) as Ref<Association>
     return {
       _class: core.class.Association,
       props: {
-        _id: generateId(),
+        _id: associationId,
         space: core.space.Model,
         classA: typeAId,
         classB: typeBId,

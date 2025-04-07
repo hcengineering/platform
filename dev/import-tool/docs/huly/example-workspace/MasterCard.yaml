@@ -1,5 +1,5 @@
 class: card:class:MasterTag
-title: Master Card 4
+title: Master Card 5
 properties:
   - label: aaa
     type: TypeString
