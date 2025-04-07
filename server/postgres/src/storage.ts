@@ -71,7 +71,7 @@ import {
   type TxAdapter
 } from '@hcengineering/server-core'
 import type postgres from 'postgres'
-import { createDBClient, createGreenDBClient, type DBClient } from './client'
+import { createDBClient, type DBClient } from './client'
 import {
   getDocFieldsByDomains,
   getSchema,
@@ -426,10 +426,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   reserveContext (id: string): () => void {
-    if (greenURL != null) {
-      // Do not reserve connection if using green
-      return () => {}
-    }
     const conn = this.mgr.getConnection(id, true)
     return () => {
       conn.released = true
@@ -2245,39 +2241,12 @@ export async function createPostgresAdapter (
   const client = getDBClient(contextVars, url)
   const connection = await client.getClient()
   return new PostgresAdapter(
-    greenURL !== undefined ? toGreenClient(greenURL, connection) : createDBClient(connection),
+    createDBClient(connection),
     client,
     wsIds.uuid,
     hierarchy,
     modelDb,
     'default-' + wsIds.url
-  )
-}
-
-let greenDecoder: ((data: any) => Promise<any>) | undefined
-let greenURL: string | undefined
-let useGreenCompression: string | undefined
-
-function toGreenClient (url: string, connection: postgres.Sql): DBClient {
-  const originalUrl = new URL(url)
-
-  // Extract components with default values if needed
-  const token = originalUrl.searchParams.get('token') ?? 'secret'
-
-  // Manually build the new URL components
-  const newHost = originalUrl.host
-  const newPathname = originalUrl.pathname
-
-  console.warn('USE GREEN', newHost, newPathname)
-  // Construct the new URL
-  const newUrl = `${originalUrl.protocol}//${newHost}${newPathname}`
-  return createGreenDBClient(
-    newUrl,
-    token,
-    connection,
-    useGreenCompression !== undefined && greenDecoder !== undefined
-      ? { decoder: greenDecoder, compression: useGreenCompression }
-      : undefined
   )
 }
 /**
@@ -2295,21 +2264,13 @@ export async function createPostgresTxAdapter (
   const connection = await client.getClient()
 
   return new PostgresTxAdapter(
-    greenURL !== undefined ? toGreenClient(greenURL, connection) : createDBClient(connection),
+    createDBClient(connection),
     client,
     wsIds.uuid,
     hierarchy,
     modelDb,
     'tx' + wsIds.url
   )
-}
-
-export function registerGreenDecoder (name: string, decoder: (data: any) => Promise<any>): void {
-  greenDecoder = decoder
-  useGreenCompression = name
-}
-export function registerGreenUrl (url?: string): void {
-  greenURL = url
 }
 
 function isPersonAccount (tx: Tx): boolean {

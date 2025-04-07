@@ -53,8 +53,6 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
-  registerGreenDecoder,
-  registerGreenUrl,
   setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
@@ -108,9 +106,6 @@ export function start (
   setAdapterSecurity('postgresql', true)
 
   const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
-
-  registerGreenDecoder('snappy', uncompress)
-  registerGreenUrl(process.env.GREEN_URL)
 
   setDBExtraOptions({
     prepare: usePrepare // We override defaults

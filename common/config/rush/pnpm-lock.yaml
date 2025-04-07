@@ -319,9 +319,6 @@ importers:
       '@rush-temp/gmail-resources':
         specifier: file:./projects/gmail-resources.tgz
         version: file:projects/gmail-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      '@rush-temp/green':
-        specifier: file:./projects/green.tgz
-        version: file:projects/green.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/guest':
         specifier: file:./projects/guest.tgz
         version: file:projects/guest.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -4191,10 +4188,6 @@ packages:
     resolution: {integrity: sha512-9/VMql8Z+vkgBr6MFQsU2lInzqWZ80a0c6CtOeUhjbn0U3j/qsPYMTfDP+7Fl7SNCC9r3Dn/qR4k+VCUI29lKg==, tarball: file:projects/gmail.tgz}
     version: 0.0.0
 
-  '@rush-temp/green@file:projects/green.tgz':
-    resolution: {integrity: sha512-w5elA2IKCjDlixayW5CW1cDH/sFEO/21ddrMJN6gPv7rUq+cnEKQJGNhiXnGg8+u9fez4WA0WxA25XYZWyRiRg==, tarball: file:projects/green.tgz}
-    version: 0.0.0
-
   '@rush-temp/guest-assets@file:projects/guest-assets.tgz':
     resolution: {integrity: sha512-0DOsbdhxR7hM4j0Lnb94yU82W/FMZxCH/kXFJTo2ZKOJcTTXvw47FuZK6lgimSeLfRdfN5oKNXv93XtVaeifig==, tarball: file:projects/guest-assets.tgz}
     version: 0.0.0
@@ -4560,7 +4553,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-server-process@file:projects/model-server-process.tgz':
-    resolution: {integrity: sha512-GK1lglXDGRXPrGdSymmKUGHdRg54t2sTwHo/8sKsPLGS2XrrMiMBNVTipX9Kz+ykPF7aAaTuN0mDkIvv2HCv4A==, tarball: file:projects/model-server-process.tgz}
+    resolution: {integrity: sha512-qQTRiYaL1lLy3mYUOC8fxtJGHKHSGXKrPZoaV01Oz1t6jpNfpewkrYvxaCjGMV9JRc7qUXuK6oAr01FpF1U9LA==, tarball: file:projects/model-server-process.tgz}
     version: 0.0.0
 
   '@rush-temp/model-server-products@file:projects/model-server-products.tgz':
@@ -4780,7 +4773,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-inbound-mail@file:projects/pod-inbound-mail.tgz':
-    resolution: {integrity: sha512-6xtpf3EZcfYCZ98hOtB7B7E1ai7pT31z9DTnDCuJxSW+hYZdInSIgy1r2j4luyYcu5pmbhoy4WTJWcmiVRrrcA==, tarball: file:projects/pod-inbound-mail.tgz}
+    resolution: {integrity: sha512-h0wMnPIe5h5vSlDCKhH0OeuaxQ7UvRfMyJ0UgdxhIwSPfEYr/LN8Ci7emb45H7gGNpnu9xQUpZxewXRTDqmVSg==, tarball: file:projects/pod-inbound-mail.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -18495,34 +18488,6 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/green@file:projects/green.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
-    dependencies:
-      '@types/jest': 29.5.12
-      '@types/node': 20.11.19
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
-      cross-env: 7.0.3
-      esbuild: 0.24.2
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      postgres: 3.4.5
-      prettier: 3.2.5
-      snappy: 7.2.2
-      ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - babel-jest
-      - babel-plugin-macros
-      - node-notifier
-      - supports-color
-      - ts-node
-
   '@rush-temp/guest-assets@file:projects/guest-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
@@ -21838,7 +21803,6 @@ snapshots:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.21.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      jwt-simple: 0.5.6
       prettier: 3.2.5
       sanitize-html: 2.15.0
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
