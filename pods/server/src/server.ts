@@ -20,15 +20,16 @@ import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { ClientSession, startSessionManager } from '@hcengineering/server'
 import {
   type CommunicationApiFactory,
+  type PlatformQueue,
   type ServerFactory,
   type Session,
   type SessionManager,
   type StorageConfiguration,
-  type Workspace,
-  type PlatformQueue
+  type Workspace
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
 import {
   createServerPipeline,
   isAdapterSecurity,
@@ -40,8 +41,6 @@ import {
   setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
-import { uncompress } from 'snappy'
-import { Api as CommunicationApi } from '@hcengineering/communication-server'
 
 import {
   createMongoAdapter,

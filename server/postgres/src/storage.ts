@@ -2240,14 +2240,7 @@ export async function createPostgresAdapter (
 ): Promise<DbAdapter> {
   const client = getDBClient(contextVars, url)
   const connection = await client.getClient()
-  return new PostgresAdapter(
-    createDBClient(connection),
-    client,
-    wsIds.uuid,
-    hierarchy,
-    modelDb,
-    'default-' + wsIds.url
-  )
+  return new PostgresAdapter(createDBClient(connection), client, wsIds.uuid, hierarchy, modelDb, 'default-' + wsIds.url)
 }
 /**
  * @public
@@ -2263,14 +2256,7 @@ export async function createPostgresTxAdapter (
   const client = getDBClient(contextVars, url)
   const connection = await client.getClient()
 
-  return new PostgresTxAdapter(
-    createDBClient(connection),
-    client,
-    wsIds.uuid,
-    hierarchy,
-    modelDb,
-    'tx' + wsIds.url
-  )
+  return new PostgresTxAdapter(createDBClient(connection), client, wsIds.uuid, hierarchy, modelDb, 'tx' + wsIds.url)
 }
 
 function isPersonAccount (tx: Tx): boolean {
