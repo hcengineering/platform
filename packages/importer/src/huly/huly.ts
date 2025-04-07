@@ -506,6 +506,9 @@ export class HulyFormatImporter {
           case core.class.Association:
             builder.addAssociation(path, doc as UnifiedDoc<Association>)
             break
+          case core.class.Relation:
+            builder.addRelation(path, doc as UnifiedDoc<Relation>)
+            break
           default:
             if (isId(doc._class) || (doc._class as string).startsWith('card:types:')) { // todo: fix system cards validation
               builder.addCard(path, doc as UnifiedDoc<Card>)

@@ -14,7 +14,7 @@
 //
 import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
-import core, { Association, Attribute, Doc, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
+import core, { Association, Attribute, Doc, Relation, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
@@ -63,6 +63,7 @@ export class ImportWorkspaceBuilder {
   private readonly tags = new Map<string, UnifiedDoc<Tag>>()
   private readonly cards = new Map<string, UnifiedDoc<Card>>()
   private readonly associations = new Map<string, UnifiedDoc<Association>>()
+  private readonly relations = new Map<string, UnifiedDoc<Relation>>()
   private readonly mixins = new Map<string, UnifiedMixin<Doc, Doc>>()
 
   private readonly projectTypes = new Map<string, ImportProjectType>()
@@ -258,6 +259,11 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addRelation (path: string, relation: UnifiedDoc<Relation>): this {
+    this.validateAndAdd('relation', path, relation, (r) => this.validateRelation(r), this.relations, path)
+    return this
+  }
+
   addTagMixin (path: string, mixin: UnifiedMixin<Doc, Doc>): this {
     this.validateAndAdd('tagMixin', path, mixin, (m) => this.validateTagMixin(m), this.mixins, path)
     return this
@@ -338,7 +344,8 @@ export class ImportWorkspaceBuilder {
         ...Array.from(this.masterTagAttributes.values()),
         ...Array.from(this.tags.values()),
         ...Array.from(this.cards.values()),
-        ...Array.from(this.associations.values())
+        ...Array.from(this.associations.values()),
+        ...Array.from(this.relations.values())
       ],
       mixins: Array.from(this.mixins.values()),
       attachments: []
@@ -895,6 +902,14 @@ export class ImportWorkspaceBuilder {
     const errors: string[] = []
 
     // todo: validate association
+
+    return errors
+  }
+
+  private validateRelation (relation: UnifiedDoc<Relation>): string[] {
+    const errors: string[] = []
+
+    // todo: validate relation
 
     return errors
   }

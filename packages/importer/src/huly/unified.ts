@@ -5,7 +5,8 @@ import core, {
   Attribute,
   Doc,
   generateId,
-  Ref
+  Ref,
+  Relation
 } from '@hcengineering/core'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
@@ -13,7 +14,7 @@ import * as path from 'path'
 import { IntlString } from '../../../platform/types'
 import { Props, UnifiedDoc, UnifiedMixin } from '../types'
 import { readMarkdownContent, readYamlHeader } from './parsing'
-import { PathToRefResolver } from './resolver'
+import { MetadataStorage } from './metadata'
 
 export interface UnifiedDocProcessResult {
   docs: Map<string, Array<UnifiedDoc<Doc>>>
@@ -21,7 +22,7 @@ export interface UnifiedDocProcessResult {
 }
 
 export class UnifiedDocProcessor {
-  private readonly pathToRefResolver = new PathToRefResolver()
+  private readonly metadataStorage = new MetadataStorage()
 
   async importFromDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
     const result: UnifiedDocProcessResult = {
@@ -49,9 +50,11 @@ export class UnifiedDocProcessor {
 
       switch (yamlConfig?.class) {
         case card.class.MasterTag: {
-          const masterTagId = this.pathToRefResolver.getIdByFullPath(yamlPath) as Ref<MasterTag>
+          const masterTagId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<MasterTag>
           const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
+
           const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
+          this.metadataStorage.setAttributes(yamlPath, masterTagAttrs)
 
           const docs = result.docs.get(yamlPath) ?? []
           docs.push(
@@ -87,8 +90,8 @@ export class UnifiedDocProcessor {
     if (parentMasterTagId === undefined || parentMasterTagAttrs === undefined) {
       await this.processSystemCards(currentPath, result)
     } else {
-      // Then process markdown files (cards)
-      await this.processCardDirectory(result, currentPath, parentMasterTagId, parentMasterTagAttrs)
+      // await this.processCardDirectory(result, currentPath, parentMasterTagId, parentMasterTagAttrs) // todo: handle parent master tag attrs
+      await this.processCardDirectory(result, currentPath, parentMasterTagId)
     }
   }
 
@@ -107,7 +110,7 @@ export class UnifiedDocProcessor {
         throw new Error('Unsupported card type: ' + cardType)
       }
 
-      await this.processCard(result, cardPath, cardProps, cardType, new Map()) // todo: get right master tag attributes
+      await this.processCard(result, cardPath, cardProps, cardType) // todo: get right master tag attributes
     }
   }
 
@@ -116,22 +119,22 @@ export class UnifiedDocProcessor {
     cardPath: string,
     cardProps: Record<string, any>,
     masterTagId: Ref<MasterTag>,
-    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
-    const card = await this.createCard(cardProps, cardPath, masterTagId, masterTagAttrs, parentCardId)
+    const cardWithRelations = await this.createCard(cardProps, cardPath, masterTagId, parentCardId)
 
-    if (card != null) {
+    if (cardWithRelations.length > 0) {
       const docs = result.docs.get(cardPath) ?? []
-      docs.push(card)
+      docs.push(...cardWithRelations)
       result.docs.set(cardPath, docs)
 
+      const card = cardWithRelations[0] as UnifiedDoc<Card>
       await this.applyTags(card, cardProps, cardPath, result)
 
       // Проверяем наличие дочерних карточек
       const cardDir = path.join(path.dirname(cardPath), path.basename(cardPath, '.md'))
       if (fs.existsSync(cardDir) && fs.statSync(cardDir).isDirectory()) {
-        await this.processCardDirectory(result, cardDir, masterTagId, masterTagAttrs, card.props._id as Ref<Card>)
+        await this.processCardDirectory(result, cardDir, masterTagId, card.props._id as Ref<Card>)
       }
     }
   }
@@ -140,16 +143,15 @@ export class UnifiedDocProcessor {
     result: UnifiedDocProcessResult,
     cardDir: string,
     masterTagId: Ref<MasterTag>,
-    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
     const entries = fs.readdirSync(cardDir, { withFileTypes: true })
+      .filter(entry => entry.isFile() && entry.name.endsWith('.md'))
 
     for (const entry of entries) {
-      if (!entry.isFile() || !entry.name.endsWith('.md')) continue
       const childCardPath = path.join(cardDir, entry.name)
       const { class: cardClass, ...cardProps } = await readYamlHeader(childCardPath)
-      await this.processCard(result, childCardPath, cardProps, masterTagId, masterTagAttrs, parentCardId)
+      await this.processCard(result, childCardPath, cardProps, masterTagId, parentCardId)
     }
   }
 
@@ -183,7 +185,7 @@ export class UnifiedDocProcessor {
     masterTagId: Ref<MasterTag>,
     parentTagId?: Ref<Tag>
   ): Promise<void> {
-    const tagId = this.pathToRefResolver.getIdByFullPath(tagPath) as Ref<Tag>
+    const tagId = this.metadataStorage.getIdByFullPath(tagPath) as Ref<Tag>
     const tag = await this.createTag(tagConfig, tagId, masterTagId, parentTagId)
 
     const attributes = await this.createAttributes(tagConfig, tagId)
@@ -275,12 +277,11 @@ export class UnifiedDocProcessor {
     cardHeader: Record<string, any>,
     cardPath: string,
     masterTagId: Ref<MasterTag>,
-    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
-  ): Promise<UnifiedDoc<Card>> {
+  ): Promise<UnifiedDoc<Doc>[]> {
     const { _class, title, tags, ...customProperties } = cardHeader
 
-    const cardId = this.pathToRefResolver.getIdByFullPath(cardPath) as Ref<Card>
+    const cardId = this.metadataStorage.getIdByFullPath(cardPath) as Ref<Card>
     const props: Record<string, any> = {
       _id: cardId,
       space: core.space.Workspace,
@@ -288,20 +289,49 @@ export class UnifiedDocProcessor {
       parent: parentCardId
     }
 
+    const masterTagPath = path.dirname(cardPath) + '.yaml' // todo: fix master tag path
+    const masterTagAttrs = this.metadataStorage.getAttributes(masterTagPath)
+    const masterTagRelations = this.metadataStorage.getAssociations(masterTagPath)
+    // todo: handle tag attributes separately
+
+    const relations: UnifiedDoc<Doc>[] = []
     for (const [key, value] of Object.entries(customProperties)) {
-      const attrName = masterTagAttrs.get(key)?.props.name // todo: handle tag attributes separately
-      // if (attrName === undefined) {
+      const propName = masterTagAttrs.get(key)?.props.name // todo: handle tag attributes separately
+      // if (propName === undefined) {
       //   throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
       // }
-      props[attrName] = value
+      if (masterTagRelations.has(key)) {
+        const metadata = masterTagRelations.get(key)
+        if (metadata === undefined) {
+          throw new Error(`Association not found: ${key}, ${cardPath}`) // todo: keep the error till builder validation
+        }
+        const otherCardField = metadata.field === 'docA' ? 'docB' : 'docA'
+        const otherCardId = this.metadataStorage.getIdByFullPath(path.resolve(path.dirname(cardPath), value)) as Ref<Card>
+        const relation: UnifiedDoc<Relation> = {
+          _class: core.class.Relation,
+          props: {
+            _id: generateId<Relation>(),
+            space: core.space.Model,
+            [metadata.field]: cardId,
+            [otherCardField]: otherCardId,
+            association: metadata.association
+          } as unknown as Props<Relation>
+        }
+        relations.push(relation)
+      } else {
+        props[propName] = value
+      }
     }
 
-    return {
-      _class: masterTagId,
-      collabField: 'content',
-      contentProvider: () => readMarkdownContent(cardPath),
-      props: props as Props<Card> // todo: what is the correct props type?
-    }
+    return [
+      {
+        _class: masterTagId,
+        collabField: 'content',
+        contentProvider: () => readMarkdownContent(cardPath),
+        props: props as Props<Card> // todo: what is the correct props type?
+      },
+      ...relations
+    ]
   }
 
   private async applyTags (
@@ -316,7 +346,7 @@ export class UnifiedDocProcessor {
     for (const tagPath of cardHeader.tags) {
       const cardDir = path.dirname(cardPath)
       const fullTagPath = path.resolve(cardDir, tagPath)
-      const tagId = this.pathToRefResolver.getIdByFullPath(fullTagPath) as Ref<Tag>
+      const tagId = this.metadataStorage.getIdByFullPath(fullTagPath) as Ref<Tag>
 
       const mixin: UnifiedMixin<Card, Tag> = {
         _class: card._class,
@@ -339,21 +369,39 @@ export class UnifiedDocProcessor {
     yamlPath: string,
     yamlConfig: Record<string, any>
   ): Promise<UnifiedDoc<Association>> {
-    const { class: _class, typeA, typeB, ...otherProps } = yamlConfig
+    console.log('createAssociation', yamlPath)
+    const { class: _class, typeA, typeB, type, nameA, nameB } = yamlConfig
 
     const currentPath = path.dirname(yamlPath)
-    const typeAId = this.pathToRefResolver.getIdByRelativePath(currentPath, typeA) as Ref<MasterTag>
-    const typeBId = this.pathToRefResolver.getIdByRelativePath(currentPath, typeB) as Ref<MasterTag>
+    const associationId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<Association>
 
-    const associationId = this.pathToRefResolver.getIdByFullPath(yamlPath) as Ref<Association>
+    const typeAPath = path.resolve(currentPath, typeA)
+    this.metadataStorage.addAssociation(typeAPath, nameB, {
+      association: associationId,
+      field: 'docA',
+      type
+    })
+
+    const typeBPath = path.resolve(currentPath, typeB)
+    this.metadataStorage.addAssociation(typeBPath, nameA, {
+      association: associationId,
+      field: 'docB',
+      type
+    })
+
+    const typeAId = this.metadataStorage.getIdByFullPath(typeAPath) as Ref<MasterTag>
+    const typeBId = this.metadataStorage.getIdByFullPath(typeBPath) as Ref<MasterTag>
+
     return {
-      _class: core.class.Association,
+      _class,
       props: {
         _id: associationId,
         space: core.space.Model,
         classA: typeAId,
         classB: typeBId,
-        ...otherProps
+        nameA,
+        nameB,
+        type
       } as unknown as Props<Association>
     }
   }
