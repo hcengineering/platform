@@ -55,7 +55,7 @@ import {
   WorkspaceLoginInfo,
   WorkspaceStatus,
   AccountEventType,
-  LoginMeta
+  Meta
 } from './types'
 import { Analytics } from '@hcengineering/analytics'
 import { TokenError, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
@@ -119,8 +119,11 @@ export function wrap (
     request: any,
     token?: string
   ): Promise<any> {
-    const timezone = request.headers !== undefined && request.headers['X-Timezone']
-    return await accountMethod(ctx, db, branding, token, { ...request.params }, { timezone })
+    const meta =
+      request.headers !== undefined && request.headers['X-Timezone'] !== undefined
+        ? { timezone: request.headers['X-Timezone'] }
+        : {}
+    return await accountMethod(ctx, db, branding, token, { ...request.params }, meta)
       .then((result) => ({ id: request.id, result }))
       .catch((err) => {
         const status =
@@ -1345,7 +1348,7 @@ export async function setTimezoneIfNotDefined (
   db: AccountDB,
   accountId: PersonUuid,
   account: Account | null | undefined,
-  meta?: LoginMeta
+  meta?: Meta
 ): Promise<void> {
   try {
     if (meta?.timezone === undefined) return
@@ -1354,7 +1357,7 @@ export async function setTimezoneIfNotDefined (
       ctx.warn('Failed to find account')
       return
     }
-    if (existingAccount?.timezone != null) return
+    if (existingAccount.timezone != null) return
     await db.account.updateOne({ uuid: accountId }, { timezone: meta.timezone })
   } catch (err: any) {
     ctx.error('Failed to set account timezone', err)

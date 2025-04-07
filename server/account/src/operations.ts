@@ -51,7 +51,7 @@ import type {
   AccountDB,
   AccountMethodHandler,
   LoginInfo,
-  LoginMeta,
+  Meta,
   Mailbox,
   MailboxOptions,
   OtpInfo,
@@ -131,7 +131,7 @@ export async function login (
     email: string
     password: string
   },
-  meta?: LoginMeta
+  meta?: Meta
 ): Promise<LoginInfo> {
   const { email, password } = params
   const normalizedEmail = cleanEmail(email)
@@ -186,7 +186,7 @@ export async function loginOtp (
   branding: Branding | null,
   token: string,
   params: { email: string },
-  meta?: LoginMeta
+  meta?: Meta
 ): Promise<OtpInfo> {
   const { email } = params
 
@@ -224,7 +224,7 @@ export async function signUp (
     firstName: string
     lastName: string
   },
-  meta?: LoginMeta
+  meta?: Meta
 ): Promise<LoginInfo> {
   const { email, password, firstName, lastName } = params
   const { account, socialId } = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName)
@@ -263,7 +263,7 @@ export async function signUpOtp (
     firstName: string
     lastName: string
   },
-  meta?: LoginMeta
+  meta?: Meta
 ): Promise<OtpInfo> {
   const { email, firstName, lastName } = params
   // Note: can support OTP based on any other social logins later
@@ -661,7 +661,7 @@ export async function join (
     password: string
     inviteId: string
   },
-  meta?: LoginMeta
+  meta?: Meta
 ): Promise<WorkspaceLoginInfo | LoginInfo> {
   const { email, password, inviteId } = params
   const normalizedEmail = cleanEmail(email)
@@ -858,7 +858,7 @@ export async function signUpJoin (
     last: string
     inviteId: string
   },
-  meta?: LoginMeta
+  meta?: Meta
 ): Promise<WorkspaceLoginInfo> {
   const { email, password, first, last, inviteId } = params
   const normalizedEmail = cleanEmail(email)
@@ -2144,6 +2144,7 @@ export async function getAccountInfo (
   token: string,
   params: { accountId: PersonUuid }
 ): Promise<AccountInfo> {
+  decodeTokenVerbose(ctx, token)
   const { accountId } = params
   const account = await getAccount(db, accountId)
   if (account === undefined || account === null) {

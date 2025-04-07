@@ -41,7 +41,7 @@ import type {
   WorkspaceOperation,
   MailboxInfo
 } from './types'
-import { getTimezoneHeader } from './utils'
+import { getClientTimezone } from './utils'
 
 /** @public */
 export interface AccountClient {
@@ -193,11 +193,16 @@ class AccountClientImpl implements AccountClient {
   }
 
   private async rpc<T>(request: Request): Promise<T> {
+    const timezone = getClientTimezone()
+    const meta: Record<string, string> = timezone !== undefined
+      ? { 'X-Timezone': timezone }
+      : {}
     const response = await fetch(this.url, {
       ...this.request,
       headers: {
         ...this.request.headers,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...meta
       },
       method: 'POST',
       body: JSON.stringify(request)
@@ -261,8 +266,7 @@ class AccountClientImpl implements AccountClient {
   async loginOtp (email: string): Promise<OtpInfo> {
     const request = {
       method: 'loginOtp' as const,
-      params: { email },
-      headers: getTimezoneHeader()
+      params: { email }
     }
 
     return await this.rpc(request)
@@ -375,8 +379,7 @@ class AccountClientImpl implements AccountClient {
   ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'signUpJoin' as const,
-      params: { email, password, first, last, inviteId },
-      headers: getTimezoneHeader()
+      params: { email, password, first, last, inviteId }
     }
 
     return await this.rpc(request)
@@ -457,8 +460,7 @@ class AccountClientImpl implements AccountClient {
   async signUpOtp (email: string, firstName: string, lastName: string): Promise<OtpInfo> {
     const request = {
       method: 'signUpOtp' as const,
-      params: { email, firstName, lastName },
-      headers: getTimezoneHeader()
+      params: { email, firstName, lastName }
     }
 
     return await this.rpc(request)
@@ -467,8 +469,7 @@ class AccountClientImpl implements AccountClient {
   async signUp (email: string, password: string, firstName: string, lastName: string): Promise<LoginInfo> {
     const request = {
       method: 'signUp' as const,
-      params: { email, password, firstName, lastName },
-      headers: getTimezoneHeader()
+      params: { email, password, firstName, lastName }
     }
 
     return await this.rpc(request)
@@ -477,8 +478,7 @@ class AccountClientImpl implements AccountClient {
   async login (email: string, password: string): Promise<LoginInfo> {
     const request = {
       method: 'login' as const,
-      params: { email, password },
-      headers: getTimezoneHeader()
+      params: { email, password }
     }
 
     return await this.rpc(request)
