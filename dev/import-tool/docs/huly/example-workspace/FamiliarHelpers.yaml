@@ -1,6 +1,6 @@
 class: core:class:Association
 typeA: ./SlaveCard/FamiliarTag.yaml
 typeB: ./SlaveCard/MinionTag.yaml
-nameA: Familiar
-nameB: Helpers
+nameA: familiar
+nameB: helpers
 type: 1:N

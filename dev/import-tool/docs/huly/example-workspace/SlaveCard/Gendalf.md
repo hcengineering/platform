@@ -1,6 +1,7 @@
 ---
 title: "Gandalf the Grey"
-familiar: "./Familiar.yaml"
+tags: ./FamiliarTag.yaml
+helpers: "./Frodo.md"
 ---
 
 A wise and powerful wizard who guides others.

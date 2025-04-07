@@ -839,7 +839,7 @@
         "-pw",
         "1234",
         "-ws",
-        "ws2"
+        "ws4"
       ],
       "env": {
         "FRONT_URL": "http://localhost:8087"

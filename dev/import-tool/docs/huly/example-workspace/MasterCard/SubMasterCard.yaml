@@ -1,6 +1,0 @@
-class: card:class:MasterTag
-title: Sub Master Card 5
-properties:
-  - label: bbb
-    type: TypeString
-    defaultValue: ""

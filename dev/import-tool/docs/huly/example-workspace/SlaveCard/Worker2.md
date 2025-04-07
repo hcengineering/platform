@@ -1,6 +1,7 @@
 ---
 title: "Worker Ant 2"
-mother: "./Mother.md"
+tags: ./MinionTag.yaml
+# mother: "./Queen.md"
 ---
 
 Another hard-working ant.

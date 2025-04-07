@@ -85,13 +85,6 @@ export class UnifiedDocProcessor {
           throw new Error('Unsupported class: ' + yamlConfig?.class) // todo: handle default case just convert to UnifiedDoc
       }
     }
-
-    // Рекурсивно обрабатываем поддиректории
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue
-      const dirPath = path.join(currentPath, entry.name)
-      await this.processMetadata(dirPath, result, parentMasterTagId)
-    }
   }
 
   private async processCards (
@@ -133,6 +126,68 @@ export class UnifiedDocProcessor {
       await this.processCards(dirPath, result, masterTagRelations, masterTagId)
     }
   }
+
+  // private async processDirectory (
+  //   currentPath: string,
+  //   result: UnifiedDocProcessResult,
+  //   parentMasterTagId?: Ref<MasterTag>,
+  //   parentMasterTagAttrs?: Map<string, UnifiedDoc<Attribute<MasterTag>>>
+  // ): Promise<void> {
+  //   const entries = fs.readdirSync(currentPath, { withFileTypes: true })
+
+  //   // Сначала обрабатываем YAML файлы (потенциальные мастер-теги)
+  //   for (const entry of entries) {
+  //     if (!entry.isFile() || !entry.name.endsWith('.yaml')) continue // todo: filter entries by extension
+
+  //     const yamlPath = path.resolve(currentPath, entry.name)
+  //     const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
+
+  //     switch (yamlConfig?.class) {
+  //       case card.class.MasterTag: {
+  //         const masterTagId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<MasterTag>
+  //         const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
+
+  //         const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
+  //         this.metadataStorage.setAttributes(yamlPath, masterTagAttrs)
+
+  //         const docs = result.docs.get(yamlPath) ?? []
+  //         docs.push(
+  //           masterTag,
+  //           ...Array.from(masterTagAttrs.values())
+  //         )
+  //         result.docs.set(yamlPath, docs)
+
+  //         const masterTagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
+  //         if (fs.existsSync(masterTagDir) && fs.statSync(masterTagDir).isDirectory()) {
+  //           await this.processDirectory(masterTagDir, result, masterTagId, masterTagAttrs)
+  //         }
+  //         break
+  //       }
+  //       case card.class.Tag: {
+  //         if (parentMasterTagId === undefined) {
+  //           throw new Error('Tag should be inside master tag folder: ' + currentPath)
+  //         }
+
+  //         await this.processTag(yamlPath, yamlConfig, result, parentMasterTagId)
+  //         break
+  //       }
+  //       case core.class.Association: {
+  //         const association = await this.createAssociation(yamlPath, yamlConfig)
+  //         result.docs.set(yamlPath, [association])
+  //         break
+  //       }
+  //       default:
+  //         throw new Error('Unsupported class: ' + yamlConfig?.class) // todo: handle default case just convert to UnifiedDoc
+  //     }
+  //   }
+
+  //   if (parentMasterTagId === undefined || parentMasterTagAttrs === undefined) {
+  //     await this.processSystemCards(currentPath, result)
+  //   } else {
+  //     // await this.processCardDirectory(result, currentPath, parentMasterTagId, parentMasterTagAttrs) // todo: handle parent master tag attrs
+  //     await this.processCardDirectory(result, currentPath, parentMasterTagId)
+  //   }
+  // }
 
   private async processSystemCards (
     currentDir: string,
@@ -359,7 +414,7 @@ export class UnifiedDocProcessor {
         if (metadata === undefined) {
           throw new Error(`Association not found: ${key}, ${cardPath}`) // todo: keep the error till builder validation
         }
-        const otherCardPath = path.resolve(path.dirname(cardPath), value)
+        const otherCardPath = path.resolve(path.dirname(cardPath), value) // todo: value can be array of paths
         const otherCardId = this.metadataStorage.getIdByFullPath(otherCardPath) as Ref<Card>
         const relation: UnifiedDoc<Relation> = this.createRelation(metadata, cardId, otherCardId)
         relations.push(relation)
@@ -403,7 +458,8 @@ export class UnifiedDocProcessor {
     if (cardHeader.tags === undefined) return
 
     const mixins: UnifiedMixin<Card, Tag>[] = []
-    for (const tagPath of cardHeader.tags) {
+    const tags = cardHeader.tags !== undefined ? (Array.isArray(cardHeader.tags) ? cardHeader.tags : [cardHeader.tags]) : []
+    for (const tagPath of tags) {
       const cardDir = path.dirname(cardPath)
       const fullTagPath = path.resolve(cardDir, tagPath)
       const tagId = this.metadataStorage.getIdByFullPath(fullTagPath) as Ref<Tag>

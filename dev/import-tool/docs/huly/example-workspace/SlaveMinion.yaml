@@ -1,6 +1,6 @@
 class: core:class:Association
 typeA: ./SlaveCard.yaml
 typeB: ./SlaveCard/MinionTag.yaml
-nameA: Mother
-nameB: Children
+nameA: mother
+nameB: children
 type: 1:N

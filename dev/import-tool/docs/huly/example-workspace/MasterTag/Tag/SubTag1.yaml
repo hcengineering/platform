@@ -1,5 +1,0 @@
-class: card:class:Tag
-title: YYY
-properties:
-  - label: y
-    type: TypeNumber

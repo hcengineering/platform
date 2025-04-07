@@ -1,7 +1,0 @@
-class: card:class:MasterTag
-title: Child Child Type 2
-properties:
-  - label: ccc # embedded:embedded:aaa
-    type: TypeString # human readable format + core:class^
-  - label: ddd
-    type: TypeString

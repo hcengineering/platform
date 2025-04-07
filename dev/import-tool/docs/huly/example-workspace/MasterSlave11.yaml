@@ -1,6 +1,0 @@
-class: core:class:Association
-typeA: MasterCard.yaml
-typeB: SlaveCard.yaml
-nameA: mainMaster
-nameB: mainSlave
-type: 1:1
