@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 import { type SendMailOptions, type Transporter } from 'nodemailer'
+
+import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext } from '@hcengineering/core'
 
 import config from './config'
@@ -30,6 +32,7 @@ export class MailClient {
       const messageInfo = `(from: ${message.from as string}, to: ${message.to as string})`
       if (err !== null) {
         ctx.error(`Failed to send email ${messageInfo}: ${err.message}`)
+        Analytics.handleError(err)
       } else {
         ctx.info(`Email request ${messageInfo} sent: ${info?.response}`)
       }

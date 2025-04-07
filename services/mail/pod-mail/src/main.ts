@@ -15,11 +15,13 @@
 
 import { type SendMailOptions } from 'nodemailer'
 import { Request, Response } from 'express'
+import { join } from 'path'
 import Mail from 'nodemailer/lib/mailer'
+
+import { Analytics } from '@hcengineering/analytics'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import { MeasureContext, MeasureMetricsContext, newMetrics } from '@hcengineering/core'
-import { SplitLogger } from '@hcengineering/analytics-service'
-import { join } from 'path'
+import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
 
 import config from './config'
 import { createServer, listen } from './server'
@@ -27,6 +29,8 @@ import { MailClient } from './mail'
 import { Endpoint } from './types'
 
 export const main = async (): Promise<void> => {
+  configureAnalytics(process.env.SENTRY_DSN, {})
+  Analytics.setTag('application', 'mail')
   const measureCtx = initStatisticsContext('mail', {
     factory: () =>
       new MeasureMetricsContext(

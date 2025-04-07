@@ -13,10 +13,12 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { main } from './main'
 
 void main().catch((err) => {
   if (err != null) {
+    Analytics.handleError(err)
     console.error(err)
   }
 })
