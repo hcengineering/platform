@@ -1138,11 +1138,11 @@ export class WorkspaceImporter {
     if (this.workspaceData.unifiedDocs === undefined) return
 
     for (const unifiedDoc of this.workspaceData.unifiedDocs) {
-      await this.importUnifiedDoc(unifiedDoc)
+      await this.createUnifiedDoc(unifiedDoc)
     }
   }
 
-  private async importUnifiedDoc (unifiedDoc: UnifiedDoc<Doc<Space>>): Promise<void> {
+  private async createUnifiedDoc (unifiedDoc: UnifiedDoc<Doc<Space>>): Promise<void> {
     const { _class, props } = unifiedDoc
     const _id = props._id ?? generateId<Doc<Space>>()
     if (unifiedDoc.collabField !== undefined) {
@@ -1158,11 +1158,11 @@ export class WorkspaceImporter {
     if (this.workspaceData.mixins === undefined) return
 
     for (const mixin of this.workspaceData.mixins) {
-      await this.importUnifiedMixin(mixin)
+      await this.createUnifiedMixin(mixin)
     }
   }
 
-  private async importUnifiedMixin (mixin: UnifiedMixin<Doc<Space>, Doc<Space>>): Promise<void> {
+  private async createUnifiedMixin (mixin: UnifiedMixin<Doc<Space>, Doc<Space>>): Promise<void> {
     const { _class, mixin: mixinClass, props } = mixin
     const { _id, space, ...data } = props
     await this.client.createMixin(_id ?? generateId<Doc<Space>>(), _class, space, mixinClass, data as Data<Doc<Space>>)
