@@ -751,9 +751,6 @@ export async function getIntegrationSecret (
   }
 
   const existing = await db.integrationSecret.findOne({ socialId, kind, workspaceUuid, key })
-  if (existing == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
-  }
 
   return existing
 }

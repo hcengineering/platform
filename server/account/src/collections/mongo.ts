@@ -62,6 +62,15 @@ interface MongoIndex {
   options: CreateIndexesOptions & { name: string }
 }
 
+function getFilteredQuery<T> (query: Query<T>): Query<T> {
+  return Object.entries(query).reduce<Query<T>>((acc, [key, value]) => {
+    if (value !== undefined) {
+      acc[key as keyof Query<T>] = value
+    }
+    return acc
+  }, {})
+}
+
 export class MongoDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
 implements DbCollection<T> {
   constructor (
@@ -123,11 +132,11 @@ implements DbCollection<T> {
   }
 
   async find (query: Query<T>, sort?: Sort<T>, limit?: number): Promise<T[]> {
-    return await this.findCursor(query, sort, limit).toArray()
+    return await this.findCursor(getFilteredQuery(query), sort, limit).toArray()
   }
 
   findCursor (query: Query<T>, sort?: Sort<T>, limit?: number): FindCursor<T> {
-    const cursor = this.collection.find<T>(query as Filter<T>)
+    const cursor = this.collection.find<T>(getFilteredQuery(query) as Filter<T>)
 
     if (sort !== undefined) {
       cursor.sort(sort as RawSort)
@@ -147,7 +156,7 @@ implements DbCollection<T> {
   }
 
   async findOne (query: Query<T>): Promise<T | null> {
-    const doc = await this.collection.findOne<T>(query as Filter<T>)
+    const doc = await this.collection.findOne<T>(getFilteredQuery(query) as Filter<T>)
     if (doc === null) {
       return null
     }
@@ -190,11 +199,11 @@ implements DbCollection<T> {
       }
     }
 
-    await this.collection.updateOne(query as Filter<T>, resOps)
+    await this.collection.updateOne(getFilteredQuery(query) as Filter<T>, resOps)
   }
 
   async deleteMany (query: Query<T>): Promise<void> {
-    await this.collection.deleteMany(query as Filter<T>)
+    await this.collection.deleteMany(getFilteredQuery(query) as Filter<T>)
   }
 }
 
@@ -218,7 +227,7 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'>
   }
 
   async findOne (query: Query<Account>): Promise<Account | null> {
-    const res = await this.collection.findOne<Account>(query as Filter<Account>)
+    const res = await this.collection.findOne<Account>(getFilteredQuery(query) as Filter<Account>)
 
     return res !== null ? this.convertToObj(res) : null
   }
@@ -247,7 +256,7 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
   private toWsQuery (query: Query<WorkspaceStatus>): Query<WorkspaceInfoWithStatus> {
     const res: Query<WorkspaceInfoWithStatus> = {}
 
-    for (const key of Object.keys(query)) {
+    for (const key of Object.keys(getFilteredQuery(query))) {
       const qVal = (query as any)[key]
       if (key === 'workspaceUuid') {
         res.uuid = qVal
