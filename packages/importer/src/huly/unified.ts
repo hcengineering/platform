@@ -319,7 +319,7 @@ export class UnifiedDocProcessor {
     cardHeader: Record<string, any>,
     cardPath: string,
     masterTagId: Ref<MasterTag>,
-    masterTagRelations: Map<string, RelationMetadata>,
+    masterTagRelations: Map<string, RelationMetadata>, // todo: rename to masterTagsAssociations
     parentCardId?: Ref<Card>
   ): Promise<UnifiedDoc<Doc>[]> {
     const { _class, title, tags, ...customProperties } = cardHeader
@@ -333,32 +333,32 @@ export class UnifiedDocProcessor {
     }
 
     const masterTagPath = path.dirname(cardPath) + '.yaml' // todo: fix master tag path
-    const masterTagAttrs = this.metadataStorage.getAttributes(masterTagPath)
+    const masterTagAttrs = this.metadataStorage.getAttributes(masterTagPath) // todo: handle master tag attributes recursively
     // const masterTagRelations = this.metadataStorage.getAssociations(masterTagPath)
     // todo: handle tag attributes separately
+
+    const tagAssociations = new Map<string, RelationMetadata>()
+    for (const tag of tags) {
+      const tagPath = path.resolve(path.dirname(cardPath), tag)
+      this.metadataStorage.getAssociations(tagPath).forEach((relationMetadata, propName) => {
+        tagAssociations.set(propName, relationMetadata)
+      })
+    }
+
     const relations: UnifiedDoc<Doc>[] = []
     for (const [key, value] of Object.entries(customProperties)) {
       const propName = masterTagAttrs.get(key)?.props.name // todo: handle tag attributes separately
       // if (propName === undefined) {
       //   throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
       // }
-      if (masterTagRelations.has(key)) {
-        const metadata = masterTagRelations.get(key)
+      if (masterTagRelations.has(key) || tagAssociations.has(key)) {
+        const metadata = masterTagRelations.get(key) ?? tagAssociations.get(key)
         if (metadata === undefined) {
           throw new Error(`Association not found: ${key}, ${cardPath}`) // todo: keep the error till builder validation
         }
-        const otherCardField = metadata.field === 'docA' ? 'docB' : 'docA'
-        const otherCardId = this.metadataStorage.getIdByFullPath(path.resolve(path.dirname(cardPath), value)) as Ref<Card>
-        const relation: UnifiedDoc<Relation> = {
-          _class: core.class.Relation,
-          props: {
-            _id: generateId<Relation>(),
-            space: core.space.Model,
-            [metadata.field]: cardId,
-            [otherCardField]: otherCardId,
-            association: metadata.association
-          } as unknown as Props<Relation>
-        }
+        const otherCardPath = path.resolve(path.dirname(cardPath), value)
+        const otherCardId = this.metadataStorage.getIdByFullPath(otherCardPath) as Ref<Card>
+        const relation: UnifiedDoc<Relation> = this.createRelation(metadata, cardId, otherCardId)
         relations.push(relation)
       } else {
         cardProps[propName] = value
@@ -374,6 +374,21 @@ export class UnifiedDocProcessor {
       },
       ...relations
     ]
+  }
+
+  private createRelation (metadata: RelationMetadata, cardId: Ref<Card>, otherCardId: Ref<Card>): UnifiedDoc<Relation> {
+    const otherCardField = metadata.field === 'docA' ? 'docB' : 'docA'
+    const relation: UnifiedDoc<Relation> = {
+      _class: core.class.Relation,
+      props: {
+        _id: generateId<Relation>(),
+        space: core.space.Model,
+        [metadata.field]: cardId,
+        [otherCardField]: otherCardId,
+        association: metadata.association
+      } as unknown as Props<Relation>
+    }
+    return relation
   }
 
   private async applyTags (
