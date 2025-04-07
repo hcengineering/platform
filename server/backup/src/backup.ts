@@ -705,11 +705,7 @@ export async function backup (
     blobsSize: 0,
     backupSize: 0
   }
-  ctx = ctx.newChild('backup', {
-    workspaceId: workspaceId.name,
-    force: options.force,
-    timeout: options.timeout
-  })
+  ctx = ctx.newChild('backup', {})
 
   let _canceled = false
   const canceled = (): boolean => {

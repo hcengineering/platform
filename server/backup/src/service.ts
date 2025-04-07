@@ -265,7 +265,7 @@ class BackupWorker {
     rootCtx.warn('\n\nBACKUP WORKSPACE ', {
       workspace: ws.workspace
     })
-    const ctx = rootCtx.newChild(ws.workspace, { workspace: ws.workspace })
+    const ctx = rootCtx.newChild('doBackup', {})
     let pipeline: Pipeline | undefined
     try {
       const storage = await createStorageBackupStorage(
@@ -446,7 +446,7 @@ export async function doRestoreWorkspace (
   rootCtx.warn('\nRESTORE WORKSPACE ', {
     workspace: ws.workspace
   })
-  const ctx = rootCtx.newChild(ws.workspace, { workspace: ws.workspace })
+  const ctx = rootCtx.newChild('doRestoreWorkspace', {})
   let pipeline: Pipeline | undefined
   try {
     const storage = await createStorageBackupStorage(ctx, backupAdapter, getWorkspaceId(bucketName), ws.workspace)
