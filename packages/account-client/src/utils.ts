@@ -18,3 +18,12 @@ import type { LoginInfo, WorkspaceLoginInfo } from './types'
 export function isWorkspaceLoginInfo (loginInfo: LoginInfo | WorkspaceLoginInfo): loginInfo is WorkspaceLoginInfo {
   return (loginInfo as WorkspaceLoginInfo).workspace != null
 }
+
+export function getClientTimezone (): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone
+  } catch (err: any) {
+    console.error('Failed to get client timezone', err)
+    return undefined
+  }
+}

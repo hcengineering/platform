@@ -243,7 +243,9 @@ export type AccountMethodHandler = (
   db: AccountDB,
   branding: Branding | null,
   request: any,
-  token: string | undefined
+  token: string | undefined,
+  params?: Record<string, any>,
+  meta?: Record<string, any>
 ) => Promise<any>
 
 export type WorkspaceEvent =
@@ -301,4 +303,8 @@ export interface MailboxOptions {
   minNameLength: number
   maxNameLength: number
   maxMailboxCount: number
+}
+
+export interface Meta {
+  timezone?: string
 }

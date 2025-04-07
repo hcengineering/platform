@@ -859,4 +859,9 @@ export interface SocialId {
   verifiedOn?: number
 }
 
+export interface AccountInfo {
+  timezone?: string
+  locale?: string
+}
+
 export type SocialKey = Pick<SocialId, 'type' | 'value'>

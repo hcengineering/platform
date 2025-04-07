@@ -14,6 +14,7 @@
 //
 import {
   type AccountRole,
+  type AccountInfo,
   BackupStatus,
   Data,
   type Person,
@@ -44,6 +45,7 @@ import type {
   IntegrationSecret,
   IntegrationSecretKey
 } from './types'
+import { getClientTimezone } from './utils'
 
 /** @public */
 export interface AccountClient {
@@ -159,6 +161,7 @@ export interface AccountClient {
     workspaceUuid?: WorkspaceUuid | null
     key?: string
   }) => Promise<IntegrationSecret[]>
+  getAccountInfo: (uuid: PersonUuid) => Promise<AccountInfo>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -213,11 +216,14 @@ class AccountClientImpl implements AccountClient {
   }
 
   private async rpc<T>(request: Request): Promise<T> {
+    const timezone = getClientTimezone()
+    const meta: Record<string, string> = timezone !== undefined ? { 'X-Timezone': timezone } : {}
     const response = await fetch(this.url, {
       ...this.request,
       headers: {
         ...this.request.headers,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...meta
       },
       method: 'POST',
       body: JSON.stringify(request)
@@ -838,6 +844,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'listIntegrationsSecrets' as const,
       params: filter
+    }
+
+    return await this.rpc(request)
+  }
+
+  async getAccountInfo (uuid: PersonUuid): Promise<AccountInfo> {
+    const request = {
+      method: 'getAccountInfo' as const,
+      params: { accountId: uuid }
     }
 
     return await this.rpc(request)
