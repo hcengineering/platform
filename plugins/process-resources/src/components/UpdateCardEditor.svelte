@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import core, { Class, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import core, { AnyAttribute, Class, Ref } from '@hcengineering/core'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { Process, State, Step } from '@hcengineering/process'
   import { createEventDispatcher } from 'svelte'
   import ParamsEditor from './ParamsEditor.svelte'
+  import { Button, eventToHTMLElement, SelectPopup, showPopup } from '@hcengineering/ui'
 
   export let process: Process
   export let state: State
@@ -39,20 +40,68 @@
     }
   }
 
-  function getKeys (_class: Ref<Class<MasterTag>>): string[] {
+  function getKeys (_class: Ref<Class<MasterTag>>): AnyAttribute[] {
     const ignoreKeys = ['_class', 'content', 'parent', 'attachments', 'todos']
     const attributes = hierarchy.getAllAttributes(_class, core.class.Doc)
-    const res: string[] = []
+    const res: AnyAttribute[] = []
     for (const [key, attr] of attributes) {
       if (attr.hidden === true) continue
-      if (attr.readonly === true) continue
       if (ignoreKeys.includes(key)) continue
-      res.push(key)
+      res.push(attr)
     }
     return res
   }
 
-  $: keys = getKeys(process.masterTag)
+  let keys = Object.keys(params)
+
+  $: allAttrs = getKeys(process.masterTag)
+  $: possibleAttrs = allAttrs.filter((attr) => !keys.includes(attr.name))
+
+  function addKey (key: string): void {
+    keys = [...keys, key]
+  }
+
+  function onAdd (e: MouseEvent): void {
+    showPopup(
+      SelectPopup,
+      {
+        value: possibleAttrs.map((p) => {
+          return { id: p.name, label: p.label }
+        })
+      },
+      eventToHTMLElement(e),
+      (res) => {
+        if (res != null) {
+          addKey(res)
+        }
+      }
+    )
+  }
+
+  function remove (e: CustomEvent<any>): void {
+    if (e.detail !== undefined) {
+      const key = e.detail.key
+      keys = keys.filter((k) => k !== key)
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete (params as any)[key]
+      ;(step.params as any) = params
+      dispatch('change', step)
+    }
+  }
 </script>
 
-<ParamsEditor _class={process.masterTag} {process} {state} {keys} {params} on:change={change} />
+<ParamsEditor
+  _class={process.masterTag}
+  {process}
+  {state}
+  {keys}
+  {params}
+  allowRemove
+  on:remove={remove}
+  on:change={change}
+/>
+{#if possibleAttrs.length > 0}
+  <div class="flex-center mt-4">
+    <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />
+  </div>
+{/if}

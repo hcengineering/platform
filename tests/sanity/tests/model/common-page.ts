@@ -41,8 +41,15 @@ export class CommonPage {
   popupSubmitButton = (): Locator => this.page.locator('div.popup button[type="submit"]')
   historyBoxButtonFirst = (): Locator => this.page.locator('div.history-box button:first-child')
   inboxNotyButton = (): Locator => this.page.locator('button[id$="Inbox"] > div.noty')
-  mentionPopupListItem = (mentionName: string): Locator =>
-    this.page.locator('form.mentionPoup div.list-item', { hasText: mentionName })
+  mentionPopupListItem = (mentionName: string, categoryName?: string): Locator => {
+    if (categoryName !== undefined && categoryName !== '') {
+      return this.page.locator(`form.mentionPoup div.list-item:below(:text("${categoryName}"))`, {
+        hasText: mentionName
+      })
+    } else {
+      return this.page.locator('form.mentionPoup div.list-item', { hasText: mentionName })
+    }
+  }
 
   hulyPopupRowButton = (name: string): Locator =>
     this.page.locator('div.hulyPopup-container button.hulyPopup-row', { hasText: name })
@@ -196,8 +203,8 @@ export class CommonPage {
     await expect(this.infoSpan()).not.toBeAttached()
   }
 
-  async selectMention (mentionName: string): Promise<void> {
-    await this.mentionPopupListItem(mentionName).click()
+  async selectMention (mentionName: string, categoryName?: string): Promise<void> {
+    await this.mentionPopupListItem(mentionName, categoryName).first().click()
   }
 
   async selectListItem (name: string): Promise<void> {

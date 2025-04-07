@@ -22,6 +22,8 @@
 
   export let _class: Ref<Class<Card>>
   export let selected: Ref<Card> | undefined
+  export let selectedObjects: Ref<Card>[] | undefined
+  export let ignoreObjects: Ref<Card>[] | undefined = undefined
   export let multiSelect: boolean = false
   export let allowDeselect: boolean = true
   export let titleDeselect: IntlString | undefined = undefined
@@ -36,9 +38,11 @@
 <ObjectPopup
   {_class}
   {selected}
+  {selectedObjects}
   {multiSelect}
   {allowDeselect}
   {titleDeselect}
+  {ignoreObjects}
   type={'object'}
   groupBy={'_class'}
   on:update

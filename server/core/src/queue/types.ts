@@ -30,7 +30,7 @@ export interface ConsumerControl {
 }
 
 export interface PlatformQueue {
-  createProducer: <T>(ctx: MeasureContext, topic: QueueTopic) => PlatformQueueProducer<T>
+  createProducer: <T>(ctx: MeasureContext, topic: QueueTopic | string) => PlatformQueueProducer<T>
 
   /**
    * Create a consumer for a topic.
@@ -38,7 +38,7 @@ export interface PlatformQueue {
    */
   createConsumer: <T>(
     ctx: MeasureContext,
-    topic: QueueTopic,
+    topic: QueueTopic | string,
     groupId: string,
     onMessage: (msg: ConsumerMessage<T>[], queue: ConsumerControl) => Promise<void>,
     options?: {
@@ -47,7 +47,13 @@ export interface PlatformQueue {
   ) => ConsumerHandle
   createTopics: (tx: number) => Promise<void>
 
+  // If not passed will delete all topica from QueueTopic enum
+  deleteTopics: (topics?: (QueueTopic | string)[]) => Promise<void>
+
   getClientId: () => string
+
+  // Will close all producers and consumers
+  shutdown: () => Promise<void>
 }
 
 /**

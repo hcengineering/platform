@@ -18,9 +18,14 @@ import core, {
   AnyAttribute,
   Data,
   Doc,
+  fillDefaults,
+  getDiffUpdate,
+  Mixin,
   Ref,
+  splitMixinUpdate,
   Tx,
   TxCreateDoc,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -113,6 +118,7 @@ async function OnAttributeRemove (ctx: TxRemoveDoc<AnyAttribute>[], control: Tri
 
 async function OnMasterTagRemove (ctx: TxUpdateDoc<MasterTag>[], control: TriggerControl): Promise<Tx[]> {
   const updateTx = ctx[0]
+  if (updateTx.space === core.space.DerivedTx) return []
   if (updateTx.operations.removed !== true) return []
   const res: Tx[] = []
   const desc = control.hierarchy.getDescendants(updateTx.objectId)
@@ -215,7 +221,10 @@ async function OnMasterTagCreate (ctx: TxCreateDoc<MasterTag | Tag>[], control: 
     control.txFactory.createTxMixin(createTx.objectId, core.class.Mixin, core.space.Model, setting.mixin.UserMixin, {})
   )
   if (tag._class === card.class.MasterTag) {
-    const viewlets = await control.findAll(control.ctx, view.class.Viewlet, { attachTo: tag.extends })
+    const viewlets = await control.findAll(control.ctx, view.class.Viewlet, {
+      attachTo: tag.extends,
+      variant: { $exists: false }
+    })
     for (const viewlet of viewlets) {
       const base = extractObjectProps(viewlet)
       res.push(
@@ -387,6 +396,40 @@ async function OnCardCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl):
   return res
 }
 
+export async function OnCardTag (ctx: TxMixin<Card, Card>[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of ctx) {
+    if (tx.space === core.space.DerivedTx) continue
+    if (tx._class !== core.class.TxMixin) continue
+    const target = tx.mixin
+    const to = control.hierarchy.getBaseClass(target)
+    const ancestors = control.hierarchy.getAncestors(target).filter((p) => control.hierarchy.isDerived(p, to))
+    const mixinAncestors: Ref<Mixin<Doc>>[] = []
+    const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }))[0]
+    if (doc === undefined) continue
+    for (const anc of ancestors) {
+      if (anc === target) continue
+      if (control.hierarchy.hasMixin(doc, anc)) break
+      if (anc === to) break
+      mixinAncestors.unshift(anc)
+    }
+    for (const anc of mixinAncestors) {
+      res.push(control.txFactory.createTxMixin(doc._id, doc._class, doc.space, anc, {}))
+    }
+    const updated = fillDefaults(control.hierarchy, control.hierarchy.as(control.hierarchy.clone(doc), target), target)
+    const diff = getDiffUpdate(doc, updated)
+    const splitted = splitMixinUpdate(control.hierarchy, diff, target, doc._class)
+    for (const it of splitted) {
+      if (control.hierarchy.isMixin(it[0])) {
+        res.push(control.txFactory.createTxMixin(doc._id, doc._class, doc.space, it[0], it[1]))
+      } else {
+        res.push(control.txFactory.createTxUpdateDoc(it[0], doc.space, doc._id, it[1]))
+      }
+    }
+  }
+  return res
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -397,6 +440,7 @@ export default async () => ({
     OnTagRemove,
     OnCardRemove,
     OnCardCreate,
-    OnCardUpdate
+    OnCardUpdate,
+    OnCardTag
   }
 })

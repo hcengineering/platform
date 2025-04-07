@@ -3,8 +3,9 @@ import core, {
   WorkspaceEvent,
   generateId,
   getTypeOf,
-  type WorkspaceIds,
+  systemAccount,
   type Account,
+  type AccountUuid,
   type BackupClient,
   type Branding,
   type BrandingMap,
@@ -20,15 +21,14 @@ import core, {
   type FindResult,
   type MeasureContext,
   type ModelDb,
+  type PersonId,
   type Ref,
   type SearchResult,
   type SessionData,
   type Tx,
   type TxResult,
   type TxWorkspaceEvent,
-  type PersonId,
-  systemAccount,
-  type AccountUuid
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import { createHash, type Hash } from 'crypto'
@@ -232,7 +232,12 @@ export function loadBrandingMap (brandingPath?: string): BrandingMap {
   return brandings
 }
 
-export function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsIds: WorkspaceIds): Client & BackupClient {
+export function wrapPipeline (
+  ctx: MeasureContext,
+  pipeline: Pipeline,
+  wsIds: WorkspaceIds,
+  doBroadcast: boolean = false
+): Client & BackupClient {
   const contextData = new SessionDataImpl(
     systemAccount,
     'pipeline',
@@ -267,7 +272,13 @@ export function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsIds: Wo
     upload: (domain, docs) => backupOps.upload(ctx, domain, docs),
     searchFulltext: async (query, options) => ({ docs: [], total: 0 }),
     sendForceClose: async () => {},
-    tx: (tx) => pipeline.tx(ctx, [tx]),
+    tx: async (tx) => {
+      const result = await pipeline.tx(ctx, [tx])
+      if (doBroadcast) {
+        await pipeline.handleBroadcast(ctx)
+      }
+      return result
+    },
     notify: (...tx) => {}
   }
 }

@@ -16,8 +16,9 @@
   import { Person, formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { Icon, Loading } from '@hcengineering/ui'
+  import { Loading } from '@hcengineering/ui'
   import love from '../plugin'
+  import MicDisabled from './icons/MicDisabled.svelte'
 
   export let _id: string
   export let name: string
@@ -57,10 +58,10 @@
 <div id={_id} class="parent">
   <div class="label">
     <span class="overflow-label">{formatName(name)}</span>
-    <div class="icon" class:shown={muted || connecting}>
-      {#if connecting}<Loading size={'small'} shrink />{/if}
-      {#if muted}<Icon size="small" icon={love.icon.MicDisabled} />{/if}
-    </div>
+  </div>
+  <div class="icon" class:shown={muted || connecting}>
+    {#if connecting}<Loading size={'small'} shrink />{/if}
+    {#if muted}<MicDisabled size={'small'} />{/if}
   </div>
   <div bind:this={parent} class="cover" class:active={activeTrack} class:mirror={mirror && activeTrack}>
     <div class="ava">
@@ -96,9 +97,9 @@
     .ava {
       overflow: hidden;
       position: absolute;
-      height: 25%;
+      height: 50%;
       aspect-ratio: 1;
-      border-radius: 20%;
+      border-radius: 50%;
     }
     &.active > .ava {
       display: none;
@@ -115,44 +116,39 @@
     min-height: 0;
     max-height: 100%;
 
-    .label {
+    .label,
+    .icon {
       position: absolute;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-      gap: 0.5rem;
-      bottom: 0.375rem;
-      left: 0.375rem;
-      right: 0.375rem;
-      max-width: calc(100% - 0.75rem);
+      padding: 0.25rem 0.5rem;
+      height: 1.5rem;
+      color: rgba(0, 0, 0, 0.75);
+      background-color: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(3px);
       z-index: 1;
+    }
+    .label {
+      overflow: hidden;
+      top: 0;
+      left: 0;
+      max-width: 12rem;
+      font-weight: 500;
+      font-size: 0.75rem;
+      line-height: 1rem;
+      border-radius: 0.75rem 0 0.5rem 0;
+    }
+    .icon {
+      display: none;
+      bottom: 0;
+      right: 0;
+      flex-shrink: 0;
+      gap: 0.25rem;
+      border-radius: 0.5rem 0 0.75rem 0;
 
-      span,
-      .icon {
-        height: 1.5rem;
-        background-color: rgba(0, 0, 0, 0.7);
-        border-radius: 0.375rem;
-      }
-      span {
-        padding: 0.25rem 0.5rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 0.875rem;
-        line-height: 1rem;
-        color: #ffffff;
-      }
-      .icon {
-        display: none;
-        justify-content: center;
-        align-items: center;
-        flex-shrink: 0;
-        gap: 0.25rem;
-        padding: 0.25rem;
-        min-width: 1.5rem;
-
-        &.shown {
-          display: flex;
-        }
+      &.shown {
+        display: flex;
       }
     }
   }

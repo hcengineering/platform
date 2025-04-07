@@ -16,13 +16,14 @@
   import { SelectedContext, Context } from '@hcengineering/process'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import ConfigurePopup from './ConfigurePopup.svelte'
-  import { Ref, Class, Doc } from '@hcengineering/core'
+  import { Ref, Class, Doc, AnyAttribute } from '@hcengineering/core'
   import ContextValuePresenter from './ContextValuePresenter.svelte'
   import { AttributeCategory } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
 
   export let contextValue: SelectedContext
   export let context: Context
+  export let attribute: AnyAttribute
   export let attrClass: Ref<Class<Doc>>
   export let category: AttributeCategory
 
@@ -40,7 +41,11 @@
         dispatch('update', res)
       }
     }
-    showPopup(ConfigurePopup, { contextValue, attrClass, category, context, onChange }, eventToHTMLElement(e))
+    showPopup(
+      ConfigurePopup,
+      { contextValue, attrClass, category, attribute, context, onChange },
+      eventToHTMLElement(e)
+    )
   }
 </script>
 

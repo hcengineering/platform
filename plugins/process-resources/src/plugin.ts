@@ -40,7 +40,10 @@ export default mergeIds(processId, process, {
     NestedContextSelector: '' as AnyComponent,
     RelatedContextSelector: '' as AnyComponent,
     FunctionSelector: '' as AnyComponent,
-    RunProcessCardPopup: '' as AnyComponent
+    RunProcessCardPopup: '' as AnyComponent,
+    DateOffsetEditor: '' as AnyComponent,
+    NumberOffsetEditor: '' as AnyComponent,
+    ErrorPresenter: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction
@@ -76,6 +79,18 @@ export default mergeIds(processId, process, {
     Random: '' as IntlString,
     MyProcesses: '' as IntlString,
     AllProcesses: '' as IntlString,
-    ShowDone: '' as IntlString
+    ShowDone: '' as IntlString,
+    Increment: '' as IntlString,
+    Decrement: '' as IntlString,
+    Add: '' as IntlString,
+    Subtract: '' as IntlString,
+    Offset: '' as IntlString,
+    Value: '' as IntlString,
+    FirstWorkingDayAfter: '' as IntlString,
+    FallbackValueError: '' as IntlString,
+    Required: '' as IntlString,
+    ParallelExecutionForbidden: '' as IntlString,
+    StartAutomatically: '' as IntlString,
+    Continue: '' as IntlString
   }
 })

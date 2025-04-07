@@ -11,6 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import card from '@hcengineering/card'
 import core, { type Doc } from '@hcengineering/core'
 import { Mixin, type Builder } from '@hcengineering/model'
 import { TMethod, TProcessFunction } from '@hcengineering/model-process'
@@ -19,8 +20,8 @@ import process from '@hcengineering/process'
 import serverCore from '@hcengineering/server-core'
 import serverProcess, {
   type ExecuteFunc,
-  type MethodImpl,
   type FuncImpl,
+  type MethodImpl,
   type TransformFunc
 } from '@hcengineering/server-process'
 
@@ -75,11 +76,55 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.Trim
   })
 
+  builder.mixin(process.function.Add, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Add
+  })
+
+  builder.mixin(process.function.Subtract, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Subtract
+  })
+
+  builder.mixin(process.function.Offset, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Offset
+  })
+
+  builder.mixin(process.function.FirstWorkingDayAfter, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.FirstWorkingDayAfter
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnExecutionContinue,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: process.class.Execution,
+      'operations.error': null
+    },
+    isAsync: true
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnProcessRemove,
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: process.class.Process
+    },
+    isAsync: true
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnCardCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: card.class.Card
+    },
+    isAsync: true
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnTagAdd,
+    txMatch: {
+      _class: core.class.TxMixin,
+      objectClass: card.class.Card
     },
     isAsync: true
   })

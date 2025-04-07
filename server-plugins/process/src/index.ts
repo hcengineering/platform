@@ -39,13 +39,20 @@ export default plugin(serverProcessId, {
     Random: '' as Resource<TransformFunc>,
     UpperCase: '' as Resource<TransformFunc>,
     LowerCase: '' as Resource<TransformFunc>,
-    Trim: '' as Resource<TransformFunc>
+    Trim: '' as Resource<TransformFunc>,
+    Add: '' as Resource<TransformFunc>,
+    Subtract: '' as Resource<TransformFunc>,
+    Offset: '' as Resource<TransformFunc>,
+    FirstWorkingDayAfter: '' as Resource<TransformFunc>
   },
   trigger: {
+    OnCardCreate: '' as Resource<TriggerFunc>,
+    OnTagAdd: '' as Resource<TriggerFunc>,
     OnExecutionCreate: '' as Resource<TriggerFunc>,
     OnStateRemove: '' as Resource<TriggerFunc>,
     OnProcessRemove: '' as Resource<TriggerFunc>,
     OnProcessToDoClose: '' as Resource<TriggerFunc>,
-    OnProcessToDoRemove: '' as Resource<TriggerFunc>
+    OnProcessToDoRemove: '' as Resource<TriggerFunc>,
+    OnExecutionContinue: '' as Resource<TriggerFunc>
   }
 })

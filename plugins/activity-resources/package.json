@@ -51,7 +51,7 @@
     "@hcengineering/ui-next": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
-    "@hcengineering/communication-types": "0.1.147",
+    "@hcengineering/communication-types": "0.1.155",
     "svelte": "^4.2.19"
   }
 }

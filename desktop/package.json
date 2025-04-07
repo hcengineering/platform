@@ -246,7 +246,7 @@
     "electron-store": "^8.2.0",
     "electron-log": "^5.1.7",
     "electron-updater": "^6.3.4",
-    "livekit-client": "^2.9.0",
+    "livekit-client": "^2.9.9",
     "@hcengineering/server-backup": "^0.6.0",
     "ws": "^8.18.0"
   },

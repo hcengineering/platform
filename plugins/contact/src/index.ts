@@ -38,6 +38,7 @@ import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import type { AnyComponent, ColorDefinition, ResolvedLocation, Location, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, FilterMode, Viewlet } from '@hcengineering/view'
 import type { Readable } from 'svelte/store'
+import { Card, MasterTag } from '@hcengineering/card'
 import { PermissionsStore } from './types'
 
 /**
@@ -140,6 +141,7 @@ export interface Contact extends Doc, AvatarInfo {
 export interface Person extends Contact, BasePerson {
   birthday?: Timestamp | null
   socialIds?: Collection<SocialIdentity>
+  profile?: Ref<Card>
 }
 
 /**
@@ -210,7 +212,8 @@ export const contactPlugin = plugin(contactId, {
     Status: '' as Ref<Class<Status>>,
     ContactsTab: '' as Ref<Class<ContactsTab>>,
     PersonSpace: '' as Ref<Class<PersonSpace>>,
-    SocialIdentity: '' as Ref<Class<SocialIdentity>>
+    SocialIdentity: '' as Ref<Class<SocialIdentity>>,
+    UserProfile: '' as Ref<MasterTag>
   },
   mixin: {
     Employee: '' as Ref<Class<Employee>>
@@ -328,13 +331,15 @@ export const contactPlugin = plugin(contactId, {
     SocialId: '' as IntlString,
     SocialIds: '' as IntlString,
     Type: '' as IntlString,
-    Confirmed: '' as IntlString
+    Confirmed: '' as IntlString,
+    UserProfile: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
     TablePerson: '' as Ref<Viewlet>,
     TableEmployee: '' as Ref<Viewlet>,
-    TableOrganization: '' as Ref<Viewlet>
+    TableOrganization: '' as Ref<Viewlet>,
+    TableUserProfile: '' as Ref<Viewlet>
   },
   filter: {
     FilterChannelIn: '' as Ref<FilterMode>,

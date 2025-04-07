@@ -41,7 +41,9 @@ import type {
   WorkspaceInfoWithStatus,
   Sort,
   Mailbox,
-  MailboxSecret
+  MailboxSecret,
+  Integration,
+  IntegrationSecret
 } from '../types'
 
 function toSnakeCase (str: string): string {
@@ -86,13 +88,18 @@ function convertKeysToSnakeCase (obj: any): any {
   return obj
 }
 
+function formatVar (idx: number, type?: string): string {
+  return type != null ? `$${idx}::${type}` : `$${idx}`
+}
+
 export class PostgresDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
 implements DbCollection<T> {
   constructor (
     readonly name: string,
     readonly client: Sql,
     readonly idKey?: K,
-    readonly ns: string = 'global_account'
+    readonly ns?: string,
+    readonly fieldTypes: Record<string, string> = {}
   ) {}
 
   getTableName (): string {
@@ -108,7 +115,14 @@ implements DbCollection<T> {
   }
 
   protected buildWhereClause (query: Query<T>, lastRefIdx: number = 0): [string, any[]] {
-    if (Object.keys(query).length === 0) {
+    const filteredQuery = Object.entries(query).reduce<Query<T>>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key as keyof Query<T>] = value
+      }
+      return acc
+    }, {})
+
+    if (Object.keys(filteredQuery).length === 0) {
       return ['', []]
     }
 
@@ -116,9 +130,12 @@ implements DbCollection<T> {
     const values: any[] = []
     let currIdx: number = lastRefIdx
 
-    for (const key of Object.keys(query)) {
-      const qKey = query[key]
+    for (const key of Object.keys(filteredQuery)) {
+      const qKey = filteredQuery[key]
+      if (qKey === undefined) continue
+
       const operator = qKey != null && typeof qKey === 'object' ? Object.keys(qKey)[0] : ''
+      const castType = this.fieldTypes[key]
       const snakeKey = toSnakeCase(key)
       switch (operator) {
         case '$in': {
@@ -126,7 +143,7 @@ implements DbCollection<T> {
           const inVars: string[] = []
           for (const val of inVals) {
             currIdx++
-            inVars.push(`$${currIdx}`)
+            inVars.push(formatVar(currIdx, castType))
             values.push(val)
           }
           whereChunks.push(`"${snakeKey}" IN (${inVars.join(', ')})`)
@@ -134,38 +151,42 @@ implements DbCollection<T> {
         }
         case '$lt': {
           currIdx++
-          whereChunks.push(`"${snakeKey}" < $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" < ${formatVar(currIdx, castType)}`)
           values.push(Object.values(qKey as object)[0])
           break
         }
         case '$lte': {
           currIdx++
-          whereChunks.push(`"${snakeKey}" <= $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" <= ${formatVar(currIdx, castType)}`)
           values.push(Object.values(qKey as object)[0])
           break
         }
         case '$gt': {
           currIdx++
-          whereChunks.push(`"${snakeKey}" > $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" > ${formatVar(currIdx, castType)}`)
           values.push(Object.values(qKey as object)[0])
           break
         }
         case '$gte': {
           currIdx++
-          whereChunks.push(`"${snakeKey}" >= $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" >= ${formatVar(currIdx, castType)}`)
           values.push(Object.values(qKey as object)[0])
           break
         }
         case '$ne': {
           currIdx++
-          whereChunks.push(`"${key}" != $${currIdx}`)
+          whereChunks.push(`"${snakeKey}" != ${formatVar(currIdx, castType)}`)
           values.push(Object.values(qKey as object)[0])
           break
         }
         default: {
           currIdx++
-          whereChunks.push(`"${snakeKey}" = $${currIdx}`)
-          values.push(qKey)
+          if (qKey !== null) {
+            whereChunks.push(`"${snakeKey}" = ${formatVar(currIdx, castType)}`)
+            values.push(qKey)
+          } else {
+            whereChunks.push(`"${snakeKey}" IS NULL`)
+          }
         }
       }
     }
@@ -253,8 +274,9 @@ implements DbCollection<T> {
         }
         default: {
           const snakeKey = toSnakeCase(key)
+          const castType = this.fieldTypes[key]
           currIdx++
-          updateChunks.push(`"${snakeKey}" = $${currIdx}`)
+          updateChunks.push(`"${snakeKey}" = ${formatVar(currIdx, castType)}`)
           values.push(ops[key])
         }
       }
@@ -297,8 +319,11 @@ export class AccountPostgresDbCollection
   implements DbCollection<Account> {
   private readonly passwordKeys = ['hash', 'salt']
 
-  constructor (readonly client: Sql) {
-    super('account', client, 'uuid')
+  constructor (
+    readonly client: Sql,
+    readonly ns?: string
+  ) {
+    super('account', client, 'uuid', ns)
   }
 
   getPasswordsTableName (): string {
@@ -316,6 +341,7 @@ export class AccountPostgresDbCollection
         a.uuid,
         a.timezone,
         a.locale,
+        a.automatic,
         p.hash,
         p.salt
       FROM ${this.getTableName()} as a
@@ -380,21 +406,25 @@ export class PostgresAccountDB implements AccountDB {
   invite: PostgresDbCollection<WorkspaceInvite, 'id'>
   mailbox: PostgresDbCollection<Mailbox, 'mailbox'>
   mailboxSecret: PostgresDbCollection<MailboxSecret>
+  integration: PostgresDbCollection<Integration>
+  integrationSecret: PostgresDbCollection<IntegrationSecret>
 
   constructor (
     readonly client: Sql,
     readonly ns: string = 'global_account'
   ) {
-    this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid')
-    this.account = new AccountPostgresDbCollection(client)
-    this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, '_id')
-    this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client)
-    this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid')
-    this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client)
-    this.otp = new PostgresDbCollection<OTP>('otp', client)
-    this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, 'id')
-    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client)
-    this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client)
+    this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid', ns)
+    this.account = new AccountPostgresDbCollection(client, ns)
+    this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, '_id', ns)
+    this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client, undefined, ns)
+    this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid', ns)
+    this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client, undefined, ns)
+    this.otp = new PostgresDbCollection<OTP>('otp', client, undefined, ns)
+    this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, 'id', ns)
+    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, undefined, ns)
+    this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client, undefined, ns)
+    this.integration = new PostgresDbCollection<Integration>('integrations', client, undefined, ns)
+    this.integrationSecret = new PostgresDbCollection<IntegrationSecret>('integration_secrets', client, undefined, ns)
   }
 
   getWsMembersTableName (): string {
@@ -644,7 +674,9 @@ export class PostgresAccountDB implements AccountDB {
       this.getV2Migration3(),
       this.getV3Migration(),
       this.getV4Migration(),
-      this.getV4Migration1()
+      this.getV4Migration1(),
+      this.getV5Migration(),
+      this.getV6Migration()
     ]
   }
 
@@ -886,6 +918,48 @@ export class PostgresAccountDB implements AccountDB {
       `
       ALTER TABLE ${this.ns}.mailbox
       DROP CONSTRAINT IF EXISTS mailbox_account_fk;
+      `
+    ]
+  }
+
+  private getV5Migration (): [string, string] {
+    return [
+      'account_db_v5_social_id_is_deleted',
+      `
+      ALTER TABLE ${this.ns}.social_id
+      ADD COLUMN IF NOT EXISTS is_deleted BOOL NOT NULL DEFAULT FALSE;
+      `
+    ]
+  }
+
+  private getV6Migration (): [string, string] {
+    return [
+      'account_db_v6_add_social_id_integrations',
+      `
+      CREATE TABLE IF NOT EXISTS ${this.ns}.integrations (
+          social_id INT8 NOT NULL,
+          kind STRING NOT NULL,
+          workspace_uuid UUID,
+          _def_ws_uuid UUID NOT NULL GENERATED ALWAYS AS (COALESCE(workspace_uuid, '00000000-0000-0000-0000-000000000000')) STORED NOT VISIBLE,
+          data JSONB,
+          CONSTRAINT integrations_pk PRIMARY KEY (social_id, kind, _def_ws_uuid),
+          INDEX integrations_kind_idx (kind),
+          CONSTRAINT integrations_social_id_fk FOREIGN KEY (social_id) REFERENCES ${this.ns}.social_id(_id),
+          CONSTRAINT integrations_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${this.ns}.workspace(uuid)
+      );
+
+      CREATE TABLE IF NOT EXISTS ${this.ns}.integration_secrets (
+          social_id INT8 NOT NULL,
+          kind STRING NOT NULL,
+          workspace_uuid UUID,
+          _def_ws_uuid UUID NOT NULL GENERATED ALWAYS AS (COALESCE(workspace_uuid, '00000000-0000-0000-0000-000000000000')) STORED NOT VISIBLE,
+          key STRING,
+          secret STRING NOT NULL,
+          CONSTRAINT integration_secrets_pk PRIMARY KEY (social_id, kind, _def_ws_uuid, key),
+          CONSTRAINT integration_secrets_integrations_fk FOREIGN KEY (social_id, kind, _def_ws_uuid) 
+              REFERENCES ${this.ns}.integrations(social_id, kind, _def_ws_uuid)
+              ON DELETE CASCADE
+      );
       `
     ]
   }

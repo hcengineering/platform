@@ -122,37 +122,22 @@ const listConfig: (BuildModelKey | string)[] = [
 export function createSystemType (
   builder: Builder,
   type: Ref<MasterTag>,
+  icon: Asset = card.icon.MasterTag,
   label: IntlString,
-  icon: Asset = card.icon.MasterTag
+  pluralLabel?: IntlString
 ): void {
   builder.createDoc(
     card.class.MasterTag,
     core.space.Model,
     {
       label,
+      pluralLabel,
       extends: card.class.Card,
       icon,
       kind: ClassifierKind.CLASS
     },
     type
   )
-
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: type,
-    descriptor: view.viewlet.List,
-    viewOptions: {
-      groupBy: ['_class', 'createdBy', 'modifiedBy'],
-      orderBy: [
-        ['modifiedOn', SortingOrder.Descending],
-        ['rank', SortingOrder.Ascending]
-      ],
-      other: []
-    },
-    configOptions: {
-      hiddenKeys: ['content', 'title']
-    },
-    config: listConfig
-  })
 
   builder.mixin(type, card.class.MasterTag, setting.mixin.Editable, {
     value: false
@@ -171,13 +156,30 @@ export function createSystemType (
       'modifiedOn'
     ]
   })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: view.viewlet.List,
+    viewOptions: {
+      groupBy: ['_class', 'createdBy', 'modifiedBy'],
+      orderBy: [
+        ['modifiedOn', SortingOrder.Descending],
+        ['rank', SortingOrder.Ascending]
+      ],
+      other: []
+    },
+    configOptions: {
+      hiddenKeys: ['content', 'title']
+    },
+    config: listConfig
+  })
 }
 
 export function createModel (builder: Builder): void {
   builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
 
-  createSystemType(builder, card.types.File, attachment.string.File, card.icon.File)
-  createSystemType(builder, card.types.Document, card.string.Document, card.icon.Document)
+  createSystemType(builder, card.types.File, card.icon.File, attachment.string.File, attachment.string.Files)
+  createSystemType(builder, card.types.Document, card.icon.Document, card.string.Document, card.string.Documents)
 
   builder.createDoc(
     workbench.class.Application,
@@ -222,6 +224,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributeEditor, {
     inlineEditor: card.component.CardEditor
+  })
+
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: card.component.CardArrayEditor
   })
 
   createAction(
@@ -319,7 +325,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: card.component.CardRefPresenter
+    presenter: card.component.CardRefPresenter,
+    arrayPresenter: card.component.CardArrayEditor
   })
 
   builder.mixin(card.class.Card, core.class.Class, activity.mixin.ActivityDoc, {})

@@ -112,6 +112,9 @@
     "UseMaxWidth": "使用最大宽度",
     "Sidebar": "侧边栏",
     "FontSize": "字体大小",
-    "Language": "语言"
+    "Language": "语言",
+    "DaysWOValue": "{days, plural, =1 {天} other {天}}",
+    "WeeksWOValue": "{weeks, plural, =1 {周} other {周}}",
+    "MonthsWOValue": "{months, plural, =1 {月} other {月}}"
   }
 }

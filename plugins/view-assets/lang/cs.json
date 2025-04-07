@@ -129,6 +129,9 @@
     "Title": "Název",
     "HideArchived": "Skrýt archivované",
     "RemoveRelation": "Odstranit vztah",  
-    "RemoveRelationConfirmation": "Chcete odstranit vztah?"  
+    "RemoveRelationConfirmation": "Chcete odstranit vztah?",
+    "MasterDetail": "Hlavní-detailní",
+    "Tree": "Strom",
+    "Document": "Dokument"
   }
 }

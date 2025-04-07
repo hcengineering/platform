@@ -53,7 +53,7 @@
       association: context.association,
       direction: context.direction,
       name: context.name,
-      functions: valueFunc !== undefined ? [valueFunc] : [],
+      functions: valueFunc !== undefined ? [{ func: valueFunc, props: {} }] : [],
       sourceFunction: reduceFunc
     })
   }

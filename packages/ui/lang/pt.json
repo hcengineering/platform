@@ -112,6 +112,9 @@
     "UseMaxWidth": "Largura máxima",
     "Sidebar": "Barra lateral",
     "FontSize": "Tamanho da fonte",
-    "Language": "Idioma"
+    "Language": "Idioma",
+    "DaysWOValue": "{days, plural, =1 {dia} other {dias}}",
+    "WeeksWOValue": "{weeks, plural, =1 {semana} other {semanas}}",
+    "MonthsWOValue": "{months, plural, =1 {mês} other {meses}}"
   }
 }

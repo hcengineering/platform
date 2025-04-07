@@ -112,6 +112,7 @@
     "SocialId": "Социальный ID",
     "SocialIds": "Социальные ID",
     "Type": "Тип",
-    "Confirmed": "Подтвержден"
+    "Confirmed": "Подтвержден",
+    "UserProfile": "Профиль пользователя"
   }
 }

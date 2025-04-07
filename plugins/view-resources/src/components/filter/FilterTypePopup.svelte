@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, ArrOf, Class, Doc, Ref, RefTo, Space, Type } from '@hcengineering/core'
+  import core, { AnyAttribute, ArrOf, Class, ClassifierKind, Doc, Ref, RefTo, Space, Type } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label, Scroller, Submenu, closePopup, closeTooltip, resizeObserver, showPopup } from '@hcengineering/ui'
   import { ClassFilters, Filter, KeyFilter, KeyFilterPreset, ViewOptions } from '@hcengineering/view'
@@ -145,6 +145,8 @@
 
     const desc = hierarchy.getDescendants(_class)
     for (const d of desc) {
+      const cl = hierarchy.findClass(d)
+      if (cl?.kind !== ClassifierKind.MIXIN) continue
       const extra = hierarchy.getOwnAttributes(d)
       for (const [k, v] of extra) {
         if (!allAttributes.has(k)) {

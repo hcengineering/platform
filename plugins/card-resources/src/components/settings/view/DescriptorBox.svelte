@@ -19,8 +19,11 @@
   import { IntlString } from '@hcengineering/platform'
 
   export let value: Ref<ViewletDescriptor> | undefined = undefined
-  export let supportedTypes: Ref<ViewletDescriptor>[] = [view.viewlet.Table, view.viewlet.List]
+  export let withSingleViews: boolean = false
   export let label: IntlString
+  $: supportedTypes = withSingleViews
+    ? [view.viewlet.Table, view.viewlet.List, view.viewlet.Tree, view.viewlet.MasterDetail, view.viewlet.Document]
+    : [view.viewlet.Table, view.viewlet.List, view.viewlet.Tree, view.viewlet.MasterDetail]
 </script>
 
 <ObjectBox
@@ -31,4 +34,5 @@
   docQuery={{
     _id: { $in: supportedTypes }
   }}
+  on:change
 />

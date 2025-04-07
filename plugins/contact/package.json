@@ -49,7 +49,8 @@
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/templates": "^0.6.11",
-    "@hcengineering/view": "^0.6.13"
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/card": "^0.6.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
