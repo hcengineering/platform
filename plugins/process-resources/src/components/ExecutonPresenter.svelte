@@ -16,6 +16,7 @@
   import { WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Execution } from '@hcengineering/process'
+  import ErrorPresenter from './ErrorPresenter.svelte'
 
   export let value: WithLookup<Execution>
 
@@ -25,7 +26,8 @@
 </script>
 
 {#if process}
-  <div>
+  <div class="flex-row-center flex-gap-2">
+    <ErrorPresenter value={value.error} />
     {process.name}
   </div>
 {/if}

@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Card, MasterTag } from '@hcengineering/card'
+import { Card, MasterTag, Tag } from '@hcengineering/card'
 import { Employee } from '@hcengineering/contact'
 import { Class, Doc, DocumentUpdate, ObjQueryType, Ref, Tx } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin } from '@hcengineering/platform'
@@ -25,10 +25,12 @@ import { AttributeCategory } from '@hcengineering/view'
 export const processId = 'process' as Plugin
 
 export interface Process extends Doc {
-  masterTag: Ref<MasterTag>
+  masterTag: Ref<MasterTag | Tag>
   name: string
   description: string
   states: Ref<State>[]
+  parallelExecutionForbidden?: boolean
+  autoStart?: boolean
 }
 
 export interface Execution extends Doc {
@@ -39,6 +41,13 @@ export interface Execution extends Doc {
   card: Ref<Card>
   done: boolean
   rollback: Record<Ref<State>, Tx[]>
+  error?: ExecutionError[] | null
+}
+
+export interface ExecutionError {
+  error: IntlString
+  props: Record<string, any>
+  intlProps: Record<string, IntlString>
 }
 
 export interface ProcessToDo extends ToDo {
@@ -72,10 +81,11 @@ export interface Method<T extends Doc> extends Doc {
   presenter?: AnyComponent
 }
 
-// add impl in server
 export interface ProcessFunction extends Doc {
   of: Ref<Class<Doc>>
-  category?: AttributeCategory
+  editor?: AnyComponent
+  category: AttributeCategory | undefined
+  allowMany?: boolean
   label: IntlString
 }
 
@@ -100,7 +110,18 @@ export default plugin(processId, {
     Method: '' as IntlString,
     Execution: '' as IntlString,
     Process: '' as IntlString,
-    Step: '' as IntlString
+    Step: '' as IntlString,
+    Error: '' as IntlString
+  },
+  error: {
+    MethodNotFound: '' as IntlString,
+    InternalServerError: '' as IntlString,
+    EmptyRelatedObjectValue: '' as IntlString,
+    RelatedObjectNotFound: '' as IntlString,
+    RelationNotExists: '' as IntlString,
+    EmptyAttributeContextValue: '' as IntlString,
+    ObjectNotFound: '' as IntlString,
+    AttributeNotExists: '' as IntlString
   },
   icon: {
     Process: '' as Asset,
@@ -113,6 +134,10 @@ export default plugin(processId, {
     Random: '' as Ref<ProcessFunction>,
     UpperCase: '' as Ref<ProcessFunction>,
     LowerCase: '' as Ref<ProcessFunction>,
-    Trim: '' as Ref<ProcessFunction>
+    Trim: '' as Ref<ProcessFunction>,
+    Add: '' as Ref<ProcessFunction>,
+    Subtract: '' as Ref<ProcessFunction>,
+    Offset: '' as Ref<ProcessFunction>,
+    FirstWorkingDayAfter: '' as Ref<ProcessFunction>
   }
 })

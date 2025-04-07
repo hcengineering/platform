@@ -35,6 +35,7 @@
   export let readonly: boolean = false
   export let label: IntlString = card.string.Card
   export let _class: Ref<Class<Card>>
+  export let ignoreObjects: Ref<Card>[] | undefined = undefined
 
   export let focusIndex: number | undefined = undefined
   export let kind: ButtonKind = 'no-border'
@@ -53,7 +54,7 @@
       return
     }
 
-    showPopup(CardsPopup, { selected: value, _class }, eventToHTMLElement(event), change)
+    showPopup(CardsPopup, { selected: value, _class, ignoreObjects }, eventToHTMLElement(event), change)
   }
 
   const change = (val: Card | undefined): void => {
@@ -68,9 +69,11 @@
   let doc: Card | undefined
 
   const query = createQuery()
-  $: query.query(card.class.Card, { _id: value }, (res) => {
-    doc = res[0]
-  })
+  $: if (value !== undefined) {
+    query.query(card.class.Card, { _id: value }, (res) => {
+      doc = res[0]
+    })
+  }
 
   $: _classRef = doc?._class ?? _class
   $: clazz = _classRef !== undefined ? (hierarchy.findClass(_classRef) as MasterTag) : undefined

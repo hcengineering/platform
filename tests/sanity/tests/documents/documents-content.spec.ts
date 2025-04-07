@@ -236,9 +236,9 @@ test.describe('Content in the Documents tests', () => {
       const HEADER_2_CONTENT = 'Header 2'
       const HEADER_3_CONTENT = 'Header 3'
       const contentParts = [
-        `# ${HEADER_1_CONTENT}\n\n${faker.lorem.paragraph(20)}\n`,
-        `## ${HEADER_2_CONTENT}\n\n${faker.lorem.paragraph(20)}\n`,
-        `### ${HEADER_3_CONTENT}\n\n${faker.lorem.paragraph(20)}`
+        `# ${HEADER_1_CONTENT}\n\n${faker.lorem.paragraph(12)}\n`,
+        `## ${HEADER_2_CONTENT}\n\n${faker.lorem.paragraph(8)}\n`,
+        `### ${HEADER_3_CONTENT}\n\n${faker.lorem.paragraph(4)}`
       ]
 
       await test.step('Fill in the document and check the appearance of the ToC items', async () => {

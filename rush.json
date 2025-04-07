@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.150.0",
+  "rushVersion": "5.151.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -2304,11 +2304,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/green",
-      "projectFolder": "pods/green",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/server-card",
       "projectFolder": "server-plugins/card",
       "shouldPublish": false
@@ -2344,29 +2339,9 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/my-space",
-      "projectFolder": "plugins/my-space",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/my-space-assets",
-      "projectFolder": "plugins/my-space-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/my-space-resources",
-      "projectFolder": "plugins/my-space-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-my-space",
-      "projectFolder": "models/my-space",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/pod-mail",
       "projectFolder": "services/mail/pod-mail",
-      "shouldPublish": false,
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/chat",

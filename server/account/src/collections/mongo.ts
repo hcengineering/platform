@@ -51,7 +51,9 @@ import type {
   WorkspaceStatusData,
   Sort,
   Mailbox,
-  MailboxSecret
+  MailboxSecret,
+  Integration,
+  IntegrationSecret
 } from '../types'
 import { isShallowEqual } from '../utils'
 
@@ -373,6 +375,8 @@ export class MongoAccountDB implements AccountDB {
   invite: MongoDbCollection<WorkspaceInvite, 'id'>
   mailbox: MongoDbCollection<Mailbox, 'mailbox'>
   mailboxSecret: MongoDbCollection<MailboxSecret>
+  integration: MongoDbCollection<Integration>
+  integrationSecret: MongoDbCollection<IntegrationSecret>
 
   workspaceMembers: MongoDbCollection<WorkspaceMember>
 
@@ -388,6 +392,8 @@ export class MongoAccountDB implements AccountDB {
     this.invite = new MongoDbCollection<WorkspaceInvite, 'id'>('invite', db, 'id')
     this.mailbox = new MongoDbCollection<Mailbox, 'mailbox'>('mailbox', db)
     this.mailboxSecret = new MongoDbCollection<MailboxSecret>('mailboxSecrets', db)
+    this.integration = new MongoDbCollection<Integration>('integration', db)
+    this.integrationSecret = new MongoDbCollection<IntegrationSecret>('integrationSecret', db)
 
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
   }

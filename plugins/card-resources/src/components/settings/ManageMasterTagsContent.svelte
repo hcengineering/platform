@@ -66,6 +66,7 @@
       selectedSubObjectId = undefined
       subEditorTitle = undefined
       subEditor = undefined
+      subEditorTitle = undefined
     }
   }
 

@@ -13,23 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { PluginConfiguration } from '@hcengineering/core'
-  import { configurationStore, getClient, isAdminUser } from '@hcengineering/presentation'
+  import { PluginConfiguration } from '@hcengineering/core'
+  import { configurationStore, getClient } from '@hcengineering/presentation'
   import { Breadcrumb, Button, Header, Icon, IconInfo, Label, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
 
   async function change (config: PluginConfiguration, value: boolean): Promise<void> {
-    await client.update(
-      config,
-      {
-        enabled: value
-      },
-      false,
-      Date.now(),
-      isAdminUser() ? core.account.ConfigUser : undefined
-    )
+    await client.update(config, {
+      enabled: value
+    })
   }
 </script>
 

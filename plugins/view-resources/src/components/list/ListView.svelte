@@ -39,6 +39,7 @@
   export let viewOptions: ViewOptions
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let props: Record<string, any> = {}
+  export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
 
   let list: List
   let scroll: Scroller
@@ -89,6 +90,7 @@
       {options}
       {createItemDialog}
       {createItemDialogProps}
+      {baseMenuClass}
       {createItemLabel}
       {createItemEvent}
       {viewOptions}

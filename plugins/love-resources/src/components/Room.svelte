@@ -34,7 +34,7 @@
   import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 
   import love from '../plugin'
-  import { storePromise, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
+  import { waitForOfficeLoaded, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
   import {
     awaitConnect,
     isConnected,
@@ -231,7 +231,7 @@
 
     configured = true
 
-    await $storePromise
+    await waitForOfficeLoaded()
 
     if (
       !$isConnected &&

@@ -15,27 +15,53 @@
 
 import cors from 'cors'
 import express, { NextFunction, Request, Response } from 'express'
+import { join } from 'path'
+import { SplitLogger } from '@hcengineering/analytics-service'
+import { MeasureContext, MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { setMetadata } from '@hcengineering/platform'
+import { initStatisticsContext } from '@hcengineering/server-core'
+import serverToken from '@hcengineering/server-token'
 import { handleMtaHook } from './handlerMta'
 import config from './config'
 
-type RequestHandler = (req: Request, res: Response, next?: NextFunction) => Promise<void>
-
-const catchError = (fn: RequestHandler) => (req: Request, res: Response, next: NextFunction) => {
-  void (async () => {
-    try {
-      await fn(req, res, next)
-    } catch (err: unknown) {
-      console.error(req.method, req.path, err)
-      next(err)
-    }
-  })()
-}
+type RequestHandler = (req: Request, res: Response, ctx: MeasureContext, next?: NextFunction) => Promise<void>
 
 async function main (): Promise<void> {
+  const ctx = initStatisticsContext('inbound-mail', {
+    factory: () =>
+      new MeasureMetricsContext(
+        'inbound-mail',
+        {},
+        {},
+        newMetrics(),
+        new SplitLogger('inbound-mail', {
+          root: join(process.cwd(), 'logs'),
+          enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+        })
+      )
+  })
+
+  setMetadata(serverToken.metadata.Secret, config.secret)
+
   const app = express()
 
   app.use(cors())
-  app.use(express.json())
+  app.use(
+    express.json({
+      limit: config.mailSizeLimit
+    })
+  )
+
+  const catchError = (fn: RequestHandler) => (req: Request, res: Response, next: NextFunction) => {
+    void (async () => {
+      try {
+        await fn(req, res, ctx)
+      } catch (error: any) {
+        ctx.error('Failed to handle request', { method: req.method, path: req.path, error })
+        next(error)
+      }
+    })()
+  }
 
   app.post('/mta-hook', catchError(handleMtaHook))
 
@@ -43,13 +69,24 @@ async function main (): Promise<void> {
     res.status(404).send({ message: 'Not found' })
   })
 
-  app.use((err: any, _req: any, res: any, _next: any) => {
+  app.use((err: any, req: Request, res: any, _next: any) => {
+    ctx.error(err)
+    if (req.path === '/mta-hook') {
+      // Any error in the mta-hook should not prevent the mail server from handling emails
+      // At least the PayloadTooLargeError falls here before reacing our code
+      res.status(200).send({ action: 'accept' })
+      return
+    }
     res.status(500).send({ message: err.message })
   })
 
   const server = app.listen(config.port, () => {
-    console.log(`server started on port ${config.port}`)
-    console.log({ ...config, secret: '(stripped)' })
+    ctx.info('server started', {
+      ...config,
+      secret: config.secret !== undefined ? '(stripped)' : undefined,
+      hookToken: config.hookToken !== undefined ? '(stripped)' : undefined,
+      storageConfig: config.storageConfig !== undefined ? '(stripped)' : undefined
+    })
   })
 
   const shutdown = (): void => {
@@ -60,11 +97,11 @@ async function main (): Promise<void> {
 
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)
-  process.on('uncaughtException', (e) => {
-    console.error(e)
+  process.on('uncaughtException', (error: any) => {
+    ctx.error('Uncaught exception', { error })
   })
-  process.on('unhandledRejection', (e) => {
-    console.error(e)
+  process.on('unhandledRejection', (error: any) => {
+    ctx.error('Unhandled rejection', { error })
   })
 }
 

@@ -404,7 +404,6 @@ services:
       - STATS_URL=http://huly.local:4900
       - REKONI_URL=http://huly.local:4004
       - ACCOUNTS_URL=http://huly.local:3000
-      - SERVER_SECRET=secret
   print:
     image: hardcoreeng/print
     extra_hosts:

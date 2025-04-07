@@ -16,20 +16,38 @@
   import { createEventDispatcher } from 'svelte'
 
   import { MasterTag, Tag } from '@hcengineering/card'
-  import core, { Data, Ref } from '@hcengineering/core'
+  import core, { Association, Data, Ref, generateId } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Label } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletDescriptor, ViewOptionsModel } from '@hcengineering/view'
+  import view, { MasterDetailConfig, Viewlet, ViewletDescriptor, ViewOptionsModel } from '@hcengineering/view'
+  import setting from '@hcengineering/setting'
 
   import DescriptorBox from './DescriptorBox.svelte'
   import ViewSettingButton from './ViewSettingButton.svelte'
   import card from '../../../plugin'
   import { updateViewletConfig } from './utils'
+  import ViewConfigSection from './ViewConfigSection.svelte'
 
   export let tag: MasterTag | Tag
 
   let title: string
   let descriptor: Ref<ViewletDescriptor> | undefined = undefined
+  const association: Association | undefined = undefined
+  let viewConfigs: MasterDetailConfig[] = []
+  $: viewConfigs = [
+    {
+      class: tag?._id,
+      view: view.viewlet.Tree,
+      id: generateId(),
+      createComponent: card.component.CreateCardButton
+    },
+    {
+      class: tag?._id,
+      view: view.viewlet.Document,
+      id: generateId(),
+      createComponent: card.component.CreateCardButton
+    }
+  ]
 
   let viewletConfig: Data<Viewlet> | undefined = undefined
   $: viewletConfig = {
@@ -62,18 +80,33 @@
   async function save (): Promise<void> {
     dispatch('close')
     if (descriptor === undefined || viewletConfig === undefined) return
+    setMasterDetailConfig()
     await client.createDoc(view.class.Viewlet, core.space.Model, viewletConfig)
+  }
+
+  function setMasterDetailConfig (): void {
+    if (viewletConfig === undefined || descriptor !== view.viewlet.MasterDetail) return
+    viewletConfig.masterDetailOptions = {
+      views: viewConfigs
+    }
   }
   function onConfigUpdate (items: any[]): void {
     if (viewletConfig === undefined) return
     updateViewletConfig(viewletConfig, items)
   }
+  function onMasterDetailUpdate (items: MasterDetailConfig[]): void {
+    if (viewletConfig === undefined) return
+    viewConfigs = items
+  }
 </script>
 
 <Card
-  label={card.string.EditView}
+  label={card.string.CreateView}
   okAction={save}
-  canSave={descriptor !== undefined}
+  canSave={descriptor !== undefined &&
+    (descriptor !== view.viewlet.MasterDetail ||
+      (viewConfigs.length > 0 &&
+        viewConfigs.every((config) => config.class !== undefined && config.view !== undefined)))}
   on:close={() => {
     dispatch('close')
   }}
@@ -88,15 +121,44 @@
       </div>
     {/if}
   </svelte:fragment>
-  <div class="mb-2"><EditBox autoFocus bind:value={title} placeholder={view.string.Title} /></div>
-  <svelte:fragment slot="pool">
-    <DescriptorBox label={card.string.SelectViewType} bind:value={descriptor} />
-    <ViewSettingButton
-      viewlet={viewletConfig}
-      disabled={descriptor === undefined}
-      on:save={(event) => {
-        onConfigUpdate(event.detail ?? [])
+  <div class="antiGrid-row">
+    <div class="antiGrid-row__header">
+      <Label label={view.string.Title} />
+    </div>
+    <div class="padding">
+      <EditBox bind:value={title} placeholder={view.string.Title} kind={'large-style'} autoFocus />
+    </div>
+  </div>
+  <div class="antiGrid-row">
+    <div class="antiGrid-row__header withDesciption">
+      <Label label={card.string.SelectViewType} />
+    </div>
+    <div class="padding flex-row-center relative">
+      <DescriptorBox label={card.string.SelectViewType} bind:value={descriptor} />
+    </div>
+  </div>
+  {#if descriptor === view.viewlet.MasterDetail}
+    <ViewConfigSection
+      {tag}
+      {viewConfigs}
+      on:change={(e) => {
+        onMasterDetailUpdate(e.detail)
       }}
     />
-  </svelte:fragment>
+  {:else}
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={setting.string.Settings} />
+      </div>
+      <div class="padding flex-row-center relative">
+        <ViewSettingButton
+          viewlet={viewletConfig}
+          disabled={descriptor === undefined}
+          on:save={(event) => {
+            onConfigUpdate(event.detail ?? [])
+          }}
+        />
+      </div>
+    </div>
+  {/if}
 </Card>

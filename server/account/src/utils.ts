@@ -54,7 +54,8 @@ import {
   LoginInfo,
   WorkspaceLoginInfo,
   WorkspaceStatus,
-  AccountEventType
+  AccountEventType,
+  Meta
 } from './types'
 import { Analytics } from '@hcengineering/analytics'
 import { TokenError, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
@@ -118,7 +119,11 @@ export function wrap (
     request: any,
     token?: string
   ): Promise<any> {
-    return await accountMethod(ctx, db, branding, token, { ...request.params })
+    const meta =
+      request.headers !== undefined && request.headers['X-Timezone'] !== undefined
+        ? { timezone: request.headers['X-Timezone'] }
+        : {}
+    return await accountMethod(ctx, db, branding, token, { ...request.params }, meta)
       .then((result) => ({ id: request.id, result }))
       .catch((err) => {
         const status =
@@ -610,6 +615,53 @@ export async function selectWorkspace (
   }
 }
 
+export async function updateWorkspaceRole (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    targetAccount: PersonUuid
+    targetRole: AccountRole
+  }
+): Promise<void> {
+  const { targetAccount, targetRole } = params
+
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
+
+  if (
+    accRole == null ||
+    getRolePower(accRole) < getRolePower(AccountRole.Maintainer) ||
+    getRolePower(accRole) < getRolePower(targetRole)
+  ) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const currentRole = await db.getWorkspaceRole(targetAccount, workspace)
+
+  if (currentRole == null || getRolePower(accRole) < getRolePower(currentRole)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  if (currentRole === targetRole) return
+
+  if (currentRole === AccountRole.Owner) {
+    // Check if there are other owners
+    const owners = (await db.getWorkspaceMembers(workspace)).filter((m) => m.role === AccountRole.Owner)
+    if (owners.length === 1) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  await db.updateWorkspaceRole(targetAccount, workspace, targetRole)
+}
+
 /**
  * Convert workspace name to a URL-friendly string following these rules:
  *
@@ -832,7 +884,7 @@ export async function confirmEmail (
     ctx.error('Email social id not found', { account, normalizedEmail })
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.SocialIdNotFound, {
-        socialId: normalizedEmail,
+        value: normalizedEmail,
         type: SocialIdType.EMAIL
       })
     )
@@ -1274,6 +1326,54 @@ export async function getInviteEmail (
   }
 }
 
+export async function addSocialId (
+  db: AccountDB,
+  personUuid: PersonUuid,
+  type: SocialIdType,
+  value: string,
+  confirmed: boolean
+): Promise<PersonId> {
+  const normalizedValue = normalizeValue(value ?? '')
+
+  if (!Object.values(SocialIdType).includes(type) || normalizedValue.length === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const person = await db.person.findOne({ uuid: personUuid })
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: personUuid }))
+  }
+
+  const socialId = await db.socialId.findOne({ type, value: normalizedValue })
+  if (socialId != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdAlreadyExists, {}))
+  }
+
+  const newSocialId: Omit<SocialId, '_id' | 'key'> = {
+    type,
+    value: normalizedValue,
+    personUuid
+  }
+
+  if (confirmed) {
+    newSocialId.verifiedOn = Date.now()
+  }
+
+  return await db.socialId.insertOne(newSocialId)
+}
+
+export async function releaseSocialId (
+  db: AccountDB,
+  personUuid: PersonUuid,
+  type: SocialIdType,
+  value: string
+): Promise<void> {
+  const socialIds = await db.socialId.find({ personUuid, type, value })
+  for (const socialId of socialIds) {
+    await db.socialId.updateOne({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
+  }
+}
+
 export async function getWorkspaceRole (
   db: AccountDB,
   account: PersonUuid,
@@ -1288,4 +1388,25 @@ export async function getWorkspaceRole (
 
 export function generatePassword (len: number = 24): string {
   return randomBytes(len).toString('base64').slice(0, len)
+}
+
+export async function setTimezoneIfNotDefined (
+  ctx: MeasureContext,
+  db: AccountDB,
+  accountId: PersonUuid,
+  account: Account | null | undefined,
+  meta?: Meta
+): Promise<void> {
+  try {
+    if (meta?.timezone === undefined) return
+    const existingAccount = account ?? (await db.account.findOne({ uuid: accountId }))
+    if (existingAccount === undefined || existingAccount === null) {
+      ctx.warn('Failed to find account')
+      return
+    }
+    if (existingAccount.timezone != null) return
+    await db.account.updateOne({ uuid: accountId }, { timezone: meta.timezone })
+  } catch (err: any) {
+    ctx.error('Failed to set account timezone', err)
+  }
 }

@@ -54,7 +54,8 @@
     "ts-node": "^10.8.0",
     "typescript": "^5.3.3",
     "@types/sharp": "~0.32.0",
-    "@types/morgan": "~1.9.9"
+    "@types/morgan": "~1.9.9",
+    "@types/on-headers": "^1.0.2"
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
@@ -75,6 +76,7 @@
     "@aws-sdk/s3-request-presigner": "^3.738.0",
     "@aws-sdk/lib-storage": "^3.738.0",
     "@smithy/node-http-handler": "^4.0.2",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "on-headers": "^1.0.2"
   }
 }

@@ -112,6 +112,9 @@
     "UseMaxWidth": "Largeur maximale",
     "Sidebar": "Barre latérale",
     "FontSize": "Taille de police",
-    "Language": "Langue"
+    "Language": "Langue",
+    "DaysWOValue": "{days, plural, =1 {jour} other {jours}}",
+    "WeeksWOValue": "{weeks, plural, =1 {semaine} other {semaines}}",
+    "MonthsWOValue": "{months, plural, =1 {mois} other {mois}}"
   }
 }

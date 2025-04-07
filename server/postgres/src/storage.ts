@@ -71,7 +71,7 @@ import {
   type TxAdapter
 } from '@hcengineering/server-core'
 import type postgres from 'postgres'
-import { createDBClient, createGreenDBClient, type DBClient } from './client'
+import { createDBClient, type DBClient } from './client'
 import {
   getDocFieldsByDomains,
   getSchema,
@@ -426,10 +426,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   reserveContext (id: string): () => void {
-    if (greenURL != null) {
-      // Do not reserve connection if using green
-      return () => {}
-    }
     const conn = this.mgr.getConnection(id, true)
     return () => {
       conn.released = true
@@ -1014,6 +1010,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return res
   }
 
+  private isArrayLookup (_class: Ref<Class<Doc>>, key: string): boolean {
+    const attr = this.hierarchy.findAttribute(_class, key)
+    if (attr === undefined) return false
+    if (attr.type._class === core.class.ArrOf) return true
+    return false
+  }
+
   private buildJoinValue<T extends Doc>(
     clazz: Ref<Class<T>>,
     lookup: Lookup<T>,
@@ -1031,6 +1034,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const _class = Array.isArray(value) ? value[0] : value
       const nested = Array.isArray(value) ? value[1] : undefined
       const domain = translateDomain(this.hierarchy.getDomain(_class))
+      if (this.isArrayLookup(clazz, key)) {
+        this.getArrayLookup(baseDomain, key, _class, res, domain, parentKey)
+        continue
+      }
       const tkey = domain === DOMAIN_MODEL ? key : this.transformKey(baseDomain, clazz, key)
       const as = `lookup_${domain}_${parentKey !== undefined ? parentKey + '_lookup_' + key : key}`
       res.push({
@@ -1047,6 +1054,34 @@ abstract class PostgresAdapterBase implements DbAdapter {
         this.buildJoinValue(_class, nested, res, key, as)
       }
     }
+  }
+
+  private getArrayLookup (
+    parentDomain: string,
+    key: string,
+    _class: Ref<Class<Doc>>,
+    result: JoinProps[],
+    domain: string,
+    parent?: string
+  ): void {
+    const desc = this.hierarchy
+      .getDescendants(this.hierarchy.getBaseClass(_class))
+      .filter((it) => !this.hierarchy.isMixin(it))
+    const as = `reverse_lookup_${domain}_${parent !== undefined ? parent + '_lookup_' + key : key}`
+    const from = isDataField(domain, key)
+      ? `ANY(SELECT jsonb_array_elements_text(${parentDomain}.data->'${key}'))`
+      : `ANY(${parentDomain}."${key}")`
+    result.push({
+      isReverse: true,
+      table: domain,
+      toAlias: as,
+      toField: '_id',
+      classes: desc,
+      path: parent !== undefined ? `${parent}.${key}` : key,
+      fromAlias: '',
+      toClass: _class,
+      fromField: from
+    })
   }
 
   private getReverseLookupValue (
@@ -1438,7 +1473,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
     }
     return [
-      `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.fromAlias}.${join.fromField} = ${join.toAlias}."${join.toField}" ${classsesQuery}) AS ${join.toAlias}`
+      `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.toAlias}."${join.toField}" = ${join.fromAlias}${join.fromAlias !== '' ? '.' : ''}${join.fromField} ${classsesQuery}) AS ${join.toAlias}`
     ]
   }
 
@@ -2205,41 +2240,7 @@ export async function createPostgresAdapter (
 ): Promise<DbAdapter> {
   const client = getDBClient(contextVars, url)
   const connection = await client.getClient()
-  return new PostgresAdapter(
-    greenURL !== undefined ? toGreenClient(greenURL, connection) : createDBClient(connection),
-    client,
-    wsIds.uuid,
-    hierarchy,
-    modelDb,
-    'default-' + wsIds.url
-  )
-}
-
-let greenDecoder: ((data: any) => Promise<any>) | undefined
-let greenURL: string | undefined
-let useGreenCompression: string | undefined
-
-function toGreenClient (url: string, connection: postgres.Sql): DBClient {
-  const originalUrl = new URL(url)
-
-  // Extract components with default values if needed
-  const token = originalUrl.searchParams.get('token') ?? 'secret'
-
-  // Manually build the new URL components
-  const newHost = originalUrl.host
-  const newPathname = originalUrl.pathname
-
-  console.warn('USE GREEN', newHost, newPathname)
-  // Construct the new URL
-  const newUrl = `${originalUrl.protocol}//${newHost}${newPathname}`
-  return createGreenDBClient(
-    newUrl,
-    token,
-    connection,
-    useGreenCompression !== undefined && greenDecoder !== undefined
-      ? { decoder: greenDecoder, compression: useGreenCompression }
-      : undefined
-  )
+  return new PostgresAdapter(createDBClient(connection), client, wsIds.uuid, hierarchy, modelDb, 'default-' + wsIds.url)
 }
 /**
  * @public
@@ -2255,22 +2256,7 @@ export async function createPostgresTxAdapter (
   const client = getDBClient(contextVars, url)
   const connection = await client.getClient()
 
-  return new PostgresTxAdapter(
-    greenURL !== undefined ? toGreenClient(greenURL, connection) : createDBClient(connection),
-    client,
-    wsIds.uuid,
-    hierarchy,
-    modelDb,
-    'tx' + wsIds.url
-  )
-}
-
-export function registerGreenDecoder (name: string, decoder: (data: any) => Promise<any>): void {
-  greenDecoder = decoder
-  useGreenCompression = name
-}
-export function registerGreenUrl (url?: string): void {
-  greenURL = url
+  return new PostgresTxAdapter(createDBClient(connection), client, wsIds.uuid, hierarchy, modelDb, 'tx' + wsIds.url)
 }
 
 function isPersonAccount (tx: Tx): boolean {

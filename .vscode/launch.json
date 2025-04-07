@@ -152,20 +152,20 @@
       "args": ["src/index.ts"],
       "env": {
         // "PORT": "4700",// For mongo
-        "PORT": "4702", // for cockroach
-        "FULLTEXT_DB_URL": "http://localhost:9200",
-        // "DB_URL": "mongodb://localhost:27017",
+        "PORT": "4710", // for cockroach
+        "FULLTEXT_DB_URL": "http://localhost:9201",
+        "DB_URL": "mongodb://localhost:27018",
         // "DB_URL": "postgresql://postgres:example@localhost:5432",
-        "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
+        // "DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
         "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
         "SERVER_SECRET": "secret",
         "REKONI_URL": "http://localhost:4004",
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         "ELASTIC_INDEX_NAME": "local_storage_index",
-        "REGION": "cockroach",
-        "STATS_URL": "http://huly.local:4900",
-        "ACCOUNTS_URL": "http://localhost:3000",
-        "QUEUE_CONFIG": "localhost:19092"
+        "REGION": "",
+        "STATS_URL": "http://huly.local:4901",
+        "ACCOUNTS_URL": "http://localhost:3003",
+        "QUEUE_CONFIG": "localhost:19093;-staging"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

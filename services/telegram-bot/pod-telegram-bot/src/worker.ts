@@ -154,13 +154,13 @@ export class PlatformWorker {
 
   async updateTelegramUsername (account: AccountUuid, tgId: number, telegramUsername: string): Promise<void> {
     await this.db.updateTelegramUsername(account, telegramUsername)
-    await getAccountClient(serviceToken()).createSocialId(
-      account,
-      SocialIdType.TELEGRAM,
-      tgId.toString(),
-      telegramUsername,
-      true
-    )
+    // await getAccountClient(serviceToken()).createSocialId(
+    //   account,
+    //   SocialIdType.TELEGRAM,
+    //   tgId.toString(),
+    //   telegramUsername,
+    //   true
+    // )
   }
 
   async removeUserByTelegramId (telegramId: number): Promise<void> {
@@ -385,14 +385,15 @@ export class PlatformWorker {
     }
 
     const accountClient = getAccountClient(serviceToken())
-    const socialId = await accountClient.createSocialId(
-      account,
-      SocialIdType.TELEGRAM,
-      otpData.telegramId.toString(),
-      otpData.telegramUsername,
-      true
-    )
-    return await this.addUser(otpData.telegramId, account, workspace, socialId.socialId, otpData.telegramUsername)
+    // const socialId = await accountClient.createSocialId(
+    //   account,
+    //   SocialIdType.TELEGRAM,
+    //   otpData.telegramId.toString(),
+    //   otpData.telegramUsername,
+    //   true
+    // )
+    // return await this.addUser(otpData.telegramId, account, workspace, socialId.socialId, otpData.telegramUsername)
+    return {} as any
   }
 
   async generateCode (telegramId: number, telegramUsername?: string): Promise<string> {

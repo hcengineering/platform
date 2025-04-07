@@ -12,49 +12,58 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { buildSocialIdString, generateId, PersonId, PersonUuid, SocialIdType, TxOperations } from '@hcengineering/core'
-import contact, { AvatarType, combineName } from '@hcengineering/contact'
+import {
+  type MeasureContext,
+  buildSocialIdString,
+  generateId,
+  PersonId,
+  PersonUuid,
+  SocialIdType,
+  TxOperations
+} from '@hcengineering/core'
+import contact, { AvatarType, combineName, SocialIdentityRef } from '@hcengineering/contact'
 import { AccountClient } from '@hcengineering/account-client'
 
 export async function ensureGlobalPerson (
+  ctx: MeasureContext,
   client: AccountClient,
   mailId: string,
   contact: { address: string, name: string }
-): Promise<{ socialId: PersonId, uuid: PersonUuid } | undefined> {
+): Promise<{ socialId: PersonId, uuid: PersonUuid, firstName: string, lastName: string } | undefined> {
+  let [firstName, lastName] = contact.name.split(' ')
+  if (firstName === undefined || firstName.length === 0) {
+    firstName = contact.address.split('@')[0]
+  }
+  if (lastName === undefined || lastName.length === 0) {
+    lastName = contact.address.split('@')[1]
+  }
   const socialKey = buildSocialIdString({ type: SocialIdType.EMAIL, value: contact.address })
   const socialId = await client.findSocialIdBySocialKey(socialKey)
   const uuid = await client.findPersonBySocialKey(socialKey)
   if (socialId !== undefined && uuid !== undefined) {
-    console.log(`[${mailId}] Found global person for ${contact.address}: ${uuid}`)
-    return { socialId, uuid }
+    return { socialId, uuid, firstName, lastName }
   }
-  const [firstName, lastName] = contact.name.split(' ')
   try {
     const globalPerson = await client.ensurePerson(SocialIdType.EMAIL, contact.address, firstName, lastName)
-    return globalPerson
-  } catch (err) {
-    console.error(`[${mailId}] Failed to create global person for ${contact.address}`, err)
+    ctx.info('Created global person', { mailId, email: contact.address, personUuid: globalPerson.uuid })
+    return { ...globalPerson, firstName, lastName }
+  } catch (error) {
+    ctx.error('Failed to create global person', { mailId, error, email: contact.address })
   }
   return undefined
 }
 
 export async function ensureLocalPerson (
+  ctx: MeasureContext,
   client: TxOperations,
+  mailId: string,
   personUuid: PersonUuid,
-  socialId: PersonId,
+  personId: PersonId,
   email: string,
   firstName: string,
   lastName: string
 ): Promise<void> {
-  let person = await client.findOne(
-    contact.class.Person,
-    {
-      personUuid
-    },
-    {
-      projection: { name: 1 }
-    }
-  )
+  let person = await client.findOne(contact.class.Person, { personUuid })
   if (person === undefined) {
     const newPersonId = await client.createDoc(
       contact.class.Person,
@@ -69,7 +78,16 @@ export async function ensureLocalPerson (
     person = await client.findOne(contact.class.Person, { _id: newPersonId })
     if (person === undefined) {
       throw new Error(`Failed to create local person for ${personUuid}`)
+    } else {
+      ctx.info('Created local person', { mailId, personUuid, _id: person._id })
     }
+  }
+  const socialId = await client.findOne(contact.class.SocialIdentity, {
+    attachedTo: person._id,
+    type: SocialIdType.EMAIL,
+    value: email
+  })
+  if (socialId === undefined) {
     await client.addCollection(
       contact.class.SocialIdentity,
       contact.space.Contacts,
@@ -77,12 +95,13 @@ export async function ensureLocalPerson (
       contact.class.Person,
       'socialIds',
       {
-        key: socialId,
+        key: buildSocialIdString({ type: SocialIdType.EMAIL, value: email }),
         type: SocialIdType.EMAIL,
         value: email
       },
-      generateId()
+      personId as SocialIdentityRef
     )
+    ctx.info('Created local socialId', { mailId, personUuid, email })
   }
   const channel = await client.findOne(contact.class.Channel, {
     attachedTo: person._id,
@@ -103,5 +122,6 @@ export async function ensureLocalPerson (
       },
       generateId()
     )
+    ctx.info('Created channel', { mailId, personUuid, email })
   }
 }

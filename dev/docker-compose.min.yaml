@@ -1,0 +1,264 @@
+services:
+  cockroach:
+    image: cockroachdb/cockroach:latest-v24.2
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    ports:
+      - '26257:26257'
+      - '8089:8080'
+    command: start-single-node --insecure
+    volumes:
+      - cockroach_db:/cockroach/cockroach-data
+    restart: unless-stopped
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+    container_name: redpanda
+    volumes:
+      - redpanda:/var/lib/redpanda/data
+    ports:
+      - 18081:18081
+      - 18082:18082
+      - 19092:19092
+      - 19644:9644
+    healthcheck:
+      test: ['CMD', 'rpk', 'cluster', 'info', '-X', 'user=superuser', '-X', 'pass=secretpassword']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  minio:
+    image: 'minio/minio'
+    command: server /data --address ":9000" --console-address ":9001"
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    expose:
+      - 9000
+      - 9001
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - files:/data
+    restart: unless-stopped
+  elastic:
+    image: 'elasticsearch:7.14.2'
+    expose:
+      - 9200
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    environment:
+      - ELASTICSEARCH_PORT_NUMBER=9200
+      - BITNAMI_DEBUG=true
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
+    restart: unless-stopped
+  account:
+    image: hardcoreeng/account
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    links:
+      - cockroach
+      - minio
+      - stats
+    ports:
+      - 3000:3000
+    volumes:
+      - ./branding.json:/var/cfg/branding.json
+    environment:
+      - ACCOUNT_PORT=3000
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - SERVER_SECRET=secret
+      - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
+      - STATS_URL=http://huly.local:4900
+      - WORKSPACE_LIMIT_PER_USER=10000
+      - DB_URL=${DB_CR_URL}
+      # - DB_URL=${MONGO_URL}
+      # - DB_NS=account-2
+      # Pass only one region to disallow selection for new workspaces.
+      - REGION_INFO=cockroach|CockroachDB
+      - TRANSACTOR_URL=ws://huly.local:3333,ws://huly.local:3332;;cockroach,
+      - MAIL_URL=
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://huly.local:8087
+      - MODEL_ENABLED=*
+      - LAST_NAME_FIRST=true
+      # - WS_LIVENESS_DAYS=1
+      - ACCOUNTS_URL=http://huly.local:3000
+      - BRANDING_PATH=/var/cfg/branding.json
+      # - DISABLE_SIGNUP=true
+    restart: unless-stopped
+  stats:
+    image: hardcoreeng/stats
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    ports:
+      - 4900:4900
+    environment:
+      - PORT=4900
+      - SERVER_SECRET=secret
+    restart: unless-stopped
+  workspace_cockroach:
+    image: hardcoreeng/workspace
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    links:
+      - cockroach
+      - minio
+      - stats
+    volumes:
+      - ./branding.json:/var/cfg/branding.json
+    environment:
+      - WS_OPERATION=all+backup
+      - REGION=cockroach
+      - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - DB_URL=${DB_CR_URL}
+      - STATS_URL=http://huly.local:4900
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - MODEL_ENABLED=*
+      - ACCOUNTS_URL=http://huly.local:3000
+      - BRANDING_PATH=/var/cfg/branding.json
+      - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
+      - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
+      - MAIL_URL=
+      # - INIT_WORKSPACE=staging-dev
+    restart: unless-stopped
+  collaborator:
+    image: hardcoreeng/collaborator
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    links:
+      - cockroach
+      - minio
+      - transactor_cockroach
+      - stats
+    ports:
+      - 3078:3078
+    environment:
+      - COLLABORATOR_PORT=3078
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://huly.local:4900
+    restart: unless-stopped
+  front:
+    image: hardcoreeng/front
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    links:
+      - cockroach
+      - minio
+      - elastic
+      - transactor_cockroach
+      - collaborator
+      - stats
+    ports:
+      - 8087:8080
+      - 8088:8080
+    environment:
+      - SERVER_PORT=8080
+      - SERVER_SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - STATS_URL=http://huly.local:4900
+      - UPLOAD_URL=/files
+      - GMAIL_URL=http://huly.local:8088
+      - CALENDAR_URL=http://huly.local:8095
+      - TELEGRAM_URL=http://huly.local:8086
+      - REKONI_URL=http://huly.local:4004
+      - COLLABORATOR_URL=ws://huly.local:3078
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - GITHUB_URL=http://huly.local:3500
+      - PRINT_URL=http://huly.local:4005
+      - SIGN_URL=http://huly.local:4006
+      - ANALYTICS_COLLECTOR_URL=http://huly.local:4017
+      - DESKTOP_UPDATES_URL=https://dist.huly.io
+      - DESKTOP_UPDATES_CHANNEL=dev
+      - BRANDING_URL=http://huly.local:8087/branding.json
+      - STREAM_URL=http://huly.local:1080/recording
+      # - DISABLE_SIGNUP=true
+    restart: unless-stopped
+  transactor_cockroach:
+    image: hardcoreeng/transactor
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    links:
+      - cockroach
+      - minio
+      - account
+      - stats
+    ports:
+      - 3332:3332
+    volumes:
+      - ./branding.json:/var/cfg/branding.json
+    environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - SERVER_PORT=3332
+      - REGION=cockroach
+      - SERVER_SECRET=secret
+      - ENABLE_COMPRESSION=true
+      - FULLTEXT_URL=http://huly.local:4702
+      - STATS_URL=http://huly.local:4900
+      - DB_URL=${DB_CR_URL}
+      - METRICS_CONSOLE=false
+      - METRICS_FILE=metrics.txt
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://huly.local:8087
+      - MAIL_URL=''
+      - ACCOUNTS_URL=http://huly.local:3000
+      - LAST_NAME_FIRST=true
+      - BRANDING_PATH=/var/cfg/branding.json
+      - AI_BOT_URL=http://huly.local:4010
+      - MSG2FILE_URL=http://huly.local:9087
+      - COMMUNICATION_TIME_LOGGING_ENABLED=true
+    restart: unless-stopped
+  fulltext_cockroach:
+    image: hardcoreeng/fulltext
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    restart: unless-stopped
+    links:
+      - elastic
+      - cockroach
+    ports:
+      - 4702:4702
+    environment:
+      - PORT=4702
+      - REGION=cockroach
+      - SERVER_SECRET=secret
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - DB_URL=${DB_CR_URL}
+      - FULLTEXT_DB_URL=http://huly.local:9200
+      - ELASTIC_INDEX_NAME=local_storage_index # Same index for simplicity
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://huly.local:4900
+      - REKONI_URL=http://huly.local:4004
+      - ACCOUNTS_URL=http://huly.local:3000
+volumes:
+  db:
+  dbpg:
+  files:
+  elastic:
+  cockroach_db:
+  redpanda:

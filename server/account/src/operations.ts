@@ -15,33 +15,23 @@
 import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
+  AccountInfo,
   buildSocialIdString,
   concatLink,
-  Data,
   isActiveMode,
   isWorkspaceCreating,
   MeasureContext,
   SocialIdType,
   systemAccountUuid,
-  Version,
-  type BackupStatus,
   type Branding,
   type Person,
   type PersonId,
   type PersonInfo,
   type PersonUuid,
   type WorkspaceMemberInfo,
-  type WorkspaceMode,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import platform, {
-  getMetadata,
-  PlatformError,
-  Severity,
-  Status,
-  translate,
-  unknownError
-} from '@hcengineering/platform'
+import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
 import { isAdminEmail } from './admin'
@@ -50,18 +40,15 @@ import type {
   AccountDB,
   AccountMethodHandler,
   LoginInfo,
+  Meta,
   Mailbox,
   MailboxOptions,
   OtpInfo,
   RegionInfo,
   SocialId,
-  Workspace,
-  WorkspaceEvent,
   WorkspaceInfoWithStatus,
   WorkspaceInviteInfo,
-  WorkspaceLoginInfo,
-  WorkspaceOperation,
-  WorkspaceStatus
+  WorkspaceLoginInfo
 } from './types'
 import {
   checkInvite,
@@ -80,12 +67,9 @@ import {
   getRegions,
   getRolePower,
   getMailUrl,
-  getSocialIdByKey,
   getWorkspaceById,
   getWorkspaceInfoWithStatusById,
   getWorkspaceInvite,
-  getWorkspaces,
-  getWorkspacesInfoWithStatusByIds,
   GUEST_ACCOUNT,
   isOtpValid,
   selectWorkspace,
@@ -101,11 +85,17 @@ import {
   getWorkspaceRole,
   normalizeValue,
   isEmail,
-  generatePassword
+  generatePassword,
+  addSocialId,
+  releaseSocialId,
+  updateWorkspaceRole,
+  setTimezoneIfNotDefined
 } from './utils'
+import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 
-// Move to config?
-const processingTimeoutMs = 30 * 1000
+// Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
+// to the database layer when searching/inserting as they may contain SQL injection
+// !!! NEVER PASS "params" DIRECTLY in any DB functions !!!
 
 const workspaceLimitPerUser =
   process.env.WORKSPACE_LIMIT_PER_USER != null ? parseInt(process.env.WORKSPACE_LIMIT_PER_USER) : 10
@@ -125,7 +115,8 @@ export async function login (
   params: {
     email: string
     password: string
-  }
+  },
+  meta?: Meta
 ): Promise<LoginInfo> {
   const { email, password } = params
   const normalizedEmail = cleanEmail(email)
@@ -156,6 +147,7 @@ export async function login (
 
     const extraToken: Record<string, string> = isAdminEmail(email) ? { admin: 'true' } : {}
     ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
+    void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, existingAccount, meta)
 
     return {
       account: existingAccount.uuid,
@@ -178,7 +170,8 @@ export async function loginOtp (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { email: string }
+  params: { email: string },
+  meta?: Meta
 ): Promise<OtpInfo> {
   const { email } = params
 
@@ -195,6 +188,8 @@ export async function loginOtp (
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
+
+  void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, account, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -213,7 +208,8 @@ export async function signUp (
     password: string
     firstName: string
     lastName: string
-  }
+  },
+  meta?: Meta
 ): Promise<LoginInfo> {
   const { email, password, firstName, lastName } = params
   const { account, socialId } = await signUpByEmail(ctx, db, branding, email, password, firstName, lastName)
@@ -233,6 +229,7 @@ export async function signUp (
     await confirmEmail(ctx, db, account, email)
   }
 
+  void setTimezoneIfNotDefined(ctx, db, account, null, meta)
   return {
     account,
     name: getPersonName(person),
@@ -250,7 +247,8 @@ export async function signUpOtp (
     email: string
     firstName: string
     lastName: string
-  }
+  },
+  meta?: Meta
 ): Promise<OtpInfo> {
   const { email, firstName, lastName } = params
   // Note: can support OTP based on any other social logins later
@@ -276,6 +274,7 @@ export async function signUpOtp (
     const emailSocialIdId = await db.socialId.insertOne(newSocialId)
     emailSocialId = { ...newSocialId, _id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
   }
+  void setTimezoneIfNotDefined(ctx, db, personUuid, null, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -646,7 +645,8 @@ export async function join (
     email: string
     password: string
     inviteId: string
-  }
+  },
+  meta?: Meta
 ): Promise<WorkspaceLoginInfo | LoginInfo> {
   const { email, password, inviteId } = params
   const normalizedEmail = cleanEmail(email)
@@ -664,7 +664,7 @@ export async function join (
 
   ctx.info('Joining a workspace using invite', { email, normalizedEmail, ...invite })
 
-  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password })
+  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password }, meta)
 
   if (token == null) {
     return {
@@ -766,27 +766,29 @@ export async function checkAutoJoin (
   if (emailSocialId != null) {
     const targetAccount = await getAccount(db, emailSocialId.personUuid)
     if (targetAccount != null) {
-      if (token == null) {
-        // Login required
-        const person = await db.person.findOne({ uuid: targetAccount.uuid })
+      if (targetAccount.automatic == null || !targetAccount.automatic) {
+        if (token == null) {
+          // Login required
+          const person = await db.person.findOne({ uuid: targetAccount.uuid })
 
-        return {
-          workspace: workspace.uuid,
-          name: person == null ? '' : getPersonName(person),
-          email: normalizedEmail
+          return {
+            workspace: workspace.uuid,
+            name: person == null ? '' : getPersonName(person),
+            email: normalizedEmail
+          }
         }
-      }
 
-      const { account: callerAccount } = decodeTokenVerbose(ctx, token)
+        const { account: callerAccount } = decodeTokenVerbose(ctx, token)
 
-      if (callerAccount !== targetAccount.uuid) {
-        // Login with target email required
-        const person = await db.person.findOne({ uuid: targetAccount.uuid })
+        if (callerAccount !== targetAccount.uuid) {
+          // Login with target email required
+          const person = await db.person.findOne({ uuid: targetAccount.uuid })
 
-        return {
-          workspace: workspace.uuid,
-          name: person == null ? '' : getPersonName(person),
-          email: normalizedEmail
+          return {
+            workspace: workspace.uuid,
+            name: person == null ? '' : getPersonName(person),
+            email: normalizedEmail
+          }
         }
       }
 
@@ -798,6 +800,9 @@ export async function checkAutoJoin (
         await db.updateWorkspaceRole(targetAccount.uuid, workspace.uuid, invite.role)
       }
 
+      if (token === undefined || token === null) {
+        token = generateToken(targetAccount.uuid)
+      }
       return await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
     }
   }
@@ -837,7 +842,8 @@ export async function signUpJoin (
     first: string
     last: string
     inviteId: string
-  }
+  },
+  meta?: Meta
 ): Promise<WorkspaceLoginInfo> {
   const { email, password, first, last, inviteId } = params
   const normalizedEmail = cleanEmail(email)
@@ -856,6 +862,7 @@ export async function signUpJoin (
   }
 
   const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last, true)
+  void setTimezoneIfNotDefined(ctx, db, account, null, meta)
 
   return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
 }
@@ -940,7 +947,7 @@ export async function requestPasswordReset (
   if (emailSocialId == null) {
     ctx.error('Email social id not found', { email, normalizedEmail })
     throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.SocialIdNotFound, { socialId: email, type: SocialIdType.EMAIL })
+      new Status(Severity.ERROR, platform.status.SocialIdNotFound, { value: email, type: SocialIdType.EMAIL })
     )
   }
 
@@ -1013,7 +1020,7 @@ export async function restorePassword (
   if (emailSocialId == null) {
     ctx.error('Email social id not found', { email })
     throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.SocialIdNotFound, { socialId: email, type: SocialIdType.EMAIL })
+      new Status(Severity.ERROR, platform.status.SocialIdNotFound, { value: email, type: SocialIdType.EMAIL })
     )
   }
 
@@ -1236,128 +1243,6 @@ export async function getWorkspaceInfo (
   }
 
   return workspace
-}
-
-export async function listWorkspaces (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: {
-    region?: string | null
-    mode?: WorkspaceMode | null
-  }
-): Promise<WorkspaceInfoWithStatus[]> {
-  const { region, mode } = params
-  const { extra } = decodeTokenVerbose(ctx, token)
-
-  if (!['tool', 'backup', 'admin'].includes(extra?.service) && extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  return await getWorkspaces(db, false, region, mode)
-}
-
-export async function performWorkspaceOperation (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  parameters: {
-    workspaceId: WorkspaceUuid | WorkspaceUuid[]
-    event: 'archive' | 'migrate-to' | 'unarchive' | 'delete' | 'reset-attempts'
-    params: any[]
-  }
-): Promise<boolean> {
-  const { workspaceId, event, params } = parameters
-  const { extra, workspace } = decodeTokenVerbose(ctx, token)
-
-  if (extra?.admin !== 'true') {
-    if (event !== 'unarchive' || workspaceId !== workspace) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    }
-  }
-
-  const workspaceUuids = Array.isArray(workspaceId) ? workspaceId : [workspaceId]
-
-  const workspaces = await getWorkspacesInfoWithStatusByIds(db, workspaceUuids)
-  if (workspaces.length === 0) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, {}))
-  }
-
-  let ops = 0
-  for (const workspace of workspaces) {
-    const update: Partial<WorkspaceStatus> = {}
-    switch (event) {
-      case 'reset-attempts':
-        update.processingAttempts = 0
-        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
-        break
-      case 'delete':
-        if (workspace.status.mode !== 'active') {
-          throw new PlatformError(unknownError('Delete allowed only for active workspaces'))
-        }
-
-        update.mode = 'pending-deletion'
-        update.processingAttempts = 0
-        update.processingProgress = 0
-        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
-        break
-      case 'archive':
-        if (!isActiveMode(workspace.status.mode)) {
-          throw new PlatformError(unknownError('Archiving allowed only for active workspaces'))
-        }
-
-        update.mode = 'archiving-pending-backup'
-        update.processingAttempts = 0
-        update.processingProgress = 0
-        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
-        break
-      case 'unarchive':
-        if (event === 'unarchive') {
-          if (workspace.status.mode !== 'archived') {
-            throw new PlatformError(unknownError('Unarchive allowed only for archived workspaces'))
-          }
-        }
-
-        update.mode = 'pending-restore'
-        update.processingAttempts = 0
-        update.processingProgress = 0
-        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
-        break
-      case 'migrate-to': {
-        if (!isActiveMode(workspace.status.mode)) {
-          return false
-        }
-        if (params.length !== 1 && params[0] == null) {
-          throw new PlatformError(unknownError('Invalid region passed to migrate operation'))
-        }
-        const regions = getRegions()
-        if (regions.find((it) => it.region === params[0]) === undefined) {
-          throw new PlatformError(unknownError('Invalid region passed to migrate operation'))
-        }
-        if ((workspace.region ?? '') === params[0]) {
-          throw new PlatformError(unknownError('Invalid region passed to migrate operation'))
-        }
-
-        update.mode = 'migration-pending-backup'
-        // NOTE: will only work for Mongo accounts
-        update.targetRegion = params[0]
-        update.processingAttempts = 0
-        update.processingProgress = 0
-        update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
-        break
-      }
-      default:
-        break
-    }
-
-    if (Object.keys(update).length !== 0) {
-      await db.workspaceStatus.updateOne({ workspaceUuid: workspace.uuid }, update)
-      ops++
-    }
-  }
-  return ops > 0
 }
 
 /**
@@ -1623,355 +1508,20 @@ export async function getWorkspaceMembers (
   return await db.getWorkspaceMembers(workspace)
 }
 
-export async function updateWorkspaceRoleBySocialKey (
+export async function getAccountInfo (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: {
-    socialKey: string
-    targetRole: AccountRole
-  }
-): Promise<void> {
-  const { socialKey, targetRole } = params
-  const { extra } = decodeTokenVerbose(ctx, token)
-
-  if (!['workspace', 'tool'].includes(extra?.service)) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const socialId = await getSocialIdByKey(db, socialKey.toLowerCase() as PersonId)
-  if (socialId == null) {
+  params: { accountId: PersonUuid }
+): Promise<AccountInfo> {
+  decodeTokenVerbose(ctx, token)
+  const { accountId } = params
+  const account = await getAccount(db, accountId)
+  if (account === undefined || account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
-
-  await updateWorkspaceRole(ctx, db, branding, token, { targetAccount: socialId.personUuid, targetRole })
-}
-
-export async function updateWorkspaceRole (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: {
-    targetAccount: PersonUuid
-    targetRole: AccountRole
-  }
-): Promise<void> {
-  const { targetAccount, targetRole } = params
-
-  const { account, workspace } = decodeTokenVerbose(ctx, token)
-
-  if (workspace === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
-  }
-
-  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
-
-  if (
-    accRole == null ||
-    getRolePower(accRole) < getRolePower(AccountRole.Maintainer) ||
-    getRolePower(accRole) < getRolePower(targetRole)
-  ) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const currentRole = await db.getWorkspaceRole(targetAccount, workspace)
-
-  if (currentRole == null || getRolePower(accRole) < getRolePower(currentRole)) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  if (currentRole === targetRole) return
-
-  if (currentRole === AccountRole.Owner) {
-    // Check if there are other owners
-    const owners = (await db.getWorkspaceMembers(workspace)).filter((m) => m.role === AccountRole.Owner)
-    if (owners.length === 1) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    }
-  }
-
-  await db.updateWorkspaceRole(targetAccount, workspace, targetRole)
-}
-
-/* =================================== */
-/* ===WORKSPACE SERVICE OPERATIONS==== */
-/* =================================== */
-
-/**
- * Retrieves one workspace for which there are things to process.
- *
- * Workspace is provided for 30seconds. This timeout is reset
- * on every progress update.
- * If no progress is reported for the workspace during this time,
- * it will become available again to be processed by another executor.
- */
-export async function getPendingWorkspace (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: {
-    region: string
-    version: Data<Version>
-    operation: WorkspaceOperation
-  }
-): Promise<WorkspaceInfoWithStatus | undefined> {
-  const { region, version, operation } = params
-  const { extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.service !== 'workspace') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const wsLivenessDays = getMetadata(accountPlugin.metadata.WsLivenessDays)
-  const wsLivenessMs = wsLivenessDays !== undefined ? wsLivenessDays * 24 * 60 * 60 * 1000 : undefined
-
-  const result = await db.getPendingWorkspace(region, version, operation, processingTimeoutMs, wsLivenessMs)
-
-  if (result != null) {
-    ctx.info('getPendingWorkspace', {
-      workspaceId: result.uuid,
-      workspaceName: result.name,
-      mode: result.status.mode,
-      operation,
-      region,
-      major: result.status.versionMajor,
-      minor: result.status.versionMinor,
-      patch: result.status.versionPatch,
-      requestedVersion: version
-    })
-  }
-
-  return result
-}
-
-export async function updateWorkspaceInfo (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: {
-    workspaceUuid: WorkspaceUuid
-    event: WorkspaceEvent
-    version: Data<Version> // A worker version
-    progress: number
-    message?: string
-  }
-): Promise<void> {
-  const { workspaceUuid, event, version, message } = params
-  let progress = params.progress
-
-  const { extra } = decodeTokenVerbose(ctx, token)
-  if (!['workspace', 'tool'].includes(extra?.service)) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const workspace = await getWorkspaceInfoWithStatusById(db, workspaceUuid)
-  if (workspace === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
-  }
-  progress = Math.round(progress)
-
-  const update: Partial<WorkspaceStatus> = {}
-  const wsUpdate: Partial<Workspace> = {}
-  switch (event) {
-    case 'create-started':
-      update.mode = 'creating'
-      if (workspace.status.mode !== 'creating') {
-        update.processingAttempts = 0
-      }
-      update.processingProgress = progress
-      break
-    case 'upgrade-started':
-      if (workspace.status.mode !== 'upgrading') {
-        update.processingAttempts = 0
-      }
-      update.mode = 'upgrading'
-      update.processingProgress = progress
-      break
-    case 'create-done':
-      ctx.info('Updating workspace info on create-done', { workspaceUuid, event, version, progress })
-      update.mode = 'active'
-      update.isDisabled = false
-      update.versionMajor = version.major
-      update.versionMinor = version.minor
-      update.versionPatch = version.patch
-      update.processingProgress = progress
-      break
-    case 'upgrade-done':
-      ctx.info('Updating workspace info on upgrade-done', { workspaceUuid, event, version, progress })
-      update.mode = 'active'
-      update.versionMajor = version.major
-      update.versionMinor = version.minor
-      update.versionPatch = version.patch
-      update.processingProgress = progress
-      break
-    case 'progress':
-      update.processingProgress = progress
-      break
-    case 'migrate-backup-started':
-      update.mode = 'migration-backup'
-      update.processingProgress = progress
-      break
-    case 'migrate-backup-done':
-      update.mode = 'migration-pending-clean'
-      update.processingProgress = progress
-      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
-      break
-    case 'migrate-clean-started':
-      update.mode = 'migration-clean'
-      update.processingAttempts = 0
-      update.processingProgress = progress
-      break
-    case 'migrate-clean-done':
-      wsUpdate.region = workspace.status.targetRegion ?? ''
-      update.mode = 'pending-restore'
-      update.processingProgress = progress
-      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
-      break
-    case 'restore-started':
-      update.mode = 'restoring'
-      update.processingAttempts = 0
-      update.processingProgress = progress
-      break
-    case 'restore-done':
-      update.mode = 'active'
-      update.processingProgress = 100
-      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
-      break
-    case 'archiving-backup-started':
-      update.mode = 'archiving-backup'
-      update.processingAttempts = 0
-      update.processingProgress = progress
-      break
-    case 'archiving-backup-done':
-      update.mode = 'archiving-pending-clean'
-      update.processingProgress = progress
-      update.lastProcessingTime = Date.now() - processingTimeoutMs // To not wait for next step
-      break
-    case 'archiving-clean-started':
-      update.mode = 'archiving-clean'
-      update.processingAttempts = 0
-      update.processingProgress = progress
-      break
-    case 'archiving-clean-done':
-      update.mode = 'archived'
-      update.processingProgress = 100
-      break
-    case 'ping':
-    default:
-      break
-  }
-
-  if (message != null) {
-    update.processingMessage = message
-  }
-
-  await db.workspaceStatus.updateOne(
-    { workspaceUuid: workspace.uuid },
-    {
-      lastProcessingTime: Date.now(), // Some operations override it.
-      ...update
-    }
-  )
-
-  if (Object.keys(wsUpdate).length !== 0) {
-    await db.workspace.updateOne({ uuid: workspace.uuid }, wsUpdate)
-  }
-}
-
-export async function workerHandshake (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: {
-    region: string
-    version: Data<Version>
-    operation: WorkspaceOperation
-  }
-): Promise<void> {
-  const { region, version, operation } = params
-  const { extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.service !== 'workspace') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  ctx.info('Worker handshake happened', { region, version, operation })
-  // Nothing else to do now but keeping to have track of workers in logs
-}
-
-export async function updateBackupInfo (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { backupInfo: BackupStatus }
-): Promise<void> {
-  const { backupInfo } = params
-  const { extra, workspace } = decodeTokenVerbose(ctx, token)
-  if (extra?.service !== 'backup') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const workspaceInfo = await getWorkspaceById(db, workspace)
-  if (workspaceInfo === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
-  }
-
-  await db.workspaceStatus.updateOne(
-    { workspaceUuid: workspace },
-    {
-      backupInfo,
-      lastProcessingTime: Date.now()
-    }
-  )
-}
-
-export async function assignWorkspace (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: {
-    email: string
-    workspaceUuid: WorkspaceUuid
-    role: AccountRole
-  }
-): Promise<void> {
-  const { email, workspaceUuid, role } = params
-  const { extra } = decodeTokenVerbose(ctx, token)
-  if (!['aibot', 'tool', 'workspace'].includes(extra?.service)) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const normalizedEmail = cleanEmail(email)
-  const emailSocialId = await getEmailSocialId(db, normalizedEmail)
-
-  if (emailSocialId == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
-  }
-
-  const account = await getAccount(db, emailSocialId.personUuid)
-
-  if (account == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
-  }
-
-  const workspace = await getWorkspaceById(db, workspaceUuid)
-
-  if (workspace == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
-  }
-
-  const currentRole = await db.getWorkspaceRole(account.uuid, workspaceUuid)
-
-  if (currentRole == null) {
-    await db.assignWorkspace(account.uuid, workspaceUuid, role)
-  } else if (getRolePower(currentRole) < getRolePower(role)) {
-    await db.updateWorkspaceRole(account.uuid, workspaceUuid, role)
-  }
+  return { timezone: account?.timezone, locale: account?.locale }
 }
 
 export async function ensurePerson (
@@ -2014,69 +1564,14 @@ export async function ensurePerson (
   return { uuid: personUuid, socialId: newSocialId }
 }
 
-export async function createSocialId (
+async function getMailboxOptions (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string,
-  params: {
-    personUuid: PersonUuid
-    type: SocialIdType
-    value: string
-    displayValue?: string
-    verified?: boolean
-  }
-): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
-  const { extra } = decodeTokenVerbose(ctx, token)
-  const allowedService = verifyAllowedServices(['tool', 'telegram-bot'], extra, false)
+  token: string
+): Promise<MailboxOptions> {
+  decodeTokenVerbose(ctx, token)
 
-  if (!allowedService) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const { personUuid, type, value, verified, displayValue } = params
-  const normalizedValue = normalizeValue(value ?? '')
-
-  if (!Object.values(SocialIdType).includes(type) || normalizedValue.length === 0) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-
-  const person = await db.person.findOne({ uuid: personUuid })
-
-  if (person == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: personUuid }))
-  }
-
-  const socialId = await db.socialId.findOne({ type, value: normalizedValue })
-
-  if (socialId?.personUuid !== personUuid && socialId?.verifiedOn !== undefined) {
-    throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.SocialIdAlreadyConfirmed, { socialId: normalizedValue, type })
-    )
-  }
-
-  if (socialId?.personUuid === personUuid) {
-    if (verified === true && socialId.verifiedOn === undefined) {
-      await db.socialId.updateOne({ _id: socialId._id }, { verifiedOn: Date.now(), displayValue })
-    } else if (socialId.displayValue !== displayValue) {
-      await db.socialId.updateOne({ _id: socialId._id }, { displayValue })
-    }
-    return { uuid: personUuid, socialId: socialId._id }
-  }
-
-  const verifiedOn = verified === true ? Date.now() : undefined
-  const newSocialId = await db.socialId.insertOne({
-    type,
-    value: normalizedValue,
-    personUuid,
-    verifiedOn,
-    displayValue
-  })
-
-  return { uuid: personUuid, socialId: newSocialId }
-}
-
-async function getMailboxOptions (): Promise<MailboxOptions> {
   return {
     availableDomains: process.env.MAILBOX_DOMAINS?.split(',') ?? [],
     minNameLength: parseInt(process.env.MAILBOX_MIN_NAME_LENGTH ?? '6'),
@@ -2094,13 +1589,13 @@ async function createMailbox (
     name: string
     domain: string
   }
-): Promise<void> {
+): Promise<{ mailbox: string, socialId: PersonId }> {
   const { account } = decodeTokenVerbose(ctx, token)
   const { name, domain } = params
   const normalizedName = cleanEmail(name)
   const normalizedDomain = cleanEmail(domain)
   const mailbox = normalizedName + '@' + normalizedDomain
-  const opts = await getMailboxOptions()
+  const opts = await getMailboxOptions(ctx, db, branding, token)
 
   if (normalizedName.length === 0 || normalizedDomain.length === 0 || !isEmail(mailbox)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'invalid-name' }))
@@ -2122,7 +1617,9 @@ async function createMailbox (
 
   await db.mailbox.insertOne({ accountUuid: account, mailbox })
   await db.mailboxSecret.insertOne({ mailbox, secret: generatePassword() })
-  await db.socialId.insertOne({ personUuid: account, type: SocialIdType.EMAIL, value: mailbox })
+  const socialId = await addSocialId(db, account, SocialIdType.EMAIL, mailbox, true)
+  ctx.info('Mailbox created', { mailbox, account, socialId })
+  return { mailbox, socialId }
 }
 
 async function getMailboxes (
@@ -2143,18 +1640,25 @@ async function deleteMailbox (
   params: { mailbox: string }
 ): Promise<void> {
   const { account } = decodeTokenVerbose(ctx, token)
-  const { mailbox } = params
+  const mailbox = cleanEmail(params.mailbox)
+
+  if (!isEmail(mailbox)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'invalid-name' }))
+  }
 
   const mb = await db.mailbox.findOne({ mailbox, accountUuid: account })
   if (mb == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.MailboxError, { reason: 'mailbox-not-found' }))
   }
 
-  await db.mailbox.deleteMany({ mailbox })
   await db.mailboxSecret.deleteMany({ mailbox })
+  await db.mailbox.deleteMany({ mailbox })
+  await releaseSocialId(db, account, SocialIdType.EMAIL, mailbox)
+  ctx.info('Mailbox deleted', { mailbox, account })
 }
 
 export type AccountMethods =
+  | AccountServiceMethods
   | 'login'
   | 'loginOtp'
   | 'signUp'
@@ -2182,14 +1686,8 @@ export type AccountMethods =
   | 'getUserWorkspaces'
   | 'getWorkspaceInfo'
   | 'getWorkspacesInfo'
-  | 'listWorkspaces'
   | 'getLoginInfoByToken'
   | 'getSocialIds'
-  | 'getPendingWorkspace'
-  | 'updateWorkspaceInfo'
-  | 'workerHandshake'
-  | 'updateBackupInfo'
-  | 'assignWorkspace'
   | 'getPerson'
   | 'getPersonInfo'
   | 'getWorkspaceMembers'
@@ -2197,14 +1695,13 @@ export type AccountMethods =
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
-  | 'performWorkspaceOperation'
-  | 'updateWorkspaceRoleBySocialKey'
   | 'ensurePerson'
   | 'getMailboxOptions'
   | 'createMailbox'
   | 'getMailboxes'
   | 'deleteMailbox'
-  | 'createSocialId'
+  | 'addSocialIdToPerson'
+  | 'getAccountInfo'
 
 /**
  * @public
@@ -2239,6 +1736,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     createMailbox: wrap(createMailbox),
     getMailboxes: wrap(getMailboxes),
     deleteMailbox: wrap(deleteMailbox),
+    ensurePerson: wrap(ensurePerson),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
@@ -2254,20 +1752,13 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
     getMailboxOptions: wrap(getMailboxOptions),
+    getAccountInfo: wrap(getAccountInfo),
 
     /* SERVICE METHODS */
-    getPendingWorkspace: wrap(getPendingWorkspace),
-    updateWorkspaceInfo: wrap(updateWorkspaceInfo),
-    workerHandshake: wrap(workerHandshake),
-    updateBackupInfo: wrap(updateBackupInfo),
-    assignWorkspace: wrap(assignWorkspace),
-    listWorkspaces: wrap(listWorkspaces),
-    performWorkspaceOperation: wrap(performWorkspaceOperation),
-    updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
-    ensurePerson: wrap(ensurePerson),
-    createSocialId: wrap(createSocialId)
+    ...getServiceMethods()
   }
 }
 
 export * from './plugin'
+export * from './serviceOperations'
 export default accountPlugin

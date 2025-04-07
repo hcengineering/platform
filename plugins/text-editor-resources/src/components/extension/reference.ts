@@ -96,17 +96,15 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
         this.options.HTMLAttributes,
         HTMLAttributes
       )
+      const id = node.attrs.id
+      const objectclass: Ref<Class<Doc>> = node.attrs.objectclass
 
       root.addEventListener('click', (event) => {
         if (event.button !== 0) return
-
-        const link = (event.target as HTMLElement)?.closest('span')
-        if (link != null) {
-          const _class = link.getAttribute('data-objectclass')
-          const _id = link.getAttribute('data-id')
-          if (_id != null && _class != null) {
-            this.options.showDoc?.(event, _id, _class)
-          }
+        const _class = objectclass
+        const _id = id
+        if (_id != null && _class != null) {
+          this.options.showDoc?.(event, _id, _class)
         }
       })
 
@@ -124,9 +122,6 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
         root.setAttribute('data-label', props.label)
         titleSpan.innerText = `${iconUrl !== '' ? '' : options.suggestion.char}${props.label ?? props.id}`
       }
-
-      const id = node.attrs.id
-      const objectclass: Ref<Class<Doc>> = node.attrs.objectclass
 
       const icon =
         objectclass !== undefined && !hierarchy.isDerived(objectclass, contact.class.Contact)

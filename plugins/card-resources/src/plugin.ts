@@ -41,7 +41,9 @@ export default mergeIds(cardId, card, {
     EditView: '' as AnyComponent,
     CardEditor: '' as AnyComponent,
     CardRefPresenter: '' as AnyComponent,
-    ChangeType: '' as AnyComponent
+    ChangeType: '' as AnyComponent,
+    CreateCardButton: '' as AnyComponent,
+    CardArrayEditor: '' as AnyComponent
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,
@@ -76,7 +78,10 @@ export default mergeIds(cardId, card, {
     EditView: '' as IntlString,
     SelectViewType: '' as IntlString,
     Document: '' as IntlString,
+    Documents: '' as IntlString,
     ChangeType: '' as IntlString,
-    ChangeTypeWarning: '' as IntlString
+    ChangeTypeWarning: '' as IntlString,
+    MasterDetailViews: '' as IntlString,
+    SelectType: '' as IntlString
   }
 })

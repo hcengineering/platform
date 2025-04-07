@@ -13,8 +13,6 @@
 // limitations under the License.
 //
 
-// src/__tests__/operations.test.ts
-
 import { AccountRole, MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'

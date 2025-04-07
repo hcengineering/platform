@@ -189,7 +189,9 @@ export class WorkspaceWorker {
       } else {
         void this.exec(async () => {
           await ctx
-            .with('workspaceOperation', {}, (ctx) => this.doWorkspaceOperation(ctx, workspace, opt))
+            .with('workspaceOperation', { mode: workspace.mode }, (ctx) =>
+              this.doWorkspaceOperation(ctx, workspace, opt)
+            )
             .catch((err) => {
               Analytics.handleError(err)
               ctx.error('error', { err })

@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { createHash } from 'crypto'
+import { createHash, randomUUID } from 'crypto'
 import { readEml, ReadedEmlJson } from 'eml-parse-js'
 import { Request, Response } from 'express'
-import { htmlToMarkup } from '@hcengineering/text-html'
-import { createMessages } from './message'
+import TurndownService from 'turndown'
+import sanitizeHtml from 'sanitize-html'
+import { MeasureContext } from '@hcengineering/core'
+import { type Attachment, createMessages } from './message'
 import config from './config'
 
 interface MtaMessage {
@@ -34,27 +36,33 @@ interface MtaMessage {
   }
 }
 
-export async function handleMtaHook (req: Request, res: Response): Promise<void> {
+export async function handleMtaHook (req: Request, res: Response, ctx: MeasureContext): Promise<void> {
   try {
+    if (config.hookToken !== undefined) {
+      const token = req.headers['x-hook-token']
+      if (token !== config.hookToken) {
+        throw new Error('Invalid hook token')
+      }
+    }
+
     const mta: MtaMessage = req.body
 
     const from = { address: mta.envelope.from.address, name: '' }
     if (config.ignoredAddresses.includes(from.address)) {
-      console.log(`Ignoring message from ${from.address}`)
       return
     }
     const fromHeader = mta.message.headers.find((header) => header[0] === 'From')?.[1]
     if (fromHeader !== undefined) {
-      from.name = extractContactName(fromHeader)
+      from.name = extractContactName(ctx, fromHeader)
     }
 
-    const tos = mta.envelope.to.map((to) => ({ address: to.address, name: '' }))
+    const tos = mta.envelope.to.map((to) => ({ address: stripTags(to.address), name: '' }))
     const toHeader = mta.message.headers.find((header) => header[0] === 'To')?.[1]
     if (toHeader !== undefined) {
       for (const part of toHeader.split(',')) {
         for (const to of tos) {
           if (part.includes(to.address)) {
-            to.name = extractContactName(part)
+            to.name = extractContactName(ctx, part)
           }
         }
       }
@@ -62,7 +70,7 @@ export async function handleMtaHook (req: Request, res: Response): Promise<void>
 
     const subject = (mta.message.headers.find((header) => header[0] === 'Subject')?.[1] ?? '').trim()
     const inReplyTo = mta.message.headers.find((header) => header[0] === 'In-Reply-To')?.[1]?.trim()
-    const content = await getContent(mta)
+    const { content, attachments } = await parseContent(ctx, mta)
 
     let mailId = mta.message.headers.find((header) => header[0] === 'Message-ID')?.[1].trim()
     if (mailId === undefined) {
@@ -78,15 +86,19 @@ export async function handleMtaHook (req: Request, res: Response): Promise<void>
         .digest('hex')
     }
 
-    await createMessages(mailId, from, tos, subject, content, inReplyTo)
-  } catch (err) {
-    console.error('mta-hook', err)
+    await createMessages(ctx, mailId, from, tos, subject, content, attachments, inReplyTo)
+  } catch (error) {
+    ctx.error('mta-hook', { error })
   } finally {
+    // Any error in the mta-hook should not prevent the mail server from handling emails
     res.status(200).send({ action: 'accept' })
   }
 }
 
-async function getContent (mta: MtaMessage): Promise<string> {
+async function parseContent (
+  ctx: MeasureContext,
+  mta: MtaMessage
+): Promise<{ content: string, attachments: Attachment[] }> {
   const contentType = mta.message.headers.find((header) => header[0] === 'Content-Type')?.[1]
   if (contentType === undefined) {
     throw new Error('Content-Type header not found')
@@ -103,21 +115,88 @@ async function getContent (mta: MtaMessage): Promise<string> {
       }
     })
   })
+
+  let content = email.text ?? ''
+  let isMarkdown = false
   if (email.html !== undefined) {
     try {
-      // Some mailers (e.g. Google) use divs instead of paragraphs
-      const html = email.html.replaceAll('<div', '<p').replaceAll('</div>', '</p>')
-      const markup = htmlToMarkup(html)
-      return JSON.stringify(markup)
-    } catch (err) {
-      console.warn('Failed to parse html content', err)
+      const html = sanitizeHtml(email.html)
+      const tds = new TurndownService()
+      content = tds.turndown(html)
+      isMarkdown = true
+    } catch (error) {
+      ctx.warn('Failed to parse html content', { error })
     }
   }
-  return email.text ?? ''
+
+  const attachments: Attachment[] = []
+  if (config.storageConfig !== undefined) {
+    for (const a of email.attachments ?? []) {
+      if (a.name === undefined || a.name.length === 0) {
+        // EML parser returns attachments with empty name for parts of content
+        // that do not have "Content-Disposition: attachment" e.g. for part
+        // Content-Type: text/calendar; charset="UTF-8"; method=REQUEST
+        continue
+      }
+      const attachment: Attachment = {
+        id: randomUUID(),
+        name: a.name,
+        data: Buffer.from(a.data64, 'base64'),
+        contentType: a.contentType.split(';')[0].trim()
+      }
+      attachments.push(attachment)
+
+      // For inline images, replace the CID references with the blob id
+      if (isMarkdown && a.inline && a.id !== undefined) {
+        const cid = a.id.replace(/[<>]/g, '')
+        content = content.replaceAll(
+          new RegExp(`!\\[.*?\\]\\(cid:${cid}\\)`, 'g'),
+          `![${a.name}](cid:${attachment.id})`
+        )
+      }
+    }
+  }
+  return { content, attachments }
 }
 
-function extractContactName (fromHeader: string): string {
+function extractContactName (ctx: MeasureContext, fromHeader: string): string {
   // Match name part that appears before an email in angle brackets
   const nameMatch = fromHeader.match(/^\s*"?([^"<]+?)"?\s*<.+?>/)
-  return nameMatch?.[1].trim() ?? ''
+  const name = nameMatch?.[1].trim() ?? ''
+  if (name.length > 0) {
+    return decodeMimeWord(ctx, name)
+  }
+  return ''
+}
+
+function decodeMimeWord (ctx: MeasureContext, text: string): string {
+  return text.replace(/=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi, (match, charset, encoding, content) => {
+    try {
+      if (encoding.toUpperCase() === 'B') {
+        // Base64 encoding
+        const buffer = Buffer.from(content, 'base64')
+        return buffer.toString(charset as BufferEncoding)
+      } else if (encoding.toUpperCase() === 'Q') {
+        // Quoted-printable encoding
+        const decoded = content
+          .replace(/_/g, ' ')
+          .replace(/=([0-9A-F]{2})/gi, (_: any, hex: string) => String.fromCharCode(parseInt(hex, 16)))
+        return Buffer.from(decoded).toString(charset as BufferEncoding)
+      }
+      return match
+    } catch (error) {
+      ctx.warn('Failed to decode encoded word', { error })
+      return match
+    }
+  })
+}
+
+function stripTags (email: string): string {
+  const [name, domain] = email.split('@')
+  const tagStart = name.indexOf('+')
+  if (tagStart === -1) {
+    return email
+  }
+  const clearName = name.substring(0, tagStart)
+  return `${clearName}@${domain}`
 }

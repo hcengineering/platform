@@ -36,6 +36,26 @@
     "Random": "Aléatoire",
     "AllProcesses": "Tous les processus",
     "MyProcesses": "Mes processus",
-    "ShowDone": "Afficher terminé"
+    "ShowDone": "Afficher terminé",
+    "Add": "Ajouter",
+    "Subtract": "Soustraire",
+    "Offset": "Décalage",
+    "FirstWorkingDayAfter": "Premier jour de travail après",
+    "FallbackValueError": "Afficher l'erreur si vide",
+    "Required": "Requis",
+    "ParallelExecutionForbidden": "Exécution parallèle interdite",
+    "StartAutomatically": "Démarrer automatiquement",
+    "Error": "Erreur",
+    "Continue": "Continuer"
+  },
+  "error": {
+    "MethodNotFound": "Méthode introuvable : {methodId}",
+    "AttributeNotExists": "Attribut inexistant : {key}",
+    "RelatedObjectNotFound": "Objet lié introuvable : {attr}",
+    "RelationNotExists": "Relation inexistante : {association}",
+    "EmptyAttributeContextValue": "Valeur d'attribut vide : {attr}",
+    "ObjectNotFound": "Objet introuvable : {_id}",
+    "EmptyRelatedObjectValue": "Valeur d'objet lié vide : {parent} {attr}",
+    "InternalServerError": "Erreur interne du serveur, contactez le support, id d'erreur : {errorId}"
   }
 }

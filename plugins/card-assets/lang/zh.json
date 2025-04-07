@@ -29,7 +29,10 @@
     "EditView": "编辑视图",
     "SelectViewType": "选择视图类型",
     "Document": "文档",
+    "Documents": "文档",
     "ChangeType": "更改类型",
-    "ChangeTypeWarning": "警告：更改卡片类型将删除任何不存在于目标类型中的任何属性的所有数据。之前的属性数据可以通过将卡片回到以前的类型来恢复。卡片内容将不会受到影响。"
+    "ChangeTypeWarning": "警告：更改卡片类型将删除任何不存在于目标类型中的任何属性的所有数据。之前的属性数据可以通过将卡片回到以前的类型来恢复。卡片内容将不会受到影响。",
+    "MasterDetailViews": "主细节视图",
+    "SelectType": "选择类型"
   }
 }

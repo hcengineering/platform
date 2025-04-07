@@ -23,7 +23,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import love from '../plugin'
   import { tryConnect, isConnected, isCurrentInstanceConnected, screenSharing } from '../utils'
-  import { infos, invites, myInfo, myRequests, storePromise, currentRoom } from '../stores'
+  import { infos, invites, myInfo, myRequests, waitForOfficeLoaded, currentRoom } from '../stores'
 
   const localNav: boolean = $deviceInfo.navigator.visible
   const savedNav = localStorage.getItem('love-visibleNav')
@@ -41,7 +41,7 @@
       return
     }
 
-    await $storePromise
+    await waitForOfficeLoaded()
     const room = $currentRoom
 
     if (room === undefined) return

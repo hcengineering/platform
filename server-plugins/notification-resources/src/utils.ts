@@ -20,7 +20,6 @@ import contact, {
   formatName,
   includesAny,
   Person,
-  PersonSpace,
   SocialIdentity,
   SocialIdentityRef
 } from '@hcengineering/contact'
@@ -70,6 +69,7 @@ import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
 import { NotifyResult } from './types'
+import { getPersonSpaces } from '@hcengineering/server-contact'
 
 /**
  * @public
@@ -472,12 +472,7 @@ export async function getReceiversInfo (
   )
   if (employees.length === 0) return []
 
-  const spaces: Pick<PersonSpace, '_id' | 'person'>[] = await control.queryFind(
-    ctx,
-    contact.class.PersonSpace,
-    {},
-    { projection: { _id: 1, person: 1 } }
-  )
+  const spaces = await getPersonSpaces(control)
   if (spaces.length === 0) return []
 
   const socialIds: Pick<SocialIdentity, '_id' | 'attachedTo'>[] = await control.findAll(
