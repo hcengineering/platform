@@ -72,7 +72,7 @@ function filterParticipantInfo (value: ParticipantInfo[]): ParticipantInfo[] {
   return Array.from(map.values())
 }
 
-export const storePromise = writable<Promise<void>>(new Promise((resolve) => {}))
+const officeLoaded = writable(false)
 
 const query = createQuery(true)
 const statusQuery = createQuery(true)
@@ -124,19 +124,25 @@ onClient(() => {
       resolve()
     })
   )
-  storePromise.set(
-    new Promise((resolve) => {
-      void Promise.all([
-        roomPromise,
-        infoPromise,
-        floorPromise,
-        requestPromise,
-        preferencePromise,
-        invitesPromise
-      ]).then(() => {
-        resolve()
-      })
-    })
+
+  void Promise.all([roomPromise, infoPromise, floorPromise, requestPromise, preferencePromise, invitesPromise]).then(
+    () => {
+      officeLoaded.set(true)
+    }
   )
 })
+
+export async function waitForOfficeLoaded (): Promise<void> {
+  if (!get(officeLoaded)) {
+    await new Promise((resolve) => {
+      const unsubscribe = officeLoaded.subscribe((loaded) => {
+        if (loaded) {
+          unsubscribe()
+          resolve(null)
+        }
+      })
+    })
+  }
+}
+
 export const lockedRoom = writable<string>('')

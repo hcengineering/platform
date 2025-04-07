@@ -29,7 +29,7 @@
     myRequests,
     rooms,
     selectedFloor,
-    storePromise
+    waitForOfficeLoaded
   } from '../stores'
   import { connectToMeeting, tryConnect } from '../utils'
   import Floor from './Floor.svelte'
@@ -72,11 +72,11 @@
     const { sessionId, meetId, ...query } = loc.query ?? {}
     loc.query = Object.keys(query).length === 0 ? undefined : query
     navigate(loc, true)
-    if (sessionId != null) {
-      await $storePromise
+    if (sessionId) {
+      await waitForOfficeLoaded()
       await connectToSession(sessionId)
-    } else if (meetId != null) {
-      await $storePromise
+    } else if (meetId) {
+      await waitForOfficeLoaded()
       await connectToMeeting($personByIdStore, $myInfo, $infos, $myRequests, $invites, meetId)
     }
   })
