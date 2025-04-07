@@ -29,8 +29,104 @@ export class UnifiedDocProcessor {
       docs: new Map(),
       mixins: new Map()
     }
-    await this.processDirectory(directoryPath, result)
+    // Первый проход - собираем метаданные
+    await this.processMetadata(directoryPath, result)
+
+    // Второй проход - обрабатываем карточки
+    await this.processCards(directoryPath, result)
+
     return result
+  }
+
+  private async processMetadata (
+    currentPath: string,
+    result: UnifiedDocProcessResult,
+    parentMasterTagId?: Ref<MasterTag>
+  ): Promise<void> {
+    const entries = fs.readdirSync(currentPath, { withFileTypes: true })
+
+    // Обрабатываем только YAML файлы
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith('.yaml')) continue
+
+      const yamlPath = path.resolve(currentPath, entry.name)
+      const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
+
+      switch (yamlConfig?.class) {
+        case card.class.MasterTag: {
+          const masterTagId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<MasterTag>
+          const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
+          const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
+
+          this.metadataStorage.setAttributes(yamlPath, masterTagAttrs)
+          result.docs.set(yamlPath, [masterTag, ...Array.from(masterTagAttrs.values())])
+
+          // Рекурсивно обрабатываем поддиректорию
+          const masterTagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
+          if (fs.existsSync(masterTagDir) && fs.statSync(masterTagDir).isDirectory()) {
+            await this.processMetadata(masterTagDir, result, masterTagId)
+          }
+          break
+        }
+        case card.class.Tag: {
+          if (parentMasterTagId === undefined) {
+            throw new Error('Tag should be inside master tag folder: ' + currentPath)
+          }
+          await this.processTag(yamlPath, yamlConfig, result, parentMasterTagId)
+          break
+        }
+        case core.class.Association: {
+          const association = await this.createAssociation(yamlPath, yamlConfig)
+          result.docs.set(yamlPath, [association])
+          break
+        }
+        default:
+          throw new Error('Unsupported class: ' + yamlConfig?.class) // todo: handle default case just convert to UnifiedDoc
+      }
+    }
+
+    // Рекурсивно обрабатываем поддиректории
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      const dirPath = path.join(currentPath, entry.name)
+      await this.processMetadata(dirPath, result, parentMasterTagId)
+    }
+  }
+
+  private async processCards (
+    currentPath: string,
+    result: UnifiedDocProcessResult,
+    currentMasterTagId?: Ref<MasterTag>
+  ): Promise<void> {
+    const entries = fs.readdirSync(currentPath, { withFileTypes: true })
+
+    // Проверяем, есть ли YAML файл MasterTag'а для текущей директории
+    const yamlPath = currentPath + '.yaml'
+    if (fs.existsSync(yamlPath)) {
+      const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
+      if (yamlConfig?.class === card.class.MasterTag) {
+        currentMasterTagId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<MasterTag>
+      }
+    }
+
+    // Обрабатываем MD файлы с учетом текущего MasterTag'а
+    for (const entry of entries) {
+      if (entry.isFile() && entry.name.endsWith('.md')) {
+        const cardPath = path.join(currentPath, entry.name)
+        const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
+
+        if (currentMasterTagId !== undefined) {
+          await this.processCard(result, cardPath, cardProps, currentMasterTagId)
+        }
+      }
+    }
+
+    // Рекурсивно обрабатываем поддиректории с передачей текущего MasterTag'а
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      const dirPath = path.join(currentPath, entry.name)
+      await this.processCards(dirPath, result, currentMasterTagId)
+    }
   }
 
   private async processDirectory (

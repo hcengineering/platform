@@ -32,6 +32,7 @@ import core, {
   isId,
   PersonId,
   type Ref,
+  Relation,
   SocialIdType,
   type Space,
   type TxOperations
