@@ -25,6 +25,7 @@
   export let _class: Ref<Class<Doc>>
   export let key: string
   export let object: Record<string, any>
+  export let allowRemove: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -61,6 +62,8 @@
   {attribute}
   {presenterClass}
   {value}
+  {allowRemove}
+  on:remove
   on:change={(e) => {
     onChange(e.detail)
   }}

@@ -22,6 +22,7 @@
   export let state: State
   export let _class: Ref<Class<Doc>>
   export let params: MethodParams<Doc>
+  export let allowRemove: boolean = false
   export let keys: string[] = []
 
   const dispatch = createEventDispatcher()
@@ -45,10 +46,12 @@
       {state}
       {_class}
       {key}
+      {allowRemove}
       object={params}
       on:update={(e) => {
         change(e, key)
       }}
+      on:remove
     />
   {/each}
 </div>
