@@ -2,9 +2,9 @@
 class: card:types:File
 title: File Example
 blobs:
-    - ./files/cake.png
+    - ./Recipes/files/cake.png
 attachments:
-    - ./files/cake.png
+    - ./Recipes/files/cake.png
 ---
 
 *DESCRiption*

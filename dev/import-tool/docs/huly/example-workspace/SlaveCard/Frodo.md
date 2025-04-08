@@ -12,7 +12,7 @@ multy-enum: [Beta]
 attachments: 
     - ../../CARDS_INSTRUCTIONS.md
 blobs:
-    - ../files/screenshot.png
+    - ../Recipes/files/cake.png
     - ../../CARDS_INSTRUCTIONS.md
 ---
 

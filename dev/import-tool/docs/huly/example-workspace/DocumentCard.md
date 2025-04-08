@@ -1,5 +1,5 @@
 ---
-class: card:class:DocumentCard
+class: card:types:Document
 title: Document Example
 ---
 CONTENT
