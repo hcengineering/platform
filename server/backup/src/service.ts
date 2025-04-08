@@ -40,9 +40,9 @@ import {
   type StorageAdapter
 } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
+import { clearInterval } from 'node:timers'
 import { backup, restore } from '.'
 import { createStorageBackupStorage } from './storage'
-import { clearInterval } from 'node:timers'
 export interface BackupConfig {
   AccountsURL: string
   Token: string
@@ -208,6 +208,7 @@ class BackupWorker {
     const rateLimiter = new RateLimiter(this.config.Parallel)
 
     const times: number[] = []
+    const activeWorkspaces = new Set<string>()
 
     const infoTo = setInterval(() => {
       const avgTime = times.length > 0 ? Math.round(times.reduce((p, c) => p + c, 0) / times.length) / 1000 : 0
@@ -218,7 +219,8 @@ class BackupWorker {
         index,
         Elapsed: (Date.now() - startTime) / 1000,
         ETA: Math.round((workspaces.length - processed) * avgTime),
-        active: rateLimiter.processingQueue.size
+        activeLen: activeWorkspaces.size,
+        active: Array.from(activeWorkspaces).join(',')
       })
     }, 10000)
 
@@ -226,6 +228,7 @@ class BackupWorker {
       for (const ws of workspaces) {
         await rateLimiter.add(async () => {
           try {
+            activeWorkspaces.add(ws.workspace)
             index++
             if (this.canceled || Date.now() - startTime > recheckTimeout) {
               return // If canceled, we should stop
@@ -241,6 +244,9 @@ class BackupWorker {
             processed++
           } catch (err: any) {
             ctx.error('Backup failed', { err })
+            failedWorkspaces.push(ws)
+          } finally {
+            activeWorkspaces.delete(ws.workspace)
           }
         })
       }
@@ -348,6 +354,14 @@ class BackupWorker {
         // We need to report update for stats to account service
         const token = generateToken(systemAccountEmail, { name: ws.workspace }, { service: 'backup' })
         await updateBackupInfo(token, backupInfo)
+      } else {
+        rootCtx.error('BACKUP FAILED', {
+          workspace: ws.workspace,
+          workspaceUrl: ws.workspaceUrl,
+          workspaceName: ws.workspaceName,
+          time: Math.round((Date.now() - st) / 1000)
+        })
+        return false
       }
     } catch (err: any) {
       rootCtx.error('\n\nFAILED to BACKUP', { workspace: ws.workspace, err })
