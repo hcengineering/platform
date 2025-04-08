@@ -5,7 +5,7 @@ helpers: "./Frodo.md"
 sex: true
 color: gray
 x: from familiar
-ref: ./Queen.md
+ref: ./Worker2.md
 ---
 
 A wise and powerful wizard who guides others.

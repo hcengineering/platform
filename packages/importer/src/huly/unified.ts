@@ -57,7 +57,7 @@ export class UnifiedDocProcessor {
         case card.class.MasterTag: {
           const masterTagId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<MasterTag>
           const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
-          const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
+          const masterTagAttrs = await this.createAttributes(yamlPath, yamlConfig, masterTagId)
 
           this.metadataStorage.setAttributes(yamlPath, masterTagAttrs)
           result.docs.set(yamlPath, [masterTag, ...Array.from(masterTagAttrs.values())])
@@ -350,6 +350,7 @@ export class UnifiedDocProcessor {
   }
 
   private async createAttributes (
+    currentPath: string,
     data: Record<string, any>,
     masterTagId: Ref<MasterTag>
   ): Promise<Map<string, UnifiedDoc<Attribute<MasterTag>>>> {
@@ -359,6 +360,15 @@ export class UnifiedDocProcessor {
 
     const attributesByLabel = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
     for (const property of data.properties) {
+      const type: Record<string, any> = {}
+      if (property.refTo !== undefined) {
+        type._class = core.class.RefTo
+        const refPath = path.resolve(path.dirname(currentPath), property.refTo)
+        type.to = this.metadataStorage.getIdByFullPath(refPath)
+      } else {
+        type._class = 'core:class:' + property.type
+      }
+
       const attr: UnifiedDoc<Attribute<MasterTag>> = {
         _class: core.class.Attribute,
         props: {
@@ -367,10 +377,7 @@ export class UnifiedDocProcessor {
           name: generateId<Attribute<MasterTag>>(),
           label: 'embedded:embedded:' + property.label as IntlString,
           isCustom: true,
-          type: {
-            _class: 'core:class:' + property.type,
-            to: property.type === 'RefTo' ? this.metadataStorage.getIdByFullPath('/home/anna/huly/platform/dev/import-tool/docs/huly/example-workspace/SlaveCard.yaml') : undefined // todo: provide correct prop 'to'
-          },
+          type,
           defaultValue: property.defaultValue ?? null
         }
       }
