@@ -16,7 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { Token, TokenError, decodeToken } from '@hcengineering/server-token'
 import { Hocuspocus } from '@hocuspocus/server'
 import bp from 'body-parser'
 import cors from 'cors'
@@ -132,6 +132,11 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       })
       res.end(json)
     } catch (err: any) {
+      if (err instanceof TokenError) {
+        res.status(401).send({ error: 'Unauthorized' })
+        return
+      }
+
       ctx.error('statistics error', { err })
       Analytics.handleError(err)
       res.writeHead(404, {})
@@ -143,7 +148,16 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   app.post('/rpc/:id', async (req, res) => {
     const authHeader = req.headers.authorization
     if (authHeader === undefined) {
-      res.status(403).send({ error: 'Unauthorized' })
+      res.status(401).send({ error: 'Unauthorized' })
+      return
+    }
+
+    const rawToken = authHeader.split(' ')[1]
+    let token: Token
+    try {
+      token = decodeToken(rawToken)
+    } catch {
+      res.status(401).send({ error: 'Unauthorized' })
       return
     }
 
@@ -167,8 +181,6 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       return
     }
 
-    const rawToken = authHeader.split(' ')[1]
-    const token = decodeToken(rawToken)
     const context = await getContext(rawToken, token)
 
     rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
