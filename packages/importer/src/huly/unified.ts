@@ -368,7 +368,8 @@ export class UnifiedDocProcessor {
           label: 'embedded:embedded:' + property.label as IntlString,
           isCustom: true,
           type: {
-            _class: 'core:class:' + property.type
+            _class: 'core:class:' + property.type,
+            to: property.type === 'RefTo' ? this.metadataStorage.getIdByFullPath('/home/anna/huly/platform/dev/import-tool/docs/huly/example-workspace/SlaveCard.yaml') : undefined // todo: provide correct prop 'to'
           },
           defaultValue: property.defaultValue ?? null
         }
@@ -408,8 +409,20 @@ export class UnifiedDocProcessor {
     const relations: UnifiedDoc<Doc>[] = []
     for (const [key, value] of Object.entries(customProperties)) {
       if (masterTagAttrs.has(key)) {
-        const propName = masterTagAttrs.get(key)?.props.name
-        cardProps[propName] = value
+        const attr = masterTagAttrs.get(key)
+        if (attr === undefined) {
+          throw new Error(`Attribute not found: ${key}, ${cardPath}`) // todo: keep the error till builder validation
+        }
+
+        const attrProps = attr.props
+        console.log(key, attrProps.name, value)
+        if (attrProps.type._class === core.class.RefTo) {
+          const refPath = path.resolve(path.dirname(cardPath), value)
+          const ref = this.metadataStorage.getIdByFullPath(refPath) as Ref<Card>
+          cardProps[attrProps.name] = ref
+        } else {
+          cardProps[attrProps.name] = value
+        }
       } else if (masterTagRelations.has(key) || tagAssociations.has(key)) {
         const metadata = masterTagRelations.get(key) ?? tagAssociations.get(key)
         if (metadata === undefined) {
