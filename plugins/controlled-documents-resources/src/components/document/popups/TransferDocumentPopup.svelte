@@ -141,7 +141,6 @@
   $: hasParentSelector = targetSpaceId !== documents.space.UnsortedTemplates
   $: permissionRestrictedSpaces = Object.keys($permissionsStore.ps)
     .filter((s) => !checkMyPermission(documents.permission.CreateDocument, s as Ref<TypedSpace>, $permissionsStore))
-    .map(([s]) => s) as Ref<Space>[]
   $: restrictedSpaces =
     sourceSpaceId !== undefined ? permissionRestrictedSpaces.concat(sourceSpaceId) : permissionRestrictedSpaces
 
