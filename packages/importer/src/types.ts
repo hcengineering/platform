@@ -17,6 +17,8 @@ export interface UnifiedMixin<T extends Doc, M extends Doc> { // todo: extends T
 export interface UnifiedFile {
   _id: Ref<PlatformBlob>
   name: string
+  type: string
+  size: number
   blobProvider: blobProvider
 }
 

@@ -4,6 +4,7 @@ import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Association,
   Attribute,
+  BlobType,
   Class,
   Doc,
   Enum,
@@ -29,7 +30,6 @@ export interface UnifiedDocProcessResult {
 
 export class UnifiedDocProcessor {
   private readonly metadataStorage = new MetadataStorage()
-
   async importFromDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
     const result: UnifiedDocProcessResult = {
       docs: new Map(),
@@ -173,7 +173,11 @@ export class UnifiedDocProcessor {
     masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
-    const cardWithRelations = await this.createCardWithRelations(cardProps, cardPath, masterTagId, masterTagRelations, masterTagAttrs, parentCardId, blobs)
+    if (cardProps.blobs !== undefined) {
+      await this.createBlobs(cardProps.blobs, cardPath, result)
+    }
+
+    const cardWithRelations = await this.createCardWithRelations(cardProps, cardPath, masterTagId, masterTagRelations, masterTagAttrs, result.files, parentCardId)
 
     if (cardWithRelations.length > 0) {
       const docs = result.docs.get(cardPath) ?? []
@@ -184,7 +188,7 @@ export class UnifiedDocProcessor {
       await this.applyTags(card, cardProps, cardPath, result)
 
       if (cardProps.attachments !== undefined) {
-        await this.processAttachments(cardProps.attachments, cardPath, card, result)
+        await this.createAttachments(cardProps.attachments, cardPath, card, result)
       }
 
       const cardDir = path.join(path.dirname(cardPath), path.basename(cardPath, '.md'))
@@ -387,10 +391,12 @@ export class UnifiedDocProcessor {
     masterTagId: Ref<MasterTag>,
     masterTagRelations: Map<string, RelationMetadata>, // todo: rename to masterTagsAssociations
     masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
+    blobFiles: Map<string, UnifiedFile>,
     parentCardId?: Ref<Card>
   ): Promise<UnifiedDoc<Doc>[]> {
-    const { _class, title, tags: rawTags, ...customProperties } = cardHeader
+    const { _class, title, blobs: rawBlobs, tags: rawTags, ...customProperties } = cardHeader
     const tags = rawTags !== undefined ? (Array.isArray(rawTags) ? rawTags : [rawTags]) : []
+    const blobs = rawBlobs !== undefined ? (Array.isArray(rawBlobs) ? rawBlobs : [rawBlobs]) : []
 
     const cardId = this.metadataStorage.getIdByAbsolutePath(cardPath) as Ref<Card>
     const cardProps: Record<string, any> = {
@@ -398,6 +404,24 @@ export class UnifiedDocProcessor {
       space: core.space.Workspace,
       title,
       parent: parentCardId
+    }
+
+    if (blobs.length > 0) {
+      const blobProps: Record<string, BlobType> = {}
+      for (const blob of blobs) {
+        const blobPath = path.resolve(path.dirname(cardPath), blob)
+        const blobFile = blobFiles.get(blobPath)
+        if (blobFile === undefined) {
+          throw new Error('Blob file not found: ' + blobPath + ' from:' + cardPath)
+        }
+        blobProps[blobFile._id] = {
+          file: blobFile._id,
+          type: blobFile.type,
+          name: blobFile.name,
+          metadata: {} // todo: blobFile.metadata
+        }
+      }
+      cardProps.blobs = blobProps
     }
 
     const tagAssociations = new Map<string, RelationMetadata>()
@@ -510,7 +534,7 @@ export class UnifiedDocProcessor {
     }
   }
 
-  private async processAttachments (
+  private async createAttachments (
     attachments: string[],
     cardPath: string,
     card: UnifiedDoc<Card>,
@@ -518,20 +542,7 @@ export class UnifiedDocProcessor {
   ): Promise<void> {
     for (const attachment of attachments) {
       const attachmentPath = path.resolve(path.dirname(cardPath), attachment)
-      const attachmentName = path.basename(attachmentPath)
-      const fileId = this.metadataStorage.getIdByAbsolutePath(attachmentPath) as Ref<PlatformBlob>
-      const type = contentType(attachmentPath)
-      const size = fs.statSync(attachmentPath).size
-
-      const file: UnifiedFile = {
-        _id: fileId, // id for datastore
-        name: attachmentName,
-        blobProvider: async () => {
-          const data = fs.readFileSync(attachmentPath)
-          const props = type !== false ? { type } : undefined
-          return new Blob([data], props)
-        }
-      }
+      const file = await this.createFile(attachmentPath)
       result.files.set(attachmentPath, file)
 
       const attachmentId = this.metadataStorage.getIdByAbsolutePath(attachmentPath) as Ref<Attachment>
@@ -542,16 +553,51 @@ export class UnifiedDocProcessor {
           space: core.space.Workspace,
           attachedTo: card.props._id as Ref<Card>,
           attachedToClass: card._class,
-          file: fileId,
-          name: attachmentName,
+          file: file._id,
+          name: file.name,
           collection: 'attachments',
           lastModified: Date.now(),
-          type: type !== false ? type : 'application/octet-stream',
-          size
+          type: file.type,
+          size: file.size
         }
       }
       result.docs.set(attachmentPath, [attachmentDoc])
     }
+  }
+
+  private async createBlobs (
+    blobs: string[],
+    cardPath: string,
+    result: UnifiedDocProcessResult
+  ): Promise<void> {
+    for (const blob of blobs) {
+      const blobPath = path.resolve(path.dirname(cardPath), blob)
+      const file = await this.createFile(blobPath)
+      result.files.set(blobPath, file)
+    }
+  }
+
+  private async createFile (
+    fileAbsPath: string
+  ): Promise<UnifiedFile> {
+    // const fileAbsPath = path.resolve(path.dirname(currentPath), filePath)
+    const fileName = path.basename(fileAbsPath)
+    const fileId = this.metadataStorage.getIdByAbsolutePath(fileAbsPath) as Ref<PlatformBlob>
+    const type = contentType(fileName)
+    const size = fs.statSync(fileAbsPath).size
+
+    const file: UnifiedFile = {
+      _id: fileId, // id for datastore
+      name: fileName,
+      type: type !== false ? type : 'application/octet-stream',
+      size, // todo: make sure this one is needed
+      blobProvider: async () => {
+        const data = fs.readFileSync(fileAbsPath)
+        const props = type !== false ? { type } : undefined
+        return new Blob([data], props)
+      }
+    }
+    return file
   }
 
   private async createAssociation (

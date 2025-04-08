@@ -1,7 +1,7 @@
 import { Tag } from '@hcengineering/card'
-import { Association, Attribute, Doc, generateId, Ref } from '@hcengineering/core'
+import { Association, Attribute, Doc, generateId, Ref, Blob as PlatformBlob } from '@hcengineering/core'
 import path from 'path'
-import { UnifiedDoc } from '../types'
+import { UnifiedDoc, UnifiedFile } from '../types'
 
 export interface RelationMetadata { // todo: rename
   association: Ref<Association>
@@ -10,6 +10,7 @@ export interface RelationMetadata { // todo: rename
 }
 export type MapAttributeToUnifiedDoc = Map<string, UnifiedDoc<Attribute<Tag>>>
 export type MapNameToIsMany = Map<string, RelationMetadata> // todo: rename
+
 export interface TagMetadata {
   _id: string
   attributes: MapAttributeToUnifiedDoc // title -> attribute id
@@ -19,6 +20,7 @@ export interface TagMetadata {
 export class MetadataStorage {
   private readonly pathToRef = new Map<string, Ref<Doc>>() // todo: attachments to a separate map?
   private readonly pathToMetadata = new Map<string, TagMetadata>()
+  private readonly pathToBlobUuid = new Map<string, Ref<PlatformBlob>>() // todo: blobs to a separate map?
 
   public getIdByAbsolutePath (path: string): Ref<Doc> {
     let id = this.pathToRef.get(path)
@@ -27,11 +29,6 @@ export class MetadataStorage {
       this.pathToRef.set(path, id)
     }
     return id
-  }
-
-  public getIdByRelativePath (currentPath: string, relativePath: string): Ref<Doc> {
-    const fullPath = path.resolve(currentPath, relativePath)
-    return this.getIdByAbsolutePath(fullPath)
   }
 
   public hasMetadata (path: string): boolean {
