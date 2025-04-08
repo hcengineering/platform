@@ -21,7 +21,6 @@ import { ClientSession, startSessionManager } from '@hcengineering/server'
 import {
   type CommunicationApiFactory,
   type PlatformQueue,
-  type ServerFactory,
   type Session,
   type SessionManager,
   type StorageConfiguration,
@@ -56,6 +55,7 @@ import {
   shutdownPostgres
 } from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
+import { startHttpServer } from './server_http'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
@@ -81,7 +81,6 @@ export function start (
     storageConfig: StorageConfiguration
     port: number
     brandingMap: BrandingMap
-    serverFactory: ServerFactory
 
     enableCompression?: boolean
 
@@ -148,23 +147,22 @@ export function start (
     )
   }
 
-  const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {
+  const sessionManager = startSessionManager(metrics, {
     pipelineFactory,
     sessionFactory,
     communicationApiFactory,
-    port: opt.port,
     brandingMap: opt.brandingMap,
-    serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
-    externalStorage,
     profiling: opt.profiling,
     queue: opt.queue
   })
+  const shutdown = startHttpServer(metrics, sessionManager, opt.port, opt.accountsUrl, externalStorage)
   return {
     shutdown: async () => {
       await externalStorage.close()
-      await onClose()
+      await sessionManager.closeWorkspaces(metrics)
+      await shutdown()
     },
     sessionManager
   }
