@@ -28,6 +28,7 @@ import core, {
   Attribute,
   type Class,
   type Doc,
+  Enum,
   generateId,
   isId,
   PersonId,
@@ -510,6 +511,9 @@ export class HulyFormatImporter {
           case core.class.Relation:
             builder.addRelation(path, doc as UnifiedDoc<Relation>)
             break
+          case core.class.Enum:
+            builder.addEnum(path, doc as UnifiedDoc<Enum>)
+            break
           default:
             if (isId(doc._class) || (doc._class as string).startsWith('card:types:')) { // todo: fix system cards validation
               builder.addCard(path, doc as UnifiedDoc<Card>)
@@ -573,6 +577,7 @@ export class HulyFormatImporter {
             break
           }
 
+          case core.class.Enum:
           case core.class.Association:
           case card.class.MasterTag: {
             this.logger.log(`Skipping ${spaceName}: master tag already processed`)

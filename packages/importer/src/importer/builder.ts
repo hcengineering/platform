@@ -14,7 +14,7 @@
 //
 import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
-import core, { Association, Attribute, Doc, Relation, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
+import core, { Association, Attribute, Doc, Enum, Relation, type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
@@ -64,6 +64,7 @@ export class ImportWorkspaceBuilder {
   private readonly cards = new Map<string, UnifiedDoc<Card>>()
   private readonly associations = new Map<string, UnifiedDoc<Association>>()
   private readonly relations = new Map<string, UnifiedDoc<Relation>>()
+  private readonly enums = new Map<string, UnifiedDoc<Enum>>()
   private readonly mixins = new Map<string, UnifiedMixin<Doc, Doc>>()
 
   private readonly projectTypes = new Map<string, ImportProjectType>()
@@ -264,6 +265,11 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addEnum (path: string, enumDoc: UnifiedDoc<Enum>): this {
+    this.validateAndAdd('enum', path, enumDoc, (e) => this.validateEnum(e), this.enums, path)
+    return this
+  }
+
   addTagMixin (path: string, mixin: UnifiedMixin<Doc, Doc>): this {
     this.validateAndAdd('tagMixin', path, mixin, (m) => this.validateTagMixin(m), this.mixins, path + '/' + mixin.mixin) // todo: fix mixin key
     return this
@@ -345,7 +351,8 @@ export class ImportWorkspaceBuilder {
         ...Array.from(this.tags.values()),
         ...Array.from(this.cards.values()),
         ...Array.from(this.associations.values()),
-        ...Array.from(this.relations.values())
+        ...Array.from(this.relations.values()),
+        ...Array.from(this.enums.values())
       ],
       mixins: Array.from(this.mixins.values()),
       attachments: []
@@ -910,6 +917,14 @@ export class ImportWorkspaceBuilder {
     const errors: string[] = []
 
     // todo: validate relation
+
+    return errors
+  }
+
+  private validateEnum (enumDoc: UnifiedDoc<Enum>): string[] {
+    const errors: string[] = []
+
+    // todo: validate enum
 
     return errors
   }

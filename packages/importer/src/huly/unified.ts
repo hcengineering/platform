@@ -4,6 +4,7 @@ import core, {
   Association,
   Attribute,
   Doc,
+  Enum,
   generateId,
   Ref,
   Relation
@@ -79,6 +80,11 @@ export class UnifiedDocProcessor {
         case core.class.Association: {
           const association = await this.createAssociation(yamlPath, yamlConfig)
           result.docs.set(yamlPath, [association])
+          break
+        }
+        case core.class.Enum: {
+          const enumDoc = await this.createEnum(yamlPath, yamlConfig)
+          result.docs.set(yamlPath, [enumDoc])
           break
         }
         default:
@@ -545,6 +551,23 @@ export class UnifiedDocProcessor {
         nameB,
         type
       } as unknown as Props<Association>
+    }
+  }
+
+  private async createEnum (
+    yamlPath: string,
+    yamlConfig: Record<string, any>
+  ): Promise<UnifiedDoc<Enum>> {
+    const { title, values } = yamlConfig
+    const enumId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<Enum>
+    return {
+      _class: core.class.Enum,
+      props: {
+        _id: enumId,
+        space: core.space.Model,
+        name: title,
+        enumValues: values
+      }
     }
   }
 }
