@@ -107,7 +107,7 @@ export interface AccountClient {
   findPersonBySocialKey: (socialKey: string, requireAccount?: boolean) => Promise<PersonUuid | undefined>
   findPersonBySocialId: (socialId: PersonId, requireAccount?: boolean) => Promise<PersonUuid | undefined>
   findSocialIdBySocialKey: (socialKey: string) => Promise<PersonId | undefined>
-  getSocialIdBySocialKey: (socialKey: string) => Promise<SocialId | undefined>
+  findFullSocialIdBySocialKey: (socialKey: string) => Promise<SocialId | undefined>
   getMailboxOptions: () => Promise<MailboxOptions>
   createMailbox: (name: string, domain: string) => Promise<{ mailbox: string, socialId: PersonId }>
   getMailboxes: () => Promise<MailboxInfo[]>
@@ -645,9 +645,9 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async getSocialIdBySocialKey (socialKey: string): Promise<SocialId | undefined> {
+  async findFullSocialIdBySocialKey (socialKey: string): Promise<SocialId | undefined> {
     const request = {
-      method: 'getSocialIdBySocialKey' as const,
+      method: 'findFullSocialIdBySocialKey' as const,
       params: { socialKey }
     }
     return await this.rpc(request)

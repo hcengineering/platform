@@ -1487,7 +1487,7 @@ export async function findSocialIdBySocialKey (
   return socialIdObj._id
 }
 
-export async function getSocialIdBySocialKey (
+export async function findFullSocialIdBySocialKey (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1708,7 +1708,7 @@ export type AccountMethods =
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
-  | 'getSocialIdBySocialKey'
+  | 'findFullSocialIdBySocialKey'
   | 'ensurePerson'
   | 'getMailboxOptions'
   | 'createMailbox'
@@ -1765,7 +1765,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     findPersonBySocialId: wrap(findPersonBySocialId),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
-    getSocialIdBySocialKey: wrap(getSocialIdBySocialKey),
+    findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
     getMailboxOptions: wrap(getMailboxOptions),
     getAccountInfo: wrap(getAccountInfo),

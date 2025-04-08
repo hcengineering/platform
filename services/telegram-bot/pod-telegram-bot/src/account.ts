@@ -75,7 +75,7 @@ export async function listIntegrationsByAccount (account: AccountUuid): Promise<
 
 export async function listIntegrationsByTelegramId (telegramId: number): Promise<IntegrationInfo[]> {
   const client = getAccountClient(serviceToken())
-  const socialId = await client.getSocialIdBySocialKey(
+  const socialId = await client.findFullSocialIdBySocialKey(
     buildSocialIdString({ type: SocialIdType.TELEGRAM, value: telegramId.toString() })
   )
   if (socialId == null) return []
@@ -97,7 +97,7 @@ export async function getIntegrationByTelegramId (
   workspace?: WorkspaceUuid
 ): Promise<IntegrationInfo | undefined> {
   const client = getAccountClient(serviceToken())
-  const socialId = await client.getSocialIdBySocialKey(
+  const socialId = await client.findFullSocialIdBySocialKey(
     buildSocialIdString({ type: SocialIdType.TELEGRAM, value: telegramId.toString() })
   )
   if (socialId == null) return undefined
@@ -152,7 +152,7 @@ export async function getOrCreateSocialId (
   username?: string
 ): Promise<PersonId> {
   const accountClient = getAccountClient(serviceToken())
-  const socialId = await accountClient.getSocialIdBySocialKey(
+  const socialId = await accountClient.findFullSocialIdBySocialKey(
     buildSocialIdString({ type: SocialIdType.TELEGRAM, value: telegramId.toString() })
   )
   if (socialId == null) {
