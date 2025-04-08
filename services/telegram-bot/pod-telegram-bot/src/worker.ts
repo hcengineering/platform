@@ -37,26 +37,24 @@ import {
   TelegramNotificationQueueMessage,
   TelegramWorkspaceSubscriptionQueueMessage
 } from '@hcengineering/server-telegram'
+import { generateToken } from '@hcengineering/server-token'
+import { Telegraf } from 'telegraf'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+
 import { Limiter } from './limiter'
 import { TgContext } from './telegraf/types'
-import { Telegraf } from 'telegraf'
 import { getDb, PostgresDB } from './db'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import {
   addWorkspace,
   createIntegration,
-  findIntegrationByAccount,
-  findIntegrationByTelegramId,
+  listIntegrationsByAccount,
   getOrCreateSocialId,
-  removeWorkspace
+  disableIntegration,
+  getIntegrationByTelegramId,
+  enableIntegration
 } from './account'
-import { generateToken } from '@hcengineering/server-token'
-
-const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
 
 export class PlatformWorker {
-  private readonly workspacesClients = new Map<string, WorkspaceClient>()
-  private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
   private readonly otpIntervalId: NodeJS.Timeout | undefined
   private readonly clearIntervalId: NodeJS.Timeout | undefined
 
@@ -105,21 +103,6 @@ export class PlatformWorker {
     await this.db.close()
   }
 
-  async closeWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
-    const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
-
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId)
-      this.closeWorkspaceTimeouts.delete(workspace)
-    }
-
-    const client = this.workspacesClients.get(workspace)
-
-    if (client !== undefined) {
-      this.workspacesClients.delete(workspace)
-    }
-  }
-
   private async addIntegration (
     telegramId: number,
     account: AccountUuid,
@@ -127,20 +110,7 @@ export class PlatformWorker {
     socialId: PersonId,
     username?: string
   ): Promise<IntegrationInfo | undefined> {
-    const existIntegration = await findIntegrationByAccount(account)
-
-    if (existIntegration != null && existIntegration.telegramId === telegramId) {
-      const workspaces: WorkspaceUuid[] = existIntegration.data?.workspaces ?? []
-      if (workspaces.includes(workspace)) {
-        return
-      }
-      if (!workspaces.includes(workspace)) {
-        await addWorkspace(existIntegration, workspace)
-      }
-      return
-    }
-
-    const integrationByTg = await findIntegrationByTelegramId(telegramId)
+    const integrationByTg = await getIntegrationByTelegramId(telegramId)
 
     if (integrationByTg != null) {
       this.ctx.error('Account is already registered', {
@@ -155,14 +125,19 @@ export class PlatformWorker {
 
     return {
       ...integration,
+      workspaceUuid: workspace,
       account,
       telegramId,
       username
     }
   }
 
-  async getFiles (workspace: WorkspaceUuid, message: Ref<ActivityMessage>): Promise<PlatformFileInfo[]> {
-    const wsClient = await this.getWorkspaceClient(workspace)
+  async getFiles (
+    workspace: WorkspaceUuid,
+    message: Ref<ActivityMessage>,
+    account: AccountUuid
+  ): Promise<PlatformFileInfo[]> {
+    const wsClient = await WorkspaceClient.create(workspace, account, this.ctx, this.storage)
     return await wsClient.getFiles(message)
   }
 
@@ -189,36 +164,13 @@ export class PlatformWorker {
     return await this.db.getMessageByTgId(account, telegramId)
   }
 
-  async getWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient> {
-    const wsClient =
-      this.workspacesClients.get(workspace) ?? (await WorkspaceClient.create(workspace, this.ctx, this.storage))
-
-    if (!this.workspacesClients.has(workspace)) {
-      this.workspacesClients.set(workspace, wsClient)
-    }
-
-    const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
-
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId)
-    }
-
-    const newTimeoutId = setTimeout(() => {
-      void this.closeWorkspaceClient(workspace)
-    }, closeWorkspaceTimeout)
-
-    this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
-
-    return wsClient
-  }
-
   async reply (
     integration: IntegrationInfo,
     messageRecord: MessageRecord,
     text: string,
     files: TelegramFileInfo[]
   ): Promise<boolean> {
-    const client = await this.getWorkspaceClient(messageRecord.workspace)
+    const client = await WorkspaceClient.create(messageRecord.workspace, integration.account, this.ctx, this.storage)
     return await client.replyToMessage(integration.account, integration.socialId, messageRecord, text, files)
   }
 
@@ -276,7 +228,7 @@ export class PlatformWorker {
     text: string,
     file?: TelegramFileInfo
   ): Promise<boolean> {
-    const client = await this.getWorkspaceClient(channel.workspace)
+    const client = await WorkspaceClient.create(channel.workspace, account, this.ctx, this.storage)
     const _id = await client.sendMessage(channel, account, socialId, text, file)
 
     if (_id === undefined) return false
@@ -292,7 +244,7 @@ export class PlatformWorker {
   }
 
   async syncChannels (account: AccountUuid, workspace: WorkspaceUuid, onlyStarred: boolean): Promise<void> {
-    const client = await this.getWorkspaceClient(workspace)
+    const client = await WorkspaceClient.create(workspace, account, this.ctx, this.storage)
     const channels = await client.getChannels(account, onlyStarred)
     const existingChannels = await this.db.getChannels(account, workspace)
 
@@ -402,22 +354,28 @@ export class PlatformWorker {
     record: TelegramNotificationQueueMessage,
     bot: Telegraf<TgContext>
   ): Promise<void> {
-    const integration = await findIntegrationByAccount(record.account)
+    const integrations = await listIntegrationsByAccount(record.account)
 
-    if (integration === undefined) {
-      this.ctx.error('User not found', { account: record.account })
+    if (integrations.length === 0) {
+      this.ctx.error('Integrations not found', { account: record.account })
       return
     }
 
-    const workspaces: WorkspaceUuid[] = integration.data?.workspaces ?? []
-    if (!workspaces.includes(workspace)) {
-      await addWorkspace(integration, workspace)
+    const workspaceIntegration = integrations.find((it) => it.workspaceUuid === workspace)
+    if (workspaceIntegration === undefined) {
+      await addWorkspace(integrations[0], workspace)
+    } else if (workspaceIntegration.data?.disabled === true) {
+      await enableIntegration(workspaceIntegration)
     }
+
+    const integration = integrations[0]
 
     void this.limiter.add(integration.telegramId, async () => {
       const { full: fullMessage, short: shortMessage } = toTelegramHtml(record)
       const files =
-        record.attachments && record.messageId != null ? await this.getFiles(workspace, record.messageId) : []
+        record.attachments && record.messageId != null
+          ? await this.getFiles(workspace, record.messageId, record.account)
+          : []
       const tgMessageIds: number[] = []
 
       if (files.length === 0) {
@@ -450,19 +408,21 @@ export class PlatformWorker {
     workspace: WorkspaceUuid,
     record: TelegramWorkspaceSubscriptionQueueMessage
   ): Promise<void> {
-    const integration = await findIntegrationByAccount(record.account)
+    const integrations = await listIntegrationsByAccount(record.account)
 
-    if (integration === undefined) {
-      this.ctx.error('Integration not found', { account: record.account })
+    if (integrations.length === 0) {
+      this.ctx.error('Integrations not found', { account: record.account })
       return
     }
 
-    const workspaces: WorkspaceUuid[] = integration.data?.workspaces ?? []
+    const workspaceIntegration = integrations.find((it) => it.workspaceUuid === workspace)
 
-    if (record.subscribe && !workspaces.includes(workspace)) {
-      await addWorkspace(integration, workspace)
-    } else if (!record.subscribe && workspaces.includes(workspace)) {
-      await removeWorkspace(integration, workspace)
+    if (record.subscribe && workspaceIntegration === undefined) {
+      await addWorkspace(integrations[0], workspace)
+    } else if (record.subscribe && workspaceIntegration?.data?.disabled === true) {
+      await enableIntegration(workspaceIntegration)
+    } else if (!record.subscribe && workspaceIntegration !== undefined) {
+      await disableIntegration(workspaceIntegration)
     }
   }
 }

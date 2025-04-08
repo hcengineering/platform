@@ -35,10 +35,10 @@ import activity, { ActivityMessage } from '@hcengineering/activity'
 import attachment, { Attachment } from '@hcengineering/attachment'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { createRestClient, RestClient } from '@hcengineering/api-client'
+import { isEmptyMarkup } from '@hcengineering/text'
+import { generateToken } from '@hcengineering/server-token'
 
 import { ChannelRecord, MessageRecord, PlatformFileInfo, TelegramFileInfo } from './types'
-import { isEmptyMarkup } from '@hcengineering/text'
-import { serviceToken } from './utils'
 
 export class WorkspaceClient {
   private constructor (
@@ -51,10 +51,11 @@ export class WorkspaceClient {
 
   static async create (
     workspace: WorkspaceUuid,
+    account: AccountUuid,
     ctx: MeasureContext,
     storage: StorageAdapter
   ): Promise<WorkspaceClient> {
-    const token = serviceToken()
+    const token = generateToken(account, workspace)
     const endpoint = await getTransactorEndpoint(token)
     const client = createRestClient(endpoint, workspace, token)
     const model = await client.getModel()

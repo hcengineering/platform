@@ -23,7 +23,7 @@ import { TelegramNotificationQueueMessage } from '@hcengineering/server-telegram
 
 import { PlatformFileInfo, TelegramFileInfo } from './types'
 import { PostgresDB } from './db'
-import { systemAccountUuid } from '@hcengineering/core'
+import { WorkspaceUuid, systemAccountUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 
 export async function getNewOtp (db: PostgresDB): Promise<string> {

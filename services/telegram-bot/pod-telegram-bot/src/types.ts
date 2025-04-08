@@ -73,6 +73,7 @@ export interface WorkspaceInfo {
 
 export type IntegrationInfo = Integration & {
   account: AccountUuid
+  workspaceUuid: WorkspaceUuid
   telegramId: number
   username?: string
 }

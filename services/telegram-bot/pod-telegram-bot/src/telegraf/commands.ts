@@ -21,7 +21,12 @@ import { Context, Telegraf } from 'telegraf'
 import config from '../config'
 import { PlatformWorker } from '../worker'
 import { TgContext } from './types'
-import { findIntegrationByTelegramId, getAccountPerson, removeIntegrationByTg } from '../account'
+import {
+  listIntegrationsByTelegramId,
+  getAccountPerson,
+  removeIntegrationsByTg,
+  getIntegrationByTelegramId
+} from '../account'
 import { WorkspaceUuid } from '@hcengineering/core'
 
 export enum Command {
@@ -70,7 +75,7 @@ export async function getCommandsHelp (lang: string): Promise<string> {
 async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
   const id = ctx.from?.id
   const lang = ctx.from?.language_code ?? 'en'
-  const integration = id !== undefined ? await findIntegrationByTelegramId(id) : undefined
+  const integration = id !== undefined ? await getIntegrationByTelegramId(id) : undefined
 
   const commandsHelp = await getCommandsHelp(lang)
   const welcomeMessage = await translate(telegram.string.WelcomeMessage, { app: config.App }, lang)
@@ -107,7 +112,7 @@ async function onHelp (ctx: Context): Promise<void> {
 
 async function onStop (ctx: Context): Promise<void> {
   if (ctx.from?.id !== undefined) {
-    await removeIntegrationByTg(ctx.from?.id)
+    await removeIntegrationsByTg(ctx.from?.id)
   }
   const lang = ctx.from?.language_code ?? 'en'
   const message = await translate(telegram.string.StopMessage, { app: config.App }, lang)
@@ -122,14 +127,16 @@ async function onSyncChannels (ctx: Context, worker: PlatformWorker, onlyStarred
     return
   }
 
-  const integration = await findIntegrationByTelegramId(id)
+  const integrations = await listIntegrationsByTelegramId(id)
 
-  if (integration === undefined) return
+  if (integrations.length === 0) return
 
-  const workspaces: WorkspaceUuid[] = integration.data?.workspaces ?? []
+  const workspaces: WorkspaceUuid[] = integrations
+    .filter((it) => it.data?.disabled !== true)
+    .map((it) => it.workspaceUuid)
 
   for (const workspace of workspaces) {
-    await worker.syncChannels(integration.account, workspace, onlyStarred)
+    await worker.syncChannels(integrations[0].account, workspace, onlyStarred)
   }
 
   await ctx.reply('List of channels updated')
@@ -143,7 +150,7 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
     return
   }
 
-  const integration = await findIntegrationByTelegramId(id)
+  const integration = await getIntegrationByTelegramId(id)
 
   if (integration !== undefined) {
     const person = await getAccountPerson(integration.account)

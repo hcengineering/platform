@@ -157,7 +157,8 @@ export class PostgresDB {
       INSERT INTO ${messagesTable} (
         message_id, workspace, account, telegram_message_id
       )
-      VALUES ($1::varchar, $2::uuid, $3::uuid, $4::int8)`
+      VALUES ($1::varchar, $2::uuid, $3::uuid, $4::int8)
+      ON CONFLICT DO NOTHING`
     await this.client.unsafe(sql, [record.messageId, record.workspace, record.account, record.telegramMessageId])
   }
 
