@@ -889,15 +889,14 @@ describe('integration methods', () => {
       expect(mockDb.integrationSecret.findOne).toHaveBeenCalledWith(mockSecretKey)
     })
 
-    test('should throw error when secret not found', async () => {
+    test('should return null when integration secret not found', async () => {
       ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
         extra: { service: 'github' }
       })
       ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(null)
 
-      await expect(getIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)).rejects.toThrow(
-        new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
-      )
+      const result = await getIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)
+      expect(result).toBeNull()
     })
 
     test('should throw error for unauthorized service', async () => {

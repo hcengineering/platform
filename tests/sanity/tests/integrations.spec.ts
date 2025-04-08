@@ -1,27 +1,35 @@
 import { expect, test } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { Integration, IntegrationSecret } from '@hcengineering/account'
-import { buildSocialIdString, SocialIdType, WorkspaceUuid } from '@hcengineering/core'
+import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
 
 import { PlatformUser } from './utils'
 import { getAdminAccountClient } from './API/AccountClient'
 
 test.describe('integrations in accounts tests', () => {
-  test.beforeEach(async ({ page }) => {
-    page.on('console', msg => { console.log(msg.text()) })
-  })
-
   test('manage integrations', async () => {
     const accountClient = await getAdminAccountClient()
 
-    const personUuid = await accountClient.findPersonBySocialKey(buildSocialIdString({ type: SocialIdType.EMAIL, value: PlatformUser }))
+    const personUuid = await accountClient.findPersonBySocialKey(
+      buildSocialIdString({ type: SocialIdType.EMAIL, value: PlatformUser })
+    )
     if (personUuid == null) {
       throw new Error('Failed to find person for PlatformUser: ' + PlatformUser)
     }
 
     const personId1 = await accountClient.addSocialIdToPerson(personUuid, SocialIdType.EMAIL, faker.word.words(1), true)
-    const personId2 = await accountClient.addSocialIdToPerson(personUuid, SocialIdType.GITHUB, faker.word.words(1), true)
-    const personId3 = await accountClient.addSocialIdToPerson(personUuid, SocialIdType.GOOGLE, faker.word.words(1), true)
+    const personId2 = await accountClient.addSocialIdToPerson(
+      personUuid,
+      SocialIdType.GITHUB,
+      faker.word.words(1),
+      true
+    )
+    const personId3 = await accountClient.addSocialIdToPerson(
+      personUuid,
+      SocialIdType.GOOGLE,
+      faker.word.words(1),
+      true
+    )
     const workspaces = await accountClient.listWorkspaces()
     if (workspaces.length === 0) {
       throw new Error('No workspaces found')
