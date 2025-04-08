@@ -16,7 +16,7 @@
   import { Asset } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
   import { AnySvelteComponent, ColorDefinition, Icon, IconSize, resizeObserver } from '@hcengineering/ui'
-  import AvatarIcon from './icons/Avatar.svelte'
+  import AvatarIcon from '../icons/Avatar.svelte'
 
   export let url: string | undefined
   export let srcset: string | undefined
@@ -30,6 +30,7 @@
   export let element: HTMLElement
   export let adaptiveName: boolean = false
   export let disabled: boolean = false
+  export let style: 'modern' | undefined = undefined
 
   export function pulse (): void {
     if (element === undefined) return
@@ -57,7 +58,7 @@
 {#if (size === 'full' || adaptiveName) && !url && displayName && displayName !== ''}
   <div
     bind:this={element}
-    class="hulyAvatar-container hulyAvatarSize-{size} {variant}"
+    class="hulyAvatar-container hulyAvatarSize-{size} {variant} {style}"
     class:no-img={!hasImg && color}
     class:bordered={!hasImg && color === undefined}
     class:border={bColor !== undefined}
@@ -78,7 +79,7 @@
 {:else}
   <div
     bind:this={element}
-    class="hulyAvatar-container hulyAvatarSize-{size} stat {variant}"
+    class="hulyAvatar-container hulyAvatarSize-{size} stat {variant} {style}"
     class:no-img={!hasImg && color}
     class:bordered={!hasImg && color === undefined}
     class:border={bColor !== undefined}
@@ -87,7 +88,7 @@
     style:background-color={background}
   >
     {#if url && !imgError}
-      <img class="hulyAvatarSize-{size} ava-image" src={url} {srcset} alt={''} on:error={handleImgError} />
+      <img class="hulyAvatarSize-{size} ava-image style" src={url} {srcset} alt={''} on:error={handleImgError} />
     {:else if displayName && displayName !== ''}
       <div
         class="ava-text"

@@ -128,16 +128,22 @@
     position: absolute;
     width: 480px;
     height: 808px;
-    left: calc(50% - 480px/2);
-    top: calc(50% - 808px/2);
+    left: calc(50% - 480px / 2);
+    top: calc(50% - 808px / 2);
 
-    background: #F1F1F1;
+    background: #f1f1f1;
     border: 1px solid rgba(0, 0, 0, 0.1);
     /* elevation-04
 
     Logos and icons for illustrations
     */
-    box-shadow: 0px 100px 80px rgba(0, 0, 0, 0.15), 0px 40px 32px rgba(0, 0, 0, 0.12), 0px 24px 16px rgba(0, 0, 0, 0.1), 0px 12px 12px rgba(0, 0, 0, 0.1), 0px 6px 6px rgba(0, 0, 0, 0.08), 0px 2px 2px rgba(0, 0, 0, 0.05);
+    box-shadow:
+      0px 100px 80px rgba(0, 0, 0, 0.15),
+      0px 40px 32px rgba(0, 0, 0, 0.12),
+      0px 24px 16px rgba(0, 0, 0, 0.1),
+      0px 12px 12px rgba(0, 0, 0, 0.1),
+      0px 6px 6px rgba(0, 0, 0, 0.08),
+      0px 2px 2px rgba(0, 0, 0, 0.05);
     border-radius: 24px;
 
     .content {
@@ -189,6 +195,4 @@
   //    opacity: 1;
   //  }
   //}
-
-  
 </style>

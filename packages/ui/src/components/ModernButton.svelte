@@ -31,11 +31,13 @@
   export let id: string | undefined = undefined
   export let dataId: string | undefined = undefined
   export let width: string | undefined = undefined
+  export let type: 'type-button' | 'type-button-icon' = 'type-button'
+  console.log('type', type)
 </script>
 
 <ButtonBase
   bind:element
-  type={'type-button'}
+  {type}
   {title}
   {shape}
   {label}

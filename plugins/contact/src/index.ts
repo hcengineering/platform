@@ -291,7 +291,10 @@ export const contactPlugin = plugin(contactId, {
     Profile: '' as Asset,
     KickUser: '' as Asset,
     Contacts: '' as Asset,
-    Viber: '' as Asset
+    Viber: '' as Asset,
+    Clock: '' as Asset,
+    Chat: '' as Asset,
+    User: '' as Asset
   },
   image: {
     ProfileBackground: '' as Asset,
@@ -332,7 +335,8 @@ export const contactPlugin = plugin(contactId, {
     SocialIds: '' as IntlString,
     Type: '' as IntlString,
     Confirmed: '' as IntlString,
-    UserProfile: '' as IntlString
+    UserProfile: '' as IntlString,
+    DeactivatedAccount: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

@@ -123,6 +123,8 @@
   --theme-button-contrast-disabled-color: rgba(0, 0, 0, .5);
   --theme-button-contrast-border: rgba(255, 255, 255, .2);
 
+  --theme-button-container-color: #25262A;
+
   --theme-refinput-divider: rgba(255, 255, 255, .07);
   --theme-refinput-border: rgba(255, 255, 255, .1);
 
@@ -193,6 +195,7 @@
   --theme-popup-header: #3A3A47;
   --theme-popup-shadow: 0 0 .5rem rgba(0, 0, 0, .2);
   --theme-popup-checkicon: #FFFFFF99;
+  --theme-popup-deactivated: #1A1A28;
   --theme-panel-color: #1A1A28;
   --theme-calendar-today-color: #fff;
   --theme-calendar-holiday-color: #eb5757;
@@ -419,6 +422,8 @@
   --theme-button-contrast-disabled-color: rgba(255, 255, 255, .5);
   --theme-button-contrast-border: rgba(0, 0, 0, .2);
 
+  --theme-button-container-color: #F1F1F1;
+
   --theme-refinput-divider: rgba(0, 0, 0, .07);
   --theme-refinput-border: rgba(0, 0, 0, .1);
 
@@ -495,6 +500,7 @@
   --theme-popup-header: #EBEBEB;
   --theme-popup-shadow: 0 0 .5rem rgba(0, 0, 0, .2);
   --theme-popup-checkicon: #205DC2;
+  --theme-popup-deactivated: #C7C8CA;
   --theme-panel-color: #FFFFFF;
   --theme-calendar-today-color: #000;
   --theme-calendar-holiday-color: #eb5757;

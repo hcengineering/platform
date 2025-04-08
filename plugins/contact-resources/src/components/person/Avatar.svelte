@@ -38,9 +38,9 @@
   import { onMount } from 'svelte'
   import { AccountUuid, type Data, PersonUuid, Ref, type WithLookup } from '@hcengineering/core'
 
-  import { loadUsersStatus, statusByUserStore } from '../utils'
+  import { loadUsersStatus, statusByUserStore } from '../../utils'
   import AvatarInstance from './AvatarInstance.svelte'
-  import { getPreviewPopup } from './person/utils'
+  import { getPreviewPopup } from './utils'
 
   export let person:
   | (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person>, personUuid?: PersonUuid })
@@ -56,6 +56,7 @@
   export let adaptiveName: boolean = false
   export let showPreview: boolean = false
   export let disabled: boolean = false
+  export let style: 'modern' | undefined = undefined
 
   export function pulse (): void {
     avatarInst.pulse()
@@ -132,11 +133,12 @@
         {color}
         {bColor}
         bind:element
-        withStatus
         {adaptiveName}
         {disabled}
+        {style}
+        withStatus
       />
-      <div class="hulyAvatar-statusMarker {size}" class:online={isOnline} class:offline={!isOnline} />
+      <div class="hulyAvatar-statusMarker medium {style}" class:online={isOnline} class:offline={!isOnline} />
     </div>
   {:else}
     <AvatarInstance
@@ -152,6 +154,21 @@
       bind:element
       {adaptiveName}
       {disabled}
+      {style}
     />
   {/if}
 </div>
+
+<style lang="scss">
+  .status-container {
+    visibility: hidden;
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    top: 50px;
+    left: 50px;
+    right: -6px;
+    bottom: -6px;
+    z-index: 10000;
+  }
+</style>

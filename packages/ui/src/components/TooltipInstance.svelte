@@ -472,13 +472,16 @@
     }
     &.modern {
       padding: 0;
+      border: none;
+      outline: none;
       border-radius: 1.5rem;
-      box-shadow: 0px 100px 80px rgba(0, 0, 0, 0.15),
-                0px 40px 32px rgba(0, 0, 0, 0.12),
-                0px 24px 16px rgba(0, 0, 0, 0.1),
-                0px 12px 12px rgba(0, 0, 0, 0.1),
-                0px 6px 6px rgba(0, 0, 0, 0.08),
-                0px 2px 2px rgba(0, 0, 0, 0.05);
+      box-shadow:
+        0px 100px 80px rgba(0, 0, 0, 0.15),
+        0px 40px 32px rgba(0, 0, 0, 0.12),
+        0px 24px 16px rgba(0, 0, 0, 0.1),
+        0px 12px 12px rgba(0, 0, 0, 0.1),
+        0px 6px 6px rgba(0, 0, 0, 0.08),
+        0px 2px 2px rgba(0, 0, 0, 0.05);
     }
     &.disabled {
       background-color: var(--popup-color-disabled);

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { ModernButton, navigate, resizeObserver } from '@hcengineering/ui'
+  import { ButtonIcon, navigate, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
@@ -24,9 +24,11 @@
   import AchievementsPresenter from './AchievementsPresenter.svelte'
 
   import contact from '../../plugin'
-  import Avatar from '../Avatar.svelte'
+  import Avatar from './Avatar.svelte'
   import { employeeByIdStore, statusByUserStore } from '../../utils'
   import { EmployeePresenter } from '../../index'
+  import TimePresenter from './TimePresenter.svelte'
+  import DeactivatedHeader from './DeactivatedHeader.svelte'
 
   export let employeeId: Ref<Employee>
   export let disabled: boolean = false
@@ -50,34 +52,72 @@
 </script>
 
 <ModernProfilePopup {disabled}>
+  <div slot="header">
+    {#if disabled}
+      <div class="flex-presenter">
+        <DeactivatedHeader>
+          <div slot="actions">
+            <div class="flex-presenter flex-gap-2 flex-center">
+              <ComponentExtensions
+                extension={contact.extension.EmployeePopupActions}
+                props={{ employee, isButtonIcon: true, icon: contact.icon.Chat, type: 'type-button-icon' }}
+              />
+              <ButtonIcon icon={contact.icon.User} size="small" iconSize="small" on:click={viewProfile} />
+            </div>
+          </div>
+        </DeactivatedHeader>
+      </div>
+    {/if}
+  </div>
   <div slot="content">
-    <div class="flex-presenter flex-gap-2 p-2">
-      <Avatar size="large" person={employee} name={employee.name} {disabled} />
-      <span class="username">
-        <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
-      </span>
-      <span class="hulyAvatar-statusMarker small relative mt-0-5" class:online={isOnline} class:offline={!isOnline} />
-    </div>
-    <AchievementsPresenter personId={employeeId}/>
+    {#if !disabled}
+      <div class="flex-presenter flex-gap-2 p-2">
+        <Avatar size="large" person={employee} name={employee.name} {disabled} showStatus style="modern" />
+        <div class="flex-col">
+          <span class="username">
+            <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
+          </span>
+          <span class="username">
+            <TimePresenter localTime="6:27 local time" />
+          </span>
+        </div>
+      </div>
+      <AchievementsPresenter personId={employeeId} />
+    {:else}
+      <div class="flex-presenter flex-gap-2 p-2">
+        <Avatar size="large" person={employee} name={employee.name} {disabled} style="modern" />
+        <div class="flex-col">
+          <span class="username">
+            <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
+          </span>
+        </div>
+      </div>
+    {/if}
   </div>
   <div slot="actions">
-    <div class="flex-presenter flex-gap-2 flex-center">
-      <ComponentExtensions extension={contact.extension.EmployeePopupActions} props={{ employee, width: '160px', kind: 'ghost' }} />
-      <ModernButton
-        label={contact.string.ViewProfile}
-        icon={contact.icon.Person}
-        size="small"
-        kind="ghost"
-        iconSize="small"
-        width="160px"
-        on:click={viewProfile}
-      />
-    </div>
+    {#if !disabled}
+      <div class="flex-presenter flex-gap-2 flex-center">
+        <div class="button-container">
+          <ComponentExtensions
+            extension={contact.extension.EmployeePopupActions}
+            props={{ employee, isButtonIcon: true, icon: contact.icon.Chat, type: 'type-button-icon' }}
+          />
+        </div>
+        <div class="button-container">
+          <ButtonIcon icon={contact.icon.User} size="small" iconSize="small" on:click={viewProfile} />
+        </div>
+      </div>
+    {/if}
   </div>
 </ModernProfilePopup>
 
 <style lang="scss">
   .username {
     font-weight: 500;
+  }
+  .button-container {
+    border-radius: var(--small-BorderRadius);
+    display: flex;
+    background-color: var(--theme-button-container-color);
   }
 </style>

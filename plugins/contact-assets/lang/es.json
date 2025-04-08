@@ -113,6 +113,7 @@
     "SocialIds": "Identificaciones sociales",
     "Type": "Tipo",
     "Confirmed": "Confirmado",
-    "UserProfile": "Perfil de usuario"
+    "UserProfile": "Perfil de usuario",
+    "DeactivatedAccount": "Cuenta desactivada"
   }
 }

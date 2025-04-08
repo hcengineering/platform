@@ -1,3 +1,2 @@
 <style lang="scss">
-
 </style>

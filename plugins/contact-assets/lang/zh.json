@@ -113,6 +113,7 @@
     "SocialIds": "社交 ID",
     "Type": "类型",
     "Confirmed": "已确认",
-    "UserProfile": "用户资料"
+    "UserProfile": "用户资料",
+    "DeactivatedAccount": "已停用账户"
   }
 }

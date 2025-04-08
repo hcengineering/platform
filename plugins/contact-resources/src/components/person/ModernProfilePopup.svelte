@@ -21,16 +21,21 @@
 </script>
 
 <div class="user-popup {style}">
-  <div class="image-container">
-    <div class="img {style}" style={`background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 50%, var(--theme-popup-color) 100%), url("${getMetadata(contact.image.ProfileBackground)}")`} alt="" />
+  <slot name="header" />
+  {#if !disabled}
+    <div class="image-container">
+      <div
+        class="img {style}"
+        style={`background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 25%, var(--theme-popup-color) 95%), url("${getMetadata(contact.image.ProfileBackground)}")`}
+        alt=""
+      />
+    </div>
+  {/if}
+  <div class="action-container">
+    <slot name="actions" />
   </div>
   <div class="content">
     <slot name="content" />
-  </div>
-
-  <div class="action-container">
-    <slot name="actions">
-    </slot>
   </div>
 </div>
 
@@ -44,19 +49,8 @@
     width: 360px;
   }
   .content,
-  .action-container {
-    width: 360px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    flex: none;
-    align-self: stretch;
-    flex-grow: 0;
-    gap: 10px;
-  }
-
   .content {
-    padding-left: 10px;
+    padding-left: 4px;
     isolation: isolate;
     order: 0;
 
@@ -78,26 +72,31 @@
     }
   }
 
-  .image-container{
-      /* image-container */
-      width: 360px;
-      min-height: 120px;
-      display: flex;
+  .image-container {
+    /* image-container */
+    width: 360px;
+    min-height: 144px;
+    display: flex;
 
-      /* Inside auto layout */
-      flex: none;
-      order: 0;
-      align-self: stretch;
-      flex-grow: 0;
-      margin: -30px 0px;
-      z-index: -100;
-    }
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    align-self: stretch;
+    flex-grow: 0;
+    margin: -30px 0px;
+    z-index: -100;
+  }
 
   .action-container {
-    height: 72px;
+    position: absolute;
+    top: 0;
+    right: 0;
     padding: 16px;
-    border-top: 1px solid var(--theme-popup-divider);
-    order: 1;
+    display: flex;
+    align-items: flex-start;
+    flex: none;
+    align-self: stretch;
+    flex-grow: 0;
   }
 
   .img {
@@ -106,7 +105,7 @@
     right: 0px;
     top: 0px;
     bottom: 0px;
-    height: 120px;
+    height: 144px;
 
     border-radius: 0px;
     background-size: cover;

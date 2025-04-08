@@ -1,4 +1,3 @@
-
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
   import { getMetadata } from '@hcengineering/platform'
@@ -7,11 +6,7 @@
 
   export let personId: Ref<Employee>
 
-  const possibleAchievements = [
-    contact.image.Achievement1,
-    contact.image.Achievement2,
-    contact.image.Achievement3
-  ]
+  const possibleAchievements = [contact.image.Achievement1, contact.image.Achievement2, contact.image.Achievement3]
 
   // TODO: Remove, it is just for achievements demonstration
   function hashStringToInt (str: string): number {
@@ -19,7 +14,7 @@
     if (str.length === 0) return hash
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
+      hash = (hash << 5) - hash + char
       hash |= 0 // Convert to a 32-bit integer
     }
     return hash
@@ -29,7 +24,6 @@
   $: personAchievements = possibleAchievements.filter((_, index) => {
     return personHash % (index + 1) === 0
   })
-
 </script>
 
 <div class="achievements">
@@ -39,8 +33,7 @@
 </div>
 
 <style lang="scss">
-
- .achievements {
+  .achievements {
     display: flex;
     flex-direction: row;
     align-items: flex-start;

@@ -113,6 +113,7 @@
     "SocialIds": "Социальные ID",
     "Type": "Тип",
     "Confirmed": "Подтвержден",
-    "UserProfile": "Профиль пользователя"
+    "UserProfile": "Профиль пользователя",
+    "DeactivatedAccount": "Деактивированный аккаунт"
   }
 }
