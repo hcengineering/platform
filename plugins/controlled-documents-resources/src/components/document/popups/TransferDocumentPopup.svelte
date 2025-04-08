@@ -25,10 +25,10 @@
     type Project,
     type ProjectDocument
   } from '@hcengineering/controlled-documents'
-  import { type Doc, type Ref, type Space } from '@hcengineering/core'
+  import { TypedSpace, type Doc, type Ref, type Space } from '@hcengineering/core'
   import presentation, { getClient, SpaceSelector } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
-  import { permissionsStore } from '@hcengineering/view-resources'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import documentsRes from '../../../plugin'
@@ -139,8 +139,8 @@
   const externalSpaces = hierarchy.getDescendants(documents.class.ExternalSpace)
 
   $: hasParentSelector = targetSpaceId !== documents.space.UnsortedTemplates
-  $: permissionRestrictedSpaces = Object.entries($permissionsStore.ps)
-    .filter(([, pss]) => !pss.has(documents.permission.CreateDocument))
+  $: permissionRestrictedSpaces = Object.keys($permissionsStore.ps)
+    .filter((s) => !checkMyPermission(documents.permission.CreateDocument, s as Ref<TypedSpace>, $permissionsStore))
     .map(([s]) => s) as Ref<Space>[]
   $: restrictedSpaces =
     sourceSpaceId !== undefined ? permissionRestrictedSpaces.concat(sourceSpaceId) : permissionRestrictedSpaces

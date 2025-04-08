@@ -11,7 +11,7 @@
   import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import { Class, Ref } from '@hcengineering/core'
   import { UserBoxItems } from '@hcengineering/contact-resources'
-  import { permissionsStore } from '@hcengineering/view-resources'
+  import { getPermittedAccounts, permissionsStore } from '@hcengineering/view-resources'
   import documents, {
     ControlledDocument,
     ControlledDocumentState,
@@ -39,7 +39,7 @@
   const permissionId = isReviewRequest ? documents.permission.ReviewDocument : documents.permission.ApproveDocument
   $: permissionsSpace =
     controlledDoc.space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : controlledDoc.space
-  $: permittedAccounts = $permissionsStore.ap[permissionsSpace]?.[permissionId] ?? new Set()
+  $: permittedAccounts = new Set(getPermittedAccounts(permissionId, permissionsSpace, $permissionsStore))
   let permittedPeople: Array<Ref<Employee>> = []
 
   $: if (permittedAccounts.size > 0) {

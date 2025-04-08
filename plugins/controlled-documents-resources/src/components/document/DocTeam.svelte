@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Label } from '@hcengineering/ui'
-  import { Account, TypedSpace, type Data, type Ref, getCurrentAccount, type Permission } from '@hcengineering/core'
   import contact, { PersonAccount, type Employee } from '@hcengineering/contact'
-  import documents, { type ControlledDocument } from '@hcengineering/controlled-documents'
   import { UserBoxItems } from '@hcengineering/contact-resources'
-  import { type PermissionsStore, permissionsStore } from '@hcengineering/view-resources'
+  import documents, { type ControlledDocument } from '@hcengineering/controlled-documents'
+  import { getCurrentAccount, TypedSpace, type Data, type Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
+  import { getPermittedAccounts, permissionsStore } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
 
   export let controlledDoc: Data<ControlledDocument>
   export let space: Ref<TypedSpace>
@@ -36,14 +36,6 @@
   $: coAuthors = controlledDoc.coAuthors
 
   $: permissionsSpace = space === documents.space.UnsortedTemplates ? documents.space.QualityDocuments : space
-
-  function getPermittedAccounts (
-    permission: Ref<Permission>,
-    space: Ref<TypedSpace>,
-    permissionsStore: PermissionsStore
-  ): Array<Ref<Account>> {
-    return Array.from(permissionsStore.ap[space]?.[permission] ?? [])
-  }
 
   let permittedReviewers: Array<Ref<Employee>> = []
   $: permittedReviewerAccounts = getPermittedAccounts(

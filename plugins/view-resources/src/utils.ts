@@ -57,7 +57,7 @@ import core, {
 } from '@hcengineering/core'
 import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
-import { getResource, translate } from '@hcengineering/platform'
+import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import {
   createQuery,
   getAttributePresenterClass,
@@ -1480,14 +1480,28 @@ async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promis
 
 type PermissionsBySpace = Record<Ref<Space>, Set<Ref<Permission>>>
 type AccountsByPermission = Record<Ref<Space>, Record<Ref<Permission>, Set<Ref<Account>>>>
+type MembersBySpace = Record<Ref<Space>, Set<Ref<Account>>>
 export interface PermissionsStore {
   ps: PermissionsBySpace
   ap: AccountsByPermission
+  ms: MembersBySpace
   whitelist: Set<Ref<Space>>
 }
 
 export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>, store: PermissionsStore): boolean {
+  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
+  if (arePermissionsDisabled) return true
   return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
+}
+
+export function getPermittedAccounts (
+  _id: Ref<Permission>,
+  space: Ref<TypedSpace>,
+  store: PermissionsStore
+): Array<Ref<Account>> {
+  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
+  if (arePermissionsDisabled) return Array.from(store.ms[space] ?? [])
+  return store.whitelist.has(space) ? Array.from(store.ms[space] ?? []) : Array.from(store.ap[space]?.[_id] ?? [])
 }
 
 export const accessDeniedStore = writable<boolean>(false)
@@ -1495,6 +1509,7 @@ export const accessDeniedStore = writable<boolean>(false)
 export const permissionsStore = writable<PermissionsStore>({
   ps: {},
   ap: {},
+  ms: {},
   whitelist: new Set()
 })
 
@@ -1523,11 +1538,13 @@ spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
       const whitelistedSpaces = new Set<Ref<Space>>()
       const permissionsBySpace: PermissionsBySpace = {}
       const accountsByPermission: AccountsByPermission = {}
+      const membersBySpace: MembersBySpace = {}
       const client = getClient()
       const hierarchy = client.getHierarchy()
       const me = getCurrentAccount()
 
       for (const s of res) {
+        membersBySpace[s._id] = new Set(s.members)
         if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
           const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
           const mixin = type?.targetClass
@@ -1568,6 +1585,7 @@ spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
       permissionsStore.set({
         ps: permissionsBySpace,
         ap: accountsByPermission,
+        ms: membersBySpace,
         whitelist: whitelistedSpaces
       })
     },
@@ -1576,6 +1594,7 @@ spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
       projection: {
         _id: 1,
         type: 1,
+        members: 1,
         ...targetClasses
       } as any
     }
