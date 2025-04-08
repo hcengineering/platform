@@ -1,0 +1,10 @@
+class: document:class:Teamspace
+title: Documentation
+emoji: 📖
+private: false
+autoJoin: true
+owners:
+  - john.doe@example.com
+members:
+  - joe.shmoe@example.com
+description: Technical documentation and guides 
