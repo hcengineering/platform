@@ -77,7 +77,9 @@ const handleRequest = async (
             values.push(`${k};dur=${v.value.toFixed(2)}`)
           }
           if (values.length > 0) {
-            res.setHeader('Server-Timing', values.join(', '))
+            if (!res.headersSent) {
+              res.setHeader('Server-Timing', values.join(', '))
+            }
           }
         }
       })

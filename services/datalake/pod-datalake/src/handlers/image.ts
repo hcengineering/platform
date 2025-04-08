@@ -15,11 +15,11 @@
 
 import { generateId, MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
-import { createReadStream, mkdtempSync, rmSync } from 'fs'
-import { writeFile } from 'fs/promises'
+import { createReadStream, createWriteStream, mkdtempSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import sharp from 'sharp'
+import { pipeline, type Readable } from 'stream'
 
 import { type Datalake } from '../datalake'
 
@@ -80,7 +80,22 @@ export async function handleImageGet (
   const { workspace, name, transform } = req.params
 
   const accept = req.headers.accept ?? 'image/*'
-  const image = parseImageTransform(accept, transform)
+  const { format, width, height, fit } = getImageTransformParams(accept, transform)
+
+  const tempDir = mkdtempSync(join(tmpdir(), 'image-'))
+  const tmpFile = join(tempDir, generateId())
+  const outFile = join(tempDir, generateId())
+
+  const cleanup = (): void => {
+    try {
+      rmSync(tempDir, { recursive: true, force: true })
+    } catch (err: any) {
+      ctx.warn('failed to remove temp dir', { workspace, name, error: err })
+    }
+  }
+
+  req.on('close', cleanup)
+  res.on('finish', cleanup)
 
   const blob = await datalake.get(ctx, workspace, name, {})
   if (blob == null) {
@@ -88,23 +103,45 @@ export async function handleImageGet (
     return
   }
 
-  const dpr = image.dpr === undefined || Number.isNaN(image.dpr) ? 1 : image.dpr
-  const width =
-    image.width === undefined || Number.isNaN(image.width) ? undefined : Math.min(Math.round(image.width * dpr), 2048)
-  const height =
-    image.height === undefined || Number.isNaN(image.height)
-      ? undefined
-      : Math.min(Math.round(image.height * dpr), 2048)
-  const fit = image.fit ?? 'cover'
-
-  const tempDir = mkdtempSync(join(tmpdir(), 'image-'))
-  const tmpFile = join(tempDir, generateId())
-  const outFile = join(tempDir, generateId())
+  await writeTempFile(tmpFile, blob.body)
 
   try {
-    await writeFile(tmpFile, blob.body)
+    const { contentType } = await ctx.with('sharp', {}, () => {
+      return runPipeline(tmpFile, outFile, { format, width, height, fit })
+    })
 
-    let pipeline = sharp(tmpFile)
+    res.setHeader('Content-Type', contentType)
+    res.setHeader('Cache-Control', cacheControl)
+
+    await writeFileToResponse(ctx, outFile, res)
+  } catch (err: any) {
+    ctx.error('image processing error', { workspace, name, error: err })
+
+    res.setHeader('Content-Type', blob.contentType)
+    res.setHeader('Cache-Control', blob.cacheControl ?? cacheControl)
+
+    await writeFileToResponse(ctx, tmpFile, res)
+  }
+}
+
+interface ImageTransformParams {
+  format: string
+  width: number | undefined
+  height: number | undefined
+  fit: 'cover' | 'contain'
+}
+
+async function runPipeline (
+  inFile: string,
+  outFile: string,
+  params: ImageTransformParams
+): Promise<{ contentType: string }> {
+  const { format, width, height, fit } = params
+
+  let pipeline: sharp.Sharp | undefined
+
+  try {
+    pipeline = sharp(inFile)
 
     // auto orient image based on exif to prevent resize use wrong orientation
     pipeline = pipeline.rotate()
@@ -117,7 +154,7 @@ export async function handleImageGet (
     })
 
     let contentType = 'image/jpeg'
-    switch (image.format) {
+    switch (format) {
       case 'jpeg':
         pipeline = pipeline.jpeg({
           progressive: true
@@ -151,26 +188,65 @@ export async function handleImageGet (
         break
     }
 
-    res.setHeader('Content-Type', contentType)
-    res.setHeader('Cache-Control', cacheControl)
+    await pipeline.toFile(outFile)
 
-    await ctx.with('sharp', {}, () => pipeline.toFile(outFile))
-    pipeline.destroy()
-
-    createReadStream(outFile).pipe(res)
-  } catch (err: any) {
-    ctx.error('image processing error', { workspace, name, error: err })
-
-    res.setHeader('Content-Type', blob.contentType)
-    res.setHeader('Cache-Control', blob.cacheControl ?? cacheControl)
-    createReadStream(tmpFile).pipe(res)
+    return { contentType }
+  } finally {
+    pipeline?.destroy()
   }
+}
 
-  res.on('finish', () => {
-    try {
-      rmSync(tempDir, { recursive: true })
-    } catch (err: any) {
-      ctx.error('failed to remove temp dir', { workspace, name, error: err })
+function getImageTransformParams (accept: string, transform: string): ImageTransformParams {
+  const image = parseImageTransform(accept, transform)
+  const format = image.format
+
+  const dpr = image.dpr === undefined || Number.isNaN(image.dpr) ? 1 : image.dpr
+  const width =
+    image.width === undefined || Number.isNaN(image.width) ? undefined : Math.min(Math.round(image.width * dpr), 2048)
+  const height =
+    image.height === undefined || Number.isNaN(image.height)
+      ? undefined
+      : Math.min(Math.round(image.height * dpr), 2048)
+  const fit = image.fit ?? 'cover'
+
+  return { format, width, height, fit }
+}
+
+async function writeTempFile (path: string, stream: Readable): Promise<void> {
+  const outp = createWriteStream(path)
+
+  stream.pipe(outp)
+
+  await new Promise<void>((resolve, reject) => {
+    stream.on('error', (err) => {
+      stream.destroy()
+      outp.destroy()
+      reject(err)
+    })
+
+    outp.on('finish', () => {
+      stream.destroy()
+      resolve()
+    })
+
+    outp.on('error', (err) => {
+      stream.destroy()
+      outp.destroy()
+      reject(err)
+    })
+  })
+}
+
+async function writeFileToResponse (ctx: MeasureContext, path: string, res: Response): Promise<void> {
+  const stream = createReadStream(path)
+
+  pipeline(stream, res, (err) => {
+    if (err != null) {
+      const error = err instanceof Error ? err.message : String(err)
+      ctx.error('error writing response', { error })
+      if (!res.headersSent) {
+        res.status(500).send('Internal Server Error')
+      }
     }
   })
 }

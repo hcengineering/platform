@@ -14,7 +14,8 @@
 //
 
 import crypto from 'node:crypto'
-import { ReadStream } from 'fs'
+import { createReadStream } from 'fs'
+import { Readable } from 'stream'
 
 export async function getBufferSha256 (buffer: Buffer): Promise<string> {
   const hash = crypto.createHash('sha256')
@@ -22,7 +23,7 @@ export async function getBufferSha256 (buffer: Buffer): Promise<string> {
   return hash.digest('hex')
 }
 
-export async function getStreamSha256 (stream: ReadStream): Promise<string> {
+export async function getStreamSha256 (stream: Readable): Promise<string> {
   const hasher = crypto.createHash('sha256')
   stream.pipe(hasher)
 
@@ -36,4 +37,9 @@ export async function getStreamSha256 (stream: ReadStream): Promise<string> {
   })
 
   return hasher.digest('hex')
+}
+
+export async function getFileSha256 (path: string): Promise<string> {
+  const stream = createReadStream(path)
+  return await getStreamSha256(stream)
 }
