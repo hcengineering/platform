@@ -1,0 +1,145 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Header */
+.hulyHeader-container {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--spacing-2);
+  width: 100%;
+  min-width: 0;
+  min-height: var(--spacing-6_5);
+  overflow: hidden;
+  
+  &.clearPadding > .hulyHeader-row {
+    padding: 0;
+    min-height: var(--spacing-6_5);
+  }
+  &:not(.hideSeparator) {
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+  &.topIndent { margin-top: 1px; }
+  .hulyHeader-row {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    padding: var(--spacing-1_5) 0;
+    min-width: 0;
+
+    &:has(.extra.overflow) { padding: 0; }
+    &:not(.noBorder):first-child {
+      max-height: var(--spacing-6_5);
+      border-bottom: 1px solid var(--theme-divider-color);
+    }
+    &:nth-child(2) { margin-top: -1px; }
+    &.between { justify-content: space-between; }
+    &.reverse { flex-direction: row-reverse; }
+    &__divider {
+      margin-top: -1px;
+      width: 100%;
+      min-height: 1px;
+      max-height: 1px;
+      background-color: var(--theme-divider-color);
+    }
+  }
+  .hulyHeader-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--button-disabled-IconColor);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--button-subtle-LabelColor);
+    }
+  }
+  .hulyHeader-divider {
+    flex-shrink: 0;
+    margin: 0 var(--spacing-2);
+    width: 1px;
+    height: var(--spacing-4);
+    background-color: var(--theme-divider-color);
+    
+    &.short {
+      margin: 0 var(--spacing-1);
+    }
+  }
+  .hulyHeader-titleGroup,
+  .hulyHeader-buttonsGroup {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+  }
+  .hulyHeader-titleGroup {
+    user-select: text;
+    cursor: auto;
+    
+    &.withDescription { flex-direction: column; }
+    &:not(.withDescription) {
+      align-items: center;
+      gap: var(--spacing-0_5);
+    }
+    &:not(.notGrow) { flex-grow: 1; }
+  }
+  .hulyHeader-buttonsGroup {
+    align-items: center;
+    flex-shrink: 0;
+
+    &.extra {
+      flex-shrink: 1;
+      margin-left: var(--spacing-2);
+
+      &.overflow {
+        overflow-x: auto;
+        margin: 0 -.25rem 0 1rem;
+        padding: .25rem;
+      }
+    }
+    &.before {
+      gap: var(--spacing-0_5);
+
+      &.freezeBefore { min-width: var(--global-small-Size); }
+    }
+    &:not(.before) { gap: var(--spacing-1); }
+    &__label {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex-shrink: 0;
+      color: var(--global-secondary-TextColor);
+    }
+  }
+  .hulyHeader-spaceFiller { flex: 1 1; }
+  .hulyHotKey-item { margin-right: .625rem; }
+
+  &.doubleRow {
+    flex-direction: column;
+    align-items: stretch;
+    flex-shrink: 0;
+    padding: 0 var(--spacing-2);
+
+    .hulyHeader-row { min-height: var(--spacing-6_5); }
+    .hulyHeader-buttonsGroup.search { flex-direction: row-reverse; }
+    .hulyHeader-buttonsGroup.actions { margin-left: 1rem; }
+  }
+  &:not(.doubleRow) {
+    .hulyHeader-buttonsGroup:not(.before) { margin-left: 1rem; }
+    .hulyHeader-buttonsGroup.search + .hulyHeader-divider + .hulyHeader-buttonsGroup.actions { margin-left: 0; }
+  }
+}

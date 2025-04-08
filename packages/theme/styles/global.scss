@@ -16,6 +16,7 @@
 @import "./_vars.scss";
 @import "./_colors.scss";
 @import "./_lumia-colors.scss";
+@import "./mixins.scss";
 @import "./_layouts.scss";
 @import "./_print.scss";
 @import "./common.scss";
@@ -24,7 +25,6 @@
 @import "./components.scss";
 @import "./dialogs.scss";
 @import "./popups.scss";
-@import "./mixins.scss";
 @import "./panel.scss";
 @import "./prose.scss";
 @import "./tables.scss";
@@ -94,7 +94,7 @@
   &::after,
   &::before { box-sizing: border-box; }
 
-  @media (max-width: 480px) {
+  @include respond-to('small') {
     --status-bar-height: 70px;
   }
 }
@@ -124,25 +124,25 @@
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-width);
 }
 ::-webkit-scrollbar:horizontal {
-  height: 6px;
+  height: var(--scrollbar-width);
 }
 ::-webkit-scrollbar-track, .panel-instance .scroll .scroll::-webkit-scrollbar-track {
   margin: 6px;
-  // background-color: var(--scrollbar-bar-color);
+  background-color: var(--scrollbar-track-color);
 }
 ::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-bar-color);
+  background-color: var(--scrollbar-thumb-color);
   border-radius: .25rem;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--scrollbar-bar-hover);
+  background-color: var(--scrollbar-thumb-hover-color);
   border-radius: .25rem;
 }
 ::-webkit-scrollbar-corner {
-  background-color: var(--scrollbar-bar-color);
+  background-color: var(--scrollbar-thumb-color);
   border-radius: .25rem;
 }
 .kanban-container .scroll::-webkit-scrollbar-track {
@@ -164,16 +164,74 @@ body {
   color: var(--content-color);
   background-color: var(--theme-bg-color);
   user-select: none;
+  width: $full-width;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
-html,
-body {
-  height: var(--app-height);
-  width: 100%;
-  overflow: hidden;
-  // touch-action: none;
+html {
+  height: 100%;
+  width: $full-width;
+  min-width: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  font-weight: var(--font-weight);
+  line-height: var(--line-height);
+  color: var(--theme-text-color);
+  background-color: var(--theme-background-color);
 
   @media print {
     overflow: visible !important;
+  }
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: $full-width;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Utility classes */
+.full-width {
+  width: $full-width;
+  min-width: 0;
+}
+
+.fit-width {
+  width: $fit-width;
+  min-width: 0;
+}
+
+.prevent-overflow {
+  @include prevent-overflow;
+}
+
+/* Scrollbar styles */
+.scrollbar {
+  overflow: auto;
+  @include prevent-overflow;
+
+  &::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+    height: var(--scrollbar-width);
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: var(--theme-scrollbar-track-color);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--theme-scrollbar-thumb-color);
+    border-radius: var(--scrollbar-radius);
+
+    &:hover {
+      background-color: var(--theme-scrollbar-thumb-hover-color);
+    }
   }
 }

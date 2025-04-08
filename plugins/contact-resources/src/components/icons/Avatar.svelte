@@ -67,7 +67,7 @@
     width: 4rem;
     height: 4rem;
   }
-  .avaicon-2x-large {
+  .avaicon-xxl {
     width: 6rem;
     height: 6rem;
   }

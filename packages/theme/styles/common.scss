@@ -45,19 +45,19 @@
 .font-medium-12,
 .font-caps-medium-12,
 .font-bold-12 {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
 }
 .font-regular-14,
 .font-medium-14,
 .font-bold-14,
 .paragraph-regular-14 {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 .font-regular-11,
 .font-regular-12,
 .font-regular-14,
 .paragraph-regular-14 {
-  font-weight: 400;
+  font-weight: var(--font-weight-normal);
 }
 .font-medium-11,
 .font-medium-12,
@@ -65,29 +65,29 @@
 .font-medium-14,
 .heading-medium-16,
 .heading-medium-20 {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 .heading-ui-H2 {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 .font-bold-12,
 .font-bold-14,
 .heading-bold-16,
 .heading-bold-20 {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 .heading-medium-16,
 .heading-bold-16 {
-  font-size: 1rem;
+  font-size: var(--font-size-md);
   // line-height: 1.125rem;
 }
 .heading-ui-H2 {
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   line-height: 1.25rem;
 }
 .heading-medium-20,
 .heading-bold-20 {
-  font-size: 1.25rem;
+  font-size: var(--font-size-xl);
   line-height: 1.5rem;
 }
 .paragraph-regular-14 {
@@ -97,6 +97,23 @@
 .font-caps-medium-12 {
   text-transform: uppercase;
 }
+
+/* Новые классы типографики на основе переменных */
+.text-xs { font-size: var(--font-size-xs); }
+.text-sm { font-size: var(--font-size-sm); }
+.text-md { font-size: var(--font-size-md); }
+.text-lg { font-size: var(--font-size-lg); }
+.text-xl { font-size: var(--font-size-xl); }
+.text-2xl { font-size: var(--font-size-2xl); }
+
+.font-normal { font-weight: var(--font-weight-normal); }
+.font-medium { font-weight: var(--font-weight-medium); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+.font-bold { font-weight: var(--font-weight-bold); }
+
+.leading-tight { line-height: var(--line-height-tight); }
+.leading-normal { line-height: var(--line-height-normal); }
+.leading-loose { line-height: var(--line-height-loose); }
 
 /* Panels */
 * {
@@ -111,15 +128,14 @@
   
   &.vertical {
     flex-direction: column;
-    min-width: var(--app-panel-width);
-    width: var(--app-panel-width);
+    @include fixed-width(var(--app-panel-width));
     height: 100%;
     border-right: 1px solid var(--theme-navpanel-divider);
   }
   &.horizonatl {
     min-height: var(--app-panel-width);
     height: var(--app-panel-width);
-    width: 100%;
+    width: $full-width; min-width: 0;
     border-top: 1px solid var(--theme-navpanel-divider);
   }
   &.lastDivider { border-color: var(--theme-navpanel-border); }
@@ -132,6 +148,7 @@
   display: flex;
   height: 100%;
   min-height: 0;
+  @include prevent-overflow;
   
   &.header { background-color: var(--theme-comp-header-color); }
   &.filled { background-color: var(--theme-bg-color); }
@@ -141,9 +158,7 @@
 }
 .antiPanel-navigator {
   position: relative;
-  min-width: 12.5rem;
-  max-width: 22.5rem;
-  width: 17.5rem;
+  @include fixed-width(17.5rem, 12.5rem, 22.5rem);
   
   &:not(.second) { background-color: var(--theme-navpanel-color); }
   &.second.float {
@@ -196,15 +211,8 @@
 
       .antiSeparator { display: none; }
       &.fly {
-        width: calc(100% - 3.5rem) !important;
+        @include fixed-width(calc(100% - 3.5rem));
         filter: var(--theme-navpanel-shadow-mobile);
-      }
-      &.second.float.fly {
-        height: calc(100% - var(--status-bar-height) - var(--app-panel-width) - 3.5rem);
-      }
-      &.fly:not(.second) {
-        top: var(--status-bar-height);
-        height: calc(100% - var(--status-bar-height) - var(--app-panel-width));
       }
     }
   }

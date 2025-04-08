@@ -1,0 +1,199 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Select component */
+.antiSelect {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  min-height: 1.875rem;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  color: var(--theme-caption-color);
+  border: 1px solid var(--theme-divider-color);
+  border-radius: 0.125rem;
+  background-color: var(--theme-button-default);
+  transition-property: background-color, box-shadow, border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.15s;
+  cursor: pointer;
+  min-width: 3rem;
+
+  &:hover:not(.disabled) {
+    background-color: var(--theme-button-hovered);
+  }
+
+  &:active:not(.disabled) {
+    background-color: var(--theme-button-pressed);
+  }
+
+  &:focus-visible:not(.disabled) {
+    background-color: var(--theme-button-pressed);
+    outline: 1px solid var(--primary-button-default);
+    outline-offset: -1px;
+    box-shadow: var(--focus-shadow);
+  }
+
+  .clear {
+    opacity: 0;
+  }
+  &:hover {
+    .clear {
+      opacity: 1;
+    }
+  }
+
+  .icon {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    color: var(--theme-dark-color);
+  }
+  &__arrow {
+    align-self: normal;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    width: 0.875rem;
+    height: 100%;
+    margin-left: auto;
+    color: var(--theme-dark-color);
+
+    &-icon {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
+  }
+  &__value {
+    flex-grow: 1;
+    overflow: hidden;
+    padding: 0 0.75rem 0 0.25rem;
+    height: 100%;
+    width: calc(100% - 1.25rem);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+
+    > div {
+      white-space: normal;
+      width: 100%;
+    }
+  }
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0.25rem 0;
+    width: 100%;
+  }
+  &__placeholder {
+    color: var(--theme-dark-color);
+  }
+  &.disabled {
+    color: var(--theme-dark-color);
+    border-color: var(--theme-divider-color);
+    background-color: var(--theme-button-disabled);
+    cursor: default;
+    pointer-events: none;
+  }
+  &.invalid {
+    outline: 1px solid var(--theme-status-critical);
+    outline-offset: -1px;
+  }
+  &.editable {
+    width: 100%;
+    height: 2.5rem;
+    border: none;
+    padding: 0 0.5rem;
+    border-radius: 0;
+  }
+  &.tiny {
+    height: 1.25rem;
+  }
+  &.small {
+    min-height: 1.5rem;
+    font-size: 0.625rem;
+  }
+  &.medium {
+    min-height: 2rem;
+  }
+  &.large {
+    min-height: 2.5rem;
+  }
+
+  &.no-border {
+    border: 1px solid transparent;
+    background-color: inherit;
+
+    &:hover:not(.disabled) {
+      background-color: var(--theme-menu-hover);
+    }
+
+    &:active:not(.disabled) {
+      background-color: var(--theme-button-pressed);
+    }
+  }
+}
+
+.antiOption {
+  display: flex;
+  align-items: center;
+  width: auto;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--theme-caption-color);
+  border-radius: 0.125rem;
+  background-color: inherit;
+  cursor: pointer;
+  margin: 0;
+  user-select: none;
+
+  .icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  &.selected {
+    background: var(--theme-menu-focused);
+    &:hover {
+      background: var(--theme-menu-focused-hover);
+    }
+  }
+
+  &:hover {
+    background: var(--theme-menu-hover);
+  }
+
+  &.disabled {
+    color: var(--theme-dark-color);
+    cursor: default;
+    pointer-events: none;
+  }
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+  }
+}

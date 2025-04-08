@@ -13,4 +13,15 @@
 // limitations under the License.
 //
 
-@import 'components/index';
+.hulyChip-item {
+  padding: var(--spacing-0_25) var(--spacing-0_5);
+  width: fit-content;
+  text-transform: uppercase;
+  color: var(--global-tertiary-TextColor);
+  background-color: var(--global-ui-BackgroundColor);
+  border-radius: var(--extra-small-BorderRadius);
+
+  &.error {
+    color: var(--button-negative-loading-LabelColor);
+  }
+}

@@ -1,3 +1,21 @@
+@import 'vars';
+
+/**
+ * ВАЖНО: Некоторые миксины были заменены переменными из _vars.scss:
+ * - Вместо @include full-width используйте width: $full-width; min-width: 0;
+ * - Вместо @include fit-width используйте width: $fit-width; min-width: 0;
+ * - Миксин avatar-size теперь принимает имя размера вместо конкретных значений
+ *
+ * Для работы с картами переменных используйте map-get напрямую:
+ * - font-size: map-get($font-sizes, 'sm');
+ * - gap: map-get($gaps, 'md');
+ * - border-radius: map-get($border-radius, 'sm');
+ * - height: map-get($form-heights, 'medium');
+ * - padding: map-get($spacing, '0_5') map-get($spacing, '1');
+ */
+
+
+
 @mixin bg-fullsize {
   position: absolute;
   top: 0;
@@ -10,4 +28,121 @@
   @include bg-fullsize;
   background: $color;
   opacity: $opacity;
+}
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// Используем переменные из $breakpoints
+@mixin respond-to($breakpoint) {
+  $value: map-get($breakpoints, $breakpoint);
+  @if $value {
+    @media (max-width: $value) {
+      @content;
+    }
+  } @else {
+    @warn "Unknown breakpoint `#{$breakpoint}`. Available: small, medium, large";
+  }
+}
+
+@mixin ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@mixin fixed-width($width, $min: null, $max: null) {
+  width: $width;
+  @if $min {
+    min-width: $min;
+  }
+  @if $max {
+    max-width: $max;
+  }
+}
+
+// @mixin min-width($width) {
+//   min-width: $width;
+//   width: auto;
+//   flex-shrink: 1;
+// }
+
+// @mixin max-width($width) {
+//   max-width: $width;
+//   width: auto;
+// }
+
+@mixin prevent-overflow {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@mixin flex($direction: row, $justify: flex-start, $align: flex-start, $wrap: nowrap) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+  flex-wrap: $wrap;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Используем значения из $avatar-sizes
+@mixin avatar-size($size) {
+  $size-values: map-get($avatar-sizes, $size);
+  @if $size-values {
+    $width: nth($size-values, 1);
+    $font-size: nth($size-values, 2);
+    
+    width: $width;
+    .ava-text { 
+      font-size: $font-size; 
+    }
+  } @else {
+    @warn "Unknown avatar size `#{$size}`. Check $avatar-sizes in _vars.scss";
+  }
+}
+
+// Используем значения из $spacing
+@mixin table-cell-base($padding-h-key: "1_5", $padding-v-key: "0_5") {
+  $padding-h: map-get($spacing, $padding-h-key);
+  $padding-v: map-get($spacing, $padding-v-key);
+  
+  @if not $padding-h {
+    $padding-h: 1.5rem;
+    @warn "Unknown spacing key `#{$padding-h-key}`. Using default 1.5rem";
+  }
+  
+  @if not $padding-v {
+    $padding-v: .5rem;
+    @warn "Unknown spacing key `#{$padding-v-key}`. Using default .5rem";
+  }
+  
+  padding: $padding-v $padding-h;
+  text-align: left;
+}
+
+@mixin table-header-cell {
+  @include table-cell-base;
+  height: 3rem;
+  font-weight: 600;
+  font-size: .625rem;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--theme-dark-color);
+  box-shadow: inset 0 -1px 0 0 var(--theme-table-border-color);
+  user-select: none;
 }

@@ -259,7 +259,7 @@ export type IconSize =
   | 'medium'
   | 'large'
   | 'x-large'
-  | '2x-large'
+  | 'xxl'
   | 'full'
 export interface IconProps {
   icon?: number | number[]
@@ -282,8 +282,8 @@ export function getIconSize2x (size: IconSize): IconSize {
     case 'large':
       return 'x-large'
     case 'x-large':
-      return '2x-large'
-    case '2x-large':
+      return 'xxl'
+    case 'xxl':
     case 'full':
       return 'full'
   }

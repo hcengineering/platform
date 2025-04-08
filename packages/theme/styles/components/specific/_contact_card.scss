@@ -1,0 +1,87 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Contact Card */
+.antiContactCard {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.5rem 1.25rem;
+  background-color: var(--theme-button-default);
+  border: 1px solid var(--theme-button-border);
+  border-radius: 0.5rem;
+  transition-property: box-shadow, background-color, border-color;
+  transition-timing-function: var(--timing-shadow);
+  transition-duration: 0.15s;
+  user-select: text;
+  height: 100%;
+  min-width: 15rem;
+  min-height: 15rem;
+
+  &:hover {
+    background-color: var(--theme-button-hovered);
+    box-shadow: var(--accent-shadow);
+  }
+
+  .logo {
+    width: 4.5rem;
+    height: 4.5rem;
+    color: var(--primary-button-color);
+    background-color: var(--primary-button-default);
+    border-radius: 50%;
+  }
+  .label {
+    margin-bottom: 1.75rem;
+    font-weight: 500;
+    font-size: 0.625rem;
+    color: var(--theme-dark-color);
+  }
+  .name {
+    margin: 1rem 0 0.25rem;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--theme-caption-color);
+  }
+  .description {
+    font-size: 0.75rem;
+    color: var(--theme-dark-color);
+  }
+  .footer {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-grow: 1;
+    margin-top: 1.5rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  &.inline {
+    padding: 0.5rem 0.5rem 0.25rem;
+    min-width: 1rem;
+    min-height: 1rem;
+
+    background-color: inherit;
+    border: inherit;
+    border-radius: inherit;
+    .name {
+      margin: 0.25rem 0 0.25rem;
+      font-size: 0.75rem;
+    }
+    .label {
+      margin-bottom: 0;
+    }
+  }
+}

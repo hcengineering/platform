@@ -531,7 +531,7 @@ export function sizeToWidth (size: string): number | undefined {
     case 'x-large':
       width = 7.5
       break
-    case '2x-large':
+    case 'xxl':
       width = 10
       break
   }

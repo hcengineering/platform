@@ -9,7 +9,6 @@
 
 .text-editor-view,
 .text-markup-view {
-  // overflow-y: auto;
   color: var(--theme-text-primary-color);
   margin: 0.25rem 0;
 
@@ -78,7 +77,6 @@
     position: relative;
     display: block;
   }
-
 
   li p {
     margin: 0;
@@ -198,41 +196,6 @@
   .collaboration-cursor__caret {
     display: flex;
     justify-content: center;
-    cursor: text;
-    height: 110%;
-    width: 8px;
-    top: -2px;
-    left: -4px;
-    position: absolute;
-
-    &::after {
-      content: '';
-      position: absolute;
-      border-color: inherit;
-      border-style: solid;
-      width: 0;
-      height: 0;
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-top-width: 4px;
-      border-bottom: 0;
-    }
-  }
-
-  cmark {
-    border-top: 1px solid lightblue;
-    border-bottom: 1px solid lightblue;
-    border-radius: 2px;
-  }
-
-  span.insertion {
-    border-top: 1px solid lightblue;
-    border-bottom: 1px solid lightblue;
-    border-radius: 2px;
-  }
-
-  span.deletion {
-    text-decoration: line-through;
   }
 }
 

@@ -1,0 +1,59 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+// Import common variables
+@import '../../vars';
+
+// Additional variables, specific to components
+// Variables $avatar-sizes and $spacing moved to _vars.scss
+
+// Additional sizes only for avatars
+$avatar-small-font-sizes: (
+  'xx-small': 10px,
+  'inline': 12px,
+  'tiny': 16px,
+  'card': 18px,
+  'x-small': 22px,
+  'smaller': 25px,
+);
+
+// Map of status marker sizes
+$status-sizes: (
+  'xx-small': (4px, 3px, 0, 0),
+  'inline': (4px, 4px, 0, 0),
+  'tiny': (6px, 5px, 0, 0),
+  'card': (6px, 6px, 0, 0),
+  'x-small': (8px, 7px, 0, 0),
+  'smaller': (9px, 8px, 0, 0),
+  'small': (10px, 9px, 0, 0),
+  'medium': (13px, 11px, 0, 0),
+  'large': (36.5%, 37%, -.125rem, -2px)
+);
+
+// Map of offsets for combined avatars
+$combine-margins: (
+  'inline': 0.875rem,
+  'tiny': 1.13rem,
+  'card': 1.25rem,
+  'x-small': 1.5rem,
+  'smaller': 1.75rem,
+  'small': 2rem,
+  'medium': 2.25rem,
+  'large': 4.5rem,
+  'x-large': 7.5rem
+);
+
+// Small avatars for masking
+$small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';

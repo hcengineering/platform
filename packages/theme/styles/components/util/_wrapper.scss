@@ -1,0 +1,68 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Wraps */
+.antiWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+
+  &.conners {
+    &::after, &::before {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: var(--primary-button-default);
+    }
+    &::before {
+      top: -2px;
+      left: -4px;
+      clip-path: path('M0,6v-6h6v1h-5v5z');
+    }
+    &::after {
+      bottom: -2px;
+      right: -4px;
+      clip-path: path('M0,6h6v-6h-1v5h-5z');
+    }
+  }
+  &.wraped::before, &.wraped::after { content: ''; }
+  &.focusWI:focus-within::before, &.focusWI:focus-within::after { content: ''; }
+  &.focus:focus::before, &.focus:focus::after { content: ''; }
+
+  .result {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    user-select: none;
+    min-width: 0;
+
+    &.selected { color: var(--caption-color); }
+    &.not-selected { color: var(--dark-color); }
+    &.highlight {
+      font-weight: 500;
+      font-size: 1rem;
+    }
+  }
+
+  .divider {
+    font-weight: 500;
+    font-size: .75em;
+    color: var(--dark-color);
+
+    &.inter { font-size: 1em; }
+  }
+} 

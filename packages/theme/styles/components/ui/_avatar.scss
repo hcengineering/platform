@@ -1,0 +1,288 @@
+//
+// Copyright © 2021 Anticrm Platform Contributors.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+/* Map of avatar sizes */
+$avatar-sizes: (
+  'xx-small': (.75rem, .375rem, 10px),
+  'inline': (.875rem, .525rem, 12px),
+  'tiny': (1.125rem, .625rem, 16px),
+  'card': (1.25rem, .75rem, 18px),
+  'x-small': (1.5rem, .875rem, 22px),
+  'smaller': (1.75rem, 1rem, 25px),
+  'small': (2rem, 1.125rem, null),
+  'medium': (2.5rem, 1.375rem, null),
+  'large': (4.5rem, 2.75rem, null),
+  'x-large': (7.5rem, 4.5rem, null),
+  'xxl': (10rem, 6rem, null),
+  'full': (100%, inherit, null)
+);
+
+/* Use definitions from core/_variables.scss */
+/* Additional sizes only for avatar */
+$avatar-small-font-sizes: (
+  'xx-small': 10px,
+  'inline': 12px,
+  'tiny': 16px,
+  'card': 18px,
+  'x-small': 22px,
+  'smaller': 25px,
+);
+
+/* Map of status marker sizes */
+$status-sizes: (
+  'xx-small': (4px, 3px, 0, 0),
+  'inline': (4px, 4px, 0, 0),
+  'tiny': (6px, 5px, 0, 0),
+  'card': (6px, 6px, 0, 0),
+  'x-small': (8px, 7px, 0, 0),
+  'smaller': (9px, 8px, 0, 0),
+  'small': (10px, 9px, 0, 0),
+  'medium': (13px, 11px, 0, 0),
+  'large': (36.5%, 37%, -.125rem, -2px)
+);
+
+/* Map of offsets for combined avatars */
+$combine-margins: (
+  'inline': 0.875rem,
+  'tiny': 1.13rem,
+  'card': 1.25rem,
+  'x-small': 1.5rem,
+  'smaller': 1.75rem,
+  'small': 2rem,
+  'medium': 2.25rem,
+  'large': 4.5rem,
+  'x-large': 7.5rem
+);
+
+/* Small avatars for masking */
+$small-avatars: 'inline', 'tiny', 'card', 'x-small', 'smaller', 'small';
+
+/* Avatar */
+.hulyAvatar-container {
+  position: relative;
+  @include flex-center;
+  min-width: 0;
+  min-height: 0;
+  flex-shrink: 0;
+  aspect-ratio: 1;
+  background-color: $button-default;
+  pointer-events: none;
+
+  &.withStatus {
+    mask-repeat: no-repeat;
+    mask-size: cover;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10,13.5c0-1.9,1.6-3.5,3.5-3.5c1,0,1.9,0.4,2.5,1.1V0H0v16h11.1C10.4,15.4,10,14.5,10,13.5z' /%3E%3C/svg%3E");
+  }
+
+  &.circle,
+  &.circle img.ava-image { border-radius: 50%; }
+  &.roundedRect,
+  &.roundedRect img.ava-image { border-radius: 20%; }
+
+  &.no-img {
+    color: $button-primary-text;
+    border-color: transparent;
+  }
+  &.bordered {
+    @include text-color('secondary');
+    border: 1px solid $border-default;
+  }
+  &.border {
+    border: 1px solid $bg-default;
+    outline: 2px solid var(--border-color);
+
+    & > img { border: 1px solid $bg-default; }
+    
+    /* Small avatars */
+    &.hulyAvatarSize-xx-small,
+    &.hulyAvatarSize-inline,
+    &.hulyAvatarSize-tiny,
+    &.hulyAvatarSize-card,
+    &.hulyAvatarSize-x-small { outline-width: 1px; }
+    
+    /* Large avatars */
+    &.hulyAvatarSize-large,
+    &.hulyAvatarSize-x-large,
+    &.hulyAvatarSize-xxl {
+      border-width: 2px;
+      & > img { border-width: 2px; }
+    }
+  }
+  img { object-fit: cover; }
+  .icon,
+  .ava-text::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+  }
+  .icon {
+    width: 100%;
+    height: 100%;
+    color: inherit;
+    transform-origin: center;
+    transform: translate(-50%, -50%) scale(.6);
+  }
+  .ava-text {
+    font-weight: 500;
+    letter-spacing: -.05em;
+
+    &::after {
+      content: attr(data-name);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+/* Avatar sizes */
+@each $size, $values in $avatar-sizes {
+  .hulyAvatarSize-#{$size} {
+    @include avatar-size($size);
+    
+    @if map-has-key($avatar-small-font-sizes, $size) {
+      .small-font & { width: map-get($avatar-small-font-sizes, $size); }
+    }
+  }
+}
+
+/* Special case for full-size avatar, which is not in the general map */
+.hulyAvatarSize-full {
+  width: 100%;
+  .ava-text { font-size: inherit; }
+}
+
+/* Avatar status marker */
+.hulyAvatar-statusMarker {
+  position: absolute;
+  right: -4%;
+  bottom: -4%;
+  width: 39%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+
+  &.relative {
+    position: relative;
+  }
+  
+  /* Common property for small marker sizes */
+  &.xx-small,
+  &.inline,
+  &.tiny,
+  &.card,
+  &.x-small,
+  &.smaller,
+  &.small,
+  &.medium {
+    right: 0;
+    bottom: 0;
+  }
+  
+  /* Generating marker sizes */
+  @each $size, $values in $status-sizes {
+    $width: nth($values, 1);
+    $small-font-width: nth($values, 2);
+    $right: nth($values, 3);
+    $small-font-right: nth($values, 4);
+    
+    &.#{$size} { 
+      width: $width; 
+      
+      @if $right != 0 {
+        right: $right;
+        bottom: $right;
+        
+        @if $small-font-right != 0 {
+          .small-font & { 
+            right: $small-font-right;
+            bottom: $small-font-right;
+            width: $small-font-width;
+          }
+        }
+      } @else if $small-font-width != $width {
+        .small-font & { width: $small-font-width; }
+      }
+    }
+  }
+  
+  &.online { background-color: $status-online; }
+  &.offline {
+    border: 1px solid $status-offline;
+
+    &:not(.xx-small, .inline, .tiny, .card, .x-small, .smaller, .small, .medium) { 
+      border-width: 2px; 
+    }
+  }
+}
+
+/* CombineAvatars */
+.hulyCombineAvatars-container {
+  display: flex;
+  align-items: center;
+
+  .hulyCombineAvatar {
+    /* Generating offsets for combined avatars */
+    @each $size, $values in $avatar-sizes {
+      $width: nth($values, 1);
+      &.#{$size}:not(:first-child) { 
+        margin-left: calc(1px - (#{$width} / 2)); 
+      }
+    }
+    
+    /* Common style for small avatars */
+    &.inline,
+    &.tiny,
+    &.card,
+    &.x-small { 
+      font-size: 0.625rem; 
+    }
+  
+    /* Masking for all except the last one */
+    $mask-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16,24.5v-17c0-3.2,1.8-6.1,4.5-7.5H8C3.6,0,0,3.6,0,8v16c0,4.4,3.6,8,8,8h12.5C17.8,30.6,16,27.7,16,24.5z'/%3E%3C/svg%3E%0A");
+    
+    @each $size in $small-avatars {
+      &.#{$size} {
+        &:not(:last-child) {
+          mask: $mask-url no-repeat;
+        }
+      }
+    }
+
+    &[data-over^='+']:last-child {
+      position: relative;
+
+      &::after {
+        content: attr(data-over);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        @include text-color('caption');
+        transform: translate(-53%, -52%);
+        z-index: 2;
+      }
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        @include bg-color('default');
+        border: 1px solid $border-divider;
+        border-radius: 0.25rem;
+        opacity: 0.9;
+        z-index: 1;
+      }
+    }
+  }
+}
