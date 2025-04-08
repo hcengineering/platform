@@ -20,11 +20,11 @@ import { MediaGroup } from 'telegraf/typings/telegram-types'
 import { InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo } from 'telegraf/src/core/types/typegram'
 import { Context, Input } from 'telegraf'
 import { TelegramNotificationQueueMessage } from '@hcengineering/server-telegram'
+import { systemAccountUuid } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 
 import { PlatformFileInfo, TelegramFileInfo } from './types'
 import { PostgresDB } from './db'
-import { WorkspaceUuid, systemAccountUuid } from '@hcengineering/core'
-import { generateToken } from '@hcengineering/server-token'
 
 export async function getNewOtp (db: PostgresDB): Promise<string> {
   let otp = otpGenerator.generate(6, {

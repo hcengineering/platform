@@ -1487,19 +1487,6 @@ export async function findSocialIdBySocialKey (
   return socialIdObj._id
 }
 
-export async function findFullSocialIdBySocialKey (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { socialKey: string }
-): Promise<SocialId | null> {
-  const { socialKey } = params
-  decodeTokenVerbose(ctx, token)
-
-  return await db.socialId.findOne({ key: socialKey })
-}
-
 export async function getWorkspaceMembers (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1765,7 +1752,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     findPersonBySocialId: wrap(findPersonBySocialId),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
-    findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
     getMailboxOptions: wrap(getMailboxOptions),
     getAccountInfo: wrap(getAccountInfo),

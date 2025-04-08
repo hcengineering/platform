@@ -37,6 +37,7 @@ import type {
   IntegrationKey,
   IntegrationSecret,
   IntegrationSecretKey,
+  SocialId,
   Workspace,
   WorkspaceEvent,
   WorkspaceInfoWithStatus,
@@ -776,6 +777,21 @@ export async function listIntegrationsSecrets (
   return await db.integrationSecret.find({ socialId, kind, workspaceUuid, key })
 }
 
+export async function findFullSocialIdBySocialKey (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { socialKey: string }
+): Promise<SocialId | null> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['telegram-bot'], extra)
+
+  const { socialKey } = params
+
+  return await db.socialId.findOne({ key: socialKey })
+}
+
 export type AccountServiceMethods =
   | 'getPendingWorkspace'
   | 'updateWorkspaceInfo'
@@ -797,6 +813,7 @@ export type AccountServiceMethods =
   | 'deleteIntegrationSecret'
   | 'getIntegrationSecret'
   | 'listIntegrationsSecrets'
+  | 'findFullSocialIdBySocialKey'
 
 /**
  * @public
@@ -822,6 +839,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     updateIntegrationSecret: wrap(updateIntegrationSecret),
     deleteIntegrationSecret: wrap(deleteIntegrationSecret),
     getIntegrationSecret: wrap(getIntegrationSecret),
-    listIntegrationsSecrets: wrap(listIntegrationsSecrets)
+    listIntegrationsSecrets: wrap(listIntegrationsSecrets),
+    findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey)
   }
 }
