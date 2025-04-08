@@ -1,7 +1,6 @@
 import { Tag } from '@hcengineering/card'
-import { Association, Attribute, Doc, generateId, Ref, Blob as PlatformBlob } from '@hcengineering/core'
-import path from 'path'
-import { UnifiedDoc, UnifiedFile } from '../types'
+import { Association, Attribute, Doc, generateId, generateUuid, Blob as PlatformBlob, Ref } from '@hcengineering/core'
+import { UnifiedDoc } from '../types'
 
 export interface RelationMetadata { // todo: rename
   association: Ref<Association>
@@ -20,15 +19,24 @@ export interface TagMetadata {
 export class MetadataStorage {
   private readonly pathToRef = new Map<string, Ref<Doc>>() // todo: attachments to a separate map?
   private readonly pathToMetadata = new Map<string, TagMetadata>()
-  private readonly pathToBlobUuid = new Map<string, Ref<PlatformBlob>>() // todo: blobs to a separate map?
+  private readonly pathToBlobUuid = new Map<string, Ref<PlatformBlob>>()
 
-  public getIdByAbsolutePath (path: string): Ref<Doc> {
-    let id = this.pathToRef.get(path)
-    if (id === undefined) {
-      id = generateId()
-      this.pathToRef.set(path, id)
+  public getRefByPath (path: string): Ref<Doc> {
+    let ref = this.pathToRef.get(path)
+    if (ref === undefined) {
+      ref = generateId()
+      this.pathToRef.set(path, ref)
     }
-    return id
+    return ref
+  }
+
+  public getUuidByPath (path: string): Ref<PlatformBlob> {
+    let uuid = this.pathToBlobUuid.get(path)
+    if (uuid === undefined) {
+      uuid = generateUuid() as Ref<PlatformBlob>
+      this.pathToBlobUuid.set(path, uuid)
+    }
+    return uuid
   }
 
   public hasMetadata (path: string): boolean {
@@ -45,7 +53,7 @@ export class MetadataStorage {
 
   public setAttributes (path: string, attributes: MapAttributeToUnifiedDoc): void {
     const metadata = this.pathToMetadata.get(path) ?? {
-      _id: this.getIdByAbsolutePath(path),
+      _id: this.getRefByPath(path),
       attributes: new Map(),
       associations: new Map()
     }
@@ -55,7 +63,7 @@ export class MetadataStorage {
 
   public addAssociation (tagPath: string, propName: string, relationMetadata: RelationMetadata): void {
     const metadata = this.pathToMetadata.get(tagPath) ?? {
-      _id: this.getIdByAbsolutePath(tagPath),
+      _id: this.getRefByPath(tagPath),
       attributes: new Map(),
       associations: new Map()
     }
