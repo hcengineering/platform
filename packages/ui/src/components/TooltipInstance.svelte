@@ -369,12 +369,14 @@
       />
     </clipPath>
   </svg>
-  <div
-    bind:this={nubHTML}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    class="nub {nubDirection ?? ''}"
-    class:shown
-  />
+  {#if !$tooltip.noArrow}
+    <div
+      bind:this={nubHTML}
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+      class="nub {nubDirection ?? ''}"
+      class:shown
+    />
+  {/if}
 {:else if $tooltip.label && $tooltip.kind !== 'submenu'}
   <div
     class="tooltip {dir ?? ''} {options.classList}"

@@ -307,6 +307,7 @@ export interface LabelAndProps {
   keys?: string[]
   timeout?: number
   style?: 'default' | 'modern'
+  noArrow?: boolean
 }
 
 export interface ListItem {

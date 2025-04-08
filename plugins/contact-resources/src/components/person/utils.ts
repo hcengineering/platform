@@ -14,6 +14,7 @@ export function getPreviewPopup (person: Person | undefined, showPopup: boolean)
     component: EmployeePreview,
     props: { employeeId: person._id, classList: ['modern'], disabled: employee?.active === false },
     timeout: 300,
-    style: 'modern'
+    style: 'modern',
+    noArrow: true
   }
 }
