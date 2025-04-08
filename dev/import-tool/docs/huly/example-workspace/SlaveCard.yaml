@@ -1,5 +1,5 @@
 class: card:class:MasterTag
-title: Slave Card 8
+title: Slave Card 11
 properties:
   - label: sex
     type: TypeBoolean
@@ -15,9 +15,9 @@ properties:
   #   type: TypeDate
   - label: select-enum
     enumOf: ./AlphaBetaEnum.yaml
-  # - label: multy-enum
-  #   enumOf: ./AlphaBeta.yaml
-  #   isArray: true
-  # - label: multy-ref
-  #   refTo: ./SlaveCard.yaml
-  #   isArray: true
+  - label: multy-enum
+    enumOf: ./AlphaBetaEnum.yaml
+    isArray: true
+  - label: multy-ref
+    refTo: ./SlaveCard.yaml
+    isArray: true

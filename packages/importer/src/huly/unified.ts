@@ -386,30 +386,46 @@ export class UnifiedDocProcessor {
   }
 
   private async convertPropertyType (property: Record<string, any>, currentPath: string): Promise<Record<string, any>> {
-    const type: Record<string, any> = {}
+    let type: Record<string, any> = {}
     if (property.refTo !== undefined) {
-      type._class = core.class.RefTo
+      const baseType: Record<string, any> = {}
+      baseType._class = core.class.RefTo
       const refPath = path.resolve(path.dirname(currentPath), property.refTo)
-      type.to = this.metadataStorage.getIdByFullPath(refPath)
-      type.label = 'core:string:Ref'
+      baseType.to = this.metadataStorage.getIdByFullPath(refPath)
+      baseType.label = core.string.Ref
+      type = property.isArray === true
+        ? {
+            _class: core.class.ArrOf,
+            label: core.string.Array,
+            of: baseType
+          }
+        : baseType
     } else if (property.enumOf !== undefined) {
-      type._class = core.class.EnumOf
+      const baseType: Record<string, any> = {}
+      baseType._class = core.class.EnumOf
       const enumPath = path.resolve(path.dirname(currentPath), property.enumOf)
-      type.of = this.metadataStorage.getIdByFullPath(enumPath)
-      type.label = 'core:string:Enum'
+      baseType.of = this.metadataStorage.getIdByFullPath(enumPath)
+      baseType.label = 'core:string:Enum'
+      type = property.isArray === true
+        ? {
+            _class: core.class.ArrOf,
+            label: core.string.Array,
+            of: baseType
+          }
+        : baseType
     } else {
       switch (property.type) {
         case 'TypeString':
           type._class = core.class.TypeString
-          type.label = 'core:string:String'
+          type.label = core.string.String
           break
         case 'TypeNumber':
           type._class = core.class.TypeNumber
-          type.label = 'core:number:Number'
+          type.label = core.string.Number
           break
         case 'TypeBoolean':
           type._class = core.class.TypeBoolean
-          type.label = 'core:boolean:Boolean'
+          type.label = core.string.Boolean
           break
         default:
           throw new Error('Unsupported type: ' + property.type + ' ' + currentPath)
@@ -455,13 +471,21 @@ export class UnifiedDocProcessor {
 
         const attrProps = attr.props
         console.log(key, attrProps.name, value)
-        if (attrProps.type._class === core.class.RefTo) {
-          const refPath = path.resolve(path.dirname(cardPath), value)
-          const ref = this.metadataStorage.getIdByFullPath(refPath) as Ref<Card>
-          cardProps[attrProps.name] = ref
-        } else {
-          cardProps[attrProps.name] = value
+
+        const attrType = attrProps.type
+        const attrBaseType = attrType._class === core.class.ArrOf ? attrType.of : attrType
+        const values = attrType._class === core.class.ArrOf ? value : [value]
+        const propValues = []
+        for (const val of values) {
+          if (attrBaseType._class === core.class.RefTo) {
+            const refPath = path.resolve(path.dirname(cardPath), val)
+            const ref = this.metadataStorage.getIdByFullPath(refPath) as Ref<Card>
+            propValues.push(ref)
+          } else {
+            propValues.push(val)
+          }
         }
+        cardProps[attrProps.name] = attrType._class === core.class.ArrOf ? propValues : propValues[0]
       } else if (masterTagRelations.has(key) || tagAssociations.has(key)) {
         const metadata = masterTagRelations.get(key) ?? tagAssociations.get(key)
         if (metadata === undefined) {
