@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import cardPlugin, { Card } from '@hcengineering/card'
+  import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
   import {
     defineSeparators,
     Separator,
@@ -24,33 +24,32 @@
     restoreLocation
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { createNotificationContextsQuery, createQuery, getClient } from '@hcengineering/presentation'
+  import { createNotificationContextsQuery, getClient } from '@hcengineering/presentation'
   import { chatId } from '@hcengineering/chat'
-  import { SortingOrder } from '@hcengineering/core'
+  import { Ref, SortingOrder } from '@hcengineering/core'
   import { NotificationContext } from '@hcengineering/communication-types'
 
   import ChatPanel from './ChatPanel.svelte'
   import ChatNavigation from './ChatNavigation.svelte'
-  import { navigateToCard, getCardIdFromLocation } from '../location'
+  import { navigateToCard, getCardIdFromLocation, navigateToType, getTypeIdFromLocation } from '../location'
+  import ChatNavigationCategoryList from './ChatNavigationCategoryList.svelte'
+
+  type Selection = { type: 'card', card: Card } | { type: 'type', ref: Ref<MasterTag> }
 
   const client = getClient()
 
-  const query = createQuery()
   const notificationContextsQuery = createNotificationContextsQuery()
 
   let replacedPanelElement: HTMLElement
-  let card: Card | undefined = undefined
+  let selection: Selection | undefined = undefined
   let needRestoreLoc = true
 
-  let cards: Card[] = []
   let contexts: NotificationContext[] = []
 
-  // TODO: only subscribed cards
-  query.query(cardPlugin.class.Card, {}, (res) => {
-    cards = res
-  })
+  $: selectedCard = getSelectedCard(selection)
+  $: selectedType = getSelectedType(selection)
 
-  // TODO: only for subscribed cards
+  // TODO: only for subscribed/loaded cards
   notificationContextsQuery.query(
     {
       notifications: {
@@ -69,10 +68,17 @@
       return
     }
 
+    const typeId = getTypeIdFromLocation(loc)
+
+    if (typeId != null && typeId !== '') {
+      selection = { type: 'type', ref: typeId }
+      return
+    }
+
     const cardId = getCardIdFromLocation(loc)
 
     if (cardId == null || cardId === '') {
-      card = undefined
+      selection = undefined
       if (needRestoreLoc) {
         needRestoreLoc = false
         restoreLocation(loc, chatId)
@@ -82,14 +88,34 @@
 
     needRestoreLoc = false
 
-    if (cardId !== card?._id) {
-      card = await client.findOne(cardPlugin.class.Card, { _id: cardId })
+    if (cardId !== selectedCard?._id) {
+      const card = await client.findOne(cardPlugin.class.Card, { _id: cardId })
+      selection = card != null ? { type: 'card', card } : undefined
     }
   }
 
   function selectCard (event: CustomEvent<Card>): void {
-    card = event.detail
+    const card = event.detail
+    selection = { type: 'card', card }
     navigateToCard(card._id)
+  }
+
+  function selectType (event: CustomEvent<Ref<MasterTag>>): void {
+    const type = event.detail
+    selection = { type: 'type', ref: type }
+    navigateToType(type)
+  }
+
+  function getSelectedCard (selection: Selection | undefined): Card | undefined {
+    if (selection == null) return undefined
+    if (selection.type !== 'card') return undefined
+    return selection.card
+  }
+
+  function getSelectedType (selection: Selection | undefined): Ref<MasterTag> | undefined {
+    if (selection == null) return undefined
+    if (selection.type !== 'type') return undefined
+    return selection.ref
   }
 
   onDestroy(
@@ -116,7 +142,13 @@
       class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
-        <ChatNavigation {card} {cards} {contexts} on:select={selectCard} />
+        <ChatNavigation
+          card={getSelectedCard(selection)}
+          type={getSelectedType(selection)}
+          {contexts}
+          on:selectCard={selectCard}
+          on:selectType={selectType}
+        />
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}
         <Separator name="new-chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
@@ -132,11 +164,11 @@
     />
   {/if}
   <div bind:this={replacedPanelElement} class="hulyComponent chat__panel">
-    {#if card}
-      {@const context = contexts.find((c) => c.card === card?._id)}
-      {#key card._id}
-        <ChatPanel {card} {context} />
-      {/key}
+    {#if selectedCard}
+      {@const context = contexts.find((c) => c.card === selectedCard?._id)}
+      <ChatPanel card={selectedCard} {context} />
+    {:else if selectedType}
+      <ChatNavigationCategoryList type={selectedType} />
     {/if}
   </div>
 </div>

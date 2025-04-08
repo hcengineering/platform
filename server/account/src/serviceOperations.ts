@@ -539,7 +539,7 @@ export async function createIntegration (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid, data } = params
 
-  if (kind == null || socialId == null) {
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -574,6 +574,10 @@ export async function updateIntegration (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid, data } = params
 
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const existing = await db.integration.findOne({ socialId, kind, workspaceUuid })
   if (existing == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
@@ -593,11 +597,16 @@ export async function deleteIntegration (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid } = params
 
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const existing = await db.integration.findOne({ socialId, kind, workspaceUuid })
   if (existing == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
   }
 
+  await db.integrationSecret.deleteMany({ socialId, kind, workspaceUuid })
   await db.integration.deleteMany({ socialId, kind, workspaceUuid })
 }
 
@@ -606,11 +615,7 @@ export async function listIntegrations (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: {
-    socialId?: PersonId
-    kind?: string
-    workspaceUuid?: WorkspaceUuid | null
-  }
+  params: Partial<IntegrationKey>
 ): Promise<Integration[]> {
   const { account, extra } = decodeTokenVerbose(ctx, token)
   const isAllowedService = verifyAllowedServices(integrationServices, extra, false)
@@ -657,6 +662,10 @@ export async function getIntegration (
   const isAllowedService = verifyAllowedServices(integrationServices, extra, false)
   const { socialId, kind, workspaceUuid } = params
 
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   if (!isAllowedService) {
     const existingSocialId = await db.socialId.findOne({ _id: socialId, personUuid: account, verifiedOn: { $gt: 0 } })
 
@@ -679,7 +688,7 @@ export async function addIntegrationSecret (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid, key, secret } = params
 
-  if (kind == null || socialId == null || key == null) {
+  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -711,6 +720,10 @@ export async function updateIntegrationSecret (
   const { socialId, kind, workspaceUuid, key, secret } = params
   const secretKey: IntegrationSecretKey = { socialId, kind, workspaceUuid, key }
 
+  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const existingSecret = await db.integrationSecret.findOne(secretKey)
   if (existingSecret == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
@@ -731,6 +744,10 @@ export async function deleteIntegrationSecret (
   const { socialId, kind, workspaceUuid, key } = params
   const secretKey: IntegrationSecretKey = { socialId, kind, workspaceUuid, key }
 
+  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const existingSecret = await db.integrationSecret.findOne(secretKey)
   if (existingSecret == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
@@ -750,10 +767,11 @@ export async function getIntegrationSecret (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid, key } = params
 
-  const existing = await db.integrationSecret.findOne({ socialId, kind, workspaceUuid, key })
-  if (existing == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
+  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
+
+  const existing = await db.integrationSecret.findOne({ socialId, kind, workspaceUuid, key })
 
   return existing
 }
@@ -763,12 +781,7 @@ export async function listIntegrationsSecrets (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: {
-    socialId?: PersonId
-    kind?: string
-    workspaceUuid?: WorkspaceUuid | null
-    key?: string
-  }
+  params: Partial<IntegrationSecretKey>
 ): Promise<IntegrationSecret[]> {
   const { extra } = decodeTokenVerbose(ctx, token)
   verifyAllowedServices(integrationServices, extra)

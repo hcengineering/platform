@@ -180,8 +180,8 @@ implements DbCollection<T> {
           break
         }
         default: {
-          currIdx++
           if (qKey !== null) {
+            currIdx++
             whereChunks.push(`"${snakeKey}" = ${formatVar(currIdx, castType)}`)
             values.push(qKey)
           } else {
@@ -956,10 +956,7 @@ export class PostgresAccountDB implements AccountDB {
           _def_ws_uuid UUID NOT NULL GENERATED ALWAYS AS (COALESCE(workspace_uuid, '00000000-0000-0000-0000-000000000000')) STORED NOT VISIBLE,
           key STRING,
           secret STRING NOT NULL,
-          CONSTRAINT integration_secrets_pk PRIMARY KEY (social_id, kind, _def_ws_uuid, key),
-          CONSTRAINT integration_secrets_integrations_fk FOREIGN KEY (social_id, kind, _def_ws_uuid) 
-              REFERENCES ${this.ns}.integrations(social_id, kind, _def_ws_uuid)
-              ON DELETE CASCADE
+          CONSTRAINT integration_secrets_pk PRIMARY KEY (social_id, kind, _def_ws_uuid, key)
       );
       `
     ]

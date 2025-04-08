@@ -52,7 +52,11 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "@hcengineering/model-all": "^0.6.0",
-    "snappyjs": "^0.7.0"
+    "snappyjs": "^0.7.0",
+    "@types/body-parser": "~1.19.2",
+    "@types/morgan": "~1.9.9",
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13"
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
@@ -78,11 +82,15 @@
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-telegram": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/server-ws": "^0.6.11",
     "bufferutil": "^4.0.8",
     "msgpackr": "^1.11.2",
     "msgpackr-extract": "^3.0.3",
     "snappy": "^7.2.2",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "@hcengineering/account-client": "^0.6.0",
+    "morgan": "^1.10.0",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
   }
 }

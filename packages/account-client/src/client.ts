@@ -154,21 +154,12 @@ export interface AccountClient {
   updateIntegration: (integration: Integration) => Promise<void>
   deleteIntegration: (integrationKey: IntegrationKey) => Promise<void>
   getIntegration: (integrationKey: IntegrationKey) => Promise<Integration | null>
-  listIntegrations: (filter: {
-    socialId?: PersonId
-    kind?: string
-    workspaceUuid?: WorkspaceUuid | null
-  }) => Promise<Integration[]>
+  listIntegrations: (filter: Partial<IntegrationKey>) => Promise<Integration[]>
   addIntegrationSecret: (integrationSecret: IntegrationSecret) => Promise<void>
   updateIntegrationSecret: (integrationSecret: IntegrationSecret) => Promise<void>
   deleteIntegrationSecret: (integrationSecretKey: IntegrationSecretKey) => Promise<void>
   getIntegrationSecret: (integrationSecretKey: IntegrationSecretKey) => Promise<IntegrationSecret | null>
-  listIntegrationsSecrets: (filter: {
-    socialId?: PersonId
-    kind?: string
-    workspaceUuid?: WorkspaceUuid | null
-    key?: string
-  }) => Promise<IntegrationSecret[]>
+  listIntegrationsSecrets: (filter: Partial<IntegrationSecretKey>) => Promise<IntegrationSecret[]>
   getAccountInfo: (uuid: PersonUuid) => Promise<AccountInfo>
 
   setCookie: () => Promise<void>
@@ -811,11 +802,7 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async listIntegrations (filter: {
-    socialId?: PersonId
-    kind?: string
-    workspaceUuid?: WorkspaceUuid | null
-  }): Promise<Integration[]> {
+  async listIntegrations (filter: Partial<IntegrationKey>): Promise<Integration[]> {
     const request = {
       method: 'listIntegrations' as const,
       params: filter
@@ -860,12 +847,7 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async listIntegrationsSecrets (filter: {
-    socialId?: PersonId
-    kind?: string
-    workspaceUuid?: WorkspaceUuid | null
-    key?: string
-  }): Promise<IntegrationSecret[]> {
+  async listIntegrationsSecrets (filter: Partial<IntegrationSecretKey>): Promise<IntegrationSecret[]> {
     const request = {
       method: 'listIntegrationsSecrets' as const,
       params: filter

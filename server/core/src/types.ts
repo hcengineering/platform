@@ -14,6 +14,17 @@
 //
 
 import {
+  type ServerApi as CommunicationApi,
+  type RequestEvent as CommunicationEvent,
+  type EventResult
+} from '@hcengineering/communication-sdk-types'
+import {
+  type FindMessagesGroupsParams,
+  type FindMessagesParams,
+  type Message,
+  type MessagesGroup
+} from '@hcengineering/communication-types'
+import {
   type Account,
   type AccountUuid,
   type Branding,
@@ -49,17 +60,6 @@ import type { LiveQuery } from '@hcengineering/query'
 import type { ReqId, Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
-import {
-  type FindMessagesGroupsParams,
-  type MessagesGroup,
-  type FindMessagesParams,
-  type Message
-} from '@hcengineering/communication-types'
-import {
-  type RequestEvent as CommunicationEvent,
-  type ServerApi as CommunicationApi,
-  type EventResult
-} from '@hcengineering/communication-sdk-types'
 
 import type { DbAdapter, DomainHelper } from './adapter'
 import type { StatisticsElement } from './stats'
@@ -723,8 +723,6 @@ export interface SessionManager {
     ws: ConnectionSocket,
     token: Token,
     rawToken: string,
-    pipelineFactory: PipelineFactory,
-    communicationApiFactory: CommunicationApiFactory,
     sessionId: string | undefined
   ) => Promise<AddSessionResponse>
 
@@ -776,32 +774,6 @@ export interface SessionManager {
     ws: ConnectionSocket
   ) => ClientSessionCtx
 }
-
-/**
- * @public
- */
-export type HandleRequestFunction = <S extends Session>(
-  rctx: MeasureContext,
-  service: S,
-  ws: ConnectionSocket,
-  msg: Request<any>,
-  workspaceId: WorkspaceUuid
-) => void
-
-/**
- * @public
- */
-
-export type ServerFactory = (
-  sessions: SessionManager,
-  handleRequest: HandleRequestFunction,
-  ctx: MeasureContext,
-  pipelineFactory: PipelineFactory,
-  communicationApiFactory: CommunicationApiFactory,
-  port: number,
-  accountsUrl: string,
-  externalStorage: StorageAdapter
-) => () => Promise<void>
 
 export const pingConst = 'ping'
 export const pongConst = 'pong!'
