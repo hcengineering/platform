@@ -89,7 +89,7 @@ export {
   getUniqueAccounts,
   getAccountUuidByOldAccount,
   getUniqueAccountsFromOldAccounts,
-  findFullSocialIdBySocialKey,
+  getSocialIdBySocialKey,
   getSocialIdFromOldAccount
 } from './migration'
 export * from './security'

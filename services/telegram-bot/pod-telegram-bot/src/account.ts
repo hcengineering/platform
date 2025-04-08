@@ -49,25 +49,24 @@ export async function getAccountSocialIds (account: AccountUuid): Promise<Social
 }
 
 export async function listIntegrationsByAccount (account: AccountUuid): Promise<IntegrationInfo[]> {
+  const client = getAccountClient(generateToken(account))
+  const integrations = await client.listIntegrations({ kind: 'telegram-bot' })
+  if (integrations.length === 0) return []
   const socialIds = await getAccountSocialIds(account)
-  const telegramIds = socialIds.filter((it) => it.type === SocialIdType.TELEGRAM && it.verifiedOn != null)
-  if (telegramIds.length === 0) return []
-
-  const client = getAccountClient(serviceToken())
 
   const result: IntegrationInfo[] = []
-  for (const id of telegramIds) {
-    const integrations = await client.listIntegrations({ kind: 'telegram-bot', socialId: id._id })
-
+  for (const integration of integrations) {
+    if (integration.workspaceUuid === undefined) continue
+    const socialId = socialIds.find((it) => it._id === integration.socialId)
+    if (socialId === undefined) continue
     result.push(
-      ...integrations.map((it) => ({
-        ...it,
-        workspaceUuid: it.workspaceUuid as WorkspaceUuid,
+      {
+        ...integration,
+        workspaceUuid: integration.workspaceUuid,
         account,
-        telegramId: Number(id.value),
-        username: id?.displayValue
-      }))
-    )
+        telegramId: Number(socialId.value),
+        username: socialId.displayValue
+      })
   }
 
   return result
@@ -122,27 +121,20 @@ export async function getIntegrationByAccount (
   account: AccountUuid,
   workspace?: WorkspaceUuid
 ): Promise<IntegrationInfo | undefined> {
-  const socialIds = await getAccountSocialIds(account)
-  const telegramIds = socialIds.filter((it) => it.type === SocialIdType.TELEGRAM && it.verifiedOn != null)
-  if (telegramIds.length === 0) return undefined
+  const client = getAccountClient(generateToken(account))
+  const integrations = await client.listIntegrations({ kind: 'telegram-bot', workspaceUuid: workspace })
+  if (integrations.length === 0) return undefined
 
-  const client = getAccountClient(serviceToken())
+  const integration = integrations[0]
+  const socialId = await getAccountClient(serviceToken()).findFullSocialIdBySocialKey(integration.socialId)
+  if (socialId == null) return undefined
 
-  for (const id of telegramIds) {
-    const integration = await client.getIntegration({
-      kind: 'telegram-bot',
-      socialId: id._id,
-      workspaceUuid: workspace
-    })
-    if (integration != null) {
-      return {
-        ...integration,
-        workspaceUuid: integration.workspaceUuid as WorkspaceUuid,
-        account,
-        telegramId: Number(id.value),
-        username: id?.displayValue
-      }
-    }
+  return {
+    ...integration,
+    workspaceUuid: integration.workspaceUuid as WorkspaceUuid,
+    account,
+    telegramId: Number(socialId.value),
+    username: socialId?.displayValue
   }
 }
 
