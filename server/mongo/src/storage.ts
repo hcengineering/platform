@@ -75,6 +75,7 @@ import {
   type TxAdapter
 } from '@hcengineering/server-core'
 import {
+  ObjectId,
   type AbstractCursor,
   type AnyBulkWriteOperation,
   type Collection,
@@ -1125,14 +1126,14 @@ abstract class MongoAdapterBase implements DbAdapter {
         const result: DocInfo[] = []
         if (d != null) {
           result.push({
-            id: d._id,
+            id: (d._id as any) instanceof ObjectId ? d._id.toString() : d._id,
             hash: this.strimSize((d as any)['%hash%'])
           })
         }
         if (iterator.bufferedCount() > 0) {
           result.push(
             ...iterator.readBufferedDocuments().map((it) => ({
-              id: it._id,
+              id: (it._id as any) instanceof ObjectId ? it._id.toString() : it._id,
               hash: this.strimSize((it as any)['%hash%'])
             }))
           )
