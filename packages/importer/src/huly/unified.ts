@@ -292,7 +292,7 @@ export class UnifiedDocProcessor {
     const tagId = this.metadataStorage.getIdByFullPath(tagPath) as Ref<Tag>
     const tag = await this.createTag(tagConfig, tagId, masterTagId, parentTagId)
 
-    const attributes = await this.createAttributes(tagConfig, tagId)
+    const attributes = await this.createAttributes(tagPath, tagConfig, tagId)
     this.metadataStorage.setAttributes(tagPath, attributes)
 
     const docs = result.docs.get(tagPath) ?? []
