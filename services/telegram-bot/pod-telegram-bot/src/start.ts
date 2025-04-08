@@ -117,10 +117,10 @@ export const start = async (): Promise<void> => {
     ctx,
     QueueTopic.TelegramBot,
     queue.getClientId(),
-    async (msg) => {
-      for (const m of msg) {
-        const id = m.id as WorkspaceUuid
-        const records = m.value
+    async (messages) => {
+      for (const message of messages) {
+        const id = message.id as WorkspaceUuid
+        const records = message.value
         for (const record of records) {
           switch (record.type) {
             case TelegramQueueMessageType.Notification:

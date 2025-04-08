@@ -27,7 +27,7 @@ import core, {
   TxFactory,
   WorkspaceUuid
 } from '@hcengineering/core'
-import notification, { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
+import notification from '@hcengineering/notification'
 import chunter, { ChatMessage, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
 import contact, { Person } from '@hcengineering/contact'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
@@ -220,42 +220,6 @@ export class WorkspaceClient {
     }
 
     return true
-  }
-
-  async replyToActivityNotification (
-    it: ActivityInboxNotification,
-    account: AccountUuid,
-    socialId: PersonId,
-    text: string,
-    files: TelegramFileInfo[]
-  ): Promise<boolean> {
-    const message = await this.client.findOne(it.attachedToClass, { _id: it.attachedTo })
-
-    if (message !== undefined) {
-      return await this.createThreadMessage(message, account, socialId, text, files)
-    }
-
-    return false
-  }
-
-  async replyToMention (
-    it: MentionInboxNotification,
-    account: AccountUuid,
-    socialId: PersonId,
-    text: string,
-    files: TelegramFileInfo[]
-  ): Promise<boolean> {
-    if (!this.hierarchy.isDerived(it.mentionedInClass, activity.class.ActivityMessage)) {
-      return false
-    }
-
-    const message = (await this.client.findOne(it.mentionedInClass, { _id: it.mentionedIn })) as ActivityMessage
-
-    if (message !== undefined) {
-      return await this.createThreadMessage(message, account, socialId, text, files)
-    }
-
-    return false
   }
 
   async replyToMessage (

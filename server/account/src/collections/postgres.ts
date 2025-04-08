@@ -676,7 +676,8 @@ export class PostgresAccountDB implements AccountDB {
       this.getV4Migration(),
       this.getV4Migration1(),
       this.getV5Migration(),
-      this.getV6Migration()
+      this.getV6Migration(),
+      this.getV7Migration()
     ]
   }
 
@@ -960,6 +961,16 @@ export class PostgresAccountDB implements AccountDB {
               REFERENCES ${this.ns}.integrations(social_id, kind, _def_ws_uuid)
               ON DELETE CASCADE
       );
+      `
+    ]
+  }
+
+  private getV7Migration (): [string, string] {
+    return [
+      'account_db_v7_add_display_value',
+      `
+      ALTER TABLE ${this.ns}.social_id
+      ADD COLUMN IF NOT EXISTS display_value TEXT;
       `
     ]
   }

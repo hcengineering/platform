@@ -13,19 +13,12 @@
 // limitations under the License.
 //
 
-import { AccountUuid, Class, PersonId, Ref, WorkspaceUuid } from '@hcengineering/core'
+import { AccountUuid, Class, Ref, WorkspaceUuid } from '@hcengineering/core'
 import { ChunterSpace } from '@hcengineering/chunter'
 import { ActivityMessage } from '@hcengineering/activity'
+import { Integration } from '@hcengineering/account-client'
 
 export type ChannelId = string & { __channelId: true }
-
-export interface UserRecord {
-  telegramId: number
-  telegramUsername?: string
-  account: AccountUuid
-  socialId: PersonId
-  workspaces: WorkspaceUuid[]
-}
 
 export interface MessageRecord {
   workspace: WorkspaceUuid
@@ -76,4 +69,10 @@ export interface WorkspaceInfo {
   url: string
   id: string
   name: string
+}
+
+export type IntegrationInfo = Integration & {
+  account: AccountUuid
+  telegramId: number
+  username?: string
 }

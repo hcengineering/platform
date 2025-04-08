@@ -21,7 +21,8 @@ import { Context, Telegraf } from 'telegraf'
 import config from '../config'
 import { PlatformWorker } from '../worker'
 import { TgContext } from './types'
-import { getAccountPerson } from '../account'
+import { findIntegrationByTelegramId, getAccountPerson, removeIntegrationByTg } from '../account'
+import { WorkspaceUuid } from '@hcengineering/core'
 
 export enum Command {
   Start = 'start',
@@ -69,13 +70,13 @@ export async function getCommandsHelp (lang: string): Promise<string> {
 async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
   const id = ctx.from?.id
   const lang = ctx.from?.language_code ?? 'en'
-  const record = id !== undefined ? await worker.getUserByTgId(id) : undefined
+  const integration = id !== undefined ? await findIntegrationByTelegramId(id) : undefined
 
   const commandsHelp = await getCommandsHelp(lang)
   const welcomeMessage = await translate(telegram.string.WelcomeMessage, { app: config.App }, lang)
 
-  if (record !== undefined) {
-    const person = await getAccountPerson(record.account)
+  if (integration !== undefined) {
+    const person = await getAccountPerson(integration.account)
     if (person === undefined) return
     const connectedMessage = await translate(
       telegram.string.ConnectedDescriptionHtml,
@@ -86,8 +87,8 @@ async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
 
     await ctx.replyWithHTML(message)
     const username = ctx.from?.username
-    if (record.telegramUsername !== username && username !== undefined) {
-      await worker.updateTelegramUsername(record.account, record.telegramId, username)
+    if (integration.username !== username && username !== undefined) {
+      await worker.updateTelegramUsername(integration.socialId, username)
     }
   } else {
     const minutes = Math.round(config.OtpTimeToLiveSec / 60)
@@ -104,9 +105,9 @@ async function onHelp (ctx: Context): Promise<void> {
   await ctx.reply(commandsHelp)
 }
 
-async function onStop (ctx: Context, worker: PlatformWorker): Promise<void> {
+async function onStop (ctx: Context): Promise<void> {
   if (ctx.from?.id !== undefined) {
-    await worker.removeUserByTelegramId(ctx.from?.id)
+    await removeIntegrationByTg(ctx.from?.id)
   }
   const lang = ctx.from?.language_code ?? 'en'
   const message = await translate(telegram.string.StopMessage, { app: config.App }, lang)
@@ -121,14 +122,14 @@ async function onSyncChannels (ctx: Context, worker: PlatformWorker, onlyStarred
     return
   }
 
-  const record = await worker.getUserByTgId(id)
+  const integration = await findIntegrationByTelegramId(id)
 
-  if (record === undefined) return
+  if (integration === undefined) return
 
-  const workspaces = record.workspaces
+  const workspaces: WorkspaceUuid[] = integration.data?.workspaces ?? []
 
   for (const workspace of workspaces) {
-    await worker.syncChannels(record.account, workspace, onlyStarred)
+    await worker.syncChannels(integration.account, workspace, onlyStarred)
   }
 
   await ctx.reply('List of channels updated')
@@ -142,10 +143,10 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
     return
   }
 
-  const userRecord = await worker.getUserByTgId(id)
+  const integration = await findIntegrationByTelegramId(id)
 
-  if (userRecord !== undefined) {
-    const person = await getAccountPerson(userRecord.account)
+  if (integration !== undefined) {
+    const person = await getAccountPerson(integration.account)
     if (person === undefined) return
     const reply = await translate(
       telegram.string.AccountAlreadyConnectedHtml,
@@ -166,7 +167,7 @@ export async function defineCommands (bot: Telegraf<TgContext>, worker: Platform
   bot.start((ctx) => onStart(ctx, worker))
   bot.help(onHelp)
 
-  bot.command(Command.Stop, (ctx) => onStop(ctx, worker))
+  bot.command(Command.Stop, (ctx) => onStop(ctx))
   bot.command(Command.Connect, (ctx) => onConnect(ctx, worker))
   bot.command(Command.SyncAllChannels, (ctx) => onSyncChannels(ctx, worker, false))
   bot.command(Command.SyncStarredChannels, (ctx) => onSyncChannels(ctx, worker, true))

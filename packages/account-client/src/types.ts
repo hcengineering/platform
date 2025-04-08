@@ -4,7 +4,9 @@ import {
   WorkspaceDataId,
   WorkspaceUuid,
   type AccountRole,
-  type Timestamp
+  type Timestamp,
+  type SocialId as SocialIdBase,
+  PersonUuid
 } from '@hcengineering/core'
 
 export interface LoginInfo {
@@ -61,6 +63,10 @@ export interface Integration {
   kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
   workspaceUuid?: WorkspaceUuid
   data?: Record<string, any>
+}
+
+export interface SocialId extends SocialIdBase {
+  personUuid: PersonUuid
 }
 
 export type IntegrationKey = Omit<Integration, 'data'>

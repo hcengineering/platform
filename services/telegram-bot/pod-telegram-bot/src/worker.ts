@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AccountUuid, MeasureContext, PersonId, Ref, SocialIdType, WorkspaceUuid } from '@hcengineering/core'
+import { AccountUuid, MeasureContext, PersonId, Ref, WorkspaceUuid } from '@hcengineering/core'
 import { StorageAdapter, type StorageConfiguration } from '@hcengineering/server-core'
 import chunter, { ChunterSpace } from '@hcengineering/chunter'
 import { formatName } from '@hcengineering/contact'
@@ -23,11 +23,11 @@ import { ActivityMessage } from '@hcengineering/activity'
 import {
   ChannelId,
   ChannelRecord,
+  IntegrationInfo,
   MessageRecord,
   PlatformFileInfo,
   ReplyRecord,
   TelegramFileInfo,
-  UserRecord,
   WorkspaceInfo
 } from './types'
 import { WorkspaceClient } from './workspace'
@@ -42,6 +42,15 @@ import { TgContext } from './telegraf/types'
 import { Telegraf } from 'telegraf'
 import { getDb, PostgresDB } from './db'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import {
+  addWorkspace,
+  createIntegration,
+  findIntegrationByAccount,
+  findIntegrationByTelegramId,
+  getOrCreateSocialId,
+  removeWorkspace
+} from './account'
+import { generateToken } from '@hcengineering/server-token'
 
 const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
 
@@ -111,40 +120,45 @@ export class PlatformWorker {
     }
   }
 
-  async addUser (
+  private async addIntegration (
     telegramId: number,
     account: AccountUuid,
     workspace: WorkspaceUuid,
     socialId: PersonId,
-    telegramUsername?: string
-  ): Promise<UserRecord | undefined> {
-    const existRecord = await this.db.getUserByAccount(account)
+    username?: string
+  ): Promise<IntegrationInfo | undefined> {
+    const existIntegration = await findIntegrationByAccount(account)
 
-    if (existRecord != null && existRecord.telegramId === telegramId) {
-      if (existRecord.workspaces.includes(workspace)) {
+    if (existIntegration != null && existIntegration.telegramId === telegramId) {
+      const workspaces: WorkspaceUuid[] = existIntegration.data?.workspaces ?? []
+      if (workspaces.includes(workspace)) {
         return
       }
-      if (!existRecord.workspaces.includes(workspace)) {
-        await this.addWorkspace(account, workspace)
+      if (!workspaces.includes(workspace)) {
+        await addWorkspace(existIntegration, workspace)
       }
       return
     }
 
-    const userByTg = await this.db.getUserByTgId(telegramId)
+    const integrationByTg = await findIntegrationByTelegramId(telegramId)
 
-    if (userByTg != null) {
+    if (integrationByTg != null) {
       this.ctx.error('Account is already registered', {
         telegramId,
-        account: userByTg.account,
+        account: integrationByTg.account,
         requestAccount: account
       })
       return
     }
 
-    const userRecord: UserRecord = { telegramId, account, workspaces: [workspace], telegramUsername, socialId }
-    await this.db.insertUser(userRecord)
+    const integration = await createIntegration(socialId, workspace)
 
-    return userRecord
+    return {
+      ...integration,
+      account,
+      telegramId,
+      username
+    }
   }
 
   async getFiles (workspace: WorkspaceUuid, message: Ref<ActivityMessage>): Promise<PlatformFileInfo[]> {
@@ -152,19 +166,8 @@ export class PlatformWorker {
     return await wsClient.getFiles(message)
   }
 
-  async updateTelegramUsername (account: AccountUuid, tgId: number, telegramUsername: string): Promise<void> {
-    await this.db.updateTelegramUsername(account, telegramUsername)
-    // await getAccountClient(serviceToken()).createSocialId(
-    //   account,
-    //   SocialIdType.TELEGRAM,
-    //   tgId.toString(),
-    //   telegramUsername,
-    //   true
-    // )
-  }
-
-  async removeUserByTelegramId (telegramId: number): Promise<void> {
-    await this.db.removeUserByTgId(telegramId)
+  async updateTelegramUsername (personId: PersonId, telegramUsername: string): Promise<void> {
+    await getAccountClient(serviceToken()).updateSocialId(personId, telegramUsername)
   }
 
   async saveReply (record: ReplyRecord): Promise<void> {
@@ -184,22 +187,6 @@ export class PlatformWorker {
 
   async getMessageRecordByTelegramId (account: AccountUuid, telegramId: number): Promise<MessageRecord | undefined> {
     return await this.db.getMessageByTgId(account, telegramId)
-  }
-
-  async getUserByTgId (telegramId: number): Promise<UserRecord | undefined> {
-    return await this.db.getUserByTgId(telegramId)
-  }
-
-  async getUserByAccount (account: AccountUuid): Promise<UserRecord | undefined> {
-    return await this.db.getUserByAccount(account)
-  }
-
-  async addWorkspace (account: AccountUuid, workspace: WorkspaceUuid): Promise<void> {
-    await this.db.pushWorkspace(account, workspace)
-  }
-
-  async removeWorkspace (account: AccountUuid, workspace: WorkspaceUuid): Promise<void> {
-    await this.db.pullWorkspace(account, workspace)
   }
 
   async getWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient> {
@@ -226,13 +213,13 @@ export class PlatformWorker {
   }
 
   async reply (
-    user: UserRecord,
+    integration: IntegrationInfo,
     messageRecord: MessageRecord,
     text: string,
     files: TelegramFileInfo[]
   ): Promise<boolean> {
     const client = await this.getWorkspaceClient(messageRecord.workspace)
-    return await client.replyToMessage(user.account, user.socialId, messageRecord, text, files)
+    return await client.replyToMessage(integration.account, integration.socialId, messageRecord, text, files)
   }
 
   async getChannelName (client: WorkspaceClient, channel: ChunterSpace, account: AccountUuid): Promise<string> {
@@ -249,10 +236,6 @@ export class PlatformWorker {
     }
 
     return channel.name
-  }
-
-  async getWorkspaces (account: AccountUuid): Promise<string[]> {
-    return (await this.getUserByAccount(account))?.workspaces ?? []
   }
 
   async getChannels (account: AccountUuid, workspace: WorkspaceUuid): Promise<ChannelRecord[]> {
@@ -349,13 +332,13 @@ export class PlatformWorker {
     }
   }
 
-  async getWorkspaceInfo (workspaceId: WorkspaceUuid): Promise<WorkspaceInfo | undefined> {
+  async getWorkspaceInfo (account: AccountUuid, workspaceId: WorkspaceUuid): Promise<WorkspaceInfo | undefined> {
     if (this.workspaceInfoById.has(workspaceId)) {
       return this.workspaceInfoById.get(workspaceId)
     }
 
     try {
-      const accountClient = getAccountClient(serviceToken())
+      const accountClient = getAccountClient(generateToken(account, workspaceId))
       const result = await accountClient.getWorkspaceInfo(false)
 
       if (result === undefined) {
@@ -375,7 +358,11 @@ export class PlatformWorker {
     }
   }
 
-  async authorizeUser (code: string, account: AccountUuid, workspace: WorkspaceUuid): Promise<UserRecord | undefined> {
+  async authorizeUser (
+    code: string,
+    account: AccountUuid,
+    workspace: WorkspaceUuid
+  ): Promise<IntegrationInfo | undefined> {
     const otpData = await this.db.getOtpByCode(code)
     const isExpired = otpData !== undefined && otpData.expires < new Date()
     const isValid = otpData !== undefined && !isExpired && code === otpData.code
@@ -384,16 +371,10 @@ export class PlatformWorker {
       throw new Error('Invalid OTP')
     }
 
-    const accountClient = getAccountClient(serviceToken())
-    // const socialId = await accountClient.createSocialId(
-    //   account,
-    //   SocialIdType.TELEGRAM,
-    //   otpData.telegramId.toString(),
-    //   otpData.telegramUsername,
-    //   true
-    // )
-    // return await this.addUser(otpData.telegramId, account, workspace, socialId.socialId, otpData.telegramUsername)
-    return {} as any
+    await this.db.removeOtp(code)
+
+    const socialId = await getOrCreateSocialId(account, otpData.telegramId, otpData.telegramUsername)
+    return await this.addIntegration(otpData.telegramId, account, workspace, socialId, otpData.telegramUsername)
   }
 
   async generateCode (telegramId: number, telegramUsername?: string): Promise<string> {
@@ -421,25 +402,26 @@ export class PlatformWorker {
     record: TelegramNotificationQueueMessage,
     bot: Telegraf<TgContext>
   ): Promise<void> {
-    const userRecord = await this.getUserByAccount(record.account)
+    const integration = await findIntegrationByAccount(record.account)
 
-    if (userRecord === undefined) {
+    if (integration === undefined) {
       this.ctx.error('User not found', { account: record.account })
       return
     }
 
-    if (!userRecord.workspaces.includes(workspace)) {
-      await this.addWorkspace(userRecord.account, workspace)
+    const workspaces: WorkspaceUuid[] = integration.data?.workspaces ?? []
+    if (!workspaces.includes(workspace)) {
+      await addWorkspace(integration, workspace)
     }
 
-    void this.limiter.add(userRecord.telegramId, async () => {
+    void this.limiter.add(integration.telegramId, async () => {
       const { full: fullMessage, short: shortMessage } = toTelegramHtml(record)
       const files =
         record.attachments && record.messageId != null ? await this.getFiles(workspace, record.messageId) : []
       const tgMessageIds: number[] = []
 
       if (files.length === 0) {
-        const message = await bot.telegram.sendMessage(userRecord.telegramId, fullMessage, {
+        const message = await bot.telegram.sendMessage(integration.telegramId, fullMessage, {
           parse_mode: 'HTML'
         })
 
@@ -447,7 +429,7 @@ export class PlatformWorker {
       } else {
         const groups = toMediaGroups(files, fullMessage, shortMessage)
         for (const group of groups) {
-          const mediaGroup = await bot.telegram.sendMediaGroup(userRecord.telegramId, group)
+          const mediaGroup = await bot.telegram.sendMediaGroup(integration.telegramId, group)
           tgMessageIds.push(...mediaGroup.map((it) => it.message_id))
         }
       }
@@ -456,7 +438,7 @@ export class PlatformWorker {
         if (record.messageId === undefined) continue
         await this.db.insertMessage({
           messageId: record.messageId,
-          account: userRecord.account,
+          account: integration.account,
           workspace,
           telegramMessageId: messageId
         })
@@ -468,17 +450,19 @@ export class PlatformWorker {
     workspace: WorkspaceUuid,
     record: TelegramWorkspaceSubscriptionQueueMessage
   ): Promise<void> {
-    const userRecord = await this.getUserByAccount(record.account)
+    const integration = await findIntegrationByAccount(record.account)
 
-    if (userRecord === undefined) {
-      this.ctx.error('User not found', { account: record.account })
+    if (integration === undefined) {
+      this.ctx.error('Integration not found', { account: record.account })
       return
     }
 
-    if (record.subscribe && !userRecord.workspaces.includes(workspace)) {
-      await this.addWorkspace(userRecord.account, workspace)
-    } else if (!record.subscribe && userRecord.workspaces.includes(workspace)) {
-      await this.removeWorkspace(userRecord.account, workspace)
+    const workspaces: WorkspaceUuid[] = integration.data?.workspaces ?? []
+
+    if (record.subscribe && !workspaces.includes(workspace)) {
+      await addWorkspace(integration, workspace)
+    } else if (!record.subscribe && workspaces.includes(workspace)) {
+      await removeWorkspace(integration, workspace)
     }
   }
 }

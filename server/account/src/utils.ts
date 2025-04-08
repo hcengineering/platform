@@ -1331,7 +1331,8 @@ export async function addSocialId (
   personUuid: PersonUuid,
   type: SocialIdType,
   value: string,
-  confirmed: boolean
+  confirmed: boolean,
+  displayValue?: string
 ): Promise<PersonId> {
   const normalizedValue = normalizeValue(value ?? '')
 
@@ -1352,7 +1353,8 @@ export async function addSocialId (
   const newSocialId: Omit<SocialId, '_id' | 'key'> = {
     type,
     value: normalizedValue,
-    personUuid
+    personUuid,
+    displayValue
   }
 
   if (confirmed) {

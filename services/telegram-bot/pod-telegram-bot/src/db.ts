@@ -14,11 +14,11 @@
 //
 
 import postgres from 'postgres'
+import { AccountUuid, Ref, WorkspaceUuid } from '@hcengineering/core'
+import { ActivityMessage } from '@hcengineering/activity'
 
 import config from './config'
-import { AccountUuid, PersonId, Ref, WorkspaceUuid } from '@hcengineering/core'
-import { ChannelId, ChannelRecord, MessageRecord, OtpRecord, ReplyRecord, UserRecord } from './types'
-import { ActivityMessage } from '@hcengineering/activity'
+import { ChannelId, ChannelRecord, MessageRecord, OtpRecord, ReplyRecord } from './types'
 
 export async function getDb (): Promise<PostgresDB> {
   const sql = postgres(config.DbUrl, {
@@ -32,7 +32,6 @@ export async function getDb (): Promise<PostgresDB> {
   return await PostgresDB.create(sql)
 }
 
-const usersTable = 'telegram_bot.users'
 const otpTable = 'telegram_bot.otp'
 const messagesTable = 'telegram_bot.messages'
 const channelsTable = 'telegram_bot.channels'
@@ -50,16 +49,6 @@ export class PostgresDB {
     const sql = `
         CREATE SCHEMA IF NOT EXISTS telegram_bot;
         
-        CREATE TABLE IF NOT EXISTS ${usersTable} (
-          account UUID NOT NULL,
-          telegram_id INT8 NOT NULL,
-          telegram_username VARCHAR(255),
-          social_id INT8 NOT NULL,
-          workspaces UUID[] NOT NULL,
-          PRIMARY KEY (account),
-          UNIQUE (telegram_id)
-        );
-        
         CREATE TABLE IF NOT EXISTS ${otpTable} (
           telegram_id INT8 NOT NULL,
           telegram_username TEXT NOT NULL,
@@ -76,7 +65,7 @@ export class PostgresDB {
           telegram_message_id INT8 NOT NULL,
           PRIMARY KEY (workspace, account, message_id)
         );
-        
+
         CREATE TABLE IF NOT EXISTS ${channelsTable} (
           rowid INT8 NOT NULL DEFAULT unique_rowid(),
           workspace UUID NOT NULL,
@@ -85,67 +74,18 @@ export class PostgresDB {
           name TEXT NOT NULL,
           account UUID NOT NULL,
           PRIMARY KEY (rowid),
-          UNIQUE (workspace, _id, account),
-          FOREIGN KEY (account) REFERENCES ${usersTable} (account)
+          UNIQUE (workspace, _id, account)
         );
-        
+
         CREATE TABLE IF NOT EXISTS ${repliesTable} (
           message_id VARCHAR(255) NOT NULL,
           telegram_user_id INT8 NOT NULL,
           reply_id INT8 NOT NULL,
-          PRIMARY KEY (message_id, telegram_user_id, reply_id),
-          FOREIGN KEY (telegram_user_id) REFERENCES ${usersTable} (telegram_id)
+          PRIMARY KEY (message_id, telegram_user_id, reply_id)
         );
   `
 
     await client.unsafe(sql)
-  }
-
-  async getUserByAccount (account: AccountUuid): Promise<UserRecord | undefined> {
-    const sql = `
-      SELECT * FROM ${usersTable} WHERE account = $1::uuid LIMIT 1`
-    const res = await this.client.unsafe(sql, [account])
-    return res.map(toUserRecord)[0]
-  }
-
-  async getUserByTgId (telegramId: number): Promise<UserRecord | undefined> {
-    const sql = `
-      SELECT * FROM ${usersTable} WHERE telegram_id = $1::int8 LIMIT 1`
-    const res = await this.client.unsafe(sql, [telegramId])
-    return res.map(toUserRecord)[0]
-  }
-
-  async insertUser (user: UserRecord): Promise<void> {
-    const sql = `
-      INSERT INTO ${usersTable} (account, telegram_id, telegram_username, workspaces, social_id)
-      VALUES ($1::uuid, $2::int8, $3::text, $4::uuid[], $5::int8)`
-    await this.client.unsafe(sql, [
-      user.account,
-      user.telegramId,
-      user.telegramUsername ?? null,
-      user.workspaces,
-      user.socialId
-    ])
-  }
-
-  async pushWorkspace (account: AccountUuid, workspace: WorkspaceUuid): Promise<void> {
-    const sql = `UPDATE ${usersTable} SET workspaces = array_append(workspaces, $1::uuid) WHERE account = $2::uuid`
-    await this.client.unsafe(sql, [workspace, account])
-  }
-
-  async pullWorkspace (account: AccountUuid, workspace: WorkspaceUuid): Promise<void> {
-    const sql = `UPDATE ${usersTable} SET workspaces = array_remove(workspaces, $1::uuid) WHERE account = $2::uuid`
-    await this.client.unsafe(sql, [workspace, account])
-  }
-
-  async updateTelegramUsername (account: AccountUuid, telegramUsername: string): Promise<void> {
-    const sql = `UPDATE ${usersTable} SET telegram_username = $1::text WHERE account = $2::uuid`
-    await this.client.unsafe(sql, [telegramUsername, account])
-  }
-
-  async removeUserByTgId (telegramId: number): Promise<void> {
-    const sql = `DELETE FROM ${usersTable} WHERE telegram_id = $1::int8`
-    await this.client.unsafe(sql, [telegramId])
   }
 
   async insertOtp (otp: OtpRecord): Promise<void> {
@@ -167,6 +107,11 @@ export class PostgresDB {
       SELECT * FROM ${otpTable} WHERE telegram_id = $1::int8 ORDER BY created_at DESC LIMIT 1`
     const res = await this.client.unsafe(sql, [telegramId])
     return res.map(toOtpRecord)[0]
+  }
+
+  async removeOtp (code: string): Promise<void> {
+    const sql = `DELETE FROM ${otpTable} WHERE code = $1::text`
+    await this.client.unsafe(sql, [code])
   }
 
   async removeExpiredOtp (): Promise<void> {
@@ -248,16 +193,6 @@ export class PostgresDB {
 
   async close (): Promise<void> {
     await this.client.end({ timeout: 0 })
-  }
-}
-
-function toUserRecord (raw: any): UserRecord {
-  return {
-    telegramId: Number(raw.telegram_id),
-    telegramUsername: raw.telegram_username,
-    workspaces: raw.workspaces,
-    account: raw.account,
-    socialId: String(raw.social_id) as PersonId
   }
 }
 

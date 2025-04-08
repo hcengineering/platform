@@ -14,20 +14,20 @@
 //
 import { Analytics } from '@hcengineering/analytics'
 import {
-  AccountRole,
   AccountInfo,
+  AccountRole,
+  type Branding,
   buildSocialIdString,
   concatLink,
   isActiveMode,
   isWorkspaceCreating,
   MeasureContext,
-  SocialIdType,
-  systemAccountUuid,
-  type Branding,
   type Person,
   type PersonId,
   type PersonInfo,
   type PersonUuid,
+  SocialIdType,
+  systemAccountUuid,
   type WorkspaceMemberInfo,
   type WorkspaceUuid
 } from '@hcengineering/core'
@@ -40,9 +40,9 @@ import type {
   AccountDB,
   AccountMethodHandler,
   LoginInfo,
-  Meta,
   Mailbox,
   MailboxOptions,
+  Meta,
   OtpInfo,
   RegionInfo,
   SocialId,
@@ -51,6 +51,7 @@ import type {
   WorkspaceLoginInfo
 } from './types'
 import {
+  addSocialId,
   checkInvite,
   cleanEmail,
   confirmEmail,
@@ -58,38 +59,37 @@ import {
   createWorkspaceRecord,
   doJoinByInvite,
   EndpointKind,
+  generatePassword,
   getAccount,
   getEmailSocialId,
   getEndpoint,
   getFrontUrl,
   getInviteEmail,
+  getMailUrl,
   getPersonName,
   getRegions,
   getRolePower,
-  getMailUrl,
   getWorkspaceById,
   getWorkspaceInfoWithStatusById,
   getWorkspaceInvite,
+  getWorkspaceRole,
   GUEST_ACCOUNT,
+  isEmail,
   isOtpValid,
+  normalizeValue,
+  releaseSocialId,
   selectWorkspace,
   sendEmail,
   sendEmailConfirmation,
   sendOtp,
   setPassword,
+  setTimezoneIfNotDefined,
   signUpByEmail,
-  verifyAllowedServices,
-  verifyAllowedRole,
-  verifyPassword,
-  wrap,
-  getWorkspaceRole,
-  normalizeValue,
-  isEmail,
-  generatePassword,
-  addSocialId,
-  releaseSocialId,
   updateWorkspaceRole,
-  setTimezoneIfNotDefined
+  verifyAllowedRole,
+  verifyAllowedServices,
+  verifyPassword,
+  wrap
 } from './utils'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 
@@ -1487,6 +1487,19 @@ export async function findSocialIdBySocialKey (
   return socialIdObj._id
 }
 
+export async function getSocialIdBySocialKey (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { socialKey: string }
+): Promise<SocialId | null> {
+  const { socialKey } = params
+  decodeTokenVerbose(ctx, token)
+
+  return await db.socialId.findOne({ key: socialKey })
+}
+
 export async function getWorkspaceMembers (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1695,12 +1708,14 @@ export type AccountMethods =
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
+  | 'getSocialIdBySocialKey'
   | 'ensurePerson'
   | 'getMailboxOptions'
   | 'createMailbox'
   | 'getMailboxes'
   | 'deleteMailbox'
   | 'addSocialIdToPerson'
+  | 'updateSocialId'
   | 'getAccountInfo'
 
 /**
@@ -1750,6 +1765,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     findPersonBySocialId: wrap(findPersonBySocialId),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
+    getSocialIdBySocialKey: wrap(getSocialIdBySocialKey),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
     getMailboxOptions: wrap(getMailboxOptions),
     getAccountInfo: wrap(getAccountInfo),

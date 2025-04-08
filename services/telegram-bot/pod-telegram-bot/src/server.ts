@@ -16,7 +16,7 @@ import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { type Server } from 'http'
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import { Telegraf } from 'telegraf'
 import telegram from '@hcengineering/telegram'
 import { translate } from '@hcengineering/platform'
@@ -28,7 +28,7 @@ import { ApiError } from './error'
 import { PlatformWorker } from './worker'
 import config from './config'
 import { TgContext } from './telegraf/types'
-import { getAccountPerson } from './account'
+import { addWorkspace, findIntegrationByAccount, getAccountPerson } from './account'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
@@ -63,13 +63,18 @@ export function createServer (bot: Telegraf<TgContext>, worker: PlatformWorker, 
   app.post(
     '/test',
     wrapRequest(async (_, res, token) => {
-      const record = await worker.getUserByAccount(token.account)
+      const record = await findIntegrationByAccount(token.account)
       if (record === undefined) {
         throw new ApiError(404)
       }
 
+      const workspaces: WorkspaceUuid[] = record.data?.workspaces ?? []
+      if (!workspaces.includes(token.workspace)) {
+        await addWorkspace(record, token.workspace)
+      }
+
       await worker.limiter.add(record.telegramId, async () => {
-        ctx.info('Sending test message', { account: token.account, username: record.telegramUsername })
+        ctx.info('Sending test message', { account: token.account, username: record.username })
         const testMessage = await translate(telegram.string.TestMessage, { app: config.App })
         await bot.telegram.sendMessage(record.telegramId, testMessage)
       })
@@ -92,7 +97,7 @@ export function createServer (bot: Telegraf<TgContext>, worker: PlatformWorker, 
         throw new ApiError(400)
       }
 
-      const record = await worker.getUserByAccount(token.account)
+      const record = await findIntegrationByAccount(token.account)
 
       if (record !== undefined) {
         throw new ApiError(409, 'User already authorized')
@@ -109,7 +114,7 @@ export function createServer (bot: Telegraf<TgContext>, worker: PlatformWorker, 
       }
 
       void worker.limiter.add(newRecord.telegramId, async () => {
-        ctx.info('Connected account', { account: token.account, username: newRecord.telegramUsername })
+        ctx.info('Connected account', { account: token.account, username: newRecord.username })
         const message = await translate(telegram.string.AccountConnectedHtml, {
           app: config.App,
           name: `${person.firstName} ${person.lastName}`

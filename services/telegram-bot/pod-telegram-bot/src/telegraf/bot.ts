@@ -27,7 +27,8 @@ import { PlatformWorker } from '../worker'
 import { TgContext, ReplyMessage } from './types'
 import { toTelegramFileInfo } from '../utils'
 import { Command, defineCommands } from './commands'
-import { ChannelId, ChannelRecord, MessageRecord, TelegramFileInfo, UserRecord, WorkspaceInfo } from '../types'
+import { ChannelId, ChannelRecord, IntegrationInfo, MessageRecord, TelegramFileInfo, WorkspaceInfo } from '../types'
+import { findIntegrationByTelegramId } from '../account'
 
 function encodeChannelId (channelId: string): string {
   return `@${channelId}`
@@ -71,17 +72,17 @@ async function onReply (
   worker: PlatformWorker,
   username?: string
 ): Promise<boolean> {
-  const userRecord = await worker.getUserByTgId(fromTgUser)
+  const integration = await findIntegrationByTelegramId(fromTgUser)
 
-  if (userRecord === undefined) {
+  if (integration === undefined) {
     return false
   }
 
-  if (userRecord.telegramUsername !== username && username !== undefined) {
-    void worker.updateTelegramUsername(userRecord.account, userRecord.telegramId, username)
+  if (integration.username !== username && username !== undefined) {
+    void worker.updateTelegramUsername(integration.socialId, username)
   }
 
-  const messageRecord = await findMessageRecord(worker, fromTgUser, replyTo, userRecord.account)
+  const messageRecord = await findMessageRecord(worker, fromTgUser, replyTo, integration.account)
 
   if (messageRecord === undefined) {
     return false
@@ -96,7 +97,7 @@ async function onReply (
   const file = await toTelegramFileInfo(ctx, message)
   const files: TelegramFileInfo[] = file !== undefined ? [file] : []
 
-  return await worker.reply(userRecord, messageRecord, htmlToMarkup(toHTML(message)), files)
+  return await worker.reply(integration, messageRecord, htmlToMarkup(toHTML(message)), files)
 }
 
 async function handleSelectChannel (
@@ -110,12 +111,12 @@ async function handleSelectChannel (
   const id = ctx.chat?.id
   if (id === undefined) return ['', false]
 
-  const userRecord = await worker.getUserByTgId(id)
-  if (userRecord === undefined) return ['', false]
+  const integration = await findIntegrationByTelegramId(id)
+  if (integration === undefined) return ['', false]
 
   const channelId = decodeChannelId(match)
   if (channelId === undefined || channelId === '') return ['', false]
-  const channel = await worker.getChannel(userRecord.account, channelId as ChannelId)
+  const channel = await worker.getChannel(integration.account, channelId as ChannelId)
 
   if (channel === undefined) return ['', false]
 
@@ -131,12 +132,17 @@ async function handleSelectChannel (
 
   return [
     channel.name,
-    await worker.sendMessage(channel, userRecord.account, userRecord.socialId, userMessage.message_id, text, file)
+    await worker.sendMessage(channel, integration.account, integration.socialId, userMessage.message_id, text, file)
   ]
 }
 
-async function showNoChannelsMessage (ctx: Context, worker: PlatformWorker, workspace: WorkspaceUuid): Promise<void> {
-  const ws = await worker.getWorkspaceInfo(workspace)
+async function showNoChannelsMessage (
+  ctx: Context,
+  worker: PlatformWorker,
+  workspace: WorkspaceUuid,
+  account: AccountUuid
+): Promise<void> {
+  const ws = await worker.getWorkspaceInfo(account, workspace)
   await ctx.editMessageText(
     `No channels found in workspace <b>${ws?.name ?? workspace}</b>.\nTo sync channels call /${Command.SyncAllChannels} or /${Command.SyncStarredChannels}`,
     { parse_mode: 'HTML' }
@@ -146,13 +152,13 @@ async function showNoChannelsMessage (ctx: Context, worker: PlatformWorker, work
 async function createSelectChannelKeyboard (
   ctx: NarrowedContext<TgContext, Update.MessageUpdate>,
   worker: PlatformWorker,
-  userRecord: UserRecord,
+  integration: IntegrationInfo,
   workspace: WorkspaceUuid
 ): Promise<void> {
-  const channels = await worker.getChannels(userRecord.account, workspace)
+  const channels = await worker.getChannels(integration.account, workspace)
 
   if (channels.length === 0) {
-    const ws = await worker.getWorkspaceInfo(workspace)
+    const ws = await worker.getWorkspaceInfo(integration.account, workspace)
     await ctx.replyWithHTML(
       `No channels found in workspace <b>${ws?.name ?? workspace}</b>.\nTo sync channels call /${Command.SyncAllChannels} or /${Command.SyncStarredChannels}`
     )
@@ -177,12 +183,13 @@ async function createSelectChannelKeyboard (
 async function createSelectWorkspaceKeyboard (
   ctx: NarrowedContext<TgContext, Update.MessageUpdate>,
   worker: PlatformWorker,
-  workspaces: WorkspaceUuid[]
+  workspaces: WorkspaceUuid[],
+  integration: IntegrationInfo
 ): Promise<void> {
   const info: WorkspaceInfo[] = []
 
   for (const workspace of workspaces) {
-    const workspaceInfo = await worker.getWorkspaceInfo(workspace)
+    const workspaceInfo = await worker.getWorkspaceInfo(integration.account, workspace)
     if (workspaceInfo === undefined) continue
     info.push(workspaceInfo)
   }
@@ -238,19 +245,18 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
     if (id === undefined) return
     if ('reply_to_message' in ctx.message) return
 
-    const userRecord = await worker.getUserByTgId(id)
-    if (userRecord === undefined) return
+    const integration = await findIntegrationByTelegramId(id)
+    if (integration === undefined) return
 
-    const workspaces = userRecord.workspaces as any // TODO: FIXME
-
+    const workspaces: WorkspaceUuid[] = integration.data?.workspaces ?? []
     if (workspaces.length === 0) {
       await ctx.reply("You don't have any connected workspaces")
       return
     }
     if (workspaces.length === 1) {
-      await createSelectChannelKeyboard(ctx, worker, userRecord, workspaces[0])
+      await createSelectChannelKeyboard(ctx, worker, integration, workspaces[0])
     } else {
-      await createSelectWorkspaceKeyboard(ctx, worker, workspaces)
+      await createSelectWorkspaceKeyboard(ctx, worker, workspaces, integration)
     }
   })
 
@@ -280,13 +286,15 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
     const messageId = ctx.callbackQuery.message?.message_id
     if (messageId === undefined) return
     if (ctx.processingKeyboards.has(messageId)) return
+    const integration = await findIntegrationByTelegramId(ctx.chat?.id ?? 0)
+    if (integration === undefined) return
 
     ctx.processingKeyboards.add(messageId)
 
     try {
       const wsId = ctx.match[0].split('_')[1] as WorkspaceUuid
       if (wsId == null || wsId === '') return
-      const info = await worker.getWorkspaceInfo(wsId)
+      const info = await worker.getWorkspaceInfo(integration.account, wsId)
       if (info === undefined) return
       await ctx.editMessageText(`Please select the channel to send message in workspace <b>${info.name}</b>`, {
         parse_mode: 'HTML'
@@ -351,13 +359,13 @@ const editChannelKeyboard = async (
   const id = ctx.chat?.id
   if (id === undefined) return
 
-  const userRecord = await worker.getUserByTgId(id)
-  if (userRecord === undefined) return
+  const integration = await findIntegrationByTelegramId(id)
+  if (integration === undefined) return
 
-  const channels = await worker.getChannels(userRecord.account, workspace)
+  const channels = await worker.getChannels(integration.account, workspace)
 
   if (channels.length === 0) {
-    await showNoChannelsMessage(ctx, worker, workspace)
+    await showNoChannelsMessage(ctx, worker, workspace, integration.account)
     return
   }
 
