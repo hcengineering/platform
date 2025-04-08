@@ -25,7 +25,7 @@ import {
   listIntegrationsByTelegramId,
   getAccountPerson,
   removeIntegrationsByTg,
-  getIntegrationByTelegramId
+  getAnyIntegrationByTelegramId
 } from '../account'
 import { WorkspaceUuid } from '@hcengineering/core'
 
@@ -75,7 +75,7 @@ export async function getCommandsHelp (lang: string): Promise<string> {
 async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
   const id = ctx.from?.id
   const lang = ctx.from?.language_code ?? 'en'
-  const integration = id !== undefined ? await getIntegrationByTelegramId(id) : undefined
+  const integration = id !== undefined ? await getAnyIntegrationByTelegramId(id) : undefined
 
   const commandsHelp = await getCommandsHelp(lang)
   const welcomeMessage = await translate(telegram.string.WelcomeMessage, { app: config.App }, lang)
@@ -150,7 +150,7 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
     return
   }
 
-  const integration = await getIntegrationByTelegramId(id)
+  const integration = await getAnyIntegrationByTelegramId(id)
 
   if (integration !== undefined) {
     const person = await getAccountPerson(integration.account)

@@ -33,7 +33,7 @@ import {
   listIntegrationsByAccount,
   getAccountPerson,
   enableIntegration,
-  getIntegrationByAccount
+  getAnyIntegrationByAccount
 } from './account'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
@@ -108,7 +108,7 @@ export function createServer (bot: Telegraf<TgContext>, worker: PlatformWorker, 
         throw new ApiError(400)
       }
 
-      const integration = await getIntegrationByAccount(token.account)
+      const integration = await getAnyIntegrationByAccount(token.account)
 
       if (integration !== undefined) {
         throw new ApiError(409, 'User already authorized')

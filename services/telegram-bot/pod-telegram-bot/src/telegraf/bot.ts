@@ -28,7 +28,7 @@ import { TgContext, ReplyMessage } from './types'
 import { toTelegramFileInfo } from '../utils'
 import { Command, defineCommands } from './commands'
 import { ChannelId, ChannelRecord, IntegrationInfo, MessageRecord, TelegramFileInfo, WorkspaceInfo } from '../types'
-import { getIntegrationByTelegramId, listIntegrationsByTelegramId } from '../account'
+import { getAnyIntegrationByTelegramId, listIntegrationsByTelegramId } from '../account'
 
 function encodeChannelId (channelId: string): string {
   return `@${channelId}`
@@ -72,7 +72,7 @@ async function onReply (
   worker: PlatformWorker,
   username?: string
 ): Promise<boolean> {
-  const integration = await getIntegrationByTelegramId(fromTgUser)
+  const integration = await getAnyIntegrationByTelegramId(fromTgUser)
 
   if (integration === undefined) {
     return false
@@ -111,7 +111,7 @@ async function handleSelectChannel (
   const id = ctx.chat?.id
   if (id === undefined) return ['', false]
 
-  const integration = await getIntegrationByTelegramId(id)
+  const integration = await getAnyIntegrationByTelegramId(id)
   if (integration === undefined) return ['', false]
 
   const channelId = decodeChannelId(match)
@@ -290,7 +290,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
     if (ctx.processingKeyboards.has(messageId)) return
     const wsId = ctx.match[0].split('_')[1] as WorkspaceUuid
     if (wsId == null || wsId === '') return
-    const integration = await getIntegrationByTelegramId(ctx.chat?.id ?? 0, wsId)
+    const integration = await getAnyIntegrationByTelegramId(ctx.chat?.id ?? 0, wsId)
     if (integration === undefined) return
 
     ctx.processingKeyboards.add(messageId)
@@ -361,7 +361,7 @@ const editChannelKeyboard = async (
   const id = ctx.chat?.id
   if (id === undefined) return
 
-  const integration = await getIntegrationByTelegramId(id, workspace)
+  const integration = await getAnyIntegrationByTelegramId(id, workspace)
   if (integration === undefined) return
 
   const channels = await worker.getChannels(integration.account, workspace)

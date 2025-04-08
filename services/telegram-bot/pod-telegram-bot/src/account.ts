@@ -56,17 +56,16 @@ export async function listIntegrationsByAccount (account: AccountUuid): Promise<
 
   const result: IntegrationInfo[] = []
   for (const integration of integrations) {
-    if (integration.workspaceUuid === undefined) continue
+    if (integration.workspaceUuid == null) continue
     const socialId = socialIds.find((it) => it._id === integration.socialId)
     if (socialId === undefined) continue
-    result.push(
-      {
-        ...integration,
-        workspaceUuid: integration.workspaceUuid,
-        account,
-        telegramId: Number(socialId.value),
-        username: socialId.displayValue
-      })
+    result.push({
+      ...integration,
+      workspaceUuid: integration.workspaceUuid,
+      account,
+      telegramId: Number(socialId.value),
+      username: socialId.displayValue
+    })
   }
 
   return result
@@ -91,7 +90,7 @@ export async function listIntegrationsByTelegramId (telegramId: number): Promise
   }))
 }
 
-export async function getIntegrationByTelegramId (
+export async function getAnyIntegrationByTelegramId (
   telegramId: number,
   workspace?: WorkspaceUuid
 ): Promise<IntegrationInfo | undefined> {
@@ -101,13 +100,11 @@ export async function getIntegrationByTelegramId (
   )
   if (socialId == null) return undefined
 
-  const integration = await client.getIntegration({
-    kind: 'telegram-bot',
-    socialId: socialId._id,
-    workspaceUuid: workspace
-  })
-  if (integration == null) return undefined
+  const integrations = await client.listIntegrations({ kind: 'telegram-bot', socialId: socialId._id })
+  if (integrations.length === 0) return undefined
 
+  const integration = workspace != null ? integrations.find((it) => it.workspaceUuid === workspace) : integrations[0]
+  if (integration == null) return undefined
   return {
     ...integration,
     workspaceUuid: integration.workspaceUuid as WorkspaceUuid,
@@ -117,7 +114,7 @@ export async function getIntegrationByTelegramId (
   }
 }
 
-export async function getIntegrationByAccount (
+export async function getAnyIntegrationByAccount (
   account: AccountUuid,
   workspace?: WorkspaceUuid
 ): Promise<IntegrationInfo | undefined> {
@@ -186,7 +183,10 @@ export async function removeIntegrationsByTg (telegramId: number): Promise<void>
     buildSocialIdString({ type: SocialIdType.TELEGRAM, value: telegramId.toString() })
   )
   if (socialId == null) return
-  await accountClient.deleteIntegration({ socialId, kind: 'telegram-bot' })
+  const integrations = await accountClient.listIntegrations({ kind: 'telegram-bot', socialId })
+  for (const integration of integrations) {
+    await accountClient.deleteIntegration({ socialId, kind: 'telegram-bot', workspaceUuid: integration.workspaceUuid })
+  }
 }
 
 export async function addWorkspace (integration: IntegrationInfo, workspace: WorkspaceUuid): Promise<void> {

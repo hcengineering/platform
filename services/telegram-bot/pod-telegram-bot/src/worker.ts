@@ -50,7 +50,7 @@ import {
   listIntegrationsByAccount,
   getOrCreateSocialId,
   disableIntegration,
-  getIntegrationByTelegramId,
+  getAnyIntegrationByTelegramId,
   enableIntegration
 } from './account'
 
@@ -110,7 +110,7 @@ export class PlatformWorker {
     socialId: PersonId,
     username?: string
   ): Promise<IntegrationInfo | undefined> {
-    const integrationByTg = await getIntegrationByTelegramId(telegramId)
+    const integrationByTg = await getAnyIntegrationByTelegramId(telegramId)
 
     if (integrationByTg != null) {
       this.ctx.error('Account is already registered', {
