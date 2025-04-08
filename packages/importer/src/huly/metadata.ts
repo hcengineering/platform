@@ -3,7 +3,7 @@ import { Association, Attribute, Doc, generateId, Ref } from '@hcengineering/cor
 import path from 'path'
 import { UnifiedDoc } from '../types'
 
-export interface RelationMetadata {
+export interface RelationMetadata { // todo: rename
   association: Ref<Association>
   field: 'docA' | 'docB'
   type: '1:1' | '1:N' | 'N:N'
@@ -20,7 +20,7 @@ export class MetadataStorage {
   private readonly pathToRef = new Map<string, Ref<Doc>>() // todo: attachments to a separate map?
   private readonly pathToMetadata = new Map<string, TagMetadata>()
 
-  public getIdByFullPath (path: string): Ref<Doc> {
+  public getIdByAbsolutePath (path: string): Ref<Doc> {
     let id = this.pathToRef.get(path)
     if (id === undefined) {
       id = generateId()
@@ -31,7 +31,7 @@ export class MetadataStorage {
 
   public getIdByRelativePath (currentPath: string, relativePath: string): Ref<Doc> {
     const fullPath = path.resolve(currentPath, relativePath)
-    return this.getIdByFullPath(fullPath)
+    return this.getIdByAbsolutePath(fullPath)
   }
 
   public hasMetadata (path: string): boolean {
@@ -48,7 +48,7 @@ export class MetadataStorage {
 
   public setAttributes (path: string, attributes: MapAttributeToUnifiedDoc): void {
     const metadata = this.pathToMetadata.get(path) ?? {
-      _id: this.getIdByFullPath(path),
+      _id: this.getIdByAbsolutePath(path),
       attributes: new Map(),
       associations: new Map()
     }
@@ -58,7 +58,7 @@ export class MetadataStorage {
 
   public addAssociation (tagPath: string, propName: string, relationMetadata: RelationMetadata): void {
     const metadata = this.pathToMetadata.get(tagPath) ?? {
-      _id: this.getIdByFullPath(tagPath),
+      _id: this.getIdByAbsolutePath(tagPath),
       attributes: new Map(),
       associations: new Map()
     }

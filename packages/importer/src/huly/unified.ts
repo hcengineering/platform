@@ -4,11 +4,11 @@ import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Association,
   Attribute,
-  Blob as PlatformBlob,
   Class,
   Doc,
   Enum,
   generateId,
+  Blob as PlatformBlob,
   Ref,
   Relation
 } from '@hcengineering/core'
@@ -62,7 +62,7 @@ export class UnifiedDocProcessor {
 
       switch (yamlConfig?.class) {
         case card.class.MasterTag: {
-          const masterTagId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<MasterTag>
+          const masterTagId = this.metadataStorage.getIdByAbsolutePath(yamlPath) as Ref<MasterTag>
           const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
           const masterTagAttrs = await this.createAttributes(yamlPath, yamlConfig, masterTagId)
 
@@ -113,7 +113,7 @@ export class UnifiedDocProcessor {
     if (fs.existsSync(yamlPath)) {
       const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
       if (yamlConfig?.class === card.class.MasterTag) {
-        masterTagId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<MasterTag>
+        masterTagId = this.metadataStorage.getIdByAbsolutePath(yamlPath) as Ref<MasterTag>
         this.metadataStorage.getAssociations(yamlPath).forEach((relationMetadata, propName) => {
           masterTagRelations.set(propName, relationMetadata)
         })
@@ -173,7 +173,7 @@ export class UnifiedDocProcessor {
     masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
-    const cardWithRelations = await this.createCard(cardProps, cardPath, masterTagId, masterTagRelations, masterTagAttrs, parentCardId)
+    const cardWithRelations = await this.createCardWithRelations(cardProps, cardPath, masterTagId, masterTagRelations, masterTagAttrs, parentCardId, blobs)
 
     if (cardWithRelations.length > 0) {
       const docs = result.docs.get(cardPath) ?? []
@@ -183,10 +183,10 @@ export class UnifiedDocProcessor {
       const card = cardWithRelations[0] as UnifiedDoc<Card>
       await this.applyTags(card, cardProps, cardPath, result)
 
-      const attachments = cardProps.attachments ?? []
-      await this.processAttachments(attachments, cardPath, card, result)
+      if (cardProps.attachments !== undefined) {
+        await this.processAttachments(cardProps.attachments, cardPath, card, result)
+      }
 
-      // Проверяем наличие дочерних карточек
       const cardDir = path.join(path.dirname(cardPath), path.basename(cardPath, '.md'))
       if (fs.existsSync(cardDir) && fs.statSync(cardDir).isDirectory()) {
         await this.processCardDirectory(result, cardDir, masterTagId, masterTagRelations, masterTagAttrs, card.props._id as Ref<Card>)
@@ -242,7 +242,7 @@ export class UnifiedDocProcessor {
     masterTagId: Ref<MasterTag>,
     parentTagId?: Ref<Tag>
   ): Promise<void> {
-    const tagId = this.metadataStorage.getIdByFullPath(tagPath) as Ref<Tag>
+    const tagId = this.metadataStorage.getIdByAbsolutePath(tagPath) as Ref<Tag>
     const tag = await this.createTag(tagConfig, tagId, masterTagId, parentTagId)
 
     const attributes = await this.createAttributes(tagPath, tagConfig, tagId)
@@ -338,7 +338,7 @@ export class UnifiedDocProcessor {
       const baseType: Record<string, any> = {}
       baseType._class = core.class.RefTo
       const refPath = path.resolve(path.dirname(currentPath), property.refTo)
-      baseType.to = this.metadataStorage.getIdByFullPath(refPath)
+      baseType.to = this.metadataStorage.getIdByAbsolutePath(refPath)
       baseType.label = core.string.Ref
       type = property.isArray === true
         ? {
@@ -351,7 +351,7 @@ export class UnifiedDocProcessor {
       const baseType: Record<string, any> = {}
       baseType._class = core.class.EnumOf
       const enumPath = path.resolve(path.dirname(currentPath), property.enumOf)
-      baseType.of = this.metadataStorage.getIdByFullPath(enumPath)
+      baseType.of = this.metadataStorage.getIdByAbsolutePath(enumPath)
       baseType.label = 'core:string:Enum'
       type = property.isArray === true
         ? {
@@ -381,7 +381,7 @@ export class UnifiedDocProcessor {
     return type
   }
 
-  private async createCard (
+  private async createCardWithRelations (
     cardHeader: Record<string, any>,
     cardPath: string,
     masterTagId: Ref<MasterTag>,
@@ -392,7 +392,7 @@ export class UnifiedDocProcessor {
     const { _class, title, tags: rawTags, ...customProperties } = cardHeader
     const tags = rawTags !== undefined ? (Array.isArray(rawTags) ? rawTags : [rawTags]) : []
 
-    const cardId = this.metadataStorage.getIdByFullPath(cardPath) as Ref<Card>
+    const cardId = this.metadataStorage.getIdByAbsolutePath(cardPath) as Ref<Card>
     const cardProps: Record<string, any> = {
       _id: cardId,
       space: core.space.Workspace,
@@ -426,7 +426,7 @@ export class UnifiedDocProcessor {
         for (const val of values) {
           if (attrBaseType._class === core.class.RefTo) {
             const refPath = path.resolve(path.dirname(cardPath), val)
-            const ref = this.metadataStorage.getIdByFullPath(refPath) as Ref<Card>
+            const ref = this.metadataStorage.getIdByAbsolutePath(refPath) as Ref<Card>
             propValues.push(ref)
           } else {
             propValues.push(val)
@@ -439,7 +439,7 @@ export class UnifiedDocProcessor {
           throw new Error(`Association not found: ${key}, ${cardPath}`) // todo: keep the error till builder validation
         }
         const otherCardPath = path.resolve(path.dirname(cardPath), value) // todo: value can be array of paths
-        const otherCardId = this.metadataStorage.getIdByFullPath(otherCardPath) as Ref<Card>
+        const otherCardId = this.metadataStorage.getIdByAbsolutePath(otherCardPath) as Ref<Card>
         const relation: UnifiedDoc<Relation> = this.createRelation(metadata, cardId, otherCardId)
         relations.push(relation)
       }
@@ -484,11 +484,11 @@ export class UnifiedDocProcessor {
     const mixins: UnifiedMixin<Card, Tag>[] = []
     for (const tagPath of tags) {
       const cardDir = path.dirname(cardPath)
-      const fullTagPath = path.resolve(cardDir, tagPath)
-      const tagId = this.metadataStorage.getIdByFullPath(fullTagPath) as Ref<Tag>
+      const tagAbsPath = path.resolve(cardDir, tagPath)
+      const tagId = this.metadataStorage.getIdByAbsolutePath(tagAbsPath) as Ref<Tag>
 
       const tagProps: Record<string, any> = {}
-      this.metadataStorage.getAttributes(fullTagPath).forEach((attr, label) => {
+      this.metadataStorage.getAttributes(tagAbsPath).forEach((attr, label) => {
         tagProps[attr.props.name] = cardHeader[label]
       })
 
@@ -519,7 +519,7 @@ export class UnifiedDocProcessor {
     for (const attachment of attachments) {
       const attachmentPath = path.resolve(path.dirname(cardPath), attachment)
       const attachmentName = path.basename(attachmentPath)
-      const fileId = this.metadataStorage.getIdByFullPath(attachmentPath) as Ref<PlatformBlob>
+      const fileId = this.metadataStorage.getIdByAbsolutePath(attachmentPath) as Ref<PlatformBlob>
       const type = contentType(attachmentPath)
       const size = fs.statSync(attachmentPath).size
 
@@ -534,7 +534,7 @@ export class UnifiedDocProcessor {
       }
       result.files.set(attachmentPath, file)
 
-      const attachmentId = this.metadataStorage.getIdByFullPath(attachmentPath) as Ref<Attachment>
+      const attachmentId = this.metadataStorage.getIdByAbsolutePath(attachmentPath) as Ref<Attachment>
       const attachmentDoc: UnifiedDoc<Attachment> = {
         _class: 'attachment:class:Attachment' as Ref<Class<Attachment>>,
         props: {
@@ -562,7 +562,7 @@ export class UnifiedDocProcessor {
     const { class: _class, typeA, typeB, type, nameA, nameB } = yamlConfig
 
     const currentPath = path.dirname(yamlPath)
-    const associationId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<Association>
+    const associationId = this.metadataStorage.getIdByAbsolutePath(yamlPath) as Ref<Association>
 
     const typeAPath = path.resolve(currentPath, typeA)
     this.metadataStorage.addAssociation(typeAPath, nameB, {
@@ -578,8 +578,8 @@ export class UnifiedDocProcessor {
       type
     })
 
-    const typeAId = this.metadataStorage.getIdByFullPath(typeAPath) as Ref<MasterTag>
-    const typeBId = this.metadataStorage.getIdByFullPath(typeBPath) as Ref<MasterTag>
+    const typeAId = this.metadataStorage.getIdByAbsolutePath(typeAPath) as Ref<MasterTag>
+    const typeBId = this.metadataStorage.getIdByAbsolutePath(typeBPath) as Ref<MasterTag>
 
     return {
       _class,
@@ -600,7 +600,7 @@ export class UnifiedDocProcessor {
     yamlConfig: Record<string, any>
   ): Promise<UnifiedDoc<Enum>> {
     const { title, values } = yamlConfig
-    const enumId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<Enum>
+    const enumId = this.metadataStorage.getIdByAbsolutePath(yamlPath) as Ref<Enum>
     return {
       _class: core.class.Enum,
       props: {
