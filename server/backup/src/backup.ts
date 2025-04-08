@@ -188,7 +188,7 @@ async function loadDigest (
           result.delete(k as Ref<Doc>)
         }
       } catch (err: any) {
-        ctx.error('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
+        ctx.warn('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
       }
     }
     // Stop if stop date is matched and provided
@@ -386,7 +386,7 @@ async function updateDigest (
     } catch (err: any) {
       digestToRemove.add(snapshot)
       modifiedFiles.push(snapshot)
-      ctx.error('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
+      ctx.warn('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
       modified = true
     }
   }
