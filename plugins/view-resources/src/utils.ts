@@ -1488,10 +1488,15 @@ export interface PermissionsStore {
   whitelist: Set<Ref<Space>>
 }
 
-export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>, store: PermissionsStore): boolean {
+export function checkMyPermission (
+  _id: Ref<Permission>,
+  space: Ref<TypedSpace>,
+  store: PermissionsStore,
+  whitelist: boolean = true
+): boolean {
   const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
   if (arePermissionsDisabled) return true
-  return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
+  return ((whitelist && store.whitelist.has(space)) || store.ps[space]?.has(_id)) ?? false
 }
 
 export function getPermittedAccounts (

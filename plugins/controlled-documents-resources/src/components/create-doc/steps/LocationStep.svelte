@@ -83,7 +83,9 @@
   $: canProceed = $locationStep.space !== undefined && $locationStep.project !== undefined
   $: hasParentSelector = $locationStep.space !== documents.space.UnsortedTemplates
   $: restrictedSpaces = Object.keys($permissionsStore.ps)
-    .filter((s) => !checkMyPermission(documents.permission.CreateDocument, s as Ref<TypedSpace>, $permissionsStore))
+    .filter(
+      (s) => !checkMyPermission(documents.permission.CreateDocument, s as Ref<TypedSpace>, $permissionsStore, false)
+    )
     .map(([s]) => s) as Ref<Space>[]
 
   $: spaceQuery = isTemplate
