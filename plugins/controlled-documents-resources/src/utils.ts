@@ -560,7 +560,7 @@ export async function canDeleteFolder (doc: ProjectDocument): Promise<boolean> {
   }
 
   const currentUser = getCurrentAccount()
-  if (currentUser.socialIds.some(id => id === doc.createdBy)) {
+  if (currentUser.socialIds.some((id) => id === doc.createdBy)) {
     return true
   }
 

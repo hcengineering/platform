@@ -145,7 +145,9 @@
     const newState = !arePermissionsDisabled
     showPopup(MessageBox, {
       label: newState ? settingsRes.string.DisablePermissions : settingsRes.string.EnablePermissions,
-      message: newState ? settingsRes.string.DisablePermissionsConfirmation : settingsRes.string.EnablePermissionsConfirmation,
+      message: newState
+        ? settingsRes.string.DisablePermissionsConfirmation
+        : settingsRes.string.EnablePermissionsConfirmation,
       dangerous: true,
       action: async () => {
         if (disablePermissionsConfiguration === undefined) {
