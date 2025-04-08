@@ -178,7 +178,8 @@ export class LoveController {
     if (!this.socialIdByPerson.has(person)) {
       const identities = await this.client.findAll(contact.class.SocialIdentity, {
         attachedTo: person,
-        attachedToClass: contact.class.Person
+        attachedToClass: contact.class.Person,
+        verifiedOn: { $gt: 0 }
       })
       if (identities.length > 0) {
         const id = pickPrimarySocialId(identities)._id

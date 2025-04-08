@@ -14,14 +14,8 @@
 //
 
 import { TriggerControl } from '@hcengineering/server-core'
-import contact, {
-  Employee,
-  type Person,
-  PersonSpace,
-  pickPrimarySocialId,
-  SocialIdentityRef
-} from '@hcengineering/contact'
-import { AccountUuid, parseSocialIdString, PersonId, type Ref, toIdMap } from '@hcengineering/core'
+import contact, { Employee, type Person, PersonSpace, SocialIdentityRef } from '@hcengineering/contact'
+import { AccountUuid, parseSocialIdString, PersonId, type Ref, SocialId, toIdMap } from '@hcengineering/core'
 
 export async function getCurrentPerson (control: TriggerControl): Promise<Person | undefined> {
   const { type, value } = parseSocialIdString(control.txFactory.account)
@@ -39,13 +33,16 @@ export async function getCurrentPerson (control: TriggerControl): Promise<Person
   )[0]
 }
 
-export async function getSocialStrings (control: TriggerControl, person: Ref<Person>): Promise<PersonId[]> {
-  const socialIdentities = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+export async function getSocialIds (control: TriggerControl, person: Ref<Person>): Promise<SocialId[]> {
+  return await control.findAll(control.ctx, contact.class.SocialIdentity, {
     attachedTo: person,
-    attachedToClass: contact.class.Person
+    attachedToClass: contact.class.Person,
+    verifiedOn: { $gt: 0 }
   })
+}
 
-  return socialIdentities.map((s) => s._id)
+export async function getSocialStrings (control: TriggerControl, person: Ref<Person>): Promise<PersonId[]> {
+  return (await getSocialIds(control, person)).map((s) => s._id)
 }
 
 export async function getSocialStringsByPersons (
@@ -192,19 +189,6 @@ export async function getSocialIdsByAccounts (
     acc[employee.personUuid].push(sid._id)
     return acc
   }, {})
-}
-
-export async function getPrimarySocialIdsByAccounts (
-  control: TriggerControl,
-  accounts: AccountUuid[]
-): Promise<Record<AccountUuid, PersonId>> {
-  return Object.entries(await getSocialIdsByAccounts(control, accounts)).reduce<Record<AccountUuid, PersonId>>(
-    (acc, [account, sids]) => {
-      acc[account as AccountUuid] = pickPrimarySocialId(sids)
-      return acc
-    },
-    {}
-  )
 }
 
 export async function getAccountBySocialId (control: TriggerControl, socialId: PersonId): Promise<AccountUuid | null> {

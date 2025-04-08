@@ -25,6 +25,7 @@ import {
 import {
   AccountRole,
   SocialIdType,
+  type AccountUuid,
   type Class,
   type Client,
   type Data,
@@ -299,7 +300,7 @@ async function kickEmployee (doc: Person): Promise<void> {
 
       if (doc.personUuid != null) {
         const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-        await leaveWorkspace(doc.personUuid)
+        await leaveWorkspace(doc.personUuid as AccountUuid)
       }
     }
   })

@@ -15,6 +15,7 @@
 
 import {
   AccountRole,
+  type AccountUuid,
   Branding,
   MeasureContext,
   Person,
@@ -938,6 +939,7 @@ describe('account utils', () => {
 
         test('should confirm unverified email', async () => {
           const mockSocialId = {
+            _id: '1000000001' as PersonId,
             key: 'email:test@example.com',
             type: SocialIdType.EMAIL,
             value: email,
@@ -948,7 +950,7 @@ describe('account utils', () => {
           await confirmEmail(mockCtx, mockDb, account, email)
 
           expect(mockDb.socialId.updateOne).toHaveBeenCalledWith(
-            { key: mockSocialId.key },
+            { _id: mockSocialId._id },
             { verifiedOn: expect.any(Number) }
           )
         })
@@ -1478,10 +1480,10 @@ describe('account utils', () => {
     })
 
     test('should return account when found', async () => {
-      const mockAccount = { uuid: 'test-uuid' as PersonUuid }
+      const mockAccount = { uuid: 'test-uuid' as AccountUuid }
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
 
-      const result = await getAccount(mockDb, 'test-uuid' as PersonUuid)
+      const result = await getAccount(mockDb, 'test-uuid' as AccountUuid)
       expect(result).toEqual(mockAccount)
       expect(mockDb.account.findOne).toHaveBeenCalledWith({ uuid: 'test-uuid' })
     })
@@ -1489,7 +1491,7 @@ describe('account utils', () => {
     test('should return null when account not found', async () => {
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
 
-      const result = await getAccount(mockDb, 'nonexistent-uuid' as PersonUuid)
+      const result = await getAccount(mockDb, 'nonexistent-uuid' as AccountUuid)
       expect(result).toBeNull()
     })
   })
@@ -1726,6 +1728,7 @@ describe('account utils', () => {
 
     const mockDb = {
       socialId: {
+        find: jest.fn(() => []),
         findOne: jest.fn(),
         insertOne: jest.fn(),
         updateOne: jest.fn()
