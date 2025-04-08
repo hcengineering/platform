@@ -57,6 +57,7 @@ export class UnifiedDocProcessor {
       if (!entry.isFile() || !entry.name.endsWith('.yaml')) continue
 
       const yamlPath = path.resolve(currentPath, entry.name)
+      console.log('Reading yaml file:', yamlPath)
       const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
 
       switch (yamlConfig?.class) {
@@ -156,7 +157,7 @@ export class UnifiedDocProcessor {
       const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
 
       if (cardType.startsWith('card:types:') === false) {
-        throw new Error('Unsupported card type: ' + cardType)
+        throw new Error('Unsupported card type: ' + cardType + ' in ' + cardPath)
       }
 
       await this.processCard(result, cardPath, cardProps, cardType, masterTagRelations, masterTagAttrs) // todo: get right master tag attributes
@@ -172,6 +173,8 @@ export class UnifiedDocProcessor {
     masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
+    console.log('Processing card:', cardPath)
+
     if (cardProps.blobs !== undefined) {
       await this.createBlobs(cardProps.blobs, cardPath, result)
     }
@@ -461,10 +464,13 @@ export class UnifiedDocProcessor {
         if (metadata === undefined) {
           throw new Error(`Association not found: ${key}, ${cardPath}`) // todo: keep the error till builder validation
         }
-        const otherCardPath = path.resolve(path.dirname(cardPath), value) // todo: value can be array of paths
-        const otherCardId = this.metadataStorage.getRefByPath(otherCardPath) as Ref<Card>
-        const relation: UnifiedDoc<Relation> = this.createRelation(metadata, cardId, otherCardId)
-        relations.push(relation)
+        const values = Array.isArray(value) ? value : [value]
+        for (const val of values) {
+          const otherCardPath = path.resolve(path.dirname(cardPath), val)
+          const otherCardId = this.metadataStorage.getRefByPath(otherCardPath) as Ref<Card>
+          const relation: UnifiedDoc<Relation> = this.createRelation(metadata, cardId, otherCardId)
+          relations.push(relation)
+        }
       }
     }
 

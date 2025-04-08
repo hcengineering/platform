@@ -1,0 +1,19 @@
+class: card:class:MasterTag
+title: Recipe
+properties:
+  - label: cookingTime
+    type: TypeString
+  - label: servings
+    type: TypeNumber
+  - label: difficulty
+    enumOf: "./Difficulty.yaml"
+    # isArray: true # for multiple values
+  - label: category
+    type: TypeString
+  - label: calories
+    type: TypeNumber
+  - label: chef
+    type: TypeString 
+  - label: relatedRecipes
+    refTo: "./Recipes.yaml"
+    isArray: true
