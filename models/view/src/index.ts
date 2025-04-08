@@ -998,10 +998,6 @@ export function createModel (builder: Builder): void {
     group: 'bottom'
   })
 
-  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilter, {
-    component: view.component.ValueFilter
-  })
-
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ValueFilter
   })
@@ -1242,10 +1238,6 @@ export function createModel (builder: Builder): void {
     presenter: view.component.StringFilterPresenter
   })
 
-  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilterPresenter, {
-    presenter: view.component.StringFilterPresenter
-  })
-
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributeFilterPresenter, {
     presenter: view.component.StringFilterPresenter
   })
@@ -1302,6 +1294,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilterPresenter, {
     presenter: view.component.PersonIdFilterValuePresenter
+  })
+
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.PersonIdFilter
   })
 
   builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributePresenter, {

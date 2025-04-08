@@ -98,6 +98,7 @@ import StatusPresenter from './components/status/StatusPresenter.svelte'
 import StatusRefPresenter from './components/status/StatusRefPresenter.svelte'
 import PersonArrayEditor from './components/PersonArrayEditor.svelte'
 import PersonIdPresenter from './components/PersonIdPresenter.svelte'
+import PersonIdFilter from './components/filter/PersonIdFilter.svelte'
 import PersonIdFilterValuePresenter from './components/filter/PersonIdFilterValuePresenter.svelte'
 import AudioViewer from './components/viewer/AudioViewer.svelte'
 import ImageViewer from './components/viewer/ImageViewer.svelte'
@@ -176,6 +177,7 @@ export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
 export { default as PersonIdPresenter } from './components/PersonIdPresenter.svelte'
+export { default as PersonIdFilter } from './components/filter/PersonIdFilter.svelte'
 export { default as PersonIdFilterValuePresenter } from './components/filter/PersonIdFilterValuePresenter.svelte'
 export { default as FoldersBrowser } from './components/folders/FoldersBrowser.svelte'
 export { default as RelationsEditor } from './components/RelationsEditor.svelte'
@@ -309,6 +311,7 @@ export default async (): Promise<Resources> => ({
     StatusRefPresenter,
     PersonArrayEditor,
     PersonIdPresenter,
+    PersonIdFilter,
     PersonIdFilterValuePresenter,
     DateFilterPresenter,
     StringFilterPresenter,

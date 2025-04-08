@@ -103,6 +103,7 @@ import PersonFilterValuePresenter from './components/PersonFilterValuePresenter.
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonIcon from './components/PersonIcon.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
+import PersonIdFilter from './components/PersonIdFilter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import SelectAvatars from './components/SelectAvatars.svelte'
 import SelectUsersPopup from './components/SelectUsersPopup.svelte'
@@ -200,7 +201,8 @@ export {
   UserDetails,
   UserInfo,
   UsersList,
-  UsersPopup
+  UsersPopup,
+  PersonIdFilter
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
@@ -391,7 +393,8 @@ export default async (): Promise<Resources> => ({
     EditOrganizationPanel,
     ChannelIcon,
     SpaceMembersEditor,
-    ContactNamePresenter
+    ContactNamePresenter,
+    PersonIdFilter
   },
   completion: {
     EmployeeQuery: async (
