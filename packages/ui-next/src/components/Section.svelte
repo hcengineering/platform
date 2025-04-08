@@ -26,12 +26,15 @@
   export let title: IntlString
   export let withHeaderDivider = false
   export let expanded = true
+  export let selected = false
 
   const dispatch = createEventDispatcher()
 
   let _expanded = expanded
 
-  function toggleExpanded (): void {
+  function toggleExpanded (event: MouseEvent): void {
+    event.stopPropagation()
+    event.preventDefault()
     _expanded = !_expanded
     dispatch('toggle', id)
   }
@@ -40,17 +43,19 @@
 <div class="section">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="section__header" on:click={toggleExpanded}>
-    <div class="section__title next-label-overflow">
-      <Label label={title} />
-    </div>
-    <div class="section__arrow">
+  <div class="section__header" class:selected on:click>
+    <div class="section__arrow" on:click={toggleExpanded}>
       {#if _expanded}
         <IconArrowChevronDown />
       {:else}
         <IconArrowChevronRight />
       {/if}
     </div>
+
+    <div class="section__title next-label-overflow">
+      <Label label={title} />
+    </div>
+
     {#if withHeaderDivider}
       <Divider />
     {/if}
@@ -75,11 +80,17 @@
   .section__header {
     display: flex;
     width: 100%;
-    height: 1.5rem;
+    min-height: 1.5rem;
     align-items: center;
     gap: 0.375rem;
     flex-shrink: 0;
     cursor: pointer;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+
+    &.selected {
+      background: var(--next-surface-color-fg-inv);
+    }
   }
 
   .section__title {

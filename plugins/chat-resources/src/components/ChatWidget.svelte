@@ -101,22 +101,23 @@
   async function handleSubmit (markdown: string, files: UploadedFile[]): Promise<void> {
     if (message === undefined || data === undefined) return
     const { card } = data
-    if (card === undefined) return
+    if (card === undefined || parentCard === undefined) return
 
     let threadId: CardID | undefined = message.thread?.thread
     if (threadId == null) {
       const markup = jsonToMarkup(markdownToMarkup(message.content))
-      const title = markupToText(markup).trim()
+      const messageText = markupToText(markup).trim()
 
       const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
+      const titleFromMessage = `${messageText.slice(0, 100)}${messageText.length > 100 ? '...' : ''}`
+      const title = titleFromMessage.length > 0 ? titleFromMessage : `Thread from ${parentCard.title}`
       const data = fillDefaults(
         hierarchy,
         {
-          title: `Thread: ${title.slice(0, 100)}${title.length > 100 ? '...' : ''}`,
+          title,
           rank: makeRank(lastOne?.rank, undefined),
           content: '' as MarkupBlobRef,
-          parentInfo: [],
-          blobs: {}
+          parent: parentCard._id
         },
         chat.masterTag.Thread
       )

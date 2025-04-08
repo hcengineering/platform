@@ -14,26 +14,71 @@
 -->
 
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
+  import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
   import { NavigationList, NavigationSection } from '@hcengineering/ui-next'
   import { languageStore, Scroller } from '@hcengineering/ui'
-  import { Ref } from '@hcengineering/core'
+  import { Ref, SortingOrder, Class } from '@hcengineering/core'
   import { NotificationContext } from '@hcengineering/communication-types'
+  import { SavedView } from '@hcengineering/workbench-resources'
+  import { chatId } from '@hcengineering/chat'
+  import { createQuery, LiveQuery } from '@hcengineering/presentation'
 
   import { cardsToChatSections, NavigatorState, navigatorStateStore, toggleSection } from '../navigator'
 
   export let card: Card | undefined = undefined
-  export let cards: Card[] = []
+  export let type: Ref<MasterTag> | undefined = undefined
   export let contexts: NotificationContext[] = []
 
+  const cardsLimit = 8
   const dispatch = createEventDispatcher()
+
+  const cardsQueryByType = new Map<Ref<MasterTag>, { query: LiveQuery, limit: number }>()
+  const typesQuery = createQuery()
+
+  let cardsByType = new Map<Ref<MasterTag>, { cards: Card[], total: number }>()
+  let types: MasterTag[] = []
 
   let sections: NavigationSection[] = []
 
-  $: void updateSections(cards, contexts, $languageStore, $navigatorStateStore)
+  $: typesQuery.query(cardPlugin.class.MasterTag, {}, (result) => {
+    types = result.filter((p) => p.removed !== true)
+  })
+
+  $: loadObjects(types)
+
+  function loadObjects (types: MasterTag[]): void {
+    if (types.length === 0) return
+    for (const type of types) {
+      const { query, limit } = cardsQueryByType.get(type._id) ?? {
+        query: createQuery(),
+        limit: cardsLimit
+      }
+
+      cardsQueryByType.set(type._id, { query, limit })
+
+      query.query(
+        type._id as Ref<Class<Card>>,
+        {},
+        (res) => {
+          if (res.length === 0) {
+            cardsByType.delete(type._id)
+          } else {
+            cardsByType.set(type._id, { cards: res, total: res.total })
+          }
+
+          cardsByType = cardsByType
+        },
+        { total: true, limit, sort: { modifiedOn: SortingOrder.Descending } }
+      )
+    }
+
+    cardsByType = cardsByType
+  }
+
+  $: void updateSections(cardsByType, contexts, $languageStore, $navigatorStateStore)
   async function updateSections (
-    cards: Card[],
+    cards: Map<Ref<MasterTag>, { cards: Card[], total: number }>,
     contexts: NotificationContext[],
     _lang: string,
     state: NavigatorState
@@ -45,24 +90,43 @@
     toggleSection(event.detail)
   }
 
-  function handleClick (event: CustomEvent<Ref<Card>>): void {
+  function handleSelectCard (event: CustomEvent<Ref<Card>>): void {
     const cardId = event.detail
 
     if (card != null && cardId === card._id) {
       return
     }
 
-    const newCard = cards.find((it) => it._id === cardId)
+    const newCard = Array.from(cardsByType.values())
+      .flatMap((it) => it.cards)
+      .find((it) => it._id === cardId)
 
     if (newCard !== undefined) {
-      dispatch('select', newCard)
+      dispatch('selectCard', newCard)
+    }
+  }
+
+  function handleAll (event: CustomEvent<Ref<MasterTag>>): void {
+    const query = cardsQueryByType.get(event.detail)
+    if (query !== undefined) {
+      query.limit += cardsLimit
+      loadObjects(types)
     }
   }
 </script>
 
 <Scroller shrink>
   <div class="chat-navigation">
-    <NavigationList {sections} selected={card?._id} on:toggle={handleSectionToggle} on:click={handleClick} />
+    <SavedView alias={chatId} />
+    <NavigationList
+      {sections}
+      selectedItem={card?._id}
+      selectedSection={type}
+      on:toggle={handleSectionToggle}
+      on:selectItem={handleSelectCard}
+      on:select={(ev) => dispatch('selectType', ev.detail)}
+      on:all={handleAll}
+    />
   </div>
 </Scroller>
 
@@ -72,6 +136,6 @@
     flex-direction: column;
     width: 100%;
     padding: 0 8px;
-    margin-top: 3rem;
+    margin-top: 1rem;
   }
 </style>
