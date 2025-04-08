@@ -1,5 +1,4 @@
-import { Class, Data, Doc, Mixin, Ref, Space } from '@hcengineering/core'
-
+import { Class, Data, Doc, Mixin, Ref, Space, Blob as PlatformBlob } from '@hcengineering/core'
 export type Props<T extends Doc> = Data<T> & Partial<Doc> & { space: Ref<Space> }
 
 export interface UnifiedDoc<T extends Doc> {
@@ -15,4 +14,11 @@ export interface UnifiedMixin<T extends Doc, M extends Doc> { // todo: extends T
   props: Props<M>
 }
 
+export interface UnifiedFile {
+  _id: Ref<PlatformBlob>
+  name: string
+  blobProvider: blobProvider
+}
+
 export type contentProvider = () => Promise<string>
+export type blobProvider = () => Promise<Blob>

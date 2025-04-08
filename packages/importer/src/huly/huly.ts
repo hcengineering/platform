@@ -68,6 +68,7 @@ import { type FileUploader } from '../importer/uploader'
 import { UnifiedDoc } from '../types'
 import { readMarkdownContent, readYamlHeader } from './parsing'
 import { UnifiedDocProcessor } from './unified'
+import attachment from '@hcengineering/model-attachment'
 
 export interface HulyComment {
   author: string
@@ -490,7 +491,7 @@ export class HulyFormatImporter {
     }
 
     // Импортируем UnifiedDoc сущности
-    const { docs: unifiedDocs, mixins: unifiedMixins } = await this.unifiedDocImporter.importFromDirectory(folderPath)
+    const { docs: unifiedDocs, mixins: unifiedMixins, files } = await this.unifiedDocImporter.importFromDirectory(folderPath)
 
     // Разбираем и добавляем в билдер по классу
     for (const [path, docs] of unifiedDocs.entries()) {
@@ -514,6 +515,9 @@ export class HulyFormatImporter {
           case core.class.Enum:
             builder.addEnum(path, doc as UnifiedDoc<Enum>)
             break
+          case attachment.class.Attachment:
+            builder.addAttachment(path, doc as UnifiedDoc<Attachment>)
+            break
           default:
             if (isId(doc._class) || (doc._class as string).startsWith('card:types:')) { // todo: fix system cards validation
               builder.addCard(path, doc as UnifiedDoc<Card>)
@@ -530,6 +534,10 @@ export class HulyFormatImporter {
       for (const mixin of mixins) {
         builder.addTagMixin(path, mixin)
       }
+    }
+
+    for (const [path, file] of files.entries()) {
+      builder.addFile(path, file)
     }
 
     // Process all yaml files first

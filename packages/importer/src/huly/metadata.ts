@@ -17,7 +17,7 @@ export interface TagMetadata {
 }
 
 export class MetadataStorage {
-  private readonly pathToRef = new Map<string, Ref<Doc>>()
+  private readonly pathToRef = new Map<string, Ref<Doc>>() // todo: attachments to a separate map?
   private readonly pathToMetadata = new Map<string, TagMetadata>()
 
   public getIdByFullPath (path: string): Ref<Doc> {

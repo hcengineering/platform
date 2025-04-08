@@ -1,8 +1,11 @@
 // unified.ts
+import { Attachment } from '@hcengineering/attachment'
 import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Association,
   Attribute,
+  Blob as PlatformBlob,
+  Class,
   Doc,
   Enum,
   generateId,
@@ -11,15 +14,17 @@ import core, {
 } from '@hcengineering/core'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
+import { contentType } from 'mime-types'
 import * as path from 'path'
 import { IntlString } from '../../../platform/types'
-import { Props, UnifiedDoc, UnifiedMixin } from '../types'
+import { Props, UnifiedDoc, UnifiedFile, UnifiedMixin } from '../types'
 import { MetadataStorage, RelationMetadata } from './metadata'
 import { readMarkdownContent, readYamlHeader } from './parsing'
 
 export interface UnifiedDocProcessResult {
   docs: Map<string, Array<UnifiedDoc<Doc>>>
   mixins: Map<string, Array<UnifiedMixin<Doc, Doc>>>
+  files: Map<string, UnifiedFile>
 }
 
 export class UnifiedDocProcessor {
@@ -28,7 +33,8 @@ export class UnifiedDocProcessor {
   async importFromDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
     const result: UnifiedDocProcessResult = {
       docs: new Map(),
-      mixins: new Map()
+      mixins: new Map(),
+      files: new Map()
     }
     // Первый проход - собираем метаданные
     await this.processMetadata(directoryPath, result)
@@ -137,68 +143,6 @@ export class UnifiedDocProcessor {
     }
   }
 
-  // private async processDirectory (
-  //   currentPath: string,
-  //   result: UnifiedDocProcessResult,
-  //   parentMasterTagId?: Ref<MasterTag>,
-  //   parentMasterTagAttrs?: Map<string, UnifiedDoc<Attribute<MasterTag>>>
-  // ): Promise<void> {
-  //   const entries = fs.readdirSync(currentPath, { withFileTypes: true })
-
-  //   // Сначала обрабатываем YAML файлы (потенциальные мастер-теги)
-  //   for (const entry of entries) {
-  //     if (!entry.isFile() || !entry.name.endsWith('.yaml')) continue // todo: filter entries by extension
-
-  //     const yamlPath = path.resolve(currentPath, entry.name)
-  //     const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
-
-  //     switch (yamlConfig?.class) {
-  //       case card.class.MasterTag: {
-  //         const masterTagId = this.metadataStorage.getIdByFullPath(yamlPath) as Ref<MasterTag>
-  //         const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
-
-  //         const masterTagAttrs = await this.createAttributes(yamlConfig, masterTagId)
-  //         this.metadataStorage.setAttributes(yamlPath, masterTagAttrs)
-
-  //         const docs = result.docs.get(yamlPath) ?? []
-  //         docs.push(
-  //           masterTag,
-  //           ...Array.from(masterTagAttrs.values())
-  //         )
-  //         result.docs.set(yamlPath, docs)
-
-  //         const masterTagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
-  //         if (fs.existsSync(masterTagDir) && fs.statSync(masterTagDir).isDirectory()) {
-  //           await this.processDirectory(masterTagDir, result, masterTagId, masterTagAttrs)
-  //         }
-  //         break
-  //       }
-  //       case card.class.Tag: {
-  //         if (parentMasterTagId === undefined) {
-  //           throw new Error('Tag should be inside master tag folder: ' + currentPath)
-  //         }
-
-  //         await this.processTag(yamlPath, yamlConfig, result, parentMasterTagId)
-  //         break
-  //       }
-  //       case core.class.Association: {
-  //         const association = await this.createAssociation(yamlPath, yamlConfig)
-  //         result.docs.set(yamlPath, [association])
-  //         break
-  //       }
-  //       default:
-  //         throw new Error('Unsupported class: ' + yamlConfig?.class) // todo: handle default case just convert to UnifiedDoc
-  //     }
-  //   }
-
-  //   if (parentMasterTagId === undefined || parentMasterTagAttrs === undefined) {
-  //     await this.processSystemCards(currentPath, result)
-  //   } else {
-  //     // await this.processCardDirectory(result, currentPath, parentMasterTagId, parentMasterTagAttrs) // todo: handle parent master tag attrs
-  //     await this.processCardDirectory(result, currentPath, parentMasterTagId)
-  //   }
-  // }
-
   private async processSystemCards (
     currentDir: string,
     result: UnifiedDocProcessResult,
@@ -238,6 +182,9 @@ export class UnifiedDocProcessor {
 
       const card = cardWithRelations[0] as UnifiedDoc<Card>
       await this.applyTags(card, cardProps, cardPath, result)
+
+      const attachments = cardProps.attachments ?? []
+      await this.processAttachments(attachments, cardPath, card, result)
 
       // Проверяем наличие дочерних карточек
       const cardDir = path.join(path.dirname(cardPath), path.basename(cardPath, '.md'))
@@ -560,6 +507,50 @@ export class UnifiedDocProcessor {
 
     if (mixins.length > 0) {
       result.mixins.set(cardPath, mixins)
+    }
+  }
+
+  private async processAttachments (
+    attachments: string[],
+    cardPath: string,
+    card: UnifiedDoc<Card>,
+    result: UnifiedDocProcessResult
+  ): Promise<void> {
+    for (const attachment of attachments) {
+      const attachmentPath = path.resolve(path.dirname(cardPath), attachment)
+      const attachmentName = path.basename(attachmentPath)
+      const fileId = this.metadataStorage.getIdByFullPath(attachmentPath) as Ref<PlatformBlob>
+      const type = contentType(attachmentPath)
+      const size = fs.statSync(attachmentPath).size
+
+      const file: UnifiedFile = {
+        _id: fileId, // id for datastore
+        name: attachmentName,
+        blobProvider: async () => {
+          const data = fs.readFileSync(attachmentPath)
+          const props = type !== false ? { type } : undefined
+          return new Blob([data], props)
+        }
+      }
+      result.files.set(attachmentPath, file)
+
+      const attachmentId = this.metadataStorage.getIdByFullPath(attachmentPath) as Ref<Attachment>
+      const attachmentDoc: UnifiedDoc<Attachment> = {
+        _class: 'attachment:class:Attachment' as Ref<Class<Attachment>>,
+        props: {
+          _id: attachmentId, // id for attachment doc
+          space: core.space.Workspace,
+          attachedTo: card.props._id as Ref<Card>,
+          attachedToClass: card._class,
+          file: fileId,
+          name: attachmentName,
+          collection: 'attachments',
+          lastModified: Date.now(),
+          type: type !== false ? type : 'application/octet-stream',
+          size
+        }
+      }
+      result.docs.set(attachmentPath, [attachmentDoc])
     }
   }
 

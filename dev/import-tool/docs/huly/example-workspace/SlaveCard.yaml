@@ -1,5 +1,5 @@
 class: card:class:MasterTag
-title: Slave Card 11
+title: Slave Card 1
 properties:
   - label: sex
     type: TypeBoolean

@@ -9,6 +9,11 @@ color: pink
 x: from familiar
 y: from minion
 multy-enum: [Beta]
+attachments: 
+    - ../../CARDS_INSTRUCTIONS.md
+    - ../files/screenshot.png
+# blobs:
+#     - ../README.md
 ---
 
 A brave hobbit guided by Gandalf.

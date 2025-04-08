@@ -29,7 +29,8 @@ import {
   type ImportTeamspace,
   type ImportWorkspace
 } from './importer'
-import { UnifiedDoc, UnifiedMixin } from '../types'
+import { UnifiedDoc, UnifiedFile, UnifiedMixin } from '../types'
+import { Attachment } from '@hcengineering/attachment'
 
 export interface ValidationError {
   path: string
@@ -65,7 +66,9 @@ export class ImportWorkspaceBuilder {
   private readonly associations = new Map<string, UnifiedDoc<Association>>()
   private readonly relations = new Map<string, UnifiedDoc<Relation>>()
   private readonly enums = new Map<string, UnifiedDoc<Enum>>()
+  private readonly attachments = new Map<string, UnifiedDoc<Attachment>>()
   private readonly mixins = new Map<string, UnifiedMixin<Doc, Doc>>()
+  private readonly files = new Map<string, UnifiedFile>()
 
   private readonly projectTypes = new Map<string, ImportProjectType>()
   private readonly issueStatusCache = new Map<string, Ref<IssueStatus>>()
@@ -270,8 +273,18 @@ export class ImportWorkspaceBuilder {
     return this
   }
 
+  addAttachment (path: string, attachment: UnifiedDoc<Attachment>): this {
+    this.validateAndAdd('attachment', path, attachment, (a) => this.validateAttachment(a), this.attachments, path)
+    return this
+  }
+
   addTagMixin (path: string, mixin: UnifiedMixin<Doc, Doc>): this {
     this.validateAndAdd('tagMixin', path, mixin, (m) => this.validateTagMixin(m), this.mixins, path + '/' + mixin.mixin) // todo: fix mixin key
+    return this
+  }
+
+  addFile (path: string, file: UnifiedFile): this {
+    this.validateAndAdd('file', path, file, (f) => this.validateFile(f), this.files, path)
     return this
   }
 
@@ -352,9 +365,11 @@ export class ImportWorkspaceBuilder {
         ...Array.from(this.cards.values()),
         ...Array.from(this.associations.values()),
         ...Array.from(this.relations.values()),
-        ...Array.from(this.enums.values())
+        ...Array.from(this.enums.values()),
+        ...Array.from(this.attachments.values())
       ],
       mixins: Array.from(this.mixins.values()),
+      files: Array.from(this.files.values()),
       attachments: []
     }
   }
@@ -929,6 +944,14 @@ export class ImportWorkspaceBuilder {
     return errors
   }
 
+  private validateAttachment (attachment: UnifiedDoc<Attachment>): string[] {
+    const errors: string[] = []
+
+    // todo: validate attachment
+
+    return errors
+  }
+
   private validateCard (card: UnifiedDoc<Card>): string[] {
     const errors: string[] = []
 
@@ -997,6 +1020,14 @@ export class ImportWorkspaceBuilder {
     const errors: string[] = []
 
     // todo: validate tag mixin
+
+    return errors
+  }
+
+  private validateFile (file: UnifiedFile): string[] {
+    const errors: string[] = []
+
+    // todo: validate file
 
     return errors
   }
