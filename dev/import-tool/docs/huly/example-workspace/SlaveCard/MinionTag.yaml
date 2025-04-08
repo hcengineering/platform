@@ -1,5 +1,5 @@
 class: card:class:Tag
 title: Minion
 properties:
-  - label: x
+  - label: y
     type: TypeString

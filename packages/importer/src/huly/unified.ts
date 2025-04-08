@@ -32,9 +32,9 @@ export class UnifiedDocProcessor {
     // Первый проход - собираем метаданные
     await this.processMetadata(directoryPath, result)
 
-    await this.processSystemCards(directoryPath, result, new Map()) // todo: get master tag relations
+    await this.processSystemCards(directoryPath, result, new Map(), new Map()) // todo: get master tag relations
     // Второй проход - обрабатываем карточки
-    await this.processCards(directoryPath, result, new Map())
+    await this.processCards(directoryPath, result, new Map(), new Map())
 
     return result
   }
@@ -91,6 +91,7 @@ export class UnifiedDocProcessor {
     currentPath: string,
     result: UnifiedDocProcessResult,
     masterTagRelations: Map<string, RelationMetadata>,
+    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     masterTagId?: Ref<MasterTag>
   ): Promise<void> {
     const entries = fs.readdirSync(currentPath, { withFileTypes: true })
@@ -104,6 +105,9 @@ export class UnifiedDocProcessor {
         this.metadataStorage.getAssociations(yamlPath).forEach((relationMetadata, propName) => {
           masterTagRelations.set(propName, relationMetadata)
         })
+        this.metadataStorage.getAttributes(yamlPath).forEach((attr, propName) => {
+          masterTagAttrs.set(propName, attr)
+        })
       }
     }
 
@@ -114,7 +118,7 @@ export class UnifiedDocProcessor {
         const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
 
         if (masterTagId !== undefined) {
-          await this.processCard(result, cardPath, cardProps, masterTagId, masterTagRelations)
+          await this.processCard(result, cardPath, cardProps, masterTagId, masterTagRelations, masterTagAttrs)
         }
       }
     }
@@ -123,7 +127,7 @@ export class UnifiedDocProcessor {
     for (const entry of entries) {
       if (!entry.isDirectory()) continue
       const dirPath = path.join(currentPath, entry.name)
-      await this.processCards(dirPath, result, masterTagRelations, masterTagId)
+      await this.processCards(dirPath, result, masterTagRelations, masterTagAttrs, masterTagId)
     }
   }
 
@@ -192,7 +196,8 @@ export class UnifiedDocProcessor {
   private async processSystemCards (
     currentDir: string,
     result: UnifiedDocProcessResult,
-    masterTagRelations: Map<string, RelationMetadata>
+    masterTagRelations: Map<string, RelationMetadata>,
+    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>
   ): Promise<void> {
     const entries = fs.readdirSync(currentDir, { withFileTypes: true })
 
@@ -205,7 +210,7 @@ export class UnifiedDocProcessor {
         throw new Error('Unsupported card type: ' + cardType)
       }
 
-      await this.processCard(result, cardPath, cardProps, cardType, masterTagRelations) // todo: get right master tag attributes
+      await this.processCard(result, cardPath, cardProps, cardType, masterTagRelations, masterTagAttrs) // todo: get right master tag attributes
     }
   }
 
@@ -215,9 +220,10 @@ export class UnifiedDocProcessor {
     cardProps: Record<string, any>,
     masterTagId: Ref<MasterTag>,
     masterTagRelations: Map<string, RelationMetadata>,
+    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
-    const cardWithRelations = await this.createCard(cardProps, cardPath, masterTagId, masterTagRelations, parentCardId)
+    const cardWithRelations = await this.createCard(cardProps, cardPath, masterTagId, masterTagRelations, masterTagAttrs, parentCardId)
 
     if (cardWithRelations.length > 0) {
       const docs = result.docs.get(cardPath) ?? []
@@ -230,7 +236,7 @@ export class UnifiedDocProcessor {
       // Проверяем наличие дочерних карточек
       const cardDir = path.join(path.dirname(cardPath), path.basename(cardPath, '.md'))
       if (fs.existsSync(cardDir) && fs.statSync(cardDir).isDirectory()) {
-        await this.processCardDirectory(result, cardDir, masterTagId, masterTagRelations, card.props._id as Ref<Card>)
+        await this.processCardDirectory(result, cardDir, masterTagId, masterTagRelations, masterTagAttrs, card.props._id as Ref<Card>)
       }
     }
   }
@@ -240,6 +246,7 @@ export class UnifiedDocProcessor {
     cardDir: string,
     masterTagId: Ref<MasterTag>,
     masterTagRelations: Map<string, RelationMetadata>,
+    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
     const entries = fs.readdirSync(cardDir, { withFileTypes: true })
@@ -248,7 +255,7 @@ export class UnifiedDocProcessor {
     for (const entry of entries) {
       const childCardPath = path.join(cardDir, entry.name)
       const { class: cardClass, ...cardProps } = await readYamlHeader(childCardPath)
-      await this.processCard(result, childCardPath, cardProps, masterTagId, masterTagRelations, parentCardId)
+      await this.processCard(result, childCardPath, cardProps, masterTagId, masterTagRelations, masterTagAttrs, parentCardId)
     }
   }
 
@@ -286,6 +293,7 @@ export class UnifiedDocProcessor {
     const tag = await this.createTag(tagConfig, tagId, masterTagId, parentTagId)
 
     const attributes = await this.createAttributes(tagConfig, tagId)
+    this.metadataStorage.setAttributes(tagPath, attributes)
 
     const docs = result.docs.get(tagPath) ?? []
     docs.push(tag, ...Array.from(attributes.values()))
@@ -375,11 +383,10 @@ export class UnifiedDocProcessor {
     cardPath: string,
     masterTagId: Ref<MasterTag>,
     masterTagRelations: Map<string, RelationMetadata>, // todo: rename to masterTagsAssociations
+    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<UnifiedDoc<Doc>[]> {
     const { _class, title, tags: rawTags, ...customProperties } = cardHeader
-
-    // Приводим tags к массиву
     const tags = rawTags !== undefined ? (Array.isArray(rawTags) ? rawTags : [rawTags]) : []
 
     const cardId = this.metadataStorage.getIdByFullPath(cardPath) as Ref<Card>
@@ -389,11 +396,6 @@ export class UnifiedDocProcessor {
       title,
       parent: parentCardId
     }
-
-    const masterTagPath = path.dirname(cardPath) + '.yaml' // todo: fix master tag path
-    const masterTagAttrs = this.metadataStorage.getAttributes(masterTagPath) // todo: handle master tag attributes recursively
-    // const masterTagRelations = this.metadataStorage.getAssociations(masterTagPath)
-    // todo: handle tag attributes separately
 
     const tagAssociations = new Map<string, RelationMetadata>()
     for (const tag of tags) {
@@ -405,11 +407,10 @@ export class UnifiedDocProcessor {
 
     const relations: UnifiedDoc<Doc>[] = []
     for (const [key, value] of Object.entries(customProperties)) {
-      const propName = masterTagAttrs.get(key)?.props.name // todo: handle tag attributes separately
-      // if (propName === undefined) {
-      //   throw new Error(`Attribute not found: ${key}`) // todo: keep the error till builder validation
-      // }
-      if (masterTagRelations.has(key) || tagAssociations.has(key)) {
+      if (masterTagAttrs.has(key)) {
+        const propName = masterTagAttrs.get(key)?.props.name
+        cardProps[propName] = value
+      } else if (masterTagRelations.has(key) || tagAssociations.has(key)) {
         const metadata = masterTagRelations.get(key) ?? tagAssociations.get(key)
         if (metadata === undefined) {
           throw new Error(`Association not found: ${key}, ${cardPath}`) // todo: keep the error till builder validation
@@ -418,8 +419,6 @@ export class UnifiedDocProcessor {
         const otherCardId = this.metadataStorage.getIdByFullPath(otherCardPath) as Ref<Card>
         const relation: UnifiedDoc<Relation> = this.createRelation(metadata, cardId, otherCardId)
         relations.push(relation)
-      } else {
-        cardProps[propName] = value
       }
     }
 
@@ -455,14 +454,20 @@ export class UnifiedDocProcessor {
     cardPath: string,
     result: UnifiedDocProcessResult
   ): Promise<void> {
-    if (cardHeader.tags === undefined) return
-
-    const mixins: UnifiedMixin<Card, Tag>[] = []
     const tags = cardHeader.tags !== undefined ? (Array.isArray(cardHeader.tags) ? cardHeader.tags : [cardHeader.tags]) : []
+    if (tags.length === 0) return
+
+    console.log(cardHeader.title, cardHeader.tags)
+    const mixins: UnifiedMixin<Card, Tag>[] = []
     for (const tagPath of tags) {
       const cardDir = path.dirname(cardPath)
       const fullTagPath = path.resolve(cardDir, tagPath)
       const tagId = this.metadataStorage.getIdByFullPath(fullTagPath) as Ref<Tag>
+
+      const tagProps: Record<string, any> = {}
+      this.metadataStorage.getAttributes(fullTagPath).forEach((attr, label) => {
+        tagProps[attr.props.name] = cardHeader[label]
+      })
 
       const mixin: UnifiedMixin<Card, Tag> = {
         _class: card._class,
@@ -470,7 +475,8 @@ export class UnifiedDocProcessor {
         props: {
           _id: card.props._id as Ref<Card>,
           space: core.space.Workspace,
-          __mixin: 'true'
+          __mixin: 'true',
+          ...tagProps
         } as unknown as Props<Tag> // todo: what is the correct props type?
       }
       mixins.push(mixin)

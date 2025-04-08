@@ -265,7 +265,7 @@ export class ImportWorkspaceBuilder {
   }
 
   addTagMixin (path: string, mixin: UnifiedMixin<Doc, Doc>): this {
-    this.validateAndAdd('tagMixin', path, mixin, (m) => this.validateTagMixin(m), this.mixins, path)
+    this.validateAndAdd('tagMixin', path, mixin, (m) => this.validateTagMixin(m), this.mixins, path + '/' + mixin.mixin) // todo: fix mixin key
     return this
   }
 

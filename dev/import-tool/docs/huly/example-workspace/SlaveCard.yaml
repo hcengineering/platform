@@ -1,7 +1,7 @@
 class: card:class:MasterTag
-title: Slave Card 2
+title: Slave Card 3
 properties:
-  - label: Sex
+  - label: sex
     type: TypeBoolean
     defaultValue: false
   - label: color
