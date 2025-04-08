@@ -468,11 +468,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/server-ws",
-      "projectFolder": "server/ws",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/theme",
       "projectFolder": "packages/theme",
       "shouldPublish": true
