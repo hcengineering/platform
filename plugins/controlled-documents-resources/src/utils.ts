@@ -51,7 +51,8 @@ import core, {
   type TxOperations,
   type WithLookup,
   SortingOrder,
-  checkPermission
+  checkPermission,
+  getCurrentAccount
 } from '@hcengineering/core'
 import { type IntlString, translate } from '@hcengineering/platform'
 import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
@@ -558,8 +559,8 @@ export async function canDeleteFolder (doc: ProjectDocument): Promise<boolean> {
     return false
   }
 
-  const currentUser = getCurrentAccount() as PersonAccount
-  if (doc.createdBy === currentUser._id) {
+  const currentUser = getCurrentAccount()
+  if (currentUser.socialIds.some(id => id === doc.createdBy)) {
     return true
   }
 

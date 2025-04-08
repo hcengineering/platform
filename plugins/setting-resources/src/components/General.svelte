@@ -260,16 +260,6 @@
               on:click={handleTogglePermissions}
             />
           </div>
-          <div class="title mt-6"><Label label={settingsRes.string.Permissions} /></div>
-          <div class="delete">
-            <Button
-              kind="regular"
-              label={arePermissionsDisabled
-                ? settingsRes.string.EnablePermissions
-                : settingsRes.string.DisablePermissions}
-              on:click={handleTogglePermissions}
-            />
-          </div>
         </div>
       </Scroller>
     {/if}
