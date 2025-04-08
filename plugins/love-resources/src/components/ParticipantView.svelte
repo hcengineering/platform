@@ -17,8 +17,11 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { Loading } from '@hcengineering/ui'
-  import love from '../plugin'
+
+  import { currentRoomAudioLevels } from '../utils'
   import MicDisabled from './icons/MicDisabled.svelte'
+  import { tweened } from 'svelte/motion'
+  import { elasticInOut } from 'svelte/easing'
 
   export let _id: string
   export let name: string
@@ -28,6 +31,12 @@
 
   let parent: HTMLDivElement
   let activeTrack: boolean = false
+
+  let level: number = 0
+  const speakers = tweened(0, {
+    duration: 5,
+    easing: elasticInOut
+  })
 
   export function appendChild (track: HTMLMediaElement): void {
     const video = parent.querySelector('.video')
@@ -53,9 +62,19 @@
   }
 
   $: user = $personByIdStore.get(_id as Ref<Person>)
+
+  $: speach = $currentRoomAudioLevels.get(_id as Ref<Person>) ?? 0
+  let tspeach: number = 0
+  $: if ((speach > 0 && speach > tspeach) || (tspeach > 0 && speach <= 0)) {
+    void speakers.set(speach > 0.3 ? 0.3 : speach, { duration: 50, easing: elasticInOut })
+  }
+  speakers.subscribe((sp) => {
+    tspeach = sp > 0 ? sp : 0
+    level = tspeach
+  })
 </script>
 
-<div id={_id} class="parent">
+<div id={_id} class="parent" style:--border-opacity={level}>
   <div class="label">
     <span class="overflow-label">{formatName(name)}</span>
   </div>
@@ -109,12 +128,13 @@
     }
   }
   .parent {
-    overflow: hidden;
     position: relative;
     flex-shrink: 0;
     height: max-content;
     min-height: 0;
     max-height: 100%;
+    background-color: black;
+    border-radius: 0.75rem;
 
     .label,
     .icon {
@@ -127,7 +147,6 @@
       color: rgba(0, 0, 0, 0.75);
       background-color: rgba(255, 255, 255, 0.5);
       backdrop-filter: blur(3px);
-      z-index: 1;
     }
     .label {
       overflow: hidden;
@@ -150,6 +169,26 @@
       &.shown {
         display: flex;
       }
+    }
+    &::after,
+    &::before {
+      position: absolute;
+      content: '';
+      background-color: var(--theme-caption-color);
+      opacity: var(--border-opacity, 0);
+      z-index: -1;
+    }
+    &::after {
+      inset: -0.125rem;
+      width: calc(100% + 0.25rem);
+      height: calc(100% + 0.25rem);
+      border-radius: calc(0.75rem + 0.125rem);
+    }
+    &::before {
+      inset: -0.25rem;
+      width: calc(100% + 0.5rem);
+      height: calc(100% + 0.5rem);
+      border-radius: calc(0.75rem + 0.25rem);
     }
   }
 </style>
