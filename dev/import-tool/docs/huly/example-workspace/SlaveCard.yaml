@@ -1,11 +1,23 @@
 class: card:class:MasterTag
-title: Slave Card 3
+title: Slave Card 8
 properties:
   - label: sex
     type: TypeBoolean
-    defaultValue: false
+  #   defaultValue: false
   - label: color
     type: TypeString
-    defaultValue: "black" # todo: is default value supported?
-  - label: ref
-    refTo: ./SlaveCard.yaml
+  #   defaultValue: "black" # todo: is default value supported?
+  # - label: ref
+  #   refTo: ./SlaveCard.yaml
+  # - label: url
+  #   type: TypeHyperlink
+  # - label: date
+  #   type: TypeDate
+  - label: select-enum
+    enumOf: ./AlphaBetaEnum.yaml
+  # - label: multy-enum
+  #   enumOf: ./AlphaBeta.yaml
+  #   isArray: true
+  # - label: multy-ref
+  #   refTo: ./SlaveCard.yaml
+  #   isArray: true

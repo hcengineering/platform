@@ -6,6 +6,7 @@ sex: true
 color: gray
 x: from familiar
 ref: ./Worker2.md
+select-enum: Alpha
 ---
 
 A wise and powerful wizard who guides others.

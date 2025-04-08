@@ -366,14 +366,7 @@ export class UnifiedDocProcessor {
 
     const attributesByLabel = new Map<string, UnifiedDoc<Attribute<MasterTag>>>()
     for (const property of data.properties) {
-      const type: Record<string, any> = {}
-      if (property.refTo !== undefined) {
-        type._class = core.class.RefTo
-        const refPath = path.resolve(path.dirname(currentPath), property.refTo)
-        type.to = this.metadataStorage.getIdByFullPath(refPath)
-      } else {
-        type._class = 'core:class:' + property.type
-      }
+      const type = await this.convertPropertyType(property, currentPath)
 
       const attr: UnifiedDoc<Attribute<MasterTag>> = {
         _class: core.class.Attribute,
@@ -390,6 +383,39 @@ export class UnifiedDocProcessor {
       attributesByLabel.set(property.label, attr)
     }
     return attributesByLabel
+  }
+
+  private async convertPropertyType (property: Record<string, any>, currentPath: string): Promise<Record<string, any>> {
+    const type: Record<string, any> = {}
+    if (property.refTo !== undefined) {
+      type._class = core.class.RefTo
+      const refPath = path.resolve(path.dirname(currentPath), property.refTo)
+      type.to = this.metadataStorage.getIdByFullPath(refPath)
+      type.label = 'core:string:Ref'
+    } else if (property.enumOf !== undefined) {
+      type._class = core.class.EnumOf
+      const enumPath = path.resolve(path.dirname(currentPath), property.enumOf)
+      type.of = this.metadataStorage.getIdByFullPath(enumPath)
+      type.label = 'core:string:Enum'
+    } else {
+      switch (property.type) {
+        case 'TypeString':
+          type._class = core.class.TypeString
+          type.label = 'core:string:String'
+          break
+        case 'TypeNumber':
+          type._class = core.class.TypeNumber
+          type.label = 'core:number:Number'
+          break
+        case 'TypeBoolean':
+          type._class = core.class.TypeBoolean
+          type.label = 'core:boolean:Boolean'
+          break
+        default:
+          throw new Error('Unsupported type: ' + property.type + ' ' + currentPath)
+      }
+    }
+    return type
   }
 
   private async createCard (
