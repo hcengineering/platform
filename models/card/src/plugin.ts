@@ -27,7 +27,8 @@ export default mergeIds(cardId, card, {
     Card: '' as Ref<Doc>
   },
   actionImpl: {
-    DeleteMasterTag: '' as ViewAction
+    DeleteMasterTag: '' as ViewAction,
+    EditSpace: '' as ViewAction
   },
   action: {
     DeleteMasterTag: '' as Ref<Action>,
