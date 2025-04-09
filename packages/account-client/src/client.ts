@@ -215,6 +215,7 @@ class AccountClientImpl implements AccountClient {
       headers: {
         ...this.request.headers,
         'Content-Type': 'application/json',
+        Connection: 'keep-alive',
         ...meta
       },
       method: 'POST',
