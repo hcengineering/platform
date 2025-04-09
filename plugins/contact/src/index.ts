@@ -238,7 +238,8 @@ export const contactPlugin = plugin(contactId, {
     CreateGuest: '' as AnyComponent,
     SpaceMembersEditor: '' as AnyComponent,
     ContactNamePresenter: '' as AnyComponent,
-    PersonFilterValuePresenter: '' as AnyComponent
+    PersonFilterValuePresenter: '' as AnyComponent,
+    PersonIdFilter: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,

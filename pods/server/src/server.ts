@@ -20,15 +20,15 @@ import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { ClientSession, startSessionManager } from '@hcengineering/server'
 import {
   type CommunicationApiFactory,
-  type ServerFactory,
+  type PlatformQueue,
   type Session,
   type SessionManager,
   type StorageConfiguration,
-  type Workspace,
-  type PlatformQueue
+  type Workspace
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
+import { Api as CommunicationApi } from '@hcengineering/communication-server'
 import {
   createServerPipeline,
   isAdapterSecurity,
@@ -40,8 +40,6 @@ import {
   setAdapterSecurity,
   sharedPipelineContextVars
 } from '@hcengineering/server-pipeline'
-import { uncompress } from 'snappy'
-import { Api as CommunicationApi } from '@hcengineering/communication-server'
 
 import {
   createMongoAdapter,
@@ -53,12 +51,11 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
-  registerGreenDecoder,
-  registerGreenUrl,
   setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
+import { startHttpServer } from './server_http'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
@@ -84,7 +81,6 @@ export function start (
     storageConfig: StorageConfiguration
     port: number
     brandingMap: BrandingMap
-    serverFactory: ServerFactory
 
     enableCompression?: boolean
 
@@ -108,9 +104,6 @@ export function start (
   setAdapterSecurity('postgresql', true)
 
   const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
-
-  registerGreenDecoder('snappy', uncompress)
-  registerGreenUrl(process.env.GREEN_URL)
 
   setDBExtraOptions({
     prepare: usePrepare // We override defaults
@@ -154,23 +147,22 @@ export function start (
     )
   }
 
-  const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {
+  const sessionManager = startSessionManager(metrics, {
     pipelineFactory,
     sessionFactory,
     communicationApiFactory,
-    port: opt.port,
     brandingMap: opt.brandingMap,
-    serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
-    externalStorage,
     profiling: opt.profiling,
     queue: opt.queue
   })
+  const shutdown = startHttpServer(metrics, sessionManager, opt.port, opt.accountsUrl, externalStorage)
   return {
     shutdown: async () => {
       await externalStorage.close()
-      await onClose()
+      await sessionManager.closeWorkspaces(metrics)
+      await shutdown()
     },
     sessionManager
   }

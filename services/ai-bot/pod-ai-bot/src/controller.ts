@@ -152,7 +152,7 @@ export class AIControl {
       wsIds,
       this.personUuid,
       this.socialIds,
-      this.ctx.newChild(workspace, {}),
+      this.ctx.newChild('create-workspace', {}),
       this.openai,
       this.openaiEncoding,
       info

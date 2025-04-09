@@ -15,6 +15,7 @@
 
 import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
+import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
 import core, {
   AccountRole,
   cutObjectArray,
@@ -48,15 +49,14 @@ import core, {
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
 import {
+  CommunicationApiFactory,
   LOGGING_ENABLED,
   pingConst,
   Pipeline,
   PipelineFactory,
   QueueTopic,
   QueueUserMessage,
-  ServerFactory,
   SessionManager,
-  StorageAdapter,
   userEvents,
   workspaceEvents,
   type AddSessionResponse,
@@ -66,15 +66,13 @@ import {
   type PlatformQueueProducer,
   type QueueWorkspaceMessage,
   type Session,
-  type Workspace,
-  CommunicationApiFactory,
-  type SessionFactory
+  type SessionFactory,
+  type Workspace
 } from '@hcengineering/server-core'
 import { generateToken, type Token } from '@hcengineering/server-token'
-import { type ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
 
-import { sendResponse } from './utils'
 import { WorkspaceIds } from '@hcengineering/core'
+import { sendResponse } from './utils'
 
 const ticksPerSecond = 20
 const workspaceSoftShutdownTicks = 15 * ticksPerSecond
@@ -134,7 +132,9 @@ export class TSessionManager implements SessionManager {
     readonly accountsUrl: string,
     readonly enableCompression: boolean,
     readonly doHandleTick: boolean = true,
-    readonly queue: PlatformQueue
+    readonly queue: PlatformQueue,
+    readonly pipelineFactory: PipelineFactory,
+    readonly communicationApiFactory: CommunicationApiFactory
   ) {
     if (this.doHandleTick) {
       this.checkInterval = setInterval(() => {
@@ -388,8 +388,6 @@ export class TSessionManager implements SessionManager {
     ws: ConnectionSocket,
     token: Token,
     rawToken: string,
-    pipelineFactory: PipelineFactory,
-    communicationApiFactory: CommunicationApiFactory,
     sessionId: string | undefined
   ): Promise<AddSessionResponse> {
     const { workspace: workspaceUuid } = token
@@ -495,8 +493,6 @@ export class TSessionManager implements SessionManager {
       workspace = this.createWorkspace(
         ctx.parent ?? ctx,
         ctx,
-        pipelineFactory,
-        communicationApiFactory,
         token,
         workspaceInfo.url ?? workspaceInfo.uuid,
         workspaceName,
@@ -530,8 +526,6 @@ export class TSessionManager implements SessionManager {
           ctx.parent ?? ctx,
           workspaceInfo.uuid,
           workspace,
-          pipelineFactory,
-          communicationApiFactory,
           ws,
           workspaceInfo.url ?? workspaceInfo.uuid,
           workspaceName
@@ -610,8 +604,6 @@ export class TSessionManager implements SessionManager {
     ctx: MeasureContext,
     workspaceUuid: WorkspaceUuid,
     workspace: Workspace,
-    pipelineFactory: PipelineFactory,
-    communicationApiFactory: CommunicationApiFactory,
     ws: ConnectionSocket,
     workspaceUrl: string,
     workspaceName: string
@@ -640,11 +632,11 @@ export class TSessionManager implements SessionManager {
       url: workspace.workspaceUrl,
       dataId: workspace.workspaceDataId
     }
-    workspace.communicationApi = await communicationApiFactory(ctx, workspaceIds, (ctx, sessionIds, result) => {
+    workspace.communicationApi = await this.communicationApiFactory(ctx, workspaceIds, (ctx, sessionIds, result) => {
       this.broadcastSessions(ctx, workspace, sessionIds, result)
     })
     // Re-create pipeline.
-    workspace.pipeline = pipelineFactory(
+    workspace.pipeline = this.pipelineFactory(
       ctx,
       workspaceIds,
       true,
@@ -766,8 +758,6 @@ export class TSessionManager implements SessionManager {
   private createWorkspace (
     ctx: MeasureContext,
     pipelineCtx: MeasureContext,
-    pipelineFactory: PipelineFactory,
-    communicationApiFactory: CommunicationApiFactory,
     token: Token,
     workspaceUrl: string,
     workspaceName: string,
@@ -782,12 +772,12 @@ export class TSessionManager implements SessionManager {
       dataId: workspaceDataId,
       url: workspaceUrl
     }
-    const communicationApi = communicationApiFactory(pipelineCtx, workspaceIds, (ctx, sessionIds, result) => {
+    const communicationApi = this.communicationApiFactory(pipelineCtx, workspaceIds, (ctx, sessionIds, result) => {
       this.broadcastSessions(ctx, workspace, sessionIds, result)
     })
 
     const factory = async (): Promise<Pipeline> => {
-      return await pipelineFactory(
+      return await this.pipelineFactory(
         pipelineCtx,
         workspaceIds,
         upgrade,
@@ -1374,7 +1364,9 @@ export function createSessionManager (
   accountsUrl: string,
   enableCompression: boolean,
   doHandleTick: boolean = true,
-  queue: PlatformQueue
+  queue: PlatformQueue,
+  pipelineFactory: PipelineFactory,
+  communicationApiFactory: CommunicationApiFactory
 ): SessionManager {
   return new TSessionManager(
     ctx,
@@ -1385,32 +1377,30 @@ export function createSessionManager (
     accountsUrl,
     enableCompression,
     doHandleTick,
-    queue
+    queue,
+    pipelineFactory,
+    communicationApiFactory
   )
+}
+
+export interface SessionManagerOptions extends Partial<Timeouts> {
+  pipelineFactory: PipelineFactory
+  communicationApiFactory: CommunicationApiFactory
+  sessionFactory: SessionFactory
+  brandingMap: BrandingMap
+  enableCompression?: boolean
+  accountsUrl: string
+  profiling?: {
+    start: () => void
+    stop: () => Promise<string | undefined>
+  }
+  queue: PlatformQueue
 }
 
 /**
  * @public
  */
-export function startSessionManager (
-  ctx: MeasureContext,
-  opt: {
-    port: number
-    pipelineFactory: PipelineFactory
-    communicationApiFactory: CommunicationApiFactory
-    sessionFactory: SessionFactory
-    brandingMap: BrandingMap
-    serverFactory: ServerFactory
-    enableCompression?: boolean
-    accountsUrl: string
-    externalStorage: StorageAdapter
-    profiling?: {
-      start: () => void
-      stop: () => Promise<string | undefined>
-    }
-    queue: PlatformQueue
-  } & Partial<Timeouts>
-): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
+export function startSessionManager (ctx: MeasureContext, opt: SessionManagerOptions): SessionManager {
   const sessions = createSessionManager(
     ctx,
     opt.sessionFactory,
@@ -1423,25 +1413,11 @@ export function startSessionManager (
     opt.accountsUrl,
     opt.enableCompression ?? false,
     true,
-    opt.queue
+    opt.queue,
+    opt.pipelineFactory,
+    opt.communicationApiFactory
   )
-  return {
-    shutdown: opt.serverFactory(
-      sessions,
-      (rctx, service, ws, msg, workspace) => {
-        void sessions.handleRequest(rctx, service, ws, msg, workspace).catch((err) => {
-          ctx.error('failed to handle request', err)
-        })
-      },
-      ctx,
-      opt.pipelineFactory,
-      opt.communicationApiFactory,
-      opt.port,
-      opt.accountsUrl,
-      opt.externalStorage
-    ),
-    sessionManager: sessions
-  }
+  return sessions
 }
 
 async function closeWorkspace (ctx: MeasureContext, workspace: Workspace): Promise<void> {

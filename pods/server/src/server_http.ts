@@ -45,27 +45,22 @@ import {
   pingConst,
   pongConst,
   type ConnectionSocket,
-  type HandleRequestFunction,
-  type PipelineFactory,
   type SessionManager,
-  type StorageAdapter,
-  type CommunicationApiFactory
+  type StorageAdapter
 } from '@hcengineering/server-core'
 import { decodeToken, type Token } from '@hcengineering/server-token'
+import 'bufferutil'
 import cors from 'cors'
 import express, { type Response as ExpressResponse, type NextFunction, type Request } from 'express'
 import http, { type IncomingMessage } from 'http'
-import os from 'os'
-import { WebSocketServer, type RawData, type WebSocket } from 'ws'
-
-import 'bufferutil'
 import morgan from 'morgan'
+import os from 'os'
 import { compress } from 'snappy'
+import { setImmediate } from 'timers/promises'
 import 'utf-8-validate'
+import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 import { registerRPC } from './rpc'
 import { retrieveJson } from './utils'
-
-import { setImmediate } from 'timers/promises'
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB limit
 
@@ -99,11 +94,8 @@ const backpressureSize = 100 * 1024
  * @param host -
  */
 export function startHttpServer (
-  sessions: SessionManager,
-  handleRequest: HandleRequestFunction,
   ctx: MeasureContext,
-  pipelineFactory: PipelineFactory,
-  communicationApiFactory: CommunicationApiFactory,
+  sessions: SessionManager,
   port: number,
   accountsUrl: string,
   externalStorage: StorageAdapter
@@ -405,7 +397,7 @@ export function startHttpServer (
     })
   )
 
-  registerRPC(app, sessions, ctx, pipelineFactory, communicationApiFactory)
+  registerRPC(app, sessions, ctx)
 
   app.put('/api/v1/broadcast', (req, res) => {
     try {
@@ -470,7 +462,7 @@ export function startHttpServer (
       connectionSocket: cs,
       payload: token,
       token: rawToken,
-      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, communicationApiFactory, sessionId),
+      session: sessions.addSession(ctx, cs, token, rawToken, sessionId),
       url: ''
     }
 
@@ -543,7 +535,7 @@ export function startHttpServer (
             webSocketData,
             (s, buff) => {
               s.context.measure('receive-data', buff?.length ?? 0)
-              processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
+              processRequest(s.session, cs, s.context, s.workspaceId, buff, sessions)
             },
             buff
           )

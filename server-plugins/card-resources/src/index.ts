@@ -15,6 +15,7 @@
 
 import card, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
+  AccountUuid,
   AnyAttribute,
   Data,
   Doc,
@@ -23,6 +24,7 @@ import core, {
   Mixin,
   Ref,
   splitMixinUpdate,
+  systemAccount,
   Tx,
   TxCreateDoc,
   TxMixin,
@@ -34,7 +36,8 @@ import { TriggerControl } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import view from '@hcengineering/view'
 import { RequestEventType } from '@hcengineering/communication-sdk-types'
-import { getEmployee } from '@hcengineering/server-contact'
+import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
+import contact from '@hcengineering/contact'
 
 async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerControl): Promise<Tx[]> {
   const attr = TxProcessor.createDoc2Doc(ctx[0])
@@ -379,21 +382,42 @@ async function OnCardCreate (ctx: TxCreateDoc<Card>[], control: TriggerControl):
     }
   }
 
-  const { communicationApi } = control
-  if (communicationApi == null) return []
-
-  for (const tx of ctx) {
-    const employee = await getEmployee(control, tx.modifiedBy)
-    if (employee?.personUuid == null || !employee.active) continue
-    // TODO: add account
-    void communicationApi.event({} as any, {
-      type: RequestEventType.AddCollaborators,
-      card: tx.objectId,
-      collaborators: [employee.personUuid]
-    })
-  }
+  await updateCollaborators(control, ctx)
 
   return res
+}
+
+async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Card>[]): Promise<void> {
+  const { communicationApi } = control
+  if (communicationApi == null) return
+
+  for (const tx of ctx) {
+    const modifier = await getEmployee(control, tx.modifiedBy)
+    const collaborators: AccountUuid[] = []
+    if (modifier?.personUuid != null && modifier.active) {
+      collaborators.push(modifier.personUuid)
+    }
+
+    const personSpaces = await getPersonSpaces(control)
+    const personSpace = personSpaces.find((it) => it._id === tx.objectSpace)
+
+    if (personSpace != null && personSpace.person !== modifier?._id) {
+      const spacePerson = (await control.findAll(control.ctx, contact.class.Person, { _id: personSpace.person }))[0]
+      if (spacePerson?.personUuid != null) {
+        collaborators.push(spacePerson.personUuid as AccountUuid)
+      }
+    }
+
+    if (collaborators.length === 0) continue
+    void communicationApi.event(
+      { account: systemAccount },
+      {
+        type: RequestEventType.AddCollaborators,
+        card: tx.objectId,
+        collaborators
+      }
+    )
+  }
 }
 
 export async function OnCardTag (ctx: TxMixin<Card, Card>[], control: TriggerControl): Promise<Tx[]> {

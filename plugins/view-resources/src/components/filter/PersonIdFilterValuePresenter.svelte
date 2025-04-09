@@ -18,17 +18,20 @@
   import { getClient } from '@hcengineering/presentation'
   import contact, { getPersonRefsBySocialIds, Person } from '@hcengineering/contact'
 
-  export let value: [any, PersonId][]
+  export let value: PersonId[]
 
   const client = getClient()
   let persons: Ref<Person>[] = []
-  $: void getPersons(value.map((p) => p[1]).flat())
+  $: void getPersons(value)
 
   async function getPersons (ids: PersonId[]): Promise<void> {
     if (ids !== undefined) {
-      const personsMap = await getPersonRefsBySocialIds(client, ids)
-      persons = Object.values(personsMap)
-      console.log(persons)
+      if (ids.length === 0) {
+        persons = []
+      } else {
+        const personsMap = await getPersonRefsBySocialIds(client, ids)
+        persons = Object.values(personsMap)
+      }
     }
   }
 </script>

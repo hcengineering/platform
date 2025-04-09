@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import calendar, { Calendar, Event, ExternalCalendar } from '@hcengineering/calendar'
-import contactPlugin, { Employee, Person, SocialIdentity, pickPrimarySocialId } from '@hcengineering/contact'
+import contactPlugin, { Employee, Person, SocialIdentity } from '@hcengineering/contact'
 import core, {
   Class,
   concatLink,
@@ -33,12 +33,13 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  AccountUuid
+  AccountUuid,
+  pickPrimarySocialId
 } from '@hcengineering/core'
 import serverCalendar from '@hcengineering/server-calendar'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import { getPerson, getSocialStrings } from '@hcengineering/server-contact'
+import { getPerson, getSocialStrings, getSocialIds } from '@hcengineering/server-contact'
 import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -95,10 +96,10 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
     if (ctx.attributes?.active !== true) continue
     if (await checkCalendarsExist(control, ctx.objectId)) continue
 
-    const socialIds = await getSocialStrings(control, ctx.objectId)
+    const socialIds = await getSocialIds(control, ctx.objectId)
     if (socialIds.length === 0) continue
 
-    const socialId = pickPrimarySocialId(socialIds)
+    const socialId = pickPrimarySocialId(socialIds)._id
 
     const employee = (
       await control.findAll(
@@ -283,10 +284,12 @@ async function eventForNewParticipants (
   const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
   const data = attr as any as Data<Event>
   for (const part of newParticipants) {
-    const socialStrings = await getSocialStrings(control, part)
-    if (socialStrings.length === 0) continue
+    const socialIds = await getSocialIds(control, part)
+    if (socialIds.length === 0) continue
+    const socialStrings = socialIds.map((si) => si._id)
     if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
-    const primarySocialString = pickPrimarySocialId(socialStrings)
+
+    const primarySocialString = pickPrimarySocialId(socialIds)._id
     const calendar = getCalendar(calendars, socialStrings)
     if (calendar === undefined) continue
     const innerTx = control.txFactory.createTxCreateDoc(
@@ -355,10 +358,11 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
   const calendars = await control.findAll(control.ctx, calendar.class.Calendar, { hidden: false })
   const access = 'reader'
   for (const part of event.participants) {
-    const socialStrings = await getSocialStrings(control, part as Ref<Person>)
-    if (socialStrings.length === 0) continue
+    const socialIds = await getSocialIds(control, part as Ref<Person>)
+    if (socialIds.length === 0) continue
+    const socialStrings = socialIds.map((si) => si._id)
     if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
-    const primarySocialString = pickPrimarySocialId(socialStrings)
+    const primarySocialString = pickPrimarySocialId(socialIds)._id
     const calendar = getCalendar(calendars, socialStrings)
     if (calendar === undefined) continue
     const innerTx = control.txFactory.createTxCreateDoc(

@@ -30,8 +30,8 @@ import {
   type AccountRole,
   type Data,
   type Version,
-  type PersonUuid,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  AccountUuid
 } from '@hcengineering/core'
 
 import type {
@@ -60,6 +60,15 @@ import { isShallowEqual } from '../utils'
 interface MongoIndex {
   key: Record<string, any>
   options: CreateIndexesOptions & { name: string }
+}
+
+function getFilteredQuery<T> (query: Query<T>): Query<T> {
+  return Object.entries(query).reduce<Query<T>>((acc, [key, value]) => {
+    if (value !== undefined) {
+      acc[key as keyof Query<T>] = value
+    }
+    return acc
+  }, {})
 }
 
 export class MongoDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
@@ -123,11 +132,11 @@ implements DbCollection<T> {
   }
 
   async find (query: Query<T>, sort?: Sort<T>, limit?: number): Promise<T[]> {
-    return await this.findCursor(query, sort, limit).toArray()
+    return await this.findCursor(getFilteredQuery(query), sort, limit).toArray()
   }
 
   findCursor (query: Query<T>, sort?: Sort<T>, limit?: number): FindCursor<T> {
-    const cursor = this.collection.find<T>(query as Filter<T>)
+    const cursor = this.collection.find<T>(getFilteredQuery(query) as Filter<T>)
 
     if (sort !== undefined) {
       cursor.sort(sort as RawSort)
@@ -147,7 +156,7 @@ implements DbCollection<T> {
   }
 
   async findOne (query: Query<T>): Promise<T | null> {
-    const doc = await this.collection.findOne<T>(query as Filter<T>)
+    const doc = await this.collection.findOne<T>(getFilteredQuery(query) as Filter<T>)
     if (doc === null) {
       return null
     }
@@ -190,11 +199,11 @@ implements DbCollection<T> {
       }
     }
 
-    await this.collection.updateOne(query as Filter<T>, resOps)
+    await this.collection.updateOne(getFilteredQuery(query) as Filter<T>, resOps)
   }
 
   async deleteMany (query: Query<T>): Promise<void> {
-    await this.collection.deleteMany(query as Filter<T>)
+    await this.collection.deleteMany(getFilteredQuery(query) as Filter<T>)
   }
 }
 
@@ -218,7 +227,7 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account, 'uuid'>
   }
 
   async findOne (query: Query<Account>): Promise<Account | null> {
-    const res = await this.collection.findOne<Account>(query as Filter<Account>)
+    const res = await this.collection.findOne<Account>(getFilteredQuery(query) as Filter<Account>)
 
     return res !== null ? this.convertToObj(res) : null
   }
@@ -247,7 +256,7 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
   private toWsQuery (query: Query<WorkspaceStatus>): Query<WorkspaceInfoWithStatus> {
     const res: Query<WorkspaceInfoWithStatus> = {}
 
-    for (const key of Object.keys(query)) {
+    for (const key of Object.keys(getFilteredQuery(query))) {
       const qVal = (query as any)[key]
       if (key === 'workspaceUuid') {
         res.uuid = qVal
@@ -348,7 +357,7 @@ export class WorkspaceStatusMongoDbCollection implements DbCollection<WorkspaceS
 
 interface WorkspaceMember {
   workspaceUuid: WorkspaceUuid
-  accountUuid: PersonUuid
+  accountUuid: AccountUuid
   role: AccountRole
 }
 
@@ -521,7 +530,7 @@ export class MongoAccountDB implements AccountDB {
     }
   }
 
-  async assignWorkspace (accountId: PersonUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {
+  async assignWorkspace (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this.workspaceMembers.insertOne({
       workspaceUuid: workspaceId,
       accountUuid: accountId,
@@ -529,7 +538,7 @@ export class MongoAccountDB implements AccountDB {
     })
   }
 
-  async unassignWorkspace (accountId: PersonUuid, workspaceId: WorkspaceUuid): Promise<void> {
+  async unassignWorkspace (accountId: AccountUuid, workspaceId: WorkspaceUuid): Promise<void> {
     await this.workspaceMembers.deleteMany({
       workspaceUuid: workspaceId,
       accountUuid: accountId
@@ -688,7 +697,7 @@ export class MongoAccountDB implements AccountDB {
     )
   }
 
-  async updateWorkspaceRole (accountId: PersonUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {
+  async updateWorkspaceRole (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this.workspaceMembers.updateOne(
       {
         workspaceUuid: workspaceId,
@@ -698,7 +707,7 @@ export class MongoAccountDB implements AccountDB {
     )
   }
 
-  async getWorkspaceRole (accountId: PersonUuid, workspaceId: WorkspaceUuid): Promise<AccountRole | null> {
+  async getWorkspaceRole (accountId: AccountUuid, workspaceId: WorkspaceUuid): Promise<AccountRole | null> {
     const assignment = await this.workspaceMembers.findOne({
       workspaceUuid: workspaceId,
       accountUuid: accountId
@@ -714,18 +723,18 @@ export class MongoAccountDB implements AccountDB {
     }))
   }
 
-  async getAccountWorkspaces (accountId: PersonUuid): Promise<WorkspaceInfoWithStatus[]> {
+  async getAccountWorkspaces (accountId: AccountUuid): Promise<WorkspaceInfoWithStatus[]> {
     const members = await this.workspaceMembers.find({ accountUuid: accountId })
     const wsIds = members.map((m) => m.workspaceUuid)
 
     return await this.workspace.find({ uuid: { $in: wsIds } })
   }
 
-  async setPassword (accountId: PersonUuid, passwordHash: Buffer, salt: Buffer): Promise<void> {
+  async setPassword (accountId: AccountUuid, passwordHash: Buffer, salt: Buffer): Promise<void> {
     await this.account.updateOne({ uuid: accountId }, { hash: passwordHash, salt })
   }
 
-  async resetPassword (accountId: PersonUuid): Promise<void> {
+  async resetPassword (accountId: AccountUuid): Promise<void> {
     await this.account.updateOne({ uuid: accountId }, { hash: null, salt: null })
   }
 }

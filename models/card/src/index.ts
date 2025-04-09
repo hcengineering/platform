@@ -161,7 +161,7 @@ export function createSystemType (
     attachTo: type,
     descriptor: view.viewlet.List,
     viewOptions: {
-      groupBy: ['_class', 'createdBy', 'modifiedBy'],
+      groupBy: ['_class', 'createdBy', 'modifiedBy', 'parent'],
       orderBy: [
         ['modifiedOn', SortingOrder.Descending],
         ['rank', SortingOrder.Ascending]
@@ -281,7 +281,7 @@ export function createModel (builder: Builder): void {
       attachTo: card.class.Card,
       descriptor: view.viewlet.List,
       viewOptions: {
-        groupBy: ['_class', 'createdBy', 'modifiedBy'],
+        groupBy: ['_class', 'createdBy', 'modifiedBy', 'parent'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['rank', SortingOrder.Ascending]
@@ -304,7 +304,7 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.List,
       variant: 'child',
       viewOptions: {
-        groupBy: ['_class', 'createdBy', 'modifiedBy'],
+        groupBy: ['_class', 'createdBy', 'modifiedBy', 'parent'],
         orderBy: [
           ['modifiedOn', SortingOrder.Descending],
           ['rank', SortingOrder.Ascending]

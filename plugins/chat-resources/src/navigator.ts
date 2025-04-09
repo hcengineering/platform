@@ -15,7 +15,7 @@
 
 import { type Card, type MasterTag } from '@hcengineering/card'
 import { type NavigationSection } from '@hcengineering/ui-next'
-import { groupByArray, type Hierarchy, type Ref } from '@hcengineering/core'
+import { type Hierarchy, type Ref } from '@hcengineering/core'
 import chat from '@hcengineering/chat'
 import { translate } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -59,28 +59,30 @@ export function toggleSection (id: string): void {
 }
 
 export async function cardsToChatSections (
-  cards: Card[],
+  cardsByType: Map<Ref<MasterTag>, { cards: Card[], total: number }>,
   contexts: NotificationContext[],
   state: NavigatorState
 ): Promise<NavigationSection[]> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const { threads, channels, other } = splitCards(cards, hierarchy)
-  const cardByClass = groupByArray(other, (it) => it._class)
+  const threads = cardsByType.get(chat.masterTag.Thread)
+  const channels = cardsByType.get(chat.masterTag.Channel)
 
   const result: NavigationSection[] = []
 
-  if (threads.length > 0) {
-    result.push(getSection(chat.masterTag.Thread, threads, contexts, state, hierarchy))
+  if (threads != null && threads.cards.length > 0) {
+    result.push(getSection(chat.masterTag.Thread, threads.cards, threads.total, contexts, state, hierarchy))
   }
 
-  if (channels.length > 0) {
-    result.push(getSection(chat.masterTag.Channel, channels, contexts, state, hierarchy))
+  if (channels != null && channels.cards.length > 0) {
+    result.push(getSection(chat.masterTag.Channel, channels.cards, channels.total, contexts, state, hierarchy))
   }
 
   const cardSessions: Array<[string, NavigationSection]> = []
-  for (const [_class, cards] of cardByClass.entries()) {
-    const section = getSection(_class, cards, contexts, state, hierarchy)
+  for (const [type, cards] of cardsByType.entries()) {
+    if (type === chat.masterTag.Thread || type === chat.masterTag.Channel) continue
+    if (cards.cards.length === 0) continue
+    const section = getSection(type, cards.cards, cards.total, contexts, state, hierarchy)
     const label = await translate(section.title, {})
     cardSessions.push([label, section])
   }
@@ -95,6 +97,7 @@ export async function cardsToChatSections (
 function getSection (
   _class: Ref<MasterTag>,
   cards: Card[],
+  total: number,
   contexts: NotificationContext[],
   state: NavigatorState,
   hierarchy: Hierarchy
@@ -105,43 +108,15 @@ function getSection (
     id: _class,
     title: clazz.pluralLabel ?? clazz.label,
     expanded: !state.collapsedSections.includes(_class),
-    items: cards
-      .map((card) => {
-        const context = contexts.find((it) => it.card === card._id)
-        return {
-          id: card._id,
-          label: card.title,
-          icon: clazz.icon ?? chat.icon.Thread,
-          notificationsCount: context?.notifications?.length ?? 0
-        }
-      })
-      .sort((c1, c2) => c1.label.toLowerCase().localeCompare(c2.label.toLowerCase()))
-  }
-}
-
-function splitCards (
-  cards: Card[],
-  hierarchy: Hierarchy
-): {
-    threads: Card[]
-    channels: Card[]
-    other: Card[]
-  } {
-  return cards.reduce<{
-    threads: Card[]
-    channels: Card[]
-    other: Card[]
-  }>(
-    (acc, it) => {
-      if (hierarchy.isDerived(it._class, chat.masterTag.Thread)) {
-        acc.threads.push(it)
-      } else if (hierarchy.isDerived(it._class, chat.masterTag.Channel)) {
-        acc.channels.push(it)
-      } else {
-        acc.other.push(it)
+    total,
+    items: cards.map((card) => {
+      const context = contexts.find((it) => it.card === card._id)
+      return {
+        id: card._id,
+        label: card.title,
+        icon: clazz.icon ?? chat.icon.Thread,
+        notificationsCount: context?.notifications?.length ?? 0
       }
-      return acc
-    },
-    { threads: [], channels: [], other: [] }
-  )
+    })
+  }
 }

@@ -3,7 +3,7 @@ import { connectMeeting, disconnectMeeting } from '@hcengineering/ai-bot-resourc
 import { Analytics } from '@hcengineering/analytics'
 import calendar, { type Event, getAllEvents } from '@hcengineering/calendar'
 import chunter from '@hcengineering/chunter'
-import contact, { getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
+import contact, { type Employee, getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
 import { personByIdStore } from '@hcengineering/contact-resources'
 import core, {
   AccountRole,
@@ -84,7 +84,8 @@ import {
   RoomEvent,
   type ScreenShareCaptureOptions,
   Track,
-  type VideoCaptureOptions
+  type VideoCaptureOptions,
+  type Participant
 } from 'livekit-client'
 import { get, writable } from 'svelte/store'
 
@@ -187,6 +188,8 @@ export const isFullScreen = writable<boolean>(false)
 export const isShareWithSound = writable<boolean>(false)
 export const isMicAllowed = writable<boolean>(false)
 export const isCamAllowed = writable<boolean>(false)
+
+export const currentRoomAudioLevels = writable<Map<Ref<Person>, number>>(new Map())
 
 function handleTrackSubscribed (
   track: RemoteTrack,
@@ -398,8 +401,13 @@ lk.on(RoomEvent.RoomMetadataChanged, (metadata) => {
   }
 })
 
+lk.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
+  currentRoomAudioLevels.set(new Map(speakers.map((it) => [it.identity as Ref<Person>, it.audioLevel])))
+})
+
 lk.on(RoomEvent.Connected, () => {
   isConnected.set(true)
+  currentRoomAudioLevels.set(new Map())
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(true)
   isRecording.set(lk.isRecording)
@@ -494,6 +502,7 @@ export async function disconnect (): Promise<void> {
   isMicEnabled.set(false)
   isCameraEnabled.set(false)
   isSharingEnabled.set(false)
+  currentRoomAudioLevels.set(new Map())
   sendMessage({ type: 'mic', value: false })
   sendMessage({ type: 'cam', value: false })
   sendMessage({ type: 'share', value: false })
@@ -860,7 +869,9 @@ export async function tryConnect (
   for (const invite of currentInvites) {
     await client.update(invite, { status: invite.room === room._id ? RequestStatus.Approved : RequestStatus.Rejected })
   }
-  if (room.access === RoomAccess.Knock && (!isOffice(room) || room.person !== currentPerson._id)) {
+
+  const isGuest = (currentPerson as Employee).role === AccountRole.Guest
+  if ((room.access === RoomAccess.Knock || isGuest) && (!isOffice(room) || room.person !== currentPerson._id)) {
     const _id = await client.createDoc(love.class.JoinRequest, core.space.Workspace, {
       person: currentPerson._id,
       room: room._id,

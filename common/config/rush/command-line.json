@@ -5,7 +5,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
 
-
   "phases": [
     {
       "name": "_phase:build",
@@ -111,7 +110,7 @@
       "description": "Do a format and show errors after it",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "rush format && ./common/scripts/format-show.sh"
-    },        
+    },
     {
       "commandKind": "phased",
       "name": "build:watch",
@@ -126,7 +125,7 @@
         "watchPhases": ["_phase:build", "_phase:validate"]
       }
     },
-    {      
+    {
       "summary": "svelte-check",
       "commandKind": "phased",
       "name": "svelte-check",
@@ -152,7 +151,7 @@
       "phases": ["_phase:validate"],
       "summary": "validate",
       "enableParallelism": true,
-      "incremental": true      
+      "incremental": true
     },
     {
       "commandKind": "phased",
@@ -210,7 +209,7 @@
       "name": "docker:build",
       "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
       "enableParallelism": true,
-      "incremental": true      
+      "incremental": true
     },
     {
       "summary": "docker:rebuild",
@@ -246,7 +245,7 @@
       "summary": "Build docker with platform",
       "description": "use to build all docker containers required for platform",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "rush docker:build -p 20 --to @hcengineering/pod-server --to @hcengineering/pod-front --to @hcengineering/prod --to @hcengineering/pod-account --to @hcengineering/pod-workspace --to @hcengineering/pod-collaborator --to @hcengineering/tool --to @hcengineering/pod-print --to @hcengineering/pod-sign --to @hcengineering/pod-analytics-collector --to @hcengineering/rekoni-service --to @hcengineering/pod-ai-bot --to @hcengineering/import-tool --to @hcengineering/pod-stats --to @hcengineering/pod-fulltext --to @hcengineering/pod-love --to @hcengineering/green --to @hcengineering/pod-mail --to @hcengineering/pod-datalake --to @hcengineering/pod-inbound-mail --to @hcengineering/pod-export --to @hcengineering/pod-msg2file"
+      "shellCommand": "rush docker:build -p 20 --to @hcengineering/pod-server --to @hcengineering/pod-front --to @hcengineering/prod --to @hcengineering/pod-account --to @hcengineering/pod-workspace --to @hcengineering/pod-collaborator --to @hcengineering/tool --to @hcengineering/pod-print --to @hcengineering/pod-sign --to @hcengineering/pod-analytics-collector --to @hcengineering/rekoni-service --to @hcengineering/pod-ai-bot --to @hcengineering/import-tool --to @hcengineering/pod-stats --to @hcengineering/pod-fulltext --to @hcengineering/pod-love --to @hcengineering/pod-mail --to @hcengineering/pod-datalake --to @hcengineering/pod-inbound-mail --to @hcengineering/pod-export --to @hcengineering/pod-msg2file"
     },
     {
       "commandKind": "global",
@@ -287,7 +286,7 @@
       "description": "Clean typescript incremental cache",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "find .|grep tsconfig.tsbuildinfo | xargs rm | pwd"
-    }, 
+    },
     {
       "commandKind": "global",
       "name": "revalidate",
@@ -308,7 +307,7 @@
       "ignoreMissingScript": true,
       "disableBuildCache": true,
       "allowWarningsInSuccessfulBuild": true
-    },  
+    },
     {
       "commandKind": "global",
       "name": "model-version",
@@ -348,7 +347,7 @@
       "description": "use to build all docker containers required for platform",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "rush package -p 20 --to desktop && cd ./desktop-package && rushx dist"
-    },        
+    }
   ],
 
   /**
@@ -356,28 +355,28 @@
    * For example, you might define a "--production" parameter for the "rush build" command.
    */
   "parameters": [
-      {
-      "parameterKind": "flag",      
+    {
+      "parameterKind": "flag",
       "longName": "--lite",
       "shortName": "-l",
       "description": "Enable Heft lite building option, will skip some phases.",
       "associatedCommands": ["build", "rebuild"]
     },
     {
-      "parameterKind": "flag",      
+      "parameterKind": "flag",
       "longName": "--clean",
       "description": "Enable Heft clean building option",
       "associatedCommands": ["build", "rebuild"]
     },
     {
-      "parameterKind": "flag",   
-      "longName": "--force",   
+      "parameterKind": "flag",
+      "longName": "--force",
       "shortName": "-f",
       "description": "Force formatting",
       "associatedCommands": ["format"]
     },
     {
-      "parameterKind": "string",   
+      "parameterKind": "string",
       "argumentName": "BRANCH",
       "required": false,
       "associatedPhases": [],
@@ -392,12 +391,12 @@
     //    * A "flag" is a custom command-line parameter whose presence acts as an on/off switch.
     //    */
     //   "parameterKind": "flag",
-    // 
+    //
     //   /**
     //    * (Required) The long name of the parameter.  It must be lower-case and use dash delimiters.
     //    */
     //   "longName": "--my-flag",
-    // 
+    //
     //   /**
     //    * An optional alternative short name for the parameter.  It must be a dash followed by a single
     //    * lower-case or upper-case letter, which is case-sensitive.
@@ -408,7 +407,7 @@
     //    * a short name if you expect the parameter to be needed very often in everyday operations.
     //    */
     //   "shortName": "-m",
-    // 
+    //
     //   /**
     //    * (Required) A long description to be shown in the command-line help.
     //    *
@@ -416,14 +415,14 @@
     //    * documentation can make a big difference for the developer experience in your repo.
     //    */
     //   "description": "A custom flag parameter that is passed to the scripts that are invoked when building projects",
-    // 
+    //
     //   /**
     //    * (Required) A list of custom commands and/or built-in Rush commands that this parameter may
     //    * be used with.  The parameter will be appended to the shell command that Rush invokes.
     //    */
     //   "associatedCommands": ["build", "rebuild"]
     // },
-    // 
+    //
     // {
     //   /**
     //    * (Required) Determines the type of custom parameter.
@@ -432,9 +431,9 @@
     //   "parameterKind": "string",
     //   "longName": "--my-string",
     //   "description": "A custom string parameter for the \"my-global-command\" custom command",
-    // 
+    //
     //   "associatedCommands": ["my-global-command"],
-    // 
+    //
     //   /**
     //    * The name of the argument, which will be shown in the command-line help.
     //    *
@@ -443,13 +442,13 @@
     //    * be comprised of upper-case letters, numbers, and underscores.  It should be kept short.
     //    */
     //   "argumentName": "SOME_TEXT",
-    // 
+    //
     //   /**
     //    * If true, this parameter must be included with the command.  The default is false.
     //    */
     //   "required": false
     // },
-    // 
+    //
     // {
     //   /**
     //    * (Required) Determines the type of custom parameter.
@@ -459,14 +458,14 @@
     //   "parameterKind": "choice",
     //   "longName": "--my-choice",
     //   "description": "A custom choice parameter for the \"my-global-command\" custom command",
-    // 
+    //
     //   "associatedCommands": ["my-global-command"],
-    // 
+    //
     //   /**
     //    * If true, this parameter must be included with the command.  The default is false.
     //    */
     //   "required": false,
-    // 
+    //
     //   /**
     //    * Normally if a parameter is omitted from the command line, it will not be passed
     //    * to the shell command. this value will be inserted by default.  Whereas if a "defaultValue"
@@ -474,7 +473,7 @@
     //    * default value if unspecified.  The value must be one of the defined alternatives.
     //    */
     //   "defaultValue": "vanilla",
-    // 
+    //
     //   /**
     //    * (Required) A list of alternative argument values that can be chosen for this parameter.
     //    */
@@ -485,7 +484,7 @@
     //        * e.g. "vanilla" in "--flavor vanilla".
     //        */
     //       "name": "vanilla",
-    // 
+    //
     //       /**
     //        * A detailed description for the alternative that can be shown in the command-line help.
     //        *
@@ -494,12 +493,12 @@
     //        */
     //       "description": "Use the vanilla flavor (the default)"
     //     },
-    // 
+    //
     //     {
     //       "name": "chocolate",
     //       "description": "Use the chocolate flavor"
     //     },
-    // 
+    //
     //     {
     //       "name": "strawberry",
     //       "description": "Use the strawberry flavor"

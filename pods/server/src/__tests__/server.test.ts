@@ -24,7 +24,6 @@ import {
   MeasureMetricsContext,
   ModelDb,
   toFindResult,
-  type PersonId,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -32,15 +31,16 @@ import {
   type FindOptions,
   type FindResult,
   type MeasureContext,
+  type PersonId,
+  type PersonUuid,
   type Ref,
   type SessionData,
   type Space,
   type Tx,
   type TxResult,
-  type PersonUuid,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { ClientSession, startSessionManager } from '@hcengineering/server'
+import { ClientSession, startSessionManager, type SessionManagerOptions } from '@hcengineering/server'
 import { createDummyQueue, createDummyStorageAdapter } from '@hcengineering/server-core'
 import { startHttpServer } from '../server_http'
 import { genMinModel } from './minmodel'
@@ -61,7 +61,8 @@ describe('server', () => {
     return { modelDb, hierarchy }
   }
 
-  const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), {
+  const toolCtx = new MeasureMetricsContext('test', {})
+  const opt: SessionManagerOptions = {
     pipelineFactory: async () => {
       const { modelDb, hierarchy } = await getModelDb()
       return {
@@ -100,13 +101,13 @@ describe('server', () => {
       return {} as any
     },
     sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
-    port,
     brandingMap: {},
-    serverFactory: startHttpServer,
     accountsUrl: '',
-    externalStorage: createDummyStorageAdapter(),
     queue: createDummyQueue()
-  })
+  }
+  const sessionMgr = startSessionManager(toolCtx, opt)
+
+  const serverShutdown = startHttpServer(toolCtx, sessionMgr, port, opt.accountsUrl, createDummyStorageAdapter())
 
   function connect (): WebSocket {
     const token: string = generateToken('' as PersonUuid, 'latest' as WorkspaceUuid)
@@ -114,7 +115,8 @@ describe('server', () => {
   }
 
   afterAll(async () => {
-    await cancelOp.shutdown()
+    await sessionMgr.closeWorkspaces(new MeasureMetricsContext('test', {}))
+    await serverShutdown()
   })
 
   it('should connect to server', (done) => {
@@ -166,7 +168,7 @@ describe('server', () => {
   })
 
   it('reconnect', async () => {
-    const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), {
+    const opt: SessionManagerOptions = {
       pipelineFactory: async () => {
         const { modelDb, hierarchy } = await getModelDb()
         return {
@@ -215,13 +217,12 @@ describe('server', () => {
         return {} as any
       },
       sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
-      port: port + 1,
       brandingMap: {},
-      serverFactory: startHttpServer,
       accountsUrl: '',
-      externalStorage: createDummyStorageAdapter(),
       queue: createDummyQueue()
-    })
+    }
+    const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), opt)
+    const serverShutdown = startHttpServer(toolCtx, sessionMgr, port + 1, opt.accountsUrl, createDummyStorageAdapter())
 
     async function findClose (token: string, timeoutPromise: Promise<void>, code: number): Promise<string> {
       const newConn = new WebSocket(`ws://localhost:${port + 1}/${token}?sessionId=s1`)
@@ -286,7 +287,8 @@ describe('server', () => {
       console.error(err)
     } finally {
       console.log('calling shutdown')
-      await cancelOp.shutdown()
+      await cancelOp.closeWorkspaces(new MeasureMetricsContext('test', {}))
+      await serverShutdown()
     }
   })
 })

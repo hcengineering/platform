@@ -1,6 +1,5 @@
-//
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+<!--
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,6 +11,16 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Ref, Space } from '@hcengineering/core'
+  import { Component } from '@hcengineering/ui'
+  import contact from '@hcengineering/contact'
+  import { Filter } from '@hcengineering/view'
 
-export * from './server_http'
+  export let filter: Filter
+  export let space: Ref<Space> | undefined = undefined
+  export let onChange: (e: Filter) => void
+</script>
+
+<Component is={contact.component.PersonIdFilter} props={{ filter, space, onChange }} />

@@ -20,11 +20,13 @@ import {
   SocialIdType,
   Version,
   WorkspaceMode,
+  type PersonInfo,
   type BackupStatus,
   type Branding,
   type PersonId,
   type PersonUuid,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type AccountUuid
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
@@ -57,7 +59,8 @@ import {
   wrap,
   addSocialId,
   getWorkspaces,
-  updateWorkspaceRole
+  updateWorkspaceRole,
+  getPersonName
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -201,17 +204,14 @@ export async function updateWorkspaceRoleBySocialKey (
 ): Promise<void> {
   const { socialKey, targetRole } = params
   const { extra } = decodeTokenVerbose(ctx, token)
-
-  if (!['workspace', 'tool'].includes(extra?.service)) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  verifyAllowedServices(['workspace', 'tool'], extra)
 
   const socialId = await getSocialIdByKey(db, socialKey.toLowerCase() as PersonId)
   if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  await updateWorkspaceRole(ctx, db, branding, token, { targetAccount: socialId.personUuid, targetRole })
+  await updateWorkspaceRole(ctx, db, branding, token, { targetAccount: socialId.personUuid as AccountUuid, targetRole })
 }
 
 /**
@@ -468,7 +468,7 @@ export async function assignWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  const account = await getAccount(db, emailSocialId.personUuid)
+  const account = await getAccount(db, emailSocialId.personUuid as AccountUuid)
 
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -486,6 +486,32 @@ export async function assignWorkspace (
     await db.assignWorkspace(account.uuid, workspaceUuid, role)
   } else if (getRolePower(currentRole) < getRolePower(role)) {
     await db.updateWorkspaceRole(account.uuid, workspaceUuid, role)
+  }
+}
+
+export async function getPersonInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { account: PersonUuid }
+): Promise<PersonInfo> {
+  const { account } = params
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['workspace', 'tool'], extra)
+
+  const person = await db.person.findOne({ uuid: account })
+
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
+  }
+
+  const verifiedSocialIds = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
+
+  return {
+    personUuid: account,
+    name: getPersonName(person),
+    socialIds: verifiedSocialIds
   }
 }
 
@@ -518,7 +544,7 @@ export async function createIntegration (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid, data } = params
 
-  if (kind == null || socialId == null) {
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -553,6 +579,10 @@ export async function updateIntegration (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid, data } = params
 
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const existing = await db.integration.findOne({ socialId, kind, workspaceUuid })
   if (existing == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
@@ -572,11 +602,16 @@ export async function deleteIntegration (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid } = params
 
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const existing = await db.integration.findOne({ socialId, kind, workspaceUuid })
   if (existing == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
   }
 
+  await db.integrationSecret.deleteMany({ socialId, kind, workspaceUuid })
   await db.integration.deleteMany({ socialId, kind, workspaceUuid })
 }
 
@@ -585,11 +620,7 @@ export async function listIntegrations (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: {
-    socialId?: PersonId
-    kind?: string
-    workspaceUuid?: WorkspaceUuid | null
-  }
+  params: Partial<IntegrationKey>
 ): Promise<Integration[]> {
   const { account, extra } = decodeTokenVerbose(ctx, token)
   const isAllowedService = verifyAllowedServices(integrationServices, extra, false)
@@ -636,6 +667,10 @@ export async function getIntegration (
   const isAllowedService = verifyAllowedServices(integrationServices, extra, false)
   const { socialId, kind, workspaceUuid } = params
 
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   if (!isAllowedService) {
     const existingSocialId = await db.socialId.findOne({ _id: socialId, personUuid: account, verifiedOn: { $gt: 0 } })
 
@@ -658,7 +693,7 @@ export async function addIntegrationSecret (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid, key, secret } = params
 
-  if (kind == null || socialId == null || key == null) {
+  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -690,6 +725,10 @@ export async function updateIntegrationSecret (
   const { socialId, kind, workspaceUuid, key, secret } = params
   const secretKey: IntegrationSecretKey = { socialId, kind, workspaceUuid, key }
 
+  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const existingSecret = await db.integrationSecret.findOne(secretKey)
   if (existingSecret == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
@@ -710,6 +749,10 @@ export async function deleteIntegrationSecret (
   const { socialId, kind, workspaceUuid, key } = params
   const secretKey: IntegrationSecretKey = { socialId, kind, workspaceUuid, key }
 
+  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const existingSecret = await db.integrationSecret.findOne(secretKey)
   if (existingSecret == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
@@ -729,10 +772,11 @@ export async function getIntegrationSecret (
   verifyAllowedServices(integrationServices, extra)
   const { socialId, kind, workspaceUuid, key } = params
 
-  const existing = await db.integrationSecret.findOne({ socialId, kind, workspaceUuid, key })
-  if (existing == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
+  if (kind == null || socialId == null || workspaceUuid === undefined || key == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
+
+  const existing = await db.integrationSecret.findOne({ socialId, kind, workspaceUuid, key })
 
   return existing
 }
@@ -742,12 +786,7 @@ export async function listIntegrationsSecrets (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: {
-    socialId?: PersonId
-    kind?: string
-    workspaceUuid?: WorkspaceUuid | null
-    key?: string
-  }
+  params: Partial<IntegrationSecretKey>
 ): Promise<IntegrationSecret[]> {
   const { extra } = decodeTokenVerbose(ctx, token)
   verifyAllowedServices(integrationServices, extra)
@@ -766,6 +805,7 @@ export type AccountServiceMethods =
   | 'performWorkspaceOperation'
   | 'updateWorkspaceRoleBySocialKey'
   | 'addSocialIdToPerson'
+  | 'getPersonInfo'
   | 'createIntegration'
   | 'updateIntegration'
   | 'deleteIntegration'
@@ -791,6 +831,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     performWorkspaceOperation: wrap(performWorkspaceOperation),
     updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
     addSocialIdToPerson: wrap(addSocialIdToPerson),
+    getPersonInfo: wrap(getPersonInfo),
     createIntegration: wrap(createIntegration),
     updateIntegration: wrap(updateIntegration),
     deleteIntegration: wrap(deleteIntegration),

@@ -9,14 +9,7 @@ import core, {
   type SearchQuery,
   type TxCUD
 } from '@hcengineering/core'
-import type {
-  ClientSessionCtx,
-  CommunicationApiFactory,
-  ConnectionSocket,
-  PipelineFactory,
-  Session,
-  SessionManager
-} from '@hcengineering/server-core'
+import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
 import { decodeToken } from '@hcengineering/server-token'
 
 import { rpcJSONReplacer } from '@hcengineering/rpc'
@@ -98,13 +91,7 @@ async function sendJson (
   res.end(body)
 }
 
-export function registerRPC (
-  app: Express,
-  sessions: SessionManager,
-  ctx: MeasureContext,
-  pipelineFactory: PipelineFactory,
-  communicationApiFactory: CommunicationApiFactory
-): void {
+export function registerRPC (app: Express, sessions: SessionManager, ctx: MeasureContext): void {
   const rpcSessions = new Map<string, RPCClientInfo>()
 
   async function withSession (
@@ -136,15 +123,7 @@ export function registerRPC (
 
       if (transactorRpc === undefined) {
         const cs: ConnectionSocket = createClosingSocket(token, rpcSessions)
-        const s = await sessions.addSession(
-          ctx,
-          cs,
-          decodedToken,
-          token,
-          pipelineFactory,
-          communicationApiFactory,
-          token
-        )
+        const s = await sessions.addSession(ctx, cs, decodedToken, token, token)
         if (!('session' in s)) {
           sendError(res, 401, {
             message: 'Failed to create session',

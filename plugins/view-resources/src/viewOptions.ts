@@ -19,7 +19,6 @@ import {
   type ToggleViewOption,
   type ViewOptionModel,
   type ViewOptions,
-  type ViewOptionsModel,
   type Viewlet,
   type ViewletDescriptor
 } from '@hcengineering/view'
@@ -84,17 +83,6 @@ function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOpt
   return res
 }
 
-function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
-  const res: ViewOptions = {
-    groupBy: [viewOptions.groupBy[0] ?? defaultOptions.groupBy[0]],
-    orderBy: viewOptions.orderBy?.[0] ?? defaultOptions.orderBy
-  }
-  for (const opt of viewOptions.other) {
-    res[opt.key] = opt.defaultValue
-  }
-  return res
-}
-
 export function getViewOptions (
   viewlet: Viewlet | undefined,
   viewOptionStore: Map<string, ViewOptions>,
@@ -105,7 +93,7 @@ export function getViewOptions (
   }
   const res = _getViewOptions(viewlet, viewOptionStore)
   if (res !== null) return res
-  return viewlet.viewOptions != null ? getDefaults(viewlet.viewOptions) : defaults
+  return defaults
 }
 
 export function migrateViewOpttions (): void {

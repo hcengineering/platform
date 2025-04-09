@@ -172,7 +172,7 @@ export function serveStats (ctx: MeasureContext, onClose?: () => void): void {
       const service = payload.extra?.service === 'true'
       const serviceName = (req.query.name as string) ?? ''
       if (service) {
-        ctx.info('put stats', { service: req.query.name })
+        ctx.info('put stats', { service: req.query.name, len: req.request.length })
         statistics.set(serviceName, {
           ...(req.request.body as ServiceStatistics),
           lastUpdate: Date.now()

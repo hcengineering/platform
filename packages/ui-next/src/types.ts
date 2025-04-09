@@ -22,6 +22,7 @@ export interface NavigationSection {
   id: string
   title: IntlString
   expanded: boolean
+  total: number
   items: NavigationSectionItem[]
 }
 
