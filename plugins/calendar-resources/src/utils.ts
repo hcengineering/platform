@@ -5,7 +5,14 @@ import {
   type ReccuringInstance,
   generateEventId
 } from '@hcengineering/calendar'
-import { type DocumentUpdate, type IdMap, SocialIdType, type Timestamp, getCurrentAccount, toIdMap } from '@hcengineering/core'
+import {
+  type DocumentUpdate,
+  type IdMap,
+  SocialIdType,
+  type Timestamp,
+  getCurrentAccount,
+  toIdMap
+} from '@hcengineering/core'
 import { createQuery, getClient, getCurrentWorkspaceUrl, MessageBox, onClient } from '@hcengineering/presentation'
 import { closePopup, DAY, showPopup } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
