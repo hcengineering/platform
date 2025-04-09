@@ -14,9 +14,8 @@
 -->
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import { ButtonIcon, navigate, resizeObserver } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { AccountUuid, Class, Doc, Ref } from '@hcengineering/core'
+  import { ButtonIcon, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
@@ -25,22 +24,24 @@
 
   import contact from '../../plugin'
   import Avatar from './Avatar.svelte'
-  import { employeeByIdStore, statusByUserStore } from '../../utils'
+  import { employeeByIdStore, getAccountClient } from '../../utils'
   import { EmployeePresenter } from '../../index'
   import TimePresenter from './TimePresenter.svelte'
   import DeactivatedHeader from './DeactivatedHeader.svelte'
+  import Loading from '@hcengineering/ui/src/components/Loading.svelte'
 
   export let employeeId: Ref<Employee>
   export let disabled: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const dispatch = createEventDispatcher()
 
   let employee: Employee | undefined = undefined
+  let timezone: string | undefined = undefined
+  let isTimezoneLoading = true
 
   $: employee = $employeeByIdStore.get(employeeId)
-  $: isOnline = employee?.personUuid !== undefined && $statusByUserStore.get(employee.personUuid)?.online === true
+  $: void loadPersonTimezone(employee?.personUuid)
 
   async function viewProfile (): Promise<void> {
     if (employee === undefined) return
@@ -48,6 +49,14 @@
     const comp = panelComponent?.component ?? view.component.EditDoc
     const loc = await getObjectLinkFragment(hierarchy, employee, {}, comp)
     navigate(loc)
+  }
+
+  async function loadPersonTimezone (personId: AccountUuid | undefined): Promise<void> {
+    if (personId === undefined) return
+    isTimezoneLoading = true
+    const accountInfo = await getAccountClient().getAccountInfo(personId)
+    timezone = accountInfo.timezone
+    isTimezoneLoading = false
   }
 </script>
 
@@ -77,8 +86,12 @@
           <span class="username">
             <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
           </span>
-          <span class="username">
-            <TimePresenter localTime="6:27 local time" />
+          <span class="flex-presenter">
+            {#if isTimezoneLoading}
+              <Loading size="small" />
+            {:else if timezone !== undefined}
+              <TimePresenter {timezone} />
+            {/if}
           </span>
         </div>
       </div>

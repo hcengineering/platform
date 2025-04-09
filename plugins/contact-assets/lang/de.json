@@ -111,6 +111,7 @@
     "ViberPlaceholder": "Viber",
     "UserProfile": "Benutzerprofil",
     "DeactivatedAccount": "Deaktivierter Account",
-    "Achievements": "Erfolge"
+    "Achievements": "Erfolge",
+    "LocalTime": "Ortszeit"
   }
 }

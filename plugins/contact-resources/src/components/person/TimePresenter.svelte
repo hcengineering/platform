@@ -13,11 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon } from '@hcengineering/ui'
+  import { Icon, Label } from '@hcengineering/ui'
 
   import contact from '@hcengineering/contact'
 
-  export let localTime: string
+  export let timezone: string
+
+  function displayTimeInTimezone (timezone: string): string {
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit'
+    }
+
+    const formatter = new Intl.DateTimeFormat([], options)
+    const now = new Date()
+    return formatter.format(now)
+  }
 </script>
 
 <div class="time-container">
@@ -25,7 +37,7 @@
     <Icon icon={contact.icon.Clock} size={'small'} />
   </div>
   <div class="time-text">
-    <span class="time-text-span">{localTime}</span>
+    <span class="time-text-span">{displayTimeInTimezone(timezone)} <Label label={contact.string.LocalTime}/></span>
   </div>
 </div>
 

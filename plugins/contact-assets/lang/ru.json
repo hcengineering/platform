@@ -115,6 +115,7 @@
     "Confirmed": "Подтвержден",
     "UserProfile": "Профиль пользователя",
     "DeactivatedAccount": "Деактивированный аккаунт",
-    "Achievements": "Достижения"
+    "Achievements": "Достижения",
+    "LocalTime": "местного времени"
   }
 }

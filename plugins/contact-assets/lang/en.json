@@ -116,6 +116,7 @@
     "UserProfile": "User profile",
     "DeactivatedAccount": "Deactivated account",
     "Achievements": "Achievements",
-    "AchievementsHeader": "Achievements"
+    "AchievementsHeader": "Achievements",
+    "LocalTime": "local time"
   }
 }

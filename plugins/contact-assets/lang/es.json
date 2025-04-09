@@ -115,6 +115,7 @@
     "Confirmed": "Confirmado",
     "UserProfile": "Perfil de usuario",
     "DeactivatedAccount": "Cuenta desactivada",
-    "Achievements": "Logros"
+    "Achievements": "Logros",
+    "LocalTime": "hora local"
   }
 }
