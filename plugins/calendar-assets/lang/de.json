@@ -92,13 +92,15 @@
     "ScheduleDeleteConfirm": "Der Zeitplan wird gelöscht. Bestätigen?",
     "ScheduleShareLink": "Link teilen",
     "ScheduleSharedLinkMessage": "<p>Teilen Sie diesen Link, damit andere ein Meeting mit Ihnen buchen können:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
-    "ScheduleSharedLinkCopy": "Link kopieren",
+    "CopyLink": "Link kopieren",
     "ScheduleAvailability": "Verfügbarkeit",
     "ScheduleUnavailable": "Nicht verfügbar",
     "ScheduleTitlePlaceholder": "Zeitplantitel",
     "ScheduleAddPeriod": "Zeitraum hinzufügen",
     "ScheduleRemovePeriod": "Zeitraum entfernen",
     "MeetingDuration": "Meetingdauer",
-    "MeetingInterval": "Pause zwischen Meetings"
+    "MeetingInterval": "Pause zwischen Meetings",
+    "CalDavShareLink": "CalDav-Link abrufen",
+    "CalDavSharedLinkMessage": "<p>Verwenden Sie diesen Link, um den Kalender in einem externen Client zu registrieren, der das CalDav-Protokoll unterstützt:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>"
   }
 }

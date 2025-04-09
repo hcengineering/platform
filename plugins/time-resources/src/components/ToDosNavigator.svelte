@@ -1,8 +1,9 @@
 <script lang="ts">
+  import calendar from '@hcengineering/calendar'
   import { ScheduleNavSection } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { NavFooter } from '@hcengineering/workbench-resources'
   import tagsPlugin, { TagElement as TagElementType } from '@hcengineering/tags'
@@ -15,7 +16,12 @@
     Month,
     getPlatformColorDef,
     themeStore,
-    deviceOptionsStore as deviceInfo
+    deviceOptionsStore as deviceInfo,
+    ButtonIcon,
+    showPopup,
+    Menu,
+    IconMoreV,
+    IconLink
   } from '@hcengineering/ui'
   import { ToDosMode } from '..'
   import time from '../plugin'
@@ -102,6 +108,26 @@
 
   const counters: Record<string, number> = {}
   const today: Date = new Date()
+
+  let pressed: boolean = false
+
+  function menuButtonClicked (ev: MouseEvent): void {
+    pressed = true
+    const actions = [
+      {
+        label: calendar.string.CalDavShareLink,
+        icon: IconLink,
+        action: async (): Promise<void> => {
+          await (
+            await getResource(calendar.function.ShareCalDavLink)
+          )()
+        }
+      }
+    ]
+    showPopup(Menu, { actions }, ev.target as HTMLElement, () => {
+      pressed = false
+    })
+  }
 </script>
 
 <div
@@ -111,6 +137,7 @@
   <div class="antiPanel-wrap__content hulyNavPanel-container">
     <div class="hulyNavPanel-header">
       <Label label={time.string.Planner} />
+      <ButtonIcon icon={IconMoreV} hasMenu {pressed} kind="tertiary" size="small" on:click={menuButtonClicked} />
     </div>
 
     <Scroller shrink>

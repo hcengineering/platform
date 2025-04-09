@@ -92,13 +92,15 @@
     "ScheduleDeleteConfirm": "Plán bude smazán. Potvrdit?",
     "ScheduleShareLink": "Sdílet odkaz",
     "ScheduleSharedLinkMessage": "<p>Sdílením tohoto odkazu umožníte ostatním zarezervovat si s vámi schůzku:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
-    "ScheduleSharedLinkCopy": "Kopírovat odkaz",
+    "CopyLink": "Kopírovat odkaz",
     "ScheduleAvailability": "Dostupnost",
     "ScheduleUnavailable": "Nedostupné",
     "ScheduleTitlePlaceholder": "Název plánu",
     "ScheduleAddPeriod": "Přidat období",
     "ScheduleRemovePeriod": "Odebrat období",
     "MeetingDuration": "Trvání schůzky",
-    "MeetingInterval": "Pauza mezi schůzkami"
+    "MeetingInterval": "Pauza mezi schůzkami",
+    "CalDavShareLink": "Získat CalDav odkaz",
+    "CalDavSharedLinkMessage": "<p>Použijte tento odkaz k registraci kalendáře v externím klientovi podporujícím protokol CalDav:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>"
   }
 }
