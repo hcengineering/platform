@@ -37,7 +37,7 @@
     <Icon icon={contact.icon.Clock} size={'small'} />
   </div>
   <div class="time-text">
-    <span class="time-text-span">{displayTimeInTimezone(timezone)} <Label label={contact.string.LocalTime}/></span>
+    <span class="time-text-span">{displayTimeInTimezone(timezone)} <Label label={contact.string.LocalTime} /></span>
   </div>
 </div>
 

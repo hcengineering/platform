@@ -948,7 +948,7 @@ export async function doLoginNavigate (
 export function isWorkspaceLoginInfo (
   info: WorkspaceLoginInfo | LoginInfo | WorkspaceInviteInfo | null
 ): info is WorkspaceLoginInfo {
-  return (info)?.workspace !== undefined && (info)?.token !== undefined
+  return info?.workspace !== undefined && info?.token !== undefined
 }
 
 export function getAccountDisplayName (loginInfo: LoginInfo | null): string {

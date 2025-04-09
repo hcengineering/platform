@@ -36,7 +36,7 @@
 
 <ButtonBase
   bind:element
-  type={type}
+  {type}
   {title}
   {shape}
   {label}
