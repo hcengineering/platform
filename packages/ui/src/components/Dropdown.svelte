@@ -47,7 +47,8 @@
   const mgr = getFocusManager()
 </script>
 
-<div bind:this={container}
+<div
+  bind:this={container}
   class={stretchWidth ? 'flex-row-center' : 'min-w-0'}
   style={stretchWidth ? 'flex: 1' : undefined}
 >
@@ -55,7 +56,7 @@
     {focusIndex}
     icon={icon !== undefined ? selected?.icon ?? icon : undefined}
     iconProps={selected?.iconProps}
-    width={stretchWidth ? 'unset' : (width ?? 'min-content')}
+    width={stretchWidth ? 'unset' : width ?? 'min-content'}
     flex={stretchWidth ? '1' : undefined}
     {size}
     {kind}

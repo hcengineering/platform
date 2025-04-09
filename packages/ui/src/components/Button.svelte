@@ -147,7 +147,7 @@
   style:min-width={minWidth}
   style:width
   style:height
-  style:flex={flex}
+  style:flex
   style:flex-shrink={shrink}
   style:padding
   {title}

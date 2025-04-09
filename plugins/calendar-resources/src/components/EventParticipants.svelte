@@ -98,7 +98,6 @@
   </div>
 {/if}
 {#if allParticipants.length}
-<div>
   <Scroller padding={disabled ? '.5rem 0 0 1.25rem' : '.125rem 0 0 1.25rem'} shrink>
     {#if disabled}
       <div style="position:absolute; left:0; top:1rem">
@@ -166,5 +165,4 @@
     {/if}
     <div class="antiVSpacer x0-5" />
   </Scroller>
-</div>
 {/if}
