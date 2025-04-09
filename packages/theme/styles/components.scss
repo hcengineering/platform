@@ -2005,10 +2005,10 @@
   &.leftPadding { padding-left: 0.625rem; }
   &::before {
     position: absolute;
-    top: -.125rem;
-    bottom: -.125rem;
-    left: -.125rem;
-    right: -.125rem;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
     border: 1px solid var(--primary-button-default);
     border-radius: .5rem;
     z-index: -1;

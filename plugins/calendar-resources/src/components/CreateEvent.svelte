@@ -239,7 +239,7 @@
     <div class="block">
       <DocCreateExtComponent manager={docCreateManager} kind={'body'} />
     </div>
-    <div class="block row">
+    <div class="block description">
       <div class="top-icon">
         <Icon icon={calendar.icon.Description} size={'small'} />
       </div>
@@ -300,7 +300,7 @@
       &:not(:last-child) {
         border-bottom: 1px solid var(--theme-divider-color);
       }
-      &:not(.row) {
+      &:not(.description) {
         flex-direction: column;
       }
       &.first {
@@ -312,8 +312,8 @@
       &.rightCropPadding {
         padding: 0.75rem 1rem 0.75rem 1.25rem;
       }
-      &.row {
-        padding: 0 1.25rem 0.5rem;
+      &.description {
+        padding: 0 1.25rem;
       }
     }
     .top-icon {

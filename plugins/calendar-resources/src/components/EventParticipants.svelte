@@ -83,21 +83,28 @@
   }
 </script>
 
-<div class="flex-row-center flex-gap-1 container flex-no-shrink">
-  <Icon icon={calendar.icon.Participants} size="small" />
-  <AddParticipant
-    {placeholder}
-    excluded={participants}
-    focusable
-    fullSize
-    {disabled}
-    {focusIndex}
-    on:ref={ref}
-    on:enter={enter}
-  />
-</div>
+{#if !disabled}
+  <div class="flex-row-center flex-gap-1 container flex-no-shrink">
+    <Icon icon={calendar.icon.Participants} size="small" />
+    <AddParticipant
+      {placeholder}
+      excluded={participants}
+      focusable
+      fullSize
+      {focusIndex}
+      on:ref={ref}
+      on:enter={enter}
+    />
+  </div>
+{/if}
 {#if allParticipants.length}
-  <Scroller padding={'.125rem .375rem 0 1.5rem'} shrink>
+<div>
+  <Scroller padding={disabled ? '.5rem 0 0 1.25rem' : '.125rem 0 0 1.25rem'} shrink>
+    {#if disabled}
+      <div style="position:absolute; left:0; top:1rem">
+        <Icon icon={calendar.icon.Participants} size="small" />
+      </div>
+    {/if}
     {#if needShort && !shown}
       {#each shortParticipants as p, i}
         <EventParticipantItem
@@ -123,7 +130,9 @@
           focusIndex={-1}
           on:click={() => (shown = true)}
         />
-        <span class="overflow-label flex-grow ml-2">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span class="overflow-label flex-grow ml-2" style="cursor:pointer" on:click={() => (shown = true)}>
           <Label label={calendar.string.SeeAllNumberParticipants} params={{ value: allParticipants.length }} />
         </span>
       </div>
@@ -157,4 +166,5 @@
     {/if}
     <div class="antiVSpacer x0-5" />
   </Scroller>
+</div>
 {/if}

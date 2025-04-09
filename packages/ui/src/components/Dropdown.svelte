@@ -34,6 +34,7 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
+  export let stretchWidth: boolean | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let focusIndex = -1
 
@@ -46,12 +47,16 @@
   const mgr = getFocusManager()
 </script>
 
-<div bind:this={container} class="min-w-0">
+<div bind:this={container}
+  class={stretchWidth ? 'flex-row-center' : 'min-w-0'}
+  style={stretchWidth ? 'flex: 1' : undefined}
+>
   <Button
     {focusIndex}
     icon={icon !== undefined ? selected?.icon ?? icon : undefined}
     iconProps={selected?.iconProps}
-    width={width ?? 'min-content'}
+    width={stretchWidth ? 'unset' : (width ?? 'min-content')}
+    flex={stretchWidth ? '1' : undefined}
     {size}
     {kind}
     {justify}
