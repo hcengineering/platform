@@ -14,22 +14,20 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { IconWithEmoji, NavItem } from '@hcengineering/ui'
-  import { NavLink } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
-  import card from '../plugin'
+  import { IconWithEmoji, NavItem, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import card from '../../plugin'
   import view from '@hcengineering/view'
 
+  export let space: Ref<Space>
   export let classes: MasterTag[] = []
   export let allClasses: MasterTag[] = []
   export let _class: Ref<Class<Doc>> | undefined
-  export let deselect: boolean = false
   export let level: number = 0
+  export let currentSpace: Ref<Space> | undefined
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
   let descendants = new Map<Ref<Class<Doc>>, MasterTag[]>()
 
   function getDescendants (_class: Ref<MasterTag>): MasterTag[] {
@@ -53,25 +51,42 @@
   }
 
   $: fillDescendants(allClasses)
+
+  function select (clazz: Ref<Class<Doc>>, space: Ref<Space>): void {
+    const loc = getCurrentLocation()
+    loc.path[3] = space
+    loc.path[4] = clazz
+    loc.path.length = 5
+    navigate(loc)
+  }
 </script>
 
 {#each classes as clazz}
-  <NavLink space={clazz._id}>
-    <NavItem
-      _id={clazz._id}
-      label={clazz.label}
-      icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz.icon}
-      iconProps={clazz.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
-      isFold
-      empty
-      {level}
-      selected={!deselect && clazz._id === _class}
-      on:click={() => {
-        dispatch('select', clazz._id)
-      }}
-    />
-  </NavLink>
-  {#if (descendants.get(clazz._id)?.length ?? 0) > 0}
-    <svelte:self classes={descendants.get(clazz._id) ?? []} {_class} {allClasses} level={level + 1} on:select />
-  {/if}
+  <NavItem
+    _id={clazz._id}
+    label={clazz.label}
+    icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz.icon}
+    iconProps={clazz.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
+    isFold
+    empty={(descendants.get(clazz._id)?.length ?? 0) === 0}
+    {level}
+    selected={clazz._id === _class && currentSpace === space}
+    on:click={() => {
+      select(clazz._id, space)
+    }}
+  >
+    <svelte:fragment slot="dropbox">
+      {#if (descendants.get(clazz._id)?.length ?? 0) > 0}
+        <svelte:self
+          classes={descendants.get(clazz._id) ?? []}
+          {space}
+          {currentSpace}
+          {_class}
+          {allClasses}
+          level={level + 1}
+          on:select
+        />
+      {/if}
+    </svelte:fragment>
+  </NavItem>
 {/each}

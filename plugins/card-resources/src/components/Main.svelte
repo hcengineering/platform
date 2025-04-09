@@ -14,60 +14,46 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Separator, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { location } from '@hcengineering/ui'
   import { SpecialView } from '@hcengineering/workbench-resources'
   import { onDestroy } from 'svelte'
   import card from '../plugin'
-  import Navigator from './Navigator.svelte'
 
-  export let currentSpace: Ref<Class<Doc>>
+  export let currentSpace: Ref<Space>
 
-  let classes: MasterTag[] = []
+  let _class: Ref<Class<Doc>> | undefined
+
+  onDestroy(
+    location.subscribe((loc) => {
+      _class = loc.path[4]
+    })
+  )
+
   let allClasses: MasterTag[] = []
-
-  function fillClasses (tags: MasterTag[]): void {
-    classes = tags.filter((it) => it.extends === card.class.Card).sort((a, b) => a.label.localeCompare(b.label))
-  }
 
   const query = createQuery()
   query.query(card.class.MasterTag, {}, (res) => {
-    const notRemoved = res.filter((it) => it.removed !== true)
-    allClasses = notRemoved
-    fillClasses(notRemoved)
+    allClasses = res.filter((it) => it.removed !== true)
   })
 
-  $: clazz = allClasses.find((it) => it._id === currentSpace)
+  $: clazz = allClasses.find((it) => it._id === _class)
 
   $: label = getLabel(clazz)
 
   function getLabel (clazz: MasterTag | undefined): IntlString | undefined {
     return clazz?.label
   }
-
-  let replacedPanel: HTMLElement
-  $: $deviceInfo.replacedPanel = replacedPanel
-  onDestroy(() => ($deviceInfo.replacedPanel = undefined))
 </script>
 
-<div class="hulyPanels-container">
-  {#if $deviceInfo.navigator.visible}
-    <Navigator _class={clazz?._id} {classes} {allClasses} />
-    <Separator
-      name={'workbench'}
-      float={$deviceInfo.navigator.float}
-      index={0}
-      color={'transparent'}
-      separatorSize={0}
-      short
-    />
-  {/if}
-
-  <div class="hulyComponent" bind:this={replacedPanel}>
-    {#if clazz !== undefined && label !== undefined}
-      <SpecialView _class={clazz._id} {label} icon={card.icon.Card} />
-    {/if}
-  </div>
-</div>
+{#if clazz !== undefined && label !== undefined}
+  <SpecialView
+    _class={clazz._id}
+    baseQuery={{ space: currentSpace }}
+    space={currentSpace}
+    {label}
+    icon={card.icon.Card}
+  />
+{/if}

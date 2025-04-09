@@ -12,12 +12,21 @@
 // limitations under the License.
 
 import activity from '@hcengineering/activity'
-import { cardId, DOMAIN_CARD, type Card, type MasterTag, type ParentInfo, type Tag } from '@hcengineering/card'
+import {
+  cardId,
+  type CardSpace,
+  DOMAIN_CARD,
+  type Card,
+  type MasterTag,
+  type ParentInfo,
+  type Tag
+} from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
 import core, {
   AccountRole,
   ClassifierKind,
   DOMAIN_MODEL,
+  DOMAIN_SPACE,
   IndexKind,
   SortingOrder,
   type Blobs,
@@ -38,7 +47,7 @@ import {
   type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import { TClass, TDoc, TMixin } from '@hcengineering/model-core'
+import { TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { createAction } from '@hcengineering/model-view'
@@ -91,6 +100,12 @@ export class TCard extends TDoc implements Card {
   children?: number
 
   parentInfo!: ParentInfo[]
+}
+
+@Model(card.class.CardSpace, core.class.Space, DOMAIN_SPACE)
+@UX(core.string.Space)
+export class TCardSpace extends TSpace implements CardSpace {
+  types!: Ref<MasterTag>[]
 }
 
 @Model(card.class.MasterTagEditorSection, core.class.Doc, DOMAIN_MODEL)
@@ -174,10 +189,55 @@ export function createSystemType (
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection)
+  builder.createModel(TMasterTag, TTag, TCard, MasterTagEditorSection, TCardSpace)
 
   createSystemType(builder, card.types.File, attachment.string.File, card.icon.File)
   createSystemType(builder, card.types.Document, card.string.Document, card.icon.Document)
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: card.class.CardSpace,
+    descriptor: view.viewlet.Table,
+    configOptions: {
+      hiddenKeys: ['name', 'description']
+    },
+    config: ['', 'members', 'private', 'archived'],
+    viewOptions: {
+      groupBy: [],
+      orderBy: [],
+      other: [
+        {
+          key: 'hideArchived',
+          type: 'toggle',
+          defaultValue: true,
+          actionTarget: 'options',
+          action: view.function.HideArchived,
+          label: view.string.HideArchived
+        }
+      ]
+    }
+  })
+
+  createAction(builder, {
+    action: card.actionImpl.EditSpace,
+    label: presentation.string.Edit,
+    icon: view.icon.Edit,
+    input: 'focus',
+    category: view.category.General,
+    target: card.class.CardSpace,
+    visibilityTester: view.function.CanEditSpace,
+    query: {},
+    context: {
+      mode: ['context', 'browser'],
+      group: 'edit'
+    }
+  })
+
+  builder.mixin(card.class.CardSpace, core.class.Class, workbench.mixin.SpaceView, {
+    view: {
+      class: card.class.Card,
+      component: card.component.Main
+    }
+  })
 
   builder.createDoc(
     workbench.class.Application,
@@ -190,10 +250,42 @@ export function createModel (builder: Builder): void {
       hidden: false,
       locationResolver: card.resolver.Location,
       locationDataResolver: card.resolver.LocationData,
-      component: card.component.Main
+      navigatorModel: {
+        specials: [
+          {
+            id: 'browser',
+            accessLevel: AccountRole.User,
+            label: core.string.Spaces,
+            icon: view.icon.List,
+            component: workbench.component.SpecialView,
+            componentProps: {
+              _class: card.class.CardSpace,
+              icon: view.icon.List,
+              label: core.string.Spaces
+            },
+            position: 'top'
+          }
+        ],
+        spaces: [
+          {
+            id: 'spaces',
+            label: core.string.Spaces,
+            spaceClass: card.class.CardSpace,
+            addSpaceLabel: core.string.Space,
+            icon: card.icon.Card,
+            // intentionally left empty in order to make space presenter working
+            specials: []
+          }
+        ]
+      },
+      navHeaderComponent: card.component.NewCardHeader
     },
     card.app.Card
   )
+
+  builder.mixin(card.class.CardSpace, core.class.Class, view.mixin.SpacePresenter, {
+    presenter: card.component.SpacePresenter
+  })
 
   createAction(
     builder,
