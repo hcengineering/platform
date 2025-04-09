@@ -14,8 +14,21 @@
 //
 
 import { extractToken } from '@hcengineering/server-client'
-import { type Response, type Request, type NextFunction } from 'express'
+import { type Response, type Request, type NextFunction, RequestHandler } from 'express'
 import { ApiError } from './error'
+
+export interface KeepAliveOptions {
+  timeout: number
+  max: number
+}
+
+export const keepAlive = (options: KeepAliveOptions): RequestHandler => {
+  const { timeout, max } = options
+  return (req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('Connection', 'keep-alive')
+    res.setHeader('Keep-Alive', `timeout=${timeout}, max=${max}`)
+  }
+}
 
 export const withAuthorization = (req: Request, res: Response, next: NextFunction): void => {
   try {

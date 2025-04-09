@@ -30,7 +30,7 @@ import onHeaders from 'on-headers'
 import { cacheControl } from './const'
 import { createDb } from './datalake/db'
 import { ApiError } from './error'
-import { withAuthorization, withBlob, withWorkspace } from './middleware'
+import { keepAlive, withAuthorization, withBlob, withWorkspace } from './middleware'
 import {
   handleBlobDelete,
   handleBlobDeleteList,
@@ -124,6 +124,7 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
   app.use(cors())
   app.use(express.json({ limit: '50mb' }))
   app.use(fileUpload({ useTempFiles: true, tempFileDir }))
+  app.use(keepAlive({ timeout: 5, max: 1000 }))
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
   const requests = ctx.newChild('requests', {}, {}, childLogger)
