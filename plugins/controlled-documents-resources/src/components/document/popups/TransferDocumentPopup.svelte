@@ -139,8 +139,9 @@
   const externalSpaces = hierarchy.getDescendants(documents.class.ExternalSpace)
 
   $: hasParentSelector = targetSpaceId !== documents.space.UnsortedTemplates
-  $: permissionRestrictedSpaces = Object.keys($permissionsStore.ps)
-    .filter((s) => !checkMyPermission(documents.permission.CreateDocument, s as Ref<TypedSpace>, $permissionsStore))
+  $: permissionRestrictedSpaces = Object.keys($permissionsStore.ps).filter(
+    (s) => !checkMyPermission(documents.permission.CreateDocument, s as Ref<TypedSpace>, $permissionsStore)
+  ) as Ref<TypedSpace>[]
   $: restrictedSpaces =
     sourceSpaceId !== undefined ? permissionRestrictedSpaces.concat(sourceSpaceId) : permissionRestrictedSpaces
 
