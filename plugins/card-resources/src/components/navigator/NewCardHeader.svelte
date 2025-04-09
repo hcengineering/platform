@@ -13,16 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import {
     AccountRole,
     Data,
+    fillDefaults,
+    getCurrentAccount,
+    hasAccountRole,
     MarkupBlobRef,
     Ref,
     SortingOrder,
-    Space,
-    fillDefaults,
-    getCurrentAccount,
-    hasAccountRole
+    Space
   } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -36,13 +37,12 @@
     SelectPopupValueType,
     showPopup
   } from '@hcengineering/ui'
-  import { Analytics } from '@hcengineering/analytics'
 
-  import card from '../../plugin'
-  import CreateSpace from './CreateSpace.svelte'
   import { Card, CardEvents, MasterTag } from '@hcengineering/card'
   import { translate } from '@hcengineering/platform'
   import { makeRank } from '@hcengineering/rank'
+  import card from '../../plugin'
+  import CreateSpace from './CreateSpace.svelte'
 
   export let currentSpace: Ref<Space> | undefined
 
@@ -56,7 +56,7 @@
   let hasSpace = false
   query.query(
     card.class.CardSpace,
-    { archived: false, members: me._id },
+    { archived: false, members: me.uuid },
     (res) => {
       hasSpace = res.length > 0
       loading = false

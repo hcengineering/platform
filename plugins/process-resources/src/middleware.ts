@@ -79,7 +79,7 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         autoStart: true
       })
       for (const proc of processes) {
-        await createExecution(createTx.objectId, proc._id)
+        await createExecution(createTx.objectId, proc._id, createTx.objectSpace)
       }
     }
   }
@@ -95,7 +95,7 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       .getModel()
       .findAllSync(process.class.Process, { masterTag: mixinTx.mixin, autoStart: true })
     for (const proc of processes) {
-      await createExecution(mixinTx.objectId, proc._id)
+      await createExecution(mixinTx.objectId, proc._id, mixinTx.objectSpace)
     }
   }
 
