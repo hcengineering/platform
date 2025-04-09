@@ -29,6 +29,7 @@ import {
   MeasureContext,
   notEmpty,
   PersonId,
+  pickPrimarySocialId,
   Ref,
   SocialId,
   toIdMap,
@@ -283,15 +284,6 @@ export function formatContactName (
   return name
 }
 
-// TODO: remove me in favor of the same util in core package
-export function pickPrimarySocialId (ids: PersonId[]): PersonId {
-  if (ids.length === 0) {
-    throw new Error('No social ids provided')
-  }
-
-  return ids[0]
-}
-
 export function includesAny (members: PersonId[], ids: PersonId[]): boolean {
   return members.some((m) => ids.includes(m))
 }
@@ -337,13 +329,13 @@ export async function getPersonRefsBySocialIds (
 }
 
 export async function getPrimarySocialId (client: Client, person: Ref<Person>): Promise<PersonId | undefined> {
-  const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: person })
+  const socialIds = await client.findAll(contact.class.SocialIdentity, { attachedTo: person, verifiedOn: { $gt: 0 } })
 
   if (socialIds.length === 0) {
     return
   }
 
-  return pickPrimarySocialId(socialIds.map((it) => it._id))
+  return pickPrimarySocialId(socialIds)._id
 }
 
 export async function getAllSocialStringsByPersonId (client: Client, personId: PersonId): Promise<PersonId[]> {
@@ -391,12 +383,6 @@ export async function getAllAccounts (client: Client): Promise<AccountUuid[]> {
   const employees = await client.findAll(contact.mixin.Employee, { active: true })
 
   return employees.map((it) => it.personUuid).filter(notEmpty)
-}
-
-export async function getAllEmployeesPrimarySocialStrings (client: Client): Promise<PersonId[]> {
-  const socialStringsByPerson = getSocialStringsByEmployee(client)
-
-  return Object.values(socialStringsByPerson).map((it) => pickPrimarySocialId(it))
 }
 
 export async function getAllUserAccounts (client: Client): Promise<AccountUuid[]> {

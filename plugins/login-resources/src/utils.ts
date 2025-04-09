@@ -27,6 +27,7 @@ import {
   AccountRole,
   concatLink,
   parseSocialIdString,
+  type AccountUuid,
   type Person,
   type WorkspaceInfoWithStatus,
   type WorkspaceUserOperation
@@ -661,7 +662,7 @@ export async function changeUsername (first: string, last: string): Promise<void
   }
 }
 
-export async function leaveWorkspace (account: string): Promise<LoginInfo | null> {
+export async function leaveWorkspace (account: AccountUuid): Promise<LoginInfo | null> {
   return await getAccountClient().leaveWorkspace(account)
 }
 

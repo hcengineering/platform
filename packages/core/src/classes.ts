@@ -544,7 +544,7 @@ export interface Person {
 }
 
 export interface PersonInfo extends BasePerson {
-  socialIds: PersonId[]
+  socialIds: SocialId[]
 }
 
 /**
@@ -830,7 +830,7 @@ export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
 }
 
 export interface WorkspaceMemberInfo {
-  person: PersonUuid
+  person: AccountUuid
   role: AccountRole
 }
 

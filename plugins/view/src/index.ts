@@ -175,6 +175,7 @@ const view = plugin(viewId, {
     SearchSelector: '' as AnyComponent,
     FoldersBrowser: '' as AnyComponent,
     PersonIdPresenter: '' as AnyComponent,
+    PersonIdFilter: '' as AnyComponent,
     RolePresenter: '' as AnyComponent
   },
   ids: {

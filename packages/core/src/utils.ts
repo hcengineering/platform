@@ -930,8 +930,9 @@ export function pickPrimarySocialId (socialIds: SocialId[]): SocialId {
   if (socialIds.length === 0) {
     throw new Error('No social ids provided')
   }
+  const hulySocialIds = socialIds.filter((si) => si.type === SocialIdType.HULY)
 
-  return socialIds[0]
+  return hulySocialIds[0] ?? socialIds[0]
 }
 
 export function notEmpty<T> (id: T | undefined | null): id is T {

@@ -26,10 +26,10 @@ import {
   type Branding,
   type Person,
   type PersonId,
-  type PersonInfo,
   type PersonUuid,
   type WorkspaceMemberInfo,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type AccountUuid
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
@@ -89,7 +89,8 @@ import {
   addSocialId,
   releaseSocialId,
   updateWorkspaceRole,
-  setTimezoneIfNotDefined
+  setTimezoneIfNotDefined,
+  confirmHulyIds
 } from './utils'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 
@@ -128,7 +129,7 @@ export async function login (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
-    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
+    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
     if (existingAccount == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -147,7 +148,7 @@ export async function login (
 
     const extraToken: Record<string, string> = isAdminEmail(email) ? { admin: 'true' } : {}
     ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
-    void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, existingAccount, meta)
+    void setTimezoneIfNotDefined(ctx, db, existingAccount.uuid, existingAccount, meta)
 
     return {
       account: existingAccount.uuid,
@@ -183,13 +184,13 @@ export async function loginOtp (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  const account = await getAccount(db, emailSocialId.personUuid)
+  const account = await getAccount(db, emailSocialId.personUuid as AccountUuid)
 
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, account, meta)
+  void setTimezoneIfNotDefined(ctx, db, account.uuid, account, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -247,8 +248,7 @@ export async function signUpOtp (
     email: string
     firstName: string
     lastName: string
-  },
-  meta?: Meta
+  }
 ): Promise<OtpInfo> {
   const { email, firstName, lastName } = params
   // Note: can support OTP based on any other social logins later
@@ -257,7 +257,7 @@ export async function signUpOtp (
   let personUuid: PersonUuid
 
   if (emailSocialId !== null) {
-    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
+    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
     if (existingAccount !== null) {
       ctx.error('An account with the provided email already exists', { email })
@@ -274,7 +274,6 @@ export async function signUpOtp (
     const emailSocialIdId = await db.socialId.insertOne(newSocialId)
     emailSocialId = { ...newSocialId, _id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
   }
-  void setTimezoneIfNotDefined(ctx, db, personUuid, null, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -287,7 +286,8 @@ export async function validateOtp (
   params: {
     email: string
     code: string
-  }
+  },
+  meta?: Meta
 ): Promise<LoginInfo> {
   const { email, code } = params
 
@@ -312,7 +312,7 @@ export async function validateOtp (
   }
 
   // This method handles both login and signup
-  const account = await db.account.findOne({ uuid: emailSocialId.personUuid })
+  const account = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
   if (account == null) {
     // This is a signup
@@ -320,10 +320,12 @@ export async function validateOtp (
 
     ctx.info('OTP signup success', emailSocialId)
   } else {
-    // Confirm huly social id if hasn't been confirmed yet
+    await confirmHulyIds(ctx, db, account.uuid)
 
     ctx.info('OTP login success', emailSocialId)
   }
+
+  void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid as AccountUuid, account, meta)
 
   const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
   if (person == null) {
@@ -331,7 +333,7 @@ export async function validateOtp (
   }
 
   return {
-    account: emailSocialId.personUuid,
+    account: emailSocialId.personUuid as AccountUuid,
     name: getPersonName(person),
     socialId: emailSocialId._id,
     token: generateToken(emailSocialId.personUuid)
@@ -764,7 +766,7 @@ export async function checkAutoJoin (
 
   // If it's an existing account we should check for saved token or ask for login to prevent accidental access through shared link
   if (emailSocialId != null) {
-    const targetAccount = await getAccount(db, emailSocialId.personUuid)
+    const targetAccount = await getAccount(db, emailSocialId.personUuid as AccountUuid)
     if (targetAccount != null) {
       if (targetAccount.automatic == null || !targetAccount.automatic) {
         if (token == null) {
@@ -883,6 +885,8 @@ export async function confirm (
 
   const socialId = await confirmEmail(ctx, db, account, email)
 
+  await confirmHulyIds(ctx, db, account)
+
   const person = await db.person.findOne({ uuid: account })
   if (person == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
@@ -951,7 +955,7 @@ export async function requestPasswordReset (
     )
   }
 
-  const account = await getAccount(db, emailSocialId.personUuid)
+  const account = await getAccount(db, emailSocialId.personUuid as AccountUuid)
 
   if (account == null) {
     ctx.info('Account not found', { email, normalizedEmail })
@@ -1038,7 +1042,7 @@ export async function leaveWorkspace (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { account: PersonUuid }
+  params: { account: AccountUuid }
 ): Promise<LoginInfo | null> {
   const { account: targetAccount } = params
   const { account, workspace } = decodeTokenVerbose(ctx, token)
@@ -1254,7 +1258,7 @@ export async function getLoginInfoByToken (
   branding: Branding | null,
   token: string
 ): Promise<LoginInfo | WorkspaceLoginInfo> {
-  let accountUuid: PersonUuid
+  let accountUuid: AccountUuid
   let workspaceUuid: WorkspaceUuid
   let extra: any
   try {
@@ -1382,32 +1386,6 @@ export async function getPerson (
   return person
 }
 
-export async function getPersonInfo (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { account: PersonUuid }
-): Promise<PersonInfo> {
-  const { account } = params
-  const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['workspace', 'tool'], extra)
-
-  const person = await db.person.findOne({ uuid: account })
-
-  if (person == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
-  }
-
-  const verifiedSocialIds = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
-
-  return {
-    personUuid: account,
-    name: getPersonName(person),
-    socialIds: verifiedSocialIds.map((it) => it._id)
-  }
-}
-
 export async function findPersonBySocialKey (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1425,7 +1403,7 @@ export async function findPersonBySocialKey (
   }
 
   if (params.requireAccount === true) {
-    const account = await db.account.findOne({ uuid: socialId.personUuid })
+    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
 
     return account?.uuid
   }
@@ -1451,7 +1429,7 @@ export async function findPersonBySocialId (
 
   // TODO: combine into one request with join
   if (requireAccount === true) {
-    const account = await db.account.findOne({ uuid: socialIdObj.personUuid })
+    const account = await db.account.findOne({ uuid: socialIdObj.personUuid as AccountUuid })
     if (account == null) {
       return
     }
@@ -1478,7 +1456,7 @@ export async function findSocialIdBySocialKey (
 
   // TODO: combine into one request with join
   if (requireAccount === true) {
-    const account = await db.account.findOne({ uuid: socialIdObj.personUuid })
+    const account = await db.account.findOne({ uuid: socialIdObj.personUuid as AccountUuid })
     if (account == null) {
       return
     }
@@ -1513,7 +1491,7 @@ export async function getAccountInfo (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { accountId: PersonUuid }
+  params: { accountId: AccountUuid }
 ): Promise<AccountInfo> {
   decodeTokenVerbose(ctx, token)
   const { accountId } = params
@@ -1689,7 +1667,6 @@ export type AccountMethods =
   | 'getLoginInfoByToken'
   | 'getSocialIds'
   | 'getPerson'
-  | 'getPersonInfo'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
   | 'findPersonBySocialKey'
@@ -1746,7 +1723,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getLoginInfoByToken: wrap(getLoginInfoByToken),
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),
-    getPersonInfo: wrap(getPersonInfo),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     findPersonBySocialId: wrap(findPersonBySocialId),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),

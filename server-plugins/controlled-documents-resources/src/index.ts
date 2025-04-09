@@ -1,7 +1,7 @@
 //
 // Copyright © 2023-2024 Hardcore Engineering Inc.
 //
-import { Person, pickPrimarySocialId, type Employee } from '@hcengineering/contact'
+import { Person, type Employee } from '@hcengineering/contact'
 import core, {
   AccountRole,
   combineAttributes,
@@ -13,14 +13,15 @@ import core, {
   TxCreateDoc,
   TxFactory,
   TxUpdateDoc,
+  systemAccountUuid,
+  pickPrimarySocialId,
   type Doc,
   type RolesAssignment,
   type Timestamp,
-  type TxCUD,
-  systemAccountUuid
+  type TxCUD
 } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
-import { getEmployees, getSocialStrings } from '@hcengineering/server-contact'
+import { getEmployees, getSocialIds } from '@hcengineering/server-contact'
 import { TriggerControl } from '@hcengineering/server-core'
 
 import documents, {
@@ -130,9 +131,14 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
   const dueDate: Timestamp | null =
     documentTraining.dueDays === null ? null : doc.effectiveDate + documentTraining.dueDays * 24 * 60 * 60 * 1000
 
-  const ownerSocialStrings = await getSocialStrings(control, doc.owner)
+  const ownerSocialIds = await getSocialIds(control, doc.owner)
+  if (ownerSocialIds.length === 0) {
+    console.error(`Owner ${doc.owner} has no social ids`)
+    return []
+  }
+
   // TODO: Encapsulate training request creation logic in training plugin?
-  const modifiedBy = pickPrimarySocialId(ownerSocialStrings)
+  const modifiedBy = pickPrimarySocialId(ownerSocialIds)._id
 
   let trainees: Array<Ref<Employee>> = documentTraining.trainees
   const roles = documentTraining.roles
