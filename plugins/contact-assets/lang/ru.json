@@ -114,6 +114,7 @@
     "Type": "Тип",
     "Confirmed": "Подтвержден",
     "UserProfile": "Профиль пользователя",
-    "DeactivatedAccount": "Деактивированный аккаунт"
+    "DeactivatedAccount": "Деактивированный аккаунт",
+    "Achievements": "Достижения"
   }
 }

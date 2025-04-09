@@ -82,7 +82,9 @@
           </span>
         </div>
       </div>
-      <AchievementsPresenter personId={employeeId} />
+      <div class="py-1">
+        <AchievementsPresenter personId={employeeId} />
+      </div>
     {:else}
       <div class="flex-presenter flex-gap-2 p-2">
         <Avatar size="large" person={employee} name={employee.name} {disabled} style="modern" />

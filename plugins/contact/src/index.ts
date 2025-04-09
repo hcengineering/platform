@@ -336,7 +336,8 @@ export const contactPlugin = plugin(contactId, {
     Type: '' as IntlString,
     Confirmed: '' as IntlString,
     UserProfile: '' as IntlString,
-    DeactivatedAccount: '' as IntlString
+    DeactivatedAccount: '' as IntlString,
+    Achievements: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

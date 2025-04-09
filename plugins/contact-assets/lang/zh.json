@@ -114,6 +114,7 @@
     "Type": "类型",
     "Confirmed": "已确认",
     "UserProfile": "用户资料",
-    "DeactivatedAccount": "已停用账户"
+    "DeactivatedAccount": "已停用账户",
+    "Achievements": "成就"
   }
 }

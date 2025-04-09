@@ -53,6 +53,7 @@
     padding-left: 4px;
     isolation: isolate;
     order: 0;
+    width: 100%;
 
     .main-container {
       padding: 16px 0;
@@ -74,7 +75,7 @@
 
   .image-container {
     /* image-container */
-    width: 360px;
+    width: 100%;
     min-height: 144px;
     display: flex;
 

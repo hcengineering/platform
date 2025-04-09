@@ -114,6 +114,7 @@
     "Type": "Type",
     "Confirmed": "Confirmé",
     "UserProfile": "Profil utilisateur",
-    "DeactivatedAccount": "Compte désactivé"
+    "DeactivatedAccount": "Compte désactivé",
+    "Achievements": "Achèvements"
   }
 }

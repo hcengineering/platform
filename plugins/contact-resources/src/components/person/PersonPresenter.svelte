@@ -1,2 +1,0 @@
-<style lang="scss">
-</style>
