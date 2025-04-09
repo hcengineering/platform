@@ -29,6 +29,7 @@ export interface Config {
   StreamUrl?: string
   DbUrl: string
   Buckets: BucketConfig[]
+  CleanupInterval: number
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -73,6 +74,7 @@ function parseBucketConfig (str: string): BucketConfig {
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4030,
+    CleanupInterval: parseNumber(process.env.CLEANUP_INTERVAL) ?? 30 * 1000,
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
     DbUrl: process.env.DB_URL,

@@ -17,10 +17,12 @@ import { MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
+import { pipeline, Readable } from 'stream'
 
 import { cacheControl } from '../const'
 import { type Datalake, wrapETag } from '../datalake'
-import { getBufferSha256, getStreamSha256 } from '../hash'
+import { getBufferSha256, getFileSha256 } from '../hash'
+import { type TemporaryDir } from '../tempdir'
 
 interface BlobParentRequest {
   parent: string | null
@@ -80,22 +82,18 @@ export async function handleBlobGet (
   const status = range != null && blob.bodyLength !== blob.size ? 206 : 200
   res.status(status)
 
-  const data = blob.body
-  data.pipe(res)
+  pipeline(blob.body, res, (err) => {
+    if (err != null) {
+      const error = err instanceof Error ? err.message : String(err)
+      ctx.error('error writing response', { workspace, name, error })
+      if (!res.headersSent) {
+        res.status(500).send('Internal Server Error')
+      }
+    }
+  })
 
-  await new Promise<void>((resolve, reject) => {
-    data.on('end', () => {
-      data.destroy()
-      res.end()
-      resolve()
-    })
-    data.on('error', (err) => {
-      ctx.error('error receive stream', { workspace, name, error: err })
-
-      res.end()
-      data.destroy()
-      reject(err)
-    })
+  req.on('close', () => {
+    blob.body.destroy()
   })
 }
 
@@ -186,7 +184,8 @@ export async function handleUploadFormData (
   ctx: MeasureContext,
   req: Request,
   res: Response,
-  datalake: Datalake
+  datalake: Datalake,
+  tempDir: TemporaryDir
 ): Promise<void> {
   const { workspace } = req.params
 
@@ -202,38 +201,46 @@ export async function handleUploadFormData (
 
   const result = await Promise.all(
     files.map(async ([file, key]) => {
-      const name = file.name
-      const size = file.size
-      const contentType = file.mimetype
-
-      let sha256: string
-      if (file.tempFilePath !== undefined) {
-        const stream = fs.createReadStream(file.tempFilePath)
-        try {
-          sha256 = await getStreamSha256(stream)
-        } finally {
-          stream.destroy()
-        }
-      } else {
-        sha256 = await getBufferSha256(file.data)
-      }
-
-      const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
-
       try {
-        const metadata = await datalake.put(ctx, workspace, name, sha256, data, {
-          size,
-          contentType,
-          lastModified: Date.now()
-        })
+        const name = file.name
+        const size = file.size
+        const contentType = file.mimetype
 
-        ctx.info('uploaded', { workspace, name, etag: metadata.etag, type: contentType })
+        let sha256: string
+        try {
+          sha256 =
+            file.tempFilePath !== undefined ? await getFileSha256(file.tempFilePath) : await getBufferSha256(file.data)
+        } catch (err: any) {
+          const error = err instanceof Error ? err.message : String(err)
+          ctx.error('failed to calculate file hash', { error })
+          throw err
+        }
 
-        return { key, metadata }
-      } catch (err: any) {
-        const error = err instanceof Error ? err.message : String(err)
-        ctx.error('failed to upload blob', { error: err })
-        return { key, error }
+        const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
+
+        try {
+          const metadata = await datalake.put(ctx, workspace, name, sha256, data, {
+            size,
+            contentType,
+            lastModified: Date.now()
+          })
+
+          ctx.info('uploaded', { workspace, name, etag: metadata.etag, type: contentType })
+
+          return { key, metadata }
+        } catch (err: any) {
+          const error = err instanceof Error ? err.message : String(err)
+          ctx.error('failed to upload blob', { error: err })
+          return { key, error }
+        } finally {
+          if (data instanceof Readable) {
+            data.destroy()
+          }
+        }
+      } finally {
+        if (file.tempFilePath !== undefined) {
+          tempDir.rm(file.tempFilePath)
+        }
       }
     })
   )
