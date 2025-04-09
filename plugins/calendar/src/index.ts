@@ -249,7 +249,8 @@ const calendarPlugin = plugin(calendarId, {
   },
   metadata: {
     CalendarServiceURL: '' as Metadata<string>,
-    PublicScheduleURL: '' as Metadata<string>
+    PublicScheduleURL: '' as Metadata<string>,
+    CalDavServerURL: '' as Metadata<string>
   },
   extensions: {
     EditEventExtensions: '' as ComponentExtensionId

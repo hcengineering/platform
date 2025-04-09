@@ -182,6 +182,7 @@ export interface Config {
   BACKUP_URL?: string
   STREAM_URL?: string
   PUBLIC_SCHEDULE_URL?: string
+  CALDAV_SERVER_URL?: string
   EXPORT_URL?: string
 }
 
@@ -440,6 +441,7 @@ export async function configurePlatform() {
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
   setMetadata(calendar.metadata.PublicScheduleURL, config.PUBLIC_SCHEDULE_URL)
+  setMetadata(calendar.metadata.CalDavServerURL, config.CALDAV_SERVER_URL)
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
   setMetadata(analyticsCollector.metadata.EndpointURL, config.ANALYTICS_COLLECTOR_URL)
   setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)

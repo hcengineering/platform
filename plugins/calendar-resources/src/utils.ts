@@ -5,12 +5,13 @@ import {
   type ReccuringInstance,
   generateEventId
 } from '@hcengineering/calendar'
-import { type DocumentUpdate, type IdMap, type Timestamp, getCurrentAccount, toIdMap } from '@hcengineering/core'
-import { createQuery, getClient, MessageBox, onClient } from '@hcengineering/presentation'
+import { type DocumentUpdate, type IdMap, SocialIdType, type Timestamp, getCurrentAccount, toIdMap } from '@hcengineering/core'
+import { createQuery, getClient, getCurrentWorkspaceUrl, MessageBox, onClient } from '@hcengineering/presentation'
 import { closePopup, DAY, showPopup } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 import UpdateRecInstancePopup from './components/UpdateRecInstancePopup.svelte'
 import calendar from './plugin'
+import { getMetadata } from '@hcengineering/platform'
 
 export function saveUTC (date: Timestamp): Timestamp {
   const utcdate = new Date(date)
@@ -196,7 +197,11 @@ export async function updateReccuringInstance (
 }
 
 export async function shareCalDavLink (): Promise<void> {
-  const link = 'TODO: generate link'
+  const calDavUrl = getMetadata(calendar.metadata.CalDavServerURL)
+  const ws = getCurrentWorkspaceUrl()
+  const account = getCurrentAccount()
+  const email = account.fullSocialIds.find((p) => p.type === SocialIdType.EMAIL)?.value
+  const link = `${calDavUrl}/caldav/principal/${email}/calendar/${ws}`
   showPopup(
     MessageBox,
     {
