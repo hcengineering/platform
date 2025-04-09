@@ -26,7 +26,6 @@ import { logOut } from '@hcengineering/workbench'
 import { get, writable } from 'svelte/store'
 
 export const versionError = writable<string | undefined>(undefined)
-
 export const invalidError = writable<boolean>(false)
 const versionStorageKey = 'last_server_version'
 
@@ -43,8 +42,11 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
 
+  const exchangeGuestToken = await getResource(login.function.ExchangeGuestToken)
+  const exchangedToken = await exchangeGuestToken(token)
+
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
-  const workspaceLoginInfo = (await selectWorkspace(wsUrl, token))[1]
+  const workspaceLoginInfo = (await selectWorkspace(wsUrl, exchangedToken))[1]
   if (workspaceLoginInfo == null) {
     console.error(
       `Error selecting workspace ${wsUrl}. There might be something wrong with the token. Please try to log in again.`
@@ -55,25 +57,25 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
 
-  setPresentationCookie(token, workspaceLoginInfo.workspace)
+  setPresentationCookie(exchangedToken, workspaceLoginInfo.workspace)
 
-  setMetadata(presentation.metadata.Token, token)
+  setMetadata(presentation.metadata.Token, exchangedToken)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
   setMetadata(presentation.metadata.WorkspaceDataId, workspaceLoginInfo.workspaceDataId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
-  if (_token !== token && _client !== undefined) {
+  if (_token !== exchangedToken && _client !== undefined) {
     await _client.close()
     _client = undefined
   }
   if (_client !== undefined) {
     return _client
   }
-  _token = token
+  _token = exchangedToken
 
   let version: Version | undefined
   const clientFactory = await getResource(client.function.GetClient)
-  _client = await clientFactory(token, workspaceLoginInfo.endpoint, {
+  _client = await clientFactory(exchangedToken, workspaceLoginInfo.endpoint, {
     onHello: (serverVersion?: string) => {
       const frontVersion = getMetadata(presentation.metadata.FrontVersion)
       if (
