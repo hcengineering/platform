@@ -21,11 +21,9 @@ import core, {
   getObjectValue,
   Ref,
   RefTo,
-  SortingOrder,
   Timestamp,
   Tx,
   TxCreateDoc,
-  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -41,6 +39,7 @@ import process, {
   SelectedContext,
   SelectedNested,
   SelectedRelation,
+  SelectedUserRequest,
   State,
   Step
 } from '@hcengineering/process'
@@ -340,6 +339,8 @@ async function getContextValue (value: any, control: TriggerControl, execution: 
         value = await getRelationValue(control, execution, context)
       } else if (context.type === 'nested') {
         value = await getNestedValue(control, execution, context)
+      } else if (context.type === 'userRequest') {
+        value = getUserRequestValue(control, execution, context)
       }
       return await fillValue(value, context, control, execution)
     } catch (err: any) {
@@ -351,6 +352,17 @@ async function getContextValue (value: any, control: TriggerControl, execution: 
   } else {
     return value
   }
+}
+
+function getUserRequestValue (control: TriggerControl, execution: Execution, context: SelectedUserRequest): any {
+  const userContext = execution.context?.[context.id]
+  if (userContext !== undefined) return userContext
+  const attr = control.hierarchy.findAttribute(context._class, context.key)
+  throw processError(
+    process.error.UserRequestedValueNotProvided,
+    {},
+    { attr: attr?.label ?? getEmbeddedLabel(context.key) }
+  )
 }
 
 async function changeState (
@@ -413,14 +425,10 @@ export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): P
     const createTx = tx as TxCreateDoc<Execution>
     if (!control.hierarchy.isDerived(createTx.objectClass, process.class.Execution)) continue
     const execution = TxProcessor.createDoc2Doc(createTx)
-    const state = (
-      await control.findAll(
-        control.ctx,
-        process.class.State,
-        { process: execution.process },
-        { sort: { rank: SortingOrder.Ascending }, limit: 1 }
-      )
-    )[0]
+    const _process = control.modelDb.findObject(execution.process)
+    if (_process === undefined) continue
+    if (_process.states.length === 0) continue
+    const state = control.modelDb.findObject(_process.states[0])
     if (state === undefined) continue
 
     res.push(...(await changeState(execution, state, control)))
@@ -650,63 +658,6 @@ export function FirstWorkingDayAfter (val: Timestamp): Timestamp {
   return val
 }
 
-export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-  for (const tx of txes) {
-    if (tx._class !== core.class.TxCreateDoc) continue
-    const createTx = tx as TxCreateDoc<Card>
-    if (!control.hierarchy.isDerived(createTx.objectClass, card.class.Card)) continue
-    const ancestors = control.hierarchy
-      .getAncestors(createTx.objectClass)
-      .filter((p) => control.hierarchy.isDerived(p, card.class.Card))
-
-    const processes = control.modelDb.findAllSync(process.class.Process, {
-      masterTag: { $in: ancestors },
-      autoStart: true
-    })
-    for (const proc of processes) {
-      res.push(
-        control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
-          process: proc._id,
-          currentState: null,
-          card: createTx.objectId,
-          done: false,
-          rollback: {},
-          currentToDo: null,
-          assignee: null
-        })
-      )
-    }
-  }
-  return res
-}
-
-export async function OnTagAdd (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-  for (const tx of txes) {
-    if (tx._class !== core.class.TxMixin) continue
-    const mixinTx = tx as TxMixin<Card, Card>
-    if (!control.hierarchy.isDerived(mixinTx.objectClass, card.class.Card)) continue
-    if (Object.keys(mixinTx.attributes).length !== 0) continue
-
-    const processes = control.modelDb.findAllSync(process.class.Process, { masterTag: mixinTx.mixin, autoStart: true })
-    for (const proc of processes) {
-      res.push(
-        control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
-          process: proc._id,
-          currentState: null,
-          card: mixinTx.objectId,
-          done: false,
-          rollback: {},
-          currentToDo: null,
-          assignee: null
-        })
-      )
-    }
-  }
-  return res
-}
-
 export async function OnExecutionContinue (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
@@ -751,8 +702,6 @@ export default async () => ({
     FirstWorkingDayAfter
   },
   trigger: {
-    OnCardCreate,
-    OnTagAdd,
     OnExecutionCreate,
     OnStateRemove,
     OnProcessRemove,

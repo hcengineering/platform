@@ -46,7 +46,9 @@
     "ParallelExecutionForbidden": "Parallele Ausführung verboten",
     "StartAutomatically": "Automatisch starten",
     "Error": "Fehler",
-    "Continue": "Fortsetzen"
+    "Continue": "Fortsetzen",
+    "RequestFromUser": "Anfrage von Benutzer",
+    "EnterValue": "Wert eingeben"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",
@@ -54,6 +56,7 @@
     "RelatedObjectNotFound": "Verwandtes Objekt nicht gefunden: {attr}",
     "RelationNotExists": "Beziehung existiert nicht: {association}",
     "EmptyAttributeContextValue": "Leerer Attributwert: {attr}",
+    "UserRequestedValueNotProvided": "Benutzer angeforderter Wert nicht bereitgestellt: {attr}",
     "ObjectNotFound": "Objekt nicht gefunden: {_id}",
     "EmptyRelatedObjectValue": "Leerer verwandtes Objekt {parent} Wert: {attr}",
     "InternalServerError": "Interner Serverfehler, bitte kontaktieren Sie den Support, Fehler-ID: {errorId}"

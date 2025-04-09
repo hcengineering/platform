@@ -216,6 +216,15 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    presentation.class.PresentationMiddlewareFactory,
+    core.space.Model,
+    {
+      createPresentationMiddleware: process.function.CreateMiddleware
+    },
+    process.pipeline.ProcessMiddleware
+  )
+
+  builder.createDoc(
     process.class.ProcessFunction,
     core.space.Model,
     {

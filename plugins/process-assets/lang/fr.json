@@ -46,7 +46,9 @@
     "ParallelExecutionForbidden": "Exécution parallèle interdite",
     "StartAutomatically": "Démarrer automatiquement",
     "Error": "Erreur",
-    "Continue": "Continuer"
+    "Continue": "Continuer",
+    "RequestFromUser": "Demander à partir de l'utilisateur",
+    "EnterValue": "Saisir une valeur"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",
@@ -54,6 +56,7 @@
     "RelatedObjectNotFound": "Objet lié introuvable : {attr}",
     "RelationNotExists": "Relation inexistante : {association}",
     "EmptyAttributeContextValue": "Valeur d'attribut vide : {attr}",
+    "UserRequestedValueNotProvided": "Valeur demandée par l'utilisateur non fournie : {attr}",
     "ObjectNotFound": "Objet introuvable : {_id}",
     "EmptyRelatedObjectValue": "Valeur d'objet lié vide : {parent} {attr}",
     "InternalServerError": "Erreur interne du serveur, contactez le support, id d'erreur : {errorId}"

@@ -46,7 +46,9 @@
     "ParallelExecutionForbidden": "Одновременное выполнение запрещено",
     "StartAutomatically": "Запускать автоматически",
     "Error": "Ошибка",
-    "Continue": "Продолжить"
+    "Continue": "Продолжить",
+    "RequestFromUser": "Запросить у пользователя",
+    "EnterValue": "Введите значение"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
@@ -55,6 +57,7 @@
     "RelatedObjectNotFound": "Связанный объект не найден: {attr}",
     "RelationNotExists": "Связь не существует: {association}",
     "EmptyAttributeContextValue": "Пустое значение атрибута: {attr}",
+    "UserRequestedValueNotProvided": "Знвчение не предоставлено пользователем: {attr}",
     "ObjectNotFound": "Объект не найден: {_id}",
     "AttributeNotExists": "Атрибут не существует: {key}"
   }

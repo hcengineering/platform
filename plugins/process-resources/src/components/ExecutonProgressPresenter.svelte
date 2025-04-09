@@ -33,19 +33,25 @@
   function getValues (value: WithLookup<Execution>, states: string[]): SelectPopupValueType[] {
     const res: SelectPopupValueType[] = []
     let isDone = true
-    for (const state of states) {
+    for (let i = 0; i < states.length; i++) {
+      const state = states[i]
       const stateObj = client.getModel().findObject(state as Ref<State>)
       if (stateObj === undefined) {
         continue
       }
-      const isCurrent = value.currentState === state
+      const isCurrent = value.currentState === state && i !== states.length - 1
       if (isCurrent) {
         isDone = false
       }
       res.push({
         id: state,
         text: stateObj.title,
-        icon: isCurrent ? IconProgress : isDone ? IconCompleted : IconBacklog
+        icon: isCurrent ? IconProgress : isDone ? IconCompleted : IconBacklog,
+        iconProps: {
+          fill: isCurrent ? 11 : isDone ? 17 : 21,
+          count: states.length,
+          index: i
+        }
       })
     }
     return res

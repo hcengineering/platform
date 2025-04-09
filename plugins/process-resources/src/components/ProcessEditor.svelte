@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref } from '@hcengineering/core'
+  import core, { generateId, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-  import { Process, State } from '@hcengineering/process'
+  import { Process, SelectedUserRequest, State } from '@hcengineering/process'
   import { settingsStore } from '@hcengineering/setting-resources'
   import {
     Button,
@@ -103,10 +103,18 @@
     await client.update(value, { states: [...value.states, id] })
 
     if (prevState !== undefined) {
+      const contex: SelectedUserRequest = {
+        id: generateId(),
+        type: 'userRequest',
+        key: 'user',
+        _class: process.class.ProcessToDo
+      }
       const endAction = {
         methodId: process.method.CreateToDo,
         params: {
-          title: prevState.title
+          state: id,
+          title: prevState.title,
+          user: '$' + JSON.stringify(contex)
         }
       }
       prevState.endAction = endAction

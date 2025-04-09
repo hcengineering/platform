@@ -46,7 +46,9 @@
     "ParallelExecutionForbidden": "禁止并行执行",
     "StartAutomatically": "自动启动",
     "Error": "错误",
-    "Continue": "继续"
+    "Continue": "继续",
+    "RequestFromUser": "从用户请求",
+    "EnterValue": "输入值"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",
@@ -54,6 +56,7 @@
     "RelatedObjectNotFound": "找不到相关对象：{attr}",
     "RelationNotExists": "关系不存在：{association}",
     "EmptyAttributeContextValue": "空属性上下文值：{attr}",
+    "UserRequestedValueNotProvided": "用户请求的值未提供：{attr}",
     "ObjectNotFound": "找不到对象：{_id}",
     "EmptyRelatedObjectValue": "空相关对象值：{parent} {attr}",
     "InternalServerError": "内部服务器错误，请联系支持，错误 ID：{errorId}"

@@ -42,6 +42,7 @@ export interface Execution extends Doc {
   done: boolean
   rollback: Record<Ref<State>, Tx[]>
   error?: ExecutionError[] | null
+  context?: Record<string, any>
 }
 
 export interface ExecutionError {
@@ -121,7 +122,8 @@ export default plugin(processId, {
     RelationNotExists: '' as IntlString,
     EmptyAttributeContextValue: '' as IntlString,
     ObjectNotFound: '' as IntlString,
-    AttributeNotExists: '' as IntlString
+    AttributeNotExists: '' as IntlString,
+    UserRequestedValueNotProvided: '' as IntlString
   },
   icon: {
     Process: '' as Asset,
