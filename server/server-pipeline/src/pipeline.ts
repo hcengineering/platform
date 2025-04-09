@@ -110,7 +110,7 @@ export function createServerPipeline (
   },
   extensions?: Partial<DbConfiguration>
 ): PipelineFactory {
-  return (ctx, workspace, upgrade, broadcast, branding, communicationApi) => {
+  return (ctx, workspace, broadcast, branding, communicationApi) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 session', {})
     const conf = getConfig(metrics, dbUrl, wsMetrics, opt, extensions)
@@ -176,7 +176,7 @@ export function createBackupPipeline (
     externalStorage: StorageAdapter
   }
 ): PipelineFactory {
-  return (ctx, workspace, upgrade, broadcast, branding, communicationApi) => {
+  return (ctx, workspace, broadcast, branding, communicationApi) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 backup', {})
     const conf = getConfig(metrics, dbUrl, wsMetrics, {
@@ -229,7 +229,7 @@ export async function getServerPipeline (
   })
 
   // TODO: Communication API ??
-  return await pipelineFactory(ctx, wsUrl, true, () => {}, null, null)
+  return await pipelineFactory(ctx, wsUrl, () => {}, null, null)
 }
 
 const txAdapterFactories: Record<string, DbAdapterFactory> = {}

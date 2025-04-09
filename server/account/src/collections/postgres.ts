@@ -490,8 +490,6 @@ export class PostgresAccountDB implements AccountDB {
       if (res.count === 1) {
         console.log(`Applying migration: ${name}`)
         await client.unsafe(ddl)
-      } else {
-        console.log(`Migration ${name} already applied`)
       }
     })
   }
@@ -535,10 +533,17 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async getWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<AccountRole | null> {
-    const res: any = await this
+    const res = await this
       .client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
 
     return res[0]?.role ?? null
+  }
+
+  async getWorkspaceRoles (accountUuid: AccountUuid): Promise<Map<WorkspaceUuid, AccountRole | null>> {
+    const res = await this
+      .client`SELECT workspace_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE account_uuid = ${accountUuid}`
+
+    return new Map(res.map((it) => [it.workspace_uuid as WorkspaceUuid, it.role]))
   }
 
   async getWorkspaceMembers (workspaceUuid: WorkspaceUuid): Promise<WorkspaceMemberInfo[]> {

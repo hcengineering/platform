@@ -14,22 +14,23 @@
 //
 import {
   AccountRole,
-  type Person,
+  BackupStatus,
   Branding,
   Data,
   MeasureContext,
   Timestamp,
   Version,
-  WorkspaceMode,
   WorkspaceMemberInfo,
-  BackupStatus,
-  type SocialId as SocialIdBase,
-  type PersonUuid,
-  type WorkspaceUuid,
-  type WorkspaceDataId,
+  WorkspaceMode,
+  type AccountUuid,
+  type Person,
   type PersonId,
-  type AccountUuid
+  type PersonUuid,
+  type SocialId as SocialIdBase,
+  type WorkspaceDataId,
+  type WorkspaceUuid
 } from '@hcengineering/core'
+import type { EndpointInfo } from './utils'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
 export enum Location {
@@ -77,13 +78,16 @@ export interface Member {
   role: AccountRole
 }
 
-export interface WorkspaceStatus {
-  workspaceUuid: WorkspaceUuid
-  mode: WorkspaceMode
-  processingProgress?: number
+export interface WorkspaceVersion {
   versionMajor: number
   versionMinor: number
   versionPatch: number
+}
+
+export interface WorkspaceStatus extends WorkspaceVersion {
+  workspaceUuid: WorkspaceUuid
+  mode: WorkspaceMode
+  processingProgress?: number
   lastProcessingTime?: Timestamp
   lastVisit?: Timestamp
   isDisabled: boolean
@@ -196,6 +200,7 @@ export interface AccountDB {
   updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   unassignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<void>
   getWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<AccountRole | null>
+  getWorkspaceRoles: (accountId: AccountUuid) => Promise<Map<WorkspaceUuid, AccountRole | null>>
   getWorkspaceMembers: (workspaceId: WorkspaceUuid) => Promise<WorkspaceMemberInfo[]>
   getAccountWorkspaces: (accountId: AccountUuid) => Promise<WorkspaceInfoWithStatus[]>
   getPendingWorkspace: (
@@ -274,6 +279,23 @@ export interface LoginInfo {
   name?: string
   socialId?: PersonId
   token?: string
+}
+
+export interface LoginInfoWorkspace {
+  url: string
+  dataId?: WorkspaceDataId
+  mode: WorkspaceMode
+  version: WorkspaceVersion
+  endpoint: EndpointInfo
+  role: AccountRole | null
+
+  progress?: number
+}
+
+export interface LoginInfoWithWorkspaces extends LoginInfo {
+  // Information necessary to handle user <--> transactor connectivity.
+  workspaces: Record<WorkspaceUuid, LoginInfoWorkspace>
+  socialIds: SocialId[]
 }
 
 export interface WorkspaceLoginInfo extends LoginInfo {

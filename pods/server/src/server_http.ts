@@ -89,7 +89,6 @@ const rpcHandler = new RPCHandler()
 const backpressureSize = 100 * 1024
 /**
  * @public
- * @param sessionFactory -
  * @param port -
  * @param host -
  */
@@ -403,27 +402,24 @@ export function startHttpServer (
     try {
       const token = (req.query.token as string) ?? (req.headers.authorization ?? '').split(' ')[1]
       decodeToken(token)
-      const ws = sessions.workspaces.get(req.query.workspace as WorkspaceUuid)
-      if (ws !== undefined) {
-        // push the data to body
-        void retrieveJson(req)
-          .then((data) => {
-            if (Array.isArray(data)) {
-              sessions.broadcastAll(ws, data as Tx[])
-            } else {
-              sessions.broadcastAll(ws, [data as unknown as Tx])
-            }
-            res.end()
-          })
-          .catch((err) => {
-            ctx.error('JSON parse error', { err })
-            res.writeHead(400, {})
-            res.end()
-          })
-      } else {
-        res.writeHead(404, {})
-        res.end()
-      }
+
+      const ws = req.query.workspace as WorkspaceUuid
+
+      // push the data to body
+      void retrieveJson(req)
+        .then((data) => {
+          if (Array.isArray(data)) {
+            sessions.broadcastAll(ws, data as Tx[])
+          } else {
+            sessions.broadcastAll(ws, [data as unknown as Tx])
+          }
+          res.end()
+        })
+        .catch((err) => {
+          ctx.error('JSON parse error', { err })
+          res.writeHead(400, {})
+          res.end()
+        })
     } catch (err: any) {
       Analytics.handleError(err)
       ctx.error('error', { err })
