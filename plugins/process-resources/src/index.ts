@@ -17,6 +17,8 @@ import NestedContextSelector from './components/attributeEditors/NestedContextSe
 import RelatedContextSelector from './components/attributeEditors/RelatedContextSelector.svelte'
 import DateOffsetEditor from './components/contextEditors/DateOffsetEditor.svelte'
 import NumberOffsetEditor from './components/contextEditors/NumberOffsetEditor.svelte'
+import RequestUserInput from './components/contextEditors/RequestUserInput.svelte'
+import ErrorPresenter from './components/ErrorPresenter.svelte'
 import ExecutonPresenter from './components/ExecutonPresenter.svelte'
 import ExecutonProgressPresenter from './components/ExecutonProgressPresenter.svelte'
 import Main from './components/Main.svelte'
@@ -32,8 +34,9 @@ import RunProcessPopup from './components/RunProcessPopup.svelte'
 import SubProcessEditor from './components/SubProcessEditor.svelte'
 import ToDoEditor from './components/ToDoEditor.svelte'
 import UpdateCardEditor from './components/UpdateCardEditor.svelte'
-import ErrorPresenter from './components/ErrorPresenter.svelte'
+
 import { continueExecution, showDoneQuery } from './utils'
+import { ProcessMiddleware } from './middleware'
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
@@ -60,9 +63,12 @@ export default async (): Promise<Resources> => ({
     RunProcessCardPopup,
     DateOffsetEditor,
     NumberOffsetEditor,
-    ErrorPresenter
+    ErrorPresenter,
+    RequestUserInput
   },
   function: {
-    ShowDoneQuery: showDoneQuery
+    ShowDoneQuery: showDoneQuery,
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    CreateMiddleware: ProcessMiddleware.create
   }
 })

@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import core, { Ref } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Process } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import process from '../plugin'
+  import { createExecution } from '../utils'
 
   export let value: Card
 
@@ -61,15 +62,7 @@
   const dispatch = createEventDispatcher()
 
   async function runProcess (_id: Ref<Process>): Promise<void> {
-    await client.createDoc(process.class.Execution, core.space.Workspace, {
-      process: _id,
-      currentState: null,
-      card: value._id,
-      done: false,
-      rollback: {},
-      currentToDo: null,
-      assignee: null
-    })
+    await createExecution(value._id, _id)
     dispatch('close')
   }
 </script>

@@ -331,7 +331,12 @@
           <Label label={plugin.string.FallbackValueError} />
         </div>
       </div>
-      <CheckBox checked={contextValue.fallbackValue === undefined} size={'medium'} kind={'primary'} />
+      <CheckBox
+        on:click={onFallbackChange}
+        checked={contextValue.fallbackValue === undefined}
+        size={'medium'}
+        kind={'primary'}
+      />
     </button>
     {#if contextValue.fallbackValue !== undefined}
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
