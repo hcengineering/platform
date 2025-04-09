@@ -27,7 +27,6 @@
       <div
         class="img {style}"
         style={`background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 25%, var(--theme-popup-color) 95%), url("${getMetadata(contact.image.ProfileBackground)}")`}
-        alt=""
       />
     </div>
   {/if}

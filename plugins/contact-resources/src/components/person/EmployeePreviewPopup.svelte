@@ -23,7 +23,7 @@
   import AchievementsPresenter from './AchievementsPresenter.svelte'
 
   import contact from '../../plugin'
-  import Avatar from './Avatar.svelte'
+  import Avatar from '../Avatar.svelte'
   import { employeeByIdStore, getAccountClient } from '../../utils'
   import { EmployeePresenter } from '../../index'
   import TimePresenter from './TimePresenter.svelte'
@@ -81,7 +81,7 @@
   <div slot="content">
     {#if !disabled}
       <div class="flex-presenter flex-gap-2 p-2">
-        <Avatar size="large" person={employee} name={employee.name} {disabled} showStatus style="modern" />
+        <Avatar size="large" person={employee} name={employee?.name} {disabled} showStatus style="modern" />
         <div class="flex-col">
           <span class="username">
             <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
@@ -100,7 +100,7 @@
       </div>
     {:else}
       <div class="flex-presenter flex-gap-2 p-2">
-        <Avatar size="large" person={employee} name={employee.name} {disabled} style="modern" />
+        <Avatar size="large" person={employee} name={employee?.name} {disabled} style="modern" />
         <div class="flex-col">
           <span class="username">
             <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />

@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -56,6 +56,7 @@
   export let adaptiveName: boolean = false
   export let showPreview: boolean = false
   export let disabled: boolean = false
+  export let style: 'modern' | undefined = undefined
 
   export function pulse (): void {
     avatarInst.pulse()
@@ -132,11 +133,12 @@
         {color}
         {bColor}
         bind:element
-        withStatus
         {adaptiveName}
         {disabled}
+        {style}
+        withStatus
       />
-      <div class="hulyAvatar-statusMarker {size}" class:online={isOnline} class:offline={!isOnline} />
+      <div class="hulyAvatar-statusMarker medium {style}" class:online={isOnline} class:offline={!isOnline} />
     </div>
   {:else}
     <AvatarInstance
@@ -152,6 +154,7 @@
       bind:element
       {adaptiveName}
       {disabled}
+      {style}
     />
   {/if}
 </div>
