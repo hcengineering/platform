@@ -28,7 +28,7 @@ import {
 import cardPlugin, { type Card } from '@hcengineering/card'
 import yaml from 'js-yaml'
 import { v4 as uuid } from 'uuid'
-import { RequestEventType } from '@hcengineering/communication-sdk-types'
+import { MessageRequestEventType } from '@hcengineering/communication-sdk-types'
 import { retry } from '@hcengineering/communication-shared'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { deserializeMessage } from '@hcengineering/communication-yaml'
@@ -386,7 +386,7 @@ async function createGroup (
   await retry(
     async () =>
       await client.event({
-        type: RequestEventType.CreateMessagesGroup,
+        type: MessageRequestEventType.CreateMessagesGroup,
         group: {
           card,
           blobId,
@@ -403,7 +403,7 @@ async function removeGroup (client: CommunicationRestClient, card: CardID, blobI
   await retry(
     async () =>
       await client.event({
-        type: RequestEventType.RemoveMessagesGroup,
+        type: MessageRequestEventType.RemoveMessagesGroup,
         card,
         blobId
       }),
