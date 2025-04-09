@@ -30,11 +30,13 @@ import { type Contact, type Employee } from '@hcengineering/contact'
 import {
   DateRangeMode,
   IndexKind,
+  type Account,
   type SystemSpace,
   type Domain,
   type Markup,
   type Ref,
-  type Timestamp
+  type Timestamp,
+  PersonId
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -137,6 +139,8 @@ export class TEvent extends TAttachedDoc implements Event {
   visibility?: Visibility
 
   timeZone?: string
+
+  user!: PersonId
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)
