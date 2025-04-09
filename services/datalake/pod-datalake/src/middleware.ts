@@ -27,6 +27,7 @@ export const keepAlive = (options: KeepAliveOptions): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction) => {
     res.setHeader('Connection', 'keep-alive')
     res.setHeader('Keep-Alive', `timeout=${timeout}, max=${max}`)
+    next()
   }
 }
 

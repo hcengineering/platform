@@ -13,15 +13,14 @@
 // limitations under the License.
 //
 
-import { generateId, MeasureContext } from '@hcengineering/core'
+import { MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
-import { createReadStream, createWriteStream, mkdtempSync, rmSync } from 'fs'
-import { tmpdir } from 'os'
-import { join } from 'path'
+import { createReadStream, createWriteStream } from 'fs'
 import sharp from 'sharp'
 import { pipeline, type Readable } from 'stream'
 
 import { type Datalake } from '../datalake'
+import { TemporaryDir } from '../tempdir'
 
 const cacheControl = 'public, max-age=31536000, immutable'
 const prefferedImageFormats = ['webp', 'avif', 'jpeg', 'png']
@@ -75,23 +74,19 @@ export async function handleImageGet (
   ctx: MeasureContext,
   req: Request,
   res: Response,
-  datalake: Datalake
+  datalake: Datalake,
+  tempDir: TemporaryDir
 ): Promise<void> {
   const { workspace, name, transform } = req.params
 
   const accept = req.headers.accept ?? 'image/*'
   const { format, width, height, fit } = getImageTransformParams(accept, transform)
 
-  const tempDir = mkdtempSync(join(tmpdir(), 'image-'))
-  const tmpFile = join(tempDir, generateId())
-  const outFile = join(tempDir, generateId())
+  const tmpFile = tempDir.tmpFile()
+  const outFile = tempDir.tmpFile()
 
   const cleanup = (): void => {
-    try {
-      rmSync(tempDir, { recursive: true, force: true })
-    } catch (err: any) {
-      ctx.warn('failed to remove temp dir', { workspace, name, error: err })
-    }
+    tempDir.rm(tmpFile, outFile)
   }
 
   req.on('close', cleanup)

@@ -17,12 +17,12 @@ import { MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { UploadedFile } from 'express-fileupload'
 import fs from 'fs'
-import { unlink } from 'fs/promises'
 import { pipeline, Readable } from 'stream'
 
 import { cacheControl } from '../const'
 import { type Datalake, wrapETag } from '../datalake'
 import { getBufferSha256, getFileSha256 } from '../hash'
+import { type TemporaryDir } from '../tempdir'
 
 interface BlobParentRequest {
   parent: string | null
@@ -184,7 +184,8 @@ export async function handleUploadFormData (
   ctx: MeasureContext,
   req: Request,
   res: Response,
-  datalake: Datalake
+  datalake: Datalake,
+  tempDir: TemporaryDir
 ): Promise<void> {
   const { workspace } = req.params
 
@@ -238,12 +239,7 @@ export async function handleUploadFormData (
         }
       } finally {
         if (file.tempFilePath !== undefined) {
-          try {
-            await unlink(file.tempFilePath)
-          } catch (err) {
-            const error = err instanceof Error ? err.message : String(err)
-            ctx.warn('failed to remove temp file', { error })
-          }
+          tempDir.rm(file.tempFilePath)
         }
       }
     })
