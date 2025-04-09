@@ -16,7 +16,7 @@ import {
   AccountRole,
   Data,
   Version,
-  type PersonUuid,
+  type AccountUuid,
   type WorkspaceMode,
   type WorkspaceUuid
 } from '@hcengineering/core'
@@ -229,7 +229,7 @@ describe('AccountPostgresDbCollection', () => {
     it('should join with passwords table', async () => {
       const mockResult = [
         {
-          uuid: 'acc1' as PersonUuid,
+          uuid: 'acc1' as AccountUuid,
           timezone: 'UTC',
           locale: 'en',
           hash: null,
@@ -238,7 +238,7 @@ describe('AccountPostgresDbCollection', () => {
       ]
       mockClient.unsafe.mockResolvedValue(mockResult)
 
-      const result = await collection.find({ uuid: 'acc1' as PersonUuid })
+      const result = await collection.find({ uuid: 'acc1' as AccountUuid })
 
       expect(mockClient.unsafe).toHaveBeenCalledWith(
         `SELECT * FROM (
@@ -260,7 +260,7 @@ describe('AccountPostgresDbCollection', () => {
     it('should convert buffer fields from database', async () => {
       const mockResult = [
         {
-          uuid: 'acc1' as PersonUuid,
+          uuid: 'acc1' as AccountUuid,
           timezone: 'UTC',
           locale: 'en',
           hash: { 0: 1, 1: 2, 3: 3 }, // Simulating buffer data from DB
@@ -269,7 +269,7 @@ describe('AccountPostgresDbCollection', () => {
       ]
       mockClient.unsafe.mockResolvedValue(mockResult)
 
-      const result = await collection.find({ uuid: 'acc1' as PersonUuid })
+      const result = await collection.find({ uuid: 'acc1' as AccountUuid })
 
       expect(result[0].hash).toBeInstanceOf(Buffer)
       expect(result[0].salt).toBeInstanceOf(Buffer)
@@ -290,7 +290,7 @@ describe('AccountPostgresDbCollection', () => {
   describe('insertOne', () => {
     it('should prevent inserting password fields', async () => {
       const doc = {
-        uuid: 'acc1' as PersonUuid,
+        uuid: 'acc1' as AccountUuid,
         hash: Buffer.from([]),
         salt: Buffer.from([])
       }
@@ -300,7 +300,7 @@ describe('AccountPostgresDbCollection', () => {
 
     it('should allow inserting non-password fields', async () => {
       const doc = {
-        uuid: 'acc1' as PersonUuid,
+        uuid: 'acc1' as AccountUuid,
         timezone: 'UTC',
         locale: 'en'
       }
@@ -324,12 +324,12 @@ describe('AccountPostgresDbCollection', () => {
 
     it('should prevent updating password fields', async () => {
       await expect(
-        collection.updateOne({ uuid: 'acc1' as PersonUuid }, { hash: Buffer.from([]), salt: Buffer.from([]) })
+        collection.updateOne({ uuid: 'acc1' as AccountUuid }, { hash: Buffer.from([]), salt: Buffer.from([]) })
       ).rejects.toThrow('Passwords are not allowed in update query')
     })
 
     it('should allow updating non-password fields', async () => {
-      await collection.updateOne({ uuid: 'acc1' as PersonUuid }, { timezone: 'UTC', locale: 'en' })
+      await collection.updateOne({ uuid: 'acc1' as AccountUuid }, { timezone: 'UTC', locale: 'en' })
 
       expect(mockClient.unsafe).toHaveBeenCalledWith(
         'UPDATE global_account.account SET "timezone" = $1, "locale" = $2 WHERE "uuid" = $3',
@@ -346,7 +346,7 @@ describe('AccountPostgresDbCollection', () => {
     })
 
     it('should allow deleting by non-password fields', async () => {
-      await collection.deleteMany({ uuid: 'acc1' as PersonUuid })
+      await collection.deleteMany({ uuid: 'acc1' as AccountUuid })
 
       expect(mockClient.unsafe).toHaveBeenCalledWith('DELETE FROM global_account.account WHERE "uuid" = $1', ['acc1'])
     })
@@ -399,7 +399,7 @@ describe('PostgresAccountDB', () => {
   })
 
   describe('workspace operations', () => {
-    const accountId = 'acc1' as PersonUuid
+    const accountId = 'acc1' as AccountUuid
     const workspaceId = 'ws1' as WorkspaceUuid
     const role = AccountRole.Owner
 
@@ -877,7 +877,7 @@ describe('PostgresAccountDB', () => {
   })
 
   describe('password operations', () => {
-    const accountId = 'acc1' as PersonUuid
+    const accountId = 'acc1' as AccountUuid
     const hash: any = {
       buffer: Buffer.from('hash')
     }

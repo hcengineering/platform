@@ -12,7 +12,8 @@
 // limitations under the License.
 
 import { type Ref } from '@hcengineering/core'
-import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import process, { processId } from '@hcengineering/process'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type ViewQueryAction, type Viewlet } from '@hcengineering/view'
@@ -43,10 +44,12 @@ export default mergeIds(processId, process, {
     RunProcessCardPopup: '' as AnyComponent,
     DateOffsetEditor: '' as AnyComponent,
     NumberOffsetEditor: '' as AnyComponent,
-    ErrorPresenter: '' as AnyComponent
+    ErrorPresenter: '' as AnyComponent,
+    RequestUserInput: '' as AnyComponent
   },
   function: {
-    ShowDoneQuery: '' as ViewQueryAction
+    ShowDoneQuery: '' as ViewQueryAction,
+    CreateMiddleware: '' as Resource<PresentationMiddlewareCreator>
   },
   string: {
     DeleteProcess: '' as IntlString,
@@ -91,6 +94,8 @@ export default mergeIds(processId, process, {
     Required: '' as IntlString,
     ParallelExecutionForbidden: '' as IntlString,
     StartAutomatically: '' as IntlString,
-    Continue: '' as IntlString
+    Continue: '' as IntlString,
+    RequestFromUser: '' as IntlString,
+    EnterValue: '' as IntlString
   }
 })

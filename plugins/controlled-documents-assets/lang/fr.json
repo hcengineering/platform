@@ -219,6 +219,7 @@
     "Name": "Nom",
     "DraftRevision": "Révision du brouillon",
     "CreateNewDraft": "Créer une nouvelle version brouillon",
+    "RestoreDraft": "Restaurer le brouillon",
     "ChangeSeverity": "Changer la gravité",
     "Reference": "Référence",
     "History": "Historique",
@@ -269,7 +270,10 @@
     "MakeDocumentObsoleteDialog": "Marquer {count, plural, one {le document comme obsolète} other {les documents comme obsolètes}}",
     "MakeDocumentObsoleteConfirm": "Voulez-vous vraiment marquer les documents suivants comme obsolètes : {titles} ?",
 
-    "LatestVersionHint": "dernier"
+    "LatestVersionHint": "dernier",
+
+    "CannotDeleteFolder": "Le dossier ne peut pas être supprimé",
+    "CannotDeleteFolderHint": "Veuillez déplacer tous les documents enfants vers un autre emplacement avant de supprimer le dossier."
   },
   "controlledDocStates": {
     "Empty": "",

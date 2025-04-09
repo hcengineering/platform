@@ -19,8 +19,8 @@ import {
   type Person,
   type WorkspaceMemberInfo,
   AccountRole,
-  type PersonUuid,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type AccountUuid
 } from '@hcengineering/core'
 
 import type {
@@ -477,22 +477,22 @@ export class PostgresAccountDB implements AccountDB {
     })
   }
 
-  async assignWorkspace (accountUuid: PersonUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
+  async assignWorkspace (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this
       .client`INSERT INTO ${this.client(this.getWsMembersTableName())} (workspace_uuid, account_uuid, role) VALUES (${workspaceUuid}, ${accountUuid}, ${role})`
   }
 
-  async unassignWorkspace (accountUuid: PersonUuid, workspaceUuid: WorkspaceUuid): Promise<void> {
+  async unassignWorkspace (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<void> {
     await this
       .client`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
   }
 
-  async updateWorkspaceRole (accountUuid: PersonUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
+  async updateWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this
       .client`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
   }
 
-  async getWorkspaceRole (accountUuid: PersonUuid, workspaceUuid: WorkspaceUuid): Promise<AccountRole | null> {
+  async getWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<AccountRole | null> {
     const res: any = await this
       .client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
 
@@ -509,7 +509,7 @@ export class PostgresAccountDB implements AccountDB {
     }))
   }
 
-  async getAccountWorkspaces (accountUuid: PersonUuid): Promise<WorkspaceInfoWithStatus[]> {
+  async getAccountWorkspaces (accountUuid: AccountUuid): Promise<WorkspaceInfoWithStatus[]> {
     const sql = `SELECT 
           w.uuid,
           w.name,
@@ -656,12 +656,12 @@ export class PostgresAccountDB implements AccountDB {
     return convertKeysToCamelCase(res[0]) as WorkspaceInfoWithStatus
   }
 
-  async setPassword (accountUuid: PersonUuid, hash: Buffer, salt: Buffer): Promise<void> {
+  async setPassword (accountUuid: AccountUuid, hash: Buffer, salt: Buffer): Promise<void> {
     await this
       .client`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash.buffer as any}::bytea, ${salt.buffer as any}::bytea)`
   }
 
-  async resetPassword (accountUuid: PersonUuid): Promise<void> {
+  async resetPassword (accountUuid: AccountUuid): Promise<void> {
     await this
       .client`DELETE FROM ${this.client(this.account.getPasswordsTableName())} WHERE account_uuid = ${accountUuid}`
   }

@@ -18,7 +18,8 @@ import {
   SocialIdType,
   type WorkspaceDataId,
   type WorkspaceUuid,
-  type SocialKey
+  type SocialKey,
+  type AccountUuid
 } from '@hcengineering/core'
 import { type AccountDB, createAccount } from '@hcengineering/account'
 import { getMongoAccountDB } from './utils'
@@ -71,9 +72,9 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
     }, 1000 * 5)
 
     // Mapping between <ObjectId, UUID>
-    const accountsIdToUuid: Record<string, PersonUuid> = {}
+    const accountsIdToUuid: Record<string, AccountUuid> = {}
     // Mapping between <email, UUID>
-    const accountsEmailToUuid: Record<string, PersonUuid> = {}
+    const accountsEmailToUuid: Record<string, AccountUuid> = {}
     // Mapping between <OldId, UUID>
     const workspacesIdToUuid: Record<WorkspaceDataId, WorkspaceUuid> = {}
 
@@ -176,7 +177,7 @@ export async function migrateFromOldAccounts (oldAccsUrl: string, accountDB: Acc
   }
 }
 
-async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promise<PersonUuid | undefined> {
+async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promise<AccountUuid | undefined> {
   let primaryKey: SocialKey
   let secondaryKey: SocialKey | undefined
 
@@ -233,7 +234,7 @@ async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promi
 
     await createAccount(accountDB, personUuid, account.confirmed, false, account.createdOn)
     if (account.hash != null && account.salt != null) {
-      await accountDB.account.updateOne({ uuid: personUuid }, { hash: account.hash, salt: account.salt })
+      await accountDB.account.updateOne({ uuid: personUuid as AccountUuid }, { hash: account.hash, salt: account.salt })
     }
   } else {
     personUuid = existing.personUuid
@@ -250,21 +251,22 @@ async function migrateAccount (account: OldAccount, accountDB: AccountDB): Promi
     }
   }
 
-  return personUuid
+  return personUuid as AccountUuid
 }
 
 async function migrateWorkspace (
   workspace: OldWorkspace,
   accountDB: AccountDB,
-  accountsIdToUuid: Record<string, PersonUuid>,
-  accountsEmailToUuid: Record<string, PersonUuid>
+  accountsIdToUuid: Record<string, AccountUuid>,
+  accountsEmailToUuid: Record<string, AccountUuid>
 ): Promise<WorkspaceUuid | undefined> {
   if (workspace.workspaceUrl == null) {
     console.log('No workspace url, skipping', workspace.workspace)
     return
   }
 
-  const createdBy = workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : ('N/A' as PersonUuid)
+  const createdBy =
+    workspace.createdBy !== undefined ? accountsEmailToUuid[workspace.createdBy] : ('N/A' as AccountUuid)
   if (createdBy === undefined) {
     console.log('No account found for workspace', workspace.workspace, 'created by', workspace.createdBy)
     return

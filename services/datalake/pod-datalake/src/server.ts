@@ -20,17 +20,14 @@ import { decodeToken, TokenError } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import fileUpload from 'express-fileupload'
-import { mkdtempSync } from 'fs'
 import { type Server } from 'http'
 import morgan from 'morgan'
-import { tmpdir } from 'os'
-import { join } from 'path'
 import onHeaders from 'on-headers'
 
 import { cacheControl } from './const'
 import { createDb } from './datalake/db'
 import { ApiError } from './error'
-import { withAuthorization, withBlob, withWorkspace } from './middleware'
+import { keepAlive, withAuthorization, withBlob, withWorkspace } from './middleware'
 import {
   handleBlobDelete,
   handleBlobDeleteList,
@@ -53,15 +50,23 @@ import { Datalake, Location } from './datalake'
 import { DatalakeImpl } from './datalake/datalake'
 import { Config } from './config'
 import { createBucket, createClient, S3Bucket } from './s3'
+import { TemporaryDir } from './tempdir'
 
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
-type AsyncRequestHandler = (ctx: MeasureContext, req: Request, res: Response, datalake: Datalake) => Promise<void>
+type AsyncRequestHandler = (
+  ctx: MeasureContext,
+  req: Request,
+  res: Response,
+  datalake: Datalake,
+  tempDir: TemporaryDir
+) => Promise<void>
 
 const handleRequest = async (
   ctx: MeasureContext,
   name: string,
   datalake: Datalake,
+  tempDir: TemporaryDir,
   fn: AsyncRequestHandler,
   req: Request,
   res: Response,
@@ -77,23 +82,18 @@ const handleRequest = async (
             values.push(`${k};dur=${v.value.toFixed(2)}`)
           }
           if (values.length > 0) {
-            res.setHeader('Server-Timing', values.join(', '))
+            if (!res.headersSent) {
+              res.setHeader('Server-Timing', values.join(', '))
+            }
           }
         }
       })
-      return fn(ctx, req, res, datalake)
+      return fn(ctx, req, res, datalake, tempDir)
     })
   } catch (err: unknown) {
     next(err)
   }
 }
-
-const wrapRequest =
-  (ctx: MeasureContext, name: string, datalake: Datalake, fn: AsyncRequestHandler) =>
-    (req: Request, res: Response, next: NextFunction) => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      handleRequest(ctx, name, datalake, fn, req, res, next)
-    }
 
 export function createServer (ctx: MeasureContext, config: Config): { app: Express, close: () => void } {
   const buckets: Array<{ location: Location, bucket: S3Bucket }> = []
@@ -115,13 +115,13 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
 
   const db = createDb(ctx, config.DbUrl)
   const datalake = new DatalakeImpl(db, buckets, { cacheControl })
-
-  const tempFileDir = mkdtempSync(join(tmpdir(), 'datalake-'))
+  const tempDir = new TemporaryDir(ctx, 'datalake-', config.CleanupInterval)
 
   const app = express()
   app.use(cors())
   app.use(express.json({ limit: '50mb' }))
-  app.use(fileUpload({ useTempFiles: true, tempFileDir }))
+  app.use(fileUpload({ useTempFiles: true, tempFileDir: tempDir.path }))
+  app.use(keepAlive({ timeout: 5, max: 1000 }))
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
   const requests = ctx.newChild('requests', {}, {}, childLogger)
@@ -131,51 +131,43 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
     }
   }
 
+  const wrapRequest =
+    (ctx: MeasureContext, name: string, fn: AsyncRequestHandler) =>
+      (req: Request, res: Response, next: NextFunction) => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        handleRequest(ctx, name, datalake, tempDir, fn, req, res, next)
+      }
+
   app.use(morgan('short', { stream: new LogStream() }))
 
-  app.get('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, 'listBlobs', datalake, handleBlobList))
+  app.get('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, 'listBlobs', handleBlobList))
 
-  app.head('/blob/:workspace/:name', withBlob, wrapRequest(ctx, 'headBlob', datalake, handleBlobHead))
+  app.head('/blob/:workspace/:name', withBlob, wrapRequest(ctx, 'headBlob', handleBlobHead))
 
-  app.head('/blob/:workspace/:name/:filename', withBlob, wrapRequest(ctx, 'headBlob', datalake, handleBlobHead))
+  app.head('/blob/:workspace/:name/:filename', withBlob, wrapRequest(ctx, 'headBlob', handleBlobHead))
 
-  app.get('/blob/:workspace/:name', withBlob, wrapRequest(ctx, 'getBlob', datalake, handleBlobGet))
+  app.get('/blob/:workspace/:name', withBlob, wrapRequest(ctx, 'getBlob', handleBlobGet))
 
-  app.get('/blob/:workspace/:name/:filename', withBlob, wrapRequest(ctx, 'getBlob', datalake, handleBlobGet))
+  app.get('/blob/:workspace/:name/:filename', withBlob, wrapRequest(ctx, 'getBlob', handleBlobGet))
 
-  app.delete(
-    '/blob/:workspace/:name',
-    withAuthorization,
-    withBlob,
-    wrapRequest(ctx, 'deleteBlob', datalake, handleBlobDelete)
-  )
+  app.delete('/blob/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'deleteBlob', handleBlobDelete))
 
   app.delete(
     '/blob/:workspace/:name/:filename',
     withAuthorization,
     withBlob,
-    wrapRequest(ctx, 'deleteBlob', datalake, handleBlobDelete)
+    wrapRequest(ctx, 'deleteBlob', handleBlobDelete)
   )
 
-  app.delete(
-    '/blob/:workspace',
-    withAuthorization,
-    withWorkspace,
-    wrapRequest(ctx, 'deleteBlob', datalake, handleBlobDeleteList)
-  )
+  app.delete('/blob/:workspace', withAuthorization, withWorkspace, wrapRequest(ctx, 'deleteBlob', handleBlobDeleteList))
 
   // Blob meta
 
-  app.get('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'getMeta', datalake, handleMetaGet))
+  app.get('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'getMeta', handleMetaGet))
 
-  app.put('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'putMeta', datalake, handleMetaPut))
+  app.put('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'putMeta', handleMetaPut))
 
-  app.patch(
-    '/meta/:workspace/:name',
-    withAuthorization,
-    withBlob,
-    wrapRequest(ctx, 'patchMeta', datalake, handleMetaPatch)
-  )
+  app.patch('/meta/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 'patchMeta', handleMetaPatch))
 
   // Form Data upload
 
@@ -183,7 +175,7 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
     '/upload/form-data/:workspace',
     withAuthorization,
     withWorkspace,
-    wrapRequest(ctx, 'uploadFormData', datalake, handleUploadFormData)
+    wrapRequest(ctx, 'uploadFormData', handleUploadFormData)
   )
 
   // S3 upload
@@ -192,48 +184,43 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
     '/upload/s3/:workspace',
     withAuthorization,
     withWorkspace,
-    wrapRequest(ctx, 's3UploadParams', datalake, handleS3CreateBlobParams)
+    wrapRequest(ctx, 's3UploadParams', handleS3CreateBlobParams)
   )
 
-  app.post(
-    '/upload/s3/:workspace/:name',
-    withAuthorization,
-    withBlob,
-    wrapRequest(ctx, 's3Upload', datalake, handleS3CreateBlob)
-  )
+  app.post('/upload/s3/:workspace/:name', withAuthorization, withBlob, wrapRequest(ctx, 's3Upload', handleS3CreateBlob))
 
   // Multipart upload
   app.post(
     '/upload/multipart/:workspace/:name',
     withAuthorization,
     withBlob,
-    wrapRequest(ctx, 'multipartUploadStart', datalake, handleMultipartUploadStart)
+    wrapRequest(ctx, 'multipartUploadStart', handleMultipartUploadStart)
   )
 
   app.put(
     '/upload/multipart/:workspace/:name/part',
     withAuthorization,
     withBlob,
-    wrapRequest(ctx, 'multipartUploadPart', datalake, handleMultipartUploadPart)
+    wrapRequest(ctx, 'multipartUploadPart', handleMultipartUploadPart)
   )
 
   app.post(
     '/upload/multipart/:workspace/:name/complete',
     withAuthorization,
     withBlob,
-    wrapRequest(ctx, 'multipartUploadComplete', datalake, handleMultipartUploadComplete)
+    wrapRequest(ctx, 'multipartUploadComplete', handleMultipartUploadComplete)
   )
 
   app.post(
     '/upload/multipart/:workspace/:name/abort',
     withAuthorization,
     withBlob,
-    wrapRequest(ctx, 'multipartUploadAvort', datalake, handleMultipartUploadAbort)
+    wrapRequest(ctx, 'multipartUploadAvort', handleMultipartUploadAbort)
   )
 
   // Image
 
-  app.get('/image/:transform/:workspace/:name', withBlob, wrapRequest(ctx, 'transformImage', datalake, handleImageGet)) // no auth
+  app.get('/image/:transform/:workspace/:name', withBlob, wrapRequest(ctx, 'transformImage', handleImageGet)) // no auth
 
   app.use((err: any, _req: any, res: any, _next: any) => {
     ctx.error(err.message, { code: err.code, message: err.message })
@@ -287,7 +274,9 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
 
   return {
     app,
-    close: () => {}
+    close: () => {
+      void tempDir.close()
+    }
   }
 }
 

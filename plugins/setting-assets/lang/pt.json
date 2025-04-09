@@ -139,6 +139,10 @@
     "MailboxErrorMailboxExists": "Este nome de caixa de correio já está ocupado",
     "MailboxErrorMailboxCountLimit": "O limite de contagem de caixas de correio foi atingido para a sua conta",
     "DeleteMailbox": "Apagar caixa de correio",
-    "MailboxDeleteConfirmation": "Tem a certeza de que pretende eliminar esta caixa de correio?"
+    "MailboxDeleteConfirmation": "Tem a certeza de que pretende eliminar esta caixa de correio?",
+    "DisablePermissions": "Desativar controle de acesso baseado em funções",
+    "EnablePermissions": "Ativar controle de acesso baseado em funções",
+    "DisablePermissionsConfirmation": "Tem certeza de que deseja desativar o controle de acesso baseado em funções? Todos os papéis e permissões serão desativados.",
+    "EnablePermissionsConfirmation": "Tem certeza de que deseja ativar o controle de acesso baseado em funções? Todos os papéis e permissões serão ativados."
   }
 }

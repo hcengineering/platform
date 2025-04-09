@@ -28,7 +28,8 @@ import {
   type WorkspaceUserOperation,
   type WorkspaceUuid,
   type PersonId,
-  type SocialIdType
+  type SocialIdType,
+  type AccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type {
@@ -76,7 +77,7 @@ export interface AccountClient {
     navigateUrl?: string,
     expHours?: number
   ) => Promise<string>
-  leaveWorkspace: (account: string) => Promise<LoginInfo | null>
+  leaveWorkspace: (account: AccountUuid) => Promise<LoginInfo | null>
   changeUsername: (first: string, last: string) => Promise<void>
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>
   signUpJoin: (
@@ -160,7 +161,7 @@ export interface AccountClient {
   deleteIntegrationSecret: (integrationSecretKey: IntegrationSecretKey) => Promise<void>
   getIntegrationSecret: (integrationSecretKey: IntegrationSecretKey) => Promise<IntegrationSecret | null>
   listIntegrationsSecrets: (filter: Partial<IntegrationSecretKey>) => Promise<IntegrationSecret[]>
-  getAccountInfo: (uuid: PersonUuid) => Promise<AccountInfo>
+  getAccountInfo: (uuid: AccountUuid) => Promise<AccountInfo>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -222,6 +223,7 @@ class AccountClientImpl implements AccountClient {
       headers: {
         ...this.request.headers,
         'Content-Type': 'application/json',
+        Connection: 'keep-alive',
         ...meta
       },
       method: 'POST',
@@ -363,7 +365,7 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async leaveWorkspace (account: string): Promise<LoginInfo | null> {
+  async leaveWorkspace (account: AccountUuid): Promise<LoginInfo | null> {
     const request = {
       method: 'leaveWorkspace' as const,
       params: { account }
@@ -856,7 +858,7 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async getAccountInfo (uuid: PersonUuid): Promise<AccountInfo> {
+  async getAccountInfo (uuid: AccountUuid): Promise<AccountInfo> {
     const request = {
       method: 'getAccountInfo' as const,
       params: { accountId: uuid }

@@ -20,11 +20,13 @@ import {
   SocialIdType,
   Version,
   WorkspaceMode,
+  type PersonInfo,
   type BackupStatus,
   type Branding,
   type PersonId,
   type PersonUuid,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type AccountUuid
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
@@ -58,7 +60,8 @@ import {
   wrap,
   addSocialId,
   getWorkspaces,
-  updateWorkspaceRole
+  updateWorkspaceRole,
+  getPersonName
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -202,17 +205,14 @@ export async function updateWorkspaceRoleBySocialKey (
 ): Promise<void> {
   const { socialKey, targetRole } = params
   const { extra } = decodeTokenVerbose(ctx, token)
-
-  if (!['workspace', 'tool'].includes(extra?.service)) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  verifyAllowedServices(['workspace', 'tool'], extra)
 
   const socialId = await getSocialIdByKey(db, socialKey.toLowerCase() as PersonId)
   if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  await updateWorkspaceRole(ctx, db, branding, token, { targetAccount: socialId.personUuid, targetRole })
+  await updateWorkspaceRole(ctx, db, branding, token, { targetAccount: socialId.personUuid as AccountUuid, targetRole })
 }
 
 /**
@@ -469,7 +469,7 @@ export async function assignWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  const account = await getAccount(db, emailSocialId.personUuid)
+  const account = await getAccount(db, emailSocialId.personUuid as AccountUuid)
 
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -487,6 +487,32 @@ export async function assignWorkspace (
     await db.assignWorkspace(account.uuid, workspaceUuid, role)
   } else if (getRolePower(currentRole) < getRolePower(role)) {
     await db.updateWorkspaceRole(account.uuid, workspaceUuid, role)
+  }
+}
+
+export async function getPersonInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { account: PersonUuid }
+): Promise<PersonInfo> {
+  const { account } = params
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['workspace', 'tool'], extra)
+
+  const person = await db.person.findOne({ uuid: account })
+
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
+  }
+
+  const verifiedSocialIds = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
+
+  return {
+    personUuid: account,
+    name: getPersonName(person),
+    socialIds: verifiedSocialIds
   }
 }
 
@@ -816,6 +842,7 @@ export type AccountServiceMethods =
   | 'updateWorkspaceRoleBySocialKey'
   | 'addSocialIdToPerson'
   | 'updateSocialId'
+  | 'getPersonInfo'
   | 'createIntegration'
   | 'updateIntegration'
   | 'deleteIntegration'
@@ -843,6 +870,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
     addSocialIdToPerson: wrap(addSocialIdToPerson),
     updateSocialId: wrap(updateSocialId),
+    getPersonInfo: wrap(getPersonInfo),
     createIntegration: wrap(createIntegration),
     updateIntegration: wrap(updateIntegration),
     deleteIntegration: wrap(deleteIntegration),

@@ -53,13 +53,14 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
-        "MODEL_VERSION": "0.7.1",
+        "MODEL_VERSION": "0.7.48",
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
         "STATS_URL": "http://huly.local:4900",
-        "STREAM_URL": "http://huly.local:1080/recording"
+        "STREAM_URL": "http://huly.local:1080/recording",
+        "QUEUE_CONFIG": "localhost:19092"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

@@ -214,7 +214,10 @@ export default mergeIds(documentsId, documents, {
     CreateDocumentTemplateFailed: '' as IntlString,
     TryAgain: '' as IntlString,
 
-    LatestVersionHint: '' as IntlString
+    LatestVersionHint: '' as IntlString,
+
+    CannotDeleteFolder: '' as IntlString,
+    CannotDeleteFolderHint: '' as IntlString
   },
   controlledDocStates: {
     Empty: '' as IntlString,

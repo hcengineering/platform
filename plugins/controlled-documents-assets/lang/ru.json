@@ -256,6 +256,7 @@
     "Name": "Название",
     "DraftRevision": "Ревизия рабочей копии",
     "CreateNewDraft": "Создать новую рабочую копию",
+    "RestoreDraft": "Восстановить черновик",
     "ChangeSeverity": "Серьезность изменений",
     "Reference": "Референс",
     "History": "История",
@@ -311,7 +312,10 @@
     "MakeDocumentObsoleteDialog": "Пометить {count, plural, one {документ как устаревший} other {документы как устаревшие}}",
     "MakeDocumentObsoleteConfirm": "Вы действительно хотите пометить следующие документы как устаревшие: {titles}?",
 
-    "LatestVersionHint": "последняя"
+    "LatestVersionHint": "последняя",
+
+    "CannotDeleteFolder": "Папка не может быть удалена",
+    "CannotDeleteFolderHint": "Пожалуйста, переместите все дочерние документы в другое место перед удалением папки."
   },
   "controlledDocStates": {
     "Empty": "",

@@ -29,7 +29,10 @@
 
   const dispatch = createEventDispatcher()
 
+  $: configurable = contextValue.type !== 'userRequest'
+
   function configure (e: MouseEvent): void {
+    if (!configurable) return
     const onChange = (res: any): void => {
       if (res !== undefined) {
         if (res.fallbackValue !== undefined) {
@@ -49,6 +52,10 @@
   }
 </script>
 
-<button class="cursor-pointer" on:click={configure}>
+{#if configurable}
+  <button on:click={configure}>
+    <ContextValuePresenter {contextValue} {context} />
+  </button>
+{:else}
   <ContextValuePresenter {contextValue} {context} />
-</button>
+{/if}

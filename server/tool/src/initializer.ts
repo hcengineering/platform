@@ -9,12 +9,13 @@ import core, {
   MeasureContext,
   Mixin,
   parseSocialIdString,
-  type PersonId,
-  type PersonInfo,
   Ref,
   SocialIdType,
   Space,
   TxOperations,
+  pickPrimarySocialId,
+  type PersonId,
+  type PersonInfo,
   type WorkspaceIds
 } from '@hcengineering/core'
 import { ModelLogger } from '@hcengineering/model'
@@ -23,7 +24,6 @@ import { HulyFormatImporter, StorageFileUploader } from '@hcengineering/importer
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { jsonToMarkup } from '@hcengineering/text'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
-import { pickPrimarySocialId } from '@hcengineering/contact'
 import { v4 as uuid } from 'uuid'
 import path from 'path'
 
@@ -114,7 +114,7 @@ export class WorkspaceInitializer {
     private readonly initRepoDir: string,
     private readonly creator: PersonInfo
   ) {
-    this.socialKey = pickPrimarySocialId(creator.socialIds)
+    this.socialKey = pickPrimarySocialId(creator.socialIds)._id
     const socialKeyObj = parseSocialIdString(this.socialKey)
     this.socialType = socialKeyObj.type
     this.socialValue = socialKeyObj.value

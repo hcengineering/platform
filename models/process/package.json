@@ -43,6 +43,7 @@
     "@hcengineering/model-presentation": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/model-workbench": "^0.6.1",
+    "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/card": "^0.6.0"
   }
 }

@@ -148,6 +148,10 @@
     "MailboxErrorMailboxExists": "Questo nome di casella di posta è già occupato",
     "MailboxErrorMailboxCountLimit": "Limite di conteggio delle caselle di posta raggiunto per il tuo account",
     "DeleteMailbox": "Elimina casella di posta",
-    "MailboxDeleteConfirmation": "Sei sicuro di voler eliminare questa casella di posta?"
+    "MailboxDeleteConfirmation": "Sei sicuro di voler eliminare questa casella di posta?",
+    "DisablePermissions": "Disabilita il controllo degli accessi basato sui ruoli",
+    "EnablePermissions": "Abilita il controllo degli accessi basato sui ruoli",
+    "DisablePermissionsConfirmation": "Sei sicuro di voler disabilitare il controllo degli accessi basato sui ruoli? Tutti i ruoli e le autorizzazioni verranno disabilitati.",
+    "EnablePermissionsConfirmation": "Sei sicuro di voler abilitare il controllo degli accessi basato sui ruoli? Tutti i ruoli e le autorizzazioni verranno abilitati."
   }
 }
