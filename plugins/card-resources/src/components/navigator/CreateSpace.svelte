@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { Account, Data, DocumentUpdate, Ref, getCurrentAccount } from '@hcengineering/core'
+  import core, { Account, Data, Ref, getCurrentAccount } from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import { CardSpace, MasterTag } from '@hcengineering/card'
-  import TypesSelector from './TypesSelector.svelte'
   import card from '../../plugin'
+  import TypesSelector from './TypesSelector.svelte'
 
   export let space: CardSpace | undefined = undefined
 
@@ -30,7 +30,11 @@
   const hierarchy = client.getHierarchy()
 
   let name: string = space?.name ?? ''
-  let types: Ref<MasterTag>[] = space?.types !== undefined ? hierarchy.clone(space.types) : [getCurrentAccount()._id]
+  const topLevelTypes = client.getModel().findAllSync(card.class.MasterTag, {
+    extends: card.class.Card
+  })
+  let types: Ref<MasterTag>[] =
+    space?.types !== undefined ? hierarchy.clone(space.types) : topLevelTypes.map((it) => it._id)
   let isPrivate: boolean = space?.private ?? false
   let members: Ref<Account>[] =
     space?.members !== undefined ? hierarchy.clone(space.members) : [getCurrentAccount()._id]
