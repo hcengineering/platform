@@ -166,6 +166,7 @@
       updateToolbarPosition(readonly, board, toolbar)
     }}
     use:drawing={{
+      autoSize: imageWidth === undefined || imageHeight === undefined,
       readonly,
       imageWidth,
       imageHeight,
