@@ -7,11 +7,11 @@
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { getResource } from '@hcengineering/platform'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { getClient } from '@hcengineering/presentation'
-
+  import { getClient, playSound } from '@hcengineering/presentation'
   import { pushAvailable, subscribePush } from '../utils'
   import plugin from '../plugin'
-
+  import { onMount } from 'svelte'
+  
   export let notification: PlatformNotification
   export let onRemove: () => void
 
@@ -54,6 +54,12 @@
     const fn = await getResource(chunter.function.OpenChannelInSidebar)
     await fn(_id, _class, undefined, thread, true, selectedMessageId)
   }
+
+  onMount(async () => {
+    if (!value.soundAlert) return
+    await playSound(plugin.sound.Knock)
+  })
+
 </script>
 
 <NotificationToast title={notification.title} severity={notification.severity} onClose={onRemove}>

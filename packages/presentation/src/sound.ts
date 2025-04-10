@@ -19,7 +19,7 @@ export async function isNotificationAllowed (_class?: Ref<Class<Doc>>): Promise<
   return isAllowedFn(notificationType, notification.providers.SoundNotificationProvider)
 }
 
-export async function prepareSound (key: string, _class?: Ref<Class<Doc>>): Promise<void> {
+export async function prepareSound (key: string): Promise<void> {
   try {
     const soundUrl = getMetadata(key as Asset) as string
     const rawAudio = await fetch(soundUrl)
@@ -34,16 +34,12 @@ export async function prepareSound (key: string, _class?: Ref<Class<Doc>>): Prom
 
 export async function playSound (
   soundKey: string,
-  _class?: Ref<Class<Doc>>,
   loop = false
 ): Promise<(() => void) | null> {
   const soundAssetKey = soundKey as Asset
 
-  const allowed = await isNotificationAllowed(_class)
-  if (!allowed) return null
-
   if (!sounds.has(soundAssetKey)) {
-    await prepareSound(soundKey, _class)
+    await prepareSound(soundKey)
   }
 
   const sound = sounds.get(soundKey as Asset)
@@ -67,4 +63,14 @@ export async function playSound (
     console.error('Error when playing sound back', soundKey, err)
     return null
   }
+}
+
+export async function playNotificationSound (
+  soundKey: string,
+  _class?: Ref<Class<Doc>>,
+  loop = false
+): Promise<(() => void) | null> {
+  const allowed = await isNotificationAllowed(_class)
+  if (!allowed) return null
+  return await playSound(soundKey, loop)
 }

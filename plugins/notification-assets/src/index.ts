@@ -22,3 +22,6 @@ loadMetadata(notification.icon, {
   Inbox: `${icons}#inbox`,
   BellCrossed: `${icons}#bell-crossed`
 })
+loadMetadata(notification.sound, {
+  Knock: require('../assets/knock.wav')
+})

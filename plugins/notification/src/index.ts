@@ -62,6 +62,7 @@ export interface BrowserNotification extends Doc {
   messageClass?: Ref<Class<ActivityMessage>>
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
+  soundAlert: boolean
 }
 
 export interface PushData {
@@ -404,6 +405,9 @@ const notification = plugin(notificationId, {
     Notifications: '' as Asset,
     Inbox: '' as Asset,
     BellCrossed: '' as Asset
+  },
+  sound: {
+    Knock: '' as Asset
   },
   string: {
     Notification: '' as IntlString,
