@@ -14,19 +14,19 @@
 //
 import { Analytics } from '@hcengineering/analytics'
 import {
-  AccountRole,
   AccountInfo,
+  AccountRole,
+  type Branding,
   buildSocialIdString,
   concatLink,
   isActiveMode,
   isWorkspaceCreating,
   MeasureContext,
-  SocialIdType,
-  systemAccountUuid,
-  type Branding,
   type Person,
   type PersonId,
   type PersonUuid,
+  SocialIdType,
+  systemAccountUuid,
   type WorkspaceMemberInfo,
   type WorkspaceUuid,
   type AccountUuid
@@ -40,9 +40,9 @@ import type {
   AccountDB,
   AccountMethodHandler,
   LoginInfo,
-  Meta,
   Mailbox,
   MailboxOptions,
+  Meta,
   OtpInfo,
   RegionInfo,
   SocialId,
@@ -51,6 +51,7 @@ import type {
   WorkspaceLoginInfo
 } from './types'
 import {
+  addSocialId,
   checkInvite,
   cleanEmail,
   confirmEmail,
@@ -58,40 +59,39 @@ import {
   createWorkspaceRecord,
   doJoinByInvite,
   EndpointKind,
+  generatePassword,
   getAccount,
   getEmailSocialId,
   getEndpoint,
   getFrontUrl,
   getInviteEmail,
+  getMailUrl,
   getPersonName,
   getRegions,
   getRolePower,
-  getMailUrl,
   getWorkspaceById,
   getWorkspaceInfoWithStatusById,
   getWorkspaceInvite,
+  getWorkspaceRole,
   GUEST_ACCOUNT,
+  isEmail,
   isOtpValid,
+  normalizeValue,
+  releaseSocialId,
   selectWorkspace,
   sendEmail,
   sendEmailConfirmation,
   sendOtp,
   setPassword,
+  setTimezoneIfNotDefined,
   signUpByEmail,
-  verifyAllowedServices,
+  updateWorkspaceRole,
   verifyAllowedRole,
+  verifyAllowedServices,
   verifyPassword,
   wrap,
-  getWorkspaceRole,
-  normalizeValue,
-  isEmail,
-  generatePassword,
-  addSocialId,
-  releaseSocialId,
-  updateWorkspaceRole,
-  setTimezoneIfNotDefined,
-  confirmHulyIds,
-  getWorkspaceByUrl
+  getWorkspaceByUrl,
+  confirmHulyIds
 } from './utils'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 
@@ -1702,6 +1702,7 @@ export type AccountMethods =
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
+  | 'findFullSocialIdBySocialKey'
   | 'ensurePerson'
   | 'exchangeGuestToken'
   | 'getMailboxOptions'
@@ -1709,6 +1710,7 @@ export type AccountMethods =
   | 'getMailboxes'
   | 'deleteMailbox'
   | 'addSocialIdToPerson'
+  | 'updateSocialId'
   | 'getAccountInfo'
 
 /**

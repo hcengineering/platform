@@ -13,38 +13,32 @@
 // limitations under the License.
 //
 
-import { Class, Ref, Timestamp, WorkspaceUuid } from '@hcengineering/core'
-import { InboxNotification } from '@hcengineering/notification'
+import { AccountUuid, Class, Ref, WorkspaceUuid } from '@hcengineering/core'
 import { ChunterSpace } from '@hcengineering/chunter'
 import { ActivityMessage } from '@hcengineering/activity'
+import { Integration } from '@hcengineering/account-client'
 
-export interface UserRecord {
-  telegramId: number
-  telegramUsername?: string
-  email: string
-  workspaces: WorkspaceUuid[]
-}
+export type ChannelId = string & { __channelId: true }
 
 export interface MessageRecord {
-  notificationId?: Ref<InboxNotification>
-  messageId?: Ref<ActivityMessage>
-  workspace: string
-  email: string
-  telegramId: number
+  workspace: WorkspaceUuid
+  account: AccountUuid
+  messageId: Ref<ActivityMessage>
+  telegramMessageId: number
 }
 
 export interface ChannelRecord {
-  workspace: string
-  channelId: Ref<ChunterSpace>
-  channelClass: Ref<Class<ChunterSpace>>
+  rowId: ChannelId
+  workspace: WorkspaceUuid
+  _id: Ref<ChunterSpace>
+  _class: Ref<Class<ChunterSpace>>
   name: string
-  email: string
+  account: AccountUuid
 }
 
 export interface ReplyRecord {
-  notificationId?: Ref<InboxNotification>
-  messageId?: Ref<ActivityMessage>
-  telegramId: number
+  messageId: Ref<ActivityMessage>
+  telegramUserId: number
   replyId: number
 }
 
@@ -52,8 +46,8 @@ export interface OtpRecord {
   telegramId: number
   telegramUsername?: string
   code: string
-  expires: Timestamp
-  createdOn: Timestamp
+  expires: Date
+  createdAt: Date
 }
 
 export interface PlatformFileInfo {
@@ -75,4 +69,11 @@ export interface WorkspaceInfo {
   url: string
   id: string
   name: string
+}
+
+export type IntegrationInfo = Integration & {
+  account: AccountUuid
+  workspaceUuid: WorkspaceUuid
+  telegramId: number
+  username?: string
 }

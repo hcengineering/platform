@@ -20,7 +20,6 @@ import {
   type Person,
   type PersonUuid,
   type PersonInfo,
-  SocialId,
   Version,
   type WorkspaceInfoWithStatus,
   type WorkspaceMemberInfo,
@@ -44,7 +43,8 @@ import type {
   Integration,
   IntegrationKey,
   IntegrationSecret,
-  IntegrationSecretKey
+  IntegrationSecretKey,
+  SocialId
 } from './types'
 import { getClientTimezone } from './utils'
 
@@ -108,6 +108,7 @@ export interface AccountClient {
   findPersonBySocialKey: (socialKey: string, requireAccount?: boolean) => Promise<PersonUuid | undefined>
   findPersonBySocialId: (socialId: PersonId, requireAccount?: boolean) => Promise<PersonUuid | undefined>
   findSocialIdBySocialKey: (socialKey: string) => Promise<PersonId | undefined>
+  findFullSocialIdBySocialKey: (socialKey: string) => Promise<SocialId | undefined>
   getMailboxOptions: () => Promise<MailboxOptions>
   createMailbox: (name: string, domain: string) => Promise<{ mailbox: string, socialId: PersonId }>
   getMailboxes: () => Promise<MailboxInfo[]>
@@ -142,8 +143,15 @@ export interface AccountClient {
     firstName: string,
     lastName: string
   ) => Promise<{ uuid: PersonUuid, socialId: PersonId }>
+  addSocialIdToPerson: (
+    person: PersonUuid,
+    type: SocialIdType,
+    value: string,
+    confirmed: boolean,
+    displayValue?: string
+  ) => Promise<PersonId>
+  updateSocialId: (personId: PersonId, displayValue: string) => Promise<PersonId>
   exchangeGuestToken: (token: string) => Promise<string>
-  addSocialIdToPerson: (person: PersonUuid, type: SocialIdType, value: string, confirmed: boolean) => Promise<PersonId>
   createIntegration: (integration: Integration) => Promise<void>
   updateIntegration: (integration: Integration) => Promise<void>
   deleteIntegration: (integrationKey: IntegrationKey) => Promise<void>
@@ -631,6 +639,14 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
+  async findFullSocialIdBySocialKey (socialKey: string): Promise<SocialId | undefined> {
+    const request = {
+      method: 'findFullSocialIdBySocialKey' as const,
+      params: { socialKey }
+    }
+    return await this.rpc(request)
+  }
+
   async listWorkspaces (region?: string | null, mode: WorkspaceMode | null = null): Promise<WorkspaceInfoWithStatus[]> {
     const request = {
       method: 'listWorkspaces' as const,
@@ -707,13 +723,22 @@ class AccountClientImpl implements AccountClient {
     person: PersonUuid,
     type: SocialIdType,
     value: string,
-    confirmed: boolean
+    confirmed: boolean,
+    displayValue?: string
   ): Promise<PersonId> {
     const request = {
       method: 'addSocialIdToPerson' as const,
-      params: { person, type, value, confirmed }
+      params: { person, type, value, confirmed, displayValue }
     }
 
+    return await this.rpc(request)
+  }
+
+  async updateSocialId (personId: PersonId, displayValue: string): Promise<PersonId> {
+    const request = {
+      method: 'updateSocialId' as const,
+      params: { personId, displayValue }
+    }
     return await this.rpc(request)
   }
 

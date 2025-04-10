@@ -853,6 +853,8 @@ export interface SocialId {
   value: string
   key: string // Calculated from type and value. Just for convenience.
 
+  displayValue?: string
+
   // To be used later when person detaches social id from his account by any means
   // There should always be only one ACTIVE social id with the same key every time
   // active: boolean

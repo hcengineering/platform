@@ -14,21 +14,19 @@
 // limitations under the License.
 //
 
-import { type Builder, Mixin, Model } from '@hcengineering/model'
+import { type Builder, Mixin } from '@hcengineering/model'
 
 import contact from '@hcengineering/contact'
-import core, { type Ref } from '@hcengineering/core'
-import { TClass, TDoc } from '@hcengineering/model-core'
+import core from '@hcengineering/core'
+import { TClass } from '@hcengineering/model-core'
 import { TNotificationType } from '@hcengineering/model-notification'
-import notification, { type NotificationProvider } from '@hcengineering/notification'
+import notification from '@hcengineering/notification'
 import { type Resource } from '@hcengineering/platform'
 import serverCore from '@hcengineering/server-core'
 import serverNotification, {
   type HTMLPresenter,
   type NotificationContentProvider,
   type NotificationPresenter,
-  type NotificationProviderFunc,
-  type NotificationProviderResources,
   type Presenter,
   type TextPresenter,
   type TypeMatch,
@@ -57,20 +55,8 @@ export class TTypeMatch extends TNotificationType implements TypeMatch {
   func!: TypeMatchFunc
 }
 
-@Model(serverNotification.class.NotificationProviderResources, core.class.Doc)
-export class TNotificationProviderResources extends TDoc implements NotificationProviderResources {
-  provider!: Ref<NotificationProvider>
-  fn!: Resource<NotificationProviderFunc>
-}
-
 export function createModel (builder: Builder): void {
-  builder.createModel(
-    THTMLPresenter,
-    TTextPresenter,
-    TTypeMatch,
-    TNotificationPresenter,
-    TNotificationProviderResources
-  )
+  builder.createModel(THTMLPresenter, TTextPresenter, TTypeMatch, TNotificationPresenter)
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnAttributeCreate,

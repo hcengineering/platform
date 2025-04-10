@@ -39,6 +39,7 @@ import type {
   IntegrationKey,
   IntegrationSecret,
   IntegrationSecretKey,
+  SocialId,
   Workspace,
   WorkspaceEvent,
   WorkspaceInfoWithStatus,
@@ -520,14 +521,34 @@ export async function addSocialIdToPerson (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { person: PersonUuid, type: SocialIdType, value: string, confirmed: boolean }
+  params: { person: PersonUuid, type: SocialIdType, value: string, confirmed: boolean, displayValue?: string }
 ): Promise<PersonId> {
-  const { person, type, value, confirmed } = params
+  const { person, type, value, confirmed, displayValue } = params
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  verifyAllowedServices(['github'], extra)
+  verifyAllowedServices(['github', 'telegram-bot'], extra)
 
-  return await addSocialId(db, person, type, value, confirmed)
+  return await addSocialId(db, person, type, value, confirmed, displayValue)
+}
+
+export async function updateSocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { personId: PersonId, displayValue: string }
+): Promise<void> {
+  const { personId, displayValue } = params
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  verifyAllowedServices(['telegram-bot'], extra)
+
+  const socialId = await db.socialId.findOne({ _id: personId })
+  if (socialId != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, { _id: personId }))
+  }
+
+  await db.socialId.updateOne({ _id: personId }, { displayValue })
 }
 
 // Move to config?
@@ -795,6 +816,21 @@ export async function listIntegrationsSecrets (
   return await db.integrationSecret.find({ socialId, kind, workspaceUuid, key })
 }
 
+export async function findFullSocialIdBySocialKey (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { socialKey: string }
+): Promise<SocialId | null> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  verifyAllowedServices(['telegram-bot'], extra)
+
+  const { socialKey } = params
+
+  return await db.socialId.findOne({ key: socialKey })
+}
+
 export type AccountServiceMethods =
   | 'getPendingWorkspace'
   | 'updateWorkspaceInfo'
@@ -805,6 +841,7 @@ export type AccountServiceMethods =
   | 'performWorkspaceOperation'
   | 'updateWorkspaceRoleBySocialKey'
   | 'addSocialIdToPerson'
+  | 'updateSocialId'
   | 'getPersonInfo'
   | 'createIntegration'
   | 'updateIntegration'
@@ -816,6 +853,7 @@ export type AccountServiceMethods =
   | 'deleteIntegrationSecret'
   | 'getIntegrationSecret'
   | 'listIntegrationsSecrets'
+  | 'findFullSocialIdBySocialKey'
 
 /**
  * @public
@@ -831,6 +869,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     performWorkspaceOperation: wrap(performWorkspaceOperation),
     updateWorkspaceRoleBySocialKey: wrap(updateWorkspaceRoleBySocialKey),
     addSocialIdToPerson: wrap(addSocialIdToPerson),
+    updateSocialId: wrap(updateSocialId),
     getPersonInfo: wrap(getPersonInfo),
     createIntegration: wrap(createIntegration),
     updateIntegration: wrap(updateIntegration),
@@ -841,6 +880,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     updateIntegrationSecret: wrap(updateIntegrationSecret),
     deleteIntegrationSecret: wrap(deleteIntegrationSecret),
     getIntegrationSecret: wrap(getIntegrationSecret),
-    listIntegrationsSecrets: wrap(listIntegrationsSecrets)
+    listIntegrationsSecrets: wrap(listIntegrationsSecrets),
+    findFullSocialIdBySocialKey: wrap(findFullSocialIdBySocialKey)
   }
 }
