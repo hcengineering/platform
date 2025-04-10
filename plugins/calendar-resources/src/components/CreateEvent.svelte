@@ -112,7 +112,7 @@
     if (startDate != null) date = startDate
     if (date === undefined) return
     if (title === '') return
-    const user = me._id
+    const user = myPrimaryId
     const _id = generateId<Event>()
     if (rules.length > 0) {
       await client.addCollection(
