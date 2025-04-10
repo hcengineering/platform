@@ -57,7 +57,7 @@ export function updatePopup (id: string, props: Partial<CompAndProps>): void {
       (p: CompAndProps) => p.id === id
     )
     if (popupIndex !== -1) {
-      ;(modals[popupIndex] as CompAndProps).update?.(props)
+      ;(modals[popupIndex] as CompAndProps).update?.(props.props)
     }
     return modals
   })
