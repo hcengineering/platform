@@ -40,13 +40,8 @@
         limit: 1
       }
     )
-    const result = []
-    if (drawings !== undefined) {
-      for (const drawing of drawings) {
-        result.push(drawing)
-      }
-    }
-    return result
+
+    return Array.from(drawings ?? [])
   }
 
   async function createDrawing (data: DrawingData): Promise<DrawingData> {
