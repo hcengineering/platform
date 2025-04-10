@@ -985,7 +985,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   private buildJoinString (vars: ValuesVariables, value: JoinProps[]): string {
     const res: string[] = []
-    const wsId = vars.add(this.workspaceId.name, '::uuid')
+    const wsId = vars.add(this.workspaceId, '::uuid')
     for (const val of value) {
       if (val.isReverse) continue
       if (val.table === DOMAIN_MODEL) continue
