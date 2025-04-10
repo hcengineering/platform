@@ -27,11 +27,9 @@ export const tooltipstore = derived(modalStore, (modals) => {
 
 let toHandler: any
 export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
-  if (options === undefined) {
-    return {}
-  }
-  if (options.label === undefined && options.component === undefined) {
+  if (options?.label === undefined && options?.component === undefined) {
     // No tooltip
+    // TODO: Fix reactive options update in this case
     return {}
   }
   let opt = options

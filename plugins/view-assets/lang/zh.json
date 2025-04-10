@@ -132,6 +132,7 @@
     "RemoveRelationConfirmation": "您要移除关系吗？",
     "MasterDetail": "主要-详细",
     "Tree": "树",
-    "Document": "文档"
+    "Document": "文档",
+    "Loading": "加载中..."
   }
 }

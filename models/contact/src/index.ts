@@ -887,6 +887,10 @@ export function createModel (builder: Builder): void {
     arrayPresenter: contact.component.EmployeeArrayEditor
   })
 
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.PreviewPresenter, {
+    presenter: contact.component.PersonPreviewPresenter
+  })
+
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
   })

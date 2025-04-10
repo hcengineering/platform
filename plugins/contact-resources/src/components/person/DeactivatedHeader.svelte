@@ -34,15 +34,6 @@
 </div>
 
 <style>
-  .deactivated-text-content {
-    color: var(--text-2, #b9babd);
-    font-size: 16px;
-    font-family: Inter Display;
-    font-weight: 500;
-    line-height: 24px;
-    word-wrap: break-word;
-  }
-
   .deactivated-text {
     justify-content: center;
     display: flex;

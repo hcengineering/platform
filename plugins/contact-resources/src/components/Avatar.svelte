@@ -49,6 +49,7 @@
   export let name: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: IconSize
+  export let statusSize: IconSize | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
@@ -57,6 +58,7 @@
   export let showPreview: boolean = false
   export let disabled: boolean = false
   export let style: 'modern' | undefined = undefined
+  export let clickable: boolean = false
 
   export function pulse (): void {
     avatarInst.pulse()
@@ -137,8 +139,14 @@
         {disabled}
         {style}
         withStatus
+        {clickable}
+        on:click
       />
-      <div class="hulyAvatar-statusMarker medium {style}" class:online={isOnline} class:offline={!isOnline} />
+      <div
+        class="hulyAvatar-statusMarker {statusSize ?? size} {style}"
+        class:online={isOnline}
+        class:offline={!isOnline}
+      />
     </div>
   {:else}
     <AvatarInstance
@@ -155,6 +163,8 @@
       {adaptiveName}
       {disabled}
       {style}
+      {clickable}
+      on:click
     />
   {/if}
 </div>

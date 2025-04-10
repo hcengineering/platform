@@ -172,6 +172,10 @@
       & > img { border-width: 2px; }
     }
   }
+  &.clickable {
+    pointer-events: auto;
+    cursor: pointer;
+  }
   img { object-fit: cover; }
   .icon,
   .ava-text::after {
@@ -310,9 +314,12 @@
   &.small { width: 10px; }
   .small-font &.medium { width: 11px; }
   &.medium { 
-    right: 4px;
-    bottom: 4px;
-    width: 14px; 
+    width: 13px;
+    &.medium { 
+      right: 4px;
+      bottom: 4px;
+      width: 14px; 
+    }
   }
   &.large {
     right: -.125rem;

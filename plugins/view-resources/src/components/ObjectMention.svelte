@@ -40,7 +40,9 @@
 
   let docLabel: string = ''
   let docTitle: string | undefined = undefined
-  let docTooltip: LabelAndProps = {}
+  let docTooltip: LabelAndProps = {
+    label: view.string.Document
+  }
   let docComponent: AnyComponent
 
   let displayTitle = ''
@@ -115,7 +117,13 @@
 </script>
 
 {#if displayTitle}
-  <span data-type={'reference'} data-id={doc?._id} data-objectclass={doc?._class} data-label={displayTitle}>
+  <span
+    data-type={'reference'}
+    data-id={doc?._id}
+    data-objectclass={doc?._class}
+    data-label={displayTitle}
+    use:tooltip={docTooltip}
+  >
     <DocNavLink object={doc} component={docComponent} {disabled} inlineReference {onClick}>
       {#if icon}<Icon {icon} size="small" />{' '}{:else}@{/if}{displayTitle}
     </DocNavLink>

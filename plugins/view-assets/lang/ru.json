@@ -129,6 +129,7 @@
     "RemoveRelationConfirmation": "Вы хотите удалить связь?",
     "MasterDetail": "Мастер-деталь",
     "Tree": "Дерево",
-    "Document": "Документ"
+    "Document": "Документ",
+    "Loading": "Загрузка..."
   }
 }

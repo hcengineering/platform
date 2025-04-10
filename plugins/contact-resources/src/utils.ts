@@ -61,7 +61,7 @@ import core, {
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
-import { getEmbeddedLabel, getMetadata, getResource, type IntlString, translate } from '@hcengineering/platform'
+import { getMetadata, getResource, type IntlString, translate } from '@hcengineering/platform'
 import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
@@ -78,6 +78,7 @@ import { type LocationData } from '@hcengineering/workbench'
 import { derived, get, type Readable, writable } from 'svelte/store'
 
 import contact from './plugin'
+import { getPreviewPopup } from './components/person/utils'
 
 export function formatDate (dueDateMs: Timestamp): string {
   return new Date(dueDateMs).toLocaleString('default', {
@@ -534,13 +535,7 @@ export async function contactTitleProvider (client: Client, ref: Ref<Contact>, d
 }
 
 export function getPersonTooltip (client: Client, value: Person | null | undefined): LabelAndProps | undefined {
-  const hierarchy = client.getHierarchy()
-
-  return value == null
-    ? undefined
-    : {
-        label: getEmbeddedLabel(getName(hierarchy, value))
-      }
+  return value == null ? undefined : getPreviewPopup(value, true)
 }
 
 export async function channelIdentifierProvider (client: Client, ref: Ref<Channel>, doc?: Channel): Promise<string> {

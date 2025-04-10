@@ -30,7 +30,7 @@
   import DeactivatedHeader from './DeactivatedHeader.svelte'
   import Loading from '@hcengineering/ui/src/components/Loading.svelte'
 
-  export let employeeId: Ref<Employee>
+  export let _id: Ref<Employee>
   export let disabled: boolean = false
 
   const client = getClient()
@@ -40,7 +40,7 @@
   let timezone: string | undefined = undefined
   let isTimezoneLoading = true
 
-  $: employee = $employeeByIdStore.get(employeeId)
+  $: employee = $employeeByIdStore.get(_id)
   $: void loadPersonTimezone(employee?.personUuid)
 
   async function viewProfile (): Promise<void> {
@@ -54,8 +54,12 @@
   async function loadPersonTimezone (personId: AccountUuid | undefined): Promise<void> {
     if (personId === undefined) return
     isTimezoneLoading = true
-    const accountInfo = await getAccountClient().getAccountInfo(personId)
-    timezone = accountInfo.timezone
+    try {
+      const accountInfo = await getAccountClient().getAccountInfo(personId)
+      timezone = accountInfo.timezone
+    } catch (error) {
+      console.error(error)
+    }
     isTimezoneLoading = false
   }
 </script>
@@ -80,27 +84,47 @@
   </div>
   <div slot="content">
     {#if !disabled}
-      <div class="flex-presenter flex-gap-2 p-2">
-        <Avatar size="large" person={employee} name={employee?.name} {disabled} showStatus style="modern" />
-        <div class="flex-col">
+      <div class="flex-presenter cursor-default flex-gap-2 p-2">
+        <Avatar
+          size="large"
+          person={employee}
+          name={employee?.name}
+          {disabled}
+          showStatus
+          statusSize="medium"
+          style="modern"
+          clickable
+          on:click={viewProfile}
+        />
+        <div class="flex-col flex-gap-0-5">
           <span class="username">
             <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
           </span>
-          <span class="flex-presenter">
+          <span class="flex-presenter cursor-default">
             {#if isTimezoneLoading}
               <Loading size="small" />
-            {:else if timezone !== undefined}
+            {:else if timezone != null}
               <TimePresenter {timezone} />
             {/if}
           </span>
         </div>
       </div>
       <div class="py-1">
-        <AchievementsPresenter personId={employeeId} />
+        <AchievementsPresenter personId={_id} />
       </div>
     {:else}
       <div class="flex-presenter flex-gap-2 p-2">
-        <Avatar size="large" person={employee} name={employee?.name} {disabled} style="modern" />
+        <div class="flex-presenter">
+          <Avatar
+            size="large"
+            person={employee}
+            name={employee?.name}
+            {disabled}
+            style="modern"
+            clickable
+            on:click={viewProfile}
+          />
+        </div>
         <div class="flex-col">
           <span class="username">
             <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />

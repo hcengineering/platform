@@ -34,33 +34,17 @@
 
 <div class="time-container">
   <div class="clock-icon">
-    <Icon icon={contact.icon.Clock} size={'small'} />
+    <Icon icon={contact.icon.Clock} size={'x-small'} />
   </div>
-  <div class="time-text">
+  <div class="text-normal font-normal content-color select-text">
     <span class="time-text-span">{displayTimeInTimezone(timezone)} <Label label={contact.string.LocalTime} /></span>
   </div>
 </div>
 
 <style>
-  .time-text-span {
-    color: var(--text-2, #b9babd);
-    font-size: 14px;
-    font-family: 'Inter Display', sans-serif;
-    font-weight: 400;
-    line-height: 18px;
-    word-wrap: break-word;
-  }
-
-  .time-text {
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-  }
-
   .clock-icon {
-    width: 14px;
-    height: 14px;
     position: relative;
+    color: var(--theme-content-color);
   }
 
   .time-container {

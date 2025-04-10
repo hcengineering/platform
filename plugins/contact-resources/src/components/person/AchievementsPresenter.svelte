@@ -26,6 +26,7 @@
 
   // TODO: Remove, it is just for achievements demonstration
   function hashStringToInt (str: string): number {
+    if (str === undefined) return 0
     let hash = 0
     if (str.length === 0) return hash
     for (let i = 0; i < str.length; i++) {
@@ -38,7 +39,7 @@
 
   $: personHash = hashStringToInt(personId)
   $: personAchievements = possibleAchievements.filter((_, index) => {
-    return true
+    return personHash % (index + 1) === 0
   })
 </script>
 
