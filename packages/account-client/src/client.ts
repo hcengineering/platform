@@ -142,6 +142,7 @@ export interface AccountClient {
     firstName: string,
     lastName: string
   ) => Promise<{ uuid: PersonUuid, socialId: PersonId }>
+  exchangeGuestToken: (token: string) => Promise<string>
   addSocialIdToPerson: (person: PersonUuid, type: SocialIdType, value: string, confirmed: boolean) => Promise<PersonId>
   createIntegration: (integration: Integration) => Promise<void>
   updateIntegration: (integration: Integration) => Promise<void>
@@ -688,6 +689,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'ensurePerson' as const,
       params: { socialType, socialValue, firstName, lastName }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async exchangeGuestToken (token: string): Promise<string> {
+    const request = {
+      method: 'exchangeGuestToken' as const,
+      params: { token }
     }
 
     return await this.rpc(request)
