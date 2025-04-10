@@ -30,7 +30,11 @@
   const hierarchy = client.getHierarchy()
 
   let name: string = space?.name ?? ''
-  let types: Ref<MasterTag>[] = space?.types !== undefined ? hierarchy.clone(space.types) : []
+  const topLevelTypes = client.getModel().findAllSync(card.class.MasterTag, {
+    extends: card.class.Card
+  })
+  let types: Ref<MasterTag>[] =
+    space?.types !== undefined ? hierarchy.clone(space.types) : topLevelTypes.map((it) => it._id)
   let isPrivate: boolean = space?.private ?? false
   let members: AccountUuid[] =
     space?.members !== undefined ? hierarchy.clone(space.members) : [getCurrentAccount().uuid]
