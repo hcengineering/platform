@@ -985,11 +985,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   private buildJoinString (vars: ValuesVariables, value: JoinProps[]): string {
     const res: string[] = []
+    const wsId = vars.add(this.workspaceId.name, '::uuid')
     for (const val of value) {
       if (val.isReverse) continue
       if (val.table === DOMAIN_MODEL) continue
       res.push(
-        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = ${vars.add(this.workspaceId, '::uuid')}`
+        `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = ${wsId}`
       )
       if (val.classes !== undefined) {
         if (val.classes.length === 1) {
@@ -1472,8 +1473,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
         classsesQuery = ` AND ${join.toAlias}._class = ANY (${vars.add(join.classes, '::text[]')})`
       }
     }
+    const wsId = vars.add(this.workspaceId.name, '::uuid')
     return [
-      `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.toAlias}."${join.toField}" = ${join.fromAlias}${join.fromAlias !== '' ? '.' : ''}${join.fromField} ${classsesQuery}) AS ${join.toAlias}`
+      `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.toAlias}."${join.toField}" = ${join.fromAlias}${join.fromAlias !== '' ? '.' : ''}${join.fromField} AND ${join.toAlias}."workspaceId" = ${wsId}${classsesQuery}) AS ${join.toAlias}`
     ]
   }
 
