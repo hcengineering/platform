@@ -721,7 +721,8 @@ export class CalendarClient {
       eventId: event.id ?? '',
       calendar: _calendar,
       access: this.getAccess(event, accessRole),
-      timeZone: event.start?.timeZone ?? event.end?.timeZone ?? 'Etc/GMT'
+      timeZone: event.start?.timeZone ?? event.end?.timeZone ?? 'Etc/GMT',
+      user: this.user.userId
     }
     if (participants[1].length > 0) {
       res.externalParticipants = participants[1]
