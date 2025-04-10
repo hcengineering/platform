@@ -6,21 +6,20 @@ import notification from '@hcengineering/notification'
 const sounds = new Map<Asset, AudioBuffer>()
 const context = new AudioContext()
 
-export async function prepareSound (key: string, _class?: Ref<Class<Doc>>): Promise<void> {
-  if (_class === undefined) return
-
+export async function isNotificationAllowed (_class?: Ref<Class<Doc>>): Promise<boolean> {
+  if (_class === undefined) return false
   const client = getClient()
   const notificationType = client
     .getModel()
     .findAllSync(notification.class.NotificationType, { objectClass: _class })[0]
 
-  if (notificationType === undefined) return
+  if (notificationType === undefined) return false
 
   const isAllowedFn = await getResource(notification.function.IsNotificationAllowed)
-  const allowed: boolean = isAllowedFn(notificationType, notification.providers.SoundNotificationProvider)
+  return isAllowedFn(notificationType, notification.providers.SoundNotificationProvider)
+}
 
-  if (!allowed) return
-
+export async function prepareSound (key: string, _class?: Ref<Class<Doc>>): Promise<void> {
   try {
     const soundUrl = getMetadata(key as Asset) as string
     const rawAudio = await fetch(soundUrl)
@@ -39,6 +38,10 @@ export async function playSound (
   loop = false
 ): Promise<(() => void) | null> {
   const soundAssetKey = soundKey as Asset
+
+  const allowed = await isNotificationAllowed(_class)
+  if (!allowed) return null
+
   if (!sounds.has(soundAssetKey)) {
     await prepareSound(soundKey, _class)
   }
