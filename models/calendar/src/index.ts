@@ -30,13 +30,12 @@ import { type Contact, type Employee } from '@hcengineering/contact'
 import {
   DateRangeMode,
   IndexKind,
-  type Account,
   type SystemSpace,
   type Domain,
   type Markup,
   type Ref,
   type Timestamp,
-  PersonId
+  type PersonId
 } from '@hcengineering/core'
 import {
   ArrOf,

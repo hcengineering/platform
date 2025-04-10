@@ -14,7 +14,14 @@
 //
 
 import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import core, { type AccountUuid, type Doc, MeasureMetricsContext, type Ref, type Space, toIdMap } from '@hcengineering/core'
+import core, {
+  type AccountUuid,
+  type Doc,
+  MeasureMetricsContext,
+  type Ref,
+  type Space,
+  toIdMap
+} from '@hcengineering/core'
 import {
   createDefaultSpace,
   type MigrateOperation,
