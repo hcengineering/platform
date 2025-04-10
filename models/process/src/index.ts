@@ -114,6 +114,8 @@ export class TExecution extends TDoc implements Execution {
   @Prop(TypeAny(process.component.ErrorPresenter, process.string.Error), process.string.Error)
   @ReadOnly()
     error?: ExecutionError[] | null
+
+  parentId?: Ref<Execution>
 }
 
 @Model(process.class.ProcessToDo, time.class.ToDo)
@@ -518,6 +520,18 @@ export function createModel (builder: Builder): void {
       requiredParams: []
     },
     process.method.UpdateCard
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.OnSubProcessesDone,
+      objectClass: process.class.Execution,
+      systemOnly: true,
+      requiredParams: []
+    },
+    process.method.WaitSubProcess
   )
 
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {

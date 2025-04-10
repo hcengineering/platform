@@ -96,6 +96,8 @@ export default mergeIds(processId, process, {
     StartAutomatically: '' as IntlString,
     Continue: '' as IntlString,
     RequestFromUser: '' as IntlString,
-    EnterValue: '' as IntlString
+    EnterValue: '' as IntlString,
+    OnToDoClose: '' as IntlString,
+    OnSubProcessesDone: '' as IntlString
   }
 })

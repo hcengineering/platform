@@ -23,11 +23,13 @@ import core, {
   type DocumentQuery,
   type Ref,
   type RefTo,
-  type Type
+  type Type,
+  generateId
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
   parseContext,
+  type SelectedUserRequest,
   type Context,
   type Execution,
   type Method,
@@ -203,18 +205,23 @@ export async function continueExecution (value: Execution): Promise<void> {
 }
 
 export async function requestUserInput (
+  processId: Ref<Process>,
   target: Ref<State>,
   userContext: Record<string, any>
 ): Promise<Record<string, any>> {
   const client = getClient()
   const state = client.getModel().findObject(target)
   if (state === undefined) return userContext
-  userContext = await getStateUserInput(state, userContext)
+  userContext = await getStateUserInput(processId, state, userContext)
   userContext = await getSubProcessesUserInput(state, userContext)
   return userContext
 }
 
-export async function getStateUserInput (state: State, userContext: Record<string, any>): Promise<Record<string, any>> {
+export async function getStateUserInput (
+  processId: Ref<Process>,
+  state: State,
+  userContext: Record<string, any>
+): Promise<Record<string, any>> {
   for (const action of [...state.actions, state.endAction]) {
     if (action == null) continue
     for (const key in action.params) {
@@ -224,7 +231,7 @@ export async function getStateUserInput (state: State, userContext: Record<strin
         const promise = new Promise<void>((resolve) => {
           showPopup(
             process.component.RequestUserInput,
-            { key: context.key, _class: context._class },
+            { processId, state: state._id, key: context.key, _class: context._class },
             undefined,
             (res) => {
               if (res?.value !== undefined) {
@@ -249,7 +256,8 @@ export async function getSubProcessesUserInput (
     if (action.methodId !== process.method.RunSubProcess) continue
     const processId = action.params._id as Ref<Process>
     if (processId === undefined) continue
-    await newExecutionUserInput(processId, userContext)
+    const res = await newExecutionUserInput(processId, {})
+    userContext[processId] = res
   }
   return userContext
 }
@@ -263,7 +271,7 @@ export async function newExecutionUserInput (
   if (process === undefined) return userContext
   const stateId = process.states[0]
   if (stateId === undefined) return userContext
-  return await requestUserInput(stateId, userContext)
+  return await requestUserInput(_id, stateId, userContext)
 }
 
 export async function getNextStateUserInput (
@@ -276,7 +284,7 @@ export async function getNextStateUserInput (
   const currentIndex =
     execution.currentState == null ? -1 : process.states.findIndex((p) => p === execution.currentState)
   const nextState = process.states[currentIndex + 1]
-  return await requestUserInput(nextState, userContext)
+  return await requestUserInput(execution.process, nextState, userContext)
 }
 
 export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space: Ref<Space>): Promise<void> {
@@ -293,4 +301,22 @@ export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space
     assignee: null,
     context
   })
+}
+
+export function getToDoEndAction (prevState: State): Step<Doc> {
+  const contex: SelectedUserRequest = {
+    id: generateId(),
+    type: 'userRequest',
+    key: 'user',
+    _class: process.class.ProcessToDo
+  }
+  const endAction = {
+    methodId: process.method.CreateToDo,
+    params: {
+      state: prevState._id,
+      title: prevState.title,
+      user: '$' + JSON.stringify(contex)
+    }
+  }
+  return endAction
 }
