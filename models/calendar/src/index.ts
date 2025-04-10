@@ -34,7 +34,8 @@ import {
   type Domain,
   type Markup,
   type Ref,
-  type Timestamp
+  type Timestamp,
+  type PersonId
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -137,6 +138,8 @@ export class TEvent extends TAttachedDoc implements Event {
   visibility?: Visibility
 
   timeZone?: string
+
+  user!: PersonId
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)

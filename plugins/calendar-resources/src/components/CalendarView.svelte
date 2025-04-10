@@ -266,6 +266,7 @@
           modifiedOn: Date.now(),
           date: e.detail.date.getTime(),
           space: calendar.space.Calendar,
+          user: myPrimaryId,
           dueDate: new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
         }
         raw.push(temp)

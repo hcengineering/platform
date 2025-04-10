@@ -100,7 +100,8 @@
         allDay: false,
         access: 'owner',
         visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
-        reminders: []
+        reminders: [],
+        user: myAccount.primarySocialId
       })
       Analytics.handleEvent(TimeEvents.ToDoScheduled, { id })
     }
@@ -158,7 +159,8 @@
       attachedToClass: time.class.ToDo,
       collection: 'workslots',
       modifiedOn: now,
-      modifiedBy: myAccount.primarySocialId
+      modifiedBy: myAccount.primarySocialId,
+      user: myAccount.primarySocialId
     })
     slots = slots
   }
