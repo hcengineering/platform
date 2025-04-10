@@ -51,6 +51,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.func.UpdateCard
   })
 
+  builder.mixin(process.method.WaitSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.WaitSubProcess
+  })
+
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.FirstValue
   })

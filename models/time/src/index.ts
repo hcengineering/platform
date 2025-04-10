@@ -116,7 +116,7 @@ export class TToDo extends TAttachedDoc implements ToDo {
 
   doneOn?: Timestamp | null
 
-  @Prop(TypeRef(contactPlugin.class.Person), contactPlugin.string.For)
+  @Prop(TypeRef(contactPlugin.class.Person), contactPlugin.string.Employee)
     user!: Ref<Person>
 
   @Prop(Collection(time.class.WorkSlot, time.string.WorkSlot), time.string.WorkSlot)

@@ -103,7 +103,7 @@
       </div>
       <ButtonIcon kind="primary" icon={IconAdd} size={'extra-small'} on:click={addAction} />
     </div>
-    {#if value.endAction != null}
+    {#if value.endAction != null && value.endAction.methodId !== plugin.method.WaitSubProcess}
       <Button
         justify="left"
         kind="ghost"

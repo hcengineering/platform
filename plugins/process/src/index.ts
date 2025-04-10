@@ -43,6 +43,7 @@ export interface Execution extends Doc {
   rollback: Record<Ref<State>, Tx[]>
   error?: ExecutionError[] | null
   context?: Record<string, any>
+  parentId?: Ref<Execution>
 }
 
 export interface ExecutionError {
@@ -105,7 +106,8 @@ export default plugin(processId, {
   method: {
     RunSubProcess: '' as Ref<Method<Process>>,
     CreateToDo: '' as Ref<Method<ProcessToDo>>,
-    UpdateCard: '' as Ref<Method<Card>>
+    UpdateCard: '' as Ref<Method<Card>>,
+    WaitSubProcess: '' as Ref<Method<Execution>>
   },
   string: {
     Method: '' as IntlString,
@@ -128,7 +130,9 @@ export default plugin(processId, {
   icon: {
     Process: '' as Asset,
     Steps: '' as Asset,
-    States: '' as Asset
+    States: '' as Asset,
+    ToDo: '' as Asset,
+    WaitSubprocesses: '' as Asset
   },
   function: {
     FirstValue: '' as Ref<ProcessFunction>,
