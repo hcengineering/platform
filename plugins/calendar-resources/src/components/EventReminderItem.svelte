@@ -23,28 +23,28 @@
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-<div class="antiOption leftPadding cursor-pointer step-tb25" tabindex={0}>
+<div class="antiOption step-tb25" style="padding-left: 0.5rem" tabindex={0}>
   <TimeShiftPresenter value={reminder * -1} />
-  <div class="tools flex-row-center flex-no-shrink gap-1">
-    <Button
-      icon={IconMoreH}
-      kind={'ghost'}
-      size={'x-small'}
-      padding={'0 .5rem'}
-      focusIndex={-1}
-      {disabled}
-      noFocus
-      on:click={(e) => dispatch('edit', e)}
-    />
-    <Button
-      icon={IconClose}
-      kind={'ghost'}
-      size={'x-small'}
-      padding={'0 .5rem'}
-      focusIndex={-1}
-      {disabled}
-      noFocus
-      on:click={() => dispatch('remove')}
-    />
-  </div>
+  {#if !disabled}
+    <div class="tools flex-row-center flex-no-shrink gap-1">
+      <Button
+        icon={IconMoreH}
+        kind={'ghost'}
+        size={'x-small'}
+        padding={'0 .5rem'}
+        focusIndex={-1}
+        noFocus
+        on:click={(e) => dispatch('edit', e)}
+      />
+      <Button
+        icon={IconClose}
+        kind={'ghost'}
+        size={'x-small'}
+        padding={'0 .5rem'}
+        focusIndex={-1}
+        noFocus
+        on:click={() => dispatch('remove')}
+      />
+    </div>
+  {/if}
 </div>

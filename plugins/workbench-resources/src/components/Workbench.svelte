@@ -1019,7 +1019,7 @@
           {:else if currentView?.component !== undefined}
             <Component
               is={currentView.component}
-              props={{ ...currentView.componentProps, currentView, workbenchWidth }}
+              props={{ ...currentView.componentProps, currentSpace, currentView, workbenchWidth }}
             />
           {:else if $accessDeniedStore}
             <div class="flex-center h-full">

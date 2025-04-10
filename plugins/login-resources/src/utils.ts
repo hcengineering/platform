@@ -382,6 +382,10 @@ export async function selectWorkspace (
   }
 }
 
+export async function exchangeGuestToken (token: string): Promise<string> {
+  return await getAccountClient(token).exchangeGuestToken(token)
+}
+
 export async function fetchWorkspace (): Promise<[Status, WorkspaceInfoWithStatus | null]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {

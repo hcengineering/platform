@@ -62,7 +62,7 @@
   const dispatch = createEventDispatcher()
 
   async function runProcess (_id: Ref<Process>): Promise<void> {
-    await createExecution(value._id, _id)
+    await createExecution(value._id, _id, value.space)
     dispatch('close')
   }
 </script>

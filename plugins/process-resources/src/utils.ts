@@ -13,6 +13,7 @@
 
 import { type Card } from '@hcengineering/card'
 import core, {
+  type Space,
   type AnyAttribute,
   type ArrOf,
   type Association,
@@ -278,11 +279,11 @@ export async function getNextStateUserInput (
   return await requestUserInput(nextState, userContext)
 }
 
-export async function createExecution (card: Ref<Card>, _id: Ref<Process>): Promise<void> {
+export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space: Ref<Space>): Promise<void> {
   const client = getClient()
   const context = await newExecutionUserInput(_id, {})
 
-  await client.createDoc(process.class.Execution, core.space.Workspace, {
+  await client.createDoc(process.class.Execution, space, {
     process: _id,
     currentState: null,
     card,

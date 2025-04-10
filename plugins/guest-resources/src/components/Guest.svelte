@@ -16,7 +16,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import core, { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, decodeTokenPayload, getClient } from '@hcengineering/presentation'
+  import presentation, { ActionContext, decodeTokenPayload, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Component,
@@ -49,14 +49,14 @@
   const client = getClient()
 
   async function load (): Promise<boolean> {
-    const loc = getCurrentLocation()
-    const token = loc.query?.token
+    const token = getMetadata(presentation.metadata.Token)
     if (token == null) return false
     const { extra } = decodeTokenPayload(token)
 
     const link = await client.findOne(guest.class.PublicLink, { _id: extra.linkId })
     if (link == null) return false
     restrictionStore.set(link.restrictions)
+    const loc = getCurrentLocation()
     const mergedLoc = link.location
     mergedLoc.path[0] = loc.path[0]
     mergedLoc.path[1] = loc.path[1]

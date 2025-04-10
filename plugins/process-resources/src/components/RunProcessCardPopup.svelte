@@ -28,7 +28,7 @@
   const client = getClient()
 
   let process: Ref<Process> | undefined = value
-  let card: Ref<Card> | undefined
+  let card: Card | undefined
 
   const processes = client.getModel().findAllSync(plugin.class.Process, {})
 
@@ -38,7 +38,7 @@
 
   async function runProcess (): Promise<void> {
     if (process === undefined || card === undefined) return
-    await createExecution(card, process)
+    await createExecution(card._id, process, card.space)
     dispatch('close')
   }
 
@@ -94,7 +94,10 @@
     <CardSelector
       kind={'regular'}
       size={'medium'}
-      bind:value={card}
+      value={card?._id}
+      on:value={(e) => {
+        card = e.detail
+      }}
       {ignoreObjects}
       _class={selectedProcess.masterTag}
     />

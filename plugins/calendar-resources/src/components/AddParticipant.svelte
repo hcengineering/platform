@@ -194,7 +194,7 @@
   }}
 >
   <div class="hidden-text" bind:this={text} />
-  <div class="flex-row-center w-full">
+  <div class="flex-row-center w-full container">
     <div class="antiEditBox ghost" class:focusable class:w-full={fullSize}>
       <input
         {disabled}
@@ -213,7 +213,7 @@
         on:blur
       />
     </div>
-    <div class="ml-2">
+    <div class="tool">
       <Button
         {disabled}
         focusIndex={2}
@@ -228,3 +228,15 @@
     </div>
   </div>
 </div>
+
+<style lang="scss">
+  .tool {
+    visibility: hidden;
+  }
+
+  .container:hover {
+    .tool {
+      visibility: visible;
+    }
+  }
+</style>

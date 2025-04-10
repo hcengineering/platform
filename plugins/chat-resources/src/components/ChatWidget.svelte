@@ -121,7 +121,7 @@
         },
         chat.masterTag.Thread
       )
-      threadId = (await client.createDoc(chat.masterTag.Thread, core.space.Workspace, data)) as CardID
+      threadId = (await client.createDoc(chat.masterTag.Thread, cardPlugin.space.Default, data)) as CardID
 
       await communicationClient.createThread(card, message.id, threadId)
     }
