@@ -31,38 +31,41 @@
   <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
   <div class="antiOption step-tb25" tabindex={focusIndex}>
     <ContactRefPresenter disabled value={participant} />
-    <div class="tools">
-      <Button
-        icon={IconClose}
-        kind={'ghost'}
-        size={'x-small'}
-        padding={'0 .5rem'}
-        focusIndex={-1}
-        {disabled}
-        noFocus
-        on:click={() => {
-          dispatch('removeParticipant', participant)
-        }}
-      />
-    </div>
+    {#if !disabled}
+      <div class="tools">
+        <Button
+          icon={IconClose}
+          kind={'ghost'}
+          size={'x-small'}
+          padding={'0 .5rem'}
+          focusIndex={-1}
+          {disabled}
+          noFocus
+          on:click={() => {
+            dispatch('removeParticipant', participant)
+          }}
+        />
+      </div>
+    {/if}
   </div>
 {:else if externalParticipant !== undefined}
   <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
   <div class="antiOption step-tb25" tabindex={focusIndex}>
     <span class="ml-8 overflow-label">{externalParticipant}</span>
-    <div class="tools">
-      <Button
-        icon={IconClose}
-        kind={'ghost'}
-        size={'x-small'}
-        padding={'0 .5rem'}
-        focusIndex={-1}
-        {disabled}
-        noFocus
-        on:click={() => {
-          dispatch('removeExtParticipant', externalParticipant)
-        }}
-      />
-    </div>
+    {#if !disabled}
+      <div class="tools">
+        <Button
+          icon={IconClose}
+          kind={'ghost'}
+          size={'x-small'}
+          padding={'0 .5rem'}
+          focusIndex={-1}
+          noFocus
+          on:click={() => {
+            dispatch('removeExtParticipant', externalParticipant)
+          }}
+        />
+      </div>
+    {/if}
   </div>
 {/if}

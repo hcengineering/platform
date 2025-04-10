@@ -92,13 +92,15 @@
     "ScheduleDeleteConfirm": "Il programma verrà eliminato. Confermare?",
     "ScheduleShareLink": "Condividi link",
     "ScheduleSharedLinkMessage": "<p>Condividi questo link per consentire ad altri di prenotare una riunione con te:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
-    "ScheduleSharedLinkCopy": "Copia link",
+    "CopyLink": "Copia link",
     "ScheduleAvailability": "Disponibilità",
     "ScheduleUnavailable": "Non disponibile",
     "ScheduleTitlePlaceholder": "Titolo programma",
     "ScheduleAddPeriod": "Aggiungi periodo",
     "ScheduleRemovePeriod": "Rimuovi periodo",
     "MeetingDuration": "Durata riunione",
-    "MeetingInterval": "Pausa tra riunioni"
+    "MeetingInterval": "Pausa tra riunioni",
+    "CalDavShareLink": "Ottieni link CalDav",
+    "CalDavSharedLinkMessage": "<p>Usa questo link per registrare il calendario in un client esterno che supporta il protocollo CalDav:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>"
   }
 }
