@@ -24,7 +24,8 @@ import {
   resolveLocationData,
   getCardLink,
   queryCard,
-  deleteMasterTag
+  deleteMasterTag,
+  editSpace
 } from './utils'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
@@ -43,6 +44,8 @@ import CardRefPresenter from './components/CardRefPresenter.svelte'
 import ChangeType from './components/ChangeType.svelte'
 import CreateCardButton from './components/CreateCardButton.svelte'
 import CardArrayEditor from './components/CardArrayEditor.svelte'
+import NewCardHeader from './components/navigator/NewCardHeader.svelte'
+import SpacePresenter from './components/navigator/SpacePresenter.svelte'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
 
@@ -69,7 +72,9 @@ export default async (): Promise<Resources> => ({
     CardRefPresenter,
     ChangeType,
     CreateCardButton,
-    CardArrayEditor
+    CardArrayEditor,
+    NewCardHeader,
+    SpacePresenter
   },
   completion: {
     CardQuery: queryCard
@@ -79,7 +84,8 @@ export default async (): Promise<Resources> => ({
     LocationData: resolveLocationData
   },
   actionImpl: {
-    DeleteMasterTag: deleteMasterTag
+    DeleteMasterTag: deleteMasterTag,
+    EditSpace: editSpace
   },
   function: {
     CardTitleProvider: getCardTitle,

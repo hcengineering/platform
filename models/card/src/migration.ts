@@ -32,6 +32,11 @@ export const cardOperation: MigrateOperation = {
         state: 'set-parent-info',
         mode: 'upgrade',
         func: setParentInfo
+      },
+      {
+        state: 'migrate-spaces',
+        mode: 'upgrade',
+        func: migrateSpaces
       }
     ])
   },
@@ -44,6 +49,13 @@ export const cardOperation: MigrateOperation = {
       {
         state: 'removeVariantViewlets',
         func: removeVariantViewlets
+      },
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createDefaultProject(tx)
+        }
       }
     ])
   }
@@ -124,4 +136,39 @@ async function migrateViewlets (client: Client): Promise<void> {
       }
     }
   }
+}
+
+async function createDefaultProject (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(card.class.CardSpace, {
+    _id: card.space.Default
+  })
+
+  const currentDeleted = await tx.findOne(core.class.TxRemoveDoc, {
+    objectId: card.space.Default
+  })
+
+  // Create new if not deleted by customers.
+  if (current === undefined && currentDeleted === undefined) {
+    const topLevelTypes = await tx.findAll(card.class.MasterTag, {
+      extends: card.class.Card
+    })
+    await tx.createDoc(
+      card.class.CardSpace,
+      core.space.Space,
+      {
+        name: 'Default',
+        description: 'Default',
+        private: false,
+        members: [],
+        archived: false,
+        autoJoin: true,
+        types: topLevelTypes.map((it) => it._id)
+      },
+      card.space.Default
+    )
+  }
+}
+
+async function migrateSpaces (client: MigrationClient): Promise<void> {
+  await client.update(DOMAIN_CARD, { space: core.space.Workspace }, { space: card.space.Default })
 }
