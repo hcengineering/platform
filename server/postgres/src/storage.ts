@@ -1473,7 +1473,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         classsesQuery = ` AND ${join.toAlias}._class = ANY (${vars.add(join.classes, '::text[]')})`
       }
     }
-    const wsId = vars.add(this.workspaceId.name, '::uuid')
+    const wsId = vars.add(this.workspaceId, '::uuid')
     return [
       `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.toAlias}."${join.toField}" = ${join.fromAlias}${join.fromAlias !== '' ? '.' : ''}${join.fromField} AND ${join.toAlias}."workspaceId" = ${wsId}${classsesQuery}) AS ${join.toAlias}`
     ]
