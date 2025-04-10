@@ -11,7 +11,7 @@
   import { pushAvailable, subscribePush } from '../utils'
   import plugin from '../plugin'
   import { onMount } from 'svelte'
-  
+
   export let notification: PlatformNotification
   export let onRemove: () => void
 
@@ -57,7 +57,7 @@
 
   onMount(async () => {
     if (!value.soundAlert) return
-    await playSound(plugin.sound.Knock)
+    await playSound(plugin.sound.InboxNotification)
   })
 
 </script>

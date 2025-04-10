@@ -407,7 +407,7 @@ const notification = plugin(notificationId, {
     BellCrossed: '' as Asset
   },
   sound: {
-    Knock: '' as Asset
+    InboxNotification: '' as Asset
   },
   string: {
     Notification: '' as IntlString,
