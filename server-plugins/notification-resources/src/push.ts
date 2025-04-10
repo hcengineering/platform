@@ -259,7 +259,10 @@ export async function PushNotificationsHandler (
 
     const senderSocialString = inboxNotification.createdBy ?? inboxNotification.modifiedBy
     const senderPerson = await getPerson(control, senderSocialString)
-    const soundAlert = availableProviders.get(inboxNotification._id)?.find((p) => p === notification.providers.SoundNotificationProvider) !== undefined
+    const soundAlert =
+      availableProviders
+        .get(inboxNotification._id)
+        ?.find((p) => p === notification.providers.SoundNotificationProvider) !== undefined
     const tx = await createPushFromInbox(
       control,
       inboxNotification,

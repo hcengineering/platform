@@ -59,7 +59,6 @@
     if (!value.soundAlert) return
     await playSound(plugin.sound.InboxNotification)
   })
-
 </script>
 
 <NotificationToast title={notification.title} severity={notification.severity} onClose={onRemove}>

@@ -32,10 +32,7 @@ export async function prepareSound (key: string): Promise<void> {
   }
 }
 
-export async function playSound (
-  soundKey: string,
-  loop = false
-): Promise<(() => void) | null> {
+export async function playSound (soundKey: string, loop = false): Promise<(() => void) | null> {
   const soundAssetKey = soundKey as Asset
 
   if (!sounds.has(soundAssetKey)) {
