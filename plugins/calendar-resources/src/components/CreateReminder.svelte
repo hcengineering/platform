@@ -56,7 +56,7 @@
       allDay: false,
       reminders: [0],
       access: 'owner',
-      user: getCurrentAccount()._id
+      user: getCurrentAccount().primarySocialId
     })
   }
 </script>
