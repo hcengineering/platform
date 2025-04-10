@@ -29,22 +29,15 @@
   function change (e: CustomEvent<any>): void {
     if (e.detail !== undefined) {
       params = e.detail
-      params.state = state._id
       ;(step.params as any) = params
       dispatch('change', step)
     }
   }
 
-  onMount(() => {
-    params.state = state._id
-    ;(step.params as any) = params
-    dispatch('change', step)
-  })
-
   const keys = test()
 
   function test (): Array<keyof ProcessToDo> {
-    return ['title', 'user', 'description', 'dueDate']
+    return ['title', 'user', 'dueDate']
   }
 </script>
 

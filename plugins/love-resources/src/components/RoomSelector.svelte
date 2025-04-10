@@ -104,12 +104,14 @@
 </script>
 
 {#if items.length > 0}
-  <div class="flex-row-center flex-gap-1">
+  <div class="flex-row-center flex-gap-1 mt-1">
     <Icon icon={love.icon.Mic} size={'small'} />
     <Dropdown
       kind={'ghost'}
       size={'medium'}
       placeholder={love.string.Room}
+      justify="left"
+      stretchWidth={true}
       padding="0.5rem"
       {items}
       withSearch={false}

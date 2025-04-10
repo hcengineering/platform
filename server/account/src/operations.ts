@@ -14,19 +14,19 @@
 //
 import { Analytics } from '@hcengineering/analytics'
 import {
-  AccountRole,
   AccountInfo,
+  AccountRole,
+  type Branding,
   buildSocialIdString,
   concatLink,
   isActiveMode,
   isWorkspaceCreating,
   MeasureContext,
-  SocialIdType,
-  systemAccountUuid,
-  type Branding,
   type Person,
   type PersonId,
   type PersonUuid,
+  SocialIdType,
+  systemAccountUuid,
   type WorkspaceMemberInfo,
   type WorkspaceUuid,
   type AccountUuid
@@ -40,9 +40,9 @@ import type {
   AccountDB,
   AccountMethodHandler,
   LoginInfo,
-  Meta,
   Mailbox,
   MailboxOptions,
+  Meta,
   OtpInfo,
   RegionInfo,
   SocialId,
@@ -51,6 +51,7 @@ import type {
   WorkspaceLoginInfo
 } from './types'
 import {
+  addSocialId,
   checkInvite,
   cleanEmail,
   confirmEmail,
@@ -58,38 +59,38 @@ import {
   createWorkspaceRecord,
   doJoinByInvite,
   EndpointKind,
+  generatePassword,
   getAccount,
   getEmailSocialId,
   getEndpoint,
   getFrontUrl,
   getInviteEmail,
+  getMailUrl,
   getPersonName,
   getRegions,
   getRolePower,
-  getMailUrl,
   getWorkspaceById,
   getWorkspaceInfoWithStatusById,
   getWorkspaceInvite,
+  getWorkspaceRole,
   GUEST_ACCOUNT,
+  isEmail,
   isOtpValid,
+  normalizeValue,
+  releaseSocialId,
   selectWorkspace,
   sendEmail,
   sendEmailConfirmation,
   sendOtp,
   setPassword,
+  setTimezoneIfNotDefined,
   signUpByEmail,
-  verifyAllowedServices,
+  updateWorkspaceRole,
   verifyAllowedRole,
+  verifyAllowedServices,
   verifyPassword,
   wrap,
-  getWorkspaceRole,
-  normalizeValue,
-  isEmail,
-  generatePassword,
-  addSocialId,
-  releaseSocialId,
-  updateWorkspaceRole,
-  setTimezoneIfNotDefined,
+  getWorkspaceByUrl,
   confirmHulyIds
 } from './utils'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
@@ -1635,6 +1636,35 @@ async function deleteMailbox (
   ctx.info('Mailbox deleted', { mailbox, account })
 }
 
+async function exchangeGuestToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<string> {
+  const tokenObj = decodeTokenVerbose(ctx, token)
+  if (tokenObj.account == null) {
+    // Check if it's old guest token
+    const oldGuestEmail = '#guest@hc.engineering'
+    const guestAccount = 'b6996120-416f-49cd-841e-e4a5d2e49c9b' as PersonUuid
+    const { linkId, guest, email, workspace: workspaceUrl } = tokenObj as any
+
+    if (linkId == null || guest == null || email !== oldGuestEmail || workspaceUrl == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+    }
+
+    const workspace = await getWorkspaceByUrl(db, workspaceUrl)
+
+    if (workspace == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
+    }
+
+    return generateToken(guestAccount, workspace.uuid, { linkId, guest: 'true' })
+  }
+
+  return token
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -1672,12 +1702,15 @@ export type AccountMethods =
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
+  | 'findFullSocialIdBySocialKey'
   | 'ensurePerson'
+  | 'exchangeGuestToken'
   | 'getMailboxOptions'
   | 'createMailbox'
   | 'getMailboxes'
   | 'deleteMailbox'
   | 'addSocialIdToPerson'
+  | 'updateSocialId'
   | 'getAccountInfo'
 
 /**
@@ -1714,6 +1747,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getMailboxes: wrap(getMailboxes),
     deleteMailbox: wrap(deleteMailbox),
     ensurePerson: wrap(ensurePerson),
+    exchangeGuestToken: wrap(exchangeGuestToken),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),

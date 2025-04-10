@@ -27,7 +27,7 @@
   let isConnectionEstablished = false
   let connectionError: Error | undefined
 
-  let info: { name: string, username: string, photoUrl: string } | undefined = undefined
+  let info: { name: string, username: string, photoId: string } | undefined = undefined
   let isLoading = false
 
   const url = getMetadata(telegram.metadata.BotUrl) ?? ''
@@ -134,8 +134,8 @@
       <div class="flex-col mt-2">
         <div class="title overflow-label mb-4">
           <div class="flex-row-center flex-gap-2">
-            {#if info.photoUrl !== ''}
-              <img class="photo" src={info.photoUrl} alt="" />
+            {#if info.photoId !== ''}
+              <img class="photo" src={concatLink(url, `/photo/${info.photoId}`)} alt="" />
             {:else}
               <Icon icon={TelegramColor} size="x-large" />
             {/if}

@@ -21,7 +21,6 @@ import core, {
   Class,
   Data,
   Doc,
-  generateId,
   Hierarchy,
   Markup,
   Ref,
@@ -38,13 +37,11 @@ import core, {
   type MeasureContext,
   AccountUuid
 } from '@hcengineering/core'
-import notification, { CommonInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
+import notification, { MentionInboxNotification } from '@hcengineering/notification'
 import { getPerson } from '@hcengineering/server-contact'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import {
-  applyNotificationProviders,
   getCommonNotificationTxes,
-  getNotificationContent,
   getNotificationProviderControl,
   getPushCollaboratorTx,
   NotifyResult,
@@ -213,43 +210,6 @@ export async function getPersonNotificationTxes (
       originTx
     )
     res.push(...txes)
-  } else {
-    const context = (
-      await control.findAll(
-        ctx,
-        notification.class.DocNotifyContext,
-        { objectId: reference.srcDocId, user: receiverAccount },
-        { projection: { _id: 1 } }
-      )
-    )[0]
-    if (context !== undefined) {
-      const content = await getNotificationContent(originTx, receiverPersonRef, sender, doc, control)
-      const notificationData: CommonInboxNotification = {
-        ...data,
-        ...content,
-        docNotifyContext: context._id,
-        _id: generateId(),
-        _class: notification.class.MentionInboxNotification,
-        space: receiverSpace._id,
-        modifiedOn: originTx.modifiedOn,
-        modifiedBy: senderId
-      }
-
-      const msg = control.hierarchy.isDerived(data.mentionedInClass, activity.class.ActivityMessage)
-        ? (await control.findAll(control.ctx, data.mentionedInClass, { _id: data.mentionedIn }))[0]
-        : undefined
-      await applyNotificationProviders(
-        notificationData,
-        notifyResult,
-        control,
-        res,
-        doc,
-        receiver,
-        sender,
-        notification.class.MentionInboxNotification,
-        msg as ActivityMessage
-      )
-    }
   }
 
   return res

@@ -97,6 +97,7 @@ export default plugin(loginId, {
     SelectWorkspace: '' as Resource<
     (workspace: string, token: string | null | undefined) => Promise<[Status, WorkspaceLoginInfo | undefined]>
     >,
+    ExchangeGuestToken: '' as Resource<(token: string) => Promise<string>>,
     FetchWorkspace: '' as Resource<() => Promise<[Status, WorkspaceInfoWithStatus | undefined]>>,
     GetPerson: '' as Resource<() => Promise<[Status, Person]>>,
     GetWorkspaces: '' as Resource<() => Promise<WorkspaceInfoWithStatus[]>>

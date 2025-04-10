@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import { ActivityMessage } from '@hcengineering/activity'
 import { ChannelItem } from '@hcengineering/contact'
-import { PersonId, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
-import { InboxNotification, NotificationProvider, NotificationType } from '@hcengineering/notification'
+import { AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import { NotificationProvider, NotificationType } from '@hcengineering/notification'
 import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
@@ -57,19 +56,6 @@ export interface SharedTelegramMessage extends BaseTelegramMessage {
  */
 export interface SharedTelegramMessages extends AttachedDoc {
   messages: SharedTelegramMessage[]
-}
-
-export interface TelegramNotificationRequest {
-  notificationId: Ref<InboxNotification>
-  messageId?: Ref<ActivityMessage>
-  attachments: boolean
-  workspace: string
-  account: PersonId
-  title: string
-  quote?: string
-  body: string
-  sender: string
-  link: string
 }
 
 /**

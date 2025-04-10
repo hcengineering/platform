@@ -201,8 +201,8 @@
       <EventParticipants bind:participants bind:externalParticipants disabled={readOnly} focusIndex={10006} />
       <ComponentExtensions extension={calendar.extensions.EditEventExtensions} props={{ readOnly, value: object }} />
     </div>
-    <div class="block row">
-      <div class="top-icon">
+    <div class="block description">
+      <div class="top-icon" class:disabled={readOnly}>
         <Icon icon={calendar.icon.Description} size={'small'} />
       </div>
       <StyledTextBox
@@ -214,6 +214,9 @@
         readonly={readOnly}
         placeholder={calendar.string.Description}
         bind:content={description}
+        on:changeSize={(e) => {
+          console.log('ChangeSize', e)
+        }}
       />
     </div>
     <div class="divider" />
@@ -265,7 +268,7 @@
       &:not(:last-child) {
         border-bottom: 1px solid var(--theme-divider-color);
       }
-      &:not(.row) {
+      &:not(.description) {
         flex-direction: column;
       }
       &.first {
@@ -277,14 +280,18 @@
       &.rightCropPadding {
         padding: 0.75rem 1rem 0.75rem 1.25rem;
       }
-      &.row {
-        padding: 0 1.25rem 0.5rem;
+      &.description {
+        padding: 0 1.25rem;
       }
     }
     .top-icon {
       flex-shrink: 0;
       margin-top: 1.375rem;
       margin-right: 0.125rem;
+
+      &.disabled {
+        margin-top: 0.875rem;
+      }
     }
   }
 </style>

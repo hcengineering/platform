@@ -14,16 +14,9 @@
 // limitations under the License.
 //
 
-import { ActivityMessage } from '@hcengineering/activity'
 import { Employee, Person, PersonSpace } from '@hcengineering/contact'
 import { PersonId, Class, Doc, Mixin, Ref, Tx, TxCUD, AccountUuid } from '@hcengineering/core'
-import {
-  BaseNotificationType,
-  InboxNotification,
-  NotificationContent,
-  NotificationProvider,
-  NotificationType
-} from '@hcengineering/notification'
+import { NotificationContent, NotificationType } from '@hcengineering/notification'
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
@@ -102,21 +95,6 @@ export interface SenderInfo {
   person?: Person
 }
 
-export type NotificationProviderFunc = (
-  control: TriggerControl,
-  types: BaseNotificationType[],
-  object: Doc,
-  data: InboxNotification,
-  receiver: ReceiverInfo,
-  sender: SenderInfo,
-  message?: ActivityMessage
-) => Promise<Tx[]>
-
-export interface NotificationProviderResources extends Doc {
-  provider: Ref<NotificationProvider>
-  fn: Resource<NotificationProviderFunc>
-}
-
 export const NOTIFICATION_BODY_SIZE = 50
 export const PUSH_NOTIFICATION_TITLE_SIZE = 80
 
@@ -129,9 +107,6 @@ export default plugin(serverNotificationId, {
     MailAuthToken: '' as Metadata<string>,
     WebPushUrl: '' as Metadata<string>,
     InboxOnlyNotifications: '' as Metadata<boolean>
-  },
-  class: {
-    NotificationProviderResources: '' as Ref<Class<NotificationProviderResources>>
   },
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,

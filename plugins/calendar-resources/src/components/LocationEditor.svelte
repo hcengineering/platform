@@ -21,9 +21,9 @@
   }
 </script>
 
-<div class="flex-row-center flex-gap-1 container flex-no-shrink">
+<div class="flex-row-center flex-gap-1 flex-no-shrink">
   <Icon icon={calendar.icon.Location} size={'small'} />
-  <div class="flex-row-center" style="flex: 1">
+  <div class="flex-row-center container" style="flex: 1">
     <EditBox
       bind:value
       placeholder={calendar.string.Location}

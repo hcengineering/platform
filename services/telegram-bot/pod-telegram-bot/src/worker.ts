@@ -13,74 +13,84 @@
 // limitations under the License.
 //
 
-import type { Collection, ObjectId, WithId } from 'mongodb'
-import { MeasureContext, Ref, SortingOrder, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
-import { InboxNotification } from '@hcengineering/notification'
-import { TelegramNotificationRequest } from '@hcengineering/telegram'
-import { StorageAdapter } from '@hcengineering/server-core'
+import { AccountUuid, MeasureContext, PersonId, Ref, WorkspaceUuid } from '@hcengineering/core'
+import { StorageAdapter, type StorageConfiguration } from '@hcengineering/server-core'
 import chunter, { ChunterSpace } from '@hcengineering/chunter'
 import { formatName } from '@hcengineering/contact'
-import { generateToken } from '@hcengineering/server-token'
 import { getAccountClient } from '@hcengineering/server-client'
 import { ActivityMessage } from '@hcengineering/activity'
 
 import {
+  ChannelId,
   ChannelRecord,
+  IntegrationInfo,
   MessageRecord,
-  OtpRecord,
   PlatformFileInfo,
   ReplyRecord,
   TelegramFileInfo,
-  UserRecord,
   WorkspaceInfo
 } from './types'
-import { getDB } from './storage'
 import { WorkspaceClient } from './workspace'
-import { getNewOtp } from './utils'
+import { getNewOtp, serviceToken, toMediaGroups, toTelegramHtml } from './utils'
 import config from './config'
+import {
+  TelegramNotificationQueueMessage,
+  TelegramWorkspaceSubscriptionQueueMessage
+} from '@hcengineering/server-telegram'
+import { generateToken } from '@hcengineering/server-token'
+import { Telegraf } from 'telegraf'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 
-const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
+import { Limiter } from './limiter'
+import { TgContext } from './telegraf/types'
+import { getDb, PostgresDB } from './db'
+import {
+  addWorkspace,
+  createIntegration,
+  listIntegrationsByAccount,
+  getOrCreateSocialId,
+  disableIntegration,
+  getAnyIntegrationByTelegramId,
+  enableIntegration
+} from './account'
 
 export class PlatformWorker {
-  private readonly workspacesClients = new Map<string, WorkspaceClient>()
-  private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
   private readonly otpIntervalId: NodeJS.Timeout | undefined
   private readonly clearIntervalId: NodeJS.Timeout | undefined
 
-  private readonly channelsByWorkspace = new Map<string, WithId<ChannelRecord>[]>()
-  private readonly channelById = new Map<ObjectId, WithId<ChannelRecord>>()
+  private readonly channelsByWorkspace = new Map<string, ChannelRecord[]>()
+  private readonly channelByRowId = new Map<ChannelId, ChannelRecord>()
   private readonly workspaceInfoById = new Map<string, WorkspaceInfo>()
 
   private constructor (
     readonly ctx: MeasureContext,
-    readonly storageAdapter: StorageAdapter,
-    private readonly usersStorage: Collection<UserRecord>,
-    private readonly messagesStorage: Collection<MessageRecord>,
-    private readonly otpStorage: Collection<OtpRecord>,
-    private readonly repliesStorage: Collection<ReplyRecord>,
-    private readonly channelsStorage: Collection<ChannelRecord>
+    readonly storage: StorageAdapter,
+    readonly limiter: Limiter,
+    private readonly db: PostgresDB
   ) {
     this.otpIntervalId = setInterval(
       () => {
-        void otpStorage.deleteMany({ expires: { $lte: Date.now() } })
+        void db.removeExpiredOtp()
       },
       3 * 60 * 1000
     )
     this.clearIntervalId = setInterval(
       () => {
         this.channelsByWorkspace.clear()
-        this.channelById.clear()
+        this.channelByRowId.clear()
       },
       60 * 60 * 1000
     )
   }
 
-  public async getUsersToDisconnect (): Promise<UserRecord[]> {
-    return await this.usersStorage.find({ workspaces: { $exists: false } }).toArray()
-  }
+  public static async create (ctx: MeasureContext): Promise<PlatformWorker> {
+    const storageConfig: StorageConfiguration = storageConfigFromEnv()
+    const storage = buildStorageFromConfig(storageConfig)
 
-  public async disconnectUsers (): Promise<void> {
-    await this.usersStorage.deleteMany({ workspaces: { $exists: false } })
+    const db = await getDb()
+    const limiter = new Limiter()
+
+    return new PlatformWorker(ctx, storage, limiter, db)
   }
 
   async close (): Promise<void> {
@@ -90,162 +100,83 @@ export class PlatformWorker {
     if (this.clearIntervalId !== undefined) {
       clearInterval(this.clearIntervalId)
     }
+    await this.db.close()
   }
 
-  async closeWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
-    const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
-
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId)
-      this.closeWorkspaceTimeouts.delete(workspace)
-    }
-
-    const client = this.workspacesClients.get(workspace)
-
-    if (client !== undefined) {
-      await client.close()
-      this.workspacesClients.delete(workspace)
-    }
-  }
-
-  async addUser (
-    id: number,
-    email: string,
+  private async addIntegration (
+    telegramId: number,
+    account: AccountUuid,
     workspace: WorkspaceUuid,
-    telegramUsername?: string
-  ): Promise<UserRecord | undefined> {
-    const emailRes = await this.usersStorage.findOne({ email })
+    socialId: PersonId,
+    username?: string
+  ): Promise<IntegrationInfo | undefined> {
+    const integrationByTg = await getAnyIntegrationByTelegramId(telegramId)
 
-    if (emailRes !== null) {
-      if (emailRes.workspaces.includes(workspace)) {
-        return
-      }
-      if (!emailRes.workspaces.includes(workspace)) {
-        await this.usersStorage.updateOne({ email }, { $push: { workspaces: workspace } })
-      }
+    if (integrationByTg != null) {
+      this.ctx.error('Account is already registered', {
+        telegramId,
+        account: integrationByTg.account,
+        requestAccount: account
+      })
       return
     }
 
-    const tRes = await this.usersStorage.findOne({ telegramId: id })
+    const integration = await createIntegration(socialId, workspace)
 
-    if (tRes !== null) {
-      if (tRes.email !== email) {
-        this.ctx.error('Account is already registered', { id, email: tRes.email, newEmail: email })
-      }
-      if (tRes.email === email && !tRes.workspaces.includes(workspace)) {
-        await this.usersStorage.updateOne({ email }, { $push: { workspaces: workspace } })
-      }
-      return
+    return {
+      ...integration,
+      workspaceUuid: workspace,
+      account,
+      telegramId,
+      username
     }
-
-    const insertResult = await this.usersStorage.insertOne({
-      telegramId: id,
-      email,
-      workspaces: [workspace],
-      telegramUsername
-    })
-
-    return (await this.usersStorage.findOne({ _id: insertResult.insertedId })) ?? undefined
   }
 
-  async getFiles (request: TelegramNotificationRequest): Promise<PlatformFileInfo[]> {
-    if (request.messageId === undefined || !request.attachments) {
-      return []
-    }
-    const wsClient = await this.getWorkspaceClient(request.workspace as any) // TODO: FIXME
-    return await wsClient.getFiles(request.messageId)
+  async getFiles (
+    workspace: WorkspaceUuid,
+    message: Ref<ActivityMessage>,
+    account: AccountUuid
+  ): Promise<PlatformFileInfo[]> {
+    const wsClient = await WorkspaceClient.create(workspace, account, this.ctx, this.storage)
+    return await wsClient.getFiles(message)
   }
 
-  async updateTelegramUsername (userRecord: UserRecord, telegramUsername?: string): Promise<void> {
-    await this.usersStorage.updateOne(
-      { telegramId: userRecord.telegramId, email: userRecord.email },
-      { $set: { telegramUsername } }
-    )
-  }
-
-  async addNotificationRecord (record: MessageRecord): Promise<void> {
-    await this.messagesStorage.insertOne(record)
-  }
-
-  async removeUserByTelegramId (id: number): Promise<void> {
-    await this.usersStorage.deleteOne({ telegramId: id })
+  async updateTelegramUsername (personId: PersonId, telegramUsername: string): Promise<void> {
+    await getAccountClient(serviceToken()).updateSocialId(personId, telegramUsername)
   }
 
   async saveReply (record: ReplyRecord): Promise<void> {
-    await this.repliesStorage.insertOne(record)
+    await this.db.insertReply(record)
   }
 
-  async getReply (id: number, replyTo: number): Promise<ReplyRecord | undefined> {
-    return (await this.repliesStorage.findOne({ telegramId: id, replyId: replyTo })) ?? undefined
+  async getReply (tgUserId: number, replyTo: number): Promise<ReplyRecord | undefined> {
+    return await this.db.getReply(tgUserId, replyTo)
   }
 
-  async getNotificationRecord (id: number, email: string): Promise<MessageRecord | undefined> {
-    return (await this.messagesStorage.findOne({ telegramId: id, email })) ?? undefined
-  }
-
-  async findMessageRecord (
-    email: string,
-    notificationId?: Ref<InboxNotification>,
-    messageId?: Ref<ActivityMessage>
+  async getMessageRecordByRef (
+    account: AccountUuid,
+    messageId: Ref<ActivityMessage>
   ): Promise<MessageRecord | undefined> {
-    if (notificationId !== undefined) {
-      return (await this.messagesStorage.findOne({ notificationId, email })) ?? undefined
-    }
-
-    if (messageId !== undefined) {
-      return (await this.messagesStorage.findOne({ messageId, email })) ?? undefined
-    }
-
-    return undefined
+    return await this.db.getMessageByRef(account, messageId)
   }
 
-  async getUserRecord (id: number): Promise<UserRecord | undefined> {
-    return (await this.usersStorage.findOne({ telegramId: id })) ?? undefined
+  async getMessageRecordByTelegramId (account: AccountUuid, telegramId: number): Promise<MessageRecord | undefined> {
+    return await this.db.getMessageByTgId(account, telegramId)
   }
 
-  async getUserRecordByEmail (email: string): Promise<UserRecord | undefined> {
-    return (await this.usersStorage.findOne({ email })) ?? undefined
+  async reply (
+    integration: IntegrationInfo,
+    messageRecord: MessageRecord,
+    text: string,
+    files: TelegramFileInfo[]
+  ): Promise<boolean> {
+    const client = await WorkspaceClient.create(messageRecord.workspace, integration.account, this.ctx, this.storage)
+    return await client.replyToMessage(integration.account, integration.socialId, messageRecord, text, files)
   }
 
-  async addWorkspace (email: string, workspace: WorkspaceUuid): Promise<void> {
-    await this.usersStorage.updateOne({ email }, { $push: { workspaces: workspace } })
-  }
-
-  async removeWorkspace (email: string, workspace: WorkspaceUuid): Promise<void> {
-    await this.usersStorage.updateOne({ email }, { $pull: { workspaces: workspace } })
-  }
-
-  async getWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient> {
-    const wsClient =
-      this.workspacesClients.get(workspace) ?? (await WorkspaceClient.create(workspace, this.ctx, this.storageAdapter))
-
-    if (!this.workspacesClients.has(workspace)) {
-      this.workspacesClients.set(workspace, wsClient)
-    }
-
-    const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
-
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId)
-    }
-
-    const newTimeoutId = setTimeout(() => {
-      void this.closeWorkspaceClient(workspace)
-    }, closeWorkspaceTimeout)
-
-    this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
-
-    return wsClient
-  }
-
-  async reply (messageRecord: MessageRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
-    const client = await this.getWorkspaceClient(messageRecord.workspace as any) // TODO: FIXME
-    return await client.reply(messageRecord, text, files)
-  }
-
-  async getChannelName (client: WorkspaceClient, channel: ChunterSpace, email: string): Promise<string> {
+  async getChannelName (client: WorkspaceClient, channel: ChunterSpace, account: AccountUuid): Promise<string> {
     if (client.hierarchy.isDerived(channel._class, chunter.class.DirectMessage)) {
-      const persons = await client.getPersons(channel.members, email)
+      const persons = await client.getPersons(channel.members.filter((it) => it !== account))
       return persons
         .map(({ name }) => formatName(name))
         .sort((a, b) => a.localeCompare(b))
@@ -259,110 +190,107 @@ export class PlatformWorker {
     return channel.name
   }
 
-  async getWorkspaces (email: string): Promise<string[]> {
-    return (await this.usersStorage.findOne({ email }))?.workspaces ?? []
-  }
-
-  async getChannels (email: string, workspace: WorkspaceUuid): Promise<WithId<ChannelRecord>[]> {
-    const key = `${email}:${workspace}`
+  async getChannels (account: AccountUuid, workspace: WorkspaceUuid): Promise<ChannelRecord[]> {
+    const key = `${account}:${workspace}`
 
     if (this.channelsByWorkspace.has(key)) {
       return this.channelsByWorkspace.get(key) ?? []
     }
-    const res = await this.channelsStorage
-      .find({ workspace, email }, { sort: { name: SortingOrder.Ascending } })
-      .toArray()
+    const res = await this.db.getChannels(account, workspace)
 
     this.channelsByWorkspace.set(key, res)
     for (const channel of res) {
-      this.channelById.set(channel._id, channel)
+      this.channelByRowId.set(channel.rowId, channel)
     }
     return res
   }
 
-  async getChannel (email: string, channelId: ObjectId): Promise<WithId<ChannelRecord> | undefined> {
-    if (this.channelById.has(channelId)) {
-      const channel = this.channelById.get(channelId)
+  async getChannel (account: AccountUuid, channelId: ChannelId): Promise<ChannelRecord | undefined> {
+    if (this.channelByRowId.has(channelId)) {
+      const channel = this.channelByRowId.get(channelId)
 
-      return channel !== undefined && channel.email === email ? channel : undefined
+      return channel !== undefined && channel.account === account ? channel : undefined
     }
 
-    const res = (await this.channelsStorage.findOne({ _id: channelId, email })) ?? undefined
+    const res = await this.db.getChannel(account, channelId)
 
     if (res !== undefined) {
-      this.channelById.set(res._id, res)
+      this.channelByRowId.set(res.rowId, res)
     }
     return res
   }
 
   async sendMessage (
     channel: ChannelRecord,
+    account: AccountUuid,
+    socialId: PersonId,
     telegramId: number,
     text: string,
     file?: TelegramFileInfo
   ): Promise<boolean> {
-    const client = await this.getWorkspaceClient(channel.workspace as any) // TODO: FIXME
-    const _id = await client.sendMessage(channel, text, file)
+    const client = await WorkspaceClient.create(channel.workspace, account, this.ctx, this.storage)
+    const _id = await client.sendMessage(channel, account, socialId, text, file)
 
-    await this.messagesStorage.insertOne({
-      email: channel.email,
+    if (_id === undefined) return false
+
+    await this.db.insertMessage({
       workspace: channel.workspace,
-      telegramId,
-      messageId: _id
+      account: channel.account,
+      messageId: _id,
+      telegramMessageId: telegramId
     })
 
-    return _id !== undefined
+    return true
   }
 
-  async syncChannels (email: string, workspace: WorkspaceUuid, onlyStarred: boolean): Promise<void> {
-    const client = await this.getWorkspaceClient(workspace as any) // TODO: FIXME
-    const channels = await client.getChannels(email, onlyStarred)
-    const existingChannels = await this.channelsStorage.find({ workspace, email }).toArray()
+  async syncChannels (account: AccountUuid, workspace: WorkspaceUuid, onlyStarred: boolean): Promise<void> {
+    const client = await WorkspaceClient.create(workspace, account, this.ctx, this.storage)
+    const channels = await client.getChannels(account, onlyStarred)
+    const existingChannels = await this.db.getChannels(account, workspace)
 
-    const toInsert: ChannelRecord[] = []
-    const toDelete: WithId<ChannelRecord>[] = []
+    const toInsert: Omit<ChannelRecord, 'rowId'>[] = []
+    const toDelete: ChannelRecord[] = []
 
     for (const channel of channels) {
-      const existingChannel = existingChannels.find((c) => c.channelId === channel._id)
-      const name = await this.getChannelName(client, channel, email)
+      const existingChannel = existingChannels.find((c) => c._id === channel._id)
+      const name = await this.getChannelName(client, channel, account)
       if (existingChannel === undefined) {
-        toInsert.push({ workspace, email, channelId: channel._id, channelClass: channel._class, name })
+        toInsert.push({ workspace, account, _id: channel._id, _class: channel._class, name })
       } else if (existingChannel.name !== name) {
-        await this.channelsStorage.updateOne({ workspace, email, _id: channel._id }, { $set: { name } })
+        await this.db.updateChannelName(existingChannel.rowId, name)
       }
     }
 
     for (const existingChannel of existingChannels) {
-      const channel = channels.find(({ _id }) => _id === existingChannel.channelId)
+      const channel = channels.find(({ _id }) => _id === existingChannel._id)
       if (channel === undefined) {
         toDelete.push(existingChannel)
       }
     }
 
     if (toInsert.length > 0) {
-      await this.channelsStorage.insertMany(toInsert)
+      await Promise.all(toInsert.map((it) => this.db.insertChannel(it)))
     }
 
     if (toDelete.length > 0) {
-      await this.channelsStorage.deleteMany({ _id: { $in: toDelete.map((c) => c._id) } })
+      await this.db.removeChannels(toDelete.map((c) => c.rowId))
     }
 
-    this.channelsByWorkspace.delete(`${email}:${workspace}`)
-    for (const [key, channel] of this.channelById.entries()) {
-      if (channel.email === email) {
-        this.channelById.delete(key)
+    this.channelsByWorkspace.delete(`${account}:${workspace}`)
+    for (const [key, channel] of this.channelByRowId.entries()) {
+      if (channel.account === account) {
+        this.channelByRowId.delete(key)
       }
     }
   }
 
-  async getWorkspaceInfo (workspaceId: WorkspaceUuid): Promise<WorkspaceInfo | undefined> {
+  async getWorkspaceInfo (account: AccountUuid, workspaceId: WorkspaceUuid): Promise<WorkspaceInfo | undefined> {
     if (this.workspaceInfoById.has(workspaceId)) {
       return this.workspaceInfoById.get(workspaceId)
     }
 
     try {
-      const token = generateToken(systemAccountUuid, workspaceId, { service: 'telegram' })
-      const accountClient = getAccountClient(token)
+      const accountClient = getAccountClient(generateToken(account, workspaceId))
       const result = await accountClient.getWorkspaceInfo(false)
 
       if (result === undefined) {
@@ -382,72 +310,119 @@ export class PlatformWorker {
     }
   }
 
-  async authorizeUser (code: string, email: string, workspace: WorkspaceUuid): Promise<UserRecord | undefined> {
-    const otpData = (await this.otpStorage.findOne({ code })) ?? undefined
-    const isExpired = otpData !== undefined && otpData.expires < Date.now()
+  async authorizeUser (
+    code: string,
+    account: AccountUuid,
+    workspace: WorkspaceUuid
+  ): Promise<IntegrationInfo | undefined> {
+    const otpData = await this.db.getOtpByCode(code)
+    const isExpired = otpData !== undefined && otpData.expires < new Date()
     const isValid = otpData !== undefined && !isExpired && code === otpData.code
 
-    if (!isValid) {
+    if (!isValid || otpData === undefined) {
       throw new Error('Invalid OTP')
     }
 
-    return await this.addUser(otpData.telegramId, email, workspace, otpData.telegramUsername)
+    await this.db.removeOtp(code)
+
+    const socialId = await getOrCreateSocialId(account, otpData.telegramId, otpData.telegramUsername)
+    return await this.addIntegration(otpData.telegramId, account, workspace, socialId, otpData.telegramUsername)
   }
 
   async generateCode (telegramId: number, telegramUsername?: string): Promise<string> {
-    const now = Date.now()
-    const otpData = (
-      await this.otpStorage.find({ telegramId }).sort({ createdOn: SortingOrder.Descending }).limit(1).toArray()
-    )[0]
+    const now = new Date()
+    const otpData = await this.db.getOtpByTelegramId(telegramId)
     const retryDelay = config.OtpRetryDelaySec * 1000
     const isValid = otpData !== undefined && otpData.expires > now
-    const canRetry = otpData !== undefined && otpData.createdOn + retryDelay < now
+    const canRetry = otpData !== undefined && otpData.createdAt.getTime() + retryDelay < now.getTime()
 
     if (isValid && !canRetry) {
       return otpData.code
     }
 
-    const newCode = await getNewOtp(this.otpStorage)
+    const newCode = await getNewOtp(this.db)
     const timeToLive = config.OtpTimeToLiveSec * 1000
-    const expires = now + timeToLive
+    const expires = Date.now() + timeToLive
 
-    await this.otpStorage.insertOne({ telegramId, code: newCode, expires, createdOn: now, telegramUsername })
+    await this.db.insertOtp({ telegramId, code: newCode, expires: new Date(expires), createdAt: now, telegramUsername })
 
     return newCode
   }
 
-  static async createStorages (): Promise<
-  [
-    Collection<UserRecord>,
-    Collection<MessageRecord>,
-    Collection<OtpRecord>,
-    Collection<ReplyRecord>,
-    Collection<ChannelRecord>
-  ]
-  > {
-    const db = await getDB()
-    const userStorage = db.collection<UserRecord>('users')
-    await db.dropCollection('notifications')
-    const messagesStorage = db.collection<MessageRecord>('messages')
-    const otpStorage = db.collection<OtpRecord>('otp')
-    const repliesStorage = db.collection<ReplyRecord>('replies')
-    const channelsStorage = db.collection<ChannelRecord>('channels')
+  async processNotification (
+    workspace: WorkspaceUuid,
+    record: TelegramNotificationQueueMessage,
+    bot: Telegraf<TgContext>
+  ): Promise<void> {
+    const integrations = await listIntegrationsByAccount(record.account)
 
-    return [userStorage, messagesStorage, otpStorage, repliesStorage, channelsStorage]
+    if (integrations.length === 0) {
+      this.ctx.error('Integrations not found', { account: record.account })
+      return
+    }
+
+    const workspaceIntegration = integrations.find((it) => it.workspaceUuid === workspace)
+    if (workspaceIntegration === undefined) {
+      await addWorkspace(integrations[0], workspace)
+    } else if (workspaceIntegration.data?.disabled === true) {
+      await enableIntegration(workspaceIntegration)
+    }
+
+    const integration = integrations[0]
+
+    void this.limiter.add(integration.telegramId, async () => {
+      const { full: fullMessage, short: shortMessage } = toTelegramHtml(record)
+      const files =
+        record.attachments && record.messageId != null
+          ? await this.getFiles(workspace, record.messageId, record.account)
+          : []
+      const tgMessageIds: number[] = []
+
+      if (files.length === 0) {
+        const message = await bot.telegram.sendMessage(integration.telegramId, fullMessage, {
+          parse_mode: 'HTML'
+        })
+
+        tgMessageIds.push(message.message_id)
+      } else {
+        const groups = toMediaGroups(files, fullMessage, shortMessage)
+        for (const group of groups) {
+          const mediaGroup = await bot.telegram.sendMediaGroup(integration.telegramId, group)
+          tgMessageIds.push(...mediaGroup.map((it) => it.message_id))
+        }
+      }
+
+      for (const messageId of tgMessageIds) {
+        if (record.messageId === undefined) continue
+        await this.db.insertMessage({
+          messageId: record.messageId,
+          account: integration.account,
+          workspace,
+          telegramMessageId: messageId
+        })
+      }
+    })
   }
 
-  static async create (ctx: MeasureContext, storageAdapter: StorageAdapter): Promise<PlatformWorker> {
-    const [userStorage, messagesStorage, otpStorage, repliesStorage, channelsStorage] =
-      await PlatformWorker.createStorages()
+  async processWorkspaceSubscription (
+    workspace: WorkspaceUuid,
+    record: TelegramWorkspaceSubscriptionQueueMessage
+  ): Promise<void> {
+    const integrations = await listIntegrationsByAccount(record.account)
 
-    return new PlatformWorker(
-      ctx,
-      storageAdapter,
-      userStorage,
-      messagesStorage,
-      otpStorage,
-      repliesStorage,
-      channelsStorage
-    )
+    if (integrations.length === 0) {
+      this.ctx.error('Integrations not found', { account: record.account })
+      return
+    }
+
+    const workspaceIntegration = integrations.find((it) => it.workspaceUuid === workspace)
+
+    if (record.subscribe && workspaceIntegration === undefined) {
+      await addWorkspace(integrations[0], workspace)
+    } else if (record.subscribe && workspaceIntegration?.data?.disabled === true) {
+      await enableIntegration(workspaceIntegration)
+    } else if (!record.subscribe && workspaceIntegration !== undefined) {
+      await disableIntegration(workspaceIntegration)
+    }
   }
 }

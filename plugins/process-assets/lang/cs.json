@@ -46,7 +46,9 @@
     "ParallelExecutionForbidden": "Nedovoluj paralelní spuštění",
     "StartAutomatically": "Spustit automaticky",
     "Error": "Chyba",
-    "Continue": "Pokračovat"
+    "Continue": "Pokračovat",
+    "RequestFromUser": "Požádat uživatele",
+    "EnterValue": "Zadat hodnotu"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
@@ -54,6 +56,7 @@
     "RelatedObjectNotFound": "Související objekt nenalezen: {attr}",
     "RelationNotExists": "Relace neexistuje: {association}",
     "EmptyAttributeContextValue": "Prázdná hodnota atributu: {attr}",
+    "UserRequestedValueNotProvided": "Hodnota požadovaná uživatelem nebyla poskytnuta: {attr}",
     "ObjectNotFound": "Objekt nenalezen: {_id}",
     "EmptyRelatedObjectValue": "Prázdná hodnota {attr} souvisejícího objektu: {parent}",
     "InternalServerError": "Vnitřní chyba serveru, kontaktujte podporu, chybové id: {errorId}"

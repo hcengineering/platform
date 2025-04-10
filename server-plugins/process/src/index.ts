@@ -46,8 +46,6 @@ export default plugin(serverProcessId, {
     FirstWorkingDayAfter: '' as Resource<TransformFunc>
   },
   trigger: {
-    OnCardCreate: '' as Resource<TriggerFunc>,
-    OnTagAdd: '' as Resource<TriggerFunc>,
     OnExecutionCreate: '' as Resource<TriggerFunc>,
     OnStateRemove: '' as Resource<TriggerFunc>,
     OnProcessRemove: '' as Resource<TriggerFunc>,

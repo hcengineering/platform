@@ -130,10 +130,15 @@
     currentStepUpdated(e.detail)
   }
 
+  let submitted = false
+
   async function handleSubmit (): Promise<void> {
     if ($locationStep.space === undefined || $locationStep.project === undefined) {
       return
     }
+
+    if (submitted) return
+    submitted = true
 
     const { category } = docObject
     if (category === undefined || category === null) return
@@ -206,6 +211,7 @@
   submitLabel={documents.string.CreateDraft}
   {canProceed}
   {steps}
+  canSubmit={!submitted}
   selectedStep={currentTemplateStep}
   on:stepChanged={handleStepChanged}
   on:submit={handleSubmit}

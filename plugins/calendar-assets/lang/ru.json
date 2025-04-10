@@ -92,13 +92,15 @@
     "ScheduleDeleteConfirm": "Расписание будет удалено. Подтвердить?",
     "ScheduleShareLink": "Поделиться ссылкой",
     "ScheduleSharedLinkMessage": "<p>Поделитесь этой ссылкой, чтобы другие могли записаться на встречу с вами:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
-    "ScheduleSharedLinkCopy": "Копировать ссылку",
+    "CopyLink": "Копировать ссылку",
     "ScheduleAvailability": "Доступность",
     "ScheduleUnavailable": "Недоступно",
     "ScheduleTitlePlaceholder": "Название расписания",
     "ScheduleAddPeriod": "Добавить период",
     "ScheduleRemovePeriod": "Удалить период",
     "MeetingDuration": "Длительность встречи",
-    "MeetingInterval": "Перерыв между встречами"
+    "MeetingInterval": "Перерыв между встречами",
+    "CalDavShareLink": "Получить CalDav-ссылку",
+    "CalDavSharedLinkMessage": "<p>Используйте эту ссылку для регистрации календаря во внешнем клиенте, поддерживающем протокол CalDav:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>"
   }
 }

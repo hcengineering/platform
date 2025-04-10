@@ -148,6 +148,10 @@
     "MailboxErrorMailboxExists": "Cette boîte aux lettres est déjà occupée",
     "MailboxErrorMailboxCountLimit": "Limite de boîtes aux lettres atteinte pour votre compte",
     "DeleteMailbox": "Supprimer la boîte aux lettres",
-    "MailboxDeleteConfirmation": "Êtes-vous sûr de vouloir supprimer cette boîte aux lettres ?"
+    "MailboxDeleteConfirmation": "Êtes-vous sûr de vouloir supprimer cette boîte aux lettres ?",
+    "DisablePermissions": "Désactiver le contrôle d'accès basé sur les rôles",
+    "EnablePermissions": "Activer le contrôle d'accès basé sur les rôles",
+    "DisablePermissionsConfirmation": "Êtes-vous sûr de vouloir désactiver le contrôle d'accès basé sur les rôles ? Tous les rôles et permissions seront désactivés.",
+    "EnablePermissionsConfirmation": "Êtes-vous sûr de vouloir activer le contrôle d'accès basé sur les rôles ? Tous les rôles et permissions seront activés."
   }
 }

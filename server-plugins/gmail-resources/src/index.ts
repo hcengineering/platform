@@ -32,11 +32,7 @@ import {
 import gmail, { Message } from '@hcengineering/gmail'
 import { TriggerControl } from '@hcengineering/server-core'
 import { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
-import serverNotification, {
-  NotificationProviderFunc,
-  ReceiverInfo,
-  SenderInfo
-} from '@hcengineering/server-notification'
+import serverNotification, { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import { getContentByTemplate } from '@hcengineering/server-notification-resources'
 import { getMetadata } from '@hcengineering/platform'
 import { ActivityMessage } from '@hcengineering/activity'
@@ -162,7 +158,7 @@ async function notifyByEmail (
   // }
 }
 
-const SendEmailNotifications: NotificationProviderFunc = async (
+const SendEmailNotifications = async (
   control: TriggerControl,
   types: BaseNotificationType[],
   object: Doc,

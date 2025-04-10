@@ -13,21 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card as CardPopup, getClient } from '@hcengineering/presentation'
-  import plugin from '../plugin'
   import { Card } from '@hcengineering/card'
   import { CardSelector } from '@hcengineering/card-resources'
-  import { Dropdown, Label, ListItem, Loading } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
+  import { Card as CardPopup, getClient } from '@hcengineering/presentation'
   import { Process } from '@hcengineering/process'
+  import { Dropdown, ListItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import core, { Ref } from '@hcengineering/core'
+  import plugin from '../plugin'
+  import { createExecution } from '../utils'
 
   export let value: Ref<Process> | undefined
 
   const client = getClient()
 
   let process: Ref<Process> | undefined = value
-  let card: Ref<Card> | undefined
+  let card: Card | undefined
 
   const processes = client.getModel().findAllSync(plugin.class.Process, {})
 
@@ -37,15 +38,7 @@
 
   async function runProcess (): Promise<void> {
     if (process === undefined || card === undefined) return
-    await client.createDoc(plugin.class.Execution, core.space.Workspace, {
-      process,
-      currentState: null,
-      card,
-      done: false,
-      rollback: {},
-      currentToDo: null,
-      assignee: null
-    })
+    await createExecution(card._id, process, card.space)
     dispatch('close')
   }
 
@@ -101,7 +94,10 @@
     <CardSelector
       kind={'regular'}
       size={'medium'}
-      bind:value={card}
+      value={card?._id}
+      on:value={(e) => {
+        card = e.detail
+      }}
       {ignoreObjects}
       _class={selectedProcess.masterTag}
     />
