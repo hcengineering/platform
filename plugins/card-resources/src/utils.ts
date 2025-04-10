@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Card, cardId, type MasterTag } from '@hcengineering/card'
+import { type Card, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
 import {
   type Class,
   type Client,
@@ -35,6 +35,7 @@ import { accessDeniedStore } from '@hcengineering/view-resources'
 import { type LocationData } from '@hcengineering/workbench'
 import CardSearchItem from './components/CardSearchItem.svelte'
 import card from './plugin'
+import CreateSpace from './components/navigator/CreateSpace.svelte'
 
 export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: () => void): Promise<void> {
   if (tag !== undefined) {
@@ -67,8 +68,14 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   const id = loc.path[3]
-  if (id !== undefined && id !== 'cards') {
+  if (loc.path[4] === undefined && id !== undefined && id !== 'browser') {
     return await generateLocation(loc, id)
+  }
+}
+
+export async function editSpace (value: CardSpace | undefined): Promise<void> {
+  if (value !== undefined) {
+    showPopup(CreateSpace, { space: value })
   }
 }
 
@@ -81,6 +88,7 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
   }
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
+  const space = doc.space
   const special = doc._class
 
   const objectPanel = client.getHierarchy().classHierarchyMixin(doc._class as Ref<Class<Doc>>, view.mixin.ObjectPanel)
@@ -92,7 +100,7 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     },
     defaultLocation: {
-      path: [appComponent, workspace, cardId, special],
+      path: [appComponent, workspace, cardId, space, special],
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     }
   }
