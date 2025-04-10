@@ -33,6 +33,7 @@
     IconAdd,
     IconDropdown,
     Loading,
+    location,
     navigate,
     SelectPopupValueType,
     showPopup
@@ -64,9 +65,9 @@
     { limit: 1, projection: { _id: 1 } }
   )
 
+  $: _class = $location.path[4] as Ref<MasterTag>
+
   async function createCard (): Promise<void> {
-    const loc = getCurrentLocation()
-    const _class = loc.path[4] as Ref<MasterTag>
     if (_class === undefined || currentSpace === undefined) return
     const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const title = await translate(card.string.Card, {})
@@ -84,6 +85,7 @@
     const _id = await client.createDoc(_class, currentSpace, filledData)
 
     Analytics.handleEvent(CardEvents.CardCreated)
+    const loc = getCurrentLocation()
 
     loc.path[3] = _id
     loc.path.length = 4
@@ -125,6 +127,7 @@
           mainButtonId={'new-document'}
           dropdownIcon={IconDropdown}
           {dropdownItems}
+          disabled={currentSpace === undefined || _class === undefined}
           on:dropdown-selected={(ev) => {
             void dropdownItemSelected(ev.detail)
           }}
@@ -150,6 +153,7 @@
         width={'100%'}
         kind={'primary'}
         gap={'large'}
+        disabled={currentSpace === undefined || _class === undefined}
         on:click={createCard}
       />
     {/if}
