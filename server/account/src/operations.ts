@@ -1449,6 +1449,10 @@ export async function findSocialIdBySocialKey (
   const { socialKey, requireAccount } = params
   decodeTokenVerbose(ctx, token)
 
+  if (socialKey == null || socialKey === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const socialIdObj = await db.socialId.findOne({ key: socialKey })
 
   if (socialIdObj == null) {
@@ -1684,7 +1688,7 @@ export type AccountMethods =
   | 'signUpJoin'
   | 'confirm'
   | 'changePassword'
-  | 'requestPassword'
+  | 'requestPasswordReset'
   | 'restorePassword'
   | 'leaveWorkspace'
   | 'changeUsername'
@@ -1736,7 +1740,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     signUpJoin: wrap(signUpJoin),
     confirm: wrap(confirm),
     changePassword: wrap(changePassword),
-    requestPassword: wrap(requestPasswordReset),
+    requestPasswordReset: wrap(requestPasswordReset),
     restorePassword: wrap(restorePassword),
     leaveWorkspace: wrap(leaveWorkspace),
     changeUsername: wrap(changeUsername),
