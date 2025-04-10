@@ -159,6 +159,17 @@ export function defineNotifications (builder: Builder): void {
     ]
   })
 
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.SoundNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [
+      chunter.ids.DMNotification,
+      chunter.ids.ChannelNotification,
+      chunter.ids.ThreadNotification,
+      chunter.ids.JoinChannelNotification
+    ]
+  })
+
   builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
     messageMatch: {
       _class: activity.class.DocUpdateMessage,
