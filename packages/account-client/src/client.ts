@@ -184,6 +184,7 @@ interface Request {
 
 class AccountClientImpl implements AccountClient {
   private readonly request: RequestInit
+  private readonly rpc: typeof this._rpc
 
   constructor (
     private readonly url: string,
@@ -206,17 +207,18 @@ class AccountClientImpl implements AccountClient {
       },
       ...(isBrowser ? { credentials: 'include' } : {})
     }
+    this.rpc = withRetryUntilTimeout(this._rpc.bind(this))
   }
 
   async getProviders (): Promise<string[]> {
-    return await retry(5, async () => {
+    return await withRetryUntilMaxAttempts(async () => {
       const response = await fetch(concatLink(this.url, '/providers'))
 
       return await response.json()
-    })
+    })()
   }
 
-  private async rpc<T>(request: Request): Promise<T> {
+  private async _rpc<T>(request: Request): Promise<T> {
     const timezone = getClientTimezone()
     const meta: Record<string, string> = timezone !== undefined ? { 'X-Timezone': timezone } : {}
     const response = await fetch(this.url, {
@@ -902,18 +904,40 @@ class AccountClientImpl implements AccountClient {
   }
 }
 
-async function retry<T> (retries: number, op: () => Promise<T>, delay: number = 100): Promise<T> {
-  let error: any
-  while (retries > 0) {
-    retries--
-    try {
-      return await op()
-    } catch (err: any) {
-      error = err
-      if (retries !== 0) {
-        await new Promise((resolve) => setTimeout(resolve, delay))
+function withRetry<T, F extends (...args: any[]) => Promise<T>> (
+  f: F,
+  shouldFail: (err: any, attempt: number) => boolean,
+  intervalMs: number = 1000
+): F {
+  return async function (...params: any[]): Promise<T> {
+    let attempt = 0
+    while (true) {
+      try {
+        return await f(...params)
+      } catch (err: any) {
+        if (shouldFail(err, attempt)) {
+          throw err
+        }
+
+        attempt++
+        await new Promise<void>((resolve) => setTimeout(resolve, intervalMs))
       }
     }
-  }
-  throw error
+  } as F
+}
+
+const connectionErrorCodes = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND']
+
+function withRetryUntilTimeout<T, F extends (...args: any[]) => Promise<T>> (f: F, timeoutMs: number = 5000): F {
+  const timeout = Date.now() + timeoutMs
+  const shouldFail = (err: any): boolean => !connectionErrorCodes.includes(err?.cause?.code) || timeout < Date.now()
+
+  return withRetry(f, shouldFail)
+}
+
+function withRetryUntilMaxAttempts<T, F extends (...args: any[]) => Promise<T>> (f: F, maxAttempts: number = 5): F {
+  const shouldFail = (err: any, attempt: number): boolean =>
+    !connectionErrorCodes.includes(err?.cause?.code) || attempt === maxAttempts
+
+  return withRetry(f, shouldFail)
 }

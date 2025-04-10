@@ -92,15 +92,36 @@ function formatVar (idx: number, type?: string): string {
   return type != null ? `$${idx}::${type}` : `$${idx}`
 }
 
+export interface PostgresDbCollectionOptions<T extends Record<string, any>, K extends keyof T | undefined = undefined> {
+  idKey?: K
+  ns?: string
+  fieldTypes?: Record<string, string>
+  timestampFields?: Array<keyof T>
+}
+
 export class PostgresDbCollection<T extends Record<string, any>, K extends keyof T | undefined = undefined>
 implements DbCollection<T> {
   constructor (
     readonly name: string,
     readonly client: Sql,
-    readonly idKey?: K,
-    readonly ns?: string,
-    readonly fieldTypes: Record<string, string> = {}
+    readonly options: PostgresDbCollectionOptions<T, K> = {}
   ) {}
+
+  get ns (): string {
+    return this.options.ns ?? ''
+  }
+
+  get idKey (): K | undefined {
+    return this.options.idKey
+  }
+
+  get fieldTypes (): Record<string, string> {
+    return this.options.fieldTypes ?? {}
+  }
+
+  get timestampFields (): Array<keyof T> {
+    return this.options.timestampFields ?? []
+  }
 
   getTableName (): string {
     if (this.ns === '') {
@@ -206,7 +227,13 @@ implements DbCollection<T> {
   }
 
   protected convertToObj (row: unknown): T {
-    return convertKeysToCamelCase(row) as T
+    const res = convertKeysToCamelCase(row)
+    for (const field of this.timestampFields) {
+      const val = Number.parseInt(res[field])
+      res[field] = Number.isNaN(val) ? null : val
+    }
+
+    return res as T
   }
 
   async find (query: Query<T>, sort?: Sort<T>, limit?: number, client?: Sql): Promise<T[]> {
@@ -319,11 +346,8 @@ export class AccountPostgresDbCollection
   implements DbCollection<Account> {
   private readonly passwordKeys = ['hash', 'salt']
 
-  constructor (
-    readonly client: Sql,
-    readonly ns?: string
-  ) {
-    super('account', client, 'uuid', ns)
+  constructor (client: Sql, ns?: string) {
+    super('account', client, { idKey: 'uuid', ns })
   }
 
   getPasswordsTableName (): string {
@@ -413,18 +437,36 @@ export class PostgresAccountDB implements AccountDB {
     readonly client: Sql,
     readonly ns: string = 'global_account'
   ) {
-    this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, 'uuid', ns)
+    this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, { ns, idKey: 'uuid' })
     this.account = new AccountPostgresDbCollection(client, ns)
-    this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, '_id', ns)
-    this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client, undefined, ns)
-    this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, 'uuid', ns)
-    this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client, undefined, ns)
-    this.otp = new PostgresDbCollection<OTP>('otp', client, undefined, ns)
-    this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, 'id', ns)
-    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, undefined, ns)
-    this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client, undefined, ns)
-    this.integration = new PostgresDbCollection<Integration>('integrations', client, undefined, ns)
-    this.integrationSecret = new PostgresDbCollection<IntegrationSecret>('integration_secrets', client, undefined, ns)
+    this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, {
+      ns,
+      idKey: '_id',
+      timestampFields: ['createdOn', 'verifiedOn']
+    })
+    this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client, {
+      ns,
+      timestampFields: ['lastProcessingTime', 'lastVisit']
+    })
+    this.workspace = new PostgresDbCollection<Workspace, 'uuid'>('workspace', client, {
+      ns,
+      idKey: 'uuid',
+      timestampFields: ['createdOn']
+    })
+    this.accountEvent = new PostgresDbCollection<AccountEvent>('account_events', client, {
+      ns,
+      timestampFields: ['time']
+    })
+    this.otp = new PostgresDbCollection<OTP>('otp', client, { ns, timestampFields: ['expiresOn', 'createdOn'] })
+    this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, {
+      ns,
+      idKey: 'id',
+      timestampFields: ['expiresOn']
+    })
+    this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, { ns })
+    this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client, { ns })
+    this.integration = new PostgresDbCollection<Integration>('integrations', client, { ns })
+    this.integrationSecret = new PostgresDbCollection<IntegrationSecret>('integration_secrets', client, { ns })
   }
 
   getWsMembersTableName (): string {
