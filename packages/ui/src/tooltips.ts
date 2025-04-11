@@ -121,7 +121,6 @@ export function showTooltip (
   style?: 'default' | 'modern',
   noArrow?: boolean
 ): void {
-  console.log('style', style)
   storedValue = {
     label,
     element,

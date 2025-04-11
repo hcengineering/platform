@@ -35,8 +35,6 @@
   $: employeeValue = person != null ? h.as(person, contact.mixin.Employee) : undefined
 
   $: active = employeeValue?.active ?? false
-
-  console.log('shouldShowAvatar', shouldShowAvatar)
 </script>
 
 <PersonPresenter
