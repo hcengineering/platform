@@ -14,7 +14,7 @@
 //
 
 import achievement from '@hcengineering/achievement'
-import { IntlString, type Asset } from '@hcengineering/platform'
+import { type IntlString, type Asset } from '@hcengineering/platform'
 
 interface PersonAchievement {
   icon: Asset
@@ -22,7 +22,7 @@ interface PersonAchievement {
 }
 
 // TODO: Remove and replace with actual person achievements, it is just for demonstration. Implement achievement service.
-const possibleAchievements : PersonAchievement[] = [
+const possibleAchievements: PersonAchievement[] = [
   { icon: achievement.icon.EarliestAdopter, tooltip: achievement.string.EarliestAdopter },
   { icon: achievement.icon.Epic, tooltip: achievement.string.Epic },
   { icon: achievement.icon.Legendary, tooltip: achievement.string.Legendary }

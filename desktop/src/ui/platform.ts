@@ -115,6 +115,7 @@ import '@hcengineering/mail-assets'
 import '@hcengineering/chat-assets'
 import '@hcengineering/inbox-assets'
 import '@hcengineering/achievement-assets'
+
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { coreId } from '@hcengineering/core'
 import love, { loveId } from '@hcengineering/love'

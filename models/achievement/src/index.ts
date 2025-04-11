@@ -24,9 +24,14 @@ export { default } from './plugin'
 export { achievementId } from '@hcengineering/achievement'
 
 export function createModel (builder: Builder): void {
-  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
-    extension: contact.extension.PersonAchievementsPresenter,
-    component: achievement.component.PersonAchievementsPresenter,
-    props: {}
-  }, achievement.extensions.PersonAchievementsPresenter)
+  builder.createDoc(
+    presentation.class.ComponentPointExtension,
+    core.space.Model,
+    {
+      extension: contact.extension.PersonAchievementsPresenter,
+      component: achievement.component.PersonAchievementsPresenter,
+      props: {}
+    },
+    achievement.extensions.PersonAchievementsPresenter
+  )
 }
