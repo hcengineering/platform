@@ -21,7 +21,7 @@ interface PersonAchievement {
   tooltip: IntlString
 }
 
-// TODO: Remove and replace with actual person achievements, it is just for demonstration
+// TODO: Remove and replace with actual person achievements, it is just for demonstration. Implement achievement service.
 const possibleAchievements : PersonAchievement[] = [
   { icon: achievement.icon.EarliestAdopter, tooltip: achievement.string.EarliestAdopter },
   { icon: achievement.icon.Epic, tooltip: achievement.string.Epic },

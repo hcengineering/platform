@@ -29,5 +29,4 @@ export function createModel (builder: Builder): void {
     component: achievement.component.PersonAchievementsPresenter,
     props: {}
   }, achievement.extensions.PersonAchievementsPresenter)
-  // TODO: Store achievement descriptors in model
 }

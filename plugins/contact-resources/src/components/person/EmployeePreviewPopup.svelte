@@ -15,19 +15,18 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountUuid, Class, Doc, Ref } from '@hcengineering/core'
-  import { ButtonIcon, navigate } from '@hcengineering/ui'
+  import { ButtonIcon, Loading, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
-  import ModernProfilePopup from './ModernProfilePopup.svelte'
 
+  import ModernProfilePopup from './ModernProfilePopup.svelte'
   import contact from '../../plugin'
   import Avatar from '../Avatar.svelte'
   import { employeeByIdStore, getAccountClient } from '../../utils'
   import { EmployeePresenter } from '../../index'
   import TimePresenter from './TimePresenter.svelte'
   import DeactivatedHeader from './DeactivatedHeader.svelte'
-  import Loading from '@hcengineering/ui/src/components/Loading.svelte'
 
   export let _id: Ref<Employee>
   export let disabled: boolean = false
@@ -96,9 +95,7 @@
           on:click={viewProfile}
         />
         <div class="flex-col flex-gap-0-5">
-          <span class="username">
-            <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
-          </span>
+          <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
           <span class="flex-presenter cursor-default">
             {#if isTimezoneLoading}
               <Loading size="small" />
@@ -130,9 +127,7 @@
           />
         </div>
         <div class="flex-col">
-          <span class="username">
-            <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
-          </span>
+          <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
         </div>
       </div>
     {/if}
@@ -155,9 +150,6 @@
 </ModernProfilePopup>
 
 <style lang="scss">
-  .username {
-    font-weight: 500;
-  }
   .button-container {
     border-radius: var(--small-BorderRadius);
     display: flex;
