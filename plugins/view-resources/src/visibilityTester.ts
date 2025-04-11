@@ -19,7 +19,9 @@ import core, {
   toIdMap,
   type Doc,
   type Space,
-  type TypedSpace
+  type TypedSpace,
+  type Ref,
+  type Permission
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { get } from 'svelte/store'
@@ -29,7 +31,7 @@ function isTypedSpace (space: Space): space is TypedSpace {
   return getClient().getHierarchy().isDerived(space._class, core.class.TypedSpace)
 }
 
-export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
+async function checkObjectPermission (objectPermission: Ref<Permission>, doc?: Doc | Doc[]) : Promise<boolean> {
   if (doc === undefined) {
     return false
   }
@@ -44,13 +46,25 @@ export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
   return !(
     await Promise.all(
       Array.from(targetSpaces.entries()).map(
-        async (s) => await checkPermission(client, core.permission.ForbidDeleteObject, s[0], s[1])
+        async (s) => await checkPermission(client, objectPermission, s[0], s[1])
       )
     )
   ).some((r) => r)
 }
 
-export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
+export async function canCreateObject (doc?: Doc | Doc[]): Promise<boolean> {
+  return await checkObjectPermission(core.permission.ForbidDeleteObject, doc)
+}
+
+export async function canEditObject (doc?: Doc | Doc[]): Promise<boolean> {
+  return await checkObjectPermission(core.permission.ForbidDeleteObject, doc)
+}
+
+export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
+  return await checkObjectPermission(core.permission.ForbidDeleteObject, doc)
+}
+
+async function checkSpacePermission (spacePermission: Ref<Permission>, doc?: Doc | Doc[], typedSpacePermission?: Ref<Permission>): Promise<boolean> {
   if (doc === undefined || Array.isArray(doc)) {
     return false
   }
@@ -65,63 +79,27 @@ export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const _spaceSpace = get(spaceSpace) ?? (await client.findOne(core.class.TypedSpace, { _id: core.space.Space }))
 
-  if (await checkPermission(client, core.permission.UpdateObject, core.space.Space, _spaceSpace)) {
+  if (await checkPermission(client, spacePermission, core.space.Space, _spaceSpace)) {
     return true
   }
 
-  if (isTypedSpace(space) && (await checkPermission(client, core.permission.UpdateSpace, space._id, space))) {
+  if (typedSpacePermission !== undefined && isTypedSpace(space) && (await checkPermission(client, typedSpacePermission, space._id, space))) {
     return true
   }
 
   return false
+}
+
+export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
+  return await checkSpacePermission(core.permission.UpdateObject, doc, core.permission.UpdateSpace)
 }
 
 export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
-  if (doc === undefined || Array.isArray(doc)) {
-    return false
-  }
-
-  const space = doc as Space
-
-  if ((space.owners ?? []).includes(getCurrentAccount().uuid)) {
-    return true
-  }
-
-  const client = getClient()
-
-  const _spaceSpace = get(spaceSpace) ?? (await client.findOne(core.class.TypedSpace, { _id: core.space.Space }))
-
-  if (await checkPermission(client, core.permission.DeleteObject, core.space.Space, _spaceSpace)) {
-    return true
-  }
-
-  if (isTypedSpace(space) && (await checkPermission(client, core.permission.ArchiveSpace, space._id, space))) {
-    return true
-  }
-
-  return false
+  return await checkSpacePermission(core.permission.DeleteObject, doc, core.permission.ArchiveSpace)
 }
 
 export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
-  if (doc === undefined || Array.isArray(doc)) {
-    return false
-  }
-
-  const space = doc as Space
-
-  if ((space.owners ?? []).includes(getCurrentAccount().uuid)) {
-    return true
-  }
-
-  const client = getClient()
-
-  const _spaceSpace = get(spaceSpace) ?? (await client.findOne(core.class.TypedSpace, { _id: core.space.Space }))
-
-  if (await checkPermission(client, core.permission.DeleteObject, core.space.Space, _spaceSpace)) {
-    return true
-  }
-
-  return false
+  return await checkSpacePermission(core.permission.DeleteObject, doc)
 }
 
 export async function canJoinSpace (doc?: Doc | Doc[]): Promise<boolean> {

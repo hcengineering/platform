@@ -235,6 +235,8 @@ function defineDrive (builder: Builder): void {
       availablePermissions: [
         core.permission.UpdateSpace,
         core.permission.ArchiveSpace,
+        core.permission.ForbidCreateObject,
+        core.permission.ForbidUpdateObject,
         core.permission.ForbidDeleteObject
       ]
     },

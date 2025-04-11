@@ -91,6 +91,8 @@ export function defineSpaceType (builder: Builder): void {
       availablePermissions: [
         core.permission.UpdateSpace,
         core.permission.ArchiveSpace,
+        core.permission.ForbidCreateObject,
+        core.permission.ForbidUpdateObject,
         core.permission.ForbidDeleteObject
       ],
       allowedTaskTypeDescriptors: [plugin.descriptors.Lead]

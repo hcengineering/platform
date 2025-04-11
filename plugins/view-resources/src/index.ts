@@ -140,15 +140,15 @@ import {
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
 import { hideArchived, showEmptyGroups } from './viewOptions'
 import {
-  canArchiveSpace,
+  canArchiveSpace, canCreateObject,
   canDeleteObject,
-  canDeleteSpace,
+  canDeleteSpace, canEditObject,
   canEditSpace,
   canJoinSpace,
   canLeaveSpace,
   isClipboardAvailable
 } from './visibilityTester'
-export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
+export { canArchiveSpace, canCreateObject, canEditObject, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
@@ -360,6 +360,8 @@ export default async (): Promise<Resources> => ({
     CreateDocMiddleware: AggregationMiddleware.create,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     AnalyticsMiddleware: AnalyticsMiddleware.create,
+    CanCreateObject: canCreateObject,
+    CanEditObject: canEditObject,
     CanDeleteObject: canDeleteObject,
     CanEditSpace: canEditSpace,
     CanArchiveSpace: canArchiveSpace,

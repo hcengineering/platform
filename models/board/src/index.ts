@@ -508,6 +508,8 @@ export function createModel (builder: Builder): void {
       availablePermissions: [
         core.permission.UpdateSpace,
         core.permission.ArchiveSpace,
+        core.permission.ForbidUpdateObject,
+        core.permission.ForbidCreateObject,
         core.permission.ForbidDeleteObject
       ],
       allowedTaskTypeDescriptors: [board.descriptors.Card]
