@@ -102,7 +102,7 @@ importers:
         version: file:projects/achievement-assets.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/achievement-resources':
         specifier: file:./projects/achievement-resources.tgz
-        version: file:projects/achievement-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(sass@1.71.1)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+        version: file:projects/achievement-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       '@rush-temp/activity':
         specifier: file:./projects/activity.tgz
         version: file:projects/activity.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(@types/node@20.11.19)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -1609,6 +1609,9 @@ importers:
       autolinker:
         specifier: 4.0.0
         version: 4.0.0
+      autoprefixer:
+        specifier: ^10.4.14
+        version: 10.4.17(postcss@8.5.3)
       base64-js:
         specifier: ^1.5.1
         version: 1.5.1
@@ -1981,6 +1984,9 @@ importers:
       png-chunks-extract:
         specifier: ^1.0.0
         version: 1.0.0
+      postcss:
+        specifier: ^8.4.20
+        version: 8.5.3
       postcss-load-config:
         specifier: ^4.0.1
         version: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
@@ -2053,12 +2059,21 @@ importers:
       style-loader:
         specifier: ^3.3.1
         version: 3.3.4(webpack@5.97.1)
+      svelte:
+        specifier: ^4.2.19
+        version: 4.2.19
+      svelte-check:
+        specifier: ^3.6.9
+        version: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)
       svelte-eslint-parser:
         specifier: ^0.33.1
         version: 0.33.1(svelte@4.2.19)
       svelte-loader:
         specifier: ^3.2.0
         version: 3.2.0(svelte@4.2.19)
+      svelte-preprocess:
+        specifier: ^5.1.3
+        version: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.3.3)
       svgo-loader:
         specifier: ^3.0.0
         version: 3.0.3
@@ -3882,7 +3897,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/achievement-resources@file:projects/achievement-resources.tgz':
-    resolution: {integrity: sha512-VlOK7Ly4occuJe2wxAHynWACUZKPhYiXRBcDNCJVbxUZfrl6bhCrK7nAM2AnKzbAGNAEAkoJfRysu37YSocZ1A==, tarball: file:projects/achievement-resources.tgz}
+    resolution: {integrity: sha512-JdWlQEjpO2hHSJnWRinKyufVcrulcrJDRKTHr4abab22AdGlrsjqBQOef/Nf3uPGOfP1krHSoYsZTGb/zENbjQ==, tarball: file:projects/achievement-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/achievement@file:projects/achievement.tgz':
@@ -6237,9 +6252,6 @@ packages:
   '@types/eslint@8.56.2':
     resolution: {integrity: sha512-uQDwm1wFHmbBbCZCqAlq6Do9LYwByNZHWzXppSnay9SuwJ+VRbjkbLABer54kcPnMSlG6Fdiy2yaFXm/z9Z5gw==}
 
-  '@types/estree@1.0.5':
-    resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
-
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
@@ -7374,9 +7386,6 @@ packages:
   camelcase@8.0.0:
     resolution: {integrity: sha512-8WB3Jcas3swSvjIeA2yvCJ+Miyz5l1ZmB6HFb9R1317dt9LCQoswg/BGrmAmkWVEszSrrg4RwmO46qIm2OEnSA==}
     engines: {node: '>=16'}
-
-  caniuse-lite@1.0.30001589:
-    resolution: {integrity: sha512-vNQWS6kI+q6sBlHbh71IIeC+sRwK2N3EDySc/updIGhIee2x5z00J4c1242/5/d6EpEMdOnk/m+6tuk4/tcsqg==}
 
   caniuse-lite@1.0.30001689:
     resolution: {integrity: sha512-CmeR2VBycfa+5/jOfnp/NpWPGd06nf1XYiefUvhXFfZE4GkRc9jv+eGPS4nT558WS/8lYCzV8SlANCIPvbWP1g==}
@@ -10909,11 +10918,6 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@3.3.7:
-    resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
   napi-build-utils@1.0.2:
     resolution: {integrity: sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==}
 
@@ -11467,9 +11471,6 @@ packages:
     resolution: {integrity: sha512-GEazpTWwTZaEQ9RhL7Nyz0WwqilbqgLahDM3D0hxWwmVDI52nXEybHqiN6/elwpkJBhcuj+WbBu+QfT0uhPGfQ==}
     engines: {node: '>= 8'}
 
-  picocolors@1.0.0:
-    resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
-
   picocolors@1.0.1:
     resolution: {integrity: sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew==}
 
@@ -11647,10 +11648,6 @@ packages:
 
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
-
-  postcss@8.4.35:
-    resolution: {integrity: sha512-u5U8qYpBCpN13BsiEB0CbR1Hhh4Gc0zLFuedrHJKMctHCHAGrMdG0PRM/KErzAL3CU6/eckEtmHNB3x6e3c0vA==}
-    engines: {node: ^10 || ^12 || >=14}
 
   postcss@8.5.3:
     resolution: {integrity: sha512-dle9A3yYxlBSrt8Fu+IpjGT8SY8hN0mlaA6GY8t0P5PjIOZemULz/E2Bnm/2dcUOena75OTNkHI76uZBNUUq3A==}
@@ -16217,26 +16214,29 @@ snapshots:
       - supports-color
       - ts-node
 
-  '@rush-temp/achievement-resources@file:projects/achievement-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(sass@1.71.1)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
+  '@rush-temp/achievement-resources@file:projects/achievement-resources.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))':
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.7.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.7.3)
-      autoprefixer: 10.4.17(postcss@8.4.35)
+      autoprefixer: 10.4.17(postcss@8.5.3)
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint-plugin-import@2.29.1(eslint@8.56.0))(eslint-plugin-n@15.7.0(eslint@8.56.0))(eslint-plugin-promise@6.1.1(eslint@8.56.0))(eslint@8.56.0)(typescript@5.7.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      postcss: 8.4.35
+      postcss: 8.5.3
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.19)
+      sass: 1.71.1
       svelte: 4.2.19
-      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)
+      svelte-check: 3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.19)
       svelte-loader: 3.2.0(svelte@4.2.19)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.7.3)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.7.3)
       tailwindcss: 3.4.17(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.7.3)
       typescript: 5.7.3
@@ -16251,7 +16251,6 @@ snapshots:
       - node-notifier
       - postcss-load-config
       - pug
-      - sass
       - stylus
       - sugarss
       - supports-color
@@ -17910,7 +17909,7 @@ snapshots:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       '@vercel/webpack-asset-relocator-loader': 1.7.4
-      autoprefixer: 10.4.17(postcss@8.4.35)
+      autoprefixer: 10.4.17(postcss@8.5.3)
       browserslist: 4.24.4
       commander: 8.3.0
       compression-webpack-plugin: 10.0.0(webpack@5.97.1)
@@ -17939,15 +17938,15 @@ snapshots:
       livekit-client: 2.9.9
       mini-css-extract-plugin: 2.8.0(webpack@5.97.1)
       node-loader: 2.0.0(webpack@5.97.1)
-      postcss: 8.4.35
-      postcss-load-config: 4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      postcss-loader: 7.3.4(postcss@8.4.35)(typescript@5.3.3)(webpack@5.97.1)
+      postcss: 8.5.3
+      postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      postcss-loader: 7.3.4(postcss@8.5.3)(typescript@5.3.3)(webpack@5.97.1)
       prettier: 3.2.5
       sass-loader: 13.3.3(sass@1.71.1)(webpack@5.97.1)
       style-loader: 3.3.4(webpack@5.97.1)
       svelte: 4.2.19
       svelte-loader: 3.2.0(svelte@4.2.19)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.3.3)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.3.3)
       svgo-loader: 3.0.3
       ts-loader: 9.5.1(typescript@5.3.3)(webpack@5.97.1)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -22770,7 +22769,7 @@ snapshots:
     dependencies:
       '@sentry/svelte': 8.52.1(svelte@4.2.19)
       '@types/node': 20.11.19
-      autoprefixer: 10.4.17(postcss@8.4.35)
+      autoprefixer: 10.4.17(postcss@8.5.3)
       browserslist: 4.24.4
       compression-webpack-plugin: 10.0.0(webpack@5.97.1)
       cross-env: 7.0.3
@@ -22782,16 +22781,16 @@ snapshots:
       fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.3.3)(webpack@5.97.1)
       html-webpack-plugin: 5.6.0(webpack@5.97.1)
       mini-css-extract-plugin: 2.8.0(webpack@5.97.1)
-      postcss: 8.4.35
-      postcss-load-config: 4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      postcss-loader: 7.3.4(postcss@8.4.35)(typescript@5.3.3)(webpack@5.97.1)
+      postcss: 8.5.3
+      postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      postcss-loader: 7.3.4(postcss@8.5.3)(typescript@5.3.3)(webpack@5.97.1)
       posthog-js: 1.122.0
       readable-stream: 4.7.0
       sass-loader: 13.3.3(sass@1.71.1)(webpack@5.97.1)
       style-loader: 3.3.4(webpack@5.97.1)
       svelte: 4.2.19
       svelte-loader: 3.2.0(svelte@4.2.19)
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.3.3)
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.3.3)
       svgo-loader: 3.0.3
       ts-loader: 9.5.1(typescript@5.3.3)(webpack@5.97.1)
       typescript: 5.3.3
@@ -28299,8 +28298,6 @@ snapshots:
       '@types/estree': 1.0.6
       '@types/json-schema': 7.0.15
 
-  '@types/estree@1.0.5': {}
-
   '@types/estree@1.0.6': {}
 
   '@types/express-fileupload@1.4.4':
@@ -29158,7 +29155,7 @@ snapshots:
 
   acorn-globals@7.0.1:
     dependencies:
-      acorn: 8.11.3
+      acorn: 8.14.0
       acorn-walk: 8.3.2
 
   acorn-import-attributes@1.9.5(acorn@8.14.0):
@@ -29503,14 +29500,14 @@ snapshots:
     dependencies:
       tslib: 2.6.2
 
-  autoprefixer@10.4.17(postcss@8.4.35):
+  autoprefixer@10.4.17(postcss@8.5.3):
     dependencies:
       browserslist: 4.24.4
-      caniuse-lite: 1.0.30001589
+      caniuse-lite: 1.0.30001689
       fraction.js: 4.3.7
       normalize-range: 0.1.2
-      picocolors: 1.0.0
-      postcss: 8.4.35
+      picocolors: 1.1.1
+      postcss: 8.5.3
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.7:
@@ -29864,8 +29861,6 @@ snapshots:
 
   camelcase@8.0.0: {}
 
-  caniuse-lite@1.0.30001589: {}
-
   caniuse-lite@1.0.30001689: {}
 
   centra@2.7.0:
@@ -30021,8 +30016,8 @@ snapshots:
   code-red@1.0.4:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
-      '@types/estree': 1.0.5
-      acorn: 8.11.3
+      '@types/estree': 1.0.6
+      acorn: 8.14.0
       estree-walker: 3.0.3
       periscopic: 3.1.0
 
@@ -30288,13 +30283,13 @@ snapshots:
 
   css-loader@5.2.7(webpack@5.97.1):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.35)
+      icss-utils: 5.1.0(postcss@8.5.3)
       loader-utils: 2.0.4
-      postcss: 8.4.35
-      postcss-modules-extract-imports: 3.0.0(postcss@8.4.35)
-      postcss-modules-local-by-default: 4.0.4(postcss@8.4.35)
-      postcss-modules-scope: 3.1.1(postcss@8.4.35)
-      postcss-modules-values: 4.0.0(postcss@8.4.35)
+      postcss: 8.5.3
+      postcss-modules-extract-imports: 3.0.0(postcss@8.5.3)
+      postcss-modules-local-by-default: 4.0.4(postcss@8.5.3)
+      postcss-modules-scope: 3.1.1(postcss@8.5.3)
+      postcss-modules-values: 4.0.0(postcss@8.5.3)
       postcss-value-parser: 4.2.0
       schema-utils: 3.3.0
       semver: 7.6.0
@@ -30323,7 +30318,7 @@ snapshots:
   css-tree@2.3.1:
     dependencies:
       mdn-data: 2.0.30
-      source-map-js: 1.0.2
+      source-map-js: 1.2.1
 
   css-what@2.1.3: {}
 
@@ -31506,9 +31501,9 @@ snapshots:
       eslint-compat-utils: 0.1.2(eslint@8.56.0)
       esutils: 2.0.3
       known-css-properties: 0.29.0
-      postcss: 8.4.35
-      postcss-load-config: 3.1.4(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      postcss-safe-parser: 6.0.0(postcss@8.4.35)
+      postcss: 8.5.3
+      postcss-load-config: 3.1.4(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
+      postcss-safe-parser: 6.0.0(postcss@8.5.3)
       postcss-selector-parser: 6.0.15
       semver: 7.6.0
       svelte-eslint-parser: 0.33.1(svelte@4.2.19)
@@ -31615,7 +31610,7 @@ snapshots:
 
   estree-walker@3.0.3:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
 
   esutils@2.0.3: {}
 
@@ -32542,9 +32537,9 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  icss-utils@5.1.0(postcss@8.4.35):
+  icss-utils@5.1.0(postcss@8.5.3):
     dependencies:
-      postcss: 8.4.35
+      postcss: 8.5.3
 
   ieee754@1.2.1: {}
 
@@ -32752,7 +32747,7 @@ snapshots:
 
   is-reference@3.0.2:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
 
   is-regex@1.1.4:
     dependencies:
@@ -33488,7 +33483,7 @@ snapshots:
 
   launch-editor@2.6.1:
     dependencies:
-      picocolors: 1.0.0
+      picocolors: 1.1.1
       shell-quote: 1.8.1
 
   layout-base@1.0.2: {}
@@ -34164,8 +34159,6 @@ snapshots:
 
   nanoid@3.3.11: {}
 
-  nanoid@3.3.7: {}
-
   napi-build-utils@1.0.2: {}
 
   napi-macros@2.0.0:
@@ -34681,7 +34674,7 @@ snapshots:
 
   periscopic@3.1.0:
     dependencies:
-      '@types/estree': 1.0.5
+      '@types/estree': 1.0.6
       estree-walker: 3.0.3
       is-reference: 3.0.2
 
@@ -34716,8 +34709,6 @@ snapshots:
       centra: 2.7.0
     transitivePeerDependencies:
       - debug
-
-  picocolors@1.0.0: {}
 
   picocolors@1.0.1: {}
 
@@ -34814,20 +34805,12 @@ snapshots:
       camelcase-css: 2.0.1
       postcss: 8.5.3
 
-  postcss-load-config@3.1.4(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)):
+  postcss-load-config@3.1.4(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)):
     dependencies:
       lilconfig: 2.1.0
       yaml: 1.10.2
     optionalDependencies:
-      postcss: 8.4.35
-      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
-
-  postcss-load-config@4.0.2(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)):
-    dependencies:
-      lilconfig: 3.1.1
-      yaml: 2.3.4
-    optionalDependencies:
-      postcss: 8.4.35
+      postcss: 8.5.3
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
 
   postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)):
@@ -34837,16 +34820,6 @@ snapshots:
     optionalDependencies:
       postcss: 8.5.3
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
-
-  postcss-loader@7.3.4(postcss@8.4.35)(typescript@5.3.3)(webpack@5.97.1):
-    dependencies:
-      cosmiconfig: 8.3.6(typescript@5.3.3)
-      jiti: 1.21.0
-      postcss: 8.4.35
-      semver: 7.6.0
-      webpack: 5.97.1(esbuild@0.24.2)(webpack-cli@5.1.4)
-    transitivePeerDependencies:
-      - typescript
 
   postcss-loader@7.3.4(postcss@8.5.3)(typescript@5.3.3)(webpack@5.97.1):
     dependencies:
@@ -34858,39 +34831,39 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  postcss-modules-extract-imports@3.0.0(postcss@8.4.35):
+  postcss-modules-extract-imports@3.0.0(postcss@8.5.3):
     dependencies:
-      postcss: 8.4.35
+      postcss: 8.5.3
 
-  postcss-modules-local-by-default@4.0.4(postcss@8.4.35):
+  postcss-modules-local-by-default@4.0.4(postcss@8.5.3):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.35)
-      postcss: 8.4.35
+      icss-utils: 5.1.0(postcss@8.5.3)
+      postcss: 8.5.3
       postcss-selector-parser: 6.0.15
       postcss-value-parser: 4.2.0
 
-  postcss-modules-scope@3.1.1(postcss@8.4.35):
+  postcss-modules-scope@3.1.1(postcss@8.5.3):
     dependencies:
-      postcss: 8.4.35
+      postcss: 8.5.3
       postcss-selector-parser: 6.0.15
 
-  postcss-modules-values@4.0.0(postcss@8.4.35):
+  postcss-modules-values@4.0.0(postcss@8.5.3):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.35)
-      postcss: 8.4.35
+      icss-utils: 5.1.0(postcss@8.5.3)
+      postcss: 8.5.3
 
   postcss-nested@6.2.0(postcss@8.5.3):
     dependencies:
       postcss: 8.5.3
       postcss-selector-parser: 6.1.2
 
-  postcss-safe-parser@6.0.0(postcss@8.4.35):
+  postcss-safe-parser@6.0.0(postcss@8.5.3):
     dependencies:
-      postcss: 8.4.35
+      postcss: 8.5.3
 
-  postcss-scss@4.0.9(postcss@8.4.35):
+  postcss-scss@4.0.9(postcss@8.5.3):
     dependencies:
-      postcss: 8.4.35
+      postcss: 8.5.3
 
   postcss-selector-parser@6.0.15:
     dependencies:
@@ -34903,12 +34876,6 @@ snapshots:
       util-deprecate: 1.0.2
 
   postcss-value-parser@4.2.0: {}
-
-  postcss@8.4.35:
-    dependencies:
-      nanoid: 3.3.7
-      picocolors: 1.0.0
-      source-map-js: 1.0.2
 
   postcss@8.5.3:
     dependencies:
@@ -35503,7 +35470,7 @@ snapshots:
       htmlparser2: 8.0.2
       is-plain-object: 5.0.0
       parse-srcset: 1.0.2
-      postcss: 8.4.35
+      postcss: 8.5.3
 
   sass-loader@13.3.3(sass@1.71.1)(webpack@5.97.1):
     dependencies:
@@ -36103,39 +36070,17 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte-check@3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.22
-      chokidar: 3.6.0
-      fast-glob: 3.3.2
-      import-fresh: 3.3.0
-      picocolors: 1.0.0
-      sade: 1.8.1
-      svelte: 4.2.19
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - coffeescript
-      - less
-      - postcss
-      - postcss-load-config
-      - pug
-      - sass
-      - stylus
-      - sugarss
-
   svelte-check@3.6.9(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.22
       chokidar: 3.6.0
       fast-glob: 3.3.2
       import-fresh: 3.3.0
-      picocolors: 1.0.0
+      picocolors: 1.1.1
       sade: 1.8.1
       svelte: 4.2.19
-      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.3.3)
-      typescript: 5.3.3
+      svelte-preprocess: 5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.7.3)
+      typescript: 5.7.3
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
@@ -36154,8 +36099,8 @@ snapshots:
       eslint-scope: 7.2.2
       eslint-visitor-keys: 3.4.3
       espree: 9.6.1
-      postcss: 8.4.35
-      postcss-scss: 4.0.9(postcss@8.4.35)
+      postcss: 8.5.3
+      postcss-scss: 4.0.9(postcss@8.5.3)
     optionalDependencies:
       svelte: 4.2.19
 
@@ -36169,36 +36114,6 @@ snapshots:
       svelte: 4.2.19
       svelte-dev-helper: 1.1.9
       svelte-hmr: 0.14.12(svelte@4.2.19)
-
-  svelte-preprocess@5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.3.3):
-    dependencies:
-      '@types/pug': 2.0.10
-      detect-indent: 6.1.0
-      magic-string: 0.30.7
-      sorcery: 0.11.0
-      strip-indent: 3.0.0
-      svelte: 4.2.19
-    optionalDependencies:
-      '@babel/core': 7.23.9
-      postcss: 8.4.35
-      postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      sass: 1.71.1
-      typescript: 5.3.3
-
-  svelte-preprocess@5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.19)(typescript@5.7.3):
-    dependencies:
-      '@types/pug': 2.0.10
-      detect-indent: 6.1.0
-      magic-string: 0.30.7
-      sorcery: 0.11.0
-      strip-indent: 3.0.0
-      svelte: 4.2.19
-    optionalDependencies:
-      '@babel/core': 7.23.9
-      postcss: 8.4.35
-      postcss-load-config: 4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3))
-      sass: 1.71.1
-      typescript: 5.7.3
 
   svelte-preprocess@5.1.3(@babel/core@7.23.9)(postcss-load-config@4.0.2(postcss@8.5.3)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(postcss@8.5.3)(sass@1.71.1)(svelte@4.2.19)(typescript@5.3.3):
     dependencies:
@@ -36250,8 +36165,8 @@ snapshots:
       '@ampproject/remapping': 2.2.1
       '@jridgewell/sourcemap-codec': 1.4.15
       '@jridgewell/trace-mapping': 0.3.22
-      '@types/estree': 1.0.5
-      acorn: 8.11.3
+      '@types/estree': 1.0.6
+      acorn: 8.14.0
       aria-query: 5.3.0
       axobject-query: 4.0.0
       code-red: 1.0.4
@@ -36274,7 +36189,7 @@ snapshots:
       css-select: 4.3.0
       css-tree: 1.1.3
       csso: 4.2.0
-      picocolors: 1.0.0
+      picocolors: 1.1.1
       stable: 0.1.8
 
   symbol-tree@3.2.4: {}
@@ -36416,7 +36331,7 @@ snapshots:
   terser@5.27.2:
     dependencies:
       '@jridgewell/source-map': 0.3.5
-      acorn: 8.11.3
+      acorn: 8.14.0
       commander: 2.20.3
       source-map-support: 0.5.21
 
