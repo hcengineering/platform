@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { UploadedFile } from 'express-fileupload'
@@ -86,6 +87,7 @@ export async function handleBlobGet (
     if (err != null) {
       const error = err instanceof Error ? err.message : String(err)
       ctx.error('error writing response', { workspace, name, error })
+      Analytics.handleError(err)
       if (!res.headersSent) {
         res.status(500).send('Internal Server Error')
       }
@@ -137,6 +139,7 @@ export async function handleBlobDelete (
 
     res.status(204).send()
   } catch (error: any) {
+    Analytics.handleError(error)
     ctx.error('failed to delete blob', { error })
     res.status(500).send()
   }
@@ -157,6 +160,7 @@ export async function handleBlobDeleteList (
 
     res.status(204).send()
   } catch (error: any) {
+    Analytics.handleError(error)
     ctx.error('failed to delete blobs', { error })
     res.status(500).send()
   }
@@ -175,6 +179,7 @@ export async function handleBlobSetParent (
     await datalake.setParent(ctx, workspace, name, parent)
     res.status(204).send()
   } catch (error: any) {
+    Analytics.handleError(error)
     ctx.error('failed to delete blob', { error })
     res.status(500).send()
   }
@@ -211,6 +216,7 @@ export async function handleUploadFormData (
           sha256 =
             file.tempFilePath !== undefined ? await getFileSha256(file.tempFilePath) : await getBufferSha256(file.data)
         } catch (err: any) {
+          Analytics.handleError(err)
           const error = err instanceof Error ? err.message : String(err)
           ctx.error('failed to calculate file hash', { error })
           throw err
@@ -229,6 +235,7 @@ export async function handleUploadFormData (
 
           return { key, metadata }
         } catch (err: any) {
+          Analytics.handleError(err)
           const error = err instanceof Error ? err.message : String(err)
           ctx.error('failed to upload blob', { error: err })
           return { key, error }
