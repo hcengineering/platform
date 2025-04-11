@@ -1,0 +1,7 @@
+class: card:class:Tag
+title: DietaryType
+properties:
+  - label: restrictions
+    type: TypeString
+  - label: allergens
+    type: TypeString 
