@@ -35,6 +35,7 @@
     "MasterDetailViews": "Zobrazení master-detail",
     "SelectType": "Vybrat typ",
     "CreateSpace": "Vytvořit prostor",
-    "NumberTypes": "{count, plural, one {# typ} few {# typy} other {# typů}}"
+    "NumberTypes": "{count, plural, one {# typ} few {# typy} other {# typů}}",
+    "Labels": "Štítky"
   }
 }

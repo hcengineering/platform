@@ -45,7 +45,8 @@ export default mergeIds(cardId, card, {
     CreateCardButton: '' as AnyComponent,
     CardArrayEditor: '' as AnyComponent,
     NewCardHeader: '' as AnyComponent,
-    SpacePresenter: '' as AnyComponent
+    SpacePresenter: '' as AnyComponent,
+    LabelsPresenter: '' as AnyComponent
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,
@@ -86,6 +87,7 @@ export default mergeIds(cardId, card, {
     MasterDetailViews: '' as IntlString,
     SelectType: '' as IntlString,
     CreateSpace: '' as IntlString,
-    NumberTypes: '' as IntlString
+    NumberTypes: '' as IntlString,
+    Labels: '' as IntlString
   }
 })

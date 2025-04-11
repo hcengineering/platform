@@ -130,6 +130,7 @@ export function start (
         findMessagesGroups: async () => [],
         findNotificationContexts: async () => [],
         findNotifications: async () => [],
+        findLabels: async () => [],
         unsubscribeQuery: async () => {},
         event: async () => {
           return {}

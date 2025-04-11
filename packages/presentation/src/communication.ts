@@ -29,7 +29,10 @@ import {
   type NotificationContext,
   PatchType,
   type RichText,
-  type SocialID
+  type SocialID,
+  type CardType,
+  type Label,
+  type FindLabelsParams
 } from '@hcengineering/communication-types'
 import {
   type CreateFileEvent,
@@ -42,9 +45,10 @@ import {
   type RemoveFileEvent,
   type RemoveReactionEvent,
   type RequestEvent,
-  RequestEventType,
   type ResponseEvent,
-  type UpdateNotificationContextEvent
+  type UpdateNotificationContextEvent,
+  MessageRequestEventType,
+  NotificationRequestEventType
 } from '@hcengineering/communication-sdk-types'
 import {
   type Client as PlatformClient,
@@ -59,18 +63,20 @@ import {
   createMessagesQuery,
   createNotificationContextsQuery,
   createNotificationsQuery,
+  createLabelsQuery,
   initLiveQueries
 } from '@hcengineering/communication-client-query'
 
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 
-export { createMessagesQuery, createNotificationsQuery, createNotificationContextsQuery }
+export { createMessagesQuery, createNotificationsQuery, createNotificationContextsQuery, createLabelsQuery }
 
 interface Connection extends PlatformConnection {
   findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
   findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
   findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
+  findLabels: (params: FindLabelsParams) => Promise<Label[]>
   sendEvent: (event: RequestEvent) => Promise<EventResult>
   unsubscribeQuery: (id: number) => Promise<void>
 }
@@ -115,7 +121,7 @@ class Client {
 
   async createThread (card: CardID, message: MessageID, thread: CardID): Promise<void> {
     const event: CreateThreadEvent = {
-      type: RequestEventType.CreateThread,
+      type: MessageRequestEventType.CreateThread,
       card,
       message,
       thread
@@ -124,11 +130,12 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async createMessage (card: CardID, content: RichText): Promise<MessageID> {
+  async createMessage (card: CardID, cardType: CardType, content: RichText): Promise<MessageID> {
     const event: CreateMessageEvent = {
-      type: RequestEventType.CreateMessage,
+      type: MessageRequestEventType.CreateMessage,
       messageType: MessageType.Message,
       card,
+      cardType,
       content,
       creator: this.getSocialId()
     }
@@ -138,7 +145,7 @@ class Client {
 
   async updateMessage (card: CardID, message: MessageID, content: RichText): Promise<void> {
     const event: CreatePatchEvent = {
-      type: RequestEventType.CreatePatch,
+      type: MessageRequestEventType.CreatePatch,
       patchType: PatchType.update,
       card,
       message,
@@ -150,7 +157,7 @@ class Client {
 
   async createReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
     const event: CreateReactionEvent = {
-      type: RequestEventType.CreateReaction,
+      type: MessageRequestEventType.CreateReaction,
       card,
       message,
       reaction,
@@ -161,7 +168,7 @@ class Client {
 
   async removeReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
     const event: RemoveReactionEvent = {
-      type: RequestEventType.RemoveReaction,
+      type: MessageRequestEventType.RemoveReaction,
       card,
       message,
       reaction,
@@ -179,7 +186,7 @@ class Client {
     size: number
   ): Promise<void> {
     const event: CreateFileEvent = {
-      type: RequestEventType.CreateFile,
+      type: MessageRequestEventType.CreateFile,
       card,
       message,
       blobId,
@@ -193,7 +200,7 @@ class Client {
 
   async removeFile (card: CardID, message: MessageID, blobId: BlobID): Promise<void> {
     const event: RemoveFileEvent = {
-      type: RequestEventType.RemoveFile,
+      type: MessageRequestEventType.RemoveFile,
       card,
       message,
       blobId,
@@ -204,7 +211,7 @@ class Client {
 
   async updateNotificationContext (context: ContextID, lastView?: Date): Promise<void> {
     const event: UpdateNotificationContextEvent = {
-      type: RequestEventType.UpdateNotificationContext,
+      type: NotificationRequestEventType.UpdateNotificationContext,
       context,
       account: this.getAccount(),
       lastView
@@ -229,6 +236,10 @@ class Client {
 
   async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
     return await this.connection.findNotifications(params, queryId)
+  }
+
+  async findLabels (params: FindLabelsParams): Promise<Label[]> {
+    return await this.connection.findLabels(params)
   }
 
   async unsubscribeQuery (id: number): Promise<void> {

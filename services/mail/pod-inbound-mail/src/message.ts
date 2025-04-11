@@ -19,7 +19,6 @@ import {
   type RestClient as CommunicationClient,
   createRestClient as getCommunicationClient
 } from '@hcengineering/communication-rest-client'
-import { type CreateFileEvent, type CreateMessageEvent, RequestEventType } from '@hcengineering/communication-sdk-types'
 import { MessageType } from '@hcengineering/communication-types'
 import contact, { PersonSpace } from '@hcengineering/contact'
 import {
@@ -267,28 +266,25 @@ async function saveMessageToSpaces (
         ctx.info('Created new thread', { mailId, threadId, spaceId })
       }
 
-      const msgEvent: CreateMessageEvent = {
-        type: RequestEventType.CreateMessage,
-        messageType: MessageType.Message,
-        card: threadId,
+      const messageId = await msgClient.createMessage(
+        threadId,
+        mail.class.MailThread,
         content,
-        creator: modifiedBy
-      }
-      const { id: messageId } = (await msgClient.event(msgEvent)) as any
+        modifiedBy,
+        MessageType.Message
+      )
       ctx.info('Created message', { mailId, messageId, threadId })
 
       for (const a of attachments) {
-        const fileEvent: CreateFileEvent = {
-          type: RequestEventType.CreateFile,
-          card: threadId,
-          message: messageId,
-          blobId: a.id as Ref<Blob>,
-          fileType: a.contentType,
-          filename: a.name,
-          size: a.data.length,
-          creator: modifiedBy
-        }
-        await msgClient.event(fileEvent)
+        await msgClient.createFile(
+          threadId,
+          messageId,
+          a.id as Ref<Blob>,
+          a.contentType,
+          a.name,
+          a.data.length,
+          modifiedBy
+        )
       }
 
       await client.createDoc(

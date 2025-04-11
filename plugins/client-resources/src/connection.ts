@@ -64,10 +64,12 @@ import { uncompress } from 'snappyjs'
 import { HelloRequest, HelloResponse, ReqId, type Response, RPCHandler } from '@hcengineering/rpc'
 import { EventResult } from '@hcengineering/communication-sdk-types'
 import {
+  FindLabelsParams,
   FindMessagesGroupsParams,
   FindMessagesParams,
   FindNotificationContextParams,
   FindNotificationsParams,
+  Label,
   Message,
   MessagesGroup,
   NotificationContext
@@ -868,6 +870,10 @@ class Connection implements ClientConnection {
 
   async findMessages (params: FindMessagesParams, queryId?: number): Promise<Message[]> {
     return await this.sendRequest({ method: 'findMessages', params: [params, queryId] })
+  }
+
+  async findLabels (params: FindLabelsParams): Promise<Label[]> {
+    return await this.sendRequest({ method: 'findLabels', params: [params] })
   }
 
   async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {

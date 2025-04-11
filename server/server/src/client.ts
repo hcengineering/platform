@@ -58,7 +58,8 @@ import {
   Message,
   MessagesGroup,
   FindNotificationContextParams,
-  FindNotificationsParams
+  FindNotificationsParams,
+  FindLabelsParams
 } from '@hcengineering/communication-types'
 import {
   RequestEvent as CommunicationEvent,
@@ -421,6 +422,11 @@ export class ClientSession implements Session {
     queryId?: number
   ): Promise<void> {
     const result = await ctx.communicationApi.findNotificationContexts(this.getCommunicationCtx(), params, queryId)
+    await ctx.sendResponse(ctx.requestId, result)
+  }
+
+  async findLabels (ctx: ClientSessionCtx, params: FindLabelsParams): Promise<void> {
+    const result = await ctx.communicationApi.findLabels(this.getCommunicationCtx(), params)
     await ctx.sendResponse(ctx.requestId, result)
   }
 

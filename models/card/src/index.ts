@@ -129,6 +129,13 @@ const listConfig: (BuildModelKey | string)[] = [
     displayProps: { key: 'tags', fixed: 'right' }
   },
   {
+    key: '',
+    presenter: card.component.LabelsPresenter,
+    label: card.string.Labels,
+    props: { fullSize: true },
+    displayProps: { fixed: 'right', key: 'labels' }
+  },
+  {
     key: 'modifiedOn',
     displayProps: { fixed: 'right', dividerBefore: true }
   }
@@ -168,6 +175,12 @@ export function createSystemType (
       '',
       '_class',
       { key: '', presenter: view.component.RolePresenter, label: card.string.Tags, props: { fullSize: true } },
+      {
+        key: '',
+        presenter: card.component.LabelsPresenter,
+        label: card.string.Labels,
+        props: { fullSize: true }
+      },
       'modifiedOn'
     ]
   })

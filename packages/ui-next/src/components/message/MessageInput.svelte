@@ -18,7 +18,7 @@
   import { Markup, RateLimiter } from '@hcengineering/core'
   import { tick, createEventDispatcher, onDestroy } from 'svelte'
   import { uploadFile, deleteFile, getCommunicationClient } from '@hcengineering/presentation'
-  import { MessageID, CardID } from '@hcengineering/communication-types'
+  import { MessageID, CardID, CardType } from '@hcengineering/communication-types'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
 
   import TextInput from '../TextInput.svelte'
@@ -28,6 +28,7 @@
   import { type TextInputAction, UploadedFile } from '../../types'
 
   export let cardId: CardID | undefined = undefined
+  export let cardType: CardType | undefined = undefined
   export let messageId: MessageID | undefined = undefined
   export let content: Markup | undefined = undefined
   export let placeholder: IntlString | undefined = undefined
@@ -66,8 +67,8 @@
   }
 
   async function createMessage (markdown: string, files: UploadedFile[]): Promise<void> {
-    if (cardId === undefined) return
-    const id = await communicationClient.createMessage(cardId, markdown)
+    if (cardId === undefined || cardType === undefined) return
+    const id = await communicationClient.createMessage(cardId, cardType, markdown)
 
     for (const file of files) {
       await communicationClient.createFile(cardId, id, file.blobId, file.type, file.filename, file.size)
