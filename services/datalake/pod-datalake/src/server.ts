@@ -229,6 +229,7 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
       return
     }
 
+    Analytics.handleError(err)
     res.status(500).json({ message: err.message?.length > 0 ? err.message : 'Internal Server Error' })
   })
 
