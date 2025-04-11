@@ -2119,6 +2119,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-calendar-mailer",
+      "projectFolder": "services/calendar/pod-calendar-mailer",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/qms-doc-import-tool",
       "projectFolder": "dev/doc-import-tool",
       "shouldPublish": false
