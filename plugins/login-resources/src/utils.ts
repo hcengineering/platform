@@ -953,6 +953,7 @@ export function isWorkspaceLoginInfo (
   info: WorkspaceLoginInfo | LoginInfo | WorkspaceInviteInfo | null
 ): info is WorkspaceLoginInfo {
   return (info as any)?.workspace !== undefined && (info as any)?.token !== undefined
+}
 
 export function getAccountDisplayName (loginInfo: LoginInfo | null): string {
   if (loginInfo == null) {
