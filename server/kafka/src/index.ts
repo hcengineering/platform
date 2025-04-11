@@ -204,7 +204,10 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
       fromBegining?: boolean
     }
   ) {
-    this.cc = this.kafka.consumer({ groupId: `${getKafkaTopicId(this.topic, this.config)}-${groupId}` })
+    this.cc = this.kafka.consumer({
+      groupId: `${getKafkaTopicId(this.topic, this.config)}-${groupId}`,
+      allowAutoTopicCreation: true
+    })
 
     void this.start().catch((err) => {
       ctx.error('failed to consume', { err })
