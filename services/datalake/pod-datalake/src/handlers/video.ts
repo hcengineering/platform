@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { systemAccountUuid, MeasureContext } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -29,7 +30,8 @@ export async function requestHLS (ctx: MeasureContext, workspace: string, name: 
   try {
     ctx.info('request for hls', { workspace, name })
     await postTranscodingTask(ctx, workspace, name)
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     ctx.error('can not schedule a task', { err })
   }
 }
