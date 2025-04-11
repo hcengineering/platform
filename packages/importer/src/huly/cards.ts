@@ -602,7 +602,21 @@ export class CardsProcessor {
 
       const tagProps: Record<string, any> = {}
       this.metadataRegistry.getAttributes(tagAbsPath).forEach((attr, label) => {
-        tagProps[attr.props.name] = cardHeader[label]
+        const value = cardHeader[label]
+        const attrType = attr.props.type
+        const attrBaseType = attrType._class === core.class.ArrOf ? attrType.of : attrType
+        const values = attrType._class === core.class.ArrOf ? value : [value]
+        const propValues: any[] = []
+        for (const val of values) {
+          if (attrBaseType._class === core.class.RefTo) {
+            const refPath = path.resolve(path.dirname(cardPath), val)
+            const ref = this.metadataRegistry.getRef(refPath) as Ref<Card>
+            propValues.push(ref)
+          } else {
+            propValues.push(val)
+          }
+        }
+        tagProps[attr.props.name] = attrType._class === core.class.ArrOf ? propValues : propValues[0]
       })
 
       const mixin: UnifiedMixin<Card, Tag> = {
