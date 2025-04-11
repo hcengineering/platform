@@ -116,55 +116,6 @@
 </div>
 
 <style lang="scss">
-  .user-popup {
-    box-sizing: border-box;
-
-    /* Auto layout */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 0px;
-
-    position: absolute;
-    width: 480px;
-    height: 808px;
-    left: calc(50% - 480px / 2);
-    top: calc(50% - 808px / 2);
-
-    background: #f1f1f1;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    /* elevation-04
-
-    Logos and icons for illustrations
-    */
-    box-shadow:
-      0px 100px 80px rgba(0, 0, 0, 0.15),
-      0px 40px 32px rgba(0, 0, 0, 0.12),
-      0px 24px 16px rgba(0, 0, 0, 0.1),
-      0px 12px 12px rgba(0, 0, 0, 0.1),
-      0px 6px 6px rgba(0, 0, 0, 0.08),
-      0px 2px 2px rgba(0, 0, 0, 0.05);
-    border-radius: 24px;
-
-    .content {
-      /* Auto layout */
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      padding: 0px;
-      isolation: isolate;
-
-      width: 480px;
-      height: 264px;
-
-      /* Inside auto layout */
-      flex: none;
-      order: 0;
-      align-self: stretch;
-      flex-grow: 0;
-    }
-  }
-
   .root {
     display: flex;
     flex-direction: column;

@@ -150,7 +150,7 @@ export interface RadioItem {
 
 export type ButtonBaseType = 'type-button' | 'type-button-icon'
 
-export type ButtonBaseKind = 'primary' | 'secondary' | 'tertiary' | 'negative' | 'ghost'
+export type ButtonBaseKind = 'primary' | 'secondary' | 'tertiary' | 'negative'
 
 export type ButtonBaseSize = 'large' | 'medium' | 'small' | 'extra-small' | 'min'
 

@@ -14,10 +14,19 @@
 //
 
 import achievement from '@hcengineering/achievement'
-import { type Asset } from '@hcengineering/platform'
+import { IntlString, type Asset } from '@hcengineering/platform'
+
+interface PersonAchievement {
+  icon: Asset
+  tooltip: IntlString
+}
 
 // TODO: Remove and replace with actual person achievements, it is just for demonstration
-const possibleAchievements = [achievement.icon.EarliestAdopter, achievement.icon.Epic, achievement.icon.Legendary]
+const possibleAchievements : PersonAchievement[] = [
+  { icon: achievement.icon.EarliestAdopter, tooltip: achievement.string.EarliestAdopter },
+  { icon: achievement.icon.Epic, tooltip: achievement.string.Epic },
+  { icon: achievement.icon.Legendary, tooltip: achievement.string.Legendary }
+]
 
 function hashStringToInt (str: string): number {
   if (str === undefined) return 0
@@ -31,7 +40,7 @@ function hashStringToInt (str: string): number {
   return hash
 }
 
-export function getPersonAchievements (personId: string): Asset[] {
+export function getPersonAchievements (personId: string): PersonAchievement[] {
   const personHash = hashStringToInt(personId)
   return possibleAchievements.filter((_, index) => {
     return personHash % (index + 1) === 0

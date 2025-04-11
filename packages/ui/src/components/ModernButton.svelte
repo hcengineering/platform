@@ -12,7 +12,7 @@
   export let title: string | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
-  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' | 'ghost' = 'secondary'
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let size: ButtonBaseSize = 'large'
   export let shape: 'rectangle' | 'round' = 'rectangle'
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined

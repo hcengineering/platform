@@ -335,7 +335,6 @@ export const contactPlugin = plugin(contactId, {
     Confirmed: '' as IntlString,
     UserProfile: '' as IntlString,
     DeactivatedAccount: '' as IntlString,
-    Achievements: '' as IntlString,
     LocalTime: '' as IntlString
   },
   viewlet: {

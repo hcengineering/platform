@@ -32,7 +32,7 @@
   <div class="achievements">
     {#each personAchievements as achievement}
       <div class="icon">
-        <Icon icon={achievement} size="full" fill="none" />
+        <Icon icon={achievement.icon} size="full" fill="none" />
       </div>
     {/each}
   </div>
