@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,27 +11,15 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  import contact from '@hcengineering/contact'
-  import { Label } from '@hcengineering/ui'
-</script>
+//
 
-<div class="header-container gap-2 px-4">
-  <span class="text-md font-normal content-color">
-    <Label label={contact.string.Achievements} />
-  </span>
-  <div class="divider" />
-</div>
+import { type Resources } from '@hcengineering/platform'
+import PersonAchievementsPresenter from './components/PersonAchievementsPresenter.svelte'
 
-<style>
-  .header-container {
-    display: flex;
-    padding: 0 12px;
-    align-items: center;
+export const achievementResourceId = 'achievement-resources' as const
+
+export default async (): Promise<Resources> => ({
+  component: {
+    PersonAchievementsPresenter
   }
-  .divider {
-    width: 100%;
-    border-top: 1px solid var(--theme-divider-color);
-  }
-</style>
+})

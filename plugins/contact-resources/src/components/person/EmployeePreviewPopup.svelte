@@ -20,7 +20,6 @@
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
   import ModernProfilePopup from './ModernProfilePopup.svelte'
-  import AchievementsPresenter from './AchievementsPresenter.svelte'
 
   import contact from '../../plugin'
   import Avatar from '../Avatar.svelte'
@@ -72,7 +71,7 @@
           <div slot="actions">
             <div class="flex-presenter flex-gap-2 flex-center">
               <ComponentExtensions
-                extension={contact.extension.EmployeePopupActions}
+                extension={contact.extension.PersonAchievementsPresenter}
                 props={{ employee, isButtonIcon: true, icon: contact.icon.Chat, type: 'type-button-icon' }}
               />
               <ButtonIcon icon={contact.icon.User} size="small" iconSize="small" on:click={viewProfile} />
@@ -110,7 +109,12 @@
         </div>
       </div>
       <div class="py-1">
-        <AchievementsPresenter personId={_id} />
+        <ComponentExtensions
+          extension={contact.extension.PersonAchievementsPresenter}
+          props={{
+            personId: _id
+          }}
+        />
       </div>
     {:else}
       <div class="flex-presenter flex-gap-2 p-2">

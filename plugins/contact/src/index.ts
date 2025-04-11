@@ -298,10 +298,7 @@ export const contactPlugin = plugin(contactId, {
     User: '' as Asset
   },
   image: {
-    ProfileBackground: '' as Asset,
-    Achievement1: '' as Asset,
-    Achievement2: '' as Asset,
-    Achievement3: '' as Asset
+    ProfileBackground: '' as Asset
   },
   space: {
     Contacts: '' as Ref<Space>
@@ -373,7 +370,8 @@ export const contactPlugin = plugin(contactId, {
     MentionCommonNotificationType: '' as Ref<Doc>
   },
   extension: {
-    EmployeePopupActions: '' as ComponentExtensionId
+    EmployeePopupActions: '' as ComponentExtensionId,
+    PersonAchievementsPresenter: '' as ComponentExtensionId
   },
   store: {
     Permissions: '' as Resource<Readable<PermissionsStore>>

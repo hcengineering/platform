@@ -54,6 +54,9 @@
     "webpack-dev-server": "^4.11.1"
   },
   "dependencies": {
+    "@hcengineering/achievement": "^0.6.0",
+    "@hcengineering/achievement-assets": "^0.6.0",
+    "@hcengineering/achievement-resources": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/activity-assets": "^0.6.3",
     "@hcengineering/activity-resources": "^0.6.1",
