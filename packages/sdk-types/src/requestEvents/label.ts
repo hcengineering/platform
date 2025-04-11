@@ -13,34 +13,32 @@
 // limitations under the License.
 //
 
-import type { AccountID, CardID, CardType, ID } from './core'
-import type { Message, MessageID, MessagesGroup, Patch } from './message'
+import type {
+  CardID,
+  AccountID,
+  LabelID,
+  CardType
+} from '@hcengineering/communication-types'
+import type { BaseRequestEvent } from './common'
 
-export type ContextID = ID & { context: true }
-export type NotificationID = ID & { notification: true }
+export enum LabelRequestEventType {
+  CreateLabel = 'createLabel',
+  RemoveLabel = 'removeLabel',
+}
 
-export interface Collaborator {
+export type LabelRequestEvent = CreateLabelEvent | RemoveLabelEvent
+
+export interface CreateLabelEvent extends BaseRequestEvent {
+  type: LabelRequestEventType.CreateLabel
+  label: LabelID
   card: CardID
   cardType: CardType
   account: AccountID
 }
 
-export interface Notification {
-  id: NotificationID
-  context: ContextID
-  read: boolean
-  created: Date
-  messageId?: MessageID
-  message?: Message
-  messageGroup?: MessagesGroup
-  patches?: Patch[]
-}
-
-export interface NotificationContext {
-  id: ContextID
+export interface RemoveLabelEvent extends BaseRequestEvent {
+  type: LabelRequestEventType.RemoveLabel
+  label: LabelID
   card: CardID
   account: AccountID
-  lastUpdate: Date
-  lastView: Date
-  notifications?: Notification[]
 }

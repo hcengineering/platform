@@ -14,10 +14,11 @@
 //
 
 import type { Ref, Blob, AccountUuid, WorkspaceUuid, PersonId } from '@hcengineering/core'
-import type { Card } from '@hcengineering/card'
+import type { Card, MasterTag } from '@hcengineering/card'
 
 export type BlobID = Ref<Blob>
 export type CardID = Ref<Card>
+export type CardType = Ref<MasterTag>
 export type SocialID = PersonId
 export type WorkspaceID = WorkspaceUuid
 export type RichText = string

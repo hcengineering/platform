@@ -25,7 +25,8 @@ import {
   type Notification,
   type NotificationContext,
   SortingOrder,
-    type NotificationID
+    type NotificationID,
+    type CardType
 } from '@hcengineering/communication-types'
 
 import { BaseDb } from './base'
@@ -34,19 +35,19 @@ import { getCondition } from './utils'
 import { toCollaborator, toNotification, toNotificationContext } from './mapping'
 
 export class NotificationsDb extends BaseDb {
-  async addCollaborators (card: CardID, collaborators: AccountID[], date?: Date): Promise<void> {
+  async addCollaborators (card: CardID, cardType: CardType, collaborators: AccountID[], date?: Date): Promise<void> {
     if (collaborators.length === 0) return
     const values: any[] = []
 
     const sqlValues = collaborators
       .map((account, index) => {
         const i = index * 3
-        values.push(this.workspace, card, account, date ?? new Date())
-        return `($${i + 1}::uuid, $${i + 2}::varchar, $${i + 3}::uuid, $${i + 4}::timestamptz)`
+        values.push(this.workspace, card, account, date ?? new Date(), cardType)
+        return `($${i + 1}::uuid, $${i + 2}::varchar, $${i + 3}::uuid, $${i + 4}::timestamptz, $${i + 5}::varchar)`
       })
       .join(', ')
 
-    const sql = `INSERT INTO ${TableName.Collaborators} (workspace_id, card_id, account, date) VALUES ${sqlValues} ON CONFLICT DO NOTHING`
+    const sql = `INSERT INTO ${TableName.Collaborators} (workspace_id, card_id, account, date, card_type) VALUES ${sqlValues} ON CONFLICT DO NOTHING`
 
     await this.execute(sql, values, 'insert collaborators')
   }
@@ -79,7 +80,7 @@ export class NotificationsDb extends BaseDb {
     size?: number
   ): AsyncIterable<NonNullable<Collaborator[][number]>[]> {
     const sql = `
-            SELECT account
+            SELECT *
             FROM ${TableName.Collaborators}
             WHERE workspace_id = $1::uuid
               AND card_id = $2::varchar
@@ -343,7 +344,7 @@ export class NotificationsDb extends BaseDb {
   async findCollaborators (params: FindCollaboratorsParams): Promise<Collaborator[]> {
     const { where, values } = this.buildCollaboratorsWhere(params)
     const select = `
-            SELECT c.account
+            SELECT *
             FROM ${TableName.Collaborators} c
         `
 

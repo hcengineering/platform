@@ -14,20 +14,20 @@
 //
 
 import { type LiveQueries } from '@hcengineering/communication-query'
-import type {
-  MessagesQueryCallback,
-  NotificationsQueryCallback,
-  QueryCallback
-} from '@hcengineering/communication-sdk-types'
+import type { PagedQueryCallback, QueryCallback } from '@hcengineering/communication-sdk-types'
 import {
+  type FindLabelsParams,
   type FindMessagesParams,
   type FindNotificationContextParams,
   type FindNotificationsParams,
-  type NotificationContext
+  type Label,
+  type Message,
+  type NotificationContext,
+  type Notification
 } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 
-class BaseQuery<P extends Record<string, any>, C extends QueryCallback<any>> {
+class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
   private oldQuery: P | undefined
   private oldCallback: C | undefined
 
@@ -78,16 +78,16 @@ class BaseQuery<P extends Record<string, any>, C extends QueryCallback<any>> {
   }
 }
 
-export class MessagesQuery extends BaseQuery<FindMessagesParams, MessagesQueryCallback> {
-  override createQuery(params: FindMessagesParams, callback: MessagesQueryCallback): { unsubscribe: () => void } {
+export class MessagesQuery extends BaseQuery<FindMessagesParams, PagedQueryCallback<Message>> {
+  override createQuery(params: FindMessagesParams, callback: PagedQueryCallback<Message>): { unsubscribe: () => void } {
     return this.lq.queryMessages(params, callback)
   }
 }
 
-export class NotificationsQuery extends BaseQuery<FindNotificationsParams, NotificationsQueryCallback> {
+export class NotificationsQuery extends BaseQuery<FindNotificationsParams, PagedQueryCallback<Notification>> {
   override createQuery(
     params: FindNotificationsParams,
-    callback: NotificationsQueryCallback
+    callback: PagedQueryCallback<Notification>
   ): {
     unsubscribe: () => void
   } {
@@ -97,14 +97,25 @@ export class NotificationsQuery extends BaseQuery<FindNotificationsParams, Notif
 
 export class NotificationContextsQuery extends BaseQuery<
   FindNotificationContextParams,
-  QueryCallback<NotificationContext>
+  PagedQueryCallback<NotificationContext>
 > {
   override createQuery(
     params: FindNotificationContextParams,
-    callback: QueryCallback<NotificationContext>
+    callback: PagedQueryCallback<NotificationContext>
   ): {
     unsubscribe: () => void
   } {
     return this.lq.queryNotificationContexts(params, callback)
+  }
+}
+
+export class LabelsQuery extends BaseQuery<FindLabelsParams, QueryCallback<Label>> {
+  override createQuery(
+    params: FindLabelsParams,
+    callback: QueryCallback<Label>
+  ): {
+    unsubscribe: () => void
+  } {
+    return this.lq.queryLabels(params, callback)
   }
 }

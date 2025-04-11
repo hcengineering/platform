@@ -35,7 +35,11 @@ import type {
   MessageType,
   FindCollaboratorsParams,
   NotificationID,
-  MessageData
+  MessageData,
+  Label,
+  FindLabelsParams,
+  LabelID,
+  CardType
 } from '@hcengineering/communication-types'
 
 export interface DbAdapter {
@@ -83,7 +87,7 @@ export interface DbAdapter {
   findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
   findThread(thread: CardID): Promise<Thread | undefined>
 
-  addCollaborators(card: CardID, collaborators: AccountID[], date?: Date): Promise<void>
+  addCollaborators(card: CardID, cardType: CardType, collaborators: AccountID[], date?: Date): Promise<void>
   removeCollaborators(card: CardID, collaborators: AccountID[]): Promise<void>
   getCollaboratorsCursor(card: CardID, date: Date, size?: number): AsyncIterable<Collaborator[]>
 
@@ -98,6 +102,10 @@ export interface DbAdapter {
 
   findContexts(params: FindNotificationContextParams): Promise<NotificationContext[]>
   findNotifications(params: FindNotificationsParams): Promise<Notification[]>
+
+  createLabel(label: LabelID, card: CardID, cardType: CardType, account: AccountID, created: Date): Promise<void>
+  removeLabel(label: LabelID, card: CardID, account: AccountID): Promise<void>
+  findLabels(params: FindLabelsParams): Promise<Label[]>
 
   close(): void
 }

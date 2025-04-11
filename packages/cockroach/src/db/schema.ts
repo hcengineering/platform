@@ -24,7 +24,9 @@ import {
   type RichText,
   type SocialID,
   type WorkspaceID,
-  type NotificationID
+  type NotificationID,
+  type LabelID,
+  type CardType
 } from '@hcengineering/communication-types'
 
 export enum TableName {
@@ -36,7 +38,8 @@ export enum TableName {
   Patch = 'communication.patch',
   Reaction = 'communication.reactions',
   Thread = 'communication.thread',
-  Collaborators = 'communication.collaborators'
+  Collaborators = 'communication.collaborators',
+  Label = 'communication.label'
 }
 
 export interface MessageDb {
@@ -120,6 +123,16 @@ export interface ContextDb {
 export interface CollaboratorDb {
   workspace_id: WorkspaceID
   card_id: CardID
+  card_type: CardType
   account: AccountID
   date: Date
+}
+
+export interface LabelDb {
+  workspace_id: WorkspaceID
+  label_id: LabelID
+  card_id: CardID
+  card_type: CardType
+  account: AccountID
+  created: Date
 }

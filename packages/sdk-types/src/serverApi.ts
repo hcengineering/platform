@@ -21,11 +21,13 @@ import type {
   Message,
   MessagesGroup,
   NotificationContext,
-  Notification
+  Notification,
+  FindLabelsParams,
+  Label
 } from '@hcengineering/communication-types'
 import type { Account } from '@hcengineering/core'
 
-import type { EventResult, RequestEvent } from './requestEvent.ts'
+import type { EventResult, RequestEvent } from './event'
 
 export interface ConnectionInfo {
   sessionId?: string
@@ -45,6 +47,8 @@ export interface ServerApi {
     params: FindNotificationsParams,
     queryId?: number | string
   ): Promise<Notification[]>
+
+  findLabels(info: ConnectionInfo, params: FindLabelsParams): Promise<Label[]>
 
   event(info: ConnectionInfo, event: RequestEvent): Promise<EventResult>
 

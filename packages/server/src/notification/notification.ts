@@ -15,29 +15,39 @@
 
 import {
   type CreateNotificationContextResult,
+  LabelRequestEventType,
+  MessageResponseEventType,
+  NotificationRequestEventType,
   type RequestEvent,
-  RequestEventType,
   type ResponseEvent,
-  ResponseEventType
 } from '@hcengineering/communication-sdk-types'
-import {MessageType, type AccountID, type CardID, type ContextID, type Message, type NotificationContext } from '@hcengineering/communication-types'
+import {
+  type AccountID,
+  type CardID,
+  type CardType,
+  type ContextID,
+  type Message,
+  MessageType,
+  NewMessageLabelID,
+  type NotificationContext
+} from '@hcengineering/communication-types'
 
-import type { TriggerCtx } from '../types'
-import { findAccount } from '../utils'
+import type {TriggerCtx} from '../types'
+import {findAccount} from '../utils'
 
 const BATCH_SIZE = 500
 
 export async function notify (ctx: TriggerCtx, event: ResponseEvent): Promise<RequestEvent[]> {
   switch (event.type) {
-    case ResponseEventType.MessageCreated: {
-      return await notifyMessage(ctx, event.message)
+    case MessageResponseEventType.MessageCreated: {
+      return await notifyMessage(ctx, event.message, event.cardType)
     }
   }
 
   return []
 }
 
-async function notifyMessage (ctx: TriggerCtx, message: Message): Promise<RequestEvent[]> {
+async function notifyMessage (ctx: TriggerCtx, message: Message, cardType: CardType): Promise<RequestEvent[]> {
   const cursor = ctx.db.getCollaboratorsCursor(message.card, message.created, BATCH_SIZE)
   const creatorAccount = await findAccount(ctx, message.creator)
   const result: RequestEvent[] = []
@@ -54,7 +64,7 @@ async function notifyMessage (ctx: TriggerCtx, message: Message): Promise<Reques
     for (const collaborator of collaborators) {
       try {
         const context = contexts.find((it) => it.account === collaborator)
-        const res = await processCollaborator(ctx, message, collaborator, creatorAccount, context)
+        const res = await processCollaborator(ctx, cardType, message, collaborator, creatorAccount, context)
         result.push(...res)
       } catch (e) {
         ctx.ctx.error('Error on create notification', { collaborator, error: e })
@@ -69,6 +79,7 @@ async function notifyMessage (ctx: TriggerCtx, message: Message): Promise<Reques
 
 async function processCollaborator (
   ctx: TriggerCtx,
+  cardType: CardType,
   message: Message,
   collaborator: AccountID,
   creatorAccount?: AccountID,
@@ -78,13 +89,23 @@ async function processCollaborator (
   const isOwn = creatorAccount === collaborator
   const { contextId, events } = await createOrUpdateContext(ctx, message, collaborator, isOwn, context)
 
+if(!isOwn) {
+  result.push({
+    type: LabelRequestEventType.CreateLabel,
+    account: collaborator,
+    label: NewMessageLabelID,
+    card: message.card,
+    cardType
+  })
+}
+
   result.push(...events)
 
   if (contextId == null || isOwn) return result
   if(message.type !== MessageType.Message) return result
 
   result.push({
-    type: RequestEventType.CreateNotification,
+    type: NotificationRequestEventType.CreateNotification,
     account: collaborator,
     context: contextId,
     message: message.id,
@@ -126,7 +147,7 @@ async function createOrUpdateContext (
     contextId: context.id,
     events: [
       {
-        type: RequestEventType.UpdateNotificationContext,
+        type: NotificationRequestEventType.UpdateNotificationContext,
         context: context.id,
         account: collaborator,
         lastView,
@@ -145,7 +166,7 @@ async function createContext (
 ): Promise<ContextID | undefined> {
   try {
     const result = (await ctx.execute({
-      type: RequestEventType.CreateNotificationContext,
+      type: NotificationRequestEventType.CreateNotificationContext,
       account,
       card,
       lastUpdate,

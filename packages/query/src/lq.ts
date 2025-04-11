@@ -20,22 +20,24 @@ import {
   type Message,
   type WorkspaceID,
   type Notification,
-  type NotificationContext
+  type NotificationContext,
+  type Label,
+  type FindLabelsParams
 } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
 import type {
-  MessagesQueryCallback,
-  NotificationsQueryCallback,
   ResponseEvent,
   QueryCallback,
   RequestEvent,
-  EventResult
+  EventResult,
+  PagedQueryCallback
 } from '@hcengineering/communication-sdk-types'
 
-import type { PagedQuery, FindParams, QueryId, QueryClient } from './types'
+import type { FindParams, QueryId, QueryClient, AnyQuery } from './types'
 import { MessagesQuery } from './messages/query'
 import { NotificationQuery } from './notifications/query'
 import { NotificationContextsQuery } from './notification-contexts/query'
+import { LabelsQuery } from './label/query'
 
 interface CreateQueryResult {
   unsubscribe: () => void
@@ -44,7 +46,7 @@ interface CreateQueryResult {
 const maxQueriesCache = 20
 
 export class LiveQueries {
-  private readonly queries = new Map<QueryId, PagedQuery>()
+  private readonly queries = new Map<QueryId, AnyQuery>()
   private readonly unsubscribed = new Set<QueryId>()
   private counter: number = 0
 
@@ -73,7 +75,7 @@ export class LiveQueries {
     }
   }
 
-  queryMessages(params: FindMessagesParams, callback: MessagesQueryCallback): CreateQueryResult {
+  queryMessages(params: FindMessagesParams, callback: PagedQueryCallback<Message>): CreateQueryResult {
     return this.createAndStoreQuery<Message, FindMessagesParams, MessagesQuery>(
       params,
       callback,
@@ -82,7 +84,7 @@ export class LiveQueries {
     )
   }
 
-  queryNotifications(params: FindNotificationsParams, callback: NotificationsQueryCallback): CreateQueryResult {
+  queryNotifications(params: FindNotificationsParams, callback: PagedQueryCallback<Notification>): CreateQueryResult {
     return this.createAndStoreQuery<Notification, FindNotificationsParams, NotificationQuery>(
       params,
       callback,
@@ -100,13 +102,19 @@ export class LiveQueries {
     )
   }
 
-  private createAndStoreQuery<T, P extends FindParams, Q extends PagedQuery<T, P>>(
+  queryLabels(params: FindLabelsParams, callback: any): CreateQueryResult {
+    return this.createAndStoreQuery<Label, FindLabelsParams, LabelsQuery>(params, callback, LabelsQuery, (params) =>
+      this.findLabelsQuery(params)
+    )
+  }
+
+  private createAndStoreQuery<T, P extends FindParams, Q extends AnyQuery>(
     params: P,
-    callback: QueryCallback<T>,
+    callback: QueryCallback<T> | PagedQueryCallback<T>,
     QueryClass: new (...args: any[]) => Q,
     finder: (params: P) => Q | undefined
   ): CreateQueryResult {
-    const query = this.createQuery<T, P, Q>(params, callback, QueryClass, finder)
+    const query = this.createQuery<P, Q>(params, callback, QueryClass, finder)
     this.queries.set(query.id, query)
 
     return {
@@ -116,7 +124,7 @@ export class LiveQueries {
     }
   }
 
-  private createQuery<T, P, Q extends PagedQuery<T, P>>(
+  private createQuery<P, Q extends AnyQuery>(
     params: P,
     callback: any,
     QueryClass: new (...args: any[]) => Q,
@@ -139,7 +147,7 @@ export class LiveQueries {
     return new QueryClass(this.client, this.workspace, this.filesUrl, id, params, callback)
   }
 
-  private findQuery<T extends PagedQuery>(params: FindParams, QueryClass: new (...args: any[]) => T): T | undefined {
+  private findQuery<T extends AnyQuery>(params: FindParams, QueryClass: new (...args: any[]) => T): T | undefined {
     for (const query of this.queries.values()) {
       if (query instanceof QueryClass && this.queryCompare(params, query.params)) {
         return query as T
@@ -157,6 +165,10 @@ export class LiveQueries {
 
   private findNotificationContextsQuery(params: FindNotificationContextParams): NotificationContextsQuery | undefined {
     return this.findQuery(params, NotificationContextsQuery)
+  }
+
+  private findLabelsQuery(params: FindLabelsParams): LabelsQuery | undefined {
+    return this.findQuery(params, LabelsQuery)
   }
 
   private queryCompare(q1: FindParams, q2: FindParams): boolean {
@@ -180,7 +192,7 @@ export class LiveQueries {
     this.unsubscribed.delete(id)
   }
 
-  private unsubscribeQuery(query: PagedQuery): void {
+  private unsubscribeQuery(query: AnyQuery): void {
     this.unsubscribed.add(query.id)
     query.removeCallback()
     if (this.unsubscribed.size > maxQueriesCache) {

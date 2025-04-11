@@ -23,7 +23,10 @@ import type {
   MessagesGroup,
   NotificationContext,
   WorkspaceID,
-  Notification
+  Notification,
+  FindLabelsParams,
+  Label,
+  AccountID
 } from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
 import type {
@@ -33,9 +36,8 @@ import type {
   RequestEvent,
   ServerApi
 } from '@hcengineering/communication-sdk-types'
-import {setMetadata} from "@hcengineering/platform";
-import serverToken from "@hcengineering/server-token";
-
+import { setMetadata } from '@hcengineering/platform'
+import serverToken from '@hcengineering/server-token'
 
 import { type BroadcastSessionsFunc, Manager } from './manager'
 import { getMetadata, type Metadata } from './metadata'
@@ -84,27 +86,7 @@ export class Api implements ServerApi {
     params: FindNotificationContextParams,
     queryId?: QueryId
   ): Promise<NotificationContext[]> {
-    const isSystem = info.account.uuid === systemAccountUuid
-
-    if (isSystem) {
-      return await this.manager.findNotificationContexts(info, params, queryId)
-    }
-
-    const accounts = params.account == null || Array.isArray(params.account) ? params.account : [params.account]
-    const withMe = accounts == null || accounts.includes(info.account.uuid)
-
-    if (withMe) {
-      return await this.manager.findNotificationContexts(
-        info,
-        {
-          ...params,
-          account: info.account.uuid
-        },
-        queryId
-      )
-    }
-
-    return []
+    return await this.manager.findNotificationContexts(info, this.expandParamsWithAccount(params, info), queryId)
   }
 
   async findNotifications(
@@ -112,27 +94,11 @@ export class Api implements ServerApi {
     params: FindNotificationsParams,
     queryId?: QueryId
   ): Promise<Notification[]> {
-    const isSystem = info.account.uuid === systemAccountUuid
+    return await this.manager.findNotifications(info, this.expandParamsWithAccount(params, info), queryId)
+  }
 
-    if (isSystem) {
-      return await this.manager.findNotifications(info, params, queryId)
-    }
-
-    const accounts = params.account == null || Array.isArray(params.account) ? params.account : [params.account]
-    const withMe = accounts == null || accounts.includes(info.account.uuid)
-
-    if (withMe) {
-      return await this.manager.findNotifications(
-        info,
-        {
-          ...params,
-          account: info.account.uuid
-        },
-        queryId
-      )
-    }
-
-    return []
+  async findLabels(info: ConnectionInfo, params: FindLabelsParams): Promise<Label[]> {
+    return await this.manager.findLabels(info, this.expandParamsWithAccount(params, info))
   }
 
   async unsubscribeQuery(info: ConnectionInfo, id: number): Promise<void> {
@@ -149,5 +115,18 @@ export class Api implements ServerApi {
 
   async close(): Promise<void> {
     this.manager.close()
+  }
+
+  private expandParamsWithAccount<T extends { account?: AccountID | AccountID[] }>(params: T, info: ConnectionInfo): T {
+    const isSystem = info.account.uuid === systemAccountUuid
+
+    if (isSystem) {
+      return params
+    }
+
+    return {
+      ...params,
+      account: info.account.uuid
+    }
   }
 }

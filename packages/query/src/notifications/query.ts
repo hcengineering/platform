@@ -22,12 +22,11 @@ import {
 import {
   type NotificationContextRemovedEvent,
   type NotificationContextUpdatedEvent,
-  type NotificationCreatedEvent,
+  type NotificationCreatedEvent, NotificationResponseEventType,
   type NotificationsRemovedEvent,
-  type QueryCallback,
+  type PagedQueryCallback,
   type RequestEvent,
-  type ResponseEvent,
-  ResponseEventType
+  type ResponseEvent
 } from '@hcengineering/communication-sdk-types'
 
 import { defaultQueryParams, type PagedQuery, type QueryId, type QueryClient } from '../types'
@@ -44,7 +43,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     private readonly filesUrl: string,
     public readonly id: QueryId,
     public readonly params: FindNotificationsParams,
-    private callback?: QueryCallback<Notification>,
+    private callback?: PagedQueryCallback<Notification>,
     initialResult?: QueryResult<Notification>
   ) {
     const limit = this.params.limit ?? defaultQueryParams.limit
@@ -78,13 +77,13 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
 
   async onEvent (event: ResponseEvent): Promise<void> {
     switch (event.type) {
-      case ResponseEventType.NotificationCreated:
+      case NotificationResponseEventType.NotificationCreated:
       { await this.onCreateNotificationEvent(event); break }
-      case ResponseEventType.NotificationsRemoved:
+      case NotificationResponseEventType.NotificationsRemoved:
       { await this.onRemoveNotificationsEvent(event); break }
-      case ResponseEventType.NotificationContextUpdated:
+      case NotificationResponseEventType.NotificationContextUpdated:
       { await this.onUpdateNotificationContextEvent(event); break }
-      case ResponseEventType.NotificationContextRemoved:
+      case NotificationResponseEventType.NotificationContextRemoved:
       { await this.onRemoveNotificationContextEvent(event) }
     }
   }
@@ -141,7 +140,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     this.callback = () => {}
   }
 
-  setCallback (callback: QueryCallback<Notification>): void {
+  setCallback (callback: PagedQueryCallback<Notification>): void {
     this.callback = callback
     void this.notify()
   }

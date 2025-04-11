@@ -15,9 +15,16 @@
 
 import { type Message, type Patch, type Reaction } from '@hcengineering/communication-types'
 import {
+  LabelRequestEventType,
+  LabelResponseEventType,
+  MessageRequestEventType,
+  MessageResponseEventType,
+  NotificationRequestEventType,
+  NotificationResponseEventType,
   type AddCollaboratorsEvent,
   type ConnectionInfo,
   type CreateFileEvent,
+  type CreateLabelEvent,
   type CreateMessageEvent,
   type CreateMessagesGroupEvent,
   type CreateNotificationContextEvent,
@@ -41,18 +48,18 @@ import {
   type ReactionRemovedEvent,
   type RemoveCollaboratorsEvent,
   type RemoveFileEvent,
+  type RemoveLabelEvent,
   type RemoveMessagesEvent,
   type RemoveMessagesGroupEvent,
   type RemoveNotificationContextEvent,
   type RemoveNotificationsEvent,
   type RemoveReactionEvent,
   type RequestEvent,
-  RequestEventType,
   type ResponseEvent,
-  ResponseEventType,
   type ThreadCreatedEvent,
   type UpdateNotificationContextEvent,
-  type UpdateThreadEvent
+  type UpdateThreadEvent,
+  type RemoveMessagesResult
 } from '@hcengineering/communication-sdk-types'
 import { systemAccountUuid } from '@hcengineering/core'
 
@@ -66,42 +73,46 @@ export class EventProcessor {
 
   async process(info: ConnectionInfo, event: RequestEvent): Promise<Result> {
     switch (event.type) {
-      case RequestEventType.CreateMessage:
+      case MessageRequestEventType.CreateMessage:
         return await this.createMessage(event, info)
-      case RequestEventType.RemoveMessages:
+      case MessageRequestEventType.RemoveMessages:
         return await this.removeMessages(event, info)
-      case RequestEventType.CreatePatch:
+      case MessageRequestEventType.CreatePatch:
         return await this.createPatch(event, info)
-      case RequestEventType.CreateReaction:
+      case MessageRequestEventType.CreateReaction:
         return await this.createReaction(event, info)
-      case RequestEventType.RemoveReaction:
+      case MessageRequestEventType.RemoveReaction:
         return await this.removeReaction(event, info)
-      case RequestEventType.CreateFile:
+      case MessageRequestEventType.CreateFile:
         return await this.createFile(event, info)
-      case RequestEventType.RemoveFile:
+      case MessageRequestEventType.RemoveFile:
         return await this.removeFile(event, info)
-      case RequestEventType.CreateNotification:
+      case NotificationRequestEventType.CreateNotification:
         return await this.createNotification(event, info)
-      case RequestEventType.RemoveNotifications:
+      case NotificationRequestEventType.RemoveNotifications:
         return await this.removeNotifications(event, info)
-      case RequestEventType.CreateNotificationContext:
+      case NotificationRequestEventType.CreateNotificationContext:
         return await this.createNotificationContext(event, info)
-      case RequestEventType.RemoveNotificationContext:
+      case NotificationRequestEventType.RemoveNotificationContext:
         return await this.removeNotificationContext(event, info)
-      case RequestEventType.UpdateNotificationContext:
+      case NotificationRequestEventType.UpdateNotificationContext:
         return await this.updateNotificationContext(event, info)
-      case RequestEventType.CreateMessagesGroup:
+      case MessageRequestEventType.CreateMessagesGroup:
         return await this.createMessagesGroup(event, info)
-      case RequestEventType.CreateThread:
+      case MessageRequestEventType.CreateThread:
         return await this.createThread(event, info)
-      case RequestEventType.RemoveMessagesGroup:
+      case MessageRequestEventType.RemoveMessagesGroup:
         return await this.removeMessagesGroup(event, info)
-      case RequestEventType.AddCollaborators:
+      case NotificationRequestEventType.AddCollaborators:
         return await this.addCollaborators(event, info)
-      case RequestEventType.RemoveCollaborators:
+      case NotificationRequestEventType.RemoveCollaborators:
         return await this.removeCollaborators(event, info)
-      case RequestEventType.UpdateThread:
+      case MessageRequestEventType.UpdateThread:
         return await this.updateThread(event, info)
+      case LabelRequestEventType.CreateLabel:
+        return await this.createLabel(event, info)
+      case LabelRequestEventType.RemoveLabel:
+        return await this.removeLabel(event, info)
     }
   }
 
@@ -111,7 +122,7 @@ export class EventProcessor {
     return {
       responseEvent: {
         _id: event._id,
-        type: ResponseEventType.ThreadUpdated,
+        type: MessageResponseEventType.ThreadUpdated,
         thread: event.thread,
         replies: event.replies,
         lastReply: event.lastReply
@@ -121,12 +132,13 @@ export class EventProcessor {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async addCollaborators(event: AddCollaboratorsEvent, _: ConnectionInfo): Promise<Result> {
-    await this.db.addCollaborators(event.card, event.collaborators, event.date)
+    await this.db.addCollaborators(event.card, event.cardType, event.collaborators, event.date)
     return {
       responseEvent: {
         _id: event._id,
-        type: ResponseEventType.AddedCollaborators,
+        type: NotificationResponseEventType.AddedCollaborators,
         card: event.card,
+        cardType: event.cardType,
         collaborators: event.collaborators
       }
     }
@@ -139,7 +151,7 @@ export class EventProcessor {
     return {
       responseEvent: {
         _id: event._id,
-        type: ResponseEventType.RemovedCollaborators,
+        type: NotificationResponseEventType.RemovedCollaborators,
         card: event.card,
         collaborators: event.collaborators
       }
@@ -170,7 +182,8 @@ export class EventProcessor {
     }
     const responseEvent: MessageCreatedEvent = {
       _id: event._id,
-      type: ResponseEventType.MessageCreated,
+      type: MessageResponseEventType.MessageCreated,
+      cardType: event.cardType,
       message
     }
     return {
@@ -193,7 +206,7 @@ export class EventProcessor {
     }
     const responseEvent: PatchCreatedEvent = {
       _id: event._id,
-      type: ResponseEventType.PatchCreated,
+      type: MessageResponseEventType.PatchCreated,
       card: event.card,
       patch
     }
@@ -208,14 +221,17 @@ export class EventProcessor {
 
     const responseEvent: MessagesRemovedEvent = {
       _id: event._id,
-      type: ResponseEventType.MessagesRemoved,
+      type: MessageResponseEventType.MessagesRemoved,
       card: event.card,
+      messages: deleted
+    }
+    const result: RemoveMessagesResult = {
       messages: deleted
     }
 
     return {
       responseEvent,
-      result: { messages: deleted }
+      result
     }
   }
 
@@ -232,7 +248,7 @@ export class EventProcessor {
     }
     const responseEvent: ReactionCreatedEvent = {
       _id: event._id,
-      type: ResponseEventType.ReactionCreated,
+      type: MessageResponseEventType.ReactionCreated,
       card: event.card,
       reaction
     }
@@ -246,7 +262,7 @@ export class EventProcessor {
     await this.db.removeReaction(event.card, event.message, event.reaction, event.creator)
     const responseEvent: ReactionRemovedEvent = {
       _id: event._id,
-      type: ResponseEventType.ReactionRemoved,
+      type: MessageResponseEventType.ReactionRemoved,
       card: event.card,
       message: event.message,
       reaction: event.reaction,
@@ -272,7 +288,7 @@ export class EventProcessor {
     )
     const responseEvent: FileCreatedEvent = {
       _id: event._id,
-      type: ResponseEventType.FileCreated,
+      type: MessageResponseEventType.FileCreated,
       card: event.card,
       file: {
         card: event.card,
@@ -295,7 +311,7 @@ export class EventProcessor {
     await this.db.removeFile(event.card, event.message, event.blobId)
     const responseEvent: FileRemovedEvent = {
       _id: event._id,
-      type: ResponseEventType.FileRemoved,
+      type: MessageResponseEventType.FileRemoved,
       card: event.card,
       message: event.message,
       blobId: event.blobId,
@@ -313,7 +329,7 @@ export class EventProcessor {
     return {
       responseEvent: {
         _id: event._id,
-        type: ResponseEventType.NotificationCreated,
+        type: NotificationResponseEventType.NotificationCreated,
         notification: {
           id,
           context: event.context,
@@ -332,7 +348,7 @@ export class EventProcessor {
 
     const responseEvent: NotificationsRemovedEvent = {
       _id: event._id,
-      type: ResponseEventType.NotificationsRemoved,
+      type: NotificationResponseEventType.NotificationsRemoved,
       context: event.context,
       account: event.account,
       untilDate: event.untilDate
@@ -347,7 +363,7 @@ export class EventProcessor {
     const id = await this.db.createContext(event.account, event.card, event.lastUpdate, event.lastView)
     const responseEvent: NotificationContextCreatedEvent = {
       _id: event._id,
-      type: ResponseEventType.NotificationContextCreated,
+      type: NotificationResponseEventType.NotificationContextCreated,
       context: {
         id,
         account: event.account,
@@ -370,7 +386,7 @@ export class EventProcessor {
     await this.db.removeContext(event.context, event.account)
     const responseEvent: NotificationContextRemovedEvent = {
       _id: event._id,
-      type: ResponseEventType.NotificationContextRemoved,
+      type: NotificationResponseEventType.NotificationContextRemoved,
       context: event.context,
       account: event.account
     }
@@ -385,7 +401,7 @@ export class EventProcessor {
 
     const responseEvent: NotificationContextUpdatedEvent = {
       _id: event._id,
-      type: ResponseEventType.NotificationContextUpdated,
+      type: NotificationResponseEventType.NotificationContextUpdated,
       context: event.context,
       account: event.account,
       lastView: event.lastView,
@@ -403,7 +419,7 @@ export class EventProcessor {
 
     const responseEvent: MessagesGroupCreatedEvent = {
       _id: event._id,
-      type: ResponseEventType.MessagesGroupCreated,
+      type: MessageResponseEventType.MessagesGroupCreated,
       group: {
         card,
         blobId,
@@ -430,7 +446,7 @@ export class EventProcessor {
     await this.db.createThread(event.card, event.message, event.thread, date)
     const responseEvent: ThreadCreatedEvent = {
       _id: event._id,
-      type: ResponseEventType.ThreadCreated,
+      type: MessageResponseEventType.ThreadCreated,
       thread: {
         card: event.card,
         thread: event.thread,
@@ -441,6 +457,39 @@ export class EventProcessor {
     }
     return {
       responseEvent
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async createLabel(event: CreateLabelEvent, _: ConnectionInfo): Promise<Result> {
+    const created = new Date()
+    await this.db.createLabel(event.label, event.card, event.cardType, event.account, created)
+    return {
+      responseEvent: {
+        _id: event._id,
+        type: LabelResponseEventType.LabelCreated,
+        label: {
+          label: event.label,
+          card: event.card,
+          cardType: event.cardType,
+          account: event.account,
+          created
+        }
+      }
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async removeLabel(event: RemoveLabelEvent, _: ConnectionInfo): Promise<Result> {
+    await this.db.removeLabel(event.label, event.card, event.account)
+    return {
+      responseEvent: {
+        _id: event._id,
+        type: LabelResponseEventType.LabelRemoved,
+        label: event.label,
+        card: event.card,
+        account: event.account
+      }
     }
   }
 }

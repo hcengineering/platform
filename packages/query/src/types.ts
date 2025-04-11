@@ -24,7 +24,9 @@ import {
   type MessagesGroup,
   type NotificationContext,
   type Window,
-  type Notification
+  type Notification,
+  type Label,
+  type FindLabelsParams
 } from '@hcengineering/communication-types'
 import type { EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
 
@@ -44,7 +46,7 @@ export enum Direction {
 
 export type FindParams = Partial<typeof defaultQueryParams>
 
-export interface PagedQuery<R = any, P = FindParams> {
+interface BaseQuery<R = any, P = FindParams> {
   readonly id: QueryId
   readonly params: P
 
@@ -53,13 +55,24 @@ export interface PagedQuery<R = any, P = FindParams> {
 
   unsubscribe: () => Promise<void>
 
-  requestLoadNextPage: () => Promise<void>
-  requestLoadPrevPage: () => Promise<void>
-
   removeCallback: () => void
-  setCallback: (callback: (window: Window<R>) => void) => void
+  setCallback: (callback: (result: any) => void) => void
   copyResult: () => QueryResult<R> | undefined
 }
+export interface PagedQuery<R = any, P = FindParams> extends BaseQuery<R, P> {
+  readonly id: QueryId
+  readonly params: P
+
+  requestLoadNextPage: () => Promise<void>
+  requestLoadPrevPage: () => Promise<void>
+  setCallback: (callback: (window: Window<R>) => void) => void
+}
+
+export interface Query<R = any, P = FindParams> extends BaseQuery<R, P> {
+  setCallback: (callback: (result: R[]) => void) => void
+}
+
+export type AnyQuery = Query | PagedQuery
 
 export interface QueryClient {
   onEvent(event: ResponseEvent): void
@@ -73,6 +86,8 @@ export interface QueryClient {
   findNotificationContexts(params: FindNotificationContextParams, queryId?: number): Promise<NotificationContext[]>
 
   findNotifications(params: FindNotificationsParams, queryId?: number): Promise<Notification[]>
+
+  findLabels(params: FindLabelsParams, queryId?: number): Promise<Label[]>
 
   unsubscribeQuery(id: number): Promise<void>
 }

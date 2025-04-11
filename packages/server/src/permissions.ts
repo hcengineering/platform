@@ -14,30 +14,38 @@
 //
 
 import { type AccountID, type SocialID } from '@hcengineering/communication-types'
-import { type ConnectionInfo, type RequestEvent, RequestEventType } from '@hcengineering/communication-sdk-types'
+import {
+  type ConnectionInfo,
+  LabelRequestEventType,
+  MessageRequestEventType,
+  NotificationRequestEventType,
+  type RequestEvent
+} from '@hcengineering/communication-sdk-types'
 import { type Account, systemAccountUuid } from '@hcengineering/core'
 
 export class Permissions {
   validate(info: ConnectionInfo, event: RequestEvent): void {
     switch (event.type) {
-      case RequestEventType.CreateMessage:
-      case RequestEventType.CreatePatch:
-      case RequestEventType.CreateReaction:
-      case RequestEventType.RemoveReaction:
-      case RequestEventType.RemoveFile:
-      case RequestEventType.CreateFile: {
+      case MessageRequestEventType.CreateMessage:
+      case MessageRequestEventType.CreatePatch:
+      case MessageRequestEventType.CreateReaction:
+      case MessageRequestEventType.RemoveReaction:
+      case MessageRequestEventType.RemoveFile:
+      case MessageRequestEventType.CreateFile: {
         this.checkSocialId(info.account, event.creator)
         return
       }
-      case RequestEventType.RemoveNotifications:
-      case RequestEventType.CreateNotificationContext:
-      case RequestEventType.UpdateNotificationContext:
-      case RequestEventType.RemoveNotificationContext: {
+      case LabelRequestEventType.CreateLabel:
+      case LabelRequestEventType.RemoveLabel:
+      case NotificationRequestEventType.RemoveNotifications:
+      case NotificationRequestEventType.CreateNotificationContext:
+      case NotificationRequestEventType.UpdateNotificationContext:
+      case NotificationRequestEventType.RemoveNotificationContext: {
         this.checkAccount(info.account, event.account)
         return
       }
-      case RequestEventType.CreateMessagesGroup:
-      case RequestEventType.RemoveMessagesGroup: {
+      case MessageRequestEventType.CreateMessagesGroup:
+      case MessageRequestEventType.RemoveMessagesGroup: {
         this.onlySystemAccount(info.account)
         break
       }

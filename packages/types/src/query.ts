@@ -17,7 +17,8 @@ import { SortingOrder } from '@hcengineering/core'
 
 import type { MessageID } from './message'
 import type { ContextID } from './notification'
-import type { AccountID, BlobID, CardID } from './core'
+import type { AccountID, BlobID, CardID, CardType } from './core'
+import type { LabelID } from './label.ts'
 
 export { SortingOrder }
 
@@ -82,4 +83,11 @@ export interface FindNotificationsParams extends FindParams {
 export interface FindCollaboratorsParams extends FindParams {
   card: CardID
   account?: AccountID | AccountID[]
+}
+
+export interface FindLabelsParams extends FindParams {
+  label?: LabelID
+  card?: CardID
+  cardType?: CardType | CardType[]
+  account?: AccountID
 }

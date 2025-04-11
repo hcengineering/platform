@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-types",
-  "version": "0.1.155",
+  "version": "0.1.166",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.28",
-    "@hcengineering/card": "^0.7.28"
+    "@hcengineering/card": "^0.7.28",
+    "@hcengineering/tags": "^0.7.28"
   },
   "repository": {
     "type": "git",

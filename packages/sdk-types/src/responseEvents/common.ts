@@ -13,9 +13,6 @@
 // limitations under the License.
 //
 
-export * from './core'
-export * from './file'
-export * from './message'
-export * from './notification'
-export * from './query'
-export * from './label'
+export type BaseResponseEvent = {
+  _id?: string
+}

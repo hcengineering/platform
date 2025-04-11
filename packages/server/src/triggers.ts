@@ -14,23 +14,36 @@
 //
 
 import {
+  type AddedCollaboratorsEvent,
   type ConnectionInfo,
   type CreatePatchEvent,
   type DbAdapter,
   type EventResult,
   type FileCreatedEvent,
   type FileRemovedEvent,
+  LabelRequestEventType,
   type MessageCreatedEvent,
+  MessageRequestEventType,
+  MessageResponseEventType,
   type MessagesGroupCreatedEvent,
   type MessagesRemovedEvent,
+  type NotificationContextUpdatedEvent,
+  NotificationRequestEventType,
+  NotificationResponseEventType,
   type PatchCreatedEvent,
+  type RemovedCollaboratorsEvent,
   type RequestEvent,
-  RequestEventType,
   type ResponseEvent,
-  ResponseEventType,
   type UpdateThreadEvent
 } from '@hcengineering/communication-sdk-types'
-import { type CardID, PatchType, type WorkspaceID, type File } from '@hcengineering/communication-types'
+import {
+  type CardID,
+  type File,
+  NewMessageLabelID,
+  PatchType,
+  SubscriptionLabelID,
+  type WorkspaceID
+} from '@hcengineering/communication-types'
 import { concatLink, type MeasureContext, systemAccountUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -64,14 +77,14 @@ export class Triggers {
       execute
     }
 
-    await this.applySyncTriggers(ctx, event, apply)
+    await this.applyTriggers(ctx, event, apply)
 
-    void this.createNotification(ctx, event).then((it) => {
+    void this.createNotifications(ctx, event).then((it) => {
       void apply(it)
     })
   }
 
-  private async applySyncTriggers(
+  private async applyTriggers(
     ctx: TriggerCtx,
     event: ResponseEvent,
     apply: (events: RequestEvent[]) => Promise<void>
@@ -80,30 +93,39 @@ export class Triggers {
 
     try {
       switch (event.type) {
-        case ResponseEventType.MessageCreated: {
+        case MessageResponseEventType.MessageCreated: {
           events = await this.onMessageCreated(ctx, event)
           break
         }
-        case ResponseEventType.MessagesRemoved: {
+        case MessageResponseEventType.MessagesRemoved: {
           events = await this.onMessagesRemoved(ctx, event)
           break
         }
-        case ResponseEventType.PatchCreated: {
+        case MessageResponseEventType.PatchCreated: {
           events = await this.onPatchCreated(ctx, event)
           break
         }
-        case ResponseEventType.FileCreated: {
+        case MessageResponseEventType.FileCreated: {
           events = await this.onFileCreated(ctx, event)
           break
         }
-        case ResponseEventType.FileRemoved: {
+        case MessageResponseEventType.FileRemoved: {
           events = await this.onFileRemoved(ctx, event)
           break
         }
-        case ResponseEventType.MessagesGroupCreated: {
+        case MessageResponseEventType.MessagesGroupCreated: {
           events = await this.onMessagesGroupCreated(ctx, event)
           break
         }
+        case NotificationResponseEventType.AddedCollaborators:
+          events = await this.onAddedCollaborators(ctx, event)
+          break
+        case NotificationResponseEventType.RemovedCollaborators:
+          events = await this.onRemovedCollaborators(ctx, event)
+          break
+        case NotificationResponseEventType.NotificationContextUpdated:
+          events = await this.onNotificationContextUpdated(ctx, event)
+          break
       }
       await apply(events)
     } catch (err: any) {
@@ -111,7 +133,7 @@ export class Triggers {
     }
   }
 
-  private async createNotification(ctx: TriggerCtx, event: ResponseEvent): Promise<RequestEvent[]> {
+  private async createNotifications(ctx: TriggerCtx, event: ResponseEvent): Promise<RequestEvent[]> {
     return await notify(ctx, event)
   }
 
@@ -129,7 +151,7 @@ export class Triggers {
 
     return event.messages.flatMap(() => {
       const patchEvent: CreatePatchEvent = {
-        type: RequestEventType.CreatePatch,
+        type: MessageRequestEventType.CreatePatch,
         patchType: PatchType.removeReply,
         card: thread.card,
         message: thread.message,
@@ -137,7 +159,7 @@ export class Triggers {
         creator: socialId
       }
       const threadEvent: UpdateThreadEvent = {
-        type: RequestEventType.UpdateThread,
+        type: MessageRequestEventType.UpdateThread,
         thread: thread.thread,
         replies: 'decrement'
       }
@@ -172,8 +194,9 @@ export class Triggers {
       ? []
       : [
           {
-            type: RequestEventType.AddCollaborators,
+            type: NotificationRequestEventType.AddCollaborators,
             card: event.message.card,
+            cardType: event.cardType,
             collaborators: [account],
             date: event.message.created
           }
@@ -194,7 +217,7 @@ export class Triggers {
 
     return [
       {
-        type: RequestEventType.CreatePatch,
+        type: MessageRequestEventType.CreatePatch,
         patchType: PatchType.addReply,
         card: thread.card,
         message: thread.message,
@@ -202,7 +225,7 @@ export class Triggers {
         creator: message.creator
       },
       {
-        type: RequestEventType.UpdateThread,
+        type: MessageRequestEventType.UpdateThread,
         thread: thread.thread,
         lastReply: event.message.created,
         replies: 'increment'
@@ -224,7 +247,7 @@ export class Triggers {
 
     return [
       {
-        type: RequestEventType.CreatePatch,
+        type: MessageRequestEventType.CreatePatch,
         patchType: PatchType.addFile,
         card: event.card,
         message: file.message,
@@ -241,7 +264,7 @@ export class Triggers {
 
     return [
       {
-        type: RequestEventType.CreatePatch,
+        type: MessageRequestEventType.CreatePatch,
         patchType: PatchType.removeFile,
         card: event.card,
         message: event.message,
@@ -249,6 +272,59 @@ export class Triggers {
         creator: event.creator
       }
     ]
+  }
+
+  private async onAddedCollaborators(ctx: TriggerCtx, event: AddedCollaboratorsEvent): Promise<RequestEvent[]> {
+    const { card, cardType, collaborators } = event
+    const result: RequestEvent[] = []
+    for (const collaborator of collaborators) {
+      result.push({
+        type: LabelRequestEventType.CreateLabel,
+        card,
+        cardType,
+        account: collaborator,
+        label: SubscriptionLabelID
+      })
+    }
+    return result
+  }
+
+  private async onRemovedCollaborators(ctx: TriggerCtx, event: RemovedCollaboratorsEvent): Promise<RequestEvent[]> {
+    const { card, collaborators } = event
+    const result: RequestEvent[] = []
+    for (const collaborator of collaborators) {
+      result.push({
+        type: LabelRequestEventType.RemoveLabel,
+        card,
+        account: collaborator,
+        label: SubscriptionLabelID
+      })
+    }
+    return result
+  }
+
+  private async onNotificationContextUpdated(
+    ctx: TriggerCtx,
+    event: NotificationContextUpdatedEvent
+  ): Promise<RequestEvent[]> {
+    const { context: contextId, lastView } = event
+    if (lastView == null) return []
+
+    const context = (await ctx.db.findContexts({ id: contextId }))[0]
+    if (context == null) return []
+
+    if (context.lastView >= context.lastUpdate) {
+      return [
+        {
+          type: LabelRequestEventType.RemoveLabel,
+          label: NewMessageLabelID,
+          card: context.card,
+          account: context.account
+        }
+      ]
+    }
+
+    return []
   }
 
   private async registerCard(card: CardID): Promise<void> {

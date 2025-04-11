@@ -15,16 +15,31 @@
 
 import { concatLink } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import type { EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
-import type {
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  FindNotificationContextParams,
-  Message,
-  MessagesGroup,
-  NotificationContext,
-  FindNotificationsParams,
-  Notification
+import {
+  MessageRequestEventType,
+  type EventResult,
+  type RequestEvent,
+  type CreateMessageResult,
+  type RemoveMessagesResult
+} from '@hcengineering/communication-sdk-types'
+import {
+  type FindMessagesGroupsParams,
+  type FindMessagesParams,
+  type FindNotificationContextParams,
+  type Message,
+  type MessagesGroup,
+  type NotificationContext,
+  type FindNotificationsParams,
+  type Notification,
+  type MessageID,
+  type CardID,
+  type RichText,
+  type SocialID,
+  type MessageData,
+  type CardType,
+  type MessageType,
+  PatchType,
+  type BlobID
 } from '@hcengineering/communication-types'
 import { retry } from '@hcengineering/communication-shared'
 
@@ -78,6 +93,82 @@ class RestClientImpl implements RestClient {
       throw new PlatformError(unknownError(response.statusText))
     }
     return (await response.json()) as EventResult
+  }
+
+  async createMessage(
+    card: CardID,
+    cardType: CardType,
+    content: RichText,
+    creator: SocialID,
+    type: MessageType,
+    data?: MessageData
+  ): Promise<MessageID> {
+    const result = await this.event({
+      type: MessageRequestEventType.CreateMessage,
+      messageType: type,
+      card,
+      cardType,
+      content,
+      creator,
+      data
+    })
+    return (result as CreateMessageResult).id
+  }
+
+  async updateMessage(card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
+    await this.event({
+      type: MessageRequestEventType.CreatePatch,
+      patchType: PatchType.update,
+      card,
+      message,
+      content,
+      creator
+    })
+  }
+
+  async removeMessage(card: CardID, message: MessageID): Promise<MessageID | undefined> {
+    return (await this.removeMessages(card, [message]))[0]
+  }
+
+  async removeMessages(card: CardID, messages: MessageID[]): Promise<MessageID[]> {
+    const result = await this.event({
+      type: MessageRequestEventType.RemoveMessages,
+      card,
+      messages
+    })
+
+    return (result as RemoveMessagesResult).messages
+  }
+
+  async createFile(
+    card: CardID,
+    message: MessageID,
+    blobId: BlobID,
+    fileType: string,
+    filename: string,
+    size: number,
+    creator: SocialID
+  ): Promise<void> {
+    await this.event({
+      type: MessageRequestEventType.CreateFile,
+      card,
+      message,
+      blobId,
+      fileType,
+      filename,
+      size,
+      creator
+    })
+  }
+
+  async removeFile(card: CardID, message: MessageID, blobId: BlobID, creator: SocialID): Promise<void> {
+    await this.event({
+      type: MessageRequestEventType.RemoveFile,
+      card,
+      message,
+      blobId,
+      creator
+    })
   }
 
   async findMessages(params: FindMessagesParams): Promise<Message[]> {

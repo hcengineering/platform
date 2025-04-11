@@ -16,6 +16,5 @@
 export * from './client'
 export * from './db'
 export * from './query'
-export * from './requestEvent.ts'
-export * from './responseEvent.ts'
+export * from './event'
 export * from './serverApi'

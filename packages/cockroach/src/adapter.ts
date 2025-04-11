@@ -36,7 +36,11 @@ import {
   type SocialID,
   type Thread,
   type WorkspaceID,
-  type NotificationID
+  type NotificationID,
+  type Label,
+  type FindLabelsParams,
+  type LabelID,
+  type CardType
 } from '@hcengineering/communication-types'
 import type { DbAdapter } from '@hcengineering/communication-sdk-types'
 import { retry } from '@hcengineering/communication-shared'
@@ -47,10 +51,12 @@ import { connect, type PostgresClientReference } from './connection'
 import { type Logger, type Options, type SqlClient, type SqlParams, type SqlRow } from './types'
 import { injectVars } from './utils'
 import { initSchema } from './init'
+import { LabelsDb } from './db/label'
 
 export class CockroachAdapter implements DbAdapter {
   private readonly message: MessagesDb
   private readonly notification: NotificationsDb
+  private readonly label: LabelsDb
 
   constructor(
     private readonly sql: SqlClient,
@@ -60,6 +66,7 @@ export class CockroachAdapter implements DbAdapter {
   ) {
     this.message = new MessagesDb(this.sql, this.workspace, logger, options)
     this.notification = new NotificationsDb(this.sql, this.workspace, logger, options)
+    this.label = new LabelsDb(this.sql, this.workspace, logger, options)
   }
 
   async createMessage(
@@ -147,8 +154,8 @@ export class CockroachAdapter implements DbAdapter {
     return await this.message.findThread(thread)
   }
 
-  async addCollaborators(card: CardID, collaborators: AccountID[], date?: Date): Promise<void> {
-    await this.notification.addCollaborators(card, collaborators, date)
+  async addCollaborators(card: CardID, cardType: CardType, collaborators: AccountID[], date?: Date): Promise<void> {
+    await this.notification.addCollaborators(card, cardType, collaborators, date)
   }
 
   async removeCollaborators(card: CardID, collaborators: AccountID[]): Promise<void> {
@@ -193,6 +200,18 @@ export class CockroachAdapter implements DbAdapter {
 
   getCollaboratorsCursor(card: CardID, date: Date, size?: number): AsyncIterable<Collaborator[]> {
     return this.notification.getCollaboratorsCursor(card, date, size)
+  }
+
+  createLabel(label: LabelID, card: CardID, cardType: CardType, account: AccountID, created: Date): Promise<void> {
+    return this.label.createLabel(label, card, cardType, account, created)
+  }
+
+  removeLabel(label: LabelID, card: CardID, account: AccountID): Promise<void> {
+    return this.label.removeLabel(label, card, account)
+  }
+
+  findLabels(params: FindLabelsParams): Promise<Label[]> {
+    return this.label.findLabels(params)
   }
 }
 

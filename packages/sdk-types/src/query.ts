@@ -13,9 +13,7 @@
 // limitations under the License.
 //
 
-import type { Message, Window, Notification } from '@hcengineering/communication-types'
+import type { Window } from '@hcengineering/communication-types'
 
-export type QueryCallback<T> = (window: Window<T>) => void
-
-export type MessagesQueryCallback = QueryCallback<Message>
-export type NotificationsQueryCallback = QueryCallback<Notification>
+export type PagedQueryCallback<T> = (window: Window<T>) => void
+export type QueryCallback<T> = (result: T[]) => void

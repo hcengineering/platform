@@ -22,7 +22,15 @@ import type {
   FindNotificationsParams,
   FindNotificationContextParams,
   NotificationContext,
-  Notification
+  Notification,
+  MessageID,
+  RichText,
+  SocialID,
+  MessageType,
+  MessageData,
+  BlobID,
+  CardID,
+  CardType
 } from '@hcengineering/communication-types'
 
 export interface RestClient {
@@ -32,4 +40,27 @@ export interface RestClient {
   findNotifications: (params: FindNotificationsParams) => Promise<Notification[]>
 
   event: (event: RequestEvent) => Promise<EventResult>
+
+  createMessage: (
+    card: CardID,
+    cardType: CardType,
+    content: RichText,
+    creator: SocialID,
+    type: MessageType,
+    data?: MessageData
+  ) => Promise<MessageID>
+  updateMessage: (card: CardID, message: MessageID, content: RichText, creator: SocialID) => Promise<void>
+  removeMessage: (card: CardID, message: MessageID) => Promise<MessageID | undefined>
+  removeMessages: (card: CardID, messages: MessageID[]) => Promise<MessageID[]>
+
+  createFile: (
+    card: CardID,
+    message: MessageID,
+    blobId: BlobID,
+    fileType: string,
+    filename: string,
+    size: number,
+    creator: SocialID
+  ) => Promise<void>
+  removeFile: (card: CardID, message: MessageID, blobId: BlobID, creator: SocialID) => Promise<void>
 }

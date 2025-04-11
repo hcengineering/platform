@@ -32,7 +32,8 @@ import {
   type RichText,
   type SocialID,
   type Thread,
-  type MessageData
+  type MessageData,
+  type Label
 } from '@hcengineering/communication-types'
 
 import {
@@ -44,7 +45,8 @@ import {
   type NotificationDb,
   type PatchDb,
   type ReactionDb,
-  type ThreadDb
+  type ThreadDb,
+  type LabelDb
 } from './schema'
 
 interface RawMessage extends MessageDb {
@@ -246,6 +248,18 @@ export function toNotification (raw: RawNotification & { card_id: CardID, last_v
 
 export function toCollaborator (raw: CollaboratorDb): Collaborator {
   return {
-    account: raw.account
+    account: raw.account,
+    cardType: raw.card_type,
+    card: raw.card_id
+  }
+}
+
+export function toLabel (raw: LabelDb): Label {
+  return {
+    label: raw.label_id,
+    card: raw.card_id,
+    cardType: raw.card_type,
+    account: raw.account,
+    created: new Date(raw.created)
   }
 }

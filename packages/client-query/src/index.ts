@@ -16,7 +16,7 @@
 import { LiveQueries, type QueryClient } from '@hcengineering/communication-query'
 import type { WorkspaceID } from '@hcengineering/communication-types'
 
-import { MessagesQuery, NotificationContextsQuery, NotificationsQuery } from './query'
+import { LabelsQuery, MessagesQuery, NotificationContextsQuery, NotificationsQuery } from './query'
 
 let lq: LiveQueries
 let onDestroy: (fn: () => void) => void = () => {}
@@ -31,6 +31,10 @@ export function createNotificationsQuery(): NotificationsQuery {
 
 export function createNotificationContextsQuery(): NotificationContextsQuery {
   return new NotificationContextsQuery(lq, onDestroy)
+}
+
+export function createLabelsQuery(): LabelsQuery {
+  return new LabelsQuery(lq, onDestroy)
 }
 
 export function initLiveQueries(

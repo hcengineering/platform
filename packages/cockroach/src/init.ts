@@ -20,7 +20,7 @@ const migrationsTableName = 'communication._migrations'
 let isInitialized = false
 
 export async function initSchema(sql: postgres.Sql) {
-  if(isInitialized) return
+  if (isInitialized) return
   console.log('🗃️ Initializing schema...')
   await sql.unsafe('CREATE SCHEMA IF NOT EXISTS communication;')
   await sql.unsafe(`CREATE TABLE IF NOT EXISTS ${migrationsTableName}
@@ -33,14 +33,14 @@ export async function initSchema(sql: postgres.Sql) {
                                               FROM ${migrationsTableName}`)
   const appliedNames = appliedMigrations.map((it) => it.name)
 
-  const migrations = [migrationO1()]
+  const migrations = getMigrations()
   for (const [name, sqlString] of migrations) {
     if (appliedNames.includes(name)) continue
     try {
       await sql.unsafe(sqlString)
       await sql.unsafe(
         `INSERT INTO ${migrationsTableName}(name)
-                        VALUES ($1::varchar);`,
+         VALUES ($1::varchar);`,
         [name]
       )
       console.log(`✅ Migration ${name} applied`)
@@ -51,6 +51,10 @@ export async function initSchema(sql: postgres.Sql) {
   }
   isInitialized = true
   console.log('🎉 All migrations complete')
+}
+
+function getMigrations(): [string, string][] {
+  return [migrationO1(), migrationO2(), migrationO3()]
 }
 
 function migrationO1(): [string, string] {
@@ -195,4 +199,28 @@ function migrationO1(): [string, string] {
       );
   `
   return ['init_tables_01', sql]
+}
+
+function migrationO2(): [string, string] {
+  const sql = `
+      CREATE TABLE IF NOT EXISTS communication.label
+      (
+          workspace_id UUID         NOT NULL,
+          label_id     VARCHAR(255) NOT NULL,
+          card_id      VARCHAR(255) NOT NULL,
+          card_type    VARCHAR(255) NOT NULL,
+          account      UUID         NOT NULL,
+          created      TIMESTAMPTZ  NOT NULL DEFAULT now(),
+          PRIMARY KEY (workspace_id, card_id, label_id, account)
+      );
+  `
+  return ['init_labels_02', sql]
+}
+
+function migrationO3(): [string, string] {
+  const sql = `
+      ALTER TABLE communication.collaborators
+      ADD COLUMN IF NOT EXISTS card_type VARCHAR(255) NOT NULL DEFAULT 'card:class:Card';
+  `
+  return ['add_card_type_to_collaborators_03', sql]
 }

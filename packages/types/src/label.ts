@@ -13,9 +13,21 @@
 // limitations under the License.
 //
 
-export * from './core'
-export * from './file'
-export * from './message'
-export * from './notification'
-export * from './query'
-export * from './label'
+import type { Ref } from '@hcengineering/core'
+import type { TagElement } from '@hcengineering/tags'
+
+import type { AccountID, CardID, CardType } from './core'
+
+export type LabelID = Ref<TagElement>
+
+//TODO: import from @hcengineering/card
+export const SubscriptionLabelID = 'card:label:Subscribed' as LabelID
+export const NewMessageLabelID = 'card:label:NewMessages' as LabelID
+
+export interface Label {
+  label: LabelID
+  card: CardID
+  cardType: CardType
+  account: AccountID
+  created: Date
+}

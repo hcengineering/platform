@@ -35,17 +35,16 @@ import {
   type MessageCreatedEvent,
   type MessagesRemovedEvent,
   type PatchCreatedEvent,
-  type QueryCallback,
   type ReactionCreatedEvent,
   type ReactionRemovedEvent,
   type CreateMessageEvent,
   type RequestEvent,
-  RequestEventType,
   type ResponseEvent,
-  ResponseEventType,
   type ThreadCreatedEvent,
   type EventResult,
-  type CreateMessageResult
+  type CreateMessageResult,
+  MessageResponseEventType, MessageRequestEventType,
+  type PagedQueryCallback
 } from '@hcengineering/communication-sdk-types'
 import { applyPatch, applyPatches, generateMessageId, parseMessageId } from '@hcengineering/communication-shared'
 import { loadGroupFile } from '@hcengineering/communication-yaml'
@@ -86,7 +85,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
     private readonly filesUrl: string,
     public readonly id: QueryId,
     public readonly params: FindMessagesParams,
-    private callback?: QueryCallback<Message>,
+    private callback?: PagedQueryCallback<Message>,
     initialResult?: QueryResult<Message>
   ) {
     const baseLimit = params.id != null ? 1 : this.params.limit ?? defaultQueryParams.limit
@@ -128,35 +127,35 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
 
   async onEvent (event: ResponseEvent): Promise<void> {
     switch (event.type) {
-      case ResponseEventType.MessageCreated: {
+      case MessageResponseEventType.MessageCreated: {
         await this.onMessageCreatedEvent(event)
         break
       }
-      case ResponseEventType.MessagesRemoved: {
+      case MessageResponseEventType.MessagesRemoved: {
         await this.onMessagesRemovedEvent(event)
         break
       }
-      case ResponseEventType.PatchCreated: {
+      case MessageResponseEventType.PatchCreated: {
         await this.onPatchCreatedEvent(event)
         break
       }
-      case ResponseEventType.ReactionCreated: {
+      case MessageResponseEventType.ReactionCreated: {
         await this.onReactionCreatedEvent(event)
         break
       }
-      case ResponseEventType.ReactionRemoved: {
+      case MessageResponseEventType.ReactionRemoved: {
         await this.onReactionRemovedEvent(event)
         break
       }
-      case ResponseEventType.FileCreated: {
+      case MessageResponseEventType.FileCreated: {
         await this.onFileCreatedEvent(event)
         break
       }
-      case ResponseEventType.FileRemoved: {
+      case MessageResponseEventType.FileRemoved: {
         await this.onFileRemovedEvent(event)
         break
       }
-      case ResponseEventType.ThreadCreated: {
+      case MessageResponseEventType.ThreadCreated: {
         await this.onThreadCreatedEvent(event)
       }
     }
@@ -164,7 +163,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
 
   async onRequest (event: RequestEvent, promise: Promise<EventResult>): Promise<void> {
     switch (event.type) {
-      case RequestEventType.CreateMessage: {
+      case MessageRequestEventType.CreateMessage: {
         await this.onCreateMessageRequest(event, promise as Promise<CreateMessageResult>)
         break
       }
@@ -276,7 +275,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
     this.callback = () => {}
   }
 
-  setCallback (callback: QueryCallback<Message>): void {
+  setCallback (callback: PagedQueryCallback<Message>): void {
     this.callback = callback
     void this.notify()
   }

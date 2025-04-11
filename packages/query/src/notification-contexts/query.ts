@@ -22,17 +22,17 @@ import {
   type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
+  MessageResponseEventType,
   type MessagesRemovedEvent,
   type NotificationContextCreatedEvent,
   type NotificationContextRemovedEvent,
   type NotificationContextUpdatedEvent,
-  type NotificationCreatedEvent,
+  type NotificationCreatedEvent, NotificationResponseEventType,
   type NotificationsRemovedEvent,
   type PatchCreatedEvent,
-  type QueryCallback,
+  type PagedQueryCallback,
   type RequestEvent,
-  type ResponseEvent,
-  ResponseEventType
+  type ResponseEvent
 } from '@hcengineering/communication-sdk-types'
 import { applyPatch } from '@hcengineering/communication-shared'
 
@@ -54,7 +54,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     private readonly filesUrl: string,
     public readonly id: QueryId,
     public readonly params: FindNotificationContextParams,
-    private callback?: QueryCallback<NotificationContext>,
+    private callback?: PagedQueryCallback<NotificationContext>,
     initialResult?: QueryResult<NotificationContext>
   ) {
     this.params = {
@@ -99,31 +99,31 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
 
   async onEvent (event: ResponseEvent): Promise<void> {
     switch (event.type) {
-      case ResponseEventType.PatchCreated: {
+      case MessageResponseEventType.PatchCreated: {
         await this.onCreatePatchEvent(event)
         break
       }
-      case ResponseEventType.MessagesRemoved: {
+      case MessageResponseEventType.MessagesRemoved: {
         await this.onMessagesRemovedEvent(event)
         break
       }
-      case ResponseEventType.NotificationCreated: {
+      case NotificationResponseEventType.NotificationCreated: {
         await this.onCreateNotificationEvent(event)
         break
       }
-      case ResponseEventType.NotificationsRemoved: {
+      case NotificationResponseEventType.NotificationsRemoved: {
         await this.onRemoveNotificationEvent(event)
         break
       }
-      case ResponseEventType.NotificationContextCreated: {
+      case NotificationResponseEventType.NotificationContextCreated: {
         await this.onCreateNotificationContextEvent(event)
         break
       }
-      case ResponseEventType.NotificationContextUpdated: {
+      case NotificationResponseEventType.NotificationContextUpdated: {
         await this.onUpdateNotificationContextEvent(event)
         break
       }
-      case ResponseEventType.NotificationContextRemoved: {
+      case NotificationResponseEventType.NotificationContextRemoved: {
         await this.onRemoveNotificationContextEvent(event)
       }
     }
@@ -224,7 +224,7 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     this.callback = () => {}
   }
 
-  setCallback (callback: QueryCallback<NotificationContext>): void {
+  setCallback (callback: PagedQueryCallback<NotificationContext>): void {
     this.callback = callback
     void this.notify()
   }
