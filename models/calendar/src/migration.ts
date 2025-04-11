@@ -132,8 +132,8 @@ async function fillUser (client: MigrationClient): Promise<void> {
     const calendar = map.get(event.calendar)
     if (calendar !== undefined) {
       await client.update(
-        DOMAIN_CALENDAR,
-        { _id: calendar._id },
+        DOMAIN_EVENT,
+        { _id: event._id },
         { user: event.createdBy !== core.account.System ? event.createdBy : calendar.createdBy }
       )
     }
@@ -191,7 +191,7 @@ export const calendarOperation: MigrateOperation = {
         func: removeEventDuplicates
       },
       {
-        state: 'fill-user',
+        state: 'fill-user-v2',
         mode: 'upgrade',
         func: fillUser
       }
