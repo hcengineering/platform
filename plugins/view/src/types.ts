@@ -533,7 +533,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // If defined, types should be matched to proposed list
   inputProps?: Record<string, Ref<Class<Doc>>>
 
-  // Kayboard bindings
+  // Keyboard bindings
   keyBinding?: KeyBinding[]
 
   // short description for action.
