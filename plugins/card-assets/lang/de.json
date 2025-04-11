@@ -35,6 +35,7 @@
     "MasterDetailViews": "Master-Detail-Ansichten",
     "SelectType": "Typ auswählen",
     "CreateSpace": "Raum erstellen",
-    "NumberTypes": "{count, plural, one {# typ} other {# typen}}"
+    "NumberTypes": "{count, plural, one {# typ} other {# typen}}",
+    "Labels": "Labels"
   }
 }

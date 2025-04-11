@@ -46,6 +46,7 @@ import CreateCardButton from './components/CreateCardButton.svelte'
 import CardArrayEditor from './components/CardArrayEditor.svelte'
 import NewCardHeader from './components/navigator/NewCardHeader.svelte'
 import SpacePresenter from './components/navigator/SpacePresenter.svelte'
+import LabelsPresenter from './components/LabelsPresenter.svelte'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
 
@@ -74,7 +75,8 @@ export default async (): Promise<Resources> => ({
     CreateCardButton,
     CardArrayEditor,
     NewCardHeader,
-    SpacePresenter
+    SpacePresenter,
+    LabelsPresenter
   },
   completion: {
     CardQuery: queryCard

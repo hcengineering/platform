@@ -30,7 +30,9 @@ import {
   PatchType,
   type RichText,
   type SocialID,
-  type CardType
+  type CardType,
+  type Label,
+  type FindLabelsParams
 } from '@hcengineering/communication-types'
 import {
   type CreateFileEvent,
@@ -61,18 +63,20 @@ import {
   createMessagesQuery,
   createNotificationContextsQuery,
   createNotificationsQuery,
+  createLabelsQuery,
   initLiveQueries
 } from '@hcengineering/communication-client-query'
 
 import { getCurrentWorkspaceUuid, getFilesUrl } from './file'
 
-export { createMessagesQuery, createNotificationsQuery, createNotificationContextsQuery }
+export { createMessagesQuery, createNotificationsQuery, createNotificationContextsQuery, createLabelsQuery }
 
 interface Connection extends PlatformConnection {
   findMessages: (params: FindMessagesParams, queryId?: number) => Promise<Message[]>
   findMessagesGroups: (params: FindMessagesGroupsParams) => Promise<MessagesGroup[]>
   findNotificationContexts: (params: FindNotificationContextParams, queryId?: number) => Promise<NotificationContext[]>
   findNotifications: (params: FindNotificationsParams, queryId?: number) => Promise<Notification[]>
+  findLabels: (params: FindLabelsParams) => Promise<Label[]>
   sendEvent: (event: RequestEvent) => Promise<EventResult>
   unsubscribeQuery: (id: number) => Promise<void>
 }
@@ -232,6 +236,10 @@ class Client {
 
   async findNotifications (params: FindNotificationsParams, queryId?: number): Promise<Notification[]> {
     return await this.connection.findNotifications(params, queryId)
+  }
+
+  async findLabels (params: FindLabelsParams): Promise<Label[]> {
+    return await this.connection.findLabels(params)
   }
 
   async unsubscribeQuery (id: number): Promise<void> {

@@ -35,6 +35,7 @@
     "MasterDetailViews": "Master Detail Views",
     "SelectType": "Select Type",
     "CreateSpace": "Create space",
-    "NumberTypes": "{count, plural, one {# type} other {# types}}"
+    "NumberTypes": "{count, plural, one {# type} other {# types}}",
+    "Labels": "Labels"
   }
 }

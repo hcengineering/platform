@@ -35,6 +35,7 @@
     "MasterDetailViews": "主细节视图",
     "SelectType": "选择类型",
     "CreateSpace": "创建空间",
-    "NumberTypes": "{count, plural, one {# 类型} other {# 类型}}"
+    "NumberTypes": "{count, plural, one {# 类型} other {# 类型}}",
+    "Labels": "标签"
   }
 }

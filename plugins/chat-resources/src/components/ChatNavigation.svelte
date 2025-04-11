@@ -19,10 +19,10 @@
   import { NavigationList, NavigationSection } from '@hcengineering/ui-next'
   import { languageStore, Scroller } from '@hcengineering/ui'
   import { Ref, SortingOrder, Class } from '@hcengineering/core'
-  import { NotificationContext } from '@hcengineering/communication-types'
+  import { NotificationContext, SubscriptionLabelID, Label } from '@hcengineering/communication-types'
   import { SavedView } from '@hcengineering/workbench-resources'
   import { chatId } from '@hcengineering/chat'
-  import { createQuery, LiveQuery } from '@hcengineering/presentation'
+  import { createQuery, LiveQuery, createLabelsQuery, getClient } from '@hcengineering/presentation'
 
   import { cardsToChatSections, NavigatorState, navigatorStateStore, toggleSection } from '../navigator'
 
@@ -32,34 +32,51 @@
 
   const cardsLimit = 8
   const dispatch = createEventDispatcher()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
-  const cardsQueryByType = new Map<Ref<MasterTag>, { query: LiveQuery, limit: number }>()
+  const cardsQueryByType = new Map<Ref<MasterTag>, { query: LiveQuery, ids: Ref<Card>[], limit: number }>()
   const typesQuery = createQuery()
+  const labelsQuery = createLabelsQuery()
 
   let cardsByType = new Map<Ref<MasterTag>, { cards: Card[], total: number }>()
   let types: MasterTag[] = []
+  let labels: Label[] = []
 
   let sections: NavigationSection[] = []
 
-  $: typesQuery.query(cardPlugin.class.MasterTag, {}, (result) => {
+  $: typesQuery.query(cardPlugin.class.MasterTag, { extends: cardPlugin.class.Card }, (result) => {
     types = result.filter((p) => p.removed !== true)
   })
 
-  $: loadObjects(types)
+  $: loadObjects(types, labels)
 
-  function loadObjects (types: MasterTag[]): void {
-    if (types.length === 0) return
+  $: labelsQuery.query({ label: SubscriptionLabelID }, (res) => {
+    labels = res
+  })
+
+  function loadObjects (types: MasterTag[], labels: Label[]): void {
+    if (labels.length === 0) return
     for (const type of types) {
-      const { query, limit } = cardsQueryByType.get(type._id) ?? {
-        query: createQuery(),
-        limit: cardsLimit
+      const typeLabels = labels.filter((it) => it.cardType === type._id || hierarchy.isDerived(it.cardType, type._id))
+
+      if (typeLabels.length === 0) {
+        cardsQueryByType.get(type._id)?.query.unsubscribe()
+        cardsQueryByType.delete(type._id)
+        continue
       }
 
-      cardsQueryByType.set(type._id, { query, limit })
+      const ids = typeLabels.map((it) => it.card) as Ref<Card>[]
+      const { query, limit } = cardsQueryByType.get(type._id) ?? {
+        query: createQuery(),
+        ids,
+        limit: cardsLimit
+      }
+      cardsQueryByType.set(type._id, { query, ids, limit })
 
       query.query(
         type._id as Ref<Class<Card>>,
-        {},
+        { _id: { $in: ids } },
         (res) => {
           if (res.length === 0) {
             cardsByType.delete(type._id)
@@ -110,7 +127,7 @@
     const query = cardsQueryByType.get(event.detail)
     if (query !== undefined) {
       query.limit += cardsLimit
-      loadObjects(types)
+      loadObjects(types, labels)
     }
   }
 </script>

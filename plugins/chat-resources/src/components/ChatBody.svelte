@@ -213,8 +213,7 @@
       readMessagesTimer = undefined
     }
     readMessagesTimer = setTimeout(async () => {
-      if (context == null) return
-      if (context.lastView && context.lastView > date) return
+      if (context == null || context.lastView >= date) return
       await communicationClient.updateNotificationContext(context.id, date)
     }, 500)
   }
