@@ -290,12 +290,13 @@ async function eventForNewParticipants (
     if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
 
     const primarySocialString = pickPrimarySocialId(socialIds)._id
+    const user = primarySocialString
     const calendar = getCalendar(calendars, socialStrings)
     if (calendar === undefined) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
-      { ...data, calendar, access },
+      { ...data, calendar, access, user },
       undefined,
       undefined,
       primarySocialString
@@ -363,12 +364,13 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
     const socialStrings = socialIds.map((si) => si._id)
     if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
     const primarySocialString = pickPrimarySocialId(socialIds)._id
+    const user = primarySocialString
     const calendar = getCalendar(calendars, socialStrings)
     if (calendar === undefined) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
-      { ...data, calendar, access },
+      { ...data, calendar, access, user },
       undefined,
       undefined,
       primarySocialString

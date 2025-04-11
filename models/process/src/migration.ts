@@ -76,7 +76,7 @@ async function migrateStateFuncs (client: MigrationUpgradeClient): Promise<void>
       }
     }
     const endAction = state.endAction
-    if (endAction != null) {
+    if (endAction?.params != null) {
       for (const key of Object.keys(endAction.params)) {
         const value = (endAction.params as any)[key]
         const context = getContext(value)
