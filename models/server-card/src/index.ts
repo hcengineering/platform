@@ -51,6 +51,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverCard.trigger.OnMasterTagRemove,
+    isAsync: true,
     txMatch: {
       _class: core.class.TxUpdateDoc,
       objectClass: card.class.MasterTag,
@@ -89,6 +90,15 @@ export function createModel (builder: Builder): void {
     isAsync: true,
     txMatch: {
       _class: core.class.TxUpdateDoc,
+      objectClass: card.class.Card
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnCardTag,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxMixin,
       objectClass: card.class.Card
     }
   })

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-export INIT_SCRIPTS_BRANCH=${INIT_SCRIPTS_BRANCH:-unified-init-scripts}
+export INIT_SCRIPTS_BRANCH=${INIT_SCRIPTS_BRANCH:-main}
 # Download init repository
 # Check if the file already exists
 if [ -e "${INIT_SCRIPTS_BRANCH}.zip" ]; then

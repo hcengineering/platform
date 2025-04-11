@@ -23,7 +23,7 @@
   export let attachments: WithLookup<Attachment>[]
   export let savedAttachmentsIds: Ref<Attachment>[] = []
   export let imageSize: AttachmentImageSize = 'auto'
-  export let videoPreload = true
+  export let videoPreload = false
 
   let otherAttachments: WithLookup<Attachment>[]
   let linkPreviewAttachments: WithLookup<Attachment>[]

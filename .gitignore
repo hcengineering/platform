@@ -3,6 +3,7 @@ lib/
 _api-extractor-temp/
 temp/
 .idea
+pods/workspace/init/
 
 # Logs
 *.log
@@ -109,3 +110,4 @@ dev/tool/history.json
 .aider*
 /combined_dependencies
 .tmp
+ws-tests/docker-compose.override.yml

@@ -135,7 +135,7 @@ export class AIControl {
         token,
         workspace,
         this,
-        this.ctx.newChild(workspace, {}),
+        this.ctx.newChild('client', {}),
         info
       )
     }
@@ -146,7 +146,7 @@ export class AIControl {
       token,
       workspace,
       this,
-      this.ctx.newChild(workspace, {}),
+      this.ctx.newChild('client', {}),
       info
     )
   }

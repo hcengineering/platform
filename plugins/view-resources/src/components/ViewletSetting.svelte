@@ -237,11 +237,13 @@
         processAttribute(attribute, result)
       }
 
-      hierarchy.getDescendants(viewlet.attachTo).forEach((it) => {
-        hierarchy.getOwnAttributes(it).forEach((attr) => {
+      const desc = hierarchy.getDescendants(viewlet.attachTo)
+      for (const d of desc) {
+        if (!hierarchy.isMixin(d)) continue
+        hierarchy.getOwnAttributes(d).forEach((attr) => {
           processAttribute(attr, result, true)
         })
-      })
+      }
 
       const ancestors = new Set(hierarchy.getAncestors(viewlet.attachTo))
       const parent = hierarchy.getParentClass(viewlet.attachTo)

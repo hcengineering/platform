@@ -73,6 +73,7 @@
       title: todo.title,
       allDay: false,
       access: 'owner',
+      user: currentUser._id,
       visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
       reminders: []
     })

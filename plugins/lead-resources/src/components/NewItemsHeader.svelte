@@ -16,20 +16,23 @@
   import { Button, showPopup, IconAdd } from '@hcengineering/ui'
   import lead from '../plugin'
   import CreateCustomer from './CreateCustomer.svelte'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
 
   async function newIssue (): Promise<void> {
     showPopup(CreateCustomer, {}, 'top')
   }
 </script>
 
-<div class="antiNav-subheader">
-  <Button
-    icon={IconAdd}
-    label={lead.string.CreateCustomerLabel}
-    justify={'left'}
-    width={'100%'}
-    kind={'primary'}
-    gap={'large'}
-    on:click={newIssue}
-  />
-</div>
+{#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
+  <div class="antiNav-subheader">
+    <Button
+      icon={IconAdd}
+      label={lead.string.CreateCustomerLabel}
+      justify={'left'}
+      width={'100%'}
+      kind={'primary'}
+      gap={'large'}
+      on:click={newIssue}
+    />
+  </div>
+{/if}

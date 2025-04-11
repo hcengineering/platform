@@ -31,7 +31,7 @@
   export let listProvider: ListSelectionProvider | undefined = undefined
   export let imageSize: AttachmentImageSize = 'auto'
   export let removable: boolean = false
-  export let videoPreload = true
+  export let videoPreload = false
 
   const dispatch = createEventDispatcher()
 

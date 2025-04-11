@@ -401,7 +401,7 @@ table.proseTable {
   padding-left: 1.5em;
   padding-right: 1.5em;
   position: relative;
-  border-left: 3px solid var(--theme-text-primary-color);
+  border-left: 2px solid var(--text-editor-block-quote-color);
 }
 
 .proseCode {
@@ -477,6 +477,12 @@ pre.proseCodeBlock>pre.proseCode {
 
   p div {
     cursor: auto;
+  }
+
+  hr {
+    margin: 1rem 0;
+    border-top: 0;
+    border-bottom: 1px solid var(--text-edtior-hr-border-color);
   }
 }
 

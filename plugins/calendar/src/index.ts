@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Contact } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, SystemSpace, Timestamp } from '@hcengineering/core'
+import type { Account, AttachedDoc, Class, Doc, Markup, Mixin, Ref, SystemSpace, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -108,6 +108,8 @@ export interface Event extends AttachedDoc {
   access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 
   timeZone?: string
+
+  user: Ref<Account>
 }
 
 /**

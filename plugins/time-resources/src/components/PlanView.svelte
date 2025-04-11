@@ -67,7 +67,8 @@
       allDay: false,
       access: 'owner',
       visibility: doc.visibility === 'public' ? 'public' : 'freeBusy',
-      reminders: []
+      reminders: [],
+      user: currentUser._id
     })
     Analytics.handleEvent(TimeEvents.ToDoScheduled, { id: doc._id })
   }

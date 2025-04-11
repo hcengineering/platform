@@ -14,7 +14,7 @@
 //
 
 import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import { groupByArray, type Ref, type Space } from '@hcengineering/core'
+import core, { groupByArray, toIdMap, type Ref, type Space } from '@hcengineering/core'
 import {
   createDefaultSpace,
   tryMigrate,
@@ -122,6 +122,24 @@ async function removeEventDuplicates (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fillUser (client: MigrationClient): Promise<void> {
+  const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, {})
+  const events = await client.find<Event>(DOMAIN_EVENT, {
+    user: { $exists: false }
+  })
+  const map = toIdMap(calendars)
+  for (const event of events) {
+    const calendar = map.get(event.calendar)
+    if (calendar !== undefined) {
+      await client.update(
+        DOMAIN_EVENT,
+        { _id: event._id },
+        { user: event.createdBy !== core.account.System ? event.createdBy : calendar.createdBy }
+      )
+    }
+  }
+}
+
 async function migrateTimezone (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_CALENDAR,
@@ -171,6 +189,11 @@ export const calendarOperation: MigrateOperation = {
         state: 'remove-duplicates',
         mode: 'upgrade',
         func: removeEventDuplicates
+      },
+      {
+        state: 'fill-user-v2',
+        mode: 'upgrade',
+        func: fillUser
       }
     ])
   },

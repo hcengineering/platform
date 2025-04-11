@@ -370,7 +370,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: card.string.Cards,
         description: card.string.ConfigDescription,
-        enabled: false,
+        enabled: true,
         beta: true,
         icon: card.icon.Card,
         classFilter: defaultFilter

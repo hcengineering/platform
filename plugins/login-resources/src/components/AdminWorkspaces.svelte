@@ -81,7 +81,11 @@
         ((showActive && isActiveMode(it.mode)) ||
           (showArchived && isArchivingMode(it.mode)) ||
           (showDeleted && isDeletingMode(it.mode)) ||
-          (showOther && (isMigrationMode(it.mode) || isRestoringMode(it.mode) || isUpgradingMode(it.mode))))
+          (showOther &&
+            (isMigrationMode(it.mode) ||
+              isRestoringMode(it.mode) ||
+              isUpgradingMode(it.mode) ||
+              (isArchivingMode(it.mode) && it.mode !== 'archived'))))
     )
     .sort((a, b) => {
       switch (sortingRule) {

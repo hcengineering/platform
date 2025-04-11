@@ -38,6 +38,7 @@
   export let exist: boolean
   export let disabled: boolean = true
   export let noTopIndent: boolean = false
+  export let isCard: boolean = false
 
   let name: string
   let type: Type<PropertyType> | undefined = attribute.type
@@ -201,6 +202,7 @@
       <Component
         {is}
         props={{
+          isCard,
           type,
           defaultValue,
           editable: !exist && !disabled,

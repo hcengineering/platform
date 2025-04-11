@@ -72,7 +72,7 @@
   $: configOptions = options
   $: resultOptions = {
     ...configOptions,
-    ...(Object.keys(lookup).length > 0 ? lookup : {}),
+    ...(Object.keys(lookup).length > 0 ? { lookup } : {}),
     ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {})
   }
 

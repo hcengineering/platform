@@ -16,17 +16,19 @@
   import type { Attachment } from '@hcengineering/attachment'
 
   import type { BlobType, WithLookup } from '@hcengineering/core'
-  import { getFileUrl } from '@hcengineering/presentation'
-  import AttachmentPresenter from './AttachmentPresenter.svelte'
+  import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
+  import { HlsVideo, Video } from '@hcengineering/ui'
 
   export let value: WithLookup<Attachment> | BlobType
-  export let preload = true
+  export let preload = false
 
-  const maxSizeRem = 20
-  const baseSizeRem = 12
-  const minSizeRem = 4
+  const maxSizeRem = 25
+  const baseSizeRem = 20
+  const minSizeRem = 10
 
   $: dimensions = getDimensions(value)
+  $: name = value.name
+  $: file = value.file
 
   function getDimensions (value: Attachment | BlobType): { width: number, height: number } {
     const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
@@ -55,22 +57,28 @@
 
     return { width, height }
   }
+
+  function toStyle (size: 'auto' | number): string {
+    return size === 'auto' ? 'auto' : `${size}px`
+  }
 </script>
 
-<video controls width={dimensions.width} height={dimensions.height} preload={preload ? 'auto' : 'none'}>
-  <source src={getFileUrl(value.file, value.name)} />
-  <track kind="captions" label={value.name} />
-  <div class="container">
-    <AttachmentPresenter {value} />
-  </div>
-</video>
+<div class="container" style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
+  {#await getVideoMeta(file, name) then meta}
+    {@const src = getFileUrl(file, name)}
+
+    {#if meta?.hls?.source !== undefined}
+      <HlsVideo {src} {preload} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} {name} />
+    {:else}
+      <Video {src} {name} preload />
+    {/if}
+  {/await}
+</div>
 
 <style lang="scss">
-  video {
-    max-width: 20rem;
-    max-height: 20rem;
-    min-width: 4rem;
-    min-height: 4rem;
+  .container {
+    min-width: 10rem;
+    min-height: 10rem;
     border-radius: 0.75rem;
   }
 </style>

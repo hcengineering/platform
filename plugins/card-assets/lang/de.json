@@ -30,6 +30,8 @@
     "SelectViewType": "Ansichtstyp auswählen",
     "Document": "Dokument",
     "ChangeType": "Typ ändern",
-    "ChangeTypeWarning": "Warnung: Das Ändern des Typs einer Karte wird alle Daten für alle Attribute entfernen, die nicht auf dem Zieltyp vorhanden sind. Vorherige Attributdaten können wiederhergestellt werden, indem Sie die Karte auf einen früheren Typ zurücksetzen. Karteninhalt wird nicht betroffen."
+    "ChangeTypeWarning": "Warnung: Das Ändern des Typs einer Karte wird alle Daten für alle Attribute entfernen, die nicht auf dem Zieltyp vorhanden sind. Vorherige Attributdaten können wiederhergestellt werden, indem Sie die Karte auf einen früheren Typ zurücksetzen. Karteninhalt wird nicht betroffen.",
+    "CreateSpace": "Raum erstellen",
+    "NumberTypes": "{count, plural, one {# typ} other {# typen}}"
   }
 }

@@ -100,6 +100,7 @@ export const chatSpecials: SpecialNavModel[] = [
       icon: chunter.icon.ChannelBrowser,
       label: chunter.string.Channels,
       createLabel: chunter.string.CreateChannel,
+      createComponentAccess: AccountRole.User,
       createComponent: chunter.component.CreateChannel
     },
     position: 'top'

@@ -28,6 +28,7 @@ import { type Contact } from '@hcengineering/contact'
 import {
   DateRangeMode,
   IndexKind,
+  type Account,
   type SystemSpace,
   type Domain,
   type Markup,
@@ -135,6 +136,8 @@ export class TEvent extends TAttachedDoc implements Event {
   visibility?: Visibility
 
   timeZone?: string
+
+  user!: Ref<Account>
 }
 
 @Model(calendar.class.ReccuringEvent, calendar.class.Event)

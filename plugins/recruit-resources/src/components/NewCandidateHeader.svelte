@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { MultipleDraftController } from '@hcengineering/presentation'
+  import { RecruitEvents } from '@hcengineering/recruit'
   import { Button, IconAdd, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
-  import { Analytics } from '@hcengineering/analytics'
-  import { RecruitEvents } from '@hcengineering/recruit'
 
   let draftExists = false
 
@@ -36,23 +37,25 @@
   }
 </script>
 
-<div class="antiNav-subheader">
-  <Button
-    icon={IconAdd}
-    label={draftExists ? recruit.string.ResumeDraft : recruit.string.CreateTalent}
-    justify={'left'}
-    kind={'primary'}
-    width={'100%'}
-    gap={'large'}
-    on:click={newCandidate}
-  >
-    <div slot="content" class="draft-circle-container">
-      {#if draftExists}
-        <div class="draft-circle" />
-      {/if}
-    </div>
-  </Button>
-</div>
+{#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
+  <div class="antiNav-subheader">
+    <Button
+      icon={IconAdd}
+      label={draftExists ? recruit.string.ResumeDraft : recruit.string.CreateTalent}
+      justify={'left'}
+      kind={'primary'}
+      width={'100%'}
+      gap={'large'}
+      on:click={newCandidate}
+    >
+      <div slot="content" class="draft-circle-container">
+        {#if draftExists}
+          <div class="draft-circle" />
+        {/if}
+      </div>
+    </Button>
+  </div>
+{/if}
 
 <style lang="scss">
   .draft-circle-container {

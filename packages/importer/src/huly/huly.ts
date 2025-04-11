@@ -14,9 +14,17 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
+import card from '@hcengineering/card'
 import contact, { Employee, type Person, type PersonAccount } from '@hcengineering/contact'
+import documents, {
+  ControlledDocument,
+  DocumentCategory,
+  DocumentMeta,
+  DocumentState
+} from '@hcengineering/controlled-documents'
 import { type Class, type Doc, generateId, type Ref, type Space, type TxOperations } from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
+import core from '@hcengineering/model-core'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
 import tracker, { type Issue, Project } from '@hcengineering/tracker'
 import * as fs from 'fs'
@@ -33,23 +41,19 @@ import {
   type ImportDocument,
   ImportDrawing,
   type ImportIssue,
+  ImportOrgSpace,
   type ImportProject,
   type ImportProjectType,
   type ImportTeamspace,
   type ImportWorkspace,
-  WorkspaceImporter,
-  ImportOrgSpace
+  WorkspaceImporter
 } from '../importer/importer'
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
-import documents, {
-  DocumentState,
-  DocumentCategory,
-  ControlledDocument,
-  DocumentMeta
-} from '@hcengineering/controlled-documents'
-
+import { CardsProcessor } from './cards'
+import { MetadataRegistry, ReferenceMetadata } from './metadata'
+import { readMarkdownContent, readYamlHeader } from './parsing'
 export interface HulyComment {
   author: string
   text: string
@@ -154,8 +158,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   constructor (
     private readonly urlProvider: (id: string) => string,
     private readonly logger: Logger,
-    private readonly pathById: Map<Ref<Doc>, string>,
-    private readonly refMetaByPath: Map<string, ReferenceMetadata>,
+    private readonly metadataRegistry: MetadataRegistry,
     private readonly attachMetaByPath: Map<string, AttachmentMetadata>,
     personsByName: Map<string, Ref<Person>>
   ) {
@@ -191,12 +194,12 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
       return
     }
 
-    const sourceMeta = this.refMetaByPath.get(sourcePath)
-    if (sourceMeta === undefined) {
+    if (!this.metadataRegistry.hasRefMetadata(sourcePath)) {
       this.logger.error(`Source metadata not found for ${sourcePath}`)
       return
     }
 
+    const sourceMeta = this.metadataRegistry.getRefMetadata(sourcePath)
     this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
     this.alterImageNode(node, attachmentMeta.id, attachmentMeta.name)
   }
@@ -208,20 +211,18 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
       const sourcePath = this.getSourcePath(id)
       if (sourcePath == null) return
 
-      const href = decodeURI(mark.attrs.href)
+      const href = decodeURI(mark.attrs?.href ?? '')
       const fullPath = path.resolve(path.dirname(sourcePath), href)
 
-      if (this.refMetaByPath.has(fullPath)) {
-        const targetDocMeta = this.refMetaByPath.get(fullPath)
-        if (targetDocMeta !== undefined) {
-          this.alterInternalLinkNode(node, targetDocMeta)
-        }
+      if (this.metadataRegistry.hasRefMetadata(fullPath)) {
+        const targetDocMeta = this.metadataRegistry.getRefMetadata(fullPath)
+        this.alterMentionNode(node, targetDocMeta)
       } else if (this.attachMetaByPath.has(fullPath)) {
         const attachmentMeta = this.attachMetaByPath.get(fullPath)
         if (attachmentMeta !== undefined) {
           this.alterAttachmentLinkNode(node, attachmentMeta)
-          const sourceMeta = this.refMetaByPath.get(sourcePath)
-          if (sourceMeta !== undefined) {
+          if (this.metadataRegistry.hasRefMetadata(sourcePath)) {
+            const sourceMeta = this.metadataRegistry.getRefMetadata(sourcePath)
             this.updateAttachmentMetadata(fullPath, attachmentMeta, id, spaceId, sourceMeta)
           }
         }
@@ -250,7 +251,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     }
   }
 
-  private alterInternalLinkNode (node: MarkupNode, targetMeta: ReferenceMetadata): void {
+  private alterMentionNode (node: MarkupNode, targetMeta: ReferenceMetadata): void {
     node.type = MarkupNodeType.reference
     node.attrs = {
       id: targetMeta.id,
@@ -282,8 +283,8 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   }
 
   private getSourcePath (id: Ref<Doc>): string | null {
-    const sourcePath = this.pathById.get(id)
-    if (sourcePath == null) {
+    const sourcePath = this.metadataRegistry.getPath(id)
+    if (sourcePath === undefined) {
       this.logger.error(`Source file path not found for ${id}`)
       return null
     }
@@ -306,12 +307,6 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
   }
 }
 
-interface ReferenceMetadata {
-  id: Ref<Doc>
-  class: string
-  refTitle: string
-}
-
 interface AttachmentMetadata {
   id: Ref<Attachment>
   name: string
@@ -322,14 +317,14 @@ interface AttachmentMetadata {
 }
 
 export class HulyFormatImporter {
-  private readonly pathById = new Map<Ref<Doc>, string>()
-  private readonly refMetaByPath = new Map<string, ReferenceMetadata>()
-  private readonly fileMetaByPath = new Map<string, AttachmentMetadata>()
-  private readonly ctrlDocTemplateIdByPath = new Map<string, Ref<ControlledDocument>>()
-
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
   private employeesByName = new Map<string, Ref<Employee>>()
+
+  private readonly fileMetaByPath = new Map<string, AttachmentMetadata>()
+  private readonly metadataRegistry = new MetadataRegistry()
+
+  private readonly cardsProcessor = new CardsProcessor(this.metadataRegistry)
 
   constructor (
     private readonly client: TxOperations,
@@ -357,8 +352,7 @@ export class HulyFormatImporter {
     const preprocessor = new HulyMarkdownPreprocessor(
       this.fileUploader.getFileUrl,
       this.logger,
-      this.pathById,
-      this.refMetaByPath,
+      this.metadataRegistry,
       this.fileMetaByPath,
       this.personsByName
     )
@@ -505,6 +499,13 @@ export class HulyFormatImporter {
             break
           }
 
+          case core.class.Enum:
+          case core.class.Association:
+          case card.class.MasterTag: {
+            this.logger.log(`Skipping ${spaceName}: will be processed later`)
+            break
+          }
+
           default: {
             throw new Error(`Unknown space class ${spaceConfig.class} in ${spaceName}`)
           }
@@ -515,7 +516,16 @@ export class HulyFormatImporter {
       }
     }
 
-    return builder.build()
+    const { docs, mixins, updates, files } = await this.cardsProcessor.processDirectory(folderPath)
+
+    const ws = builder.build()
+    ws.unifiedDocs = {
+      docs: Array.from(docs.values()).flat(),
+      mixins: Array.from(mixins.values()).flat(),
+      updates: Array.from(updates.values()).flat(),
+      files: Array.from(files.values())
+    }
+    return ws
   }
 
   private async processIssuesRecursively (
@@ -529,7 +539,7 @@ export class HulyFormatImporter {
 
     for (const issueFile of issueFiles) {
       const issuePath = path.join(currentPath, issueFile)
-      const issueHeader = (await this.readYamlHeader(issuePath)) as HulyIssueHeader
+      const issueHeader = (await readYamlHeader(issuePath)) as HulyIssueHeader
 
       if (issueHeader.class === undefined) {
         this.logger.error(`Skipping ${issueFile}: not an issue`)
@@ -540,20 +550,14 @@ export class HulyFormatImporter {
         const numberMatch = issueFile.match(/^(\d+)\./)
         const issueNumber = numberMatch?.[1]
 
-        const meta: ReferenceMetadata = {
-          id: generateId<Issue>(),
-          class: tracker.class.Issue,
-          refTitle: `${projectIdentifier}-${issueNumber}`
-        }
-        this.pathById.set(meta.id, issuePath)
-        this.refMetaByPath.set(issuePath, meta)
+        this.metadataRegistry.setRefMetadata(issuePath, tracker.class.Issue, `${projectIdentifier}-${issueNumber}`)
 
         const issue: ImportIssue = {
-          id: meta.id as Ref<Issue>,
+          id: this.metadataRegistry.getRef(issuePath) as Ref<Issue>,
           class: tracker.class.Issue,
           title: issueHeader.title,
           number: parseInt(issueNumber ?? 'NaN'),
-          descrProvider: async () => await this.readMarkdownContent(issuePath),
+          descrProvider: async () => await readMarkdownContent(issuePath),
           status: { name: issueHeader.status },
           priority: issueHeader.priority,
           estimation: issueHeader.estimation,
@@ -613,7 +617,7 @@ export class HulyFormatImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = (await this.readYamlHeader(docPath)) as HulyDocumentHeader
+      const docHeader = (await readYamlHeader(docPath)) as HulyDocumentHeader
 
       if (docHeader.class === undefined) {
         this.logger.error(`Skipping ${docFile}: not a document`)
@@ -621,20 +625,13 @@ export class HulyFormatImporter {
       }
 
       if (docHeader.class === document.class.Document) {
-        const docMeta: ReferenceMetadata = {
-          id: generateId<Document>(),
-          class: document.class.Document,
-          refTitle: docHeader.title
-        }
-
-        this.pathById.set(docMeta.id, docPath)
-        this.refMetaByPath.set(docPath, docMeta)
+        this.metadataRegistry.setRefMetadata(docPath, document.class.Document, docHeader.title)
 
         const doc: ImportDocument = {
-          id: docMeta.id as Ref<Document>,
+          id: this.metadataRegistry.getRef(docPath) as Ref<Document>,
           class: document.class.Document,
           title: docHeader.title,
-          descrProvider: async () => await this.readMarkdownContent(docPath),
+          descrProvider: async () => await readMarkdownContent(docPath),
           subdocs: [] // Will be added via builder
         }
 
@@ -661,9 +658,7 @@ export class HulyFormatImporter {
 
     for (const docFile of docFiles) {
       const docPath = path.join(currentPath, docFile)
-      const docHeader = (await this.readYamlHeader(docPath)) as
-        | HulyControlledDocumentHeader
-        | HulyDocumentTemplateHeader
+      const docHeader = (await readYamlHeader(docPath)) as HulyControlledDocumentHeader | HulyDocumentTemplateHeader
 
       if (docHeader.class === undefined) {
         this.logger.error(`Skipping ${docFile}: not a document`)
@@ -677,41 +672,22 @@ export class HulyFormatImporter {
         throw new Error(`Unknown document class ${docHeader.class} in ${docFile}`)
       }
 
-      const documentMetaId = generateId<DocumentMeta>()
-      const refMeta: ReferenceMetadata = {
-        id: documentMetaId,
-        class: documents.class.DocumentMeta,
-        refTitle: docHeader.title
-      }
-      this.refMetaByPath.set(docPath, refMeta)
+      const documentMetaId = this.metadataRegistry.getRef(docPath) as Ref<DocumentMeta>
+      this.metadataRegistry.setRefMetadata(docPath, documents.class.DocumentMeta, docHeader.title)
 
       if (docHeader.class === documents.class.ControlledDocument) {
-        const docId = generateId<ControlledDocument>()
-        this.pathById.set(docId, docPath)
-
         const doc = await this.processControlledDocument(
           docHeader as HulyControlledDocumentHeader,
           docPath,
-          docId,
+          this.metadataRegistry.getRef(docPath) as Ref<ControlledDocument>,
           documentMetaId
         )
         builder.addControlledDocument(spacePath, docPath, doc, parentDocPath)
       } else {
-        if (!this.ctrlDocTemplateIdByPath.has(docPath)) {
-          const templateId = generateId<ControlledDocument>()
-          this.ctrlDocTemplateIdByPath.set(docPath, templateId)
-          this.pathById.set(templateId, docPath)
-        }
-
-        const templateId = this.ctrlDocTemplateIdByPath.get(docPath)
-        if (templateId === undefined) {
-          throw new Error(`Template ID not found: ${docPath}`)
-        }
-
         const template = await this.processControlledDocumentTemplate(
           docHeader as HulyDocumentTemplateHeader,
           docPath,
-          templateId,
+          this.metadataRegistry.getRef(docPath) as Ref<ControlledDocument>,
           documentMetaId
         )
         builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
@@ -835,16 +811,7 @@ export class HulyFormatImporter {
       throw new Error(`Template file not found: ${templatePath}`)
     }
 
-    if (!this.ctrlDocTemplateIdByPath.has(templatePath)) {
-      const templateId = generateId<ControlledDocument>()
-      this.ctrlDocTemplateIdByPath.set(templatePath, templateId)
-      this.pathById.set(templateId, templatePath)
-    }
-
-    const templateId = this.ctrlDocTemplateIdByPath.get(templatePath)
-    if (templateId === undefined) {
-      throw new Error(`Template ID not found: ${templatePath}`)
-    }
+    const templateId = this.metadataRegistry.getRef(templatePath) as Ref<ControlledDocument>
 
     return {
       id,
@@ -862,7 +829,7 @@ export class HulyFormatImporter {
       reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
       approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
       coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
-      descrProvider: async () => await this.readMarkdownContent(docPath),
+      descrProvider: async () => await readMarkdownContent(docPath),
       ccReason: header.changeControl?.reason,
       ccImpact: header.changeControl?.impact,
       ccDescription: header.changeControl?.description,
@@ -900,28 +867,12 @@ export class HulyFormatImporter {
       reviewers: header.reviewers?.map((email) => this.findEmployeeByName(email)) ?? [],
       approvers: header.approvers?.map((email) => this.findEmployeeByName(email)) ?? [],
       coAuthors: header.coAuthors?.map((email) => this.findEmployeeByName(email)) ?? [],
-      descrProvider: async () => await this.readMarkdownContent(docPath),
+      descrProvider: async () => await readMarkdownContent(docPath),
       ccReason: header.changeControl?.reason,
       ccImpact: header.changeControl?.impact,
       ccDescription: header.changeControl?.description,
       subdocs: []
     }
-  }
-
-  private async readYamlHeader (filePath: string): Promise<any> {
-    this.logger.log('Read YAML header from: ' + filePath)
-    const content = fs.readFileSync(filePath, 'utf8')
-    const match = content.match(/^---\n([\s\S]*?)\n---/)
-    if (match != null) {
-      return yaml.load(match[1])
-    }
-    return {}
-  }
-
-  private async readMarkdownContent (filePath: string): Promise<string> {
-    const content = fs.readFileSync(filePath, 'utf8')
-    const match = content.match(/^---\n[\s\S]*?\n---\n(.*)$/s)
-    return match != null ? match[1] : content
   }
 
   private async cachePersonsByNames (): Promise<void> {

@@ -177,8 +177,7 @@ export class WorkspaceWorker {
         void this.exec(async () => {
           await this.doWorkspaceOperation(
             ctx.newChild('workspaceOperation', {
-              workspace: workspace.workspace,
-              workspaceName: workspace.workspaceName
+              mode: workspace.mode
             }),
             workspace,
             opt
