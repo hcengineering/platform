@@ -238,13 +238,14 @@ async function eventForNewParticipants (
     const acc = accounts.find((a) => a.person === part)
     if (acc === undefined) continue
     if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
+    const user = acc._id
     const calendar = getCalendar(calendars, acc._id, event.calendar)
     if (calendar === undefined) continue
     if (calendar === event.calendar) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
-      { ...data, calendar, access },
+      { ...data, calendar, access, user },
       undefined,
       undefined,
       acc._id
@@ -313,13 +314,14 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
     const acc = accounts.find((a) => a.person === part)
     if (acc === undefined) continue
     if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
+    const user = acc._id
     const calendar = getCalendar(calendars, acc._id, event.calendar)
     if (calendar === undefined) continue
     if (calendar === event.calendar) continue
     const innerTx = control.txFactory.createTxCreateDoc(
       _class,
       space,
-      { ...data, calendar, access },
+      { ...data, calendar, access, user },
       undefined,
       undefined,
       acc._id
