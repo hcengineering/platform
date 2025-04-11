@@ -263,7 +263,6 @@
             readonly: !editable,
             editable
           }
-    console.log('Editable: ', editable)
     if (attribute.collectionAttr) {
       return { object, ...attribute.props, ...readonlyParams }
     }
