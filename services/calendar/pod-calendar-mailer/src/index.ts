@@ -55,16 +55,20 @@ async function main (): Promise<void> {
         const ws = message.id as WorkspaceUuid
         const records = message.value
         for (const record of records) {
-          switch (record.action) {
-            case 'create':
-              await eventCreated(ctx, ws, record)
-              break
-            case 'update':
-              await eventUpdated(ctx, ws, record)
-              break
-            case 'delete':
-              await eventDeleted(ctx, ws, record)
-              break
+          try {
+            switch (record.action) {
+              case 'create':
+                await eventCreated(ctx, ws, record)
+                break
+              case 'update':
+                await eventUpdated(ctx, ws, record)
+                break
+              case 'delete':
+                await eventDeleted(ctx, ws, record)
+                break
+            }
+          } catch (error) {
+            ctx.error('Error processing message', { error, ws, record })
           }
         }
       }

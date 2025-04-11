@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Contact, Employee } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Markup, Mixin, PersonId, Ref, SystemSpace, Timestamp } from '@hcengineering/core'
+import type { AttachedDoc, Class, Client, Doc, Markup, Mixin, PersonId, Ref, SystemSpace, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -246,7 +246,9 @@ const calendarPlugin = plugin(calendarId, {
     CalDavAccessServer: '' as IntlString,
     CalDavAccessAccount: '' as IntlString,
     CalDavAccessPassword: '' as IntlString,
-    CalDavAccessPasswordWarning: '' as IntlString
+    CalDavAccessPasswordWarning: '' as IntlString,
+    MeetingScheduledNotification: '' as IntlString,
+    MeetingRescheduledNotification: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler
@@ -267,7 +269,8 @@ const calendarPlugin = plugin(calendarId, {
     NoAttached: '' as Ref<Event>
   },
   function: {
-    ConfigureCalDavAccess: '' as Resource<() => Promise<void>>
+    ConfigureCalDavAccess: '' as Resource<() => Promise<void>>,
+    EventTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })
 
