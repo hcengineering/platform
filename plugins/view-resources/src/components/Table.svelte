@@ -251,7 +251,7 @@
     }
   }
 
-  const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean) => {
+  const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean, editable: boolean) => {
     const readonlyParams =
       readonly || (attribute?.attribute?.readonly ?? false)
         ? {
@@ -259,7 +259,11 @@
             editable: false,
             disabled: true
           }
-        : {}
+        : {
+            readonly: !editable,
+            editable
+          }
+    console.log('Editable: ', editable)
     if (attribute.collectionAttr) {
       return { object, ...attribute.props, ...readonlyParams }
     }
@@ -457,7 +461,7 @@
                         onChange={getOnChange(object, attribute)}
                         label={attribute.label}
                         attribute={attribute.attribute}
-                        {...joinProps(attribute, object, !canEditObject || readonly || $restrictionStore.readonly)}
+                        {...joinProps(attribute, object, readonly || $restrictionStore.readonly, canEditObject)}
                       />
                     </div>
                   </td>
