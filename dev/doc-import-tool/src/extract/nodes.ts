@@ -1,4 +1,4 @@
-import { Document, Element, AnyNode as AnyDomNode, AnyNode } from 'domhandler'
+import { type Document, type Element, type AnyNode as AnyDomNode, type AnyNode } from 'domhandler'
 import { ElementType } from 'htmlparser2'
 import {
   compareDocumentPosition,
@@ -10,9 +10,9 @@ import {
   removeSubsets
 } from 'domutils'
 
-import { NodeType, ListParams, TableParams, GenericParams, TocParaSeqParams, TagsWithTextSpec, TagsSpec } from './types'
+import { NodeType, type ListParams, type TableParams, type GenericParams, type TocParaSeqParams, type TagsWithTextSpec, type TagsSpec } from './types'
 import { clean, compareStrExact } from '../helpers'
-import { Container, GenericContainer, ListContainer, TableContainer } from './container'
+import { type Container, GenericContainer, ListContainer, TableContainer } from './container'
 
 // Copied from domutils ambient const enums to solve 'isolatedModules' is enabled
 const enum DocumentPosition {

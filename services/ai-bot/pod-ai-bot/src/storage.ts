@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
-import { Collection, Db, MongoClient, ObjectId, UpdateFilter, WithId } from 'mongodb'
-import { Doc, Ref, SortingOrder, WorkspaceUuid } from '@hcengineering/core'
-import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
+import { type MongoClientReference, getMongoClient } from '@hcengineering/mongo'
+import { type Collection, type Db, type MongoClient, type ObjectId, type UpdateFilter, type WithId } from 'mongodb'
+import { type Doc, type Ref, SortingOrder, type WorkspaceUuid } from '@hcengineering/core'
+import { type WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 
 import config from './config'
-import { HistoryRecord } from './types'
+import { type HistoryRecord } from './types'
 
 const clientRef: MongoClientReference = getMongoClient(config.MongoURL)
 let client: MongoClient | undefined

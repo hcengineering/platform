@@ -44,8 +44,8 @@ import core, {
   type TxWorkspaceEvent,
   type WorkspaceDataId,
   type WorkspaceInfoWithStatus,
-  type WorkspaceUuid
-  , type WorkspaceIds
+  type WorkspaceUuid,
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'

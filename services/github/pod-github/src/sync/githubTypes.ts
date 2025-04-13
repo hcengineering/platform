@@ -863,7 +863,7 @@ export function toReviewDecision (reviewDecision: PullRequestExternalData['revie
 }
 
 export function getUpdatedAtReviewThread (review: ReviewThread): number {
-  const value = (review.comments.nodes.map((it) => it.updatedAt).filter((it) => it != null) as string[])
+  const value = (review.comments.nodes.map((it) => it.updatedAt).filter((it) => it != null))
     .map((it) => new Date(it).getTime())
     .reduce((prev, it) => (it > prev ? it : prev), 0)
   if (value === 0) {

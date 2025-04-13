@@ -20,11 +20,11 @@ import {
   AccountRole,
   type Person as GlobalPerson,
   type AccountUuid
+  , type MeasureContext, type PersonUuid, systemAccountUuid
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { getAccountClient, withRetry } from '@hcengineering/server-client'
 import { aiBotAccountEmail, aiBotEmailSocialKey } from '@hcengineering/ai-bot'
-import { MeasureContext, PersonUuid, systemAccountUuid } from '@hcengineering/core'
 
 import config from '../config'
 import { wait } from './common'

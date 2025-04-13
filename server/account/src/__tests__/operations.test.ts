@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { AccountRole, MeasureContext, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
+import { AccountRole, type MeasureContext, type PersonUuid, type WorkspaceUuid } from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
 
-import { AccountDB } from '../types'
+import { type AccountDB } from '../types'
 import { createInvite, createInviteLink, sendInvite, resendInvite } from '../operations'
 import { accountPlugin } from '../plugin'
 

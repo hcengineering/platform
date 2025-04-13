@@ -14,18 +14,18 @@
 //
 
 import core, {
-  Doc,
-  MeasureContext,
-  Tx,
-  TxCUD,
+  type Doc,
+  type MeasureContext,
+  type Tx,
+  type TxCUD,
   TxProcessor,
   type SessionData,
-  TxApplyIf,
+  type TxApplyIf,
   systemAccountUuid,
-  AccountUuid
+  type AccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import { BaseMiddleware, type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 import { DOMAIN_USER_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_DOC_NOTIFY } from '@hcengineering/server-notification'
 
 /**

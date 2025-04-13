@@ -3,7 +3,7 @@ import { parseDocument } from 'htmlparser2'
 
 import { NodeType } from './types'
 import { clean } from '../helpers'
-import { Cell } from './common'
+import { type Cell } from './common'
 
 export abstract class Container {
   constructor (

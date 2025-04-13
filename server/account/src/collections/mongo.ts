@@ -26,12 +26,12 @@ import {
   type Person,
   type WorkspaceMemberInfo,
   buildSocialIdString,
-  SocialKey,
+  type SocialKey,
   type AccountRole,
   type Data,
   type Version,
   type WorkspaceUuid,
-  AccountUuid
+  type AccountUuid
 } from '@hcengineering/core'
 
 import type {

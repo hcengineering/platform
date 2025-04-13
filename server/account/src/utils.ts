@@ -13,24 +13,24 @@
 // limitations under the License.
 //
 import {
-  Branding,
+  type Branding,
   concatLink,
   generateId,
   groupByArray,
-  MeasureContext,
+  type MeasureContext,
   AccountRole,
   roleOrder,
   SocialIdType,
-  WorkspaceUuid,
-  WorkspaceMode,
-  SocialKey,
+  type WorkspaceUuid,
+  type WorkspaceMode,
+  type SocialKey,
   systemAccountUuid,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   isActiveMode,
   type PersonUuid,
   type PersonId,
   type Person,
-  AccountUuid
+  type AccountUuid
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -43,20 +43,20 @@ import { PostgresAccountDB } from './collections/postgres'
 import { accountPlugin } from './plugin'
 import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import {
-  AccountMethodHandler,
-  OtpInfo,
-  WorkspaceInvite,
-  WorkspaceInfoWithStatus,
+  type AccountMethodHandler,
+  type OtpInfo,
+  type WorkspaceInvite,
+  type WorkspaceInfoWithStatus,
   type Account,
   type AccountDB,
   type RegionInfo,
   type SocialId,
   type Workspace,
-  LoginInfo,
-  WorkspaceLoginInfo,
-  WorkspaceStatus,
+  type LoginInfo,
+  type WorkspaceLoginInfo,
+  type WorkspaceStatus,
   AccountEventType,
-  Meta
+  type Meta
 } from './types'
 import { Analytics } from '@hcengineering/analytics'
 import { TokenError, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'

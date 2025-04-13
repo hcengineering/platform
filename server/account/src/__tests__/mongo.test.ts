@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 /* eslint-disable @typescript-eslint/unbound-method */
-import { Collection, Db } from 'mongodb'
+import { type Collection, type Db } from 'mongodb'
 import {
   type WorkspaceMode,
   type WorkspaceUuid,
@@ -31,7 +31,7 @@ import {
   WorkspaceStatusMongoDbCollection,
   MongoAccountDB
 } from '../collections/mongo'
-import { WorkspaceInfoWithStatus, WorkspaceStatus } from '../types'
+import { type WorkspaceInfoWithStatus, type WorkspaceStatus } from '../types'
 
 interface TestWorkspace {
   _id?: string

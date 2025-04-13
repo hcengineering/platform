@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import core, { Client, Ref, TxOperations, AccountUuid } from '@hcengineering/core'
+import core, { type Client, type Ref, type TxOperations, type AccountUuid } from '@hcengineering/core'
 import { createClient } from '@hcengineering/server-client'
-import contact, { Employee, Person } from '@hcengineering/contact'
-import chunter, { DirectMessage } from '@hcengineering/chunter'
+import contact, { type Employee, type Person } from '@hcengineering/contact'
+import chunter, { type DirectMessage } from '@hcengineering/chunter'
 import { aiBotEmailSocialKey } from '@hcengineering/ai-bot'
 import notification from '@hcengineering/notification'
 

@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { ObjectId } from 'mongodb'
-import { Class, Doc, Ref, PersonUuid } from '@hcengineering/core'
+import { type ObjectId } from 'mongodb'
+import { type Class, type Doc, type Ref, type PersonUuid } from '@hcengineering/core'
 
 export interface HistoryRecord {
   _id?: ObjectId

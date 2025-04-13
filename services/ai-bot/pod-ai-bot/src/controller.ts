@@ -15,30 +15,30 @@
 
 import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import {
-  AIEventRequest,
-  ConnectMeetingRequest,
-  DisconnectMeetingRequest,
-  IdentityResponse,
-  PersonMessage,
-  PostTranscriptRequest,
-  SummarizeMessagesRequest,
-  SummarizeMessagesResponse,
-  TranslateRequest,
-  TranslateResponse
+  type AIEventRequest,
+  type ConnectMeetingRequest,
+  type DisconnectMeetingRequest,
+  type IdentityResponse,
+  type PersonMessage,
+  type PostTranscriptRequest,
+  type SummarizeMessagesRequest,
+  type SummarizeMessagesResponse,
+  type TranslateRequest,
+  type TranslateResponse
 } from '@hcengineering/ai-bot'
 import core, {
-  AccountUuid,
-  MeasureContext,
-  PersonId,
-  Ref,
-  SocialId,
+  type AccountUuid,
+  type MeasureContext,
+  type PersonId,
+  type Ref,
+  type SocialId,
   SortingOrder,
   toIdMap,
   type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { Room } from '@hcengineering/love'
-import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
+import { type Room } from '@hcengineering/love'
+import { type WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { htmlToMarkup, jsonToHTML, jsonToMarkup, markupToJSON } from '@hcengineering/text'
@@ -46,15 +46,15 @@ import { encodingForModel } from 'js-tiktoken'
 import OpenAI from 'openai'
 
 import chunter from '@hcengineering/chunter'
-import { StorageAdapter } from '@hcengineering/server-core'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import config from './config'
-import { DbStorage } from './storage'
+import { type DbStorage } from './storage'
 import { tryAssignToWorkspace } from './utils/account'
 import { summarizeMessages, translateHtml } from './utils/openai'
 import { WorkspaceClient } from './workspace/workspaceClient'
-import contact, { Contact, getName, SocialIdentityRef } from '@hcengineering/contact'
+import contact, { type Contact, getName, type SocialIdentityRef } from '@hcengineering/contact'
 
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
 
