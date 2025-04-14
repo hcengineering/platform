@@ -2490,3 +2490,12 @@
 }
 
 /* ToDos in Calendar (WorkSlot) */
+.toDos-container .task-item.dragged {
+  overflow: hidden;
+  background-color: var(--theme-bg-dark-color);
+  border-color: var(--theme-divider-color);
+  border-radius: .125rem;
+  opacity: .75;
+
+  .hideOnDrag { opacity: 0 !important; }
+}
