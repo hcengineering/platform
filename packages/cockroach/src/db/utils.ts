@@ -19,41 +19,41 @@ export function getCondition(
   startIndex: number,
   param: any,
   type: string
-): { where: string, values: any[], index: number } | undefined {
-  const conditions: string[] = [];
-  const values: any[] = [];
-  let index = startIndex;
+): { where: string; values: any[]; index: number } | undefined {
+  const conditions: string[] = []
+  const values: any[] = []
+  let index = startIndex
 
   if (param !== null && typeof param === 'object') {
     if (param.less !== undefined) {
-      conditions.push(`${table}.${dbField} < $${index}::${type}`);
-      values.push(param.less);
-      index++;
+      conditions.push(`${table}.${dbField} < $${index}::${type}`)
+      values.push(param.less)
+      index++
     }
     if (param.lessOrEqual !== undefined) {
-      conditions.push(`${table}.${dbField} <= $${index}::${type}`);
-      values.push(param.lessOrEqual);
-      index++;
+      conditions.push(`${table}.${dbField} <= $${index}::${type}`)
+      values.push(param.lessOrEqual)
+      index++
     }
     if (param.greater !== undefined) {
-      conditions.push(`${table}.${dbField} > $${index}::${type}`);
-      values.push(param.greater);
-      index++;
+      conditions.push(`${table}.${dbField} > $${index}::${type}`)
+      values.push(param.greater)
+      index++
     }
     if (param.greaterOrEqual !== undefined) {
-      conditions.push(`${table}.${dbField} >= $${index}::${type}`);
-      values.push(param.greaterOrEqual);
-      index++;
+      conditions.push(`${table}.${dbField} >= $${index}::${type}`)
+      values.push(param.greaterOrEqual)
+      index++
     }
   }
 
   if (param != null && conditions.length === 0) {
-    conditions.push(`${table}.${dbField} = $${index}::${type}`);
-    values.push(param);
-    index++;
+    conditions.push(`${table}.${dbField} = $${index}::${type}`)
+    values.push(param)
+    index++
   }
 
-  if (conditions.length === 0) return undefined;
+  if (conditions.length === 0) return undefined
 
-  return { where: conditions.join(' AND '), values, index };
+  return { where: conditions.join(' AND '), values, index }
 }

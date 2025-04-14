@@ -14,7 +14,7 @@
     "build:types": "tsc --project ./tsconfig.json --emitDeclarationOnly --declarationDir ./types",
     "build:browser": "bun build src/index.ts --outdir dist --target browser",
     "lint": "eslint src/*.ts",
-    "format": "prettier --write src/*.ts "
+    "format": "prettier --write src/**/*.ts "
   },
   "devDependencies": {
     "@types/bun": "^1.1.14",

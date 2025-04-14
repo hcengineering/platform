@@ -13,23 +13,16 @@
 // limitations under the License.
 //
 
-import type {
-  CardID,
-  AccountID,
-  LabelID,
-  Label
-} from '@hcengineering/communication-types'
+import type { CardID, AccountID, LabelID, Label } from '@hcengineering/communication-types'
 
-import type {BaseResponseEvent} from "./common";
+import type { BaseResponseEvent } from './common'
 
 export enum LabelResponseEventType {
   LabelCreated = 'labelCreated',
-  LabelRemoved = 'labelRemoved',
+  LabelRemoved = 'labelRemoved'
 }
 
-export type LabelResponseEvent =
-  | LabelCreatedEvent
-  | LabelRemovedEvent
+export type LabelResponseEvent = LabelCreatedEvent | LabelRemovedEvent
 
 export interface LabelCreatedEvent extends BaseResponseEvent {
   type: LabelResponseEventType.LabelCreated
@@ -42,4 +35,3 @@ export interface LabelRemovedEvent extends BaseResponseEvent {
   card: CardID
   account: AccountID
 }
-

@@ -82,7 +82,7 @@ type RawContext = ContextDb & { id: ContextID } & {
   notifications?: RawNotification[]
 }
 
-export function toMessage (raw: RawMessage): Message {
+export function toMessage(raw: RawMessage): Message {
   const lastPatch = raw.patches?.[0]
 
   return {
@@ -110,7 +110,7 @@ export function toMessage (raw: RawMessage): Message {
   }
 }
 
-export function toReaction (raw: ReactionDb): Reaction {
+export function toReaction(raw: ReactionDb): Reaction {
   return {
     message: String(raw.message_id) as MessageID,
     reaction: raw.reaction,
@@ -119,7 +119,7 @@ export function toReaction (raw: ReactionDb): Reaction {
   }
 }
 
-export function toFile (raw: FileDb): File {
+export function toFile(raw: FileDb): File {
   return {
     card: raw.card_id,
     message: String(raw.message_id) as MessageID,
@@ -132,7 +132,7 @@ export function toFile (raw: FileDb): File {
   }
 }
 
-export function toMessagesGroup (raw: MessagesGroupDb): MessagesGroup {
+export function toMessagesGroup(raw: MessagesGroupDb): MessagesGroup {
   return {
     card: raw.card_id,
     blobId: raw.blob_id,
@@ -143,7 +143,7 @@ export function toMessagesGroup (raw: MessagesGroupDb): MessagesGroup {
   }
 }
 
-export function toPatch (raw: PatchDb): Patch {
+export function toPatch(raw: PatchDb): Patch {
   return {
     type: raw.type,
     message: String(raw.message_id) as MessageID,
@@ -153,7 +153,7 @@ export function toPatch (raw: PatchDb): Patch {
   }
 }
 
-export function toThread (raw: ThreadDb): Thread {
+export function toThread(raw: ThreadDb): Thread {
   return {
     card: raw.card_id,
     message: String(raw.message_id) as MessageID,
@@ -163,7 +163,7 @@ export function toThread (raw: ThreadDb): Thread {
   }
 }
 
-export function toNotificationContext (raw: RawContext): NotificationContext {
+export function toNotificationContext(raw: RawContext): NotificationContext {
   const lastView = new Date(raw.last_view)
   return {
     id: String(raw.id) as ContextID,
@@ -177,7 +177,7 @@ export function toNotificationContext (raw: RawContext): NotificationContext {
   }
 }
 
-function toNotificationRaw (
+function toNotificationRaw(
   id: ContextID,
   card: CardID,
   lastView: Date | undefined,
@@ -243,13 +243,13 @@ function toNotificationRaw (
   }
 }
 
-export function toNotification (raw: RawNotification & { card_id: CardID, last_view?: Date }): Notification {
+export function toNotification(raw: RawNotification & { card_id: CardID; last_view?: Date }): Notification {
   const lastView = raw.last_view != null ? new Date(raw.last_view) : undefined
 
   return toNotificationRaw(raw.context_id, raw.card_id, lastView, raw)
 }
 
-export function toCollaborator (raw: CollaboratorDb): Collaborator {
+export function toCollaborator(raw: CollaboratorDb): Collaborator {
   return {
     account: raw.account,
     cardType: raw.card_type,
@@ -257,7 +257,7 @@ export function toCollaborator (raw: CollaboratorDb): Collaborator {
   }
 }
 
-export function toLabel (raw: LabelDb): Label {
+export function toLabel(raw: LabelDb): Label {
   return {
     label: raw.label_id,
     card: raw.card_id,

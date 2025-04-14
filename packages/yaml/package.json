@@ -15,7 +15,7 @@
     "build:browser": "bun build src/index.ts --outdir dist --target browser",
     "build:node": "bun build src/index.ts --target node --format cjs --outfile dist/index.cjs",
     "lint": "eslint src/*.ts",
-    "format": "prettier --write src/*.ts "
+    "format": "prettier --write src/**/*.ts "
   },
   "devDependencies": {
     "@types/bun": "^1.1.14",

@@ -13,17 +13,12 @@
 // limitations under the License.
 //
 
-import type {
-  CardID,
-  AccountID,
-  LabelID,
-  CardType
-} from '@hcengineering/communication-types'
+import type { CardID, AccountID, LabelID, CardType } from '@hcengineering/communication-types'
 import type { BaseRequestEvent } from './common'
 
 export enum LabelRequestEventType {
   CreateLabel = 'createLabel',
-  RemoveLabel = 'removeLabel',
+  RemoveLabel = 'removeLabel'
 }
 
 export type LabelRequestEvent = CreateLabelEvent | RemoveLabelEvent

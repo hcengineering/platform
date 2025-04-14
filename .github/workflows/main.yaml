@@ -1,0 +1,65 @@
+#
+# Copyright © 2025 Hardcore Engineering Inc.
+#
+# Licensed under the Eclipse Public License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may
+# obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: CI
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@hcengineering'
+
+      - name: Prepare deps
+        run: |
+          echo "@hcengineering:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build
+        run: bun run build
+
+      - name: Check format
+        run: bun run format:check
+
+      - name: Lint
+        run: bun run lint
+

@@ -6,7 +6,8 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "format": "turbo run format",
-    "check": "bun run format && bun run lint"
+    "check": "bun run format && bun run lint",
+    "format:check": "prettier --check \"**/*.ts\""
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",

@@ -19,7 +19,7 @@ import {
   MessageResponseEventType,
   NotificationRequestEventType,
   type RequestEvent,
-  type ResponseEvent,
+  type ResponseEvent
 } from '@hcengineering/communication-sdk-types'
 import {
   type AccountID,
@@ -32,12 +32,12 @@ import {
   type NotificationContext
 } from '@hcengineering/communication-types'
 
-import type {TriggerCtx} from '../types'
-import {findAccount} from '../utils'
+import type { TriggerCtx } from '../types'
+import { findAccount } from '../utils'
 
 const BATCH_SIZE = 500
 
-export async function notify (ctx: TriggerCtx, event: ResponseEvent): Promise<RequestEvent[]> {
+export async function notify(ctx: TriggerCtx, event: ResponseEvent): Promise<RequestEvent[]> {
   switch (event.type) {
     case MessageResponseEventType.MessageCreated: {
       return await notifyMessage(ctx, event.message, event.cardType)
@@ -47,7 +47,7 @@ export async function notify (ctx: TriggerCtx, event: ResponseEvent): Promise<Re
   return []
 }
 
-async function notifyMessage (ctx: TriggerCtx, message: Message, cardType: CardType): Promise<RequestEvent[]> {
+async function notifyMessage(ctx: TriggerCtx, message: Message, cardType: CardType): Promise<RequestEvent[]> {
   const cursor = ctx.db.getCollaboratorsCursor(message.card, message.created, BATCH_SIZE)
   const creatorAccount = await findAccount(ctx, message.creator)
   const result: RequestEvent[] = []
@@ -77,7 +77,7 @@ async function notifyMessage (ctx: TriggerCtx, message: Message, cardType: CardT
   return result
 }
 
-async function processCollaborator (
+async function processCollaborator(
   ctx: TriggerCtx,
   cardType: CardType,
   message: Message,
@@ -89,20 +89,20 @@ async function processCollaborator (
   const isOwn = creatorAccount === collaborator
   const { contextId, events } = await createOrUpdateContext(ctx, message, collaborator, isOwn, context)
 
-if(!isOwn) {
-  result.push({
-    type: LabelRequestEventType.CreateLabel,
-    account: collaborator,
-    label: NewMessageLabelID,
-    card: message.card,
-    cardType
-  })
-}
+  if (!isOwn) {
+    result.push({
+      type: LabelRequestEventType.CreateLabel,
+      account: collaborator,
+      label: NewMessageLabelID,
+      card: message.card,
+      cardType
+    })
+  }
 
   result.push(...events)
 
   if (contextId == null || isOwn) return result
-  if(message.type !== MessageType.Message) return result
+  if (message.type !== MessageType.Message) return result
 
   result.push({
     type: NotificationRequestEventType.CreateNotification,
@@ -114,16 +114,16 @@ if(!isOwn) {
   return result
 }
 
-async function createOrUpdateContext (
+async function createOrUpdateContext(
   ctx: TriggerCtx,
   message: Message,
   collaborator: AccountID,
   isOwn: boolean,
   context?: NotificationContext
 ): Promise<{
-    contextId: ContextID | undefined
-    events: RequestEvent[]
-  }> {
+  contextId: ContextID | undefined
+  events: RequestEvent[]
+}> {
   if (context == null) {
     const contextId = await createContext(
       ctx,
@@ -157,7 +157,7 @@ async function createOrUpdateContext (
   }
 }
 
-async function createContext (
+async function createContext(
   ctx: TriggerCtx,
   account: AccountID,
   card: CardID,
@@ -184,7 +184,7 @@ async function createContext (
   }
 }
 
-function isContextRead (context: NotificationContext): boolean {
+function isContextRead(context: NotificationContext): boolean {
   const { lastView, lastUpdate } = context
 
   if (lastView == null) {

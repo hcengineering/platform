@@ -13,13 +13,7 @@
 // limitations under the License.
 //
 
-import type {
-  CardID,
-  ContextID,
-  MessageID,
-  AccountID,
-  CardType
-} from '@hcengineering/communication-types'
+import type { CardID, ContextID, MessageID, AccountID, CardType } from '@hcengineering/communication-types'
 import type { BaseRequestEvent } from './common'
 
 export enum NotificationRequestEventType {
@@ -31,7 +25,7 @@ export enum NotificationRequestEventType {
 
   CreateNotificationContext = 'createNotificationContext',
   RemoveNotificationContext = 'removeNotificationContext',
-  UpdateNotificationContext = 'updateNotificationContext',
+  UpdateNotificationContext = 'updateNotificationContext'
 }
 
 export type NotificationRequestEvent =

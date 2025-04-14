@@ -19,7 +19,7 @@ import type {
   NotificationContext,
   Notification,
   AccountID,
-  CardType,
+  CardType
 } from '@hcengineering/communication-types'
 import type { BaseResponseEvent } from './common'
 

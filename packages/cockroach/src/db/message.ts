@@ -32,13 +32,21 @@ import {
 import { generateMessageId, parseMessageId } from '@hcengineering/communication-shared'
 
 import { BaseDb } from './base'
-import {type FileDb, type MessageDb, type MessagesGroupDb, type PatchDb, type ReactionDb, TableName, type ThreadDb } from './schema'
+import {
+  type FileDb,
+  type MessageDb,
+  type MessagesGroupDb,
+  type PatchDb,
+  type ReactionDb,
+  TableName,
+  type ThreadDb
+} from './schema'
 import { getCondition } from './utils'
 import { toMessage, toMessagesGroup, toThread } from './mapping'
 
 export class MessagesDb extends BaseDb {
   // Message
-  async createMessage (
+  async createMessage(
     card: CardID,
     type: MessageType,
     content: RichText,
@@ -65,14 +73,24 @@ export class MessagesDb extends BaseDb {
 
     await this.execute(
       sql,
-      [db.workspace_id, db.card_id, db.id, db.content, db.creator, db.created, db.type, db.data ?? {}, externalId ?? null],
+      [
+        db.workspace_id,
+        db.card_id,
+        db.id,
+        db.content,
+        db.creator,
+        db.created,
+        db.type,
+        db.data ?? {},
+        externalId ?? null
+      ],
       'insert message'
     )
 
     return id
   }
 
-  async removeMessages (card: CardID, messages: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
+  async removeMessages(card: CardID, messages: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {
     if (messages.length === 0) return []
 
     const where: string[] = ['workspace_id = $1::uuid', 'card_id = $2::varchar']
@@ -105,7 +123,7 @@ export class MessagesDb extends BaseDb {
     return result.map((row: any) => row.id)
   }
 
-  async createPatch (
+  async createPatch(
     card: CardID,
     message: MessageID,
     type: PatchType,
@@ -135,7 +153,16 @@ export class MessagesDb extends BaseDb {
   }
 
   // File
-  async createFile (card: CardID, message: MessageID,  blobId: BlobID, fileType: string, filename: string, size: number,creator: SocialID, created: Date): Promise<void> {
+  async createFile(
+    card: CardID,
+    message: MessageID,
+    blobId: BlobID,
+    fileType: string,
+    filename: string,
+    size: number,
+    creator: SocialID,
+    created: Date
+  ): Promise<void> {
     const db: FileDb = {
       workspace_id: this.workspace,
       card_id: card,
@@ -151,10 +178,25 @@ export class MessagesDb extends BaseDb {
     const sql = `INSERT INTO ${TableName.File} (workspace_id, card_id, message_id, blob_id, type, filename, creator, created, message_created_sec, size)
                      VALUES ($1::uuid, $2::varchar, $3::int8, $4::uuid, $5::varchar, $6::varchar, $7::varchar, $8::timestamptz, $9::timestamptz, $10::int8)`
 
-    await this.execute(sql, [db.workspace_id, db.card_id, db.message_id, db.blob_id, db.type, db.filename, db.creator, db.created, db.message_created_sec, db.size], 'insert file')
+    await this.execute(
+      sql,
+      [
+        db.workspace_id,
+        db.card_id,
+        db.message_id,
+        db.blob_id,
+        db.type,
+        db.filename,
+        db.creator,
+        db.created,
+        db.message_created_sec,
+        db.size
+      ],
+      'insert file'
+    )
   }
 
-  async removeFile (card: CardID, message: MessageID, blobId: BlobID): Promise<void> {
+  async removeFile(card: CardID, message: MessageID, blobId: BlobID): Promise<void> {
     const sql = `DELETE
                  FROM ${TableName.File}
                  WHERE workspace_id = $1::uuid
@@ -165,7 +207,7 @@ export class MessagesDb extends BaseDb {
   }
 
   // Reaction
-  async createReaction (
+  async createReaction(
     card: CardID,
     message: MessageID,
     reaction: string,
@@ -200,7 +242,7 @@ export class MessagesDb extends BaseDb {
     }
   }
 
-  async removeReaction (
+  async removeReaction(
     card: CardID,
     message: MessageID,
     reaction: string,
@@ -228,7 +270,7 @@ export class MessagesDb extends BaseDb {
   }
 
   // Thread
-  async createThread (card: CardID, message: MessageID, thread: CardID, created: Date): Promise<void> {
+  async createThread(card: CardID, message: MessageID, thread: CardID, created: Date): Promise<void> {
     const db: ThreadDb = {
       workspace_id: this.workspace,
       card_id: card,
@@ -247,7 +289,7 @@ export class MessagesDb extends BaseDb {
     )
   }
 
-  async updateThread (thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void> {
+  async updateThread(thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void> {
     const set: string[] = []
     const values: any[] = []
 
@@ -270,7 +312,7 @@ export class MessagesDb extends BaseDb {
   }
 
   // MessagesGroup
-  async createMessagesGroup (card: CardID, blobId: BlobID, fromSec: Date, toSec: Date, count: number): Promise<void> {
+  async createMessagesGroup(card: CardID, blobId: BlobID, fromSec: Date, toSec: Date, count: number): Promise<void> {
     const db: MessagesGroupDb = {
       workspace_id: this.workspace,
       card_id: card,
@@ -289,7 +331,7 @@ export class MessagesDb extends BaseDb {
     )
   }
 
-  async removeMessagesGroup (card: CardID, blobId: BlobID): Promise<void> {
+  async removeMessagesGroup(card: CardID, blobId: BlobID): Promise<void> {
     const sql = `DELETE
                      FROM ${TableName.MessagesGroup}
                      WHERE workspace_id = $1::uuid
@@ -299,9 +341,9 @@ export class MessagesDb extends BaseDb {
   }
 
   async find(params: FindMessagesParams): Promise<Message[]> {
-    const { where, values } = this.buildMessageWhere(params);
-    const orderBy = this.buildOrderBy(params);
-    const limit = this.buildLimit(params);
+    const { where, values } = this.buildMessageWhere(params)
+    const orderBy = this.buildOrderBy(params)
+    const limit = this.buildLimit(params)
 
     const sql = `
     WITH
@@ -310,20 +352,18 @@ export class MessagesDb extends BaseDb {
     ${this.buildCteAggregatedReactions(params)}
     ${this.buildCteAggregatedPatches()}
     ${this.buildMainSelect(params)}
-  `;
+  `
 
-    const result = await this.execute(sql, values, 'find messages');
-    return result.map((it: any) => toMessage(it));
+    const result = await this.execute(sql, values, 'find messages')
+    return result.map((it: any) => toMessage(it))
   }
 
   private buildOrderBy(params: FindMessagesParams): string {
-    return params.order != null
-      ? `ORDER BY m.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}`
-      : '';
+    return params.order != null ? `ORDER BY m.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
   }
 
   private buildLimit(params: FindMessagesParams): string {
-    return params.limit != null ? `LIMIT ${params.limit}` : '';
+    return params.limit != null ? `LIMIT ${params.limit}` : ''
   }
 
   private buildCteLimitedMessages(where: string, orderBy: string, limit: string): string {
@@ -335,11 +375,11 @@ export class MessagesDb extends BaseDb {
       ${orderBy}
       ${limit}
     )
-  `;
+  `
   }
 
   private buildCteAggregatedFiles(params: FindMessagesParams): string {
-    if (!params.files) return '';
+    if (!params.files) return ''
     return `,
     agg_files AS (
       SELECT
@@ -362,11 +402,11 @@ export class MessagesDb extends BaseDb {
         AND m.id = f.message_id
       GROUP BY f.workspace_id, f.card_id, f.message_id
     )
-  `;
+  `
   }
 
   private buildCteAggregatedReactions(params: FindMessagesParams): string {
-    if (!params.reactions) return '';
+    if (!params.reactions) return ''
     return `,
     agg_reactions AS (
       SELECT
@@ -386,7 +426,7 @@ export class MessagesDb extends BaseDb {
         AND m.id = r.message_id
       GROUP BY r.workspace_id, r.card_id, r.message_id
     )
-  `;
+  `
   }
 
   private buildCteAggregatedPatches(): string {
@@ -411,34 +451,36 @@ export class MessagesDb extends BaseDb {
       WHERE p.type = 'update'
       GROUP BY p.workspace_id, p.card_id, p.message_id
     )
-  `;
+  `
   }
 
   private buildMainSelect(params: FindMessagesParams): string {
-    const orderBy = this.buildOrderBy(params);
+    const orderBy = this.buildOrderBy(params)
     const selectReplies = params.replies
       ? `t.thread_id as thread_id, t.replies_count as replies_count, t.last_reply as last_reply,`
-      : '';
+      : ''
 
-    const selectFiles = params.files
-      ? `COALESCE(f.files, '[]'::jsonb) AS files,`
-      : `'[]'::jsonb AS files,`;
+    const selectFiles = params.files ? `COALESCE(f.files, '[]'::jsonb) AS files,` : `'[]'::jsonb AS files,`
 
     const selectReactions = params.reactions
       ? `COALESCE(r.reactions, '[]'::jsonb) AS reactions,`
-      : `'[]'::jsonb AS reactions,`;
+      : `'[]'::jsonb AS reactions,`
 
-    const joinFiles = params.files ? `
+    const joinFiles = params.files
+      ? `
     LEFT JOIN agg_files f
       ON f.workspace_id = m.workspace_id
       AND f.card_id = m.card_id
-      AND f.message_id = m.id` : '';
+      AND f.message_id = m.id`
+      : ''
 
-    const joinReactions = params.reactions ? `
+    const joinReactions = params.reactions
+      ? `
     LEFT JOIN agg_reactions r
       ON r.workspace_id = m.workspace_id
       AND r.card_id = m.card_id
-      AND r.message_id = m.id` : '';
+      AND r.message_id = m.id`
+      : ''
 
     return `
     SELECT
@@ -466,10 +508,10 @@ export class MessagesDb extends BaseDb {
       AND p.card_id = m.card_id
       AND p.message_id = m.id
     ${orderBy}
-  `;
+  `
   }
 
-  buildMessageWhere (params: FindMessagesParams): { where: string, values: any[] } {
+  buildMessageWhere(params: FindMessagesParams): { where: string; values: any[] } {
     const where: string[] = ['m.workspace_id = $1::uuid']
     const values: any[] = [this.workspace]
 
@@ -502,7 +544,7 @@ export class MessagesDb extends BaseDb {
   }
 
   // Find thread
-  async findThread (thread: CardID): Promise<Thread | undefined> {
+  async findThread(thread: CardID): Promise<Thread | undefined> {
     const sql = `SELECT t.card_id,
                             t.message_id,
                             t.thread_id,
@@ -518,7 +560,7 @@ export class MessagesDb extends BaseDb {
   }
 
   // Find messages groups
-  async findMessagesGroups (params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+  async findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
     const select = `
             SELECT mg.card_id,
                    mg.blob_id,
@@ -554,7 +596,7 @@ export class MessagesDb extends BaseDb {
     return result.map((it: any) => toMessagesGroup(it))
   }
 
-  buildMessagesGroupWhere (params: FindMessagesGroupsParams): {
+  buildMessagesGroupWhere(params: FindMessagesGroupsParams): {
     where: string
     values: any[]
   } {

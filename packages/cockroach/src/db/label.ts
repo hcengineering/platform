@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-
 import {
   SortingOrder,
   type AccountID,
@@ -22,26 +21,36 @@ import {
   type FindLabelsParams,
   type LabelID,
   type Label
-} from '@hcengineering/communication-types';
+} from '@hcengineering/communication-types'
 
-import {BaseDb} from './base'
-import {type LabelDb, TableName} from "./schema.ts";
-import {toLabel} from './mapping.ts';
+import { BaseDb } from './base'
+import { type LabelDb, TableName } from './schema.ts'
+import { toLabel } from './mapping.ts'
 
 export class LabelsDb extends BaseDb {
-  async createLabel(label: LabelID, card: CardID, cardType: CardType, account: AccountID, created: Date): Promise<void> {
+  async createLabel(
+    label: LabelID,
+    card: CardID,
+    cardType: CardType,
+    account: AccountID,
+    created: Date
+  ): Promise<void> {
     const db: LabelDb = {
       workspace_id: this.workspace,
       label_id: label,
       card_id: card,
       card_type: cardType,
       account,
-      created,
+      created
     }
     const sql = `INSERT INTO ${TableName.Label} (workspace_id, label_id, card_id, card_type, account, created)
                  VALUES ($1::uuid, $2::varchar, $3::varchar, $4::varchar, $5::uuid, $6::timestamptz)
                  ON CONFLICT DO NOTHING`
-    await this.execute(sql, [db.workspace_id, db.label_id, db.card_id, db.card_type, db.account, db.created], 'insert label')
+    await this.execute(
+      sql,
+      [db.workspace_id, db.label_id, db.card_id, db.card_type, db.account, db.created],
+      'insert label'
+    )
   }
 
   async removeLabel(label: LabelID, card: CardID, account: AccountID): Promise<void> {
@@ -90,7 +99,8 @@ export class LabelsDb extends BaseDb {
     }
 
     const limit = params.limit != null ? `LIMIT ${params.limit}` : ''
-    const orderBy = params.order != null ? `ORDER BY l.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
+    const orderBy =
+      params.order != null ? `ORDER BY l.created ${params.order === SortingOrder.Ascending ? 'ASC' : 'DESC'}` : ''
 
     const whereString = `WHERE ${where.join(' AND ')}`
     const sql = [select, whereString, orderBy, limit].join(' ')

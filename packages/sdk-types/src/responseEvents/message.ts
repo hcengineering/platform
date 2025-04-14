@@ -44,7 +44,7 @@ export enum MessageResponseEventType {
   ThreadUpdated = 'threadUpdated',
 
   MessagesGroupCreated = 'messagesGroupCreated',
-  MessagesGroupRemoved = 'messagesGroupRemoved',
+  MessagesGroupRemoved = 'messagesGroupRemoved'
 }
 
 export type MessageResponseEvent =

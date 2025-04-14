@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type {FindLabelsParams, Label, WorkspaceID} from '@hcengineering/communication-types'
+import type { FindLabelsParams, Label, WorkspaceID } from '@hcengineering/communication-types'
 import {
   type EventResult,
   type LabelCreatedEvent,
@@ -21,22 +21,20 @@ import {
   LabelResponseEventType,
   type QueryCallback,
   type RequestEvent,
-  type ResponseEvent,
+  type ResponseEvent
 } from '@hcengineering/communication-sdk-types'
 
-import {QueryResult} from '../result'
-import {type Query, type QueryClient, type QueryId} from '../types'
+import { QueryResult } from '../result'
+import { type Query, type QueryClient, type QueryId } from '../types'
 
-
-function getId (label: Label): string {
+function getId(label: Label): string {
   return `${label.label}:${label.card}:${label.account}`
 }
 
 export class LabelsQuery implements Query<Label, FindLabelsParams> {
   private result: Promise<QueryResult<Label>> | QueryResult<Label>
 
-
-  constructor (
+  constructor(
     private readonly client: QueryClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string,
@@ -53,7 +51,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-  async onEvent (event: ResponseEvent): Promise<void> {
+  async onEvent(event: ResponseEvent): Promise<void> {
     switch (event.type) {
       case LabelResponseEventType.LabelCreated:
         await this.onLabelCreated(event)
@@ -64,37 +62,39 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-  async onLabelCreated (event: LabelCreatedEvent): Promise<void> {
-    if(this.result instanceof Promise) this.result = await this.result
-    if(this.params.limit && this.result.length >= this.params.limit) return
+  async onLabelCreated(event: LabelCreatedEvent): Promise<void> {
+    if (this.result instanceof Promise) this.result = await this.result
+    if (this.params.limit && this.result.length >= this.params.limit) return
 
     const match = this.match(event.label)
-    if(!match) return
+    if (!match) return
     const existing = this.result.get(getId(event.label))
-    if(existing) return
+    if (existing) return
     this.result.push(event.label)
     void this.notify()
   }
 
-  async onLabelRemoved (event: LabelRemovedEvent): Promise<void> {
-    if(this.result instanceof Promise) this.result = await this.result
+  async onLabelRemoved(event: LabelRemovedEvent): Promise<void> {
+    if (this.result instanceof Promise) this.result = await this.result
 
-    const existing = this.result.getResult().find((it) => it.account === event.account && it.card === event.card && it.label === event.label)
-    if(existing === undefined) return
+    const existing = this.result
+      .getResult()
+      .find((it) => it.account === event.account && it.card === event.card && it.label === event.label)
+    if (existing === undefined) return
     const prevLength = this.result.length
     this.result.delete(getId(existing))
 
-    if(this.params.limit && this.result.length < this.params.limit && prevLength >= this.params.limit) {
-      const labels =await this.find(this.params)
+    if (this.params.limit && this.result.length < this.params.limit && prevLength >= this.params.limit) {
+      const labels = await this.find(this.params)
       this.result = new QueryResult(labels, getId)
     }
 
     void this.notify()
   }
 
-  async onRequest (event: RequestEvent, promise: Promise<EventResult>): Promise<void> {}
+  async onRequest(event: RequestEvent, promise: Promise<EventResult>): Promise<void> {}
 
-  private async initResult (): Promise<QueryResult<Label>> {
+  private async initResult(): Promise<QueryResult<Label>> {
     try {
       const res = await this.find(this.params)
       const result = new QueryResult(res, getId)
@@ -107,22 +107,20 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
   }
 
-
-  async unsubscribe (): Promise<void> {
+  async unsubscribe(): Promise<void> {
     await this.client.unsubscribeQuery(this.id)
   }
 
-
-  removeCallback (): void {
+  removeCallback(): void {
     this.callback = () => {}
   }
 
-  setCallback (callback: QueryCallback<Label>): void {
+  setCallback(callback: QueryCallback<Label>): void {
     this.callback = callback
     void this.notify()
   }
 
-  copyResult (): QueryResult<Label> | undefined {
+  copyResult(): QueryResult<Label> | undefined {
     if (this.result instanceof Promise) {
       return undefined
     }
@@ -130,19 +128,18 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     return this.result.copy()
   }
 
-
-  private async find (params: FindLabelsParams): Promise<Label[]> {
+  private async find(params: FindLabelsParams): Promise<Label[]> {
     return await this.client.findLabels(params, this.id)
   }
 
-  private async notify (): Promise<void> {
+  private async notify(): Promise<void> {
     if (this.callback == null) return
     if (this.result instanceof Promise) this.result = await this.result
     const result = this.result.getResult()
     this.callback(result)
   }
 
-  private match (label: Label): boolean {
+  private match(label: Label): boolean {
     if (this.params.account != null && this.params.account !== label.account) {
       return false
     }
@@ -154,7 +151,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     }
     if (this.params.cardType != null) {
       const types = Array.isArray(this.params.cardType) ? this.params.cardType : [this.params.cardType]
-      if(!types.includes(label.cardType)) {
+      if (!types.includes(label.cardType)) {
         return false
       }
     }

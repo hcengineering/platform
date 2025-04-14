@@ -23,7 +23,7 @@ import type {
   PatchType,
   MessageType,
   MessageData,
-  CardType,
+  CardType
 } from '@hcengineering/communication-types'
 
 import type { BaseRequestEvent } from './common'
@@ -44,7 +44,7 @@ export enum MessageRequestEventType {
   UpdateThread = 'updateThread',
 
   CreateMessagesGroup = 'createMessagesGroup',
-  RemoveMessagesGroup = 'removeMessagesGroup',
+  RemoveMessagesGroup = 'removeMessagesGroup'
 }
 
 export type MessageRequestEvent =
