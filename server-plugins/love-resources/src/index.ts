@@ -28,7 +28,9 @@ import core, {
   UserStatus,
   combineAttributes,
   type PersonUuid,
-  type AccountUuid
+  type AccountUuid,
+  AccountRole,
+  systemAccountUuid
 } from '@hcengineering/core'
 import love, {
   Invite,
@@ -55,9 +57,11 @@ import {
 } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
+import drive from '@hcengineering/drive'
 
 export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
+
   for (const tx of txes) {
     const actualTx = tx as TxMixin<Person, Employee>
     if (actualTx._class !== core.class.TxMixin) {
@@ -73,11 +77,11 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
     if (val) {
       const freeRoom = (await control.findAll(control.ctx, love.class.Office, { person: null }))[0]
       if (freeRoom !== undefined) {
-        return [
+        result.push(
           control.txFactory.createTxUpdateDoc(freeRoom._class, freeRoom.space, freeRoom._id, {
             person: actualTx.objectId
           })
-        ]
+        )
       }
     } else {
       const room = (await control.findAll(control.ctx, love.class.Office, { person: actualTx.objectId }))[0]
@@ -89,6 +93,23 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
         )
       }
     }
+  }
+
+  const account = control.ctx.contextData.account
+  if (account.role !== AccountRole.Owner) return result
+
+  const defaultSpace = (await control.findAll(control.ctx, drive.class.Drive, { _id: love.space.Drive }))[0]
+
+  if (defaultSpace === undefined) return result
+
+  const owners = defaultSpace.owners ?? []
+
+  if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
+    result.push(
+      control.txFactory.createTxUpdateDoc(defaultSpace._class, defaultSpace.space, defaultSpace._id, {
+        owners: [account.uuid]
+      })
+    )
   }
   return result
 }
