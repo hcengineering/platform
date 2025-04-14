@@ -124,6 +124,7 @@ import IconAddMember from './components/icons/AddMember.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 import ContactNamePresenter from './components/ContactNamePresenter.svelte'
+import PersonPreviewProvider from './components/person/PersonPreviewProvider.svelte'
 
 import { get } from 'svelte/store'
 import { canResendInvitation } from './visibilityTester'
@@ -202,7 +203,8 @@ export {
   UserInfo,
   UsersList,
   UsersPopup,
-  PersonIdFilter
+  PersonIdFilter,
+  PersonPreviewProvider
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
