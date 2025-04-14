@@ -50,27 +50,27 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0;
-    width: 360px;
+    width: 22.5rem;
   }
   .content,
   .content {
-    padding-left: 4px;
+    padding-left: 0.25rem;
     isolation: isolate;
     order: 0;
     width: 100%;
 
     .main-container {
-      padding: 16px 0;
-      gap: 16px;
+      padding: 1rem 0;
+      gap: 1rem;
     }
 
     .button {
       position: absolute;
-      width: 28px;
-      height: 28px;
-      right: 16px;
-      top: 16px;
-      border-radius: 6px;
+      width: 1.75rem;
+      height: 1.75rem;
+      right: 1rem;
+      top: 1rem;
+      border-radius: 0.375rem;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -80,7 +80,7 @@
   .image-container {
     /* image-container */
     width: 100%;
-    min-height: 144px;
+    min-height: 9rem;
     display: flex;
 
     /* Inside auto layout */
@@ -88,7 +88,7 @@
     order: 0;
     align-self: stretch;
     flex-grow: 0;
-    margin: -30px 0px;
+    margin: -1.875rem 0;
     z-index: -100;
   }
 
@@ -96,7 +96,7 @@
     position: absolute;
     top: 0;
     right: 0;
-    padding: 16px;
+    padding: 1rem;
     display: flex;
     align-items: flex-start;
     flex: none;
@@ -106,13 +106,13 @@
 
   .img {
     position: absolute;
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    bottom: 0px;
-    height: 144px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    height: 9rem;
 
-    border-radius: 0px;
+    border-radius: 0;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;

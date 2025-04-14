@@ -43,7 +43,7 @@
   .achievements {
     display: flex;
     flex-wrap: wrap;
-    padding: 10px 8px 0px 8px;
+    padding: 0.625rem 0.5rem 0 0.5rem;
 
     order: 1;
   }

@@ -27,7 +27,7 @@
 <style>
   .header-container {
     display: flex;
-    padding: 0 12px;
+    padding: 0 0.75rem;
     align-items: center;
   }
   .divider {

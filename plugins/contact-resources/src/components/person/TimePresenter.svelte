@@ -50,7 +50,7 @@
   .time-container {
     justify-content: flex-start;
     align-items: center;
-    gap: 4px;
+    gap: 0.25rem;
     display: inline-flex;
   }
 </style>

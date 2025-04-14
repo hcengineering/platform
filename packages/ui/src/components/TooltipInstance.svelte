@@ -478,12 +478,12 @@
       outline: none;
       border-radius: 1.5rem;
       box-shadow:
-        0px 100px 80px rgba(0, 0, 0, 0.15),
-        0px 40px 32px rgba(0, 0, 0, 0.12),
-        0px 24px 16px rgba(0, 0, 0, 0.1),
-        0px 12px 12px rgba(0, 0, 0, 0.1),
-        0px 6px 6px rgba(0, 0, 0, 0.08),
-        0px 2px 2px rgba(0, 0, 0, 0.05);
+        0 6.25rem 5rem rgba(0, 0, 0, 0.15),
+        0 2.5rem 2rem rgba(0, 0, 0, 0.12),
+        0 1.5rem 1rem rgba(0, 0, 0, 0.1),
+        0 0.75rem 0.75rem rgba(0, 0, 0, 0.1),
+        0 0.375rem 0.375rem rgba(0, 0, 0, 0.08),
+        0 0.125rem 0.125rem rgba(0, 0, 0, 0.05);
     }
     &.disabled {
       background-color: var(--popup-color-disabled);

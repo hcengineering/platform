@@ -42,8 +42,8 @@
 
   .deactivated-label {
     flex: 1 1 0;
-    height: 32px;
-    border-radius: 6px;
+    height: 2rem;
+    border-radius: 0.375rem;
     justify-content: flex-start;
     align-items: center;
     display: flex;
@@ -52,21 +52,21 @@
   .action-buttons {
     justify-content: flex-start;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
     display: flex;
   }
 
   .deactivated-header {
-    width: 360px;
+    width: 22.5rem;
     align-self: stretch;
-    padding-left: 16px;
-    padding-right: 16px;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
     background: var(--theme-popup-deactivated);
     justify-content: flex-start;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
     display: inline-flex;
     border: none;
     outline: none;

@@ -25,7 +25,6 @@
   export let employee: Employee
   export let width: string | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
-  export let isButtonIcon: boolean = false
   export let icon: Asset | undefined = undefined
   export let type: 'type-button' | 'type-button-icon' = 'type-button'
 
@@ -47,7 +46,7 @@
 </script>
 
 <ModernButton
-  label={isButtonIcon ? undefined : chunter.string.Message}
+  label={type === 'type-button-icon' ? undefined : chunter.string.Message}
   icon={icon ?? view.icon.Bubble}
   size="small"
   iconSize="small"
