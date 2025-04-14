@@ -132,7 +132,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
       return true
     }
     const account =
-      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user))?._id ?? core.account.System
+      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user)) ?? core.account.System
 
     if (commentExternal !== undefined) {
       try {
@@ -172,7 +172,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
     repo: GithubIntegrationRepository,
     integration: IntegrationContainer
   ): Promise<void> {
-    const account = (await this.provider.getAccountU(event.sender))?._id ?? core.account.System
+    const account = (await this.provider.getAccountU(event.sender)) ?? core.account.System
 
     let externalData: ReviewThreadExternalData
     try {
@@ -287,7 +287,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
     // Use first comment as author, since github doesn't provide one.
     const account =
       existing?.modifiedBy ??
-      (await this.provider.getAccount(review.comments.nodes[0].author ?? null))?._id ??
+      (await this.provider.getAccount(review.comments.nodes[0].author ?? null)) ??
       core.account.System
 
     const messageData: ReviewThreadData = {
@@ -301,7 +301,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
       originalLine: review.originalLine,
       originalStartLine: review.originalStartLine,
       path: review.path,
-      resolvedBy: (await this.provider.getAccount(review.resolvedBy))?._id ?? core.account.System,
+      resolvedBy: (await this.provider.getAccount(review.resolvedBy)) ?? core.account.System,
       startDiffSide: review.startDiffSide
     }
     if (existing === undefined) {

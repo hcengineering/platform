@@ -104,7 +104,7 @@ export class CommentSyncManager implements DocSyncManager {
       return true
     }
     const account =
-      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user))?._id ?? core.account.System
+      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user)) ?? core.account.System
 
     if (commentExternal !== undefined) {
       try {
@@ -164,7 +164,7 @@ export class CommentSyncManager implements DocSyncManager {
       return
     }
 
-    const account = (await this.provider.getAccountU(event.sender))?._id ?? core.account.System
+    const account = (await this.provider.getAccountU(event.sender)) ?? core.account.System
     switch (event.action) {
       case 'created': {
         await this.createSyncData(event, derivedClient, repo)
@@ -277,7 +277,7 @@ export class CommentSyncManager implements DocSyncManager {
       return { needSync: githubSyncVersion }
     }
 
-    const account = existing?.modifiedBy ?? (await this.provider.getAccountU(comment.user))?._id ?? core.account.System
+    const account = existing?.modifiedBy ?? (await this.provider.getAccountU(comment.user)) ?? core.account.System
 
     const messageData: MessageData = {
       message: await this.provider.getMarkupSafe(container.container, comment.body)

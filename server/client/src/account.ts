@@ -28,10 +28,10 @@ export interface LoginInfo {
 
 const connectionErrorCodes = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND']
 
-export function getAccountClient (token?: string): AccountClient {
+export function getAccountClient (token?: string, retryTimeoutMs?: number): AccountClient {
   const accountsUrl = getMetadata(plugin.metadata.Endpoint)
 
-  return getAccountClientRaw(accountsUrl, token)
+  return getAccountClientRaw(accountsUrl, token, retryTimeoutMs)
 }
 
 const externalRegions = process.env.EXTERNAL_REGIONS?.split(';') ?? []
@@ -50,7 +50,7 @@ export async function getTransactorEndpoint (
   kind: 'internal' | 'external' | 'byregion' = 'byregion',
   timeout: number = -1
 ): Promise<string> {
-  const accountClient = getAccountClient(token)
+  const accountClient = getAccountClient(token, 30000)
   const st = Date.now()
   while (true) {
     try {

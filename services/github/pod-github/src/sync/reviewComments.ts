@@ -113,7 +113,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
       return true
     }
     const account =
-      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user))?._id ?? core.account.System
+      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user)) ?? core.account.System
 
     if (commentExternal !== undefined) {
       try {
@@ -177,7 +177,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     repo: GithubIntegrationRepository,
     integration: IntegrationContainer
   ): Promise<void> {
-    const account = (await this.provider.getAccountU(event.sender))?._id ?? core.account.System
+    const account = (await this.provider.getAccountU(event.sender)) ?? core.account.System
 
     let externalData: ReviewCommentExternalData
     try {
@@ -329,7 +329,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     const reviewComment = info.external as ReviewCommentExternalData
 
     const account =
-      existing?.modifiedBy ?? (await this.provider.getAccount(reviewComment.author))?._id ?? core.account.System
+      existing?.modifiedBy ?? (await this.provider.getAccount(reviewComment.author)) ?? core.account.System
 
     if (info.reviewThreadId === undefined && reviewComment.replyTo?.url !== undefined) {
       const rthread = await derivedClient.findOne(github.class.GithubReviewComment, {
