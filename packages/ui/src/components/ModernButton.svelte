@@ -30,7 +30,6 @@
   export let element: HTMLButtonElement | undefined = undefined
   export let id: string | undefined = undefined
   export let dataId: string | undefined = undefined
-  export let width: string | undefined = undefined
   export let type: 'type-button' | 'type-button-icon' = 'type-button'
 </script>
 
@@ -57,7 +56,6 @@
   {autoFocus}
   {id}
   {dataId}
-  {width}
   on:click
 >
   <slot />
