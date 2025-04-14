@@ -15,10 +15,13 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
   import presentation, { Card, getAttributeEditor, getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent } from '@hcengineering/ui'
+  import { Process, State } from '@hcengineering/process'
+  import { AnySvelteComponent, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 
+  export let processId: Ref<Process>
+  export let state: Ref<State>
   export let key: string
   export let _class: Ref<Class<Doc>>
 
@@ -48,6 +51,9 @@
     return false
   }
 
+  const stateVal = client.getModel().findObject(state)
+  const processVal = client.getModel().findObject(processId)
+
   $: getBaseEditor(_class, key)
 </script>
 
@@ -59,6 +65,18 @@
   okAction={save}
   okLabel={presentation.string.Save}
 >
+  {#if processVal !== undefined}
+    <div>
+      <Label label={plugin.string.Process} />:
+      {processVal.name}
+    </div>
+  {/if}
+  {#if stateVal !== undefined}
+    <div>
+      <Label label={plugin.string.Step} />:
+      {stateVal.title}
+    </div>
+  {/if}
   {#if editor}
     <div class="w-full mt-2">
       <svelte:component

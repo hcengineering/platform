@@ -48,7 +48,9 @@
     "Error": "Chyba",
     "Continue": "Pokračovat",
     "RequestFromUser": "Požádat uživatele",
-    "EnterValue": "Zadat hodnotu"
+    "EnterValue": "Zadat hodnotu",
+    "OnToDoClose": "Při zavření úkolu",
+    "OnSubProcessesDone": "Při dokončení podprocesů"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

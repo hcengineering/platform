@@ -127,7 +127,7 @@
     }
 
     if (threadId != null) {
-      const id = await communicationClient.createMessage(threadId, markdown)
+      const id = await communicationClient.createMessage(threadId, chat.masterTag.Thread, markdown)
       for (const file of files) {
         await communicationClient.createFile(threadId, id, file.blobId, file.type, file.filename, file.size)
       }

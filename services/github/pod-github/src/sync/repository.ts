@@ -105,7 +105,7 @@ export class RepositorySyncMapper implements DocSyncManager {
   async handleEvent<T>(integration: IntegrationContainer, derivedClient: TxOperations, evt: T): Promise<void> {
     const event = evt as RepositoryEvent
 
-    const account = (await this.provider.getAccountU(event.sender))?._id ?? core.account.System
+    const account = (await this.provider.getAccountU(event.sender)) ?? core.account.System
     switch (event.action) {
       case 'created': {
         await this.client.addCollection(

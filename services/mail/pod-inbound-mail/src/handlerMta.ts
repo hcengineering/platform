@@ -36,6 +36,11 @@ interface MtaMessage {
   }
 }
 
+function getHeader (mta: MtaMessage, header: string): string | undefined {
+  const h = header.toLowerCase()
+  return mta.message.headers.find((header) => header[0].toLowerCase() === h)?.[1]?.trim()
+}
+
 export async function handleMtaHook (req: Request, res: Response, ctx: MeasureContext): Promise<void> {
   try {
     if (config.hookToken !== undefined) {
@@ -51,13 +56,13 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
     if (config.ignoredAddresses.includes(from.address)) {
       return
     }
-    const fromHeader = mta.message.headers.find((header) => header[0] === 'From')?.[1]
+    const fromHeader = getHeader(mta, 'From')
     if (fromHeader !== undefined) {
       from.name = extractContactName(ctx, fromHeader)
     }
 
     const tos = mta.envelope.to.map((to) => ({ address: stripTags(to.address), name: '' }))
-    const toHeader = mta.message.headers.find((header) => header[0] === 'To')?.[1]
+    const toHeader = getHeader(mta, 'To')
     if (toHeader !== undefined) {
       for (const part of toHeader.split(',')) {
         for (const to of tos) {
@@ -68,11 +73,11 @@ export async function handleMtaHook (req: Request, res: Response, ctx: MeasureCo
       }
     }
 
-    const subject = (mta.message.headers.find((header) => header[0] === 'Subject')?.[1] ?? '').trim()
-    const inReplyTo = mta.message.headers.find((header) => header[0] === 'In-Reply-To')?.[1]?.trim()
+    const subject = getHeader(mta, 'Subject') ?? ''
+    const inReplyTo = getHeader(mta, 'In-Reply-To')
     const { content, attachments } = await parseContent(ctx, mta)
 
-    let mailId = mta.message.headers.find((header) => header[0] === 'Message-ID')?.[1].trim()
+    let mailId = getHeader(mta, 'Message-ID')
     if (mailId === undefined) {
       mailId = createHash('sha256')
         .update(
@@ -99,10 +104,15 @@ async function parseContent (
   ctx: MeasureContext,
   mta: MtaMessage
 ): Promise<{ content: string, attachments: Attachment[] }> {
-  const contentType = mta.message.headers.find((header) => header[0] === 'Content-Type')?.[1]
+  const contentType = getHeader(mta, 'Content-Type')
   if (contentType === undefined) {
     throw new Error('Content-Type header not found')
   }
+
+  if (contentType.toLowerCase().startsWith('text/plain')) {
+    return { content: mta.message.contents, attachments: [] }
+  }
+
   const contents = `Content-Type: ${contentType}\r\n${mta.message.contents}`
   const email = await new Promise<ReadedEmlJson>((resolve, reject) => {
     readEml(contents, (err, json) => {

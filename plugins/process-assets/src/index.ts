@@ -20,5 +20,7 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(process.icon, {
   Process: `${icons}#process`,
   States: `${icons}#trigger`,
-  Steps: `${icons}#steps`
+  Steps: `${icons}#steps`,
+  ToDo: `${icons}#todo`,
+  WaitSubprocesses: `${icons}#subprocesses`
 })

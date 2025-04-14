@@ -48,7 +48,9 @@
     "Error": "Erreur",
     "Continue": "Continuer",
     "RequestFromUser": "Demander à partir de l'utilisateur",
-    "EnterValue": "Saisir une valeur"
+    "EnterValue": "Saisir une valeur",
+    "OnToDoClose": "Au fermeture de la tâche",
+    "OnSubProcessesDone": "Au fin des sous-processus"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

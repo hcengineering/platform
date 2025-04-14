@@ -52,19 +52,17 @@ import { getSince, gqlp, guessStatus, isGHWriteAllowed, syncRunner } from './uti
 export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncManager {
   createPromise: Promise<IssueExternalData | undefined> | undefined
   externalDerivedSync = false
-  async getAssigneesI (issue: GithubIssue): Promise<any[]> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
+  async getAssigneesI (issue: GithubIssue): Promise<PersonId[]> {
     // Find Assignees and reviewers
-    // const assignees: PersonAccount[] = []
+    const assignees: PersonId[] = []
 
-    // for (const o of issue.assignees) {
-    //   const acc = await this.provider.getAccountU(o)
-    //   if (acc !== undefined) {
-    //     assignees.push(acc)
-    //   }
-    // }
-    // return assignees
+    for (const o of issue.assignees) {
+      const acc = await this.provider.getAccountU(o)
+      if (acc !== undefined) {
+        assignees.push(acc)
+      }
+    }
+    return assignees
   }
 
   async handleEvent<T = IssuesEvent | ProjectsV2ItemEvent>(
@@ -150,7 +148,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     integration: IntegrationContainer,
     prj: GithubProject
   ): Promise<void> {
-    const account = (await this.provider.getAccountU(event.sender))?._id ?? core.account.System
+    const account = (await this.provider.getAccountU(event.sender)) ?? core.account.System
 
     let externalData: IssueExternalData | undefined
     if (event.action !== 'deleted') {
@@ -243,8 +241,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       case 'assigned':
       case 'unassigned': {
         const assignees = await this.getAssigneesI(event.issue)
+        const persons = await this.getPersonsFromId(assignees)
         const update: IssueUpdate = {
-          assignee: assignees?.[0]?.person ?? null
+          assignee: persons?.[0] ?? null
         }
         await this.handleUpdate(externalData as IssueExternalData, derivedClient, update, account, prj, false)
         break
@@ -481,9 +480,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     info: DocSyncInfo
   ): Promise<DocumentUpdate<DocSyncInfo>> {
     const account =
-      existing?.modifiedBy ?? (await this.provider.getAccount(issueExternal.author))?._id ?? core.account.System
+      existing?.modifiedBy ?? (await this.provider.getAccount(issueExternal.author)) ?? core.account.System
     const accountGH =
-      info.lastGithubUser ?? (await this.provider.getAccount(issueExternal.author))?._id ?? core.account.System
+      info.lastGithubUser ?? (await this.provider.getAccount(issueExternal.author)) ?? core.account.System
 
     const isProjectProjectTarget = target.target.projectNodeId === target.project.projectNodeId
     const supportProjects =
@@ -492,7 +491,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     // A target node id
     const targetNodeId: string | undefined = info.targetNodeId as string
 
-    const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
 
     const type = await this.provider.getTaskTypeOf(container.project.type, tracker.class.Issue)
     const statuses = await this.provider.getStatuses(type?._id)
@@ -502,7 +501,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     const issueData = {
       title: issueExternal.title,
       description: await this.provider.getMarkupSafe(container.container, issueExternal.body, this.stripGuestLink),
-      assignee: assignees[0]?.person,
+      assignee: assignees[0],
       repository: info.repository,
       remainingTime: 0
     }

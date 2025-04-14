@@ -41,6 +41,8 @@
   import ArrowEnd from './icons/ArrowEnd.svelte'
   import ArrowStart from './icons/ArrowStart.svelte'
   import StateEditor from './StateEditor.svelte'
+  import TransitionEditor from './TransitionEditor.svelte'
+  import { getToDoEndAction } from '../utils'
 
   export let _id: Ref<Process>
   export let visibleSecondNav: boolean = true
@@ -103,20 +105,7 @@
     await client.update(value, { states: [...value.states, id] })
 
     if (prevState !== undefined) {
-      const contex: SelectedUserRequest = {
-        id: generateId(),
-        type: 'userRequest',
-        key: 'user',
-        _class: process.class.ProcessToDo
-      }
-      const endAction = {
-        methodId: process.method.CreateToDo,
-        params: {
-          state: id,
-          title: prevState.title,
-          user: '$' + JSON.stringify(contex)
-        }
-      }
+      const endAction = getToDoEndAction(prevState)
       prevState.endAction = endAction
       await client.update(prevState, { endAction })
       $settingsStore = { id: value._id, component: Aside, props: { process: value, value: prevState, index: -1 } }
@@ -204,6 +193,9 @@
                 <div class="arrow">
                   <ArrowStart size={'full'} />
                 </div>
+                {#if state.endAction !== undefined}
+                  <TransitionEditor {state} />
+                {/if}
                 <div class="arrow">
                   <ArrowEnd size={'full'} />
                 </div>

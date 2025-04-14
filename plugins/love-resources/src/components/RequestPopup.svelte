@@ -15,7 +15,7 @@
 <script lang="ts">
   import { formatName, getCurrentEmployee } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { getClient, playSound } from '@hcengineering/presentation'
+  import { getClient, playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { JoinRequest, RequestStatus } from '@hcengineering/love'
   import love from '../plugin'
@@ -45,7 +45,7 @@
   }
 
   onMount(async () => {
-    stopSound = await playSound(love.sound.Knock, love.class.JoinRequest, true)
+    stopSound = await playNotificationSound(love.sound.Knock, love.class.JoinRequest, true)
   })
 
   onDestroy(() => {

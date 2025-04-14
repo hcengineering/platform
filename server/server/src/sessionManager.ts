@@ -913,6 +913,7 @@ export class TSessionManager implements SessionManager {
             ticks: this.timeouts.reconnectTimeout * ticksPerSecond,
             operation: () => {
               this.reconnectIds.delete(sessionRef.session.sessionId)
+              void communicationApi.closeSession(sessionRef.session.sessionId)
               const user = sessionRef.session.getUser()
               if (workspace !== undefined) {
                 const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)

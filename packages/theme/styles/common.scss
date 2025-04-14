@@ -528,6 +528,7 @@
   border-radius: .25rem;
   cursor: pointer;
   user-select: text;
+  font-size: var(--body-font-size);
 
   &:hover {
     text-decoration: none !important;

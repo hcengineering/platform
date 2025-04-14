@@ -14,10 +14,9 @@
 // limitations under the License.
 //
 
-import { type Attachment, type Drawing } from '@hcengineering/attachment'
-import core, {
+import { type Attachment } from '@hcengineering/attachment'
+import {
   type BlobMetadata,
-  SortingOrder,
   type Blob,
   type Class,
   type TxOperations as Client,
@@ -30,19 +29,18 @@ import core, {
 } from '@hcengineering/core'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import {
-  type DrawingData,
   type FileOrBlob,
   getClient,
   getFileMetadata,
   getPreviewAlignment,
-  uploadFile,
-  FilePreviewPopup
+  uploadFile
 } from '@hcengineering/presentation'
 import { closeTooltip, showPopup, type PopupResult } from '@hcengineering/ui'
 import workbench, { type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
 
 import attachment from './plugin'
+import AttachmentPreviewPopup from './components/AttachmentPreviewPopup.svelte'
 
 export async function createAttachments (
   client: Client,
@@ -158,60 +156,8 @@ export function isAttachment (value: Attachment | BlobType): value is WithLookup
 }
 
 export function showAttachmentPreviewPopup (value: WithLookup<Attachment> | BlobType): PopupResult {
-  const props: Record<string, any> = {}
-
-  if (value?.type?.startsWith('image/') && isAttachment(value)) {
-    props.drawingAvailable = true
-    props.loadDrawings = async (): Promise<Drawing[] | undefined> => {
-      const client = getClient()
-      const drawings = await client.findAll(
-        attachment.class.Drawing,
-        {
-          parent: value.file,
-          space: value.space
-        },
-        {
-          sort: {
-            createdOn: SortingOrder.Descending
-          },
-          limit: 1
-        }
-      )
-      const result = []
-      if (drawings !== undefined) {
-        for (const drawing of drawings) {
-          result.push(drawing)
-        }
-      }
-      return result
-    }
-    props.createDrawing = async (data: DrawingData): Promise<DrawingData> => {
-      const client = getClient()
-      const newId = await client.createDoc(attachment.class.Drawing, value.space, {
-        parent: value.file,
-        parentClass: core.class.Blob,
-        content: data.content
-      })
-      const newDrawing = await client.findOne(attachment.class.Drawing, { _id: newId })
-      if (newDrawing === undefined) {
-        throw new Error('Unable to find just created drawing')
-      }
-      return newDrawing
-    }
-  }
-
   closeTooltip()
-  return showPopup(
-    FilePreviewPopup,
-    {
-      file: value.file,
-      contentType: value.type,
-      name: value.name,
-      metadata: value.metadata,
-      props
-    },
-    getPreviewAlignment(value.type ?? '')
-  )
+  return showPopup(AttachmentPreviewPopup, { value }, getPreviewAlignment(value.type ?? ''))
 }
 
 interface ImageDimensions {

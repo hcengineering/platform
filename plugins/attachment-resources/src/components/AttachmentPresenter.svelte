@@ -99,7 +99,8 @@
       return
     }
     if (value.type.startsWith('image/') || value.type.startsWith('video/') || value.type.startsWith('audio/')) {
-      showAttachmentPreviewPopup(value)
+      const popup = showAttachmentPreviewPopup(value)
+      dispatch('open', popup.id)
     } else {
       await openAttachmentInSidebar(value)
     }

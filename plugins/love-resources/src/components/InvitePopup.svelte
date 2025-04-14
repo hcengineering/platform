@@ -15,18 +15,20 @@
 <script lang="ts">
   import { formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, playNotificationSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { Invite, RequestStatus, getFreeRoomPlace } from '@hcengineering/love'
   import love from '../plugin'
   import { infos, myInfo, rooms } from '../stores'
   import { connectRoom } from '../utils'
+  import { onDestroy, onMount } from 'svelte'
 
   export let invite: Invite
 
   $: person = $personByIdStore.get(invite.from)
 
   const client = getClient()
+  let stopSound: (() => void) | null = null
 
   async function accept (): Promise<void> {
     const room = $rooms.find((p) => p._id === invite.room)
@@ -45,6 +47,14 @@
   async function decline (): Promise<void> {
     await client.update(invite, { status: RequestStatus.Rejected })
   }
+
+  onMount(async () => {
+    stopSound = await playNotificationSound(love.sound.Knock, love.class.Invite, true)
+  })
+
+  onDestroy(() => {
+    stopSound?.()
+  })
 </script>
 
 <div class="antiPopup flex-col-center">

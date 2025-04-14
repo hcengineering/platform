@@ -31,7 +31,8 @@ export default plugin(serverProcessId, {
   func: {
     RunSubProcess: '' as Resource<ExecuteFunc>,
     CreateToDo: '' as Resource<ExecuteFunc>,
-    UpdateCard: '' as Resource<ExecuteFunc>
+    UpdateCard: '' as Resource<ExecuteFunc>,
+    WaitSubProcess: '' as Resource<ExecuteFunc>
   },
   transform: {
     FirstValue: '' as Resource<TransformFunc>,

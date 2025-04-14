@@ -41,7 +41,7 @@ import DraftTagsEditor from './components/DraftTagsEditor.svelte'
 import TagsFilterPresenter from './components/TagsFilterPresenter.svelte'
 import DocTagsEditor from './components/DocTagsEditor.svelte'
 
-export { WeightPopup, TagElement, selectedTagElements }
+export { WeightPopup, TagElement, selectedTagElements, TagElementPresenter }
 export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getRefs(filter, onUpdate)
   return { $in: result }

@@ -13,24 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { getCurrentEmployee } from '@hcengineering/contact'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
-  import { Class, Doc, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { getClient, MessageViewer, pendingCreatedDocs } from '@hcengineering/presentation'
-  import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
-  import { getDocLinkTitle } from '@hcengineering/view-resources'
-  import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import activity, { ActivityMessage, ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityDocLink, ActivityMessageTemplate, MessageInlineAction } from '@hcengineering/activity-resources'
-  import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
   import { Attachment } from '@hcengineering/attachment'
+  import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
+  import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
+  import contact, { getCurrentEmployee, type SocialIdentityRef } from '@hcengineering/contact'
+  import {
+    personByPersonIdStore,
+    primarySocialIdByPersonIdStore,
+    socialIdsStore
+  } from '@hcengineering/contact-resources'
+  import { Class, Doc, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { getClient, MessageViewer, pendingCreatedDocs } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
+  import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { getDocLinkTitle } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
+  import { shownTranslatedMessagesStore, translatedMessagesStore, translatingMessagesStore } from '../../stores'
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
-  import { translatedMessagesStore, translatingMessagesStore, shownTranslatedMessagesStore } from '../../stores'
 
   export let value: WithLookup<ChatMessage> | undefined
   export let doc: Doc | undefined = undefined
@@ -80,6 +84,8 @@
 
   $: personId = value?.createdBy
   $: person = personId !== undefined ? $personByPersonIdStore.get(personId) : undefined
+
+  $: socialId = personId !== undefined ? $socialIdsStore.get(personId as SocialIdentityRef) : undefined
 
   let originalText = value?.message
 
@@ -227,6 +233,7 @@
     {viewlet}
     {parentMessage}
     {person}
+    socialId={socialId?.type !== 'huly' ? socialId : undefined}
     {showNotify}
     {isHighlighted}
     {isSelected}

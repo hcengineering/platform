@@ -1,19 +1,18 @@
-import type { PersonId } from '@hcengineering/core'
-import type { Collection, FindCursor } from 'mongodb'
+import type { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
+import { systemAccountUuid, type PersonId, type WorkspaceUuid } from '@hcengineering/core'
+import { getAccountClient } from '@hcengineering/server-client'
+import { generateToken } from '@hcengineering/server-token'
 import type { GithubUserRecord } from './types'
 
 export class UserManager {
   userCache = new Map<string, GithubUserRecord>()
   refUserCache = new Map<string, GithubUserRecord>()
 
-  constructor (readonly usersCollection: Collection<GithubUserRecord>) {}
+  accountClient: AccountClient
 
-  public async getUsers (workspace: string): Promise<GithubUserRecord[]> {
-    return await this.usersCollection
-      .find<GithubUserRecord>({
-      [`accounts.${workspace}`]: { $exists: true }
-    })
-      .toArray()
+  constructor () {
+    const sysToken = generateToken(systemAccountUuid, '' as WorkspaceUuid, { service: 'github' })
+    this.accountClient = getAccountClient(sysToken, 30000)
   }
 
   async getAccount (login: string): Promise<GithubUserRecord | undefined> {
@@ -21,7 +20,11 @@ export class UserManager {
     if (res !== undefined) {
       return res
     }
-    res = (await this.usersCollection.findOne({ _id: login })) ?? undefined
+    const secrets = await this.accountClient.listIntegrationsSecrets({ kind: 'github-user', key: login })
+    if (secrets.length === 0) {
+      return
+    }
+    res = this.secretToUserRecord(secrets[0], login)
     if (res !== undefined) {
       if (this.userCache.size > 1000) {
         this.userCache.clear()
@@ -31,13 +34,28 @@ export class UserManager {
     return res
   }
 
-  async getAccountByRef (workspace: string, ref: PersonId): Promise<GithubUserRecord | undefined> {
+  private secretToUserRecord (secret: IntegrationSecret, login: string): GithubUserRecord | undefined {
+    return {
+      ...(JSON.parse(secret.secret) ?? {}), // TODO: Add security
+      account: secret.socialId,
+      _id: login,
+      accounts: {}
+    }
+  }
+
+  async getAccountByRef (workspace: WorkspaceUuid, ref: PersonId): Promise<GithubUserRecord | undefined> {
     const key = `${workspace}.${ref}`
     let rec = this.refUserCache.get(key)
     if (rec !== undefined) {
       return rec
     }
-    rec = (await this.usersCollection.findOne({ [`accounts.${workspace}`]: ref })) ?? undefined
+
+    const secrets = await this.accountClient.listIntegrationsSecrets({ kind: 'github-user', socialId: ref })
+    if (secrets.length === 0) {
+      return
+    }
+
+    rec = this.secretToUserRecord(secrets[0], secrets[0].key)
     if (rec !== undefined) {
       if (this.refUserCache.size > 1000) {
         this.refUserCache.clear()
@@ -47,23 +65,67 @@ export class UserManager {
     return rec
   }
 
-  async updateUser (dta: GithubUserRecord): Promise<void> {
-    this.userCache.clear()
-    this.refUserCache.clear()
-    await this.usersCollection.updateOne({ _id: dta._id }, { $set: dta } as any)
+  async updateUser (dta: GithubUserRecord, clear: boolean = true): Promise<void> {
+    if (clear) {
+      this.userCache.clear()
+      this.refUserCache.clear()
+    }
+
+    // Need to check if user integeration exists.
+    const existing = await this.accountClient.getIntegration({
+      kind: 'github-user',
+      workspaceUuid: null,
+      socialId: dta.account
+    })
+
+    if (existing == null) {
+      await this.accountClient.createIntegration({
+        kind: 'github-user',
+        workspaceUuid: null,
+        socialId: dta.account,
+        data: {
+          login: dta._id
+        }
+      })
+    }
+
+    const exists = await this.accountClient.getIntegrationSecret({
+      key: dta._id,
+      kind: 'github-user',
+      socialId: dta.account,
+      workspaceUuid: null
+    })
+
+    if (exists !== null) {
+      await this.accountClient.updateIntegrationSecret({
+        key: dta._id,
+        kind: 'github-user',
+        socialId: dta.account,
+        secret: JSON.stringify(dta),
+        workspaceUuid: null
+      })
+    } else {
+      await this.accountClient.addIntegrationSecret({
+        key: dta._id,
+        kind: 'github-user',
+        socialId: dta.account,
+        secret: JSON.stringify(dta),
+        workspaceUuid: null
+      })
+    }
   }
 
   async insertUser (dta: GithubUserRecord): Promise<void> {
-    await this.usersCollection.insertOne(dta)
+    await this.updateUser(dta, false)
   }
 
   async removeUser (login: string): Promise<void> {
     this.userCache.clear()
     this.refUserCache.clear()
-    await this.usersCollection.deleteOne({ _id: login })
-  }
 
-  getAllUsers (): FindCursor<GithubUserRecord> {
-    return this.usersCollection.find({})
+    const secerts = await this.accountClient.listIntegrationsSecrets({ kind: 'github-user', key: login })
+    for (const s of secerts) {
+      await this.accountClient.deleteIntegrationSecret(s)
+    }
   }
 }

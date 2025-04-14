@@ -1,11 +1,11 @@
 import { Person } from '@hcengineering/contact'
 import {
-  PersonId,
   Branding,
   Class,
   Data,
   Doc,
   DocumentUpdate,
+  PersonId,
   Ref,
   Space,
   Status,
@@ -14,10 +14,6 @@ import {
   WorkspaceUuid,
   type Blob
 } from '@hcengineering/core'
-import { LiveQuery } from '@hcengineering/query'
-import { ProjectType, TaskType } from '@hcengineering/task'
-import { MarkupNode } from '@hcengineering/text'
-import { User } from '@octokit/webhooks-types'
 import {
   DocSyncInfo,
   GithubIntegration,
@@ -26,6 +22,10 @@ import {
   GithubProject,
   GithubUserInfo
 } from '@hcengineering/github'
+import { LiveQuery } from '@hcengineering/query'
+import { ProjectType, TaskType } from '@hcengineering/task'
+import { MarkupNode } from '@hcengineering/text'
+import { User } from '@octokit/webhooks-types'
 import { Octokit } from 'octokit'
 import { GithubProjectV2 } from './sync/githubTypes'
 
@@ -83,9 +83,8 @@ export interface ContainerFocus {
 export interface IntegrationManager {
   liveQuery: LiveQuery
   getContainer: (space: Ref<Space>) => Promise<ContainerFocus | undefined>
-  // TODO: FIXME
-  getAccount: (user?: UserInfo | null) => Promise<any | undefined>
-  getAccountU: (user: User) => Promise<any | undefined>
+  getAccount: (user?: UserInfo | null) => Promise<PersonId | undefined>
+  getAccountU: (user: User) => Promise<PersonId | undefined>
   getOctokit: (account: PersonId) => Promise<Octokit | undefined>
   getMarkupSafe: (
     container: IntegrationContainer,
@@ -194,7 +193,7 @@ export interface DocSyncManager {
  */
 export interface GithubIntegrationRecord {
   installationId: number
-  workspace: string
+  workspace: WorkspaceUuid
   accountId: PersonId
 }
 
@@ -202,6 +201,7 @@ export interface GithubIntegrationRecord {
  * @public
  */
 export interface GithubUserRecord {
+  account: PersonId
   _id: string // login
   code?: string | null
   token?: string
@@ -212,6 +212,5 @@ export interface GithubUserRecord {
   state?: string
   scope?: string
   error?: string | null
-
-  accounts: Record<string, PersonId>
+  accounts: Record<WorkspaceUuid, PersonId>
 }

@@ -71,6 +71,7 @@ import {
   createMongoAdapter,
   createMongoDestroyAdapter,
   createMongoTxAdapter,
+  getMongoClient,
   shutdownMongo
 } from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
@@ -93,6 +94,7 @@ import { getAccountDBUrl, getMongoDBUrl } from './__start'
 import { changeConfiguration } from './configuration'
 
 import { moveAccountDbFromMongoToPG } from './db'
+import { performGithubAccountMigrations } from './github'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 const colorConstants = {
@@ -2398,6 +2400,20 @@ export function devTool (
   //       await fillGithubUsers(toolCtx, db, cmd.token)
   //     })
   //   })
+
+  program
+    .command('migrate-github-account')
+    .option('--db <db>', 'Github DB', '%github')
+    .option('--region <region>', 'Github DB')
+    .action(async (cmd: { db: string, region?: string }) => {
+      const mongodbUri = getMongoDBUrl()
+      const client = getMongoClient(mongodbUri)
+      const _client = await client.getClient()
+
+      await performGithubAccountMigrations(_client.db(cmd.db), cmd.region ?? null)
+      await _client.close()
+      client.close()
+    })
 
   program
     .command('queue-init-topics')
