@@ -240,8 +240,13 @@ const calendarPlugin = plugin(calendarId, {
     Day: '' as IntlString,
     Week: '' as IntlString,
     Month: '' as IntlString,
-    CalDavShareLink: '' as IntlString,
-    CalDavSharedLinkMessage: '' as IntlString
+    CalDavAccess: '' as IntlString,
+    CalDavAccessPrompt: '' as IntlString,
+    CalDavAccessEnable: '' as IntlString,
+    CalDavAccessServer: '' as IntlString,
+    CalDavAccessAccount: '' as IntlString,
+    CalDavAccessPassword: '' as IntlString,
+    CopyValue: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler
@@ -262,7 +267,7 @@ const calendarPlugin = plugin(calendarId, {
     NoAttached: '' as Ref<Event>
   },
   function: {
-    ShareCalDavLink: '' as Resource<() => Promise<void>>
+    ConfigureCalDavAccess: '' as Resource<() => Promise<void>>
   }
 })
 

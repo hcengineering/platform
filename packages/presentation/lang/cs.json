@@ -38,7 +38,9 @@
     "DrawingHistory": "Čmárání historie",
     "ColorAdd": "Přidejte předvolbu barev",
     "ColorRemove": "Odstraňte předvolbu barev",
-    "ColorReset": "Resetovat předvolby barev"
+    "ColorReset": "Resetovat předvolby barev",
+    "Copy": "Kopírovat",
+    "CopyLink": "Zkopírovat odkaz"
   },
   "status": {
     "FileTooLarge": "Soubor je příliš velký"
