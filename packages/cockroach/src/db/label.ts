@@ -24,8 +24,8 @@ import {
 } from '@hcengineering/communication-types'
 
 import { BaseDb } from './base'
-import { type LabelDb, TableName } from './schema.ts'
-import { toLabel } from './mapping.ts'
+import { type LabelDb, TableName } from './schema'
+import { toLabel } from './mapping'
 
 export class LabelsDb extends BaseDb {
   async createLabel(

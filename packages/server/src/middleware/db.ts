@@ -2,7 +2,7 @@
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
+//  you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -13,16 +13,22 @@
 // limitations under the License.
 //
 
-import { type Message, type Patch, type Reaction } from '@hcengineering/communication-types'
+import type {
+  FindLabelsParams,
+  FindMessagesGroupsParams,
+  FindMessagesParams,
+  FindNotificationContextParams,
+  FindNotificationsParams,
+  Label,
+  Message,
+  MessagesGroup,
+  Notification,
+  NotificationContext,
+  Patch,
+  Reaction
+} from '@hcengineering/communication-types'
 import {
-  LabelRequestEventType,
-  LabelResponseEventType,
-  MessageRequestEventType,
-  MessageResponseEventType,
-  NotificationRequestEventType,
-  NotificationResponseEventType,
   type AddCollaboratorsEvent,
-  type ConnectionInfo,
   type CreateFileEvent,
   type CreateLabelEvent,
   type CreateMessageEvent,
@@ -36,12 +42,18 @@ import {
   type EventResult,
   type FileCreatedEvent,
   type FileRemovedEvent,
+  LabelRequestEventType,
+  LabelResponseEventType,
   type MessageCreatedEvent,
+  MessageRequestEventType,
+  MessageResponseEventType,
   type MessagesGroupCreatedEvent,
   type MessagesRemovedEvent,
   type NotificationContextCreatedEvent,
   type NotificationContextRemovedEvent,
   type NotificationContextUpdatedEvent,
+  NotificationRequestEventType,
+  NotificationResponseEventType,
   type NotificationsRemovedEvent,
   type PatchCreatedEvent,
   type ReactionCreatedEvent,
@@ -51,73 +63,114 @@ import {
   type RemoveLabelEvent,
   type RemoveMessagesEvent,
   type RemoveMessagesGroupEvent,
+  type RemoveMessagesResult,
   type RemoveNotificationContextEvent,
   type RemoveNotificationsEvent,
   type RemoveReactionEvent,
   type RequestEvent,
   type ResponseEvent,
+  type SessionData,
   type ThreadCreatedEvent,
   type UpdateNotificationContextEvent,
-  type UpdateThreadEvent,
-  type RemoveMessagesResult
+  type UpdateThreadEvent
 } from '@hcengineering/communication-sdk-types'
 import { systemAccountUuid } from '@hcengineering/core'
 
-export interface Result {
+import type { Middleware, MiddlewareContext } from '../types'
+import { BaseMiddleware } from './base'
+
+interface Result {
   responseEvent?: ResponseEvent
   result?: EventResult
 }
 
-export class EventProcessor {
-  constructor(private readonly db: DbAdapter) {}
+export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
+  constructor(
+    private readonly db: DbAdapter,
+    readonly context: MiddlewareContext,
+    next?: Middleware
+  ) {
+    super(context, next)
+  }
 
-  async process(info: ConnectionInfo, event: RequestEvent): Promise<Result> {
+  async findMessages(_: SessionData, params: FindMessagesParams): Promise<Message[]> {
+    return await this.db.findMessages(params)
+  }
+
+  async findMessagesGroups(_: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+    return await this.db.findMessagesGroups(params)
+  }
+
+  async findNotificationContexts(
+    _: SessionData,
+    params: FindNotificationContextParams
+  ): Promise<NotificationContext[]> {
+    return await this.db.findNotificationContexts(params)
+  }
+
+  async findNotifications(_: SessionData, params: FindNotificationsParams): Promise<Notification[]> {
+    return await this.db.findNotifications(params)
+  }
+
+  async findLabels(_: SessionData, params: FindLabelsParams): Promise<Label[]> {
+    return await this.db.findLabels(params)
+  }
+
+  async event(session: SessionData, event: RequestEvent): Promise<EventResult> {
+    const result = await this.processEvent(session, event)
+    if (result.responseEvent) {
+      void this.context.head?.response(session, result.responseEvent)
+    }
+
+    return result.result ?? {}
+  }
+
+  private async processEvent(session: SessionData, event: RequestEvent): Promise<Result> {
     switch (event.type) {
       case MessageRequestEventType.CreateMessage:
-        return await this.createMessage(event, info)
+        return await this.createMessage(event)
       case MessageRequestEventType.RemoveMessages:
-        return await this.removeMessages(event, info)
+        return await this.removeMessages(event, session)
       case MessageRequestEventType.CreatePatch:
-        return await this.createPatch(event, info)
+        return await this.createPatch(event)
       case MessageRequestEventType.CreateReaction:
-        return await this.createReaction(event, info)
+        return await this.createReaction(event)
       case MessageRequestEventType.RemoveReaction:
-        return await this.removeReaction(event, info)
+        return await this.removeReaction(event)
       case MessageRequestEventType.CreateFile:
-        return await this.createFile(event, info)
+        return await this.createFile(event)
       case MessageRequestEventType.RemoveFile:
-        return await this.removeFile(event, info)
+        return await this.removeFile(event)
       case NotificationRequestEventType.CreateNotification:
-        return await this.createNotification(event, info)
+        return await this.createNotification(event)
       case NotificationRequestEventType.RemoveNotifications:
-        return await this.removeNotifications(event, info)
+        return await this.removeNotifications(event)
       case NotificationRequestEventType.CreateNotificationContext:
-        return await this.createNotificationContext(event, info)
+        return await this.createNotificationContext(event)
       case NotificationRequestEventType.RemoveNotificationContext:
-        return await this.removeNotificationContext(event, info)
+        return await this.removeNotificationContext(event)
       case NotificationRequestEventType.UpdateNotificationContext:
-        return await this.updateNotificationContext(event, info)
+        return await this.updateNotificationContext(event)
       case MessageRequestEventType.CreateMessagesGroup:
-        return await this.createMessagesGroup(event, info)
+        return await this.createMessagesGroup(event)
       case MessageRequestEventType.CreateThread:
-        return await this.createThread(event, info)
+        return await this.createThread(event)
       case MessageRequestEventType.RemoveMessagesGroup:
-        return await this.removeMessagesGroup(event, info)
+        return await this.removeMessagesGroup(event)
       case NotificationRequestEventType.AddCollaborators:
-        return await this.addCollaborators(event, info)
+        return await this.addCollaborators(event)
       case NotificationRequestEventType.RemoveCollaborators:
-        return await this.removeCollaborators(event, info)
+        return await this.removeCollaborators(event)
       case MessageRequestEventType.UpdateThread:
-        return await this.updateThread(event, info)
+        return await this.updateThread(event)
       case LabelRequestEventType.CreateLabel:
-        return await this.createLabel(event, info)
+        return await this.createLabel(event)
       case LabelRequestEventType.RemoveLabel:
-        return await this.removeLabel(event, info)
+        return await this.removeLabel(event)
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async updateThread(event: UpdateThreadEvent, _: ConnectionInfo): Promise<Result> {
+  private async updateThread(event: UpdateThreadEvent): Promise<Result> {
     await this.db.updateThread(event.thread, event.replies, event.lastReply)
     return {
       responseEvent: {
@@ -130,22 +183,21 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async addCollaborators(event: AddCollaboratorsEvent, _: ConnectionInfo): Promise<Result> {
-    await this.db.addCollaborators(event.card, event.cardType, event.collaborators, event.date)
+  private async addCollaborators(event: AddCollaboratorsEvent): Promise<Result> {
+    const added = await this.db.addCollaborators(event.card, event.cardType, event.collaborators, event.date)
+    if (added.length === 0) return {}
     return {
       responseEvent: {
         _id: event._id,
         type: NotificationResponseEventType.AddedCollaborators,
         card: event.card,
         cardType: event.cardType,
-        collaborators: event.collaborators
+        collaborators: added
       }
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async removeCollaborators(event: RemoveCollaboratorsEvent, _: ConnectionInfo): Promise<Result> {
+  private async removeCollaborators(event: RemoveCollaboratorsEvent): Promise<Result> {
     await this.db.removeCollaborators(event.card, event.collaborators)
 
     return {
@@ -158,8 +210,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async createMessage(event: CreateMessageEvent, _: ConnectionInfo): Promise<Result> {
+  private async createMessage(event: CreateMessageEvent): Promise<Result> {
     const created = new Date()
     const id = await this.db.createMessage(
       event.card,
@@ -194,8 +245,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async createPatch(event: CreatePatchEvent, _: ConnectionInfo): Promise<Result> {
+  private async createPatch(event: CreatePatchEvent): Promise<Result> {
     const created = new Date()
     await this.db.createPatch(event.card, event.message, event.patchType, event.content, event.creator, created)
 
@@ -217,8 +267,9 @@ export class EventProcessor {
     }
   }
 
-  private async removeMessages(event: RemoveMessagesEvent, info: ConnectionInfo): Promise<Result> {
-    const socialIds = systemAccountUuid === info.account.uuid ? undefined : info.account.socialIds
+  private async removeMessages(event: RemoveMessagesEvent, session: SessionData): Promise<Result> {
+    const account = session.account
+    const socialIds = systemAccountUuid === account.uuid ? undefined : account.socialIds
     const deleted = await this.db.removeMessages(event.card, event.messages, socialIds)
 
     const responseEvent: MessagesRemovedEvent = {
@@ -237,8 +288,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async createReaction(event: CreateReactionEvent, _: ConnectionInfo): Promise<Result> {
+  private async createReaction(event: CreateReactionEvent): Promise<Result> {
     const created = new Date()
     await this.db.createReaction(event.card, event.message, event.reaction, event.creator, created)
 
@@ -259,8 +309,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async removeReaction(event: RemoveReactionEvent, _: ConnectionInfo): Promise<Result> {
+  private async removeReaction(event: RemoveReactionEvent): Promise<Result> {
     await this.db.removeReaction(event.card, event.message, event.reaction, event.creator)
     const responseEvent: ReactionRemovedEvent = {
       _id: event._id,
@@ -275,8 +324,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async createFile(event: CreateFileEvent, _: ConnectionInfo): Promise<Result> {
+  private async createFile(event: CreateFileEvent): Promise<Result> {
     const created = new Date()
     await this.db.createFile(
       event.card,
@@ -308,8 +356,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async removeFile(event: RemoveFileEvent, _: ConnectionInfo): Promise<Result> {
+  private async removeFile(event: RemoveFileEvent): Promise<Result> {
     await this.db.removeFile(event.card, event.message, event.blobId)
     const responseEvent: FileRemovedEvent = {
       _id: event._id,
@@ -324,8 +371,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async createNotification(event: CreateNotificationEvent, _: ConnectionInfo): Promise<Result> {
+  private async createNotification(event: CreateNotificationEvent): Promise<Result> {
     const id = await this.db.createNotification(event.context, event.message, event.created)
 
     return {
@@ -344,8 +390,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async removeNotifications(event: RemoveNotificationsEvent, _: ConnectionInfo): Promise<Result> {
+  private async removeNotifications(event: RemoveNotificationsEvent): Promise<Result> {
     await this.db.removeNotification(event.context, event.account, event.untilDate)
 
     const responseEvent: NotificationsRemovedEvent = {
@@ -360,8 +405,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async createNotificationContext(event: CreateNotificationContextEvent, _: ConnectionInfo): Promise<Result> {
+  private async createNotificationContext(event: CreateNotificationContextEvent): Promise<Result> {
     const id = await this.db.createContext(event.account, event.card, event.lastUpdate, event.lastView)
     const responseEvent: NotificationContextCreatedEvent = {
       _id: event._id,
@@ -380,11 +424,7 @@ export class EventProcessor {
     }
   }
 
-  private async removeNotificationContext(
-    event: RemoveNotificationContextEvent,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _: ConnectionInfo
-  ): Promise<Result> {
+  private async removeNotificationContext(event: RemoveNotificationContextEvent): Promise<Result> {
     await this.db.removeContext(event.context, event.account)
     const responseEvent: NotificationContextRemovedEvent = {
       _id: event._id,
@@ -397,8 +437,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async updateNotificationContext(event: UpdateNotificationContextEvent, _: ConnectionInfo): Promise<Result> {
+  async updateNotificationContext(event: UpdateNotificationContextEvent): Promise<Result> {
     await this.db.updateContext(event.context, event.account, event.lastUpdate, event.lastView)
 
     const responseEvent: NotificationContextUpdatedEvent = {
@@ -414,8 +453,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async createMessagesGroup(event: CreateMessagesGroupEvent, _: ConnectionInfo): Promise<Result> {
+  async createMessagesGroup(event: CreateMessagesGroupEvent): Promise<Result> {
     const { fromSec, toSec, count, card, blobId } = event.group
     await this.db.createMessagesGroup(card, blobId, fromSec, toSec, count)
 
@@ -435,15 +473,13 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async removeMessagesGroup(event: RemoveMessagesGroupEvent, _: ConnectionInfo): Promise<Result> {
+  async removeMessagesGroup(event: RemoveMessagesGroupEvent): Promise<Result> {
     await this.db.removeMessagesGroup(event.card, event.blobId)
 
     return {}
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async createThread(event: CreateThreadEvent, _: ConnectionInfo): Promise<Result> {
+  private async createThread(event: CreateThreadEvent): Promise<Result> {
     const date = new Date()
     await this.db.createThread(event.card, event.message, event.thread, date)
     const responseEvent: ThreadCreatedEvent = {
@@ -462,8 +498,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async createLabel(event: CreateLabelEvent, _: ConnectionInfo): Promise<Result> {
+  private async createLabel(event: CreateLabelEvent): Promise<Result> {
     const created = new Date()
     await this.db.createLabel(event.label, event.card, event.cardType, event.account, created)
     return {
@@ -481,8 +516,7 @@ export class EventProcessor {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async removeLabel(event: RemoveLabelEvent, _: ConnectionInfo): Promise<Result> {
+  private async removeLabel(event: RemoveLabelEvent): Promise<Result> {
     await this.db.removeLabel(event.label, event.card, event.account)
     return {
       responseEvent: {
@@ -493,5 +527,9 @@ export class EventProcessor {
         account: event.account
       }
     }
+  }
+
+  close(): void {
+    this.db.close()
   }
 }

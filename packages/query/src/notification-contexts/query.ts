@@ -64,9 +64,9 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       order: params.order ?? defaultQueryParams.order
     }
     const limit = params.limit != null ? params.limit + 1 : undefined
-    const findParams = {
+    const findParams: FindNotificationContextParams = {
       ...this.params,
-      sort: this.params.order ?? defaultQueryParams.order,
+      order: this.params.order ?? defaultQueryParams.order,
       limit
     }
 

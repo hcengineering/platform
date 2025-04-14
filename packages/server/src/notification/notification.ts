@@ -56,7 +56,7 @@ async function notifyMessage(ctx: TriggerCtx, message: Message, cardType: CardTy
 
   for await (const dbCollaborators of cursor) {
     const collaborators: AccountID[] = dbCollaborators.map((it) => it.account)
-    const contexts: NotificationContext[] = await ctx.db.findContexts({
+    const contexts: NotificationContext[] = await ctx.db.findNotificationContexts({
       card: message.card,
       account: isFirstBatch && collaborators.length < BATCH_SIZE ? undefined : collaborators
     })
@@ -176,7 +176,7 @@ async function createContext(
     return result.id
   } catch (e) {
     return (
-      await ctx.db.findContexts({
+      await ctx.db.findNotificationContexts({
         account,
         card
       })

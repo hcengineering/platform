@@ -14,18 +14,103 @@
 //
 
 import type { Account, MeasureContext } from '@hcengineering/core'
-import type { DbAdapter, EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
-import type { WorkspaceID } from '@hcengineering/communication-types'
+import type {
+  DbAdapter,
+  EventResult,
+  RequestEvent,
+  ResponseEvent,
+  ResponseEventType,
+  SessionData
+} from '@hcengineering/communication-sdk-types'
+import type {
+  CardID,
+  FindLabelsParams,
+  FindMessagesGroupsParams,
+  FindMessagesParams,
+  FindNotificationContextParams,
+  FindNotificationsParams,
+  Label,
+  Message,
+  MessagesGroup,
+  Notification,
+  NotificationContext,
+  WorkspaceID
+} from '@hcengineering/communication-types'
 
-import type { Metadata } from './metadata'
+export interface Metadata {
+  msg2fileUrl: string
+  accountsUrl: string
+  secret?: string
+}
+
+export type QueryId = string | number
+
+export interface Middleware {
+  findMessages: (session: SessionData, params: FindMessagesParams, queryId?: QueryId) => Promise<Message[]>
+  findMessagesGroups: (
+    session: SessionData,
+    params: FindMessagesGroupsParams,
+    queryId?: QueryId
+  ) => Promise<MessagesGroup[]>
+
+  findNotificationContexts: (
+    session: SessionData,
+    params: FindNotificationContextParams,
+    queryId?: QueryId
+  ) => Promise<NotificationContext[]>
+  findNotifications: (
+    session: SessionData,
+    params: FindNotificationsParams,
+    queryId?: QueryId
+  ) => Promise<Notification[]>
+
+  findLabels: (session: SessionData, params: FindLabelsParams, queryId?: QueryId) => Promise<Label[]>
+
+  event: (session: SessionData, event: RequestEvent, derived: boolean) => Promise<EventResult>
+
+  unsubscribeQuery: (session: SessionData, queryId: number) => void
+
+  response: (session: SessionData, event: ResponseEvent) => Promise<void>
+
+  closeSession: (sessionId: string) => void
+  close: () => void
+}
+
+export interface MiddlewareContext {
+  ctx: MeasureContext
+  workspace: WorkspaceID
+  metadata: Metadata
+  registeredCards: Set<CardID>
+
+  derived?: Middleware
+  head?: Middleware
+}
+
+export type MiddlewareCreateFn = (context: MiddlewareContext, next?: Middleware) => Promise<Middleware>
+
+export type BroadcastSessionsFunc = (ctx: MeasureContext, sessionIds: string[], result: any) => void
+
+export type TriggersDb = Pick<
+  DbAdapter,
+  | 'findMessagesGroups'
+  | 'findMessages'
+  | 'findCollaborators'
+  | 'findNotifications'
+  | 'findNotificationContexts'
+  | 'findLabels'
+  | 'getCollaboratorsCursor'
+  | 'findThread'
+>
 
 export interface TriggerCtx {
   ctx: MeasureContext
   metadata: Metadata
-  db: DbAdapter
+  db: TriggersDb
   workspace: WorkspaceID
   account: Account
+  registeredCards: Set<CardID>
   execute: (event: RequestEvent) => Promise<EventResult>
 }
 
-export type QueryId = string | number
+export type TriggerFn = (ctx: TriggerCtx, event: ResponseEvent) => Promise<RequestEvent[]>
+export type Triggers = [string, ResponseEventType, TriggerFn][]

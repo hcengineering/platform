@@ -24,12 +24,15 @@ export async function findAccount(ctx: TriggerCtx, socialString: SocialID): Prom
     return ctx.account.uuid
   }
 
+  const url = ctx.metadata.accountsUrl ?? ''
+  if (url === '') return undefined
+
   const token = generateToken(systemAccountUuid)
   // const account = getAccountClient(ctx.metadata.accountsUrl, token)
 
   try {
     //TODO: FIXME
-    return await fetchAccount(socialString, ctx.metadata.accountsUrl, token)
+    return await fetchAccount(socialString, url, token)
   } catch (err: any) {
     ctx.ctx.warn('Cannot find account', { socialString, err })
   }

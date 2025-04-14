@@ -18,7 +18,7 @@ import { SortingOrder } from '@hcengineering/core'
 import type { MessageID } from './message'
 import type { ContextID } from './notification'
 import type { AccountID, BlobID, CardID, CardType } from './core'
-import type { LabelID } from './label.ts'
+import type { LabelID } from './label'
 
 export { SortingOrder }
 

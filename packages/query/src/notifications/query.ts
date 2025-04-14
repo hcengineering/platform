@@ -48,7 +48,11 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
     initialResult?: QueryResult<Notification>
   ) {
     const limit = this.params.limit ?? defaultQueryParams.limit
-    const findParams = { ...this.params, sort: this.params.order ?? defaultQueryParams.order, limit: limit + 1 }
+    const findParams: FindNotificationsParams = {
+      ...this.params,
+      order: this.params.order ?? defaultQueryParams.order,
+      limit: limit + 1
+    }
 
     if (initialResult !== undefined) {
       this.result = initialResult

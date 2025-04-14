@@ -13,5 +13,5 @@
 // limitations under the License.
 //
 
-export * from './parse.ts'
-export * from './deserialize.ts'
+export * from './parse'
+export * from './deserialize'

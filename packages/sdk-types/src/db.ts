@@ -88,7 +88,7 @@ export interface DbAdapter {
   findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
   findThread(thread: CardID): Promise<Thread | undefined>
 
-  addCollaborators(card: CardID, cardType: CardType, collaborators: AccountID[], date?: Date): Promise<void>
+  addCollaborators(card: CardID, cardType: CardType, collaborators: AccountID[], date?: Date): Promise<AccountID[]>
   removeCollaborators(card: CardID, collaborators: AccountID[]): Promise<void>
   getCollaboratorsCursor(card: CardID, date: Date, size?: number): AsyncIterable<Collaborator[]>
 
@@ -101,7 +101,7 @@ export interface DbAdapter {
   updateContext(context: ContextID, account: AccountID, lastUpdate?: Date, lastView?: Date): Promise<void>
   removeContext(context: ContextID, account: AccountID): Promise<void>
 
-  findContexts(params: FindNotificationContextParams): Promise<NotificationContext[]>
+  findNotificationContexts(params: FindNotificationContextParams): Promise<NotificationContext[]>
   findNotifications(params: FindNotificationsParams): Promise<Notification[]>
 
   createLabel(label: LabelID, card: CardID, cardType: CardType, account: AccountID, created: Date): Promise<void>

@@ -35,8 +35,13 @@ import { getCondition } from './utils'
 import { toCollaborator, toNotification, toNotificationContext } from './mapping'
 
 export class NotificationsDb extends BaseDb {
-  async addCollaborators(card: CardID, cardType: CardType, collaborators: AccountID[], date?: Date): Promise<void> {
-    if (collaborators.length === 0) return
+  async addCollaborators(
+    card: CardID,
+    cardType: CardType,
+    collaborators: AccountID[],
+    date?: Date
+  ): Promise<AccountID[]> {
+    if (collaborators.length === 0) return []
     const values: any[] = []
 
     const sqlValues = collaborators
@@ -47,9 +52,10 @@ export class NotificationsDb extends BaseDb {
       })
       .join(', ')
 
-    const sql = `INSERT INTO ${TableName.Collaborators} (workspace_id, card_id, account, date, card_type) VALUES ${sqlValues} ON CONFLICT DO NOTHING`
+    const sql = `INSERT INTO ${TableName.Collaborators} (workspace_id, card_id, account, date, card_type) VALUES ${sqlValues} ON CONFLICT DO NOTHING RETURNING account`
 
-    await this.execute(sql, values, 'insert collaborators')
+    const result = await this.execute(sql, values, 'insert collaborators')
+    return result.map((it: any) => it.account)
   }
 
   async removeCollaborators(card: CardID, collaborators: AccountID[]): Promise<void> {

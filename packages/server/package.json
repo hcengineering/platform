@@ -29,7 +29,8 @@
     "@hcengineering/communication-types": "workspace:*",
     "@hcengineering/core": "^0.7.28",
     "@hcengineering/server-token": "^0.7.28",
-    "@hcengineering/platform": "^0.7.28"
+    "@hcengineering/platform": "^0.7.28",
+    "zod": "^3.24.2"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"

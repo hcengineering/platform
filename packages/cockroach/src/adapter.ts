@@ -156,8 +156,13 @@ export class CockroachAdapter implements DbAdapter {
     return await this.message.findThread(thread)
   }
 
-  async addCollaborators(card: CardID, cardType: CardType, collaborators: AccountID[], date?: Date): Promise<void> {
-    await this.notification.addCollaborators(card, cardType, collaborators, date)
+  async addCollaborators(
+    card: CardID,
+    cardType: CardType,
+    collaborators: AccountID[],
+    date?: Date
+  ): Promise<AccountID[]> {
+    return await this.notification.addCollaborators(card, cardType, collaborators, date)
   }
 
   async removeCollaborators(card: CardID, collaborators: AccountID[]): Promise<void> {
@@ -184,7 +189,7 @@ export class CockroachAdapter implements DbAdapter {
     await this.notification.removeContext(context, account)
   }
 
-  async findContexts(params: FindNotificationContextParams): Promise<NotificationContext[]> {
+  async findNotificationContexts(params: FindNotificationContextParams): Promise<NotificationContext[]> {
     return await this.notification.findContexts(params)
   }
 

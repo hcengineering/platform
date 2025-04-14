@@ -3,6 +3,17 @@
 # Packages to publish
 PUBLISH_PACKAGES=("types" "sdk-types" "shared" "yaml" "rest-client" "query" "client-query" "cockroach" "server")
 
+beta_mode=false
+if [ "$1" == "beta" ]; then
+  beta_mode=true
+  beta_number="$2"
+  if [ -z "$beta_number" ]; then
+    echo "Please supply beta number as second parameter (e.g., 'sh scripts/publish.sh beta 2')"
+    exit 1
+  fi
+fi
+
+# Массивы для хранения путей пакетов и их оригинальных версий
 package_paths=()
 package_versions=()
 
@@ -35,10 +46,15 @@ bump_global_version() {
 
   if [ -f "$version_file" ]; then
     current_version=$(cat "$version_file" | tr -d '"')
-    IFS='.' read -r major minor patch <<< "$current_version"
-    new_version="$major.$minor.$((patch + 1))"
-    echo "$new_version" > "$version_file"
-    echo "Version updated to $new_version"
+    if [ "$beta_mode" = true ]; then
+      new_version="${current_version}-beta.${beta_number}"
+      echo "Beta version: $new_version"
+    else
+      IFS='.' read -r major minor patch <<< "$current_version"
+      new_version="$major.$minor.$((patch + 1))"
+      echo "$new_version" > "$version_file"
+      echo "Version updated to $new_version"
+    fi
   else
     echo "❌ Version file $version_file not found"
     exit 1
@@ -63,6 +79,7 @@ bump_global_version
 for pkg in packages/*; do
   if [ -d "$pkg" ]; then
     update_package_json "$pkg"
+    rm -rf "$pkg/types" "$pkg/dist"
   fi
 done
 
@@ -72,7 +89,11 @@ bun run build
 
 for pkg in "${PUBLISH_PACKAGES[@]}"; do
   echo "📦 Publishing $pkg..."
-  (cd "packages/$pkg" && bun publish) || echo "❌ Failed to publish $pkg"
+  if [ "$beta_mode" = true ]; then
+    (cd "packages/$pkg" && bun publish --tag beta) || echo "❌ Failed to publish $pkg"
+  else
+    (cd "packages/$pkg" && bun publish) || echo "❌ Failed to publish $pkg"
+  fi
 done
 
 restore_versions

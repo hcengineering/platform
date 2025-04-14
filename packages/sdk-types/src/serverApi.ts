@@ -29,30 +29,30 @@ import type { Account } from '@hcengineering/core'
 
 import type { EventResult, RequestEvent } from './event'
 
-export interface ConnectionInfo {
+export interface SessionData {
   sessionId?: string
   account: Account
 }
 
 export interface ServerApi {
-  findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: number | string): Promise<Message[]>
-  findMessagesGroups(info: ConnectionInfo, params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
+  findMessages(session: SessionData, params: FindMessagesParams, queryId?: number | string): Promise<Message[]>
+  findMessagesGroups(session: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
   findNotificationContexts(
-    info: ConnectionInfo,
+    session: SessionData,
     params: FindNotificationContextParams,
     queryId?: number | string
   ): Promise<NotificationContext[]>
   findNotifications(
-    info: ConnectionInfo,
+    session: SessionData,
     params: FindNotificationsParams,
     queryId?: number | string
   ): Promise<Notification[]>
 
-  findLabels(info: ConnectionInfo, params: FindLabelsParams): Promise<Label[]>
+  findLabels(session: SessionData, params: FindLabelsParams): Promise<Label[]>
 
-  event(info: ConnectionInfo, event: RequestEvent): Promise<EventResult>
+  event(session: SessionData, event: RequestEvent): Promise<EventResult>
 
-  unsubscribeQuery(info: ConnectionInfo, id: number): Promise<void>
+  unsubscribeQuery(session: SessionData, id: number): Promise<void>
 
   closeSession(sessionId: string): Promise<void>
   close(): Promise<void>

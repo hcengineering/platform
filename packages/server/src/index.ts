@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, systemAccountUuid } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 import type {
   FindMessagesGroupsParams,
   FindMessagesParams,
@@ -25,36 +25,22 @@ import type {
   WorkspaceID,
   Notification,
   FindLabelsParams,
-  Label,
-  AccountID
+  Label
 } from '@hcengineering/communication-types'
 import { createDbAdapter } from '@hcengineering/communication-cockroach'
-import type {
-  ConnectionInfo,
-  DbAdapter,
-  EventResult,
-  RequestEvent,
-  ServerApi
-} from '@hcengineering/communication-sdk-types'
+import type { EventResult, RequestEvent, ServerApi, SessionData } from '@hcengineering/communication-sdk-types'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 
-import { type BroadcastSessionsFunc, Manager } from './manager'
-import { getMetadata, type Metadata } from './metadata'
-import type { QueryId } from './types'
+import { getMetadata } from './metadata'
+import type { BroadcastSessionsFunc, QueryId } from './types'
+import { buildMiddlewares, Middlewares } from './middlewares'
 
 export class Api implements ServerApi {
-  private readonly manager: Manager
-
   private constructor(
     private readonly ctx: MeasureContext,
-    protected readonly metadata: Metadata,
-    private readonly workspace: WorkspaceID,
-    private readonly db: DbAdapter,
-    private readonly broadcast: BroadcastSessionsFunc
-  ) {
-    this.manager = new Manager(this.ctx, this.metadata, this.db, this.workspace, this.broadcast)
-  }
+    private readonly middlewares: Middlewares
+  ) {}
 
   static async create(
     ctx: MeasureContext,
@@ -70,63 +56,52 @@ export class Api implements ServerApi {
 
     setMetadata(serverToken.metadata.Secret, metadata.secret)
 
-    return new Api(ctx, metadata, workspace, db, broadcast)
+    const middleware = await buildMiddlewares(ctx, workspace, metadata, db, broadcast)
+
+    return new Api(ctx, middleware)
   }
 
-  async findMessages(info: ConnectionInfo, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
-    return await this.manager.findMessages(info, params, queryId)
+  async findMessages(session: SessionData, params: FindMessagesParams, queryId?: QueryId): Promise<Message[]> {
+    return await this.middlewares.findMessages(session, params, queryId)
   }
 
-  async findMessagesGroups(info: ConnectionInfo, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
-    return await this.manager.findMessagesGroups(info, params)
+  async findMessagesGroups(session: SessionData, params: FindMessagesGroupsParams): Promise<MessagesGroup[]> {
+    return await this.middlewares.findMessagesGroups(session, params)
   }
 
   async findNotificationContexts(
-    info: ConnectionInfo,
+    session: SessionData,
     params: FindNotificationContextParams,
     queryId?: QueryId
   ): Promise<NotificationContext[]> {
-    return await this.manager.findNotificationContexts(info, this.expandParamsWithAccount(params, info), queryId)
+    return await this.middlewares.findNotificationContexts(session, params, queryId)
   }
 
   async findNotifications(
-    info: ConnectionInfo,
+    session: SessionData,
     params: FindNotificationsParams,
     queryId?: QueryId
   ): Promise<Notification[]> {
-    return await this.manager.findNotifications(info, this.expandParamsWithAccount(params, info), queryId)
+    return await this.middlewares.findNotifications(session, params, queryId)
   }
 
-  async findLabels(info: ConnectionInfo, params: FindLabelsParams): Promise<Label[]> {
-    return await this.manager.findLabels(info, this.expandParamsWithAccount(params, info))
+  async findLabels(session: SessionData, params: FindLabelsParams): Promise<Label[]> {
+    return await this.middlewares.findLabels(session, params)
   }
 
-  async unsubscribeQuery(info: ConnectionInfo, id: number): Promise<void> {
-    this.manager.unsubscribeQuery(info, id)
+  async unsubscribeQuery(session: SessionData, id: number): Promise<void> {
+    await this.middlewares.unsubscribeQuery(session, id)
   }
 
-  async event(info: ConnectionInfo, event: RequestEvent): Promise<EventResult> {
-    return await this.manager.event(info, event)
+  async event(session: SessionData, event: RequestEvent): Promise<EventResult> {
+    return await this.middlewares.event(session, event)
   }
 
   async closeSession(sessionId: string): Promise<void> {
-    this.manager.closeSession(sessionId)
+    await this.middlewares.closeSession(sessionId)
   }
 
   async close(): Promise<void> {
-    this.manager.close()
-  }
-
-  private expandParamsWithAccount<T extends { account?: AccountID | AccountID[] }>(params: T, info: ConnectionInfo): T {
-    const isSystem = info.account.uuid === systemAccountUuid
-
-    if (isSystem) {
-      return params
-    }
-
-    return {
-      ...params,
-      account: info.account.uuid
-    }
+    await this.middlewares.close()
   }
 }

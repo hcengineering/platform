@@ -2,7 +2,7 @@
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
+//  you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -13,12 +13,10 @@
 // limitations under the License.
 //
 
-import type { Metadata } from './types'
+import type { Triggers } from '../types'
+import message from './message'
+import notification from './notification'
 
-export function getMetadata(): Metadata {
-  return {
-    msg2fileUrl: process.env.MSG2FILE_URL ?? '',
-    accountsUrl: process.env.ACCOUNTS_URL ?? '',
-    secret: process.env.SERVER_SECRET
-  }
-}
+const allTriggers: Triggers = [...message, ...notification]
+
+export default allTriggers

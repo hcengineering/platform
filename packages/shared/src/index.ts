@@ -13,6 +13,6 @@
 // limitations under the License.
 //
 
-export * from './message.ts'
-export * from './retry.ts'
-export * from './patch.ts'
+export * from './message'
+export * from './retry'
+export * from './patch'

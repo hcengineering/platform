@@ -21,6 +21,7 @@ let isInitialized = false
 
 export async function initSchema(sql: postgres.Sql) {
   if (isInitialized) return
+  const start = performance.now()
   console.log('🗃️ Initializing schema...')
   await sql.unsafe('CREATE SCHEMA IF NOT EXISTS communication;')
   await sql.unsafe(`CREATE TABLE IF NOT EXISTS ${migrationsTableName}
@@ -50,7 +51,9 @@ export async function initSchema(sql: postgres.Sql) {
     }
   }
   isInitialized = true
-  console.log('🎉 All migrations complete')
+  const end = performance.now()
+  const resTime = (end - start) / 1000
+  console.log(`🎉 All migrations complete in ${resTime.toFixed(2)} sec`)
 }
 
 function getMigrations(): [string, string][] {
