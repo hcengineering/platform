@@ -121,7 +121,9 @@
     person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid as AccountUuid)?.online === true
 </script>
 
-<div class="flex-presenter" use:tooltip={getPreviewPopup(person, showPreview)}>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="flex-presenter" use:tooltip={getPreviewPopup(person, showPreview)} on:click>
   {#if showStatus && person}
     <div class="relative">
       <AvatarInstance
@@ -138,9 +140,8 @@
         {adaptiveName}
         {disabled}
         {style}
-        withStatus
         {clickable}
-        on:click
+        withStatus
       />
       <div
         class="hulyAvatar-statusMarker {statusSize ?? size} {style}"
@@ -164,7 +165,12 @@
       {disabled}
       {style}
       {clickable}
-      on:click
     />
   {/if}
 </div>
+
+<style>
+  .flex-presenter {
+    cursor: pointer;
+  }
+</style>

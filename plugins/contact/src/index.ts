@@ -298,7 +298,8 @@ export const contactPlugin = plugin(contactId, {
     User: '' as Asset
   },
   image: {
-    ProfileBackground: '' as Asset
+    ProfileBackground: '' as Asset,
+    ProfileBackgroundLight: '' as Asset
   },
   space: {
     Contacts: '' as Ref<Space>

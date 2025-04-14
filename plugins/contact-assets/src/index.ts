@@ -50,8 +50,10 @@ loadMetadata(contact.icon, {
 })
 addStringsLoader(contactId, async (lang: string) => await import(`../lang/${lang}.json`))
 
-const profileBackground = require('../assets/profile-background.png') as string // eslint-disable-line
+const ProfileBackground = require('../assets/profile-background.png') as string // eslint-disable-line
+const ProfileBackgroundLight = require('../assets/profile-background-light.png') as string // eslint-disable-line
 
 loadMetadata(contact.image, {
-  ProfileBackground: profileBackground
+  ProfileBackground,
+  ProfileBackgroundLight
 })

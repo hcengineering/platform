@@ -19,7 +19,7 @@ import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
 export const achievementId = 'achievement' as Plugin
 
 export default plugin(achievementId, {
-  icon: {
+  image: {
     EarliestAdopter: '' as Asset,
     Epic: '' as Asset,
     Legendary: '' as Asset

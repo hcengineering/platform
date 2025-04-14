@@ -70,7 +70,7 @@
           <div slot="actions">
             <div class="flex-presenter flex-gap-2 flex-center">
               <ComponentExtensions
-                extension={contact.extension.PersonAchievementsPresenter}
+                extension={contact.extension.EmployeePopupActions}
                 props={{ employee, isButtonIcon: true, icon: contact.icon.Chat, type: 'type-button-icon' }}
               />
               <ButtonIcon icon={contact.icon.User} size="small" iconSize="small" on:click={viewProfile} />

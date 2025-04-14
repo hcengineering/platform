@@ -130,6 +130,17 @@
   background-color: var(--theme-button-default);
   pointer-events: none;
 
+  &.clickable {
+    cursor: pointer;
+    pointer-events: auto;
+
+    & > * {
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+  }
+
   &.withStatus {
     mask-repeat: no-repeat;
     mask-size: cover;
@@ -172,11 +183,12 @@
       & > img { border-width: 2px; }
     }
   }
-  &.clickable {
-    pointer-events: auto;
-    cursor: pointer;
+  img { 
+    object-fit: cover;
+    &.disabled {
+      filter: grayscale(100%);
+    }
   }
-  img { object-fit: cover; }
   .icon,
   .ava-text::after {
     position: absolute;
@@ -2478,12 +2490,3 @@
 }
 
 /* ToDos in Calendar (WorkSlot) */
-.toDos-container .task-item.dragged {
-  overflow: hidden;
-  background-color: var(--theme-bg-dark-color);
-  border-color: var(--theme-divider-color);
-  border-radius: .125rem;
-  opacity: .75;
-
-  .hideOnDrag { opacity: 0 !important; }
-}

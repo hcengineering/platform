@@ -15,8 +15,13 @@
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
   import contact from '@hcengineering/contact'
+  import { getCurrentTheme, isThemeDark } from '@hcengineering/theme'
 
   export let disabled: boolean = false
+  const backgroundImage = isThemeDark(getCurrentTheme())
+    ? contact.image.ProfileBackground
+    : contact.image.ProfileBackgroundLight
+
   $: style = disabled ? 'gray' : ''
 </script>
 
@@ -26,7 +31,7 @@
     <div class="image-container">
       <div
         class="img {style}"
-        style={`background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 25%, var(--theme-popup-color) 95%), url("${getMetadata(contact.image.ProfileBackground)}")`}
+        style={`background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 25%, var(--theme-popup-color) 95%), url("${getMetadata(backgroundImage)}"); background-size: cover;`}
       />
     </div>
   {/if}
@@ -108,7 +113,7 @@
     height: 144px;
 
     border-radius: 0px;
-    background-size: cover;
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     z-index: -100;

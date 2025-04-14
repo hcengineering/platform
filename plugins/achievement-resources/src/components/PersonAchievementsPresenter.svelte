@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
-  import { Icon } from '@hcengineering/ui'
+  import { Image } from '@hcengineering/ui'
+  import { getMetadata } from '@hcengineering/platform'
 
   import AchievementsHeader from './AchievementsHeader.svelte'
   import { getPersonAchievements } from '../utils'
@@ -32,7 +33,7 @@
   <div class="achievements">
     {#each personAchievements as achievement}
       <div class="icon">
-        <Icon icon={achievement.icon} size="full" fill="none" />
+        <Image src={getMetadata(achievement.icon)} width="40px" height="60px" />
       </div>
     {/each}
   </div>
@@ -45,9 +46,5 @@
     padding: 10px 8px 0px 8px;
 
     order: 1;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
   }
 </style>

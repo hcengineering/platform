@@ -16,10 +16,13 @@
 import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
 import achievement, { achievementId } from '@hcengineering/achievement'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(achievement.icon, {
-  EarliestAdopter: `${icons}#earliest-adopter`,
-  Epic: `${icons}#epic`,
-  Legendary: `${icons}#legendary`
+const EarliestAdopter = require('../assets/EarliestAdopter.png') as string // eslint-disable-line
+const Epic = require('../assets/Epic.png') as string // eslint-disable-line
+const Legendary = require('../assets/Legendary.png') as string // eslint-disable-line
+
+loadMetadata(achievement.image, {
+  EarliestAdopter,
+  Epic,
+  Legendary
 })
 addStringsLoader(achievementId, async (lang: string) => await import(`../lang/${lang}.json`))

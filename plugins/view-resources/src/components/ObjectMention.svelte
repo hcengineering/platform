@@ -41,7 +41,7 @@
   let docLabel: string = ''
   let docTitle: string | undefined = undefined
   let docTooltip: LabelAndProps = {
-    label: view.string.Document
+    label: view.string.Loading
   }
   let docComponent: AnyComponent
 

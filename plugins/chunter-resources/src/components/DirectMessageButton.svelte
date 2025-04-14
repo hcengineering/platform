@@ -24,7 +24,7 @@
 
   export let employee: Employee
   export let width: string | undefined = undefined
-  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' | 'ghost' = 'secondary'
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let isButtonIcon: boolean = false
   export let icon: Asset | undefined = undefined
   export let type: 'type-button' | 'type-button-icon' = 'type-button'

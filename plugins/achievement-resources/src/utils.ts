@@ -23,9 +23,9 @@ interface PersonAchievement {
 
 // TODO: Remove and replace with actual person achievements, it is just for demonstration. Implement achievement service.
 const possibleAchievements: PersonAchievement[] = [
-  { icon: achievement.icon.EarliestAdopter, tooltip: achievement.string.EarliestAdopter },
-  { icon: achievement.icon.Epic, tooltip: achievement.string.Epic },
-  { icon: achievement.icon.Legendary, tooltip: achievement.string.Legendary }
+  { icon: achievement.image.EarliestAdopter, tooltip: achievement.string.EarliestAdopter },
+  { icon: achievement.image.Epic, tooltip: achievement.string.Epic },
+  { icon: achievement.image.Legendary, tooltip: achievement.string.Legendary }
 ]
 
 function hashStringToInt (str: string): number {

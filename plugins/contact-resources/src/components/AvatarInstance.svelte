@@ -60,10 +60,17 @@
   }
 
   $: hasImg = url != null && !imgError
-  $: background = disabled ? '#666' : color && !hasImg ? color.icon : 'var(--theme-button-default)'
+  $: background =
+    !hasImg && disabled
+      ? 'var(--theme-popup-deactivated)'
+      : color && !hasImg
+        ? color.icon
+        : 'var(--theme-button-default)'
 </script>
 
 {#if (size === 'full' || adaptiveName) && !url && displayName && displayName !== ''}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     bind:this={element}
     class="hulyAvatar-container hulyAvatarSize-{size} {variant} {style} {clickable ? 'clickable' : ''}"
@@ -76,6 +83,7 @@
     use:resizeObserver={(element) => {
       fontSize = element.clientWidth * 0.6
     }}
+    on:click={handleClick}
   >
     <div
       class="ava-text"
@@ -85,6 +93,8 @@
     />
   </div>
 {:else}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     bind:this={element}
     class="hulyAvatar-container hulyAvatarSize-{size} {variant} {style} {clickable ? 'clickable' : ''}"
@@ -94,15 +104,15 @@
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={background}
+    on:click={handleClick}
   >
     {#if url && !imgError}
       <img
-        class="hulyAvatarSize-{size} ava-image"
+        class="hulyAvatarSize-{size} ava-image {disabled ? 'disabled' : ''}"
         src={url}
         {srcset}
         alt={''}
         on:error={handleImgError}
-        on:click={handleClick}
       />
     {:else if displayName && displayName !== ''}
       <div
@@ -117,3 +127,17 @@
     {/if}
   </div>
 {/if}
+
+<style>
+  .clickable {
+    cursor: pointer;
+  }
+  .clickable > * {
+    pointer-events: none;
+  }
+  .clickable img {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+</style>
