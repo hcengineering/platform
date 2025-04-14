@@ -67,7 +67,7 @@
     } else {
       const type = taskTypes.get(kind)
       if (type !== undefined) {
-        statuses = type.statuses.map((p) => store.get(p)).filter((p) => p !== undefined) as Status[]
+        statuses = type.statuses.map((p) => store.get(p)).filter((p) => p !== undefined)
       }
     }
   }

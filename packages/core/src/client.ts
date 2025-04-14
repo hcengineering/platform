@@ -299,7 +299,7 @@ export async function createClient (
         // We have upgrade procedure and need rebuild all stuff.
         hierarchy = new Hierarchy()
         model = new ModelDb(hierarchy)
-        ;(client as ClientImpl).setModel(hierarchy, model)
+        ;(client).setModel(hierarchy, model)
 
         ctx.withSync('build-model', {}, (ctx) => {
           buildModel(ctx, current, modelFilter, hierarchy, model)

@@ -15,16 +15,16 @@
 
 import {
   AccountRole,
-  Doc,
+  type Doc,
   DOMAIN_CONFIGURATION,
-  MeasureContext,
-  Tx,
-  TxCUD,
+  type MeasureContext,
+  type Tx,
+  type TxCUD,
   TxProcessor,
   type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import { BaseMiddleware, type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 
 export const configurationAccountEmail = '#configurator@hc.engineering'
 /**

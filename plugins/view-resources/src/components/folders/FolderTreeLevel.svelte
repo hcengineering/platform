@@ -61,7 +61,7 @@
     return result
   }
 
-  $: _folders = folders.map((it) => folderById.get(it)).filter((it) => it !== undefined) as Doc[]
+  $: _folders = folders.map((it) => folderById.get(it)).filter((it) => it !== undefined)
   $: _descendants = new Map(_folders.map((it) => [it._id, getDescendants(it._id)]))
 </script>
 

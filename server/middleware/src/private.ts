@@ -14,25 +14,25 @@
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import core, {
-  AttachedDoc,
-  Class,
+  type AttachedDoc,
+  type Class,
   DOMAIN_TX,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  LookupData,
-  MeasureContext,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type LookupData,
+  type MeasureContext,
   type PersonUuid,
-  Ref,
-  Tx,
-  TxCUD,
+  type Ref,
+  type Tx,
+  type TxCUD,
   TxProcessor,
   systemAccountUuid,
   type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
+import { BaseMiddleware, type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
 
 /**

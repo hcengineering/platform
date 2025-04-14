@@ -1,24 +1,24 @@
 import { saveCollabJson } from '@hcengineering/collaboration'
 import core, {
-  AttachedDoc,
-  Class,
-  Data,
-  Doc,
+  type AttachedDoc,
+  type Class,
+  type Data,
+  type Doc,
   generateId,
   makeCollabId,
-  MeasureContext,
-  Mixin,
+  type MeasureContext,
+  type Mixin,
   parseSocialIdString,
-  Ref,
-  SocialIdType,
-  Space,
-  TxOperations,
+  type Ref,
+  type SocialIdType,
+  type Space,
+  type TxOperations,
   pickPrimarySocialId,
   type PersonId,
   type PersonInfo,
   type WorkspaceIds
 } from '@hcengineering/core'
-import { ModelLogger } from '@hcengineering/model'
+import { type ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
 import { HulyFormatImporter, StorageFileUploader } from '@hcengineering/importer'
 import type { StorageAdapter } from '@hcengineering/server-core'

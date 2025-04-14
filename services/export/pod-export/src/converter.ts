@@ -266,7 +266,7 @@ export class UnifiedConverter {
         return ''
       }
 
-      const markup = Buffer.concat(buffer as any).toString()
+      const markup = buffer.toString()
       // const markdown = await markupToMarkdown(markup, '', '')
       return markup // todo: test it is a markdown
     } catch (err) {
@@ -304,7 +304,7 @@ export class UnifiedConverter {
             return Buffer.from([])
           }
 
-          return Buffer.concat(buffer as any)
+          return buffer
         }
       })
     )

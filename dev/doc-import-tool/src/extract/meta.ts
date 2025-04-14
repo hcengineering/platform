@@ -1,18 +1,18 @@
-import { AnyNode, Document, Element, Text } from 'domhandler'
+import { type AnyNode, type Document, type Element, type Text } from 'domhandler'
 import { find } from 'domutils'
 import { ElementType } from 'htmlparser2'
 
 import {
-  DocMetadataSpec,
+  type DocMetadataSpec,
   MetadataContainer,
-  DocTableRowMetadata,
-  DocMetaTagsMetadata,
-  PageHeaderTableRowMetadata,
-  MetadataTableCell
+  type DocTableRowMetadata,
+  type DocMetaTagsMetadata,
+  type PageHeaderTableRowMetadata,
+  type MetadataTableCell
 } from './types'
 import { ELEMENT_LIMIT } from './common'
 import { TableNodeExtractor } from './nodes'
-import { TableContainer } from './container'
+import { type TableContainer } from './container'
 
 interface DocMetadataExtractor {
   extractName: (doc: Document) => string

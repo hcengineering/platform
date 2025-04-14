@@ -528,7 +528,7 @@ export function startHttpServer (
         if (msg instanceof Buffer) {
           buff = msg
         } else if (Array.isArray(msg)) {
-          buff = Buffer.concat(msg as any)
+          buff = Buffer.concat(msg)
         }
         if (buff !== undefined) {
           doSessionOp(

@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import { AccountUuid, Ref } from '@hcengineering/core'
+import { type AccountUuid, type Ref } from '@hcengineering/core'
 import { countTokens } from '@hcengineering/openai'
-import { Tiktoken } from 'js-tiktoken'
-import OpenAI from 'openai'
+import { type Tiktoken } from 'js-tiktoken'
+import type OpenAI from 'openai'
 
-import { PersonMessage } from '@hcengineering/ai-bot'
-import contact, { Contact } from '@hcengineering/contact'
+import { type PersonMessage } from '@hcengineering/ai-bot'
+import contact, { type Contact } from '@hcengineering/contact'
 import config from '../config'
-import { HistoryRecord } from '../types'
-import { WorkspaceClient } from '../workspace/workspaceClient'
+import { type HistoryRecord } from '../types'
+import { type WorkspaceClient } from '../workspace/workspaceClient'
 import { getTools } from './tools'
 
 export async function translateHtml (client: OpenAI, html: string, lang: string): Promise<string | undefined> {

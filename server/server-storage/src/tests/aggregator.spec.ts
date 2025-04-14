@@ -47,7 +47,7 @@ describe('aggregator tests', () => {
     const stat2 = await aggr.stat(testCtx, wsIds1, 'test')
     expect(stat2?.provider).toEqual('mem2')
 
-    const dta = Buffer.concat((await aggr.read(testCtx, wsIds1, 'test')) as any).toString()
+    const dta = (await aggr.read(testCtx, wsIds1, 'test')).toString()
     expect(dta).toEqual('data2')
   })
 })

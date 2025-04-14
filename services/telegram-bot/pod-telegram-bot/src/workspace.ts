@@ -244,9 +244,7 @@ export class WorkspaceClient {
     const res: PlatformFileInfo[] = []
     for (const attachment of attachments) {
       if (attachment.type === 'application/link-preview') continue
-      const chunks: Buffer[] = await this.storage.read(this.ctx, this.workspace as any, attachment.file)
-      const uint8Chunks: Uint8Array[] = chunks.map((chunk) => new Uint8Array(chunk))
-      const buffer = Buffer.concat(uint8Chunks)
+      const buffer: Buffer = await this.storage.read(this.ctx, this.workspace as any, attachment.file)
       if (buffer.length > 0) {
         res.push({
           buffer,

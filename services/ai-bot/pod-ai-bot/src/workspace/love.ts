@@ -12,31 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
+import { type ConnectMeetingRequest } from '@hcengineering/ai-bot'
 import chunter from '@hcengineering/chunter'
-import contact, { Person } from '@hcengineering/contact'
+import contact, { type Person } from '@hcengineering/contact'
 import core, {
   concatLink,
-  Doc,
-  Markup,
-  MeasureContext,
-  PersonId,
-  Ref,
-  TxCreateDoc,
-  TxCUD,
-  TxOperations,
+  type Doc,
+  type Markup,
+  type MeasureContext,
+  type PersonId,
+  type Ref,
+  type TxCreateDoc,
+  type TxCUD,
+  type TxOperations,
   TxProcessor,
-  TxUpdateDoc,
-  WorkspaceUuid,
+  type TxUpdateDoc,
+  type WorkspaceUuid,
   pickPrimarySocialId
 } from '@hcengineering/core'
 import love, {
   getFreeRoomPlace,
-  MeetingMinutes,
+  type MeetingMinutes,
   MeetingStatus,
-  ParticipantInfo,
-  Room,
-  RoomLanguage,
+  type ParticipantInfo,
+  type Room,
+  type RoomLanguage,
   TranscriptionStatus
 } from '@hcengineering/love'
 import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text'

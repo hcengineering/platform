@@ -421,7 +421,7 @@ export class S3Service implements StorageAdapter {
   }
 
   @withContext('read')
-  async read (ctx: MeasureContext, wsIds: WorkspaceIds, name: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, wsIds: WorkspaceIds, name: string): Promise<Buffer> {
     const data = await this.doGet(ctx, wsIds, name)
     const chunks: Buffer[] = []
 
@@ -439,7 +439,7 @@ export class S3Service implements StorageAdapter {
         reject(err)
       })
     })
-    return chunks
+    return Buffer.concat(chunks)
   }
 
   @withContext('partial')

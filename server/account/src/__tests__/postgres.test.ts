@@ -14,14 +14,14 @@
 //
 import {
   AccountRole,
-  Data,
-  Version,
+  type Data,
+  type Version,
   type AccountUuid,
   type WorkspaceMode,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { AccountPostgresDbCollection, PostgresAccountDB, PostgresDbCollection } from '../collections/postgres'
-import { Sql } from 'postgres'
+import { type Sql } from 'postgres'
 
 interface TestWorkspace {
   uuid: WorkspaceUuid
