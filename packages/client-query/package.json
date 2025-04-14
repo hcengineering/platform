@@ -1,7 +1,7 @@
 {
   "name": "@hcengineering/communication-client-query",
-  "version": "0.1.166",
-  "main": "dist/index.js",
+  "version": "0.1.0",
+  "main": "src/index.ts",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
   "files": [
@@ -10,8 +10,11 @@
     "types/**/*.d.ts"
   ],
   "scripts": {
-    "bundle": "bun run bundle:browser",
-    "bundle:browser": "bun build src/index.ts --outdir dist --target browser"
+    "build": "bun run build:types && bun run build:browser",
+    "build:types": "tsc --project ./tsconfig.json --emitDeclarationOnly --declarationDir ./types",
+    "build:browser": "bun build src/index.ts --outdir dist --target browser",
+    "lint": "eslint src/*.ts",
+    "format": "prettier --write src/*.ts "
   },
   "devDependencies": {
     "@types/bun": "^1.1.14"

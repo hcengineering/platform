@@ -3,9 +3,10 @@
   "workspaces": ["packages/*"],
   "scripts": {
     "publish": "sh scripts/publish.sh",
-    "bundle": "sh scripts/bundle.sh && tsc --noEmit",
-    "lint": "eslint packages/**/src/*.ts",
-    "format": "prettier --write packages/**/src/*.ts && bun run lint"
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "check": "bun run format && bun run lint"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
@@ -15,6 +16,8 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.6",
     "prettier": "^3.5.3",
-    "typescript-eslint": "^8.29.1"
-  }
+    "typescript-eslint": "^8.29.1",
+    "turbo": "^2.5.0"
+  },
+  "packageManager": "bun@1.2.9"
 }

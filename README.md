@@ -16,7 +16,7 @@ Install dependencies using Bun:
 ### Build packages
 
 ```bash
-  bun run bundle
+  bun run build
 ```
 
 ### Lint & format

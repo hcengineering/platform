@@ -11,12 +11,13 @@
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-prettier": "^5.2.6",
         "prettier": "^3.5.3",
+        "turbo": "^2.5.0",
         "typescript-eslint": "^8.29.1",
       },
     },
     "packages/client-query": {
       "name": "@hcengineering/communication-client-query",
-      "version": "0.1.166",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-query": "workspace:*",
         "@hcengineering/communication-sdk-types": "workspace:*",
@@ -32,7 +33,7 @@
     },
     "packages/cockroach": {
       "name": "@hcengineering/communication-cockroach",
-      "version": "0.1.166",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -49,7 +50,7 @@
     },
     "packages/query": {
       "name": "@hcengineering/communication-query",
-      "version": "0.1.166",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -67,7 +68,7 @@
     },
     "packages/rest-client": {
       "name": "@hcengineering/communication-rest-client",
-      "version": "0.1.166",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-shared": "workspace:*",
@@ -85,7 +86,7 @@
     },
     "packages/sdk-types": {
       "name": "@hcengineering/communication-sdk-types",
-      "version": "0.1.166",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-types": "workspace:*",
         "@hcengineering/core": "^0.7.28",
@@ -99,7 +100,7 @@
     },
     "packages/server": {
       "name": "@hcengineering/communication-server",
-      "version": "0.1.166",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/account-client": "^0.7.28",
         "@hcengineering/communication-cockroach": "workspace:*",
@@ -121,7 +122,7 @@
     },
     "packages/shared": {
       "name": "@hcengineering/communication-shared",
-      "version": "0.1.166",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-types": "workspace:*",
       },
@@ -134,7 +135,7 @@
     },
     "packages/types": {
       "name": "@hcengineering/communication-types",
-      "version": "0.1.166",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/card": "^0.7.28",
         "@hcengineering/core": "^0.7.28",
@@ -149,7 +150,7 @@
     },
     "packages/yaml": {
       "name": "@hcengineering/communication-yaml",
-      "version": "0.1.166",
+      "version": "0.1.0",
       "dependencies": {
         "@hcengineering/communication-shared": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
@@ -552,6 +553,20 @@
     "ts-api-utils": ["ts-api-utils@2.0.1", "", { "peerDependencies": { "typescript": ">=4.8.4" } }, "sha512-dnlgjFSVetynI8nzgJ+qF62efpglpWRk8isUEWZGWlJYySCTD6aKvbUDu+zbPeDakk3bg5H4XpitHukgfL1m9w=="],
 
     "tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
+
+    "turbo": ["turbo@2.5.0", "", { "optionalDependencies": { "turbo-darwin-64": "2.5.0", "turbo-darwin-arm64": "2.5.0", "turbo-linux-64": "2.5.0", "turbo-linux-arm64": "2.5.0", "turbo-windows-64": "2.5.0", "turbo-windows-arm64": "2.5.0" }, "bin": { "turbo": "bin/turbo" } }, "sha512-PvSRruOsitjy6qdqwIIyolv99+fEn57gP6gn4zhsHTEcCYgXPhv6BAxzAjleS8XKpo+Y582vTTA9nuqYDmbRuA=="],
+
+    "turbo-darwin-64": ["turbo-darwin-64@2.5.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-fP1hhI9zY8hv0idym3hAaXdPi80TLovmGmgZFocVAykFtOxF+GlfIgM/l4iLAV9ObIO4SUXPVWHeBZQQ+Hpjag=="],
+
+    "turbo-darwin-arm64": ["turbo-darwin-arm64@2.5.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-p9sYq7kXH7qeJwIQE86cOWv/xNqvow846l6c/qWc26Ib1ci5W7V0sI5thsrP3eH+VA0d+SHalTKg5SQXgNQBWA=="],
+
+    "turbo-linux-64": ["turbo-linux-64@2.5.0", "", { "os": "linux", "cpu": "x64" }, "sha512-1iEln2GWiF3iPPPS1HQJT6ZCFXynJPd89gs9SkggH2EJsj3eRUSVMmMC8y6d7bBbhBFsiGGazwFIYrI12zs6uQ=="],
+
+    "turbo-linux-arm64": ["turbo-linux-arm64@2.5.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-bKBcbvuQHmsX116KcxHJuAcppiiBOfivOObh2O5aXNER6mce7YDDQJy00xQQNp1DhEfcSV2uOsvb3O3nN2cbcA=="],
+
+    "turbo-windows-64": ["turbo-windows-64@2.5.0", "", { "os": "win32", "cpu": "x64" }, "sha512-9BCo8oQ7BO7J0K913Czbc3tw8QwLqn2nTe4E47k6aVYkM12ASTScweXPTuaPFP5iYXAT6z5Dsniw704Ixa5eGg=="],
+
+    "turbo-windows-arm64": ["turbo-windows-arm64@2.5.0", "", { "os": "win32", "cpu": "arm64" }, "sha512-OUHCV+ueXa3UzfZ4co/ueIHgeq9B2K48pZwIxKSm5VaLVuv8M13MhM7unukW09g++dpdrrE1w4IOVgxKZ0/exg=="],
 
     "type-check": ["type-check@0.4.0", "", { "dependencies": { "prelude-ls": "^1.2.1" } }, "sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew=="],
 

@@ -1,6 +1,7 @@
 # build output
 dist/
 lib/
+.turbo/
 **/types/
 
 !packages/types/
