@@ -235,4 +235,4 @@
   <TextEditorToolbar bind:toolbar={imageToolbarElement} kind="image" {editor} on:focus={handleFocus} />
 {/if}
 
-<div class="select-text" style="width: 100%;" bind:this={element} />
+<div class="select-text" style="width: 100%;" bind:this={element} on:keydown />

@@ -26,6 +26,7 @@
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
   import { Attachment } from '@hcengineering/attachment'
   import { EmptyMarkup } from '@hcengineering/text'
+  import { createEventDispatcher } from 'svelte'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
@@ -55,11 +56,13 @@
   export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
+  export let isEditing = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const STALE_TIMEOUT_MS = 5000
   const me = getCurrentEmployee()
+  const dispatch = createEventDispatcher()
 
   let parentMessage: DisplayActivityMessage | undefined = undefined
   let object: Doc | undefined
@@ -140,7 +143,6 @@
     isEditing = true
   }
 
-  let isEditing = false
   let additionalActions: Action[] = []
 
   $: isOwn = person !== undefined && person._id === me
@@ -284,6 +286,7 @@
           {object}
           on:submit={() => {
             isEditing = false
+            dispatch('editingEnded')
           }}
         />
         <div class="flex-row-center gap-2 justify-end mt-2">
@@ -291,6 +294,7 @@
             label={view.string.Cancel}
             on:click={() => {
               isEditing = false
+              dispatch('editingEnded')
             }}
           />
           <Button label={activity.string.Update} accent on:click={() => refInput.submit()} />

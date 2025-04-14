@@ -87,6 +87,7 @@
       kind="input"
       {extensions}
       props={{ object, boundary, collection, autofocus, withTypingInfo: true }}
+      on:keydown
     />
   </div>
 {:else}

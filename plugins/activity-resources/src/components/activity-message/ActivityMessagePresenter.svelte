@@ -42,6 +42,7 @@
   export let readonly = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: ((message: ActivityMessage) => void) | undefined = undefined
+  export let isEditing = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -76,7 +77,9 @@
       compact,
       readonly,
       onClick,
-      onReply
+      onReply,
+      isEditing
     }}
+    on:editingEnded
   />
 {/if}
