@@ -95,7 +95,7 @@
           on:click={viewProfile}
         />
         <div class="flex-col flex-gap-0-5">
-          <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
+          <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact accent/>
           <span class="flex-presenter cursor-default">
             {#if isTimezoneLoading}
               <Loading size="small" />
@@ -127,7 +127,7 @@
           />
         </div>
         <div class="flex-col">
-          <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
+          <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact accent/>
         </div>
       </div>
     {/if}
