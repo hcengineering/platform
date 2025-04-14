@@ -48,7 +48,9 @@
     "Error": "错误",
     "Continue": "继续",
     "RequestFromUser": "从用户请求",
-    "EnterValue": "输入值"
+    "EnterValue": "输入值",
+    "OnToDoClose": "关闭待办事项",
+    "OnSubProcessesDone": "子进程完成时"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

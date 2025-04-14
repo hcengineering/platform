@@ -14,29 +14,29 @@
 -->
 <script lang="ts">
   import activity, {
+    ActivityMessage,
     ActivityMessageViewlet,
-    DisplayActivityMessage,
     ActivityMessageViewType,
-    ActivityMessage
+    DisplayActivityMessage
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, SystemAvatar } from '@hcengineering/contact-resources'
-  import core, { Ref } from '@hcengineering/core'
+  import core, { Ref, type SocialId } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { Asset } from '@hcengineering/platform'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
-  import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
-  import { Asset } from '@hcengineering/platform'
   import { Action as ViewAction } from '@hcengineering/view'
-  import notification from '@hcengineering/notification'
+  import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
 
-  import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
-  import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
-  import ActivityMessageActions from '../ActivityMessageActions.svelte'
-  import { isReactionMessage } from '../../activityMessagesUtils'
   import { savedMessagesStore } from '../../activity'
-  import MessageTimestamp from '../MessageTimestamp.svelte'
-  import Replies from '../Replies.svelte'
+  import { isReactionMessage } from '../../activityMessagesUtils'
   import { MessageInlineAction } from '../../types'
+  import ActivityMessageActions from '../ActivityMessageActions.svelte'
+  import MessageTimestamp from '../MessageTimestamp.svelte'
+  import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
+  import Replies from '../Replies.svelte'
+  import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import InlineAction from './InlineAction.svelte'
 
   export let message: DisplayActivityMessage
@@ -44,6 +44,7 @@
 
   export let viewlet: ActivityMessageViewlet | undefined = undefined
   export let person: Person | undefined = undefined
+  export let socialId: SocialId | undefined = undefined
   export let actions: Action[] = []
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
@@ -219,6 +220,9 @@
               <div class="username">
                 <ComponentExtensions extension={activity.extension.ActivityEmployeePresenter} props={{ person }} />
               </div>
+              {#if socialId !== undefined}
+                ({socialId.type})
+              {/if}
             {:else}
               <div class="strong">
                 <Label label={core.string.System} />

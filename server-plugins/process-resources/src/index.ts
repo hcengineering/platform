@@ -44,7 +44,7 @@ import process, {
   Step
 } from '@hcengineering/process'
 import { TriggerControl } from '@hcengineering/server-core'
-import serverProcess, { ExecuteResult } from '@hcengineering/server-process'
+import serverProcess, { ExecuteResult, SuccessExecutionResult } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
 import { isError, parseError, ProcessError, processError } from './errors'
 
@@ -67,9 +67,7 @@ export async function OnStateRemove (txes: Tx[], control: TriggerControl): Promi
       control.txFactory.createTxUpdateDoc(_process._class, _process.space, _process._id, { states: _process.states })
     )
     if (theLast) {
-      const lastState = (
-        await control.findAll(control.ctx, process.class.State, { _id: _process.states[_process.states.length - 1] })
-      )[0]
+      const lastState = control.modelDb.findObject(_process.states[_process.states.length - 1])
       if (lastState?.endAction != null) {
         res.push(
           control.txFactory.createTxUpdateDoc(lastState._class, lastState.space, lastState._id, {
@@ -137,10 +135,10 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
     if (currentIndex === -1) continue
     const nextState = _process.states[currentIndex + 1]
     if (nextState === undefined) continue
-    const states = await control.findAll(control.ctx, process.class.State, { _id: nextState })
-    if (states.length === 0) continue
+    const state = control.modelDb.findObject(nextState)
+    if (state === undefined) continue
     const isDone = _process.states[currentIndex + 2] === undefined
-    res.push(...(await changeState(execution, states[0], control, isDone)))
+    res.push(...(await changeState(execution, state, control, isDone)))
   }
   return res
 }
@@ -374,6 +372,28 @@ async function changeState (
   const errors: ExecutionError[] = []
   const res: Tx[] = []
   const rollback: Tx[] = []
+  if (execution.currentState !== null) {
+    rollback.push(
+      control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+        currentState: execution.currentState,
+        done: execution.done
+      })
+    )
+  } else {
+    rollback.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
+  }
+  res.push(
+    control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+      currentState: state._id,
+      done: isDone
+    })
+  )
+  if (isDone && execution.parentId !== undefined) {
+    const parentWaitTxes = await checkParentWait(execution, control)
+    if (parentWaitTxes !== undefined) {
+      res.push(...parentWaitTxes)
+    }
+  }
   for (const action of state.actions) {
     const actionResult = await executeAction(action, execution, control)
     if (isError(actionResult)) {
@@ -396,26 +416,43 @@ async function changeState (
       res.push(...actionResult.txes)
     }
   }
-
+  execution.rollback[state._id] = rollback
+  res.push(
+    control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+      rollback: execution.rollback
+    })
+  )
   if (errors.length === 0) {
-    if (rollback.length > 0) {
-      execution.rollback[state._id] = rollback
-      res.push(
-        control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-          rollback: execution.rollback
-        })
-      )
-    }
-    res.push(
-      control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-        currentState: state._id,
-        done: isDone
-      })
-    )
     return res
   } else {
     return [control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, { error: errors })]
   }
+}
+
+async function checkParentWait (execution: Execution, control: TriggerControl): Promise<Tx[] | undefined> {
+  const subProcesses = await control.findAll(control.ctx, process.class.Execution, {
+    parentId: execution.parentId,
+    done: false
+  })
+  const filtered = subProcesses.filter((it) => it._id !== execution._id)
+  if (filtered.length !== 0) return
+  const parent = await control.findAll(control.ctx, process.class.Execution, { _id: execution.parentId })
+  if (parent.length === 0) return
+  const _process = control.modelDb.findObject(parent[0].process)
+  if (_process === undefined) return
+  if (parent[0].currentState == null) return
+  const currentIndex = _process.states.findIndex((it) => it === parent[0].currentState)
+  if (currentIndex === -1) return
+  const currentState = control.modelDb.findObject(parent[0].currentState)
+  if (currentState === undefined) return
+  if (currentState.endAction?.methodId !== process.method.WaitSubProcess) return
+  const nextState = _process.states[currentIndex + 1]
+  if (nextState === undefined) return
+  const state = control.modelDb.findObject(nextState)
+  if (state === undefined) return
+  const isDone = _process.states[currentIndex + 2] === undefined
+  const txes = await changeState(parent[0], state, control, isDone)
+  return txes
 }
 
 export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -450,13 +487,6 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
     const rollback = execution.rollback[removedTodo.state]
     if (rollback !== undefined) {
       for (const rollbackTx of rollback) {
-        // skip already removed tx
-        if (
-          rollbackTx._class === core.class.TxRemoveDoc &&
-          (rollbackTx as TxRemoveDoc<ProcessToDo>).objectId === removeTx.objectId
-        ) {
-          continue
-        }
         res.push(rollbackTx)
       }
     }
@@ -507,7 +537,13 @@ export async function CreateToDo (
       currentToDo: execution.currentToDo
     })
   )
-  rollback.push(control.txFactory.createTxRemoveDoc(process.class.ProcessToDo, time.space.ToDos, id))
+  if (execution.currentToDo !== null) {
+    rollback.push(
+      control.txFactory.createTxUpdateDoc(process.class.ProcessToDo, execution.space, execution.currentToDo, {
+        doneOn: null
+      })
+    )
+  }
   return { txes: res, rollback }
 }
 
@@ -528,6 +564,38 @@ export async function UpdateCard (
   const res: Tx[] = [control.txFactory.createTxUpdateDoc(target._class, target.space, target._id, update)]
   const rollback: Tx[] = [control.txFactory.createTxUpdateDoc(target._class, target.space, target._id, prevValue)]
   return { txes: res, rollback }
+}
+
+export async function WaitSubProcess (
+  params: MethodParams<Execution>,
+  execution: Execution,
+  control: TriggerControl
+): Promise<ExecuteResult | undefined> {
+  const res: SuccessExecutionResult = {
+    txes: [
+      control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+        currentToDo: null
+      })
+    ],
+    rollback: []
+  }
+  const subProcesses = await control.findAll(control.ctx, process.class.Execution, {
+    parentId: execution._id,
+    done: false
+  })
+  if (subProcesses.length !== 0) return res
+  const _process = await control.modelDb.findOne(process.class.Process, { _id: execution.process })
+  if (_process === undefined) return res
+  const currentIndex = _process.states.findIndex((it) => it === execution.currentState)
+  if (currentIndex === -1) return res
+  const nextState = _process.states[currentIndex + 2]
+  if (nextState === undefined) return res
+  const state = control.modelDb.findObject(nextState)
+  if (state === undefined) return res
+  const isDone = _process.states[currentIndex + 3] === undefined
+  const txes = await changeState(execution, state, control, isDone)
+  res.txes.push(...txes)
+  return res
 }
 
 export async function RunSubProcess (
@@ -557,9 +625,11 @@ export async function RunSubProcess (
       currentState: null,
       currentToDo: null,
       card: execution.card,
+      context: execution.context?.[processId] ?? {},
       done: false,
       rollback: {},
-      assignee: null
+      assignee: null,
+      parentId: execution._id
     })
   )
   return { txes: res, rollback: undefined }
@@ -674,10 +744,10 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
     const currentIndex = _process.states.findIndex((it) => it === execution.currentState)
     const nextState = _process.states[currentIndex + 1]
     if (nextState === undefined) continue
-    const states = await control.findAll(control.ctx, process.class.State, { _id: nextState })
-    if (states.length === 0) continue
+    const state = control.modelDb.findObject(nextState)
+    if (state === undefined) continue
     const isDone = _process.states[currentIndex + 2] === undefined
-    res.push(...(await changeState(execution, states[0], control, isDone)))
+    res.push(...(await changeState(execution, state, control, isDone)))
   }
   return res
 }
@@ -687,7 +757,8 @@ export default async () => ({
   func: {
     RunSubProcess,
     CreateToDo,
-    UpdateCard
+    UpdateCard,
+    WaitSubProcess
   },
   transform: {
     FirstValue,

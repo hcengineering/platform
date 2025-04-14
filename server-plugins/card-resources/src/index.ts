@@ -35,7 +35,7 @@ import core, {
 import { TriggerControl } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
 import view from '@hcengineering/view'
-import { RequestEventType } from '@hcengineering/communication-sdk-types'
+import { NotificationRequestEventType } from '@hcengineering/communication-sdk-types'
 import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
 import contact from '@hcengineering/contact'
 
@@ -412,8 +412,9 @@ async function updateCollaborators (control: TriggerControl, ctx: TxCreateDoc<Ca
     void communicationApi.event(
       { account: systemAccount },
       {
-        type: RequestEventType.AddCollaborators,
+        type: NotificationRequestEventType.AddCollaborators,
         card: tx.objectId,
+        cardType: tx.objectClass,
         collaborators
       }
     )

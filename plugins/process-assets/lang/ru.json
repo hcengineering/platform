@@ -48,7 +48,9 @@
     "Error": "Ошибка",
     "Continue": "Продолжить",
     "RequestFromUser": "Запросить у пользователя",
-    "EnterValue": "Введите значение"
+    "EnterValue": "Введите значение",
+    "OnToDoClose": "При закрытии ToDo",
+    "OnSubProcessesDone": "При завершении подпроцессов"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

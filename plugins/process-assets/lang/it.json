@@ -48,7 +48,9 @@
     "Error": "Errore",
     "Continue": "Continua",
     "RequestFromUser": "Richiedi da utente",
-    "EnterValue": "Inserisci valore"
+    "EnterValue": "Inserisci valore",
+    "OnToDoClose": "Alla chiusura Attività",
+    "OnSubProcessesDone": "Alla fine dei sottoprocessi"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

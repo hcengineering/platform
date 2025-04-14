@@ -2,10 +2,10 @@
 import { Analytics } from '@hcengineering/analytics'
 import { Person } from '@hcengineering/contact'
 import core, {
-  PersonId,
   AttachedData,
   Doc,
   DocumentUpdate,
+  PersonId,
   Ref,
   SortingOrder,
   Status,
@@ -41,10 +41,10 @@ import {
   DocSyncManager,
   ExternalSyncField,
   IntegrationContainer,
-  UserInfo,
   githubDerivedSyncVersion,
   githubExternalSyncVersion,
-  githubSyncVersion
+  githubSyncVersion,
+  type UserInfo
 } from '../types'
 import {
   IssueExternalData,
@@ -154,7 +154,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     integration: IntegrationContainer,
     prj: GithubProject
   ): Promise<void> {
-    const account = (await this.provider.getAccountU(event.sender))?._id ?? core.account.System
+    const account = (await this.provider.getAccountU(event.sender)) ?? core.account.System
 
     let externalData: PullRequestExternalData
     try {
@@ -243,7 +243,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       case 'unassigned': {
         const assignees = await this.getAssignees(externalData)
         const update: GithubPullRequestUpdate = {
-          assignee: assignees?.[0]?.person ?? null
+          assignee: assignees?.[0] ?? null
         }
         await this.handleUpdate(externalData, derivedClient, update, account, prj, true)
         break
@@ -326,27 +326,27 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     }
   }
 
-  // async getReviewers (issue: PullRequestExternalData): Promise<PersonAccount[]> {
-  //   // Find Assignees and reviewers
-  //   const ids: UserInfo[] = issue.reviewRequests.nodes.map((it: any) => it.requestedReviewer)
+  async getReviewers (issue: PullRequestExternalData): Promise<PersonId[]> {
+    // Find Assignees and reviewers
+    const ids: UserInfo[] = issue.reviewRequests.nodes.map((it: any) => it.requestedReviewer)
 
-  //   const values: PersonAccount[] = []
+    const values: PersonId[] = []
 
-  //   for (const o of ids) {
-  //     const acc = await this.provider.getAccount(o)
-  //     if (acc !== undefined) {
-  //       values.push(acc)
-  //     }
-  //   }
+    for (const o of ids) {
+      const acc = await this.provider.getAccount(o)
+      if (acc !== undefined) {
+        values.push(acc)
+      }
+    }
 
-  //   for (const n of issue.latestReviews.nodes) {
-  //     const acc = await this.provider.getAccount(n.author)
-  //     if (acc !== undefined) {
-  //       values.push(acc)
-  //     }
-  //   }
-  //   return values
-  // }
+    for (const n of issue.latestReviews.nodes) {
+      const acc = await this.provider.getAccount(n.author)
+      if (acc !== undefined) {
+        values.push(acc)
+      }
+    }
+    return values
+  }
 
   private async createSyncData (
     pullRequestExternal: PullRequestExternalData,
@@ -387,14 +387,14 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     info: DocSyncInfo
   ): Promise<DocumentUpdate<DocSyncInfo>> {
     const account =
-      existing?.modifiedBy ?? (await this.provider.getAccount(pullRequestExternal.author))?._id ?? core.account.System
+      existing?.modifiedBy ?? (await this.provider.getAccount(pullRequestExternal.author)) ?? core.account.System
     const accountGH =
-      info.lastGithubUser ?? (await this.provider.getAccount(pullRequestExternal.author))?._id ?? core.account.System
+      info.lastGithubUser ?? (await this.provider.getAccount(pullRequestExternal.author)) ?? core.account.System
 
     // A target node id
     const targetNodeId: string | undefined = info.targetNodeId as string
 
-    const okit = (await this.provider.getOctokit(account as PersonId)) ?? container.container.octokit
+    const okit = (await this.provider.getOctokit(account)) ?? container.container.octokit
 
     const isProjectProjectTarget = target.target.projectNodeId === target.project.projectNodeId
     const supportProjects =
@@ -452,13 +452,12 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     }
 
     const assignees = await this.getAssignees(pullRequestExternal)
-    // TODO: FIXME
-    const reviewers: any = [] // await this.getReviewers(pullRequestExternal)
+    const reviewers: PersonId[] = await this.getReviewers(pullRequestExternal)
 
     const latestReviews: LastReviewState[] = []
 
     for (const d of pullRequestExternal.latestReviews?.nodes ?? []) {
-      const author = (await this.provider.getAccount(d.author))?._id
+      const author = await this.provider.getAccount(d.author)
       if (author !== undefined) {
         latestReviews.push({
           state: toReviewState(d.state),
@@ -473,7 +472,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         pullRequestExternal.body,
         this.stripGuestLink
       ),
-      assignee: assignees[0]?.person ?? null,
+      assignee: assignees[0] ?? null,
       reviewers: reviewers.map((it: any) => it.person),
       draft: pullRequestExternal.isDraft,
       head: pullRequestExternal.headRef,
@@ -706,10 +705,10 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       }
     }
 
-    const pendingOrDismissed = new Map<Ref<Person>, PullRequestReviewState>()
+    const pendingOrDismissedIds = new Map<PersonId, PullRequestReviewState>()
 
-    const approvedOrChangesRequested = new Map<Ref<Person>, PullRequestReviewState>()
-    const reviewStates = new Map<Ref<Person>, PullRequestReviewState[]>()
+    const approvedOrChangesRequested = new Map<PersonId, PullRequestReviewState>()
+    const reviewStates = new Map<PersonId, PullRequestReviewState[]>()
 
     const sortedReviews: (Review & { date: number })[] = external.reviews.nodes
       .filter((it) => it != null)
@@ -734,13 +733,17 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         continue
       }
       if (r.state === 'PENDING' || r.state === 'DISMISSED') {
-        pendingOrDismissed.set(rp.person, r.state)
+        pendingOrDismissedIds.set(rp, r.state)
       }
       if (r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED') {
-        approvedOrChangesRequested.set(rp.person, r.state)
+        approvedOrChangesRequested.set(rp, r.state)
       }
-      reviewStates.set(rp.person, [...(reviewStates.get(rp.person) ?? []), r.state])
+      reviewStates.set(rp, [...(reviewStates.get(rp) ?? []), r.state])
     }
+
+    const pendingOrDismissed = new Set(
+      await this.getPersonsFromId(Array.from(pendingOrDismissedIds.entries()).map((it) => it[0]))
+    )
 
     for (const r of pullRequest.reviewers ?? []) {
       // Find all related todos's
@@ -750,10 +753,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       const hasPending = todos.some((it) => it.doneOn !== null)
 
       // Create review Todo, if missing.
-      if (
-        pullRequest.state === GithubPullRequestState.open ||
-        (!hasPending && pendingOrDismissed.get(r) !== undefined)
-      ) {
+      if (pullRequest.state === GithubPullRequestState.open || (!hasPending && pendingOrDismissed.has(r))) {
         if (todos.length === 0) {
           await this.requestReview(client, pullRequest, external, r, account)
         }
@@ -763,26 +763,28 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     // Handle change requests.
     // If we have change requests pending, we need to create Todo to resolve them to author or assigned person, to resolve them.
 
-    const changeRequestPersons = new Set<Ref<Person>>()
+    const changeRequestPersonsIds = new Set<PersonId>()
     const author = await this.provider.getAccount(external.author)
     if (author !== undefined) {
-      changeRequestPersons.add(author.person)
+      changeRequestPersonsIds.add(author)
     }
     for (const au of external.assignees.nodes ?? []) {
       const u = await this.provider.getAccount(au)
       if (u !== undefined) {
-        changeRequestPersons.add(u.person)
+        changeRequestPersonsIds.add(u)
       }
     }
 
     // Check review threads and create todo to resolve them.
     const requestedIds: Ref<Person>[] = []
 
+    const changeRequestPersons = await this.getPersonsFromId(Array.from(changeRequestPersonsIds))
+
     let allResolved = true
     for (const r of external.reviewThreads.nodes) {
       if (!r.isResolved) {
         allResolved = false
-        for (const c of Array.from(changeRequestPersons)) {
+        for (const c of changeRequestPersons) {
           // We need to add Todo to resolve PR.
           const todos = [...allTodos, ...removedTodos].filter((it) => it.user === c && it.purpose === 'fix')
           if (todos.length === 0) {
@@ -801,7 +803,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       for (const [, sst] of approvedOrChangesRequested.entries()) {
         if (sst === 'CHANGES_REQUESTED') {
           // We have changes requested and not resolved yet.
-          for (const c of Array.from(changeRequestPersons)) {
+          for (const c of changeRequestPersons) {
             const todos = [...allTodos, ...removedTodos].filter((it) => it.user === c && it.purpose === 'fix')
             if (todos.length === 0 && !requestedIds.includes(c)) {
               requestedIds.push(c)

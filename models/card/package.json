@@ -45,6 +45,7 @@
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/card-resources": "^0.6.0",
-    "@hcengineering/view": "^0.6.13"
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/tags": "^0.6.16"
   }
 }

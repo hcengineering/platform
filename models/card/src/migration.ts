@@ -20,10 +20,12 @@ import {
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  createOrUpdate
 } from '@hcengineering/model'
 import view from '@hcengineering/view'
 import card from '.'
+import tags from '@hcengineering/tags'
 
 export const cardOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
@@ -56,6 +58,10 @@ export const cardOperation: MigrateOperation = {
           const tx = new TxOperations(client, core.account.System)
           await createDefaultProject(tx)
         }
+      },
+      {
+        state: 'default-labels',
+        func: defaultLabels
       }
     ])
   }
@@ -171,4 +177,49 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
 
 async function migrateSpaces (client: MigrationClient): Promise<void> {
   await client.update(DOMAIN_CARD, { space: core.space.Workspace }, { space: card.space.Default })
+}
+
+async function defaultLabels (client: Client): Promise<void> {
+  const ops = new TxOperations(client, core.account.System)
+  await createOrUpdate(
+    ops,
+    tags.class.TagCategory,
+    core.space.Workspace,
+    {
+      icon: tags.icon.Tags,
+      label: 'Labels',
+      targetClass: card.class.Card,
+      tags: [],
+      default: true
+    },
+    card.category.Labels
+  )
+
+  await createOrUpdate(
+    ops,
+    tags.class.TagElement,
+    core.space.Workspace,
+    {
+      title: 'Subscribed',
+      targetClass: card.class.Card,
+      description: '',
+      color: 17, // green
+      category: card.category.Labels
+    },
+    card.label.Subscribed
+  )
+
+  await createOrUpdate(
+    ops,
+    tags.class.TagElement,
+    core.space.Workspace,
+    {
+      title: 'New messages',
+      targetClass: card.class.Card,
+      description: '',
+      color: 19, // orange
+      category: card.category.Labels
+    },
+    card.label.NewMessages
+  )
 }

@@ -12,8 +12,8 @@ importers:
         specifier: ^3.11.3
         version: 3.11.3
       '@livekit/agents':
-        specifier: ^0.7.1
-        version: 0.7.1(@livekit/rtc-node@0.13.10)
+        specifier: ^0.7.2
+        version: 0.7.2(@livekit/rtc-node@0.13.10)
       '@livekit/rtc-node':
         specifier: ^0.13.10
         version: 0.13.10
@@ -243,8 +243,8 @@ packages:
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
     deprecated: Use @eslint/object-schema instead
 
-  '@livekit/agents@0.7.1':
-    resolution: {integrity: sha512-t1KWZmOwAD6SuHI3mHdIvGaUdmJHag4+YnJ7r1snzZVA15nhSKHRW+bVOjt266BS3HjlCvRyFTI1NemCbu3qPw==}
+  '@livekit/agents@0.7.2':
+    resolution: {integrity: sha512-FBORsCwwRb0WK9Tik8HecbTBSOG0Ibr4pUZM4eDBhmlJHtDPdcXTSrir6R/gAoQMGS/q1I3qyUNnG72jx6qKDw==}
     peerDependencies:
       '@livekit/rtc-node': ^0.13.4
 
@@ -1645,7 +1645,7 @@ snapshots:
 
   '@humanwhocodes/object-schema@2.0.3': {}
 
-  '@livekit/agents@0.7.1(@livekit/rtc-node@0.13.10)':
+  '@livekit/agents@0.7.2(@livekit/rtc-node@0.13.10)':
     dependencies:
       '@livekit/mutex': 1.1.1
       '@livekit/protocol': 1.32.1

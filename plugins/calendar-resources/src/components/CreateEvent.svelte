@@ -112,6 +112,7 @@
     if (startDate != null) date = startDate
     if (date === undefined) return
     if (title === '') return
+    const user = myPrimaryId
     const _id = generateId<Event>()
     if (rules.length > 0) {
       await client.addCollection(
@@ -138,7 +139,8 @@
           allDay,
           access: 'owner',
           originalStartTime: allDay ? saveUTC(date) : date,
-          timeZone
+          timeZone,
+          user
         },
         _id as Ref<ReccuringEvent>
       )
@@ -163,7 +165,8 @@
           location,
           allDay,
           timeZone,
-          access: 'owner'
+          access: 'owner',
+          user
         },
         _id
       )

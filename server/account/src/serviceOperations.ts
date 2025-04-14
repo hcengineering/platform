@@ -84,7 +84,7 @@ export async function listWorkspaces (
   const { region, mode } = params
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  if (!['tool', 'backup', 'admin'].includes(extra?.service) && extra?.admin !== 'true') {
+  if (!['tool', 'backup', 'admin', 'github'].includes(extra?.service) && extra?.admin !== 'true') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 

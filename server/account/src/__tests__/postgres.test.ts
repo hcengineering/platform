@@ -27,6 +27,7 @@ interface TestWorkspace {
   uuid: WorkspaceUuid
   mode: WorkspaceMode
   name: string
+  createdOn: number
   processingAttempts?: number
   lastProcessingTime?: number
 }
@@ -42,7 +43,7 @@ describe('PostgresDbCollection', () => {
       unsafe: jest.fn().mockResolvedValue([]) // Default to empty array result
     }
 
-    collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, 'uuid', ns)
+    collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, { idKey: 'uuid', ns })
   })
 
   describe('getTableName', () => {
@@ -51,17 +52,18 @@ describe('PostgresDbCollection', () => {
     })
 
     it('should return table name without namespace when ns is empty', () => {
-      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, 'uuid', '')
+      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, {
+        idKey: 'uuid',
+        ns: ''
+      })
       expect(collection.getTableName()).toBe('workspace')
     })
 
     it('should return table name with custom namespace when ns is provided', () => {
-      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>(
-        'workspace',
-        mockClient as Sql,
-        'uuid',
-        'custom_account'
-      )
+      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, {
+        idKey: 'uuid',
+        ns: 'custom_account'
+      })
       expect(collection.getTableName()).toBe('custom_account.workspace')
     })
   })
@@ -196,6 +198,92 @@ describe('PostgresDbCollection', () => {
 
       expect(mockClient.unsafe).toHaveBeenCalledWith('DELETE FROM global_account.workspace WHERE "mode" = $1', [
         'deleted'
+      ])
+    })
+  })
+
+  describe('timestamp field handling', () => {
+    beforeEach(() => {
+      // Create collection with timestamp fields specified
+      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, {
+        idKey: 'uuid',
+        ns,
+        timestampFields: ['lastProcessingTime', 'createdOn']
+      })
+    })
+
+    it('should convert string timestamps to numbers', async () => {
+      // Mock database returning string timestamps
+      mockClient.unsafe.mockResolvedValue([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          last_processing_time: '1234567890000',
+          created_on: '1234567891000'
+        }
+      ])
+
+      const result = await collection.find({})
+
+      expect(result).toEqual([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          lastProcessingTime: 1234567890000,
+          createdOn: 1234567891000
+        }
+      ])
+      expect(typeof result[0].lastProcessingTime).toBe('number')
+      expect(typeof result[0].createdOn).toBe('number')
+    })
+
+    it('should handle null timestamp values', async () => {
+      mockClient.unsafe.mockResolvedValue([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          last_processing_time: null,
+          created_on: null
+        }
+      ])
+
+      const result = await collection.find({})
+
+      expect(result).toEqual([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          lastProcessingTime: null,
+          createdOn: null
+        }
+      ])
+    })
+
+    it('should handle invalid timestamp strings', async () => {
+      mockClient.unsafe.mockResolvedValue([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          last_processing_time: 'invalid',
+          created_on: ''
+        }
+      ])
+
+      const result = await collection.find({})
+
+      expect(result).toEqual([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          lastProcessingTime: null,
+          createdOn: null
+        }
       ])
     })
   })

@@ -316,7 +316,7 @@ export async function getSocialKeyByOldAccount (client: MigrationClient): Promis
   })
   const accounts = getAccountsFromTxes(accountsTxes)
 
-  const socialKeyByAccount: Record<string, PersonId> = {}
+  const socialKeyByAccount: Record<string, string> = {}
   for (const account of accounts) {
     if (account.email === undefined) {
       continue

@@ -96,7 +96,7 @@
       </div>
       {#if showInput}
         <div class="ref-input oldest-first">
-          <MessageInput cardId={object._id} placeholder={activity.string.Message} />
+          <MessageInput cardId={object._id} cardType={object._class} placeholder={activity.string.Message} />
         </div>
       {/if}
     </svelte:fragment>
