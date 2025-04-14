@@ -39,7 +39,7 @@
     const filtered: Ref<Class<Doc>>[] = []
     for (const _id of desc) {
       const _class = hierarchy.getClass(_id)
-      if (_class.extends === id && _class._class === card.class.MasterTag) {
+      if (_class.extends === id && _class._class === card.class.MasterTag && (_class as MasterTag).removed !== true) {
         filtered.push(_id)
         continue
       }
