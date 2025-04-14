@@ -19,6 +19,7 @@ import {
   type FindMessagesGroupsParams,
   type FindMessagesParams,
   type Message,
+  type MessageData,
   type MessageID,
   type MessagesGroup,
   type MessageType,
@@ -43,7 +44,8 @@ export class MessagesDb extends BaseDb {
     content: RichText,
     creator: SocialID,
     created: Date,
-    data?: any
+    data?: MessageData,
+    externalId?: string
   ): Promise<MessageID> {
     const id = generateMessageId()
     const db: MessageDb = {
@@ -54,15 +56,16 @@ export class MessagesDb extends BaseDb {
       content,
       creator,
       created,
-      data
+      data,
+      external_id: externalId
     }
 
-    const sql = `INSERT INTO ${TableName.Message} (workspace_id, card_id, id, content, creator, created, type, data)
-                     VALUES ($1::uuid, $2::varchar, $3::bigint, $4::text, $5::varchar, $6::timestamptz, $7::varchar, $8::jsonb)`
+    const sql = `INSERT INTO ${TableName.Message} (workspace_id, card_id, id, content, creator, created, type, data, external_id)
+                     VALUES ($1::uuid, $2::varchar, $3::bigint, $4::text, $5::varchar, $6::timestamptz, $7::varchar, $8::jsonb, $9::varchar)`
 
     await this.execute(
       sql,
-      [db.workspace_id, db.card_id, db.id, db.content, db.creator, db.created, db.type, db.data ?? {}],
+      [db.workspace_id, db.card_id, db.id, db.content, db.creator, db.created, db.type, db.data ?? {}, externalId ?? null],
       'insert message'
     )
 
@@ -446,6 +449,7 @@ export class MessagesDb extends BaseDb {
       m.creator,
       m.created,
       m.data,
+      m.external_id,
       ${selectReplies}
       ${selectFiles}
       ${selectReactions}
@@ -474,6 +478,11 @@ export class MessagesDb extends BaseDb {
     if (params.id != null) {
       where.push(`m.id = $${index++}::bigint`)
       values.push(params.id)
+    }
+
+    if (params.externalId != null) {
+      where.push(`m.external_id = $${index++}::varchar`)
+      values.push(params.externalId)
     }
 
     if (params.card != null) {

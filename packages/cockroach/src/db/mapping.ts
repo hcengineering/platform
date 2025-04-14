@@ -64,6 +64,7 @@ interface RawNotification extends NotificationDb {
   message_content?: RichText
   message_creator?: SocialID
   message_data?: MessageData
+  message_external_id?: string
   message_created?: Date
   message_group_blob_id?: BlobID
   message_group_from_sec?: Date
@@ -92,6 +93,7 @@ export function toMessage (raw: RawMessage): Message {
     creator: raw.creator,
     created: raw.created,
     data: raw.data,
+    externalId: raw.external_id,
     edited: lastPatch?.created ?? undefined,
     thread:
       raw.thread_id != null
@@ -199,6 +201,7 @@ function toNotificationRaw (
       card,
       content: lastPatch?.patch_content ?? raw.message_content,
       data: raw.message_data,
+      externalId: raw.message_external_id,
       creator: raw.message_creator,
       created: new Date(raw.message_created),
       edited: lastPatch?.patch_created != null ? new Date(lastPatch.patch_created) : undefined,

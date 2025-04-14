@@ -50,7 +50,8 @@ export interface MessageDb {
   content: RichText
   creator: SocialID
   created: Date
-  data?: any
+  data?: Record<string, any>
+  external_id?: string
 }
 
 export interface MessagesGroupDb {

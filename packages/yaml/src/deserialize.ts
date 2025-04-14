@@ -24,6 +24,7 @@ export function deserializeMessage(message: Message): FileMessage {
     creator: message.creator,
     created: message.created,
     data: message.data,
+    externalId: message.externalId,
     thread:
       message.thread != null
         ? {

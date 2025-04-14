@@ -167,7 +167,8 @@ export class EventProcessor {
       event.content,
       event.creator,
       created,
-      event.data
+      event.data,
+      event.externalId
     )
     const message: Message = {
       id,
@@ -177,6 +178,7 @@ export class EventProcessor {
       creator: event.creator,
       created,
       data: event.data,
+      externalId: event.externalId,
       reactions: [],
       files: []
     }

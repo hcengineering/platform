@@ -43,6 +43,7 @@ interface FindParams {
 
 export interface FindMessagesParams extends FindParams {
   id?: MessageID
+  externalId?: string
   card: CardID
   files?: boolean
   reactions?: boolean

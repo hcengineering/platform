@@ -29,6 +29,7 @@ export interface FileMessage {
   content: RichText
   creator: SocialID
   data?: MessageData
+  externalId?: string
   created: Date
   edited?: Date
   reactions: FileReaction[]

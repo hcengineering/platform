@@ -27,6 +27,7 @@ export interface Message {
   creator: SocialID
   created: Date
   data?: MessageData
+  externalId?: string
 
   edited?: Date
   thread?: Thread
@@ -39,7 +40,7 @@ export enum MessageType {
   Activity = 'activity'
 }
 
-export type MessageData = ActivityMessageData | any
+export type MessageData = ActivityMessageData | Record<string, any>
 
 export interface ActivityMessage extends Message {
   type: MessageType.Activity

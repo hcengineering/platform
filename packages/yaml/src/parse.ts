@@ -70,6 +70,7 @@ export function parseYaml(data: string): ParsedFile {
       creator: message.creator,
       created: message.created,
       data: message.data,
+      externalId: message.externalId,
       thread: message.thread
         ? {
             card: metadata.card,

@@ -40,7 +40,8 @@ import {
   type Label,
   type FindLabelsParams,
   type LabelID,
-  type CardType
+  type CardType,
+  type MessageData
 } from '@hcengineering/communication-types'
 import type { DbAdapter } from '@hcengineering/communication-sdk-types'
 import { retry } from '@hcengineering/communication-shared'
@@ -75,9 +76,10 @@ export class CockroachAdapter implements DbAdapter {
     content: RichText,
     creator: SocialID,
     created: Date,
-    data?: any
+    data?: MessageData,
+    externalId?: string
   ): Promise<MessageID> {
-    return await this.message.createMessage(card, type, content, creator, created, data)
+    return await this.message.createMessage(card, type, content, creator, created, data, externalId)
   }
 
   async removeMessages(card: CardID, messages: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]> {

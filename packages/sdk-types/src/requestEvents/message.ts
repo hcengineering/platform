@@ -68,6 +68,7 @@ export interface CreateMessageEvent extends BaseRequestEvent {
   content: RichText
   creator: SocialID
   data?: MessageData
+  externalId?: string
 }
 
 export interface RemoveMessagesEvent extends BaseRequestEvent {

@@ -49,7 +49,8 @@ export interface DbAdapter {
     content: RichText,
     creator: SocialID,
     created: Date,
-    data?: MessageData
+    data?: MessageData,
+    externalId?: string
   ): Promise<MessageID>
   removeMessages(card: CardID, ids: MessageID[], socialIds?: SocialID[]): Promise<MessageID[]>
 
