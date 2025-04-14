@@ -136,7 +136,9 @@
   <div class="message__body">
     <!--TODO: remove  on:contextmenu-->
     <div class="message__avatar" on:contextmenu={handleContextMenu}>
-      <Avatar name={author?.name} avatar={author} size={AvatarSize.Small} showPreview />
+      <PersonPreviewProvider value={author}>
+        <Avatar name={author?.name} avatar={author} size={AvatarSize.Small} />
+      </PersonPreviewProvider>
     </div>
     <div class="message__content">
       <div class="message__header">
