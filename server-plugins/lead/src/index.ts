@@ -30,8 +30,5 @@ export default plugin(serverLeadId, {
   function: {
     LeadHTMLPresenter: '' as Resource<Presenter>,
     LeadTextPresenter: '' as Resource<Presenter>
-  },
-  trigger: {
-    OnEmployeeCreate: '' as Resource<TriggerFunc>
   }
 })

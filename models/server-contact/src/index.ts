@@ -82,6 +82,14 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverContact.trigger.OnTypedSpaceCreate,
+    txMatch: {
+      objectClass: core.class.TypedSpace,
+      _class: core.class.TxCreateDoc
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverContact.trigger.OnPersonCreate,
     txMatch: {
       objectClass: contact.class.Person,
