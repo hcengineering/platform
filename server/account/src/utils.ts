@@ -1370,15 +1370,34 @@ export async function addSocialId (
   return await db.socialId.insertOne(newSocialId)
 }
 
-export async function releaseSocialId (
+export async function doReleaseSocialId (
   db: AccountDB,
   personUuid: PersonUuid,
   type: SocialIdType,
-  value: string
+  value: string,
+  releasedBy: string
 ): Promise<void> {
   const socialIds = await db.socialId.find({ personUuid, type, value })
+
+  if (socialIds.length === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: personUuid as AccountUuid })
+
   for (const socialId of socialIds) {
     await db.socialId.updateOne({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
+    if (account != null) {
+      await db.accountEvent.insertOne({
+        accountUuid: account.uuid,
+        eventType: AccountEventType.SOCIAL_ID_RELEASED,
+        time: Date.now(),
+        data: {
+          socialId: socialId._id,
+          releasedBy: releasedBy ?? ''
+        }
+      })
+    }
   }
 }
 

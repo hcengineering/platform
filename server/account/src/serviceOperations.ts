@@ -63,7 +63,8 @@ import {
   addSocialId,
   getWorkspaces,
   updateWorkspaceRole,
-  getPersonName
+  getPersonName,
+  doReleaseSocialId
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -518,6 +519,26 @@ export async function getPersonInfo (
   }
 }
 
+export async function releaseSocialId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { personUuid: PersonUuid, type: SocialIdType, value: string }
+): Promise<void> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  verifyAllowedServices(['github'], extra)
+
+  const { personUuid, type, value } = params
+
+  if (personUuid == null || !Object.values(SocialIdType).includes(type) || value == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  await doReleaseSocialId(db, personUuid, type, value, extra?.service ?? '')
+}
+
 export async function addSocialIdToPerson (
   ctx: MeasureContext,
   db: AccountDB,
@@ -811,6 +832,7 @@ export type AccountServiceMethods =
   | 'addSocialIdToPerson'
   | 'updateSocialId'
   | 'getPersonInfo'
+  | 'releaseSocialId'
   | 'createIntegration'
   | 'updateIntegration'
   | 'deleteIntegration'
@@ -839,6 +861,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     addSocialIdToPerson: wrap(addSocialIdToPerson),
     updateSocialId: wrap(updateSocialId),
     getPersonInfo: wrap(getPersonInfo),
+    releaseSocialId: wrap(releaseSocialId),
     createIntegration: wrap(createIntegration),
     updateIntegration: wrap(updateIntegration),
     deleteIntegration: wrap(deleteIntegration),

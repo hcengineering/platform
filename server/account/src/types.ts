@@ -68,7 +68,8 @@ export interface AccountEvent {
 }
 
 export enum AccountEventType {
-  ACCOUNT_CREATED = 'account_created'
+  ACCOUNT_CREATED = 'account_created',
+  SOCIAL_ID_RELEASED = 'social_id_released'
 }
 
 export interface Member {
