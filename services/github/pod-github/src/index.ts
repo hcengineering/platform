@@ -9,8 +9,12 @@ import { initStatisticsContext, loadBrandingMap } from '@hcengineering/server-co
 import { join } from 'path'
 import config from './config'
 import { start } from './server'
+import { setMetadata } from '@hcengineering/platform'
+import serverToken from '@hcengineering/server-token'
 
 // Load and inc startID, to have easy logs.
+
+setMetadata(serverToken.metadata.Secret, config.ServerSecret)
 
 const metricsContext = initStatisticsContext('github', {
   factory: () =>
