@@ -5,13 +5,7 @@ import {
   type ReccuringInstance,
   generateEventId
 } from '@hcengineering/calendar'
-import {
-  type DocumentUpdate,
-  type IdMap,
-  type Timestamp,
-  getCurrentAccount,
-  toIdMap
-} from '@hcengineering/core'
+import { type DocumentUpdate, type IdMap, type Timestamp, getCurrentAccount, toIdMap } from '@hcengineering/core'
 import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { closePopup, DAY, showPopup } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
@@ -207,11 +201,7 @@ export async function updateReccuringInstance (
 }
 
 export async function configureCalDavAccess (): Promise<void> {
-  showPopup(
-    CalDavAccess,
-    {},
-    undefined
-  )
+  showPopup(CalDavAccess, {}, undefined)
 }
 
 export function getAccountClient (): AccountClient {

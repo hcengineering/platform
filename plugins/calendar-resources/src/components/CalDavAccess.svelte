@@ -1,7 +1,18 @@
 <script lang="ts">
   import { Integration, IntegrationKey } from '@hcengineering/account-client'
   import presentation, { getClient, getCurrentWorkspaceUrl, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
-  import { Dropdown, Label, ListItem, Modal, ModernEditbox, CheckBox, Spinner, Button, IconCopy, EditBox } from '@hcengineering/ui'
+  import {
+    Dropdown,
+    Label,
+    ListItem,
+    Modal,
+    ModernEditbox,
+    CheckBox,
+    Spinner,
+    Button,
+    IconCopy,
+    EditBox
+  } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import calendar from '@hcengineering/calendar'
   import { createEventDispatcher, onMount } from 'svelte'
@@ -27,16 +38,12 @@
   const dispatch = createEventDispatcher()
 
   $: wasAccessEnabled = integrationGlobal !== null && integrationWs !== null
-  $: canSave = !!(!loading && (
-    (
-      !wasAccessEnabled && accessEnabled && selectedAccount != null
-    ) ||
-    (
-      wasAccessEnabled && !accessEnabled
-    ) || (
-      wasAccessEnabled && accessEnabled && selectedAccount != null && selectedAccount._id !== integrationWs?.socialId
-    )
-  ))
+  $: canSave = !!(
+    !loading &&
+    ((!wasAccessEnabled && accessEnabled && selectedAccount != null) ||
+      (wasAccessEnabled && !accessEnabled) ||
+      (wasAccessEnabled && accessEnabled && selectedAccount != null && selectedAccount._id !== integrationWs?.socialId))
+  )
 
   function generateRandomPassword (length = 24): string {
     const array = new Uint8Array(length)
@@ -45,9 +52,7 @@
     for (let i = 0; i < array.length; i++) {
       numbers.push(array[i])
     }
-    return btoa(String.fromCharCode.apply(null, numbers))
-      .replace(/[+/=]/g, '')
-      .slice(0, length)
+    return btoa(String.fromCharCode.apply(null, numbers)).replace(/[+/=]/g, '').slice(0, length)
   }
 
   onMount(async () => {
@@ -233,21 +238,21 @@
       <CheckBox kind="primary" bind:checked={accessEnabled} />
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="ml-2" style="cursor: pointer" on:click={() => { accessEnabled = !accessEnabled }}>
-        <Label label={calendar.string.CalDavAccessEnable} params={{ ws: getCurrentWorkspaceUrl() }}/>
+      <div
+        class="ml-2"
+        style="cursor: pointer"
+        on:click={() => {
+          accessEnabled = !accessEnabled
+        }}
+      >
+        <Label label={calendar.string.CalDavAccessEnable} params={{ ws: getCurrentWorkspaceUrl() }} />
       </div>
     </div>
 
     <div class="flex-col-stretch flex-gap-1-5" class:accessDisabled={!accessEnabled}>
       <Label label={calendar.string.CalDavAccessServer} />
       <div class="flex-row-center flex-gap-1">
-        <EditBox
-          bind:value={serverUrl}
-          kind="ghost"
-          fullSize
-          focusable
-          disabled={true}
-        />
+        <EditBox bind:value={serverUrl} kind="ghost" fullSize focusable disabled={true} />
         <Button
           icon={IconCopy}
           size="small"
@@ -289,14 +294,7 @@
     <div class="flex-col-stretch flex-gap-1-5" class:accessDisabled={!accessEnabled}>
       <Label label={calendar.string.CalDavAccessPassword} />
       <div class="flex-row-center flex-gap-1">
-        <EditBox
-          bind:value={password}
-          kind="ghost"
-          format="password"
-          fullSize
-          focusable
-          disabled={true}
-        />
+        <EditBox bind:value={password} kind="ghost" format="password" fullSize focusable disabled={true} />
         <Button
           icon={IconCopy}
           size="small"
