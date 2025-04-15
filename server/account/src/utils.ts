@@ -56,7 +56,8 @@ import {
   WorkspaceLoginInfo,
   WorkspaceStatus,
   AccountEventType,
-  Meta
+  Meta,
+  Integration
 } from './types'
 import { Analytics } from '@hcengineering/analytics'
 import { TokenError, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
@@ -1419,4 +1420,44 @@ export async function setTimezoneIfNotDefined (
   } catch (err: any) {
     ctx.error('Failed to set account timezone', err)
   }
+}
+
+// Move to config?
+export const integrationServices = ['github', 'telegram-bot', 'telegram', 'mailbox']
+
+export async function findExistingIntegration (
+  account: AccountUuid,
+  db: AccountDB,
+  params: Integration,
+  extra: any
+): Promise<Integration | null> {
+  const { socialId, kind, workspaceUuid } = params
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (verifyAllowedServices(integrationServices, extra, false)) {
+    const existingSocialId = await db.socialId.findOne({ _id: socialId, verifiedOn: { $gt: 0 } })
+    if (existingSocialId == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, { _id: socialId }))
+    }
+  } else {
+    if (account == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+    // Allow accounts to operate on their own integrations
+    const existingSocialId = await db.socialId.findOne({ _id: socialId, personUuid: account, verifiedOn: { $gt: 0 } })
+    if (existingSocialId == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  if (workspaceUuid != null) {
+    const workspace = await getWorkspaceById(db, workspaceUuid)
+    if (workspace == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+    }
+  }
+
+  return await db.integration.findOne({ socialId, kind, workspaceUuid })
 }
