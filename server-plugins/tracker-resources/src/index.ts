@@ -16,13 +16,11 @@
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import { Person } from '@hcengineering/contact'
 import core, {
-  AccountRole,
   concatLink,
   Doc,
   DocumentUpdate,
   Ref,
   Space,
-  systemAccountUuid,
   Tx,
   TxCreateDoc,
   TxCUD,

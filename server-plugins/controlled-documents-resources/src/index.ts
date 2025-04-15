@@ -3,7 +3,6 @@
 //
 import { Person, type Employee } from '@hcengineering/contact'
 import core, {
-  AccountRole,
   combineAttributes,
   DocumentQuery,
   PersonId,
@@ -13,7 +12,6 @@ import core, {
   TxCreateDoc,
   TxFactory,
   TxUpdateDoc,
-  systemAccountUuid,
   pickPrimarySocialId,
   type Doc,
   type RolesAssignment,

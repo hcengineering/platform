@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import contact from '@hcengineering/contact'
 import core from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import tracker from '@hcengineering/model-tracker'

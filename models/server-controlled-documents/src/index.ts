@@ -7,7 +7,6 @@ import serverCore from '@hcengineering/server-core'
 import { RequestStatus } from '@hcengineering/request'
 import documents, { DocumentState } from '@hcengineering/controlled-documents'
 import serverDocuments from '@hcengineering/server-controlled-documents'
-import contact from '@hcengineering/contact'
 import serverNotification from '@hcengineering/server-notification'
 import notification from '@hcengineering/notification'
 
