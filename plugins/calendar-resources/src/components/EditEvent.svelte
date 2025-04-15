@@ -214,9 +214,6 @@
         readonly={readOnly}
         placeholder={calendar.string.Description}
         bind:content={description}
-        on:changeSize={(e) => {
-          console.log('ChangeSize', e)
-        }}
       />
     </div>
     <div class="divider" />

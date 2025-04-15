@@ -100,10 +100,11 @@
     "MeetingDuration": "Trvání schůzky",
     "MeetingInterval": "Pauza mezi schůzkami",
     "CalDavAccess": "Přístup CalDAV",
-    "CalDavAccessPrompt": "Protokol CalDAV umožňuje synchronizaci vašeho osobního kalendáře Huly s externími aplikacemi kalendáře. Vyberte účet a použijte navrhované heslo pro registraci serveru Huly CalDAV v klientské aplikaci kalendáře.",
+    "CalDavAccessPrompt": "Protokol CalDAV umožňuje synchronizaci vašeho osobního kalendáře Huly s externími kalendářovými aplikacemi. Použijte tento účet a navrhované heslo pro registraci serveru Huly CalDAV v aplikaci kalendářového klienta.",
     "CalDavAccessEnable": "Povolte přístup CalDAV k osobnímu kalendáři v pracovním prostoru {ws}",
     "CalDavAccessServer": "Server CalDAV",
     "CalDavAccessAccount": "Účet Huly",
-    "CalDavAccessPassword": "Heslo (automaticky vygenerované)"
+    "CalDavAccessPassword": "Heslo",
+    "CalDavAccessPasswordWarning": "Tohle heslo už nebudete moci znovu vidět. Uložte si ho na bezpečné místo."
   }
 }
