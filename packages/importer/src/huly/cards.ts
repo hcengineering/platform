@@ -33,8 +33,24 @@ import { contentType } from 'mime-types'
 import * as path from 'path'
 import { IntlString } from '../../../platform/types'
 import { Props, UnifiedDoc, UnifiedUpdate, UnifiedFile, UnifiedMixin } from '../types'
-import { MetadataRegistry, RelationMetadata } from './metadata'
+import { MetadataRegistry, AssociationMetadata } from './registry'
 import { readMarkdownContent, readYamlHeader } from './parsing'
+import { Logger } from '../importer/logger'
+import { validateSchema } from './validation'
+import {
+  AssociationSchema,
+  BaseFieldType,
+  BooleanFieldType,
+  EnumSchema,
+  FieldType,
+  FormatSchema,
+  MasterTagSchema,
+  NumberFieldType,
+  OneOfFieldType,
+  PathFieldType,
+  StringFieldType,
+  TagSchema
+} from './schema'
 
 export interface UnifiedDocProcessResult {
   docs: Map<string, Array<UnifiedDoc<Doc>>>
@@ -44,10 +60,13 @@ export interface UnifiedDocProcessResult {
 }
 
 export class CardsProcessor {
-  constructor (private readonly metadataRegistry: MetadataRegistry) {}
+  constructor (
+    private readonly metadataRegistry: MetadataRegistry,
+    private readonly logger: Logger
+  ) {}
 
   async processDirectory (directoryPath: string): Promise<UnifiedDocProcessResult> {
-    console.log('Start looking for cards stuff in:', directoryPath)
+    this.logger.log('Start looking for cards stuff in:', directoryPath)
 
     const result: UnifiedDocProcessResult = {
       docs: new Map(),
@@ -107,17 +126,17 @@ export class CardsProcessor {
 
     for (const entry of yamlFiles) {
       const yamlPath = path.resolve(currentPath, entry.name)
-      console.log('Reading yaml file:', yamlPath)
+      this.logger.log('Reading yaml file:', yamlPath)
       const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
 
       switch (yamlConfig?.class) {
         case card.class.MasterTag: {
           const masterTagId = this.metadataRegistry.getRef(yamlPath) as Ref<MasterTag>
-          const masterTag = await this.createMasterTag(yamlConfig, masterTagId, parentMasterTagId)
-          const masterTagAttrs = await this.createAttributes(yamlPath, yamlConfig, masterTagId)
+          const masterTag = await this.createMasterTag(yamlConfig, yamlPath, parentMasterTagId)
+          const masterTagAttributes = await this.createAttributes(yamlPath, yamlConfig, masterTagId)
 
-          this.metadataRegistry.setAttributes(yamlPath, masterTagAttrs)
-          result.docs.set(yamlPath, [masterTag, ...Array.from(masterTagAttrs.values())])
+          this.metadataRegistry.setAttributes(yamlPath, masterTagAttributes)
+          result.docs.set(yamlPath, [masterTag, ...Array.from(masterTagAttributes.values())])
           types.push(masterTag)
 
           const masterTagDir = path.join(currentPath, path.basename(yamlPath, '.yaml'))
@@ -140,11 +159,12 @@ export class CardsProcessor {
         }
         case core.class.Enum: {
           const enumDoc = await this.createEnum(yamlPath, yamlConfig)
+          this.metadataRegistry.setEnumValues(yamlPath, yamlConfig.values)
           result.docs.set(yamlPath, [enumDoc])
           break
         }
         default:
-          console.log('Skipping class: ' + yamlConfig?.class)
+          this.logger.log('Skipping class: ' + yamlConfig?.class)
       }
     }
   }
@@ -152,8 +172,8 @@ export class CardsProcessor {
   private async processCards (
     currentPath: string,
     result: UnifiedDocProcessResult,
-    masterTagRelations: Map<string, RelationMetadata>,
-    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
+    masterTagAssociaions: Map<string, AssociationMetadata>,
+    masterTagAttributes: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     masterTagId?: Ref<MasterTag>
   ): Promise<void> {
     const entries = fs.readdirSync(currentPath, { withFileTypes: true })
@@ -164,11 +184,11 @@ export class CardsProcessor {
       const yamlConfig = yaml.load(fs.readFileSync(yamlPath, 'utf8')) as Record<string, any>
       if (yamlConfig?.class === card.class.MasterTag) {
         masterTagId = this.metadataRegistry.getRef(yamlPath) as Ref<MasterTag>
-        this.metadataRegistry.getAssociations(yamlPath).forEach((relationMetadata, propName) => {
-          masterTagRelations.set(propName, relationMetadata)
+        this.metadataRegistry.getAssociations(yamlPath).forEach((AssociationMetadata, propName) => {
+          masterTagAssociaions.set(propName, AssociationMetadata)
         })
         this.metadataRegistry.getAttributes(yamlPath).forEach((attr, propName) => {
-          masterTagAttrs.set(propName, attr)
+          masterTagAttributes.set(propName, attr)
         })
       }
     }
@@ -180,7 +200,7 @@ export class CardsProcessor {
         const { class: cardType, ...cardProps } = await readYamlHeader(cardPath)
 
         if (masterTagId !== undefined) {
-          await this.processCard(result, cardPath, cardProps, masterTagId, masterTagRelations, masterTagAttrs)
+          await this.processCard(result, cardPath, cardProps, masterTagId, masterTagAssociaions, masterTagAttributes)
         }
       }
     }
@@ -193,7 +213,7 @@ export class CardsProcessor {
 
       // Only process directories that have a corresponding YAML file
       if (fs.existsSync(dirYamlPath)) {
-        await this.processCards(dirPath, result, masterTagRelations, masterTagAttrs, masterTagId)
+        await this.processCards(dirPath, result, masterTagAssociaions, masterTagAttributes, masterTagId)
       }
     }
   }
@@ -201,8 +221,8 @@ export class CardsProcessor {
   private async processSystemTypeCards (
     currentDir: string,
     result: UnifiedDocProcessResult,
-    masterTagRelations: Map<string, RelationMetadata>,
-    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>
+    masterTagAssociaions: Map<string, AssociationMetadata>,
+    masterTagAttributes: Map<string, UnifiedDoc<Attribute<MasterTag>>>
   ): Promise<void> {
     const entries = fs.readdirSync(currentDir, { withFileTypes: true })
 
@@ -215,9 +235,9 @@ export class CardsProcessor {
           throw new Error('Unsupported card type: ' + cardType + ' in ' + cardPath)
         }
 
-        await this.processCard(result, cardPath, cardProps, cardType, masterTagRelations, masterTagAttrs)
+        await this.processCard(result, cardPath, cardProps, cardType, masterTagAssociaions, masterTagAttributes)
       } else if (entry.isDirectory() && (entry.name === card.types.File || entry.name === card.types.Document)) {
-        await this.processCards(path.join(currentDir, entry.name), result, masterTagRelations, masterTagAttrs)
+        await this.processCards(path.join(currentDir, entry.name), result, masterTagAssociaions, masterTagAttributes)
       }
     }
   }
@@ -227,11 +247,11 @@ export class CardsProcessor {
     cardPath: string,
     cardProps: Record<string, any>,
     masterTagId: Ref<MasterTag>,
-    masterTagRelations: Map<string, RelationMetadata>,
-    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
+    masterTagAssociaions: Map<string, AssociationMetadata>,
+    masterTagAttributes: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
-    console.log('Processing card:', cardPath)
+    this.logger.log('Processing card:', cardPath)
 
     if (cardProps.blobs !== undefined) {
       await this.createBlobs(cardProps.blobs, cardPath, result)
@@ -241,8 +261,8 @@ export class CardsProcessor {
       cardProps,
       cardPath,
       masterTagId,
-      masterTagRelations,
-      masterTagAttrs,
+      masterTagAssociaions,
+      masterTagAttributes,
       result.files,
       parentCardId
     )
@@ -266,8 +286,8 @@ export class CardsProcessor {
           result,
           cardDir,
           masterTagId,
-          masterTagRelations,
-          masterTagAttrs,
+          masterTagAssociaions,
+          masterTagAttributes,
           card.props._id as Ref<Card>
         )
       }
@@ -278,8 +298,8 @@ export class CardsProcessor {
     result: UnifiedDocProcessResult,
     cardDir: string,
     masterTagId: Ref<MasterTag>,
-    masterTagRelations: Map<string, RelationMetadata>,
-    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
+    masterTagAssociaions: Map<string, AssociationMetadata>,
+    masterTagAttributes: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     parentCardId?: Ref<Card>
   ): Promise<void> {
     const entries = fs
@@ -294,8 +314,8 @@ export class CardsProcessor {
         childCardPath,
         cardProps,
         masterTagId,
-        masterTagRelations,
-        masterTagAttrs,
+        masterTagAssociaions,
+        masterTagAttributes,
         parentCardId
       )
     }
@@ -303,9 +323,10 @@ export class CardsProcessor {
 
   private async createMasterTag (
     data: Record<string, any>,
-    masterTagId: Ref<MasterTag>,
+    filePath: string,
     parentMasterTagId?: Ref<MasterTag>
   ): Promise<UnifiedDoc<MasterTag>> {
+    this.validateFormat(data, MasterTagSchema, filePath)
     const { class: _class, title } = data
     if (_class !== card.class.MasterTag) {
       throw new Error('Invalid master tag data')
@@ -314,7 +335,7 @@ export class CardsProcessor {
     return {
       _class: card.class.MasterTag,
       props: {
-        _id: masterTagId,
+        _id: this.metadataRegistry.getRef(filePath) as Ref<MasterTag>,
         space: core.space.Model,
         extends: parentMasterTagId ?? card.class.Card,
         label: ('embedded:embedded:' + title) as IntlString,
@@ -332,7 +353,7 @@ export class CardsProcessor {
     parentTagId?: Ref<Tag>
   ): Promise<void> {
     const tagId = this.metadataRegistry.getRef(tagPath) as Ref<Tag>
-    const tag = await this.createTag(tagConfig, tagId, masterTagId, parentTagId)
+    const tag = await this.createTag(tagConfig, tagPath, masterTagId, parentTagId)
 
     const attributes = await this.createAttributes(tagPath, tagConfig, tagId)
     this.metadataRegistry.setAttributes(tagPath, attributes)
@@ -369,10 +390,12 @@ export class CardsProcessor {
 
   private async createTag (
     data: Record<string, any>,
-    tagId: Ref<Tag>,
+    filePath: string,
     masterTagId: Ref<MasterTag>,
     parentTagId?: Ref<Tag>
   ): Promise<UnifiedDoc<Tag>> {
+    this.validateFormat(data, TagSchema, filePath)
+
     const { class: _class, title } = data
     if (_class !== card.class.Tag) {
       throw new Error('Invalid tag data')
@@ -381,7 +404,7 @@ export class CardsProcessor {
     return {
       _class: card.class.Tag,
       props: {
-        _id: tagId,
+        _id: this.metadataRegistry.getRef(filePath) as Ref<Tag>,
         space: core.space.Model,
         extends: parentTagId ?? masterTagId,
         label: ('embedded:embedded:' + title) as IntlString,
@@ -476,14 +499,28 @@ export class CardsProcessor {
     cardHeader: Record<string, any>,
     cardPath: string,
     masterTagId: Ref<MasterTag>,
-    masterTagRelations: Map<string, RelationMetadata>,
-    masterTagAttrs: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
+    masterTagAssociaions: Map<string, AssociationMetadata>,
+    masterTagAttributes: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
     blobFiles: Map<string, UnifiedFile>,
     parentCardId?: Ref<Card>
   ): Promise<UnifiedDoc<Doc>[]> {
     const { _class, title, blobs: rawBlobs, tags: rawTags, ...customProperties } = cardHeader
     const tags = rawTags !== undefined ? (Array.isArray(rawTags) ? rawTags : [rawTags]) : []
-    const blobs = rawBlobs !== undefined ? (Array.isArray(rawBlobs) ? rawBlobs : [rawBlobs]) : []
+
+    const tagAttributes = new Map<string, UnifiedDoc<Attribute<Tag>>>()
+    const tagAssociations = new Map<string, AssociationMetadata>()
+    for (const tag of tags) {
+      const tagPath = path.resolve(path.dirname(cardPath), tag)
+      this.metadataRegistry.getAttributes(tagPath).forEach((attr, propName) => {
+        tagAttributes.set(propName, attr)
+      })
+      this.metadataRegistry.getAssociations(tagPath).forEach((AssociationMetadata, propName) => {
+        tagAssociations.set(propName, AssociationMetadata)
+      })
+    }
+
+    const cardSchema = this.createCardSchema(masterTagAttributes, masterTagAssociaions, tagAttributes, tagAssociations)
+    this.validateFormat(cardHeader, cardSchema, cardPath)
 
     const cardId = this.metadataRegistry.getRef(cardPath) as Ref<Card>
     const cardProps: Record<string, any> = {
@@ -493,6 +530,7 @@ export class CardsProcessor {
       parent: parentCardId
     }
 
+    const blobs = rawBlobs !== undefined ? (Array.isArray(rawBlobs) ? rawBlobs : [rawBlobs]) : []
     if (blobs.length > 0) {
       const blobProps: Record<string, BlobType> = {}
       for (const blob of blobs) {
@@ -511,18 +549,10 @@ export class CardsProcessor {
       cardProps.blobs = blobProps
     }
 
-    const tagAssociations = new Map<string, RelationMetadata>()
-    for (const tag of tags) {
-      const tagPath = path.resolve(path.dirname(cardPath), tag)
-      this.metadataRegistry.getAssociations(tagPath).forEach((relationMetadata, propName) => {
-        tagAssociations.set(propName, relationMetadata)
-      })
-    }
-
     const relations: UnifiedDoc<Doc>[] = []
     for (const [key, value] of Object.entries(customProperties)) {
-      if (masterTagAttrs.has(key)) {
-        const attr = masterTagAttrs.get(key)
+      if (masterTagAttributes.has(key)) {
+        const attr = masterTagAttributes.get(key)
         if (attr === undefined) {
           throw new Error(`Attribute not found: ${key}, ${cardPath}`)
         }
@@ -543,8 +573,8 @@ export class CardsProcessor {
           }
         }
         cardProps[attrProps.name] = attrType._class === core.class.ArrOf ? propValues : propValues[0]
-      } else if (masterTagRelations.has(key) || tagAssociations.has(key)) {
-        const metadata = masterTagRelations.get(key) ?? tagAssociations.get(key)
+      } else if (masterTagAssociaions.has(key) || tagAssociations.has(key)) {
+        const metadata = masterTagAssociaions.get(key) ?? tagAssociations.get(key)
         if (metadata === undefined) {
           throw new Error(`Association not found: ${key}, ${cardPath}`)
         }
@@ -569,7 +599,11 @@ export class CardsProcessor {
     ]
   }
 
-  private createRelation (metadata: RelationMetadata, cardId: Ref<Card>, otherCardId: Ref<Card>): UnifiedDoc<Relation> {
+  private createRelation (
+    metadata: AssociationMetadata,
+    cardId: Ref<Card>,
+    otherCardId: Ref<Card>
+  ): UnifiedDoc<Relation> {
     const otherCardField = metadata.field === 'docA' ? 'docB' : 'docA'
     const relation: UnifiedDoc<Relation> = {
       _class: core.class.Relation,
@@ -644,6 +678,8 @@ export class CardsProcessor {
     result: UnifiedDocProcessResult
   ): Promise<void> {
     for (const attachment of attachments) {
+      this.validateFileExists(attachment)
+
       const attachmentPath = path.resolve(path.dirname(cardPath), attachment)
       const file = await this.createFile(attachmentPath)
       result.files.set(attachmentPath, file)
@@ -678,6 +714,8 @@ export class CardsProcessor {
   }
 
   private async createFile (fileAbsPath: string): Promise<UnifiedFile> {
+    this.validateFileExists(fileAbsPath)
+
     const fileName = path.basename(fileAbsPath)
     const fileUuid = this.metadataRegistry.getBlobUuid(fileAbsPath)
     const type = contentType(fileName)
@@ -697,11 +735,13 @@ export class CardsProcessor {
     return file
   }
 
-  private async createAssociation (yamlPath: string, yamlConfig: Record<string, any>): Promise<UnifiedDoc<Association>> {
-    const { class: _class, typeA, typeB, type, nameA, nameB } = yamlConfig
+  private async createAssociation (filePath: string, data: Record<string, any>): Promise<UnifiedDoc<Association>> {
+    this.validateFormat(data, AssociationSchema, filePath)
 
-    const currentPath = path.dirname(yamlPath)
-    const associationId = this.metadataRegistry.getRef(yamlPath) as Ref<Association>
+    const { class: _class, typeA, typeB, type, nameA, nameB } = data
+
+    const currentPath = path.dirname(filePath)
+    const associationId = this.metadataRegistry.getRef(filePath) as Ref<Association>
 
     const typeAPath = path.resolve(currentPath, typeA)
     this.metadataRegistry.addAssociation(typeAPath, nameB, {
@@ -734,9 +774,10 @@ export class CardsProcessor {
     }
   }
 
-  private async createEnum (yamlPath: string, yamlConfig: Record<string, any>): Promise<UnifiedDoc<Enum>> {
-    const { title, values } = yamlConfig
-    const enumId = this.metadataRegistry.getRef(yamlPath) as Ref<Enum>
+  private async createEnum (filePath: string, data: Record<string, any>): Promise<UnifiedDoc<Enum>> {
+    const { title, values } = data
+    const enumId = this.metadataRegistry.getRef(filePath) as Ref<Enum>
+    this.validateFormat(data, EnumSchema, filePath)
     return {
       _class: core.class.Enum,
       props: {
@@ -745,6 +786,112 @@ export class CardsProcessor {
         name: title,
         enumValues: values
       }
+    }
+  }
+
+  private createCardSchema (
+    masterTagAttributes: Map<string, UnifiedDoc<Attribute<MasterTag>>>,
+    masterTagAssociaions: Map<string, AssociationMetadata>,
+    tagAttributes: Map<string, UnifiedDoc<Attribute<Tag>>>,
+    tagAssociations: Map<string, AssociationMetadata>
+  ): FormatSchema {
+    const requiredFields = new Map<string, FieldType>()
+    const optionalFields = new Map<string, FieldType>()
+
+    // Add required fields
+    requiredFields.set('title', {
+      type: StringFieldType,
+      isArray: false
+    })
+
+    // Add master tag and tags attributes
+    const allAttrs = new Map([...masterTagAttributes, ...tagAttributes])
+    for (const [label, attr] of allAttrs.entries()) {
+      const attrType = attr.props.type
+      const isArray = attrType._class === core.class.ArrOf
+      const baseType = isArray ? attrType.of : attrType
+
+      let fieldType: BaseFieldType
+
+      // Determine field type based on attribute type
+      switch (baseType._class) {
+        case core.class.TypeString:
+          fieldType = StringFieldType
+          break
+        case core.class.TypeNumber:
+          fieldType = NumberFieldType
+          break
+        case core.class.TypeBoolean:
+          fieldType = BooleanFieldType
+          break
+        case core.class.RefTo:
+          fieldType = PathFieldType
+          break
+        case core.class.EnumOf: {
+          const enumValues = this.metadataRegistry.getEnumValues(baseType.of)
+          fieldType = new OneOfFieldType(enumValues)
+          break
+        }
+        default:
+          throw new Error(`Unsupported attribute type: ${baseType._class}`)
+      }
+
+      optionalFields.set(label, {
+        type: fieldType,
+        isArray
+      })
+    }
+
+    // Add fields for relations (and from master tag, and from tags)
+    const allRelations = new Map([...masterTagAssociaions, ...tagAssociations])
+    for (const [label, relation] of allRelations.entries()) {
+      optionalFields.set(label, {
+        type: PathFieldType,
+        isArray: relation.type === 'N:N' || (relation.type === '1:N' && relation.field === 'docA')
+      })
+    }
+
+    // Add special fields
+    optionalFields.set('blobs', {
+      type: PathFieldType,
+      isArray: true
+    })
+
+    optionalFields.set('tags', {
+      type: PathFieldType,
+      isArray: true
+    })
+
+    optionalFields.set('attachments', {
+      type: PathFieldType,
+      isArray: true
+    })
+
+    return {
+      requiredFields,
+      optionalFields
+    }
+  }
+
+  private validateFormat (data: Record<string, any>, schema: FormatSchema, filePath: string): void {
+    const currentPath = path.dirname(filePath)
+    const errors = validateSchema(data, schema, currentPath)
+    if (errors.length > 0) {
+      throw new Error(
+        'Invalid import schema in ' +
+          filePath +
+          ': \n' +
+          Array.from(errors)
+            .map((e) => `    * ${e}`)
+            .join(';\n') +
+          '\n'
+      )
+    }
+  }
+
+  private validateFileExists (fileAbsPath: string): void {
+    if (!fs.existsSync(fileAbsPath)) {
+      throw new Error('File not found: ' + fileAbsPath)
     }
   }
 }
