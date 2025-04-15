@@ -853,6 +853,11 @@ export function createModel (builder: Builder): void {
     inlineEditor: contact.component.AccountArrayEditor
   })
 
+  builder.mixin(core.class.TypeAccountUuid, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: view.component.PersonIdPresenter,
+    arrayPresenter: contact.component.AccountArrayEditor
+  })
+
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.OrganizationPresenter
   })
@@ -885,6 +890,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.EmployeeRefPresenter,
     arrayPresenter: contact.component.EmployeeArrayEditor
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.PreviewPresenter, {
+    presenter: contact.component.PersonPreviewPresenter
   })
 
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.IgnoreActions, {

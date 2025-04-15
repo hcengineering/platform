@@ -128,7 +128,9 @@ export default plugin(presentationId, {
     DrawingHistory: '' as IntlString,
     ColorAdd: '' as IntlString,
     ColorRemove: '' as IntlString,
-    ColorReset: '' as IntlString
+    ColorReset: '' as IntlString,
+    Copy: '' as IntlString,
+    CopyLink: '' as IntlString
   },
   extension: {
     FilePreviewExtension: '' as ComponentExtensionId,

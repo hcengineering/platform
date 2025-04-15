@@ -38,7 +38,9 @@
     "DrawingHistory": "Scarabocchiare la storia",
     "ColorAdd": "Aggiungi preimpostazione colore",
     "ColorRemove": "Rimuovi preimpostazione colore",
-    "ColorReset": "Ripristina i preset colore"
+    "ColorReset": "Ripristina i preset colore",
+    "Copy": "Copia",
+    "CopyLink": "Copia collegamento"
   },
   "status": {
     "FileTooLarge": "File troppo grande"

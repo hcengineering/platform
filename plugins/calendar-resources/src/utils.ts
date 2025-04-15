@@ -5,20 +5,16 @@ import {
   type ReccuringInstance,
   generateEventId
 } from '@hcengineering/calendar'
-import {
-  type DocumentUpdate,
-  type IdMap,
-  SocialIdType,
-  type Timestamp,
-  getCurrentAccount,
-  toIdMap
-} from '@hcengineering/core'
-import { createQuery, getClient, getCurrentWorkspaceUrl, MessageBox, onClient } from '@hcengineering/presentation'
+import { type DocumentUpdate, type IdMap, type Timestamp, getCurrentAccount, toIdMap } from '@hcengineering/core'
+import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { closePopup, DAY, showPopup } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 import UpdateRecInstancePopup from './components/UpdateRecInstancePopup.svelte'
 import calendar from './plugin'
 import { getMetadata } from '@hcengineering/platform'
+import login from '@hcengineering/login'
+import { getClient as getAccountClientRaw, type AccountClient } from '@hcengineering/account-client'
+import CalDavAccess from './components/CalDavAccess.svelte'
 
 export function saveUTC (date: Timestamp): Timestamp {
   const utcdate = new Date(date)
@@ -204,25 +200,13 @@ export async function updateReccuringInstance (
   }
 }
 
-export async function shareCalDavLink (): Promise<void> {
-  const calDavUrl = getMetadata(calendar.metadata.CalDavServerURL)
-  const ws = getCurrentWorkspaceUrl()
-  const account = getCurrentAccount()
-  const email = account.fullSocialIds.find((p) => p.type === SocialIdType.EMAIL)?.value
-  const link = `${calDavUrl}/caldav/principal/${email}/calendar/${ws}`
-  showPopup(
-    MessageBox,
-    {
-      label: calendar.string.CalDavShareLink,
-      message: calendar.string.CalDavSharedLinkMessage,
-      params: { link },
-      richMessage: true,
-      okLabel: calendar.string.CopyLink,
-      canSubmit: false,
-      action: async () => {
-        await navigator.clipboard.writeText(link)
-      }
-    },
-    undefined
-  )
+export async function configureCalDavAccess (): Promise<void> {
+  showPopup(CalDavAccess, {}, undefined)
+}
+
+export function getAccountClient (): AccountClient {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  const token = getMetadata(presentation.metadata.Token)
+
+  return getAccountClientRaw(accountsUrl, token)
 }
