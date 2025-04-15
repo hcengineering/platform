@@ -92,12 +92,13 @@ export function showPopup (
     overlay: boolean
     fixed?: boolean
     refId?: string
+    id?: string
   } = {
     category: 'popup',
     overlay: true
   }
 ): PopupResult {
-  const id = `${popupId++}`
+  const id = options?.id ?? `${popupId++}`
   const closePopupOp = (): void => {
     modalStore.update((popups) => {
       const pos = popups.findIndex((p) => (p as CompAndProps).id === id && p.type === 'popup')
@@ -107,6 +108,7 @@ export function showPopup (
       return popups
     })
   }
+  closePopupOp()
   const _element = element instanceof HTMLElement ? getPopupPositionElement(element) : element
   const data: Omit<CompAndProps, 'is'> = {
     id,
