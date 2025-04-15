@@ -22,16 +22,19 @@
   let accessEnabled = false
   let serverUrl = getMetadata(calendar.metadata.CalDavServerURL)
   let password = ''
+  let totalWsIntegrations = 0
 
   const dispatch = createEventDispatcher()
 
   $: wasAccessEnabled = integrationGlobal !== null && integrationWs !== null
   $: canSave = !!(!loading && (
     (
-      !wasAccessEnabled && accessEnabled && selectedAccount
+      !wasAccessEnabled && accessEnabled && selectedAccount != null
     ) ||
     (
       wasAccessEnabled && !accessEnabled
+    ) || (
+      wasAccessEnabled && accessEnabled && selectedAccount != null && selectedAccount._id !== integrationWs?.socialId
     )
   ))
 
@@ -51,7 +54,6 @@
     loading = true
     try {
       password = generateRandomPassword()
-      console.log(password)
 
       const account = getCurrentAccount()
       const accountClient = getAccountClient()
@@ -61,36 +63,34 @@
         if (socialId.type === SocialIdType.EMAIL && socialId.value.includes('#')) {
           continue
         }
-        availableAccounts.push({
-          _id: socialId._id,
-          label: buildSocialIdString(socialId)
-        })
-        if (integrationGlobal === null) {
-          integrationGlobal = await accountClient.getIntegration({
-            socialId: socialId._id,
-            kind: 'caldav',
-            workspaceUuid: null
+        if (availableAccounts.find((a) => a.label === socialId.value) == null) {
+          availableAccounts.push({
+            _id: socialId._id,
+            label: socialId.value
           })
         }
-        if (integrationWs === null) {
-          integrationWs = await accountClient.getIntegration({
-            socialId: socialId._id,
-            kind: 'caldav',
-            workspaceUuid: wsId
-          })
-          if (integrationWs) {
+        const integrations = await accountClient.listIntegrations({
+          socialId: socialId._id,
+          kind: 'caldav'
+        })
+        for (const integration of integrations) {
+          if (integration.workspaceUuid == null) {
+            if (integrationGlobal == null) {
+              integrationGlobal = integration
+              continue
+            }
+          }
+          totalWsIntegrations += 1
+          if (integration.workspaceUuid === wsId && integrationWs == null) {
+            integrationWs = integration
             selectedAccount = {
               _id: socialId._id,
-              label: buildSocialIdString(socialId)
+              label: socialId.value
             }
           }
         }
-        if (integrationGlobal !== null && integrationWs !== null) {
-          break
-        }
       }
-      accessEnabled = !!(integrationWs && integrationGlobal)
-      console.log(selectedAccount)
+      accessEnabled = integrationWs != null && integrationGlobal != null
     } catch (err: any) {
       console.error('Failed to load CalDAV intergrations', err)
       error = `${err.message ?? 'Unable to load CalDAV intergrations'}`
@@ -100,60 +100,113 @@
 
   async function save (): Promise<void> {
     loading = true
-    const accountClient = getAccountClient()
     try {
-      // Access disabled
+      const accountClient = getAccountClient()
       if (wasAccessEnabled && !accessEnabled) {
+        // Access disabled
         await accountClient.deleteIntegration({
           socialId: selectedAccount?._id as PersonId,
           kind: 'caldav',
           workspaceUuid
         })
-        // TODO: deleteIntegrationSecret if there are no other workspaces have integration enabled
-        return
-      }
-      // Access enabled
-      if (!wasAccessEnabled && accessEnabled) {
+        if (totalWsIntegrations === 1 && integrationGlobal != null) {
+          await accountClient.deleteIntegrationSecret({
+            socialId: integrationGlobal.socialId,
+            kind: 'caldav',
+            workspaceUuid: null,
+            key: 'caldav'
+          })
+          await accountClient.deleteIntegration({
+            socialId: integrationGlobal.socialId,
+            kind: 'caldav',
+            workspaceUuid: null
+          })
+        }
+      } else if (!wasAccessEnabled && accessEnabled) {
+        // Access enabled
         if (integrationGlobal === null) {
-          console.log('Create integration global')
           await accountClient.createIntegration({
             socialId: selectedAccount?._id as PersonId,
             kind: 'caldav',
             workspaceUuid: null
           })
-          console.log('Add integration secret global')
-          await accountClient.addIntegrationSecret({
+          integrationGlobal = await accountClient.getIntegration({
             socialId: selectedAccount?._id as PersonId,
+            kind: 'caldav',
+            workspaceUuid: null
+          })
+        }
+        const secret = await accountClient.getIntegrationSecret({
+          socialId: integrationGlobal?.socialId as PersonId,
+          kind: 'caldav',
+          workspaceUuid: null,
+          key: 'caldav'
+        })
+        if (secret == null) {
+          await accountClient.addIntegrationSecret({
+            socialId: integrationGlobal?.socialId as PersonId,
             kind: 'caldav',
             workspaceUuid: null,
             key: 'caldav',
             secret: password
           })
         }
-        console.log('Create integration workspace')
+        await accountClient.createIntegration({
+          socialId: selectedAccount?._id as PersonId,
+          kind: 'caldav',
+          workspaceUuid
+        })
+      } else if (accessEnabled && wasAccessEnabled && selectedAccount?._id !== integrationWs?.socialId) {
+        // Access changed
+        await accountClient.deleteIntegration({
+          socialId: integrationWs?.socialId as PersonId,
+          kind: 'caldav',
+          workspaceUuid
+        })
         await accountClient.createIntegration({
           socialId: selectedAccount?._id as PersonId,
           kind: 'caldav',
           workspaceUuid
         })
       }
-      // Access changed
-      if (accessEnabled && wasAccessEnabled && integrationWs && selectedAccount && selectedAccount._id !== integrationWs.socialId) {
-        await accountClient.deleteIntegration({
-          socialId: integrationWs.socialId,
-          kind: 'caldav',
-          workspaceUuid
-        })
-        await accountClient.createIntegration({
-          socialId: selectedAccount._id as PersonId,
-          kind: 'caldav',
-          workspaceUuid: null
-        })
-      }
       dispatch('close', true)
     } catch (err: any) {
       error = `${err.message ?? 'Unable to save CalDAV intergration'}`
       console.error('Failed to save CalDAV integration', err)
+    }
+    loading = false
+  }
+
+  async function copyServer (): Promise<void> {
+    console.log(serverUrl)
+    await navigator?.clipboard?.writeText(serverUrl ?? '')
+  }
+
+  async function copyAccount (): Promise<void> {
+    console.log(selectedAccount?.label)
+    await navigator?.clipboard?.writeText(selectedAccount?.label ?? '')
+  }
+
+  async function copyPassword (): Promise<void> {
+    loading = true
+    try {
+      if (integrationGlobal != null) {
+        const accountClient = getAccountClient()
+        const secret = await accountClient.getIntegrationSecret({
+          socialId: integrationGlobal.socialId,
+          kind: 'caldav',
+          workspaceUuid: null,
+          key: 'caldav'
+        })
+        if (secret != null) {
+          await navigator?.clipboard?.writeText(secret.secret)
+          return
+        }
+      }
+      await navigator?.clipboard?.writeText(password)
+    } catch (err: any) {
+      error = `${err.message ?? 'Unable to copy password'}`
+      console.error('Failed to copy password', err)
     }
     loading = false
   }
@@ -190,7 +243,6 @@
       <div class="flex-row-center flex-gap-1">
         <EditBox
           bind:value={serverUrl}
-          placeholder={calendar.string.Location}
           kind="ghost"
           fullSize
           focusable
@@ -202,9 +254,7 @@
           kind="ghost"
           disabled={!accessEnabled}
           showTooltip={{ label: presentation.string.Copy }}
-          on:click={() => {
-            console.log('Copy URL')
-          }}
+          on:click={copyServer}
         />
       </div>
     </div>
@@ -231,9 +281,7 @@
           kind="ghost"
           showTooltip={{ label: presentation.string.Copy }}
           disabled={!accessEnabled}
-          on:click={() => {
-            console.log('Copy account')
-          }}
+          on:click={copyAccount}
         />
       </div>
     </div>
@@ -255,9 +303,7 @@
           kind="ghost"
           disabled={!accessEnabled}
           showTooltip={{ label: presentation.string.Copy }}
-          on:click={() => {
-            console.log('Copy password')
-          }}
+          on:click={copyPassword}
         />
       </div>
     </div>
