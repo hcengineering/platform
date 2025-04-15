@@ -26,9 +26,8 @@ import core, {
   type Ref
 } from '@hcengineering/core'
 import github, { GithubAuthentication, makeQuery, type GithubIntegration } from '@hcengineering/github'
-import { setMetadata } from '@hcengineering/platform'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverToken, { generateToken } from '@hcengineering/server-token'
+import { generateToken } from '@hcengineering/server-token'
 import tracker from '@hcengineering/tracker'
 import { Installation, type InstallationCreatedEvent, type InstallationUnsuspendEvent } from '@octokit/webhooks-types'
 import { App, Octokit } from 'octokit'
@@ -82,7 +81,6 @@ export class PlatformWorker {
     readonly brandingMap: BrandingMap,
     readonly periodicSyncInterval = 10 * 60 * 1000 // 10 minutes
   ) {
-    setMetadata(serverToken.metadata.Secret, config.ServerSecret)
     registerLoaders()
   }
 
@@ -510,38 +508,68 @@ export class PlatformWorker {
 
               if (githubSocialId === undefined) {
                 // We need to create a new social id for this account.
-                githubSocialId = await sysAccountClient.addSocialIdToPerson(
-                  person.personUuid as PersonUuid,
-                  SocialIdType.GITHUB,
-                  dta?._id ?? '',
-                  true
-                )
+                this.ctx.info('Create social id', {
+                  account: dta?._id,
+                  workspace: payload.workspace,
+                  personUuid: person.personUuid,
+                  ids
+                })
+                try {
+                  const pp = await sysAccountClient.findPersonBySocialKey(
+                    buildSocialIdString({ type: SocialIdType.GITHUB, value: dta?._id })
+                  )
+                  if (pp !== person.personUuid) {
+                    // TODO: We need to remove old social id association
+                  }
+
+                  githubSocialId = await sysAccountClient.addSocialIdToPerson(
+                    person.personUuid as PersonUuid,
+                    SocialIdType.GITHUB,
+                    dta?._id ?? '',
+                    true
+                  )
+                } catch (err: any) {
+                  this.ctx.error('Failed to create social id', {
+                    account: dta?._id,
+                    workspace: payload.workspace,
+                    error: err
+                  })
+                }
               }
 
               const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
                 _id: githubSocialId as SocialIdentityRef
               })
-              if (socialIdentity === undefined) {
+              if (githubSocialId !== undefined && socialIdentity === undefined) {
                 // We need to create a new social id for this account.
 
                 // We need to create social id github account
-                await client.addCollection(
-                  contact.class.SocialIdentity,
-                  contact.space.Contacts,
-                  person._id,
-                  contact.class.Person,
-                  'socialIds',
-                  {
-                    type: SocialIdType.GITHUB,
-                    value: dta._id,
-                    key: buildSocialIdString({
+                try {
+                  await client.addCollection(
+                    contact.class.SocialIdentity,
+                    contact.space.Contacts,
+                    person._id,
+                    contact.class.Person,
+                    'socialIds',
+                    {
                       type: SocialIdType.GITHUB,
-                      value: dta._id
-                    }),
-                    verifiedOn: Date.now()
-                  },
-                  githubSocialId as SocialIdentityRef
-                )
+                      value: dta._id.toLowerCase(),
+                      key: buildSocialIdString({
+                        type: SocialIdType.GITHUB,
+                        value: dta._id.toLowerCase()
+                      }),
+                      verifiedOn: Date.now()
+                    },
+                    githubSocialId as SocialIdentityRef
+                  )
+                } catch (err: any) {
+                  this.ctx.error('Failed to create social id', {
+                    account: dta?._id,
+                    workspace: payload.workspace,
+                    error: err,
+                    githubSocialId
+                  })
+                }
               }
             }
           } else {
