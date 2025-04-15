@@ -1,5 +1,5 @@
 import type { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
-import { systemAccountUuid, type PersonId, type WorkspaceUuid } from '@hcengineering/core'
+import core, { systemAccountUuid, type PersonId, type WorkspaceUuid } from '@hcengineering/core'
 import { getAccountClient } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import type { GithubUserRecord } from './types'
@@ -48,6 +48,9 @@ export class UserManager {
     let rec = this.refUserCache.get(key)
     if (rec !== undefined) {
       return rec
+    }
+    if (ref === core.account.System || ref === core.account.ConfigUser) {
+      return undefined
     }
 
     const secrets = await this.accountClient.listIntegrationsSecrets({ kind: 'github-user', socialId: ref })
