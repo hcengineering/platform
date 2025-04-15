@@ -221,7 +221,7 @@ class AccountClientImpl implements AccountClient {
 
   private async _rpc<T>(request: Request): Promise<T> {
     const timezone = getClientTimezone()
-    const meta: Record<string, string> = timezone !== undefined ? { 'X-Timezone': timezone } : {}
+    const meta: Record<string, string> = timezone !== undefined ? { 'x-timezone': timezone } : {}
     const response = await fetch(this.url, {
       ...this.request,
       headers: {

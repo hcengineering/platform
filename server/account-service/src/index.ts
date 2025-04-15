@@ -4,6 +4,7 @@
 
 import account, {
   type AccountMethods,
+  type Meta,
   EndpointKind,
   accountId,
   getAccountDB,
@@ -173,6 +174,10 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     return extractAuthorizationToken(headers) ?? extractCookieToken(headers)
   }
 
+  const getRequestMeta = (headers: IncomingHttpHeaders): Meta => {
+    return headers?.['x-timezone'] !== undefined ? { timezone: headers['x-timezone'] as string } : {}
+  }
+
   function getCookieOptions (ctx: Koa.Context): Cookies.SetOption {
     const requestUrl = ctx.request.href
     const url = new URL(requestUrl)
@@ -314,6 +319,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   router.post('rpc', '/', async (ctx) => {
     const token = extractToken(ctx.request.headers)
+    const meta = getRequestMeta(ctx.request.headers)
 
     const request = ctx.request.body as any
     const method = methods[request.method as AccountMethods]
@@ -349,7 +355,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
         return
       }
 
-      return method(mctx, db, branding, request, token)
+      return method(mctx, db, branding, request, token, meta)
     })
 
     const body = JSON.stringify(result)

@@ -554,7 +554,7 @@ describe('account utils', () => {
           param1: 'value1',
           param2: 'value2'
         },
-        {}
+        undefined
       )
     })
 
@@ -567,7 +567,7 @@ describe('account utils', () => {
       const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result).toEqual({ id: 'req1', result: mockResult })
-      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, 'token', { param1: 'value1' }, {})
+      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, 'token', { param1: 'value1' }, undefined)
     })
 
     test('should handle PlatformError', async () => {
@@ -623,9 +623,9 @@ describe('account utils', () => {
       const mockMethod = jest.fn().mockResolvedValue(mockResult)
       const wrappedMethod = wrap(mockMethod)
       const mockTimezone = 'America/New_York'
-      const request = { id: 'req1', params: { param1: 'value1' }, headers: { 'X-Timezone': mockTimezone } }
+      const request = { id: 'req1', params: { param1: 'value1' } }
 
-      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
+      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token', { timezone: mockTimezone })
 
       expect(result).toEqual({ id: 'req1', result: mockResult })
       expect(mockMethod).toHaveBeenCalledWith(
