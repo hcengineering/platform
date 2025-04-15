@@ -56,7 +56,12 @@
   {:else if mark.type === MarkupMarkType.em}
     <em><slot /></em>
   {:else if mark.type === MarkupMarkType.link}
-    <a href={attrs.href} target={attrs.target} on:click|stopPropagation={handleLink} on:contextmenu|stopPropagation>
+    <a
+      href={attrs.href}
+      target={attrs.target ?? '_blank'}
+      on:click|stopPropagation={handleLink}
+      on:contextmenu|stopPropagation
+    >
       <slot />
     </a>
   {:else if mark.type === MarkupMarkType.strike}
