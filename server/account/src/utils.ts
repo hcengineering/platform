@@ -1405,7 +1405,6 @@ export async function setTimezoneIfNotDefined (
   meta?: Meta
 ): Promise<void> {
   try {
-    console.log('setTimezoneIfNotDefined', meta?.timezone)
     if (meta?.timezone === undefined) return
     const existingAccount = account ?? (await db.account.findOne({ uuid: accountId }))
     if (existingAccount === undefined || existingAccount === null) {
