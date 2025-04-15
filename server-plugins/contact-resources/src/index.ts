@@ -17,35 +17,38 @@
 import contact, {
   Channel,
   Contact,
-  Employee,
-  Organization,
-  Person,
-  PersonSpace,
   contactId,
+  Employee,
   formatContactName,
   formatName,
   getFirstName,
   getLastName,
   getName,
+  Organization,
+  Person,
+  PersonSpace,
   type UserProfile
 } from '@hcengineering/contact'
 import core, {
+  AccountRole,
+  AccountUuid,
+  concatLink,
   Doc,
   Hierarchy,
+  MarkupBlobRef,
   Ref,
+  SocialIdType,
+  SortingOrder,
+  type Space,
   SpaceType,
+  systemAccountUuid,
   Tx,
+  TxCreateDoc,
   TxCUD,
   TxMixin,
   TxRemoveDoc,
   TxUpdateDoc,
-  concatLink,
-  type Space,
-  SocialIdType,
-  AccountUuid,
-  TxCreateDoc,
-  SortingOrder,
-  MarkupBlobRef, AccountRole, systemAccountUuid, TypedSpace
+  TypedSpace
 } from '@hcengineering/core'
 import { makeRank } from '@hcengineering/rank'
 import card from '@hcengineering/card'
@@ -119,7 +122,7 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
   const account = control.ctx.contextData.account
   if (account.role !== AccountRole.Owner) return result
 
-  const typedSpaces = (await control.findAll(control.ctx, core.class.TypedSpace, {}))
+  const typedSpaces = await control.findAll(control.ctx, core.class.TypedSpace, {})
 
   for (const space of typedSpaces) {
     if (space === undefined) continue
@@ -127,9 +130,11 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
     const owners = space.owners ?? []
 
     if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
-      result.push(control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-        owners: [account.uuid]
-      }))
+      result.push(
+        control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+          owners: [account.uuid]
+        })
+      )
     }
   }
 
@@ -138,6 +143,31 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
 
 export async function OnTypedSpaceCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
+  let employees: Employee[] | undefined
+  for (const tx of _txes) {
+    const ctx = tx as TxCreateDoc<TypedSpace>
+    const owners = ctx.attributes.owners ?? []
+
+    if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
+      if (employees === undefined) {
+        employees = await control.findAll(
+          control.ctx,
+          contact.mixin.Employee,
+          { role: AccountRole.User },
+          { sort: { createdOn: SortingOrder.Ascending } }
+        )
+      }
+      const account = employees?.find(
+        (e) => e.personUuid !== undefined && ctx.attributes.members.includes(e.personUuid)
+      )
+      if (account?.personUuid === undefined) continue
+      result.push(
+        control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.space, ctx.objectId, {
+          owners: [account.personUuid]
+        })
+      )
+    }
+  }
   return result
 }
 

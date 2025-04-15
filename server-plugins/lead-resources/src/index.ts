@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { AccountRole, concatLink, Doc, systemAccountUuid, Tx } from '@hcengineering/core'
-import lead, { Lead, leadId } from '@hcengineering/lead'
+import { concatLink, Doc } from '@hcengineering/core'
+import { Lead, leadId } from '@hcengineering/lead'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import view from '@hcengineering/view'
