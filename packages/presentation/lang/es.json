@@ -38,7 +38,9 @@
     "DrawingHistory": "Historia de garabatos",
     "ColorAdd": "Añadir ajuste preestablecido de color",
     "ColorRemove": "Eliminar el ajuste preestablecido de color",
-    "ColorReset": "Restablecer ajustes preestablecidos de color"
+    "ColorReset": "Restablecer ajustes preestablecidos de color",
+    "Copy": "Copiar",
+    "CopyLink": "Copiar enlace"
   },
   "status": {
     "FileTooLarge": "Archivo demasiado grande"

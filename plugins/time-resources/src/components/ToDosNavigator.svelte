@@ -118,11 +118,11 @@
     const actions: Action[] = []
     if (getMetadata(calendar.metadata.CalDavServerURL)) {
       actions.push({
-        label: calendar.string.CalDavShareLink,
+        label: calendar.string.CalDavAccess,
         icon: IconLink,
         action: async (): Promise<void> => {
           await (
-            await getResource(calendar.function.ShareCalDavLink)
+            await getResource(calendar.function.ConfigureCalDavAccess)
           )()
         }
       })
