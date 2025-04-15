@@ -50,7 +50,7 @@ const palette = {
     colorSpec('red', 'bg')
   ],
   text: [
-    { color: 'var(--theme-text-color-primary)' },
+    { color: 'var(--theme-text-primary-color)' },
     colorSpec('gray'),
     colorSpec('brown'),
     colorSpec('orange'),
@@ -65,33 +65,55 @@ const palette = {
 
 export async function openBackgroundColorOptions (editor: Editor, event: MouseEvent): Promise<void> {
   await new Promise<void>((resolve) => {
-    showPopup(ColorPicker, { palette: palette.background }, getEventPositionElement(event), (val) => {
-      const color: string | undefined = val?.color
-      if (color === undefined) return
+    showPopup(
+      ColorPicker,
+      { palette: palette.background, id: 'text-editor-background-color-picker' },
+      getEventPositionElement(event),
+      (val) => {
+        const color: string | undefined = val?.color
+        if (color === undefined) return
 
-      if (color === 'transparent') {
-        editor.commands.unsetBackgroundColor()
-      } else {
-        editor.commands.setBackgroundColor(color)
+        if (color === 'transparent') {
+          editor.commands.unsetBackgroundColor()
+        } else {
+          editor.commands.setBackgroundColor(color)
+        }
+        resolve()
+      },
+      undefined,
+      {
+        id: 'text-editor-background-color-picker',
+        category: 'popup',
+        overlay: true
       }
-      resolve()
-    })
+    )
   })
 }
 
 export async function openTextColorOptions (editor: Editor, event: MouseEvent): Promise<void> {
   await new Promise<void>((resolve) => {
-    showPopup(ColorPicker, { palette: palette.text }, getEventPositionElement(event), (val) => {
-      const color: string | undefined = val?.color
-      if (color === undefined) return
+    showPopup(
+      ColorPicker,
+      { palette: palette.text, letters: true },
+      getEventPositionElement(event),
+      (val) => {
+        const color: string | undefined = val?.color
+        if (color === undefined) return
 
-      if (color === 'var(--theme-text-color-primary)') {
-        editor.commands.unsetTextColor()
-      } else {
-        editor.commands.setTextColor(color)
+        if (color === 'var(--theme-text-primary-color)') {
+          editor.commands.unsetTextColor()
+        } else {
+          editor.commands.setTextColor(color)
+        }
+        resolve()
+      },
+      undefined,
+      {
+        id: 'text-editor-text-color-picker',
+        category: 'popup',
+        overlay: true
       }
-      resolve()
-    })
+    )
   })
 }
 
