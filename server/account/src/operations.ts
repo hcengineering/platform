@@ -77,7 +77,7 @@ import {
   isEmail,
   isOtpValid,
   normalizeValue,
-  releaseSocialId,
+  doReleaseSocialId,
   selectWorkspace,
   sendEmail,
   sendEmailConfirmation,
@@ -359,7 +359,7 @@ export async function createWorkspace (
   ctx.info('Creating workspace record', { workspaceName, account, region })
 
   // Any confirmed social ID will do
-  const socialId = await db.socialId.findOne({ personUuid: account, verifiedOn: { $gt: 0 } })
+  const socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true }))[0]
 
   if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, {}))
@@ -1280,7 +1280,7 @@ export async function getLoginInfoByToken (
 
   if (!isDocGuest && !isSystem) {
     // Any confirmed social ID will do
-    socialId = await db.socialId.findOne({ personUuid: accountUuid, verifiedOn: { $gt: 0 } })
+    socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true }))[0]
     if (socialId == null) {
       return {
         account: accountUuid
@@ -1367,7 +1367,9 @@ export async function getSocialIds (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  return await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
+  const socialIds = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
+
+  return socialIds.filter((si) => si.isDeleted !== true)
 }
 
 export async function getPerson (
@@ -1636,7 +1638,7 @@ async function deleteMailbox (
 
   await db.mailboxSecret.deleteMany({ mailbox })
   await db.mailbox.deleteMany({ mailbox })
-  await releaseSocialId(db, account, SocialIdType.EMAIL, mailbox)
+  await doReleaseSocialId(db, account, SocialIdType.EMAIL, mailbox, 'deleteMailbox')
   ctx.info('Mailbox deleted', { mailbox, account })
 }
 
