@@ -71,7 +71,7 @@
             <div class="flex-presenter flex-gap-2 flex-center">
               <ComponentExtensions
                 extension={contact.extension.EmployeePopupActions}
-                props={{ employee, isButtonIcon: true, icon: contact.icon.Chat, type: 'type-button-icon' }}
+                props={{ employee, icon: contact.icon.Chat, type: 'type-button-icon' }}
               />
               <ButtonIcon icon={contact.icon.User} size="small" iconSize="small" on:click={viewProfile} />
             </div>
@@ -138,7 +138,7 @@
         <div class="button-container">
           <ComponentExtensions
             extension={contact.extension.EmployeePopupActions}
-            props={{ employee, isButtonIcon: true, icon: contact.icon.Chat, type: 'type-button-icon' }}
+            props={{ employee, icon: contact.icon.Chat, type: 'type-button-icon' }}
           />
         </div>
         <div class="button-container">
