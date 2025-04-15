@@ -119,12 +119,9 @@ export function wrap (
     db: AccountDB,
     branding: Branding | null,
     request: any,
-    token?: string
+    token?: string,
+    meta?: Meta
   ): Promise<any> {
-    const meta =
-      request.headers !== undefined && request.headers['X-Timezone'] !== undefined
-        ? { timezone: request.headers['X-Timezone'] }
-        : {}
     return await accountMethod(ctx, db, branding, token, { ...request.params }, meta)
       .then((result) => ({ id: request.id, result }))
       .catch((err) => {
