@@ -31,28 +31,6 @@ export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Pro
   return `<a href="${link}">${lead.title}</a>`
 }
 
-export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  // Fill owner of default space with the very first owner account creating a social identity
-  const account = control.ctx.contextData.account
-  if (account.role !== AccountRole.Owner) return []
-
-  const defaultSpace = (await control.findAll(control.ctx, lead.class.Funnel, { _id: lead.space.DefaultFunnel }))[0]
-
-  if (defaultSpace === undefined) return []
-
-  const owners = defaultSpace.owners ?? []
-
-  if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
-    const setOwnerTx = control.txFactory.createTxUpdateDoc(defaultSpace._class, defaultSpace.space, defaultSpace._id, {
-      owners: [account.uuid]
-    })
-
-    return [setOwnerTx]
-  }
-
-  return []
-}
-
 /**
  * @public
  */
@@ -66,8 +44,5 @@ export default async () => ({
   function: {
     LeadHTMLPresenter: leadHTMLPresenter,
     LeadTextPresenter: leadTextPresenter
-  },
-  trigger: {
-    OnEmployeeCreate
   }
 })

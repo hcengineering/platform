@@ -52,16 +52,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnEmployeeCreate,
-    txMatch: {
-      objectClass: contact.class.Person,
-      _class: core.class.TxMixin,
-      mixin: contact.mixin.Employee,
-      'attributes.active': true
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnIssueUpdate,
     txMatch: {
       objectClass: { $in: [tracker.class.Issue, tracker.class.TimeSpendReport] }

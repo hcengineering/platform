@@ -15,16 +15,6 @@ export { serverDocumentsId } from '@hcengineering/server-controlled-documents/sr
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverDocuments.trigger.OnEmployeeCreate,
-    txMatch: {
-      objectClass: contact.class.Person,
-      _class: core.class.TxMixin,
-      mixin: contact.mixin.Employee,
-      'attributes.active': true
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverDocuments.trigger.OnDocDeleted,
     txMatch: {
       _class: core.class.TxUpdateDoc,
