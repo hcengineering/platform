@@ -345,7 +345,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }
     const branding = host !== undefined ? brandings[host] : null
     const result = await measureCtx.with(request.method, {}, (mctx) => {
-      if (method === undefined) {
+      if (method === undefined || typeof method !== 'function') {
         const response = {
           id: request.id,
           error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
