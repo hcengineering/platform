@@ -127,6 +127,7 @@
     "RemoveRelationConfirmation": "Deseja remover a relação?",
     "MasterDetail": "Mestre-detalhe",
     "Tree": "Árvore",
-    "Document": "Documento"
+    "Document": "Documento",
+    "Loading": "Carregando..."
   }
 }

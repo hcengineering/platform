@@ -318,7 +318,7 @@
 />
 {#if $tooltip.component && $tooltip.kind !== 'submenu'}
   <div
-    class="popup-tooltip {options.classList}"
+    class="popup-tooltip {options.classList} {$tooltip.style}"
     class:shown
     class:doublePadding={$tooltip.label}
     use:resizeObserver={(element) => {
@@ -369,12 +369,14 @@
       />
     </clipPath>
   </svg>
-  <div
-    bind:this={nubHTML}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    class="nub {nubDirection ?? ''}"
-    class:shown
-  />
+  {#if !$tooltip.noArrow}
+    <div
+      bind:this={nubHTML}
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+      class="nub {nubDirection ?? ''}"
+      class:shown
+    />
+  {/if}
 {:else if $tooltip.label && $tooltip.kind !== 'submenu'}
   <div
     class="tooltip {dir ?? ''} {options.classList}"
@@ -469,6 +471,22 @@
 
     &.doublePadding {
       padding: 1rem;
+    }
+    &.modern {
+      padding: 0;
+      border: none;
+      outline: none;
+      border-radius: 1.5rem;
+      box-shadow:
+        0 6.25rem 5rem rgba(0, 0, 0, 0.15),
+        0 2.5rem 2rem rgba(0, 0, 0, 0.12),
+        0 1.5rem 1rem rgba(0, 0, 0, 0.1),
+        0 0.75rem 0.75rem rgba(0, 0, 0, 0.1),
+        0 0.375rem 0.375rem rgba(0, 0, 0, 0.08),
+        0 0.125rem 0.125rem rgba(0, 0, 0, 0.05);
+    }
+    &.disabled {
+      background-color: var(--popup-color-disabled);
     }
   }
 

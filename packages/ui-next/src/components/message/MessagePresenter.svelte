@@ -20,7 +20,7 @@
   import { Card } from '@hcengineering/card'
   import { getCurrentAccount } from '@hcengineering/core'
   import { EmojiPopup, getEventPositionElement, showPopup, Action as MenuAction } from '@hcengineering/ui'
-  import { personByPersonIdStore } from '@hcengineering/contact-resources'
+  import { PersonPreviewProvider, personByPersonIdStore } from '@hcengineering/contact-resources'
   import type { SocialID } from '@hcengineering/communication-types'
   import { AttachmentPreview } from '@hcengineering/attachment-resources'
   import { Message, MessageType } from '@hcengineering/communication-types'
@@ -136,13 +136,17 @@
   <div class="message__body">
     <!--TODO: remove  on:contextmenu-->
     <div class="message__avatar" on:contextmenu={handleContextMenu}>
-      <Avatar name={author?.name} avatar={author} size={AvatarSize.Small} />
+      <PersonPreviewProvider value={author}>
+        <Avatar name={author?.name} avatar={author} size={AvatarSize.Small} />
+      </PersonPreviewProvider>
     </div>
     <div class="message__content">
       <div class="message__header">
-        <div class="message__username">
-          {formatName(author?.name ?? '')}
-        </div>
+        <PersonPreviewProvider value={author}>
+          <div class="message__username">
+            {formatName(author?.name ?? '')}
+          </div>
+        </PersonPreviewProvider>
         <div class="message__date">
           {formatDate(message.created)}
         </div>

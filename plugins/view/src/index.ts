@@ -230,7 +230,8 @@ const view = plugin(viewId, {
     RemoveRelation: '' as IntlString,
     MasterDetail: '' as IntlString,
     Tree: '' as IntlString,
-    Document: '' as IntlString
+    Document: '' as IntlString,
+    Loading: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

@@ -209,17 +209,7 @@
   <div class="flex-col-center gapV-4 mx-6">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="cursor-pointer"
-      on:click|self={(e) => {
-        if (imageOnly) {
-          handleImageAvatarClick()
-        } else {
-          if (selectedAvatarType === AvatarType.IMAGE) handleImageAvatarClick()
-          else if (selectedAvatarType === AvatarType.COLOR) showColorPopup(e)
-        }
-      }}
-    >
+    <div class="cursor-pointer">
       <AvatarComponent
         person={{
           avatarType: selectedAvatarType,
@@ -230,6 +220,15 @@
         size={'2x-large'}
         {icon}
         {name}
+        clickable
+        on:click={(e) => {
+          if (imageOnly) {
+            void handleImageAvatarClick()
+          } else {
+            if (selectedAvatarType === AvatarType.IMAGE) void handleImageAvatarClick()
+            else if (selectedAvatarType === AvatarType.COLOR) showColorPopup(e)
+          }
+        }}
       />
     </div>
     <TabList

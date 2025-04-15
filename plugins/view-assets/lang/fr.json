@@ -127,6 +127,7 @@
     "RemoveRelationConfirmation": "Voulez-vous supprimer la relation ?",
     "MasterDetail": "Maître-détail",
     "Tree": "Arbre",
-    "Document": "Document"
+    "Document": "Document",
+    "Loading": "Chargement..."
   }
 }

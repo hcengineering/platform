@@ -109,6 +109,8 @@
     "ViewProfile": "Profil anzeigen",
     "Viber": "Viber",
     "ViberPlaceholder": "Viber",
-    "UserProfile": "Benutzerprofil"
+    "UserProfile": "Benutzerprofil",
+    "DeactivatedAccount": "Deaktivierter Account",
+    "LocalTime": "Ortszeit"
   }
 }
