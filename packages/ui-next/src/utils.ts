@@ -80,8 +80,8 @@ export async function toggleReaction (message: Message, emoji: string): Promise<
   const { socialIds } = me
   const reaction = message.reactions.find((it) => it.reaction === emoji && socialIds.includes(it.creator))
   if (reaction !== undefined) {
-    await communicationClient.removeReaction(message.card, message.id, emoji)
+    await communicationClient.removeReaction(message.card, message.id, message.created, emoji)
   } else {
-    await communicationClient.createReaction(message.card, message.id, emoji)
+    await communicationClient.createReaction(message.card, message.id, message.created, emoji)
   }
 }

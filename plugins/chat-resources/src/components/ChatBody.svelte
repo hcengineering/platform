@@ -20,7 +20,7 @@
   import { MessagesGroup as MessagesGroupPresenter } from '@hcengineering/ui-next'
   import { Scroller } from '@hcengineering/ui'
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
-  import { tick } from 'svelte'
+  import { tick, onDestroy } from 'svelte'
 
   import ReverseScroller from './internal/ReverseScroller.svelte'
   import { createMessagesObserver, getGroupDay, groupMessagesByDay, MessagesGroup } from '../ui'
@@ -206,6 +206,7 @@
   let newLastView: Date | undefined = context?.lastView
   let separatorDate: Date | undefined = undefined
   let readMessagesTimer: any | undefined = undefined
+  let unsubscribeObserver: (() => void) | undefined = undefined
 
   function readMessage (date: Date): void {
     if (readMessagesTimer != null) {
@@ -218,13 +219,23 @@
     }, 500)
   }
 
-  $: if (contentDiv != null && isScrollInitialized && context != null) {
-    createMessagesObserver(contentDiv, (messageDiv) => {
-      if (!isScrollInitialized) return
+  $: initMessageObserver(contentDiv, isScrollInitialized, context)
+
+  function initMessageObserver (
+    contentDiv: HTMLDivElement | undefined | null,
+    isScrollInitialized: boolean,
+    context: NotificationContext | undefined
+  ): void {
+    if (contentDiv == null || !isScrollInitialized || context == null) return
+    if (unsubscribeObserver != null) return
+
+    unsubscribeObserver = createMessagesObserver(contentDiv, (messageDiv) => {
       const id = messageDiv.id
       const message = messages.find((it) => it.id === id)
+
       if (message === undefined) return
       const shouldRead = newLastView == null || message.created > newLastView
+
       if (shouldRead) {
         newLastView = message.created
         readMessage(message.created)
@@ -260,6 +271,12 @@
       updateShouldScrollToNew()
     }
   }
+
+  onDestroy(() => {
+    if (unsubscribeObserver != null) {
+      unsubscribeObserver()
+    }
+  })
 </script>
 
 <ReverseScroller

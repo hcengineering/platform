@@ -63,7 +63,7 @@ import {
 } from '@hcengineering/communication-types'
 import {
   RequestEvent as CommunicationEvent,
-  ConnectionInfo as CommunicationCtx,
+  SessionData as CommunicationSession,
   EventResult
 } from '@hcengineering/communication-sdk-types'
 
@@ -436,7 +436,7 @@ export class ClientSession implements Session {
     await ctx.sendResponse(ctx.requestId, {})
   }
 
-  private getCommunicationCtx (): CommunicationCtx {
+  private getCommunicationCtx (): CommunicationSession {
     return {
       sessionId: this.sessionId,
       account: this.account

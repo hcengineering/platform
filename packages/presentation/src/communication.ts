@@ -119,18 +119,19 @@ class Client {
   onEvent: (event: ResponseEvent) => void = () => {}
   onRequest: (event: RequestEvent, eventPromise: Promise<EventResult>) => void = () => {}
 
-  async createThread (card: CardID, message: MessageID, thread: CardID): Promise<void> {
+  async createThread (card: CardID, message: MessageID, messageCreated: Date, thread: CardID): Promise<void> {
     const event: CreateThreadEvent = {
       type: MessageRequestEventType.CreateThread,
       card,
       message,
+      messageCreated,
       thread
     }
 
     await this.sendEvent(event)
   }
 
-  async createMessage (card: CardID, cardType: CardType, content: RichText): Promise<MessageID> {
+  async createMessage (card: CardID, cardType: CardType, content: RichText): Promise<CreateMessageResult> {
     const event: CreateMessageEvent = {
       type: MessageRequestEventType.CreateMessage,
       messageType: MessageType.Message,
@@ -140,37 +141,40 @@ class Client {
       creator: this.getSocialId()
     }
     const result = await this.sendEvent(event)
-    return (result as CreateMessageResult).id
+    return result as CreateMessageResult
   }
 
-  async updateMessage (card: CardID, message: MessageID, content: RichText): Promise<void> {
+  async updateMessage (card: CardID, message: MessageID, messageCreated: Date, content: RichText): Promise<void> {
     const event: CreatePatchEvent = {
       type: MessageRequestEventType.CreatePatch,
       patchType: PatchType.update,
       card,
       message,
+      messageCreated,
       content,
       creator: this.getSocialId()
     }
     await this.sendEvent(event)
   }
 
-  async createReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
+  async createReaction (card: CardID, message: MessageID, messageCreated: Date, reaction: string): Promise<void> {
     const event: CreateReactionEvent = {
       type: MessageRequestEventType.CreateReaction,
       card,
       message,
+      messageCreated,
       reaction,
       creator: this.getSocialId()
     }
     await this.sendEvent(event)
   }
 
-  async removeReaction (card: CardID, message: MessageID, reaction: string): Promise<void> {
+  async removeReaction (card: CardID, message: MessageID, messageCreated: Date, reaction: string): Promise<void> {
     const event: RemoveReactionEvent = {
       type: MessageRequestEventType.RemoveReaction,
       card,
       message,
+      messageCreated,
       reaction,
       creator: this.getSocialId()
     }
@@ -180,6 +184,7 @@ class Client {
   async createFile (
     card: CardID,
     message: MessageID,
+    messageCreated: Date,
     blobId: BlobID,
     fileType: string,
     filename: string,
@@ -189,6 +194,7 @@ class Client {
       type: MessageRequestEventType.CreateFile,
       card,
       message,
+      messageCreated,
       blobId,
       fileType,
       filename,
@@ -198,11 +204,12 @@ class Client {
     await this.sendEvent(event)
   }
 
-  async removeFile (card: CardID, message: MessageID, blobId: BlobID): Promise<void> {
+  async removeFile (card: CardID, message: MessageID, messageCreated: Date, blobId: BlobID): Promise<void> {
     const event: RemoveFileEvent = {
       type: MessageRequestEventType.RemoveFile,
       card,
       message,
+      messageCreated,
       blobId,
       creator: this.getSocialId()
     }
