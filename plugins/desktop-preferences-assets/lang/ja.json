@@ -1,0 +1,11 @@
+{
+  "string": {
+    "ShowNotifications": "通知を表示",
+    "PlaySound": "サウンドを再生",
+    "BounceAppIcon": "アプリのアイコンをバウンスさせる（MacOS のみ）",
+    "ShowBadge": "アプリのアイコンにバッジを表示",
+    "SoundAndAppearance": "サウンドと外観",
+    "HaveGotANotification": "通知があります",
+    "TotalNotificationsCount": "合計 {count, plural, =1 {# 件} other {# 件}}"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "status": {
+    "CategoryRequired": "カテゴリは必須です",
+    "NameRequired": "名前は必須です"
+  },
+  "string": {
+    "Categories": "カテゴリ",
+    "Category": "カテゴリ",
+    "CategoryCreateLabel": "カテゴリ",
+    "CreateCategory": "カテゴリを作成",
+    "CreateSubcategory": "サブカテゴリを作成",
+    "Inventory": "在庫",
+    "ProductCreateLabel": "製品",
+    "CreateProduct": "製品を作成",
+    "Products": "製品",
+    "Product": "製品",
+    "Variant": "バリアント",
+    "SKU": "SKU",
+    "Variants": "バリアント",
+    "NoVariantsForProduct": "この製品にはバリアントがありません。",
+    "CreateVariant": "バリアントを作成",
+    "ConfigLabel": "在庫",
+    "ConfigDescription": "拡張機能を管理するための拡張機能"
+  }
+}
