@@ -324,13 +324,22 @@
   &.smaller,
   .small-font &.small { width: 9px; }
   &.small { width: 10px; }
-  .small-font &.medium { width: 11px; }
-  &.medium { 
-    width: 13px;
+  &:not(.small-font) {
+    &.medium { 
+      width: 13px;
+      &.modern { 
+        right: 4px;
+        bottom: 4px;
+        width: 14px; 
+      }
+    }
+  }
+  .small-font &.medium { 
+    width: 11px; 
     &.modern { 
-      right: 4px;
-      bottom: 4px;
-      width: 14px; 
+      width: 13px; 
+      right: 3px;
+      bottom: 3px;
     }
   }
   &.large {
