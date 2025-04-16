@@ -120,7 +120,7 @@
       }
     })
     actions.push(...getMenu(items, ['main']))
-    if (hasAccountRole(account, AccountRole.User)) {
+    if (hasAccountRole(account, AccountRole.Maintainer)) {
       actions.push({
         icon: setting.icon.InviteWorkspace,
         label: setting.string.InviteWorkspace,
