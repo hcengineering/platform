@@ -161,12 +161,7 @@
           <MessageContentViewer {message} {card} />
         </div>
       {:else}
-        <MessageInput
-          cardId={message.card}
-          messageId={message.id}
-          content={toMarkup(message.content)}
-          onCancel={handleCancelEdit}
-        />
+        <MessageInput cardId={message.card} {message} content={toMarkup(message.content)} onCancel={handleCancelEdit} />
       {/if}
     </div>
   </div>

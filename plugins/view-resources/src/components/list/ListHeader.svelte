@@ -127,11 +127,11 @@
       <div class="chevron"><IconCollapseArrow size={level === 0 ? 'small' : 'tiny'} /></div>
       <!-- {/if} -->
       {#if groupByKey === noCategory}
-        <span class="text-base fs-bold overflow-label pointer-events-none">
+        <span class="fs-bold content-color overflow-label pointer-events-none">
           <Label label={view.string.NoGrouping} />
         </span>
       {:else if category === undefined}
-        <span class="overflow-label pointer-events-none">
+        <span class="fs-bold content-color overflow-label pointer-events-none">
           <Label label={view.string.NotSpecified} />
         </span>
       {:else if headerComponent}

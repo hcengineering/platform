@@ -70,9 +70,9 @@
   }
 
   function selectCard (event: CustomEvent<{ context: NotificationContext, card: Card }>): void {
+    void readCard(event.detail.context)
     if (card?._id === event.detail.card._id) return
     card = event.detail.card
-    void readCard(event.detail.context)
     navigateToCard(card._id)
   }
 
