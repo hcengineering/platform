@@ -143,7 +143,7 @@
     participants = participants
     participantElements.length = participants.length
     await tick()
-    participantElements[index]?.appendChild(element)
+    participantElements[index]?.appendChild(element, participant.isCameraEnabled)
   }
 
   function attachParticipant (participant: Participant): void {

@@ -38,15 +38,16 @@
     easing: elasticInOut
   })
 
-  export function appendChild (track: HTMLMediaElement): void {
+  export function appendChild (track: HTMLMediaElement, enabled: boolean = true): void {
     const video = parent.querySelector('.video')
     if (video != null) {
       video.remove()
     }
 
     track.classList.add('video')
+    if (!enabled) track.classList.add('hidden')
     parent.appendChild(track)
-    activeTrack = true
+    activeTrack = enabled
   }
 
   export function setTrackMuted (value: boolean): void {
@@ -66,7 +67,7 @@
   $: speach = $currentRoomAudioLevels.get(_id as Ref<Person>) ?? 0
   let tspeach: number = 0
   $: if ((speach > 0 && speach > tspeach) || (tspeach > 0 && speach <= 0)) {
-    void speakers.set(speach > 0.3 ? 0.3 : speach, { duration: 50, easing: elasticInOut })
+    void speakers.set(speach > 0.5 ? 0.5 : speach, { duration: 50, easing: elasticInOut })
   }
   speakers.subscribe((sp) => {
     tspeach = sp > 0 ? sp : 0
@@ -75,17 +76,16 @@
 </script>
 
 <div id={_id} class="parent" style:--border-opacity={level}>
+  <div bind:this={parent} class="cover" class:active={activeTrack} class:mirror={mirror && activeTrack} />
+  <div class="ava">
+    <Avatar size={'full'} {name} person={user} showStatus={false} />
+  </div>
   <div class="label">
     <span class="overflow-label">{formatName(name)}</span>
   </div>
   <div class="icon" class:shown={muted || connecting}>
     {#if connecting}<Loading size={'small'} shrink />{/if}
     {#if muted}<MicDisabled size={'small'} />{/if}
-  </div>
-  <div bind:this={parent} class="cover" class:active={activeTrack} class:mirror={mirror && activeTrack}>
-    <div class="ava">
-      <Avatar size={'full'} {name} person={user} showStatus={false} />
-    </div>
   </div>
 </div>
 
@@ -104,7 +104,7 @@
     border-radius: 0.75rem;
     height: 100%;
     width: 100%;
-    aspect-ratio: 1280/720;
+    aspect-ratio: 1280 / 720;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -113,19 +113,22 @@
       transform: scaleX(-1);
     }
 
-    .ava {
-      overflow: hidden;
-      position: absolute;
-      height: 50%;
-      aspect-ratio: 1;
-      border-radius: 50%;
-    }
-    &.active > .ava {
+    &.active + .ava {
       display: none;
     }
     &:not(.active) {
       background-color: black;
     }
+  }
+  .ava {
+    overflow: hidden;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 50%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
   }
   .parent {
     position: relative;
