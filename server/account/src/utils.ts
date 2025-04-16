@@ -261,6 +261,10 @@ export const getEndpoint = (workspace: WorkspaceUuid, region: string | undefined
     transactors = _endpointInfo.get('') ?? []
   }
 
+  if (transactors.length === 0) {
+    throw new Error('Please provide transactor endpoint url')
+  }
+
   return selectKind(kind, transactors[Math.abs(hash % transactors.length)])
 }
 
