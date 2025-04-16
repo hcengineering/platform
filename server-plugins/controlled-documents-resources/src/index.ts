@@ -60,7 +60,7 @@ async function getDocs (
 
 function makeDocEffective (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
   const updates = getEffectiveDocUpdates()
-  return updates.map(u => txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, u))
+  return updates.map((u) => txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, u))
 }
 
 function archiveDocs (docs: ControlledDocument[], txFactory: TxFactory): Tx[] {
