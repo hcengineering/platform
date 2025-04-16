@@ -659,7 +659,7 @@ export async function join (
 
   ctx.info('Joining a workspace using invite', { email, normalizedEmail, ...invite })
 
-  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password }, meta)
+  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password })
 
   if (token == null) {
     return {
