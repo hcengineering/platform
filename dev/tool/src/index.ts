@@ -93,8 +93,8 @@ import { getAccountDBUrl, getMongoDBUrl } from './__start'
 // import { fillGithubUsers, fixAccountEmails, renameAccount } from './account'
 import { changeConfiguration } from './configuration'
 
-import { moveAccountDbFromMongoToPG } from './db'
 import { performGithubAccountMigrations } from './github'
+import { migrateCreatedModifiedBy, ensureGlobalPersonsForLocalAccounts, moveAccountDbFromMongoToPG } from './db'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 const colorConstants = {
@@ -2281,6 +2281,20 @@ export function devTool (
       await withAccountDatabase(async (mongoDb) => {
         await moveAccountDbFromMongoToPG(toolCtx, mongoDb, pgDb)
       }, mongodbUri)
+    }, dbUrl)
+  })
+
+  program.command('migrate-created-modified-by').action(async () => {
+    const { dbUrl } = prepareTools()
+
+    await migrateCreatedModifiedBy(toolCtx, dbUrl)
+  })
+
+  program.command('ensure-global-persons-for-local-accounts').action(async () => {
+    const { dbUrl } = prepareTools()
+
+    await withAccountDatabase(async (accDb) => {
+      await ensureGlobalPersonsForLocalAccounts(toolCtx, dbUrl, accDb)
     }, dbUrl)
   })
 
