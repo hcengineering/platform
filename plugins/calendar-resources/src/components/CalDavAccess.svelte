@@ -1,25 +1,16 @@
 <script lang="ts">
-  import { Integration, IntegrationKey } from '@hcengineering/account-client'
-  import presentation, { getClient, getCurrentWorkspaceUrl, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
-  import {
-    Dropdown,
-    Label,
-    ListItem,
-    Modal,
-    ModernEditbox,
-    CheckBox,
-    Spinner,
-    Button,
-    IconCopy,
-    EditBox
-  } from '@hcengineering/ui'
-  import setting from '@hcengineering/setting'
+  import { Integration } from '@hcengineering/account-client'
+  import presentation, {
+    copyTextToClipboard,
+    getCurrentWorkspaceUrl,
+    getCurrentWorkspaceUuid
+  } from '@hcengineering/presentation'
+  import { Label, Modal, CheckBox, Spinner, Button, IconCopy, EditBox } from '@hcengineering/ui'
   import calendar from '@hcengineering/calendar'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { getMetadata, IntlString, translateCB } from '@hcengineering/platform'
-  import contact, { getCurrentEmployee, SocialIdentityRef } from '@hcengineering/contact'
-  import { buildSocialIdString, getCurrentAccount, PersonId, SocialIdType } from '@hcengineering/core'
-  import { calendarByIdStore, getAccountClient } from '../utils'
+  import { getMetadata } from '@hcengineering/platform'
+  import { getCurrentAccount, pickPrimarySocialId, SocialId, SocialIdType } from '@hcengineering/core'
+  import { getAccountClient } from '../utils'
 
   const workspaceUuid = getCurrentWorkspaceUuid()
 
@@ -28,8 +19,8 @@
 
   let loading = true
   let error: string | undefined
-  const availableAccounts: ListItem[] = []
-  let selectedAccount: ListItem | undefined
+  let selectedSocialId: SocialId | undefined
+  let hulySocialId = ''
   let accessEnabled = false
   let serverUrl = getMetadata(calendar.metadata.CalDavServerURL)
   let password = ''
@@ -40,9 +31,7 @@
   $: wasAccessEnabled = integrationGlobal !== null && integrationWs !== null
   $: canSave = !!(
     !loading &&
-    ((!wasAccessEnabled && accessEnabled && selectedAccount != null) ||
-      (wasAccessEnabled && !accessEnabled) ||
-      (wasAccessEnabled && accessEnabled && selectedAccount != null && selectedAccount._id !== integrationWs?.socialId))
+    ((!wasAccessEnabled && accessEnabled && selectedSocialId != null) || (wasAccessEnabled && !accessEnabled))
   )
 
   function generateRandomPassword (length = 24): string {
@@ -60,70 +49,69 @@
     try {
       password = generateRandomPassword()
 
-      const account = getCurrentAccount()
-      const accountClient = getAccountClient()
+      const socialId = pickPrimarySocialId(getCurrentAccount().fullSocialIds)
+      if (socialId.type !== SocialIdType.HULY) {
+        // Thid should not happen, no need to translate
+        error = 'Appropriate account not found'
+        return
+      }
+
       const wsId = getCurrentWorkspaceUuid()
-      for (const socialId of account.fullSocialIds) {
-        // TODO: Handle delete social ids generically, we don't have isDelete field on thr workspace side
-        if (socialId.type === SocialIdType.EMAIL && socialId.value.includes('#')) {
-          continue
-        }
-        if (availableAccounts.find((a) => a.label === socialId.value) == null) {
-          availableAccounts.push({
-            _id: socialId._id,
-            label: socialId.value
-          })
-        }
-        const integrations = await accountClient.listIntegrations({
-          socialId: socialId._id,
-          kind: 'caldav'
-        })
-        for (const integration of integrations) {
-          if (integration.workspaceUuid == null) {
-            if (integrationGlobal == null) {
-              integrationGlobal = integration
-              continue
-            }
+      hulySocialId = socialId.value
+      const accountClient = getAccountClient()
+      const integrations = await accountClient.listIntegrations({
+        socialId: socialId._id,
+        kind: 'caldav'
+      })
+      for (const integration of integrations) {
+        if (integration.workspaceUuid == null) {
+          if (integrationGlobal == null) {
+            integrationGlobal = integration
+            continue
           }
-          totalWsIntegrations += 1
-          if (integration.workspaceUuid === wsId && integrationWs == null) {
-            integrationWs = integration
-            selectedAccount = {
-              _id: socialId._id,
-              label: socialId.value
-            }
-          }
+        }
+        totalWsIntegrations += 1
+        if (integration.workspaceUuid === wsId && integrationWs == null) {
+          integrationWs = integration
         }
       }
+      selectedSocialId = socialId
       accessEnabled = integrationWs != null && integrationGlobal != null
     } catch (err: any) {
       console.error('Failed to load CalDAV intergrations', err)
       error = `${err.message ?? 'Unable to load CalDAV intergrations'}`
+    } finally {
+      loading = false
     }
-    loading = false
   })
 
   async function save (): Promise<void> {
     loading = true
     try {
+      if (selectedSocialId == null) {
+        return
+      }
       const accountClient = getAccountClient()
+      const socialId = selectedSocialId._id
+      const kind = 'caldav'
+      const key = 'password'
       if (wasAccessEnabled && !accessEnabled) {
         // Access disabled
         await accountClient.deleteIntegration({
-          socialId: selectedAccount?._id as PersonId,
-          kind: 'caldav',
+          socialId,
+          kind,
           workspaceUuid
         })
         if (totalWsIntegrations === 1 && integrationGlobal != null) {
           await accountClient.deleteIntegrationSecret({
-            socialId: integrationGlobal.socialId,
-            kind: 'caldav',
+            socialId,
+            kind,
             workspaceUuid: null,
-            key: 'caldav'
+            key
           })
           await accountClient.deleteIntegration({
-            socialId: integrationGlobal.socialId,
-            kind: 'caldav',
+            socialId,
+            kind,
             workspaceUuid: null
           })
         }
@@ -131,46 +119,21 @@
         // Access enabled
         if (integrationGlobal === null) {
           await accountClient.createIntegration({
-            socialId: selectedAccount?._id as PersonId,
-            kind: 'caldav',
-            workspaceUuid: null
-          })
-          integrationGlobal = await accountClient.getIntegration({
-            socialId: selectedAccount?._id as PersonId,
-            kind: 'caldav',
+            socialId,
+            kind,
             workspaceUuid: null
           })
         }
-        const secret = await accountClient.getIntegrationSecret({
-          socialId: integrationGlobal?.socialId as PersonId,
-          kind: 'caldav',
+        await accountClient.addIntegrationSecret({
+          socialId,
+          kind,
           workspaceUuid: null,
-          key: 'caldav'
-        })
-        if (secret == null) {
-          await accountClient.addIntegrationSecret({
-            socialId: integrationGlobal?.socialId as PersonId,
-            kind: 'caldav',
-            workspaceUuid: null,
-            key: 'caldav',
-            secret: password
-          })
-        }
-        await accountClient.createIntegration({
-          socialId: selectedAccount?._id as PersonId,
-          kind: 'caldav',
-          workspaceUuid
-        })
-      } else if (accessEnabled && wasAccessEnabled && selectedAccount?._id !== integrationWs?.socialId) {
-        // Access changed
-        await accountClient.deleteIntegration({
-          socialId: integrationWs?.socialId as PersonId,
-          kind: 'caldav',
-          workspaceUuid
+          key,
+          secret: password
         })
         await accountClient.createIntegration({
-          socialId: selectedAccount?._id as PersonId,
-          kind: 'caldav',
+          socialId,
+          kind,
           workspaceUuid
         })
       }
@@ -178,42 +141,21 @@
     } catch (err: any) {
       error = `${err.message ?? 'Unable to save CalDAV intergration'}`
       console.error('Failed to save CalDAV integration', err)
+    } finally {
+      loading = false
     }
-    loading = false
   }
 
   async function copyServer (): Promise<void> {
-    console.log(serverUrl)
-    await navigator?.clipboard?.writeText(serverUrl ?? '')
+    await copyTextToClipboard(serverUrl ?? '')
   }
 
   async function copyAccount (): Promise<void> {
-    console.log(selectedAccount?.label)
-    await navigator?.clipboard?.writeText(selectedAccount?.label ?? '')
+    await copyTextToClipboard(selectedSocialId?.value ?? '')
   }
 
   async function copyPassword (): Promise<void> {
-    loading = true
-    try {
-      if (integrationGlobal != null) {
-        const accountClient = getAccountClient()
-        const secret = await accountClient.getIntegrationSecret({
-          socialId: integrationGlobal.socialId,
-          kind: 'caldav',
-          workspaceUuid: null,
-          key: 'caldav'
-        })
-        if (secret != null) {
-          await navigator?.clipboard?.writeText(secret.secret)
-          return
-        }
-      }
-      await navigator?.clipboard?.writeText(password)
-    } catch (err: any) {
-      error = `${err.message ?? 'Unable to copy password'}`
-      console.error('Failed to copy password', err)
-    }
-    loading = false
+    await copyTextToClipboard(password)
   }
 </script>
 
@@ -267,19 +209,7 @@
     <div class="flex-col-stretch flex-gap-1-5" class:accessDisabled={!accessEnabled}>
       <Label label={calendar.string.CalDavAccessAccount} />
       <div class="flex-row-center flex-gap-1">
-        <Dropdown
-          size="large"
-          placeholder={calendar.string.CalDavAccessAccount}
-          items={availableAccounts}
-          selected={selectedAccount}
-          justify="left"
-          withSearch={false}
-          stretchWidth={true}
-          disabled={!accessEnabled}
-          on:selected={(e) => {
-            selectedAccount = e.detail
-          }}
-        />
+        <EditBox bind:value={hulySocialId} kind="ghost" fullSize focusable disabled={true} />
         <Button
           icon={IconCopy}
           size="small"
@@ -291,20 +221,25 @@
       </div>
     </div>
 
-    <div class="flex-col-stretch flex-gap-1-5" class:accessDisabled={!accessEnabled}>
-      <Label label={calendar.string.CalDavAccessPassword} />
-      <div class="flex-row-center flex-gap-1">
-        <EditBox bind:value={password} kind="ghost" format="password" fullSize focusable disabled={true} />
-        <Button
-          icon={IconCopy}
-          size="small"
-          kind="ghost"
-          disabled={!accessEnabled}
-          showTooltip={{ label: presentation.string.Copy }}
-          on:click={copyPassword}
-        />
+    {#if !wasAccessEnabled}
+      <div class="flex-col-stretch flex-gap-1-5" class:accessDisabled={!accessEnabled}>
+        <Label label={calendar.string.CalDavAccessPassword} />
+        <div class="flex-row-center flex-gap-1">
+          <EditBox bind:value={password} kind="ghost" format="password" fullSize focusable disabled={true} />
+          <Button
+            icon={IconCopy}
+            size="small"
+            kind="ghost"
+            disabled={!accessEnabled}
+            showTooltip={{ label: presentation.string.Copy }}
+            on:click={copyPassword}
+          />
+        </div>
+        {#if canSave}
+          <Label label={calendar.string.CalDavAccessPasswordWarning} />
+        {/if}
       </div>
-    </div>
+    {/if}
 
     {#if error}
       <div style="color: var(--theme-error-color)">{error}</div>

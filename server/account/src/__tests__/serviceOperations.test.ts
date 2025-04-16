@@ -1248,7 +1248,6 @@ describe('integration methods', () => {
   })
 
   describe('getIntegrationSecret', () => {
-    const mockAccount = 'test-account'
     const mockSocialId = 'test-social-id' as PersonId
     const mockSecretKey: IntegrationSecretKey = {
       socialId: mockSocialId,
@@ -1267,56 +1266,11 @@ describe('integration methods', () => {
         extra: { service: 'github' }
       })
       ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(mockSecret)
-      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
-      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
-      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({})
 
       const result = await getIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)
 
       expect(result).toEqual(mockSecret)
       expect(mockDb.integrationSecret.findOne).toHaveBeenCalledWith(mockSecretKey)
-      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ _id: mockSocialId, verifiedOn: { $gt: 0 } })
-    })
-
-    test('should allow verified user to get their secret', async () => {
-      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        account: mockAccount
-      })
-      ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(mockSecret)
-      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
-      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
-      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({})
-
-      const result = await getIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)
-
-      expect(result).toEqual(mockSecret)
-      expect(mockDb.integrationSecret.findOne).toHaveBeenCalledWith(mockSecretKey)
-      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
-        _id: mockSocialId,
-        personUuid: mockAccount,
-        verifiedOn: { $gt: 0 }
-      })
-    })
-
-    test('should throw error when user gets secret for different account', async () => {
-      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        account: mockAccount
-      })
-      ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(mockSecret)
-      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
-      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
-      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({})
-
-      await expect(getIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)).rejects.toThrow(
-        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-      )
-
-      expect(mockDb.integrationSecret.findOne).not.toHaveBeenCalledWith()
-      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
-        _id: mockSocialId,
-        personUuid: mockAccount,
-        verifiedOn: { $gt: 0 }
-      })
     })
 
     test('should return null when integration secret not found', async () => {

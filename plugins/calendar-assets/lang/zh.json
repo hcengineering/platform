@@ -100,10 +100,11 @@
     "MeetingDuration": "会议时长",
     "MeetingInterval": "会议间暂停",
     "CalDavAccess": "CalDAV 访问",
-    "CalDavAccessPrompt": "CalDAV 协议允许将您的个人 Huly 日历与外部日历应用同步。请选择一个帐户并使用建议的密码在日历客户端应用中注册 Huly CalDav 服务器。",
+    "CalDavAccessPrompt": "CalDAV 協定允許將您的個人 Huly 日曆與外部日曆應用程式同步。使用此帳戶和建議的密碼在日曆用戶端應用程式中註冊 Huly CalDAV 伺服器。",
     "CalDavAccessEnable": "在工作区 {ws} 中启用 CalDAV 对个人日历的访问",
     "CalDavAccessServer": "CalDAV 服务器",
     "CalDavAccessAccount": "Huly 帐户",
-    "CalDavAccessPassword": "密码（自动生成）"
+    "CalDavAccessPassword": "密码",
+    "CalDavAccessPasswordWarning": "您将无法再次看到此密码。请将其保存在安全的地方。"
   }
 }

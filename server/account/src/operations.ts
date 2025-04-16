@@ -1187,9 +1187,10 @@ export async function getWorkspacesInfo (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  ids: WorkspaceUuid[]
+  params: { ids: WorkspaceUuid[] }
 ): Promise<WorkspaceInfoWithStatus[]> {
   const { account } = decodeTokenVerbose(ctx, token)
+  const { ids } = params
 
   if (account !== systemAccountUuid) {
     ctx.error('getWorkspaceInfos with wrong user', { account, token })

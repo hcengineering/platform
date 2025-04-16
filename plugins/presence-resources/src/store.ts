@@ -133,7 +133,6 @@ export function followeeDataUnsubscribe (topic: string, handler: (data: any) => 
 }
 
 export function toggleFollowee (person: Ref<Person> | undefined): void {
-  console.log('toggle followee', person)
   followee.update((p) => (p === person ? undefined : person))
 
   const f = get(followee)
@@ -150,7 +149,6 @@ export function toggleFollowee (person: Ref<Person> | undefined): void {
       }
     }
   } else {
-    console.log('no followee')
     for (const handlers of followeeDataHandlers.values()) {
       for (const handler of handlers) {
         handler(undefined)

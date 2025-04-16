@@ -100,10 +100,11 @@
     "MeetingDuration": "Durata riunione",
     "MeetingInterval": "Pausa tra riunioni",
     "CalDavAccess": "Accesso CalDAV",
-    "CalDavAccessPrompt": "Il protocollo CalDAV consente la sincronizzazione del calendario personale Huly con applicazioni di calendario esterne. Seleziona un account e utilizza la password suggerita per registrare il server CalDAV Huly in un'applicazione client di calendario.",
+    "CalDavAccessPrompt": "Il protocollo CalDAV consente la sincronizzazione del calendario personale Huly con applicazioni di calendario esterne. Utilizza questo account e la password suggerita per registrare il server CalDAV Huly in un'applicazione client di calendario.",
     "CalDavAccessEnable": "Abilita l'accesso CalDAV al calendario personale nell'area di lavoro {ws}",
     "CalDavAccessServer": "Server CalDAV",
     "CalDavAccessAccount": "Account Huly",
-    "CalDavAccessPassword": "Password (generata automaticamente)"
+    "CalDavAccessPassword": "Password",
+    "CalDavAccessPasswordWarning": "Non potrai vedere di nuovo questa password. Conservala in un luogo sicuro."
   }
 }

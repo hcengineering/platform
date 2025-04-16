@@ -246,7 +246,7 @@ const calendarPlugin = plugin(calendarId, {
     CalDavAccessServer: '' as IntlString,
     CalDavAccessAccount: '' as IntlString,
     CalDavAccessPassword: '' as IntlString,
-    CopyValue: '' as IntlString
+    CalDavAccessPasswordWarning: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler
