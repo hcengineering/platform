@@ -347,10 +347,6 @@ describe('account utils', () => {
     })
 
     describe('getEndpoint', () => {
-      const mockCtx = {
-        error: jest.fn()
-      } as unknown as MeasureContext
-
       beforeEach(() => {
         jest.clearAllMocks()
       })
@@ -392,8 +388,7 @@ describe('account utils', () => {
         'should handle workspace="%s" region="%s" kind=%s (%s)',
         (workspace, region, kind, transactors, expected, description) => {
           ;(getMetadata as jest.Mock).mockReturnValue(transactors)
-          expect(getEndpoint(mockCtx, workspace, region, kind)).toBe(expected)
-          expect(mockCtx.error).not.toHaveBeenCalled()
+          expect(getEndpoint(workspace as WorkspaceUuid, region, kind)).toBe(expected)
         }
       )
 
@@ -401,21 +396,17 @@ describe('account utils', () => {
         const transactors = 'http://internal:3000;http://external:3000;'
         ;(getMetadata as jest.Mock).mockReturnValue(transactors)
 
-        expect(getEndpoint(mockCtx, 'workspace1', 'nonexistent', EndpointKind.Internal)).toBe('http://internal:3000')
-
-        expect(mockCtx.error).toHaveBeenCalledWith('No transactors for the target region, will use default region', {
-          group: 'nonexistent'
-        })
+        expect(getEndpoint('workspace1' as WorkspaceUuid, 'nonexistent', EndpointKind.Internal)).toBe(
+          'http://internal:3000'
+        )
       })
 
       test('should throw error when no transactors available', () => {
         ;(getMetadata as jest.Mock).mockReturnValue('http://internal:3000;http://external:3000;us')
 
-        expect(() => getEndpoint(mockCtx, 'workspace1', 'nonexistent', EndpointKind.Internal)).toThrow(
+        expect(() => getEndpoint('workspace1' as WorkspaceUuid, 'nonexistent', EndpointKind.Internal)).toThrow(
           'Please provide transactor endpoint url'
         )
-
-        expect(mockCtx.error).toHaveBeenCalledWith('No transactors for the default region')
       })
     })
 

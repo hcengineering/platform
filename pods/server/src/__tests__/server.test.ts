@@ -40,7 +40,7 @@ import {
   type TxResult,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { ClientSession, startSessionManager, type SessionManagerOptions } from '@hcengineering/server'
+import { startSessionManager, type SessionManagerOptions } from '@hcengineering/server'
 import { createDummyQueue, createDummyStorageAdapter } from '@hcengineering/server-core'
 import { startHttpServer } from '../server_http'
 import { genMinModel } from './minmodel'
@@ -100,7 +100,6 @@ describe('server', () => {
     communicationApiFactory: async () => {
       return {} as any
     },
-    sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
     brandingMap: {},
     accountsUrl: '',
     queue: createDummyQueue()
@@ -216,7 +215,6 @@ describe('server', () => {
       communicationApiFactory: async () => {
         return {} as any
       },
-      sessionFactory: (token, workspace, account) => new ClientSession(token, workspace, account, true),
       brandingMap: {},
       accountsUrl: '',
       queue: createDummyQueue()

@@ -50,7 +50,6 @@ export interface SessionData {
   admin?: boolean
   isTriggerCtx?: boolean
   workspace: WorkspaceIds
-  branding: Branding | null
   socialStringsToUsers: Map<PersonId, AccountUuid>
 
   asyncRequests?: (() => Promise<void>)[]

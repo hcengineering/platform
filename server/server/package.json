@@ -47,6 +47,7 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/rpc": "^0.6.5",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-token": "^0.6.11"
+    "@hcengineering/server-token": "^0.6.11",
+    "utf-8-validate": "^6.0.4"
   }
 }

@@ -332,7 +332,7 @@ class BackupWorker {
             },
             getConnection: async () => {
               if (pipeline === undefined) {
-                pipeline = await this.pipelineFactory(ctx, wsIds, true, () => {}, null, null)
+                pipeline = await this.pipelineFactory(ctx, wsIds, () => {}, null, null)
               }
               return wrapPipeline(ctx, pipeline, wsIds)
             },
@@ -484,7 +484,7 @@ export async function doRestoreWorkspace (
           cleanIndexState,
           getConnection: async () => {
             if (pipeline === undefined) {
-              pipeline = await pipelineFactory(ctx, wsIds, true, () => {}, null, null)
+              pipeline = await pipelineFactory(ctx, wsIds, () => {}, null, null)
             }
             return wrapPipeline(ctx, pipeline, wsIds)
           },

@@ -13,38 +13,39 @@
 // limitations under the License.
 //
 import {
-  type AccountRole,
   type AccountInfo,
+  type AccountRole,
+  type AccountUuid,
   BackupStatus,
+  concatLink,
   Data,
   type Person,
-  type PersonUuid,
+  type PersonId,
   type PersonInfo,
+  type PersonUuid,
+  type SocialIdType,
   Version,
   type WorkspaceInfoWithStatus,
   type WorkspaceMemberInfo,
   WorkspaceMode,
-  concatLink,
   type WorkspaceUserOperation,
-  type WorkspaceUuid,
-  type PersonId,
-  type SocialIdType,
-  type AccountUuid
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type {
-  LoginInfo,
-  MailboxOptions,
-  OtpInfo,
-  WorkspaceLoginInfo,
-  RegionInfo,
-  WorkspaceOperation,
-  MailboxInfo,
   Integration,
   IntegrationKey,
   IntegrationSecret,
   IntegrationSecretKey,
-  SocialId
+  LoginInfo,
+  LoginInfoWithWorkspaces,
+  MailboxInfo,
+  MailboxOptions,
+  OtpInfo,
+  RegionInfo,
+  SocialId,
+  WorkspaceLoginInfo,
+  WorkspaceOperation
 } from './types'
 import { getClientTimezone } from './utils'
 
@@ -63,6 +64,7 @@ export interface AccountClient {
   validateOtp: (email: string, code: string) => Promise<LoginInfo>
   loginOtp: (email: string) => Promise<OtpInfo>
   getLoginInfoByToken: () => Promise<LoginInfo | WorkspaceLoginInfo>
+  getLoginWithWorkspaceInfo: () => Promise<LoginInfoWithWorkspaces>
   restorePassword: (password: string) => Promise<LoginInfo>
   confirm: () => Promise<LoginInfo>
   requestPasswordReset: (email: string) => Promise<void>
@@ -302,6 +304,15 @@ class AccountClientImpl implements AccountClient {
   async getLoginInfoByToken (): Promise<LoginInfo | WorkspaceLoginInfo> {
     const request = {
       method: 'getLoginInfoByToken' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async getLoginWithWorkspaceInfo (): Promise<LoginInfoWithWorkspaces> {
+    const request = {
+      method: 'getLoginWithWorkspaceInfo' as const,
       params: {}
     }
 

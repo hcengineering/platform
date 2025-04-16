@@ -221,7 +221,6 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       sctx.admin,
       { txes: [], targets: {} },
       this.context.workspace,
-      this.context.branding,
       true,
       sctx.removedMap,
       sctx.contextCache,

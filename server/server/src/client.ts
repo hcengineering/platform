@@ -13,6 +13,21 @@
 // limitations under the License.
 //
 
+import type { LoginInfoWithWorkspaces } from '@hcengineering/account-client'
+import {
+  RequestEvent as CommunicationEvent,
+  SessionData as CommunicationSession,
+  EventResult
+} from '@hcengineering/communication-sdk-types'
+import {
+  FindLabelsParams,
+  FindMessagesGroupsParams,
+  FindMessagesParams,
+  FindNotificationContextParams,
+  FindNotificationsParams,
+  Message,
+  MessagesGroup
+} from '@hcengineering/communication-types'
 import {
   AccountUuid,
   generateId,
@@ -32,11 +47,13 @@ import {
   type SearchQuery,
   type SearchResult,
   type SessionData,
+  type SocialId,
   type Timestamp,
   type Tx,
   type TxCUD,
   type TxResult,
-  type WorkspaceDataId
+  type WorkspaceDataId,
+  type WorkspaceIds
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
@@ -48,24 +65,9 @@ import {
   type Pipeline,
   type Session,
   type SessionRequest,
-  type StatisticsElement,
-  type Workspace
+  type StatisticsElement
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
-import {
-  FindMessagesGroupsParams,
-  FindMessagesParams,
-  Message,
-  MessagesGroup,
-  FindNotificationContextParams,
-  FindNotificationsParams,
-  FindLabelsParams
-} from '@hcengineering/communication-types'
-import {
-  RequestEvent as CommunicationEvent,
-  SessionData as CommunicationSession,
-  EventResult
-} from '@hcengineering/communication-sdk-types'
 
 const useReserveContext = (process.env.USE_RESERVE_CTX ?? 'true') === 'true'
 
@@ -93,8 +95,9 @@ export class ClientSession implements Session {
 
   constructor (
     protected readonly token: Token,
-    readonly workspace: Workspace,
+    readonly workspace: WorkspaceIds,
     readonly account: Account,
+    readonly info: LoginInfoWithWorkspaces,
     readonly allowUpload: boolean
   ) {
     this.isAdmin = this.token.extra?.admin === 'true'
@@ -106,6 +109,10 @@ export class ClientSession implements Session {
 
   getUserSocialIds (): PersonId[] {
     return this.account.socialIds
+  }
+
+  getSocialIds (): SocialId[] {
+    return this.info.socialIds
   }
 
   getRawAccount (): Account {
@@ -142,18 +149,16 @@ export class ClientSession implements Session {
   }
 
   includeSessionContext (ctx: ClientSessionCtx): void {
-    const dataId = this.workspace.workspaceDataId ?? (this.workspace.workspaceUuid as unknown as WorkspaceDataId)
+    const dataId = this.workspace.dataId ?? (this.workspace.uuid as unknown as WorkspaceDataId)
     const contextData = new SessionDataImpl(
       this.account,
       this.sessionId,
       this.isAdmin,
       undefined,
       {
-        uuid: this.workspace.workspaceUuid,
-        url: this.workspace.workspaceUrl,
+        ...this.workspace,
         dataId
       },
-      this.workspace.branding,
       false,
       undefined,
       undefined,

@@ -318,7 +318,6 @@ export async function upgradeWorkspaceWith (
       true,
       undefined,
       wsIds,
-      null,
       true,
       undefined,
       undefined,

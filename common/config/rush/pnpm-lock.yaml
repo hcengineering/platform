@@ -774,7 +774,7 @@ importers:
         version: file:projects/pod-print.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       '@rush-temp/pod-server':
         specifier: file:./projects/pod-server.tgz
-        version: file:projects/pod-server.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(utf-8-validate@6.0.4)
+        version: file:projects/pod-server.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
       '@rush-temp/pod-ses':
         specifier: file:./projects/pod-ses.tgz
         version: file:projects/pod-ses.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))
@@ -4806,7 +4806,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-server@file:projects/pod-server.tgz':
-    resolution: {integrity: sha512-nlXF3FUjnhvEM9Jz2qnS0pYDDJC4Akt9EZEmku7H+TFP6znCb/pBVelUlY5W+CSRBUFpRkmNv2e/KS/knh4b7w==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-9Ff7F+voylF+V6WMOoCiftEMWTcPA4odM1CleTnf6cfA8Kg8vUz4Di2kzNcH/yxmiywvp47OGSsfuly+djtnkw==, tarball: file:projects/pod-server.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-ses@file:projects/pod-ses.tgz':
@@ -5274,7 +5274,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server@file:projects/server.tgz':
-    resolution: {integrity: sha512-zYTPrh4adUZ36sz8IfoCcJ2yGCSbXgLaeYBv4++J+g/njPytlCfEN9L1x5aYT5zu91cZ/Gt4DkHGFgHsPwNjAw==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-ZeFqWmcBAIlHDDCSms07YvcEuy5G2LJ/Y4wAw743ykDDgqxQ7ptxJpQ0DATsSdOnAF916DE8TYktKbV9Hu1cug==, tarball: file:projects/server.tgz}
     version: 0.0.0
 
   '@rush-temp/setting-assets@file:projects/setting-assets.tgz':
@@ -22126,7 +22126,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@rush-temp/pod-server@file:projects/pod-server.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(utf-8-validate@6.0.4)':
+  '@rush-temp/pod-server@file:projects/pod-server.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
       '@hcengineering/communication-server': 0.1.170(typescript@5.3.3)
       '@types/body-parser': 1.19.5
@@ -22160,6 +22160,7 @@ snapshots:
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
+      utf-8-validate: 6.0.4
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - '@babel/core'
@@ -22170,7 +22171,6 @@ snapshots:
       - babel-plugin-macros
       - node-notifier
       - supports-color
-      - utf-8-validate
 
   '@rush-temp/pod-ses@file:projects/pod-ses.tgz(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))':
     dependencies:
@@ -25474,6 +25474,7 @@ snapshots:
       prettier: 3.2.5
       ts-jest: 29.1.2(@babel/core@7.23.9)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.23.9))(esbuild@0.24.2)(jest@29.7.0(@types/node@20.11.19)(ts-node@10.9.2(@types/node@20.11.19)(typescript@5.3.3)))(typescript@5.3.3)
       typescript: 5.3.3
+      utf-8-validate: 6.0.4
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
