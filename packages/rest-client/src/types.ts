@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
+import type { CreateMessageResult, EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
 import type {
   FindMessagesGroupsParams,
   FindMessagesParams,
@@ -48,19 +48,32 @@ export interface RestClient {
     creator: SocialID,
     type: MessageType,
     data?: MessageData
-  ) => Promise<MessageID>
-  updateMessage: (card: CardID, message: MessageID, content: RichText, creator: SocialID) => Promise<void>
+  ) => Promise<CreateMessageResult>
+  updateMessage: (
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    content: RichText,
+    creator: SocialID
+  ) => Promise<void>
   removeMessage: (card: CardID, message: MessageID) => Promise<MessageID | undefined>
   removeMessages: (card: CardID, messages: MessageID[]) => Promise<MessageID[]>
 
   createFile: (
     card: CardID,
     message: MessageID,
+    messageCreated: Date,
     blobId: BlobID,
     fileType: string,
     filename: string,
     size: number,
     creator: SocialID
   ) => Promise<void>
-  removeFile: (card: CardID, message: MessageID, blobId: BlobID, creator: SocialID) => Promise<void>
+  removeFile: (
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    blobId: BlobID,
+    creator: SocialID
+  ) => Promise<void>
 }

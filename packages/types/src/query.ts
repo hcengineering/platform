@@ -55,9 +55,9 @@ export interface FindMessagesGroupsParams extends FindParams {
   card: CardID
   blobId?: BlobID
   patches?: boolean
-  fromSec?: Partial<Record<ComparisonOperator, Date>> | Date
-  toSec?: Partial<Record<ComparisonOperator, Date>> | Date
-  orderBy?: 'fromSec' | 'toSec'
+  fromDate?: Partial<Record<ComparisonOperator, Date>> | Date
+  toDate?: Partial<Record<ComparisonOperator, Date>> | Date
+  orderBy?: 'fromDate' | 'toDate'
 }
 
 export interface FindNotificationContextParams extends FindParams {

@@ -46,7 +46,7 @@ export class NotificationsDb extends BaseDb {
 
     const sqlValues = collaborators
       .map((account, index) => {
-        const i = index * 3
+        const i = index * 5
         values.push(this.workspace, card, account, date ?? new Date(), cardType)
         return `($${i + 1}::uuid, $${i + 2}::varchar, $${i + 3}::uuid, $${i + 4}::timestamptz, $${i + 5}::varchar)`
       })
@@ -104,7 +104,7 @@ export class NotificationsDb extends BaseDb {
     }
     const sql = `INSERT INTO ${TableName.Notification} (message_id, context_id, created)
                      VALUES ($1::bigint, $2::int8, $3::timestamptz)
-                     RETURNING id`
+                     RETURNING id::text`
     const result = await this.execute(sql, [db.message_id, db.context_id, db.created], 'insert notification')
     return result[0].id as NotificationID
   }
@@ -131,7 +131,7 @@ export class NotificationsDb extends BaseDb {
     }
     const sql = `INSERT INTO ${TableName.NotificationContext} (workspace_id, card_id, account, last_view, last_update)
                      VALUES ($1::uuid, $2::varchar, $3::uuid, $4::timestamptz, $5::timestamptz)
-                     RETURNING id`
+                     RETURNING id::text`
     const result = await this.execute(
       sql,
       [db.workspace_id, db.card_id, db.account, db.last_view, db.last_update],
@@ -142,8 +142,8 @@ export class NotificationsDb extends BaseDb {
 
   async removeContext(context: ContextID, account: AccountID): Promise<void> {
     const sql = `DELETE
-                     FROM ${TableName.Notification}
-                     WHERE context = $1::int8 AND account = $2::uuid`
+                     FROM ${TableName.NotificationContext}
+                     WHERE id = $1::int8 AND account = $2::uuid`
     await this.execute(sql, [context, account], 'remove notification context')
   }
 
@@ -183,9 +183,9 @@ export class NotificationsDb extends BaseDb {
     let joinMessages = ''
     let buildObject = `
     JSONB_BUILD_OBJECT(
-      'id', n.id,
+      'id', n.id::text,
       'created', n.created,
-      'message_id', n.message_id
+      'message_id', n.message_id::text
     )`
 
     if (withMessages) {
@@ -197,13 +197,13 @@ export class NotificationsDb extends BaseDb {
       LEFT JOIN ${TableName.MessagesGroup} mg 
         ON nc.workspace_id = mg.workspace_id 
         AND nc.card_id = mg.card_id 
-        AND n.created BETWEEN mg.from_sec AND mg.to_sec`
+        AND n.created BETWEEN mg.from_date AND mg.to_date`
 
       buildObject = `
       JSONB_BUILD_OBJECT(
-        'id', n.id,
+        'id', n.id::text,
         'created', n.created,
-        'message_id', n.message_id,
+        'message_id', n.message_id::text,
         'message_type', m.type,
         'message_content', m.content,
         'message_data', m.data,
@@ -211,8 +211,8 @@ export class NotificationsDb extends BaseDb {
         'message_creator', m.creator,
         'message_created', m.created,
         'message_group_blob_id', mg.blob_id,
-        'message_group_from_sec', mg.from_sec,
-        'message_group_to_sec', mg.to_sec,
+        'message_group_from_date', mg.from_date,
+        'message_group_to_date', mg.to_date,
         'message_group_count', mg.count,
         'message_patches', (
           SELECT COALESCE(
@@ -270,7 +270,7 @@ export class NotificationsDb extends BaseDb {
     }
 
     const sql = `
-      SELECT nc.id,
+      SELECT nc.id::text,
              nc.card_id,
              nc.account,
              nc.last_view,
@@ -307,8 +307,8 @@ export class NotificationsDb extends BaseDb {
       m.data AS message_data,
       m.external_id AS message_external_id,
       mg.blob_id AS message_group_blob_id,
-      mg.from_sec AS message_group_from_sec,
-      mg.to_sec AS message_group_to_sec,
+      mg.from_date AS message_group_from_date,
+      mg.to_date AS message_group_to_date,
       mg.count AS message_group_count,
       (SELECT json_agg(
         jsonb_build_object(
@@ -330,7 +330,7 @@ export class NotificationsDb extends BaseDb {
       LEFT JOIN ${TableName.MessagesGroup} mg
         ON nc.workspace_id = mg.workspace_id
         AND nc.card_id = mg.card_id
-        AND n.created BETWEEN mg.from_sec AND mg.to_sec
+        AND n.created BETWEEN mg.from_date AND mg.to_date
     `
     }
 

@@ -79,14 +79,15 @@ export interface ActivityAttributeUpdate {
 export interface MessagesGroup {
   card: CardID
   blobId: BlobID
-  fromSec: Date
-  toSec: Date
+  fromDate: Date
+  toDate: Date
   count: number
   patches?: Patch[]
 }
 
 export interface Patch {
   message: MessageID
+  messageCreated: Date
   type: PatchType
   content: string
   creator: SocialID
@@ -113,6 +114,7 @@ export interface Reaction {
 export interface File {
   card: CardID
   message: MessageID
+  messageCreated: Date
   blobId: BlobID
   type: string
   filename: string
@@ -124,6 +126,7 @@ export interface File {
 export interface Thread {
   card: CardID
   message: MessageID
+  messageCreated: Date
   thread: CardID
   repliesCount: number
   lastReply: Date

@@ -1,7 +1,7 @@
 {
   "name": "@hcengineering/communication-cockroach",
   "version": "0.1.0",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
   "files": [
@@ -14,7 +14,8 @@
     "build:types": "tsc --project ./tsconfig.json --emitDeclarationOnly --declarationDir ./types",
     "build:node": "bun build src/index.ts --target node --format cjs --outfile dist/index.js",
     "lint": "eslint src/*.ts",
-    "format": "prettier --write src/**/*.ts"
+    "format": "prettier --write src/**/*.ts",
+    "clean": "rm -rf dist && rm -rf types && rm -rf .turbo"
   },
   "devDependencies": {
     "@types/bun": "^1.1.14"
@@ -24,7 +25,7 @@
     "@hcengineering/communication-sdk-types": "workspace:*",
     "@hcengineering/communication-types": "workspace:*",
     "postgres": "^3.4.4",
-    "uuid": "^11.0.3"
+    "uuid": "^11.1.0"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"

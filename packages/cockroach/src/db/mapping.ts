@@ -67,8 +67,8 @@ interface RawNotification extends NotificationDb {
   message_external_id?: string
   message_created?: Date
   message_group_blob_id?: BlobID
-  message_group_from_sec?: Date
-  message_group_to_sec?: Date
+  message_group_from_date?: Date
+  message_group_to_date?: Date
   message_group_count?: number
   message_patches?: {
     patch_type: PatchType
@@ -100,6 +100,7 @@ export function toMessage(raw: RawMessage): Message {
         ? {
             card: raw.card_id,
             message: String(raw.id) as MessageID,
+            messageCreated: new Date(raw.created),
             thread: raw.thread_id,
             repliesCount: raw.replies_count ?? 0,
             lastReply: raw.last_reply ?? new Date()
@@ -123,6 +124,7 @@ export function toFile(raw: FileDb): File {
   return {
     card: raw.card_id,
     message: String(raw.message_id) as MessageID,
+    messageCreated: new Date(raw.message_created),
     blobId: raw.blob_id,
     type: raw.type,
     filename: raw.filename,
@@ -136,9 +138,9 @@ export function toMessagesGroup(raw: MessagesGroupDb): MessagesGroup {
   return {
     card: raw.card_id,
     blobId: raw.blob_id,
-    fromSec: raw.from_sec,
-    toSec: raw.to_sec,
-    count: raw.count,
+    fromDate: raw.from_date,
+    toDate: raw.to_date,
+    count: Number(raw.count),
     patches: raw.patches == null ? [] : raw.patches.filter((it: any) => it.message_id != null).map(toPatch)
   }
 }
@@ -146,6 +148,7 @@ export function toMessagesGroup(raw: MessagesGroupDb): MessagesGroup {
 export function toPatch(raw: PatchDb): Patch {
   return {
     type: raw.type,
+    messageCreated: new Date(raw.message_created),
     message: String(raw.message_id) as MessageID,
     content: raw.content,
     creator: raw.creator,
@@ -157,6 +160,7 @@ export function toThread(raw: ThreadDb): Thread {
   return {
     card: raw.card_id,
     message: String(raw.message_id) as MessageID,
+    messageCreated: new Date(raw.message_created),
     thread: raw.thread_id,
     repliesCount: raw.replies_count,
     lastReply: raw.last_reply
@@ -223,12 +227,12 @@ function toNotificationRaw(
 
   let messageGroup: MessagesGroup | undefined
 
-  if (raw.message_group_blob_id != null && raw.message_group_from_sec != null && raw.message_group_to_sec != null) {
+  if (raw.message_group_blob_id != null && raw.message_group_from_date != null && raw.message_group_to_date != null) {
     messageGroup = {
       card,
       blobId: raw.message_group_blob_id,
-      fromSec: new Date(raw.message_group_from_sec),
-      toSec: new Date(raw.message_group_to_sec),
+      fromDate: new Date(raw.message_group_from_date),
+      toDate: new Date(raw.message_group_to_date),
       count: raw.message_group_count ?? 0
     }
   }

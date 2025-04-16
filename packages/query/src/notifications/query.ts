@@ -20,6 +20,7 @@ import {
   type WorkspaceID
 } from '@hcengineering/communication-types'
 import {
+  type FindClient,
   type NotificationContextRemovedEvent,
   type NotificationContextUpdatedEvent,
   type NotificationCreatedEvent,
@@ -30,7 +31,7 @@ import {
   type ResponseEvent
 } from '@hcengineering/communication-sdk-types'
 
-import { defaultQueryParams, type PagedQuery, type QueryId, type QueryClient } from '../types'
+import { defaultQueryParams, type PagedQuery, type QueryId } from '../types'
 import { QueryResult } from '../result'
 import { WindowImpl } from '../window'
 import { loadMessageFromGroup } from '../utils'
@@ -39,7 +40,7 @@ export class NotificationQuery implements PagedQuery<Notification, FindNotificat
   private result: QueryResult<Notification> | Promise<QueryResult<Notification>>
 
   constructor(
-    private readonly client: QueryClient,
+    private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string,
     public readonly id: QueryId,

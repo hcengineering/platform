@@ -52,6 +52,7 @@ async function onMessagesRemoved(ctx: TriggerCtx, event: MessagesRemovedEvent): 
       patchType: PatchType.removeReply,
       card: thread.card,
       message: thread.message,
+      messageCreated: thread.messageCreated,
       content: thread.thread,
       creator: socialId
     }
@@ -70,7 +71,7 @@ async function onFileCreated(ctx: TriggerCtx, event: FileCreatedEvent): Promise<
   if (message !== undefined) return []
 
   const { file } = event
-  const patchContent: Omit<File, 'card' | 'message' | 'created' | 'creator'> = {
+  const patchContent: Omit<File, 'card' | 'message' | 'created' | 'creator' | 'messageCreated'> = {
     blobId: file.blobId,
     type: file.type,
     filename: file.filename,
@@ -83,6 +84,7 @@ async function onFileCreated(ctx: TriggerCtx, event: FileCreatedEvent): Promise<
       patchType: PatchType.addFile,
       card: event.card,
       message: file.message,
+      messageCreated: file.messageCreated,
       content: JSON.stringify(patchContent),
       creator: file.creator
     }
@@ -100,6 +102,7 @@ async function onFileRemoved(ctx: TriggerCtx, event: FileRemovedEvent): Promise<
       patchType: PatchType.removeFile,
       card: event.card,
       message: event.message,
+      messageCreated: event.messageCreated,
       content: JSON.stringify({ blobId }),
       creator: event.creator
     }
@@ -164,6 +167,7 @@ async function addThreadReply(ctx: TriggerCtx, event: MessageCreatedEvent): Prom
       patchType: PatchType.addReply,
       card: thread.card,
       message: thread.message,
+      messageCreated: thread.messageCreated,
       content: thread.thread,
       creator: message.creator
     },

@@ -32,6 +32,7 @@ import {
   type CreateFileEvent,
   type CreateLabelEvent,
   type CreateMessageEvent,
+  type CreateMessageResult,
   type CreateMessagesGroupEvent,
   type CreateNotificationContextEvent,
   type CreateNotificationEvent,
@@ -211,7 +212,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async createMessage(event: CreateMessageEvent): Promise<Result> {
-    const created = new Date()
+    const created = event.created ?? new Date()
     const id = await this.db.createMessage(
       event.card,
       event.messageType,
@@ -239,18 +240,31 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       cardType: event.cardType,
       message
     }
+    const result: CreateMessageResult = {
+      id,
+      created
+    }
     return {
       responseEvent,
-      result: { id }
+      result
     }
   }
 
   private async createPatch(event: CreatePatchEvent): Promise<Result> {
     const created = new Date()
-    await this.db.createPatch(event.card, event.message, event.patchType, event.content, event.creator, created)
+    await this.db.createPatch(
+      event.card,
+      event.message,
+      event.messageCreated,
+      event.patchType,
+      event.content,
+      event.creator,
+      created
+    )
 
     const patch: Patch = {
       type: event.patchType,
+      messageCreated: event.messageCreated,
       message: event.message,
       content: event.content,
       creator: event.creator,
@@ -290,7 +304,14 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
 
   private async createReaction(event: CreateReactionEvent): Promise<Result> {
     const created = new Date()
-    await this.db.createReaction(event.card, event.message, event.reaction, event.creator, created)
+    await this.db.createReaction(
+      event.card,
+      event.message,
+      event.messageCreated,
+      event.reaction,
+      event.creator,
+      created
+    )
 
     const reaction: Reaction = {
       message: event.message,
@@ -310,7 +331,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   private async removeReaction(event: RemoveReactionEvent): Promise<Result> {
-    await this.db.removeReaction(event.card, event.message, event.reaction, event.creator)
+    await this.db.removeReaction(event.card, event.message, event.messageCreated, event.reaction, event.creator)
     const responseEvent: ReactionRemovedEvent = {
       _id: event._id,
       type: MessageResponseEventType.ReactionRemoved,
@@ -329,6 +350,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
     await this.db.createFile(
       event.card,
       event.message,
+      event.messageCreated,
       event.blobId,
       event.fileType,
       event.filename,
@@ -343,6 +365,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       file: {
         card: event.card,
         message: event.message,
+        messageCreated: event.messageCreated,
         blobId: event.blobId,
         type: event.fileType,
         filename: event.filename,
@@ -363,6 +386,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       type: MessageResponseEventType.FileRemoved,
       card: event.card,
       message: event.message,
+      messageCreated: event.messageCreated,
       blobId: event.blobId,
       creator: event.creator
     }
@@ -454,8 +478,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
   }
 
   async createMessagesGroup(event: CreateMessagesGroupEvent): Promise<Result> {
-    const { fromSec, toSec, count, card, blobId } = event.group
-    await this.db.createMessagesGroup(card, blobId, fromSec, toSec, count)
+    const { fromDate, toDate, count, card, blobId } = event.group
+    await this.db.createMessagesGroup(card, blobId, fromDate, toDate, count)
 
     const responseEvent: MessagesGroupCreatedEvent = {
       _id: event._id,
@@ -463,8 +487,8 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
       group: {
         card,
         blobId,
-        fromSec,
-        toSec,
+        fromDate,
+        toDate,
         count
       }
     }
@@ -481,7 +505,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
 
   private async createThread(event: CreateThreadEvent): Promise<Result> {
     const date = new Date()
-    await this.db.createThread(event.card, event.message, event.thread, date)
+    await this.db.createThread(event.card, event.message, event.messageCreated, event.thread, date)
     const responseEvent: ThreadCreatedEvent = {
       _id: event._id,
       type: MessageResponseEventType.ThreadCreated,
@@ -489,6 +513,7 @@ export class DatabaseMiddleware extends BaseMiddleware implements Middleware {
         card: event.card,
         thread: event.thread,
         message: event.message,
+        messageCreated: event.messageCreated,
         repliesCount: 0,
         lastReply: date
       }

@@ -45,18 +45,27 @@ import {
   type CreateMessageResult,
   MessageResponseEventType,
   MessageRequestEventType,
-  type PagedQueryCallback
+  type PagedQueryCallback,
+  type FindClient
 } from '@hcengineering/communication-sdk-types'
-import { applyPatch, applyPatches, generateMessageId, parseMessageId } from '@hcengineering/communication-shared'
+import { applyPatch, applyPatches } from '@hcengineering/communication-shared'
 import { loadGroupFile } from '@hcengineering/communication-yaml'
+import { v4 as uuid } from 'uuid'
 
 import { QueryResult } from '../result'
-import { defaultQueryParams, Direction, type PagedQuery, type QueryId, type QueryClient } from '../types'
+import {
+  defaultQueryParams,
+  Direction,
+  type PagedQuery,
+  type QueryId,
+  type MessageQueryParams,
+  type OneMessageQueryParams
+} from '../types'
 import { WindowImpl } from '../window'
 
 const GROUPS_LIMIT = 20
 
-export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
+export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
   private result: Promise<QueryResult<Message>> | QueryResult<Message>
 
   private messagesFromFiles: Message[] = []
@@ -81,15 +90,15 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
   private tmpMessages: Map<string, MessageID> = new Map()
 
   constructor(
-    private readonly client: QueryClient,
+    private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string,
     public readonly id: QueryId,
-    public readonly params: FindMessagesParams,
+    public readonly params: MessageQueryParams,
     private callback?: PagedQueryCallback<Message>,
     initialResult?: QueryResult<Message>
   ) {
-    const baseLimit = params.id != null ? 1 : (this.params.limit ?? defaultQueryParams.limit)
+    const baseLimit = 'id' in params && params.id != null ? 1 : (this.params.limit ?? defaultQueryParams.limit)
     this.limit = baseLimit + 1
     this.params = {
       ...params,
@@ -176,7 +185,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
     const eventId = event._id
     if (eventId == null) return
 
-    const tmpId = generateMessageId()
+    const tmpId = uuid() as MessageID
     let resultId: MessageID | undefined
     const tmpMessage: Message = {
       id: tmpId,
@@ -287,9 +296,9 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
   }
 
   private isInitLoadingForward(): boolean {
-    const { order, id } = this.params
+    const { order } = this.params
 
-    if (id != null) {
+    if (this.isOneMessageQuery(this.params)) {
       return true
     }
 
@@ -432,7 +441,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
           ? currentGroups
           : await this.findGroups(
               direction,
-              direction === Direction.Forward ? this.lastGroup?.fromSec : this.firstGroup?.fromSec
+              direction === Direction.Forward ? this.lastGroup?.fromDate : this.firstGroup?.fromDate
             )
 
       if (currentGroups.length === 0) {
@@ -447,7 +456,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
         } else {
           this.prev.hasGroups = groups.length >= GROUPS_LIMIT
         }
-        if (this.params.id != null) {
+        if (this.isOneMessageQuery(this.params)) {
           this.next.hasGroups = false
           this.prev.hasGroups = false
         }
@@ -495,8 +504,9 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
 
   private matchFileMessages(file: ParsedFile, created?: Date): Message[] {
     let result: Message[] = file.messages
-    if (this.params.id != null) {
-      const msg = file.messages.find((it) => it.id === this.params.id)
+    const params = this.params
+    if (this.isOneMessageQuery(params)) {
+      const msg = file.messages.find((it) => it.id === params.id)
       result = msg != null ? [msg] : []
     }
 
@@ -530,24 +540,22 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
     }
   }
 
-  private async findGroupByMessage(id: MessageID): Promise<MessagesGroup | undefined> {
-    const date = parseMessageId(id)
-
+  private async findGroupByDate(created: Date): Promise<MessagesGroup | undefined> {
     const groups = await this.client.findMessagesGroups({
       card: this.params.card,
-      fromSec: { lessOrEqual: date },
-      toSec: { greaterOrEqual: date },
+      fromDate: { lessOrEqual: created },
+      toDate: { greaterOrEqual: created },
       limit: 1,
       order: SortingOrder.Ascending,
-      orderBy: 'fromSec'
+      orderBy: 'fromDate'
     })
 
     return groups[0]
   }
 
   private async findGroups(direction: Direction, fromDate?: Date): Promise<MessagesGroup[]> {
-    if (this.params.id != null) {
-      const group = await this.findGroupByMessage(this.params.id)
+    if (this.isOneMessageQuery(this.params)) {
+      const group = await this.findGroupByDate(this.params.created)
       return group !== undefined ? [group] : []
     }
 
@@ -556,7 +564,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
         card: this.params.card,
         limit: GROUPS_LIMIT,
         order: direction === Direction.Forward ? SortingOrder.Ascending : SortingOrder.Descending,
-        orderBy: 'fromSec'
+        orderBy: 'fromDate'
       })
     }
 
@@ -564,8 +572,8 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
       card: this.params.card,
       limit: GROUPS_LIMIT,
       order: direction === Direction.Forward ? SortingOrder.Ascending : SortingOrder.Descending,
-      orderBy: 'fromSec',
-      fromSec:
+      orderBy: 'fromDate',
+      fromDate:
         direction === Direction.Forward
           ? {
               greater: fromDate
@@ -580,6 +588,10 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
     return await this.client.findMessages(params, this.id)
   }
 
+  private isOneMessageQuery(params: MessageQueryParams): params is OneMessageQueryParams {
+    return 'id' in this.params && this.params.id != null
+  }
+
   private async notify(): Promise<void> {
     if (this.callback == null) return
     if (this.result instanceof Promise) this.result = await this.result
@@ -588,7 +600,7 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
   }
 
   private match(message: Message): boolean {
-    if (this.params.id != null && this.params.id !== message.id) {
+    if (this.isOneMessageQuery(this.params) && this.params.id !== message.id) {
       return false
     }
     if (this.params.card !== message.card) {
@@ -655,8 +667,8 @@ export class MessagesQuery implements PagedQuery<Message, FindMessagesParams> {
     if (this.result instanceof Promise) this.result = await this.result
 
     const { patch } = event
-    const created = parseMessageId(patch.message)
-    const groups = this.groupsBuffer.filter((it) => it.fromSec <= created && it.toSec >= created)
+    const { messageCreated } = patch
+    const groups = this.groupsBuffer.filter((it) => it.fromDate <= messageCreated && it.toDate >= messageCreated)
 
     for (const group of groups) {
       if (group.patches != null) {

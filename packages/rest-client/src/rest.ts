@@ -101,8 +101,9 @@ class RestClientImpl implements RestClient {
     content: RichText,
     creator: SocialID,
     type: MessageType,
-    data?: MessageData
-  ): Promise<MessageID> {
+    data?: MessageData,
+    created?: Date
+  ): Promise<CreateMessageResult> {
     const result = await this.event({
       type: MessageRequestEventType.CreateMessage,
       messageType: type,
@@ -110,15 +111,23 @@ class RestClientImpl implements RestClient {
       cardType,
       content,
       creator,
-      data
+      data,
+      created
     })
-    return (result as CreateMessageResult).id
+    return result as CreateMessageResult
   }
 
-  async updateMessage(card: CardID, message: MessageID, content: RichText, creator: SocialID): Promise<void> {
+  async updateMessage(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    content: RichText,
+    creator: SocialID
+  ): Promise<void> {
     await this.event({
       type: MessageRequestEventType.CreatePatch,
       patchType: PatchType.update,
+      messageCreated,
       card,
       message,
       content,
@@ -143,6 +152,7 @@ class RestClientImpl implements RestClient {
   async createFile(
     card: CardID,
     message: MessageID,
+    messageCreated: Date,
     blobId: BlobID,
     fileType: string,
     filename: string,
@@ -153,6 +163,7 @@ class RestClientImpl implements RestClient {
       type: MessageRequestEventType.CreateFile,
       card,
       message,
+      messageCreated,
       blobId,
       fileType,
       filename,
@@ -161,11 +172,18 @@ class RestClientImpl implements RestClient {
     })
   }
 
-  async removeFile(card: CardID, message: MessageID, blobId: BlobID, creator: SocialID): Promise<void> {
+  async removeFile(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    blobId: BlobID,
+    creator: SocialID
+  ): Promise<void> {
     await this.event({
       type: MessageRequestEventType.RemoveFile,
       card,
       message,
+      messageCreated,
       blobId,
       creator
     })

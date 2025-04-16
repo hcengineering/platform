@@ -31,4 +31,15 @@ export class ApiError extends Error {
   static forbidden(message: string): ApiError {
     return new ApiError(403, `Forbidden: ${message}`)
   }
+
+  toJSON() {
+    return {
+      code: this.code,
+      message: this.message
+    }
+  }
+
+  toString(): string {
+    return JSON.stringify(this.toJSON())
+  }
 }

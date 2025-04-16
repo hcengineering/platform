@@ -57,21 +57,36 @@ export interface DbAdapter {
   createPatch(
     card: CardID,
     message: MessageID,
+    messageCreated: Date,
     type: PatchType,
     content: RichText,
     creator: SocialID,
     created: Date
   ): Promise<void>
 
-  createMessagesGroup(card: CardID, blobId: BlobID, fromSec: Date, toSec: Date, count: number): Promise<void>
+  createMessagesGroup(card: CardID, blobId: BlobID, fromDate: Date, toDate: Date, count: number): Promise<void>
   removeMessagesGroup(card: CardID, blobId: BlobID): Promise<void>
 
-  createReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID, created: Date): Promise<void>
-  removeReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void>
+  createReaction(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    reaction: string,
+    creator: SocialID,
+    created: Date
+  ): Promise<void>
+  removeReaction(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    reaction: string,
+    creator: SocialID
+  ): Promise<void>
 
   createFile(
     card: CardID,
     message: MessageID,
+    messageCreated: Date,
     blobId: BlobID,
     fileType: string,
     filename: string,
@@ -81,7 +96,7 @@ export interface DbAdapter {
   ): Promise<void>
   removeFile(card: CardID, message: MessageID, blobId: BlobID): Promise<void>
 
-  createThread(card: CardID, message: MessageID, thread: CardID, created: Date): Promise<void>
+  createThread(card: CardID, message: MessageID, messageCreated: Date, thread: CardID, created: Date): Promise<void>
   updateThread(thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void>
 
   findMessages(params: FindMessagesParams): Promise<Message[]>

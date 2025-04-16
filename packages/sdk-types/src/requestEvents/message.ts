@@ -69,6 +69,7 @@ export interface CreateMessageEvent extends BaseRequestEvent {
   creator: SocialID
   data?: MessageData
   externalId?: string
+  created?: Date
 }
 
 export interface RemoveMessagesEvent extends BaseRequestEvent {
@@ -82,6 +83,7 @@ export interface CreatePatchEvent extends BaseRequestEvent {
   patchType: PatchType
   card: CardID
   message: MessageID
+  messageCreated: Date
   content: RichText
   creator: SocialID
 }
@@ -90,6 +92,7 @@ export interface CreateReactionEvent extends BaseRequestEvent {
   type: MessageRequestEventType.CreateReaction
   card: CardID
   message: MessageID
+  messageCreated: Date
   reaction: string
   creator: SocialID
 }
@@ -98,6 +101,7 @@ export interface RemoveReactionEvent extends BaseRequestEvent {
   type: MessageRequestEventType.RemoveReaction
   card: CardID
   message: MessageID
+  messageCreated: Date
   reaction: string
   creator: SocialID
 }
@@ -106,6 +110,7 @@ export interface CreateFileEvent extends BaseRequestEvent {
   type: MessageRequestEventType.CreateFile
   card: CardID
   message: MessageID
+  messageCreated: Date
   blobId: BlobID
   size: number
   fileType: string
@@ -117,6 +122,7 @@ export interface RemoveFileEvent extends BaseRequestEvent {
   type: MessageRequestEventType.RemoveFile
   card: CardID
   message: MessageID
+  messageCreated: Date
   blobId: BlobID
   creator: SocialID
 }
@@ -125,6 +131,7 @@ export interface CreateThreadEvent extends BaseRequestEvent {
   type: MessageRequestEventType.CreateThread
   card: CardID
   message: MessageID
+  messageCreated: Date
   thread: CardID
 }
 
@@ -150,6 +157,7 @@ export type MessageEventResult = CreateMessageResult | RemoveMessagesResult
 
 export interface CreateMessageResult {
   id: MessageID
+  created: Date
 }
 
 export interface RemoveMessagesResult {

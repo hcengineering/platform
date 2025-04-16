@@ -39,7 +39,7 @@
         "@hcengineering/communication-shared": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
         "postgres": "^3.4.4",
-        "uuid": "^11.0.3",
+        "uuid": "^11.1.0",
       },
       "devDependencies": {
         "@types/bun": "^1.1.14",
@@ -57,6 +57,7 @@
         "@hcengineering/communication-types": "workspace:*",
         "@hcengineering/communication-yaml": "workspace:*",
         "fast-equals": "^5.0.1",
+        "uuid": "^11.1.0",
       },
       "devDependencies": {
         "@types/bun": "^1.1.14",
@@ -125,6 +126,7 @@
       "name": "@hcengineering/communication-shared",
       "version": "0.1.0",
       "dependencies": {
+        "@hcengineering/communication-sdk-types": "workspace:*",
         "@hcengineering/communication-types": "workspace:*",
       },
       "devDependencies": {

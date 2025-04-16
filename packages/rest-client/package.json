@@ -1,7 +1,7 @@
 {
   "name": "@hcengineering/communication-rest-client",
   "version": "0.1.0",
-  "main": "src/index.ts",
+  "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
   "files": [
@@ -15,7 +15,8 @@
     "build:browser": "bun build src/index.ts --outdir dist --target browser",
     "build:node": "bun build src/index.ts --target node --format cjs --outfile dist/index.cjs",
     "lint": "eslint src/*.ts",
-    "format": "prettier --write src/**/*.ts "
+    "format": "prettier --write src/**/*.ts ",
+    "clean": "rm -rf dist && rm -rf types && rm -rf .turbo"
   },
   "devDependencies": {
     "@types/bun": "^1.1.14",

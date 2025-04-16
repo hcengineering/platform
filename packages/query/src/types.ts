@@ -16,17 +16,10 @@
 import { type ResponseEvent } from '@hcengineering/communication-sdk-types'
 import {
   SortingOrder,
-  type FindMessagesGroupsParams,
-  type FindMessagesParams,
-  type FindNotificationContextParams,
-  type FindNotificationsParams,
-  type Message,
-  type MessagesGroup,
-  type NotificationContext,
   type Window,
-  type Notification,
-  type Label,
-  type FindLabelsParams
+  type ComparisonOperator,
+  type CardID,
+  type MessageID
 } from '@hcengineering/communication-types'
 import type { EventResult, RequestEvent } from '@hcengineering/communication-sdk-types'
 
@@ -74,20 +67,21 @@ export interface Query<R = any, P = FindParams> extends BaseQuery<R, P> {
 
 export type AnyQuery = Query | PagedQuery
 
-export interface QueryClient {
-  onEvent(event: ResponseEvent): void
+export interface DefaultMessageQueryParams {
+  card: CardID
 
-  onRequest(event: RequestEvent, promise: Promise<EventResult>): void
+  limit?: number
+  order?: SortingOrder
 
-  findMessages(params: FindMessagesParams, queryId?: number): Promise<Message[]>
-
-  findMessagesGroups(params: FindMessagesGroupsParams): Promise<MessagesGroup[]>
-
-  findNotificationContexts(params: FindNotificationContextParams, queryId?: number): Promise<NotificationContext[]>
-
-  findNotifications(params: FindNotificationsParams, queryId?: number): Promise<Notification[]>
-
-  findLabels(params: FindLabelsParams, queryId?: number): Promise<Label[]>
-
-  unsubscribeQuery(id: number): Promise<void>
+  files?: boolean
+  reactions?: boolean
+  replies?: boolean
+  created?: Partial<Record<ComparisonOperator, Date>> | Date
 }
+
+export interface OneMessageQueryParams extends DefaultMessageQueryParams {
+  id: MessageID
+  created: Date
+}
+
+export type MessageQueryParams = OneMessageQueryParams | DefaultMessageQueryParams

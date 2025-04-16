@@ -48,6 +48,7 @@ export class ValidateMiddleware extends BaseMiddleware implements Middleware {
     const validationResult = schema.safeParse(data)
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map((err) => err.message)
+      this.context.ctx.error(validationResult.error.message, data)
       throw ApiError.badRequest(errors.join(', '))
     }
   }
@@ -171,9 +172,10 @@ const PatchType = z.string()
 const RichText = z.string()
 const SocialID = z.string()
 const SortingOrder = z.number()
+const Date = z.union([z.date(), z.string()])
 
 // Find params
-const dateOrRecordSchema = z.union([z.date(), z.record(z.date())])
+const dateOrRecordSchema = z.union([z.date(), z.string(), z.record(z.string())])
 
 const FindParamsSchema = z
   .object({
@@ -196,9 +198,9 @@ const FindMessagesGroupsParamsSchema = FindParamsSchema.extend({
   card: CardID,
   blobId: BlobID.optional(),
   patches: z.boolean().optional(),
-  fromSec: dateOrRecordSchema.optional(),
-  toSec: dateOrRecordSchema.optional(),
-  orderBy: z.enum(['fromSec', 'toSec']).optional()
+  fromDate: dateOrRecordSchema.optional(),
+  toDate: dateOrRecordSchema.optional(),
+  orderBy: z.enum(['fromDate', 'toDate']).optional()
 }).strict()
 
 const FindNotificationContextParamsSchema = FindParamsSchema.extend({
@@ -264,7 +266,8 @@ const CreateMessageEventSchema = BaseRequestEventSchema.extend({
   content: RichText,
   creator: SocialID,
   data: MessageData.optional(),
-  externalId: z.string().optional()
+  externalId: z.string().optional(),
+  created: Date.optional()
 }).strict()
 
 const RemoveMessagesEventSchema = BaseRequestEventSchema.extend({
@@ -278,6 +281,7 @@ const CreatePatchEventSchema = BaseRequestEventSchema.extend({
   patchType: PatchType,
   card: CardID,
   message: MessageID,
+  messageCreated: Date,
   content: RichText,
   creator: SocialID
 }).strict()
@@ -286,6 +290,7 @@ const CreateReactionEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.CreateReaction),
   card: CardID,
   message: MessageID,
+  messageCreated: Date,
   reaction: z.string(),
   creator: SocialID
 }).strict()
@@ -294,6 +299,7 @@ const RemoveReactionEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.RemoveReaction),
   card: CardID,
   message: MessageID,
+  messageCreated: Date,
   reaction: z.string(),
   creator: SocialID
 }).strict()
@@ -302,6 +308,7 @@ const CreateFileEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.CreateFile),
   card: CardID,
   message: MessageID,
+  messageCreated: Date,
   blobId: BlobID,
   size: z.number(),
   fileType: z.string(),
@@ -313,7 +320,7 @@ const RemoveFileEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.RemoveFile),
   card: CardID,
   message: MessageID,
-  blobId: BlobID,
+  messageCreated: Date,
   creator: SocialID
 }).strict()
 
@@ -321,6 +328,7 @@ const CreateThreadEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.CreateThread),
   card: CardID,
   message: MessageID,
+  messageCreated: Date,
   thread: CardID
 }).strict()
 
@@ -328,7 +336,7 @@ const UpdateThreadEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(MessageRequestEventType.UpdateThread),
   thread: CardID,
   replies: z.enum(['increment', 'decrement']),
-  lastReply: z.date().optional()
+  lastReply: Date.optional()
 }).strict()
 
 const CreateMessagesGroupEventSchema = BaseRequestEventSchema.extend({
@@ -348,7 +356,7 @@ const CreateNotificationEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.CreateNotification),
   context: ContextID,
   message: MessageID,
-  created: z.date(),
+  created: Date,
   account: AccountID
 }).strict()
 
@@ -356,15 +364,15 @@ const RemoveNotificationsEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.RemoveNotifications),
   context: ContextID,
   account: AccountID,
-  untilDate: z.date()
+  untilDate: Date
 }).strict()
 
 const CreateNotificationContextEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.CreateNotificationContext),
   card: CardID,
   account: AccountID,
-  lastView: z.date(),
-  lastUpdate: z.date()
+  lastView: Date,
+  lastUpdate: Date
 }).strict()
 
 const RemoveNotificationContextEventSchema = BaseRequestEventSchema.extend({
@@ -377,8 +385,8 @@ const UpdateNotificationContextEventSchema = BaseRequestEventSchema.extend({
   type: z.literal(NotificationRequestEventType.UpdateNotificationContext),
   context: ContextID,
   account: AccountID,
-  lastView: z.date().optional(),
-  lastUpdate: z.date().optional()
+  lastView: Date.optional(),
+  lastUpdate: Date.optional()
 }).strict()
 
 const AddCollaboratorsEventSchema = BaseRequestEventSchema.extend({
@@ -386,7 +394,7 @@ const AddCollaboratorsEventSchema = BaseRequestEventSchema.extend({
   card: CardID,
   cardType: CardType,
   collaborators: z.array(AccountID).nonempty(),
-  date: z.date().optional()
+  date: Date.optional()
 }).strict()
 
 const RemoveCollaboratorsEventSchema = BaseRequestEventSchema.extend({

@@ -102,6 +102,7 @@ export interface FileRemovedEvent extends BaseResponseEvent {
   type: MessageResponseEventType.FileRemoved
   card: CardID
   message: MessageID
+  messageCreated: Date
   blobId: BlobID
   creator: SocialID
 }

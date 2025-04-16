@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import { LiveQueries, type QueryClient } from '@hcengineering/communication-query'
+import { LiveQueries } from '@hcengineering/communication-query'
 import type { WorkspaceID } from '@hcengineering/communication-types'
+import type { FindClient } from '@hcengineering/communication-sdk-types'
 
 import { LabelsQuery, MessagesQuery, NotificationContextsQuery, NotificationsQuery } from './query'
 
@@ -38,7 +39,7 @@ export function createLabelsQuery(): LabelsQuery {
 }
 
 export function initLiveQueries(
-  client: QueryClient,
+  client: FindClient,
   workspace: WorkspaceID,
   filesUrl: string,
   destroyFn?: (fn: () => void) => void

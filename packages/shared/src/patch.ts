@@ -88,6 +88,7 @@ function addReply(message: Message, thread: CardID, created: Date): Message {
       thread: {
         card: message.card,
         message: message.id,
+        messageCreated: message.created,
         thread,
         repliesCount: 1,
         lastReply: created
@@ -108,7 +109,14 @@ function addReply(message: Message, thread: CardID, created: Date): Message {
 }
 
 function addFile(message: Message, file: PatchFile, created: Date, creator: SocialID): Message {
-  message.files.push({ ...file, card: message.card, message: message.id, created, creator })
+  message.files.push({
+    ...file,
+    card: message.card,
+    message: message.id,
+    created,
+    creator,
+    messageCreated: message.created
+  })
   return message
 }
 

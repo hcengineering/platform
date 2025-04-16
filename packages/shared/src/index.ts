@@ -13,6 +13,5 @@
 // limitations under the License.
 //
 
-export * from './message'
 export * from './retry'
 export * from './patch'

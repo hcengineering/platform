@@ -1,7 +1,7 @@
 {
   "name": "@hcengineering/communication-query",
   "version": "0.1.0",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "./types/index.d.ts",
   "files": [
@@ -14,7 +14,8 @@
     "build:types": "tsc --project ./tsconfig.json --emitDeclarationOnly --declarationDir ./types",
     "build:browser": "bun build src/index.ts --outdir dist --target browser",
     "lint": "eslint src/*.ts",
-    "format": "prettier --write src/**/*.ts "
+    "format": "prettier --write src/**/*.ts ",
+    "clean": "rm -rf dist && rm -rf types && rm -rf .turbo"
   },
   "devDependencies": {
     "@types/bun": "^1.1.14",
@@ -25,7 +26,8 @@
     "@hcengineering/communication-shared": "workspace:*",
     "@hcengineering/communication-types": "workspace:*",
     "@hcengineering/communication-yaml": "workspace:*",
-    "fast-equals": "^5.0.1"
+    "fast-equals": "^5.0.1",
+    "uuid": "^11.1.0"
   },
   "peerDependencies": {
     "typescript": "^5.6.3"

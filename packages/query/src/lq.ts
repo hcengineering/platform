@@ -30,10 +30,11 @@ import type {
   QueryCallback,
   RequestEvent,
   EventResult,
-  PagedQueryCallback
+  PagedQueryCallback,
+  FindClient
 } from '@hcengineering/communication-sdk-types'
 
-import type { FindParams, QueryId, QueryClient, AnyQuery } from './types'
+import type { FindParams, QueryId, AnyQuery } from './types'
 import { MessagesQuery } from './messages/query'
 import { NotificationQuery } from './notifications/query'
 import { NotificationContextsQuery } from './notification-contexts/query'
@@ -51,7 +52,7 @@ export class LiveQueries {
   private counter: number = 0
 
   constructor(
-    private readonly client: QueryClient,
+    private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string
   ) {

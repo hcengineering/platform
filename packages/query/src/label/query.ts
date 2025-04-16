@@ -16,6 +16,7 @@
 import type { FindLabelsParams, Label, WorkspaceID } from '@hcengineering/communication-types'
 import {
   type EventResult,
+  type FindClient,
   type LabelCreatedEvent,
   type LabelRemovedEvent,
   LabelResponseEventType,
@@ -25,7 +26,7 @@ import {
 } from '@hcengineering/communication-sdk-types'
 
 import { QueryResult } from '../result'
-import { type Query, type QueryClient, type QueryId } from '../types'
+import { type Query, type QueryId } from '../types'
 
 function getId(label: Label): string {
   return `${label.label}:${label.card}:${label.account}`
@@ -35,7 +36,7 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
   private result: Promise<QueryResult<Label>> | QueryResult<Label>
 
   constructor(
-    private readonly client: QueryClient,
+    private readonly client: FindClient,
     private readonly workspace: WorkspaceID,
     private readonly filesUrl: string,
     public readonly id: QueryId,

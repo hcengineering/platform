@@ -58,8 +58,8 @@ export interface MessagesGroupDb {
   workspace_id: WorkspaceID
   card_id: CardID
   blob_id: BlobID
-  from_sec: Date
-  to_sec: Date
+  from_date: Date
+  to_date: Date
   count: number
   patches?: PatchDb[]
 }
@@ -72,7 +72,7 @@ export interface PatchDb {
   content: RichText
   creator: SocialID
   created: Date
-  message_created_sec: Date
+  message_created: Date
 }
 
 export interface ReactionDb {
@@ -94,13 +94,14 @@ export interface FileDb {
   type: string
   creator: SocialID
   created: Date
-  message_created_sec: Date
+  message_created: Date
 }
 
 export interface ThreadDb {
   workspace_id: WorkspaceID
   card_id: CardID
   message_id: MessageID
+  message_created: Date
   thread_id: CardID
   replies_count: number
   last_reply: Date

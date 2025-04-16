@@ -14,4 +14,3 @@
 //
 
 export * from './lq'
-export type { QueryClient } from './types'

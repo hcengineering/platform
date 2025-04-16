@@ -42,6 +42,7 @@ import { DatabaseMiddleware } from './middleware/db'
 import { BroadcastMiddleware } from './middleware/broadcast'
 import { createTriggersDb, TriggersMiddleware } from './middleware/triggers'
 import { ValidateMiddleware } from './middleware/validate'
+import { DateMiddleware } from './middleware/date'
 
 export async function buildMiddlewares(
   ctx: MeasureContext,
@@ -53,6 +54,7 @@ export async function buildMiddlewares(
   const createFns: MiddlewareCreateFn[] = [
     async (context, next) => new ValidateMiddleware(context, next),
     async (context, next) => new PermissionsMiddleware(context, next),
+    async (context, next) => new DateMiddleware(context, next),
     async (context, next) => new BroadcastMiddleware(broadcast, context, next),
     async (context, next) => new DatabaseMiddleware(db, context, next),
     async (context, next) => new TriggersMiddleware(createTriggersDb(db), context, next)

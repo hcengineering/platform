@@ -89,12 +89,13 @@ export class CockroachAdapter implements DbAdapter {
   async createPatch(
     card: CardID,
     message: MessageID,
+    messageCreated: Date,
     type: PatchType,
     content: RichText,
     creator: SocialID,
     created: Date
   ): Promise<void> {
-    await this.message.createPatch(card, message, type, content, creator, created)
+    await this.message.createPatch(card, message, messageCreated, type, content, creator, created)
   }
 
   async createMessagesGroup(card: CardID, blobId: BlobID, fromDate: Date, toDate: Date, count: number): Promise<void> {
@@ -108,20 +109,28 @@ export class CockroachAdapter implements DbAdapter {
   async createReaction(
     card: CardID,
     message: MessageID,
+    messageCreated: Date,
     reaction: string,
     creator: SocialID,
     created: Date
   ): Promise<void> {
-    await this.message.createReaction(card, message, reaction, creator, created)
+    await this.message.createReaction(card, message, messageCreated, reaction, creator, created)
   }
 
-  async removeReaction(card: CardID, message: MessageID, reaction: string, creator: SocialID): Promise<void> {
-    await this.message.removeReaction(card, message, reaction, creator, new Date())
+  async removeReaction(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    reaction: string,
+    creator: SocialID
+  ): Promise<void> {
+    await this.message.removeReaction(card, message, messageCreated, reaction, creator, new Date())
   }
 
   async createFile(
     card: CardID,
     message: MessageID,
+    messageCreated: Date,
     blobId: BlobID,
     fileType: string,
     filename: string,
@@ -129,15 +138,21 @@ export class CockroachAdapter implements DbAdapter {
     creator: SocialID,
     created: Date
   ): Promise<void> {
-    await this.message.createFile(card, message, blobId, fileType, filename, size, creator, created)
+    await this.message.createFile(card, message, messageCreated, blobId, fileType, filename, size, creator, created)
   }
 
   async removeFile(card: CardID, message: MessageID, blobId: BlobID): Promise<void> {
     await this.message.removeFile(card, message, blobId)
   }
 
-  async createThread(card: CardID, message: MessageID, thread: CardID, created: Date): Promise<void> {
-    await this.message.createThread(card, message, thread, created)
+  async createThread(
+    card: CardID,
+    message: MessageID,
+    messageCreated: Date,
+    thread: CardID,
+    created: Date
+  ): Promise<void> {
+    await this.message.createThread(card, message, messageCreated, thread, created)
   }
 
   async updateThread(thread: CardID, op: 'increment' | 'decrement', lastReply?: Date): Promise<void> {

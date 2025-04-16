@@ -57,10 +57,22 @@ export async function initSchema(sql: postgres.Sql) {
 }
 
 function getMigrations(): [string, string][] {
-  return [migrationO1(), migrationO2(), migrationO3(), migrationO4(), migrationO5()]
+  return [
+    migrationV1_1(),
+    migrationV2_1(),
+    migrationV3_1(),
+    migrationV4_1(),
+    migrationV4_2(),
+    migrationV5_1(),
+    migrationV5_2(),
+    migrationV5_3(),
+    migrationV5_4(),
+    migrationV5_5(),
+    migrationV5_6()
+  ]
 }
 
-function migrationO1(): [string, string] {
+function migrationV1_1(): [string, string] {
   const sql = `
       CREATE TABLE IF NOT EXISTS communication.messages
       (
@@ -204,7 +216,7 @@ function migrationO1(): [string, string] {
   return ['init_tables_01', sql]
 }
 
-function migrationO2(): [string, string] {
+function migrationV2_1(): [string, string] {
   const sql = `
       CREATE TABLE IF NOT EXISTS communication.label
       (
@@ -220,15 +232,15 @@ function migrationO2(): [string, string] {
   return ['init_labels_02', sql]
 }
 
-function migrationO3(): [string, string] {
+function migrationV3_1(): [string, string] {
   const sql = `
       ALTER TABLE communication.collaborators
-      ADD COLUMN IF NOT EXISTS card_type VARCHAR(255) NOT NULL DEFAULT 'card:class:Card';
+          ADD COLUMN IF NOT EXISTS card_type VARCHAR(255) NOT NULL DEFAULT 'card:class:Card';
   `
   return ['add_card_type_to_collaborators_03', sql]
 }
 
-function migrationO4(): [string, string] {
+function migrationV4_1(): [string, string] {
   const sql = `
       ALTER TABLE communication.messages
           ADD COLUMN IF NOT EXISTS external_id VARCHAR(255);
@@ -236,11 +248,94 @@ function migrationO4(): [string, string] {
   return ['message_add_external_id_column', sql]
 }
 
-function migrationO5(): [string, string] {
+function migrationV4_2(): [string, string] {
   const sql = `
       CREATE UNIQUE INDEX IF NOT EXISTS idx_messages_unique_external_id
           ON communication.messages (external_id)
           WHERE external_id IS NOT NULL;
   `
   return ['message_add_external_id_column_unique_index', sql]
+}
+
+function migrationV5_1(): [string, string] {
+  const sql = `
+      ALTER TABLE communication.reactions
+          DROP CONSTRAINT IF EXISTS reactions_workspace_id_card_id_message_id_fkey;
+  `
+  return ['remove-reactions-fk_v5_1', sql]
+}
+
+function migrationV5_2(): [string, string] {
+  const sql = `
+      ALTER TABLE communication.messages
+          ALTER COLUMN id SET DEFAULT unique_rowid();
+
+      ALTER TABLE communication.messages
+          DROP CONSTRAINT IF EXISTS messages_pkey,
+          ADD CONSTRAINT messages_pkey PRIMARY KEY (id);`
+  return ['migrate-message-id_v5_2', sql]
+}
+
+function migrationV5_3(): [string, string] {
+  const sql = `
+      ALTER TABLE communication.messages_groups ADD COLUMN from_date TIMESTAMPTZ;
+      ALTER TABLE communication.messages_groups ADD COLUMN to_date TIMESTAMPTZ;
+      ALTER TABLE communication.patch ADD COLUMN message_created TIMESTAMPTZ;
+      ALTER TABLE communication.files ADD COLUMN message_created TIMESTAMPTZ;
+      ALTER TABLE communication.thread ADD COLUMN IF NOT EXISTS message_created TIMESTAMPTZ NOT NULL DEFAULT now();
+      DROP INDEX IF EXISTS communication.thread_workspace_id_card_id_message_id_key CASCADE;
+      ALTER TABLE communication.thread ADD CONSTRAINT thread_unique_constraint UNIQUE (message_id);
+  `
+  return ['add-date-columns_v5_3', sql]
+}
+
+function migrationV5_4(): [string, string] {
+  const sql = `
+      UPDATE communication.messages_groups
+      SET from_date = from_sec::TIMESTAMPTZ,
+          to_date = to_sec::TIMESTAMPTZ;
+
+      ALTER TABLE communication.messages_groups ALTER COLUMN from_date SET NOT NULL;
+      ALTER TABLE communication.messages_groups ALTER COLUMN to_date SET NOT NULL;
+
+      ALTER TABLE communication.messages_groups DROP COLUMN from_sec;
+      ALTER TABLE communication.messages_groups DROP COLUMN to_sec;
+
+      UPDATE communication.patch
+      SET message_created = message_created_sec::TIMESTAMPTZ;
+
+      ALTER TABLE communication.patch ALTER COLUMN message_created SET NOT NULL;
+      ALTER TABLE communication.patch DROP COLUMN message_created_sec;
+
+      UPDATE communication.files
+      SET message_created = message_created_sec::TIMESTAMPTZ;
+
+      ALTER TABLE communication.files ALTER COLUMN message_created SET NOT NULL;
+      ALTER TABLE communication.files DROP COLUMN message_created_sec;
+  `
+  return ['migrate-date-values_v5_4', sql]
+}
+
+function migrationV5_5(): [string, string] {
+  const sql = `
+      ALTER TABLE communication.reactions
+          DROP CONSTRAINT IF EXISTS reactions_pkey;
+      ALTER TABLE communication.reactions
+          ADD CONSTRAINT reactions_pkey PRIMARY KEY (message_id, creator, reaction);
+  `
+  return ['migrate-reactions-pk_v5_5', sql]
+}
+
+function migrationV5_6(): [string, string] {
+  const sql = `
+    ALTER TABLE communication.files
+      DROP CONSTRAINT IF EXISTS files_pkey;
+    ALTER TABLE communication.files
+      ADD CONSTRAINT files_pkey PRIMARY KEY (message_id, blob_id);
+
+    ALTER TABLE communication.reactions
+      ADD CONSTRAINT reactions_message_fkey FOREIGN KEY (message_id)
+        REFERENCES communication.messages (id) ON DELETE CASCADE;
+  `
+  return ['migrate-constraints_v5_6', sql]
 }

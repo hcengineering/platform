@@ -75,6 +75,7 @@ export function parseYaml(data: string): ParsedFile {
         ? {
             card: metadata.card,
             message: message.id,
+            messageCreated: message.created,
             thread: message.thread.thread,
             repliesCount: message.thread.repliesCount,
             lastReply: message.thread.lastReply
@@ -83,6 +84,7 @@ export function parseYaml(data: string): ParsedFile {
       files: message.files.map((file) => ({
         ...file,
         message: message.id,
+        messageCreated: message.created,
         card: metadata.card
       })),
       reactions: message.reactions.map((reaction) => ({
