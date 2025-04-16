@@ -190,6 +190,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -238,6 +239,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -366,6 +368,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -443,6 +446,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -522,6 +526,7 @@ jobs:
         run: node common/scripts/install-run-rush.js build -t @hcengineering/tests-sanity
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -626,6 +631,7 @@ jobs:
         run: node common/scripts/install-run-rush.js model-version
 
       - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
