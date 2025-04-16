@@ -117,8 +117,7 @@ export async function login (
   params: {
     email: string
     password: string
-  },
-  meta?: Meta
+  }
 ): Promise<LoginInfo> {
   const { email, password } = params
   const normalizedEmail = cleanEmail(email)
@@ -149,7 +148,6 @@ export async function login (
 
     const extraToken: Record<string, string> = isAdminEmail(email) ? { admin: 'true' } : {}
     ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
-    void setTimezoneIfNotDefined(ctx, db, existingAccount.uuid, existingAccount, meta)
 
     return {
       account: existingAccount.uuid,
@@ -172,8 +170,7 @@ export async function loginOtp (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { email: string },
-  meta?: Meta
+  params: { email: string }
 ): Promise<OtpInfo> {
   const { email } = params
 
@@ -190,8 +187,6 @@ export async function loginOtp (
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
-
-  void setTimezoneIfNotDefined(ctx, db, account.uuid, account, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -287,8 +282,7 @@ export async function validateOtp (
   params: {
     email: string
     code: string
-  },
-  meta?: Meta
+  }
 ): Promise<LoginInfo> {
   const { email, code } = params
 
@@ -325,8 +319,6 @@ export async function validateOtp (
 
     ctx.info('OTP login success', emailSocialId)
   }
-
-  void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid as AccountUuid, account, meta)
 
   const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
   if (person == null) {
@@ -667,7 +659,7 @@ export async function join (
 
   ctx.info('Joining a workspace using invite', { email, normalizedEmail, ...invite })
 
-  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password }, meta)
+  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password })
 
   if (token == null) {
     return {
@@ -1258,7 +1250,8 @@ export async function getLoginInfoByToken (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string
+  token: string,
+  meta?: Meta
 ): Promise<LoginInfo | WorkspaceLoginInfo> {
   let accountUuid: AccountUuid
   let workspaceUuid: WorkspaceUuid
@@ -1315,6 +1308,10 @@ export async function getLoginInfoByToken (
     name: getPersonName(person),
     socialId: socialId?._id,
     token
+  }
+
+  if (!isSystem) {
+    void setTimezoneIfNotDefined(ctx, db, accountUuid, null, meta)
   }
 
   if (workspaceUuid != null && workspaceUuid !== '') {

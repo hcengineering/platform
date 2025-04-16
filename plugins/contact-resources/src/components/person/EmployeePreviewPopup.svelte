@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountUuid, Class, Doc, Ref } from '@hcengineering/core'
-  import { ButtonIcon, Loading, navigate } from '@hcengineering/ui'
+  import { ButtonIcon, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
@@ -97,11 +97,7 @@
         <div class="flex-col flex-gap-0-5">
           <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact accent />
           <span class="flex-presenter cursor-default">
-            {#if isTimezoneLoading}
-              <Loading size="small" />
-            {:else if timezone != null}
-              <TimePresenter {timezone} />
-            {/if}
+            <TimePresenter {timezone} {isTimezoneLoading} />
           </span>
         </div>
       </div>
