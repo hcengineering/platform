@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Cancel": "キャンセル",
+    "Pause": "一時停止",
+    "Stop": "停止",
+    "Resume": "再開",
+    "Record": "記録",
+    "ClickToSkip": "クリックしてスキップ"
+  }
+}

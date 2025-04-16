@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "キャンセル",
+    "Templates": "テキスト テンプレート",
+    "TemplatesHeader": "テキスト テンプレート",
+    "CreateTemplate": "テンプレートを作成",
+    "SaveTemplate": "テンプレートを保存",
+    "EditTemplate": "テンプレートを編集",
+    "ViewTemplate": "テンプレートを表示",
+    "Suggested": "提案",
+    "SearchTemplate": "テンプレートを検索",
+    "TemplatePlaceholder": "新しいテンプレート",
+    "Title": "タイトル",
+    "Message": "メッセージ",
+    "Field": "フィールド",
+    "TemplateCategory": "テンプレート グループ",
+    "CreateTemplateCategory": "グループを作成",
+    "Copy": "コピー",
+    "Template": "テンプレート"
+  }
+}

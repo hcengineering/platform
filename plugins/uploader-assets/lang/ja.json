@@ -1,0 +1,15 @@
+{
+  "string": {
+    "Cancel": "キャンセル",
+    "Retry": "再試行",
+    "UploadFiles": "ファイルをアップロード",
+    "UploadFolders": "フォルダをアップロード",
+    "UploadingTo": "次のフォルダに {files, plural, =1 {# ファイル} other {# ファイル}} をアップロード中："
+  },
+  "status": {
+    "Error": "エラー",
+    "Waiting": "待機中",
+    "Uploading": "アップロード中",
+    "Completed": "完了"
+  }
+}
