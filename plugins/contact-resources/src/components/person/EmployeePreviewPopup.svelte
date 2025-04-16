@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountUuid, Class, Doc, Ref } from '@hcengineering/core'
-  import { ButtonIcon, Loading, navigate } from '@hcengineering/ui'
+  import { ButtonIcon, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
