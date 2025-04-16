@@ -1416,7 +1416,7 @@ export async function getLoginWithWorkspaceInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const userWorkspaces = await db.getAccountWorkspaces(accountUuid)
+  const userWorkspaces = (await db.getAccountWorkspaces(accountUuid)).filter((it) => isActiveMode(it.status.mode))
   const roles: Map<WorkspaceUuid, AccountRole | null> = await getWorkspaceRoles(db, accountUuid)
 
   const info = getEndpointInfo()
