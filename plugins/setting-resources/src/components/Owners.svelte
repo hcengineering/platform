@@ -17,23 +17,31 @@
   import { EmployeePresenter, employeesStore } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, SearchInput, Header, Scroller } from '@hcengineering/ui'
+  import {
+    Breadcrumb,
+    DropdownLabelsIntl,
+    SearchInput,
+    Header,
+    Scroller,
+  } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
   const query = createQuery()
   const currentAccount = getCurrentAccount()
 
-  const items: DropdownIntlItem[] = [
+  const items = [
     { id: AccountRole.Guest, label: setting.string.Guest },
     { id: AccountRole.User, label: setting.string.User },
     { id: AccountRole.Maintainer, label: setting.string.Maintainer },
     { id: AccountRole.Owner, label: setting.string.Owner }
   ]
+  const availableItems = items.filter((i) => hasAccountRole(currentAccount, i.id))
 
   let accounts: PersonAccount[] = []
   let owners: PersonAccount[] = []
   $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
+
 
   query.query(contact.class.PersonAccount, {}, (res) => {
     owners = res.filter((p) => p.role === AccountRole.Owner)
@@ -70,12 +78,12 @@
                 <EmployeePresenter value={employee} disabled={false} />
               </div>
               <DropdownLabelsIntl
-                label={setting.string.Role}
+                label={items.find((x) => x.id === acc.role).label}
                 disabled={!hasAccountRole(currentAccount, acc.role) ||
                   (acc.role === AccountRole.Owner && owners.length === 1)}
                 kind={'primary'}
                 size={'medium'}
-                {items}
+                items={availableItems}
                 selected={acc.role}
                 on:selected={(e) => {
                   void change(acc, e.detail)
