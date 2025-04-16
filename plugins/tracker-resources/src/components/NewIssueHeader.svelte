@@ -44,6 +44,33 @@
     })
   }
 
+  function getAvailableActions (): SelectPopupValueType[] {
+    const result = []
+    if (hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)) {
+      result.push(
+        {
+          id: tracker.string.CreateProject,
+          label: tracker.string.CreateProject
+        }
+      )
+    }
+    result.push(
+      {
+        id: tracker.string.NewIssue,
+        label: tracker.string.NewIssue
+      }
+    )
+    if (hasAccountRole(getCurrentAccount(), AccountRole.User)) {
+      result.push(
+        {
+          id: tracker.string.Import,
+          label: tracker.string.Import
+        }
+      )
+    }
+    return result
+  }
+
   const query = createQuery()
 
   let projectExists = false
@@ -53,27 +80,7 @@
   })
 
   $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
-  $: dropdownItems = hasAccountRole(getCurrentAccount(), AccountRole.User)
-    ? [
-        {
-          id: tracker.string.CreateProject,
-          label: tracker.string.CreateProject
-        },
-        {
-          id: tracker.string.NewIssue,
-          label
-        },
-        {
-          id: tracker.string.Import,
-          label: tracker.string.Import
-        }
-      ]
-    : [
-        {
-          id: tracker.string.NewIssue,
-          label
-        }
-      ]
+  $: dropdownItems = getAvailableActions()
   const client = getClient()
 
   let keys: string[] | undefined = undefined
