@@ -1,15 +1,7 @@
 <script lang="ts">
   import { Integration } from '@hcengineering/account-client'
   import presentation, { getCurrentWorkspaceUrl, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
-  import {
-    Label,
-    Modal,
-    CheckBox,
-    Spinner,
-    Button,
-    IconCopy,
-    EditBox
-  } from '@hcengineering/ui'
+  import { Label, Modal, CheckBox, Spinner, Button, IconCopy, EditBox } from '@hcengineering/ui'
   import calendar from '@hcengineering/calendar'
   import { createEventDispatcher, onMount } from 'svelte'
   import { getMetadata } from '@hcengineering/platform'
@@ -35,8 +27,7 @@
   $: wasAccessEnabled = integrationGlobal !== null && integrationWs !== null
   $: canSave = !!(
     !loading &&
-    ((!wasAccessEnabled && accessEnabled && selectedSocialId != null) ||
-      (wasAccessEnabled && !accessEnabled))
+    ((!wasAccessEnabled && accessEnabled && selectedSocialId != null) || (wasAccessEnabled && !accessEnabled))
   )
 
   function generateRandomPassword (length = 24): string {
