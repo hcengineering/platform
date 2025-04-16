@@ -573,12 +573,14 @@ describe('PostgresAccountDB', () => {
             uuid: workspaceId,
             name: 'Test',
             url: 'test',
+            created_on: '1234567890000',
             status: {
               mode: 'active',
               version_major: 1,
               version_minor: 0,
               version_patch: 0,
-              is_disabled: false
+              is_disabled: false,
+              last_processing_time: '1234567890000'
             }
           }
         ]
@@ -591,12 +593,15 @@ describe('PostgresAccountDB', () => {
           uuid: workspaceId,
           name: 'Test',
           url: 'test',
+          createdOn: 1234567890000,
           status: {
             mode: 'active',
             versionMajor: 1,
             versionMinor: 0,
             versionPatch: 0,
-            isDisabled: false
+            isDisabled: false,
+            lastProcessingTime: 1234567890000,
+            lastVisit: null
           }
         })
       })
