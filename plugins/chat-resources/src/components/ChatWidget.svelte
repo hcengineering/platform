@@ -123,13 +123,13 @@
       )
       threadId = (await client.createDoc(chat.masterTag.Thread, cardPlugin.space.Default, data)) as CardID
 
-      await communicationClient.createThread(card, message.id, threadId)
+      await communicationClient.createThread(card, message.id, message.created, threadId)
     }
 
     if (threadId != null) {
-      const id = await communicationClient.createMessage(threadId, chat.masterTag.Thread, markdown)
+      const { id, created } = await communicationClient.createMessage(threadId, chat.masterTag.Thread, markdown)
       for (const file of files) {
-        await communicationClient.createFile(threadId, id, file.blobId, file.type, file.filename, file.size)
+        await communicationClient.createFile(threadId, id, created, file.blobId, file.type, file.filename, file.size)
       }
     }
   }
