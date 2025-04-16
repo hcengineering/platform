@@ -1,11 +1,15 @@
 <script lang="ts">
   import { Integration } from '@hcengineering/account-client'
-  import presentation, { getCurrentWorkspaceUrl, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
+  import presentation, {
+    copyTextToClipboard,
+    getCurrentWorkspaceUrl,
+    getCurrentWorkspaceUuid
+  } from '@hcengineering/presentation'
   import { Label, Modal, CheckBox, Spinner, Button, IconCopy, EditBox } from '@hcengineering/ui'
   import calendar from '@hcengineering/calendar'
   import { createEventDispatcher, onMount } from 'svelte'
   import { getMetadata } from '@hcengineering/platform'
-  import { pickPrimarySocialId, SocialId, SocialIdType } from '@hcengineering/core'
+  import { getCurrentAccount, pickPrimarySocialId, SocialId, SocialIdType } from '@hcengineering/core'
   import { getAccountClient } from '../utils'
 
   const workspaceUuid = getCurrentWorkspaceUuid()
@@ -45,15 +49,16 @@
     try {
       password = generateRandomPassword()
 
-      const wsId = getCurrentWorkspaceUuid()
-      const accountClient = getAccountClient()
-      const socialId = pickPrimarySocialId(await accountClient.getSocialIds())
+      const socialId = pickPrimarySocialId(getCurrentAccount().fullSocialIds)
       if (socialId.type !== SocialIdType.HULY) {
         // Thid should not happen, no need to translate
         error = 'Appropriate account not found'
         return
       }
+
+      const wsId = getCurrentWorkspaceUuid()
       hulySocialId = socialId.value
+      const accountClient = getAccountClient()
       const integrations = await accountClient.listIntegrations({
         socialId: socialId._id,
         kind: 'caldav'
@@ -89,7 +94,7 @@
       const accountClient = getAccountClient()
       const socialId = selectedSocialId._id
       const kind = 'caldav'
-      const key = 'caldav'
+      const key = 'password'
       if (wasAccessEnabled && !accessEnabled) {
         // Access disabled
         await accountClient.deleteIntegration({
@@ -142,15 +147,15 @@
   }
 
   async function copyServer (): Promise<void> {
-    await navigator?.clipboard?.writeText(serverUrl ?? '')
+    await copyTextToClipboard(serverUrl ?? '')
   }
 
   async function copyAccount (): Promise<void> {
-    await navigator?.clipboard?.writeText(selectedSocialId?.value ?? '')
+    await copyTextToClipboard(selectedSocialId?.value ?? '')
   }
 
   async function copyPassword (): Promise<void> {
-    await navigator?.clipboard?.writeText(password)
+    await copyTextToClipboard(password)
   }
 </script>
 
