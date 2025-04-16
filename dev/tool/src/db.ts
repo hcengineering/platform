@@ -1,10 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  type AccountDB,
-  type MongoAccountDB,
-  type Workspace,
-  ensurePerson
-} from '@hcengineering/account'
+import { type AccountDB, type MongoAccountDB, type Workspace, ensurePerson } from '@hcengineering/account'
 import { getFirstName, getLastName } from '@hcengineering/contact'
 import {
   systemAccountUuid,
