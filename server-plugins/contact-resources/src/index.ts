@@ -143,27 +143,16 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
 
 export async function OnTypedSpaceCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
-  let employees: Employee[] | undefined
   for (const tx of _txes) {
     const ctx = tx as TxCreateDoc<TypedSpace>
     const owners = ctx.attributes.owners ?? []
 
     if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
-      if (employees === undefined) {
-        employees = await control.findAll(
-          control.ctx,
-          contact.mixin.Employee,
-          { role: AccountRole.User },
-          { sort: { createdOn: SortingOrder.Ascending } }
-        )
-      }
-      const account = employees?.find(
-        (e) => e.personUuid !== undefined && ctx.attributes.members.includes(e.personUuid)
-      )
-      if (account?.personUuid === undefined) continue
+      const members = ctx.attributes.members
+      if (members.length === 0) continue
       result.push(
         control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.space, ctx.objectId, {
-          owners: [account.personUuid]
+          owners: [members[0]]
         })
       )
     }
