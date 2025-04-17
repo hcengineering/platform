@@ -183,7 +183,7 @@ async function getEventPerson (
 ): Promise<Ref<Person> | undefined> {
   const calendar = calendars.find((c) => c._id === current.calendar)
   if (calendar === undefined) return
-  const person = await getPerson(control, current.createdBy ?? current.modifiedBy)
+  const person = await getPerson(control, current.user ?? current.createdBy ?? current.modifiedBy)
 
   return person?._id
 }
@@ -289,7 +289,7 @@ async function eventForNewParticipants (
     const socialIds = await getSocialIds(control, part)
     if (socialIds.length === 0) continue
     const socialStrings = socialIds.map((si) => si._id)
-    if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
+    if (socialStrings.includes(event.user ?? event.createdBy ?? event.modifiedBy)) continue
 
     const primarySocialString = pickPrimarySocialId(socialIds)._id
     const user = primarySocialString
@@ -396,7 +396,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
     const socialIds = await getSocialIds(control, part as Ref<Person>)
     if (socialIds.length === 0) continue
     const socialStrings = socialIds.map((si) => si._id)
-    if (socialStrings.includes(event.createdBy ?? event.modifiedBy)) continue
+    if (socialStrings.includes(event.user ?? event.createdBy ?? event.modifiedBy)) continue
     const primarySocialString = pickPrimarySocialId(socialIds)._id
     const user = primarySocialString
     const calendar = getCalendar(calendars, socialStrings)
