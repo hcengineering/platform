@@ -2104,7 +2104,8 @@ export function devTool (
   program
     .command('fulltext-reindex-all')
     .description('reindex workspaces')
-    .action(async () => {
+    .option('--region <region>', 'region to reindex')
+    .action(async (cmd: { region?: string }) => {
       const fulltextUrl = process.env.FULLTEXT_URL
       if (fulltextUrl === undefined) {
         console.error('please provide FULLTEXT_URL')
@@ -2112,8 +2113,11 @@ export function devTool (
       }
 
       await withAccountDatabase(async (db) => {
-        const workspaces = await listWorkspacesRaw(db)
+        let workspaces = await listWorkspacesRaw(db)
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+        if (cmd.region !== undefined) {
+          workspaces = workspaces.filter((it) => it.region === cmd.region)
+        }
         for (const workspace of workspaces) {
           const wsid = getWorkspaceId(workspace.workspace)
           const token = generateToken(systemAccountEmail, wsid)
