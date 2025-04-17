@@ -338,7 +338,8 @@ export function createModel (builder: Builder): void {
               icon: contact.icon.Person,
               label: contact.string.Employee,
               createLabel: contact.string.CreateEmployee,
-              createComponent: contact.component.CreateEmployee
+              createComponent: contact.component.CreateEmployee,
+              createComponentAccess: AccountRole.Maintainer
             }
           },
           {
