@@ -50,7 +50,9 @@
     "prettier": "^3.1.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3",
-    "@types/uuid": "^8.3.1"
+    "@types/uuid": "^8.3.1",
+    "ts-node": "^10.8.0",
+    "cross-env": "~7.0.3"
   },
   "dependencies": {
     "@hcengineering/attachment": "^0.6.14",

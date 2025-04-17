@@ -255,6 +255,10 @@ export class GmailClient {
     }, 86400000)
   }
 
+  async sync (): Promise<void> {
+    await this.syncManager.sync(this.socialId, this.email)
+  }
+
   async newChannel (value: string): Promise<void> {
     const query = `{from:${value} to:${value} cc:${value} bcc:${value}}`
     await this.fullSync(query)

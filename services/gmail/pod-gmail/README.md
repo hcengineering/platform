@@ -34,34 +34,28 @@ npm install
 ### Running Locally
 
 ```bash
-npm run run-local
+rushx run-local
 ```
 
 ### Building
 
 ```bash
-npm run build
+rushx build
 ```
 
 ### Testing
 
 ```bash
-npm test
+rushx test
 ```
 
 ## Docker Support
 
-The service can be built and run using Docker:
+The service can be built using Docker:
 
 ```bash
 # Build Docker image
-npm run docker:build
-
-# Push to registry
-npm run docker:push
-
-# Build and push to staging
-npm run docker:staging
+rushx docker:build
 ```
 
 ## Configuration

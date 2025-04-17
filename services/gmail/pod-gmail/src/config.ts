@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { config as dotenvConfig } from 'dotenv'
+
+dotenvConfig()
 
 interface Config {
   Port: number
