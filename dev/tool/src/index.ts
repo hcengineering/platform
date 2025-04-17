@@ -2113,7 +2113,9 @@ export function devTool (
       }
 
       await withAccountDatabase(async (db) => {
-        const workspaces = await listWorkspacesRaw(db, cmd.region)
+        const workspaces = (await listWorkspacesRaw(db, cmd.region)).filter(
+          (it) => isActiveMode(it.mode) && it.version?.patch === getModelVersion().patch
+        )
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
         console.log('workspacess to process', workspaces.length)
         for (const workspace of workspaces) {
@@ -2122,8 +2124,8 @@ export function devTool (
 
           console.log('reindex workspace', workspace.workspaceUrl)
           await reindexWorkspace(toolCtx, fulltextUrl, token)
-          console.log('done', workspace)
         }
+        console.log('end-reindex')
       })
     })
 
