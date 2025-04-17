@@ -677,8 +677,8 @@ export class HulyFormatImporter {
         throw new Error(`Unknown document class ${docHeader.class} in ${docFile}`)
       }
 
-      const documentMetaId = this.metadataRegistry.getRef(docPath) as Ref<DocumentMeta> // todo: same as for document
-      this.metadataRegistry.setRefMetadata(docPath, documents.class.DocumentMeta, docHeader.title)
+      const documentMetaId = generateId<DocumentMeta>()
+      this.metadataRegistry.setRefMetadata(docPath, documents.class.DocumentMeta, docHeader.title, documentMetaId)
 
       if (docHeader.class === documents.class.ControlledDocument) {
         const doc = await this.processControlledDocument(
@@ -692,7 +692,7 @@ export class HulyFormatImporter {
         const template = await this.processControlledDocumentTemplate(
           docHeader as HulyDocumentTemplateHeader,
           docPath,
-          this.metadataRegistry.getRef(docPath) as Ref<ControlledDocument>, // todo: same as for document
+          this.metadataRegistry.getRef(docPath) as Ref<ControlledDocument>,
           documentMetaId
         )
         builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
