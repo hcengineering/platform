@@ -49,6 +49,7 @@ import { DrawingBoardExtension, type DrawingBoardOptions } from '../components/e
 import { type IndendOptions, IndentExtension, indentExtensionOptions } from '../components/extension/indent'
 import TextAlign, { type TextAlignOptions } from '@tiptap/extension-text-align'
 import { LinkUtilsExtension } from '../components/extension/link'
+import { TransformPastedContentExtension } from '../components/extension/paste'
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
@@ -332,6 +333,8 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
               if (mode !== 'compact' && this.options.note !== false) {
                 staticKitExtensions.push([1000, NoteExtension.configure(this.options.note ?? {})])
               }
+
+              staticKitExtensions.push([1100, TransformPastedContentExtension.configure({})])
 
               const allKitExtensions = [...tableKitExtensions, ...modelKitExtensions, ...staticKitExtensions]
 
