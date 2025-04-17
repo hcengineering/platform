@@ -218,6 +218,7 @@ export interface ImportControlledDocument extends ImportDoc {
   major: number
   minor: number
   state: DocumentState
+  category?: Ref<DocumentCategory>
   reviewers?: Ref<Employee>[]
   approvers?: Ref<Employee>[]
   coAuthors?: Ref<Employee>[]
@@ -986,6 +987,7 @@ export class WorkspaceImporter {
         author: template.author,
         owner: template.owner,
         abstract: template.abstract,
+        category: template.category,
         reviewers: template.reviewers ?? [],
         approvers: template.approvers ?? [],
         coAuthors: template.coAuthors ?? [],
@@ -1027,7 +1029,7 @@ export class WorkspaceImporter {
     // const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, doc.template as unknown as Ref<DocumentTemplate>)
     const result = await createControlledDocMetadata(
       this.client,
-      documents.template.ProductChangeControl, // todo: make it dynamic - wtf, commit missed?
+      documents.template.ProductChangeControl,
       documentId,
       spaceId,
       undefined, // project
@@ -1072,7 +1074,7 @@ export class WorkspaceImporter {
     const contentId = await this.createCollaborativeContent(document.id, collabId, content, spaceId)
 
     const templateId = document.template
-    const { seqNumber, prefix, category } = await useDocumentTemplate(
+    const { seqNumber, prefix, category: templateCategory } = await useDocumentTemplate(
       this.client,
       templateId as unknown as Ref<DocumentTemplate>
     )
@@ -1104,7 +1106,7 @@ export class WorkspaceImporter {
         changeControl: changeControlId,
         code: document.code ?? `${prefix}-${seqNumber}`,
         prefix,
-        category,
+        category: document.category ?? templateCategory,
         seqNumber,
         content: contentId,
         template: templateId as unknown as Ref<DocumentTemplate>,

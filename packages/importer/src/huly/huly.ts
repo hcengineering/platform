@@ -126,6 +126,7 @@ export interface HulyControlledDocumentHeader {
   template: string
   author: string
   owner: string
+  category?: string
   abstract?: string
   reviewers?: string[]
   approvers?: string[]
@@ -320,6 +321,7 @@ export class HulyFormatImporter {
   private personsByName = new Map<string, Ref<Person>>()
   private accountsByEmail = new Map<string, Ref<PersonAccount>>()
   private employeesByName = new Map<string, Ref<Employee>>()
+  private controlledDocumentCategories = new Map<string, Ref<DocumentCategory>>()
 
   private readonly fileMetaByPath = new Map<string, AttachmentMetadata>()
 
@@ -338,6 +340,7 @@ export class HulyFormatImporter {
     await this.cachePersonsByNames()
     await this.cacheAccountsByEmails()
     await this.cacheEmployeesByName()
+    await this.cacheControlledDocumentCategories()
   }
 
   async importFolder (folderPath: string): Promise<void> {
@@ -674,7 +677,7 @@ export class HulyFormatImporter {
         throw new Error(`Unknown document class ${docHeader.class} in ${docFile}`)
       }
 
-      const documentMetaId = this.metadataRegistry.getRef(docPath) as Ref<DocumentMeta>
+      const documentMetaId = this.metadataRegistry.getRef(docPath) as Ref<DocumentMeta> // todo: same as for document
       this.metadataRegistry.setRefMetadata(docPath, documents.class.DocumentMeta, docHeader.title)
 
       if (docHeader.class === documents.class.ControlledDocument) {
@@ -689,7 +692,7 @@ export class HulyFormatImporter {
         const template = await this.processControlledDocumentTemplate(
           docHeader as HulyDocumentTemplateHeader,
           docPath,
-          this.metadataRegistry.getRef(docPath) as Ref<ControlledDocument>,
+          this.metadataRegistry.getRef(docPath) as Ref<ControlledDocument>, // todo: same as for document
           documentMetaId
         )
         builder.addControlledDocumentTemplate(spacePath, docPath, template, parentDocPath)
@@ -814,7 +817,7 @@ export class HulyFormatImporter {
     }
 
     const templateId = this.metadataRegistry.getRef(templatePath) as Ref<ControlledDocument>
-
+    const category = header.category !== undefined ? this.controlledDocumentCategories.get(header.category) : undefined
     return {
       id,
       metaId,
@@ -825,6 +828,7 @@ export class HulyFormatImporter {
       major: 0,
       minor: 1,
       state: DocumentState.Draft,
+      category,
       author,
       owner,
       abstract: header.abstract,
@@ -852,6 +856,7 @@ export class HulyFormatImporter {
     }
 
     const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
+    const category = header.category !== undefined ? this.controlledDocumentCategories.get(header.category) : undefined
     return {
       id,
       metaId,
@@ -862,7 +867,7 @@ export class HulyFormatImporter {
       major: 0,
       minor: 1,
       state: DocumentState.Draft,
-      category: header.category as Ref<DocumentCategory>,
+      category,
       author,
       owner,
       abstract: header.abstract,
@@ -910,6 +915,14 @@ export class HulyFormatImporter {
       .reduce((refByName, employee) => {
         refByName.set(employee.name, employee._id)
         return refByName
+      }, new Map())
+  }
+
+  private async cacheControlledDocumentCategories (): Promise<void> {
+    this.controlledDocumentCategories = (await this.client.findAll(documents.class.DocumentCategory, {}))
+      .reduce((refByCode, category) => {
+        refByCode.set(category.code, category._id)
+        return refByCode
       }, new Map())
   }
 
