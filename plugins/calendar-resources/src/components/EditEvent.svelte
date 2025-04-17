@@ -279,6 +279,7 @@
       }
       &.description {
         padding: 0 1.25rem;
+        min-height: 2.625rem;
       }
     }
     .top-icon {

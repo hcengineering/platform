@@ -59,7 +59,6 @@
 
   function change (val: Visibility): void {
     if (value !== val) {
-      console.log('Changed', val)
       dispatch('change', val)
       value = val
     }
@@ -70,7 +69,6 @@
       opened = true
       closeTooltip()
       showPopup(ModernPopup, { items, selected: selected?.id }, eventToHTMLElement(ev), (selectedId) => {
-        console.log('Selected', selectedId)
         if (selectedId !== undefined) {
           change(selectedId)
         }

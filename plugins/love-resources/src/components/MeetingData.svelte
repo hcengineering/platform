@@ -46,6 +46,7 @@
     kind={'ghost'}
     padding={'0 .5rem'}
     justify={'left'}
+    flex="1"
     on:click={() => {
       isMeeting = !isMeeting
       changeIsMeeting(isMeeting)

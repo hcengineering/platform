@@ -310,7 +310,7 @@
         padding-top: 0;
       }
       &:not(.rightCropPadding) {
-        padding: 0.75rem 1.25rem;
+        padding: 0.75rem 1rem;
       }
       &.rightCropPadding {
         padding: 0.75rem 1rem 0.75rem 1.25rem;
