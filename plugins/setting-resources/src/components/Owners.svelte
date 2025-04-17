@@ -17,13 +17,7 @@
   import { EmployeePresenter, employeesStore } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    Breadcrumb,
-    DropdownLabelsIntl,
-    SearchInput,
-    Header,
-    Scroller,
-  } from '@hcengineering/ui'
+  import { Breadcrumb, DropdownLabelsIntl, SearchInput, Header, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
@@ -41,7 +35,6 @@
   let accounts: PersonAccount[] = []
   let owners: PersonAccount[] = []
   $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
-
 
   query.query(contact.class.PersonAccount, {}, (res) => {
     owners = res.filter((p) => p.role === AccountRole.Owner)
