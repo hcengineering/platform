@@ -919,11 +919,13 @@ export class HulyFormatImporter {
   }
 
   private async cacheControlledDocumentCategories (): Promise<void> {
-    this.controlledDocumentCategories = (await this.client.findAll(documents.class.DocumentCategory, {}))
-      .reduce((refByCode, category) => {
+    this.controlledDocumentCategories = (await this.client.findAll(documents.class.DocumentCategory, {})).reduce(
+      (refByCode, category) => {
         refByCode.set(category.code, category._id)
         return refByCode
-      }, new Map())
+      },
+      new Map()
+    )
   }
 
   private async collectFileMetadata (folderPath: string): Promise<void> {

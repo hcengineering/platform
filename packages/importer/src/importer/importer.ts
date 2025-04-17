@@ -179,8 +179,8 @@ export interface ImportDrawing {
   contentProvider: () => Promise<string>
 }
 
-export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate // todo: rename
-export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
+export type ImportControlledDocOrTemplate = ImportControlledDocument | ImportControlledDocumentTemplate
+export interface ImportOrgSpace extends ImportSpace<ImportControlledDocOrTemplate> {
   class: Ref<Class<DocumentSpace>>
   qualified?: Ref<Account>
   manager?: Ref<Account>
@@ -206,7 +206,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   ccReason?: string
   ccImpact?: string
   ccDescription?: string
-  subdocs: ImportControlledDoc[]
+  subdocs: ImportControlledDocOrTemplate[]
 }
 
 export interface ImportControlledDocument extends ImportDoc {
@@ -228,7 +228,7 @@ export interface ImportControlledDocument extends ImportDoc {
   ccReason?: string
   ccImpact?: string
   ccDescription?: string
-  subdocs: ImportControlledDoc[]
+  subdocs: ImportControlledDocOrTemplate[]
 }
 
 export class WorkspaceImporter {
@@ -854,7 +854,7 @@ export class WorkspaceImporter {
   }
 
   private partitionTemplatesFromDocuments (
-    doc: ImportControlledDoc,
+    doc: ImportControlledDocOrTemplate,
     documentMap: Map<Ref<ControlledDocument>, ImportControlledDocument>,
     templateMap: Map<Ref<ControlledDocument>, ImportControlledDocumentTemplate>
   ): void {
@@ -971,7 +971,12 @@ export class WorkspaceImporter {
     const collabId = makeCollabId(documents.class.Document, template.id, 'content')
     const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
 
-    const changeControlId = await this.createChangeControl(spaceId, template.ccDescription, template.ccReason, template.ccImpact)
+    const changeControlId = await this.createChangeControl(
+      spaceId,
+      template.ccDescription,
+      template.ccReason,
+      template.ccImpact
+    )
 
     const ops = this.client.apply()
     const result = await ops.addCollection(
@@ -994,14 +999,14 @@ export class WorkspaceImporter {
         coAuthors: template.coAuthors ?? [],
         code,
         seqNumber,
-        prefix: template.docPrefix, // todo: or TEMPLATE_PREFIX?s
+        prefix: template.docPrefix,
         content: contentId,
         changeControl: changeControlId,
         commentSequence: 0,
         requests: 0,
         labels: 0
       },
-      template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
+      template.id as unknown as Ref<ControlledDocument>
     )
 
     await ops.createMixin(template.id, documents.class.Document, spaceId, documents.mixin.DocumentTemplate, {
@@ -1078,14 +1083,20 @@ export class WorkspaceImporter {
     const contentId = await this.createCollaborativeContent(document.id, collabId, content, spaceId)
 
     const templateId = document.template
-    const { seqNumber, prefix, category: templateCategory } = await useDocumentTemplate(
-      this.client,
-      templateId as unknown as Ref<DocumentTemplate>
-    )
+    const {
+      seqNumber,
+      prefix,
+      category: templateCategory
+    } = await useDocumentTemplate(this.client, templateId as unknown as Ref<DocumentTemplate>)
 
     const ops = this.client.apply()
 
-    const changeControlId = await this.createChangeControl(spaceId, document.ccDescription, document.ccReason, document.ccImpact)
+    const changeControlId = await this.createChangeControl(
+      spaceId,
+      document.ccDescription,
+      document.ccReason,
+      document.ccImpact
+    )
 
     const code = document.code ?? `${prefix}-${seqNumber}`
     const result = await ops.addCollection(

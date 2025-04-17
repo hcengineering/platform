@@ -81,20 +81,22 @@ export class CardsProcessor {
     await this.processMetadata(directoryPath, result, topLevelTypes)
 
     const typesRefs = topLevelTypes.map((type) => type.props._id) as Ref<MasterTag>[]
-    const updateDefaultSpace: UnifiedUpdate<CardSpace> = {
-      _class: card.class.CardSpace,
-      _id: 'card:space:Default' as Ref<CardSpace>,
-      space: core.space.Model,
-      props: {
-        $push: {
-          types: {
-            $each: [...new Set(typesRefs)],
-            $position: 0
+    if (typesRefs.length > 0) {
+      const updateDefaultSpace: UnifiedUpdate<CardSpace> = {
+        _class: card.class.CardSpace,
+        _id: 'card:space:Default' as Ref<CardSpace>,
+        space: core.space.Model,
+        props: {
+          $push: {
+            types: {
+              $each: [...new Set(typesRefs)],
+              $position: 0
+            }
           }
         }
       }
+      result.updates.set('card:space:Default', [updateDefaultSpace])
     }
-    result.updates.set('card:space:Default', [updateDefaultSpace])
 
     await this.processSystemTypeCards(directoryPath, result, new Map(), new Map())
     await this.processCards(directoryPath, result, new Map(), new Map())
