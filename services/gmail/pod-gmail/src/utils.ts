@@ -14,9 +14,12 @@
 // limitations under the License.
 //
 
-import { type Data, type Doc, type DocumentUpdate } from '@hcengineering/core'
+import { type Data, type Doc, type DocumentUpdate, systemAccountUuid } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 import { deepEqual } from 'fast-equals'
+
 import { type Token, type User } from './types'
+import config from './config'
 
 export class DeferredPromise<T = any> {
   public readonly promise: Promise<T>
@@ -62,4 +65,13 @@ function toUndef (value: any): any {
 
 export function isToken (user: User | Token): user is Token {
   return (user as Token).access_token !== undefined
+}
+
+export function addFooter (message: string): string {
+  if (config.FooterMessage === undefined || config.FooterMessage.trim() === '') return message
+  return message + config.FooterMessage.trim()
+}
+
+export function serviceToken (): string {
+  return generateToken(systemAccountUuid, undefined, { service: 'gmail' })
 }

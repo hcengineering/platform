@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { PersonId, Doc, WorkspaceUuid } from '@hcengineering/core'
+import type { AccountUuid, Doc, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import type { NextFunction, Request, Response } from 'express'
 import type { Credentials } from 'google-auth-library'
 import type { Channel as PlatformChannel } from '@hcengineering/contact'
@@ -26,7 +26,8 @@ export type History = User & {
 }
 
 export interface User {
-  userId: PersonId
+  userId: AccountUuid
+  socialId: PersonId
   workspace: WorkspaceUuid
   token: string
 }
@@ -67,4 +68,9 @@ export interface ProjectCredentialsData {
   auth_provider_x509_cert_url: string
   client_secret: string
   redirect_uris: string[]
+}
+export const GMAIL_INTEGRATION = 'gmail'
+
+export enum SecretType {
+  TOKEN = 'token'
 }
