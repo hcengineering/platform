@@ -1,4 +1,4 @@
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022-2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -248,7 +248,8 @@ const calendarPlugin = plugin(calendarId, {
     CalDavAccessPassword: '' as IntlString,
     CalDavAccessPasswordWarning: '' as IntlString,
     MeetingScheduledNotification: '' as IntlString,
-    MeetingRescheduledNotification: '' as IntlString
+    MeetingRescheduledNotification: '' as IntlString,
+    MeetingCanceledNotification: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler

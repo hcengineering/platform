@@ -23,7 +23,7 @@ import serverToken from '@hcengineering/server-token'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import config from './config'
 import { EventCUDMessage } from './types'
-import { eventCreated, eventUpdated, eventDeleted } from './handlers'
+import { eventCreated, eventUpdated, eventDeleted, eventMixin } from './handlers'
 
 async function main (): Promise<void> {
   const ctx = initStatisticsContext('calendar-mailer', {
@@ -58,13 +58,16 @@ async function main (): Promise<void> {
           try {
             switch (record.action) {
               case 'create':
-                await eventCreated(ctx, ws, record)
+                await eventCreated(ws, record)
                 break
               case 'update':
-                await eventUpdated(ctx, ws, record)
+                await eventUpdated(ws, record)
                 break
               case 'delete':
-                await eventDeleted(ctx, ws, record)
+                await eventDeleted(ws, record)
+                break
+              case 'mixin':
+                await eventMixin(ws, record)
                 break
             }
           } catch (error) {

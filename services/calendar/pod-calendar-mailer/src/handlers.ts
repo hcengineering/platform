@@ -12,76 +12,95 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getClient as getAccountClient, AccountClient } from '@hcengineering/account-client'
-import { createRestTxOperations } from '@hcengineering/api-client'
-import calendar from '@hcengineering/calendar'
-import { AccountUuid, MeasureContext, TxOperations, WorkspaceUuid, systemAccountUuid } from '@hcengineering/core'
-import { generateToken } from '@hcengineering/server-token'
-import config from './config'
+import { Event } from '@hcengineering/calendar'
+import { Data, WorkspaceUuid } from '@hcengineering/core'
+import { createNotification, MeetingNotificationType } from './notification'
 import { type EventCUDMessage } from './types'
-import { createNotification } from './notification'
-import contact from '@hcengineering/contact'
+import { isMeeting } from './utils'
 
-async function getClient (workspaceUuid: WorkspaceUuid): Promise<{ client: TxOperations, accountClient: AccountClient }> {
-  const token = generateToken(systemAccountUuid, workspaceUuid)
-  const accountClient = getAccountClient(config.accountsUrl, token)
-  const wsInfo = await accountClient.getLoginInfoByToken()
-  if (!('endpoint' in wsInfo)) {
-    throw new Error('Invalid login info')
-  }
-  const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
-  const client = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
-  return { client, accountClient }
-}
+const recentlyCreatedEvents = new Set<string>()
 
 export async function eventCreated (
-  ctx: MeasureContext,
   workspaceUuid: WorkspaceUuid,
-  message: EventCUDMessage
+  message: Omit<EventCUDMessage, 'action'>
 ): Promise<void> {
-  const { eventId } = message
-  ctx.info('Event created', { workspaceUuid, eventId })
-  const { client, accountClient } = await getClient(workspaceUuid)
-  const event = await client.findOne(calendar.class.Event, { _id: eventId })
-  if (event === undefined) {
-    throw new Error('Event not found')
+  const { event, modifiedBy } = message
+
+  console.log(`Event ${event._id} for ${event.user} created by ${modifiedBy}`, event)
+
+  if (modifiedBy === event.user) return
+
+  if (await isMeeting(workspaceUuid, event)) {
+    // This happens when the host adds a new participant to the existing meeting
+    // A new event which is already a meeting is created for the new participant
+    console.log(`Meeting ${event._id} for ${event.user} scheduled`)
+    await createNotification(workspaceUuid, MeetingNotificationType.Scheduled, event, modifiedBy)
+  } else {
+    // Don't create notifications for reguar events, only for meetings
+    // But the event will be marked as a meeting in a separate call
+    // immediately after creation, in the "mixin" message
+    recentlyCreatedEvents.add(event._id)
   }
-  const personUuid = await accountClient.findPersonBySocialId(event.user, true)
-  if (personUuid === undefined) {
-    throw new Error('Global person not found')
-  }
-  const person = await client.findOne(contact.class.Person, { personUuid }, { projection: { _id: 1 } })
-  if (person === undefined) {
-    throw new Error('Local person not found')
-  }
-  const space = await client.findOne(contact.class.PersonSpace, { person: person._id }, { projection: { _id: 1 } })
-  if (space === undefined) {
-    throw new Error('Person space not found')
-  }
-  await createNotification(
-    client,
-    event,
-    personUuid as AccountUuid,
-    space._id,
-    calendar.string.MeetingScheduledNotification,
-    {}
-  )
 }
 
 export async function eventUpdated (
-  ctx: MeasureContext,
   workspaceUuid: WorkspaceUuid,
-  message: EventCUDMessage
+  message: Omit<EventCUDMessage, 'action'>
 ): Promise<void> {
-  const { eventId } = message
-  ctx.info('Event updated', { workspaceUuid, eventId })
+  const { event, modifiedBy } = message
+
+  console.log(`Event ${event._id} for ${event.user} updated by ${modifiedBy}`, event, message.changes)
+
+  if (modifiedBy === event.user) return
+
+  if (await isMeeting(workspaceUuid, event)) {
+    const changes = message.changes as Partial<Data<Event>>
+    if (changes.date !== undefined) {
+      console.log(`Meeting ${event._id} for ${event.user} rescheduled`)
+      await createNotification(workspaceUuid, MeetingNotificationType.Rescheduled, event, modifiedBy)
+    }
+  }
 }
 
 export async function eventDeleted (
-  ctx: MeasureContext,
   workspaceUuid: WorkspaceUuid,
-  message: EventCUDMessage
+  message: Omit<EventCUDMessage, 'action'>
 ): Promise<void> {
-  const { eventId } = message
-  ctx.info('Event deleted', { workspaceUuid, eventId })
+  const { event, modifiedBy } = message
+
+  console.log(`Event ${event._id} for ${event.user} deleted by ${modifiedBy}`, event)
+
+  if (modifiedBy === event.user) return
+
+  if (await isMeeting(workspaceUuid, event)) {
+    console.log(`Meeting ${event._id} for ${event.user} canceled`)
+    await createNotification(workspaceUuid, MeetingNotificationType.Canceled, event, modifiedBy)
+  }
+}
+
+export async function eventMixin (
+  workspaceUuid: WorkspaceUuid,
+  message: Omit<EventCUDMessage, 'action'>
+): Promise<void> {
+  const { event, modifiedBy } = message
+
+  console.log(`Event ${event._id} for ${event.user} mixined by ${modifiedBy}`, event, message.changes)
+
+  if (modifiedBy === event.user) {
+    console.log('Event is mixined by the host, skipping notification')
+    return
+  }
+
+  if (recentlyCreatedEvents.has(event._id)) {
+    recentlyCreatedEvents.delete(event._id)
+
+    if (await isMeeting(workspaceUuid, event)) {
+      console.log(`Meeting ${event._id} for ${event.user} scheduled`)
+      await createNotification(workspaceUuid, MeetingNotificationType.Scheduled, event, modifiedBy)
+    } else {
+      console.log(`Event ${event._id} for ${event.user} is not a meeting`)
+    }
+  } else {
+    console.log('Event is not newly created, skipping notification')
+  }
 }

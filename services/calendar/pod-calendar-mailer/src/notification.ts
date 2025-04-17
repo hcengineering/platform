@@ -13,38 +13,88 @@
 // limitations under the License.
 //
 import calendar, { Event } from '@hcengineering/calendar'
-import { PersonSpace } from '@hcengineering/contact'
-import { Ref, TxOperations, AccountUuid } from '@hcengineering/core'
+import contact from '@hcengineering/contact'
+import { AccountUuid, Doc, PersonId, Ref, Space, WorkspaceUuid } from '@hcengineering/core'
 import notification from '@hcengineering/notification'
 import { IntlString } from '@hcengineering/platform'
+import { getClient } from './utils'
+
+export enum MeetingNotificationType {
+  Scheduled = 'meeting-scheduled',
+  Rescheduled = 'meeting-rescheduled',
+  Canceled = 'meeting-canceled',
+}
+
+const notificationMessages: Record<MeetingNotificationType, IntlString> = {
+  [MeetingNotificationType.Scheduled]: calendar.string.MeetingScheduledNotification,
+  [MeetingNotificationType.Rescheduled]: calendar.string.MeetingRescheduledNotification,
+  [MeetingNotificationType.Canceled]: calendar.string.MeetingCanceledNotification
+}
 
 export async function createNotification (
-  client: TxOperations,
+  workspaceUuid: WorkspaceUuid,
+  type: MeetingNotificationType,
   forEvent: Event,
-  user: AccountUuid,
-  space: Ref<PersonSpace>,
-  message: IntlString,
-  props: Record<string, any>
+  modifiedBy: PersonId
 ): Promise<void> {
-  const docNotifyContext = await client.findOne(notification.class.DocNotifyContext, { objectId: forEvent._id, user })
+  const { client, accountClient } = await getClient(workspaceUuid)
+  const personUuid = await accountClient.findPersonBySocialId(forEvent.user, true)
+  if (personUuid === undefined) {
+    throw new Error(`Global person not found for social-id ${forEvent.user}`)
+  }
+  const person = await client.findOne(contact.class.Person, { personUuid }, { projection: { _id: 1 } })
+  if (person === undefined) {
+    throw new Error(`Local person not found for person-uuid ${personUuid}`)
+  }
+  const space = await client.findOne(contact.class.PersonSpace, { person: person._id }, { projection: { _id: 1 } })
+  if (space === undefined) {
+    throw new Error(`Person space not found for person ${person._id}`)
+  }
+  console.log(`Creating notification for ${forEvent._id} for ${forEvent.user} in ${space._id}`)
+
+  const user = personUuid as AccountUuid
+  let objectId: Ref<Doc<Space>> = forEvent._id
+  let objectClass = forEvent._class
+  let objectSpace = forEvent.space
+
+  if (type === MeetingNotificationType.Canceled) {
+    const calendr = await client.findOne(calendar.class.Calendar, { _id: forEvent.calendar }, { projection: { _id: 1 } })
+    if (calendr === undefined) {
+      throw new Error(`Calendar not found for event ${forEvent._id}`)
+    }
+    objectId = calendr._id
+    objectClass = calendar.class.Calendar
+    objectSpace = calendr.space
+  }
+
+  const docNotifyContext = await client.findOne(notification.class.DocNotifyContext, { objectId, user })
   let docNotifyContextId = docNotifyContext?._id
   if (docNotifyContextId === undefined) {
-    docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, space, {
-      objectId: forEvent._id,
-      objectClass: forEvent._class,
-      objectSpace: forEvent.space,
+    docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, space._id, {
+      objectId,
+      objectClass,
+      objectSpace,
       user,
       isPinned: false,
       hidden: false
     })
   }
-  await client.createDoc(notification.class.CommonInboxNotification, space, {
+
+  if (notificationMessages[type] === undefined) {
+    throw new Error('Invalid notification type')
+  }
+
+  // Here we need another client with that account who created the event
+  // to make the notification in the inbox displaying the author name
+  const { client: txClient } = await getClient(workspaceUuid, modifiedBy)
+
+  await txClient.createDoc(notification.class.CommonInboxNotification, space._id, {
     user,
-    objectId: forEvent._id,
-    objectClass: forEvent._class,
+    objectId,
+    objectClass,
     icon: calendar.icon.Calendar,
-    message,
-    props,
+    message: notificationMessages[type],
+    props: { title: forEvent.title },
     isViewed: false,
     archived: false,
     docNotifyContext: docNotifyContextId

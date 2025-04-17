@@ -13,10 +13,13 @@
 // limitations under the License.
 //
 
-import { type Ref } from '@hcengineering/core'
-import { type Event } from '@hcengineering/calendar'
+import { Event } from '@hcengineering/calendar'
+import { Data, PersonId } from '@hcengineering/core'
+import { Meeting } from '@hcengineering/love'
 
 export interface EventCUDMessage {
-  action: 'create' | 'update' | 'delete'
-  eventId: Ref<Event>
+  action: 'create' | 'update' | 'delete' | 'mixin'
+  event: Event
+  modifiedBy: PersonId
+  changes?: Partial<Data<Event>> | Partial<Data<Meeting>>
 }
