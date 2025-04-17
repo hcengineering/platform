@@ -917,7 +917,7 @@ export class WorkspaceImporter {
     this.logger.log('Creating document template: ' + template.title)
     const templateId = template.id ?? generateId<ControlledDocument>()
 
-    const { seqNumber, code, projectDocumentId } = await createDocumentTemplateMetadata(
+    const { seqNumber, code, projectDocumentId, success } = await createDocumentTemplateMetadata(
       this.client,
       documents.class.Document,
       spaceId,
@@ -930,6 +930,10 @@ export class WorkspaceImporter {
       template.title,
       template.metaId
     )
+
+    if (!success) {
+      throw new Error('Failed to create document template: ' + template.title)
+    }
 
     templateMetaMap.set(templateId, { seqNumber, code })
 
@@ -967,10 +971,7 @@ export class WorkspaceImporter {
     const collabId = makeCollabId(documents.class.Document, template.id, 'content')
     const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
 
-    const changeControlId =
-      template.ccReason !== undefined || template.ccImpact !== undefined || template.ccDescription !== undefined
-        ? await this.createChangeControl(spaceId, template.ccDescription, template.ccReason, template.ccImpact)
-        : ('' as Ref<ChangeControl>)
+    const changeControlId = await this.createChangeControl(spaceId, template.ccDescription, template.ccReason, template.ccImpact)
 
     const ops = this.client.apply()
     const result = await ops.addCollection(
@@ -1026,7 +1027,6 @@ export class WorkspaceImporter {
     this.logger.log('Creating controlled document: ' + doc.title)
     const documentId = doc.id ?? generateId<ControlledDocument>()
 
-    // const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, doc.template as unknown as Ref<DocumentTemplate>)
     const result = await createControlledDocMetadata(
       this.client,
       documents.template.ProductChangeControl,
@@ -1040,6 +1040,10 @@ export class WorkspaceImporter {
       doc.title,
       doc.metaId
     )
+
+    if (!result.success) {
+      throw new Error('Failed to create controlled document: ' + doc.title)
+    }
 
     // Process subdocs recursively
     for (const subdoc of doc.subdocs) {
@@ -1081,10 +1085,7 @@ export class WorkspaceImporter {
 
     const ops = this.client.apply()
 
-    const changeControlId =
-      document.ccReason !== undefined || document.ccImpact !== undefined
-        ? await this.createChangeControl(spaceId, document.ccDescription, document.ccReason, document.ccImpact)
-        : ('' as Ref<ChangeControl>)
+    const changeControlId = await this.createChangeControl(spaceId, document.ccDescription, document.ccReason, document.ccImpact)
 
     const result = await ops.addCollection(
       documents.class.ControlledDocument,
