@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 
@@ -46,6 +47,7 @@ export async function handleS3CreateBlob (
     await datalake.create(ctx, workspace, name, filename)
     res.status(200).send()
   } catch (err: any) {
+    Analytics.handleError(err)
     const error = err instanceof Error ? err.message : String(err)
     ctx.error('failed to create blob', { workspace, name, error })
     res.status(500).send()

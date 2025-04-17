@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext } from '@hcengineering/core'
 import { type Request, type Response } from 'express'
 import { createReadStream, createWriteStream } from 'fs'
@@ -110,6 +111,7 @@ export async function handleImageGet (
 
     await writeFileToResponse(ctx, outFile, res)
   } catch (err: any) {
+    Analytics.handleError(err)
     ctx.error('image processing error', { workspace, name, error: err })
 
     res.setHeader('Content-Type', blob.contentType)
@@ -237,6 +239,7 @@ async function writeFileToResponse (ctx: MeasureContext, path: string, res: Resp
 
   pipeline(stream, res, (err) => {
     if (err != null) {
+      Analytics.handleError(err)
       const error = err instanceof Error ? err.message : String(err)
       ctx.error('error writing response', { error })
       if (!res.headersSent) {

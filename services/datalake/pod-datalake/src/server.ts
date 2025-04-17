@@ -15,6 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, metricsAggregate } from '@hcengineering/core'
+import { getCPUInfo, getMemoryInfo } from '@hcengineering/server-core'
 import { decodeToken } from '@hcengineering/server-token'
 
 import cors from 'cors'
@@ -229,6 +230,7 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
       return
     }
 
+    Analytics.handleError(err)
     res.status(500).json({ message: err.message?.length > 0 ? err.message : 'Internal Server Error' })
   })
 
@@ -245,7 +247,8 @@ export function createServer (ctx: MeasureContext, config: Config): { app: Expre
       const json = JSON.stringify({
         metrics: metricsAggregate((ctx as any).metrics),
         statistics: {
-          activeSessions: {}
+          cpu: getCPUInfo(),
+          memory: getMemoryInfo()
         },
         admin
       })
