@@ -86,6 +86,13 @@ export const storeNodes: Record<string, NodeProcessor> = {
     state.write('```')
     state.closeBlock(node)
   },
+  mermaid: (state, node) => {
+    state.write('```mermaid\n')
+    state.renderInline(node)
+    state.ensureNewLine()
+    state.write('```')
+    state.closeBlock(node)
+  },
   heading: (state, node) => {
     const attrs = nodeAttrs(node)
     if (attrs.marker === '=' && attrs.level === 1) {
