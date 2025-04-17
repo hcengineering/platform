@@ -97,4 +97,14 @@ export function definePermissions (builder: Builder): void {
     },
     core.permission.ArchiveSpace
   )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
+      label: core.string.CreateProject,
+      description: core.string.CreateProjectDescription
+    },
+    core.permission.CreateProject
+  )
 }

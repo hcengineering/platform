@@ -14,7 +14,14 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { AccountRole, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import core, {
+    AccountRole,
+    Ref,
+    Space,
+    getCurrentAccount,
+    hasAccountRole,
+    checkPermission
+  } from '@hcengineering/core'
   import { MultipleDraftController, createQuery, getClient } from '@hcengineering/presentation'
   import { TrackerEvents } from '@hcengineering/tracker'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
@@ -36,39 +43,12 @@
       draftExists = res
     })
   )
-  async function newIssue (): Promise<void> {
+  function newIssue (): void {
     closed = false
     Analytics.handleEvent(TrackerEvents.NewIssueButtonClicked)
     showPopup(CreateIssue, { space: currentSpace, shouldSaveDraft: true }, 'top', () => {
       closed = true
     })
-  }
-
-  function getAvailableActions (): SelectPopupValueType[] {
-    const result = []
-    if (hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)) {
-      result.push(
-        {
-          id: tracker.string.CreateProject,
-          label: tracker.string.CreateProject
-        }
-      )
-    }
-    result.push(
-      {
-        id: tracker.string.NewIssue,
-        label: tracker.string.NewIssue
-      }
-    )
-    if (hasAccountRole(getCurrentAccount(), AccountRole.User)) {
-      result.push(
-        {
-          id: tracker.string.Import,
-          label: tracker.string.Import
-        }
-      )
-    }
-    return result
   }
 
   const query = createQuery()
@@ -79,12 +59,13 @@
     projectExists = res.length > 0
   })
 
-  $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
-  $: dropdownItems = getAvailableActions()
   const client = getClient()
+  $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
 
   let keys: string[] | undefined = undefined
-  async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
+  let canCreateProject = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
+
+  function dropdownItemSelected (res?: SelectPopupValueType['id']): void {
     if (res == null) return
 
     if (res === tracker.string.CreateProject) {
@@ -93,11 +74,37 @@
         closed = true
       })
     } else {
-      await newIssue()
+      newIssue()
     }
   }
 
   void client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
+  if (!canCreateProject) {
+    void checkPermission(client, core.permission.CreateProject, core.space.Space).then((hasPermission) => {
+      canCreateProject = hasPermission
+    })
+  }
+
+  function getAvailableActions (): SelectPopupValueType[] {
+    const result = []
+    if (canCreateProject) {
+      result.push({
+        id: tracker.string.CreateProject,
+        label: tracker.string.CreateProject
+      })
+    }
+    result.push({
+      id: tracker.string.NewIssue,
+      label: tracker.string.NewIssue
+    })
+    if (hasAccountRole(getCurrentAccount(), AccountRole.User)) {
+      result.push({
+        id: tracker.string.Import,
+        label: tracker.string.Import
+      })
+    }
+    return result
+  }
 </script>
 
 <div class="antiNav-subheader">
@@ -108,7 +115,7 @@
       kind={'primary'}
       {label}
       on:click={newIssue}
-      {dropdownItems}
+      dropdownItems={getAvailableActions()}
       dropdownIcon={IconDropdown}
       on:dropdown-selected={(ev) => {
         dropdownItemSelected(ev.detail)
@@ -128,6 +135,7 @@
     </ButtonWithDropdown>
   {:else}
     <Button
+      disabled={!canCreateProject}
       icon={IconAdd}
       justify="left"
       kind="primary"
