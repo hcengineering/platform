@@ -52,6 +52,7 @@
     "@hcengineering/collaborator-client": "^0.6.4",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/presence": "^0.6.0",
+    "@hcengineering/text-markdown": "^0.6.0",
     "@tiptap/core": "^2.11.7",
     "@tiptap/pm": "^2.11.7",
     "@tiptap/extension-code-block-lowlight": "^2.11.7",
