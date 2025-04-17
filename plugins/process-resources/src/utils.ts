@@ -13,7 +13,7 @@
 
 import { type Card } from '@hcengineering/card'
 import core, {
-  type Space,
+  generateId,
   type AnyAttribute,
   type ArrOf,
   type Association,
@@ -23,13 +23,14 @@ import core, {
   type DocumentQuery,
   type Ref,
   type RefTo,
-  type Type,
-  generateId
+  type Space,
+  type TxOperations,
+  type Type
 } from '@hcengineering/core'
+import { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import {
   parseContext,
-  type SelectedUserRequest,
   type Context,
   type Execution,
   type Method,
@@ -37,6 +38,7 @@ import {
   type Process,
   type ProcessFunction,
   type RelatedContext,
+  type SelectedUserRequest,
   type State,
   type Step
 } from '@hcengineering/process'
@@ -319,4 +321,30 @@ export function getToDoEndAction (prevState: State): Step<Doc> {
     }
   }
   return endAction
+}
+
+export async function requestResult (
+  txop: TxOperations,
+  execution: Execution,
+  results: Record<Ref<State>, any>
+): Promise<void> {
+  if (execution.currentState === null) return
+  const client = getClient()
+  const state = client.getModel().findObject(execution.currentState)
+  if (state === undefined) return
+  if (state.resultType == null) return
+  const promise = new Promise<void>((resolve, reject) => {
+    showPopup(process.component.ResultInput, { type: state.resultType }, undefined, (res) => {
+      if (res?.value !== undefined) {
+        results[state._id] = res.value
+        resolve()
+      } else {
+        reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
+      }
+    })
+  })
+  await promise
+  await txop.update(execution, {
+    results
+  })
 }

@@ -123,7 +123,7 @@
     if (attribute.hidden === true || attribute.label === undefined) return
     if (viewlet.configOptions?.hiddenKeys?.includes(attribute.name)) return
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
-    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
+    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
     const value = getValue(attribute.name, attribute.type, attrClass)
     for (const res of result) {
       const key = typeof res.value === 'string' ? res.value : res.value?.key

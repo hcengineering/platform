@@ -50,7 +50,10 @@
     "RequestFromUser": "Požádat uživatele",
     "EnterValue": "Zadat hodnotu",
     "OnToDoClose": "Při zavření úkolu",
-    "OnSubProcessesDone": "Při dokončení podprocesů"
+    "OnSubProcessesDone": "Při dokončení podprocesů",
+    "Result": "Výsledek",
+    "NoResultRequired": "Není vyžadován žádný výsledek",
+    "RequestResult": "Požádat o výsledek"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
@@ -61,6 +64,7 @@
     "UserRequestedValueNotProvided": "Hodnota požadovaná uživatelem nebyla poskytnuta: {attr}",
     "ObjectNotFound": "Objekt nenalezen: {_id}",
     "EmptyRelatedObjectValue": "Prázdná hodnota {attr} souvisejícího objektu: {parent}",
-    "InternalServerError": "Vnitřní chyba serveru, kontaktujte podporu, chybové id: {errorId}"
+    "InternalServerError": "Vnitřní chyba serveru, kontaktujte podporu, chybové id: {errorId}",
+    "ResultNotProvided": "Výsledek nebyl poskytnut"
   }
 }

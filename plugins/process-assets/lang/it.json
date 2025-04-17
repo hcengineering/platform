@@ -50,7 +50,10 @@
     "RequestFromUser": "Richiedi da utente",
     "EnterValue": "Inserisci valore",
     "OnToDoClose": "Alla chiusura Attività",
-    "OnSubProcessesDone": "Alla fine dei sottoprocessi"
+    "OnSubProcessesDone": "Alla fine dei sottoprocessi",
+    "Result": "Risultato",
+    "RequestResult": "Richiedi risultato",
+    "NoResultRequired": "Nessun risultato richiesto"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
@@ -61,6 +64,7 @@
     "UserRequestedValueNotProvided": "Valore richiesto dall'utente non fornito: {attr}",
     "ObjectNotFound": "Oggetto non trovato: {_id}",
     "EmptyRelatedObjectValue": "Valore oggetto correlato vuoto: {parent} {attr}",
-    "InternalServerError": "Errore interno del server, contatta il supporto, id errore: {errorId}"
+    "InternalServerError": "Errore interno del server, contatta il supporto, id errore: {errorId}",
+    "ResultNotProvided": "Risultato non fornito"
   }
 }

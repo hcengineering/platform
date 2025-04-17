@@ -16,13 +16,12 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
+  getCurrentAccount,
   MeasureMetricsContext,
+  reduceCalls,
   TxOperations,
   TxProcessor,
-  getCurrentAccount,
-  reduceCalls,
   type Account,
-  type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
   type Class,
@@ -45,6 +44,7 @@ import core, {
   type TxApplyIf,
   type TxCUD,
   type TxResult,
+  type Type,
   type TypeAny,
   type WithLookup,
   type WorkspaceUuid
@@ -597,12 +597,12 @@ export async function copyTextToClipboard (text: string | Promise<string>): Prom
  */
 export function getAttributePresenterClass (
   hierarchy: Hierarchy,
-  attribute: AnyAttribute
+  type: Type<any>
 ): { attrClass: Ref<Class<Doc>>, category: AttributeCategory } {
-  let attrClass = attribute.type._class
+  let attrClass = type._class
   let category: AttributeCategory = 'attribute'
   if (hierarchy.isDerived(attrClass, core.class.RefTo)) {
-    attrClass = (attribute.type as RefTo<Doc>).to
+    attrClass = (type as RefTo<Doc>).to
     category = 'object'
   }
   if (hierarchy.isDerived(attrClass, core.class.TypeMarkup)) {
@@ -612,11 +612,11 @@ export function getAttributePresenterClass (
     category = 'inplace'
   }
   if (hierarchy.isDerived(attrClass, core.class.Collection)) {
-    attrClass = (attribute.type as Collection<AttachedDoc>).of
+    attrClass = (type as Collection<AttachedDoc>).of
     category = 'collection'
   }
   if (hierarchy.isDerived(attrClass, core.class.ArrOf)) {
-    const of = (attribute.type as ArrOf<AttachedDoc>).of
+    const of = (type as ArrOf<AttachedDoc>).of
     attrClass = of._class === core.class.RefTo ? (of as RefTo<Doc>).to : of._class
     category = 'array'
   }
@@ -634,6 +634,32 @@ function getAttributeEditorNotFoundError (
   return `attribute editor not found for class "${_class}", attribute "${attributeKey}"` + error
 }
 
+export function getAttrEditor (type: Type<any>, hierarchy: Hierarchy): AnyComponent | undefined {
+  const attrClass = getAttributePresenterClass(hierarchy, type)
+  if (attrClass === undefined) {
+    return
+  }
+
+  let mixin: Ref<Mixin<AttributeEditor>>
+
+  switch (attrClass.category) {
+    case 'collection': {
+      mixin = view.mixin.CollectionEditor
+      break
+    }
+    case 'array': {
+      mixin = view.mixin.ArrayEditor
+      break
+    }
+    default: {
+      mixin = view.mixin.AttributeEditor
+    }
+  }
+
+  const editorMixin = hierarchy.classHierarchyMixin(attrClass.attrClass, mixin)
+  return editorMixin?.inlineEditor
+}
+
 export async function getAttributeEditor (
   client: Client,
   _class: Ref<Class<Obj>>,
@@ -647,7 +673,7 @@ export async function getAttributeEditor (
     return await getResource(_type.editor ?? _type.presenter)
   }
 
-  const presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
+  const presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute.type) : undefined
 
   if (presenterClass === undefined) {
     return

@@ -43,6 +43,7 @@
   import StateEditor from './StateEditor.svelte'
   import TransitionEditor from './TransitionEditor.svelte'
   import { getToDoEndAction } from '../utils'
+  import ExecutionResultEditor from './ExecutionResultEditor.svelte'
 
   export let _id: Ref<Process>
   export let visibleSecondNav: boolean = true
@@ -194,19 +195,23 @@
                   <ArrowStart size={'full'} />
                 </div>
                 {#if state.endAction !== undefined}
-                  <TransitionEditor {state} />
+                  <TransitionEditor {state} process={value} />
+                  <div class="arrow">
+                    <ArrowEnd size={'full'} />
+                  </div>
+                {:else}
+                  <ButtonIcon icon={IconAdd} size={'medium'} kind={'primary'} on:click={addState} />
                 {/if}
-                <div class="arrow">
-                  <ArrowEnd size={'full'} />
-                </div>
               {/each}
-              <Button
-                kind={'primary'}
-                size={'large'}
-                icon={IconAdd}
-                label={process.string.AddState}
-                on:click={addState}
-              />
+              {#if sortedStates.length === 0}
+                <Button
+                  kind={'primary'}
+                  size={'large'}
+                  icon={IconAdd}
+                  label={process.string.AddState}
+                  on:click={addState}
+                />
+              {/if}
             </div>
           </div>
         </div>
