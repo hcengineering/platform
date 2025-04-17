@@ -229,7 +229,7 @@ export function devTool (
     const uri = dbOverride ?? getAccountDBUrl()
     console.log(`connecting to database '${uri}'...`)
 
-    const [accountDb, closeAccountsDb] = await getAccountDB(uri)
+    const [accountDb, closeAccountsDb] = await getAccountDB(uri, process.env.DB_NS)
     try {
       await f(accountDb)
     } catch (err: any) {
@@ -2113,16 +2113,14 @@ export function devTool (
       }
 
       await withAccountDatabase(async (db) => {
-        let workspaces = await listWorkspacesRaw(db)
+        const workspaces = await listWorkspacesRaw(db, cmd.region)
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-        if (cmd.region !== undefined) {
-          workspaces = workspaces.filter((it) => it.region === cmd.region)
-        }
+        console.log('workspacess to process', workspaces.length)
         for (const workspace of workspaces) {
           const wsid = getWorkspaceId(workspace.workspace)
           const token = generateToken(systemAccountEmail, wsid)
 
-          console.log('reindex workspace', workspace)
+          console.log('reindex workspace', workspace.workspaceUrl)
           await reindexWorkspace(toolCtx, fulltextUrl, token)
           console.log('done', workspace)
         }
