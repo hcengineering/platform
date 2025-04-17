@@ -52,7 +52,7 @@ import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
 import { type FileUploader } from '../importer/uploader'
 import { CardsProcessor } from './cards'
-import { MetadataRegistry, ReferenceMetadata } from './metadata'
+import { MetadataRegistry, MentionMetadata } from './registry'
 import { readMarkdownContent, readYamlHeader } from './parsing'
 export interface HulyComment {
   author: string
@@ -251,7 +251,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     }
   }
 
-  private alterMentionNode (node: MarkupNode, targetMeta: ReferenceMetadata): void {
+  private alterMentionNode (node: MarkupNode, targetMeta: MentionMetadata): void {
     node.type = MarkupNodeType.reference
     node.attrs = {
       id: targetMeta.id,
@@ -296,7 +296,7 @@ class HulyMarkdownPreprocessor extends BaseMarkdownPreprocessor {
     attachmentMeta: AttachmentMetadata,
     id: Ref<Doc>,
     spaceId: Ref<Space>,
-    sourceMeta: ReferenceMetadata
+    sourceMeta: MentionMetadata
   ): void {
     this.attachMetaByPath.set(fullPath, {
       ...attachmentMeta,
@@ -322,15 +322,17 @@ export class HulyFormatImporter {
   private employeesByName = new Map<string, Ref<Employee>>()
 
   private readonly fileMetaByPath = new Map<string, AttachmentMetadata>()
-  private readonly metadataRegistry = new MetadataRegistry()
 
-  private readonly cardsProcessor = new CardsProcessor(this.metadataRegistry)
+  private readonly metadataRegistry = new MetadataRegistry()
+  private readonly cardsProcessor: CardsProcessor
 
   constructor (
     private readonly client: TxOperations,
     private readonly fileUploader: FileUploader,
     private readonly logger: Logger
-  ) {}
+  ) {
+    this.cardsProcessor = new CardsProcessor(this.metadataRegistry, this.logger)
+  }
 
   private async initCaches (): Promise<void> {
     await this.cachePersonsByNames()
