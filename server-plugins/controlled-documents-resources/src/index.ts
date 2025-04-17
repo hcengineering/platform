@@ -31,7 +31,7 @@ import documents, {
   DocumentApprovalRequest,
   DocumentState,
   DocumentTemplate,
-  getEffectiveDocUpdate,
+  getEffectiveDocUpdates,
   type DocumentRequest,
   type DocumentTraining
 } from '@hcengineering/controlled-documents'
@@ -58,8 +58,9 @@ async function getDocs (
   return allDocs.filter(predicate)
 }
 
-function makeDocEffective (doc: ControlledDocument, txFactory: TxFactory): Tx {
-  return txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, getEffectiveDocUpdate())
+function makeDocEffective (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
+  const updates = getEffectiveDocUpdates()
+  return updates.map((u) => txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, u))
 }
 
 function archiveDocs (docs: ControlledDocument[], txFactory: TxFactory): Tx[] {
@@ -358,7 +359,7 @@ export async function OnDocPlannedEffectiveDateChanged (
     if (tx.operations.plannedEffectiveDate === 0 && doc.controlledState === ControlledDocumentState.Approved) {
       // Create with not derived tx factory in order for notifications to work
       const factory = new TxFactory(control.txFactory.account)
-      await control.apply(control.ctx, [makeDocEffective(doc, factory)])
+      await control.apply(control.ctx, makeDocEffective(doc, factory))
     }
   }
 
@@ -383,7 +384,7 @@ export async function OnDocApprovalRequestApproved (
 
     // Create with not derived tx factory in order for notifications to work
     const factory = new TxFactory(control.txFactory.account)
-    await control.apply(control.ctx, [makeDocEffective(doc, factory)])
+    await control.apply(control.ctx, makeDocEffective(doc, factory))
     // make doc effective immediately
   }
   return result

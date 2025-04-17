@@ -870,12 +870,16 @@ export async function getFirstRank (
 /**
  * @public
  */
-export function getEffectiveDocUpdate (): DocumentUpdate<ControlledDocument> {
-  return {
-    state: DocumentState.Effective,
-    effectiveDate: Date.now(),
-    controlledState: undefined
-  }
+export function getEffectiveDocUpdates (): DocumentUpdate<ControlledDocument>[] {
+  return [
+    {
+      state: DocumentState.Effective,
+      effectiveDate: Date.now()
+    },
+    {
+      $unset: { controlledState: true }
+    }
+  ]
 }
 
 /**
