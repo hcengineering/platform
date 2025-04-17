@@ -135,7 +135,7 @@ export const TextColor = Extension.create<TextColorOptions>({
       unsetTextColor:
         () =>
           ({ chain }) => {
-            return chain().setMark('textStyle', { color: null }).removeEmptyTextStyle().run()
+            return chain().unsetMark('textStyle').run()
           }
     }
   }
