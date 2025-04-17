@@ -1087,6 +1087,7 @@ export class WorkspaceImporter {
 
     const changeControlId = await this.createChangeControl(spaceId, document.ccDescription, document.ccReason, document.ccImpact)
 
+    const code = document.code ?? `${prefix}-${seqNumber}`
     const result = await ops.addCollection(
       documents.class.ControlledDocument,
       spaceId,
@@ -1105,7 +1106,7 @@ export class WorkspaceImporter {
         approvers: document.approvers ?? [],
         coAuthors: document.coAuthors ?? [],
         changeControl: changeControlId,
-        code: document.code ?? `${prefix}-${seqNumber}`,
+        code,
         prefix,
         category: document.category ?? templateCategory,
         seqNumber,
@@ -1119,7 +1120,7 @@ export class WorkspaceImporter {
 
     await ops.updateDoc(documents.class.DocumentMeta, spaceId, document.metaId, {
       documents: 0,
-      title: `${prefix}-${seqNumber} ${document.title}`
+      title: `${code} ${document.title}`
     })
 
     await ops.commit()
