@@ -85,7 +85,10 @@ export const main = async (): Promise<void> => {
           }
 
           const authProvider = gmailController.getAuthProvider()
-          const url = authProvider.getAuthUrl(redirectURL, { workspace: wsLoginInfo.workspace, userId: wsLoginInfo.account })
+          const url = authProvider.getAuthUrl(redirectURL, {
+            workspace: wsLoginInfo.workspace,
+            userId: wsLoginInfo.account
+          })
           res.send(url)
         } catch (err) {
           console.log('signin error', (err as any).message)

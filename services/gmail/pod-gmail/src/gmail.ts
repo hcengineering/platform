@@ -25,7 +25,6 @@ import core, {
 import gmail, { type NewMessage } from '@hcengineering/gmail'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
-import type { GaxiosResponse } from 'gaxios'
 import type { Credentials, OAuth2Client } from 'google-auth-library'
 import { gmail_v1, google } from 'googleapis'
 import { encode64 } from './base64'
@@ -88,7 +87,6 @@ export class GmailClient {
   private readonly client: TxOperations
   private watchTimer: NodeJS.Timeout | undefined = undefined
   private refreshTimer: NodeJS.Timeout | undefined = undefined
-  private syncPromise: Promise<void> | undefined = undefined
   private readonly rateLimiter = new RateLimiter(1000, 200)
   private readonly attachmentHandler: AttachmentHandler
   private readonly messageManager: MessageManager
@@ -108,16 +106,11 @@ export class GmailClient {
     this.oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
     this.gmail = google.gmail({ version: 'v1', auth: this.oAuth2Client }).users
     this.tokenStorage = new TokenStorage(workspaceId, user.token)
+    this.socialId = this.user.socialId
     this.client = new TxOperations(client, this.socialId)
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, workspaceId, storageAdapter, this.gmail, this.client)
-    this.messageManager = new MessageManager(
-      ctx,
-      this.client,
-      this.attachmentHandler,
-      this.socialId,
-      this.workspace
-    )
+    this.messageManager = new MessageManager(ctx, this.client, this.attachmentHandler, this.socialId, this.workspace)
     this.syncManager = new SyncManager(
       ctx,
       this.messageManager,
@@ -253,32 +246,8 @@ export class GmailClient {
     }
   }
 
-  async sync (): Promise<void> {
-    if (this.syncPromise !== undefined) {
-      await this.syncPromise
-    }
-    /*
-    const history = await this.getHistory()
-    try {
-      if (history != null) {
-        this.syncPromise = this.partSync(history.historyId)
-        await this.syncPromise
-      } else {
-        this.syncPromise = this.fullSync()
-        await this.syncPromise
-      }
-    }
-    */
-    try {
-      this.syncPromise = this.fullSync()
-      await this.syncPromise
-    } finally {
-      this.syncPromise = undefined
-    }
-  }
-
   async startSync (): Promise<void> {
-    await this.sync()
+    await this.syncManager.sync(this.socialId, this.email)
     await this.watch()
     // recall every 24 hours https://developers.google.com/gmail/api/guides/push
     this.watchTimer = setInterval(() => {
@@ -312,7 +281,7 @@ export class GmailClient {
     const tokenInfo = await this.oAuth2Client.getTokenInfo(credentials.access_token)
     this.email = tokenInfo.email
     if (this.email === undefined) {
-      console.error('Can\'t get email from token info', this.user.workspace, this.user.userId)
+      console.error("Can't get email from token info", this.user.workspace, this.user.userId)
       return
     }
     this.socialId = await getOrCreateSocialId(this.account, this.email)
@@ -372,11 +341,6 @@ export class GmailClient {
 
   private async fullSync (q?: string): Promise<void> {
     await this.syncManager.fullSync(this.socialId, this.email, q)
-  }
-
-  private async saveMessage (message: GaxiosResponse<gmail_v1.Schema$Message>): Promise<void> {
-    const email = await this.getEmail()
-    await this.messageManager.saveMessage(message, email)
   }
 
   private async refreshToken (): Promise<void> {

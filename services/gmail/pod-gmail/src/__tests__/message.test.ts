@@ -7,6 +7,9 @@ import { type Channel } from '../types'
 import { AttachmentHandler } from '../message/attachments'
 import { MessageManager } from '../message/message'
 
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
+/* eslint-disable @typescript-eslint/unbound-method */
+
 jest.mock('../config')
 
 describe('MessageManager', () => {
@@ -40,13 +43,7 @@ describe('MessageManager', () => {
       getChannel: jest.fn()
     }
 
-    messageManager = new MessageManager(
-      mockCtx,
-      mockClient,
-      mockAttachmentHandler,
-      mockSocialId,
-      mockWorkspace
-    )
+    messageManager = new MessageManager(mockCtx, mockClient, mockAttachmentHandler, mockSocialId, mockWorkspace)
   })
 
   describe('saveMessage', () => {

@@ -57,11 +57,9 @@ export async function getIntegration (
   return await client.getIntegration({ kind: GMAIL_INTEGRATION, socialId, workspaceUuid: workspaceUuid ?? null })
 }
 
-export async function getIntegrations (
-  token: string
-): Promise<Integration[]> {
+export async function getIntegrations (token: string): Promise<Integration[]> {
   const client = getAccountClient(token)
-  return await client.listIntegrations({ kind: GMAIL_INTEGRATION }) ?? []
+  return (await client.listIntegrations({ kind: GMAIL_INTEGRATION })) ?? []
 }
 
 export async function getOrCreateSocialIdByEmail (
@@ -74,12 +72,7 @@ export async function getOrCreateSocialIdByEmail (
     buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
   )
   if (socialId != null) return socialId._id
-  return await client.addSocialIdToPerson(
-    account,
-    SocialIdType.EMAIL,
-    email,
-    true
-  )
+  return await client.addSocialIdToPerson(account, SocialIdType.EMAIL, email, true)
 }
 
 export async function getIntegrationByAccount (
@@ -103,30 +96,29 @@ export async function getIntegrationByAccount (
   return null
 }
 
-export async function removeIntegration (socialId: PersonId | undefined | null, workspaceUuid: WorkspaceUuid): Promise<void> {
+export async function removeIntegration (
+  socialId: PersonId | undefined | null,
+  workspaceUuid: WorkspaceUuid
+): Promise<void> {
   if (socialId == null) return
   const accountClient = getAccountClient(serviceToken())
   const integrations = await accountClient.listIntegrations({ kind: GMAIL_INTEGRATION, socialId, workspaceUuid })
   for (const integration of integrations) {
-    await accountClient.deleteIntegration({ socialId, kind: GMAIL_INTEGRATION, workspaceUuid: integration.workspaceUuid })
+    await accountClient.deleteIntegration({
+      socialId,
+      kind: GMAIL_INTEGRATION,
+      workspaceUuid: integration.workspaceUuid
+    })
   }
 }
 
-export async function getOrCreateSocialId (
-  account: AccountUuid,
-  email: string
-): Promise<PersonId> {
+export async function getOrCreateSocialId (account: AccountUuid, email: string): Promise<PersonId> {
   const accountClient = getAccountClient(serviceToken())
   const socialId = await accountClient.findFullSocialIdBySocialKey(
     buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
   )
   if (socialId == null) {
-    return await accountClient.addSocialIdToPerson(
-      account,
-      SocialIdType.EMAIL,
-      email,
-      true
-    )
+    return await accountClient.addSocialIdToPerson(account, SocialIdType.EMAIL, email, true)
   }
 
   // TODO: proper handle if connected to other account

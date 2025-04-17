@@ -57,10 +57,7 @@ export class AttachmentHandler {
     }
   }
 
-  async getPartFiles (
-    part: gmail_v1.Schema$MessagePart | undefined,
-    messageId: string
-  ): Promise<AttachedFile[]> {
+  async getPartFiles (part: gmail_v1.Schema$MessagePart | undefined, messageId: string): Promise<AttachedFile[]> {
     if (part === undefined) return []
     if (part.filename != null && part.filename.length > 0) {
       if (part.body?.attachmentId != null) {
@@ -154,7 +151,7 @@ export class AttachmentHandler {
 
   private async makeAttachmentPart (attachment: Attachment): Promise<string[]> {
     const buffer = await this.storageAdapter.read(this.ctx, this.workspaceId as any, attachment.file) // TODO: FIXME
-    const data = Buffer.concat(buffer.map(b => new Uint8Array(b))).toString('base64')
+    const data = Buffer.concat(buffer.map((b) => new Uint8Array(b))).toString('base64')
     const res: string[] = []
     res.push('--mail\n')
     res.push(`Content-Type: ${attachment.type}\n`)

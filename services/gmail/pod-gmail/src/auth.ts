@@ -28,11 +28,7 @@ export class AuthProvider {
   initClient (): void {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { client_secret, client_id, redirect_uris } = this.credentials.web
-    this.oAuth2Client = new google.auth.OAuth2(
-      client_id,
-      client_secret,
-      redirect_uris[0]
-    )
+    this.oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
   }
 
   getAuthUrl (redirectURL: string, user: { workspace: string, userId: string }): string {

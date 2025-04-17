@@ -29,6 +29,7 @@ interface History {
 export class SyncManager {
   private readonly rateLimiter = new RateLimiter(1000, 200)
   private readonly tokenStorage: TokenStorage
+  private syncPromise: Promise<void> | undefined = undefined
 
   constructor (
     private readonly ctx: MeasureContext,
@@ -182,12 +183,17 @@ export class SyncManager {
   }
 
   async sync (userId: PersonId, userEmail?: string): Promise<void> {
+    if (this.syncPromise !== undefined) {
+      await this.syncPromise
+    }
     const history = await this.getHistory(userId)
     try {
       if (history != null) {
-        await this.partSync(userId, userEmail, history.historyId)
+        this.syncPromise = this.partSync(userId, userEmail, history.historyId)
+        await this.syncPromise
       } else {
-        await this.fullSync(userId)
+        this.syncPromise = this.fullSync(userId)
+        await this.syncPromise
       }
     } catch (err) {
       console.log('Sync error', this.workspace, userId, err)

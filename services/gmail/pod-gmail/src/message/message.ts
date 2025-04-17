@@ -12,7 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type MeasureContext, PersonId, Timestamp, TxCUD, TxFactory, TxOperations, TxProcessor, TxCreateDoc, TxUpdateDoc, AttachedData, Data } from '@hcengineering/core'
+import {
+  type MeasureContext,
+  PersonId,
+  Timestamp,
+  TxCUD,
+  TxFactory,
+  TxOperations,
+  TxProcessor,
+  TxCreateDoc,
+  TxUpdateDoc,
+  AttachedData,
+  Data
+} from '@hcengineering/core'
 import gmail, { type Message } from '@hcengineering/gmail'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'

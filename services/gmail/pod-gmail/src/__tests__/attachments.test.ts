@@ -1,4 +1,14 @@
-import { MeasureContext, Ref, Blob, TxOperations, WorkspaceUuid, Doc, Space, Class, PersonId } from '@hcengineering/core'
+import {
+  MeasureContext,
+  Ref,
+  Blob,
+  TxOperations,
+  WorkspaceUuid,
+  Doc,
+  Space,
+  Class,
+  PersonId
+} from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { gmail_v1 } from 'googleapis'
 import { AttachmentHandler } from '../message/attachments'
@@ -7,6 +17,8 @@ import attachment, { Attachment } from '@hcengineering/attachment'
 import { decode64, encode64 } from '../base64'
 
 jest.mock('../config')
+
+/* eslint-disable @typescript-eslint/unbound-method */
 
 describe('AttachmentHandler', () => {
   const mockCtx: MeasureContext = {
@@ -65,13 +77,7 @@ describe('AttachmentHandler', () => {
   let attachmentHandler: AttachmentHandler
 
   beforeEach(() => {
-    attachmentHandler = new AttachmentHandler(
-      mockCtx,
-      mockWorkspaceId,
-      mockStorageAdapter,
-      mockGmail,
-      mockClient
-    )
+    attachmentHandler = new AttachmentHandler(mockCtx, mockWorkspaceId, mockStorageAdapter, mockGmail, mockClient)
   })
 
   describe('addAttachement', () => {
@@ -84,11 +90,13 @@ describe('AttachmentHandler', () => {
         lastModified: Date.now()
       }
       const message = { _id: 'test-message', _class: 'test-class', space: 'test-space' }
-      const currentAttachments: Attachment[] = [{
-        ...getBaseAttachment(),
-        name: 'test.txt',
-        lastModified: file.lastModified
-      }]
+      const currentAttachments: Attachment[] = [
+        {
+          ...getBaseAttachment(),
+          name: 'test.txt',
+          lastModified: file.lastModified
+        }
+      ]
 
       await attachmentHandler.addAttachement(file, message, currentAttachments)
 
@@ -144,13 +152,15 @@ describe('AttachmentHandler', () => {
 
       const result = await attachmentHandler.getPartFiles(part, 'test-message')
 
-      expect(result).toEqual([{
-        file: 'test-data',
-        name: 'test.txt',
-        type: 'text/plain',
-        size: 100,
-        lastModified: expect.any(Number)
-      }])
+      expect(result).toEqual([
+        {
+          file: 'test-data',
+          name: 'test.txt',
+          type: 'text/plain',
+          size: 100,
+          lastModified: expect.any(Number)
+        }
+      ])
     })
 
     it('should get files from body data', async () => {
@@ -165,13 +175,15 @@ describe('AttachmentHandler', () => {
 
       const result = await attachmentHandler.getPartFiles(part, 'test-message')
 
-      expect(result).toEqual([{
-        file: 'test-data',
-        name: 'test.txt',
-        type: 'text/plain',
-        size: 100,
-        lastModified: expect.any(Number)
-      }])
+      expect(result).toEqual([
+        {
+          file: 'test-data',
+          name: 'test.txt',
+          type: 'text/plain',
+          size: 100,
+          lastModified: expect.any(Number)
+        }
+      ])
     })
   })
 
