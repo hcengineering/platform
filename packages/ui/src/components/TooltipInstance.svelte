@@ -248,6 +248,7 @@
 
   const hideTooltip = (): void => {
     if (tooltipHTML) options.visibility = 'hidden'
+    shown = false
     closeTooltip()
   }
 
@@ -467,7 +468,6 @@
     border-radius: 0.75rem;
     box-shadow: var(--theme-popup-shadow);
     user-select: none;
-    opacity: 0;
 
     &.doublePadding {
       padding: 1rem;
@@ -489,13 +489,21 @@
       background-color: var(--popup-color-disabled);
     }
   }
+  .popup-tooltip,
+  .nub {
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+  }
+  .shown {
+    opacity: 1;
+    transition: opacity 0.1s ease-in-out 0.05s;
+  }
 
   .nub {
     position: fixed;
     // background-color: rgba(255, 255, 0, .5);
     user-select: none;
     pointer-events: none;
-    opacity: 0;
 
     &::after,
     &::before {
@@ -560,10 +568,6 @@
       right: -0.25rem;
       transform: rotate(-90deg);
     }
-  }
-  .shown {
-    transition: opacity 0.1s ease-in-out 0.15s;
-    opacity: 1;
   }
 
   .keys {
