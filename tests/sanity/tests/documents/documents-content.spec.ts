@@ -345,7 +345,7 @@ test.describe('Content in the Documents tests', () => {
     await documentContentPage.changeCodeBlockLanguage('Line 18', 'plaintext', 'css')
     await documentContentPage.applyNote('Line 19', 'warning', testNote)
     await documentContentPage.addImage('Line 20')
-    await page.keyboard.type('Cat')
+    // await page.keyboard.type('Cat')
 
     newUser2 = generateUser()
     await createAccount(request, newUser2)

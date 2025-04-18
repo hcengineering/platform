@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { Process, ProcessToDo, State, Step } from '@hcengineering/process'
-  import { createEventDispatcher, onMount } from 'svelte'
-  import ParamsEditor from './ParamsEditor.svelte'
+  import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
+  import ParamsEditor from './ParamsEditor.svelte'
 
   export let process: Process
   export let state: State
@@ -34,11 +34,7 @@
     }
   }
 
-  const keys = test()
-
-  function test (): Array<keyof ProcessToDo> {
-    return ['title', 'user', 'dueDate']
-  }
+  const keys = ['title', 'user', 'dueDate']
 </script>
 
 <ParamsEditor _class={plugin.class.ProcessToDo} {process} {state} {keys} {params} on:change={change} />

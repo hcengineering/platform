@@ -21,6 +21,7 @@
   import Component from './Component.svelte'
   import Label from './Label.svelte'
   import { capitalizeFirstLetter, formatKey } from '../utils'
+  import { testing } from '..'
 
   let tooltipHTML: HTMLElement
   let nubHTML: HTMLElement
@@ -248,6 +249,7 @@
 
   const hideTooltip = (): void => {
     if (tooltipHTML) options.visibility = 'hidden'
+    shown = false
     closeTooltip()
   }
 
@@ -319,6 +321,7 @@
 {#if $tooltip.component && $tooltip.kind !== 'submenu'}
   <div
     class="popup-tooltip {options.classList} {$tooltip.style}"
+    class:testing
     class:shown
     class:doublePadding={$tooltip.label}
     use:resizeObserver={(element) => {
@@ -374,6 +377,7 @@
       bind:this={nubHTML}
       style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
       class="nub {nubDirection ?? ''}"
+      class:testing
       class:shown
     />
   {/if}
@@ -467,7 +471,6 @@
     border-radius: 0.75rem;
     box-shadow: var(--theme-popup-shadow);
     user-select: none;
-    opacity: 0;
 
     &.doublePadding {
       padding: 1rem;
@@ -489,13 +492,25 @@
       background-color: var(--popup-color-disabled);
     }
   }
+  .popup-tooltip,
+  .nub {
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+
+    &.testing {
+      transition-duration: 0 !important;
+    }
+  }
+  .shown {
+    opacity: 1;
+    transition: opacity 0.1s ease-in-out 0.05s;
+  }
 
   .nub {
     position: fixed;
     // background-color: rgba(255, 255, 0, .5);
     user-select: none;
     pointer-events: none;
-    opacity: 0;
 
     &::after,
     &::before {
@@ -560,10 +575,6 @@
       right: -0.25rem;
       transform: rotate(-90deg);
     }
-  }
-  .shown {
-    transition: opacity 0.1s ease-in-out 0.15s;
-    opacity: 1;
   }
 
   .keys {

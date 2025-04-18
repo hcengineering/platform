@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import card, { type Tag, type Card, type MasterTag } from '@hcengineering/card'
+import card, { type Card, type MasterTag, type Tag } from '@hcengineering/card'
 import contact, { type Employee } from '@hcengineering/contact'
 import core, {
   AccountRole,
@@ -22,7 +22,8 @@ import core, {
   type Ref,
   SortingOrder,
   type Space,
-  type Tx
+  type Tx,
+  type Type
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -49,6 +50,7 @@ import {
   type Process,
   type ProcessFunction,
   type ProcessToDo,
+  type Results,
   type State,
   type Step,
   processId
@@ -116,6 +118,10 @@ export class TExecution extends TDoc implements Execution {
     error?: ExecutionError[] | null
 
   parentId?: Ref<Execution>
+
+  context?: Record<string, any>
+
+  results?: Results
 }
 
 @Model(process.class.ProcessToDo, time.class.ToDo)
@@ -148,6 +154,7 @@ export class TState extends TDoc implements State {
   title!: string
   actions!: Step<Doc>[]
   endAction?: Step<Doc> | null
+  resultType?: Type<any> | null
 }
 
 @Model(process.class.ProcessFunction, core.class.Doc, DOMAIN_MODEL)

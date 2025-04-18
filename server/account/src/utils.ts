@@ -527,7 +527,8 @@ export async function selectWorkspace (
     workspaceUrl: string
     kind: 'external' | 'internal' | 'byregion'
     externalRegions?: string[]
-  }
+  },
+  meta?: Meta
 ): Promise<WorkspaceLoginInfo> {
   const { workspaceUrl, kind, externalRegions = [] } = params
   const { account: accountUuid, workspace: tokenWorkspaceUuid, extra } = decodeTokenVerbose(ctx, token ?? '')
@@ -579,6 +580,10 @@ export async function selectWorkspace (
 
   if (workspace == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
+  }
+
+  if (accountUuid !== systemAccountUuid) {
+    void setTimezoneIfNotDefined(ctx, db, accountUuid, account, meta)
   }
 
   if (accountUuid === systemAccountUuid || extra?.admin === 'true') {

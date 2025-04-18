@@ -10,12 +10,16 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { get, writable } from 'svelte/store'
+
+import type { AccountUuid, Class, Ref } from '@hcengineering/core'
 import type { Person } from '@hcengineering/contact'
 import { getClient } from '@hcengineering/presentation'
 import type { LabelAndProps } from '@hcengineering/ui'
+
 import contact from '../../plugin'
 import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
-import type { Class, Ref } from '@hcengineering/core'
+import { getAccountClient } from '../../utils'
 
 const client = getClient()
 const h = client.getHierarchy()
@@ -33,5 +37,30 @@ export function getPreviewPopup (
     timeout: 300,
     style: 'modern',
     noArrow: true
+  }
+}
+
+export const timezoneByAccountStore = writable<Map<AccountUuid, string>>(new Map())
+
+export async function getPersonTimezone (personId: AccountUuid | undefined): Promise<string | undefined> {
+  if (personId === undefined) return undefined
+
+  const storedTimezone = get(timezoneByAccountStore).get(personId)
+  if (storedTimezone !== undefined) return storedTimezone
+
+  try {
+    const accountInfo = await getAccountClient().getAccountInfo(personId)
+    if (accountInfo.timezone !== undefined) {
+      timezoneByAccountStore.update((store: Map<AccountUuid, string>) => {
+        if (accountInfo.timezone !== undefined) {
+          store.set(personId, accountInfo.timezone)
+        }
+        return store
+      })
+    }
+    return accountInfo.timezone
+  } catch (error) {
+    console.error(error)
+    return undefined
   }
 }

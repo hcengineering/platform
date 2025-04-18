@@ -115,7 +115,6 @@
     "Confirmed": "Confirmado",
     "UserProfile": "Perfil de usuario",
     "DeactivatedAccount": "Cuenta desactivada",
-    "LocalTime": "hora local",
-    "LocalTimeNotSet": "Hora local no establecida"
+    "LocalTime": "hora local"
   }
 }

@@ -23,7 +23,8 @@
   import ModernProfilePopup from './ModernProfilePopup.svelte'
   import contact from '../../plugin'
   import Avatar from '../Avatar.svelte'
-  import { employeeByIdStore, getAccountClient } from '../../utils'
+  import { employeeByIdStore } from '../../utils'
+  import { getPersonTimezone } from './utils'
   import { EmployeePresenter } from '../../index'
   import TimePresenter from './TimePresenter.svelte'
   import DeactivatedHeader from './DeactivatedHeader.svelte'
@@ -36,7 +37,6 @@
 
   let employee: Employee | undefined = undefined
   let timezone: string | undefined = undefined
-  let isTimezoneLoading = true
 
   $: employee = $employeeByIdStore.get(_id)
   $: void loadPersonTimezone(employee?.personUuid)
@@ -50,15 +50,7 @@
   }
 
   async function loadPersonTimezone (personId: AccountUuid | undefined): Promise<void> {
-    if (personId === undefined) return
-    isTimezoneLoading = true
-    try {
-      const accountInfo = await getAccountClient().getAccountInfo(personId)
-      timezone = accountInfo.timezone
-    } catch (error) {
-      console.error(error)
-    }
-    isTimezoneLoading = false
+    timezone = await getPersonTimezone(personId)
   }
 </script>
 
@@ -95,9 +87,10 @@
           on:click={viewProfile}
         />
         <div class="flex-col flex-gap-0-5">
+          <div class="status-container" />
           <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact accent />
           <span class="flex-presenter cursor-default">
-            <TimePresenter {timezone} {isTimezoneLoading} />
+            <TimePresenter {timezone} />
           </span>
         </div>
       </div>
@@ -150,5 +143,9 @@
     border-radius: var(--small-BorderRadius);
     display: flex;
     background-color: var(--theme-button-container-color);
+  }
+  .status-container {
+    display: flex;
+    min-height: 1rem;
   }
 </style>
