@@ -16,21 +16,32 @@
 <script lang="ts">
   import { Card } from '@hcengineering/card'
   import { NotificationContext } from '@hcengineering/communication-types'
+  import { createNotificationContextsQuery } from '@hcengineering/presentation'
 
   import ChatHeader from './ChatHeader.svelte'
   import ChatBody from './ChatBody.svelte'
   import ChatFooter from './ChatFooter.svelte'
 
   export let card: Card
-  export let context: NotificationContext | undefined = undefined
+
+  const contextsQuery = createNotificationContextsQuery()
 
   let footerHeight: number | undefined = undefined
+  let context: NotificationContext | undefined = undefined
+  let isLoaded = false
+
+  $: contextsQuery.query({ card: card._id, limit: 1 }, (res) => {
+    context = res.getResult()[0]
+    isLoaded = true
+  })
 </script>
 
 <ChatHeader {card} />
-{#key card._id}
-  <ChatBody {card} {footerHeight} {context} />
-{/key}
+{#if isLoaded}
+  {#key card._id}
+    <ChatBody {card} {footerHeight} {context} />
+  {/key}
+{/if}
 <ChatFooter {card} bind:height={footerHeight} />
 
 <style lang="scss">

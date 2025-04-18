@@ -21,12 +21,18 @@
   import IconArrowChevronRight from './icons/IconArrowChevronRight.svelte'
   import IconArrowChevronDown from './icons/IconArrowChevronDown.svelte'
   import Divider from './Divider.svelte'
+  import { IconComponent } from '../types'
+  import Icon from './Icon.svelte'
 
   export let id: string
   export let title: IntlString
+  export let icon: IconComponent | undefined = undefined
+  export let iconProps: any | undefined = undefined
   export let withHeaderDivider = false
   export let expanded = true
   export let selected = false
+  export let level: number = 0
+  export let empty = false
 
   const dispatch = createEventDispatcher()
 
@@ -44,14 +50,20 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="section__header" class:selected on:click>
-    <div class="section__arrow" on:click={toggleExpanded}>
-      {#if _expanded}
-        <IconArrowChevronDown />
-      {:else}
-        <IconArrowChevronRight />
-      {/if}
-    </div>
+    <div style:margin-left={`${1.25 * level}rem`} />
+    {#if !empty}
+      <div class="section__arrow" on:click={toggleExpanded}>
+        {#if _expanded}
+          <IconArrowChevronDown />
+        {:else}
+          <IconArrowChevronRight />
+        {/if}
+      </div>
+    {/if}
 
+    {#if icon}
+      <Icon {icon} {...iconProps} />
+    {/if}
     <div class="section__title next-label-overflow">
       <Label label={title} />
     </div>
@@ -62,7 +74,7 @@
   </div>
 
   <div class="section__content">
-    {#if _expanded}
+    {#if _expanded && !empty}
       <slot />
     {/if}
   </div>

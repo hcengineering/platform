@@ -25,11 +25,13 @@
   export let icon: IconComponent
   export let selected: boolean = false
   export let notificationsCount: number = 0
+  export let level: number = 0
 </script>
 
 <button class="nav-item" class:selected on:click>
+  <div style:margin-left={`${1.25 * level}rem`} />
   <span class="nav-item__icon">
-    <Icon {icon} size="medium" />
+    <Icon {icon} size="small" />
   </span>
   <span class="nav-item__label next-label-overflow">
     {#if label}

@@ -24,10 +24,9 @@
     restoreLocation
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
-  import { createNotificationContextsQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { chatId } from '@hcengineering/chat'
-  import { Ref, SortingOrder } from '@hcengineering/core'
-  import { NotificationContext } from '@hcengineering/communication-types'
+  import { Ref } from '@hcengineering/core'
 
   import ChatPanel from './ChatPanel.svelte'
   import ChatNavigation from './ChatNavigation.svelte'
@@ -38,30 +37,12 @@
 
   const client = getClient()
 
-  const notificationContextsQuery = createNotificationContextsQuery()
-
   let replacedPanelElement: HTMLElement
   let selection: Selection | undefined = undefined
   let needRestoreLoc = true
 
-  let contexts: NotificationContext[] = []
-
   $: selectedCard = getSelectedCard(selection)
   $: selectedType = getSelectedType(selection)
-
-  // TODO: only for subscribed/loaded cards
-  notificationContextsQuery.query(
-    {
-      notifications: {
-        order: SortingOrder.Descending,
-        read: false,
-        limit: 10
-      }
-    },
-    (res) => {
-      contexts = res.getResult()
-    }
-  )
 
   async function syncLocation (loc: Location): Promise<void> {
     if (loc.path[2] !== chatId) {
@@ -100,10 +81,11 @@
     navigateToCard(card._id)
   }
 
-  function selectType (event: CustomEvent<Ref<MasterTag>>): void {
+  function selectType (event: CustomEvent<MasterTag>): void {
+    if (selection && selection.type === 'type' && selection.ref === event.detail._id) return
     const type = event.detail
-    selection = { type: 'type', ref: type }
-    navigateToType(type)
+    selection = { type: 'type', ref: type.color }
+    navigateToType(type._id)
   }
 
   function getSelectedCard (selection: Selection | undefined): Card | undefined {
@@ -145,7 +127,6 @@
         <ChatNavigation
           card={getSelectedCard(selection)}
           type={getSelectedType(selection)}
-          {contexts}
           on:selectCard={selectCard}
           on:selectType={selectType}
         />
@@ -165,8 +146,7 @@
   {/if}
   <div bind:this={replacedPanelElement} class="hulyComponent chat__panel">
     {#if selectedCard}
-      {@const context = contexts.find((c) => c.card === selectedCard?._id)}
-      <ChatPanel card={selectedCard} {context} />
+      <ChatPanel card={selectedCard} />
     {:else if selectedType}
       <ChatNavigationCategoryList type={selectedType} />
     {/if}
