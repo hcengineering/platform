@@ -43,6 +43,7 @@ export default mergeIds(gmailId, gmail, {
     Email: '' as IntlString,
     HaveWrittenEmail: '' as IntlString,
     NewIncomingMessage: '' as IntlString,
-    GooglePrivacy: '' as IntlString
+    GooglePrivacy: '' as IntlString,
+    FailedToConnect: '' as IntlString
   }
 })
