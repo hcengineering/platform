@@ -13,13 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon, Label } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
 
   import contact from '@hcengineering/contact'
-  import view from '@hcengineering/view'
 
   export let timezone: string | undefined
-  export let isTimezoneLoading: boolean
 
   function displayTimeInTimezone (timezone: string): string {
     const options: Intl.DateTimeFormatOptions = {
@@ -35,30 +33,19 @@
 </script>
 
 <div class="time-container">
-  <div class="clock-icon">
-    <Icon icon={contact.icon.Clock} size={'smaller'} />
-  </div>
-  <div class="text-normal font-normal content-color select-text">
-    {#if isTimezoneLoading}
-      <span class="time-text-span"><Label label={view.string.Loading} /></span>
-    {:else if timezone != null}
+  <div class="text-normal font-normal content-color">
+    {#if timezone != null}
       <span class="time-text-span">{displayTimeInTimezone(timezone)} <Label label={contact.string.LocalTime} /></span>
-    {:else}
-      <span class="time-text-span"><Label label={contact.string.LocalTimeNotSet} /></span>
     {/if}
   </div>
 </div>
 
 <style>
-  .clock-icon {
-    position: relative;
-    color: var(--theme-content-color);
-  }
-
   .time-container {
     justify-content: flex-start;
     align-items: center;
     gap: 0.25rem;
     display: inline-flex;
+    min-height: 1.25rem;
   }
 </style>
