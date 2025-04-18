@@ -91,7 +91,7 @@ export async function buildDmName (client: Client, accounts: AccountUuid[]): Pro
   let myName = ''
 
   for (const acc of accounts) {
-    const employee = employeeByAccount.get(acc)
+    const employee = employeeByAccount.get(acc) ?? (await client.findOne(contact.class.Person, { personUuid: acc }))
 
     if (employee === undefined) {
       continue
