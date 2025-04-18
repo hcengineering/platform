@@ -18,7 +18,22 @@ import { createNotification, MeetingNotificationType } from './notification'
 import { type EventCUDMessage } from './types'
 import { isMeeting } from './utils'
 
-const recentlyCreatedEvents = new Set<string>()
+const recentlyCreatedEvents = new Map<string, number>()
+
+function addRecentEvent (eventId: string): void {
+  recentlyCreatedEvents.set(eventId, Date.now())
+
+  const now = Date.now()
+  const deleteIds: string[] = []
+  for (const [eventId, timestamp] of recentlyCreatedEvents.entries()) {
+    if (now - timestamp > 60_000) {
+      deleteIds.push(eventId)
+    }
+  }
+  for (const eventId of deleteIds) {
+    recentlyCreatedEvents.delete(eventId)
+  }
+}
 
 export async function eventCreated (
   workspaceUuid: WorkspaceUuid,
@@ -26,20 +41,21 @@ export async function eventCreated (
 ): Promise<void> {
   const { event, modifiedBy } = message
 
-  console.log(`Event ${event._id} for ${event.user} created by ${modifiedBy}`, event)
+  // TODO: move emailing logic from huly-schedule here
 
-  if (modifiedBy === event.user) return
+  if (event.date <= Date.now()) return
 
-  if (await isMeeting(workspaceUuid, event)) {
-    // This happens when the host adds a new participant to the existing meeting
-    // A new event which is already a meeting is created for the new participant
-    console.log(`Meeting ${event._id} for ${event.user} scheduled`)
-    await createNotification(workspaceUuid, MeetingNotificationType.Scheduled, event, modifiedBy)
-  } else {
-    // Don't create notifications for reguar events, only for meetings
-    // But the event will be marked as a meeting in a separate call
-    // immediately after creation, in the "mixin" message
-    recentlyCreatedEvents.add(event._id)
+  if (modifiedBy !== event.user) {
+    if (await isMeeting(workspaceUuid, event)) {
+      // This happens when the host adds a new participant to the existing meeting
+      // A new event which is already a meeting is created for the new participant
+      await createNotification(workspaceUuid, MeetingNotificationType.Scheduled, event, modifiedBy)
+    } else {
+      // Don't create notifications for reguar events, only for meetings
+      // But the event will be marked as a meeting in a separate call
+      // immediately after creation, in the "mixin" message
+      addRecentEvent(event._id)
+    }
   }
 }
 
@@ -49,15 +65,16 @@ export async function eventUpdated (
 ): Promise<void> {
   const { event, modifiedBy } = message
 
-  console.log(`Event ${event._id} for ${event.user} updated by ${modifiedBy}`, event, message.changes)
+  // TODO: if the event was created via huly-schedule, we need to send an email
 
-  if (modifiedBy === event.user) return
+  if (event.date <= Date.now()) return
 
-  if (await isMeeting(workspaceUuid, event)) {
-    const changes = message.changes as Partial<Data<Event>>
-    if (changes.date !== undefined) {
-      console.log(`Meeting ${event._id} for ${event.user} rescheduled`)
-      await createNotification(workspaceUuid, MeetingNotificationType.Rescheduled, event, modifiedBy)
+  if (modifiedBy !== event.user) {
+    if (await isMeeting(workspaceUuid, event)) {
+      const changes = message.changes as Partial<Data<Event>>
+      if (changes.date !== undefined) {
+        await createNotification(workspaceUuid, MeetingNotificationType.Rescheduled, event, modifiedBy)
+      }
     }
   }
 }
@@ -68,13 +85,14 @@ export async function eventDeleted (
 ): Promise<void> {
   const { event, modifiedBy } = message
 
-  console.log(`Event ${event._id} for ${event.user} deleted by ${modifiedBy}`, event)
+  // TODO: if the event was created via huly-schedule, we need to send an email
 
-  if (modifiedBy === event.user) return
+  if (event.date <= Date.now()) return
 
-  if (await isMeeting(workspaceUuid, event)) {
-    console.log(`Meeting ${event._id} for ${event.user} canceled`)
-    await createNotification(workspaceUuid, MeetingNotificationType.Canceled, event, modifiedBy)
+  if (modifiedBy !== event.user) {
+    if (await isMeeting(workspaceUuid, event)) {
+      await createNotification(workspaceUuid, MeetingNotificationType.Canceled, event, modifiedBy)
+    }
   }
 }
 
@@ -84,23 +102,15 @@ export async function eventMixin (
 ): Promise<void> {
   const { event, modifiedBy } = message
 
-  console.log(`Event ${event._id} for ${event.user} mixined by ${modifiedBy}`, event, message.changes)
+  // TODO: move emailing logic from huly-schedule here
 
-  if (modifiedBy === event.user) {
-    console.log('Event is mixined by the host, skipping notification')
-    return
-  }
+  if (modifiedBy !== event.user) {
+    if (recentlyCreatedEvents.has(event._id)) {
+      recentlyCreatedEvents.delete(event._id)
 
-  if (recentlyCreatedEvents.has(event._id)) {
-    recentlyCreatedEvents.delete(event._id)
-
-    if (await isMeeting(workspaceUuid, event)) {
-      console.log(`Meeting ${event._id} for ${event.user} scheduled`)
-      await createNotification(workspaceUuid, MeetingNotificationType.Scheduled, event, modifiedBy)
-    } else {
-      console.log(`Event ${event._id} for ${event.user} is not a meeting`)
+      if (await isMeeting(workspaceUuid, event)) {
+        await createNotification(workspaceUuid, MeetingNotificationType.Scheduled, event, modifiedBy)
+      }
     }
-  } else {
-    console.log('Event is not newly created, skipping notification')
   }
 }

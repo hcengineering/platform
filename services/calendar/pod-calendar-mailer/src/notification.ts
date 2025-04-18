@@ -50,7 +50,6 @@ export async function createNotification (
   if (space === undefined) {
     throw new Error(`Person space not found for person ${person._id}`)
   }
-  console.log(`Creating notification for ${forEvent._id} for ${forEvent.user} in ${space._id}`)
 
   const user = personUuid as AccountUuid
   let objectId: Ref<Doc<Space>> = forEvent._id

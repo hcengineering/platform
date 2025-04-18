@@ -26,7 +26,16 @@ const meetingGuest = 'meeting-guest' as PersonId
 const room = 'room-id' as Ref<Room>
 
 function eventFor (user: PersonId, props?: Partial<Event> | Partial<Meeting>): Event {
-  return { _id: 'test-event', user, ...props } as any as Event
+  return {
+    _id: 'test-event',
+    user,
+    date: Date.now() + 3600000,
+    ...props
+  } as any as Event
+}
+
+function pastDate (): number {
+  return Date.now() - 3600000
 }
 
 jest.mock('../notification', () => {
@@ -93,6 +102,16 @@ describe('queue message handlers', () => {
         meetingHost
       )
     })
+
+    test('there should not be notification when host creates meeting for guest in the past', async () => {
+      // This happens when the host adds a new participant to the existing meeting
+      // A new event which is already a meeting is created for the new participant
+      const event = eventFor(meetingGuest, { room, date: pastDate() })
+
+      await eventCreated(ws, { event, modifiedBy: meetingHost })
+
+      expect(createNotificationSpy).not.toHaveBeenCalled()
+    })
   })
 
   describe('eventUpdated', () => {
@@ -123,6 +142,14 @@ describe('queue message handlers', () => {
         event,
         meetingHost
       )
+    })
+
+    test('there should be notification when host updates meeting for guest in the past', async () => {
+      const event = eventFor(meetingGuest, { room, date: pastDate() })
+
+      await eventUpdated(ws, { event, modifiedBy: meetingHost, changes: { date: Date.now() } })
+
+      expect(createNotificationSpy).not.toHaveBeenCalled()
     })
 
     test('there should not be notification when host updates meeting for himself', async () => {
@@ -162,6 +189,14 @@ describe('queue message handlers', () => {
         event,
         meetingHost
       )
+    })
+
+    test('there should not be notification when host deletes meeting for guest in the past', async () => {
+      const event = eventFor(meetingGuest, { room, date: pastDate() })
+
+      await eventDeleted(ws, { event, modifiedBy: meetingHost })
+
+      expect(createNotificationSpy).not.toHaveBeenCalled()
     })
 
     test('there should not be notification when host deletes meeting for himself', async () => {
