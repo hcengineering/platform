@@ -71,7 +71,7 @@
   $: getValueComponent(currentFilter)
 
   async function getValueComponent (filter: Filter): Promise<void> {
-    const presenterClass = getAttributePresenterClass(hierarchy, filter.key.attribute)
+    const presenterClass = getAttributePresenterClass(hierarchy, filter.key.attribute.type)
     const presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributeFilterPresenter)
     valueComponent = presenterMixin?.presenter
   }

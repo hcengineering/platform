@@ -24,7 +24,6 @@ import core, {
   TxProcessor,
   getCurrentAccount,
   getObjectValue,
-  type PersonId,
   type AggregateValue,
   type AnyAttribute,
   type AttachedDoc,
@@ -39,6 +38,7 @@ import core, {
   type Lookup,
   type Mixin,
   type Obj,
+  type PersonId,
   type Ref,
   type RefTo,
   type ReverseLookup,
@@ -50,6 +50,7 @@ import core, {
   type TxMixin,
   type TxOperations,
   type TxUpdateDoc,
+  type Type,
   type TypeAny,
   type TypedSpace,
   type WithLookup
@@ -97,8 +98,8 @@ import view, {
 } from '@hcengineering/view'
 
 import contact, {
-  getCurrentEmployee,
   getAllSocialStringsByPersonRef,
+  getCurrentEmployee,
   getName,
   type Contact
 } from '@hcengineering/contact'
@@ -279,6 +280,30 @@ export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>)
   return presenterMixin?.presenter
 }
 
+export function getAttrTypePresenter (hierarchy: Hierarchy, type: Type<any>): AnyComponent | undefined {
+  const actualMixinClass = view.mixin.AttributePresenter
+
+  const { attrClass, category } = getAttributePresenterClass(hierarchy, type)
+
+  const isCollectionAttr = category === 'collection'
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
+
+  const presenterMixin: AttributePresenter | CollectionPresenter | undefined = hierarchy.classHierarchyMixin(
+    attrClass,
+    mixin
+  )
+
+  const attributePresenter = presenterMixin as AttributePresenter
+  if (category === 'array' && attributePresenter.arrayPresenter !== undefined) {
+    return attributePresenter.arrayPresenter
+  } else if (presenterMixin?.presenter !== undefined) {
+    return presenterMixin.presenter
+  } else if (attrClass === core.class.TypeAny) {
+    const typeAny = type as TypeAny
+    return typeAny.presenter
+  }
+}
+
 export async function getAttributePresenter (
   client: Client,
   _class: Ref<Class<Obj>>,
@@ -291,7 +316,7 @@ export async function getAttributePresenter (
 
   const hierarchy = client.getHierarchy()
   const attribute = hierarchy.getAttribute(_class, key)
-  let { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
+  let { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
   if (_category !== undefined) {
     category = _category
   }
@@ -372,7 +397,7 @@ export function hasAttributePresenter (
   const hierarchy = client.getHierarchy()
   const attribute = hierarchy.getAttribute(_class, key)
 
-  const presenterClass = getAttributePresenterClass(hierarchy, attribute)
+  const presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
   const isCollectionAttr = presenterClass.category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
 
@@ -720,7 +745,7 @@ export function categorizeFields (
   }
 
   for (const key of keys) {
-    const cl = getAttributePresenterClass(hierarchy, key.attr)
+    const cl = getAttributePresenterClass(hierarchy, key.attr.type)
     if (useAsCollection.includes(key.key)) {
       result.collections.push({ key, category: cl.category })
     } else if (useAsAttribute.includes(key.key)) {
@@ -728,7 +753,7 @@ export function categorizeFields (
     } else if (cl.category === 'collection' || cl.category === 'inplace') {
       result.collections.push({ key, category: cl.category })
     } else if (cl.category === 'array') {
-      const attrClass = getAttributePresenterClass(hierarchy, key.attr)
+      const attrClass = getAttributePresenterClass(hierarchy, key.attr.type)
       const clazz = hierarchy.getClass(attrClass.attrClass)
       const mix = hierarchy.as(clazz, view.mixin.ArrayEditor)
       if (mix.editor !== undefined && mix.inlineEditor === undefined) {
@@ -895,7 +920,7 @@ export async function groupByCategory (
   if (attr === undefined) return categories
   if (key === noCategory) return [undefined]
 
-  const attrClass = getAttributePresenterClass(h, attr).attrClass
+  const attrClass = getAttributePresenterClass(h, attr.type).attrClass
   const mixin = h.classHierarchyMixin(attrClass, view.mixin.Groupping)
   let existingCategories: any[] = []
 
@@ -1441,7 +1466,7 @@ export async function getDocAttrsInfo (
 
   for (const k of collections) {
     if (allowedCollections.includes(k.key.key)) continue
-    const editor = await getAttrEditor(k.key, hierarchy)
+    const editor = getAttrEditor(k.key, hierarchy)
     if (editor === undefined) continue
     if (k.category === 'inplace') {
       inplaceAttributes.push(k.key.key)
@@ -1456,8 +1481,8 @@ export async function getDocAttrsInfo (
   }
 }
 
-async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promise<AnyComponent | undefined> {
-  const attrClass = getAttributePresenterClass(hierarchy, key.attr)
+function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): AnyComponent | undefined {
+  const attrClass = getAttributePresenterClass(hierarchy, key.attr.type)
   const clazz = hierarchy.getClass(attrClass.attrClass)
   const mix = {
     array: view.mixin.ArrayEditor,

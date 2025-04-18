@@ -50,7 +50,10 @@
     "RequestFromUser": "Anfrage von Benutzer",
     "EnterValue": "Wert eingeben",
     "OnToDoClose": "Beim Schließen von Aufgabe",
-    "OnSubProcessesDone": "Beim Abschluss von Unterprozessen"
+    "OnSubProcessesDone": "Beim Abschluss von Unterprozessen",
+    "Result": "Ergebnis",
+    "NoResultRequired": "Kein Ergebnis erforderlich",
+    "RequestResult": "Ergebnis anfordern"
   },  
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",
@@ -61,6 +64,7 @@
     "UserRequestedValueNotProvided": "Benutzer angeforderter Wert nicht bereitgestellt: {attr}",
     "ObjectNotFound": "Objekt nicht gefunden: {_id}",
     "EmptyRelatedObjectValue": "Leerer verwandtes Objekt {parent} Wert: {attr}",
-    "InternalServerError": "Interner Serverfehler, bitte kontaktieren Sie den Support, Fehler-ID: {errorId}"
+    "InternalServerError": "Interner Serverfehler, bitte kontaktieren Sie den Support, Fehler-ID: {errorId}",
+    "ResultNotProvided": "Ergebnis nicht bereitgestellt"
   }
 }

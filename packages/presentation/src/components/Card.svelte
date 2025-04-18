@@ -46,6 +46,7 @@
   export let hideContent: boolean = false
   export let hideAttachments: boolean = false
   export let hideFooter: boolean = false
+  export let hideClose: boolean = false
   export let gap: string | undefined = undefined
   export let width: 'large' | 'medium' | 'small' | 'x-small' | 'menu' = 'large'
   export let noFade = false
@@ -128,23 +129,25 @@
         {/if}
       </div>
     </div>
-    <div class="ml-4 buttons-group small-gap content-dark-color">
-      <Button
-        id="card-close"
-        focusIndex={10002}
-        icon={IconClose}
-        iconProps={{ size: 'medium', fill: 'var(--theme-dark-color)' }}
-        kind={'ghost'}
-        size={'small'}
-        on:click={() => {
-          if (onCancel) {
-            onCancel()
-          } else {
-            dispatch('close')
-          }
-        }}
-      />
-    </div>
+    {#if !hideClose}
+      <div class="ml-4 buttons-group small-gap content-dark-color">
+        <Button
+          id="card-close"
+          focusIndex={10002}
+          icon={IconClose}
+          iconProps={{ size: 'medium', fill: 'var(--theme-dark-color)' }}
+          kind={'ghost'}
+          size={'small'}
+          on:click={() => {
+            if (onCancel) {
+              onCancel()
+            } else {
+              dispatch('close')
+            }
+          }}
+        />
+      </div>
+    {/if}
   </div>
   {#if $$slots.subheader && !hideSubheader}
     <div class="antiCard-subheader">

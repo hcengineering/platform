@@ -42,7 +42,7 @@
   $: value = object[key]
 
   $: attribute = hierarchy.getAttribute(_class, key)
-  $: presenterClass = getAttributePresenterClass(hierarchy, attribute)
+  $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
   $: context = getContext(client, process, presenterClass.attrClass, presenterClass.category, attribute._id)
 
   let editor: AnySvelteComponent | undefined

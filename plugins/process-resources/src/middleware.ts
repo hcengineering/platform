@@ -24,7 +24,7 @@ import core, {
 } from '@hcengineering/core'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
 import process, { type ProcessToDo } from '@hcengineering/process'
-import { createExecution, getNextStateUserInput } from './utils'
+import { createExecution, getNextStateUserInput, requestResult } from './utils'
 import cardPlugin, { type Card } from '@hcengineering/card'
 
 /**
@@ -112,11 +112,13 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         _id: todo.execution
       })
       if (execution === undefined) return
+      if (execution.currentState !== todo.state) return
       const context = await getNextStateUserInput(execution, execution.context ?? {})
       const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
       await txop.update(execution, {
         context
       })
+      await requestResult(txop, execution, execution.results ?? {})
     }
   }
 }

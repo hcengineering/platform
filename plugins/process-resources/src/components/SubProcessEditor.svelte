@@ -17,6 +17,7 @@
   import { Process, Step } from '@hcengineering/process'
   import { DropdownLabels, DropdownTextItem, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import card from '@hcengineering/card'
   import plugin from '../plugin'
 
   export let process: Process
@@ -33,7 +34,9 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  $: desc = hierarchy.getDescendants(process.masterTag).filter((it) => !hierarchy.isMixin(it))
+  $: ancestors = hierarchy
+    .getAncestors(process.masterTag)
+    .filter((it) => !hierarchy.isMixin(it) && hierarchy.isDerived(it, card.class.Card))
 
   let processes: Process[] = []
   let items: DropdownTextItem[] = []
@@ -48,7 +51,7 @@
 
   const query = createQuery()
 
-  $: query.query(plugin.class.Process, { masterTag: { $in: desc } }, (res) => {
+  $: query.query(plugin.class.Process, { masterTag: { $in: ancestors } }, (res) => {
     processes = res.filter((it) => it._id !== process._id)
   })
 </script>
