@@ -38,7 +38,9 @@
     "DrawingHistory": "Scribble history",
     "ColorAdd": "Add color preset",
     "ColorRemove": "Remove color preset",
-    "ColorReset": "Reset color presets"
+    "ColorReset": "Reset color presets",
+    "Copy": "Copy",
+    "CopyLink": "Copy link"
   },
   "status": {
     "FileTooLarge": "File too large"

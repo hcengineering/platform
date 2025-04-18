@@ -64,6 +64,7 @@ import workbench, { workbenchId } from '@hcengineering/workbench'
 import { mailId } from '@hcengineering/mail'
 import { chatId } from '@hcengineering/chat'
 import { inboxId } from '@hcengineering/inbox'
+import { achievementId } from '@hcengineering/achievement'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -113,6 +114,7 @@ import '@hcengineering/workbench-assets'
 import '@hcengineering/mail-assets'
 import '@hcengineering/chat-assets'
 import '@hcengineering/inbox-assets'
+import '@hcengineering/achievement-assets'
 
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { coreId } from '@hcengineering/core'
@@ -224,6 +226,7 @@ function configureI18n (): void {
   addStringsLoader(chatId, async (lang: string) => await import(`@hcengineering/chat-assets/lang/${lang}.json`))
   addStringsLoader(inboxId, async (lang: string) => await import(`@hcengineering/inbox-assets/lang/${lang}.json`))
   addStringsLoader(processId, async (lang: string) => await import(`@hcengineering/process-assets/lang/${lang}.json`))
+  addStringsLoader(achievementId, async (lang: string) => await import(`@hcengineering/achievement-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform (): Promise<void> {
@@ -285,7 +288,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(presence.metadata.PresenceUrl, config.PRESENCE_URL ?? '')
   setMetadata(exportPlugin.metadata.ExportUrl, config.EXPORT_URL ?? '')
 
-  const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de']
+  const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de', 'ja']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 
@@ -361,6 +364,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
   addLocation(mailId, () => import(/* webpackChunkName: "card" */ '@hcengineering/mail-resources'))
   addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
+  addLocation(achievementId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

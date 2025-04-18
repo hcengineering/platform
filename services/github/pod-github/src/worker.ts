@@ -341,7 +341,7 @@ export class GithubWorker implements IntegrationManager {
     // Find a local social id already existing
     const existingSocialId = await this._client.findOne(contact.class.SocialIdentity, {
       type: SocialIdType.GITHUB,
-      value: userInfo.login
+      value: userInfo.login.toLowerCase()
     })
 
     if (existingSocialId !== undefined) {
@@ -350,7 +350,7 @@ export class GithubWorker implements IntegrationManager {
 
     const { uuid, socialId } = await this.accountClient.ensurePerson(
       SocialIdType.GITHUB,
-      userInfo.login,
+      userInfo.login.toLowerCase(),
       userInfo.name ?? userInfo.login,
       ''
     )
@@ -366,10 +366,10 @@ export class GithubWorker implements IntegrationManager {
       'socialIds',
       {
         type: SocialIdType.GITHUB,
-        value: userInfo.login,
+        value: userInfo.login.toLowerCase(),
         key: buildSocialIdString({
           type: SocialIdType.GITHUB,
-          value: userInfo.login
+          value: userInfo.login.toLowerCase()
         }),
         verifiedOn: Date.now()
       },
@@ -471,7 +471,7 @@ export class GithubWorker implements IntegrationManager {
     if (userInfo.email != null && userInfo.email.trim().length > 0) {
       const personAccount = await this.client.findOne(contact.class.SocialIdentity, {
         type: SocialIdType.EMAIL,
-        value: userInfo.email
+        value: userInfo.email.toLowerCase()
       })
       person = personAccount?.attachedTo
     }

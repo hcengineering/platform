@@ -46,7 +46,7 @@ import ScheduleNavSection from './components/ScheduleNavSection.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
-import { shareCalDavLink } from './utils'
+import { configureCalDavAccess } from './utils'
 
 export {
   EventElement,
@@ -216,6 +216,6 @@ export default async (): Promise<Resources> => ({
     }
   },
   function: {
-    ShareCalDavLink: shareCalDavLink
+    ConfigureCalDavAccess: configureCalDavAccess
   }
 })

@@ -109,6 +109,8 @@
     "ViewProfile": "Zobrazit profil",
     "Viber": "Viber",
     "ViberPlaceholder": "Viber",
-    "UserProfile": "Uživatelský profil"
+    "UserProfile": "Uživatelský profil",
+    "DeactivatedAccount": "Deaktivovaný účet",
+    "LocalTime": "místní čas"
   }
 }

@@ -21,6 +21,7 @@
   import Component from './Component.svelte'
   import Label from './Label.svelte'
   import { capitalizeFirstLetter, formatKey } from '../utils'
+  import { testing } from '..'
 
   let tooltipHTML: HTMLElement
   let nubHTML: HTMLElement
@@ -248,6 +249,7 @@
 
   const hideTooltip = (): void => {
     if (tooltipHTML) options.visibility = 'hidden'
+    shown = false
     closeTooltip()
   }
 
@@ -318,7 +320,8 @@
 />
 {#if $tooltip.component && $tooltip.kind !== 'submenu'}
   <div
-    class="popup-tooltip {options.classList}"
+    class="popup-tooltip {options.classList} {$tooltip.style}"
+    class:testing
     class:shown
     class:doublePadding={$tooltip.label}
     use:resizeObserver={(element) => {
@@ -369,12 +372,15 @@
       />
     </clipPath>
   </svg>
-  <div
-    bind:this={nubHTML}
-    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
-    class="nub {nubDirection ?? ''}"
-    class:shown
-  />
+  {#if !$tooltip.noArrow}
+    <div
+      bind:this={nubHTML}
+      style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+      class="nub {nubDirection ?? ''}"
+      class:testing
+      class:shown
+    />
+  {/if}
 {:else if $tooltip.label && $tooltip.kind !== 'submenu'}
   <div
     class="tooltip {dir ?? ''} {options.classList}"
@@ -465,11 +471,39 @@
     border-radius: 0.75rem;
     box-shadow: var(--theme-popup-shadow);
     user-select: none;
-    opacity: 0;
 
     &.doublePadding {
       padding: 1rem;
     }
+    &.modern {
+      padding: 0;
+      border: none;
+      outline: none;
+      border-radius: 1.5rem;
+      box-shadow:
+        0 6.25rem 5rem rgba(0, 0, 0, 0.15),
+        0 2.5rem 2rem rgba(0, 0, 0, 0.12),
+        0 1.5rem 1rem rgba(0, 0, 0, 0.1),
+        0 0.75rem 0.75rem rgba(0, 0, 0, 0.1),
+        0 0.375rem 0.375rem rgba(0, 0, 0, 0.08),
+        0 0.125rem 0.125rem rgba(0, 0, 0, 0.05);
+    }
+    &.disabled {
+      background-color: var(--popup-color-disabled);
+    }
+  }
+  .popup-tooltip,
+  .nub {
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+
+    &.testing {
+      transition-duration: 0 !important;
+    }
+  }
+  .shown {
+    opacity: 1;
+    transition: opacity 0.1s ease-in-out 0.05s;
   }
 
   .nub {
@@ -477,7 +511,6 @@
     // background-color: rgba(255, 255, 0, .5);
     user-select: none;
     pointer-events: none;
-    opacity: 0;
 
     &::after,
     &::before {
@@ -542,10 +575,6 @@
       right: -0.25rem;
       transform: rotate(-90deg);
     }
-  }
-  .shown {
-    transition: opacity 0.1s ease-in-out 0.15s;
-    opacity: 1;
   }
 
   .keys {

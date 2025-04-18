@@ -28,7 +28,9 @@
 </script>
 
 <ChatHeader {card} />
-<ChatBody {card} {footerHeight} {context} />
+{#key card._id}
+  <ChatBody {card} {footerHeight} {context} />
+{/key}
 <ChatFooter {card} bind:height={footerHeight} />
 
 <style lang="scss">

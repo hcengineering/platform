@@ -8,7 +8,7 @@ import clientResources from '@hcengineering/client-resources'
 import { Client, ClientConnectEvent, systemAccountUuid, WorkspaceUuid } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
-import serverToken, { generateToken } from '@hcengineering/server-token'
+import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
 import config from './config'
 
@@ -28,7 +28,6 @@ export async function createPlatformClient (
     }) as never as ClientSocket
   })
 
-  setMetadata(serverToken.metadata.Secret, config.ServerSecret)
   const token = generateToken(systemAccountUuid, workspace, { service: 'github', mode: 'github' })
   setMetadata(client.metadata.UseBinaryProtocol, true)
   setMetadata(client.metadata.UseProtocolCompression, true)

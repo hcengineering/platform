@@ -61,7 +61,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/analytics-service": "^0.6.0",
-    "@hcengineering/communication-server": "0.1.166",
+    "@hcengineering/communication-server": "0.1.170",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/kafka": "^0.6.0",
@@ -82,6 +82,7 @@
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-telegram": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
+    "utf-8-validate": "^6.0.4",
     "bufferutil": "^4.0.8",
     "msgpackr": "^1.11.2",
     "msgpackr-extract": "^3.0.3",

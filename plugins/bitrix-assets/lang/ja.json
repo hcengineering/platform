@@ -1,0 +1,18 @@
+{
+  "string": {
+    "BitrixTokenUrl": "Bitrix24 トークン URL",
+    "Bitrix": "",
+    "BitrixDesc": "Bitrix 24 連携",
+    "Settings": "設定",
+    "NotAllowed": "管理者権限がないため許可されていません",
+    "BitrixEntityType": "エンティティマッピング",
+    "FieldMapping": "フィールドマッピング",
+    "AddField": "マッピングを追加",
+    "Attribute": "属性",
+    "MapField": "マップ...",
+    "BitrixImport": "Bitrix と同期",
+    "AddMapping": "エンティティマッピングを追加",
+    "ConfigLabel": "Bitrix24",
+    "ConfigDescription": "Bitrix 24 との連携のための拡張機能"
+  }
+}

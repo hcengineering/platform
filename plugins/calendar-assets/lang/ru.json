@@ -92,7 +92,6 @@
     "ScheduleDeleteConfirm": "Расписание будет удалено. Подтвердить?",
     "ScheduleShareLink": "Поделиться ссылкой",
     "ScheduleSharedLinkMessage": "<p>Поделитесь этой ссылкой, чтобы другие могли записаться на встречу с вами:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
-    "CopyLink": "Копировать ссылку",
     "ScheduleAvailability": "Доступность",
     "ScheduleUnavailable": "Недоступно",
     "ScheduleTitlePlaceholder": "Название расписания",
@@ -100,7 +99,12 @@
     "ScheduleRemovePeriod": "Удалить период",
     "MeetingDuration": "Длительность встречи",
     "MeetingInterval": "Перерыв между встречами",
-    "CalDavShareLink": "Получить CalDav-ссылку",
-    "CalDavSharedLinkMessage": "<p>Используйте эту ссылку для регистрации календаря во внешнем клиенте, поддерживающем протокол CalDav:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>"
+    "CalDavAccess": "Доступ через CalDAV",
+    "CalDavAccessPrompt": "Протокол CalDAV позволяет синхронизировать ваш личный календарь Huly с внешними приложениями календаря. Используйте эту учетную запись и предложенный пароль для регистрации сервера Huly CalDAV в клиентском приложении календаря.",
+    "CalDavAccessEnable": "Разрешить доступ к личному календарю в пространстве {ws} через CalDAV",
+    "CalDavAccessServer": "Сервер CalDAV",
+    "CalDavAccessAccount": "Учетная запись Huly",
+    "CalDavAccessPassword": "Пароль",
+    "CalDavAccessPasswordWarning": "Вы не сможете увидеть этот пароль снова. Пожалуйста, сохраните его в безопасном месте."
   }
 }

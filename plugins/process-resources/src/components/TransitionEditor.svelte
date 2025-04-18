@@ -13,48 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { State } from '@hcengineering/process'
+  import { Process, State } from '@hcengineering/process'
+  import { ButtonIcon, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import plugin from '../plugin'
-  import { ButtonIcon, eventToHTMLElement, SelectPopup, SelectPopupValueType, showPopup } from '@hcengineering/ui'
-  import { getToDoEndAction } from '../utils'
-  import { getClient } from '@hcengineering/presentation'
+  import TransitionPopup from './TransitionPopup.svelte'
+  import { settingsStore } from '@hcengineering/setting-resources'
+  import ResultConfigure from './contextEditors/ResultConfigure.svelte'
 
   export let state: State
-
-  const client = getClient()
+  export let process: Process
 
   $: icon = state.endAction?.methodId === plugin.method.CreateToDo ? plugin.icon.ToDo : plugin.icon.WaitSubprocesses
 
   function clickHandler (e: MouseEvent): void {
-    const value: SelectPopupValueType[] = [
-      {
-        id: plugin.method.CreateToDo,
-        label: plugin.string.OnToDoClose,
-        icon: plugin.icon.ToDo
-      },
-      {
-        id: plugin.method.WaitSubProcess,
-        label: plugin.string.OnSubProcessesDone,
-        icon: plugin.icon.WaitSubprocesses
-      }
-    ]
-    showPopup(
-      SelectPopup,
-      {
-        value
-      },
-      eventToHTMLElement(e),
-      async (res) => {
-        if (res !== undefined) {
-          if (res === plugin.method.WaitSubProcess) {
-            await client.update(state, { endAction: { methodId: plugin.method.WaitSubProcess, params: {} } })
-          } else {
-            await client.update(state, { endAction: getToDoEndAction(state) })
-          }
-        }
-      }
-    )
+    showPopup(TransitionPopup, { state, process }, eventToHTMLElement(e))
   }
+
+  function resultClick (e: MouseEvent): void {
+    $settingsStore = { id: state._id + '_result', component: ResultConfigure, props: { state } }
+  }
+
+  $: resultIcon = state.resultType?.icon ?? undefined
 </script>
 
 <ButtonIcon {icon} size={'medium'} on:click={clickHandler} />
+{#if resultIcon}
+  <ButtonIcon icon={resultIcon} size={'medium'} on:click={resultClick} />
+{/if}

@@ -92,6 +92,12 @@ function formatVar (idx: number, type?: string): string {
   return type != null ? `$${idx}::${type}` : `$${idx}`
 }
 
+function convertTimestamp (ts: string): number | null {
+  const val = Number.parseInt(ts)
+
+  return Number.isNaN(val) ? null : val
+}
+
 export interface PostgresDbCollectionOptions<T extends Record<string, any>, K extends keyof T | undefined = undefined> {
   idKey?: K
   ns?: string
@@ -229,8 +235,7 @@ implements DbCollection<T> {
   protected convertToObj (row: unknown): T {
     const res = convertKeysToCamelCase(row)
     for (const field of this.timestampFields) {
-      const val = Number.parseInt(res[field])
-      res[field] = Number.isNaN(val) ? null : val
+      res[field] = convertTimestamp(res[field])
     }
 
     return res as T
@@ -490,8 +495,6 @@ export class PostgresAccountDB implements AccountDB {
       if (res.count === 1) {
         console.log(`Applying migration: ${name}`)
         await client.unsafe(ddl)
-      } else {
-        console.log(`Migration ${name} already applied`)
       }
     })
   }
@@ -535,10 +538,17 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async getWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<AccountRole | null> {
-    const res: any = await this
+    const res = await this
       .client`SELECT role FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
 
     return res[0]?.role ?? null
+  }
+
+  async getWorkspaceRoles (accountUuid: AccountUuid): Promise<Map<WorkspaceUuid, AccountRole | null>> {
+    const res = await this
+      .client`SELECT workspace_uuid, role FROM ${this.client(this.getWsMembersTableName())} WHERE account_uuid = ${accountUuid}`
+
+    return new Map(res.map((it) => [it.workspace_uuid as WorkspaceUuid, it.role]))
   }
 
   async getWorkspaceMembers (workspaceUuid: WorkspaceUuid): Promise<WorkspaceMemberInfo[]> {
@@ -583,6 +593,12 @@ export class PostgresAccountDB implements AccountDB {
     `
 
     const res: any = await this.client.unsafe(sql, [accountUuid])
+
+    for (const row of res) {
+      row.created_on = convertTimestamp(row.created_on)
+      row.status.last_processing_time = convertTimestamp(row.status.last_processing_time)
+      row.status.last_visit = convertTimestamp(row.status.last_visit)
+    }
 
     return convertKeysToCamelCase(res)
   }

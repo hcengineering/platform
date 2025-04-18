@@ -17,7 +17,7 @@
 <script lang="ts">
   import { Schedule } from '@hcengineering/calendar'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { createQuery, getClient, getCurrentWorkspaceUrl, MessageBox } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient, getCurrentWorkspaceUrl, MessageBox } from '@hcengineering/presentation'
   import { Action, ButtonIcon, IconAdd, IconDelete, IconLink, NavItem, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { TreeElement } from '@hcengineering/view-resources'
@@ -88,7 +88,7 @@
         message: calendar.string.ScheduleSharedLinkMessage,
         params: { link },
         richMessage: true,
-        okLabel: calendar.string.CopyLink,
+        okLabel: presentation.string.CopyLink,
         canSubmit: false,
         action: async () => {
           await navigator.clipboard.writeText(link)

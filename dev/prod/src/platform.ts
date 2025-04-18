@@ -73,6 +73,7 @@ import { chatId } from '@hcengineering/chat'
 import github, { githubId } from '@hcengineering/github'
 import { bitrixId } from '@hcengineering/bitrix'
 import {inboxId} from '@hcengineering/inbox'
+import {achievementId} from '@hcengineering/achievement'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
@@ -124,6 +125,7 @@ import '@hcengineering/chat-assets'
 import '@hcengineering/inbox-assets'
 import '@hcengineering/mail-assets'
 import '@hcengineering/github-assets'
+import '@hcengineering/achievement-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, {
@@ -355,6 +357,7 @@ function configureI18n(): void {
   addStringsLoader(chatId, async (lang: string) => await import(`@hcengineering/chat-assets/lang/${lang}.json`))
   addStringsLoader(processId, async (lang: string) => await import(`@hcengineering/process-assets/lang/${lang}.json`))
   addStringsLoader(inboxId, async (lang: string) => await import(`@hcengineering/inbox-assets/lang/${lang}.json`))
+  addStringsLoader(achievementId, async (lang: string) => await import(`@hcengineering/achievement-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -463,7 +466,7 @@ export async function configurePlatform() {
 
   const languages = myBranding.languages
     ? (myBranding.languages as string).split(',').map((l) => l.trim())
-    : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de']
+    : ['en', 'ru', 'es', 'pt', 'zh', 'fr', 'cs', 'it', 'de', 'ja']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 
@@ -554,6 +557,7 @@ export async function configurePlatform() {
   addLocation(chatId, () => import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
   addLocation(processId, () => import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
   addLocation(inboxId, () => import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
+  addLocation(achievementId, () => import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

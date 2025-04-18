@@ -12,7 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { UUID } from 'mongodb'
+import {
+  type AccountRole,
+  type Data,
+  type Person,
+  type Version,
+  type WorkspaceMemberInfo,
+  type WorkspaceUuid,
+  AccountUuid,
+  buildSocialIdString,
+  SocialKey
+} from '@hcengineering/core'
 import type {
   Collection,
   CreateIndexesOptions,
@@ -22,38 +32,28 @@ import type {
   OptionalUnlessRequiredId,
   Sort as RawSort
 } from 'mongodb'
-import {
-  type Person,
-  type WorkspaceMemberInfo,
-  buildSocialIdString,
-  SocialKey,
-  type AccountRole,
-  type Data,
-  type Version,
-  type WorkspaceUuid,
-  AccountUuid
-} from '@hcengineering/core'
+import { UUID } from 'mongodb'
 
 import type {
-  DbCollection,
-  Query,
-  Operations,
-  WorkspaceOperation,
-  AccountDB,
   Account,
-  SocialId,
-  WorkspaceInvite,
-  OTP,
-  WorkspaceStatus,
+  AccountDB,
   AccountEvent,
-  WorkspaceData,
-  WorkspaceInfoWithStatus,
-  WorkspaceStatusData,
-  Sort,
+  DbCollection,
+  Integration,
+  IntegrationSecret,
   Mailbox,
   MailboxSecret,
-  Integration,
-  IntegrationSecret
+  Operations,
+  OTP,
+  Query,
+  SocialId,
+  Sort,
+  WorkspaceData,
+  WorkspaceInfoWithStatus,
+  WorkspaceInvite,
+  WorkspaceOperation,
+  WorkspaceStatus,
+  WorkspaceStatusData
 } from '../types'
 import { isShallowEqual } from '../utils'
 
@@ -714,6 +714,17 @@ export class MongoAccountDB implements AccountDB {
     })
 
     return assignment?.role ?? null
+  }
+
+  async getWorkspaceRoles (accountId: AccountUuid): Promise<Map<WorkspaceUuid, AccountRole | null>> {
+    const assignment = await this.workspaceMembers.find({
+      accountUuid: accountId
+    })
+
+    return assignment.reduce<Map<WorkspaceUuid, AccountRole | null>>((acc, it) => {
+      acc.set(it.workspaceUuid, it.role)
+      return acc
+    }, new Map())
   }
 
   async getWorkspaceMembers (workspaceId: WorkspaceUuid): Promise<WorkspaceMemberInfo[]> {

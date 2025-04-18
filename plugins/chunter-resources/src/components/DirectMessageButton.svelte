@@ -20,8 +20,12 @@
   import chunter from '../plugin'
   import { createDirect } from '../utils'
   import { openChannelInSidebar } from '../navigation'
+  import { Asset } from '@hcengineering/platform'
 
   export let employee: Employee
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
+  export let icon: Asset | undefined = undefined
+  export let type: 'type-button' | 'type-button-icon' = 'type-button'
 
   async function openDirect (): Promise<void> {
     const dm = await createDirect([employee._id])
@@ -41,9 +45,11 @@
 </script>
 
 <ModernButton
-  label={chunter.string.Message}
-  icon={view.icon.Bubble}
+  label={type === 'type-button-icon' ? undefined : chunter.string.Message}
+  icon={icon ?? view.icon.Bubble}
   size="small"
   iconSize="small"
+  {type}
+  {kind}
   on:click={openDirect}
 />

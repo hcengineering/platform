@@ -14,19 +14,16 @@
 // limitations under the License.
 //
 
-import { type Account, type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
+import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
-import { ClientSession, startSessionManager } from '@hcengineering/server'
+import { startSessionManager } from '@hcengineering/server'
 import {
   type CommunicationApiFactory,
   type PlatformQueue,
-  type Session,
   type SessionManager,
-  type StorageConfiguration,
-  type Workspace
+  type StorageConfiguration
 } from '@hcengineering/server-core'
-import { type Token } from '@hcengineering/server-token'
 
 import { Api as CommunicationApi } from '@hcengineering/communication-server'
 import {
@@ -120,9 +117,6 @@ export function start (
     { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl), queue: opt.queue },
     {}
   )
-  const sessionFactory = (token: Token, workspace: Workspace, account: Account): Session => {
-    return new ClientSession(token, workspace, account, token.extra?.mode === 'backup')
-  }
   const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
     if (dbUrl.startsWith('mongodb')) {
       return {
@@ -150,7 +144,6 @@ export function start (
 
   const sessionManager = startSessionManager(metrics, {
     pipelineFactory,
-    sessionFactory,
     communicationApiFactory,
     brandingMap: opt.brandingMap,
     enableCompression: opt.enableCompression,

@@ -45,7 +45,8 @@ export default mergeIds(processId, process, {
     DateOffsetEditor: '' as AnyComponent,
     NumberOffsetEditor: '' as AnyComponent,
     ErrorPresenter: '' as AnyComponent,
-    RequestUserInput: '' as AnyComponent
+    RequestUserInput: '' as AnyComponent,
+    ResultInput: '' as AnyComponent
   },
   function: {
     ShowDoneQuery: '' as ViewQueryAction,
@@ -98,6 +99,9 @@ export default mergeIds(processId, process, {
     RequestFromUser: '' as IntlString,
     EnterValue: '' as IntlString,
     OnToDoClose: '' as IntlString,
-    OnSubProcessesDone: '' as IntlString
+    OnSubProcessesDone: '' as IntlString,
+    Result: '' as IntlString,
+    RequestResult: '' as IntlString,
+    NoResultRequired: '' as IntlString
   }
 })

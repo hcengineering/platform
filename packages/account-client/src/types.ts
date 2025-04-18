@@ -6,7 +6,8 @@ import {
   type AccountRole,
   type Timestamp,
   type SocialId as SocialIdBase,
-  PersonUuid
+  PersonUuid,
+  type WorkspaceMode
 } from '@hcengineering/core'
 
 export interface LoginInfo {
@@ -14,6 +15,33 @@ export interface LoginInfo {
   name?: string
   socialId?: PersonId
   token?: string
+}
+
+export interface EndpointInfo {
+  internalUrl: string
+  externalUrl: string
+  region: string
+}
+export interface WorkspaceVersion {
+  versionMajor: number
+  versionMinor: number
+  versionPatch: number
+}
+
+export interface LoginInfoWorkspace {
+  url: string
+  dataId?: WorkspaceDataId
+  mode: WorkspaceMode
+  version: WorkspaceVersion
+  endpoint: EndpointInfo
+  role: AccountRole | null
+  progress?: number
+}
+
+export interface LoginInfoWithWorkspaces extends LoginInfo {
+  // Information necessary to handle user <--> transactor connectivity.
+  workspaces: Record<WorkspaceUuid, LoginInfoWorkspace>
+  socialIds: SocialId[]
 }
 
 /**

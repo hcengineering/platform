@@ -18,7 +18,7 @@
   import { Markup, RateLimiter } from '@hcengineering/core'
   import { tick, createEventDispatcher, onDestroy } from 'svelte'
   import { uploadFile, deleteFile, getCommunicationClient } from '@hcengineering/presentation'
-  import { MessageID, CardID, CardType } from '@hcengineering/communication-types'
+  import { CardID, CardType, Message } from '@hcengineering/communication-types'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
 
   import TextInput from '../TextInput.svelte'
@@ -29,7 +29,7 @@
 
   export let cardId: CardID | undefined = undefined
   export let cardType: CardType | undefined = undefined
-  export let messageId: MessageID | undefined = undefined
+  export let message: Message | undefined = undefined
   export let content: Markup | undefined = undefined
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParams: Record<string, any> = {}
@@ -48,39 +48,47 @@
     event.preventDefault()
     event.stopPropagation()
 
-    const message = event.detail
+    const markup = event.detail
     const filesToLoad = files
 
     files = []
 
-    const markdown = toMarkdown(message)
+    const markdown = toMarkdown(markup)
 
     if (onSubmit !== undefined) {
       await onSubmit(markdown, filesToLoad)
     }
 
-    if (messageId === undefined) {
+    if (message === undefined) {
       await createMessage(markdown, filesToLoad)
     } else {
-      await editMessage(messageId, markdown, filesToLoad)
+      await editMessage(message, markdown, filesToLoad)
     }
   }
 
   async function createMessage (markdown: string, files: UploadedFile[]): Promise<void> {
     if (cardId === undefined || cardType === undefined) return
-    const id = await communicationClient.createMessage(cardId, cardType, markdown)
+    const { id, created } = await communicationClient.createMessage(cardId, cardType, markdown)
 
     for (const file of files) {
-      await communicationClient.createFile(cardId, id, file.blobId, file.type, file.filename, file.size)
+      await communicationClient.createFile(cardId, id, created, file.blobId, file.type, file.filename, file.size)
     }
   }
 
-  async function editMessage (id: MessageID, markdown: string, files: UploadedFile[]): Promise<void> {
+  async function editMessage (message: Message, markdown: string, files: UploadedFile[]): Promise<void> {
     if (cardId === undefined) return
-    await communicationClient.updateMessage(cardId, id, markdown)
+    await communicationClient.updateMessage(cardId, message.id, message.created, markdown)
 
     for (const file of files) {
-      await communicationClient.createFile(cardId, id, file.blobId, file.type, file.filename, file.size)
+      await communicationClient.createFile(
+        cardId,
+        message.id,
+        message.created,
+        file.blobId,
+        file.type,
+        file.filename,
+        file.size
+      )
     }
   }
 

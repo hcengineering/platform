@@ -164,7 +164,7 @@ export async function backupRestore (
         recheck: false,
         storageAdapter: workspaceStorage,
         getConnection: async () => {
-          return wrapPipeline(ctx, await pipelineFactory(ctx, wsUrl, true, () => {}, null, null), wsUrl)
+          return wrapPipeline(ctx, await pipelineFactory(ctx, wsUrl, () => {}, null, null), wsUrl)
         }
       })
     )

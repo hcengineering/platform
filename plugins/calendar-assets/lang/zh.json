@@ -92,7 +92,6 @@
     "ScheduleDeleteConfirm": "日程表将被删除。确认吗？",
     "ScheduleShareLink": "共享链接",
     "ScheduleSharedLinkMessage": "<p>共享此链接以允许其他人与您预约会议: </p><p><a href=\"{link}\" target=\"_blank\">{link</a></p>",
-    "CopyLink": "复制链接",
     "ScheduleAvailability": "可用性",
     "ScheduleUnavailable": "不可用",
     "ScheduleTitlePlaceholder": "日程表标题",
@@ -100,7 +99,12 @@
     "ScheduleRemovePeriod": "删除时间段",
     "MeetingDuration": "会议时长",
     "MeetingInterval": "会议间暂停",
-    "CalDavShareLink": "获取 CalDav 链接",
-    "CalDavSharedLinkMessage": "<p>使用此链接在支持 CalDav 协议的外部客户端中注册日历:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>"
+    "CalDavAccess": "CalDAV 访问",
+    "CalDavAccessPrompt": "CalDAV 協定允許將您的個人 Huly 日曆與外部日曆應用程式同步。使用此帳戶和建議的密碼在日曆用戶端應用程式中註冊 Huly CalDAV 伺服器。",
+    "CalDavAccessEnable": "在工作区 {ws} 中启用 CalDAV 对个人日历的访问",
+    "CalDavAccessServer": "CalDAV 服务器",
+    "CalDavAccessAccount": "Huly 帐户",
+    "CalDavAccessPassword": "密码",
+    "CalDavAccessPasswordWarning": "您将无法再次看到此密码。请将其保存在安全的地方。"
   }
 }

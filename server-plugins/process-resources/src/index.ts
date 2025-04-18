@@ -34,7 +34,10 @@ import process, {
   ExecutionError,
   MethodParams,
   parseContext,
+  parseError,
   Process,
+  processError,
+  ProcessError,
   ProcessToDo,
   SelectedContext,
   SelectedNested,
@@ -46,7 +49,7 @@ import process, {
 import { TriggerControl } from '@hcengineering/server-core'
 import serverProcess, { ExecuteResult, SuccessExecutionResult } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
-import { isError, parseError, ProcessError, processError } from './errors'
+import { isError } from './errors'
 
 export async function OnStateRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
@@ -389,7 +392,7 @@ async function changeState (
     })
   )
   if (isDone && execution.parentId !== undefined) {
-    const parentWaitTxes = await checkParentWait(execution, control)
+    const parentWaitTxes = await checkParent(execution, control)
     if (parentWaitTxes !== undefined) {
       res.push(...parentWaitTxes)
     }
@@ -429,30 +432,44 @@ async function changeState (
   }
 }
 
-async function checkParentWait (execution: Execution, control: TriggerControl): Promise<Tx[] | undefined> {
+async function checkParent (execution: Execution, control: TriggerControl): Promise<Tx[] | undefined> {
   const subProcesses = await control.findAll(control.ctx, process.class.Execution, {
     parentId: execution.parentId,
     done: false
   })
   const filtered = subProcesses.filter((it) => it._id !== execution._id)
   if (filtered.length !== 0) return
-  const parent = await control.findAll(control.ctx, process.class.Execution, { _id: execution.parentId })
-  if (parent.length === 0) return
-  const _process = control.modelDb.findObject(parent[0].process)
-  if (_process === undefined) return
-  if (parent[0].currentState == null) return
-  const currentIndex = _process.states.findIndex((it) => it === parent[0].currentState)
-  if (currentIndex === -1) return
-  const currentState = control.modelDb.findObject(parent[0].currentState)
-  if (currentState === undefined) return
-  if (currentState.endAction?.methodId !== process.method.WaitSubProcess) return
+  const parent = (await control.findAll(control.ctx, process.class.Execution, { _id: execution.parentId }))[0]
+  if (parent === undefined) return
+  const res: Tx[] = []
+  if (execution.results !== undefined) {
+    const results = parent.results ?? {}
+    if (results.child === undefined) {
+      results.child = {}
+    }
+    results.child[execution._id] = execution.results
+    res.push(
+      control.txFactory.createTxUpdateDoc(parent._class, parent.space, parent._id, {
+        results
+      })
+    )
+  }
+  const _process = control.modelDb.findObject(parent.process)
+  if (_process === undefined) return res
+  if (parent.currentState == null) return res
+  const currentIndex = _process.states.findIndex((it) => it === parent.currentState)
+  if (currentIndex === -1) return res
+  const currentState = control.modelDb.findObject(parent.currentState)
+  if (currentState === undefined) return res
+  if (currentState.endAction?.methodId !== process.method.WaitSubProcess) return res
   const nextState = _process.states[currentIndex + 1]
-  if (nextState === undefined) return
+  if (nextState === undefined) return res
   const state = control.modelDb.findObject(nextState)
-  if (state === undefined) return
+  if (state === undefined) return res
   const isDone = _process.states[currentIndex + 2] === undefined
-  const txes = await changeState(parent[0], state, control, isDone)
-  return txes
+  const txes = await changeState(parent, state, control, isDone)
+  res.push(...txes)
+  return res
 }
 
 export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {

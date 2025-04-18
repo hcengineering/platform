@@ -50,7 +50,10 @@
     "RequestFromUser": "Request from user",
     "EnterValue": "Enter value",
     "OnToDoClose": "On ToDo close",
-    "OnSubProcessesDone": "On sub processes done"
+    "OnSubProcessesDone": "On sub processes done",
+    "Result": "Result",
+    "RequestResult": "Request result",
+    "NoResultRequired": "No result required"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
@@ -61,6 +64,7 @@
     "UserRequestedValueNotProvided": "User requested value not provided: {attr}",
     "ObjectNotFound": "Object not found: {_id}",
     "EmptyRelatedObjectValue": "Empty related object {parent} value: {attr}",
-    "InternalServerError": "Internal server error, contact support, error id: {errorId}"
+    "InternalServerError": "Internal server error, contact support, error id: {errorId}",
+    "ResultNotProvided": "Result not provided"
   }
 }

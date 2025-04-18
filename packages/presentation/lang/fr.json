@@ -38,7 +38,9 @@
     "DrawingHistory": "Histoire de gribouillage",
     "ColorAdd": "Ajouter un préréglage de couleur",
     "ColorRemove": "Supprimer le préréglage de couleur",
-    "ColorReset": "Réinitialiser les préréglages de couleur"
+    "ColorReset": "Réinitialiser les préréglages de couleur",
+    "Copy": "Copier",
+    "CopyLink": "Copier le lien"
   },
   "status": {
     "FileTooLarge": "Fichier trop volumineux"

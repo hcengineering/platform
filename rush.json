@@ -2427,6 +2427,26 @@
       "packageName": "@hcengineering/pod-inbound-mail",
       "projectFolder": "services/mail/pod-inbound-mail",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/achievement",
+      "projectFolder": "plugins/achievement",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/achievement-assets",
+      "projectFolder": "plugins/achievement-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/achievement-resources",
+      "projectFolder": "plugins/achievement-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-achievement",
+      "projectFolder": "models/achievement",
+      "shouldPublish": false
     }
   ]
 }

@@ -15,20 +15,20 @@
 
 <script lang="ts">
   import { Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
-  import { personRefByPersonIdStore, PersonRefPresenter } from '@hcengineering/contact-resources'
+  import { personRefByAccountUuidStore, PersonRefPresenter } from '@hcengineering/contact-resources'
   import { Person } from '@hcengineering/contact'
-  import { type PersonId, type Ref, notEmpty } from '@hcengineering/core'
+  import { type Ref, type AccountUuid, notEmpty } from '@hcengineering/core'
   import activity, { DocAttributeUpdates } from '@hcengineering/activity'
   import notification from '@hcengineering/notification'
 
   export let value: DocAttributeUpdates
 
-  $: removed = getPersonRefs(value.removed, $personRefByPersonIdStore)
-  $: added = getPersonRefs(value.added.length > 0 ? value.added : value.set, $personRefByPersonIdStore)
+  $: removed = getPersonRefs(value.removed, $personRefByAccountUuidStore)
+  $: added = getPersonRefs(value.added.length > 0 ? value.added : value.set, $personRefByAccountUuidStore)
 
   function getPersonRefs (
     values: DocAttributeUpdates['removed' | 'added' | 'set'],
-    personRefByPersonId: Map<PersonId, Ref<Person>>
+    personRefByAccountUuid: Map<AccountUuid, Ref<Person>>
   ): Ref<Person>[] {
     const persons = new Set(
       values
@@ -37,7 +37,7 @@
             return undefined
           }
 
-          const person = personRefByPersonId.get(value as PersonId)
+          const person = personRefByAccountUuid.get(value as AccountUuid)
 
           if (person === undefined) {
             return undefined

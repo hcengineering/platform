@@ -92,7 +92,6 @@
     "ScheduleDeleteConfirm": "Plán bude smazán. Potvrdit?",
     "ScheduleShareLink": "Sdílet odkaz",
     "ScheduleSharedLinkMessage": "<p>Sdílením tohoto odkazu umožníte ostatním zarezervovat si s vámi schůzku:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
-    "CopyLink": "Kopírovat odkaz",
     "ScheduleAvailability": "Dostupnost",
     "ScheduleUnavailable": "Nedostupné",
     "ScheduleTitlePlaceholder": "Název plánu",
@@ -100,7 +99,12 @@
     "ScheduleRemovePeriod": "Odebrat období",
     "MeetingDuration": "Trvání schůzky",
     "MeetingInterval": "Pauza mezi schůzkami",
-    "CalDavShareLink": "Získat CalDav odkaz",
-    "CalDavSharedLinkMessage": "<p>Použijte tento odkaz k registraci kalendáře v externím klientovi podporujícím protokol CalDav:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>"
+    "CalDavAccess": "Přístup CalDAV",
+    "CalDavAccessPrompt": "Protokol CalDAV umožňuje synchronizaci vašeho osobního kalendáře Huly s externími kalendářovými aplikacemi. Použijte tento účet a navrhované heslo pro registraci serveru Huly CalDAV v aplikaci kalendářového klienta.",
+    "CalDavAccessEnable": "Povolte přístup CalDAV k osobnímu kalendáři v pracovním prostoru {ws}",
+    "CalDavAccessServer": "Server CalDAV",
+    "CalDavAccessAccount": "Účet Huly",
+    "CalDavAccessPassword": "Heslo",
+    "CalDavAccessPasswordWarning": "Tohle heslo už nebudete moci znovu vidět. Uložte si ho na bezpečné místo."
   }
 }

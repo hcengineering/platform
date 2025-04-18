@@ -92,7 +92,6 @@
     "ScheduleDeleteConfirm": "The schedule will be deleted. Confirm?",
     "ScheduleShareLink": "Share link",
     "ScheduleSharedLinkMessage": "<p>Share this link to allow others to book a meeting with you:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
-    "CopyLink": "Copy link",
     "ScheduleAvailability": "Availability",
     "ScheduleUnavailable": "Unavailable",
     "ScheduleTitlePlaceholder": "Schedule title",
@@ -100,7 +99,12 @@
     "ScheduleRemovePeriod": "Remove period",
     "MeetingDuration": "Meeting duration",
     "MeetingInterval": "Pause between meetings",
-    "CalDavShareLink": "Get CalDav link",
-    "CalDavSharedLinkMessage": "<p>Use this link to register the calendar in an external client supporting CalDav protocol:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>"
+    "CalDavAccess": "CalDAV access",
+    "CalDavAccessPrompt": "CalDAV protocol allows for syncing your personal Huly calendar with external calendar applications. Use this account and the suggested password for registering the Huly CalDAV server in a calendar client application.", 
+    "CalDavAccessEnable": "Enable CalDAV access to the personal calendar in workspace {ws}",
+    "CalDavAccessServer": "CalDAV server",
+    "CalDavAccessAccount": "Huly account",
+    "CalDavAccessPassword": "Password",
+    "CalDavAccessPasswordWarning": "You will not be able to see this password again. Please save it in a secure place."
   }
 }

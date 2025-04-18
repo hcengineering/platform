@@ -53,7 +53,7 @@ function findOrCreateGroup (
 export function createMessagesObserver (
   contentDiv: HTMLDivElement,
   onMessageView: (node: HTMLDivElement) => void
-): void {
+): () => void {
   const messageObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -91,4 +91,9 @@ export function createMessagesObserver (
   })
 
   mutationObserver.observe(contentDiv, { childList: true, subtree: true })
+
+  return () => {
+    messageObserver.disconnect()
+    mutationObserver.disconnect()
+  }
 }

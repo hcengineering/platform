@@ -81,7 +81,7 @@ export function initStatisticsContext (
     logFile?: string
     logConsole?: boolean
     factory?: () => MeasureMetricsContext
-    getUsers?: () => WorkspaceStatistics[]
+    getStats?: () => WorkspaceStatistics[]
     statsUrl?: string
     serviceName?: () => string
   }
@@ -144,7 +144,7 @@ export function initStatisticsContext (
             cpu: getCPUInfo(),
             memory: getMemoryInfo(),
             stats: metricsContext.metrics,
-            workspaces: ops?.getUsers?.()
+            workspaces: ops?.getStats?.()
           }
 
           const statData = JSON.stringify(data)

@@ -27,7 +27,7 @@ import presentation, { createQuery, getClient } from '@hcengineering/presentatio
 import view from '@hcengineering/view'
 
 import contact from '@hcengineering/contact'
-import { parseLocation, type Location } from '@hcengineering/ui'
+import { parseLocation, tooltip, type LabelAndProps, type Location } from '@hcengineering/ui'
 import workbench, { type Application } from '@hcengineering/workbench'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
@@ -139,6 +139,14 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
         use.setAttributeNS('http://www.w3.org/1999/xlink', 'href', iconUrl)
       }
 
+      let tooltipHandle: any
+      const resetTooltipHandle = (newState: any): void => {
+        if (typeof tooltipHandle?.destroy === 'function') {
+          tooltipHandle.destroy()
+        }
+        tooltipHandle = newState
+      }
+
       const titleSpan = root.appendChild(document.createElement('span'))
       renderLabel({ id, objectclass, label: node.attrs.label })
 
@@ -149,6 +157,9 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
 
           const label = await getReferenceLabel(objectclass, id, obj)
           if (label === '') return
+
+          const tooltipOptions = await getReferenceTooltip(objectclass, id, obj)
+          resetTooltipHandle(tooltip(root, tooltipOptions))
 
           renderLabel({ id, objectclass, label })
         })
@@ -162,6 +173,7 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
         },
         destroy () {
           query.unsubscribe()
+          resetTooltipHandle(undefined)
         }
       }
     }
@@ -334,6 +346,24 @@ export function ResolveReferenceUrlsPlugin (editor: Editor): Plugin<ResolveRefer
       }
     }
   })
+}
+
+async function getReferenceTooltip<T extends Doc> (
+  objectclass: Ref<Class<T>>,
+  id: Ref<T>,
+  doc?: T
+): Promise<LabelAndProps> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const mixin = hierarchy.classHierarchyMixin(objectclass as Ref<Class<Doc>>, view.mixin.ObjectTooltip)
+
+  if (mixin?.provider !== undefined) {
+    const providerFn = await getResource(mixin.provider)
+    return (await providerFn(client, doc)) ?? { label: hierarchy.getClass(objectclass).label }
+  }
+
+  return { label: hierarchy.getClass(objectclass).label }
 }
 
 export async function getReferenceLabel<T extends Doc> (
