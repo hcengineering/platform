@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import card, { type Tag, type Card, type MasterTag } from '@hcengineering/card'
+import card, { type Card, type MasterTag, type Tag } from '@hcengineering/card'
 import contact, { type Employee } from '@hcengineering/contact'
 import core, {
   AccountRole,
@@ -22,7 +22,8 @@ import core, {
   type Ref,
   SortingOrder,
   type Space,
-  type Tx
+  type Tx,
+  type Type
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -49,6 +50,7 @@ import {
   type Process,
   type ProcessFunction,
   type ProcessToDo,
+  type Results,
   type State,
   type Step,
   processId
@@ -114,6 +116,12 @@ export class TExecution extends TDoc implements Execution {
   @Prop(TypeAny(process.component.ErrorPresenter, process.string.Error), process.string.Error)
   @ReadOnly()
     error?: ExecutionError[] | null
+
+  parentId?: Ref<Execution>
+
+  context?: Record<string, any>
+
+  results?: Results
 }
 
 @Model(process.class.ProcessToDo, time.class.ToDo)
@@ -146,6 +154,7 @@ export class TState extends TDoc implements State {
   title!: string
   actions!: Step<Doc>[]
   endAction?: Step<Doc> | null
+  resultType?: Type<any> | null
 }
 
 @Model(process.class.ProcessFunction, core.class.Doc, DOMAIN_MODEL)
@@ -213,6 +222,15 @@ export function createModel (builder: Builder): void {
       component: process.component.Main
     },
     process.app.Process
+  )
+
+  builder.createDoc(
+    presentation.class.PresentationMiddlewareFactory,
+    core.space.Model,
+    {
+      createPresentationMiddleware: process.function.CreateMiddleware
+    },
+    process.pipeline.ProcessMiddleware
   )
 
   builder.createDoc(
@@ -509,6 +527,18 @@ export function createModel (builder: Builder): void {
       requiredParams: []
     },
     process.method.UpdateCard
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.OnSubProcessesDone,
+      objectClass: process.class.Execution,
+      systemOnly: true,
+      requiredParams: []
+    },
+    process.method.WaitSubProcess
   )
 
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {

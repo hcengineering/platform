@@ -15,7 +15,6 @@
 
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { TriggerFunc } from '@hcengineering/server-core'
 import { Presenter } from '@hcengineering/server-notification'
 
 /**
@@ -30,8 +29,5 @@ export default plugin(serverLeadId, {
   function: {
     LeadHTMLPresenter: '' as Resource<Presenter>,
     LeadTextPresenter: '' as Resource<Presenter>
-  },
-  trigger: {
-    OnEmployeeCreate: '' as Resource<TriggerFunc>
   }
 })

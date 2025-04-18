@@ -29,7 +29,7 @@
     SearchInput,
     showPopup
   } from '@hcengineering/ui'
-  import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions, BuildModelKey } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
@@ -58,6 +58,9 @@
   export let queryBuilder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined = undefined
   export let actionConfig: Record<string, any> = {}
   export let actionVisible: boolean = false
+  export let defaultViewletDescriptor: Ref<ViewletDescriptor> | undefined = undefined
+  export let defaultViewOptions: ViewOptions | undefined = undefined
+  export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -130,6 +133,7 @@
       bind:viewlet
       bind:preference
       bind:viewlets
+      {defaultViewletDescriptor}
       ignoreFragment
       viewletQuery={{
         attachTo: _class,
@@ -137,7 +141,7 @@
         ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
       }}
     />
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
+    <ViewletSettingButton bind:viewOptions bind:viewlet {defaultViewOptions} {defaultConfig} />
   </svelte:fragment>
 
   <Breadcrumb {icon} {label} size={'large'} isCurrent />
@@ -198,7 +202,7 @@
         _class,
         space,
         options,
-        config: preference?.config ?? viewlet.config,
+        config: preference?.config ?? defaultConfig ?? viewlet.config,
         viewlet,
         viewOptions,
         viewOptionsConfig: viewlet.viewOptions?.other,
@@ -218,7 +222,7 @@
         _class,
         space,
         options,
-        config: preference?.config ?? viewlet.config,
+        config: preference?.config ?? defaultConfig ?? viewlet.config,
         viewlet,
         viewOptions,
         viewOptionsConfig: viewlet.viewOptions?.other,

@@ -46,7 +46,14 @@
     "ParallelExecutionForbidden": "Execução Paralela Proibida",
     "StartAutomatically": "Iniciar automaticamente",
     "Error": "Erro",
-    "Continue": "Continuar"
+    "Continue": "Continuar",
+    "RequestFromUser": "Solicitar do usuário",
+    "EnterValue": "Insira valor",
+    "OnToDoClose": "Ao fechar Tarefa",
+    "OnSubProcessesDone": "Ao concluir processos sub",
+    "Result": "Resultado",
+    "RequestResult": "Solicitar resultado",
+    "NoResultRequired": "Nenhum resultado requerido"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",
@@ -54,8 +61,10 @@
     "RelatedObjectNotFound": "Objeto relacionado não encontrado: {attr}",
     "RelationNotExists": "Relação não existe: {association}",
     "EmptyAttributeContextValue": "Valor de atributo vazio: {attr}",
+    "UserRequestedValueNotProvided": "Valor solicitado pelo usuário não fornecido: {attr}",
     "ObjectNotFound": "Objeto não encontrado: {_id}",
     "EmptyRelatedObjectValue": "Valor de objeto relacionado vazio: {parent} {attr}",
-    "InternalServerError": "Erro interno do servidor, contate o suporte, id de erro: {errorId}"
+    "InternalServerError": "Erro interno do servidor, contate o suporte, id de erro: {errorId}",
+    "ResultNotProvided": "Resultado não fornecido"
   }
 }

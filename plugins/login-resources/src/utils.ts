@@ -27,6 +27,7 @@ import {
   AccountRole,
   concatLink,
   parseSocialIdString,
+  type AccountUuid,
   type Person,
   type WorkspaceInfoWithStatus,
   type WorkspaceUserOperation
@@ -381,6 +382,10 @@ export async function selectWorkspace (
   }
 }
 
+export async function exchangeGuestToken (token: string): Promise<string> {
+  return await getAccountClient(token).exchangeGuestToken(token)
+}
+
 export async function fetchWorkspace (): Promise<[Status, WorkspaceInfoWithStatus | null]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
@@ -661,7 +666,7 @@ export async function changeUsername (first: string, last: string): Promise<void
   }
 }
 
-export async function leaveWorkspace (account: string): Promise<LoginInfo | null> {
+export async function leaveWorkspace (account: AccountUuid): Promise<LoginInfo | null> {
   return await getAccountClient().leaveWorkspace(account)
 }
 

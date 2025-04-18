@@ -3,7 +3,7 @@ import { Card } from '@hcengineering/card'
 import { TriggerControl } from '@hcengineering/server-core'
 import activity from '@hcengineering/activity'
 import { ActivityControl } from '@hcengineering/server-activity'
-import { RequestEventType, ServerApi as CommunicationApi } from '@hcengineering/communication-sdk-types'
+import { ServerApi as CommunicationApi, MessageRequestEventType } from '@hcengineering/communication-sdk-types'
 import {
   ActivityAttributeUpdate,
   ActivityMessageData,
@@ -78,9 +78,10 @@ async function createMessages (
         account: systemAccount
       },
       {
-        type: RequestEventType.CreateMessage,
+        type: MessageRequestEventType.CreateMessage,
         messageType: MessageType.Activity,
         card: card._id,
+        cardType: card._class,
         content: await getActivityContent(control, data, card),
         creator: tx.modifiedBy,
         data

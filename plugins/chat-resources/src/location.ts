@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Card } from '@hcengineering/card'
-import type { Ref } from '@hcengineering/core'
+import { type Card, type MasterTag } from '@hcengineering/card'
+import type { Doc, Ref } from '@hcengineering/core'
 import { navigate, type Location, getCurrentResolvedLocation } from '@hcengineering/ui'
 import { chatId } from '@hcengineering/chat'
 import { getClient } from '@hcengineering/presentation'
@@ -25,22 +25,51 @@ import { openWidget } from '@hcengineering/workbench-resources'
 import chat from './plugin'
 import { type ChatWidgetData } from './types'
 
-// Url: /chat/{cardId}/{threadId}?message={messageId}
+export function decodeURI (value: string): ['type', Ref<MasterTag>] | ['card', Ref<Card>] {
+  return decodeURIComponent(value).split('|') as any
+}
+
+export function encodeURI (type: 'type' | 'card', ref: Ref<Doc>): string {
+  return [type, ref].join('|')
+}
 
 export function getCardIdFromLocation (loc: Location): Ref<Card> | undefined {
   if (loc.path[2] !== chatId) {
     return undefined
   }
-  return loc.path[3] as Ref<Card>
+  const [type, ref] = decodeURI(loc.path[3])
+  if (type !== 'card') {
+    return undefined
+  }
+  return ref
+}
+
+export function getTypeIdFromLocation (loc: Location): Ref<MasterTag> | undefined {
+  if (loc.path[2] !== chatId) {
+    return undefined
+  }
+  const [type, ref] = decodeURI(loc.path[3])
+  if (type !== 'type') {
+    return undefined
+  }
+  return ref
 }
 
 export function navigateToCard (_id: Ref<Card>): void {
   const loc = getCurrentResolvedLocation()
 
   loc.path[2] = chatId
-  loc.path[3] = _id
-  loc.path[4] = ''
-  loc.path.length = 4
+  loc.path[3] = encodeURI('card', _id)
+  delete loc.query?.message
+
+  navigate(loc)
+}
+
+export function navigateToType (_id: Ref<MasterTag>): void {
+  const loc = getCurrentResolvedLocation()
+
+  loc.path[2] = chatId
+  loc.path[3] = encodeURI('type', _id)
   delete loc.query?.message
 
   navigate(loc)

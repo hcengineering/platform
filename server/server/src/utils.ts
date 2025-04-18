@@ -19,8 +19,8 @@ import type {
   AddSessionActive,
   AddSessionResponse,
   ConnectionSocket,
-  HandleRequestFunction,
-  Session
+  Session,
+  SessionManager
 } from '@hcengineering/server-core'
 
 import { type Response } from '@hcengineering/rpc'
@@ -65,11 +65,13 @@ export function processRequest (
   context: MeasureContext,
   workspaceId: WorkspaceUuid,
   buff: any,
-  handleRequest: HandleRequestFunction
+  sessions: SessionManager
 ): void {
   try {
     const request = cs.readRequest(buff, session.binaryMode)
-    handleRequest(context, session, cs, request, workspaceId)
+    void sessions.handleRequest(context, session, cs, request, workspaceId).catch((err) => {
+      context.error('failed to handle request', { err, request })
+    })
   } catch (err: any) {
     if (((err.message as string) ?? '').includes('Data read, but end of buffer not reached')) {
       // ignore it

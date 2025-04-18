@@ -46,7 +46,14 @@
     "ParallelExecutionForbidden": "Одновременное выполнение запрещено",
     "StartAutomatically": "Запускать автоматически",
     "Error": "Ошибка",
-    "Continue": "Продолжить"
+    "Continue": "Продолжить",
+    "RequestFromUser": "Запросить у пользователя",
+    "EnterValue": "Введите значение",
+    "OnToDoClose": "При закрытии ToDo",
+    "OnSubProcessesDone": "При завершении подпроцессов",
+    "Result": "Результат",
+    "NoResultRequired": "Результат не требуется",
+    "RequestResult": "Запросить результат"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
@@ -55,7 +62,9 @@
     "RelatedObjectNotFound": "Связанный объект не найден: {attr}",
     "RelationNotExists": "Связь не существует: {association}",
     "EmptyAttributeContextValue": "Пустое значение атрибута: {attr}",
+    "UserRequestedValueNotProvided": "Знвчение не предоставлено пользователем: {attr}",
     "ObjectNotFound": "Объект не найден: {_id}",
-    "AttributeNotExists": "Атрибут не существует: {key}"
+    "AttributeNotExists": "Атрибут не существует: {key}",
+    "ResultNotProvided": "Результат не предоставлен"
   }
 }

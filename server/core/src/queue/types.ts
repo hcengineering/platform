@@ -11,7 +11,9 @@ export enum QueueTopic {
   Fulltext = 'fulltext',
 
   // A topic about user activity.
-  Users = 'users'
+  Users = 'users',
+
+  TelegramBot = 'telegramBot'
 }
 
 export interface ConsumerHandle {

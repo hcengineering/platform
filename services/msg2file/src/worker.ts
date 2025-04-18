@@ -28,8 +28,8 @@ import {
 import cardPlugin, { type Card } from '@hcengineering/card'
 import yaml from 'js-yaml'
 import { v4 as uuid } from 'uuid'
-import { RequestEventType } from '@hcengineering/communication-sdk-types'
-import { retry } from '@hcengineering/communication-shared'
+import { MessageRequestEventType } from '@hcengineering/communication-sdk-types'
+import { applyPatches, retry } from '@hcengineering/communication-shared'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { deserializeMessage } from '@hcengineering/communication-yaml'
 import { RestClient as CommunicationRestClient } from '@hcengineering/communication-rest-client'
@@ -37,7 +37,6 @@ import { RestClient as CommunicationRestClient } from '@hcengineering/communicat
 import { PostgresDB, SyncRecord } from './db'
 import config from './config'
 import { parseFileStream } from './parser'
-import { applyPatches } from './utils'
 import { connectCommunication, connectPlatform } from './platform'
 import { getFile, removeFile, uploadFile } from './storage'
 
@@ -151,8 +150,8 @@ async function applyPatchesToGroups (
       patches: true,
       limit: 100,
       order: SortingOrder.Ascending,
-      fromSec: {
-        greater: groups[groups.length - 1].toSec
+      fromDate: {
+        greater: groups[groups.length - 1].toDate
       }
     })
   }
@@ -212,7 +211,7 @@ async function newMessages2file (
   const lastGroup = (
     await client.findMessagesGroups({
       card: card._id,
-      orderBy: 'toSec',
+      orderBy: 'toDate',
       order: SortingOrder.Descending,
       limit: 1
     })
@@ -245,12 +244,11 @@ async function newMessages2file (
 
     const firstMessage = messages[0]
     const fromDate = firstMessage.created
-    const fromSec = new Date(fromDate).setMilliseconds(0)
 
     const messagesFromExistingGroup =
-      lastGroup == null || fromSec > lastGroup.toSec.getTime()
+      lastGroup == null || fromDate > lastGroup.toDate
         ? []
-        : messages.filter(({ created }) => new Date(created).setMilliseconds(0) <= lastGroup.toSec.getTime())
+        : messages.filter(({ created }) => created <= lastGroup.toDate)
     const newMessages =
       messagesFromExistingGroup.length > 0 ? messages.slice(messagesFromExistingGroup.length) : messages
 
@@ -274,17 +272,13 @@ async function createNewGroup (
   if (messages.length === 0) return []
 
   const lastMessage = messages[messages.length - 1]
-  const to = new Date(lastMessage.created)
-  to.setMilliseconds(999)
+  const toDate = lastMessage.created
 
   const messagesFromRange = (
     await client.findMessages({
       card: card._id,
       order: SortingOrder.Ascending,
-      created: {
-        greaterOrEqual: lastMessage.created,
-        lessOrEqual: to
-      },
+      created: toDate,
       reactions: true,
       replies: true,
       files: true
@@ -331,9 +325,8 @@ async function pushMessagesToExistingGroup (
     }
 
     const messagesFromGroup = messages.filter((it) => {
-      const date = new Date(it.created)
-      date.setMilliseconds(0)
-      return date <= group.toSec && date >= group.fromSec
+      const date = it.created
+      return date <= group.toDate && date >= group.fromDate
     })
 
     messages.splice(0, messagesFromGroup.length)
@@ -379,19 +372,19 @@ async function createGroup (
   client: CommunicationRestClient,
   card: CardID,
   blobId: Ref<Blob>,
-  fromSec: Date,
-  toSec: Date,
+  fromDate: Date,
+  toDate: Date,
   count: number
 ): Promise<void> {
   await retry(
     async () =>
       await client.event({
-        type: RequestEventType.CreateMessagesGroup,
+        type: MessageRequestEventType.CreateMessagesGroup,
         group: {
           card,
           blobId,
-          fromSec,
-          toSec,
+          fromDate,
+          toDate,
           count
         }
       }),
@@ -403,7 +396,7 @@ async function removeGroup (client: CommunicationRestClient, card: CardID, blobI
   await retry(
     async () =>
       await client.event({
-        type: RequestEventType.RemoveMessagesGroup,
+        type: MessageRequestEventType.RemoveMessagesGroup,
         card,
         blobId
       }),
@@ -458,16 +451,14 @@ async function findTargetGroup (
   card: CardID,
   created: Date
 ): Promise<MessagesGroup | undefined> {
-  const date = new Date(created)
-  date.setMilliseconds(0)
   return (
     await client.findMessagesGroups({
       card,
-      fromSec: { lessOrEqual: date },
-      toSec: { greaterOrEqual: date },
+      fromDate: { lessOrEqual: created },
+      toDate: { greaterOrEqual: created },
       limit: 1,
       order: SortingOrder.Ascending,
-      orderBy: 'fromSec'
+      orderBy: 'fromDate'
     })
   )[0]
 }

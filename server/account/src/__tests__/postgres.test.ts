@@ -16,7 +16,7 @@ import {
   AccountRole,
   Data,
   Version,
-  type PersonUuid,
+  type AccountUuid,
   type WorkspaceMode,
   type WorkspaceUuid
 } from '@hcengineering/core'
@@ -27,6 +27,7 @@ interface TestWorkspace {
   uuid: WorkspaceUuid
   mode: WorkspaceMode
   name: string
+  createdOn: number
   processingAttempts?: number
   lastProcessingTime?: number
 }
@@ -42,7 +43,7 @@ describe('PostgresDbCollection', () => {
       unsafe: jest.fn().mockResolvedValue([]) // Default to empty array result
     }
 
-    collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, 'uuid', ns)
+    collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, { idKey: 'uuid', ns })
   })
 
   describe('getTableName', () => {
@@ -51,17 +52,18 @@ describe('PostgresDbCollection', () => {
     })
 
     it('should return table name without namespace when ns is empty', () => {
-      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, 'uuid', '')
+      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, {
+        idKey: 'uuid',
+        ns: ''
+      })
       expect(collection.getTableName()).toBe('workspace')
     })
 
     it('should return table name with custom namespace when ns is provided', () => {
-      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>(
-        'workspace',
-        mockClient as Sql,
-        'uuid',
-        'custom_account'
-      )
+      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, {
+        idKey: 'uuid',
+        ns: 'custom_account'
+      })
       expect(collection.getTableName()).toBe('custom_account.workspace')
     })
   })
@@ -199,6 +201,92 @@ describe('PostgresDbCollection', () => {
       ])
     })
   })
+
+  describe('timestamp field handling', () => {
+    beforeEach(() => {
+      // Create collection with timestamp fields specified
+      collection = new PostgresDbCollection<TestWorkspace, 'uuid'>('workspace', mockClient as Sql, {
+        idKey: 'uuid',
+        ns,
+        timestampFields: ['lastProcessingTime', 'createdOn']
+      })
+    })
+
+    it('should convert string timestamps to numbers', async () => {
+      // Mock database returning string timestamps
+      mockClient.unsafe.mockResolvedValue([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          last_processing_time: '1234567890000',
+          created_on: '1234567891000'
+        }
+      ])
+
+      const result = await collection.find({})
+
+      expect(result).toEqual([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          lastProcessingTime: 1234567890000,
+          createdOn: 1234567891000
+        }
+      ])
+      expect(typeof result[0].lastProcessingTime).toBe('number')
+      expect(typeof result[0].createdOn).toBe('number')
+    })
+
+    it('should handle null timestamp values', async () => {
+      mockClient.unsafe.mockResolvedValue([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          last_processing_time: null,
+          created_on: null
+        }
+      ])
+
+      const result = await collection.find({})
+
+      expect(result).toEqual([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          lastProcessingTime: null,
+          createdOn: null
+        }
+      ])
+    })
+
+    it('should handle invalid timestamp strings', async () => {
+      mockClient.unsafe.mockResolvedValue([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          last_processing_time: 'invalid',
+          created_on: ''
+        }
+      ])
+
+      const result = await collection.find({})
+
+      expect(result).toEqual([
+        {
+          uuid: 'ws1',
+          mode: 'active',
+          name: 'Test',
+          lastProcessingTime: null,
+          createdOn: null
+        }
+      ])
+    })
+  })
 })
 
 describe('AccountPostgresDbCollection', () => {
@@ -229,7 +317,7 @@ describe('AccountPostgresDbCollection', () => {
     it('should join with passwords table', async () => {
       const mockResult = [
         {
-          uuid: 'acc1' as PersonUuid,
+          uuid: 'acc1' as AccountUuid,
           timezone: 'UTC',
           locale: 'en',
           hash: null,
@@ -238,7 +326,7 @@ describe('AccountPostgresDbCollection', () => {
       ]
       mockClient.unsafe.mockResolvedValue(mockResult)
 
-      const result = await collection.find({ uuid: 'acc1' as PersonUuid })
+      const result = await collection.find({ uuid: 'acc1' as AccountUuid })
 
       expect(mockClient.unsafe).toHaveBeenCalledWith(
         `SELECT * FROM (
@@ -260,7 +348,7 @@ describe('AccountPostgresDbCollection', () => {
     it('should convert buffer fields from database', async () => {
       const mockResult = [
         {
-          uuid: 'acc1' as PersonUuid,
+          uuid: 'acc1' as AccountUuid,
           timezone: 'UTC',
           locale: 'en',
           hash: { 0: 1, 1: 2, 3: 3 }, // Simulating buffer data from DB
@@ -269,7 +357,7 @@ describe('AccountPostgresDbCollection', () => {
       ]
       mockClient.unsafe.mockResolvedValue(mockResult)
 
-      const result = await collection.find({ uuid: 'acc1' as PersonUuid })
+      const result = await collection.find({ uuid: 'acc1' as AccountUuid })
 
       expect(result[0].hash).toBeInstanceOf(Buffer)
       expect(result[0].salt).toBeInstanceOf(Buffer)
@@ -290,7 +378,7 @@ describe('AccountPostgresDbCollection', () => {
   describe('insertOne', () => {
     it('should prevent inserting password fields', async () => {
       const doc = {
-        uuid: 'acc1' as PersonUuid,
+        uuid: 'acc1' as AccountUuid,
         hash: Buffer.from([]),
         salt: Buffer.from([])
       }
@@ -300,7 +388,7 @@ describe('AccountPostgresDbCollection', () => {
 
     it('should allow inserting non-password fields', async () => {
       const doc = {
-        uuid: 'acc1' as PersonUuid,
+        uuid: 'acc1' as AccountUuid,
         timezone: 'UTC',
         locale: 'en'
       }
@@ -324,12 +412,12 @@ describe('AccountPostgresDbCollection', () => {
 
     it('should prevent updating password fields', async () => {
       await expect(
-        collection.updateOne({ uuid: 'acc1' as PersonUuid }, { hash: Buffer.from([]), salt: Buffer.from([]) })
+        collection.updateOne({ uuid: 'acc1' as AccountUuid }, { hash: Buffer.from([]), salt: Buffer.from([]) })
       ).rejects.toThrow('Passwords are not allowed in update query')
     })
 
     it('should allow updating non-password fields', async () => {
-      await collection.updateOne({ uuid: 'acc1' as PersonUuid }, { timezone: 'UTC', locale: 'en' })
+      await collection.updateOne({ uuid: 'acc1' as AccountUuid }, { timezone: 'UTC', locale: 'en' })
 
       expect(mockClient.unsafe).toHaveBeenCalledWith(
         'UPDATE global_account.account SET "timezone" = $1, "locale" = $2 WHERE "uuid" = $3',
@@ -346,7 +434,7 @@ describe('AccountPostgresDbCollection', () => {
     })
 
     it('should allow deleting by non-password fields', async () => {
-      await collection.deleteMany({ uuid: 'acc1' as PersonUuid })
+      await collection.deleteMany({ uuid: 'acc1' as AccountUuid })
 
       expect(mockClient.unsafe).toHaveBeenCalledWith('DELETE FROM global_account.account WHERE "uuid" = $1', ['acc1'])
     })
@@ -399,7 +487,7 @@ describe('PostgresAccountDB', () => {
   })
 
   describe('workspace operations', () => {
-    const accountId = 'acc1' as PersonUuid
+    const accountId = 'acc1' as AccountUuid
     const workspaceId = 'ws1' as WorkspaceUuid
     const role = AccountRole.Owner
 
@@ -485,12 +573,14 @@ describe('PostgresAccountDB', () => {
             uuid: workspaceId,
             name: 'Test',
             url: 'test',
+            created_on: '1234567890000',
             status: {
               mode: 'active',
               version_major: 1,
               version_minor: 0,
               version_patch: 0,
-              is_disabled: false
+              is_disabled: false,
+              last_processing_time: '1234567890000'
             }
           }
         ]
@@ -503,12 +593,15 @@ describe('PostgresAccountDB', () => {
           uuid: workspaceId,
           name: 'Test',
           url: 'test',
+          createdOn: 1234567890000,
           status: {
             mode: 'active',
             versionMajor: 1,
             versionMinor: 0,
             versionPatch: 0,
-            isDisabled: false
+            isDisabled: false,
+            lastProcessingTime: 1234567890000,
+            lastVisit: null
           }
         })
       })
@@ -877,7 +970,7 @@ describe('PostgresAccountDB', () => {
   })
 
   describe('password operations', () => {
-    const accountId = 'acc1' as PersonUuid
+    const accountId = 'acc1' as AccountUuid
     const hash: any = {
       buffer: Buffer.from('hash')
     }

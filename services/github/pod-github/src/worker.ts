@@ -1,23 +1,29 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import type { AccountClient } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import chunter from '@hcengineering/chunter'
 import { CollaboratorClient } from '@hcengineering/collaborator-client'
-import contact, { AvatarType, Person } from '@hcengineering/contact'
+import contact, {
+  AvatarType,
+  Person,
+  type Employee,
+  type SocialIdentity,
+  type SocialIdentityRef
+} from '@hcengineering/contact'
 import core, {
-  PersonId,
-  AccountRole,
   AttachedDoc,
   Branding,
   Class,
   Client,
   ClientConnectEvent,
-  Data,
   Doc,
   DocumentQuery,
   DocumentUpdate,
   FindResult,
   MeasureContext,
+  PersonId,
   Ref,
+  SocialIdType,
   SortingOrder,
   Space,
   Status,
@@ -30,16 +36,19 @@ import core, {
   WithLookup,
   WorkspaceEvent,
   WorkspaceUuid,
+  buildSocialIdString,
   concatLink,
   generateId,
   groupByArray,
   reduceCalls,
+  systemAccountUuid,
   toIdMap,
   type Blob,
+  type Data,
   type MigrationState,
+  type PersonUuid,
   type TimeRateLimiter,
-  type WorkspaceIds,
-  type WorkspaceDataId
+  type WorkspaceIds
 } from '@hcengineering/core'
 import github, {
   DocSyncInfo,
@@ -48,12 +57,14 @@ import github, {
   GithubIntegrationRepository,
   GithubIssue,
   GithubProject,
-  GithubUserInfo,
-  githubId
+  githubId,
+  type GithubUserInfo
 } from '@hcengineering/github'
 import { LiveQuery } from '@hcengineering/query'
+import { getAccountClient } from '@hcengineering/server-client'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { getPublicLinkUrl } from '@hcengineering/server-guest-resources'
+import { generateToken } from '@hcengineering/server-token'
 import task, { ProjectType, TaskType } from '@hcengineering/task'
 import { MarkupNode, MarkupNodeType, jsonToMarkup } from '@hcengineering/text'
 import { isMarkdownsEquals } from '@hcengineering/text-markdown'
@@ -91,9 +102,6 @@ import {
 } from './types'
 import { equalExceptKeys } from './utils'
 
-// TODO: FIXME
-type PersonAccount = any
-
 /**
  * @public
  */
@@ -105,8 +113,7 @@ export class GithubWorker implements IntegrationManager {
 
   triggerRequests: number = 0
 
-  // TODO: FIXME
-  authRequestSend = new Set<any>()
+  authRequestSend = new Set<PersonId>()
 
   triggerSync: () => void = () => {
     this.triggerRequests++
@@ -271,7 +278,7 @@ export class GithubWorker implements IntegrationManager {
     }
   }
 
-  async getAccountU (user?: User): Promise<PersonAccount | undefined> {
+  async getAccountU (user?: User): Promise<PersonId | undefined> {
     if (user == null) {
       return undefined
     }
@@ -284,97 +291,95 @@ export class GithubWorker implements IntegrationManager {
     })
   }
 
-  accountMap = new Map<string, Promise<PersonAccount | undefined>>()
-  async getAccount (userInfo?: UserInfo | null): Promise<PersonAccount | undefined> {
+  accountMap = new Map<string, PersonId | undefined | Promise<PersonId | undefined>>()
+  async getAccount (userInfo?: UserInfo | null): Promise<PersonId | undefined> {
     if (userInfo?.login == null) {
       return
     }
     const info = this.accountMap.get(userInfo?.login ?? '')
     if (info !== undefined) {
-      return await info
+      if (info instanceof Promise) {
+        const p = await info
+        this.accountMap.set(userInfo?.login, p)
+        return p
+      }
+      return info
     }
     const p = this._getAccountRaw(userInfo)
     this.accountMap.set(userInfo?.login ?? '', p)
     return await p
   }
 
-  async _getAccountRaw (userInfo?: UserInfo | null): Promise<PersonAccount | undefined> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // // We need to sync by userInfo id to prevent parallel requests.
-    // if (userInfo === null) {
-    //   // Ghost author.
-    //   return await this.getAccount({
-    //     id: 'ghost',
-    //     login: 'ghost',
-    //     avatarUrl: 'https://avatars.githubusercontent.com/u/10137?v=4',
-    //     email: '<EMAIL>',
-    //     name: 'Ghost'
-    //   })
-    // }
-    // if (userInfo?.login == null) {
-    //   return
-    // }
-    // const userName = (userInfo.name ?? userInfo.login)
-    //   .split(' ')
-    //   .map((it) => it.trim())
-    //   .reverse()
-    //   .join(',') // TODO: Convert first, last name
+  async _getAccountRaw (userInfo?: UserInfo | null): Promise<PersonId | undefined> {
+    // We need to sync by userInfo id to prevent parallel requests.
+    if (userInfo === null) {
+      // Ghost author.
+      return await this.getAccount({
+        id: 'ghost',
+        login: 'ghost',
+        avatarUrl: 'https://avatars.githubusercontent.com/u/10137?v=4',
+        email: '<EMAIL>',
+        name: 'Ghost'
+      })
+    }
+    if (userInfo?.login == null) {
+      return
+    }
+    const userName = (userInfo.name ?? userInfo.login)
+      .split(' ')
+      .map((it) => it.trim())
+      .reverse()
+      .join(',') // TODO: Convert first, last name
 
-    // const infos = await this.liveQuery.findOne(github.class.GithubUserInfo, { login: userInfo.login })
-    // if (infos === undefined) {
-    //   await this._client.createDoc(github.class.GithubUserInfo, contact.space.Contacts, {
-    //     ...userInfo
-    //   })
-    // }
+    const infos = await this.liveQuery.findOne(github.class.GithubUserInfo, { login: userInfo.login })
+    if (infos === undefined) {
+      await this._client.createDoc(github.class.GithubUserInfo, contact.space.Contacts, {
+        ...userInfo
+      })
+    }
 
-    // const account = await this.client
-    //   .getModel()
-    //   .findOne(contact.class.PersonAccount, { email: `github:${userInfo.login}` })
-    // if (account !== undefined) {
-    //   const person = await this.liveQuery.findOne(contact.class.Person, { _id: account.person })
-    //   // We need to be sure employee are exists.
-    //   if (person === undefined) {
-    //     const person: Ref<Person> = await this.findPerson(userInfo, userName)
-    //     if (account.person !== person) {
-    //       await this._client.update(account, { person })
-    //     }
-    //   }
-    //   return account
-    // } else {
-    //   // Check authorized users
-    //   const accountRecord = await this.platform.getAccount(userInfo.login)
-    //   if (accountRecord !== undefined) {
-    //     const authorizedId = accountRecord.accounts[this.workspace.name]
-    //     if (authorizedId !== undefined) {
-    //       const emp = await this._client.findOne(contact.class.PersonAccount, {
-    //         _id: authorizedId as Ref<PersonAccount>
-    //       })
-    //       if (emp !== undefined) {
-    //         // We need to create github account
-    //         const gid = await this._client.createDoc(contact.class.PersonAccount, core.space.Model, {
-    //           email: `github:${userInfo.login}`,
-    //           person: emp.person,
-    //           role: AccountRole.User
-    //         })
-    //         const acc = await this._client.findOne(contact.class.PersonAccount, { _id: gid })
-    //         return acc
-    //       }
-    //     }
-    //   }
+    // Find a local social id already existing
+    const existingSocialId = await this._client.findOne(contact.class.SocialIdentity, {
+      type: SocialIdType.GITHUB,
+      value: userInfo.login.toLowerCase()
+    })
 
-    //   const person: Ref<Person> | undefined = await this.findPerson(userInfo, userName)
+    if (existingSocialId !== undefined) {
+      return existingSocialId?._id
+    }
 
-    //   // We need to create email account
-    //   const id = await this._client.createDoc(contact.class.PersonAccount, core.space.Model, {
-    //     email: `github:${userInfo.login}`,
-    //     person,
-    //     role: AccountRole.User
-    //   })
-    //   const acc = await this.client.getModel().findOne(contact.class.PersonAccount, { _id: id })
-    //   return acc
-    // }
+    const { uuid, socialId } = await this.accountClient.ensurePerson(
+      SocialIdType.GITHUB,
+      userInfo.login.toLowerCase(),
+      userInfo.name ?? userInfo.login,
+      ''
+    )
+    const person: Ref<Person> | undefined = await this.findPerson(userInfo, userName, uuid)
+    // We need to find or create a local person for uuid if missing.
+
+    // We need to create social id github account
+    await this._client.addCollection(
+      contact.class.SocialIdentity,
+      contact.space.Contacts,
+      person,
+      contact.class.Person,
+      'socialIds',
+      {
+        type: SocialIdType.GITHUB,
+        value: userInfo.login.toLowerCase(),
+        key: buildSocialIdString({
+          type: SocialIdType.GITHUB,
+          value: userInfo.login.toLowerCase()
+        }),
+        verifiedOn: Date.now()
+      },
+      socialId as SocialIdentityRef
+    )
+
+    return socialId
   }
+
+  accountClient: AccountClient
 
   private constructor (
     readonly ctx: MeasureContext,
@@ -388,6 +393,9 @@ export class GithubWorker implements IntegrationManager {
     readonly branding: Branding | null,
     readonly periodicSyncInterval = 60 * 60 * 1000
   ) {
+    const token = generateToken(systemAccountUuid, this.workspace.uuid, { service: 'github', mode: 'github' })
+    this.accountClient = getAccountClient(token, 30000)
+
     this._client = new TxOperations(this.client, core.account.System)
     this.liveQuery = new LiveQuery(client)
 
@@ -420,7 +428,6 @@ export class GithubWorker implements IntegrationManager {
         _class: [chunter.class.ChatMessage],
         mapper: new CommentSyncManager(this.ctx.newChild('comment', {}), this._client, this.liveQuery)
       },
-      // TODO: FIXME
       // {
       //   _class: [contact.class.PersonAccount],
       //   mapper: this.personMapper
@@ -458,221 +465,235 @@ export class GithubWorker implements IntegrationManager {
     this.periodicSyncPromise = undefined
   }
 
-  // private async findPerson (userInfo: UserInfo, userName: string): Promise<Ref<Person>> {
-  //   let person: Ref<Person> | undefined
-  //   // try to find by account.
-  //   if (userInfo.email != null && userInfo.email.trim().length > 0) {
-  //     const personAccount = await this.client.getModel().findOne(contact.class.PersonAccount, { email: userInfo.email })
-  //     person = personAccount?.person
-  //   }
+  private async findPerson (userInfo: UserInfo, userName: string, uuid: PersonUuid): Promise<Ref<Person>> {
+    let person: Ref<Person> | undefined
+    // try to find by account.
+    if (userInfo.email != null && userInfo.email.trim().length > 0) {
+      const personAccount = await this.client.findOne(contact.class.SocialIdentity, {
+        type: SocialIdType.EMAIL,
+        value: userInfo.email.toLowerCase()
+      })
+      person = personAccount?.attachedTo
+    }
 
-  //   if (person === undefined) {
-  //     const channel = await this.liveQuery.findOne(contact.class.Channel, {
-  //       provider: contact.channelProvider.GitHub,
-  //       value: userInfo.login
-  //     })
-  //     person = channel?.attachedTo as Ref<Person>
-  //   }
-
-  //   if (person === undefined) {
-  //     // We need to create some person to identify this account.
-  //     person = await this._client.createDoc(contact.class.Person, contact.space.Contacts, {
-  //       name: userName,
-  //       avatarType: AvatarType.EXTERNAL,
-  //       avatarProps: { url: userInfo.avatarUrl },
-  //       city: '',
-  //       comments: 0,
-  //       channels: 0,
-  //       attachments: 0
-  //     })
-  //     await this._client.addCollection(
-  //       contact.class.Channel,
-  //       contact.space.Contacts,
-  //       person,
-  //       contact.class.Person,
-  //       'channels',
-  //       {
-  //         provider: contact.channelProvider.GitHub,
-  //         value: userInfo.login
-  //       }
-  //     )
-  //     if (userInfo.email != null && userInfo.email.trim() !== '') {
-  //       await this._client.addCollection(
-  //         contact.class.Channel,
-  //         contact.space.Contacts,
-  //         person,
-  //         contact.class.Person,
-  //         'channels',
-  //         {
-  //           provider: contact.channelProvider.Email,
-  //           value: userInfo.email
-  //         }
-  //       )
-  //     }
-  //   }
-  //   return person
-  // }
-
-  async getGithubLogin (container: IntegrationContainer, person: Ref<Person>): Promise<UserInfo | undefined> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const accounts = this.client.getModel().findAllSync(contact.class.PersonAccount, {})
-    // const acc = accounts.find((it) => it.person === person && it.email.startsWith('github:'))
-    // if (acc === undefined) {
-    //   return // Nobody, will use system account.
-    // }
-    // const login = acc.email.substring(7)
-    // let info = await this.liveQuery.findOne(github.class.GithubUserInfo, { login })
-    // if (info === undefined) {
-    //   // We need to retrieve info for login
-    //   const response: any = await container.octokit?.graphql(
-    //     `query($login: String!) {
-    //     user(login: $login) {
-    //       id
-    //       email
-    //       login
-    //       name
-    //       avatarUrl
-    //     }
-    //   }`,
-    //     {
-    //       login
-    //     }
-    //   )
-    // }
-    //   info = response.user
-    //   await this._client.createDoc(github.class.GithubUserInfo, contact.space.Contacts, info as Data<GithubUserInfo>)
-    // }
-    // return info
+    if (person === undefined) {
+      // We need to create some person to identify this account.
+      person = await this._client.createDoc(contact.class.Person, contact.space.Contacts, {
+        name: userName,
+        avatarType: AvatarType.EXTERNAL,
+        avatarProps: { url: userInfo.avatarUrl },
+        city: '',
+        comments: 0,
+        channels: 0,
+        attachments: 0,
+        personUuid: uuid
+      })
+      await this._client.addCollection(
+        contact.class.Channel,
+        contact.space.Contacts,
+        person,
+        contact.class.Person,
+        'channels',
+        {
+          provider: contact.channelProvider.GitHub,
+          value: userInfo.login
+        }
+      )
+      if (userInfo.email != null && userInfo.email.trim() !== '') {
+        await this._client.addCollection(
+          contact.class.Channel,
+          contact.space.Contacts,
+          person,
+          contact.class.Person,
+          'channels',
+          {
+            provider: contact.channelProvider.Email,
+            value: userInfo.email
+          }
+        )
+      }
+    }
+    return person
   }
 
-  async syncUserData (ctx: MeasureContext, users: GithubUserRecord[]): Promise<void> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // Let's sync information about users and send some details
-    // const accounts = await this._client.findAll(contact.class.PersonAccount, {
-    //   email: { $in: users.map((it) => `github:${it._id}`) }
-    // })
-    // const userAuths = await this._client.findAll(github.class.GithubAuthentication, {})
-    // const persons = await this._client.findAll(contact.class.Person, { _id: { $in: accounts.map((it) => it.person) } })
-    // for (const record of users) {
-    //   if (record.error !== undefined) {
-    //     // Skip accounts with error
-    //     continue
-    //   }
-    //   const account = accounts.find((it) => it.email === `github:${record._id}`)
-    //   const userAuth = userAuths.find((it) => it.login === record._id)
-    //   const person = persons.find((it) => account?.person)
-    //   if (account === undefined || userAuth === undefined || person === undefined) {
-    //     continue
-    //   }
-    //   const accountRef = record.accounts[this.workspace.name]
-    //   try {
-    //     await this.platform.checkRefreshToken(record, true)
+  async getGithubLogin (container: IntegrationContainer, person: Ref<Person>): Promise<UserInfo | undefined> {
+    const personRef = await this.client.findOne(contact.class.Person, { _id: person })
+    if (personRef === undefined) {
+      return
+    }
+    const accounts = await this.client.findAll(contact.class.SocialIdentity, {
+      type: SocialIdType.GITHUB,
+      attachedTo: personRef._id
+    })
+    if (accounts.length === 0) {
+      return // Nobody, will use system account.
+    }
+    const info = await this.client.findOne(github.class.GithubUserInfo, {
+      login: { $in: accounts.map((it) => it.value) }
+    })
+    if (info?.id === undefined) {
+      // We need to retrieve info for login
+      const response: any = await container.octokit?.graphql(
+        `query($login: String!) {
+        user(login: $login) {
+          id
+          email
+          login
+          name
+          avatarUrl
+        }
+      }`,
+        {
+          login: accounts[0].value
+        }
+      )
+      const infoData = response.user
+      if (info == null) {
+        await this._client.createDoc(
+          github.class.GithubUserInfo,
+          contact.space.Contacts,
+          infoData as Data<GithubUserInfo>
+        )
+      } else {
+        await this._client.diffUpdate(info, {
+          ...infoData
+        })
+      }
+    }
+    return info
+  }
 
-    //     const ops = new TxOperations(this.client, accountRef)
-    //     await syncUser(ctx, record, userAuth, ops, accountRef)
-    //   } catch (err: any) {
-    //     try {
-    //       await this.platform.revokeUserAuth(record)
-    //     } catch (err: any) {
-    //       ctx.error(`Failed to revoke user ${record._id}`, err)
-    //     }
-    //     if (err.response?.data?.message !== 'Bad credentials') {
-    //       ctx.error(`Failed to sync user ${record._id}`, err)
-    //       Analytics.handleError(err)
-    //     }
-    //     if (userAuth !== undefined) {
-    //       await this._client.update<GithubAuthentication>(
-    //         userAuth,
-    //         {
-    //           error: errorToObj(err)
-    //         },
-    //         undefined,
-    //         Date.now(),
-    //         accountRef
-    //       )
-    //     }
-    //   }
-    // }
+  async syncUserData (ctx: MeasureContext): Promise<void> {
+    // Let's sync information about users and send some details
+    const accounts = await this._client.findAll(contact.class.SocialIdentity, {
+      type: SocialIdType.GITHUB
+    })
+    const userAuths = await this._client.findAll(github.class.GithubAuthentication, {})
+    const persons = await this._client.findAll(contact.class.Person, {
+      _id: { $in: accounts.map((it) => it.attachedTo) }
+    })
+    for (const account of accounts) {
+      const userAuth = userAuths.find((it) => it.login === account.value)
+      const person = persons.find((it) => account?.attachedTo)
+      if (account === undefined || userAuth === undefined || person === undefined) {
+        continue
+      }
+      const record = await this.platform.getUser(account.value)
+      if (record === undefined) {
+        continue
+      }
+      try {
+        await this.platform.checkRefreshToken(record, true)
+
+        const ops = new TxOperations(this.client, account._id)
+        await syncUser(ctx, record, userAuth, ops, account._id)
+      } catch (err: any) {
+        try {
+          await this.platform.revokeUserAuth(record)
+        } catch (err: any) {
+          ctx.error(`Failed to revoke user ${record._id}`, err)
+        }
+        if (err.response?.data?.message !== 'Bad credentials') {
+          ctx.error(`Failed to sync user ${record._id}`, err)
+          Analytics.handleError(err)
+        }
+        if (userAuth !== undefined) {
+          await this._client.update<GithubAuthentication>(
+            userAuth,
+            {
+              error: errorToObj(err)
+            },
+            undefined,
+            Date.now(),
+            account._id
+          )
+        }
+      }
+    }
   }
 
   async getOctokit (account: PersonId): Promise<Octokit | undefined> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // let record = await this.platform.getAccountByRef(this.workspace.name, account)
+    let record = await this.platform.getAccountByRef(this.workspace.uuid, account)
 
-    // const accountRef = this.accounts.find((it) => it._id === account)
-    // const [accountRef] = this.client.getModel().findAllSync(contact.class.PersonAccount, { _id: account })
-    // if (record === undefined) {
-    //   if (accountRef !== undefined) {
-    //     const accounts = this._client.getModel().getAccountByPersonId(accountRef.person)
-    //     for (const aa of accounts) {
-    //       record = await this.platform.getAccountByRef(this.workspace.name, aa._id)
-    //       if (record !== undefined) {
-    //         break
-    //       }
-    //     }
-    //   }
-    // }
-    // // Check and refresh token if required.
-    // if (record !== undefined) {
-    //   this.ctx.info('get octokit', { account, recordId: record._id, workspace: this.workspace.name })
-    //   await this.platform.checkRefreshToken(record)
-    //   return new Octokit({
-    //     auth: record.token,
-    //     client_id: config.ClientID,
-    //     client_secret: config.ClientSecret
-    //   })
-    // }
+    const accountRef = await this._client.findOne(contact.class.SocialIdentity, { _id: account as any })
+    if (record === undefined) {
+      if (accountRef !== undefined) {
+        const accounts = await this._client.findAll(contact.class.SocialIdentity, { attachedTo: accountRef.attachedTo })
+        for (const aa of accounts) {
+          record = await this.platform.getAccountByRef(this.workspace.uuid, aa._id)
+          if (record !== undefined) {
+            break
+          }
+        }
+      }
+    }
+    // Check and refresh token if required.
+    if (record !== undefined) {
+      this.ctx.info('get octokit', { account, recordId: record._id, workspace: this.workspace.uuid })
+      await this.platform.checkRefreshToken(record)
+      return new Octokit({
+        auth: record.token,
+        client_id: config.ClientID,
+        client_secret: config.ClientSecret
+      })
+    }
 
-    // // We need to inform user, he need to authorize this account with github.
-    // if (accountRef !== undefined && !this.authRequestSend.has(accountRef._id)) {
-    //   this.authRequestSend.add(accountRef._id)
-    //   const person = await this.liveQuery.findOne(contact.class.Person, { _id: accountRef.person })
-    //   if (person !== undefined) {
-    //     const personSpace = await this.liveQuery.findOne(contact.class.PersonSpace, { person: person._id })
-    //     if (personSpace !== undefined) {
-    //       // We need to remove if user has authentication in workspace but doesn't have a record.
+    // We need to inform user, he need to authorize this account with github.
+    // TODO: Inform user it need authenticsion
+    if (!this.authRequestSend.has(account)) {
+      this.authRequestSend.add(account)
+      const socialId = await this._client.findOne(contact.class.SocialIdentity, { _id: account as any })
+      if (socialId !== undefined) {
+        const personSpace = await this.liveQuery.findOne(contact.class.PersonSpace, { person: socialId.attachedTo })
+        const person = await this._client.findOne(contact.mixin.Employee, { _id: socialId.attachedTo as Ref<Employee> })
+        if (personSpace !== undefined && person !== undefined) {
+          // We need to remove if user has authentication in workspace but doesn't have a record.
 
-    //       const accounts = this._client.getModel().getAccountByPersonId(accountRef.person)
-    //       const authentications = await this.liveQuery.findAll(github.class.GithubAuthentication, {
-    //         createdBy: { $in: accounts.map((it) => it._id) }
-    //       })
-    //       for (const auth of authentications) {
-    //         await this._client.remove(auth)
-    //       }
+          const allSocialId = await this._client.findAll(contact.class.SocialIdentity, {
+            attachedTo: personSpace.person
+          })
 
-    //       await createNotification(this._client, person, {
-    //         user: account,
-    //         space: personSpace._id,
-    //         message: github.string.AuthenticatedWithGithubRequired,
-    //         props: {}
-    //       })
-    //     }
-    //   }
-    // }
-    // this.ctx.info('get octokit: return bot', { account, workspace: this.workspace.name })
+          const authentications = await this.liveQuery.findAll(github.class.GithubAuthentication, {
+            createdBy: { $in: allSocialId.map((it) => it._id) }
+          })
+          for (const auth of authentications) {
+            await this._client.remove(auth)
+          }
+
+          if (person.personUuid !== undefined) {
+            await createNotification(this._client, person, {
+              user: person.personUuid,
+              space: personSpace._id,
+              message: github.string.AuthenticatedWithGithubRequired,
+              props: {}
+            })
+          }
+        }
+      }
+    }
+    this.ctx.info('get octokit: return bot', { account, workspace: this.workspace.uuid })
   }
 
   async isPlatformUser (account: PersonId): Promise<boolean> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // let record = await this.platform.getAccountByRef(this.workspace.name, account)
-    // const accountRef = await this.liveQuery.findOne(contact.class.PersonAccount, { _id: account })
-    // if (record === undefined) {
-    //   if (accountRef !== undefined) {
-    //     const accounts = this._client.getModel().getAccountByPersonId(accountRef.person)
-    //     for (const aa of accounts) {
-    //       record = await this.platform.getAccountByRef(this.workspace.name, aa._id)
-    //       if (record !== undefined) {
-    //         break
-    //       }
-    //     }
-    //   }
-    // }
-    // // Check and refresh token if required.
-    // return record !== undefined && accountRef !== undefined
+    let record = await this.platform.getAccountByRef(this.workspace.uuid, account)
+    let accountRef: Employee | undefined
+    if (record === undefined) {
+      const socialId = await this._client.findOne(contact.class.SocialIdentity, { _id: account as any })
+      if (socialId !== undefined) {
+        accountRef = await this._client.findOne(contact.mixin.Employee, { _id: socialId?.attachedTo as Ref<Employee> })
+        if (accountRef !== undefined) {
+          const socialIds = await this._client.findAll(contact.class.SocialIdentity, { attachedTo: accountRef._id })
+          for (const aa of socialIds) {
+            record = await this.platform.getAccountByRef(this.workspace.uuid, aa._id)
+            if (record !== undefined) {
+              break
+            }
+          }
+        }
+      }
+    }
+    // Check and refresh token if required.
+    return record !== undefined && accountRef !== undefined
   }
 
   async uploadFile (patch: string, file?: string, contentType?: string): Promise<Blob | undefined> {
@@ -787,10 +808,8 @@ export class GithubWorker implements IntegrationManager {
     this.triggerRequests = 1
     this.updateRequests = 1
     this.syncPromise = this.syncAndWait()
-
-    const userRecords = await this.platform.getUsers(this.workspace.uuid)
     try {
-      await this.syncUserData(this.ctx, userRecords)
+      await this.syncUserData(this.ctx)
     } catch (err: any) {
       Analytics.handleError(err)
     }
@@ -909,59 +928,55 @@ export class GithubWorker implements IntegrationManager {
   }
 
   private async queryAccounts (): Promise<void> {
-    // TODO: FIXME
-    throw new Error('Not implemented')
-    // const updateAccounts = async (accounts: PersonAccount[]): Promise<void> => {
-    //   const persons = await this.liveQuery.findAll(contact.class.Person, {
-    //     _id: { $in: accounts.map((it) => it.person) }
-    //   })
-    //   const h = this.client.getHierarchy()
-    //   for (const a of accounts) {
-    //     if (a.email.startsWith('github:')) {
-    //       const login = a.email.substring(7)
-    //       const person = persons.find((it) => it._id === a.person)
-    //       if (person !== undefined) {
-    //         // #1 check if person has GithubUser mixin.
-    //         if (!h.hasMixin(person, github.mixin.GithubUser)) {
-    //           await this._client.createMixin(person._id, person._class, person.space, github.mixin.GithubUser, {
-    //             url: `https://github.com/${login}`
-    //           })
-    //         } else {
-    //           const ghu = h.as(person, github.mixin.GithubUser)
-    //           if (ghu.url !== `https://github.com/${login}`) {
-    //             await this._client.updateMixin(person._id, person._class, person.space, github.mixin.GithubUser, {
-    //               url: `https://github.com/${login}`
-    //             })
-    //           }
-    //         }
-    //         // #2 check if person has contact github and if not add it.
-    //         const channel = await this._client.findOne(contact.class.Channel, {
-    //           provider: contact.channelProvider.GitHub,
-    //           value: login,
-    //           attachedTo: person._id
-    //         })
-    //         if (channel === undefined) {
-    //           await this._client.addCollection(
-    //             contact.class.Channel,
-    //             person.space,
-    //             person._id,
-    //             contact.class.Person,
-    //             'channels',
-    //             {
-    //               provider: contact.channelProvider.GitHub,
-    //               value: login
-    //             }
-    //           )
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-    // await new Promise<void>((resolve, reject) => {
-    //   this.liveQuery.query(contact.class.PersonAccount, {}, (res) => {
-    //     void updateAccounts(res).then(resolve).catch(reject)
-    //   })
-    // })
+    const updateAccounts = async (accounts: SocialIdentity[]): Promise<void> => {
+      const persons = await this.liveQuery.findAll(contact.class.Person, {
+        _id: { $in: accounts.map((it) => it.attachedTo) }
+      })
+      const h = this.client.getHierarchy()
+      for (const a of accounts) {
+        const login = a.value
+        const person = persons.find((it) => it._id === a.attachedTo)
+        if (person !== undefined) {
+          // #1 check if person has GithubUser mixin.
+          if (!h.hasMixin(person, github.mixin.GithubUser)) {
+            await this._client.createMixin(person._id, person._class, person.space, github.mixin.GithubUser, {
+              url: `https://github.com/${login}`
+            })
+          } else {
+            const ghu = h.as(person, github.mixin.GithubUser)
+            if (ghu.url !== `https://github.com/${login}`) {
+              await this._client.updateMixin(person._id, person._class, person.space, github.mixin.GithubUser, {
+                url: `https://github.com/${login}`
+              })
+            }
+          }
+          // #2 check if person has contact github and if not add it.
+          const channel = await this._client.findOne(contact.class.Channel, {
+            provider: contact.channelProvider.GitHub,
+            value: login,
+            attachedTo: person._id
+          })
+          if (channel === undefined) {
+            await this._client.addCollection(
+              contact.class.Channel,
+              person.space,
+              person._id,
+              contact.class.Person,
+              'channels',
+              {
+                provider: contact.channelProvider.GitHub,
+                value: login
+              }
+            )
+          }
+        }
+      }
+    }
+    await new Promise<void>((resolve, reject) => {
+      this.liveQuery.query(contact.class.SocialIdentity, { type: SocialIdType.GITHUB }, (res) => {
+        void updateAccounts(res).then(resolve).catch(reject)
+      })
+    })
   }
 
   async performExternalSync (
@@ -1642,7 +1657,7 @@ export class GithubWorker implements IntegrationManager {
     branding: Branding | null,
     app: App,
     storageAdapter: StorageAdapter,
-    reconnect: (workspaceId: string, event: ClientConnectEvent) => void
+    reconnect: (workspaceId: WorkspaceUuid, event: ClientConnectEvent) => void
   ): Promise<GithubWorker | undefined> {
     ctx.info('Connecting to', { workspace })
     let client: Client | undefined
@@ -1729,7 +1744,8 @@ export async function syncUser (
       repositoryDiscussions: details.viewer.repositoryDiscussions.totalCount,
       organizations: details.viewer.organizations,
       nodeId: details.viewer.id,
-      ...dta
+      ...dta,
+      error: null
     },
     undefined,
     account

@@ -21,6 +21,7 @@
   import { focusStore } from '../selection'
   import { setViewOptions } from '../viewOptions'
   import ViewOptionsEditor from './ViewOptions.svelte'
+  import core, { Class, Doc, Hierarchy, Ref } from '@hcengineering/core'
 
   export let viewlet: Viewlet | undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
@@ -34,6 +35,15 @@
   let btn: HTMLButtonElement
   let pressed: boolean = false
 
+  function getGroupingCustomAttributes (h: Hierarchy, _class: Ref<Class<Doc>>): string[] {
+    const customAttributes = [...h.getOwnAttributes(_class).values()]
+      .filter(
+        (attr) => attr.isCustom && !attr.isHidden && [core.class.RefTo, core.class.EnumOf].includes(attr.type._class)
+      )
+      .map((a) => a.name)
+    return customAttributes
+  }
+
   async function clickHandler (): Promise<void> {
     if (viewlet === undefined) {
       return
@@ -45,6 +55,11 @@
     if (viewOptionsConfig !== undefined && config !== undefined) {
       config.other = viewOptionsConfig
     }
+
+    const customAttributes = getGroupingCustomAttributes(h, viewlet.attachTo)
+
+    config.groupBy = Array.from(new Set([...config.groupBy, ...customAttributes]))
+
     showPopup(
       ViewOptionsEditor,
       { viewlet, config, viewOptions: h.clone(viewOptions) },

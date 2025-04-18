@@ -106,6 +106,7 @@ export class TBrowserNotification extends TDoc implements BrowserNotification {
   messageClass?: Ref<Class<ActivityMessage>>
   objectId!: Ref<Doc>
   objectClass!: Ref<Class<Doc>>
+  soundAlert!: boolean
 }
 
 @Model(notification.class.PushSubscription, core.class.Doc, DOMAIN_USER_NOTIFY)
@@ -776,7 +777,6 @@ export function createModel (builder: Builder): void {
       depends: notification.providers.PushNotificationProvider,
       defaultEnabled: true,
       canDisable: true,
-      ignoreAll: true,
       order: 250
     },
     notification.providers.SoundNotificationProvider
@@ -784,6 +784,12 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
     provider: notification.providers.PushNotificationProvider,
+    ignoredTypes: [notification.ids.CollaboratoAddNotification],
+    enabledTypes: []
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.SoundNotificationProvider,
     ignoredTypes: [notification.ids.CollaboratoAddNotification],
     enabledTypes: []
   })

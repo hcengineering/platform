@@ -17,6 +17,7 @@
   export let inline: boolean = false
   export let shouldShowName: boolean = true
   export let avatarSize: IconSize = kind === 'list-header' ? 'smaller' : 'x-small'
+  export let readonly = false
 
   $: employee = value ? $employeeByIdStore.get(value) : undefined
 
@@ -34,6 +35,7 @@
 {#if onChange !== undefined}
   <AssigneeBox
     label={contact.string.Employee}
+    {readonly}
     {value}
     size={'medium'}
     kind={'link'}

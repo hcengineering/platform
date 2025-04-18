@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Channel": "チャンネル",
+    "Channels": "チャンネル",
+    "Chat": "チャット",
+    "Description": "説明",
+    "Loading": "読込中...",
+    "MessageIn": "メッセージ #{title}",
+    "Thread": "スレッド",
+    "Threads": "スレッド",
+    "Title": "タイトル"
+  }
+}

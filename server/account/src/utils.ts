@@ -13,52 +13,54 @@
 // limitations under the License.
 //
 import {
+  AccountRole,
+  AccountUuid,
   Branding,
   concatLink,
   generateId,
   groupByArray,
+  isActiveMode,
   MeasureContext,
-  AccountRole,
   roleOrder,
   SocialIdType,
-  WorkspaceUuid,
-  WorkspaceMode,
   SocialKey,
   systemAccountUuid,
-  type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
-  isActiveMode,
-  type PersonUuid,
+  WorkspaceMode,
+  WorkspaceUuid,
+  type Person,
   type PersonId,
-  type Person
+  type PersonUuid,
+  type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore
 } from '@hcengineering/core'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { getDBClient } from '@hcengineering/postgres'
-import otpGenerator from 'otp-generator'
 import { pbkdf2Sync, randomBytes } from 'crypto'
+import otpGenerator from 'otp-generator'
 
+import { Analytics } from '@hcengineering/analytics'
+import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
+import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
 import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres'
 import { accountPlugin } from './plugin'
-import { sharedPipelineContextVars } from '@hcengineering/server-pipeline'
 import {
+  AccountEventType,
   AccountMethodHandler,
+  Integration,
+  LoginInfo,
+  Meta,
   OtpInfo,
-  WorkspaceInvite,
   WorkspaceInfoWithStatus,
+  WorkspaceInvite,
+  WorkspaceLoginInfo,
+  WorkspaceStatus,
   type Account,
   type AccountDB,
   type RegionInfo,
   type SocialId,
-  type Workspace,
-  LoginInfo,
-  WorkspaceLoginInfo,
-  WorkspaceStatus,
-  AccountEventType,
-  Meta
+  type Workspace
 } from './types'
-import { Analytics } from '@hcengineering/analytics'
-import { TokenError, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b'
 
@@ -117,12 +119,9 @@ export function wrap (
     db: AccountDB,
     branding: Branding | null,
     request: any,
-    token?: string
+    token?: string,
+    meta?: Meta
   ): Promise<any> {
-    const meta =
-      request.headers !== undefined && request.headers['X-Timezone'] !== undefined
-        ? { timezone: request.headers['X-Timezone'] }
-        : {}
     return await accountMethod(ctx, db, branding, token, { ...request.params }, meta)
       .then((result) => ({ id: request.id, result }))
       .catch((err) => {
@@ -173,7 +172,7 @@ export enum EndpointKind {
   External
 }
 
-const toTransactor = (line: string): { internalUrl: string, region: string, externalUrl: string } => {
+const toTransactor = (line: string): EndpointInfo => {
   const [internalUrl, externalUrl, region] = line
     .split(';')
     .map((it) => it.trim())
@@ -237,33 +236,46 @@ export const _getRegions = (): RegionInfo[] => {
   return _regionInfo
 }
 
-export const getEndpoint = (
-  ctx: MeasureContext,
-  workspace: string,
-  region: string | undefined,
-  kind: EndpointKind
-): string => {
-  const byRegions = groupByArray(getEndpoints().map(toTransactor), (it) => it.region)
-  let transactors = (byRegions.get(region ?? '') ?? [])
-    .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
-    .flat()
+export interface EndpointInfo {
+  internalUrl: string
+  externalUrl: string
+  region: string
+}
 
-  // This is really bad
+export function getEndpointInfo (): Map<string, EndpointInfo[]> {
+  return groupByArray(getEndpoints().map(toTransactor), (it) => it.region)
+}
+
+export const selectKind = (kind: EndpointKind, it: EndpointInfo): string => {
+  return kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl
+}
+
+export const getEndpoint = (workspace: WorkspaceUuid, region: string | undefined, kind: EndpointKind): string => {
+  const hash = hashWorkspace(workspace)
+  const _endpointInfo = getEndpointInfo()
+
+  let transactors = _endpointInfo.get(region ?? '') ?? []
+
   if (transactors.length === 0) {
-    ctx.error('No transactors for the target region, will use default region', { group: region })
-
-    transactors = (byRegions.get('') ?? [])
-      .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
-      .flat()
+    console.warn('No transactors for the target region, will use default region', { group: region })
+    transactors = _endpointInfo.get('') ?? []
   }
 
   if (transactors.length === 0) {
-    ctx.error('No transactors for the default region')
     throw new Error('Please provide transactor endpoint url')
   }
 
+  return selectKind(kind, transactors[Math.abs(hash % transactors.length)])
+}
+
+export const getWorkspaceEndpoint = (
+  info: Map<string, EndpointInfo[]>,
+  workspace: WorkspaceUuid,
+  region: string | undefined
+): EndpointInfo => {
   const hash = hashWorkspace(workspace)
-  return transactors[Math.abs(hash % transactors.length)]
+  const byRegion = info.get(region ?? '') ?? []
+  return byRegion[Math.abs(hash % byRegion.length)]
 }
 
 export function getAllTransactors (kind: EndpointKind): string[] {
@@ -328,7 +340,7 @@ export async function setPassword (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  personUuid: PersonUuid,
+  personUuid: AccountUuid,
   password: string
 ): Promise<void> {
   if (password == null || password === '') {
@@ -444,17 +456,15 @@ export async function createAccount (
   createdOn = Date.now()
 ): Promise<void> {
   // Create Huly social id and account
-  // Currently, it's always created along with the account but never confirmed.
-  // What's the actual use case for it?
   await db.socialId.insertOne({
     type: SocialIdType.HULY,
     value: personUuid,
     personUuid,
     ...(confirmed ? { verifiedOn: Date.now() } : {})
   })
-  await db.account.insertOne({ uuid: personUuid, automatic })
+  await db.account.insertOne({ uuid: personUuid as AccountUuid, automatic })
   await db.accountEvent.insertOne({
-    accountUuid: personUuid,
+    accountUuid: personUuid as AccountUuid,
     eventType: AccountEventType.ACCOUNT_CREATED,
     time: createdOn
   })
@@ -470,22 +480,22 @@ export async function signUpByEmail (
   lastName: string,
   confirmed = false,
   automatic = false
-): Promise<{ account: PersonUuid, socialId: PersonId }> {
+): Promise<{ account: AccountUuid, socialId: PersonId }> {
   const normalizedEmail = cleanEmail(email)
 
   const emailSocialId = await getEmailSocialId(db, normalizedEmail)
-  let account: PersonUuid
+  let account: AccountUuid
   let socialId: PersonId
 
   if (emailSocialId !== null) {
-    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
+    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
     if (existingAccount !== null) {
       ctx.error('An account with the provided email already exists', { email })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
     }
 
-    account = emailSocialId.personUuid
+    account = emailSocialId.personUuid as AccountUuid
     socialId = emailSocialId._id
     // Person exists, but may have different name, need to update with what's been provided
     await db.person.updateOne({ uuid: account }, { firstName, lastName })
@@ -517,7 +527,8 @@ export async function selectWorkspace (
     workspaceUrl: string
     kind: 'external' | 'internal' | 'byregion'
     externalRegions?: string[]
-  }
+  },
+  meta?: Meta
 ): Promise<WorkspaceLoginInfo> {
   const { workspaceUrl, kind, externalRegions = [] } = params
   const { account: accountUuid, workspace: tokenWorkspaceUuid, extra } = decodeTokenVerbose(ctx, token ?? '')
@@ -544,7 +555,7 @@ export async function selectWorkspace (
     // Guest mode select workspace
     return {
       account: accountUuid,
-      endpoint: getEndpoint(ctx, workspace.uuid, workspace.region, getKind(workspace.region)),
+      endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
       token,
       workspace: workspace.uuid,
       workspaceUrl: workspace.url,
@@ -571,11 +582,15 @@ export async function selectWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
   }
 
+  if (accountUuid !== systemAccountUuid) {
+    void setTimezoneIfNotDefined(ctx, db, accountUuid, account, meta)
+  }
+
   if (accountUuid === systemAccountUuid || extra?.admin === 'true') {
     return {
       account: accountUuid,
       token: generateToken(accountUuid, workspace.uuid, extra),
-      endpoint: getEndpoint(ctx, workspace.uuid, workspace.region, getKind(workspace.region)),
+      endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
       workspace: workspace.uuid,
       workspaceUrl: workspace.url,
       role: AccountRole.Owner
@@ -607,7 +622,7 @@ export async function selectWorkspace (
   return {
     account: accountUuid,
     token: generateToken(accountUuid, workspace.uuid, extra),
-    endpoint: getEndpoint(ctx, workspace.uuid, workspace.region, getKind(workspace.region)),
+    endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
     workspace: workspace.uuid,
     workspaceUrl: workspace.url,
     workspaceDataId: workspace.dataId,
@@ -621,7 +636,7 @@ export async function updateWorkspaceRole (
   branding: Branding | null,
   token: string,
   params: {
-    targetAccount: PersonUuid
+    targetAccount: AccountUuid
     targetRole: AccountRole
   }
 ): Promise<void> {
@@ -899,15 +914,22 @@ export async function confirmEmail (
     )
   }
 
-  await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
+  await db.socialId.updateOne({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
   return emailSocialId._id
+}
+
+export async function confirmHulyIds (ctx: MeasureContext, db: AccountDB, account: AccountUuid): Promise<void> {
+  const hulySocialIds = await db.socialId.find({ personUuid: account, type: SocialIdType.HULY, verifiedOn: null })
+  for (const hulySocialId of hulySocialIds) {
+    await db.socialId.updateOne({ _id: hulySocialId._id }, { verifiedOn: Date.now() })
+  }
 }
 
 export async function useInvite (db: AccountDB, inviteId: string): Promise<void> {
   await db.invite.updateOne({ id: inviteId }, { $inc: { remainingUses: -1 } })
 }
 
-export async function getAccount (db: AccountDB, uuid: PersonUuid): Promise<Account | null> {
+export async function getAccount (db: AccountDB, uuid: AccountUuid): Promise<Account | null> {
   return await db.account.findOne({ uuid })
 }
 
@@ -1016,7 +1038,7 @@ export async function doJoinByInvite (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  account: PersonUuid,
+  account: AccountUuid,
   workspace: Workspace,
   invite: WorkspaceInvite
 ): Promise<WorkspaceLoginInfo> {
@@ -1079,7 +1101,7 @@ export async function loginOrSignUpWithProvider (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const account = await db.account.findOne({ uuid: personUuid })
+  const account = await db.account.findOne({ uuid: personUuid as AccountUuid })
 
   if (account == null) {
     if (signUpDisabled) {
@@ -1095,7 +1117,7 @@ export async function loginOrSignUpWithProvider (
   const confirmedSocialId = await db.socialId.findOne({ personUuid, verifiedOn: { $gt: 0 } })
 
   if (confirmedSocialId == null) {
-    await db.resetPassword(personUuid)
+    await db.resetPassword(personUuid as AccountUuid)
   }
 
   let socialIdId: PersonId | undefined
@@ -1120,8 +1142,10 @@ export async function loginOrSignUpWithProvider (
     await db.socialId.updateOne({ key: emailSocialId.key }, { verifiedOn: Date.now() })
   }
 
+  await confirmHulyIds(ctx, db, personUuid as AccountUuid)
+
   return {
-    account: personUuid,
+    account: personUuid as AccountUuid,
     socialId: socialIdId,
     name: getPersonName(person),
     token: generateToken(personUuid)
@@ -1331,7 +1355,8 @@ export async function addSocialId (
   personUuid: PersonUuid,
   type: SocialIdType,
   value: string,
-  confirmed: boolean
+  confirmed: boolean,
+  displayValue?: string
 ): Promise<PersonId> {
   const normalizedValue = normalizeValue(value ?? '')
 
@@ -1352,7 +1377,8 @@ export async function addSocialId (
   const newSocialId: Omit<SocialId, '_id' | 'key'> = {
     type,
     value: normalizedValue,
-    personUuid
+    personUuid,
+    displayValue
   }
 
   if (confirmed) {
@@ -1362,21 +1388,40 @@ export async function addSocialId (
   return await db.socialId.insertOne(newSocialId)
 }
 
-export async function releaseSocialId (
+export async function doReleaseSocialId (
   db: AccountDB,
   personUuid: PersonUuid,
   type: SocialIdType,
-  value: string
+  value: string,
+  releasedBy: string
 ): Promise<void> {
   const socialIds = await db.socialId.find({ personUuid, type, value })
+
+  if (socialIds.length === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: personUuid as AccountUuid })
+
   for (const socialId of socialIds) {
     await db.socialId.updateOne({ _id: socialId._id }, { value: `${socialId.value}#${socialId._id}`, isDeleted: true })
+    if (account != null) {
+      await db.accountEvent.insertOne({
+        accountUuid: account.uuid,
+        eventType: AccountEventType.SOCIAL_ID_RELEASED,
+        time: Date.now(),
+        data: {
+          socialId: socialId._id,
+          releasedBy: releasedBy ?? ''
+        }
+      })
+    }
   }
 }
 
 export async function getWorkspaceRole (
   db: AccountDB,
-  account: PersonUuid,
+  account: AccountUuid,
   workspace: WorkspaceUuid
 ): Promise<AccountRole | null> {
   if (account === systemAccountUuid) {
@@ -1386,6 +1431,13 @@ export async function getWorkspaceRole (
   return await db.getWorkspaceRole(account, workspace)
 }
 
+export async function getWorkspaceRoles (
+  db: AccountDB,
+  account: AccountUuid
+): Promise<Map<WorkspaceUuid, AccountRole | null>> {
+  return await db.getWorkspaceRoles(account)
+}
+
 export function generatePassword (len: number = 24): string {
   return randomBytes(len).toString('base64').slice(0, len)
 }
@@ -1393,7 +1445,7 @@ export function generatePassword (len: number = 24): string {
 export async function setTimezoneIfNotDefined (
   ctx: MeasureContext,
   db: AccountDB,
-  accountId: PersonUuid,
+  accountId: AccountUuid,
   account: Account | null | undefined,
   meta?: Meta
 ): Promise<void> {
@@ -1409,4 +1461,44 @@ export async function setTimezoneIfNotDefined (
   } catch (err: any) {
     ctx.error('Failed to set account timezone', err)
   }
+}
+
+// Move to config?
+export const integrationServices = ['github', 'telegram-bot', 'telegram', 'mailbox', 'caldav']
+
+export async function findExistingIntegration (
+  account: AccountUuid,
+  db: AccountDB,
+  params: Integration,
+  extra: any
+): Promise<Integration | null> {
+  const { socialId, kind, workspaceUuid } = params
+  if (kind == null || socialId == null || workspaceUuid === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (verifyAllowedServices(integrationServices, extra, false)) {
+    const existingSocialId = await db.socialId.findOne({ _id: socialId, verifiedOn: { $gt: 0 } })
+    if (existingSocialId == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, { _id: socialId }))
+    }
+  } else {
+    if (account == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+    // Allow accounts to operate on their own integrations
+    const existingSocialId = await db.socialId.findOne({ _id: socialId, personUuid: account, verifiedOn: { $gt: 0 } })
+    if (existingSocialId == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  if (workspaceUuid != null) {
+    const workspace = await getWorkspaceById(db, workspaceUuid)
+    if (workspace == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+    }
+  }
+
+  return await db.integration.findOne({ socialId, kind, workspaceUuid })
 }

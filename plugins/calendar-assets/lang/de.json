@@ -92,13 +92,19 @@
     "ScheduleDeleteConfirm": "Der Zeitplan wird gelöscht. Bestätigen?",
     "ScheduleShareLink": "Link teilen",
     "ScheduleSharedLinkMessage": "<p>Teilen Sie diesen Link, damit andere ein Meeting mit Ihnen buchen können:</p><p><a href=\"{link}\" target=\"_blank\">{link}</a></p>",
-    "ScheduleSharedLinkCopy": "Link kopieren",
     "ScheduleAvailability": "Verfügbarkeit",
     "ScheduleUnavailable": "Nicht verfügbar",
     "ScheduleTitlePlaceholder": "Zeitplantitel",
     "ScheduleAddPeriod": "Zeitraum hinzufügen",
     "ScheduleRemovePeriod": "Zeitraum entfernen",
     "MeetingDuration": "Meetingdauer",
-    "MeetingInterval": "Pause zwischen Meetings"
+    "MeetingInterval": "Pause zwischen Meetings",
+    "CalDavAccess": "CalDAV-Zugriff",
+    "CalDavAccessPrompt": "Das CalDAV-Protokoll ermöglicht die Synchronisierung Ihres persönlichen Huly-Kalenders mit externen Kalenderanwendungen. Verwenden Sie dieses Konto und das vorgeschlagene Passwort, um den Huly CalDAV-Server in einer Kalender-Client-Anwendung zu registrieren.",
+    "CalDavAccessEnable": "CalDAV-Zugriff auf den persönlichen Kalender im Arbeitsbereich {ws} aktivieren",
+    "CalDavAccessServer": "CalDAV-Server",
+    "CalDavAccessAccount": "Huly-Konto",
+    "CalDavAccessPassword": "Passwort",
+    "CalDavAccessPasswordWarning": "Sie können dieses Passwort nicht erneut anzeigen. Bitte speichern Sie es an einem sicheren Ort."
   }
 }

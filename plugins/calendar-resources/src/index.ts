@@ -46,6 +46,7 @@ import ScheduleNavSection from './components/ScheduleNavSection.svelte'
 import calendar from './plugin'
 import contact from '@hcengineering/contact'
 import { deleteObjects } from '@hcengineering/view-resources'
+import { configureCalDavAccess } from './utils'
 
 export {
   EventElement,
@@ -106,7 +107,8 @@ async function deleteRecHandler (res: any, object: ReccuringInstance): Promise<v
         exdate: object.exdate,
         visibility: object.visibility,
         access: object.access,
-        timeZone: object.timeZone
+        timeZone: object.timeZone,
+        user: object.user
       },
       object._id
     )
@@ -212,5 +214,8 @@ export default async (): Promise<Resources> => ({
         }
       })
     }
+  },
+  function: {
+    ConfigureCalDavAccess: configureCalDavAccess
   }
 })

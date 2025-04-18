@@ -14,20 +14,16 @@
 // limitations under the License.
 //
 
-import { type Account, type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
+import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
-import { ClientSession, startSessionManager } from '@hcengineering/server'
+import { startSessionManager } from '@hcengineering/server'
 import {
   type CommunicationApiFactory,
   type PlatformQueue,
-  type ServerFactory,
-  type Session,
   type SessionManager,
-  type StorageConfiguration,
-  type Workspace
+  type StorageConfiguration
 } from '@hcengineering/server-core'
-import { type Token } from '@hcengineering/server-token'
 
 import { Api as CommunicationApi } from '@hcengineering/communication-server'
 import {
@@ -56,6 +52,7 @@ import {
   shutdownPostgres
 } from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
+import { startHttpServer } from './server_http'
 const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 registerStringLoaders()
@@ -81,7 +78,6 @@ export function start (
     storageConfig: StorageConfiguration
     port: number
     brandingMap: BrandingMap
-    serverFactory: ServerFactory
 
     enableCompression?: boolean
 
@@ -121,9 +117,6 @@ export function start (
     { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl), queue: opt.queue },
     {}
   )
-  const sessionFactory = (token: Token, workspace: Workspace, account: Account): Session => {
-    return new ClientSession(token, workspace, account, token.extra?.mode === 'backup')
-  }
   const communicationApiFactory: CommunicationApiFactory = async (ctx, workspace, broadcastSessions) => {
     if (dbUrl.startsWith('mongodb')) {
       return {
@@ -131,6 +124,7 @@ export function start (
         findMessagesGroups: async () => [],
         findNotificationContexts: async () => [],
         findNotifications: async () => [],
+        findLabels: async () => [],
         unsubscribeQuery: async () => {},
         event: async () => {
           return {}
@@ -148,23 +142,21 @@ export function start (
     )
   }
 
-  const { shutdown: onClose, sessionManager } = startSessionManager(metrics, {
+  const sessionManager = startSessionManager(metrics, {
     pipelineFactory,
-    sessionFactory,
     communicationApiFactory,
-    port: opt.port,
     brandingMap: opt.brandingMap,
-    serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
-    externalStorage,
     profiling: opt.profiling,
     queue: opt.queue
   })
+  const shutdown = startHttpServer(metrics, sessionManager, opt.port, opt.accountsUrl, externalStorage)
   return {
     shutdown: async () => {
       await externalStorage.close()
-      await onClose()
+      await sessionManager.closeWorkspaces(metrics)
+      await shutdown()
     },
     sessionManager
   }

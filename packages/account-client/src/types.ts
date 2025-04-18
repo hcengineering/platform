@@ -4,7 +4,10 @@ import {
   WorkspaceDataId,
   WorkspaceUuid,
   type AccountRole,
-  type Timestamp
+  type Timestamp,
+  type SocialId as SocialIdBase,
+  PersonUuid,
+  type WorkspaceMode
 } from '@hcengineering/core'
 
 export interface LoginInfo {
@@ -12,6 +15,33 @@ export interface LoginInfo {
   name?: string
   socialId?: PersonId
   token?: string
+}
+
+export interface EndpointInfo {
+  internalUrl: string
+  externalUrl: string
+  region: string
+}
+export interface WorkspaceVersion {
+  versionMajor: number
+  versionMinor: number
+  versionPatch: number
+}
+
+export interface LoginInfoWorkspace {
+  url: string
+  dataId?: WorkspaceDataId
+  mode: WorkspaceMode
+  version: WorkspaceVersion
+  endpoint: EndpointInfo
+  role: AccountRole | null
+  progress?: number
+}
+
+export interface LoginInfoWithWorkspaces extends LoginInfo {
+  // Information necessary to handle user <--> transactor connectivity.
+  workspaces: Record<WorkspaceUuid, LoginInfoWorkspace>
+  socialIds: SocialId[]
 }
 
 /**
@@ -59,8 +89,12 @@ export interface MailboxInfo {
 export interface Integration {
   socialId: PersonId
   kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
-  workspaceUuid?: WorkspaceUuid
+  workspaceUuid: WorkspaceUuid | null
   data?: Record<string, any>
+}
+
+export interface SocialId extends SocialIdBase {
+  personUuid: PersonUuid
 }
 
 export type IntegrationKey = Omit<Integration, 'data'>
@@ -68,7 +102,7 @@ export type IntegrationKey = Omit<Integration, 'data'>
 export interface IntegrationSecret {
   socialId: PersonId
   kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
-  workspaceUuid?: WorkspaceUuid
+  workspaceUuid: WorkspaceUuid | null
   key: string // Key for the secret in the integration. Different secrets for the same integration must have different keys. Can be any string. E.g. '', 'user_app_1' etc.
   secret: string
 }

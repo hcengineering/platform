@@ -38,7 +38,9 @@
     "DrawingHistory": "Kritzel-Verlauf",
     "ColorAdd": "Farbvoreinstellung hinzufügen",
     "ColorRemove": "Farbvoreinstellung entfernen",
-    "ColorReset": "Farbvoreinstellungen zurücksetzen"
+    "ColorReset": "Farbvoreinstellungen zurücksetzen",
+    "Copy": "Kopieren",
+    "CopyLink": "Link kopieren"
   },
   "status": {
     "FileTooLarge": "Datei zu groß"

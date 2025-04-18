@@ -64,6 +64,7 @@
 
       & > div { opacity: .35; }
     }
+    & > * { pointer-events: none; }
   }
 
   &::before {

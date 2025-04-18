@@ -14,21 +14,23 @@
 //
 import {
   AccountRole,
-  type Person,
+  BackupStatus,
   Branding,
   Data,
   MeasureContext,
   Timestamp,
   Version,
-  WorkspaceMode,
   WorkspaceMemberInfo,
-  BackupStatus,
-  type SocialId as SocialIdBase,
+  WorkspaceMode,
+  type AccountUuid,
+  type Person,
+  type PersonId,
   type PersonUuid,
-  type WorkspaceUuid,
+  type SocialId as SocialIdBase,
   type WorkspaceDataId,
-  type PersonId
+  type WorkspaceUuid
 } from '@hcengineering/core'
+import type { EndpointInfo } from './utils'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
 export enum Location {
@@ -50,7 +52,7 @@ export interface SocialId extends SocialIdBase {
 }
 
 export interface Account {
-  uuid: PersonUuid
+  uuid: AccountUuid
   automatic?: boolean
   timezone?: string
   locale?: string
@@ -60,14 +62,15 @@ export interface Account {
 
 // TODO: type data with generic type
 export interface AccountEvent {
-  accountUuid: PersonUuid
+  accountUuid: AccountUuid
   eventType: AccountEventType
   data?: Record<string, any>
   time: Timestamp
 }
 
 export enum AccountEventType {
-  ACCOUNT_CREATED = 'account_created'
+  ACCOUNT_CREATED = 'account_created',
+  SOCIAL_ID_RELEASED = 'social_id_released'
 }
 
 export interface Member {
@@ -75,13 +78,16 @@ export interface Member {
   role: AccountRole
 }
 
-export interface WorkspaceStatus {
-  workspaceUuid: WorkspaceUuid
-  mode: WorkspaceMode
-  processingProgress?: number
+export interface WorkspaceVersion {
   versionMajor: number
   versionMinor: number
   versionPatch: number
+}
+
+export interface WorkspaceStatus extends WorkspaceVersion {
+  workspaceUuid: WorkspaceUuid
+  mode: WorkspaceMode
+  processingProgress?: number
   lastProcessingTime?: Timestamp
   lastVisit?: Timestamp
   isDisabled: boolean
@@ -142,7 +148,7 @@ export interface MailboxInfo {
 export interface Integration {
   socialId: PersonId
   kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
-  workspaceUuid?: WorkspaceUuid
+  workspaceUuid: WorkspaceUuid | null
   data?: Record<string, any>
 }
 
@@ -151,7 +157,7 @@ export type IntegrationKey = Omit<Integration, 'data'>
 export interface IntegrationSecret {
   socialId: PersonId
   kind: string // Integration kind. E.g. 'github', 'mail', 'telegram-bot', 'telegram' etc.
-  workspaceUuid?: WorkspaceUuid
+  workspaceUuid: WorkspaceUuid | null
   key: string // Key for the secret in the integration. Different secrets for the same integration must have different keys. Can be any string. E.g. '', 'user_app_1' etc.
   secret: string
 }
@@ -190,12 +196,13 @@ export interface AccountDB {
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
-  assignWorkspace: (accountId: PersonUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
-  updateWorkspaceRole: (accountId: PersonUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
-  unassignWorkspace: (accountId: PersonUuid, workspaceId: WorkspaceUuid) => Promise<void>
-  getWorkspaceRole: (accountId: PersonUuid, workspaceId: WorkspaceUuid) => Promise<AccountRole | null>
+  assignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
+  updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
+  unassignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<void>
+  getWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<AccountRole | null>
+  getWorkspaceRoles: (accountId: AccountUuid) => Promise<Map<WorkspaceUuid, AccountRole | null>>
   getWorkspaceMembers: (workspaceId: WorkspaceUuid) => Promise<WorkspaceMemberInfo[]>
-  getAccountWorkspaces: (accountId: PersonUuid) => Promise<WorkspaceInfoWithStatus[]>
+  getAccountWorkspaces: (accountId: AccountUuid) => Promise<WorkspaceInfoWithStatus[]>
   getPendingWorkspace: (
     region: string,
     version: Data<Version>,
@@ -203,8 +210,8 @@ export interface AccountDB {
     processingTimeoutMs: number,
     wsLivenessMs?: number
   ) => Promise<WorkspaceInfoWithStatus | undefined>
-  setPassword: (accountId: PersonUuid, passwordHash: Buffer, salt: Buffer) => Promise<void>
-  resetPassword: (accountId: PersonUuid) => Promise<void>
+  setPassword: (accountId: AccountUuid, passwordHash: Buffer, salt: Buffer) => Promise<void>
+  resetPassword: (accountId: AccountUuid) => Promise<void>
 }
 
 export interface DbCollection<T> {
@@ -268,10 +275,27 @@ export type WorkspaceEvent =
   | 'archiving-done'
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 export interface LoginInfo {
-  account: PersonUuid
+  account: AccountUuid
   name?: string
   socialId?: PersonId
   token?: string
+}
+
+export interface LoginInfoWorkspace {
+  url: string
+  dataId?: WorkspaceDataId
+  mode: WorkspaceMode
+  version: WorkspaceVersion
+  endpoint: EndpointInfo
+  role: AccountRole | null
+
+  progress?: number
+}
+
+export interface LoginInfoWithWorkspaces extends LoginInfo {
+  // Information necessary to handle user <--> transactor connectivity.
+  workspaces: Record<WorkspaceUuid, LoginInfoWorkspace>
+  socialIds: SocialId[]
 }
 
 export interface WorkspaceLoginInfo extends LoginInfo {

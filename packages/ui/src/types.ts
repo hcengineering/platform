@@ -306,6 +306,8 @@ export interface LabelAndProps {
   kind?: 'tooltip' | 'submenu' | 'popup'
   keys?: string[]
   timeout?: number
+  style?: 'default' | 'modern'
+  noArrow?: boolean
 }
 
 export interface ListItem {

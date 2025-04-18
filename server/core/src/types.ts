@@ -14,6 +14,17 @@
 //
 
 import {
+  type ServerApi as CommunicationApi,
+  type RequestEvent as CommunicationEvent,
+  type EventResult
+} from '@hcengineering/communication-sdk-types'
+import {
+  type FindMessagesGroupsParams,
+  type FindMessagesParams,
+  type Message,
+  type MessagesGroup
+} from '@hcengineering/communication-types'
+import {
   type Account,
   type AccountUuid,
   type Branding,
@@ -35,12 +46,12 @@ import {
   type SearchQuery,
   type SearchResult,
   type SessionData,
+  type SocialId,
   type Space,
   type Timestamp,
   type Tx,
   type TxFactory,
   type TxResult,
-  type WorkspaceDataId,
   type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
@@ -49,21 +60,11 @@ import type { LiveQuery } from '@hcengineering/query'
 import type { ReqId, Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
-import {
-  type FindMessagesGroupsParams,
-  type MessagesGroup,
-  type FindMessagesParams,
-  type Message
-} from '@hcengineering/communication-types'
-import {
-  type RequestEvent as CommunicationEvent,
-  type ServerApi as CommunicationApi,
-  type EventResult
-} from '@hcengineering/communication-sdk-types'
 
 import type { DbAdapter, DomainHelper } from './adapter'
-import type { StatisticsElement } from './stats'
+import type { StatisticsElement, WorkspaceStatistics } from './stats'
 import { type StorageAdapter } from './storage'
+import { type PlatformQueue } from './queue'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   domain?: Domain // Allow to find for Doc's in specified domain only.
@@ -193,6 +194,7 @@ export interface PipelineContext {
   serviceAdapterManager?: ServiceAdaptersManager
   lowLevelStorage?: LowLevelStorage
   liveQuery?: LiveQuery
+  queue?: PlatformQueue
 
   // Entry point for derived data procvessing
   derived?: Middleware
@@ -237,7 +239,6 @@ export interface Pipeline {
 export type PipelineFactory = (
   ctx: MeasureContext,
   ws: WorkspaceIds,
-  upgrade: boolean,
   broadcast: BroadcastFunc,
   branding: Branding | null,
   communicationApi: CommunicationApi | null
@@ -267,6 +268,9 @@ export interface TriggerControl {
   lowLevel: LowLevelStorage
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
+
+  queue?: PlatformQueue
+
   communicationApi: CommunicationApi | null
 
   // Cache per workspace
@@ -554,7 +558,7 @@ export interface ClientSessionCtx {
  * @public
  */
 export interface Session {
-  workspace: Workspace
+  workspace: WorkspaceIds
   createTime: number
 
   // Session restore information
@@ -582,7 +586,10 @@ export interface Session {
   // Client methods
   ping: (ctx: ClientSessionCtx) => Promise<void>
   getUser: () => AccountUuid
+
   getUserSocialIds: () => PersonId[]
+
+  getSocialIds: () => SocialId[]
 
   loadModel: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<void>
   loadModelRaw: (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string) => Promise<LoadModelResponse | Tx[]>
@@ -658,82 +665,36 @@ export function disableLogging (): void {
   LOGGING_ENABLED = false
 }
 
-interface TickHandler {
-  ticks: number
-  operation: () => void
-}
-
-/**
- * @public
- */
-export interface Workspace {
-  context: MeasureContext
-  id: string
-  token: string // Account workspace update token.
-  pipeline: Promise<Pipeline> | Pipeline
-  communicationApi: Promise<CommunicationApi> | CommunicationApi
-
-  tickHash: number
-
-  tickHandlers: Map<string, TickHandler>
-
-  sessions: Map<string, { session: Session, socket: ConnectionSocket, tickHash: number }>
-  upgrade: boolean
-
-  closing?: Promise<void>
-  softShutdown: number
-  workspaceInitCompleted: boolean
-
-  workspaceName: string
-  workspaceUuid: WorkspaceUuid
-  workspaceUrl: string
-  workspaceDataId?: WorkspaceDataId
-  branding: Branding | null
-}
-
 export interface AddSessionActive {
   session: Session
   context: MeasureContext
   workspaceId: WorkspaceUuid
 }
 
-export type AddSessionResponse =
-  | AddSessionActive
+export type GetWorkspaceResponse =
   | { upgrade: true, progress?: number }
   | { error: any, terminate?: boolean, specialError?: 'archived' | 'migration' }
 
-export type SessionFactory = (token: Token, workspace: Workspace, account: Account) => Session
+export type AddSessionResponse = AddSessionActive | GetWorkspaceResponse
 
 /**
  * @public
  */
 export interface SessionManager {
-  workspaces: Map<WorkspaceUuid, Workspace>
+  // workspaces: Map<WorkspaceUuid, Workspace>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
-
-  createSession: SessionFactory
 
   addSession: (
     ctx: MeasureContext,
     ws: ConnectionSocket,
     token: Token,
     rawToken: string,
-    pipelineFactory: PipelineFactory,
-    communicationApiFactory: CommunicationApiFactory,
     sessionId: string | undefined
   ) => Promise<AddSessionResponse>
 
-  broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
+  broadcastAll: (workspace: WorkspaceUuid, tx: Tx[], targets?: string[]) => void
 
   close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: WorkspaceUuid) => Promise<void>
-
-  closeAll: (
-    wsId: WorkspaceUuid,
-    workspace: Workspace,
-    code: number,
-    reason: 'upgrade' | 'shutdown',
-    ignoreSocket?: ConnectionSocket
-  ) => Promise<void>
 
   forceClose: (wsId: WorkspaceUuid, ignoreSocket?: ConnectionSocket) => Promise<void>
 
@@ -770,33 +731,9 @@ export interface SessionManager {
     service: Session,
     ws: ConnectionSocket
   ) => ClientSessionCtx
+
+  getStatistics: () => WorkspaceStatistics[]
 }
-
-/**
- * @public
- */
-export type HandleRequestFunction = <S extends Session>(
-  rctx: MeasureContext,
-  service: S,
-  ws: ConnectionSocket,
-  msg: Request<any>,
-  workspaceId: WorkspaceUuid
-) => void
-
-/**
- * @public
- */
-
-export type ServerFactory = (
-  sessions: SessionManager,
-  handleRequest: HandleRequestFunction,
-  ctx: MeasureContext,
-  pipelineFactory: PipelineFactory,
-  communicationApiFactory: CommunicationApiFactory,
-  port: number,
-  accountsUrl: string,
-  externalStorage: StorageAdapter
-) => () => Promise<void>
 
 export const pingConst = 'ping'
 export const pongConst = 'pong!'

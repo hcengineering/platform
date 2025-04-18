@@ -20,22 +20,8 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager, ad
   }
   data.statistics.totalClients = sessions.sessions.size
   if (admin) {
-    for (const [k, vv] of sessions.workspaces) {
-      data.statistics.activeSessions[k] = {
-        sessions: Array.from(vv.sessions.entries()).map(([k, v]) => ({
-          userId: v.session.getUser(),
-          data: v.socket.data(),
-          mins5: v.session.mins5,
-          total: v.session.total,
-          current: v.session.current,
-          upgrade: v.session.isUpgradeClient()
-        })),
-        name: vv.workspaceName,
-        wsId: vv.workspaceUuid,
-        sessionsTotal: vv.sessions.size,
-        upgrading: vv.upgrade,
-        closing: vv.closing !== undefined
-      }
+    for (const wsStats of sessions.getStatistics()) {
+      data.statistics.activeSessions[wsStats.wsId] = wsStats
     }
   }
 

@@ -17,8 +17,8 @@
 <script lang="ts">
   import { Schedule } from '@hcengineering/calendar'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { createQuery, getClient, getCurrentWorkspaceUrl, MessageBox } from '@hcengineering/presentation'
-  import { Action, ButtonIcon, IconAdd, IconDelete, IconShare, NavItem, showPopup } from '@hcengineering/ui'
+  import presentation, { createQuery, getClient, getCurrentWorkspaceUrl, MessageBox } from '@hcengineering/presentation'
+  import { Action, ButtonIcon, IconAdd, IconDelete, IconLink, NavItem, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { TreeElement } from '@hcengineering/view-resources'
   import ScheduleEditor from './ScheduleEditor.svelte'
@@ -88,7 +88,7 @@
         message: calendar.string.ScheduleSharedLinkMessage,
         params: { link },
         richMessage: true,
-        okLabel: calendar.string.ScheduleSharedLinkCopy,
+        okLabel: presentation.string.CopyLink,
         canSubmit: false,
         action: async () => {
           await navigator.clipboard.writeText(link)
@@ -122,7 +122,7 @@
         >
           <svelte:fragment slot="actions">
             <ButtonIcon
-              icon={IconShare}
+              icon={IconLink}
               size={'extra-small'}
               kind={'tertiary'}
               tooltip={{ label: calendar.string.ScheduleShareLink, direction: 'top' }}

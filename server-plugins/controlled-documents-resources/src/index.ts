@@ -1,9 +1,8 @@
 //
 // Copyright © 2023-2024 Hardcore Engineering Inc.
 //
-import { Person, pickPrimarySocialId, type Employee } from '@hcengineering/contact'
+import { Person, type Employee } from '@hcengineering/contact'
 import core, {
-  AccountRole,
   combineAttributes,
   DocumentQuery,
   PersonId,
@@ -13,14 +12,14 @@ import core, {
   TxCreateDoc,
   TxFactory,
   TxUpdateDoc,
+  pickPrimarySocialId,
   type Doc,
   type RolesAssignment,
   type Timestamp,
-  type TxCUD,
-  systemAccountUuid
+  type TxCUD
 } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
-import { getEmployees, getSocialStrings } from '@hcengineering/server-contact'
+import { getEmployees, getSocialIds } from '@hcengineering/server-contact'
 import { TriggerControl } from '@hcengineering/server-core'
 
 import documents, {
@@ -30,7 +29,7 @@ import documents, {
   DocumentApprovalRequest,
   DocumentState,
   DocumentTemplate,
-  getEffectiveDocUpdate,
+  getEffectiveDocUpdates,
   type DocumentRequest,
   type DocumentTraining
 } from '@hcengineering/controlled-documents'
@@ -57,8 +56,9 @@ async function getDocs (
   return allDocs.filter(predicate)
 }
 
-function makeDocEffective (doc: ControlledDocument, txFactory: TxFactory): Tx {
-  return txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, getEffectiveDocUpdate())
+function makeDocEffective (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
+  const updates = getEffectiveDocUpdates()
+  return updates.map((u) => txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, u))
 }
 
 function archiveDocs (docs: ControlledDocument[], txFactory: TxFactory): Tx[] {
@@ -130,9 +130,14 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
   const dueDate: Timestamp | null =
     documentTraining.dueDays === null ? null : doc.effectiveDate + documentTraining.dueDays * 24 * 60 * 60 * 1000
 
-  const ownerSocialStrings = await getSocialStrings(control, doc.owner)
+  const ownerSocialIds = await getSocialIds(control, doc.owner)
+  if (ownerSocialIds.length === 0) {
+    console.error(`Owner ${doc.owner} has no social ids`)
+    return []
+  }
+
   // TODO: Encapsulate training request creation logic in training plugin?
-  const modifiedBy = pickPrimarySocialId(ownerSocialStrings)
+  const modifiedBy = pickPrimarySocialId(ownerSocialIds)._id
 
   let trainees: Array<Ref<Employee>> = documentTraining.trainees
   const roles = documentTraining.roles
@@ -286,30 +291,6 @@ export async function OnDocHasBecomeEffective (
   return result
 }
 
-export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  // Fill owner of default space with the very first owner account creating a social identity
-  const account = control.ctx.contextData.account
-  if (account.role !== AccountRole.Owner) return []
-
-  const defaultSpace = (
-    await control.findAll(control.ctx, documents.class.OrgSpace, { _id: documents.space.QualityDocuments })
-  )[0]
-
-  if (defaultSpace === undefined) return []
-
-  const owners = defaultSpace.owners ?? []
-
-  if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
-    const setOwnerTx = control.txFactory.createTxUpdateDoc(defaultSpace._class, defaultSpace.space, defaultSpace._id, {
-      owners: [account.uuid]
-    })
-
-    return [setOwnerTx]
-  }
-
-  return []
-}
-
 export async function OnDocDeleted (txes: TxUpdateDoc<ControlledDocument>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
@@ -352,7 +333,7 @@ export async function OnDocPlannedEffectiveDateChanged (
     if (tx.operations.plannedEffectiveDate === 0 && doc.controlledState === ControlledDocumentState.Approved) {
       // Create with not derived tx factory in order for notifications to work
       const factory = new TxFactory(control.txFactory.account)
-      await control.apply(control.ctx, [makeDocEffective(doc, factory)])
+      await control.apply(control.ctx, makeDocEffective(doc, factory))
     }
   }
 
@@ -377,7 +358,7 @@ export async function OnDocApprovalRequestApproved (
 
     // Create with not derived tx factory in order for notifications to work
     const factory = new TxFactory(control.txFactory.account)
-    await control.apply(control.ctx, [makeDocEffective(doc, factory)])
+    await control.apply(control.ctx, makeDocEffective(doc, factory))
     // make doc effective immediately
   }
   return result
@@ -416,7 +397,6 @@ async function CoAuthorsTypeMatch (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnEmployeeCreate,
     OnDocDeleted,
     OnDocPlannedEffectiveDateChanged,
     OnDocApprovalRequestApproved,

@@ -174,7 +174,9 @@ const view = plugin(viewId, {
     ObjectMention: '' as AnyComponent,
     SearchSelector: '' as AnyComponent,
     FoldersBrowser: '' as AnyComponent,
-    PersonIdPresenter: '' as AnyComponent
+    PersonIdPresenter: '' as AnyComponent,
+    PersonIdFilter: '' as AnyComponent,
+    RolePresenter: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset
@@ -228,7 +230,8 @@ const view = plugin(viewId, {
     RemoveRelation: '' as IntlString,
     MasterDetail: '' as IntlString,
     Tree: '' as IntlString,
-    Document: '' as IntlString
+    Document: '' as IntlString,
+    Loading: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

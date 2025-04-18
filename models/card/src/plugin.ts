@@ -21,13 +21,15 @@ import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
 import { type LocationData } from '@hcengineering/workbench'
 import { type ActionCategory, type Action, type ViewAction } from '@hcengineering/view'
+import { type TagCategory, type TagElement } from '@hcengineering/tags'
 
 export default mergeIds(cardId, card, {
   app: {
     Card: '' as Ref<Doc>
   },
   actionImpl: {
-    DeleteMasterTag: '' as ViewAction
+    DeleteMasterTag: '' as ViewAction,
+    EditSpace: '' as ViewAction
   },
   action: {
     DeleteMasterTag: '' as Ref<Action>,
@@ -35,7 +37,8 @@ export default mergeIds(cardId, card, {
     UnsetParent: '' as Ref<Action<Doc, any>>
   },
   category: {
-    Card: '' as Ref<ActionCategory>
+    Card: '' as Ref<ActionCategory>,
+    Labels: '' as Ref<TagCategory>
   },
   ids: {
     MasterTags: '' as Ref<Doc>,
@@ -50,5 +53,9 @@ export default mergeIds(cardId, card, {
     CardTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     CardIdProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     GetCardLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+  },
+  label: {
+    Subscribed: '' as Ref<TagElement>,
+    NewMessages: '' as Ref<TagElement>
   }
 })

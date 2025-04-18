@@ -85,6 +85,8 @@
     icon={withoutIcon ? undefined : calendar.icon.Hidden}
     label={selected?.label}
     kind="ghost"
+    justify="left"
+    flex="1"
     padding="0.5rem"
     {size}
     {disabled}

@@ -11,30 +11,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { type Card } from '@hcengineering/card'
 import core, {
-  type Association,
+  generateId,
   type AnyAttribute,
   type ArrOf,
+  type Association,
   type Class,
   type Client,
   type Doc,
+  type DocumentQuery,
   type Ref,
   type RefTo,
-  type Type,
-  type DocumentQuery
+  type Space,
+  type TxOperations,
+  type Type
 } from '@hcengineering/core'
+import { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import process, {
+import {
+  parseContext,
   type Context,
-  type NestedContext,
-  type RelatedContext,
+  type Execution,
   type Method,
+  type NestedContext,
   type Process,
-  type Step,
   type ProcessFunction,
-  type Execution
+  type RelatedContext,
+  type SelectedUserRequest,
+  type State,
+  type Step
 } from '@hcengineering/process'
+import { showPopup } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
+import process from './plugin'
 
 export async function initStep<T extends Doc> (methodId: Ref<Method<T>>): Promise<Step<T>> {
   return {
@@ -192,5 +202,149 @@ export function showDoneQuery (value: any, query: DocumentQuery<Doc>): DocumentQ
 export async function continueExecution (value: Execution): Promise<void> {
   if (value.error == null) return
   const client = getClient()
-  await client.update(value, { error: null })
+  const context = await getNextStateUserInput(value, value.context ?? {})
+  await client.update(value, { error: null, context })
+}
+
+export async function requestUserInput (
+  processId: Ref<Process>,
+  target: Ref<State>,
+  userContext: Record<string, any>
+): Promise<Record<string, any>> {
+  const client = getClient()
+  const state = client.getModel().findObject(target)
+  if (state === undefined) return userContext
+  userContext = await getStateUserInput(processId, state, userContext)
+  userContext = await getSubProcessesUserInput(state, userContext)
+  return userContext
+}
+
+export async function getStateUserInput (
+  processId: Ref<Process>,
+  state: State,
+  userContext: Record<string, any>
+): Promise<Record<string, any>> {
+  for (const action of [...state.actions, state.endAction]) {
+    if (action == null) continue
+    for (const key in action.params) {
+      const value = (action.params as any)[key]
+      const context = parseContext(value)
+      if (context !== undefined && context.type === 'userRequest') {
+        const promise = new Promise<void>((resolve) => {
+          showPopup(
+            process.component.RequestUserInput,
+            { processId, state: state._id, key: context.key, _class: context._class },
+            undefined,
+            (res) => {
+              if (res?.value !== undefined) {
+                userContext[context.id] = res.value
+              }
+              resolve()
+            }
+          )
+        })
+        await promise
+      }
+    }
+  }
+  return userContext
+}
+
+export async function getSubProcessesUserInput (
+  state: State,
+  userContext: Record<string, any>
+): Promise<Record<string, any>> {
+  for (const action of state.actions) {
+    if (action.methodId !== process.method.RunSubProcess) continue
+    const processId = action.params._id as Ref<Process>
+    if (processId === undefined) continue
+    const res = await newExecutionUserInput(processId, {})
+    userContext[processId] = res
+  }
+  return userContext
+}
+
+export async function newExecutionUserInput (
+  _id: Ref<Process>,
+  userContext: Record<string, any>
+): Promise<Record<string, any>> {
+  const client = getClient()
+  const process = client.getModel().findObject(_id)
+  if (process === undefined) return userContext
+  const stateId = process.states[0]
+  if (stateId === undefined) return userContext
+  return await requestUserInput(_id, stateId, userContext)
+}
+
+export async function getNextStateUserInput (
+  execution: Execution,
+  userContext: Record<string, any>
+): Promise<Record<string, any>> {
+  const client = getClient()
+  const process = client.getModel().findObject(execution.process)
+  if (process === undefined) return userContext
+  const currentIndex =
+    execution.currentState == null ? -1 : process.states.findIndex((p) => p === execution.currentState)
+  const nextState = process.states[currentIndex + 1]
+  return await requestUserInput(execution.process, nextState, userContext)
+}
+
+export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space: Ref<Space>): Promise<void> {
+  const client = getClient()
+  const context = await newExecutionUserInput(_id, {})
+
+  await client.createDoc(process.class.Execution, space, {
+    process: _id,
+    currentState: null,
+    card,
+    done: false,
+    rollback: {},
+    currentToDo: null,
+    assignee: null,
+    context
+  })
+}
+
+export function getToDoEndAction (prevState: State): Step<Doc> {
+  const contex: SelectedUserRequest = {
+    id: generateId(),
+    type: 'userRequest',
+    key: 'user',
+    _class: process.class.ProcessToDo
+  }
+  const endAction = {
+    methodId: process.method.CreateToDo,
+    params: {
+      state: prevState._id,
+      title: prevState.title,
+      user: '$' + JSON.stringify(contex)
+    }
+  }
+  return endAction
+}
+
+export async function requestResult (
+  txop: TxOperations,
+  execution: Execution,
+  results: Record<Ref<State>, any>
+): Promise<void> {
+  if (execution.currentState === null) return
+  const client = getClient()
+  const state = client.getModel().findObject(execution.currentState)
+  if (state === undefined) return
+  if (state.resultType == null) return
+  const promise = new Promise<void>((resolve, reject) => {
+    showPopup(process.component.ResultInput, { type: state.resultType }, undefined, (res) => {
+      if (res?.value !== undefined) {
+        results[state._id] = res.value
+        resolve()
+      } else {
+        reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
+      }
+    })
+  })
+  await promise
+  await txop.update(execution, {
+    results
+  })
 }

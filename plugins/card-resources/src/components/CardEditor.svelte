@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import { AnyAttribute, Ref, RefTo } from '@hcengineering/core'
+  import { AnyAttribute, Ref, RefTo, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -26,7 +26,8 @@
   export let readonly: boolean = false
   export let label: IntlString = card.string.Card
   export let onChange: (value: any) => void
-  export let attribute: AnyAttribute
+  export let attribute: AnyAttribute | undefined = undefined
+  export let type: Type<any> | undefined = undefined
 
   export let focusIndex: number | undefined = undefined
   export let kind: ButtonKind = 'no-border'
@@ -41,7 +42,7 @@
     onChange(val)
   }
 
-  const _class = (attribute?.type as RefTo<Card>)?.to ?? card.class.Card
+  const _class = (attribute?.type as RefTo<Card>)?.to ?? (type as RefTo<Card>)?.to ?? card.class.Card
 </script>
 
 {#if readonly || attribute?.readonly}

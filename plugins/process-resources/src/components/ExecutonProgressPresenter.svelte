@@ -13,13 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@hcengineering/core'
+  import { WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Execution, State } from '@hcengineering/process'
-  import { Button, ProgressCircle, SelectPopup, SelectPopupValueType } from '@hcengineering/ui'
-  import IconProgress from './icons/IconProgress.svelte'
-  import IconBacklog from './icons/IconBacklog.svelte'
-  import IconCompleted from './icons/IconCompleted.svelte'
+  import { Execution } from '@hcengineering/process'
+  import { Button, eventToHTMLElement, ProgressCircle, showPopup } from '@hcengineering/ui'
+  import ExecutionPopup from './ExecutionPopup.svelte'
 
   export let value: WithLookup<Execution>
 
@@ -28,51 +26,24 @@
   $: states = value?.$lookup?.process?.states ?? client.getModel().findObject(value.process)?.states ?? []
   $: progress = states.findIndex((it) => it === value.currentState) + 1
 
-  $: values = getValues(value, states)
+  $: currentState = value.currentState != null ? client.getModel().findObject(value.currentState) : undefined
 
-  function getValues (value: WithLookup<Execution>, states: string[]): SelectPopupValueType[] {
-    const res: SelectPopupValueType[] = []
-    let isDone = true
-    for (const state of states) {
-      const stateObj = client.getModel().findObject(state as Ref<State>)
-      if (stateObj === undefined) {
-        continue
-      }
-      const isCurrent = value.currentState === state
-      if (isCurrent) {
-        isDone = false
-      }
-      res.push({
-        id: state,
-        text: stateObj.title,
-        icon: isCurrent ? IconProgress : isDone ? IconCompleted : IconBacklog
-      })
-    }
-    return res
+  function showDetail (e: MouseEvent): void {
+    showPopup(ExecutionPopup, { value }, eventToHTMLElement(e))
   }
 </script>
 
 <div class="flex-center flex-no-shrink">
-  <Button
-    width={'min-content'}
-    kind={'link-bordered'}
-    size={'small'}
-    justify={'left'}
-    showTooltip={{
-      component: SelectPopup,
-      props: {
-        value: values,
-        showShadow: false,
-        width: 'large'
-      }
-    }}
-  >
+  <Button width={'min-content'} kind={'link-bordered'} size={'small'} justify={'left'} on:click={showDetail}>
     <svelte:fragment slot="content">
       <div class="flex-row-center content-color text-sm pointer-events-none">
         <div class="mr-1-5">
           <ProgressCircle bind:value={progress} bind:max={states.length} size={'small'} primary />
         </div>
         {progress}/{states.length}
+        {#if currentState}
+          {currentState.title}
+        {/if}
       </div>
     </svelte:fragment>
   </Button>

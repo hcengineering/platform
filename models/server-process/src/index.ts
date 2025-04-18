@@ -11,7 +11,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import card from '@hcengineering/card'
 import core, { type Doc } from '@hcengineering/core'
 import { Mixin, type Builder } from '@hcengineering/model'
 import { TMethod, TProcessFunction } from '@hcengineering/model-process'
@@ -50,6 +49,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.method.UpdateCard, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.UpdateCard
+  })
+
+  builder.mixin(process.method.WaitSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.WaitSubProcess
   })
 
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
@@ -107,24 +110,6 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: process.class.Process
-    },
-    isAsync: true
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverProcess.trigger.OnCardCreate,
-    txMatch: {
-      _class: core.class.TxCreateDoc,
-      objectClass: card.class.Card
-    },
-    isAsync: true
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverProcess.trigger.OnTagAdd,
-    txMatch: {
-      _class: core.class.TxMixin,
-      objectClass: card.class.Card
     },
     isAsync: true
   })

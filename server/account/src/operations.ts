@@ -14,20 +14,20 @@
 //
 import { Analytics } from '@hcengineering/analytics'
 import {
-  AccountRole,
   AccountInfo,
+  AccountRole,
+  type AccountUuid,
+  type Branding,
   buildSocialIdString,
   concatLink,
   isActiveMode,
   isWorkspaceCreating,
   MeasureContext,
-  SocialIdType,
-  systemAccountUuid,
-  type Branding,
   type Person,
   type PersonId,
-  type PersonInfo,
   type PersonUuid,
+  SocialIdType,
+  systemAccountUuid,
   type WorkspaceMemberInfo,
   type WorkspaceUuid
 } from '@hcengineering/core'
@@ -36,13 +36,15 @@ import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
+import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 import type {
   AccountDB,
   AccountMethodHandler,
   LoginInfo,
-  Meta,
+  LoginInfoWithWorkspaces,
   Mailbox,
   MailboxOptions,
+  Meta,
   OtpInfo,
   RegionInfo,
   SocialId,
@@ -51,47 +53,51 @@ import type {
   WorkspaceLoginInfo
 } from './types'
 import {
+  addSocialId,
   checkInvite,
   cleanEmail,
   confirmEmail,
+  confirmHulyIds,
   createAccount,
   createWorkspaceRecord,
   doJoinByInvite,
   EndpointKind,
+  generatePassword,
   getAccount,
   getEmailSocialId,
   getEndpoint,
+  getEndpointInfo,
   getFrontUrl,
   getInviteEmail,
+  getMailUrl,
   getPersonName,
   getRegions,
   getRolePower,
-  getMailUrl,
   getWorkspaceById,
+  getWorkspaceByUrl,
+  getWorkspaceEndpoint,
   getWorkspaceInfoWithStatusById,
   getWorkspaceInvite,
+  getWorkspaceRole,
+  getWorkspaceRoles,
   GUEST_ACCOUNT,
+  isEmail,
   isOtpValid,
+  normalizeValue,
+  doReleaseSocialId,
   selectWorkspace,
   sendEmail,
   sendEmailConfirmation,
   sendOtp,
   setPassword,
+  setTimezoneIfNotDefined,
   signUpByEmail,
-  verifyAllowedServices,
-  verifyAllowedRole,
-  verifyPassword,
-  wrap,
-  getWorkspaceRole,
-  normalizeValue,
-  isEmail,
-  generatePassword,
-  addSocialId,
-  releaseSocialId,
   updateWorkspaceRole,
-  setTimezoneIfNotDefined
+  verifyAllowedRole,
+  verifyAllowedServices,
+  verifyPassword,
+  wrap
 } from './utils'
-import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
 // to the database layer when searching/inserting as they may contain SQL injection
@@ -115,8 +121,7 @@ export async function login (
   params: {
     email: string
     password: string
-  },
-  meta?: Meta
+  }
 ): Promise<LoginInfo> {
   const { email, password } = params
   const normalizedEmail = cleanEmail(email)
@@ -128,7 +133,7 @@ export async function login (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
-    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
+    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
     if (existingAccount == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -147,7 +152,6 @@ export async function login (
 
     const extraToken: Record<string, string> = isAdminEmail(email) ? { admin: 'true' } : {}
     ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
-    void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, existingAccount, meta)
 
     return {
       account: existingAccount.uuid,
@@ -170,8 +174,7 @@ export async function loginOtp (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { email: string },
-  meta?: Meta
+  params: { email: string }
 ): Promise<OtpInfo> {
   const { email } = params
 
@@ -183,13 +186,11 @@ export async function loginOtp (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
-  const account = await getAccount(db, emailSocialId.personUuid)
+  const account = await getAccount(db, emailSocialId.personUuid as AccountUuid)
 
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
-
-  void setTimezoneIfNotDefined(ctx, db, emailSocialId.personUuid, account, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -247,8 +248,7 @@ export async function signUpOtp (
     email: string
     firstName: string
     lastName: string
-  },
-  meta?: Meta
+  }
 ): Promise<OtpInfo> {
   const { email, firstName, lastName } = params
   // Note: can support OTP based on any other social logins later
@@ -257,7 +257,7 @@ export async function signUpOtp (
   let personUuid: PersonUuid
 
   if (emailSocialId !== null) {
-    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid })
+    const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
     if (existingAccount !== null) {
       ctx.error('An account with the provided email already exists', { email })
@@ -274,7 +274,6 @@ export async function signUpOtp (
     const emailSocialIdId = await db.socialId.insertOne(newSocialId)
     emailSocialId = { ...newSocialId, _id: emailSocialIdId, key: buildSocialIdString(newSocialId) }
   }
-  void setTimezoneIfNotDefined(ctx, db, personUuid, null, meta)
 
   return await sendOtp(ctx, db, branding, emailSocialId)
 }
@@ -312,7 +311,7 @@ export async function validateOtp (
   }
 
   // This method handles both login and signup
-  const account = await db.account.findOne({ uuid: emailSocialId.personUuid })
+  const account = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
   if (account == null) {
     // This is a signup
@@ -320,7 +319,7 @@ export async function validateOtp (
 
     ctx.info('OTP signup success', emailSocialId)
   } else {
-    // Confirm huly social id if hasn't been confirmed yet
+    await confirmHulyIds(ctx, db, account.uuid)
 
     ctx.info('OTP login success', emailSocialId)
   }
@@ -331,7 +330,7 @@ export async function validateOtp (
   }
 
   return {
-    account: emailSocialId.personUuid,
+    account: emailSocialId.personUuid as AccountUuid,
     name: getPersonName(person),
     socialId: emailSocialId._id,
     token: generateToken(emailSocialId.personUuid)
@@ -356,7 +355,7 @@ export async function createWorkspace (
   ctx.info('Creating workspace record', { workspaceName, account, region })
 
   // Any confirmed social ID will do
-  const socialId = await db.socialId.findOne({ personUuid: account, verifiedOn: { $gt: 0 } })
+  const socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true }))[0]
 
   if (socialId == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, {}))
@@ -388,7 +387,7 @@ export async function createWorkspace (
     socialId: socialId._id,
     name: getPersonName(person),
     token: generateToken(account, workspaceUuid),
-    endpoint: getEndpoint(ctx, workspaceUuid, region, EndpointKind.External),
+    endpoint: getEndpoint(workspaceUuid, region, EndpointKind.External),
     workspace: workspaceUuid,
     workspaceUrl,
     role: AccountRole.Owner
@@ -664,7 +663,7 @@ export async function join (
 
   ctx.info('Joining a workspace using invite', { email, normalizedEmail, ...invite })
 
-  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password }, meta)
+  const { token, account } = await login(ctx, db, branding, _token, { email: normalizedEmail, password })
 
   if (token == null) {
     return {
@@ -764,7 +763,7 @@ export async function checkAutoJoin (
 
   // If it's an existing account we should check for saved token or ask for login to prevent accidental access through shared link
   if (emailSocialId != null) {
-    const targetAccount = await getAccount(db, emailSocialId.personUuid)
+    const targetAccount = await getAccount(db, emailSocialId.personUuid as AccountUuid)
     if (targetAccount != null) {
       if (targetAccount.automatic == null || !targetAccount.automatic) {
         if (token == null) {
@@ -883,6 +882,8 @@ export async function confirm (
 
   const socialId = await confirmEmail(ctx, db, account, email)
 
+  await confirmHulyIds(ctx, db, account)
+
   const person = await db.person.findOne({ uuid: account })
   if (person == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
@@ -951,7 +952,7 @@ export async function requestPasswordReset (
     )
   }
 
-  const account = await getAccount(db, emailSocialId.personUuid)
+  const account = await getAccount(db, emailSocialId.personUuid as AccountUuid)
 
   if (account == null) {
     ctx.info('Account not found', { email, normalizedEmail })
@@ -1038,7 +1039,7 @@ export async function leaveWorkspace (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { account: PersonUuid }
+  params: { account: AccountUuid }
 ): Promise<LoginInfo | null> {
   const { account: targetAccount } = params
   const { account, workspace } = decodeTokenVerbose(ctx, token)
@@ -1182,9 +1183,10 @@ export async function getWorkspacesInfo (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  ids: WorkspaceUuid[]
+  params: { ids: WorkspaceUuid[] }
 ): Promise<WorkspaceInfoWithStatus[]> {
   const { account } = decodeTokenVerbose(ctx, token)
+  const { ids } = params
 
   if (account !== systemAccountUuid) {
     ctx.error('getWorkspaceInfos with wrong user', { account, token })
@@ -1252,9 +1254,10 @@ export async function getLoginInfoByToken (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string
+  token: string,
+  meta?: Meta
 ): Promise<LoginInfo | WorkspaceLoginInfo> {
-  let accountUuid: PersonUuid
+  let accountUuid: AccountUuid
   let workspaceUuid: WorkspaceUuid
   let extra: any
   try {
@@ -1275,7 +1278,7 @@ export async function getLoginInfoByToken (
 
   if (!isDocGuest && !isSystem) {
     // Any confirmed social ID will do
-    socialId = await db.socialId.findOne({ personUuid: accountUuid, verifiedOn: { $gt: 0 } })
+    socialId = (await getSocialIds(ctx, db, branding, token, { confirmed: true }))[0]
     if (socialId == null) {
       return {
         account: accountUuid
@@ -1311,6 +1314,10 @@ export async function getLoginInfoByToken (
     token
   }
 
+  if (!isSystem) {
+    void setTimezoneIfNotDefined(ctx, db, accountUuid, null, meta)
+  }
+
   if (workspaceUuid != null && workspaceUuid !== '') {
     const workspace = await getWorkspaceById(db, workspaceUuid)
 
@@ -1323,7 +1330,7 @@ export async function getLoginInfoByToken (
       return {
         ...loginInfo,
         workspace: workspaceUuid,
-        endpoint: getEndpoint(ctx, workspace.uuid, workspace.region, EndpointKind.External),
+        endpoint: getEndpoint(workspace.uuid, workspace.region, EndpointKind.External),
         role: AccountRole.DocGuest
       }
     }
@@ -1339,12 +1346,107 @@ export async function getLoginInfoByToken (
       ...loginInfo,
       workspace: workspace.uuid,
       workspaceDataId: workspace.dataId,
-      endpoint: getEndpoint(ctx, workspace.uuid, workspace.region, EndpointKind.External),
+      endpoint: getEndpoint(workspace.uuid, workspace.region, EndpointKind.External),
       role
     }
   } else {
     return loginInfo
   }
+}
+
+/**
+ * Validates the token and returns the decoded account information.
+ */
+export async function getLoginWithWorkspaceInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<LoginInfoWithWorkspaces> {
+  let accountUuid: AccountUuid
+  let extra: any
+  try {
+    ;({ account: accountUuid, extra } = decodeTokenVerbose(ctx, token))
+  } catch (err: any) {
+    Analytics.handleError(err)
+    ctx.error('Invalid token', { token })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+  }
+
+  if (accountUuid == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountUuid }))
+  }
+
+  const isDocGuest = accountUuid === GUEST_ACCOUNT && extra?.guest === 'true'
+  const isSystem = accountUuid === systemAccountUuid
+  let socialIds: SocialId[] = []
+
+  if (!isDocGuest && !isSystem) {
+    // Any confirmed social ID will do
+    socialIds = await db.socialId.find({ personUuid: accountUuid, verifiedOn: { $gt: 0 } })
+    if (socialIds.length === 0) {
+      return {
+        account: accountUuid,
+        workspaces: {},
+        socialIds: []
+      }
+    }
+  }
+
+  let person: Person | null
+  if (isDocGuest) {
+    person = {
+      uuid: accountUuid,
+      firstName: 'Guest',
+      lastName: 'User'
+    }
+  } else if (isSystem) {
+    person = {
+      uuid: accountUuid,
+      firstName: 'System',
+      lastName: 'User'
+    }
+  } else {
+    person = await db.person.findOne({ uuid: accountUuid })
+  }
+
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+  }
+
+  const userWorkspaces = (await db.getAccountWorkspaces(accountUuid)).filter((it) => isActiveMode(it.status.mode))
+  const roles: Map<WorkspaceUuid, AccountRole | null> = await getWorkspaceRoles(db, accountUuid)
+
+  const info = getEndpointInfo()
+  const loginInfo: LoginInfoWithWorkspaces = {
+    account: accountUuid,
+    name: getPersonName(person),
+    socialId: socialIds[0]?._id,
+    token,
+    workspaces: Object.fromEntries(
+      isSystem || isDocGuest
+        ? []
+        : userWorkspaces.map((it, idx) => [
+          it.uuid,
+          {
+            url: it.url,
+            dataId: it.dataId,
+            mode: it.status.mode,
+            endpoint: getWorkspaceEndpoint(info, it.uuid, it.region),
+            role: roles.get(it.uuid) ?? null,
+            version: {
+              versionMajor: it.status.versionMajor,
+              versionMinor: it.status.versionMinor,
+              versionPatch: it.status.versionPatch
+            },
+            progress: it.status.processingProgress
+          }
+        ])
+    ),
+    socialIds
+  }
+
+  return loginInfo
 }
 
 export async function getSocialIds (
@@ -1362,7 +1464,9 @@ export async function getSocialIds (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  return await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
+  const socialIds = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
+
+  return socialIds.filter((si) => si.isDeleted !== true)
 }
 
 export async function getPerson (
@@ -1382,32 +1486,6 @@ export async function getPerson (
   return person
 }
 
-export async function getPersonInfo (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { account: PersonUuid }
-): Promise<PersonInfo> {
-  const { account } = params
-  const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['workspace', 'tool'], extra)
-
-  const person = await db.person.findOne({ uuid: account })
-
-  if (person == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
-  }
-
-  const verifiedSocialIds = await db.socialId.find({ personUuid: account, verifiedOn: { $gt: 0 } })
-
-  return {
-    personUuid: account,
-    name: getPersonName(person),
-    socialIds: verifiedSocialIds.map((it) => it._id)
-  }
-}
-
 export async function findPersonBySocialKey (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1425,7 +1503,7 @@ export async function findPersonBySocialKey (
   }
 
   if (params.requireAccount === true) {
-    const account = await db.account.findOne({ uuid: socialId.personUuid })
+    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
 
     return account?.uuid
   }
@@ -1451,7 +1529,7 @@ export async function findPersonBySocialId (
 
   // TODO: combine into one request with join
   if (requireAccount === true) {
-    const account = await db.account.findOne({ uuid: socialIdObj.personUuid })
+    const account = await db.account.findOne({ uuid: socialIdObj.personUuid as AccountUuid })
     if (account == null) {
       return
     }
@@ -1470,6 +1548,10 @@ export async function findSocialIdBySocialKey (
   const { socialKey, requireAccount } = params
   decodeTokenVerbose(ctx, token)
 
+  if (socialKey == null || socialKey === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
   const socialIdObj = await db.socialId.findOne({ key: socialKey })
 
   if (socialIdObj == null) {
@@ -1478,7 +1560,7 @@ export async function findSocialIdBySocialKey (
 
   // TODO: combine into one request with join
   if (requireAccount === true) {
-    const account = await db.account.findOne({ uuid: socialIdObj.personUuid })
+    const account = await db.account.findOne({ uuid: socialIdObj.personUuid as AccountUuid })
     if (account == null) {
       return
     }
@@ -1513,7 +1595,7 @@ export async function getAccountInfo (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { accountId: PersonUuid }
+  params: { accountId: AccountUuid }
 ): Promise<AccountInfo> {
   decodeTokenVerbose(ctx, token)
   const { accountId } = params
@@ -1537,7 +1619,7 @@ export async function ensurePerson (
   }
 ): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
   const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
-  const allowedService = verifyAllowedServices(['tool', 'workspace', 'schedule', 'mail'], extra, false)
+  const allowedService = verifyAllowedServices(['tool', 'workspace', 'schedule', 'mail', 'github'], extra, false)
 
   if (!allowedService) {
     const callerRole = await getWorkspaceRole(db, account, workspace)
@@ -1653,8 +1735,36 @@ async function deleteMailbox (
 
   await db.mailboxSecret.deleteMany({ mailbox })
   await db.mailbox.deleteMany({ mailbox })
-  await releaseSocialId(db, account, SocialIdType.EMAIL, mailbox)
+  await doReleaseSocialId(db, account, SocialIdType.EMAIL, mailbox, 'deleteMailbox')
   ctx.info('Mailbox deleted', { mailbox, account })
+}
+
+async function exchangeGuestToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<string> {
+  const tokenObj = decodeTokenVerbose(ctx, token)
+  if (tokenObj.account == null) {
+    // Check if it's old guest token
+    const oldGuestEmail = '#guest@hc.engineering'
+    const { linkId, guest, email, workspace: workspaceUrl } = tokenObj as any
+
+    if (linkId == null || guest == null || email !== oldGuestEmail || workspaceUrl == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+    }
+
+    const workspace = await getWorkspaceByUrl(db, workspaceUrl)
+
+    if (workspace == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl }))
+    }
+
+    return generateToken(GUEST_ACCOUNT as PersonUuid, workspace.uuid, { linkId, guest: 'true' })
+  }
+
+  return token
 }
 
 export type AccountMethods =
@@ -1676,7 +1786,7 @@ export type AccountMethods =
   | 'signUpJoin'
   | 'confirm'
   | 'changePassword'
-  | 'requestPassword'
+  | 'requestPasswordReset'
   | 'restorePassword'
   | 'leaveWorkspace'
   | 'changeUsername'
@@ -1687,20 +1797,23 @@ export type AccountMethods =
   | 'getWorkspaceInfo'
   | 'getWorkspacesInfo'
   | 'getLoginInfoByToken'
+  | 'getLoginWithWorkspaceInfo'
   | 'getSocialIds'
   | 'getPerson'
-  | 'getPersonInfo'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
   | 'findPersonBySocialKey'
   | 'findPersonBySocialId'
   | 'findSocialIdBySocialKey'
+  | 'findFullSocialIdBySocialKey'
   | 'ensurePerson'
+  | 'exchangeGuestToken'
   | 'getMailboxOptions'
   | 'createMailbox'
   | 'getMailboxes'
   | 'deleteMailbox'
   | 'addSocialIdToPerson'
+  | 'updateSocialId'
   | 'getAccountInfo'
 
 /**
@@ -1726,7 +1839,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     signUpJoin: wrap(signUpJoin),
     confirm: wrap(confirm),
     changePassword: wrap(changePassword),
-    requestPassword: wrap(requestPasswordReset),
+    requestPasswordReset: wrap(requestPasswordReset),
     restorePassword: wrap(restorePassword),
     leaveWorkspace: wrap(leaveWorkspace),
     changeUsername: wrap(changeUsername),
@@ -1737,6 +1850,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getMailboxes: wrap(getMailboxes),
     deleteMailbox: wrap(deleteMailbox),
     ensurePerson: wrap(ensurePerson),
+    exchangeGuestToken: wrap(exchangeGuestToken),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
@@ -1744,9 +1858,9 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getWorkspaceInfo: wrap(getWorkspaceInfo),
     getWorkspacesInfo: wrap(getWorkspacesInfo),
     getLoginInfoByToken: wrap(getLoginInfoByToken),
+    getLoginWithWorkspaceInfo: wrap(getLoginWithWorkspaceInfo),
     getSocialIds: wrap(getSocialIds),
     getPerson: wrap(getPerson),
-    getPersonInfo: wrap(getPersonInfo),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     findPersonBySocialId: wrap(findPersonBySocialId),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),

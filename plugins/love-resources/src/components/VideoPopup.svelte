@@ -143,7 +143,7 @@
     participants = participants
     participantElements.length = participants.length
     await tick()
-    participantElements[index]?.appendChild(element)
+    participantElements[index]?.appendChild(element, participant.isCameraEnabled)
   }
 
   function attachParticipant (participant: Participant): void {
@@ -373,7 +373,7 @@
   <Scroller
     bind:divScroll
     noStretch
-    padding={'0 .5rem'}
+    padding={'.25rem .5rem 0'}
     containerName={'videoPopupСontainer'}
     onResize={dispatchFit}
     stickedScrollBars

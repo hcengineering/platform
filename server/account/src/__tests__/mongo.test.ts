@@ -21,7 +21,8 @@ import {
   SocialIdType,
   AccountRole,
   type Version,
-  type Data
+  type Data,
+  type AccountUuid
 } from '@hcengineering/core'
 import {
   MongoDbCollection,
@@ -299,7 +300,7 @@ describe('AccountMongoDbCollection', () => {
       const mockDocs = [
         {
           _id: 'id1',
-          uuid: 'acc1' as PersonUuid,
+          uuid: 'acc1' as AccountUuid,
           hash: { buffer: new Uint8Array([1, 2, 3]) },
           salt: { buffer: new Uint8Array([4, 5, 6]) }
         }
@@ -319,7 +320,7 @@ describe('AccountMongoDbCollection', () => {
 
       mockCollection.find.mockReturnValue(mockCursor)
 
-      const results = await collection.find({ uuid: 'acc1' as PersonUuid })
+      const results = await collection.find({ uuid: 'acc1' as AccountUuid })
 
       expect(results[0].hash).toBeInstanceOf(Buffer)
       expect(results[0].salt).toBeInstanceOf(Buffer)
@@ -331,7 +332,7 @@ describe('AccountMongoDbCollection', () => {
       const mockDocs = [
         {
           _id: 'id1',
-          uuid: 'acc1' as PersonUuid,
+          uuid: 'acc1' as AccountUuid,
           hash: null,
           salt: null
         }
@@ -351,7 +352,7 @@ describe('AccountMongoDbCollection', () => {
 
       mockCollection.find.mockReturnValue(mockCursor)
 
-      const results = await collection.find({ uuid: 'acc1' as PersonUuid })
+      const results = await collection.find({ uuid: 'acc1' as AccountUuid })
 
       expect(results[0].hash).toBeNull()
       expect(results[0].salt).toBeNull()
@@ -362,14 +363,14 @@ describe('AccountMongoDbCollection', () => {
     it('should convert Buffer fields in found document', async () => {
       const mockDoc = {
         _id: 'id1',
-        uuid: 'acc1' as PersonUuid,
+        uuid: 'acc1' as AccountUuid,
         hash: { buffer: new Uint8Array([1, 2, 3]) },
         salt: { buffer: new Uint8Array([4, 5, 6]) }
       }
 
       mockCollection.findOne.mockResolvedValue(mockDoc)
 
-      const result = await collection.findOne({ uuid: 'acc1' as PersonUuid })
+      const result = await collection.findOne({ uuid: 'acc1' as AccountUuid })
 
       expect(result?.hash).toBeInstanceOf(Buffer)
       expect(result?.salt).toBeInstanceOf(Buffer)
@@ -380,14 +381,14 @@ describe('AccountMongoDbCollection', () => {
     it('should handle null hash and salt in found document', async () => {
       const mockDoc = {
         _id: 'id1',
-        uuid: 'acc1' as PersonUuid,
+        uuid: 'acc1' as AccountUuid,
         hash: null,
         salt: null
       }
 
       mockCollection.findOne.mockResolvedValue(mockDoc)
 
-      const result = await collection.findOne({ uuid: 'acc1' as PersonUuid })
+      const result = await collection.findOne({ uuid: 'acc1' as AccountUuid })
 
       expect(result?.hash).toBeNull()
       expect(result?.salt).toBeNull()
@@ -396,7 +397,7 @@ describe('AccountMongoDbCollection', () => {
     it('should handle null result', async () => {
       mockCollection.findOne.mockResolvedValue(null)
 
-      const result = await collection.findOne({ uuid: 'non-existent' as PersonUuid })
+      const result = await collection.findOne({ uuid: 'non-existent' as AccountUuid })
 
       expect(result).toBeNull()
     })
@@ -789,7 +790,7 @@ describe('MongoAccountDB', () => {
   })
 
   describe('workspace operations', () => {
-    const accountId = 'acc1' as PersonUuid
+    const accountId = 'acc1' as AccountUuid
     const workspaceId = 'ws1' as WorkspaceUuid
     const role = AccountRole.Owner
 
@@ -851,7 +852,7 @@ describe('MongoAccountDB', () => {
     describe('getWorkspaceMembers', () => {
       it('should return mapped member info', async () => {
         const members = [
-          { accountUuid: 'acc1' as PersonUuid, role: AccountRole.Owner },
+          { accountUuid: 'acc1' as AccountUuid, role: AccountRole.Owner },
           { accountUuid: 'acc2' as PersonUuid, role: AccountRole.Maintainer }
         ]
 
@@ -1169,7 +1170,7 @@ describe('MongoAccountDB', () => {
   })
 
   describe('password operations', () => {
-    const accountId = 'acc1' as PersonUuid
+    const accountId = 'acc1' as AccountUuid
     const passwordHash = Buffer.from('hash')
     const salt = Buffer.from('salt')
 

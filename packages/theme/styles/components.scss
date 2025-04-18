@@ -130,10 +130,27 @@
   background-color: var(--theme-button-default);
   pointer-events: none;
 
+  &.clickable {
+    cursor: pointer;
+    pointer-events: auto;
+
+    & > * {
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+  }
+
   &.withStatus {
     mask-repeat: no-repeat;
     mask-size: cover;
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10,13.5c0-1.9,1.6-3.5,3.5-3.5c1,0,1.9,0.4,2.5,1.1V0H0v16h11.1C10.4,15.4,10,14.5,10,13.5z' /%3E%3C/svg%3E");
+    &.hulyAvatarSize-large {
+      mask-image: 
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Ccircle cx='69' cy='69' r='11' /%3E%3C/svg%3E"),
+        linear-gradient(#000 0 0);
+      mask-composite: exclude;
+    }
   }
 
   &.circle,
@@ -166,7 +183,12 @@
       & > img { border-width: 2px; }
     }
   }
-  img { object-fit: cover; }
+  img { 
+    object-fit: cover;
+    &.disabled {
+      filter: grayscale(100%);
+    }
+  }
   .icon,
   .ava-text::after {
     position: absolute;
@@ -242,6 +264,12 @@
   width: 4.5rem; // 72 - 63
 
   .ava-text { font-size: 2.75rem; }
+
+  &.modern {
+    width: 5rem;
+
+    .ava-text { font-size: 3rem; }
+  }
 }
 .hulyAvatarSize-x-large {
   width: 7.5rem; // 120 - 105
@@ -296,8 +324,24 @@
   &.smaller,
   .small-font &.small { width: 9px; }
   &.small { width: 10px; }
-  .small-font &.medium { width: 11px; }
-  &.medium { width: 13px; }
+  &:not(.small-font) {
+    &.medium { 
+      width: 13px;
+      &.modern { 
+        right: 4px;
+        bottom: 4px;
+        width: 14px; 
+      }
+    }
+  }
+  .small-font &.medium { 
+    width: 11px; 
+    &.modern { 
+      width: 13px; 
+      right: 3px;
+      bottom: 3px;
+    }
+  }
   &.large {
     right: -.125rem;
     bottom: -.125rem;
@@ -309,7 +353,9 @@
       width: 37%;
     }
   }
-  &.online { background-color: var(--global-online-color); }
+  &.online { 
+    background-color: var(--global-online-color); 
+  }
   &.offline {
     border: 1px solid var(--global-offline-color);
 
@@ -2005,10 +2051,10 @@
   &.leftPadding { padding-left: 0.625rem; }
   &::before {
     position: absolute;
-    top: -.125rem;
-    bottom: -.125rem;
-    left: -.125rem;
-    right: -.125rem;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
     border: 1px solid var(--primary-button-default);
     border-radius: .5rem;
     z-index: -1;

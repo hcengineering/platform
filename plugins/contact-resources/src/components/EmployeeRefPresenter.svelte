@@ -14,6 +14,7 @@
   export let inline: boolean = false
   export let shouldShowName: boolean = true
   export let avatarSize: IconSize = kind === 'regular' ? 'small' : 'card'
+  export let readonly = false
 </script>
 
 {#if Array.isArray(value)}
@@ -29,6 +30,7 @@
         {accent}
         {shouldShowName}
         {avatarSize}
+        {readonly}
         on:accent-color
       />
     {/each}
@@ -44,6 +46,7 @@
     {accent}
     {shouldShowName}
     {avatarSize}
+    {readonly}
     on:accent-color
   />
 {/if}

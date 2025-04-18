@@ -16,18 +16,12 @@ import serverCalendar from '@hcengineering/server-calendar'
 import serverCore, {
   initStatisticsContext,
   loadBrandingMap,
-  type ConnectionSocket,
-  type Session,
   type StorageConfiguration,
-  type UserStatistics,
-  type Workspace,
   type WorkspaceStatistics
 } from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverTelegram from '@hcengineering/server-telegram'
 import serverToken from '@hcengineering/server-token'
-import { startHttpServer } from '@hcengineering/server-ws'
 import { join } from 'path'
 import { start } from '.'
 import { profileStart, profileStop } from './inspector'
@@ -35,7 +29,7 @@ import { profileStart, profileStop } from './inspector'
 configureAnalytics(process.env.SENTRY_DSN, {})
 Analytics.setTag('application', 'transactor')
 
-let getUsers: () => WorkspaceStatistics[] = () => {
+let getStats: () => WorkspaceStatistics[] = () => {
   return []
 }
 
@@ -52,8 +46,8 @@ void queue.createTopics(10).catch((err) => {
 
 // Force create server metrics context with proper logging
 const metricsContext = initStatisticsContext('transactor', {
-  getUsers: (): WorkspaceStatistics[] => {
-    return getUsers()
+  getStats: (): WorkspaceStatistics[] => {
+    return getStats()
   },
   factory: () =>
     new MeasureMetricsContext(
@@ -87,7 +81,6 @@ setMetadata(serverToken.metadata.Secret, config.serverSecret)
 setMetadata(serverNotification.metadata.MailUrl, config.mailUrl ?? '')
 setMetadata(serverNotification.metadata.MailAuthToken, config.mailAuthToken)
 setMetadata(serverNotification.metadata.WebPushUrl, config.webPushUrl)
-setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 setMetadata(serverCalendar.metadata.EndpointURL, process.env.CALENDAR_URL)
 
@@ -95,7 +88,6 @@ const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   fulltextUrl: config.fulltextUrl,
   storageConfig,
   port: config.serverPort,
-  serverFactory: startHttpServer,
   brandingMap: loadBrandingMap(config.brandingPath),
   accountsUrl: config.accountsUrl,
   enableCompression: config.enableCompression,
@@ -107,29 +99,8 @@ const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   queue
 })
 
-const entryToUserStats = (session: Session, socket: ConnectionSocket): UserStatistics => {
-  return {
-    current: session.current,
-    mins5: session.mins5,
-    userId: session.getUser(),
-    sessionId: socket.id,
-    total: session.total,
-    data: socket.data
-  }
-}
-
-const workspaceToWorkspaceStats = (ws: Workspace): WorkspaceStatistics => {
-  return {
-    clientsTotal: new Set(Array.from(ws.sessions.values()).map((it) => it.session.getUser())).size,
-    sessionsTotal: ws.sessions.size,
-    workspaceName: ws.workspaceName,
-    wsId: ws.workspaceUuid,
-    sessions: Array.from(ws.sessions.values()).map((it) => entryToUserStats(it.session, it.socket))
-  }
-}
-
-getUsers = () => {
-  return Array.from(sessionManager.workspaces.values()).map((it) => workspaceToWorkspaceStats(it))
+getStats = (): WorkspaceStatistics[] => {
+  return sessionManager.getStatistics()
 }
 
 const close = (): void => {

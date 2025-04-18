@@ -559,7 +559,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       true,
       undefined,
       this.workspace,
-      null,
       false,
       undefined,
       undefined,

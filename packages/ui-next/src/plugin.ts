@@ -20,6 +20,7 @@ export const uiNextId = 'ui-next' as Plugin
 export const uiNext = plugin(uiNextId, {
   string: {
     Added: '' as IntlString,
+    All: '' as IntlString,
     Attach: '' as IntlString,
     Cancel: '' as IntlString,
     Edit: '' as IntlString,

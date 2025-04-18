@@ -13,7 +13,7 @@
 
 import { Card, MasterTag, Tag } from '@hcengineering/card'
 import { Employee } from '@hcengineering/contact'
-import { Class, Doc, DocumentUpdate, ObjQueryType, Ref, Tx } from '@hcengineering/core'
+import { Class, Doc, DocumentUpdate, ObjQueryType, Ref, Tx, Type } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin } from '@hcengineering/platform'
 import { ToDo } from '@hcengineering/time'
 import { AnyComponent } from '@hcengineering/ui'
@@ -42,6 +42,14 @@ export interface Execution extends Doc {
   done: boolean
   rollback: Record<Ref<State>, Tx[]>
   error?: ExecutionError[] | null
+  context?: Record<string, any>
+  results?: Results
+  parentId?: Ref<Execution>
+}
+
+export type ExecutionResults = Record<Ref<Execution>, Record<Ref<State>, any>>
+export type Results = Record<Ref<State>, any> & {
+  child?: ExecutionResults
 }
 
 export interface ExecutionError {
@@ -64,6 +72,7 @@ export interface State extends Doc {
   title: string
   actions: Step<Doc>[]
   endAction?: Step<Doc> | null
+  resultType?: Type<any> | null
 }
 
 export interface Step<T extends Doc> {
@@ -91,6 +100,7 @@ export interface ProcessFunction extends Doc {
 
 export * from './types'
 export * from './utils'
+export * from './errors'
 
 export default plugin(processId, {
   class: {
@@ -104,7 +114,8 @@ export default plugin(processId, {
   method: {
     RunSubProcess: '' as Ref<Method<Process>>,
     CreateToDo: '' as Ref<Method<ProcessToDo>>,
-    UpdateCard: '' as Ref<Method<Card>>
+    UpdateCard: '' as Ref<Method<Card>>,
+    WaitSubProcess: '' as Ref<Method<Execution>>
   },
   string: {
     Method: '' as IntlString,
@@ -121,12 +132,16 @@ export default plugin(processId, {
     RelationNotExists: '' as IntlString,
     EmptyAttributeContextValue: '' as IntlString,
     ObjectNotFound: '' as IntlString,
-    AttributeNotExists: '' as IntlString
+    AttributeNotExists: '' as IntlString,
+    UserRequestedValueNotProvided: '' as IntlString,
+    ResultNotProvided: '' as IntlString
   },
   icon: {
     Process: '' as Asset,
     Steps: '' as Asset,
-    States: '' as Asset
+    States: '' as Asset,
+    ToDo: '' as Asset,
+    WaitSubprocesses: '' as Asset
   },
   function: {
     FirstValue: '' as Ref<ProcessFunction>,

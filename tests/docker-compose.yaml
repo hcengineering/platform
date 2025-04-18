@@ -28,7 +28,7 @@ services:
       - 27018:27018
     restart: unless-stopped
   cockroach:
-    image: cockroachdb/cockroach:latest-v24.2
+    image: cockroachdb/cockroach:v24.1.2
     ports:
       - '26258:26257'
       - '18089:8080'

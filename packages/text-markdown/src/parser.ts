@@ -22,8 +22,17 @@ import type StateCore from 'markdown-it/lib/rules_core/state_core'
 import { addToSet, removeFromSet, sameSet } from './marks'
 import { nodeContent } from './node'
 
+type SpecRule<T> = T | ((tok: Token, state: MarkdownParseState) => T)
+
+function readSpec<T> (rule: SpecRule<T>, tok: Token, state: MarkdownParseState): T {
+  if (typeof rule === 'function') {
+    return (rule as (tok: Token, state: MarkdownParseState) => T)(tok, state)
+  }
+  return rule
+}
+
 interface ParsingBlockRule {
-  block: MarkupNodeType
+  block: SpecRule<MarkupNodeType>
   getAttrs?: (tok: Token, state: MarkdownParseState) => Attrs
   wrapContent?: boolean
   noCloseToken?: boolean
@@ -222,12 +231,17 @@ function withoutTrailingNewline (str: string): string {
   return str[str.length - 1] === '\n' ? str.slice(0, str.length - 1) : str
 }
 
-function addSpecBlock (handlers: HandlersRecord, spec: ParsingBlockRule, type: string, specBlock: MarkupNodeType): void {
+function addSpecBlock (
+  handlers: HandlersRecord,
+  spec: ParsingBlockRule,
+  type: string,
+  specBlock: SpecRule<MarkupNodeType>
+): void {
   if (noCloseToken(spec, type)) {
     handlers[type] = newSimpleBlockHandler(specBlock, spec)
   } else {
     handlers[type + '_open'] = (state, tok) => {
-      state.openNode(specBlock, attrs(spec, tok, state))
+      state.openNode(readSpec(specBlock, tok, state), attrs(spec, tok, state))
       if (spec.wrapContent === true) {
         state.openNode(MarkupNodeType.paragraph, {})
       }
@@ -240,9 +254,9 @@ function addSpecBlock (handlers: HandlersRecord, spec: ParsingBlockRule, type: s
     }
   }
 }
-function newSimpleBlockHandler (specBlock: MarkupNodeType, spec: ParsingBlockRule): HandlerRecord {
+function newSimpleBlockHandler (specBlock: SpecRule<MarkupNodeType>, spec: ParsingBlockRule): HandlerRecord {
   return (state, tok) => {
-    state.openNode(specBlock, attrs(spec, tok, state))
+    state.openNode(readSpec(specBlock, tok, state), attrs(spec, tok, state))
     state.addText(withoutTrailingNewline(tok.content))
     state.closeNode()
   }
@@ -448,14 +462,24 @@ const tokensBlock: Record<string, ParsingBlockRule> = {
     getAttrs: (tok: Token) => ({ level: Number(tok.tag.slice(1)), marker: tok.markup })
   },
   code_block: {
-    block: MarkupNodeType.code_block,
+    block: (tok) => {
+      if (tok.info === 'mermaid') {
+        return MarkupNodeType.mermaid
+      }
+      return MarkupNodeType.code_block
+    },
     getAttrs: (tok: Token) => {
       return { language: tok.info ?? '' }
     },
     noCloseToken: true
   },
   fence: {
-    block: MarkupNodeType.code_block,
+    block: (tok) => {
+      if (tok.info === 'mermaid') {
+        return MarkupNodeType.mermaid
+      }
+      return MarkupNodeType.code_block
+    },
     getAttrs: (tok: Token) => {
       return { language: tok.info ?? '' }
     },

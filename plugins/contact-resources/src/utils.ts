@@ -61,7 +61,7 @@ import core, {
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
-import { getEmbeddedLabel, getMetadata, getResource, type IntlString, translate } from '@hcengineering/platform'
+import { getMetadata, getResource, type IntlString, translate } from '@hcengineering/platform'
 import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
@@ -78,6 +78,7 @@ import { type LocationData } from '@hcengineering/workbench'
 import { derived, get, type Readable, writable } from 'svelte/store'
 
 import contact from './plugin'
+import { getPreviewPopup } from './components/person/utils'
 
 export function formatDate (dueDateMs: Timestamp): string {
   return new Date(dueDateMs).toLocaleString('default', {
@@ -334,7 +335,7 @@ export const myEmployeeStore = derived(
  * Only employees for now. Later need to be extended to possibly include guests and GitHub persons.
  */
 export const personByIdStore = writable<IdMap<WithLookup<Person>>>(new Map())
-export const socialIdsStore = writable<Array<WithLookup<SocialIdentity>>>([])
+export const socialIdsStore = writable<IdMap<WithLookup<SocialIdentity>>>(new Map())
 
 /**
  * [Ref<Person> => SocialIdentity[]] mapping
@@ -342,7 +343,7 @@ export const socialIdsStore = writable<Array<WithLookup<SocialIdentity>>>([])
 export const socialIdsByPersonRefStore: Readable<Map<Ref<Person>, SocialIdentity[]>> = derived(
   [socialIdsStore],
   ([socialIds]) => {
-    const sidsByPersonRef = socialIds.reduce<Record<Ref<Person>, SocialIdentity[]>>((acc, si) => {
+    const sidsByPersonRef = Array.from(socialIds.values()).reduce<Record<Ref<Person>, SocialIdentity[]>>((acc, si) => {
       acc[si.attachedTo] = acc[si.attachedTo] ?? []
       acc[si.attachedTo].push(si)
       return acc
@@ -367,14 +368,14 @@ export const primarySocialIdByPersonRefStore: Readable<Map<Ref<Person>, PersonId
  * [PersonId (social ID) => Ref<Person>] mapping
  */
 export const personRefByPersonIdStore: Readable<Map<PersonId, Ref<Person>>> = derived(socialIdsStore, (socialIds) => {
-  const mapped = socialIds.map((si) => [si._id, si.attachedTo] as const)
+  const mapped = Array.from(socialIds.values()).map((si) => [si._id, si.attachedTo] as const)
   return new Map(mapped)
 })
 /**
  * [string (social key) => Ref<Person>] mapping
  */
 export const personRefBySocialKeyStore: Readable<Map<string, Ref<Person>>> = derived(socialIdsStore, (socialIds) => {
-  const mapped = socialIds.map((si) => [si.key, si.attachedTo] as const)
+  const mapped = Array.from(socialIds.values()).map((si) => [si.key, si.attachedTo] as const)
   return new Map(mapped)
 })
 /**
@@ -396,6 +397,7 @@ export const personByPersonIdStore: Readable<Map<PersonId, Person>> = derived(
         return [personId, person] as const
       })
       .filter(notEmpty)
+
     return new Map(mapped)
   }
 )
@@ -477,7 +479,6 @@ onClient(() => {
     employeeByIdStore.set(toIdMap(res))
 
     // We may need to extend this later with guests and github users
-    personByIdStore.set(toIdMap(res))
     personRefByAccountUuidStore.set(
       new Map(
         res.filter((p) => p.active && p.personUuid != null).map((p) => [p.personUuid as AccountUuid, p._id] as const)
@@ -485,9 +486,20 @@ onClient(() => {
     )
   })
 
-  siQuery.query(contact.class.SocialIdentity, {}, (res) => {
-    socialIdsStore.set(res)
-  })
+  siQuery.query(
+    contact.class.SocialIdentity,
+    {},
+    (res) => {
+      socialIdsStore.set(toIdMap(res))
+      const persons = res.map((it) => it.$lookup?.attachedTo).filter((it) => it !== undefined) as Person[]
+      personByIdStore.set(toIdMap(persons))
+    },
+    {
+      lookup: {
+        attachedTo: contact.class.Person
+      }
+    }
+  )
 })
 
 const userStatusesQuery = createQuery(true)
@@ -534,13 +546,7 @@ export async function contactTitleProvider (client: Client, ref: Ref<Contact>, d
 }
 
 export function getPersonTooltip (client: Client, value: Person | null | undefined): LabelAndProps | undefined {
-  const hierarchy = client.getHierarchy()
-
-  return value == null
-    ? undefined
-    : {
-        label: getEmbeddedLabel(getName(hierarchy, value))
-      }
+  return value == null ? undefined : getPreviewPopup(value, true)
 }
 
 export async function channelIdentifierProvider (client: Client, ref: Ref<Channel>, doc?: Channel): Promise<string> {

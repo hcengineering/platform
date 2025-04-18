@@ -544,7 +544,7 @@ export interface Person {
 }
 
 export interface PersonInfo extends BasePerson {
-  socialIds: PersonId[]
+  socialIds: SocialId[]
 }
 
 /**
@@ -830,7 +830,7 @@ export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
 }
 
 export interface WorkspaceMemberInfo {
-  person: PersonUuid
+  person: AccountUuid
   role: AccountRole
 }
 
@@ -852,6 +852,8 @@ export interface SocialId {
   type: SocialIdType
   value: string
   key: string // Calculated from type and value. Just for convenience.
+
+  displayValue?: string
 
   // To be used later when person detaches social id from his account by any means
   // There should always be only one ACTIVE social id with the same key every time

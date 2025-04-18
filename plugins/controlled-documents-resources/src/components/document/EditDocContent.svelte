@@ -380,6 +380,10 @@
     padding-top: 20rem;
     overflow: hidden;
     pointer-events: none;
+
+    @media print {
+      display: none;
+    }
   }
 
   .watermark {

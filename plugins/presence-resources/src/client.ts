@@ -166,6 +166,11 @@ export class PresenceClient implements Disposable {
   }
 
   private handleMessage (data: string): void {
+    if (data === 'pong') {
+      clearTimeout(this.pingTimeout)
+      return
+    }
+
     try {
       const message = JSON.parse(data) as IncomingMessage
       if (message.type === 'update' && message.presence !== undefined) {

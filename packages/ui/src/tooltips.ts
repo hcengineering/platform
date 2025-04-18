@@ -12,7 +12,9 @@ const emptyTooltip: LabelAndProps = {
   anchor: undefined,
   onUpdate: undefined,
   keys: undefined,
-  kind: 'tooltip'
+  kind: 'tooltip',
+  style: undefined,
+  noArrow: false
 }
 let storedValue: LabelAndProps = emptyTooltip
 export const tooltipstore = derived(modalStore, (modals) => {
@@ -25,11 +27,9 @@ export const tooltipstore = derived(modalStore, (modals) => {
 
 let toHandler: any
 export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
-  if (options === undefined) {
-    return {}
-  }
-  if (options.label === undefined && options.component === undefined) {
+  if (options?.label === undefined && options?.component === undefined) {
     // No tooltip
+    // TODO: Fix reactive options update in this case
     return {}
   }
   let opt = options
@@ -48,7 +48,9 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
             opt.anchor,
             opt.onUpdate,
             opt.kind,
-            opt.keys
+            opt.keys,
+            opt.style,
+            opt.noArrow
           )
         }, opt.timeout ?? 10)
       } else {
@@ -61,7 +63,9 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
           opt.anchor,
           opt.onUpdate,
           opt.kind,
-          opt.keys
+          opt.keys,
+          opt.style,
+          opt.noArrow
         )
       }
     }
@@ -86,7 +90,9 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
           opt.anchor,
           opt.onUpdate,
           opt.kind,
-          opt.keys
+          opt.keys,
+          opt.style,
+          opt.noArrow
         )
       }
     },
@@ -111,7 +117,9 @@ export function showTooltip (
   anchor?: HTMLElement,
   onUpdate?: (result: any) => void,
   kind?: 'tooltip' | 'submenu' | 'popup',
-  keys?: string[]
+  keys?: string[],
+  style?: 'default' | 'modern',
+  noArrow?: boolean
 ): void {
   storedValue = {
     label,
@@ -123,7 +131,9 @@ export function showTooltip (
     onUpdate,
     kind,
     keys,
-    type: 'tooltip'
+    type: 'tooltip',
+    style,
+    noArrow
   }
   modalStore.update((old) => {
     const tooltip = old.find((m) => m?.type === 'tooltip') as LabelAndProps | undefined

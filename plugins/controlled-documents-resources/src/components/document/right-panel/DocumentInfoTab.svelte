@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import documents, { type Document, type DocumentTemplate } from '@hcengineering/controlled-documents'
+  import documents, { DocumentState, type Document, type DocumentTemplate } from '@hcengineering/controlled-documents'
   import { PersonPresenter } from '@hcengineering/contact-resources'
   import { DateRangeMode } from '@hcengineering/core'
   import { DatePresenter, Label, Scroller, eventToHTMLElement, showPopup } from '@hcengineering/ui'
@@ -73,7 +73,9 @@
     )
   }
 
-  $: isEditableDraft = $isEditable && $controlledDocument != null && $documentAllVersions.length === 1
+  $: isEditableDraft = $isEditable && $controlledDocument != null && $controlledDocument.state === DocumentState.Draft
+  $: isInitialEditableDraft = isEditableDraft && $documentAllVersions.length === 1
+
   $: isTemplate =
     $controlledDocument != null && hierarchy.hasMixin($controlledDocument, documents.mixin.DocumentTemplate)
 
@@ -94,7 +96,7 @@
           value={$controlledDocument}
           isRegular
           disableLink
-          editable={isEditableDraft}
+          editable={isInitialEditableDraft}
           on:edit={(e) => {
             handleCodeEdit(e.detail)
           }}
@@ -119,7 +121,7 @@
 
       {#if isTemplate}
         <DocumentInfo label={documentsRes.string.DocumentPrefix}>
-          <DocumentPrefixPresenter value={asTemplate} editable={isEditableDraft} />
+          <DocumentPrefixPresenter value={asTemplate} editable={isInitialEditableDraft} />
         </DocumentInfo>
       {/if}
 

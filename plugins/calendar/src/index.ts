@@ -12,9 +12,9 @@
 // limitations under the License.
 
 import { Contact, Employee } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, SystemSpace, Timestamp } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Markup, Mixin, PersonId, Ref, SystemSpace, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
-import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Handler, IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
@@ -108,6 +108,8 @@ export interface Event extends AttachedDoc {
   access: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
 
   timeZone?: string
+
+  user: PersonId
 }
 
 /**
@@ -227,7 +229,7 @@ const calendarPlugin = plugin(calendarId, {
     ScheduleDeleteConfirm: '' as IntlString,
     ScheduleShareLink: '' as IntlString,
     ScheduleSharedLinkMessage: '' as IntlString,
-    ScheduleSharedLinkCopy: '' as IntlString,
+    CopyLink: '' as IntlString,
     ScheduleAvailability: '' as IntlString,
     ScheduleAddPeriod: '' as IntlString,
     ScheduleRemovePeriod: '' as IntlString,
@@ -237,7 +239,14 @@ const calendarPlugin = plugin(calendarId, {
     MeetingInterval: '' as IntlString,
     Day: '' as IntlString,
     Week: '' as IntlString,
-    Month: '' as IntlString
+    Month: '' as IntlString,
+    CalDavAccess: '' as IntlString,
+    CalDavAccessPrompt: '' as IntlString,
+    CalDavAccessEnable: '' as IntlString,
+    CalDavAccessServer: '' as IntlString,
+    CalDavAccessAccount: '' as IntlString,
+    CalDavAccessPassword: '' as IntlString,
+    CalDavAccessPasswordWarning: '' as IntlString
   },
   handler: {
     DisconnectHandler: '' as Handler
@@ -247,7 +256,8 @@ const calendarPlugin = plugin(calendarId, {
   },
   metadata: {
     CalendarServiceURL: '' as Metadata<string>,
-    PublicScheduleURL: '' as Metadata<string>
+    PublicScheduleURL: '' as Metadata<string>,
+    CalDavServerURL: '' as Metadata<string>
   },
   extensions: {
     EditEventExtensions: '' as ComponentExtensionId
@@ -255,6 +265,9 @@ const calendarPlugin = plugin(calendarId, {
   ids: {
     ReminderNotification: '' as Ref<NotificationType>,
     NoAttached: '' as Ref<Event>
+  },
+  function: {
+    ConfigureCalDavAccess: '' as Resource<() => Promise<void>>
   }
 })
 

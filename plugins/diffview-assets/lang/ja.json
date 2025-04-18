@@ -1,0 +1,14 @@
+{
+  "string": {
+    "ViewMode": "表示モード",
+    "Unified": "統合",
+    "Split": "分割",
+    "Viewed": "表示済み",
+    "ShowDiff": "差分を表示",
+    "NoChanges": "差分はありません",
+    "LargeDiffsAreHidden": "大きな差分はデフォルトで非表示となります。",
+    "FileIsTooLarge": "ファイルが大きすぎて表示できません。",
+    "FileWasRenamed": "ファイル名のみが変更されました。",
+    "FileWasDeleted": "ファイルが削除されました。"
+  }
+}

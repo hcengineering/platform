@@ -1,6 +1,7 @@
 {
   "string": {
     "Added": "Ajouté",
+    "All": "Tout ({count})",
     "Attach": "Joindre",
     "Cancel": "Annuler",
     "Edit": "Modifier",

@@ -92,13 +92,19 @@
     "ScheduleDeleteConfirm": "A agenda será eliminada. Confirma?",
     "ScheduleShareLink": "Partilhar link",
     "ScheduleSharedLinkMessage": "<p>Partilhe este link para permitir que outras pessoas agendem uma reunião consigo:</p><p><a href=\"{link}\" ></p>",
-    "ScheduleSharedLinkCopy": "Copiar link",
     "ScheduleAvailability": "Disponibilidade",
     "ScheduleUnavailable": "Indisponível",
     "ScheduleTitlePlaceholder": "Título da agenda",
     "ScheduleAddPeriod": "Adicionar período",
     "ScheduleRemovePeriod": "Remover período",
     "MeetingDuration": "Duração da reunião",
-    "MeetingInterval": "Pausa entre reuniões"
+    "MeetingInterval": "Pausa entre reuniões",
+    "CalDavAccess": "CalDAV Access",
+    "CalDavAccessPrompt": "O protocolo CalDAV permite sincronizar o seu calendário pessoal Huly com aplicações de calendário externas. Utilize esta conta e a palavra-passe sugerida para registar o servidor Huly CalDAV numa aplicação cliente de calendário.",
+    "CalDavAccessEnable": "Ativar o acesso CalDAV ao calendário pessoal no espaço de trabalho {ws}",
+    "CalDavAccessServer": "Servidor CalDAV",
+    "CalDavAccessAccount": "Conta Huly",
+    "CalDavAccessPassword": "Password",
+    "CalDavAccessPasswordWarning": "Não será possível ver esta palavra-passe novamente. Guarde-a num local seguro."
   }
 }

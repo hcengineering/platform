@@ -30,11 +30,12 @@
   export let element: HTMLButtonElement | undefined = undefined
   export let id: string | undefined = undefined
   export let dataId: string | undefined = undefined
+  export let type: 'type-button' | 'type-button-icon' = 'type-button'
 </script>
 
 <ButtonBase
   bind:element
-  type={'type-button'}
+  {type}
   {title}
   {shape}
   {label}

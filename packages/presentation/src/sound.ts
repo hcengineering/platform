@@ -6,21 +6,20 @@ import notification from '@hcengineering/notification'
 const sounds = new Map<Asset, AudioBuffer>()
 const context = new AudioContext()
 
-export async function prepareSound (key: string, _class?: Ref<Class<Doc>>): Promise<void> {
-  if (_class === undefined) return
-
+export async function isNotificationAllowed (_class?: Ref<Class<Doc>>): Promise<boolean> {
+  if (_class === undefined) return false
   const client = getClient()
   const notificationType = client
     .getModel()
     .findAllSync(notification.class.NotificationType, { objectClass: _class })[0]
 
-  if (notificationType === undefined) return
+  if (notificationType === undefined) return false
 
   const isAllowedFn = await getResource(notification.function.IsNotificationAllowed)
-  const allowed: boolean = isAllowedFn(notificationType, notification.providers.SoundNotificationProvider)
+  return isAllowedFn(notificationType, notification.providers.SoundNotificationProvider)
+}
 
-  if (!allowed) return
-
+export async function prepareSound (key: string): Promise<void> {
   try {
     const soundUrl = getMetadata(key as Asset) as string
     const rawAudio = await fetch(soundUrl)
@@ -33,14 +32,11 @@ export async function prepareSound (key: string, _class?: Ref<Class<Doc>>): Prom
   }
 }
 
-export async function playSound (
-  soundKey: string,
-  _class?: Ref<Class<Doc>>,
-  loop = false
-): Promise<(() => void) | null> {
+export async function playSound (soundKey: string, loop = false): Promise<(() => void) | null> {
   const soundAssetKey = soundKey as Asset
+
   if (!sounds.has(soundAssetKey)) {
-    await prepareSound(soundKey, _class)
+    await prepareSound(soundKey)
   }
 
   const sound = sounds.get(soundKey as Asset)
@@ -64,4 +60,14 @@ export async function playSound (
     console.error('Error when playing sound back', soundKey, err)
     return null
   }
+}
+
+export async function playNotificationSound (
+  soundKey: string,
+  _class?: Ref<Class<Doc>>,
+  loop = false
+): Promise<(() => void) | null> {
+  const allowed = await isNotificationAllowed(_class)
+  if (!allowed) return null
+  return await playSound(soundKey, loop)
 }

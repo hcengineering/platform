@@ -15,6 +15,7 @@
 
 import {
   AccountRole,
+  type AccountUuid,
   Branding,
   MeasureContext,
   Person,
@@ -63,7 +64,8 @@ import {
   getWorkspaceInvite,
   loginOrSignUpWithProvider,
   sendEmail,
-  addSocialId
+  addSocialId,
+  doReleaseSocialId
 } from '../utils'
 // eslint-disable-next-line import/no-named-default
 import platform, { getMetadata, PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -345,10 +347,6 @@ describe('account utils', () => {
     })
 
     describe('getEndpoint', () => {
-      const mockCtx = {
-        error: jest.fn()
-      } as unknown as MeasureContext
-
       beforeEach(() => {
         jest.clearAllMocks()
       })
@@ -390,8 +388,7 @@ describe('account utils', () => {
         'should handle workspace="%s" region="%s" kind=%s (%s)',
         (workspace, region, kind, transactors, expected, description) => {
           ;(getMetadata as jest.Mock).mockReturnValue(transactors)
-          expect(getEndpoint(mockCtx, workspace, region, kind)).toBe(expected)
-          expect(mockCtx.error).not.toHaveBeenCalled()
+          expect(getEndpoint(workspace as WorkspaceUuid, region, kind)).toBe(expected)
         }
       )
 
@@ -399,21 +396,17 @@ describe('account utils', () => {
         const transactors = 'http://internal:3000;http://external:3000;'
         ;(getMetadata as jest.Mock).mockReturnValue(transactors)
 
-        expect(getEndpoint(mockCtx, 'workspace1', 'nonexistent', EndpointKind.Internal)).toBe('http://internal:3000')
-
-        expect(mockCtx.error).toHaveBeenCalledWith('No transactors for the target region, will use default region', {
-          group: 'nonexistent'
-        })
+        expect(getEndpoint('workspace1' as WorkspaceUuid, 'nonexistent', EndpointKind.Internal)).toBe(
+          'http://internal:3000'
+        )
       })
 
       test('should throw error when no transactors available', () => {
         ;(getMetadata as jest.Mock).mockReturnValue('http://internal:3000;http://external:3000;us')
 
-        expect(() => getEndpoint(mockCtx, 'workspace1', 'nonexistent', EndpointKind.Internal)).toThrow(
+        expect(() => getEndpoint('workspace1' as WorkspaceUuid, 'nonexistent', EndpointKind.Internal)).toThrow(
           'Please provide transactor endpoint url'
         )
-
-        expect(mockCtx.error).toHaveBeenCalledWith('No transactors for the default region')
       })
     })
 
@@ -553,7 +546,7 @@ describe('account utils', () => {
           param1: 'value1',
           param2: 'value2'
         },
-        {}
+        undefined
       )
     })
 
@@ -566,7 +559,7 @@ describe('account utils', () => {
       const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
 
       expect(result).toEqual({ id: 'req1', result: mockResult })
-      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, 'token', { param1: 'value1' }, {})
+      expect(mockMethod).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, 'token', { param1: 'value1' }, undefined)
     })
 
     test('should handle PlatformError', async () => {
@@ -622,9 +615,9 @@ describe('account utils', () => {
       const mockMethod = jest.fn().mockResolvedValue(mockResult)
       const wrappedMethod = wrap(mockMethod)
       const mockTimezone = 'America/New_York'
-      const request = { id: 'req1', params: { param1: 'value1' }, headers: { 'X-Timezone': mockTimezone } }
+      const request = { id: 'req1', params: { param1: 'value1' } }
 
-      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token')
+      const result = await wrappedMethod(mockCtx, mockDb, mockBranding, request, 'token', { timezone: mockTimezone })
 
       expect(result).toEqual({ id: 'req1', result: mockResult })
       expect(mockMethod).toHaveBeenCalledWith(
@@ -938,6 +931,7 @@ describe('account utils', () => {
 
         test('should confirm unverified email', async () => {
           const mockSocialId = {
+            _id: '1000000001' as PersonId,
             key: 'email:test@example.com',
             type: SocialIdType.EMAIL,
             value: email,
@@ -948,7 +942,7 @@ describe('account utils', () => {
           await confirmEmail(mockCtx, mockDb, account, email)
 
           expect(mockDb.socialId.updateOne).toHaveBeenCalledWith(
-            { key: mockSocialId.key },
+            { _id: mockSocialId._id },
             { verifiedOn: expect.any(Number) }
           )
         })
@@ -1478,10 +1472,10 @@ describe('account utils', () => {
     })
 
     test('should return account when found', async () => {
-      const mockAccount = { uuid: 'test-uuid' as PersonUuid }
+      const mockAccount = { uuid: 'test-uuid' as AccountUuid }
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
 
-      const result = await getAccount(mockDb, 'test-uuid' as PersonUuid)
+      const result = await getAccount(mockDb, 'test-uuid' as AccountUuid)
       expect(result).toEqual(mockAccount)
       expect(mockDb.account.findOne).toHaveBeenCalledWith({ uuid: 'test-uuid' })
     })
@@ -1489,7 +1483,7 @@ describe('account utils', () => {
     test('should return null when account not found', async () => {
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
 
-      const result = await getAccount(mockDb, 'nonexistent-uuid' as PersonUuid)
+      const result = await getAccount(mockDb, 'nonexistent-uuid' as AccountUuid)
       expect(result).toBeNull()
     })
   })
@@ -1726,6 +1720,7 @@ describe('account utils', () => {
 
     const mockDb = {
       socialId: {
+        find: jest.fn(() => []),
         findOne: jest.fn(),
         insertOne: jest.fn(),
         updateOne: jest.fn()
@@ -2068,6 +2063,92 @@ describe('account utils', () => {
       expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
         type,
         value: normalizedValue
+      })
+    })
+  })
+
+  describe('social id release utils', () => {
+    describe('doReleaseSocialId', () => {
+      const mockDb = {
+        socialId: {
+          find: jest.fn(),
+          updateOne: jest.fn()
+        },
+        account: {
+          findOne: jest.fn()
+        },
+        accountEvent: {
+          insertOne: jest.fn()
+        }
+      } as unknown as AccountDB
+
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+
+      test('should release social id and create event', async () => {
+        const personUuid = 'test-person' as PersonUuid
+        const type = SocialIdType.GITHUB
+        const value = 'test-value'
+        const releasedBy = 'github'
+        const socialIdId = 'test-social-id' as PersonId
+
+        const mockSocialIds = [
+          {
+            _id: socialIdId,
+            value
+          }
+        ]
+        const mockAccount = { uuid: personUuid }
+
+        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue(mockSocialIds)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+
+        await doReleaseSocialId(mockDb, personUuid, type, value, releasedBy)
+
+        expect(mockDb.socialId.updateOne).toHaveBeenCalledWith(
+          { _id: socialIdId },
+          { value: `${value}#${socialIdId}`, isDeleted: true }
+        )
+        expect(mockDb.accountEvent.insertOne).toHaveBeenCalledWith({
+          accountUuid: personUuid,
+          eventType: AccountEventType.SOCIAL_ID_RELEASED,
+          time: expect.any(Number),
+          data: {
+            socialId: socialIdId,
+            releasedBy
+          }
+        })
+      })
+
+      test('should handle missing account', async () => {
+        const personUuid = 'test-person' as PersonUuid
+        const type = SocialIdType.GITHUB
+        const value = 'test-value'
+        const socialIds = [{ _id: 'id1' as PersonId, value }]
+
+        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue(socialIds)
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(null)
+
+        await doReleaseSocialId(mockDb, personUuid, type, value, '')
+
+        expect(mockDb.socialId.updateOne).toHaveBeenCalled()
+        expect(mockDb.accountEvent.insertOne).not.toHaveBeenCalled()
+      })
+
+      test('should throw error when no social id found', async () => {
+        const personUuid = 'test-person' as PersonUuid
+        const type = SocialIdType.GITHUB
+        const value = 'test-value'
+
+        ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([])
+
+        await expect(doReleaseSocialId(mockDb, personUuid, type, value, '')).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.SocialIdNotFound, {}))
+        )
+
+        expect(mockDb.socialId.updateOne).not.toHaveBeenCalled()
+        expect(mockDb.accountEvent.insertOne).not.toHaveBeenCalled()
       })
     })
   })

@@ -26,6 +26,7 @@
   import ViewletClassSettings from './ViewletClassSettings.svelte'
 
   export let viewlet: Viewlet
+  export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -98,11 +99,13 @@
   }
 
   function getBaseConfig (viewlet: Viewlet): Config[] {
-    const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
+    const config = defaultConfig ?? viewlet.config
+    const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, config, viewlet.options?.lookup)
     const result: Config[] = []
     const clazz = hierarchy.getClass(viewlet.attachTo)
     let wasOptional = false
-    for (const param of viewlet.config) {
+
+    for (const param of config) {
       if (typeof param === 'string') {
         if (viewlet.configOptions?.hiddenKeys?.includes(param)) continue
         if (param.length === 0) {
@@ -163,7 +166,7 @@
     if (attribute.hidden === true || attribute.label === undefined) return
     if (viewlet.configOptions?.hiddenKeys?.includes(attribute.name)) return
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
-    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
+    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
     const value = getValue(attribute.name, attribute.type, attrClass)
     for (const res of result) {
       const key = typeof res.value === 'string' ? res.value : res.value?.key

@@ -1,0 +1,22 @@
+{
+  "string": {
+    "OnboardingChannelDescription": "ユーザー：{user} ワークスペース：{workspace}",
+    "Error": "エラー：",
+    "InProject": " プロジェクト内 ",
+    "NavigateToSpecial": "{app}：{special} を開く",
+    "OpenSpecial": "{special} を開く",
+    "Set": "設定 ",
+    "To": " を ",
+    "Open": "開く ",
+    "Workbench": "ワークベンチ：",
+    "OnboardingChannel": "オンボーディングチャンネル",
+    "OnboardingChannels": "オンボーディングチャンネル一覧",
+    "WorkspaceId": "ワークスペースID",
+    "WorkspaceName": "ワークスペース名",
+    "WorkspaceUrl": "ワークスペースURL",
+    "Account": "アカウント",
+    "UserName": "ユーザー名",
+    "DisableAIReplies": "AI返信を無効にする",
+    "ShowAIReplies": "AI返信を表示する"
+  }
+}

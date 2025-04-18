@@ -21,11 +21,9 @@ import core, {
   getObjectValue,
   Ref,
   RefTo,
-  SortingOrder,
   Timestamp,
   Tx,
   TxCreateDoc,
-  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -36,18 +34,22 @@ import process, {
   ExecutionError,
   MethodParams,
   parseContext,
+  parseError,
   Process,
+  processError,
+  ProcessError,
   ProcessToDo,
   SelectedContext,
   SelectedNested,
   SelectedRelation,
+  SelectedUserRequest,
   State,
   Step
 } from '@hcengineering/process'
 import { TriggerControl } from '@hcengineering/server-core'
-import serverProcess, { ExecuteResult } from '@hcengineering/server-process'
+import serverProcess, { ExecuteResult, SuccessExecutionResult } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
-import { isError, parseError, ProcessError, processError } from './errors'
+import { isError } from './errors'
 
 export async function OnStateRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
@@ -68,9 +70,7 @@ export async function OnStateRemove (txes: Tx[], control: TriggerControl): Promi
       control.txFactory.createTxUpdateDoc(_process._class, _process.space, _process._id, { states: _process.states })
     )
     if (theLast) {
-      const lastState = (
-        await control.findAll(control.ctx, process.class.State, { _id: _process.states[_process.states.length - 1] })
-      )[0]
+      const lastState = control.modelDb.findObject(_process.states[_process.states.length - 1])
       if (lastState?.endAction != null) {
         res.push(
           control.txFactory.createTxUpdateDoc(lastState._class, lastState.space, lastState._id, {
@@ -138,10 +138,10 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
     if (currentIndex === -1) continue
     const nextState = _process.states[currentIndex + 1]
     if (nextState === undefined) continue
-    const states = await control.findAll(control.ctx, process.class.State, { _id: nextState })
-    if (states.length === 0) continue
+    const state = control.modelDb.findObject(nextState)
+    if (state === undefined) continue
     const isDone = _process.states[currentIndex + 2] === undefined
-    res.push(...(await changeState(execution, states[0], control, isDone)))
+    res.push(...(await changeState(execution, state, control, isDone)))
   }
   return res
 }
@@ -340,6 +340,8 @@ async function getContextValue (value: any, control: TriggerControl, execution: 
         value = await getRelationValue(control, execution, context)
       } else if (context.type === 'nested') {
         value = await getNestedValue(control, execution, context)
+      } else if (context.type === 'userRequest') {
+        value = getUserRequestValue(control, execution, context)
       }
       return await fillValue(value, context, control, execution)
     } catch (err: any) {
@@ -353,6 +355,17 @@ async function getContextValue (value: any, control: TriggerControl, execution: 
   }
 }
 
+function getUserRequestValue (control: TriggerControl, execution: Execution, context: SelectedUserRequest): any {
+  const userContext = execution.context?.[context.id]
+  if (userContext !== undefined) return userContext
+  const attr = control.hierarchy.findAttribute(context._class, context.key)
+  throw processError(
+    process.error.UserRequestedValueNotProvided,
+    {},
+    { attr: attr?.label ?? getEmbeddedLabel(context.key) }
+  )
+}
+
 async function changeState (
   execution: Execution,
   state: State,
@@ -362,6 +375,28 @@ async function changeState (
   const errors: ExecutionError[] = []
   const res: Tx[] = []
   const rollback: Tx[] = []
+  if (execution.currentState !== null) {
+    rollback.push(
+      control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+        currentState: execution.currentState,
+        done: execution.done
+      })
+    )
+  } else {
+    rollback.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
+  }
+  res.push(
+    control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+      currentState: state._id,
+      done: isDone
+    })
+  )
+  if (isDone && execution.parentId !== undefined) {
+    const parentWaitTxes = await checkParent(execution, control)
+    if (parentWaitTxes !== undefined) {
+      res.push(...parentWaitTxes)
+    }
+  }
   for (const action of state.actions) {
     const actionResult = await executeAction(action, execution, control)
     if (isError(actionResult)) {
@@ -384,26 +419,57 @@ async function changeState (
       res.push(...actionResult.txes)
     }
   }
-
+  execution.rollback[state._id] = rollback
+  res.push(
+    control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+      rollback: execution.rollback
+    })
+  )
   if (errors.length === 0) {
-    if (rollback.length > 0) {
-      execution.rollback[state._id] = rollback
-      res.push(
-        control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-          rollback: execution.rollback
-        })
-      )
-    }
-    res.push(
-      control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
-        currentState: state._id,
-        done: isDone
-      })
-    )
     return res
   } else {
     return [control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, { error: errors })]
   }
+}
+
+async function checkParent (execution: Execution, control: TriggerControl): Promise<Tx[] | undefined> {
+  const subProcesses = await control.findAll(control.ctx, process.class.Execution, {
+    parentId: execution.parentId,
+    done: false
+  })
+  const filtered = subProcesses.filter((it) => it._id !== execution._id)
+  if (filtered.length !== 0) return
+  const parent = (await control.findAll(control.ctx, process.class.Execution, { _id: execution.parentId }))[0]
+  if (parent === undefined) return
+  const res: Tx[] = []
+  if (execution.results !== undefined) {
+    const results = parent.results ?? {}
+    if (results.child === undefined) {
+      results.child = {}
+    }
+    results.child[execution._id] = execution.results
+    res.push(
+      control.txFactory.createTxUpdateDoc(parent._class, parent.space, parent._id, {
+        results
+      })
+    )
+  }
+  const _process = control.modelDb.findObject(parent.process)
+  if (_process === undefined) return res
+  if (parent.currentState == null) return res
+  const currentIndex = _process.states.findIndex((it) => it === parent.currentState)
+  if (currentIndex === -1) return res
+  const currentState = control.modelDb.findObject(parent.currentState)
+  if (currentState === undefined) return res
+  if (currentState.endAction?.methodId !== process.method.WaitSubProcess) return res
+  const nextState = _process.states[currentIndex + 1]
+  if (nextState === undefined) return res
+  const state = control.modelDb.findObject(nextState)
+  if (state === undefined) return res
+  const isDone = _process.states[currentIndex + 2] === undefined
+  const txes = await changeState(parent, state, control, isDone)
+  res.push(...txes)
+  return res
 }
 
 export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -413,14 +479,10 @@ export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): P
     const createTx = tx as TxCreateDoc<Execution>
     if (!control.hierarchy.isDerived(createTx.objectClass, process.class.Execution)) continue
     const execution = TxProcessor.createDoc2Doc(createTx)
-    const state = (
-      await control.findAll(
-        control.ctx,
-        process.class.State,
-        { process: execution.process },
-        { sort: { rank: SortingOrder.Ascending }, limit: 1 }
-      )
-    )[0]
+    const _process = control.modelDb.findObject(execution.process)
+    if (_process === undefined) continue
+    if (_process.states.length === 0) continue
+    const state = control.modelDb.findObject(_process.states[0])
     if (state === undefined) continue
 
     res.push(...(await changeState(execution, state, control)))
@@ -442,13 +504,6 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
     const rollback = execution.rollback[removedTodo.state]
     if (rollback !== undefined) {
       for (const rollbackTx of rollback) {
-        // skip already removed tx
-        if (
-          rollbackTx._class === core.class.TxRemoveDoc &&
-          (rollbackTx as TxRemoveDoc<ProcessToDo>).objectId === removeTx.objectId
-        ) {
-          continue
-        }
         res.push(rollbackTx)
       }
     }
@@ -499,7 +554,13 @@ export async function CreateToDo (
       currentToDo: execution.currentToDo
     })
   )
-  rollback.push(control.txFactory.createTxRemoveDoc(process.class.ProcessToDo, time.space.ToDos, id))
+  if (execution.currentToDo !== null) {
+    rollback.push(
+      control.txFactory.createTxUpdateDoc(process.class.ProcessToDo, execution.space, execution.currentToDo, {
+        doneOn: null
+      })
+    )
+  }
   return { txes: res, rollback }
 }
 
@@ -520,6 +581,38 @@ export async function UpdateCard (
   const res: Tx[] = [control.txFactory.createTxUpdateDoc(target._class, target.space, target._id, update)]
   const rollback: Tx[] = [control.txFactory.createTxUpdateDoc(target._class, target.space, target._id, prevValue)]
   return { txes: res, rollback }
+}
+
+export async function WaitSubProcess (
+  params: MethodParams<Execution>,
+  execution: Execution,
+  control: TriggerControl
+): Promise<ExecuteResult | undefined> {
+  const res: SuccessExecutionResult = {
+    txes: [
+      control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+        currentToDo: null
+      })
+    ],
+    rollback: []
+  }
+  const subProcesses = await control.findAll(control.ctx, process.class.Execution, {
+    parentId: execution._id,
+    done: false
+  })
+  if (subProcesses.length !== 0) return res
+  const _process = await control.modelDb.findOne(process.class.Process, { _id: execution.process })
+  if (_process === undefined) return res
+  const currentIndex = _process.states.findIndex((it) => it === execution.currentState)
+  if (currentIndex === -1) return res
+  const nextState = _process.states[currentIndex + 2]
+  if (nextState === undefined) return res
+  const state = control.modelDb.findObject(nextState)
+  if (state === undefined) return res
+  const isDone = _process.states[currentIndex + 3] === undefined
+  const txes = await changeState(execution, state, control, isDone)
+  res.txes.push(...txes)
+  return res
 }
 
 export async function RunSubProcess (
@@ -549,9 +642,11 @@ export async function RunSubProcess (
       currentState: null,
       currentToDo: null,
       card: execution.card,
+      context: execution.context?.[processId] ?? {},
       done: false,
       rollback: {},
-      assignee: null
+      assignee: null,
+      parentId: execution._id
     })
   )
   return { txes: res, rollback: undefined }
@@ -650,63 +745,6 @@ export function FirstWorkingDayAfter (val: Timestamp): Timestamp {
   return val
 }
 
-export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-  for (const tx of txes) {
-    if (tx._class !== core.class.TxCreateDoc) continue
-    const createTx = tx as TxCreateDoc<Card>
-    if (!control.hierarchy.isDerived(createTx.objectClass, card.class.Card)) continue
-    const ancestors = control.hierarchy
-      .getAncestors(createTx.objectClass)
-      .filter((p) => control.hierarchy.isDerived(p, card.class.Card))
-
-    const processes = control.modelDb.findAllSync(process.class.Process, {
-      masterTag: { $in: ancestors },
-      autoStart: true
-    })
-    for (const proc of processes) {
-      res.push(
-        control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
-          process: proc._id,
-          currentState: null,
-          card: createTx.objectId,
-          done: false,
-          rollback: {},
-          currentToDo: null,
-          assignee: null
-        })
-      )
-    }
-  }
-  return res
-}
-
-export async function OnTagAdd (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-  for (const tx of txes) {
-    if (tx._class !== core.class.TxMixin) continue
-    const mixinTx = tx as TxMixin<Card, Card>
-    if (!control.hierarchy.isDerived(mixinTx.objectClass, card.class.Card)) continue
-    if (Object.keys(mixinTx.attributes).length !== 0) continue
-
-    const processes = control.modelDb.findAllSync(process.class.Process, { masterTag: mixinTx.mixin, autoStart: true })
-    for (const proc of processes) {
-      res.push(
-        control.txFactory.createTxCreateDoc(process.class.Execution, core.space.Workspace, {
-          process: proc._id,
-          currentState: null,
-          card: mixinTx.objectId,
-          done: false,
-          rollback: {},
-          currentToDo: null,
-          assignee: null
-        })
-      )
-    }
-  }
-  return res
-}
-
 export async function OnExecutionContinue (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
@@ -723,10 +761,10 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
     const currentIndex = _process.states.findIndex((it) => it === execution.currentState)
     const nextState = _process.states[currentIndex + 1]
     if (nextState === undefined) continue
-    const states = await control.findAll(control.ctx, process.class.State, { _id: nextState })
-    if (states.length === 0) continue
+    const state = control.modelDb.findObject(nextState)
+    if (state === undefined) continue
     const isDone = _process.states[currentIndex + 2] === undefined
-    res.push(...(await changeState(execution, states[0], control, isDone)))
+    res.push(...(await changeState(execution, state, control, isDone)))
   }
   return res
 }
@@ -736,7 +774,8 @@ export default async () => ({
   func: {
     RunSubProcess,
     CreateToDo,
-    UpdateCard
+    UpdateCard,
+    WaitSubProcess
   },
   transform: {
     FirstValue,
@@ -751,8 +790,6 @@ export default async () => ({
     FirstWorkingDayAfter
   },
   trigger: {
-    OnCardCreate,
-    OnTagAdd,
     OnExecutionCreate,
     OnStateRemove,
     OnProcessRemove,

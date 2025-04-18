@@ -20,7 +20,6 @@ import contact, {
   formatName,
   includesAny,
   Person,
-  PersonSpace,
   SocialIdentity,
   SocialIdentityRef
 } from '@hcengineering/contact'
@@ -70,6 +69,7 @@ import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
 import { NotifyResult } from './types'
+import { getPersonSpaces } from '@hcengineering/server-contact'
 
 /**
  * @public
@@ -82,10 +82,10 @@ export function isUserEmployeeInFieldValueTypeMatch (
   type: NotificationType,
   control: TriggerControl
 ): boolean {
-  // TODO: check field type and compare with Ref<Person> or PersonId based on that
   if (type.field === undefined) return false
   const value = (doc as any)[type.field]
   if (value == null) return false
+  if (value === person) return true
 
   if (Array.isArray(value)) {
     return includesAny(value, socialIds)
@@ -121,7 +121,7 @@ function escapeRegExp (str: string): string {
 
 export async function shouldNotifyCommon (
   control: TriggerControl,
-  user: PersonId[],
+  socialIds: PersonId[],
   typeId: Ref<CommonNotificationType>,
   notificationControl: NotificationProviderControl
 ): Promise<NotifyResult> {
@@ -135,7 +135,7 @@ export async function shouldNotifyCommon (
   const providers = await control.modelDb.findAll(notification.class.NotificationProvider, {})
 
   for (const provider of providers) {
-    const allowed = isAllowed(control, user, type, provider, notificationControl)
+    const allowed = isAllowed(control, socialIds, type, provider, notificationControl)
 
     if (allowed) {
       const cur = result.get(provider._id) ?? []
@@ -472,12 +472,7 @@ export async function getReceiversInfo (
   )
   if (employees.length === 0) return []
 
-  const spaces: Pick<PersonSpace, '_id' | 'person'>[] = await control.queryFind(
-    ctx,
-    contact.class.PersonSpace,
-    {},
-    { projection: { _id: 1, person: 1 } }
-  )
+  const spaces = await getPersonSpaces(control)
   if (spaces.length === 0) return []
 
   const socialIds: Pick<SocialIdentity, '_id' | 'attachedTo'>[] = await control.findAll(

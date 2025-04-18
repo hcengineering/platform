@@ -1,6 +1,7 @@
 {
   "string": {
     "Added": "已添加",
+    "All": "全部 ({count})",
     "Attach": "附加",
     "Cancel": "取消",
     "Edit": "编辑",

@@ -38,7 +38,9 @@
     "DrawingHistory": "涂鸦的历史",
     "ColorAdd": "添加颜色预设",
     "ColorRemove": "删除颜色预设",
-    "ColorReset": "重置颜色预设"
+    "ColorReset": "重置颜色预设",
+    "Copy": "复制",
+    "CopyLink": "复制链接"
   },
   "status": {
     "FileTooLarge": "文件太大"

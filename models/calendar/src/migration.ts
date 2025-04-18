@@ -14,16 +14,23 @@
 //
 
 import { type Calendar, calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import { type AccountUuid, type Doc, MeasureMetricsContext, type Ref, type Space } from '@hcengineering/core'
+import core, {
+  type AccountUuid,
+  type Doc,
+  MeasureMetricsContext,
+  type Ref,
+  type Space,
+  toIdMap
+} from '@hcengineering/core'
 import {
   createDefaultSpace,
-  type MigrateUpdate,
-  type MigrationDocumentQuery,
-  tryMigrate,
-  tryUpgrade,
   type MigrateOperation,
+  type MigrateUpdate,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationDocumentQuery,
+  type MigrationUpgradeClient,
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
 import { DOMAIN_SPACE, getAccountUuidBySocialKey, getSocialKeyByOldAccount } from '@hcengineering/model-core'
 import { DOMAIN_CALENDAR, DOMAIN_EVENT } from '.'
@@ -279,6 +286,24 @@ async function migrateSync (client: MigrationClient): Promise<void> {
   )
 }
 
+async function fillUser (client: MigrationClient): Promise<void> {
+  const calendars = await client.find<Calendar>(DOMAIN_CALENDAR, {})
+  const events = await client.find<Event>(DOMAIN_EVENT, {
+    user: { $exists: false }
+  })
+  const map = toIdMap(calendars)
+  for (const event of events) {
+    const calendar = map.get(event.calendar)
+    if (calendar !== undefined) {
+      await client.update(
+        DOMAIN_EVENT,
+        { _id: event._id },
+        { user: event.createdBy !== core.account.System ? event.createdBy : calendar.createdBy }
+      )
+    }
+  }
+}
+
 async function migrateTimezone (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_CALENDAR,
@@ -333,6 +358,11 @@ export const calendarOperation: MigrateOperation = {
         state: 'migrate-social-ids-to-account-uuids',
         mode: 'upgrade',
         func: migrateSocialIdsToAccountUuids
+      },
+      {
+        state: 'fill-user-v2',
+        mode: 'upgrade',
+        func: fillUser
       }
     ])
   },

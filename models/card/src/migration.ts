@@ -20,10 +20,12 @@ import {
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  createOrUpdate
 } from '@hcengineering/model'
 import view from '@hcengineering/view'
 import card from '.'
+import tags from '@hcengineering/tags'
 
 export const cardOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
@@ -32,6 +34,11 @@ export const cardOperation: MigrateOperation = {
         state: 'set-parent-info',
         mode: 'upgrade',
         func: setParentInfo
+      },
+      {
+        state: 'migrate-spaces',
+        mode: 'upgrade',
+        func: migrateSpaces
       }
     ])
   },
@@ -44,6 +51,17 @@ export const cardOperation: MigrateOperation = {
       {
         state: 'removeVariantViewlets',
         func: removeVariantViewlets
+      },
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createDefaultProject(tx)
+        }
+      },
+      {
+        state: 'default-labels',
+        func: defaultLabels
       }
     ])
   }
@@ -124,4 +142,84 @@ async function migrateViewlets (client: Client): Promise<void> {
       }
     }
   }
+}
+
+async function createDefaultProject (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(card.class.CardSpace, {
+    _id: card.space.Default
+  })
+
+  const currentDeleted = await tx.findOne(core.class.TxRemoveDoc, {
+    objectId: card.space.Default
+  })
+
+  // Create new if not deleted by customers.
+  if (current === undefined && currentDeleted === undefined) {
+    const topLevelTypes = await tx.findAll(card.class.MasterTag, {
+      extends: card.class.Card
+    })
+    await tx.createDoc(
+      card.class.CardSpace,
+      core.space.Space,
+      {
+        name: 'Default',
+        description: 'Default',
+        private: false,
+        members: [],
+        archived: false,
+        autoJoin: true,
+        types: topLevelTypes.map((it) => it._id)
+      },
+      card.space.Default
+    )
+  }
+}
+
+async function migrateSpaces (client: MigrationClient): Promise<void> {
+  await client.update(DOMAIN_CARD, { space: core.space.Workspace }, { space: card.space.Default })
+}
+
+async function defaultLabels (client: Client): Promise<void> {
+  const ops = new TxOperations(client, core.account.System)
+  await createOrUpdate(
+    ops,
+    tags.class.TagCategory,
+    core.space.Workspace,
+    {
+      icon: tags.icon.Tags,
+      label: 'Labels',
+      targetClass: card.class.Card,
+      tags: [],
+      default: true
+    },
+    card.category.Labels
+  )
+
+  await createOrUpdate(
+    ops,
+    tags.class.TagElement,
+    core.space.Workspace,
+    {
+      title: 'Subscribed',
+      targetClass: card.class.Card,
+      description: '',
+      color: 17, // green
+      category: card.category.Labels
+    },
+    card.label.Subscribed
+  )
+
+  await createOrUpdate(
+    ops,
+    tags.class.TagElement,
+    core.space.Workspace,
+    {
+      title: 'New messages',
+      targetClass: card.class.Card,
+      description: '',
+      color: 19, // orange
+      category: card.category.Labels
+    },
+    card.label.NewMessages
+  )
 }

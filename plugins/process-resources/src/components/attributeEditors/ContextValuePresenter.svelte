@@ -13,7 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SelectedContext, Context } from '@hcengineering/process'
+  import { Context, SelectedContext } from '@hcengineering/process'
+  import { Label } from '@hcengineering/ui'
+  import plugin from '../../plugin'
   import AttrContextPresenter from './AttrContextPresenter.svelte'
   import NestedContextPresenter from './NestedContextPresenter.svelte'
   import RelContextPresenter from './RelContextPresenter.svelte'
@@ -29,6 +31,8 @@
     <RelContextPresenter {contextValue} {context} />
   {:else if contextValue.type === 'nested'}
     <NestedContextPresenter {contextValue} {context} />
+  {:else if contextValue.type === 'userRequest'}
+    <Label label={plugin.string.RequestFromUser} />
   {/if}
 </div>
 

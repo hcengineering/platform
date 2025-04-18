@@ -64,6 +64,7 @@
 
     value = val._id
     dispatch('change', value)
+    dispatch('value', val)
   }
 
   let doc: Card | undefined

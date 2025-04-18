@@ -38,7 +38,9 @@
     "DrawingHistory": "História de rabiscos",
     "ColorAdd": "Adicionar predefinição de cor",
     "ColorRemove": "Remover predefinição de cor",
-    "ColorReset": "Repor predefinições de cores"
+    "ColorReset": "Repor predefinições de cores",
+    "Copiar": "Copiar",
+    "CopyLink": "Copiar link"
   },
   "status": {
     "FileTooLarge": "Ficheiro demasiado grande"

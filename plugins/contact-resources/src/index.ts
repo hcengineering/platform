@@ -25,6 +25,7 @@ import {
 import {
   AccountRole,
   SocialIdType,
+  type AccountUuid,
   type Class,
   type Client,
   type Data,
@@ -102,6 +103,7 @@ import PersonFilterValuePresenter from './components/PersonFilterValuePresenter.
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonIcon from './components/PersonIcon.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
+import PersonIdFilter from './components/PersonIdFilter.svelte'
 import PersonRefPresenter from './components/PersonRefPresenter.svelte'
 import SelectAvatars from './components/SelectAvatars.svelte'
 import SelectUsersPopup from './components/SelectUsersPopup.svelte'
@@ -122,6 +124,7 @@ import IconAddMember from './components/icons/AddMember.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 import ContactNamePresenter from './components/ContactNamePresenter.svelte'
+import PersonPreviewProvider from './components/person/PersonPreviewProvider.svelte'
 
 import { get } from 'svelte/store'
 import { canResendInvitation } from './visibilityTester'
@@ -199,7 +202,9 @@ export {
   UserDetails,
   UserInfo,
   UsersList,
-  UsersPopup
+  UsersPopup,
+  PersonIdFilter,
+  PersonPreviewProvider
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
@@ -299,7 +304,7 @@ async function kickEmployee (doc: Person): Promise<void> {
 
       if (doc.personUuid != null) {
         const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-        await leaveWorkspace(doc.personUuid)
+        await leaveWorkspace(doc.personUuid as AccountUuid)
       }
     }
   })
@@ -390,7 +395,8 @@ export default async (): Promise<Resources> => ({
     EditOrganizationPanel,
     ChannelIcon,
     SpaceMembersEditor,
-    ContactNamePresenter
+    ContactNamePresenter,
+    PersonIdFilter
   },
   completion: {
     EmployeeQuery: async (

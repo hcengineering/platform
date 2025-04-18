@@ -751,6 +751,28 @@ Lorem ipsum dolor sit amet.
           }
         ]
       }
+    },
+    {
+      name: 'mermaid diagram',
+      markdown: '```mermaid\ngraph TD;\n\tA-->B;\n\tA-->C;\n\tB-->D;\n\tC-->D;\n```',
+      markup: {
+        type: 'doc',
+        content: [
+          {
+            type: 'mermaid',
+            attrs: {
+              language: 'mermaid'
+            },
+            content: [
+              {
+                marks: [],
+                text: 'graph TD;\n\tA-->B;\n\tA-->C;\n\tB-->D;\n\tC-->D;',
+                type: 'text'
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 

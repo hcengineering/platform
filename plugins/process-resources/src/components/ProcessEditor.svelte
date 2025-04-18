@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref } from '@hcengineering/core'
+  import core, { generateId, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-  import { Process, State } from '@hcengineering/process'
+  import { Process, SelectedUserRequest, State } from '@hcengineering/process'
   import { settingsStore } from '@hcengineering/setting-resources'
   import {
     Button,
@@ -41,6 +41,9 @@
   import ArrowEnd from './icons/ArrowEnd.svelte'
   import ArrowStart from './icons/ArrowStart.svelte'
   import StateEditor from './StateEditor.svelte'
+  import TransitionEditor from './TransitionEditor.svelte'
+  import { getToDoEndAction } from '../utils'
+  import ExecutionResultEditor from './ExecutionResultEditor.svelte'
 
   export let _id: Ref<Process>
   export let visibleSecondNav: boolean = true
@@ -103,12 +106,7 @@
     await client.update(value, { states: [...value.states, id] })
 
     if (prevState !== undefined) {
-      const endAction = {
-        methodId: process.method.CreateToDo,
-        params: {
-          title: prevState.title
-        }
-      }
+      const endAction = getToDoEndAction(prevState)
       prevState.endAction = endAction
       await client.update(prevState, { endAction })
       $settingsStore = { id: value._id, component: Aside, props: { process: value, value: prevState, index: -1 } }
@@ -196,17 +194,24 @@
                 <div class="arrow">
                   <ArrowStart size={'full'} />
                 </div>
-                <div class="arrow">
-                  <ArrowEnd size={'full'} />
-                </div>
+                {#if state.endAction !== undefined}
+                  <TransitionEditor {state} process={value} />
+                  <div class="arrow">
+                    <ArrowEnd size={'full'} />
+                  </div>
+                {:else}
+                  <ButtonIcon icon={IconAdd} size={'medium'} kind={'primary'} on:click={addState} />
+                {/if}
               {/each}
-              <Button
-                kind={'primary'}
-                size={'large'}
-                icon={IconAdd}
-                label={process.string.AddState}
-                on:click={addState}
-              />
+              {#if sortedStates.length === 0}
+                <Button
+                  kind={'primary'}
+                  size={'large'}
+                  icon={IconAdd}
+                  label={process.string.AddState}
+                  on:click={addState}
+                />
+              {/if}
             </div>
           </div>
         </div>

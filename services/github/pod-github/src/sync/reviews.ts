@@ -110,7 +110,7 @@ export class ReviewSyncManager implements DocSyncManager {
       return true
     }
     const account =
-      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user))?._id ?? core.account.System
+      existing?.createdBy ?? (await this.provider.getAccountU(commentExternal.user)) ?? core.account.System
 
     if (commentExternal !== undefined) {
       try {
@@ -164,7 +164,7 @@ export class ReviewSyncManager implements DocSyncManager {
     repo: GithubIntegrationRepository,
     integration: IntegrationContainer
   ): Promise<void> {
-    const account = (await this.provider.getAccountU(event.sender))?._id ?? core.account.System
+    const account = (await this.provider.getAccountU(event.sender)) ?? core.account.System
 
     let externalData: ReviewExternalData
     try {
@@ -302,7 +302,7 @@ export class ReviewSyncManager implements DocSyncManager {
     }
     const review = info.external as ReviewExternalData
 
-    const account = existing?.modifiedBy ?? (await this.provider.getAccount(review.author))?._id ?? core.account.System
+    const account = existing?.modifiedBy ?? (await this.provider.getAccount(review.author)) ?? core.account.System
 
     const messageData: ReviewData = {
       body: await this.provider.getMarkupSafe(container.container, review.body),

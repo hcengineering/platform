@@ -14,31 +14,53 @@
 -->
 
 <script lang="ts">
-  import { NavigationSection } from '../types'
-  import { Section } from '../index'
-  import NavItem from './NavItem.svelte'
   import { createEventDispatcher } from 'svelte'
 
+  import { ButtonVariant, NavigationSection } from '../types'
+  import { Section } from '../index'
+  import NavItem from './NavItem.svelte'
+  import uiNext from '../plugin'
+  import Button from './Button.svelte'
+
   export let sections: NavigationSection[] = []
-  export let selected: string | undefined = undefined
+  export let selectedItem: string | undefined = undefined
+  export let selectedSection: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 </script>
 
 <div class="navigation-list">
   {#each sections as section (section.id)}
-    <Section id={section.id} title={section.title} expanded={section.expanded} on:toggle>
+    <Section
+      id={section.id}
+      title={section.title}
+      selected={selectedSection === section.id}
+      expanded={section.expanded}
+      on:toggle
+      on:click={() => {
+        dispatch('select', section.id)
+      }}
+    >
       {#each section.items as item (item.id)}
         <NavItem
           label={item.label}
           icon={item.icon}
-          selected={selected === item.id}
+          selected={selectedItem === item.id}
           notificationsCount={item.notificationsCount}
           on:click={() => {
-            dispatch('click', item.id)
+            dispatch('selectItem', item.id)
           }}
         />
       {/each}
+
+      {#if section.total > section.items.length}
+        <Button
+          labelIntl={uiNext.string.All}
+          labelParams={{ count: section.total }}
+          variant={ButtonVariant.Ghost}
+          on:click={() => dispatch('all', section.id)}
+        />
+      {/if}
     </Section>
   {/each}
 </div>

@@ -51,5 +51,6 @@ startFront(metricsContext, {
   BACKUP_URL: process.env.BACKUP_URL,
   TRANSACTOR_OVERRIDE: process.env.TRANSACTOR_OVERRIDE,
   PUBLIC_SCHEDULE_URL: process.env.PUBLIC_SCHEDULE_URL,
+  CALDAV_SERVER_URL: process.env.CALDAV_SERVER_URL,
   EXPORT_URL: process.env.EXPORT_URL
 })

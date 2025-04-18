@@ -17,6 +17,7 @@
   import { Card } from '@hcengineering/presentation'
 
   export let palette: Array<{ color: string, preview?: string }> = [{ color: 'transparent' }]
+  export let letters: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -32,11 +33,15 @@
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="colorBox"
-        style:background-color={k.preview ?? k.color}
+        class:letters
+        class:solid={!letters}
+        style:--color={k.preview ?? k.color}
         on:click={() => {
           handleSubmit(k)
         }}
-      />
+      >
+        {#if letters}A{/if}
+      </div>
     {/each}
   </div>
 </div>
@@ -61,6 +66,20 @@
     height: 1.5rem;
     border-radius: 0.25rem;
     cursor: pointer;
+  }
+
+  .solid {
+    background-color: var(--color);
     box-shadow: var(--text-editor-color-picker-outline) 0px 0px 0px 1px inset;
+  }
+
+  .letters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: 1px solid var(--color);
+    color: var(--color);
+    font-weight: bold;
   }
 </style>

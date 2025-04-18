@@ -104,7 +104,6 @@ import testManagement, {
   testManagementId,
   createModel as testManagementModel
 } from '@hcengineering/model-test-management'
-import mySpace, { mySpaceId, createModel as mySpaceModel } from '@hcengineering/model-my-space'
 import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
 
 import {
@@ -116,6 +115,7 @@ import { presenceId, createModel as presenceModel } from '@hcengineering/model-p
 import { chatId, createModel as chatModel } from '@hcengineering/model-chat'
 import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
 import { createModel as inboxModel, inboxId } from '@hcengineering/model-inbox'
+import { achievementId, createModel as achievementModel } from '@hcengineering/model-achievement'
 import { type Plugin } from '@hcengineering/platform'
 
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
@@ -450,20 +450,10 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     ],
     [surveyModel, surveyId],
     [presenceModel, presenceId],
-    [
-      mySpaceModel,
-      mySpaceId,
-      {
-        label: mySpace.string.ConfigLabel,
-        description: mySpace.string.ConfigDescription,
-        enabled: false,
-        beta: true,
-        classFilter: defaultFilter
-      }
-    ],
     [mailModel, mailId],
     [chatModel, chatId],
     [inboxModel, inboxId],
+    [achievementModel, achievementId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],

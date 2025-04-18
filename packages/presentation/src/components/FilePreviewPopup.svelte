@@ -47,10 +47,9 @@
 
   const dispatch = createEventDispatcher()
 
-  onMount(() => {
-    if (fullSize) {
-      dispatch('fullsize')
-    }
+  $: void loadDrawings(file)
+
+  async function loadDrawings (file: Ref<Blob> | undefined): Promise<void> {
     if (props.drawingAvailable === true) {
       if (props.loadDrawings !== undefined) {
         drawingLoading = true
@@ -66,6 +65,14 @@
             console.error('Failed to load drawings for file', file, error)
           })
       }
+    }
+  }
+
+  onMount(() => {
+    if (fullSize) {
+      dispatch('fullsize')
+    }
+    if (props.drawingAvailable === true) {
       if (props.createDrawing !== undefined) {
         createDrawing = props.createDrawing
         props.createDrawing = async (data: any): Promise<any> => {

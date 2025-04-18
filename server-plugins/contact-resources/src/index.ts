@@ -17,35 +17,38 @@
 import contact, {
   Channel,
   Contact,
-  Employee,
-  Organization,
-  Person,
-  PersonSpace,
   contactId,
+  Employee,
   formatContactName,
   formatName,
   getFirstName,
   getLastName,
   getName,
+  Organization,
+  Person,
+  PersonSpace,
   type UserProfile
 } from '@hcengineering/contact'
 import core, {
+  AccountRole,
+  AccountUuid,
+  concatLink,
   Doc,
   Hierarchy,
+  MarkupBlobRef,
   Ref,
+  SocialIdType,
+  SortingOrder,
+  type Space,
   SpaceType,
+  systemAccountUuid,
   Tx,
+  TxCreateDoc,
   TxCUD,
   TxMixin,
   TxRemoveDoc,
   TxUpdateDoc,
-  concatLink,
-  type Space,
-  SocialIdType,
-  AccountUuid,
-  TxCreateDoc,
-  SortingOrder,
-  MarkupBlobRef
+  TypedSpace
 } from '@hcengineering/core'
 import { makeRank } from '@hcengineering/rank'
 import card from '@hcengineering/card'
@@ -113,6 +116,45 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
         }
       })
       result.push(pushTx)
+    }
+  }
+
+  const account = control.ctx.contextData.account
+  if (account.role !== AccountRole.Owner) return result
+
+  const typedSpaces = await control.findAll(control.ctx, core.class.TypedSpace, {})
+
+  for (const space of typedSpaces) {
+    if (space === undefined) continue
+
+    const owners = space.owners ?? []
+
+    if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
+      result.push(
+        control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+          owners: [account.uuid]
+        })
+      )
+    }
+  }
+
+  return result
+}
+
+export async function OnTypedSpaceCreate (_txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of _txes) {
+    const ctx = tx as TxCreateDoc<TypedSpace>
+    const owners = ctx.attributes.owners ?? []
+
+    if (owners.length === 0 || (owners.length === 1 && owners[0] === systemAccountUuid)) {
+      const members = ctx.attributes.members
+      if (members.length === 0) continue
+      result.push(
+        control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.space, ctx.objectId, {
+          owners: [members[0]]
+        })
+      )
     }
   }
   return result
@@ -369,6 +411,7 @@ export async function getContactFirstName (
 export default async () => ({
   trigger: {
     OnEmployeeCreate,
+    OnTypedSpaceCreate,
     OnPersonCreate,
     OnContactDelete,
     OnChannelUpdate,

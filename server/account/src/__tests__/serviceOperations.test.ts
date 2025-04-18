@@ -29,6 +29,7 @@ import {
   getIntegrationSecret,
   listIntegrations,
   listIntegrationsSecrets,
+  releaseSocialId,
   updateIntegration,
   updateIntegrationSecret
 } from '../serviceOperations'
@@ -82,13 +83,21 @@ describe('addSocialIdToPerson', () => {
       person: 'test-person' as PersonUuid,
       type: SocialIdType.GITHUB,
       value: 'test-value',
-      confirmed: true
+      confirmed: true,
+      displayValue: 'test-display-value'
     }
 
     const result = await addSocialIdToPerson(mockCtx, mockDb, mockBranding, mockToken, params)
 
     expect(result).toBe(newSocialId)
-    expect(addSocialIdSpy).toHaveBeenCalledWith(mockDb, params.person, params.type, params.value, params.confirmed)
+    expect(addSocialIdSpy).toHaveBeenCalledWith(
+      mockDb,
+      params.person,
+      params.type,
+      params.value,
+      params.confirmed,
+      params.displayValue
+    )
   })
 
   test('should allow admin to add social id', async () => {
@@ -102,13 +111,21 @@ describe('addSocialIdToPerson', () => {
       person: 'test-person' as PersonUuid,
       type: SocialIdType.GITHUB,
       value: 'test-value',
-      confirmed: false
+      confirmed: false,
+      displayValue: 'test-display-value'
     }
 
     const result = await addSocialIdToPerson(mockCtx, mockDb, mockBranding, mockToken, params)
 
     expect(result).toBe(newSocialId)
-    expect(addSocialIdSpy).toHaveBeenCalledWith(mockDb, params.person, params.type, params.value, params.confirmed)
+    expect(addSocialIdSpy).toHaveBeenCalledWith(
+      mockDb,
+      params.person,
+      params.type,
+      params.value,
+      params.confirmed,
+      params.displayValue
+    )
   })
 
   test('should throw error for unauthorized service', async () => {
@@ -210,7 +227,66 @@ describe('integration methods', () => {
 
       await createIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegration)
 
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ _id: mockSocialId, verifiedOn: { $gt: 0 } })
       expect(mockDb.integration.insertOne).toHaveBeenCalledWith(mockIntegration)
+    })
+
+    test('should allow verified user to create their integration', async () => {
+      const mockAccount = 'test-account'
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+
+      const mockSocialId = 'test-social-id' as PersonId
+      const mockIntegration: Integration = {
+        socialId: mockSocialId,
+        kind: 'test-kind',
+        workspaceUuid: 'test-workspace' as WorkspaceUuid,
+        data: {}
+      }
+
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+
+      await createIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegration)
+
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
+      expect(mockDb.integration.insertOne).toHaveBeenCalledWith(mockIntegration)
+    })
+
+    test('should throw error when user creates integration for different social id', async () => {
+      const mockAccount = 'test-account'
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+
+      const mockSocialId = 'test-social-id' as PersonId
+      const mockIntegration: Integration = {
+        socialId: mockSocialId,
+        kind: 'test-kind',
+        workspaceUuid: 'test-workspace' as WorkspaceUuid,
+        data: {}
+      }
+
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+
+      await expect(createIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegration)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
+      expect(mockDb.integration.insertOne).not.toHaveBeenCalled()
     })
 
     test('should throw error when social id not found', async () => {
@@ -306,8 +382,10 @@ describe('integration methods', () => {
   })
 
   describe('updateIntegration', () => {
+    const mockAccount = 'test-account'
+    const mockSocialId = 'test-social-id' as PersonId
     const mockIntegration: Integration = {
-      socialId: 'test-social-id' as PersonId,
+      socialId: mockSocialId,
       kind: 'test-kind',
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       data: { someData: 'value' }
@@ -321,6 +399,8 @@ describe('integration methods', () => {
         ...mockIntegration,
         data: { oldData: 'old' }
       })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
 
       await updateIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegration)
 
@@ -332,6 +412,60 @@ describe('integration methods', () => {
         },
         { data: mockIntegration.data }
       )
+
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ _id: mockSocialId, verifiedOn: { $gt: 0 } })
+    })
+
+    test('should allow verified user to update their integration', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({
+        ...mockIntegration,
+        data: { oldData: 'old' }
+      })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+
+      await updateIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegration)
+
+      expect(mockDb.integration.updateOne).toHaveBeenCalledWith(
+        {
+          socialId: mockIntegration.socialId,
+          kind: mockIntegration.kind,
+          workspaceUuid: mockIntegration.workspaceUuid
+        },
+        { data: mockIntegration.data }
+      )
+
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
+    })
+
+    test('should throw error when use updates integration for different social id', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({
+        ...mockIntegration,
+        data: { oldData: 'old' }
+      })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+
+      await expect(updateIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegration)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(mockDb.integration.updateOne).not.toHaveBeenCalled()
+
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
     })
 
     test('should throw error when integration not found', async () => {
@@ -339,6 +473,7 @@ describe('integration methods', () => {
         extra: { service: 'github' }
       })
       ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
 
       await expect(updateIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegration)).rejects.toThrow(
         new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
@@ -361,8 +496,10 @@ describe('integration methods', () => {
   })
 
   describe('deleteIntegration', () => {
+    const mockAccount = 'test-account'
+    const mockSocialId = 'test-social-id' as PersonId
     const mockIntegrationKey: IntegrationKey = {
-      socialId: 'test-social-id' as PersonId,
+      socialId: mockSocialId,
       kind: 'test-kind',
       workspaceUuid: 'test-workspace' as WorkspaceUuid
     }
@@ -375,10 +512,57 @@ describe('integration methods', () => {
         ...mockIntegrationKey,
         data: {}
       })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
 
       await deleteIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegrationKey)
 
       expect(mockDb.integration.deleteMany).toHaveBeenCalledWith(mockIntegrationKey)
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ _id: mockSocialId, verifiedOn: { $gt: 0 } })
+    })
+
+    test('should allow verified user to delete their integration', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({
+        ...mockIntegrationKey,
+        data: {}
+      })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+
+      await deleteIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegrationKey)
+
+      expect(mockDb.integration.deleteMany).toHaveBeenCalledWith(mockIntegrationKey)
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
+    })
+
+    test('should throw error when user deletes integration for different social id', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({
+        ...mockIntegrationKey,
+        data: {}
+      })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+
+      await expect(deleteIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegrationKey)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(mockDb.integration.deleteMany).not.toHaveBeenCalled()
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
     })
 
     test('should throw error when integration not found', async () => {
@@ -386,6 +570,7 @@ describe('integration methods', () => {
         extra: { service: 'github' }
       })
       ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
 
       await expect(deleteIntegration(mockCtx, mockDb, mockBranding, mockToken, mockIntegrationKey)).rejects.toThrow(
         new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
@@ -408,15 +593,17 @@ describe('integration methods', () => {
   })
 
   describe('getIntegration', () => {
+    const mockAccount = 'test-account'
+    const mockSocialId = 'test-social-id' as PersonId
     const mockKey: IntegrationKey = {
-      socialId: 'test-social-id' as PersonId,
+      socialId: mockSocialId,
       kind: 'test-kind',
       workspaceUuid: 'test-workspace' as WorkspaceUuid
     }
 
     test('should allow verified user to get their integration', async () => {
       ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-        account: 'test-account',
+        account: mockAccount,
         extra: {}
       })
 
@@ -426,13 +613,19 @@ describe('integration methods', () => {
       }
 
       ;(mockDb.socialId.find as jest.Mock).mockResolvedValue([
-        { _id: mockKey.socialId, personUuid: 'test-account', verifiedOn: 1 }
+        { _id: mockKey.socialId, personUuid: mockAccount, verifiedOn: 1 }
       ])
       ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue(mockIntegration)
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
 
       const result = await getIntegration(mockCtx, mockDb, mockBranding, mockToken, mockKey)
       expect(result).toEqual(mockIntegration)
       expect(mockDb.integration.findOne).toHaveBeenCalledWith(mockKey)
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
     })
 
     test('should throw error when there is no matching verified social id', async () => {
@@ -662,8 +855,9 @@ describe('integration methods', () => {
           extra: { service }
         })
 
+        const mockSocialId = 'test-social-id' as PersonId
         const mockSecret: IntegrationSecret = {
-          socialId: 'test-social-id' as PersonId,
+          socialId: mockSocialId,
           kind: 'test-kind',
           workspaceUuid: 'test-workspace' as WorkspaceUuid,
           key: 'test-key',
@@ -679,11 +873,91 @@ describe('integration methods', () => {
 
         ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue(mockIntegration)
         ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(null)
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+        ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
 
         await addIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)
 
         expect(mockDb.integrationSecret.insertOne).toHaveBeenCalledWith(mockSecret)
+        expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ _id: mockSocialId, verifiedOn: { $gt: 0 } })
       }
+    })
+
+    test('should allow verified user services to create their integration secret', async () => {
+      jest.clearAllMocks()
+      const mockAccount = 'test-account'
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+
+      const mockSocialId = 'test-social-id' as PersonId
+      const mockSecret: IntegrationSecret = {
+        socialId: mockSocialId,
+        kind: 'test-kind',
+        workspaceUuid: 'test-workspace' as WorkspaceUuid,
+        key: 'test-key',
+        secret: 'test-secret'
+      }
+
+      const mockIntegration: Integration = {
+        socialId: mockSecret.socialId,
+        kind: mockSecret.kind,
+        workspaceUuid: mockSecret.workspaceUuid,
+        data: {}
+      }
+
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue(mockIntegration)
+      ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+
+      await addIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)
+
+      expect(mockDb.integrationSecret.insertOne).toHaveBeenCalledWith(mockSecret)
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
+    })
+
+    test('should throw error when user services adds integration secret for different social id', async () => {
+      jest.clearAllMocks()
+      const mockAccount = 'test-account'
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+
+      const mockSocialId = 'test-social-id' as PersonId
+      const mockSecret: IntegrationSecret = {
+        socialId: mockSocialId,
+        kind: 'test-kind',
+        workspaceUuid: 'test-workspace' as WorkspaceUuid,
+        key: 'test-key',
+        secret: 'test-secret'
+      }
+
+      const mockIntegration: Integration = {
+        socialId: mockSecret.socialId,
+        kind: mockSecret.kind,
+        workspaceUuid: mockSecret.workspaceUuid,
+        data: {}
+      }
+
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue(mockIntegration)
+      ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+
+      await expect(addIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(mockDb.integrationSecret.insertOne).not.toHaveBeenCalled()
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
     })
 
     test('should throw error when integration does not exist', async () => {
@@ -691,8 +965,9 @@ describe('integration methods', () => {
         extra: { service: 'github' }
       })
 
+      const mockSocialId = 'test-social-id' as PersonId
       const mockSecret: IntegrationSecret = {
-        socialId: 'test-social-id' as PersonId,
+        socialId: mockSocialId,
         kind: 'test-kind',
         workspaceUuid: 'test-workspace' as WorkspaceUuid,
         key: 'test-key',
@@ -700,12 +975,15 @@ describe('integration methods', () => {
       }
 
       ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
 
       await expect(addIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)).rejects.toThrow(
         new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationNotFound, {}))
       )
 
       expect(mockDb.integrationSecret.insertOne).not.toHaveBeenCalled()
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ _id: mockSocialId, verifiedOn: { $gt: 0 } })
     })
 
     test('should throw error if secret already exists', async () => {
@@ -760,8 +1038,10 @@ describe('integration methods', () => {
   })
 
   describe('updateIntegrationSecret', () => {
+    const mockAccount = 'test-account'
+    const mockSocialId = 'test-social-id' as PersonId
     const mockSecret: IntegrationSecret = {
-      socialId: 'test-social-id' as PersonId,
+      socialId: mockSocialId,
       kind: 'test-kind',
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       key: 'test-key',
@@ -783,10 +1063,59 @@ describe('integration methods', () => {
         ...mockSecret,
         secret: 'old-secret'
       })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({})
 
       await updateIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)
 
       expect(mockDb.integrationSecret.updateOne).toHaveBeenCalledWith(mockSecretKey, { secret: mockSecret.secret })
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ _id: mockSocialId, verifiedOn: { $gt: 0 } })
+    })
+
+    test('should allow verified user to update their secret', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+      ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue({
+        ...mockSecret,
+        secret: 'old-secret'
+      })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({})
+
+      await updateIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)
+
+      expect(mockDb.integrationSecret.updateOne).toHaveBeenCalledWith(mockSecretKey, { secret: mockSecret.secret })
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
+    })
+
+    test('should throw error when user updates secret for different social id', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+      ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue({
+        ...mockSecret,
+        secret: 'old-secret'
+      })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+
+      await expect(updateIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(mockDb.integrationSecret.updateOne).not.toHaveBeenCalledWith()
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
     })
 
     test('should throw error when secret not found', async () => {
@@ -794,6 +1123,7 @@ describe('integration methods', () => {
         extra: { service: 'github' }
       })
       ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
 
       await expect(updateIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecret)).rejects.toThrow(
         new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
@@ -817,8 +1147,10 @@ describe('integration methods', () => {
   })
 
   describe('deleteIntegrationSecret', () => {
+    const mockAccount = 'test-account'
+    const mockSocialId = 'test-social-id' as PersonId
     const mockSecretKey: IntegrationSecretKey = {
-      socialId: 'test-social-id' as PersonId,
+      socialId: mockSocialId,
       kind: 'test-kind',
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       key: 'test-key'
@@ -832,10 +1164,60 @@ describe('integration methods', () => {
         ...mockSecretKey,
         secret: 'test-secret'
       })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({})
 
       await deleteIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)
 
       expect(mockDb.integrationSecret.deleteMany).toHaveBeenCalledWith(mockSecretKey)
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ _id: mockSocialId, verifiedOn: { $gt: 0 } })
+    })
+
+    test('should allow verified user to delete their secret', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+      ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue({
+        ...mockSecretKey,
+        secret: 'test-secret'
+      })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({})
+
+      await deleteIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)
+
+      expect(mockDb.integrationSecret.deleteMany).toHaveBeenCalledWith(mockSecretKey)
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
+    })
+
+    test('should throw error when user deletes secret for different social id', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: mockAccount
+      })
+      ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue({
+        ...mockSecretKey,
+        secret: 'test-secret'
+      })
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue({ uuid: 'test-workspace' })
+      ;(mockDb.integration.findOne as jest.Mock).mockResolvedValue({})
+
+      await expect(deleteIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(mockDb.integrationSecret.deleteMany).not.toHaveBeenCalledWith()
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        _id: mockSocialId,
+        personUuid: mockAccount,
+        verifiedOn: { $gt: 0 }
+      })
     })
 
     test('should throw error when secret not found', async () => {
@@ -843,6 +1225,7 @@ describe('integration methods', () => {
         extra: { service: 'github' }
       })
       ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
 
       await expect(deleteIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)).rejects.toThrow(
         new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
@@ -865,8 +1248,9 @@ describe('integration methods', () => {
   })
 
   describe('getIntegrationSecret', () => {
+    const mockSocialId = 'test-social-id' as PersonId
     const mockSecretKey: IntegrationSecretKey = {
-      socialId: 'test-social-id' as PersonId,
+      socialId: mockSocialId,
       kind: 'test-kind',
       workspaceUuid: 'test-workspace' as WorkspaceUuid,
       key: 'test-key'
@@ -889,15 +1273,15 @@ describe('integration methods', () => {
       expect(mockDb.integrationSecret.findOne).toHaveBeenCalledWith(mockSecretKey)
     })
 
-    test('should throw error when secret not found', async () => {
+    test('should return null when integration secret not found', async () => {
       ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
         extra: { service: 'github' }
       })
       ;(mockDb.integrationSecret.findOne as jest.Mock).mockResolvedValue(null)
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ _id: mockSocialId })
 
-      await expect(getIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)).rejects.toThrow(
-        new PlatformError(new Status(Severity.ERROR, platform.status.IntegrationSecretNotFound, {}))
-      )
+      const result = await getIntegrationSecret(mockCtx, mockDb, mockBranding, mockToken, mockSecretKey)
+      expect(result).toBeNull()
     })
 
     test('should throw error for unauthorized service', async () => {
@@ -1004,6 +1388,82 @@ describe('integration methods', () => {
       )
 
       expect(mockDb.integrationSecret.find).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('releaseSocialId', () => {
+    const mockCtx = {
+      error: jest.fn()
+    } as unknown as MeasureContext
+
+    const mockDb = {} as unknown as AccountDB
+    const mockBranding = null
+    const mockToken = 'test-token'
+
+    // Create spy on doReleaseSocialId
+    const doReleaseSocialIdSpy = jest.spyOn(utils, 'doReleaseSocialId').mockImplementation(async () => {})
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    afterAll(() => {
+      doReleaseSocialIdSpy.mockRestore()
+    })
+
+    test('should allow github service to release social id', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        extra: { service: 'github' }
+      })
+
+      const params = {
+        personUuid: 'test-person' as PersonUuid,
+        type: SocialIdType.GITHUB,
+        value: 'test-value'
+      }
+
+      await releaseSocialId(mockCtx, mockDb, mockBranding, mockToken, params)
+
+      expect(doReleaseSocialIdSpy).toHaveBeenCalledWith(mockDb, params.personUuid, params.type, params.value, 'github')
+    })
+
+    test('should throw error for unauthorized service', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        extra: { service: 'unauthorized' }
+      })
+
+      const params = {
+        personUuid: 'test-person' as PersonUuid,
+        type: SocialIdType.GITHUB,
+        value: 'test-value'
+      }
+
+      await expect(releaseSocialId(mockCtx, mockDb, mockBranding, mockToken, params)).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(doReleaseSocialIdSpy).not.toHaveBeenCalled()
+    })
+
+    test('should throw error for invalid parameters', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        extra: { service: 'github' }
+      })
+
+      const invalidParams = [
+        { type: SocialIdType.GITHUB, value: 'test' }, // missing personUuid
+        { personUuid: 'test' as PersonUuid, value: 'test' }, // missing type
+        { personUuid: 'test' as PersonUuid, type: SocialIdType.GITHUB }, // missing value
+        { personUuid: 'test' as PersonUuid, type: 'invalid' as SocialIdType, value: 'test' } // invalid type
+      ]
+
+      for (const params of invalidParams) {
+        await expect(releaseSocialId(mockCtx, mockDb, mockBranding, mockToken, params as any)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+        )
+      }
+
+      expect(doReleaseSocialIdSpy).not.toHaveBeenCalled()
     })
   })
 })
