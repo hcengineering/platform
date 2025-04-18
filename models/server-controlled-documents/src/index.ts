@@ -7,23 +7,12 @@ import serverCore from '@hcengineering/server-core'
 import { RequestStatus } from '@hcengineering/request'
 import documents, { DocumentState } from '@hcengineering/controlled-documents'
 import serverDocuments from '@hcengineering/server-controlled-documents'
-import contact from '@hcengineering/contact'
 import serverNotification from '@hcengineering/server-notification'
 import notification from '@hcengineering/notification'
 
 export { serverDocumentsId } from '@hcengineering/server-controlled-documents/src/index'
 
 export function createModel (builder: Builder): void {
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverDocuments.trigger.OnEmployeeCreate,
-    txMatch: {
-      objectClass: contact.class.Person,
-      _class: core.class.TxMixin,
-      mixin: contact.mixin.Employee,
-      'attributes.active': true
-    }
-  })
-
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverDocuments.trigger.OnDocDeleted,
     txMatch: {

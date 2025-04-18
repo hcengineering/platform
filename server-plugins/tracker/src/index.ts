@@ -35,7 +35,6 @@ export default plugin(serverTrackerId, {
     IssueLinkIdProvider: '' as Resource<(doc: Doc) => Promise<string>>
   },
   trigger: {
-    OnEmployeeCreate: '' as Resource<TriggerFunc>,
     OnIssueUpdate: '' as Resource<TriggerFunc>,
     OnComponentRemove: '' as Resource<TriggerFunc>,
     OnProjectRemove: '' as Resource<TriggerFunc>
