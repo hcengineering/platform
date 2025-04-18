@@ -22,7 +22,7 @@ import { getClient } from './utils'
 export enum MeetingNotificationType {
   Scheduled = 'meeting-scheduled',
   Rescheduled = 'meeting-rescheduled',
-  Canceled = 'meeting-canceled',
+  Canceled = 'meeting-canceled'
 }
 
 const notificationMessages: Record<MeetingNotificationType, IntlString> = {
@@ -57,7 +57,11 @@ export async function createNotification (
   let objectSpace = forEvent.space
 
   if (type === MeetingNotificationType.Canceled) {
-    const calendr = await client.findOne(calendar.class.Calendar, { _id: forEvent.calendar }, { projection: { _id: 1 } })
+    const calendr = await client.findOne(
+      calendar.class.Calendar,
+      { _id: forEvent.calendar },
+      { projection: { _id: 1 } }
+    )
     if (calendr === undefined) {
       throw new Error(`Calendar not found for event ${forEvent._id}`)
     }

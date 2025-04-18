@@ -53,9 +53,7 @@ jest.mock('../utils', () => {
     ...actual,
     ...actual.default,
     isMeeting: jest.fn((ws: WorkspaceUuid, event: Event): Promise<boolean> => {
-      return Promise.resolve(
-        (event as any as Meeting).room !== undefined
-      )
+      return Promise.resolve((event as any as Meeting).room !== undefined)
     })
   }
 })
@@ -95,12 +93,7 @@ describe('queue message handlers', () => {
 
       await eventCreated(ws, { event, modifiedBy: meetingHost })
 
-      expect(createNotificationSpy).toHaveBeenCalledWith(
-        ws,
-        MeetingNotificationType.Scheduled,
-        event,
-        meetingHost
-      )
+      expect(createNotificationSpy).toHaveBeenCalledWith(ws, MeetingNotificationType.Scheduled, event, meetingHost)
     })
 
     test('there should not be notification when host creates meeting for guest in the past', async () => {
@@ -136,12 +129,7 @@ describe('queue message handlers', () => {
 
       await eventUpdated(ws, { event, modifiedBy: meetingHost, changes: { date: Date.now() } })
 
-      expect(createNotificationSpy).toHaveBeenCalledWith(
-        ws,
-        MeetingNotificationType.Rescheduled,
-        event,
-        meetingHost
-      )
+      expect(createNotificationSpy).toHaveBeenCalledWith(ws, MeetingNotificationType.Rescheduled, event, meetingHost)
     })
 
     test('there should be notification when host updates meeting for guest in the past', async () => {
@@ -183,12 +171,7 @@ describe('queue message handlers', () => {
 
       await eventDeleted(ws, { event, modifiedBy: meetingHost })
 
-      expect(createNotificationSpy).toHaveBeenCalledWith(
-        ws,
-        MeetingNotificationType.Canceled,
-        event,
-        meetingHost
-      )
+      expect(createNotificationSpy).toHaveBeenCalledWith(ws, MeetingNotificationType.Canceled, event, meetingHost)
     })
 
     test('there should not be notification when host deletes meeting for guest in the past', async () => {
@@ -224,12 +207,7 @@ describe('queue message handlers', () => {
       const event = eventFor(meetingGuest, { room })
       await eventMixin(ws, { event, modifiedBy: meetingHost, changes: { room } })
 
-      expect(createNotificationSpy).toHaveBeenCalledWith(
-        ws,
-        MeetingNotificationType.Scheduled,
-        event,
-        meetingHost
-      )
+      expect(createNotificationSpy).toHaveBeenCalledWith(ws, MeetingNotificationType.Scheduled, event, meetingHost)
     })
 
     test('there should not be notification when host created meeting for himself', async () => {

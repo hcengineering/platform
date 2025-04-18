@@ -20,7 +20,10 @@ import love from '@hcengineering/love'
 import { generateToken } from '@hcengineering/server-token'
 import config from './config'
 
-export async function getClient (workspaceUuid: WorkspaceUuid, socialId?: PersonId): Promise<{ client: TxOperations, accountClient: AccountClient }> {
+export async function getClient (
+  workspaceUuid: WorkspaceUuid,
+  socialId?: PersonId
+): Promise<{ client: TxOperations, accountClient: AccountClient }> {
   const token = generateToken(systemAccountUuid, workspaceUuid)
   let accountClient = getAccountClient(config.accountsUrl, token)
 
