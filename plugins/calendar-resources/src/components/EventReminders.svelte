@@ -44,23 +44,30 @@
   }
 </script>
 
-<div class="flex-row-center gap-1" class:pb-0-5={reminders.length}>
-  <Icon icon={calendar.icon.Notifications} size="small" />
-  <Button
-    label={reminders.length > 0 ? calendar.string.AddReminder : calendar.string.Reminders}
-    {disabled}
-    justify={'left'}
-    flex="1"
-    padding="0.5rem"
-    kind={'ghost'}
-    {focusIndex}
-    on:click={(e) => {
-      addReminder(e)
-    }}
-  />
-</div>
+{#if !disabled}
+  <div class="flex-row-center gap-1" class:pb-0-5={reminders.length}>
+    <Icon icon={calendar.icon.Notifications} size="small" />
+    <Button
+      label={reminders.length > 0 ? calendar.string.AddReminder : calendar.string.Reminders}
+      {disabled}
+      justify={'left'}
+      flex="1"
+      padding="0.5rem"
+      kind={'ghost'}
+      {focusIndex}
+      on:click={(e) => {
+        addReminder(e)
+      }}
+    />
+  </div>
+{/if}
 {#if reminders.length}
   <Scroller padding={'.125rem 0 0 1.25rem'} shrink>
+    {#if disabled}
+      <div style="position:absolute; left:0; top:0.625rem">
+        <Icon icon={calendar.icon.Participants} size="small" />
+      </div>
+    {/if}
     {#if reminders.length > maxReminders && !shown}
       {#each reminders.slice(0, maxReminders - 2) as reminder, i}
         <EventReminderItem

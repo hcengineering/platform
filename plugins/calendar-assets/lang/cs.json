@@ -105,6 +105,9 @@
     "CalDavAccessServer": "Server CalDAV",
     "CalDavAccessAccount": "Účet Huly",
     "CalDavAccessPassword": "Heslo",
-    "CalDavAccessPasswordWarning": "Tohle heslo už nebudete moci znovu vidět. Uložte si ho na bezpečné místo."
+    "CalDavAccessPasswordWarning": "Tohle heslo už nebudete moci znovu vidět. Uložte si ho na bezpečné místo.",
+    "MeetingScheduledNotification": "Naplánována schůzka",
+    "MeetingRescheduledNotification": "Čas schůzky změněn",
+    "MeetingCanceledNotification": "Schůzka zrušena: {title}"
   }
 }

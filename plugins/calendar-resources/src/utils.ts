@@ -5,7 +5,16 @@ import {
   type ReccuringInstance,
   generateEventId
 } from '@hcengineering/calendar'
-import { type DocumentUpdate, type IdMap, type Timestamp, getCurrentAccount, toIdMap } from '@hcengineering/core'
+import {
+  type Client,
+  type Doc,
+  type DocumentUpdate,
+  type IdMap,
+  type Ref,
+  type Timestamp,
+  getCurrentAccount,
+  toIdMap
+} from '@hcengineering/core'
 import presentation, { createQuery, getClient, onClient } from '@hcengineering/presentation'
 import { closePopup, DAY, showPopup } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
@@ -209,4 +218,12 @@ export function getAccountClient (): AccountClient {
   const token = getMetadata(presentation.metadata.Token)
 
   return getAccountClientRaw(accountsUrl, token)
+}
+
+export async function eventTitleProvider (client: Client, ref: Ref<Doc>, doc?: Event): Promise<string> {
+  const object = doc ?? (await client.findOne(calendar.class.Event, { _id: ref as Ref<Event> }))
+  if (object === undefined) {
+    return ''
+  }
+  return object.title
 }
