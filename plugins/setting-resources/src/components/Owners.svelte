@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { PersonAccount, formatName } from '@hcengineering/contact'
   import { EmployeePresenter, employeesStore } from '@hcengineering/contact-resources'
-  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Breadcrumb, DropdownLabelsIntl, SearchInput, Header, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
@@ -30,7 +30,6 @@
     { id: AccountRole.Maintainer, label: setting.string.Maintainer },
     { id: AccountRole.Owner, label: setting.string.Owner }
   ]
-  const availableItems = items.filter((i) => hasAccountRole(currentAccount, i.id))
 
   let accounts: PersonAccount[] = []
   let owners: PersonAccount[] = []
@@ -71,12 +70,12 @@
                 <EmployeePresenter value={employee} disabled={false} />
               </div>
               <DropdownLabelsIntl
-                label={items.find((x) => x.id === acc.role).label}
-                disabled={!hasAccountRole(currentAccount, acc.role) ||
+                label={setting.string.Role}
+                disabled={currentAccount.role !== AccountRole.Owner ||
                   (acc.role === AccountRole.Owner && owners.length === 1)}
                 kind={'primary'}
                 size={'medium'}
-                items={availableItems}
+                {items}
                 selected={acc.role}
                 on:selected={(e) => {
                   void change(acc, e.detail)
