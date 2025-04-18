@@ -303,7 +303,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       boardModel,
       boardId,
       {
-        label: board.string.ConfigLabel,
+        label: undefined, // board.string.ConfigLabel,
         description: board.string.ConfigDescription,
         enabled: false,
         beta: true,
@@ -315,7 +315,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       bitrixModel,
       bitrixId,
       {
-        label: bitrix.string.ConfigLabel,
+        label: undefined, // bitrix.string.ConfigLabel,
         description: bitrix.string.ConfigDescription,
         enabled: false,
         beta: true,
