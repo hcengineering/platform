@@ -21,6 +21,7 @@
   import Component from './Component.svelte'
   import Label from './Label.svelte'
   import { capitalizeFirstLetter, formatKey } from '../utils'
+  import { testing } from '..'
 
   let tooltipHTML: HTMLElement
   let nubHTML: HTMLElement
@@ -320,6 +321,7 @@
 {#if $tooltip.component && $tooltip.kind !== 'submenu'}
   <div
     class="popup-tooltip {options.classList} {$tooltip.style}"
+    class:testing
     class:shown
     class:doublePadding={$tooltip.label}
     use:resizeObserver={(element) => {
@@ -375,6 +377,7 @@
       bind:this={nubHTML}
       style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
       class="nub {nubDirection ?? ''}"
+      class:testing
       class:shown
     />
   {/if}
@@ -493,6 +496,10 @@
   .nub {
     opacity: 0;
     transition: opacity 0.1s ease-in-out;
+
+    &.testing {
+      transition-duration: 0 !important;
+    }
   }
   .shown {
     opacity: 1;
