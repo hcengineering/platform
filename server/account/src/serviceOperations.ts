@@ -552,7 +552,7 @@ export async function updateSocialId (
 }
 
 // Move to config?
-const integrationServices = ['github', 'telegram-bot', 'telegram', 'mailbox']
+const integrationServices = ['github', 'telegram-bot', 'telegram', 'mailbox', 'gmail']
 
 export async function createIntegration (
   ctx: MeasureContext,
