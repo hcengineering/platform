@@ -286,6 +286,10 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
       return
     }
 
+    if (!this.match(context)) {
+      return
+    }
+
     await this.addContext(context)
     void this.notify()
   }
@@ -494,6 +498,54 @@ export class NotificationContextsQuery implements PagedQuery<NotificationContext
     if (this.params.limit != null && this.result.length > this.params.limit) {
       this.result.pop()
     }
+  }
+
+  private match(context: NotificationContext): boolean {
+    if (this.params.card !== undefined) {
+      const cards = Array.isArray(this.params.card) ? this.params.card : [this.params.card]
+      if (!cards.includes(context.card)) return false
+    }
+
+    if (this.params.id !== undefined && context.id !== this.params.id) {
+      return false
+    }
+
+    if (this.params.lastUpdate !== undefined) {
+      if (
+        'greater' in this.params.lastUpdate &&
+        this.params.lastUpdate.greater != null &&
+        context.lastUpdate <= this.params.lastUpdate.greater
+      ) {
+        return false
+      }
+      if (
+        'less' in this.params.lastUpdate &&
+        this.params.lastUpdate.less != null &&
+        context.lastUpdate >= this.params.lastUpdate.less
+      ) {
+        return false
+      }
+      if (
+        'greaterOrEqual' in this.params.lastUpdate &&
+        this.params.lastUpdate.greaterOrEqual != null &&
+        context.lastUpdate < this.params.lastUpdate.greaterOrEqual
+      ) {
+        return false
+      }
+      if (
+        'lessOrEqual' in this.params.lastUpdate &&
+        this.params.lastUpdate.lessOrEqual != null &&
+        context.lastUpdate > this.params.lastUpdate.lessOrEqual
+      ) {
+        return false
+      }
+
+      if (this.params.lastUpdate instanceof Date && this.params.lastUpdate !== context.lastUpdate) {
+        return false
+      }
+    }
+
+    return true
   }
 
   private async notify(): Promise<void> {

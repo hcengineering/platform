@@ -147,8 +147,12 @@ export class LabelsQuery implements Query<Label, FindLabelsParams> {
     if (this.params.card != null && this.params.card !== label.card) {
       return false
     }
-    if (this.params.label != null && this.params.label !== label.label) {
-      return false
+
+    if (this.params.label != null) {
+      const labels = Array.isArray(this.params.label) ? this.params.label : [this.params.label]
+      if (!labels.includes(label.label)) {
+        return false
+      }
     }
     if (this.params.cardType != null) {
       const types = Array.isArray(this.params.cardType) ? this.params.cardType : [this.params.cardType]

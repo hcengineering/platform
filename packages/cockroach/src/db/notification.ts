@@ -400,8 +400,14 @@ export class NotificationsDb extends BaseDb {
     }
 
     if (params.card != null) {
-      where.push(`nc.card_id = $${index++}::varchar`)
-      values.push(params.card)
+      const cards = Array.isArray(params.card) ? params.card : [params.card]
+      if (cards.length === 1) {
+        where.push(`nc.card_id = $${index++}::varchar`)
+        values.push(cards[0])
+      } else {
+        where.push(`nc.card_id = ANY($${index++}::varchar[])`)
+        values.push(cards)
+      }
     }
 
     if (params.account != null) {

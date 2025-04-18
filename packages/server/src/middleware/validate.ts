@@ -175,7 +175,7 @@ const SortingOrder = z.number()
 const Date = z.union([z.date(), z.string()])
 
 // Find params
-const dateOrRecordSchema = z.union([z.date(), z.string(), z.record(z.string())])
+const dateOrRecordSchema = z.union([Date, z.record(Date)])
 
 const FindParamsSchema = z
   .object({
@@ -205,7 +205,7 @@ const FindMessagesGroupsParamsSchema = FindParamsSchema.extend({
 
 const FindNotificationContextParamsSchema = FindParamsSchema.extend({
   id: ContextID.optional(),
-  card: CardID.optional(),
+  card: z.union([CardID, z.array(CardID)]).optional(),
   lastUpdate: dateOrRecordSchema.optional(),
   account: z.union([AccountID, z.array(AccountID)]).optional(),
   notifications: z
@@ -227,7 +227,7 @@ const FindNotificationsParamsSchema = FindParamsSchema.extend({
 }).strict()
 
 const FindLabelsParamsSchema = FindParamsSchema.extend({
-  label: LabelID.optional(),
+  label: z.union([LabelID, z.array(LabelID)]).optional(),
   card: CardID.optional(),
   cardType: z.union([CardType, z.array(CardType)]).optional(),
   account: AccountID.optional()

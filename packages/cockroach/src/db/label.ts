@@ -72,8 +72,14 @@ export class LabelsDb extends BaseDb {
     let index = whereValues.length + 1
 
     if (params.label != null) {
-      where.push(`l.label_id = $${index++}::varchar`)
-      whereValues.push(params.label)
+      const labels = Array.isArray(params.label) ? params.label : [params.label]
+      if (labels.length === 1) {
+        where.push(`l.label_id = $${index++}::varchar`)
+        whereValues.push(labels[0])
+      } else {
+        where.push(`l.label_id = ANY($${index++}::varchar[])`)
+        whereValues.push(labels)
+      }
     }
 
     if (params.card != null) {
