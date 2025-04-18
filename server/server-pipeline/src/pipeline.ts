@@ -31,6 +31,7 @@ import {
   ModelMiddleware,
   ModifiedMiddleware,
   NotificationsMiddleware,
+  PluginConfigurationMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
   SpacePermissionsMiddleware,
@@ -114,6 +115,7 @@ export function createServerPipeline (
       LookupMiddleware.create,
       IdentityMiddleware.create,
       ModifiedMiddleware.create,
+      PluginConfigurationMiddleware.create,
       PrivateMiddleware.create,
       NotificationsMiddleware.create,
       (ctx: MeasureContext, context: PipelineContext, next?: Middleware) =>
