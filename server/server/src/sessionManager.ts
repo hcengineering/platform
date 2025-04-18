@@ -325,7 +325,7 @@ export class TSessionManager implements SessionManager {
         uuid: info.account,
         socialIds: info.socialIds.map((it) => it._id),
         primarySocialId,
-        fullSocialIds: [],
+        fullSocialIds: info.socialIds,
         role
       },
       info,
