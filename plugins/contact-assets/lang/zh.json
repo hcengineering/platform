@@ -115,7 +115,6 @@
     "Confirmed": "已确认",
     "UserProfile": "用户资料",
     "DeactivatedAccount": "已停用账户",
-    "LocalTime": "当地时间",
-    "LocalTimeNotSet": "未设置当地时间"
+    "LocalTime": "当地时间"
   }
 }

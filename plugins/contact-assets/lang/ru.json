@@ -115,7 +115,6 @@
     "Confirmed": "Подтвержден",
     "UserProfile": "Профиль пользователя",
     "DeactivatedAccount": "Деактивированный аккаунт",
-    "LocalTime": "местного времени",
-    "LocalTimeNotSet": "Местное время не задано"
+    "LocalTime": "местного времени"
   }
 }

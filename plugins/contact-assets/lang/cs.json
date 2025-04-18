@@ -111,7 +111,6 @@
     "ViberPlaceholder": "Viber",
     "UserProfile": "Uživatelský profil",
     "DeactivatedAccount": "Deaktivovaný účet",
-    "LocalTime": "místní čas",
-    "LocalTimeNotSet": "Místní čas není nastaven"
+    "LocalTime": "místní čas"
   }
 }

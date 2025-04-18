@@ -111,7 +111,6 @@
     "ViberPlaceholder": "Viber",
     "UserProfile": "Benutzerprofil",
     "DeactivatedAccount": "Deaktivierter Account",
-    "LocalTime": "Ortszeit",
-    "LocalTimeNotSet": "Ortszeit nicht festgelegt"
+    "LocalTime": "Ortszeit"
   }
 }
