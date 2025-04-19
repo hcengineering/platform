@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,22 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { config as dotenvConfig } from 'dotenv'
 
-import type { Plugin, Resource } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
-import { Presenter } from '@hcengineering/server-notification'
+dotenvConfig()
 
-/**
- * @public
- */
-export const serverLeadId = 'server-lead' as Plugin
+interface Config {
+  secret: string
+  sentryDSN: string
+  accountsUrl: string
+  smtpUrl: string
+  queueRegion: string
+}
 
-/**
- * @public
- */
-export default plugin(serverLeadId, {
-  function: {
-    LeadHTMLPresenter: '' as Resource<Presenter>,
-    LeadTextPresenter: '' as Resource<Presenter>
-  }
-})
+const config: Config = {
+  secret: process.env.SECRET ?? 'secret',
+  sentryDSN: process.env.SENTRY_DSN ?? '',
+  accountsUrl: process.env.ACCOUNTS_URL ?? 'http://localhost:3000',
+  smtpUrl: process.env.SMTP_URL ?? 'http://localhost:8097',
+  queueRegion: process.env.QUEUE_REGION ?? 'localhost'
+}
+
+export default config

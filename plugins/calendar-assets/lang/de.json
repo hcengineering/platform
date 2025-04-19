@@ -105,6 +105,9 @@
     "CalDavAccessServer": "CalDAV-Server",
     "CalDavAccessAccount": "Huly-Konto",
     "CalDavAccessPassword": "Passwort",
-    "CalDavAccessPasswordWarning": "Sie können dieses Passwort nicht erneut anzeigen. Bitte speichern Sie es an einem sicheren Ort."
+    "CalDavAccessPasswordWarning": "Sie können dieses Passwort nicht erneut anzeigen. Bitte speichern Sie es an einem sicheren Ort.",
+    "MeetingScheduledNotification": "Besprechung geplant",
+    "MeetingRescheduledNotification": "Besprechungszeit geändert",
+    "MeetingCanceledNotification": "Besprechung abgesagt: {title}"
   }
 }

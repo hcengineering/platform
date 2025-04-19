@@ -150,7 +150,7 @@ export async function login (
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
-    const extraToken: Record<string, string> = isAdminEmail(email) ? { admin: 'true' } : {}
+    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
     ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
 
     return {
@@ -292,48 +292,56 @@ export async function validateOtp (
 
   // Note: can support OTP based on any other social logins later
   const normalizedEmail = cleanEmail(email)
-  const emailSocialId = await getEmailSocialId(db, normalizedEmail)
+  try {
+    const emailSocialId = await getEmailSocialId(db, normalizedEmail)
 
-  if (emailSocialId == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
-  }
+    if (emailSocialId == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+    }
 
-  const isValid = await isOtpValid(db, emailSocialId._id, code)
+    const isValid = await isOtpValid(db, emailSocialId._id, code)
 
-  if (!isValid) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
-  }
+    if (!isValid) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
+    }
 
-  await db.otp.deleteMany({ socialId: emailSocialId._id })
+    await db.otp.deleteMany({ socialId: emailSocialId._id })
 
-  if (emailSocialId.verifiedOn == null) {
-    await db.socialId.updateOne({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
-  }
+    if (emailSocialId.verifiedOn == null) {
+      await db.socialId.updateOne({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
+    }
 
-  // This method handles both login and signup
-  const account = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
+    // This method handles both login and signup
+    const account = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
-  if (account == null) {
-    // This is a signup
-    await createAccount(db, emailSocialId.personUuid, true)
+    if (account == null) {
+      // This is a signup
+      await createAccount(db, emailSocialId.personUuid, true)
 
-    ctx.info('OTP signup success', emailSocialId)
-  } else {
-    await confirmHulyIds(ctx, db, account.uuid)
+      ctx.info('OTP signup success', emailSocialId)
+    } else {
+      await confirmHulyIds(ctx, db, account.uuid)
 
-    ctx.info('OTP login success', emailSocialId)
-  }
+      ctx.info('OTP login success', emailSocialId)
+    }
 
-  const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
-  if (person == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
-  }
+    const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
+    if (person == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    }
 
-  return {
-    account: emailSocialId.personUuid as AccountUuid,
-    name: getPersonName(person),
-    socialId: emailSocialId._id,
-    token: generateToken(emailSocialId.personUuid)
+    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
+
+    return {
+      account: emailSocialId.personUuid as AccountUuid,
+      name: getPersonName(person),
+      socialId: emailSocialId._id,
+      token: generateToken(emailSocialId.personUuid, undefined, extraToken)
+    }
+  } catch (err: any) {
+    Analytics.handleError(err)
+    ctx.error('OTP login error', { email, err })
+    throw err
   }
 }
 

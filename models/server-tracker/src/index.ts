@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import contact from '@hcengineering/contact'
 import core from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import tracker from '@hcengineering/model-tracker'
@@ -49,16 +48,6 @@ export function createModel (builder: Builder): void {
     },
     shortTitle: [['identifier']],
     title: [['title']]
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnEmployeeCreate,
-    txMatch: {
-      objectClass: contact.class.Person,
-      _class: core.class.TxMixin,
-      mixin: contact.mixin.Employee,
-      'attributes.active': true
-    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

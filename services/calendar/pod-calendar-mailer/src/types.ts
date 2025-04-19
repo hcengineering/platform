@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,21 +13,13 @@
 // limitations under the License.
 //
 
-import type { Plugin, Resource } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
-import { Presenter } from '@hcengineering/server-notification'
+import { Event } from '@hcengineering/calendar'
+import { Data, PersonId } from '@hcengineering/core'
+import { Meeting } from '@hcengineering/love'
 
-/**
- * @public
- */
-export const serverLeadId = 'server-lead' as Plugin
-
-/**
- * @public
- */
-export default plugin(serverLeadId, {
-  function: {
-    LeadHTMLPresenter: '' as Resource<Presenter>,
-    LeadTextPresenter: '' as Resource<Presenter>
-  }
-})
+export interface EventCUDMessage {
+  action: 'create' | 'update' | 'delete' | 'mixin'
+  event: Event
+  modifiedBy: PersonId
+  changes?: Partial<Data<Event>> | Partial<Data<Meeting>>
+}
