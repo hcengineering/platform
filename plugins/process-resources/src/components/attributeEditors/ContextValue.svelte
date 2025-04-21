@@ -20,7 +20,9 @@
   import ContextValuePresenter from './ContextValuePresenter.svelte'
   import { AttributeCategory } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import { MasterTag, Tag } from '@hcengineering/card'
 
+  export let masterTag: Ref<MasterTag | Tag>
   export let contextValue: SelectedContext
   export let context: Context
   export let attribute: AnyAttribute
@@ -46,7 +48,7 @@
     }
     showPopup(
       ConfigurePopup,
-      { contextValue, attrClass, category, attribute, context, onChange },
+      { contextValue, attrClass, masterTag, category, attribute, context, onChange },
       eventToHTMLElement(e)
     )
   }

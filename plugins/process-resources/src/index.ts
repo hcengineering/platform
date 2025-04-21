@@ -35,6 +35,7 @@ import SubProcessEditor from './components/SubProcessEditor.svelte'
 import ToDoEditor from './components/ToDoEditor.svelte'
 import UpdateCardEditor from './components/UpdateCardEditor.svelte'
 import ResultInput from './components/contextEditors/ResultInput.svelte'
+import RoleEditor from './components/contextEditors/RoleEditor.svelte'
 
 import { continueExecution, showDoneQuery } from './utils'
 import { ProcessMiddleware } from './middleware'
@@ -66,7 +67,8 @@ export default async (): Promise<Resources> => ({
     NumberOffsetEditor,
     ErrorPresenter,
     RequestUserInput,
-    ResultInput
+    ResultInput,
+    RoleEditor
   },
   function: {
     ShowDoneQuery: showDoneQuery,

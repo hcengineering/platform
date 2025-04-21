@@ -164,6 +164,7 @@ export class TProcessFunction extends TDoc implements ProcessFunction {
   label!: IntlString
   editor?: AnyComponent
   allowMany?: boolean
+  type!: 'transform' | 'reduce' | 'context'
 }
 
 export * from './migration'
@@ -239,7 +240,8 @@ export function createModel (builder: Builder): void {
     {
       of: core.class.TypeString,
       category: 'attribute',
-      label: process.string.UpperCase
+      label: process.string.UpperCase,
+      type: 'transform'
     },
     process.function.UpperCase
   )
@@ -250,7 +252,8 @@ export function createModel (builder: Builder): void {
     {
       of: core.class.TypeString,
       category: 'attribute',
-      label: process.string.LowerCase
+      label: process.string.LowerCase,
+      type: 'transform'
     },
     process.function.LowerCase
   )
@@ -261,7 +264,8 @@ export function createModel (builder: Builder): void {
     {
       of: core.class.TypeString,
       category: 'attribute',
-      label: process.string.Trim
+      label: process.string.Trim,
+      type: 'transform'
     },
     process.function.Trim
   )
@@ -272,7 +276,8 @@ export function createModel (builder: Builder): void {
     {
       of: core.class.ArrOf,
       category: undefined,
-      label: process.string.FirstValue
+      label: process.string.FirstValue,
+      type: 'reduce'
     },
     process.function.FirstValue
   )
@@ -282,6 +287,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       of: core.class.ArrOf,
+      type: 'reduce',
       category: undefined,
       label: process.string.LastValue
     },
@@ -293,6 +299,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       of: core.class.ArrOf,
+      type: 'reduce',
       category: undefined,
       label: process.string.Random
     },
@@ -304,6 +311,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       of: core.class.TypeNumber,
+      type: 'transform',
       category: 'attribute',
       label: process.string.Add,
       allowMany: true,
@@ -320,7 +328,8 @@ export function createModel (builder: Builder): void {
       category: 'attribute',
       label: process.string.Subtract,
       allowMany: true,
-      editor: process.component.NumberOffsetEditor
+      editor: process.component.NumberOffsetEditor,
+      type: 'transform'
     },
     process.function.Subtract
   )
@@ -332,7 +341,8 @@ export function createModel (builder: Builder): void {
       of: core.class.TypeDate,
       category: 'attribute',
       label: process.string.Offset,
-      editor: process.component.DateOffsetEditor
+      editor: process.component.DateOffsetEditor,
+      type: 'transform'
     },
     process.function.Offset
   )
@@ -343,9 +353,23 @@ export function createModel (builder: Builder): void {
     {
       of: core.class.TypeDate,
       category: 'attribute',
-      label: process.string.FirstWorkingDayAfter
+      label: process.string.FirstWorkingDayAfter,
+      type: 'transform'
     },
     process.function.FirstWorkingDayAfter
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: contact.mixin.Employee,
+      editor: process.component.RoleEditor,
+      category: 'array',
+      label: core.string.Role,
+      type: 'context'
+    },
+    process.function.RoleContext
   )
 
   builder.mixin(process.class.Process, core.class.Class, view.mixin.AttributePresenter, {

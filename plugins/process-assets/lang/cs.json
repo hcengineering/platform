@@ -65,6 +65,7 @@
     "ObjectNotFound": "Objekt nenalezen: {_id}",
     "EmptyRelatedObjectValue": "Prázdná hodnota {attr} souvisejícího objektu: {parent}",
     "InternalServerError": "Vnitřní chyba serveru, kontaktujte podporu, chybové id: {errorId}",
-    "ResultNotProvided": "Výsledek nebyl poskytnut"
+    "ResultNotProvided": "Výsledek nebyl poskytnut",
+    "EmptyFunctionResult": "Prázdný výsledek funkce {func}"
   }
 }

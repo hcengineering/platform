@@ -65,6 +65,7 @@
     "ObjectNotFound": "Objet introuvable : {_id}",
     "EmptyRelatedObjectValue": "Valeur d'objet lié vide : {parent} {attr}",
     "InternalServerError": "Erreur interne du serveur, contactez le support, id d'erreur : {errorId}",
-    "ResultNotProvided": "Résultat non fourni"
+    "ResultNotProvided": "Résultat non fourni",
+    "EmptyFunctionResult": "Résultat de fonction vide {func}"
   }
 }
