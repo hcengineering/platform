@@ -83,11 +83,11 @@ export class GmailController {
         const info = await accountClient.getWorkspaceInfo()
 
         if (info === undefined) {
-          console.log('workspace not found', integration.workspaceUuid)
+          this.ctx.info('workspace not found', { workspaceUuid: integration.workspaceUuid })
           return
         }
         if (!isActiveMode(info.mode)) {
-          console.log('workspace is not active', integration.workspaceUuid)
+          this.ctx.info('workspace is not active', { workspaceUuid: integration.workspaceUuid })
           return
         }
         const tokens = await getWorkspaceTokens(accountClient, integration.workspaceUuid)
@@ -110,13 +110,13 @@ export class GmailController {
     for (const token of tokens) {
       try {
         const timeout = setTimeout(() => {
-          console.log('init client hang', token.workspace, token.userId)
+          this.ctx.info('init client hang', { workspaceUuid: token.workspace, userId: token.userId })
         }, 60000)
         const client = await workspaceClient.createGmailClient(token)
         clearTimeout(timeout)
         clients.push(client)
       } catch (err) {
-        console.error(`Couldn't create client for ${workspace} ${token.userId}`)
+        this.ctx.error('Couldn\'t create client', { workspaceUuid: workspace, userId: token.userId })
       }
     }
     for (const client of clients) {
@@ -184,12 +184,12 @@ export class GmailController {
     let res = this.workspaces.get(workspace)
     if (res === undefined) {
       try {
-        console.log('create workspace worker for', workspace)
+        this.ctx.info('create workspace worker', { workspaceUuid: workspace })
         res = await WorkspaceClient.create(this.ctx, this.credentials, this.storageAdapter, workspace)
         this.workspaces.set(workspace, res)
-        console.log('created workspace worker for', workspace)
+        this.ctx.info('created workspace worker', { workspaceUuid: workspace })
       } catch (err) {
-        console.error(`Couldn't create workspace worker for ${workspace}, reason: `, err)
+        this.ctx.error('Couldn\'t create workspace worker', { workspaceUuid: workspace, reason: err })
         throw err
       }
     }

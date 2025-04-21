@@ -132,7 +132,7 @@ export class GmailClient {
   ): Promise<GmailClient> {
     const gmailClient = new GmailClient(ctx, credentials, user, client, workspaceId, storageAdapter, workspace)
     if (isToken(user)) {
-      console.log('Setting token while creating', user.workspace, user.userId, user)
+      ctx.info('Setting token while creating', { workspaceUuid: user.workspace, userId: user.userId })
       await gmailClient.setToken(user)
       await gmailClient.refreshToken()
       await gmailClient.addClient()
@@ -152,7 +152,7 @@ export class GmailClient {
 
   async authorize (code: string): Promise<void> {
     const token = await this.oAuth2Client.getToken(code)
-    console.log('Setting token after authorize', this.user.workspace, this.user.userId, token)
+    this.ctx.info('Setting token after authorize', { workspaceUuid: this.user.workspace, userId: this.user.userId })
     await this.setToken(token.tokens)
     await this.refreshToken()
     await this.addClient()
@@ -216,7 +216,7 @@ export class GmailClient {
         status: 'error',
         error: JSON.stringify(err)
       })
-      console.log('Create message error', this.user.workspace, this.user.userId, err.message)
+      this.ctx.error('Create message error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: err.message })
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.refreshToken()
       }
@@ -247,6 +247,7 @@ export class GmailClient {
   }
 
   async startSync (): Promise<void> {
+    this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId })
     await this.syncManager.sync(this.socialId, this.email)
     await this.watch()
     // recall every 24 hours https://developers.google.com/gmail/api/guides/push
@@ -256,6 +257,7 @@ export class GmailClient {
   }
 
   async sync (): Promise<void> {
+    this.ctx.info('Sync', { workspaceUuid: this.user.workspace, userId: this.user.userId })
     await this.syncManager.sync(this.socialId, this.email)
   }
 
@@ -282,10 +284,8 @@ export class GmailClient {
 
   private async syncUserInfo (credentials: Credentials): Promise<void> {
     if (credentials.access_token == null) return
-    const tokenInfo = await this.oAuth2Client.getTokenInfo(credentials.access_token)
-    this.email = tokenInfo.email
     if (this.email === undefined) {
-      console.error("Can't get email from token info", this.user.workspace, this.user.userId)
+      this.ctx.error('User email is missing', { workspaceUuid: this.user.workspace, userId: this.user.userId })
       return
     }
     this.socialId = await getOrCreateSocialId(this.account, this.email)
@@ -302,7 +302,7 @@ export class GmailClient {
       const controller = GmailController.getGmailController()
       controller.addClient(socialId, this)
     } catch (err) {
-      console.log('Add client error', this.user.workspace, this.user.userId, (err as any).message)
+      this.ctx.error('Add client error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: (err as any).message })
     }
   }
 
@@ -313,7 +313,7 @@ export class GmailClient {
       await this.syncUserInfo(token)
       await this.updateSocialId(email)
     } catch (err: any) {
-      console.log('Set token error', this.user.workspace, this.user.userId, err.message)
+      this.ctx.error('Set token error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: err.message })
       if (this.checkError(err)) {
         await this.signout(true)
       }
@@ -339,7 +339,7 @@ export class GmailClient {
     try {
       await this.tokenStorage.saveToken(token as Token)
     } catch (err) {
-      console.log('update token error', this.user.workspace, this.user.userId, (err as any).message)
+      this.ctx.error('update token error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: (err as any).message })
     }
   }
 
@@ -359,7 +359,7 @@ export class GmailClient {
         30 * 60 * 1000
       )
     } catch (err: any) {
-      console.log("Couldn't refresh token, error:", err.message)
+      this.ctx.error('Couldn\'t refresh token', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: err.message })
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.workspace.signoutBySocialId(this.socialId, true)
       } else {
@@ -384,7 +384,7 @@ export class GmailClient {
         }
       })
     } catch (err) {
-      console.log('Watch error', (err as any).message)
+      this.ctx.error('Watch error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: (err as any).message })
     }
   }
 
@@ -401,7 +401,7 @@ export class GmailClient {
         userId: 'me'
       })
     } catch (err) {
-      console.log('close error', (err as any).message)
+      this.ctx.error('close error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: (err as any).message })
     }
   }
 }

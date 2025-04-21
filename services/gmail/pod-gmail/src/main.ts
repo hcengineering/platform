@@ -18,8 +18,8 @@
 import { SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
-import serverClient from '@hcengineering/server-client'
-import { getClient as getAccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import serverClient, { getAccountClient } from '@hcengineering/server-client'
+import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
@@ -69,6 +69,7 @@ export const main = async (): Promise<void> => {
       type: 'get',
       handler: async (req, res) => {
         try {
+          ctx.info('Signin request received')
           const token = extractToken(req.headers)
 
           if (token === undefined) {
@@ -91,7 +92,7 @@ export const main = async (): Promise<void> => {
           })
           res.send(url)
         } catch (err) {
-          console.log('signin error', (err as any).message)
+          ctx.error('signin error', { message: (err as any).message })
           res.status(500).send()
         }
       }
@@ -100,6 +101,7 @@ export const main = async (): Promise<void> => {
       endpoint: '/signin/code',
       type: 'get',
       handler: async (req, res) => {
+        ctx.info('Signin code request received')
         const code = req.query.code as string
         const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
         const gmail = await gmailController.createClient(state)
@@ -111,6 +113,7 @@ export const main = async (): Promise<void> => {
       endpoint: '/signout',
       type: 'get',
       handler: async (req, res) => {
+        ctx.info('Signout request received')
         try {
           const token = extractToken(req.headers)
 
@@ -123,7 +126,7 @@ export const main = async (): Promise<void> => {
 
           await gmailController.signout(workspace, account)
         } catch (err) {
-          console.log('signout error', JSON.stringify(err))
+          ctx.error('signout error', { message: JSON.stringify(err) })
         }
 
         res.send()

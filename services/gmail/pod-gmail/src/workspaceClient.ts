@@ -117,7 +117,7 @@ export class WorkspaceClient {
 
   private async initClient (workspace: WorkspaceUuid): Promise<Client> {
     const token = generateToken(systemAccountUuid, workspace, { service: 'gmail' })
-    console.log('token', token, workspace)
+    this.ctx.info('Init client', { workspaceUuid: workspace })
     const client = await getClient(token)
     client.notify = (...tx: Tx[]) => {
       void this.txHandler(...tx)
@@ -152,7 +152,7 @@ export class WorkspaceClient {
     const newMessages = await this.client.findAll(gmailP.class.NewMessage, {
       status: 'new'
     })
-    console.log('get new messages, recieved', this.workspace, newMessages.length)
+    this.ctx.info('get new messages', { workspaceUuid: this.workspace, count: newMessages.length })
     await this.subscribeMessages()
     for (const message of newMessages) {
       const from = message.from ?? message.createdBy ?? message.modifiedBy
@@ -160,7 +160,7 @@ export class WorkspaceClient {
       if (client !== undefined) {
         await client.createMessage(message)
       } else {
-        console.log('client not found, skip message', this.workspace, from, message._id)
+        this.ctx.error('client not found, skip message', { workspaceUuid: this.workspace, from, messageId: message._id })
       }
     }
   }
@@ -329,7 +329,7 @@ export class WorkspaceClient {
         await this.txEmployeeHandler(tx)
       }
     })
-    console.log('deactivate users', this.workspace, removedEmployees.length)
+    this.ctx.info('deactivate users', { workspaceUuid: this.workspace, count: removedEmployees.length })
   }
 
   private async deactivateUser (acc: Person): Promise<void> {
