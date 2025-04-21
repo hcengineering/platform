@@ -15,10 +15,11 @@
 
 import { DocumentState } from '@hcengineering/controlled-documents'
 import { combine } from 'effector'
-import { $documentState, $isLatestVersion } from './editor'
+import { $documentState, $isDocumentOwner, $isLatestVersion } from './editor'
 
 export const $canSendForReview = combine(
   $isLatestVersion,
   $documentState,
-  (isLatestVersion, state) => isLatestVersion && state === DocumentState.Draft
+  $isDocumentOwner,
+  (isLatestVersion, state, isDocumentOwner) => isLatestVersion && state === DocumentState.Draft && isDocumentOwner
 )
