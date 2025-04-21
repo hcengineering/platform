@@ -34,11 +34,11 @@
   let draftExists = false
   let projectExists = false
   let loading = true
-  let keys: string[] | undefined = undefined
 
   const query = createQuery()
   const client = getClient()
   const draftController = new MultipleDraftController(tracker.ids.IssueDraft)
+  const newIssueKeyBindingPromise = client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then(p => p?.keyBinding)
 
   onDestroy(
     draftController.hasNext((res) => {
@@ -50,8 +50,6 @@
     projectExists = res.length > 0
     loading = false
   })
-
-  void client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
 
   function newProject (): void {
     closed = false
@@ -109,13 +107,13 @@
       id: tracker.string.ResumeDraft,
       label: tracker.string.ResumeDraft,
       draft: true,
-      keyBinding: keys,
+      keyBindingPromise: newIssueKeyBindingPromise,
       callback: newIssue
     },
     {
       id: tracker.string.NewIssue,
       label: tracker.string.NewIssue,
-      keyBinding: keys,
+      keyBindingPromise: newIssueKeyBindingPromise,
       callback: newIssue
     },
     {

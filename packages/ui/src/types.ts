@@ -515,6 +515,7 @@ export interface SelectPopupValueType {
  */
 export interface HeaderButtonAction extends SelectPopupValueType {
   callback: () => void
+  keyBindingPromise?: Promise<string[] | undefined>
   keyBinding?: string[] | undefined
   draft?: boolean
   accountRole?: AccountRole

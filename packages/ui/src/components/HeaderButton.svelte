@@ -42,6 +42,7 @@
       if (await isActionAllowed(action)) {
         result.push(action)
       }
+      action.keyBinding = await action.keyBindingPromise
     }
     allowedActions = result
     return result
