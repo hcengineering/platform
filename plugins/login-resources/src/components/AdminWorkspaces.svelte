@@ -78,6 +78,7 @@
           (it.workspaceUrl?.includes(search) ?? false) ||
           it.workspace?.includes(search) ||
           it.createdBy?.includes(search)) &&
+        (showSelectedRegionOnly ? it.region === selectedRegionId : true) &&
         ((showActive && isActiveMode(it.mode)) ||
           (showArchived && isArchivingMode(it.mode)) ||
           (showDeleted && isDeletingMode(it.mode)) ||
@@ -169,9 +170,11 @@
   const dayRanges = {
     Today: [-1, 1],
     Week: [1, 7],
-    Weeks: [7, 30],
-    Month: [30, 90],
-    Months: [90, 180],
+    Weeks: [7, 14],
+    Month: [14, 30],
+    Months1: [30, 60],
+    Months2: [60, 90],
+    Months3: [90, 180],
     'Six Month': [180, 270],
     'Nine Months': [270, 365],
     Years: [365, 10000000]
@@ -185,6 +188,8 @@
   let showArchived: boolean = false
   let showDeleted: boolean = false
   let showOther: boolean = true
+
+  let showSelectedRegionOnly: boolean = false
 
   $: groupped = groupByArray(sortedWorkspaces, (it) => {
     const lastUsageDays = Math.round((now - it.lastVisit) / (1000 * 3600 * 24))
@@ -282,6 +287,10 @@
       <div class="flex-row-center">
         <span class="mr-2">Show other workspaces:</span>
         <CheckBox bind:checked={showOther} />
+      </div>
+      <div class="flex-row-center">
+        <span class="mr-2">Show selected region only:</span>
+        <CheckBox bind:checked={showSelectedRegionOnly} />
       </div>
     </div>
 
@@ -410,7 +419,7 @@
                   <!-- svelte-ignore a11y-no-static-element-interactions -->
                   <div class="flex fs-title cursor-pointer focused-button bordered" id={`${workspace.workspace}`}>
                     <div class="flex p-2">
-                      <span class="label overflow-label flex-row-center" style:width={'12rem'}>
+                      <span class="label overflow-label flex-row-center" style:width={'22rem'}>
                         <div class="mr-1">
                           <Button
                             icon={IconOpen}
@@ -427,7 +436,7 @@
                         </div>
                         {wsName}
                       </span>
-                      <div class="ml-1" style:width={'12rem'}>
+                      <div class="ml-1" style:width={'18rem'}>
                         {workspace.createdBy}
                       </div>
                       <span class="label overflow-label" style:width={'8rem'}>
