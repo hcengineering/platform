@@ -36,9 +36,9 @@ import core, {
   AccountUuid,
   pickPrimarySocialId
 } from '@hcengineering/core'
-import serverCalendar from '@hcengineering/server-calendar'
+import serverCalendar, { EventCUDMessage, EventCUDType } from '@hcengineering/server-calendar'
 import { getMetadata, getResource } from '@hcengineering/platform'
-import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
+import { PlatformQueueProducer, QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { getPerson, getSocialStrings, getSocialIds } from '@hcengineering/server-contact'
 import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
 import { generateToken } from '@hcengineering/server-token'
@@ -349,14 +349,6 @@ async function sendEventToService (
   }
 }
 
-type EventCUDType = 'create' | 'update' | 'delete' | 'mixin'
-interface EventCUDMessage {
-  action: EventCUDType
-  event: Event
-  modifiedBy: PersonId
-  changes?: Record<string, any>
-}
-
 async function putEventToQueue (
   control: TriggerControl,
   action: EventCUDType,
@@ -364,19 +356,13 @@ async function putEventToQueue (
   modifiedBy: PersonId,
   changes?: Record<string, any>
 ): Promise<void> {
-  if (control.queue === undefined) {
-    return
-  }
-  const producer = control.queue.createProducer<EventCUDMessage>(
-    control.ctx.newChild('queue', {}),
-    QueueTopic.CalendarEventCUD
-  )
+  const producer = control.queueProducers?.get(QueueTopic.CalendarEventCUD) as PlatformQueueProducer<EventCUDMessage>
+  if (producer === undefined) return
+
   try {
     await producer.send(control.workspace.uuid, [{ action, event, modifiedBy, changes }])
   } catch (err) {
     control.ctx.error('Could not queue calendar event', { err, action, event })
-  } finally {
-    await producer.close()
   }
 }
 

@@ -19,6 +19,7 @@ import { plugin } from '@hcengineering/platform'
 import type { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
 import { Presenter } from '@hcengineering/server-notification'
 
+export * from './types'
 /**
  * @public
  */

@@ -133,7 +133,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       storageAdapter: this.storageAdapter,
       serviceAdaptersManager: this.context.serviceAdapterManager as ServiceAdaptersManager,
       findAll,
-      queue: this.context.queue,
+      queueProducers: this.context.queueProducers,
       contextCache: ctx.contextData.contextCache,
       modelDb: this.context.modelDb,
       hierarchy: this.context.hierarchy,

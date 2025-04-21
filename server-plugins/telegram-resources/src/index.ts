@@ -260,9 +260,9 @@ function hasAttachments (doc: ActivityMessage | undefined, hierarchy: Hierarchy)
 const telegramNotificationCacheKey = 'telegram.notification.cache'
 
 async function NotificationsHandler (txes: TxCreateDoc<InboxNotification>[], control: TriggerControl): Promise<Tx[]> {
-  const queue = control.queue
+  const producer = control.queueProducers?.get(QueueTopic.TelegramBot) as PlatformQueueProducer<TelegramQueueMessage>
 
-  if (queue === undefined) {
+  if (producer === undefined) {
     return []
   }
 
@@ -280,14 +280,10 @@ async function NotificationsHandler (txes: TxCreateDoc<InboxNotification>[], con
   }
 
   const result: Tx[] = []
-  const producer = queue.createProducer(control.ctx, QueueTopic.TelegramBot)
-  try {
-    for (const inboxNotification of all) {
-      result.push(...(await processNotification(inboxNotification, control, producer)))
-    }
-  } finally {
-    await producer.close()
+  for (const inboxNotification of all) {
+    result.push(...(await processNotification(inboxNotification, control, producer)))
   }
+
   return result
 }
 
@@ -396,45 +392,39 @@ async function ProviderSettingsHandler (
   txes: TxCUD<NotificationProviderSetting>[],
   control: TriggerControl
 ): Promise<Tx[]> {
-  const queue = control.queue
+  const producer = control.queueProducers?.get(QueueTopic.TelegramBot) as PlatformQueueProducer<TelegramQueueMessage>
 
-  if (queue === undefined) {
+  if (producer === undefined) {
     return []
   }
 
-  const producer = queue.createProducer(control.ctx, QueueTopic.TelegramBot)
+  for (const tx of txes) {
+    if (tx._class === core.class.TxCreateDoc) {
+      const createTx = tx as TxCreateDoc<NotificationProviderSetting>
+      const setting = TxProcessor.createDoc2Doc(createTx)
 
-  try {
-    for (const tx of txes) {
-      if (tx._class === core.class.TxCreateDoc) {
-        const createTx = tx as TxCreateDoc<NotificationProviderSetting>
-        const setting = TxProcessor.createDoc2Doc(createTx)
+      if (setting.attachedTo === telegram.providers.TelegramNotificationProvider) {
+        await updateWorkspaceSubscription(producer, setting.enabled, setting.createdBy ?? setting.modifiedBy, control)
+      }
+    } else if (tx._class === core.class.TxUpdateDoc) {
+      const updateTx = tx as TxUpdateDoc<NotificationProviderSetting>
+      if (updateTx.operations.enabled !== undefined) {
+        const setting = (
+          await control.findAll(control.ctx, notification.class.NotificationProviderSetting, {
+            _id: updateTx.objectId
+          })
+        )[0]
 
-        if (setting.attachedTo === telegram.providers.TelegramNotificationProvider) {
-          await updateWorkspaceSubscription(producer, setting.enabled, setting.createdBy ?? setting.modifiedBy, control)
-        }
-      } else if (tx._class === core.class.TxUpdateDoc) {
-        const updateTx = tx as TxUpdateDoc<NotificationProviderSetting>
-        if (updateTx.operations.enabled !== undefined) {
-          const setting = (
-            await control.findAll(control.ctx, notification.class.NotificationProviderSetting, {
-              _id: updateTx.objectId
-            })
-          )[0]
-
-          if (setting !== undefined && setting.attachedTo === telegram.providers.TelegramNotificationProvider) {
-            await updateWorkspaceSubscription(
-              producer,
-              updateTx.operations.enabled,
-              setting.createdBy ?? setting.modifiedBy,
-              control
-            )
-          }
+        if (setting !== undefined && setting.attachedTo === telegram.providers.TelegramNotificationProvider) {
+          await updateWorkspaceSubscription(
+            producer,
+            updateTx.operations.enabled,
+            setting.createdBy ?? setting.modifiedBy,
+            control
+          )
         }
       }
     }
-  } finally {
-    await producer.close()
   }
 
   return []

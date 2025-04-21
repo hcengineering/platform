@@ -37,7 +37,9 @@ import {
   SpacePermissionsMiddleware,
   SpaceSecurityMiddleware,
   TriggersMiddleware,
-  TxMiddleware
+  TxMiddleware,
+  TelegramMiddleware,
+  CalendarMiddleware
 } from '@hcengineering/middleware'
 import {
   createBenchmarkAdapter,
@@ -139,6 +141,8 @@ export function createServerPipeline (
       DomainFindMiddleware.create,
       DomainTxMiddleware.create,
       ...(opt.queue !== undefined ? [QueueMiddleware.create(opt.queue)] : []),
+      ...(opt.queue !== undefined ? [TelegramMiddleware.create(opt.queue)] : []),
+      ...(opt.queue !== undefined ? [CalendarMiddleware.create(opt.queue)] : []),
       DBAdapterInitMiddleware.create,
       ModelMiddleware.create(model),
       DBAdapterMiddleware.create(conf), // Configure DB adapters
@@ -153,6 +157,7 @@ export function createServerPipeline (
       modelDb,
       hierarchy,
       queue: opt.queue,
+      queueProducers: new Map(),
       storageAdapter: opt.externalStorage,
       contextVars: opt.pipelineContextVars ?? sharedPipelineContextVars,
       communicationApi
