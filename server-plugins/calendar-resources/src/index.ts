@@ -349,8 +349,8 @@ async function sendEventToService (
   }
 }
 
-export type EventCUDType = 'create' | 'update' | 'delete' | 'mixin'
-export interface EventCUDMessage {
+type EventCUDType = 'create' | 'update' | 'delete' | 'mixin'
+interface EventCUDMessage {
   action: EventCUDType
   event: Event
   modifiedBy: PersonId
