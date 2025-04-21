@@ -18,7 +18,7 @@
   import { ButtonWithDropdown, Button, Loading, IconAdd, IconDropdown } from '../index'
 
   export let mainActionId: number | string | null = null
-  export let loading = true
+  export let loading = false
   export let client: TxOperations & Client
   export let actions: HeaderButtonAction[] = []
   export let visibleActions: string[] = []
