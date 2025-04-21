@@ -69,7 +69,7 @@
             kind="primary"
             label={mainAction.label}
             width="100%"
-            on:click={mainAction.action}
+            on:click={mainAction.callback}
             showTooltip={{
               direction: 'bottom',
               label: mainAction.label,
@@ -91,9 +91,9 @@
             dropdownItems={items}
             dropdownIcon={IconDropdown}
             on:dropdown-selected={(ev) => {
-              items.find((a) => a.id === ev.detail)?.action()
+              items.find((a) => a.id === ev.detail)?.callback()
             }}
-            on:click={mainAction.action}
+            on:click={mainAction.callback}
             mainButtonId={mainAction.id !== null ? String(mainAction.id) : undefined}
             showTooltipMain={{
               direction: 'bottom',

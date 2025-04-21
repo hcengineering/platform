@@ -103,25 +103,25 @@
         id: core.permission.CreateProject,
         space: core.space.Space
       },
-      action: newProject
+      callback: newProject
     },
     {
       id: tracker.string.ResumeDraft,
       label: tracker.string.ResumeDraft,
       draft: true,
       keyBinding: keys,
-      action: newIssue
+      callback: newIssue
     },
     {
       id: tracker.string.NewIssue,
       label: tracker.string.NewIssue,
       keyBinding: keys,
-      action: newIssue
+      callback: newIssue
     },
     {
       id: tracker.string.Import,
       label: tracker.string.Import,
       accountRole: AccountRole.User,
-      action: newIssue
+      callback: newIssue
     }]}
 />
