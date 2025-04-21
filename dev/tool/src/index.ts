@@ -352,10 +352,8 @@ export function devTool (
         const coreWsInfo = flattenStatus(wsInfo)
         const accountClient = getAccountClient(getToolToken())
 
-        const wsProducer = getPlatformQueue('tool', cmd.region).getProducer<QueueWorkspaceMessage>(
-          toolCtx,
-          QueueTopic.Workspace
-        )
+        const queue = getPlatformQueue('tool', cmd.region)
+        const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
 
         await createWorkspace(
           measureCtx,
@@ -377,9 +375,8 @@ export function devTool (
         })
 
         await wsProducer.send(res.workspaceUuid, [workspaceEvents.created()])
-        await wsProducer.close()
-
-        console.log('create-workspace done')
+        await queue.shutdown()
+        console.log(queue)
       })
     })
 
@@ -435,10 +432,8 @@ export function devTool (
         const coreWsInfo = flattenStatus(wsInfo)
         const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
         const accountClient = getAccountClient(getToolToken(wsInfo.uuid))
-        const wsProducer = getPlatformQueue('tool', info.region).getProducer<QueueWorkspaceMessage>(
-          toolCtx,
-          QueueTopic.Workspace
-        )
+        const queue = getPlatformQueue('tool', info.region)
+        const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
         await upgradeWorkspace(
           measureCtx,
           version,
@@ -464,7 +459,7 @@ export function devTool (
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
 
         await wsProducer.send(info.uuid, [workspaceEvents.upgraded()])
-        await wsProducer.close()
+        await queue.shutdown()
         console.log('upgrade-workspace done')
       })
     })
@@ -1144,12 +1139,10 @@ export function devTool (
             storageAdapter: workspaceStorage,
             historyFile: cmd.historyFile
           })
-          const wsProducer = getPlatformQueue('tool', ws.region).getProducer<QueueWorkspaceMessage>(
-            toolCtx,
-            QueueTopic.Workspace
-          )
+          const queue = getPlatformQueue('tool', ws.region)
+          const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
           await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
-          await wsProducer.close()
+          await queue.shutdown()
           await workspaceStorage?.close()
         })
       }
@@ -2092,12 +2085,10 @@ export function devTool (
         }
 
         console.log('reindex workspace', workspace)
-        const wsProducer = getPlatformQueue('tool', ws.region).getProducer<QueueWorkspaceMessage>(
-          toolCtx,
-          QueueTopic.Workspace
-        )
+        const queue = getPlatformQueue('tool', info.region)
+        const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
         await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
-        await wsProducer.close()
+        await queue.shutdown()
         console.log('done', workspace)
       })
     })

@@ -158,7 +158,6 @@ export function serveWorkspaceAccount (
 
   const close = (): void => {
     canceled = true
-    void wsProducer.close()
     void queue.shutdown()
     onClose?.()
   }
