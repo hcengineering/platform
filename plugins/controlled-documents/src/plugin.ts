@@ -172,6 +172,7 @@ export const documentsPlugin = plugin(documentsId, {
     Category: '' as IntlString,
     Author: '' as IntlString,
     Owner: '' as IntlString,
+    Creator: '' as IntlString,
     Status: '' as IntlString,
     Labels: '' as IntlString,
     Description: '' as IntlString,

@@ -18,7 +18,7 @@ import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/acti
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, { Employee, type Person } from '@hcengineering/contact'
 import core, {
-  PersonId,
+  AccountUuid,
   AnyAttribute,
   ArrOf,
   AttachedDoc,
@@ -30,6 +30,8 @@ import core, {
   DocumentUpdate,
   MeasureContext,
   MixinUpdate,
+  notEmpty,
+  PersonId,
   Ref,
   RefTo,
   SortingOrder,
@@ -41,11 +43,7 @@ import core, {
   TxMixin,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc,
-  AccountUuid,
-  notEmpty,
-  generateId,
-  toIdMap
+  TxUpdateDoc
 } from '@hcengineering/core'
 import notification, {
   ActivityInboxNotification,
@@ -78,21 +76,21 @@ import {
   createPullCollaboratorsTx,
   createPushCollaboratorsTx,
   getHTMLPresenter,
+  getNotificationContent,
   getNotificationLink,
   getNotificationProviderControl,
   getObjectSpace,
-  getTextPresenter,
   getReceiversInfo,
+  getSenderInfo,
+  getTextPresenter,
   isAllowed,
   isMixinTx,
   isShouldNotifyTx,
   isUserEmployeeInFieldValueTypeMatch,
   messageToMarkup,
-  replaceAll,
-  updateNotifyContextsSpace,
   type NotificationProviderControl,
-  getNotificationContent,
-  getSenderInfo
+  replaceAll,
+  updateNotifyContextsSpace
 } from './utils'
 import { PushNotificationsHandler } from './push'
 
@@ -564,11 +562,6 @@ async function createNotifyContext (
   contextsCache.contexts.set(cacheKey, createTx.objectId)
   control.cache.set(ContextsCacheKey, contextsCache)
   await ctx.with('apply', {}, () => control.apply(control.ctx, [createTx]))
-  control.ctx.contextData.broadcast.targets['docNotifyContext' + createTx._id] = (it) => {
-    if (it._id === createTx._id) {
-      return [receiver.account]
-    }
-  }
   return createTx.objectId
 }
 
@@ -668,12 +661,6 @@ async function updateContextsTimestamp (
     })
 
     res.push(updateTx)
-
-    control.ctx.contextData.broadcast.targets['docNotifyContext' + updateTx._id] = (it) => {
-      if (it._id === updateTx._id) {
-        return [context.user]
-      }
-    }
   }
 
   if (res.length > 0) {
@@ -700,12 +687,6 @@ async function removeContexts (
     const removeTx = control.txFactory.createTxRemoveDoc(context._class, context.space, context._id)
 
     res.push(removeTx)
-
-    control.ctx.contextData.broadcast.targets['docNotifyContext' + removeTx._id] = (it) => {
-      if (it._id === removeTx._id) {
-        return [context.user]
-      }
-    }
   }
 
   await control.apply(control.ctx, res)
@@ -815,13 +796,7 @@ export async function createCollabDocInfo (
       docMessages,
       settings
     )
-    const ids = new Set(targetRes.map((it) => it._id))
-    const id = generateId() as string
-    control.ctx.contextData.broadcast.targets[id] = (it) => {
-      if (ids.has(it._id)) {
-        return [receiver.account]
-      }
-    }
+
     res = res.concat(targetRes)
   }
   return res
@@ -1448,41 +1423,6 @@ export async function OnAttributeUpdate (txes: Tx[], control: TriggerControl): P
   return result
 }
 
-async function applyUserTxes (ctx: MeasureContext, control: TriggerControl, txes: Tx[]): Promise<Tx[]> {
-  const map: Map<AccountUuid, Tx[]> = new Map<AccountUuid, Tx[]>()
-  const res: Tx[] = []
-
-  for (const tx of txes) {
-    const ttx = tx as TxCUD<Doc>
-    if (
-      control.hierarchy.isDerived(ttx.objectClass, notification.class.InboxNotification) &&
-      ttx._class === core.class.TxCreateDoc
-    ) {
-      const notification = TxProcessor.createDoc2Doc(ttx as TxCreateDoc<InboxNotification>)
-
-      if (map.has(notification.user)) {
-        map.get(notification.user)?.push(tx)
-      } else {
-        map.set(notification.user, [tx])
-      }
-    } else {
-      res.push(tx)
-    }
-  }
-
-  for (const [user, txs] of map.entries()) {
-    await control.apply(ctx, txs)
-    const m1 = toIdMap(txs)
-    control.ctx.contextData.broadcast.targets.docNotifyContext = (it) => {
-      if (m1.has(it._id)) {
-        return [user]
-      }
-    }
-  }
-
-  return res
-}
-
 async function updateCollaborators (
   ctx: MeasureContext,
   control: TriggerControl,
@@ -1565,19 +1505,16 @@ export async function createCollaboratorNotifications (
   }
 
   if (tx.attachedTo !== undefined && !ignoreCollection) {
-    const res = await ctx.with('collectionCollabDoc', {}, (ctx) =>
+    return await ctx.with('collectionCollabDoc', {}, (ctx) =>
       collectionCollabDoc(ctx, tx as TxCUD<AttachedDoc>, control, activityMessages, cache, true)
     )
-    return await applyUserTxes(ctx, control, res)
   }
 
   switch (tx._class) {
     case core.class.TxCreateDoc: {
-      const res = await ctx.with('createCollaboratorDoc', {}, (ctx) =>
+      return await ctx.with('createCollaboratorDoc', {}, (ctx) =>
         createCollaboratorDoc(ctx, tx as TxCreateDoc<Doc>, control, activityMessages, cache)
       )
-
-      return await applyUserTxes(ctx, control, res)
     }
     case core.class.TxUpdateDoc:
     case core.class.TxMixin: {
@@ -1596,7 +1533,7 @@ export async function createCollaboratorNotifications (
           )
         )
       )
-      return await applyUserTxes(ctx, control, res)
+      return res
     }
   }
 
