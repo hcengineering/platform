@@ -43,8 +43,6 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-preference": "^0.6.0",
     "@hcengineering/server-notification": "^0.6.1",
-    "@hcengineering/server-telegram": "^0.6.0",
-    "@hcengineering/server-calendar": "^0.6.0",
     "@hcengineering/query": "^0.6.12",
     "@hcengineering/analytics": "^0.6.0",
     "fast-equals": "^5.2.2"

@@ -35,7 +35,7 @@ export interface ConsumerControl {
 }
 
 export interface PlatformQueue {
-  createProducer: <T>(ctx: MeasureContext, topic: QueueTopic | string) => PlatformQueueProducer<T>
+  getProducer: <T>(ctx: MeasureContext, topic: QueueTopic | string) => PlatformQueueProducer<T>
 
   /**
    * Create a consumer for a topic.

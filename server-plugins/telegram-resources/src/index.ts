@@ -260,11 +260,8 @@ function hasAttachments (doc: ActivityMessage | undefined, hierarchy: Hierarchy)
 const telegramNotificationCacheKey = 'telegram.notification.cache'
 
 async function NotificationsHandler (txes: TxCreateDoc<InboxNotification>[], control: TriggerControl): Promise<Tx[]> {
-  const producer = control.queueProducers?.get(QueueTopic.TelegramBot) as PlatformQueueProducer<TelegramQueueMessage>
-
-  if (producer === undefined) {
-    return []
-  }
+  if (control.queue === undefined) return []
+  const producer = control.queue.getProducer<TelegramQueueMessage>(control.ctx, QueueTopic.TelegramBot)
 
   const availableProviders: AvailableProvidersCache = control.contextCache.get(AvailableProvidersCacheKey) ?? new Map()
 
@@ -392,11 +389,8 @@ async function ProviderSettingsHandler (
   txes: TxCUD<NotificationProviderSetting>[],
   control: TriggerControl
 ): Promise<Tx[]> {
-  const producer = control.queueProducers?.get(QueueTopic.TelegramBot) as PlatformQueueProducer<TelegramQueueMessage>
-
-  if (producer === undefined) {
-    return []
-  }
+  if (control.queue === undefined) return []
+  const producer = control.queue.getProducer<TelegramQueueMessage>(control.ctx, QueueTopic.TelegramBot)
 
   for (const tx of txes) {
     if (tx._class === core.class.TxCreateDoc) {

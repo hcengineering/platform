@@ -270,7 +270,7 @@ export interface TriggerControl {
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
 
-  queueProducers?: Map<QueueTopic, PlatformQueueProducer<any>>
+  queue?: PlatformQueue
 
   communicationApi: CommunicationApi | null
 

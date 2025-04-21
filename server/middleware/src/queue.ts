@@ -34,7 +34,7 @@ export class QueueMiddleware extends BaseMiddleware {
     readonly queue: PlatformQueue
   ) {
     super(context, next)
-    this.txProducer = queue.createProducer<Tx>(ctx, QueueTopic.Tx)
+    this.txProducer = queue.getProducer<Tx>(ctx, QueueTopic.Tx)
   }
 
   static create (queue: PlatformQueue): MiddlewareCreator {

@@ -352,7 +352,7 @@ export function devTool (
         const coreWsInfo = flattenStatus(wsInfo)
         const accountClient = getAccountClient(getToolToken())
 
-        const wsProducer = getPlatformQueue('tool', cmd.region).createProducer<QueueWorkspaceMessage>(
+        const wsProducer = getPlatformQueue('tool', cmd.region).getProducer<QueueWorkspaceMessage>(
           toolCtx,
           QueueTopic.Workspace
         )
@@ -435,7 +435,7 @@ export function devTool (
         const coreWsInfo = flattenStatus(wsInfo)
         const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
         const accountClient = getAccountClient(getToolToken(wsInfo.uuid))
-        const wsProducer = getPlatformQueue('tool', info.region).createProducer<QueueWorkspaceMessage>(
+        const wsProducer = getPlatformQueue('tool', info.region).getProducer<QueueWorkspaceMessage>(
           toolCtx,
           QueueTopic.Workspace
         )
@@ -1144,7 +1144,7 @@ export function devTool (
             storageAdapter: workspaceStorage,
             historyFile: cmd.historyFile
           })
-          const wsProducer = getPlatformQueue('tool', ws.region).createProducer<QueueWorkspaceMessage>(
+          const wsProducer = getPlatformQueue('tool', ws.region).getProducer<QueueWorkspaceMessage>(
             toolCtx,
             QueueTopic.Workspace
           )
@@ -2092,7 +2092,7 @@ export function devTool (
         }
 
         console.log('reindex workspace', workspace)
-        const wsProducer = getPlatformQueue('tool', ws.region).createProducer<QueueWorkspaceMessage>(
+        const wsProducer = getPlatformQueue('tool', ws.region).getProducer<QueueWorkspaceMessage>(
           toolCtx,
           QueueTopic.Workspace
         )

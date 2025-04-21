@@ -41,7 +41,6 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-notification": "^0.6.1",
-    "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/platform": "^0.6.11"
   }
 }
