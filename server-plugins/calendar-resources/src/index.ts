@@ -365,7 +365,10 @@ async function putEventToQueue (
   changes?: Record<string, any>
 ): Promise<void> {
   if (control.queue === undefined) return
-  const producer = control.queue.getProducer<EventCUDMessage>(control.ctx, QueueTopic.CalendarEventCUD)
+  const producer = control.queue.getProducer<EventCUDMessage>(
+    control.ctx.newChild('queue', {}),
+    QueueTopic.CalendarEventCUD
+  )
 
   try {
     await producer.send(control.workspace.uuid, [{ action, event, modifiedBy, changes }])

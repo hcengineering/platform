@@ -261,7 +261,6 @@ const telegramNotificationCacheKey = 'telegram.notification.cache'
 
 async function NotificationsHandler (txes: TxCreateDoc<InboxNotification>[], control: TriggerControl): Promise<Tx[]> {
   if (control.queue === undefined) return []
-  const producer = control.queue.getProducer<TelegramQueueMessage>(control.ctx, QueueTopic.TelegramBot)
 
   const availableProviders: AvailableProvidersCache = control.contextCache.get(AvailableProvidersCacheKey) ?? new Map()
 
@@ -277,6 +276,7 @@ async function NotificationsHandler (txes: TxCreateDoc<InboxNotification>[], con
   }
 
   const result: Tx[] = []
+  const producer = control.queue.getProducer<TelegramQueueMessage>(control.ctx, QueueTopic.TelegramBot)
   for (const inboxNotification of all) {
     result.push(...(await processNotification(inboxNotification, control, producer)))
   }
