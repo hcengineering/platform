@@ -1,4 +1,3 @@
-//
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,13 +10,16 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
+import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { type Message } from '@hcengineering/communication-types'
 import { type Card } from '@hcengineering/card'
+import { jsonToMarkup, markupToText } from '@hcengineering/text'
 
-import { openThreadInSidebar } from './location'
+export function createThreadTitle (message: Message, parent: Card): string {
+  const markup = jsonToMarkup(markdownToMarkup(message.content))
+  const messageText = markupToText(markup).trim()
 
-export async function replyToThread (message: Message, parent: Card): Promise<void> {
-  await openThreadInSidebar(message, parent)
+  const titleFromMessage = `${messageText.slice(0, 100)}${messageText.length > 100 ? '...' : ''}`
+  return titleFromMessage.length > 0 ? titleFromMessage : `Thread from ${parent.title}`
 }

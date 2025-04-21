@@ -20,12 +20,13 @@
   export let contentDiv: HTMLDivElement | undefined | null = undefined
   export let bottomStart: boolean = true
   export let isLoading: boolean = false
+  export let overlyColor: string = 'var(--next-panel-color-background)'
   export let onScroll: () => void = () => {}
   export let onResize: () => void = () => {}
 </script>
 
 {#if isLoading}
-  <div class="overlay">
+  <div class="overlay" style:background-color={overlyColor}>
     <Loading />
   </div>
 {/if}
@@ -53,6 +54,5 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--next-panel-color-background);
   }
 </style>
