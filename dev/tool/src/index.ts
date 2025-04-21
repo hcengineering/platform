@@ -2085,7 +2085,7 @@ export function devTool (
         }
 
         console.log('reindex workspace', workspace)
-        const queue = getPlatformQueue('tool', info.region)
+        const queue = getPlatformQueue('tool', ws.region)
         const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
         await wsProducer.send(ws.uuid, [workspaceEvents.fullReindex()])
         await queue.shutdown()
