@@ -652,10 +652,28 @@ export class MessagesQuery implements PagedQuery<Message, MessageQueryParams> {
         if (tmp) this.result.delete(tmp)
         this.tmpMessages.delete(eventId)
       }
+      const lastMessage = this.result.getLast()
+      const firstMessage = this.result.getFirst()
+
+      function shouldResort(order: SortingOrder): boolean {
+        if (firstMessage == null || lastMessage == null) return false
+        if (order === SortingOrder.Ascending) {
+          return lastMessage.created > message.created
+        }
+        return firstMessage.created > message.created
+      }
       if (this.params.order === SortingOrder.Ascending) {
         this.result.push(message)
       } else {
         this.result.unshift(message)
+      }
+
+      if (shouldResort(this.params.order ?? SortingOrder.Ascending)) {
+        this.result.sort((a, b) =>
+          this.params.order === SortingOrder.Ascending
+            ? a.created.getTime() - b.created.getTime()
+            : b.created.getTime() - a.created.getTime()
+        )
       }
       await this.notify()
     }

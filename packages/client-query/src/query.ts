@@ -17,7 +17,6 @@ import { type LiveQueries } from '@hcengineering/communication-query'
 import type { PagedQueryCallback, QueryCallback } from '@hcengineering/communication-sdk-types'
 import {
   type FindLabelsParams,
-  type FindMessagesParams,
   type FindNotificationContextParams,
   type FindNotificationsParams,
   type Label,
@@ -26,6 +25,7 @@ import {
   type Notification
 } from '@hcengineering/communication-types'
 import { deepEqual } from 'fast-equals'
+import type { MessageQueryParams } from '@hcengineering/communication-query'
 
 class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
   private oldQuery: P | undefined
@@ -78,8 +78,8 @@ class BaseQuery<P extends Record<string, any>, C extends (r: any) => void> {
   }
 }
 
-export class MessagesQuery extends BaseQuery<FindMessagesParams, PagedQueryCallback<Message>> {
-  override createQuery(params: FindMessagesParams, callback: PagedQueryCallback<Message>): { unsubscribe: () => void } {
+export class MessagesQuery extends BaseQuery<MessageQueryParams, PagedQueryCallback<Message>> {
+  override createQuery(params: MessageQueryParams, callback: PagedQueryCallback<Message>): { unsubscribe: () => void } {
     return this.lq.queryMessages(params, callback)
   }
 }

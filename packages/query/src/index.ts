@@ -14,3 +14,5 @@
 //
 
 export * from './lq'
+
+export type { MessageQueryParams } from './types'

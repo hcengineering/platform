@@ -34,7 +34,7 @@ import type {
   FindClient
 } from '@hcengineering/communication-sdk-types'
 
-import type { FindParams, QueryId, AnyQuery } from './types'
+import type { FindParams, QueryId, AnyQuery, MessageQueryParams } from './types'
 import { MessagesQuery } from './messages/query'
 import { NotificationQuery } from './notifications/query'
 import { NotificationContextsQuery } from './notification-contexts/query'
@@ -76,7 +76,7 @@ export class LiveQueries {
     }
   }
 
-  queryMessages(params: FindMessagesParams, callback: PagedQueryCallback<Message>): CreateQueryResult {
+  queryMessages(params: MessageQueryParams, callback: PagedQueryCallback<Message>): CreateQueryResult {
     return this.createAndStoreQuery<Message, FindMessagesParams, MessagesQuery>(
       params,
       callback,
