@@ -32,6 +32,7 @@ import tracker from '@hcengineering/model-tracker'
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
+import contacts from '@hcengineering/model-contact'
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import textEditor from '@hcengineering/text-editor'
@@ -266,7 +267,7 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '$lookup.owner',
-          label: documents.string.Owner,
+          label: documents.string.Author,
           presenter: documents.component.OwnerPresenter,
           props: { shouldShowLabel: true, isEditable: false },
           sortingKey: '$lookup.owner.name'
@@ -329,7 +330,7 @@ export function createModel (builder: Builder): void {
         },
         {
           key: '$lookup.owner',
-          label: documents.string.Owner,
+          label: documents.string.Author,
           presenter: documents.component.OwnerPresenter,
           props: { shouldShowLabel: true, isEditable: false },
           sortingKey: '$lookup.owner.name'
@@ -630,13 +631,23 @@ export function createModel (builder: Builder): void {
       'state',
       'space',
       'template',
-      'owner',
+      {
+        _class: documents.class.Document,
+        component: contacts.component.EmployeeFilter,
+        key: 'owner',
+        label: documents.string.Author
+      },
       'category',
       'modifiedOn',
       'labels',
       'major',
       'minor',
-      'author'
+      {
+        _class: documents.class.Document,
+        component: contacts.component.EmployeeFilter,
+        key: 'author',
+        label: documents.string.Creator
+      }
     ],
     getVisibleFilters: documents.function.GetVisibleFilters
   })

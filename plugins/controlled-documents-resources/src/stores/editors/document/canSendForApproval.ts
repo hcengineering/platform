@@ -17,7 +17,14 @@ import { ControlledDocumentState, DocumentState } from '@hcengineering/controlle
 import { TrainingState } from '@hcengineering/training'
 import { combine } from 'effector'
 import { $documentComments } from './documentComments'
-import { $controlledDocument, $documentState, $isLatestVersion, $reviewRequestHistory, $training } from './editor'
+import {
+  $controlledDocument,
+  $documentState,
+  $isDocumentOwner,
+  $isLatestVersion,
+  $reviewRequestHistory,
+  $training
+} from './editor'
 
 export const $canSendForApproval = combine(
   $controlledDocument,
@@ -26,7 +33,10 @@ export const $canSendForApproval = combine(
   $documentComments,
   $training,
   $reviewRequestHistory,
-  (document, isLatestVersion, state, comments, training, reviewHistory) => {
+  $isDocumentOwner,
+  (document, isLatestVersion, state, comments, training, reviewHistory, isDocumentOwner) => {
+    if (!isDocumentOwner) return false
+
     let haveBeenReviewedOnce = false
     if (document !== null) {
       const reviews = (reviewHistory ?? []).filter((review) => review.attachedTo === document._id)
