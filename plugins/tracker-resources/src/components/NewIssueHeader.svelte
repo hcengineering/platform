@@ -18,13 +18,10 @@
     AccountRole,
     Ref,
     Space,
-    getCurrentAccount,
-    hasAccountRole,
-    checkPermission
   } from '@hcengineering/core'
   import { MultipleDraftController, createQuery, getClient } from '@hcengineering/presentation'
   import { TrackerEvents } from '@hcengineering/tracker'
-  import { Button, ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
+  import { HeaderButton, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
   import { onDestroy } from 'svelte'
@@ -34,15 +31,35 @@
   export let currentSpace: Ref<Space> | undefined
 
   let closed = true
-
   let draftExists = false
+  let projectExists = false
+  let loading = true
+  let keys: string[] | undefined = undefined
 
+  const query = createQuery()
+  const client = getClient()
   const draftController = new MultipleDraftController(tracker.ids.IssueDraft)
+
   onDestroy(
     draftController.hasNext((res) => {
       draftExists = res
     })
   )
+
+  query.query(tracker.class.Project, {}, (res) => {
+    projectExists = res.length > 0
+    loading = false
+  })
+
+  void client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
+
+  function newProject (): void {
+    closed = false
+    showPopup(tracker.component.CreateProject, {}, 'top', () => {
+      closed = true
+    })
+  }
+
   function newIssue (): void {
     closed = false
     Analytics.handleEvent(TrackerEvents.NewIssueButtonClicked)
@@ -51,115 +68,60 @@
     })
   }
 
-  const query = createQuery()
-
-  let projectExists = false
-
-  query.query(tracker.class.Project, {}, (res) => {
-    projectExists = res.length > 0
-  })
-
-  const client = getClient()
-  $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
-
-  let keys: string[] | undefined = undefined
-  let canCreateProject = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
-
-  function dropdownItemSelected (res?: SelectPopupValueType['id']): void {
-    if (res == null) return
-
-    if (res === tracker.string.CreateProject) {
-      closed = false
-      showPopup(tracker.component.CreateProject, {}, 'top', () => {
-        closed = true
-      })
+  let mainActionId: string | undefined = undefined
+  let visibleActions: string[] = []
+  function updateActions (draft: boolean, project: boolean, closed: boolean): void {
+    mainActionId = draft || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
+    if (project) {
+      visibleActions = [
+        tracker.string.CreateProject,
+        mainActionId,
+        tracker.string.Import
+      ]
     } else {
-      newIssue()
+      visibleActions = [
+        tracker.string.CreateProject
+      ]
     }
   }
 
-  void client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
-  if (!canCreateProject) {
-    void checkPermission(client, core.permission.CreateProject, core.space.Space).then((hasPermission) => {
-      canCreateProject = hasPermission
-    })
-  }
+  $: updateActions(draftExists, projectExists, closed)
 
-  function getAvailableActions (): SelectPopupValueType[] {
-    const result = []
-    if (canCreateProject) {
-      result.push({
-        id: tracker.string.CreateProject,
-        label: tracker.string.CreateProject
-      })
-    }
-    result.push({
-      id: tracker.string.NewIssue,
-      label: tracker.string.NewIssue
-    })
-    if (hasAccountRole(getCurrentAccount(), AccountRole.User)) {
-      result.push({
-        id: tracker.string.Import,
-        label: tracker.string.Import
-      })
-    }
-    return result
-  }
 </script>
 
-<div class="antiNav-subheader">
-  {#if projectExists}
-    <ButtonWithDropdown
-      icon={IconAdd}
-      justify={'left'}
-      kind={'primary'}
-      {label}
-      on:click={newIssue}
-      dropdownItems={getAvailableActions()}
-      dropdownIcon={IconDropdown}
-      on:dropdown-selected={(ev) => {
-        dropdownItemSelected(ev.detail)
-      }}
-      mainButtonId={'new-issue'}
-      showTooltipMain={{
-        direction: 'bottom',
-        label,
-        keys
-      }}
-    >
-      <div slot="content" class="draft-circle-container">
-        {#if draftExists}
-          <div class="draft-circle" />
-        {/if}
-      </div>
-    </ButtonWithDropdown>
-  {:else}
-    <Button
-      disabled={!canCreateProject}
-      icon={IconAdd}
-      justify="left"
-      kind="primary"
-      label={tracker.string.CreateProject}
-      width="100%"
-      on:click={() => {
-        showPopup(tracker.component.CreateProject, {}, 'top', () => {
-          closed = true
-        })
-      }}
-    />
-  {/if}
-</div>
-
-<style lang="scss">
-  .draft-circle-container {
-    margin-left: auto;
-    padding-right: 12px;
-  }
-
-  .draft-circle {
-    height: 6px;
-    width: 6px;
-    background-color: var(--primary-bg-color);
-    border-radius: 50%;
-  }
-</style>
+<HeaderButton
+  {loading}
+  {client}
+  {mainActionId}
+  {visibleActions}
+  actions={[
+    {
+      id: tracker.string.CreateProject,
+      label: tracker.string.CreateProject,
+      accountRole: AccountRole.Maintainer,
+      permission: {
+        id: core.permission.CreateProject,
+        space: core.space.Space
+      },
+      action: newProject
+    },
+    {
+      id: tracker.string.ResumeDraft,
+      label: tracker.string.ResumeDraft,
+      draft: true,
+      keyBinding: keys,
+      action: newIssue
+    },
+    {
+      id: tracker.string.NewIssue,
+      label: tracker.string.NewIssue,
+      keyBinding: keys,
+      action: newIssue
+    },
+    {
+      id: tracker.string.Import,
+      label: tracker.string.Import,
+      accountRole: AccountRole.User,
+      action: newIssue
+    }]}
+/>
