@@ -14,10 +14,10 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly textCategory: Locator
   readonly textVersion: Locator
   readonly textStatus: Locator
-  readonly textOwner: Locator
   readonly textAuthor: Locator
-  readonly buttonSelectNewOwner: Locator
-  readonly buttonSelectNewOwnerChange: Locator
+  readonly textCreator: Locator
+  readonly buttonSelectNewAuthor: Locator
+  readonly buttonSelectNewAuthorChange: Locator
   readonly buttonSendForReview: Locator
   readonly buttonSendForApproval: Locator
   readonly buttonAddMembers: Locator
@@ -41,7 +41,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly buttonDocument: Locator
   readonly buttonDocumentApprovals: Locator
   readonly textPageHeader: Locator
-  readonly buttonSelectNewOwnerChangeByQaraManager: Locator
+  readonly buttonSelectNewAuthorChangeByQaraManager: Locator
   readonly textId: Locator
   readonly contentLocator: Locator
   readonly addSpaceButton: Locator
@@ -113,10 +113,10 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.textCategory = page.locator('div.flex:has(div.label:text("Category")) div.field')
     this.textVersion = page.locator('div.flex:has(div.label:text("Version")) div.field')
     this.textStatus = page.locator('div.flex:has(div.label:text("Status")) div.field')
-    this.textOwner = page.locator('div.flex:has(div.label:text("Owner")) div.field')
     this.textAuthor = page.locator('div.flex:has(div.label:text("Author")) div.field')
-    this.buttonSelectNewOwner = page.locator('div.popup button.small')
-    this.buttonSelectNewOwnerChange = page.locator('div.popup button.dangerous')
+    this.textCreator = page.locator('div.flex:has(div.label:text("Creator")) div.field')
+    this.buttonSelectNewAuthor = page.locator('div.popup button.small')
+    this.buttonSelectNewAuthorChange = page.locator('div.popup button.dangerous')
     this.buttonSendForReview = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Send for review'
     })
@@ -152,7 +152,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.buttonDocumentInformation = page.locator('button[id$="info"]')
     this.buttonDocumentApprovals = page.locator('button[id$="approvals"]')
     this.textPageHeader = page.locator('div.hulyNavPanel-header')
-    this.buttonSelectNewOwnerChangeByQaraManager = page.locator('div.popup button[type="submit"]')
+    this.buttonSelectNewAuthorChangeByQaraManager = page.locator('div.popup button[type="submit"]')
     this.textId = page.locator('div.flex:has(div.label:text("ID")) div.field')
     this.contentLocator = page.locator('div.textInput div.tiptap')
     this.addSpaceButton = page.locator('#tree-orgspaces')
@@ -707,20 +707,20 @@ export class DocumentContentPage extends DocumentCommonPage {
       await expect(this.textStatus).toHaveText(data.status)
     }
     if (data.owner != null) {
-      await expect(this.textOwner).toHaveText(data.owner)
+      await expect(this.textAuthor).toHaveText(data.owner)
     }
     if (data.author != null) {
-      await expect(this.textAuthor).toHaveText(data.author)
+      await expect(this.textCreator).toHaveText(data.author)
     }
     if (data.id != null) {
       await expect(this.textId).toHaveText(data.id)
     }
   }
 
-  async fillChangeDocumentOwnerPopup (newOwner: string): Promise<void> {
-    await this.buttonSelectNewOwner.click()
-    await this.selectListItemWithSearch(this.page, newOwner)
-    await this.buttonSelectNewOwnerChange.click()
+  async fillChangeDocumentAuthorPopup (newAuthor: string): Promise<void> {
+    await this.buttonSelectNewAuthor.click()
+    await this.selectListItemWithSearch(this.page, newAuthor)
+    await this.buttonSelectNewAuthorChange.click()
   }
 
   async fillSelectReviewersForm (reviewers: Array<string>): Promise<void> {
@@ -858,9 +858,9 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.buttonDocumentApprovals.click({ position: { x: 1, y: 1 }, force: true })
   }
 
-  async fillChangeDocumentOwnerPopupByQaraManager (newOwner: string): Promise<void> {
-    await this.buttonSelectNewOwner.click()
+  async fillChangeDocumentAuthorPopupByQaraManager (newOwner: string): Promise<void> {
+    await this.buttonSelectNewAuthor.click()
     await this.selectListItemWithSearch(this.page, newOwner)
-    await this.buttonSelectNewOwnerChangeByQaraManager.click()
+    await this.buttonSelectNewAuthorChangeByQaraManager.click()
   }
 }

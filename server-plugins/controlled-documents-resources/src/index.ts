@@ -84,14 +84,6 @@ function updateMeta (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
   ]
 }
 
-function updateAuthor (doc: ControlledDocument, txFactory: TxFactory): Tx[] {
-  return [
-    txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-      author: doc.owner
-    })
-  ]
-}
-
 // TODO: Find a way to avoid duplicate logic and reuse createTrainingRequest() from `training-resources`
 async function createDocumentTrainingRequest (doc: ControlledDocument, control: TriggerControl): Promise<Tx[]> {
   if (!control.hierarchy.hasMixin(doc, documents.mixin.DocumentTraining)) {
@@ -281,7 +273,6 @@ export async function OnDocHasBecomeEffective (
     const olderEffective = await getDocsOlderThanDoc(doc, control, [DocumentState.Effective])
 
     result.push(
-      ...updateAuthor(doc, control.txFactory),
       ...archiveDocs(olderEffective, control.txFactory),
       ...updateMeta(doc, control.txFactory),
       ...updateTemplate(doc, olderEffective, control),
