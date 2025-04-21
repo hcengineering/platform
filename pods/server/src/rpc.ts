@@ -12,7 +12,7 @@ import core, {
 import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
 import { decodeToken } from '@hcengineering/server-token'
 
-import { rpcJSONReplacer } from '@hcengineering/rpc'
+import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
 import { createHash } from 'crypto'
 import { type Express, type Response as ExpressResponse, type Request } from 'express'
 import type { OutgoingHttpHeaders } from 'http2'
@@ -20,6 +20,8 @@ import { compress } from 'snappy'
 import { promisify } from 'util'
 import { gzip } from 'zlib'
 import { retrieveJson } from './utils'
+
+import { unknownError } from '@hcengineering/platform'
 interface RPCClientInfo {
   client: ConnectionSocket
   session: Session
@@ -28,14 +30,32 @@ interface RPCClientInfo {
 
 const gzipAsync = promisify(gzip)
 
+const keepAliveOptions = {
+  'keep-alive': 'timeout=5, max=1000',
+  Connection: 'keep-alive'
+}
+
 const sendError = (res: ExpressResponse, code: number, data: any): void => {
   res.writeHead(code, {
+    ...keepAliveOptions,
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-    'keep-alive': 'timeout=5, max=1000'
+    'Cache-Control': 'no-cache'
   })
   res.end(JSON.stringify(data))
+}
+
+function rateLimitToHeaders (rateLimit?: RateLimitInfo): OutgoingHttpHeaders {
+  if (rateLimit === undefined) {
+    return {}
+  }
+  const { remaining, limit, reset, retryAfter } = rateLimit
+  return {
+    'Retry-After': `${Math.max(retryAfter ?? 0, 1)}`,
+    'Retry-After-ms': `${retryAfter ?? 0}`,
+    'X-RateLimit-Limit': `${limit}`,
+    'X-RateLimit-Remaining': `${remaining}`,
+    'X-RateLimit-Reset': `${reset}`
+  }
 }
 
 async function sendJson (
@@ -50,10 +70,9 @@ async function sendJson (
   const etag = createHash('sha256').update(body).digest('hex')
   const headers: OutgoingHttpHeaders = {
     ...(extraHeaders ?? {}),
+    ...keepAliveOptions,
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
-    connection: 'keep-alive',
-    'keep-alive': 'timeout=5, max=1000',
     ETag: etag
   }
 
@@ -97,7 +116,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
   async function withSession (
     req: Request,
     res: ExpressResponse,
-    operation: (ctx: ClientSessionCtx, session: Session) => Promise<void>
+    operation: (ctx: ClientSessionCtx, session: Session, rateLimit?: RateLimitInfo) => Promise<void>
   ): Promise<void> {
     try {
       if (req.params.workspaceId === undefined || req.params.workspaceId === '') {
@@ -136,62 +155,87 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       }
 
       const rpc = transactorRpc
-      await sessions.handleRPC(ctx, rpc.session, rpc.client, async (ctx) => {
-        await operation(ctx, rpc.session)
+      const rateLimit = await sessions.handleRPC(ctx, rpc.session, rpc.client, async (ctx, rateLimit) => {
+        await operation(ctx, rpc.session, rateLimit)
       })
+      if (rateLimit !== undefined) {
+        const { remaining, limit, reset, retryAfter } = rateLimit
+        const retryHeaders: OutgoingHttpHeaders = {
+          ...keepAliveOptions,
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Retry-After': `${Math.max((retryAfter ?? 0) / 1000, 1)}`,
+          'Retry-After-ms': `${retryAfter ?? 0}`,
+          'X-RateLimit-Limit': `${limit}`,
+          'X-RateLimit-Remaining': `${remaining}`,
+          'X-RateLimit-Reset': `${reset}`
+        }
+        res.writeHead(429, retryHeaders)
+        res.end(
+          JSON.stringify({
+            id: -1,
+            error: unknownError('Rate limit')
+          })
+        )
+      }
     } catch (err: any) {
       sendError(res, 500, { message: 'Failed to execute operation', error: err.message, stack: err.stack })
     }
   }
 
   app.get('/api/v1/ping/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
+    void withSession(req, res, async (ctx, session, rateLimit) => {
       await session.ping(ctx)
-      await sendJson(req, res, {
-        pong: true,
-        lastTx: ctx.pipeline.context.lastTx,
-        lastHash: ctx.pipeline.context.lastHash
-      })
+      await sendJson(
+        req,
+        res,
+        {
+          pong: true,
+          lastTx: ctx.pipeline.context.lastTx,
+          lastHash: ctx.pipeline.context.lastHash
+        },
+        rateLimitToHeaders(rateLimit)
+      )
     })
   })
 
   app.get('/api/v1/find-all/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
+    void withSession(req, res, async (ctx, session, rateLimit) => {
       const _class = req.query.class as Ref<Class<Doc>>
       const query = req.query.query !== undefined ? JSON.parse(req.query.query as string) : {}
       const options = req.query.options !== undefined ? JSON.parse(req.query.options as string) : {}
 
       const result = await session.findAllRaw(ctx, _class, query, options)
-      await sendJson(req, res, result)
+      await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 
   app.post('/api/v1/find-all/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
+    void withSession(req, res, async (ctx, session, rateLimit) => {
       const { _class, query, options }: any = (await retrieveJson(req)) ?? {}
 
       const result = await session.findAllRaw(ctx, _class, query, options)
-      await sendJson(req, res, result)
+      await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 
   app.post('/api/v1/tx/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
+    void withSession(req, res, async (ctx, session, rateLimit) => {
       const tx: any = (await retrieveJson(req)) ?? {}
 
       const result = await session.txRaw(ctx, tx)
-      await sendJson(req, res, result.result)
+      await sendJson(req, res, result.result, rateLimitToHeaders(rateLimit))
     })
   })
   app.get('/api/v1/account/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
+    void withSession(req, res, async (ctx, session, rateLimit) => {
       const result = session.getRawAccount()
-      await sendJson(req, res, result)
+      await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 
   app.get('/api/v1/load-model/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
+    void withSession(req, res, async (ctx, session, rateLimit) => {
       const lastModelTx = parseInt((req.query.lastModelTx as string) ?? '0')
       const lastHash = req.query.lastHash as string
       const result = await session.loadModelRaw(ctx, lastModelTx, lastHash)
@@ -214,12 +258,12 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
           allowedClasess.some((cl) => h.isDerived((it as TxCUD<Doc>).objectClass, cl))
       )
 
-      await sendJson(req, res, filtered)
+      await sendJson(req, res, filtered, rateLimitToHeaders(rateLimit))
     })
   })
 
   app.get('/api/v1/search-fulltext/:workspaceId', (req, res) => {
-    void withSession(req, res, async (ctx, session) => {
+    void withSession(req, res, async (ctx, session, rateLimit) => {
       const query: SearchQuery = {
         query: req.query.query as string,
         classes: req.query.classes !== undefined ? JSON.parse(req.query.classes as string) : undefined,
@@ -229,7 +273,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         limit: req.query.limit !== undefined ? parseInt(req.query.limit as string) : undefined
       }
       const result = await session.searchFulltextRaw(ctx, query, options)
-      await sendJson(req, res, result)
+      await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 
@@ -260,9 +304,9 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
 
   // To use in non-js (rust) clients that can't link to @hcengineering/core
   app.get('/api/v1/generate-id/:workspaceId', (req, res) => {
-    void withSession(req, res, async () => {
+    void withSession(req, res, async (ctx, session, rateLimit) => {
       const result = { id: generateId() }
-      await sendJson(req, res, result)
+      await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
   })
 }

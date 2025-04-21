@@ -57,7 +57,7 @@ import {
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import type { LiveQuery } from '@hcengineering/query'
-import type { ReqId, Request, Response } from '@hcengineering/rpc'
+import type { RateLimitInfo, ReqId, Request, Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
 
@@ -719,8 +719,8 @@ export interface SessionManager {
     requestCtx: MeasureContext,
     service: S,
     ws: ConnectionSocket,
-    operation: (ctx: ClientSessionCtx) => Promise<void>
-  ) => Promise<void>
+    operation: (ctx: ClientSessionCtx, rateLimit?: RateLimitInfo) => Promise<void>
+  ) => Promise<RateLimitInfo | undefined>
 
   createOpContext: (
     ctx: MeasureContext,
@@ -729,7 +729,8 @@ export interface SessionManager {
     communicationApi: CommunicationApi,
     requestId: Request<any>['id'],
     service: Session,
-    ws: ConnectionSocket
+    ws: ConnectionSocket,
+    rateLimit?: RateLimitInfo
   ) => ClientSessionCtx
 
   getStatistics: () => WorkspaceStatistics[]
