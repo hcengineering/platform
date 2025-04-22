@@ -112,13 +112,19 @@ export async function removeIntegration (
   }
 }
 
-export async function getOrCreateSocialId (account: AccountUuid, email: string): Promise<PersonId> {
+export async function getOrCreateSocialId (account: AccountUuid, email: string): Promise<SocialId> {
   const accountClient = getAccountClient(serviceToken())
-  const socialId = await accountClient.findFullSocialIdBySocialKey(
+  let socialId = await accountClient.findFullSocialIdBySocialKey(
     buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
   )
   if (socialId == null) {
-    return await accountClient.addSocialIdToPerson(account, SocialIdType.EMAIL, email, true)
+    await accountClient.addSocialIdToPerson(account, SocialIdType.EMAIL, email, true)
+    socialId = await accountClient.findFullSocialIdBySocialKey(
+      buildSocialIdString({ type: SocialIdType.EMAIL, value: email })
+    )
+    if (socialId == null) {
+      throw new Error('Cannot create social id')
+    }
   }
 
   // TODO: proper handle if connected to other account
@@ -126,7 +132,7 @@ export async function getOrCreateSocialId (account: AccountUuid, email: string):
     throw new Error('Social id connected to another account')
   }
 
-  return socialId._id
+  return socialId
 }
 
 export async function createIntegration (socialId: PersonId, workspace: WorkspaceUuid): Promise<Integration> {

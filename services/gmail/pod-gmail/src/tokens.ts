@@ -42,7 +42,7 @@ export class TokenStorage {
     const exists = await this.accountClient.getIntegrationSecret({
       key: SecretType.TOKEN,
       kind: GMAIL_INTEGRATION,
-      socialId: token.socialId,
+      socialId: token.socialId._id,
       workspaceUuid: this.workspace
     })
 
@@ -50,7 +50,7 @@ export class TokenStorage {
       await this.accountClient.updateIntegrationSecret({
         key: SecretType.TOKEN,
         kind: GMAIL_INTEGRATION,
-        socialId: token.socialId,
+        socialId: token.socialId._id,
         secret: JSON.stringify(token),
         workspaceUuid: this.workspace
       })
@@ -58,7 +58,7 @@ export class TokenStorage {
       await this.accountClient.addIntegrationSecret({
         key: SecretType.TOKEN,
         kind: GMAIL_INTEGRATION,
-        socialId: token.socialId,
+        socialId: token.socialId._id,
         secret: JSON.stringify(token),
         workspaceUuid: this.workspace
       })

@@ -101,12 +101,17 @@ export const main = async (): Promise<void> => {
       endpoint: '/signin/code',
       type: 'get',
       handler: async (req, res) => {
-        ctx.info('Signin code request received')
-        const code = req.query.code as string
-        const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
-        const gmail = await gmailController.createClient(state)
-        await gmail.authorize(code)
-        res.redirect(state.redirectURL)
+        try {
+          ctx.info('Signin code request received')
+          const code = req.query.code as string
+          const state = JSON.parse(decode64(req.query.state as string)) as unknown as State
+          const gmail = await gmailController.createClient(state, code)
+          await gmail.initIntegration()
+          res.redirect(state.redirectURL)
+        } catch (err) {
+          ctx.error('Failed to process signin code', { message: (err as any).message })
+          res.status(500).send()
+        }
       }
     },
     {
@@ -136,14 +141,19 @@ export const main = async (): Promise<void> => {
       endpoint: '/push',
       type: 'post',
       handler: async (req, res) => {
-        const data = req.body?.message?.data
-        if (data === undefined) {
-          res.status(400).send({ err: "'data' is missing" })
-          return
-        }
-        gmailController.push(data)
+        try {
+          const data = req.body?.message?.data
+          if (data === undefined) {
+            res.status(400).send({ err: "'data' is missing" })
+            return
+          }
+          gmailController.push(data)
 
-        res.send()
+          res.send()
+        } catch (err) {
+          ctx.error('Push request failed', { message: JSON.stringify(err) })
+          res.status(500).send()
+        }
       }
     }
   ]

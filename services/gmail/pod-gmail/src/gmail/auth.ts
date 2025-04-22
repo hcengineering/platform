@@ -14,7 +14,7 @@
 //
 import { google } from 'googleapis'
 import { OAuth2Client } from 'google-auth-library'
-import { ProjectCredentials } from './types'
+import { ProjectCredentials } from '../types'
 
 export class AuthProvider {
   private oAuth2Client: OAuth2Client | undefined

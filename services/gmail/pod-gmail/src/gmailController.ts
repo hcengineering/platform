@@ -35,7 +35,7 @@ import { getIntegrations } from './accounts'
 import { serviceToken } from './utils'
 import { getWorkspaceTokens } from './tokens'
 
-import { AuthProvider } from './auth'
+import { AuthProvider } from './gmail/auth'
 
 export class GmailController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
@@ -116,7 +116,7 @@ export class GmailController {
         clearTimeout(timeout)
         clients.push(client)
       } catch (err) {
-        this.ctx.error('Couldn\'t create client', { workspaceUuid: workspace, userId: token.userId })
+        this.ctx.error("Couldn't create client", { workspaceUuid: workspace, userId: token.userId })
       }
     }
     for (const client of clients) {
@@ -174,9 +174,9 @@ export class GmailController {
     this.workspaces.clear()
   }
 
-  async createClient (user: User | Token): Promise<GmailClient> {
+  async createClient (user: User | Token, authCode?: string): Promise<GmailClient> {
     const workspace = await this.getWorkspaceClient(user.workspace)
-    const newClient = await workspace.createGmailClient(user)
+    const newClient = await workspace.createGmailClient(user, authCode)
     return newClient
   }
 
@@ -189,7 +189,7 @@ export class GmailController {
         this.workspaces.set(workspace, res)
         this.ctx.info('created workspace worker', { workspaceUuid: workspace })
       } catch (err) {
-        this.ctx.error('Couldn\'t create workspace worker', { workspaceUuid: workspace, reason: err })
+        this.ctx.error("Couldn't create workspace worker", { workspaceUuid: workspace, reason: err })
         throw err
       }
     }

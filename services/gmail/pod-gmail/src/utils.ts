@@ -17,7 +17,6 @@
 import { type Data, type Doc, type DocumentUpdate, systemAccountUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { deepEqual } from 'fast-equals'
-
 import { type Token, type User } from './types'
 import config from './config'
 
@@ -74,4 +73,12 @@ export function addFooter (message: string): string {
 
 export function serviceToken (): string {
   return generateToken(systemAccountUuid, undefined, { service: 'gmail' })
+}
+
+export async function wait (sec: number): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, sec * 1000)
+  })
 }

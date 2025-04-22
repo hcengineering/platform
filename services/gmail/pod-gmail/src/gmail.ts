@@ -13,15 +13,7 @@
 // limitations under the License.
 //
 
-import core, {
-  AccountUuid,
-  Client,
-  MeasureContext,
-  PersonId,
-  TxOperations,
-  WorkspaceUuid,
-  parseSocialIdString
-} from '@hcengineering/core'
+import core, { AccountUuid, Client, MeasureContext, SocialId, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import gmail, { type NewMessage } from '@hcengineering/gmail'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
@@ -32,13 +24,14 @@ import config from './config'
 import { GmailController } from './gmailController'
 import { RateLimiter } from './rateLimiter'
 import type { ProjectCredentials, Token, User } from './types'
-import { addFooter, isToken } from './utils'
+import { addFooter, isToken, serviceToken } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
 import { AttachmentHandler } from './message/attachments'
 import { TokenStorage } from './tokens'
 import { MessageManager } from './message/message'
 import { SyncManager } from './message/sync'
+import { getEmail } from './gmail/utils'
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
@@ -78,11 +71,8 @@ async function wait (sec: number): Promise<void> {
 }
 
 export class GmailClient {
-  private readonly oAuth2Client: OAuth2Client
-  private readonly gmail: gmail_v1.Resource$Users
   private readonly account: AccountUuid
   private email: string | undefined = undefined
-  private socialId: PersonId
   private readonly tokenStorage: TokenStorage
   private readonly client: TxOperations
   private watchTimer: NodeJS.Timeout | undefined = undefined
@@ -91,33 +81,40 @@ export class GmailClient {
   private readonly attachmentHandler: AttachmentHandler
   private readonly messageManager: MessageManager
   private readonly syncManager: SyncManager
+  private readonly integrationToken: string
 
   private constructor (
     private readonly ctx: MeasureContext,
-    credentials: ProjectCredentials,
+    private readonly oAuth2Client: OAuth2Client,
+    private readonly gmail: gmail_v1.Resource$Users,
     private readonly user: User,
     client: Client,
     workspaceId: WorkspaceUuid,
     storageAdapter: StorageAdapter,
-    private readonly workspace: WorkspaceClient
+    private readonly workspace: WorkspaceClient,
+    email: string,
+    private socialId: SocialId
   ) {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { client_secret, client_id, redirect_uris } = credentials.web
-    this.oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
-    this.gmail = google.gmail({ version: 'v1', auth: this.oAuth2Client }).users
-    this.tokenStorage = new TokenStorage(workspaceId, user.token)
-    this.socialId = this.user.socialId
-    this.client = new TxOperations(client, this.socialId)
+    this.email = email
+    this.integrationToken = serviceToken()
+    this.tokenStorage = new TokenStorage(workspaceId, this.integrationToken)
+    this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, workspaceId, storageAdapter, this.gmail, this.client)
-    this.messageManager = new MessageManager(ctx, this.client, this.attachmentHandler, this.socialId, this.workspace)
+    this.messageManager = new MessageManager(
+      ctx,
+      this.client,
+      this.attachmentHandler,
+      this.socialId._id,
+      this.workspace
+    )
     this.syncManager = new SyncManager(
       ctx,
       this.messageManager,
       this.gmail,
       this.user.workspace,
       workspaceId,
-      user.token
+      this.integrationToken
     )
   }
 
@@ -128,15 +125,50 @@ export class GmailClient {
     client: Client,
     workspace: WorkspaceClient,
     workspaceId: WorkspaceUuid,
-    storageAdapter: StorageAdapter
+    storageAdapter: StorageAdapter,
+    authCode?: string
   ): Promise<GmailClient> {
-    const gmailClient = new GmailClient(ctx, credentials, user, client, workspaceId, storageAdapter, workspace)
-    if (isToken(user)) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { client_secret, client_id, redirect_uris } = credentials.web
+    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
+    const googleClient = google.gmail({ version: 'v1', auth: oAuth2Client }).users
+
+    let token: Credentials | undefined = isToken(user) ? user : undefined
+    if (token === undefined && authCode !== undefined) {
+      const tokenResponse = await oAuth2Client.getToken(authCode)
+      token = tokenResponse.tokens
+      oAuth2Client.setCredentials(token)
+    }
+    const email = user.email ?? (await getEmail(googleClient))
+    if (email === undefined) {
+      throw new Error('Cannot retrieve user email')
+    }
+    const socialId = user.socialId ?? (await getOrCreateSocialId(user.userId, email))
+    ctx.info('socialId', { socialId })
+    if (socialId?._id == null) {
+      throw new Error(`Cannot create gmail client without social id: ${user.userId}, ${workspaceId}`)
+    }
+    user.socialId = socialId
+
+    const gmailClient = new GmailClient(
+      ctx,
+      oAuth2Client,
+      googleClient,
+      user,
+      client,
+      workspaceId,
+      storageAdapter,
+      workspace,
+      email,
+      socialId
+    )
+    if (token !== undefined) {
       ctx.info('Setting token while creating', { workspaceUuid: user.workspace, userId: user.userId })
-      await gmailClient.setToken(user)
+      await gmailClient.setToken(token)
       await gmailClient.refreshToken()
       await gmailClient.addClient()
     }
+    ctx.info('Created gmail client', { workspaceUuid: user.workspace, userId: user.userId })
     return gmailClient
   }
 
@@ -150,17 +182,13 @@ export class GmailClient {
     return authUrl
   }
 
-  async authorize (code: string): Promise<void> {
-    const token = await this.oAuth2Client.getToken(code)
-    this.ctx.info('Setting token after authorize', { workspaceUuid: this.user.workspace, userId: this.user.userId })
-    await this.setToken(token.tokens)
-    await this.refreshToken()
-    await this.addClient()
+  async initIntegration (): Promise<void> {
+    this.ctx.info('Init integration', { workspaceUuid: this.user.workspace, userId: this.user.userId })
     void this.startSync()
     void this.getNewMessagesAfterAuth()
 
     const integrations = await this.client.findAll(setting.class.Integration, {
-      createdBy: this.socialId,
+      createdBy: this.socialId._id,
       type: gmail.integrationType.Gmail
     })
     const updated = integrations.find((p) => p.disabled && p.value === this.email)
@@ -176,7 +204,7 @@ export class GmailClient {
       await this.client.createDoc(setting.class.Integration, core.space.Workspace, {
         type: gmail.integrationType.Gmail,
         disabled: false,
-        value: this.socialId
+        value: this.socialId._id
       })
     }
   }
@@ -184,7 +212,7 @@ export class GmailClient {
   async getNewMessagesAfterAuth (): Promise<void> {
     const newMessages = await this.client.findAll(gmail.class.NewMessage, {
       status: 'new',
-      from: this.socialId
+      from: this.socialId._id
     })
     await this.workspace.subscribeMessages()
     for (const message of newMessages) {
@@ -216,7 +244,11 @@ export class GmailClient {
         status: 'error',
         error: JSON.stringify(err)
       })
-      this.ctx.error('Create message error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: err.message })
+      this.ctx.error('Create message error', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        message: err.message
+      })
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.refreshToken()
       }
@@ -232,9 +264,9 @@ export class GmailClient {
       await this.close()
       await this.oAuth2Client.revokeCredentials()
     } catch {}
-    await this.tokenStorage.deleteToken(this.socialId)
+    await this.tokenStorage.deleteToken(this.socialId._id)
     const integration = await this.client.findOne(setting.class.Integration, {
-      createdBy: this.socialId,
+      createdBy: this.socialId._id,
       type: gmail.integrationType.Gmail
     })
     if (integration !== undefined) {
@@ -247,8 +279,8 @@ export class GmailClient {
   }
 
   async startSync (): Promise<void> {
-    this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId })
-    await this.syncManager.sync(this.socialId, this.email)
+    this.ctx.info('Start sync', { workspaceUuid: this.user.workspace, userId: this.user.userId, email: this.email })
+    await this.syncManager.sync(this.socialId._id, this.email)
     await this.watch()
     // recall every 24 hours https://developers.google.com/gmail/api/guides/push
     this.watchTimer = setInterval(() => {
@@ -258,7 +290,7 @@ export class GmailClient {
 
   async sync (): Promise<void> {
     this.ctx.info('Sync', { workspaceUuid: this.user.workspace, userId: this.user.userId })
-    await this.syncManager.sync(this.socialId, this.email)
+    await this.syncManager.sync(this.socialId._id, this.email)
   }
 
   async newChannel (value: string): Promise<void> {
@@ -292,17 +324,20 @@ export class GmailClient {
   }
 
   private async getCurrentToken (): Promise<Token | null> {
-    return await this.tokenStorage.getToken(this.socialId)
+    return await this.tokenStorage.getToken(this.socialId._id)
   }
 
   private async addClient (): Promise<void> {
     try {
-      const email = await this.getEmail()
-      const socialId = await this.initSocialId(email)
+      this.ctx.info('Register client', { socialId: this.socialId._id, email: this.email })
       const controller = GmailController.getGmailController()
-      controller.addClient(socialId, this)
+      controller.addClient(this.socialId._id, this)
     } catch (err) {
-      this.ctx.error('Add client error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: (err as any).message })
+      this.ctx.error('Add client error', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        message: (err as any).message
+      })
     }
   }
 
@@ -313,7 +348,11 @@ export class GmailClient {
       await this.syncUserInfo(token)
       await this.updateSocialId(email)
     } catch (err: any) {
-      this.ctx.error('Set token error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: err.message })
+      this.ctx.error('Set token error', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        message: err.message
+      })
       if (this.checkError(err)) {
         await this.signout(true)
       }
@@ -321,16 +360,8 @@ export class GmailClient {
     }
   }
 
-  private async initSocialId (email: string | undefined): Promise<PersonId> {
-    if (email === undefined) {
-      throw new Error(`User email is missing ${this.user.workspace} ${this.user.userId}`)
-    }
-    this.socialId = await getOrCreateSocialId(this.user.userId, email)
-    return this.socialId
-  }
-
   private async updateSocialId (email: string): Promise<void> {
-    const existingEmail = this.socialId !== undefined ? parseSocialIdString(this.socialId).value : undefined
+    const existingEmail = this.socialId !== undefined ? this.socialId.value : undefined
     if (existingEmail === email) return
     this.socialId = await getOrCreateSocialId(this.user.userId, email)
   }
@@ -339,12 +370,21 @@ export class GmailClient {
     try {
       await this.tokenStorage.saveToken(token as Token)
     } catch (err) {
-      this.ctx.error('update token error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: (err as any).message })
+      this.ctx.error('update token error', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        message: (err as any).message
+      })
     }
   }
 
   private async fullSync (q?: string): Promise<void> {
-    await this.syncManager.fullSync(this.socialId, this.email, q)
+    this.ctx.info('Full sync client', {
+      workspaceUuid: this.user.workspace,
+      userId: this.user.userId,
+      email: this.email
+    })
+    await this.syncManager.fullSync(this.socialId._id, this.email, q)
   }
 
   private async refreshToken (): Promise<void> {
@@ -359,9 +399,13 @@ export class GmailClient {
         30 * 60 * 1000
       )
     } catch (err: any) {
-      this.ctx.error('Couldn\'t refresh token', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: err.message })
+      this.ctx.error("Couldn't refresh token", {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        message: err.message
+      })
       if (err?.response?.data?.error === 'invalid_grant') {
-        await this.workspace.signoutBySocialId(this.socialId, true)
+        await this.workspace.signoutBySocialId(this.socialId._id, true)
       } else {
         this.refreshTimer = setTimeout(
           () => {
@@ -384,7 +428,11 @@ export class GmailClient {
         }
       })
     } catch (err) {
-      this.ctx.error('Watch error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: (err as any).message })
+      this.ctx.error('Watch error', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        message: (err as any).message
+      })
     }
   }
 
@@ -401,7 +449,11 @@ export class GmailClient {
         userId: 'me'
       })
     } catch (err) {
-      this.ctx.error('close error', { workspaceUuid: this.user.workspace, userId: this.user.userId, message: (err as any).message })
+      this.ctx.error('close error', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        message: (err as any).message
+      })
     }
   }
 }

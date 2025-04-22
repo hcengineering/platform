@@ -66,9 +66,10 @@ export class WorkspaceClient {
     return instance
   }
 
-  async createGmailClient (user: User): Promise<GmailClient> {
-    const current = this.getGmailClient(user.socialId)
+  async createGmailClient (user: User, authCode?: string): Promise<GmailClient> {
+    const current = user.socialId?._id !== undefined ? this.getGmailClient(user.socialId?._id) : undefined
     if (current !== undefined) return current
+    this.ctx.info('Creating new gmail client', { workspaceUuid: this.workspace, userId: user.userId })
     const newClient = await GmailClient.create(
       this.ctx,
       this.credentials,
@@ -76,9 +77,10 @@ export class WorkspaceClient {
       this.client,
       this,
       this.workspace,
-      this.storageAdapter
+      this.storageAdapter,
+      authCode
     )
-    this.clients.set(user.socialId, newClient)
+    this.clients.set(user.socialId._id, newClient)
     return newClient
   }
 
@@ -160,7 +162,11 @@ export class WorkspaceClient {
       if (client !== undefined) {
         await client.createMessage(message)
       } else {
-        this.ctx.error('client not found, skip message', { workspaceUuid: this.workspace, from, messageId: message._id })
+        this.ctx.error('client not found, skip message', {
+          workspaceUuid: this.workspace,
+          from,
+          messageId: message._id
+        })
       }
     }
   }

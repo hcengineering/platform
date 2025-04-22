@@ -82,7 +82,7 @@ export class SyncManager {
           pageToken
         })
       } catch (err) {
-        console.log('Part sync get history error', this.workspace, userId, err)
+        this.ctx.error('Part sync get history error', { workspaceUuid: this.workspace, userId, err })
         await this.clearHistory(userId)
         await this.sync(userId)
         return
@@ -99,7 +99,12 @@ export class SyncManager {
               const res = await this.getMessage(message.message.id)
               await this.messageManager.saveMessage(res, userEmail)
             } catch (err) {
-              console.log('Part sync message error', this.workspace, userId, message.message.id, err)
+              this.ctx.error('Part sync message error', {
+                workspaceUuid: this.workspace,
+                userId,
+                messageId: message.message.id,
+                err
+              })
             }
           }
           if (history.id != null) {
@@ -112,13 +117,14 @@ export class SyncManager {
           pageToken = nextPageToken
         }
       } catch (err) {
-        console.log('Part sync error', this.workspace, userId, err)
+        this.ctx.error('Part sync error', { workspaceUuid: this.workspace, userId, err })
         return
       }
     }
   }
 
   async fullSync (userId: PersonId, userEmail?: string, q?: string): Promise<void> {
+    this.ctx.info('Start full sync', { workspaceUuid: this.workspace, userId, userEmail })
     if (userEmail === undefined) {
       throw new Error('Cannot sync without user email')
     }
@@ -131,7 +137,6 @@ export class SyncManager {
       query.q = q
     }
     let currentHistoryId: string | undefined
-    console.log('start full sync', this.workspace, userId, q)
     try {
       const messagesIds: string[] = []
       while (true) {
@@ -183,6 +188,7 @@ export class SyncManager {
   }
 
   async sync (userId: PersonId, userEmail?: string): Promise<void> {
+    this.ctx.info('Sync history', { workspaceUuid: this.workspace, userId, userEmail })
     if (this.syncPromise !== undefined) {
       await this.syncPromise
     }
@@ -192,7 +198,7 @@ export class SyncManager {
         this.syncPromise = this.partSync(userId, userEmail, history.historyId)
         await this.syncPromise
       } else {
-        this.syncPromise = this.fullSync(userId)
+        this.syncPromise = this.fullSync(userId, userEmail)
         await this.syncPromise
       }
     } catch (err) {
