@@ -19,6 +19,7 @@ import { plugin } from '@hcengineering/platform'
 import type { ProjectTypeDescriptor, TaskType } from '@hcengineering/task'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import type { Applicant, ApplicantMatch, Candidate, Opinion, Review, Vacancy, VacancyList } from './types'
+import { Action } from '@hcengineering/view'
 
 export * from './types'
 export * from './analytics'
@@ -44,6 +45,9 @@ const recruit = plugin(recruitId, {
   },
   descriptors: {
     VacancyType: '' as Ref<ProjectTypeDescriptor>
+  },
+  action: {
+    CreateTalent: '' as Ref<Action<Doc, any>>
   },
   mixin: {
     Candidate: '' as Ref<Mixin<Candidate>>,

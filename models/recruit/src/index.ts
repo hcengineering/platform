@@ -1035,7 +1035,8 @@ export function createModel (builder: Builder): void {
       application: recruit.app.Recruit,
       group: 'create'
     }
-  })
+  }, recruit.action.CreateTalent
+  )
 
   createAction(builder, {
     action: view.actionImpl.ShowPopup,

@@ -21,11 +21,17 @@
   import { onDestroy } from 'svelte'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
+  import view from '@hcengineering/view'
 
   let draftExists = false
 
   const client = getClient()
   const draftController = new MultipleDraftController(recruit.mixin.Candidate)
+  const newRecruitKeyBindingPromise = client
+    .findOne(view.class.Action, { _id: recruit.action.CreateTalent })
+    .then((p) => p?.keyBinding)
+
+
   onDestroy(
     draftController.hasNext((res) => {
       draftExists = res
@@ -41,9 +47,7 @@
   let visibleActions: string[] = []
   function updateActions (draft: boolean): void {
     mainActionId = draft ? recruit.string.ResumeDraft : recruit.string.CreateTalent
-    visibleActions = [
-      mainActionId
-    ]
+    visibleActions = [mainActionId]
   }
 
   $: updateActions(draftExists)
@@ -58,6 +62,7 @@
       id: recruit.string.CreateTalent,
       label: recruit.string.CreateTalent,
       accountRole: AccountRole.User,
+      keyBindingPromise: newRecruitKeyBindingPromise,
       callback: newCandidate
     },
     {
@@ -65,6 +70,8 @@
       label: recruit.string.ResumeDraft,
       draft: true,
       accountRole: AccountRole.User,
+      keyBindingPromise: newRecruitKeyBindingPromise,
       callback: newCandidate
-    }]}
+    }
+  ]}
 />
