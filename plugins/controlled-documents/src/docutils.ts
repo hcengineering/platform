@@ -323,7 +323,7 @@ export async function createDocumentTemplateMetadata (
     space,
     {
       documents: 0,
-      title: `${TEMPLATE_PREFIX}-${seqNumber} ${specTitle}`
+      title: `${code} ${specTitle}`
     },
     metaId
   )

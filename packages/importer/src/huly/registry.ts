@@ -106,8 +106,8 @@ export class MetadataRegistry {
     this.pathToTagMetadata.set(tagPath, metadata)
   }
 
-  public setRefMetadata (path: string, _class: string, title: string): void {
-    const ref = this.getRef(path)
+  public setRefMetadata (path: string, _class: string, title: string, id?: Ref<Doc>): void {
+    const ref = id ?? this.getRef(path)
     this.pathToMentionMetadata.set(path, {
       id: ref,
       class: _class,
