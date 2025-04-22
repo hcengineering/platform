@@ -313,7 +313,9 @@
     "LatestVersionHint": "最新",
 
     "CannotDeleteFolder": "无法删除文件夹",
-    "CannotDeleteFolderHint": "请在删除文件夹之前将所有子文档移动到其他位置。"
+    "CannotDeleteFolderHint": "请在删除文件夹之前将所有子文档移动到其他位置。",
+
+    "AllDocumentSpaces": "所有文档空间"
   },
   "controlledDocStates": {
     "Empty": "",

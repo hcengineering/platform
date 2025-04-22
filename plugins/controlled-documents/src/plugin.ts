@@ -13,7 +13,7 @@ import {
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { AnyComponent, ResolvedLocation, Location } from '@hcengineering/ui/src/types'
-import { Action } from '@hcengineering/view'
+import { Action, Viewlet } from '@hcengineering/view'
 
 import type {
   ChangeControl,
@@ -258,6 +258,7 @@ export const documentsPlugin = plugin(documentsId, {
     CreateNewDraft: '' as IntlString,
     RestoreDraft: '' as IntlString,
     CreateOrgSpace: '' as IntlString,
+    AllDocumentSpaces: '' as IntlString,
 
     ReviewDocumentPermission: '' as IntlString,
     ReviewDocumentDescription: '' as IntlString,
@@ -329,6 +330,9 @@ export const documentsPlugin = plugin(documentsId, {
   },
   notification: {
     CoAuthorsNotification: '' as Ref<NotificationType>
+  },
+  viewlet: {
+    DocumentSpaceTable: '' as Ref<Viewlet>
   }
 })
 

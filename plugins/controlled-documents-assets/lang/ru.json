@@ -316,7 +316,9 @@
     "LatestVersionHint": "последняя",
 
     "CannotDeleteFolder": "Папка не может быть удалена",
-    "CannotDeleteFolderHint": "Пожалуйста, переместите все дочерние документы в другое место перед удалением папки."
+    "CannotDeleteFolderHint": "Пожалуйста, переместите все дочерние документы в другое место перед удалением папки.",
+
+    "AllDocumentSpaces": "Все пространства документов"
   },
   "controlledDocStates": {
     "Empty": "",
