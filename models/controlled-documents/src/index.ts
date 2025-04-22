@@ -757,7 +757,7 @@ export function createModel (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name', 'description']
       },
-      config: ['', 'members', 'private', 'owners'],
+      config: ['', 'members', 'private', 'owners', 'archived'],
       viewOptions: {
         groupBy: [],
         orderBy: [],
