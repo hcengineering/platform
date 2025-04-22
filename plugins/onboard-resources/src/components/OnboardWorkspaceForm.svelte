@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { LoginInfo } from '@hcengineering/login'
-  import { createWorkspace, setLoginInfo } from '@hcengineering/login-resources'
-  import { Status, Severity, OK } from '@hcengineering/platform'
-  import { createEventDispatcher } from 'svelte'
+  import { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/login'
+  import { createWorkspace, getRegionInfo, RegionInfo, setLoginInfo } from '@hcengineering/login-resources'
+  import { Status, Severity, OK, getEmbeddedLabel } from '@hcengineering/platform'
+  import { ButtonMenu } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   import Form from './Form.svelte'
   import onboard from '../plugin'
@@ -32,21 +33,44 @@
   }
 
   let status: Status<any> = OK
+  let regions: RegionInfo[] = []
+  let selectedRegion: string = ''
+
+  onMount(async () => {
+    regions = (await getRegionInfo())?.filter((it) => it.name.length > 0) ?? []
+    selectedRegion = regions[0]?.region
+  })
 
   const action = {
     i18n: onboard.string.CreateWorkspace,
     func: async () => {
       status = new Status(Severity.INFO, onboard.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await createWorkspace(object.workspace)
+      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion)
       status = loginStatus
 
       if (result !== undefined) {
-        setLoginInfo(result)
+        setLoginInfo(result as WorkspaceLoginInfo)
         dispatch('step', result)
       }
     }
   }
 </script>
 
-<Form caption={onboard.string.CreateWorkspace} subtitle={account.email} {status} {fields} {object} {action} />
+<Form caption={onboard.string.CreateWorkspace} subtitle={account.email} {status} {fields} {object} {action}>
+  <svelte:fragment slot="region-selector">
+    {#if regions.length > 1}
+      <div class="flex flex-grow flex-reverse">
+        <ButtonMenu
+          bind:selected={selectedRegion}
+          autoSelectionIfOne
+          title={regions.find((it) => it.region === selectedRegion)?.name}
+          items={regions.map((it) => ({ id: it.region, label: getEmbeddedLabel(it.name) }))}
+          on:selected={(it) => {
+            selectedRegion = it.detail
+          }}
+        />
+      </div>
+    {/if}
+  </svelte:fragment>
+</Form>
