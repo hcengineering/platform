@@ -10,7 +10,6 @@ export class SignupPage {
   readonly inputRepeatNewPassword: Locator
   readonly buttonSignUp: Locator
   readonly textError: Locator
-  readonly signUpPasswordBtn: Locator
 
   constructor (page: Page) {
     this.page = page
@@ -21,15 +20,9 @@ export class SignupPage {
     this.inputRepeatNewPassword = page.locator('input[name="new-password"]').nth(1)
     this.buttonSignUp = page.locator('div.send button')
     this.textError = page.locator('div.ERROR > span')
-    this.signUpPasswordBtn = page.locator('a', { hasText: 'Sign up with password' })
   }
 
   async signupPwd (userData: UserSignUp): Promise<void> {
-    const isOtp = await this.signUpPasswordBtn.isVisible()
-    if (isOtp) {
-      await this.signUpPasswordBtn.click()
-    }
-
     await this.inputFirstName.fill(userData.firstName)
     await this.inputLastName.fill(userData.lastName)
     await this.inputEmail.fill(userData.email)
