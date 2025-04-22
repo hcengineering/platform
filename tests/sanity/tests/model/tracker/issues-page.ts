@@ -156,7 +156,7 @@ export class IssuesPage extends CommonTrackerPage {
 
   estimationSpan = (): Locator => this.page.locator('.estimation-container >> span').first()
   okButton = (): Locator => this.page.getByRole('button', { name: 'Ok', exact: true })
-  newIssueButton = (): Locator => this.page.locator('#new-issue')
+  newIssueButton = (): Locator => this.page.locator('#tracker-string-NewIssue')
   issueNameInput = (): Locator => this.page.locator('#issue-name >> input')
   issueDescriptionInput = (): Locator => this.page.locator('#issue-description >> [contenteditable]')
   statusEditor = (): Locator => this.page.locator('#status-editor')

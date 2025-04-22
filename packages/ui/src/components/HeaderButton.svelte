@@ -97,7 +97,7 @@
               items.find((a) => a.id === ev.detail)?.callback()
             }}
             on:click={mainAction.callback}
-            mainButtonId={mainAction.id !== null ? String(mainAction.id) : undefined}
+            mainButtonId={mainAction.id !== null ? String(mainAction.id).replaceAll(':', '-') : undefined}
             showTooltipMain={{
               direction: 'bottom',
               label: mainAction.label,

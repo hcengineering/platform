@@ -73,7 +73,7 @@
 <HeaderButton
   {loading}
   {client}
-  mainActionId={drive.string.CreateFolder}
+  mainActionId={drive.string.UploadFile}
   {visibleActions}
   actions={[
     {
