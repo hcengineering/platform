@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
+  import { Employee, Person } from '@hcengineering/contact'
   import { AssigneePopup, EmployeePresenter } from '@hcengineering/contact-resources'
   import { type Class, type Doc, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
@@ -87,7 +87,7 @@
     }
   }
 
-  async function assignTodo (user: Ref<Person>): Promise<void> {
+  async function assignTodo (user: Ref<Employee>): Promise<void> {
     if (todo !== undefined && todo.user === user) return
     if (objectId === undefined || objectClass === undefined || objectSpace === undefined) return
 
@@ -144,7 +144,7 @@
     }
   }
 
-  async function assignTodoConfirm (user: Ref<Person>): Promise<void> {
+  async function assignTodoConfirm (user: Ref<Employee>): Promise<void> {
     showPopup(
       MessageBox,
       {
@@ -172,7 +172,7 @@
     )
   }
 
-  async function changeAssignee (user: Ref<Person> | undefined): Promise<void> {
+  async function changeAssignee (user: Ref<Employee> | undefined): Promise<void> {
     const shouldConfirm = todo !== undefined && todo?.workslots > 0
     if (user !== undefined) {
       shouldConfirm ? await assignTodoConfirm(user) : await assignTodo(user)
