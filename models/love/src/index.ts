@@ -66,6 +66,7 @@ import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
 import view, { createAction, createAttributePresenter } from '@hcengineering/model-view'
+import media from '@hcengineering/media'
 import notification from '@hcengineering/notification'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -322,6 +323,16 @@ export function createModel (builder: Builder): void {
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: calendar.extensions.EditEventExtensions,
     component: love.component.EditMeetingData
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: media.extension.StateContext,
+    component: love.component.MediaPopupItemExt
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: media.extension.StateIndicator,
+    component: love.component.SharingStateIndicator
   })
 
   builder.createDoc(

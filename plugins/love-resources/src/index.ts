@@ -24,6 +24,8 @@ import RoomPresenter from './components/RoomPresenter.svelte'
 import MeetingMinutesDocEditor from './components/MeetingMinutesDocEditor.svelte'
 import MeetingMinutesStatusPresenter from './components/MeetingMinutesStatusPresenter.svelte'
 import RoomLanguageEditor from './components/RoomLanguageEditor.svelte'
+import MediaPopupItemExt from './components/MediaPopupItemExt.svelte'
+import SharingStateIndicator from './components/SharingStateIndicator.svelte'
 
 import {
   copyGuestLink,
@@ -62,7 +64,9 @@ export default async (): Promise<Resources> => ({
     RoomPresenter,
     MeetingMinutesDocEditor,
     MeetingMinutesStatusPresenter,
-    RoomLanguageEditor
+    RoomLanguageEditor,
+    MediaPopupItemExt,
+    SharingStateIndicator
   },
   function: {
     CreateMeeting: createMeeting,

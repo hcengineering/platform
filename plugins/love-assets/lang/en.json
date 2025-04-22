@@ -86,6 +86,10 @@
     "ShareWithAudioTooltip": "Share your screen with system audio. Restart screen share to apply changes.",
     "MicPermission": "Microphone not found, check browser permissions",
     "CamPermission": "Camera not found, check browser permissions",
-    "SearchMeetingMinutes": "Search meeting minutes..."
+    "SearchMeetingMinutes": "Search meeting minutes...",
+    "Sharing": "Sharing...",
+    "Browser": "Browser",
+    "Monitor": "Monitor",
+    "Window": "Window"
   }
 }

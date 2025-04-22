@@ -86,6 +86,10 @@
     "ShareWithAudioTooltip": "Partagez votre écran avec l'audio du système. Redémarrez le partage d’écran pour appliquer les modifications.",
     "MicPermission": "Microphone non trouvé, vérifiez les autorisations du navigateur",
     "CamPermission": "Caméra non trouvée, vérifiez les autorisations du navigateur",
-    "SearchMeetingMinutes": "Rechercher des minutes de réunion..."
+    "SearchMeetingMinutes": "Rechercher des minutes de réunion...",
+    "Sharing": "Partage...",
+    "Browser": "Navigateur",
+    "Monitor": "Moniteur",
+    "Window": "Fenêtre"
   }
 }

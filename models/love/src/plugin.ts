@@ -30,7 +30,9 @@ export default mergeIds(loveId, love, {
     LoveWidget: '' as AnyComponent,
     MeetingWidget: '' as AnyComponent,
     WidgetSwitcher: '' as AnyComponent,
-    RoomLanguageEditor: '' as AnyComponent
+    RoomLanguageEditor: '' as AnyComponent,
+    MediaPopupItemExt: '' as AnyComponent,
+    SharingStateIndicator: '' as AnyComponent
   },
   app: {
     Love: '' as Ref<Doc>

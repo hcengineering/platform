@@ -86,6 +86,10 @@
     "ShareWithAudioTooltip": "システム音声付きで画面を共有します。変更を適用するには、画面共有を再起動してください。",
     "MicPermission": "マイクが見つかりません。ブラウザの権限を確認してください",
     "CamPermission": "カメラが見つかりません。ブラウザの権限を確認してください",
-    "SearchMeetingMinutes": "議事録を検索..."
+    "SearchMeetingMinutes": "議事録を検索...",
+    "Sharing": "共有中...",
+    "Browser": "ブラウザ",
+    "Monitor": "モニター",
+    "Window": "ウィンドウ"
   }
 }
