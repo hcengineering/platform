@@ -61,15 +61,9 @@
   let visibleActions: string[] = []
   function updateActions (hasSpace: boolean): void {
     if (hasSpace) {
-      visibleActions = [
-        drive.string.CreateDrive,
-        drive.string.CreateFolder,
-        drive.string.UploadFile
-      ]
+      visibleActions = [drive.string.CreateDrive, drive.string.CreateFolder, drive.string.UploadFile]
     } else {
-      visibleActions = [
-        drive.string.CreateDrive
-      ]
+      visibleActions = [drive.string.CreateDrive]
     }
   }
 
@@ -100,5 +94,6 @@
       label: drive.string.UploadFile,
       icon: drive.icon.File,
       callback: handleUploadFile
-    }]}
+    }
+  ]}
 />

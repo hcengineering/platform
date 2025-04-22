@@ -36,5 +36,6 @@
       label: lead.string.CreateCustomerLabel,
       accountRole: AccountRole.User,
       callback: newIssue
-    }]}
+    }
+  ]}
 />

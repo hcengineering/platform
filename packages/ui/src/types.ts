@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { AccountRole, type Permission, type Timestamp, type Ref, type TypedSpace } from '@hcengineering/core'
+import { type AccountRole, type Permission, type Timestamp, type Ref, type TypedSpace } from '@hcengineering/core'
 import type {
   Asset,
   IntlString,

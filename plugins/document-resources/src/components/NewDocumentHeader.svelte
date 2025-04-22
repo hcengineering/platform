@@ -15,10 +15,7 @@
 <script lang="ts">
   import { AccountRole, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    HeaderButton,
-    showPopup
-  } from '@hcengineering/ui'
+  import { HeaderButton, showPopup } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
   import { Analytics } from '@hcengineering/analytics'
   import { DocumentEvents } from '@hcengineering/document'
@@ -71,14 +68,9 @@
   function updateActions (teamspace: boolean): void {
     mainActionId = document.string.CreateDocument
     if (teamspace) {
-      visibleActions = [
-        document.string.CreateTeamspace,
-        document.string.CreateDocument
-      ]
+      visibleActions = [document.string.CreateTeamspace, document.string.CreateDocument]
     } else {
-      visibleActions = [
-        document.string.CreateTeamspace
-      ]
+      visibleActions = [document.string.CreateTeamspace]
     }
   }
 
@@ -102,5 +94,6 @@
       label: document.string.CreateDocument,
       accountRole: AccountRole.User,
       callback: newDocument
-    }]}
+    }
+  ]}
 />

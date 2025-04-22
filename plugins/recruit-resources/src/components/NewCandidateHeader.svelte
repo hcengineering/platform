@@ -31,7 +31,6 @@
     .findOne(view.class.Action, { _id: recruit.action.CreateTalent })
     .then((p) => p?.keyBinding)
 
-
   onDestroy(
     draftController.hasNext((res) => {
       draftExists = res

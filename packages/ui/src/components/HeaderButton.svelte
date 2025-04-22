@@ -29,8 +29,8 @@
   $: filterVisibleActions(allowedActions, visibleActions)
 
   function filterVisibleActions (allowed: HeaderButtonAction[], visible: (string | number | null)[]): void {
-    items = allowed.filter(action => visible.includes(action.id))
-    mainAction = items.find(a => a.id === mainActionId)
+    items = allowed.filter((action) => visible.includes(action.id))
+    mainAction = items.find((a) => a.id === mainActionId)
     if (mainAction === undefined && items.length > 0) {
       mainAction = items[0]
     }
@@ -51,7 +51,9 @@
   async function isActionAllowed (action: HeaderButtonAction): Promise<boolean> {
     if (action.accountRole === undefined && action.permission === undefined) return true
     if (action.accountRole !== undefined && hasAccountRole(getCurrentAccount(), action.accountRole)) return true
-    return action.permission !== undefined && await checkPermission(client, action.permission.id, action.permission.space)
+    return (
+      action.permission !== undefined && (await checkPermission(client, action.permission.id, action.permission.space))
+    )
   }
 </script>
 
