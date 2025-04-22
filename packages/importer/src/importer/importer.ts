@@ -181,8 +181,8 @@ export interface ImportDrawing {
   contentProvider: () => Promise<string>
 }
 
-export type ImportControlledDoc = ImportControlledDocument | ImportControlledDocumentTemplate // todo: rename
-export interface ImportOrgSpace extends ImportSpace<ImportControlledDoc> {
+export type ImportControlledDocOrTemplate = ImportControlledDocument | ImportControlledDocumentTemplate
+export interface ImportOrgSpace extends ImportSpace<ImportControlledDocOrTemplate> {
   class: Ref<Class<DocumentSpace>>
   qualified?: AccountUuid
   manager?: AccountUuid
@@ -208,7 +208,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   ccReason?: string
   ccImpact?: string
   ccDescription?: string
-  subdocs: ImportControlledDoc[]
+  subdocs: ImportControlledDocOrTemplate[]
 }
 
 export interface ImportControlledDocument extends ImportDoc {
@@ -220,6 +220,7 @@ export interface ImportControlledDocument extends ImportDoc {
   major: number
   minor: number
   state: DocumentState
+  category?: Ref<DocumentCategory>
   reviewers?: Ref<Employee>[]
   approvers?: Ref<Employee>[]
   coAuthors?: Ref<Employee>[]
@@ -229,7 +230,7 @@ export interface ImportControlledDocument extends ImportDoc {
   ccReason?: string
   ccImpact?: string
   ccDescription?: string
-  subdocs: ImportControlledDoc[]
+  subdocs: ImportControlledDocOrTemplate[]
 }
 
 export class WorkspaceImporter {
@@ -855,7 +856,7 @@ export class WorkspaceImporter {
   }
 
   private partitionTemplatesFromDocuments (
-    doc: ImportControlledDoc,
+    doc: ImportControlledDocOrTemplate,
     documentMap: Map<Ref<ControlledDocument>, ImportControlledDocument>,
     templateMap: Map<Ref<ControlledDocument>, ImportControlledDocumentTemplate>
   ): void {
@@ -918,7 +919,7 @@ export class WorkspaceImporter {
     this.logger.log('Creating document template: ' + template.title)
     const templateId = template.id ?? generateId<ControlledDocument>()
 
-    const { seqNumber, code, projectDocumentId } = await createDocumentTemplateMetadata(
+    const { seqNumber, code, projectDocumentId, success } = await createDocumentTemplateMetadata(
       this.client,
       documents.class.Document,
       spaceId,
@@ -931,6 +932,10 @@ export class WorkspaceImporter {
       template.title,
       template.metaId
     )
+
+    if (!success) {
+      throw new Error('Failed to create document template: ' + template.title)
+    }
 
     templateMetaMap.set(templateId, { seqNumber, code })
 
@@ -968,10 +973,12 @@ export class WorkspaceImporter {
     const collabId = makeCollabId(documents.class.Document, template.id, 'content')
     const contentId = await this.createCollaborativeContent(template.id, collabId, content, spaceId)
 
-    const changeControlId =
-      template.ccReason !== undefined || template.ccImpact !== undefined || template.ccDescription !== undefined
-        ? await this.createChangeControl(spaceId, template.ccDescription, template.ccReason, template.ccImpact)
-        : ('' as Ref<ChangeControl>)
+    const changeControlId = await this.createChangeControl(
+      spaceId,
+      template.ccDescription,
+      template.ccReason,
+      template.ccImpact
+    )
 
     const ops = this.client.apply()
     const result = await ops.addCollection(
@@ -988,19 +995,20 @@ export class WorkspaceImporter {
         author: template.author,
         owner: template.owner,
         abstract: template.abstract,
+        category: template.category,
         reviewers: template.reviewers ?? [],
         approvers: template.approvers ?? [],
         coAuthors: template.coAuthors ?? [],
         code,
         seqNumber,
-        prefix: template.docPrefix, // todo: or TEMPLATE_PREFIX?s
+        prefix: template.docPrefix,
         content: contentId,
         changeControl: changeControlId,
         commentSequence: 0,
         requests: 0,
         labels: 0
       },
-      template.id as unknown as Ref<ControlledDocument> // todo: make sure it's not used anywhere as mixin id
+      template.id as unknown as Ref<ControlledDocument>
     )
 
     await ops.createMixin(template.id, documents.class.Document, spaceId, documents.mixin.DocumentTemplate, {
@@ -1026,10 +1034,9 @@ export class WorkspaceImporter {
     this.logger.log('Creating controlled document: ' + doc.title)
     const documentId = doc.id ?? generateId<ControlledDocument>()
 
-    // const { seqNumber, prefix, category } = await useDocumentTemplate(this.client, doc.template as unknown as Ref<DocumentTemplate>)
     const result = await createControlledDocMetadata(
       this.client,
-      documents.template.ProductChangeControl, // todo: make it dynamic - wtf, commit missed?
+      documents.template.ProductChangeControl,
       documentId,
       spaceId,
       undefined, // project
@@ -1040,6 +1047,10 @@ export class WorkspaceImporter {
       doc.title,
       doc.metaId
     )
+
+    if (!result.success) {
+      throw new Error('Failed to create controlled document: ' + doc.title)
+    }
 
     // Process subdocs recursively
     for (const subdoc of doc.subdocs) {
@@ -1074,18 +1085,22 @@ export class WorkspaceImporter {
     const contentId = await this.createCollaborativeContent(document.id, collabId, content, spaceId)
 
     const templateId = document.template
-    const { seqNumber, prefix, category } = await useDocumentTemplate(
-      this.client,
-      templateId as unknown as Ref<DocumentTemplate>
-    )
+    const {
+      seqNumber,
+      prefix,
+      category: templateCategory
+    } = await useDocumentTemplate(this.client, templateId as unknown as Ref<DocumentTemplate>)
 
     const ops = this.client.apply()
 
-    const changeControlId =
-      document.ccReason !== undefined || document.ccImpact !== undefined
-        ? await this.createChangeControl(spaceId, document.ccDescription, document.ccReason, document.ccImpact)
-        : ('' as Ref<ChangeControl>)
+    const changeControlId = await this.createChangeControl(
+      spaceId,
+      document.ccDescription,
+      document.ccReason,
+      document.ccImpact
+    )
 
+    const code = document.code ?? `${prefix}-${seqNumber}`
     const result = await ops.addCollection(
       documents.class.ControlledDocument,
       spaceId,
@@ -1104,9 +1119,9 @@ export class WorkspaceImporter {
         approvers: document.approvers ?? [],
         coAuthors: document.coAuthors ?? [],
         changeControl: changeControlId,
-        code: document.code ?? `${prefix}-${seqNumber}`,
+        code,
         prefix,
-        category,
+        category: document.category ?? templateCategory,
         seqNumber,
         content: contentId,
         template: templateId as unknown as Ref<DocumentTemplate>,
@@ -1118,7 +1133,7 @@ export class WorkspaceImporter {
 
     await ops.updateDoc(documents.class.DocumentMeta, spaceId, document.metaId, {
       documents: 0,
-      title: `${prefix}-${seqNumber} ${document.title}`
+      title: `${code} ${document.title}`
     })
 
     await ops.commit()
