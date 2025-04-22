@@ -316,7 +316,9 @@
     "LatestVersionHint": "latest",
 
     "CannotDeleteFolder": "The folder cannot be deleted",
-    "CannotDeleteFolderHint": "Please move all child documents to another location before deleting the folder."
+    "CannotDeleteFolderHint": "Please move all child documents to another location before deleting the folder.",
+
+    "AllDocumentSpaces": "All document spaces"
   },
   "controlledDocStates": {
     "Empty": "",

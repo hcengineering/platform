@@ -314,7 +314,9 @@
     "LatestVersionHint": "neueste",
 
     "CannotDeleteFolder": "Der Ordner kann nicht gelöscht werden",
-    "CannotDeleteFolderHint": "Bitte verschieben Sie alle untergeordneten Dokumente an einen anderen Ort, bevor Sie den Ordner löschen."
+    "CannotDeleteFolderHint": "Bitte verschieben Sie alle untergeordneten Dokumente an einen anderen Ort, bevor Sie den Ordner löschen.",
+
+    "AllDocumentSpaces": "Alle Dokumentbereiche"
   },
   "controlledDocStates": {
     "Empty": "",
