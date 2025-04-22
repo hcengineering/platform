@@ -135,7 +135,7 @@
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i]
 
-      if (node.nodeType !== Node.TEXT_NODE) continue
+      if (node.nodeType !== Node.TEXT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue
 
       range.selectNodeContents(node)
 

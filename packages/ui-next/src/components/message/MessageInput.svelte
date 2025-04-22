@@ -90,6 +90,8 @@
         file.size
       )
     }
+
+    dispatch('edited')
   }
 
   async function fileSelected (): Promise<void> {

@@ -14,12 +14,39 @@
 -->
 
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
+  import cardPlugin, { Card } from '@hcengineering/card'
+  import { Header, Icon } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { Asset } from '@hcengineering/platform'
 
   export let card: Card | undefined = undefined
+  export let canClose: boolean = false
+  export let title: string | undefined = undefined
+  export let icon: Asset | undefined = undefined
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: clazz = card != null ? hierarchy.getClass(card._class) : undefined
 </script>
 
-<div class="chat-header"></div>
+<Header
+  allowFullsize={false}
+  type={canClose ? 'type-aside' : 'type-component'}
+  adaptive="disabled"
+  hideBefore={false}
+  closeOnEscape={false}
+  on:close
+>
+  <div class="hulyHeader-titleGroup">
+    <div class="content-color mr-2 pl-2">
+      <Icon icon={clazz?.icon ?? icon ?? cardPlugin.icon.Card} size={'small'} />
+    </div>
+    <span class="secondary-textColor overflow-label heading-medium-16 line-height-auto mr-2"
+      >{card?.title ?? title}</span
+    >
+  </div>
+</Header>
 
 <style lang="scss">
   .chat-header {
