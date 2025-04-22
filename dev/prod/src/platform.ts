@@ -186,6 +186,7 @@ export interface Config {
   PUBLIC_SCHEDULE_URL?: string
   CALDAV_SERVER_URL?: string
   EXPORT_URL?: string
+  MAIL_URL?: string
 }
 
 export interface Branding {
@@ -428,6 +429,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL)
+  setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
   setMetadata(recorder.metadata.StreamUrl, config.STREAM_URL)
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
 

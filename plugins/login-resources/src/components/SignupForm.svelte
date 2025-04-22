@@ -15,22 +15,24 @@
 -->
 <script lang="ts">
   import { OK, Severity, Status } from '@hcengineering/platform'
+  import { logIn } from '@hcengineering/workbench'
 
   import BottomActionComponent from './BottomAction.svelte'
   import login from '../plugin'
   import { getPasswordValidationRules } from '../validations'
   import { goTo } from '../utils'
   import Form from './Form.svelte'
-  import { OtpLoginSteps, signUpOtp } from '../index'
+  import { OtpLoginSteps, signUp, signUpOtp } from '../index'
   import type { Field } from '../types'
   import OtpForm from './OtpForm.svelte'
 
   export let signUpDisabled = false
   export let navigateUrl: string | undefined = undefined
+  export let useOTP = true // False only for dev/tests
 
   let fields: Array<Field>
   let form: Form
-  let withPassword = false
+  let withPassword = !useOTP
 
   $: {
     fields = [
@@ -70,14 +72,25 @@
   const action = {
     i18n: login.string.SignUp,
     func: async () => {
-      status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+      if (useOTP) {
+        status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [otpStatus, result] = await signUpOtp(object.username, object.first, object.last)
-      status = otpStatus
+        const [otpStatus, result] = await signUpOtp(object.username, object.first, object.last)
+        status = otpStatus
 
-      if (result?.sent === true && otpStatus === OK) {
-        step = OtpLoginSteps.Otp
-        otpRetryOn = result.retryOn
+        if (result?.sent === true && otpStatus === OK) {
+          step = OtpLoginSteps.Otp
+          otpRetryOn = result.retryOn
+        }
+      } else {
+        const [loginStatus, result] = await signUp(object.username, object.password, object.first, object.last)
+
+        status = loginStatus
+
+        if (result != null) {
+          await logIn(result)
+          goTo('confirmationSend')
+        }
       }
     }
   }
@@ -118,12 +131,21 @@
   />
 {/if}
 
-<div class="action">
-  <BottomActionComponent action={withPasswordAction} />
-</div>
+{#if useOTP}
+  <div class="action">
+    <BottomActionComponent action={withPasswordAction} />
+  </div>
+{:else}
+  <div class="placeholder" />
+{/if}
 
 <style lang="scss">
   .action {
     margin-left: 5rem;
+  }
+
+  // TODO: Refactor me please
+  .placeholder {
+    height: 1.125rem;
   }
 </style>
