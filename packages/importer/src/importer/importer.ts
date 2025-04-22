@@ -198,7 +198,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   major: number
   minor: number
   state: DocumentState
-  category?: Ref<DocumentCategory>
+  category: Ref<DocumentCategory>
   author?: Ref<Employee>
   owner?: Ref<Employee>
   abstract?: string

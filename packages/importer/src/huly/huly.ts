@@ -899,8 +899,12 @@ export class HulyFormatImporter {
       throw new Error(`Author or owner not found: ${header.author} or ${header.owner}`)
     }
 
+    const category = this.controlledDocumentCategories.get(header.category)
+    if (category === undefined) {
+      throw new Error(`Category not found: ${header.category}`)
+    }
+
     const codeMatch = path.basename(docPath).match(/^\[([^\]]+)\]/)
-    const category = header.category !== undefined ? this.controlledDocumentCategories.get(header.category) : undefined
     return {
       id,
       metaId,
