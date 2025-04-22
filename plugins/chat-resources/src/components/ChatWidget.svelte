@@ -19,15 +19,14 @@
   import cardPlugin, { type Card } from '@hcengineering/card'
   import { Message, CardID } from '@hcengineering/communication-types'
   import { MessagePresenter, MessageInput, Divider, UploadedFile } from '@hcengineering/ui-next'
-  import core, { fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
-  import { jsonToMarkup, markupToText } from '@hcengineering/text'
-  import { markdownToMarkup } from '@hcengineering/text-markdown'
+  import { fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
   import { makeRank } from '@hcengineering/rank'
 
   import { ChatWidgetData } from '../types'
   import chat from '../plugin'
   import ChatHeader from './ChatHeader.svelte'
   import ChatBody from './ChatBody.svelte'
+  import { createThreadTitle } from '../utils'
 
   export let widget: Widget | undefined
   export let widgetState: WidgetState | undefined
@@ -50,10 +49,11 @@
 
   $: data = widgetState?.data as ChatWidgetData
 
-  $: if (data?.card !== undefined && data?.message !== undefined) {
+  $: if (data !== undefined) {
     messageQuery.query(
       {
         card: data.card,
+        created: data.created,
         id: data.message,
         limit: 1,
         replies: true,
@@ -67,7 +67,7 @@
 
     parentCardQuery.query(
       cardPlugin.class.Card,
-      { _id: data.card },
+      { _id: data.card as Ref<Card> },
       (res) => {
         parentCard = res[0]
       },
@@ -105,12 +105,8 @@
 
     let threadId: CardID | undefined = message.thread?.thread
     if (threadId == null) {
-      const markup = jsonToMarkup(markdownToMarkup(message.content))
-      const messageText = markupToText(markup).trim()
-
       const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
-      const titleFromMessage = `${messageText.slice(0, 100)}${messageText.length > 100 ? '...' : ''}`
-      const title = titleFromMessage.length > 0 ? titleFromMessage : `Thread from ${parentCard.title}`
+      const title = createThreadTitle(message, parentCard)
       const data = fillDefaults(
         hierarchy,
         {
@@ -137,15 +133,15 @@
 
 {#if widget && data && data.message}
   <div class="chat-widget" style:width style:height>
-    <ChatHeader card={threadCard} />
+    <ChatHeader card={threadCard} icon={chat.icon.Thread} title={data.name} canClose on:close />
     {#if message && parentCard}
-      <div style:padding="0 1rem">
-        <MessagePresenter {message} card={parentCard} />
+      <div style:padding="1rem">
+        <MessagePresenter {message} card={parentCard} replies={false} />
       </div>
       <Divider />
 
       <div class="messages">
-        <ChatBody card={threadCard} bottomStart={false} showDates={false} />
+        <ChatBody card={threadCard} bottomStart={false} showDates={false} overlyColor="var(--next-background-color)" />
       </div>
       <div style:padding="1rem">
         <MessageInput onSubmit={handleSubmit} />
