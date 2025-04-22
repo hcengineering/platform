@@ -45,7 +45,8 @@
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/tags": "^0.6.16"
+    "@hcengineering/tags": "^0.6.16",
+    "@hcengineering/view": "^0.6.13"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

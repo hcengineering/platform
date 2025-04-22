@@ -13,15 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { type Drive, DriveEvents } from '@hcengineering/drive'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
+  import { AccountRole, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { type Drive } from '@hcengineering/drive'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { HeaderButton } from '@hcengineering/ui'
 
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
   import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup } from '../utils'
-  import { Analytics } from '@hcengineering/analytics'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
@@ -29,6 +28,7 @@
   const me = getCurrentAccount()
 
   const query = createQuery()
+  const client = getClient()
 
   let loading = true
   let hasDrive = false
@@ -44,16 +44,6 @@
 
   $: parent = getFolderIdFromFragment(currentFragment ?? '') ?? drive.ids.Root
 
-  async function handleDropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
-    if (res === drive.string.CreateDrive) {
-      await handleCreateDrive()
-    } else if (res === drive.string.CreateFolder) {
-      await handleCreateFolder()
-    } else if (res === drive.string.UploadFile) {
-      await handleUploadFile()
-    }
-  }
-
   async function handleCreateDrive (): Promise<void> {
     await showCreateDrivePopup()
   }
@@ -68,47 +58,42 @@
     }
   }
 
-  const dropdownItems = hasAccountRole(me, AccountRole.User)
-    ? [
-        { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive },
-        { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
-        { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
-      ]
-    : [
-        { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
-        { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
-      ]
+  let visibleActions: string[] = []
+  function updateActions (hasSpace: boolean): void {
+    if (hasSpace) {
+      visibleActions = [drive.string.CreateDrive, drive.string.CreateFolder, drive.string.UploadFile]
+    } else {
+      visibleActions = [drive.string.CreateDrive]
+    }
+  }
+
+  $: updateActions(hasDrive)
 </script>
 
-{#if loading}
-  <Loading shrink />
-{:else}
-  <div class="antiNav-subheader">
-    {#if hasDrive}
-      <ButtonWithDropdown
-        icon={IconAdd}
-        justify={'left'}
-        kind={'primary'}
-        label={drive.string.UploadFile}
-        mainButtonId={'new-document'}
-        dropdownIcon={IconDropdown}
-        {dropdownItems}
-        disabled={currentSpace === undefined}
-        on:click={handleUploadFile}
-        on:dropdown-selected={(ev) => {
-          void handleDropdownItemSelected(ev.detail)
-        }}
-      />
-    {:else}
-      <Button
-        icon={IconAdd}
-        label={drive.string.CreateDrive}
-        justify={'left'}
-        width={'100%'}
-        kind={'primary'}
-        gap={'large'}
-        on:click={handleCreateDrive}
-      />
-    {/if}
-  </div>
-{/if}
+<HeaderButton
+  {loading}
+  {client}
+  mainActionId={drive.string.UploadFile}
+  {visibleActions}
+  actions={[
+    {
+      id: drive.string.CreateDrive,
+      label: drive.string.CreateDrive,
+      icon: drive.icon.Drive,
+      accountRole: AccountRole.Maintainer,
+      callback: handleCreateDrive
+    },
+    {
+      id: drive.string.CreateFolder,
+      label: drive.string.CreateFolder,
+      icon: drive.icon.Folder,
+      callback: handleCreateFolder
+    },
+    {
+      id: drive.string.UploadFile,
+      label: drive.string.UploadFile,
+      icon: drive.icon.File,
+      callback: handleUploadFile
+    }
+  ]}
+/>

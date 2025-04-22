@@ -45,7 +45,7 @@ test.describe('Tracker sub-issues tests', () => {
     await fillIssueForm(page, props)
     await page.keyboard.press('Escape')
     await page.keyboard.press('Escape')
-    await issuesPage.clickOnNewIssue()
+    await issuesPage.clickOnResumeDraft()
     await checkIssueDraft(page, props)
   })
 
