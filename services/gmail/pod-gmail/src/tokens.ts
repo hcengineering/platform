@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { PersonId, WorkspaceUuid } from '@hcengineering/core'
+import { MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
 import type { AccountClient } from '@hcengineering/account-client'
 import { getAccountClient } from '@hcengineering/server-client'
 import { GMAIL_INTEGRATION, SecretType, Token } from './types'
@@ -22,6 +22,7 @@ export class TokenStorage {
   private readonly accountClient: AccountClient
 
   constructor (
+    private readonly ctx: MeasureContext,
     private readonly workspace: WorkspaceUuid,
     platformToken: string
   ) {
@@ -38,30 +39,31 @@ export class TokenStorage {
     return secret?.secret !== undefined ? JSON.parse(secret.secret) : null
   }
 
-  async saveToken (token: Token): Promise<void> {
-    const exists = await this.accountClient.getIntegrationSecret({
-      key: SecretType.TOKEN,
-      kind: GMAIL_INTEGRATION,
-      socialId: token.socialId._id,
-      workspaceUuid: this.workspace
-    })
+  async saveToken (socialId: PersonId, token: Token): Promise<void> {
+    const existingToken = await this.getToken(socialId)
 
-    if (exists !== null) {
+    if (existingToken !== null) {
+      const updatedToken = {
+        ...existingToken,
+        ...token
+      }
       await this.accountClient.updateIntegrationSecret({
         key: SecretType.TOKEN,
         kind: GMAIL_INTEGRATION,
-        socialId: token.socialId._id,
-        secret: JSON.stringify(token),
+        socialId,
+        secret: JSON.stringify(updatedToken),
         workspaceUuid: this.workspace
       })
+      this.ctx.info('Updated integration secret', { socialId, workspaceUuid: this.workspace })
     } else {
       await this.accountClient.addIntegrationSecret({
         key: SecretType.TOKEN,
         kind: GMAIL_INTEGRATION,
-        socialId: token.socialId._id,
+        socialId,
         secret: JSON.stringify(token),
         workspaceUuid: this.workspace
       })
+      this.ctx.info('Created integration secret', { socialId, workspaceUuid: this.workspace })
     }
   }
 

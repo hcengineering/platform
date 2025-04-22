@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type MeasureContext, PersonId, WorkspaceUuid } from '@hcengineering/core'
+import { type MeasureContext, PersonId } from '@hcengineering/core'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
 import { RateLimiter } from '../rateLimiter'
@@ -28,7 +28,6 @@ interface History {
 
 export class SyncManager {
   private readonly rateLimiter = new RateLimiter(1000, 200)
-  private readonly tokenStorage: TokenStorage
   private syncPromise: Promise<void> | undefined = undefined
 
   constructor (
@@ -36,11 +35,8 @@ export class SyncManager {
     private readonly messageManager: MessageManager,
     private readonly gmail: gmail_v1.Resource$Users,
     private readonly workspace: string,
-    workspaceId: WorkspaceUuid,
-    token: string
-  ) {
-    this.tokenStorage = new TokenStorage(workspaceId, token)
-  }
+    private readonly tokenStorage: TokenStorage
+  ) {}
 
   private async getHistory (userId: PersonId): Promise<History | null> {
     const token = await this.tokenStorage.getToken(userId)
@@ -56,14 +52,14 @@ export class SyncManager {
     const token = await this.tokenStorage.getToken(userId)
     if (token === null) return
     const updatedToken = { ...token, historyId: undefined }
-    await this.tokenStorage.saveToken(updatedToken as Token)
+    await this.tokenStorage.saveToken(userId, updatedToken as Token)
   }
 
   private async setHistoryId (userId: PersonId, historyId: string): Promise<void> {
     const token = await this.tokenStorage.getToken(userId)
     if (token === null) return
     const updatedToken = { ...token, historyId }
-    await this.tokenStorage.saveToken(updatedToken as Token)
+    await this.tokenStorage.saveToken(userId, updatedToken as Token)
   }
 
   private async partSync (userId: PersonId, userEmail: string | undefined, historyId: string): Promise<void> {
@@ -81,8 +77,8 @@ export class SyncManager {
           startHistoryId: historyId,
           pageToken
         })
-      } catch (err) {
-        this.ctx.error('Part sync get history error', { workspaceUuid: this.workspace, userId, err })
+      } catch (err: any) {
+        this.ctx.error('Part sync get history error', { workspaceUuid: this.workspace, userId, error: err.message })
         await this.clearHistory(userId)
         await this.sync(userId)
         return
@@ -143,7 +139,7 @@ export class SyncManager {
         await this.rateLimiter.take(5)
         const messages = await this.gmail.messages.list(query)
         if (query.pageToken == null) {
-          console.log('Total messages', this.workspace, userId, messages.data.resultSizeEstimate)
+          this.ctx.info('Total messages', { workspace: this.workspace, userId, resultSizeEstimate: messages.data.resultSizeEstimate })
         }
         const ids = messages.data.messages?.map((p) => p.id) ?? []
         for (let index = 0; index < ids.length; index++) {
@@ -152,7 +148,7 @@ export class SyncManager {
           messagesIds.push(id)
         }
         if (messages.data.nextPageToken == null) {
-          console.log('Break, total new messages: ', messagesIds.length)
+          this.ctx.info('Break', { totalNewMessages: messagesIds.length })
           break
         }
         query.pageToken = messages.data.nextPageToken
@@ -169,12 +165,15 @@ export class SyncManager {
               currentHistoryId = historyId
             }
           }
+          if (index % 500 === 0) {
+            this.ctx.info('Remaining messages to sync', { workspace: this.workspace, userId, count: index })
+          }
         } catch (err: any) {
-          console.log('Full sync message error', this.workspace, userId, err)
+          this.ctx.error('Full sync message error', { workspace: this.workspace, userId, err })
         }
       }
     } catch (err) {
-      console.log('Full sync error', this.workspace, userId, err)
+      this.ctx.error('Full sync error', { workspace: this.workspace, userId, err })
     }
   }
 
@@ -202,7 +201,7 @@ export class SyncManager {
         await this.syncPromise
       }
     } catch (err) {
-      console.log('Sync error', this.workspace, userId, err)
+      this.ctx.error('Sync error', { workspace: this.workspace, userId, err })
     }
   }
 }

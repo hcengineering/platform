@@ -18,7 +18,6 @@ import {
   isActiveMode,
   MeasureContext,
   RateLimiter,
-  systemAccountUuid,
   WorkspaceUuid,
   type PersonId
 } from '@hcengineering/core'
@@ -29,9 +28,8 @@ import config from './config'
 import { type GmailClient } from './gmail'
 import { type ProjectCredentials, type Token, type User } from './types'
 import { WorkspaceClient } from './workspaceClient'
-import { generateToken } from '@hcengineering/server-token'
 import { getAccountClient } from '@hcengineering/server-client'
-import { getIntegrations } from './accounts'
+import { getIntegrations } from './integrations'
 import { serviceToken } from './utils'
 import { getWorkspaceTokens } from './tokens'
 
@@ -71,37 +69,43 @@ export class GmailController {
   }
 
   async startAll (): Promise<void> {
-    const integrations = await getIntegrations(serviceToken())
+    try {
+      const token = serviceToken()
+      const integrations = await getIntegrations(token)
+      this.ctx.info('Start integrations', { count: integrations.length })
 
-    const limiter = new RateLimiter(config.InitLimit)
-    for (const integration of integrations) {
-      if (integration.workspaceUuid === null) continue
-      await limiter.add(async () => {
-        if (integration.workspaceUuid === null) return
-        const wstok = generateToken(systemAccountUuid, integration.workspaceUuid)
-        const accountClient = getAccountClient(wstok)
-        const info = await accountClient.getWorkspaceInfo()
+      const limiter = new RateLimiter(config.InitLimit)
+      for (const integration of integrations) {
+        if (integration.workspaceUuid === null) continue
+        await limiter.add(async () => {
+          if (integration.workspaceUuid === null) return
+          const accountClient = getAccountClient(token)
+          const info = await accountClient.getWorkspaceInfo()
 
-        if (info === undefined) {
-          this.ctx.info('workspace not found', { workspaceUuid: integration.workspaceUuid })
-          return
-        }
-        if (!isActiveMode(info.mode)) {
-          this.ctx.info('workspace is not active', { workspaceUuid: integration.workspaceUuid })
-          return
-        }
-        const tokens = await getWorkspaceTokens(accountClient, integration.workspaceUuid)
-        const startPromise = this.startWorkspace(integration.workspaceUuid, tokens)
-        const timeoutPromise = new Promise<void>((resolve) => {
-          setTimeout(() => {
-            resolve()
-          }, 60000)
+          if (info === undefined) {
+            this.ctx.info('workspace not found', { workspaceUuid: integration.workspaceUuid })
+            return
+          }
+          if (!isActiveMode(info.mode)) {
+            this.ctx.info('workspace is not active', { workspaceUuid: integration.workspaceUuid })
+            return
+          }
+          const tokens = await getWorkspaceTokens(accountClient, integration.workspaceUuid)
+          this.ctx.info('Use stored tokens', { count: tokens.length })
+          const startPromise = this.startWorkspace(integration.workspaceUuid, tokens)
+          const timeoutPromise = new Promise<void>((resolve) => {
+            setTimeout(() => {
+              resolve()
+            }, 60000)
+          })
+          await Promise.race([startPromise, timeoutPromise])
         })
-        await Promise.race([startPromise, timeoutPromise])
-      })
-    }
+      }
 
-    await limiter.waitProcessing()
+      await limiter.waitProcessing()
+    } catch (err: any) {
+      this.ctx.error('Failed to start existing integrations', err)
+    }
   }
 
   async startWorkspace (workspace: WorkspaceUuid, tokens: Token[]): Promise<void> {
@@ -115,8 +119,8 @@ export class GmailController {
         const client = await workspaceClient.createGmailClient(token)
         clearTimeout(timeout)
         clients.push(client)
-      } catch (err) {
-        this.ctx.error("Couldn't create client", { workspaceUuid: workspace, userId: token.userId })
+      } catch (err: any) {
+        this.ctx.error("Couldn't create client", { workspaceUuid: workspace, userId: token.userId, message: err.message })
       }
     }
     for (const client of clients) {

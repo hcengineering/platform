@@ -27,11 +27,13 @@ import type { ProjectCredentials, Token, User } from './types'
 import { addFooter, isToken, serviceToken } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
+import { createIntegrationIfNotEsixts, disableIntegration, removeIntegration } from './integrations'
 import { AttachmentHandler } from './message/attachments'
 import { TokenStorage } from './tokens'
 import { MessageManager } from './message/message'
 import { SyncManager } from './message/sync'
 import { getEmail } from './gmail/utils'
+import { Integration } from '@hcengineering/account-client'
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
@@ -82,6 +84,7 @@ export class GmailClient {
   private readonly messageManager: MessageManager
   private readonly syncManager: SyncManager
   private readonly integrationToken: string
+  private integration: Integration | undefined = undefined
 
   private constructor (
     private readonly ctx: MeasureContext,
@@ -97,7 +100,7 @@ export class GmailClient {
   ) {
     this.email = email
     this.integrationToken = serviceToken()
-    this.tokenStorage = new TokenStorage(workspaceId, this.integrationToken)
+    this.tokenStorage = new TokenStorage(this.ctx, workspaceId, this.integrationToken)
     this.client = new TxOperations(client, this.socialId._id)
     this.account = this.user.userId
     this.attachmentHandler = new AttachmentHandler(ctx, workspaceId, storageAdapter, this.gmail, this.client)
@@ -113,8 +116,7 @@ export class GmailClient {
       this.messageManager,
       this.gmail,
       this.user.workspace,
-      workspaceId,
-      this.integrationToken
+      this.tokenStorage
     )
   }
 
@@ -136,7 +138,12 @@ export class GmailClient {
     let token: Credentials | undefined = isToken(user) ? user : undefined
     if (token === undefined && authCode !== undefined) {
       const tokenResponse = await oAuth2Client.getToken(authCode)
-      token = tokenResponse.tokens
+      token = {
+        ...user,
+        ...tokenResponse.tokens
+      }
+      oAuth2Client.setCredentials(token)
+    } else if (token !== undefined) {
       oAuth2Client.setCredentials(token)
     }
     const email = user.email ?? (await getEmail(googleClient))
@@ -144,7 +151,6 @@ export class GmailClient {
       throw new Error('Cannot retrieve user email')
     }
     const socialId = user.socialId ?? (await getOrCreateSocialId(user.userId, email))
-    ctx.info('socialId', { socialId })
     if (socialId?._id == null) {
       throw new Error(`Cannot create gmail client without social id: ${user.userId}, ${workspaceId}`)
     }
@@ -162,6 +168,7 @@ export class GmailClient {
       email,
       socialId
     )
+    await gmailClient.createIntregration()
     if (token !== undefined) {
       ctx.info('Setting token while creating', { workspaceUuid: user.workspace, userId: user.userId })
       await gmailClient.setToken(token)
@@ -169,6 +176,7 @@ export class GmailClient {
       await gmailClient.addClient()
     }
     ctx.info('Created gmail client', { workspaceUuid: user.workspace, userId: user.userId })
+    void gmailClient.initIntegration()
     return gmailClient
   }
 
@@ -183,29 +191,46 @@ export class GmailClient {
   }
 
   async initIntegration (): Promise<void> {
-    this.ctx.info('Init integration', { workspaceUuid: this.user.workspace, userId: this.user.userId })
-    void this.startSync()
-    void this.getNewMessagesAfterAuth()
+    try {
+      this.ctx.info('Init integration', { workspaceUuid: this.user.workspace, userId: this.user.userId })
 
-    const integrations = await this.client.findAll(setting.class.Integration, {
-      createdBy: this.socialId._id,
-      type: gmail.integrationType.Gmail
-    })
-    const updated = integrations.find((p) => p.disabled && p.value === this.email)
+      void this.startSync()
+      void this.getNewMessagesAfterAuth()
 
-    for (const integration of integrations.filter((p) => p._id !== updated?._id)) {
-      await this.client.remove(integration)
+      const integrations = await this.client.findAll(setting.class.Integration, {
+        createdBy: this.socialId._id,
+        type: gmail.integrationType.Gmail
+      })
+      const updated = integrations.find((p) => p.disabled && p.value === this.email)
+
+      for (const integration of integrations.filter((p) => p._id !== updated?._id)) {
+        await this.client.remove(integration)
+      }
+      if (updated !== undefined) {
+        await this.client.update(updated, {
+          disabled: false
+        })
+      } else {
+        await this.client.createDoc(setting.class.Integration, core.space.Workspace, {
+          type: gmail.integrationType.Gmail,
+          disabled: false,
+          value: this.socialId._id
+        })
+      }
+    } catch (err: any) {
+      this.ctx.info('Failed to start message sync', {
+        workspaceUuid: this.user.workspace,
+        userId: this.user.userId,
+        error: err.message
+      })
     }
-    if (updated !== undefined) {
-      await this.client.update(updated, {
-        disabled: false
-      })
-    } else {
-      await this.client.createDoc(setting.class.Integration, core.space.Workspace, {
-        type: gmail.integrationType.Gmail,
-        disabled: false,
-        value: this.socialId._id
-      })
+  }
+
+  async createIntregration (): Promise<void> {
+    try {
+      this.integration = await createIntegrationIfNotEsixts(this.socialId._id, this.user.workspace)
+    } catch (err: any) {
+      this.ctx.error('Failed to create integration', { socialdId: this.socialId, workspace: this.workspace })
     }
   }
 
@@ -223,6 +248,7 @@ export class GmailClient {
   async createMessage (message: NewMessage): Promise<void> {
     if (message.status === 'sent') return
     try {
+      this.ctx.info('Send gmail message', { id: message._id, from: message.from, to: message.to })
       const email = await this.getEmail()
       const body =
         message.attachments != null && message.attachments > 0
@@ -260,11 +286,13 @@ export class GmailClient {
   }
 
   async signout (byError: boolean = false): Promise<void> {
+    this.ctx.info('Deactivate gmail client', { socialId: this.socialId, workspace: this.user.workspace })
     try {
       await this.close()
       await this.oAuth2Client.revokeCredentials()
     } catch {}
     await this.tokenStorage.deleteToken(this.socialId._id)
+    await this.disableIntegration(byError)
     const integration = await this.client.findOne(setting.class.Integration, {
       createdBy: this.socialId._id,
       type: gmail.integrationType.Gmail
@@ -274,6 +302,16 @@ export class GmailClient {
         await this.client.update(integration, { disabled: true })
       } else {
         await this.client.remove(integration)
+      }
+    }
+  }
+
+  async disableIntegration (byError: boolean = false): Promise<void> {
+    if (this.integration !== undefined) {
+      if (byError) {
+        await disableIntegration(this.integration)
+      } else {
+        await removeIntegration(this.socialId._id, this.user.workspace)
       }
     }
   }
@@ -347,6 +385,7 @@ export class GmailClient {
       const email = await this.getEmail()
       await this.syncUserInfo(token)
       await this.updateSocialId(email)
+      await this.updateToken(token)
     } catch (err: any) {
       this.ctx.error('Set token error', {
         workspaceUuid: this.user.workspace,
@@ -368,7 +407,7 @@ export class GmailClient {
 
   private async updateToken (token: Credentials): Promise<void> {
     try {
-      await this.tokenStorage.saveToken(token as Token)
+      await this.tokenStorage.saveToken(this.socialId._id, token as Token)
     } catch (err) {
       this.ctx.error('update token error', {
         workspaceUuid: this.user.workspace,
@@ -437,7 +476,12 @@ export class GmailClient {
   }
 
   private async makeAttachmentsBody (message: NewMessage, from: string): Promise<string> {
-    return await this.attachmentHandler.makeAttachmentsBody(message, from)
+    try {
+      return await this.attachmentHandler.makeAttachmentsBody(message, from)
+    } catch (err: any) {
+      this.ctx.error('Failed to make attachment body', err)
+      return makeHTMLBody(message, from)
+    }
   }
 
   async close (): Promise<void> {

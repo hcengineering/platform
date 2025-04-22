@@ -16,7 +16,6 @@
 
 import contact, { type Channel as PlatformChannel, type Person, Employee } from '@hcengineering/contact'
 import core, {
-  type PersonUuid,
   type WorkspaceUuid,
   type Client,
   type Doc,
@@ -29,7 +28,8 @@ import core, {
   type TxRemoveDoc,
   type TxUpdateDoc,
   PersonId,
-  AccountUuid
+  AccountUuid,
+  TxOperations
 } from '@hcengineering/core'
 import gmailP, { type NewMessage } from '@hcengineering/gmail'
 import type { StorageAdapter } from '@hcengineering/server-core'
@@ -38,6 +38,7 @@ import { getClient } from './client'
 import { GmailClient } from './gmail'
 import { type Channel, type ProjectCredentials, type User } from './types'
 import { getAccountSocialIds } from './accounts'
+import { cleanIntegrations } from './integrations'
 
 export class WorkspaceClient {
   private messageSubscribed: boolean = false
@@ -70,6 +71,7 @@ export class WorkspaceClient {
     const current = user.socialId?._id !== undefined ? this.getGmailClient(user.socialId?._id) : undefined
     if (current !== undefined) return current
     this.ctx.info('Creating new gmail client', { workspaceUuid: this.workspace, userId: user.userId })
+    this.ctx.info('Creating new gmail user', { user })
     const newClient = await GmailClient.create(
       this.ctx,
       this.credentials,
@@ -94,13 +96,23 @@ export class WorkspaceClient {
 
   async signoutByAccountId (userId: AccountUuid, byError: boolean = false): Promise<number> {
     const socialIds = await getAccountSocialIds(userId)
+    this.ctx.info('socialIds', { socialIds })
+    this.ctx.info('clients', { clients: this.clients })
+    let deleted = false
     for (const socialId of socialIds) {
       const client = this.clients.get(socialId._id)
       if (client !== undefined) {
         await client.signout(byError)
         this.clients.delete(socialId._id)
+        deleted = true
       }
     }
+    if (!deleted && socialIds.length > 0) {
+      this.ctx.info('Clean up integrations without clients')
+      const tx = new TxOperations(this.client, socialIds[0]._id)
+      await cleanIntegrations(this.ctx, tx, userId, this.workspace)
+    }
+
     return this.clients.size
   }
 
