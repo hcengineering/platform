@@ -10,7 +10,7 @@ export class IssuesPage extends CommonTrackerPage {
   modelSelectorAll = (): Locator => this.page.locator('label[data-id="tab-all"]')
   issues = (): Locator => this.page.locator('.antiPanel-navigator').locator('text="Issues"')
   subIssues = (): Locator => this.page.locator('button:has-text("Add sub-issue")')
-  newIssue = (): Locator => this.page.locator('#new-issue')
+  newIssue = (): Locator => this.page.locator('#tracker-string-NewIssue')
   modelSelectorActive = (): Locator => this.page.locator('label[data-id="tab-active"]')
   modelSelectorBacklog = (): Locator => this.page.locator('label[data-id="tab-backlog"]')
   buttonCreateNewIssue = (): Locator => this.page.locator('button > div', { hasText: 'New issue' })
