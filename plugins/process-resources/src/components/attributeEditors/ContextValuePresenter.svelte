@@ -19,6 +19,7 @@
   import AttrContextPresenter from './AttrContextPresenter.svelte'
   import NestedContextPresenter from './NestedContextPresenter.svelte'
   import RelContextPresenter from './RelContextPresenter.svelte'
+  import FunctionContextPresenter from './FunctionContextPresenter.svelte'
 
   export let contextValue: SelectedContext
   export let context: Context
@@ -33,6 +34,8 @@
     <NestedContextPresenter {contextValue} {context} />
   {:else if contextValue.type === 'userRequest'}
     <Label label={plugin.string.RequestFromUser} />
+  {:else if contextValue.type === 'function'}
+    <FunctionContextPresenter {contextValue} {context} />
   {/if}
 </div>
 

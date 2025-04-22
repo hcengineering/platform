@@ -11,7 +11,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Blobs, Class, Doc, Domain, MarkupBlobRef, Mixin, Rank, Ref, Space } from '@hcengineering/core'
+import {
+  AttachedDoc,
+  Blobs,
+  Class,
+  CollectionSize,
+  Doc,
+  Domain,
+  MarkupBlobRef,
+  Mixin,
+  Rank,
+  Ref,
+  Space
+} from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
@@ -20,9 +32,15 @@ export * from './analytics'
 export interface MasterTag extends Class<Card> {
   color?: number
   removed?: boolean
+  roles?: CollectionSize<Role>
 }
 
 export interface Tag extends MasterTag, Mixin<Card> {}
+
+export interface Role extends AttachedDoc<MasterTag | Tag, 'roles'> {
+  name: string
+  attachedTo: Ref<MasterTag | Tag>
+}
 
 export interface Card extends Doc {
   _class: Ref<MasterTag>
@@ -69,7 +87,8 @@ const cardPlugin = plugin(cardId, {
     MasterTag: '' as Ref<Class<MasterTag>>,
     Tag: '' as Ref<Class<Tag>>,
     MasterTagEditorSection: '' as Ref<Class<MasterTagEditorSection>>,
-    CardSpace: '' as Ref<Class<CardSpace>>
+    CardSpace: '' as Ref<Class<CardSpace>>,
+    Role: '' as Ref<Class<Role>>
   },
   space: {
     Default: '' as Ref<CardSpace>

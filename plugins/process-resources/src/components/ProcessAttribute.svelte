@@ -29,7 +29,9 @@
   import { createEventDispatcher } from 'svelte'
   import ContextSelectorPopup from './attributeEditors/ContextSelectorPopup.svelte'
   import ContextValue from './attributeEditors/ContextValue.svelte'
+  import { MasterTag, Tag } from '@hcengineering/card'
 
+  export let masterTag: Ref<MasterTag | Tag>
   export let value: any
   export let context: Context
   export let presenterClass: {
@@ -52,6 +54,7 @@
     showPopup(
       ContextSelectorPopup,
       {
+        masterTag,
         context,
         attribute,
         onSelect
@@ -78,6 +81,7 @@
   <div class="text-input" class:context={contextValue}>
     {#if contextValue}
       <ContextValue
+        {masterTag}
         {contextValue}
         {context}
         {attribute}

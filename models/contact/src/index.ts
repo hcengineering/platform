@@ -15,11 +15,12 @@
 //
 
 import activity from '@hcengineering/activity'
+import card, { type Role, type Card } from '@hcengineering/card'
 import {
   AvatarType,
+  type UserRole,
   contactId,
   type AvatarProvider,
-  type SocialIdentity,
   type Channel,
   type ChannelProvider,
   type Contact,
@@ -29,26 +30,27 @@ import {
   type Member,
   type Organization,
   type Person,
-  type Status,
-  type PersonSpace
+  type PersonSpace,
+  type SocialIdentity,
+  type Status
 } from '@hcengineering/contact'
 import {
   AccountRole,
+  ClassifierKind,
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
-  type Collection,
+  type AccountUuid,
   type Blob,
   type Class,
-  type MarkupBlobRef,
+  type Collection,
   type Domain,
-  type Ref,
-  type Timestamp,
-  type SocialIdType,
-  type PersonUuid,
+  type MarkupBlobRef,
   type PersonId,
-  type AccountUuid,
-  ClassifierKind
+  type PersonUuid,
+  type Ref,
+  type SocialIdType,
+  type Timestamp
 } from '@hcengineering/core'
 import {
   Collection as CollectionType,
@@ -84,7 +86,6 @@ import setting from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action } from '@hcengineering/view'
-import card, { type Card } from '@hcengineering/card'
 import contact from './plugin'
 
 export { contactId } from '@hcengineering/contact'
@@ -92,6 +93,7 @@ export { contactOperation } from './migration'
 export { contact as default }
 
 export const DOMAIN_CONTACT = 'contact' as Domain
+export const DOMAIN_ROLE = 'role' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
 
 @Model(contact.class.AvatarProvider, core.class.Doc, DOMAIN_MODEL)
@@ -272,6 +274,12 @@ export class TPersonSpace extends TSpace implements PersonSpace {
     person!: Ref<Person>
 }
 
+@Model(contact.class.UserRole, core.class.Doc, DOMAIN_ROLE)
+export class TUserRole extends TDoc implements UserRole {
+  user!: Ref<Employee>
+  role!: Ref<Role>
+}
+
 function createUserProfileTag (builder: Builder): void {
   builder.createDoc(
     card.class.MasterTag,
@@ -334,7 +342,8 @@ export function createModel (builder: Builder): void {
     TStatus,
     TMember,
     TContactsTab,
-    TPersonSpace
+    TPersonSpace,
+    TUserRole
   )
 
   builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ActivityDoc, {})

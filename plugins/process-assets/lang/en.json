@@ -65,6 +65,7 @@
     "ObjectNotFound": "Object not found: {_id}",
     "EmptyRelatedObjectValue": "Empty related object {parent} value: {attr}",
     "InternalServerError": "Internal server error, contact support, error id: {errorId}",
-    "ResultNotProvided": "Result not provided"
+    "ResultNotProvided": "Result not provided",
+    "EmptyFunctionResult": "Empty function result {func}"
   }
 }

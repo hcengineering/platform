@@ -38,7 +38,7 @@ import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import type { AnyComponent, ColorDefinition, ResolvedLocation, Location, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, FilterMode, Viewlet } from '@hcengineering/view'
 import type { Readable } from 'svelte/store'
-import { Card, MasterTag } from '@hcengineering/card'
+import { Card, MasterTag, Role } from '@hcengineering/card'
 import { PermissionsStore } from './types'
 
 /**
@@ -144,6 +144,11 @@ export interface Person extends Contact, BasePerson {
   profile?: Ref<Card>
 }
 
+export interface UserRole extends Doc {
+  user: Ref<Employee>
+  role: Ref<Role>
+}
+
 /**
  * @public
  */
@@ -213,7 +218,8 @@ export const contactPlugin = plugin(contactId, {
     ContactsTab: '' as Ref<Class<ContactsTab>>,
     PersonSpace: '' as Ref<Class<PersonSpace>>,
     SocialIdentity: '' as Ref<Class<SocialIdentity>>,
-    UserProfile: '' as Ref<MasterTag>
+    UserProfile: '' as Ref<MasterTag>,
+    UserRole: '' as Ref<Class<UserRole>>
   },
   mixin: {
     Employee: '' as Ref<Class<Employee>>

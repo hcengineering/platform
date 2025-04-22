@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute } from '@hcengineering/core'
+  import { MasterTag, Tag } from '@hcengineering/card'
+  import core, { AnyAttribute, Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { Context, ProcessFunction } from '@hcengineering/process'
@@ -23,6 +24,7 @@
   import ProcessAttribute from '../ProcessAttribute.svelte'
 
   export let func: ProcessFunction
+  export let masterTag: Ref<MasterTag | Tag>
   export let context: Context
   export let attribute: AnyAttribute
   export let props: Record<string, any> = {}
@@ -59,6 +61,7 @@
 
 <Card on:close width={'menu'} label={func.label} canSave okAction={save} okLabel={presentation.string.Save}>
   <ProcessAttribute
+    {masterTag}
     {context}
     {attribute}
     presenterClass={{

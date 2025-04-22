@@ -44,7 +44,8 @@ export default plugin(serverProcessId, {
     Add: '' as Resource<TransformFunc>,
     Subtract: '' as Resource<TransformFunc>,
     Offset: '' as Resource<TransformFunc>,
-    FirstWorkingDayAfter: '' as Resource<TransformFunc>
+    FirstWorkingDayAfter: '' as Resource<TransformFunc>,
+    RoleContext: '' as Resource<TransformFunc>
   },
   trigger: {
     OnExecutionCreate: '' as Resource<TriggerFunc>,
