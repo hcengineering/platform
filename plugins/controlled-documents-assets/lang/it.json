@@ -272,7 +272,9 @@
     "LatestVersionHint": "ultimo",
 
     "CannotDeleteFolder": "Impossibile eliminare la cartella",
-    "CannotDeleteFolderHint": "Sposta tutti i documenti figli in un'altra posizione prima di eliminare la cartella."
+    "CannotDeleteFolderHint": "Sposta tutti i documenti figli in un'altra posizione prima di eliminare la cartella.",
+
+    "AllDocumentSpaces": "Tutti gli spazi documenti"
   },
   "controlledDocStates": {
     "Empty": "",
