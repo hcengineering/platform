@@ -68,7 +68,9 @@ function getMigrations(): [string, string][] {
     migrationV5_3(),
     migrationV5_4(),
     migrationV5_5(),
-    migrationV5_6()
+    migrationV5_6(),
+    migrationV6_1(),
+    migrationV6_2()
   ]
 }
 
@@ -338,4 +340,20 @@ function migrationV5_6(): [string, string] {
         REFERENCES communication.messages (id) ON DELETE CASCADE;
   `
   return ['migrate-constraints_v5_6', sql]
+}
+
+function migrationV6_1(): [string, string] {
+  const sql = `
+    DROP INDEX IF EXISTS communication.idx_messages_unique_external_id CASCADE;
+  `
+  return ['message_drop_external_id_unique_index', sql]
+}
+
+function migrationV6_2(): [string, string] {
+  const sql = `
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_messages_unique_workspace_card_external_id
+          ON communication.messages (workspace_id, card_id, external_id)
+          WHERE external_id IS NOT NULL;
+  `
+  return ['idx_messages_unique_workspace_card_external_id', sql]
 }
