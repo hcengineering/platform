@@ -133,8 +133,8 @@ export class TSessionManager implements SessionManager {
         this.handleTick()
       }, 1000 / ticksPerSecond)
     }
-    this.workspaceProducer = this.queue.createProducer(ctx.newChild('queue', {}), QueueTopic.Workspace)
-    this.usersProducer = this.queue.createProducer(ctx.newChild('queue', {}), QueueTopic.Users)
+    this.workspaceProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Workspace)
+    this.usersProducer = this.queue.getProducer(ctx.newChild('queue', {}), QueueTopic.Users)
   }
 
   scheduleMaintenance (timeMinutes: number): void {
