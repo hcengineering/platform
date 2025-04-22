@@ -219,10 +219,12 @@ export class ChannelPage extends CommonPage {
     await expect(this.pinnedMessage(message)).toBeVisible()
   }
 
-  async replyToMessage (message: string, messageReply: string): Promise<void> {
+  async replyMessage (message: string): Promise<void> {
     await this.textMessage(message).hover()
     await this.replyButton().click()
-    await this.page.waitForTimeout(500)
+  }
+
+  async sendReply (messageReply: string): Promise<void> {
     await this.page.keyboard.type(messageReply)
     await this.page.keyboard.press('Enter')
   }
