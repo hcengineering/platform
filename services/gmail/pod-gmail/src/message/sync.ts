@@ -139,7 +139,11 @@ export class SyncManager {
         await this.rateLimiter.take(5)
         const messages = await this.gmail.messages.list(query)
         if (query.pageToken == null) {
-          this.ctx.info('Total messages', { workspace: this.workspace, userId, resultSizeEstimate: messages.data.resultSizeEstimate })
+          this.ctx.info('Total messages', {
+            workspace: this.workspace,
+            userId,
+            resultSizeEstimate: messages.data.resultSizeEstimate
+          })
         }
         const ids = messages.data.messages?.map((p) => p.id) ?? []
         for (let index = 0; index < ids.length; index++) {
@@ -193,7 +197,7 @@ export class SyncManager {
     }
     const history = await this.getHistory(userId)
     try {
-      if (history != null) {
+      if (history?.historyId != null && history?.historyId !== '') {
         this.syncPromise = this.partSync(userId, userEmail, history.historyId)
         await this.syncPromise
       } else {

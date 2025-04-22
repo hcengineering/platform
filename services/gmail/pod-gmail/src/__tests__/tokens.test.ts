@@ -3,6 +3,7 @@ import { AccountClient, IntegrationSecret } from '@hcengineering/account-client'
 import { getAccountClient } from '@hcengineering/server-client'
 import { TokenStorage } from '../tokens'
 import { GMAIL_INTEGRATION, SecretType, Token } from '../types'
+import type { MeasureContext } from '@hcengineering/core'
 
 // Mock the getAccountClient function
 jest.mock('@hcengineering/server-client', () => ({
@@ -16,7 +17,7 @@ describe('TokenStorage', () => {
   const mockUserId = 'test-user' as AccountUuid
   const mockToken: Token = {
     userId: mockUserId,
-    socialId: mockSocialId,
+    socialId: { _id: '123' } as any,
     workspace: mockWorkspace,
     token: 'test-token',
     access_token: 'test-access-token',
@@ -28,6 +29,11 @@ describe('TokenStorage', () => {
 
   let tokenStorage: TokenStorage
   let mockAccountClient: jest.Mocked<AccountClient>
+  // Add mock MeasureContext
+  const mockMeasureContext: MeasureContext = {
+    info: jest.fn(),
+    error: jest.fn()
+  } as any
 
   beforeEach(() => {
     // Create mock AccountClient
@@ -41,8 +47,8 @@ describe('TokenStorage', () => {
     // Set up getAccountClient mock
     ;(getAccountClient as jest.Mock).mockReturnValue(mockAccountClient)
 
-    // Create TokenStorage instance
-    tokenStorage = new TokenStorage(mockWorkspace, mockPlatformToken)
+    // Create TokenStorage instance with MeasureContext
+    tokenStorage = new TokenStorage(mockMeasureContext, mockWorkspace, mockPlatformToken)
   })
 
   afterEach(() => {
@@ -78,20 +84,28 @@ describe('TokenStorage', () => {
 
   describe('saveToken', () => {
     it('should update token when it exists', async () => {
+      const existingToken = { existing: 'token' }
       const mockSecret: IntegrationSecret = {
         socialId: mockSocialId,
         kind: GMAIL_INTEGRATION,
         workspaceUuid: mockWorkspace,
         key: SecretType.TOKEN,
-        secret: 'existing'
+        secret: JSON.stringify(existingToken)
       }
       mockAccountClient.getIntegrationSecret.mockResolvedValue(mockSecret)
-      await tokenStorage.saveToken(mockToken)
+      await tokenStorage.saveToken(mockSocialId, mockToken)
+
+      // Expect merged token (existing token properties + new token properties)
+      const expectedMergedToken = {
+        ...existingToken,
+        ...mockToken
+      }
+
       expect(mockAccountClient.updateIntegrationSecret).toHaveBeenCalledWith({
         key: SecretType.TOKEN,
         kind: GMAIL_INTEGRATION,
         socialId: mockSocialId,
-        secret: JSON.stringify(mockToken),
+        secret: JSON.stringify(expectedMergedToken),
         workspaceUuid: mockWorkspace
       })
       expect(mockAccountClient.addIntegrationSecret).not.toHaveBeenCalled()
@@ -99,7 +113,7 @@ describe('TokenStorage', () => {
 
     it('should add new token when it does not exist', async () => {
       mockAccountClient.getIntegrationSecret.mockResolvedValue(null)
-      await tokenStorage.saveToken(mockToken)
+      await tokenStorage.saveToken(mockSocialId, mockToken)
       expect(mockAccountClient.addIntegrationSecret).toHaveBeenCalledWith({
         key: SecretType.TOKEN,
         kind: GMAIL_INTEGRATION,

@@ -111,13 +111,7 @@ export class GmailClient {
       this.socialId._id,
       this.workspace
     )
-    this.syncManager = new SyncManager(
-      ctx,
-      this.messageManager,
-      this.gmail,
-      this.user.workspace,
-      this.tokenStorage
-    )
+    this.syncManager = new SyncManager(ctx, this.messageManager, this.gmail, this.user.workspace, this.tokenStorage)
   }
 
   static async create (

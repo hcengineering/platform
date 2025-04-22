@@ -120,7 +120,11 @@ export class GmailController {
         clearTimeout(timeout)
         clients.push(client)
       } catch (err: any) {
-        this.ctx.error("Couldn't create client", { workspaceUuid: workspace, userId: token.userId, message: err.message })
+        this.ctx.error("Couldn't create client", {
+          workspaceUuid: workspace,
+          userId: token.userId,
+          message: err.message
+        })
       }
     }
     for (const client of clients) {
