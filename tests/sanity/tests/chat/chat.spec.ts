@@ -591,7 +591,6 @@ test.describe('Channel tests', () => {
     await test.step('Open channel in Sidebar', async () => {
       await channelPage.replyMessage('Test message')
       await sidebarPage.checkIfSidebarIsOpen(true)
-      await page.screenshot({ path: 'sidebar-before-reply.png', fullPage: true })
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
       await sidebarPage.checkIfChatSidebarTabIsOpen(true, 'Thread')
       await sidebarPage.checkIfChatSidebarTabIsOpen(true, data.channelName)
