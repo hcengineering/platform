@@ -12,7 +12,6 @@ export class LoginPage {
   inputPassword = (): Locator => this.page.locator('input[name=current-password]')
   buttonLogin = (): Locator => this.page.locator('button', { hasText: 'Log In' })
   loginWithPassword = (): Locator => this.page.locator('a', { hasText: 'Login with password' })
-  signUpWithPassword = (): Locator => this.page.locator('a', { hasText: 'Sign up with password' })
   linkSignUp = (): Locator => this.page.locator('a.title', { hasText: 'Sign Up' })
   invalidCredentialsMessage = (): Locator =>
     this.page.getByText('Account not found or the provided credentials are incorrect')
@@ -37,11 +36,8 @@ export class LoginPage {
     await (await this.page.goto(`${PlatformURI}/login/admin`))?.finished()
   }
 
-  async clickSignUp (usePassword: boolean = true): Promise<void> {
+  async clickSignUp (): Promise<void> {
     await this.linkSignUp().click()
-    if (usePassword) {
-      await this.signUpWithPassword().click()
-    }
   }
 
   async clickOnRecover (): Promise<void> {
