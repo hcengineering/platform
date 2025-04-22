@@ -278,12 +278,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
     }
 
     const employee = (
-      await control.findAll(
-        control.ctx,
-        contact.mixin.Employee,
-        { _id: todo.user, active: true },
-        { limit: 1 }
-      )
+      await control.findAll(control.ctx, contact.mixin.Employee, { _id: todo.user, active: true }, { limit: 1 })
     )[0]
     if (employee === undefined) {
       continue
