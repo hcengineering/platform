@@ -27,7 +27,7 @@
   export let compactMode: boolean = false
 
   let query: DocumentQuery<Issue>
-  $: query = { 'relations._id': object._id, 'relations._class': object._class }
+  $: query = { relations: { _id: object._id, _class: object._class } }
 </script>
 
 {#if viewlet !== undefined}
