@@ -80,6 +80,7 @@ export interface TextInputAction {
 }
 
 export interface Action {
+  id: string
   label: IntlString
   icon: IconComponent
   action: (event: MouseEvent) => void

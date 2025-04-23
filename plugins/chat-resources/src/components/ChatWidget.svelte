@@ -158,7 +158,6 @@
     min-width: 0;
     min-height: 0;
     background: var(--next-background-color);
-    font-family: 'Inter Display', sans-serif;
   }
 
   .messages {

@@ -49,6 +49,7 @@
 
     if (config.allowCreate === true && space !== undefined) {
       result.push({
+        id: 'create-card',
         label: cardPlugin.string.CreateCard,
         icon: IconAdd,
         action: () => {

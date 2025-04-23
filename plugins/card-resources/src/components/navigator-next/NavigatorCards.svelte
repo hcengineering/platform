@@ -109,7 +109,7 @@
   $: empty = total === 0
 </script>
 
-{#if !empty || config.hideEmpty !== true}
+{#if !empty || config.hideEmpty !== true || config.fixedTypes?.includes(type._id)}
   <NavigatorType {type} {config} {space} {selectedType} {empty} bold on:selectType on:selectCard>
     {#each cards as card (card._id)}
       {@const clazz = hierarchy.getClass(card._class)}

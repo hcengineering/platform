@@ -105,7 +105,6 @@
     flex-direction: column;
     justify-content: space-between;
     color: var(--global-primary-TextColor);
-    font-weight: 600;
     font-size: 0.875rem;
     gap: 0.25rem;
     min-width: 0;

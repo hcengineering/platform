@@ -33,6 +33,7 @@ export interface CardsNavigatorConfig extends BaseNavigatorConfig {
   limit: number
   hideEmpty?: boolean
   labelFilter?: LabelID[]
+  fixedTypes?: Array<Ref<MasterTag>>
 }
 
 export type NavigatorConfig = TypesNavigatorConfig | CardsNavigatorConfig

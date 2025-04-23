@@ -137,10 +137,10 @@
   .section__title {
     color: var(--next-text-color-secondary);
     font-size: 0.813rem;
-    font-weight: 500;
+    font-weight: 400;
 
     &.bold {
-      font-weight: 600;
+      font-weight: 500;
     }
   }
 

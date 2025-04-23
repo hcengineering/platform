@@ -157,7 +157,6 @@
   .chat {
     background: var(--next-background-color);
     border-color: var(--next-border-color);
-    font-family: 'Inter Display', sans-serif;
   }
 
   .chat__navigator {

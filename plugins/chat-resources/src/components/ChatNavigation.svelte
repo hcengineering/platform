@@ -36,7 +36,8 @@
     preorder: [
       { type: chat.masterTag.Thread, order: 1 },
       { type: chat.masterTag.Channel, order: 2 }
-    ]
+    ],
+    fixedTypes: [chat.masterTag.Thread, chat.masterTag.Channel]
   }}
   applicationId={chatId}
   selectedType={type}
