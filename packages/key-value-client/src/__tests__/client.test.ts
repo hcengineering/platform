@@ -11,7 +11,7 @@ describe('KeyValueClient', () => {
   beforeEach(() => {
     // Reset fetch mocks for each test
     fetchMock.resetMocks()
-    
+
     // Default successful response for all fetch calls
     fetchMock.mockResponse(JSON.stringify({ key: 'value' }), {
       status: 200,
@@ -51,8 +51,8 @@ describe('KeyValueClient', () => {
           method: 'POST',
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-token',
-            'Connection': 'keep-alive'
+            Authorization: 'Bearer test-token',
+            Connection: 'keep-alive'
           }),
           body: JSON.stringify(value)
         })
@@ -82,8 +82,8 @@ describe('KeyValueClient', () => {
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
-            'Authorization': 'Bearer test-token',
-            'Connection': 'keep-alive'
+            Authorization: 'Bearer test-token',
+            Connection: 'keep-alive'
           })
         })
       )
@@ -117,8 +117,8 @@ describe('KeyValueClient', () => {
         expect.objectContaining({
           method: 'DELETE',
           headers: expect.objectContaining({
-            'Authorization': 'Bearer test-token',
-            'Connection': 'keep-alive'
+            Authorization: 'Bearer test-token',
+            Connection: 'keep-alive'
           })
         })
       )
@@ -184,12 +184,10 @@ describe('KeyValueClient', () => {
   describe('retry logic', () => {
     it('should retry on network errors', async () => {
       // First call throws network error, second succeeds
-      fetchMock
-        .mockRejectOnce(new Error('Network error'))
-        .mockResponseOnce(JSON.stringify({ key: 'value' }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        })
+      fetchMock.mockRejectOnce(new Error('Network error')).mockResponseOnce(JSON.stringify({ key: 'value' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      })
 
       const result = await client.getValue('ns', 'key')
 
