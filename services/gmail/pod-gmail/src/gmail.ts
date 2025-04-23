@@ -24,7 +24,7 @@ import config from './config'
 import { GmailController } from './gmailController'
 import { RateLimiter } from './rateLimiter'
 import type { ProjectCredentials, Token, User } from './types'
-import { addFooter, isToken, serviceToken } from './utils'
+import { addFooter, isToken, serviceToken, getKvsClient } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
 import { getOrCreateSocialId } from './accounts'
 import { createIntegrationIfNotEsixts, disableIntegration, removeIntegration } from './integrations'
@@ -111,7 +111,8 @@ export class GmailClient {
       this.socialId._id,
       this.workspace
     )
-    this.syncManager = new SyncManager(ctx, this.messageManager, this.gmail, this.user.workspace, this.tokenStorage)
+    const keyValueClient = getKvsClient(this.integrationToken)
+    this.syncManager = new SyncManager(ctx, this.messageManager, this.gmail, this.user.workspace, keyValueClient)
   }
 
   static async create (

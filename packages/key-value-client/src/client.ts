@@ -127,12 +127,10 @@ class KeyValueClientImpl implements KeyValueClient {
       body: options.body
     })
 
-    // Return null for 404 responses when explicitly handling them
     if (options.returnNullOn404 === true && response.status === 404) {
       return null
     }
 
-    // Accept 404 as valid response for some operations
     if (options.acceptNotFound === true && response.status === 404) {
       return null
     }

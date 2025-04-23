@@ -17,6 +17,7 @@
 import { type Data, type Doc, type DocumentUpdate, systemAccountUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { deepEqual } from 'fast-equals'
+import { type KeyValueClient, getClient as getKeyValueClient } from '@hcengineering/key-value-client'
 import { type Token, type User } from './types'
 import config from './config'
 
@@ -81,4 +82,11 @@ export async function wait (sec: number): Promise<void> {
       resolve()
     }, sec * 1000)
   })
+}
+
+let keyValueClient: KeyValueClient | undefined
+export function getKvsClient (token: string): KeyValueClient {
+  if (keyValueClient !== undefined) return keyValueClient
+  keyValueClient = getKeyValueClient(process.env.KEY_VALUE_URL, token)
+  return keyValueClient
 }

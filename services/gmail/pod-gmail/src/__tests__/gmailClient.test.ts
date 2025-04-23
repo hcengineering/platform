@@ -89,7 +89,13 @@ jest.mock('../integrations', () => ({
 jest.mock('../utils', () => ({
   addFooter: jest.fn().mockImplementation((content: string) => content),
   isToken: jest.fn().mockImplementation((obj: any) => 'token' in obj),
-  serviceToken: jest.fn().mockReturnValue('service-token')
+  serviceToken: jest.fn().mockReturnValue('service-token'),
+  getKvsClient: jest.fn().mockImplementation(() => ({
+    getValue: jest.fn(),
+    setValue: jest.fn().mockImplementation(() => Promise.resolve(undefined)),
+    deleteKey: jest.fn().mockImplementation(() => Promise.resolve(undefined)),
+    listKeys: jest.fn()
+  }))
 }))
 
 // Mock gmail module

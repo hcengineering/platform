@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type MeasureContext, PersonId } from '@hcengineering/core'
 import { type GaxiosResponse } from 'gaxios'
 import { gmail_v1 } from 'googleapis'
+
+import { type MeasureContext, PersonId } from '@hcengineering/core'
+import { type KeyValueClient } from '@hcengineering/key-value-client'
+
 import { RateLimiter } from '../rateLimiter'
-import { type Token } from '../types'
-import { TokenStorage } from '../tokens'
 import { MessageManager } from './message'
 
 interface History {
@@ -29,37 +30,34 @@ interface History {
 export class SyncManager {
   private readonly rateLimiter = new RateLimiter(1000, 200)
   private syncPromise: Promise<void> | undefined = undefined
+  private readonly kvNamespace = 'gmail'
 
   constructor (
     private readonly ctx: MeasureContext,
     private readonly messageManager: MessageManager,
     private readonly gmail: gmail_v1.Resource$Users,
     private readonly workspace: string,
-    private readonly tokenStorage: TokenStorage
+    private readonly keyValueClient: KeyValueClient
   ) {}
 
   private async getHistory (userId: PersonId): Promise<History | null> {
-    const token = await this.tokenStorage.getToken(userId)
-    if (token === null) return null
-    return {
-      historyId: (token as any).historyId ?? '',
-      userId,
-      workspace: this.workspace
-    }
+    const historyKey = this.getHistoryKey(userId)
+    return await this.keyValueClient.getValue<History>(this.kvNamespace, historyKey)
   }
 
   private async clearHistory (userId: PersonId): Promise<void> {
-    const token = await this.tokenStorage.getToken(userId)
-    if (token === null) return
-    const updatedToken = { ...token, historyId: undefined }
-    await this.tokenStorage.saveToken(userId, updatedToken as Token)
+    const historyKey = this.getHistoryKey(userId)
+    await this.keyValueClient.deleteKey(this.kvNamespace, historyKey)
   }
 
   private async setHistoryId (userId: PersonId, historyId: string): Promise<void> {
-    const token = await this.tokenStorage.getToken(userId)
-    if (token === null) return
-    const updatedToken = { ...token, historyId }
-    await this.tokenStorage.saveToken(userId, updatedToken as Token)
+    const historyKey = this.getHistoryKey(userId)
+    const history: History = {
+      historyId,
+      userId,
+      workspace: this.workspace
+    }
+    await this.keyValueClient.setValue(this.kvNamespace, historyKey, history)
   }
 
   private async partSync (userId: PersonId, userEmail: string | undefined, historyId: string): Promise<void> {
@@ -207,5 +205,9 @@ export class SyncManager {
     } catch (err) {
       this.ctx.error('Sync error', { workspace: this.workspace, userId, err })
     }
+  }
+
+  private getHistoryKey (userId: PersonId): string {
+    return `history:${this.workspace}:${userId}`
   }
 }
