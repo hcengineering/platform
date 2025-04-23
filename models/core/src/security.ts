@@ -155,6 +155,7 @@ export class TRole extends TAttachedDoc implements Role {
 @UX(core.string.Permission)
 export class TPermission extends TDoc implements Permission {
   label!: IntlString
+  scope?: 'space' | 'workspace'
   description?: IntlString
   icon?: Asset
 }

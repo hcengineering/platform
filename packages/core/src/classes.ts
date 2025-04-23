@@ -476,6 +476,7 @@ export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
  */
 export interface Permission extends Doc {
   label: IntlString
+  scope?: 'space' | 'workspace'
   description?: IntlString
   icon?: Asset
 }

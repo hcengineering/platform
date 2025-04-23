@@ -23,6 +23,7 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: core.string.CreateObject,
+      scope: 'space',
       description: core.string.CreateObjectDescription
     },
     core.permission.CreateObject
@@ -33,6 +34,7 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: core.string.UpdateObject,
+      scope: 'space',
       description: core.string.UpdateObjectDescription
     },
     core.permission.UpdateObject
@@ -43,6 +45,7 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: core.string.DeleteObject,
+      scope: 'space',
       description: core.string.DeleteObjectDescription
     },
     core.permission.DeleteObject
@@ -53,6 +56,7 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: core.string.ForbidDeleteObject,
+      scope: 'space',
       description: core.string.ForbidDeleteObjectDescription
     },
     core.permission.ForbidDeleteObject
@@ -63,6 +67,7 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: core.string.UpdateObject,
+      scope: 'space',
       description: core.string.UpdateObjectDescription
     },
     core.permission.UpdateObject
@@ -73,6 +78,7 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: core.string.DeleteObject,
+      scope: 'space',
       description: core.string.DeleteObjectDescription
     },
     core.permission.DeleteObject
@@ -83,6 +89,7 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: core.string.UpdateSpace,
+      scope: 'space',
       description: core.string.UpdateSpaceDescription
     },
     core.permission.UpdateSpace
@@ -93,6 +100,7 @@ export function definePermissions (builder: Builder): void {
     core.space.Model,
     {
       label: core.string.ArchiveSpace,
+      scope: 'space',
       description: core.string.ArchiveSpaceDescription
     },
     core.permission.ArchiveSpace
