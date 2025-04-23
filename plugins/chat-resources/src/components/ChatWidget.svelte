@@ -29,6 +29,7 @@
   import ChatHeader from './ChatHeader.svelte'
   import ChatBody from './ChatBody.svelte'
   import { createThreadTitle } from '../utils'
+  import ChatFooter from './ChatFooter.svelte'
 
   export let widget: Widget | undefined
   export let widgetState: WidgetState | undefined
@@ -136,6 +137,7 @@
       }
     }
   }
+  let footerHeight: number | undefined = undefined
 </script>
 
 {#if widget && data && data.message}
@@ -147,11 +149,15 @@
       <Divider />
 
       <div class="messages">
-        <ChatBody card={threadCard} bottomStart={false} showDates={false} overlyColor="var(--next-background-color)" />
+        <ChatBody
+          card={threadCard}
+          bottomStart={false}
+          showDates={false}
+          overlyColor="var(--next-background-color)"
+          {footerHeight}
+        />
       </div>
-      <div style:padding="1rem">
-        <MessageInput onSubmit={handleSubmit} />
-      </div>
+      <ChatFooter card={threadCard} bind:height={footerHeight} onSubmit={handleSubmit} />
     {/if}
   </div>
 {/if}
@@ -164,7 +170,6 @@
     min-width: 0;
     min-height: 0;
     background: var(--next-background-color);
-    font-family: 'Inter Display', sans-serif;
   }
 
   .messages {
@@ -172,5 +177,10 @@
     flex-direction: column;
     width: 100%;
     overflow: hidden;
+  }
+
+  .footer {
+    border-top: 1px solid var(--next-divider-color);
+    padding: 1.25rem 1rem 0 1rem;
   }
 </style>

@@ -26,6 +26,8 @@
     "WeekdayAt": "{weekday} um {time}",
     "YearAt": "{year} um {time}",
     "Yesterday": "Gestern",
-    "YesterdayAt": "Gestern um {time}"
+    "YesterdayAt": "Gestern um {time}",
+    "AndMore": "und {count} weitere",
+    "IsTyping": "{count, plural, =1 {schreibt} other {schreiben}}"
   }
 }

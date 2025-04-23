@@ -242,7 +242,7 @@
     </div>
   {/if}
   {#if replies && message.thread && message.thread.repliesCount > 0}
-    <div class="message__replies">
+    <div class="message__replies overflow-label">
       <MessageReplies
         count={message.thread.repliesCount}
         lastReply={message.thread.lastReply}
@@ -263,14 +263,14 @@
     padding: 1rem 2rem;
 
     &:hover {
-      background: var(--color-huly-dark-grey-5);
+      background: var(--next-message-hover-color-background);
       .message__actions {
         visibility: visible;
       }
     }
 
     &.active {
-      background: var(--color-huly-dark-grey-5);
+      background: var(--next-message-hover-color-background);
     }
   }
 
@@ -347,8 +347,12 @@
 
   .message__replies {
     padding-top: 0.5rem;
-    margin-left: 2.75rem;
+    margin-left: 2.25rem;
     padding-bottom: 0;
+    display: flex;
+    align-items: flex-start;
+    align-self: stretch;
+    overflow: hidden;
   }
 
   .message__files {

@@ -20,12 +20,17 @@
   import { uploadFile, deleteFile, getCommunicationClient } from '@hcengineering/presentation'
   import { CardID, CardType, Message } from '@hcengineering/communication-types'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
+  import { isEmptyMarkup } from '@hcengineering/text'
+  import { updateMyPresence } from '@hcengineering/presence-resources'
+  import { ThrottledCaller } from '@hcengineering/ui'
+  import { getCurrentEmployee } from '@hcengineering/contact'
 
   import TextInput from '../TextInput.svelte'
   import { defaultMessageInputActions, toMarkdown } from '../../utils'
   import uiNext from '../../plugin'
   import IconPlus from '../icons/IconPlus.svelte'
-  import { type TextInputAction, UploadedFile } from '../../types'
+  import { type TextInputAction, UploadedFile, type PresenceTyping } from '../../types'
+  import TypingPresenter from '../TypingPresenter.svelte'
 
   export let cardId: CardID | undefined = undefined
   export let cardType: CardType | undefined = undefined
@@ -36,13 +41,15 @@
   export let onCancel: (() => void) | undefined = undefined
   export let onSubmit: ((markdown: string, files: UploadedFile[]) => Promise<void>) | undefined = undefined
 
+  const throttle = new ThrottledCaller(500)
+  const dispatch = createEventDispatcher()
+  const communicationClient = getCommunicationClient()
+  const me = getCurrentEmployee()
+
   let files: UploadedFile[] = []
   let inputElement: HTMLInputElement
 
   let progress = false
-
-  const dispatch = createEventDispatcher()
-  const communicationClient = getCommunicationClient()
 
   async function handleSubmit (event: CustomEvent<Markup>): Promise<void> {
     event.preventDefault()
@@ -57,6 +64,7 @@
 
     if (onSubmit !== undefined) {
       await onSubmit(markdown, filesToLoad)
+      return
     }
 
     if (message === undefined) {
@@ -194,6 +202,19 @@
     await limiter.waitProcessing()
     progress = false
   }
+
+  async function onUpdate (event: CustomEvent<Markup>): Promise<void> {
+    if (cardId === undefined || cardType === undefined) return
+    if (message !== undefined) return
+    const markup = event.detail
+    if (!isEmptyMarkup(markup)) {
+      throttle.call(() => {
+        const room = { objectId: cardId, objectClass: cardType }
+        const typing: PresenceTyping = { person: me, lastTyping: Date.now() }
+        updateMyPresence(room, { typing })
+      })
+    }
+  }
 </script>
 
 <div
@@ -220,6 +241,7 @@
     hasNonTextContent={files.length > 0}
     actions={[...defaultMessageInputActions, attachAction]}
     on:submit={handleSubmit}
+    on:update={onUpdate}
     onCancel={onCancel ? handleCancel : undefined}
     onPaste={pasteAction}
   >
@@ -250,6 +272,10 @@
     </div>
   </TextInput>
 </div>
+
+{#if cardId && message === undefined}
+  <TypingPresenter {cardId} />
+{/if}
 
 <style lang="scss">
   .header {

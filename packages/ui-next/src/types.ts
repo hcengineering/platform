@@ -17,6 +17,8 @@ import { type Asset, type IntlString } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
 import { type TextEditorHandler } from '@hcengineering/text-editor'
 import { type BlobID } from '@hcengineering/communication-types'
+import type { Ref, Timestamp } from '@hcengineering/core'
+import type { Person } from '@hcengineering/contact'
 
 export interface NavigationSection {
   id: string
@@ -93,4 +95,9 @@ export interface Action {
   action: (event: MouseEvent) => void
   order: number
   disabled?: boolean
+}
+
+export interface PresenceTyping {
+  person: Ref<Person>
+  lastTyping: Timestamp
 }
