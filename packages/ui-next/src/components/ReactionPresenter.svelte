@@ -15,6 +15,7 @@
 
 <script lang="ts">
   import { tooltip } from '@hcengineering/ui'
+  import { PersonId } from '@hcengineering/core'
 
   import ReactionsTooltip from './ReactionsTooltip.svelte'
   import Icon from './Icon.svelte'
@@ -28,8 +29,6 @@
   export let active: boolean = false
   export let socialIds: PersonId[] = []
 </script>
-
-<!--TODO: add users tooltip-->
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
