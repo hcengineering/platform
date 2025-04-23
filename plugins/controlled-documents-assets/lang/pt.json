@@ -97,7 +97,8 @@
     "Title": "Título",
     "CreateFolder": "Criar nova pasta",
     "RenameFolder": "Renomear pasta",
-    "CreateChildFolder": "Criar subpasta"
+    "CreateChildFolder": "Criar subpasta",
+    "AllDocumentSpaces": "Todos os espaços de documentos"
   },
   "controlledDocStates": {
     "Empty": "",

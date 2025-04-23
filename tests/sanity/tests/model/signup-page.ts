@@ -10,7 +10,6 @@ export class SignUpPage extends CommonPage {
     this.page = page
   }
 
-  signUpPasswordBtn = (): Locator => this.page.locator('a', { hasText: 'Sign up with password' })
   inputFirstName = (): Locator => this.page.locator('input[name="given-name"]')
   inputLastName = (): Locator => this.page.locator('input[name="family-name"]')
   inputEmail = (): Locator => this.page.locator('input[name="email"]')

@@ -24,7 +24,6 @@ export class LoginPage {
   }
 
   async login (email: string, password: string): Promise<void> {
-    await this.loginWithPassword.click()
     await this.inputEmail.fill(email)
     await this.inputPassword.fill(password)
     expect(await this.buttonLogin.isEnabled()).toBe(true)

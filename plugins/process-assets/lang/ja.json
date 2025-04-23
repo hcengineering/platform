@@ -61,6 +61,7 @@
     "UserRequestedValueNotProvided": "ユーザーが要求した値が提供されていません: {attr}",
     "ObjectNotFound": "オブジェクトが見つかりません: {_id}",
     "EmptyRelatedObjectValue": "関連オブジェクト {parent} の値が空です: {attr}",
-    "InternalServerError": "内部サーバーエラー。サポートにお問い合わせください。エラーID: {errorId}"
+    "InternalServerError": "内部サーバーエラー。サポートにお問い合わせください。エラーID: {errorId}",
+    "EmptyFunctionResult": "関数結果が空です {func}"
   }
 }

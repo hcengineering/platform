@@ -1,10 +1,11 @@
 <script lang="ts">
+  import { getSelectedCamId, updateSelectedCamId } from '@hcengineering/media'
   import { translate } from '@hcengineering/platform'
   import { DropdownLabels, DropdownTextItem, Label, Progress, Toggle } from '@hcengineering/ui'
   import { Room } from 'livekit-client'
   import love from '../plugin'
   import { myPreferences } from '../stores'
-  import { blurProcessor, getActive, lk, selectedCamId, updateBlurRadius } from '../utils'
+  import { blurProcessor, getActive, lk, updateBlurRadius } from '../utils'
 
   void Room.getLocalDevices().then(async (devices) => {
     devices.forEach((device) => {
@@ -21,7 +22,7 @@
   let cameras: DropdownTextItem[] = []
 
   $: blurRadius = $myPreferences?.blurRadius ?? 0
-  $: activeCamera = getActive(cameras, lk.getActiveDevice('videoinput'), localStorage.getItem(selectedCamId))
+  $: activeCamera = getActive(cameras, lk.getActiveDevice('videoinput'), getSelectedCamId())
 </script>
 
 <div class="antiPopup p-4 grid">
@@ -37,7 +38,7 @@
     on:selected={async (item) => {
       if (item.detail != null && item.detail !== 'default') {
         await lk.switchActiveDevice('videoinput', item.detail)
-        localStorage.setItem(selectedCamId, item.detail)
+        updateSelectedCamId(item.detail)
         activeCamera = cameras.find((p) => p.id === item.detail) ?? cameras[0]
       }
     }}

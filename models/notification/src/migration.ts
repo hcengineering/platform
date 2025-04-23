@@ -37,6 +37,7 @@ import {
 } from '@hcengineering/model'
 import notification, {
   notificationId,
+  type PushSubscription,
   type BrowserNotification,
   type DocNotifyContext,
   type InboxNotification
@@ -320,9 +321,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
   const groupByUser = await client.groupBy<any, Doc>(DOMAIN_NOTIFICATION, 'user', {
     _class: {
       $in: [
-        notification.class.DocNotifyContext,
         notification.class.BrowserNotification,
-        notification.class.PushSubscription,
         notification.class.InboxNotification,
         notification.class.ActivityInboxNotification,
         notification.class.CommonInboxNotification
@@ -340,9 +339,7 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
         user: oldAccId,
         _class: {
           $in: [
-            notification.class.DocNotifyContext,
             notification.class.BrowserNotification,
-            notification.class.PushSubscription,
             notification.class.InboxNotification,
             notification.class.ActivityInboxNotification,
             notification.class.CommonInboxNotification
@@ -441,6 +438,49 @@ async function migrateAccounts (client: MigrationClient): Promise<void> {
     await dncIterator.close()
   }
   ctx.info('finished processing doc notify contexts ', {})
+
+  ctx.info('processing push subscriptions ', {})
+  const psIterator = await client.traverse<PushSubscription>(DOMAIN_USER_NOTIFY, {
+    _class: notification.class.PushSubscription
+  })
+  try {
+    let processed = 0
+    while (true) {
+      const docs = await psIterator.next(200)
+      if (docs === null || docs.length === 0) {
+        break
+      }
+
+      const operations: {
+        filter: MigrationDocumentQuery<PushSubscription>
+        update: MigrateUpdate<PushSubscription>
+      }[] = []
+
+      for (const doc of docs) {
+        const oldUser: any = doc.user
+        const newUser = await getAccountUuidByOldAccount(client, oldUser, socialKeyByAccount, accountUuidByOldAccount)
+
+        if (newUser != null && newUser !== oldUser) {
+          operations.push({
+            filter: { _id: doc._id },
+            update: {
+              user: newUser
+            }
+          })
+        }
+      }
+
+      if (operations.length > 0) {
+        await client.bulk(DOMAIN_USER_NOTIFY, operations)
+      }
+
+      processed += docs.length
+      ctx.info('...processed', { count: processed })
+    }
+  } finally {
+    await psIterator.close()
+  }
+  ctx.info('finished processing push subscriptions ', {})
 }
 
 export async function migrateSettings (client: MigrationClient): Promise<void> {
@@ -710,7 +750,7 @@ export const notificationOperation: MigrateOperation = {
         }
       },
       {
-        state: 'accounts-to-social-ids',
+        state: 'accounts-to-social-ids-v2',
         mode: 'upgrade',
         func: migrateAccounts
       }

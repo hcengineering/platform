@@ -65,6 +65,7 @@
     "ObjectNotFound": "找不到对象：{_id}",
     "EmptyRelatedObjectValue": "空相关对象值：{parent} {attr}",
     "InternalServerError": "内部服务器错误，请联系支持，错误 ID：{errorId}",
-    "ResultNotProvided": "未提供结果"
+    "ResultNotProvided": "未提供结果",
+    "EmptyFunctionResult": "空函数结果 {func}"
   }
 }

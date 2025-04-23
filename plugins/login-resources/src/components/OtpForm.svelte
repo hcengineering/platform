@@ -21,7 +21,7 @@
   import { LoginInfo } from '@hcengineering/account-client'
 
   import Tabs from './Tabs.svelte'
-  import { BottomAction, doLoginNavigate, validateOtpLogin, OtpLoginSteps, loginOtp } from '../index'
+  import { BottomAction, doLoginNavigate, doValidateOtp, OtpLoginSteps, loginOtp } from '../index'
   import login from '../plugin'
   import BottomActionComponent from './BottomAction.svelte'
   import StatusControl from './StatusControl.svelte'
@@ -32,6 +32,7 @@
   export let signUpDisabled = false
   export let loginState: 'login' | 'signup' | 'none' = 'none'
   export let canChangeEmail = true
+  export let password: string | undefined = undefined
   export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -66,7 +67,7 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const otp = otpData.otp1 + otpData.otp2 + otpData.otp3 + otpData.otp4 + otpData.otp5 + otpData.otp6
-    const [loginStatus, result] = await validateOtpLogin(email, otp)
+    const [loginStatus, result] = await doValidateOtp(loginState === 'signup', email, otp, password)
     status = loginStatus
 
     if (onLogin !== undefined) {

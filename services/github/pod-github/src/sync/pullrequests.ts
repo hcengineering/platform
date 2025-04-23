@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Analytics } from '@hcengineering/analytics'
-import { Person } from '@hcengineering/contact'
+import contact, { Employee, Person } from '@hcengineering/contact'
 import core, {
   AttachedData,
   Doc,
@@ -840,10 +840,12 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     todoUser: Ref<Person>,
     account: PersonId
   ): Promise<void> {
+    const employee = (await client.findAll(contact.mixin.Employee, { _id: todoUser as Ref<Employee> }, { limit: 1 }))[0]
+    if (employee === undefined) return
     const latestTodo = await client.findOne(
       time.class.ToDo,
       {
-        user: todoUser,
+        user: employee._id,
         doneOn: null
       },
       {
@@ -860,7 +862,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         title: 'Review ' + external.title,
         description: external.url,
         attachedSpace: pullRequest.space,
-        user: todoUser,
+        user: employee._id,
         workslots: 0,
         priority: ToDoPriority.High,
         visibility: 'public',
@@ -893,10 +895,12 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     todoUser: Ref<Person>,
     account: PersonId
   ): Promise<void> {
+    const employee = (await client.findAll(contact.mixin.Employee, { _id: todoUser as Ref<Employee> }, { limit: 1 }))[0]
+    if (employee === undefined) return
     const latestTodo = await client.findOne(
       time.class.ToDo,
       {
-        user: todoUser,
+        user: employee._id,
         doneOn: null
       },
       {
@@ -914,7 +918,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         attachedSpace: pullRequest.space,
         title: 'Resolve ' + pullRequest.title,
         description: external.url,
-        user: todoUser,
+        user: employee._id,
         workslots: 0,
         priority: ToDoPriority.High,
         visibility: 'public',

@@ -69,6 +69,8 @@
     "Hello": "Hello {name},",
     "ProcessingInvite": "Processing invite, please wait...",
     "SignToProceed": "Please sign in to proceed",
-    "Proceed": "Proceed"
+    "Proceed": "Proceed",
+    "SetPasswordLater": "I'll set a password later",
+    "SetPasswordNow": "I'll set a password now"
   }
 }

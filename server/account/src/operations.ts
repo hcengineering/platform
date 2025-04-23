@@ -198,6 +198,8 @@ export async function loginOtp (
 /**
  * Given an email, password, first name, and last name, creates a new account and sends a confirmation email.
  * The email confirmation is not required if the email service is not configured.
+ *
+ * ---------DEPRECATED. Only to be used for dev setups without mail service. Use signUpOtp instead.
  */
 export async function signUp (
   ctx: MeasureContext,
@@ -286,9 +288,10 @@ export async function validateOtp (
   params: {
     email: string
     code: string
+    password?: string
   }
 ): Promise<LoginInfo> {
-  const { email, code } = params
+  const { email, code, password } = params
 
   // Note: can support OTP based on any other social logins later
   const normalizedEmail = cleanEmail(email)
@@ -317,6 +320,9 @@ export async function validateOtp (
     if (account == null) {
       // This is a signup
       await createAccount(db, emailSocialId.personUuid, true)
+      if (password != null) {
+        await setPassword(ctx, db, branding, emailSocialId.personUuid as AccountUuid, password)
+      }
 
       ctx.info('OTP signup success', emailSocialId)
     } else {

@@ -24,7 +24,7 @@
   import UserBoxList from './UserBoxList.svelte'
 
   export let label: IntlString
-  export let value: AccountUuid[]
+  export let value: AccountUuid[] | undefined
   export let onChange: ((refs: AccountUuid[]) => void | Promise<void>) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
@@ -40,7 +40,7 @@
   let update: (() => Promise<void>) | undefined
 
   $: valueByPersonRef = new Map(
-    value.map((p) => {
+    (value ?? []).map((p) => {
       const person = $personRefByAccountUuidStore.get(p)
 
       if (person === undefined) {
@@ -86,7 +86,9 @@
     void update?.()
   })
 
-  $: employees = value.map((p) => $personRefByAccountUuidStore.get(p)).filter((p) => p !== undefined) as Ref<Employee>[]
+  $: employees = (value ?? [])
+    .map((p) => $personRefByAccountUuidStore.get(p))
+    .filter((p) => p !== undefined) as Ref<Employee>[]
   $: docQuery =
     excludeItems.length === 0 && includeItems.length === 0
       ? {}

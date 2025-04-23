@@ -1,9 +1,15 @@
 <script lang="ts">
-  import { getEmbeddedLabel, translate } from '@hcengineering/platform'
+  import {
+    getSelectedMicId,
+    getSelectedSpeakerId,
+    updateSelectedMicId,
+    updateSelectedSpeakerId
+  } from '@hcengineering/media'
+  import { translate } from '@hcengineering/platform'
   import { DropdownLabels, DropdownTextItem, Label, Toggle } from '@hcengineering/ui'
   import { Room } from 'livekit-client'
   import love from '../plugin'
-  import { getActive, krispProcessor, lk, selectedMicId, selectedSpeakerId } from '../utils'
+  import { getActive, krispProcessor, lk } from '../utils'
   import { DevicesPreference } from '@hcengineering/love'
   import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
@@ -33,8 +39,8 @@
   let speakers: DropdownTextItem[] = []
   let mics: DropdownTextItem[] = []
 
-  $: activeSpeaker = getActive(speakers, lk.getActiveDevice('audiooutput'), localStorage.getItem(selectedSpeakerId))
-  $: activeMic = getActive(mics, lk.getActiveDevice('audioinput'), localStorage.getItem(selectedMicId))
+  $: activeSpeaker = getActive(speakers, lk.getActiveDevice('audiooutput'), getSelectedSpeakerId())
+  $: activeMic = getActive(mics, lk.getActiveDevice('audioinput'), getSelectedMicId())
 
   const client = getClient()
 
@@ -70,7 +76,7 @@
     on:selected={async (item) => {
       if (item.detail != null && item.detail !== 'default') {
         await lk.switchActiveDevice('audiooutput', item.detail)
-        localStorage.setItem(selectedSpeakerId, item.detail)
+        updateSelectedSpeakerId(item.detail)
         activeSpeaker = speakers.find((p) => p.id === item.detail) ?? speakers[0]
       }
     }}
@@ -87,7 +93,7 @@
     on:selected={async (item) => {
       if (item.detail != null && item.detail !== 'default') {
         await lk.switchActiveDevice('audioinput', item.detail)
-        localStorage.setItem(selectedMicId, item.detail)
+        updateSelectedMicId(item.detail)
         activeMic = mics.find((p) => p.id === item.detail) ?? mics[0]
       }
     }}

@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import board from '@hcengineering/board'
 import calendarPlugin, { type Visibility } from '@hcengineering/calendar'
-import contactPlugin, { type Person } from '@hcengineering/contact'
+import contactPlugin, { type Employee } from '@hcengineering/contact'
 import {
   DOMAIN_MODEL,
   type Class,
@@ -116,8 +116,8 @@ export class TToDo extends TAttachedDoc implements ToDo {
 
   doneOn?: Timestamp | null
 
-  @Prop(TypeRef(contactPlugin.class.Person), contactPlugin.string.Employee)
-    user!: Ref<Person>
+  @Prop(TypeRef(contactPlugin.mixin.Employee), contactPlugin.string.Employee)
+    user!: Ref<Employee>
 
   @Prop(Collection(time.class.WorkSlot, time.string.WorkSlot), time.string.WorkSlot)
     workslots!: number

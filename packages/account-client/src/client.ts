@@ -61,7 +61,7 @@ export interface AccountClient {
     kind?: 'external' | 'internal' | 'byregion',
     externalRegions?: string[]
   ) => Promise<WorkspaceLoginInfo>
-  validateOtp: (email: string, code: string) => Promise<LoginInfo>
+  validateOtp: (email: string, code: string, password?: string) => Promise<LoginInfo>
   loginOtp: (email: string) => Promise<OtpInfo>
   getLoginInfoByToken: () => Promise<LoginInfo | WorkspaceLoginInfo>
   getLoginWithWorkspaceInfo: () => Promise<LoginInfoWithWorkspaces>
@@ -98,6 +98,9 @@ export interface AccountClient {
   getRegionInfo: () => Promise<RegionInfo[]>
   createWorkspace: (name: string, region?: string) => Promise<WorkspaceLoginInfo>
   signUpOtp: (email: string, first: string, last: string) => Promise<OtpInfo>
+  /**
+   * Deprecated. Only to be used for dev setups without mail service.
+   */
   signUp: (email: string, password: string, first: string, last: string) => Promise<LoginInfo>
   login: (email: string, password: string) => Promise<LoginInfo>
   getPerson: () => Promise<Person>
@@ -283,10 +286,10 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async validateOtp (email: string, code: string): Promise<LoginInfo> {
+  async validateOtp (email: string, code: string, password?: string): Promise<LoginInfo> {
     const request = {
       method: 'validateOtp' as const,
-      params: { email, code }
+      params: { email, code, password }
     }
 
     return await this.rpc(request)

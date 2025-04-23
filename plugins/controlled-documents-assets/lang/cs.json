@@ -307,7 +307,9 @@
     "LatestVersionHint": "nejnovější",
 
     "CannotDeleteFolder": "Složku nelze smazat",
-    "CannotDeleteFolderHint": "Před odstraněním složky prosím přesuňte všechny podřízené dokumenty na jiné místo."
+    "CannotDeleteFolderHint": "Před odstraněním složky prosím přesuňte všechny podřízené dokumenty na jiné místo.",
+
+    "AllDocumentSpaces": "Všechny dokumentové prostory"
   },
   "controlledDocStates": {
     "Empty": "",

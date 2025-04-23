@@ -278,12 +278,7 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
     }
 
     const employee = (
-      await control.findAll(
-        control.ctx,
-        contact.mixin.Employee,
-        { _id: todo.user as Ref<Employee>, active: true },
-        { limit: 1 }
-      )
+      await control.findAll(control.ctx, contact.mixin.Employee, { _id: todo.user, active: true }, { limit: 1 })
     )[0]
     if (employee === undefined) {
       continue
@@ -580,7 +575,7 @@ export async function IssueToDoDone (
       total = Math.round(total / 15) * 15
 
       const data: AttachedData<TimeSpendReport> = {
-        employee: todo.user as Ref<Employee>,
+        employee: todo.user,
         date: new Date().getTime(),
         value: total / 60,
         description: ''
@@ -620,12 +615,16 @@ async function getIssueToDoData (
   user: Ref<Person>,
   control: TriggerControl
 ): Promise<AttachedData<ProjectToDo> | undefined> {
+  const employee = (
+    await control.findAll(control.ctx, contact.mixin.Employee, { _id: user as Ref<Employee> }, { limit: 1 })
+  )[0]
+  if (employee === undefined) return
   const firstTodoItem = (
     await control.findAll(
       control.ctx,
       time.class.ToDo,
       {
-        user,
+        user: employee._id,
         doneOn: null
       },
       {
@@ -642,7 +641,7 @@ async function getIssueToDoData (
     priority: ToDoPriority.NoPriority,
     visibility: 'public',
     title: issue.title,
-    user,
+    user: employee._id,
     rank
   }
   return data
@@ -703,7 +702,7 @@ async function changeIssueStatusHandler (
     if (issue?.assignee != null) {
       const todos = await control.findAll(control.ctx, time.class.ToDo, {
         attachedTo: issue._id,
-        user: issue.assignee
+        user: issue.assignee as Ref<Employee>
       })
       if (todos.length === 0) {
         const tx = await getCreateToDoTx(issue, issue.assignee, control)

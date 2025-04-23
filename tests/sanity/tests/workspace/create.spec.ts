@@ -89,9 +89,8 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
 
     await loginPage.goto()
-    await loginPage.clickSignUp(false)
+    await loginPage.clickSignUp()
 
-    await signUpPage.signUpPasswordBtn().click()
     await signUpPage.checkInfo(page, 'Required field First name')
     await signUpPage.enterFirstName(newUser.firstName)
     await signUpPage.checkInfo(page, 'Required field Last name')
