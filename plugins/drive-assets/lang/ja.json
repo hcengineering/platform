@@ -27,6 +27,8 @@
     "Rename": "名前を変更",
     "Restore": "復元",
     "RoleLabel": "ロール",
-    "Root": "/"
+    "Root": "/",
+    "CreateDrivePermission": "ドライブを作成",
+    "CreateDrivePermissionDescription": "ユーザーが新しいドライブを作成する権限を付与します"
   }
 }

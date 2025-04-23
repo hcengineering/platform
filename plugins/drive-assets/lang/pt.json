@@ -27,6 +27,8 @@
     "Rename": "Renomear",
     "Restore": "Restaurar",
     "RoleLabel": "Papel",
-    "Root": "/"
+    "Root": "/",
+    "CreateDrivePermission": "Criar unidade",
+    "CreateDrivePermissionDescription": "Concede aos utilizadores a capacidade de criar novas unidades"
   }
 }

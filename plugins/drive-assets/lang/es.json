@@ -27,6 +27,8 @@
     "Rename": "Renombrar",
     "Restore": "Restaurar",
     "RoleLabel": "Rol",
-    "Root": "/"
+    "Root": "/",
+    "CreateDrivePermission": "Crear unidad",
+    "CreateDrivePermissionDescription": "Permite a los usuarios crear nuevas unidades"
   }
 }

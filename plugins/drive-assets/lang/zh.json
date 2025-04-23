@@ -27,6 +27,8 @@
     "Rename": "重命名",
     "Restore": "恢复",
     "RoleLabel": "角色",
-    "Root": "/"
+    "Root": "/",
+    "CreateDrivePermission": "创建磁盘",
+    "CreateDrivePermissionDescription": "授予用户创建新磁盘的权限"
   }
 }

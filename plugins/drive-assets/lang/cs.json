@@ -27,6 +27,8 @@
     "Rename": "Přejmenovat",
     "Restore": "Obnovit",
     "RoleLabel": "Role",
-    "Root": "/"
+    "Root": "/",
+    "CreateDrivePermission": "Vytvořit disk",
+    "CreateDrivePermissionDescription": "Uděluje uživatelům právo vytvářet nové disky"
   }
 }

@@ -27,6 +27,8 @@
     "Rename": "Rename",
     "Restore": "Restore",
     "RoleLabel": "Role",
-    "Root": "/"
+    "Root": "/",
+    "CreateDrivePermission": "Create drive",
+    "CreateDrivePermissionDescription": "Grants users ability to create new drives"
   }
 }

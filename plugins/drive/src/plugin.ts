@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor, Type } from '@hcengineering/core'
+import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor, Type, Permission } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource as PlatformResource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Location, ResolvedLocation } from '@hcengineering/ui/src/types'
@@ -64,13 +64,18 @@ export const drivePlugin = plugin(driveId, {
     File: '' as IntlString,
     FileVersion: '' as IntlString,
     Folder: '' as IntlString,
-    Resource: '' as IntlString
+    Resource: '' as IntlString,
+    CreateDrivePermission: '' as IntlString,
+    CreateDrivePermissionDescription: '' as IntlString
   },
   descriptor: {
     DriveType: '' as Ref<SpaceTypeDescriptor>
   },
   spaceType: {
     DefaultDrive: '' as Ref<SpaceType>
+  },
+  permission: {
+    CreateDrive: '' as Ref<Permission>
   }
 })
 

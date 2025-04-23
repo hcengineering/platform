@@ -27,6 +27,8 @@
     "Rename": "Umbenennen",
     "Restore": "Wiederherstellen",
     "RoleLabel": "Rolle",
-    "Root": "/"
+    "Root": "/",
+    "CreateDrivePermission": "Laufwerk erstellen",
+    "CreateDrivePermissionDescription": "Erlaubt Benutzern die Erstellung neuer Laufwerke"
   }
 }

@@ -27,6 +27,8 @@
     "Rename": "Переименовать",
     "Restore": "Восстановить",
     "RoleLabel": "Роль",
-    "Root": "/"
+    "Root": "/",
+    "CreateDrivePermission": "Создать диск",
+    "CreateDrivePermissionDescription": "Предоставляет пользователям возможность создавать новые диски"
   }
 }
