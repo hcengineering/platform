@@ -142,9 +142,8 @@
   <div class="chat-widget" style:width style:height>
     <ChatHeader card={threadCard} icon={chat.icon.Thread} title={data.name} canClose on:close />
     {#if message && parentCard}
-      <div style:padding="1rem">
-        <MessagePresenter {message} card={parentCard} replies={false} />
-      </div>
+      <div class="mt-4" />
+      <MessagePresenter {message} card={parentCard} replies={false} />
       <Divider />
 
       <div class="messages">

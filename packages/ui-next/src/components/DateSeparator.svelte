@@ -44,10 +44,12 @@
 </script>
 
 <div class="date-separator" class:sticky>
-  <div class="date-separator__date">
-    {#await formatDate(date, $themeStore.language) then date}
-      {date}
-    {/await}
+  <div class="date-separator__content">
+    <div class="date-separator__date">
+      {#await formatDate(date, $themeStore.language) then date}
+        {date}
+      {/await}
+    </div>
   </div>
 </div>
 
@@ -55,10 +57,7 @@
   .date-separator {
     display: flex;
     width: 100%;
-    padding: 0.375rem 0;
-    align-items: center;
-    gap: 0.375rem;
-    border-bottom: 1px solid var(--next-divider-color);
+    padding: 0 2rem;
     background: var(--next-panel-color-background);
 
     &.sticky {
@@ -66,6 +65,15 @@
       top: 0;
       z-index: 1;
     }
+  }
+
+  .date-separator__content {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    border-bottom: 1px solid var(--next-divider-color);
+    gap: 0.375rem;
+    padding: 0.375rem 0;
   }
 
   .date-separator__date {

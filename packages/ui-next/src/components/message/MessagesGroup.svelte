@@ -60,7 +60,6 @@
     align-items: flex-start;
     gap: 0.75rem;
     width: 100%;
-    padding: 0 2rem;
   }
 
   .messages-group__messages {
@@ -69,7 +68,6 @@
     align-items: flex-start;
     flex: 1 0 0;
     width: 100%;
-    gap: 1rem;
     padding: 1rem 0;
   }
 </style>

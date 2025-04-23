@@ -85,3 +85,12 @@ export interface UploadedFile {
   filename: string
   size: number
 }
+
+export interface Action {
+  id: string
+  label: IntlString
+  icon: IconComponent
+  action: (event: MouseEvent) => void
+  order: number
+  disabled?: boolean
+}

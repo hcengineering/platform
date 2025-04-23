@@ -35,6 +35,10 @@
   import uiNext from '../../plugin'
   import MessageReplies from './MessageReplies.svelte'
   import { toMarkup, toggleReaction } from '../../utils'
+  import MessageActionsPanel from './MessageActionsPanel.svelte'
+  import IconEmoji from '../icons/IconEmoji.svelte'
+  import IconMessageMultiple from '../icons/IconMessageMultiple.svelte'
+  import IconPen from '../icons/IconPen.svelte'
 
   export let card: Card
   export let message: Message
@@ -123,6 +127,7 @@
       const actions: MenuAction[] = [
         {
           label: uiNext.string.Emoji,
+          icon: IconEmoji,
           action: async (): Promise<void> => {
             showPopup(
               EmojiPopup,
@@ -142,6 +147,7 @@
         },
         {
           label: uiNext.string.Reply,
+          icon: IconMessageMultiple,
           action: async (): Promise<void> => {
             dispatch('reply', message)
           }
@@ -151,6 +157,7 @@
       if (canEdit()) {
         actions.unshift({
           label: uiNext.string.Edit,
+          icon: IconPen,
           action: handleEdit
         })
       }
@@ -158,12 +165,24 @@
       showPopup(Menu, { actions }, getEventPositionElement(event), () => {})
     }
   }
+
+  let isActionsOpened = false
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<!--TODO: remove or improve on:contextmenu-->
-<div class="message" id={message.id.toString()} on:contextmenu={handleContextMenu}>
+<div class="message" id={message.id.toString()} on:contextmenu={handleContextMenu} class:active={isActionsOpened}>
+  <div class="message__actions" class:opened={isActionsOpened}>
+    <MessageActionsPanel
+      {message}
+      editable={canEdit()}
+      bind:isOpened={isActionsOpened}
+      on:edit={handleEdit}
+      on:reply={() => {
+        dispatch('reply', message)
+      }}
+    />
+  </div>
   <div class="message__body">
     <div class="message__avatar">
       <PersonPreviewProvider value={author}>
@@ -187,7 +206,7 @@
         {/if}
       </div>
       {#if !isEditing}
-        <div class="message__text overflow-label">
+        <div class="message__text">
           <MessageContentViewer {message} {card} />
         </div>
       {:else}
@@ -233,7 +252,19 @@
     align-items: flex-start;
     align-self: stretch;
     min-width: 0;
-    overflow: hidden;
+    position: relative;
+    padding: 1rem 2rem;
+
+    &:hover {
+      background: var(--color-huly-dark-grey-5);
+      .message__actions {
+        visibility: visible;
+      }
+    }
+
+    &.active {
+      background: var(--color-huly-dark-grey-5);
+    }
   }
 
   .message__body {
@@ -242,6 +273,7 @@
     gap: 0.75rem;
     align-self: stretch;
     min-width: 0;
+    overflow: hidden;
   }
 
   .message__avatar {
@@ -311,9 +343,21 @@
     margin-left: 2.75rem;
     padding-bottom: 0;
   }
+
   .message__files {
     display: flex;
     gap: 0.375rem;
     overflow-x: auto;
+  }
+
+  .message__actions {
+    position: absolute;
+    top: -0.75rem;
+    right: 1rem;
+    visibility: hidden;
+
+    &.opened {
+      visibility: visible;
+    }
   }
 </style>
