@@ -15,85 +15,66 @@
 
 <script lang="ts">
   import view from '@hcengineering/view'
-  import { IconWithEmoji } from '@hcengineering/ui'
-  import { Label } from '@hcengineering/communication-types'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { IconWithEmoji, IconAdd } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
-  import { Card, MasterTag } from '@hcengineering/card'
-  import { Section } from '@hcengineering/ui-next'
+  import { CardSpace, MasterTag } from '@hcengineering/card'
+  import { Section, Action } from '@hcengineering/ui-next'
+  import { getClient } from '@hcengineering/presentation'
 
-  import NavigatorCards from './NavigatorCards.svelte'
-  import type { NavigatorConfig } from './types'
-  import NavigatorHierarchy from './NavigatorHierarchy.svelte'
+  import type { NavigatorConfig } from '../../types'
+  import cardPlugin from '../../plugin'
+  import { createCard } from '../../utils'
 
   export let type: MasterTag
-  export let labels: Label[] = []
   export let level: number = 0
+  export let space: CardSpace | undefined = undefined
   export let config: NavigatorConfig
   export let selectedType: Ref<MasterTag> | undefined = undefined
-  export let selectedCard: Ref<Card> | undefined = undefined
-  export let descendants = new Map<Ref<Class<Doc>>, MasterTag[]>()
+  export let empty: boolean = false
+  export let bold: boolean = false
 
   const dispatch = createEventDispatcher()
 
-  let cardsTotal: number = 0
-  $: cardOptions = config.cardOptions
-  $: isLeaf =
-    (descendants.get(type._id)?.length ?? 0) === 0 || (config.maxDepth !== undefined && level + 1 >= config.maxDepth)
-
-  let childEmptyMap = new Map<Ref<MasterTag>, boolean>()
-
-  function handleChildEmpty (event: CustomEvent<{ typeId: Ref<MasterTag>, empty: boolean }>): void {
-    const { typeId, empty } = event.detail
-    childEmptyMap.set(typeId, empty)
-    childEmptyMap = childEmptyMap
+  async function handleCreateCard (): Promise<void> {
+    if (space === undefined) return
+    const _id = await createCard(type._id, space._id)
+    const card = await getClient().findOne(cardPlugin.class.Card, { _id })
+    if (card === undefined) return
+    dispatch('selectCard', card)
   }
 
-  $: hasChildTypes = childEmptyMap.size > 0 && (descendants.get(type._id) ?? []).some((child) => childEmptyMap.get(child._id) !== true)
-  $: empty = cardsTotal === 0 && !hasChildTypes
+  function getActions (): Action[] {
+    const result: Action[] = []
 
-  $: dispatch('empty', { typeId: type._id, empty })
+    if (config.allowCreate === true && space !== undefined) {
+      result.push({
+        label: cardPlugin.string.CreateCard,
+        icon: IconAdd,
+        action: () => {
+          void handleCreateCard()
+        },
+        order: 1
+      })
+    }
 
-  $: hideEmpty = cardOptions.enabled && cardOptions.hideEmptyTypes
+    return result
+  }
 </script>
 
-{#if !empty || !hideEmpty}
-  <Section
-    id={type._id}
-    title={type.label}
-    {level}
-    selected={selectedType === type._id}
-    icon={type.icon === view.ids.IconWithEmoji ? IconWithEmoji : type.icon}
-    iconProps={type.icon === view.ids.IconWithEmoji ? { icon: type.color } : {}}
-    {empty}
-    on:click={() => {
-      dispatch('selectType', type)
-    }}
-  >
-    {#if cardOptions.enabled}
-      <NavigatorCards
-        {labels}
-        level={level + 1}
-        types={[type]}
-        {isLeaf}
-        {config}
-        {selectedCard}
-        bind:total={cardsTotal}
-        on:selectCard
-      />
-    {/if}
-    {#if !isLeaf}
-      <NavigatorHierarchy
-        types={descendants.get(type._id) ?? []}
-        level={level + 1}
-        {selectedType}
-        {selectedCard}
-        {config}
-        {labels}
-        on:empty={handleChildEmpty}
-        on:selectType
-        on:selectCard
-      />
-    {/if}
-  </Section>
-{/if}
+<Section
+  id={type._id}
+  title={type.label}
+  {level}
+  selected={selectedType === type._id}
+  icon={type.icon === view.ids.IconWithEmoji ? IconWithEmoji : type.icon}
+  iconProps={type.icon === view.ids.IconWithEmoji ? { icon: type.color } : {}}
+  {empty}
+  {bold}
+  actions={getActions()}
+  on:click={() => {
+    dispatch('selectType', type)
+  }}
+>
+  <slot />
+</Section>

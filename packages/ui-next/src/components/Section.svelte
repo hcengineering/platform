@@ -21,8 +21,9 @@
   import IconArrowChevronRight from './icons/IconArrowChevronRight.svelte'
   import IconArrowChevronDown from './icons/IconArrowChevronDown.svelte'
   import Divider from './Divider.svelte'
-  import { IconComponent } from '../types'
+  import { IconComponent, Action } from '../types'
   import Icon from './Icon.svelte'
+  import Button from './Button.svelte'
 
   export let id: string
   export let title: IntlString
@@ -33,6 +34,8 @@
   export let selected = false
   export let level: number = 0
   export let empty = false
+  export let bold = false
+  export let actions: Action[] = []
 
   const dispatch = createEventDispatcher()
 
@@ -51,23 +54,42 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="section__header" class:selected on:click>
     <div style:margin-left={`${1.25 * level}rem`} />
-    {#if !empty}
-      <div class="section__arrow" on:click={toggleExpanded}>
+
+    <div class="section__arrow" on:click={toggleExpanded}>
+      {#if !empty}
         {#if _expanded}
           <IconArrowChevronDown />
         {:else}
           <IconArrowChevronRight />
         {/if}
-      </div>
-    {/if}
+      {/if}
+    </div>
 
     {#if icon}
       <Icon {icon} {...iconProps} />
     {/if}
-    <div class="section__title next-label-overflow">
+    <div class="section__title next-label-overflow" class:bold>
       <Label label={title} />
     </div>
-
+    {#if actions.length > 0}
+      <div class="section__actions">
+        {#each actions as action}
+          <Button
+            disabled={action.disabled}
+            icon={action.icon}
+            iconSize="small"
+            tooltip={{ label: action.label }}
+            on:click={(e) => {
+              if (action.disabled !== true) {
+                e.stopPropagation()
+                e.preventDefault()
+                action.action(e)
+              }
+            }}
+          />
+        {/each}
+      </div>
+    {/if}
     {#if withHeaderDivider}
       <Divider />
     {/if}
@@ -92,16 +114,23 @@
   .section__header {
     display: flex;
     width: 100%;
-    min-height: 1.5rem;
+    min-height: 2rem;
     align-items: center;
     gap: 0.375rem;
     flex-shrink: 0;
     cursor: pointer;
     border-radius: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.25rem;
 
     &.selected {
-      background: var(--next-surface-color-fg-inv);
+      background: var(--next-button-menu-ghost-background-color-active);
+    }
+
+    &:hover {
+      background: var(--next-button-menu-ghost-background-color-hover);
+      .section__actions {
+        visibility: visible;
+      }
     }
   }
 
@@ -109,6 +138,10 @@
     color: var(--next-text-color-secondary);
     font-size: 0.813rem;
     font-weight: 500;
+
+    &.bold {
+      font-weight: 600;
+    }
   }
 
   .section__arrow {
@@ -121,5 +154,12 @@
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
+  }
+  .section__actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    visibility: hidden;
   }
 </style>

@@ -17,7 +17,7 @@
   import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
   import { SubscriptionLabelID } from '@hcengineering/communication-types'
-  import { chatId } from '@hcengineering/chat'
+  import chat, { chatId } from '@hcengineering/chat'
   import { Navigator } from '@hcengineering/card-resources'
 
   export let card: Card | undefined = undefined
@@ -26,16 +26,17 @@
 
 <Navigator
   config={{
+    variant: 'cards',
     types: [cardPlugin.class.Card],
-    maxDepth: 1,
-    groupBySpace: false,
     savedViews: true,
-    cardOptions: {
-      hideEmptyTypes: true,
-      enabled: true,
-      limit: 8,
-      labelFilter: [SubscriptionLabelID]
-    }
+    groupBySpace: false,
+    hideEmpty: true,
+    limit: 10,
+    labelFilter: [SubscriptionLabelID],
+    preorder: [
+      { type: chat.masterTag.Thread, order: 1 },
+      { type: chat.masterTag.Channel, order: 2 }
+    ]
   }}
   applicationId={chatId}
   selectedType={type}

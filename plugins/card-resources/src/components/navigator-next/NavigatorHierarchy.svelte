@@ -14,21 +14,18 @@
 -->
 
 <script lang="ts">
-  import card, { MasterTag, Card } from '@hcengineering/card'
+  import card, { CardSpace, MasterTag } from '@hcengineering/card'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/communication-types'
 
-  import NavigatorCards from './NavigatorCards.svelte'
-  import type { NavigatorConfig } from './types'
+  import type { TypesNavigatorConfig } from '../../types'
   import NavigatorType from './NavigatorType.svelte'
 
   export let types: MasterTag[] = []
-  export let labels: Label[] = []
   export let level: number = 0
-  export let config: NavigatorConfig
+  export let config: TypesNavigatorConfig
+  export let space: CardSpace | undefined = undefined
   export let selectedType: Ref<MasterTag> | undefined = undefined
-  export let selectedCard: Ref<Card> | undefined = undefined
 
   const client = getClient()
 
@@ -55,26 +52,25 @@
   }
 
   $: fillDescendants(types)
-
-  let sortedTypes: MasterTag[] = []
-  $: sortedTypes = types.sort((a, b) => a.label.localeCompare(b.label))
 </script>
 
-{#if config.maxDepth === undefined || config.maxDepth > 0}
-  {#each sortedTypes as type (type._id)}
-    <NavigatorType
-      {type}
-      {labels}
-      {level}
-      {config}
-      {selectedType}
-      {selectedCard}
-      {descendants}
-      on:selectType
-      on:selectCard
-      on:empty
-    />
+{#if config.hierarchyDepth === undefined || config.hierarchyDepth > 0}
+  {#each types as type (type._id)}
+    {@const typeDescendants = descendants.get(type._id) ?? []}
+    {@const empty =
+      typeDescendants.length === 0 || (config.hierarchyDepth !== undefined && level + 1 >= config.hierarchyDepth)}
+    <NavigatorType {type} {level} {config} {space} {selectedType} {empty} on:selectType on:selectCard>
+      {#if !empty}
+        <svelte:self
+          types={typeDescendants}
+          level={level + 1}
+          {space}
+          {selectedType}
+          {config}
+          on:selectType
+          on:selectCard
+        />
+      {/if}
+    </NavigatorType>
   {/each}
-{:else if config.cardOptions.enabled}
-  <NavigatorCards {types} {config} {labels} isLeaf {selectedCard} on:selectCard />
 {/if}

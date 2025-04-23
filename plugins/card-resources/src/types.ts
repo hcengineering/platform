@@ -15,15 +15,24 @@ import type { Ref } from '@hcengineering/core'
 import type { MasterTag } from '@hcengineering/card'
 import type { LabelID } from '@hcengineering/communication-types'
 
-export interface NavigatorConfig {
+interface BaseNavigatorConfig {
   types: Array<Ref<MasterTag>>
   groupBySpace?: boolean
-  maxDepth?: number
   savedViews?: boolean
-  cardOptions: {
-    hideEmptyTypes?: boolean
-    enabled: boolean
-    limit: number
-    labelFilter?: LabelID[]
-  }
+  allowCreate?: boolean // for now works only when groupBySpace is true
+  preorder?: Array<{ type: Ref<MasterTag>, order: number }>
 }
+
+export interface TypesNavigatorConfig extends BaseNavigatorConfig {
+  variant: 'types'
+  hierarchyDepth?: number
+}
+
+export interface CardsNavigatorConfig extends BaseNavigatorConfig {
+  variant: 'cards'
+  limit: number
+  hideEmpty?: boolean
+  labelFilter?: LabelID[]
+}
+
+export type NavigatorConfig = TypesNavigatorConfig | CardsNavigatorConfig

@@ -187,7 +187,7 @@
         {/if}
       </div>
       {#if !isEditing}
-        <div class="message__text overflow-label">
+        <div class="message__text">
           <MessageContentViewer {message} {card} />
         </div>
       {:else}

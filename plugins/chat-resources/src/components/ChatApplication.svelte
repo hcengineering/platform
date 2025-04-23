@@ -84,7 +84,7 @@
   function selectType (event: CustomEvent<MasterTag>): void {
     if (selection && selection.type === 'type' && selection.ref === event.detail._id) return
     const type = event.detail
-    selection = { type: 'type', ref: type.color }
+    selection = { type: 'type', ref: type._id }
     navigateToType(type._id)
   }
 

@@ -16,15 +16,14 @@
 <script lang="ts">
   import { Scroller } from '@hcengineering/ui'
   import cardPlugin, { MasterTag, Card, CardSpace } from '@hcengineering/card'
-  import { createLabelsQuery, createQuery, getClient } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/communication-types'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import { SavedView } from '@hcengineering/workbench-resources'
   import { getCurrentAccount, SortingOrder, Ref } from '@hcengineering/core'
 
-  import { type NavigatorConfig } from './types'
+  import { type NavigatorConfig } from '../../types'
   import NavigatorSpace from './NavigatorSpace.svelte'
-  import NavigatorHierarchy from './NavigatorHierarchy.svelte'
+  import NavigatorVariant from './NavigatorVariant.svelte'
 
   export let config: NavigatorConfig
   export let applicationId: string
@@ -37,16 +36,11 @@
 
   const typesQuery = createQuery()
   const spacesQuery = createQuery()
-  const labelsQuery = createLabelsQuery()
 
   let types: MasterTag[] = []
-  let labels: Label[] = []
   let spaces: CardSpace[] = []
 
-  const allDescendants = new Set(config.types.flatMap((it) => hierarchy.getDescendants(it)))
   const showAllTypes = config.types.includes(cardPlugin.class.Card)
-
-  $: cardOptions = config.cardOptions
 
   $: typesQuery.query(
     cardPlugin.class.MasterTag,
@@ -58,24 +52,9 @@
     }
   )
 
-  $: if (cardOptions.enabled && (cardOptions.labelFilter?.length ?? 0) > 0 && types.length > 0) {
-    labelsQuery.query(
-      {
-        label: cardOptions.labelFilter,
-        ...(showAllTypes ? {} : { cardType: Array.from(allDescendants) })
-      },
-      (res) => {
-        labels = res
-      }
-    )
-  } else {
-    labelsQuery.unsubscribe()
-    labels = []
-  }
-
   const spaceClasses = hierarchy.getDescendants(cardPlugin.class.CardSpace).filter((it) => !hierarchy.isMixin(it))
 
-  $: if (config.groupBySpace && spaceClasses.length > 0) {
+  $: if (config.groupBySpace === true && spaceClasses.length > 0) {
     spacesQuery.query<CardSpace>(
       spaceClasses.length === 1 ? spaceClasses[0] : cardPlugin.class.CardSpace,
       {
@@ -121,18 +100,16 @@
           {config}
           {selectedType}
           {selectedCard}
-          {labels}
           on:selectType={selectType}
           on:selectCard={selectCard}
         />
       {/each}
     {:else}
-      <NavigatorHierarchy
+      <NavigatorVariant
         {types}
         {config}
         {selectedType}
         {selectedCard}
-        {labels}
         on:selectType={selectType}
         on:selectCard={selectCard}
       />

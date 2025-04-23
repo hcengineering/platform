@@ -14,48 +14,30 @@
 -->
 
 <script lang="ts">
-  import { TreeNode } from '@hcengineering/view-resources'
-  import cardPlugin, { MasterTag, CardSpace, Card } from '@hcengineering/card'
+  import { Card, CardSpace, MasterTag } from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
 
-  import NavigatorVariant from './NavigatorVariant.svelte'
   import type { NavigatorConfig } from '../../types'
-  import { getRootType } from '../../utils'
+  import NavigatorHierarchy from './NavigatorHierarchy.svelte'
+  import NavigatorCards from './NavigatorCards.svelte'
+  import { sortNavigatorTypes } from '../../utils'
 
   export let types: MasterTag[] = []
+  export let level: number = 0
   export let config: NavigatorConfig
-  export let space: CardSpace
+  export let space: CardSpace | undefined = undefined
   export let selectedType: Ref<MasterTag> | undefined = undefined
   export let selectedCard: Ref<Card> | undefined = undefined
 
-  const client = getClient()
-
-  let filteredTypes: MasterTag[] = []
-  $: filteredTypes = types.filter((it) => space.types.includes(getRootType(client.getHierarchy(), it._id)))
+  $: sortedTypes = sortNavigatorTypes(types, config)
 </script>
 
-<TreeNode
-  _id={space._id}
-  icon={cardPlugin.icon.Card}
-  title={space.name}
-  type={'nested'}
-  on:dragstart={(evt) => {
-    evt.preventDefault()
-  }}
->
-  <div class="flex-col ml-2">
-    <NavigatorVariant
-      types={filteredTypes}
-      {space}
-      {config}
-      {selectedType}
-      {selectedCard}
-      on:selectType
-      on:selectCard
-    />
-  </div>
-</TreeNode>
+{#if config.variant === 'types'}
+  <NavigatorHierarchy types={sortedTypes} {level} {space} {config} {selectedType} on:selectType on:selectCard />
+{/if}
 
-<style lang="scss">
-</style>
+{#if config.variant === 'cards'}
+  {#each sortedTypes as type (type._id)}
+    <NavigatorCards {type} {space} {config} {selectedType} {selectedCard} on:selectType on:selectCard />
+  {/each}
+{/if}

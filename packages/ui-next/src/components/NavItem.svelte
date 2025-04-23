@@ -25,11 +25,10 @@
   export let icon: IconComponent
   export let selected: boolean = false
   export let notificationsCount: number = 0
-  export let level: number = 0
+  export let paddingLeft: string | undefined = undefined
 </script>
 
-<button class="nav-item" class:selected on:click>
-  <div style:margin-left={`${1.25 * level}rem`} />
+<button class="nav-item" class:selected on:click style:padding-left={paddingLeft}>
   <span class="nav-item__icon">
     <Icon {icon} size="small" />
   </span>

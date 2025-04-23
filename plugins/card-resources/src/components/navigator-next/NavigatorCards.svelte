@@ -14,46 +14,70 @@
 -->
 
 <script lang="ts">
+  import { Card, CardSpace, MasterTag } from '@hcengineering/card'
   import { Ref, SortingOrder } from '@hcengineering/core'
-  import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
-  import { createNotificationContextsQuery, createQuery, getClient } from '@hcengineering/presentation'
-  import { createEventDispatcher } from 'svelte'
+  import {
+    createNotificationContextsQuery,
+    createQuery,
+    getClient,
+    createLabelsQuery
+  } from '@hcengineering/presentation'
   import uiNext, { ButtonVariant, NavItem, Button } from '@hcengineering/ui-next'
-  import type { NotificationContext, Label } from '@hcengineering/communication-types'
+  import { createEventDispatcher } from 'svelte'
+  import { Label, NotificationContext } from '@hcengineering/communication-types'
 
-  import { type NavigatorConfig } from './types'
+  import type { CardsNavigatorConfig } from '../../types'
+  import cardPlugin from '../../plugin'
+  import NavigatorType from './NavigatorType.svelte'
 
-  export let types: MasterTag[] = []
-  export let config: NavigatorConfig
-  export let labels: Label[] = []
-  export let level: number = 0
-  export let isLeaf: boolean = false
-  export let total: number = 0
+  export let type: MasterTag
+  export let config: CardsNavigatorConfig
+  export let space: CardSpace | undefined = undefined
+  export let selectedType: Ref<MasterTag> | undefined = undefined
   export let selectedCard: Ref<Card> | undefined = undefined
 
   const dispatch = createEventDispatcher()
-
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   const cardsQuery = createQuery()
+  const labelsQuery = createLabelsQuery()
   const notificationContextsQuery = createNotificationContextsQuery()
 
-  $: cardOptions = config.cardOptions
-
   let cards: Card[] = []
+  let total = -1
   let contexts: NotificationContext[] = []
+  let labels: Label[] = []
+  let isLabelsLoaded = false
 
-  let limit = config.cardOptions.limit ?? 10
+  let limit = config.limit
 
-  $: ids = (cardOptions.labelFilter?.length ?? 0) > 0 ? labels.map((it) => it.card) : undefined
-
-  $: if (ids === undefined || ids.length > 0) {
-    cardsQuery.query<Card>(
-      types.length === 1 ? types[0]._id : cardPlugin.class.Card,
+  $: if ((config.labelFilter?.length ?? 0) > 0) {
+    labelsQuery.query(
       {
-        ...(isLeaf ? {} : { _class: { $in: types.map((it) => it._id) } }),
-        ...(ids === undefined ? {} : { _id: { $in: ids as Ref<Card>[] } })
+        label: config.labelFilter,
+        cardType: hierarchy.getDescendants(type._id),
+        limit: Math.max(limit, 100)
+      },
+      (res) => {
+        labels = res
+        isLabelsLoaded = true
+      }
+    )
+  } else {
+    labelsQuery.unsubscribe()
+    labels = []
+    isLabelsLoaded = true
+  }
+
+  $: ids = (config.labelFilter?.length ?? 0) > 0 ? labels.map((it) => it.card) : undefined
+
+  $: if (isLabelsLoaded) {
+    cardsQuery.query<Card>(
+      type._id,
+      {
+        ...(ids === undefined ? {} : { _id: { $in: ids as Ref<Card>[] } }),
+        ...(space !== undefined ? { space: space._id } : {})
       },
       (res) => {
         cards = res
@@ -61,10 +85,6 @@
       },
       { total: true, limit, sort: { title: SortingOrder.Ascending } }
     )
-  } else {
-    cardsQuery.unsubscribe()
-    cards = []
-    total = 0
   }
 
   $: if ((ids?.length ?? 0) > 0 || cards.length > 0) {
@@ -85,34 +105,46 @@
     notificationContextsQuery.unsubscribe()
     contexts = []
   }
+
+  $: empty = total === 0
 </script>
 
-{#each cards as card (card._id)}
-  {@const clazz = hierarchy.getClass(card._class)}
-  {@const context = contexts.find((c) => c.card === card._id)}
-  <NavItem
-    label={card.title}
-    icon={clazz.icon ?? cardPlugin.icon.Card}
-    selected={selectedCard === card._id}
-    notificationsCount={context?.notifications?.length ?? 0}
-    {level}
-    on:click={(e) => {
-      e.stopPropagation()
-      e.preventDefault()
-      dispatch('selectCard', card)
-    }}
-  />
-{/each}
+{#if !empty || config.hideEmpty !== true}
+  <NavigatorType {type} {config} {space} {selectedType} {empty} bold on:selectType on:selectCard>
+    {#each cards as card (card._id)}
+      {@const clazz = hierarchy.getClass(card._class)}
+      {@const context = contexts.find((c) => c.card === card._id)}
+      <NavItem
+        label={card.title}
+        icon={clazz.icon ?? cardPlugin.icon.Card}
+        selected={selectedCard === card._id}
+        paddingLeft="1.75rem"
+        notificationsCount={context?.notifications?.length ?? 0}
+        on:click={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+          dispatch('selectCard', card)
+        }}
+      />
+    {/each}
 
-{#if total > cards.length}
-  <div class="all-button" style:margin-left={`${2 * level}rem`}>
-    <Button
-      labelIntl={uiNext.string.All}
-      labelParams={{ count: total }}
-      variant={ButtonVariant.Ghost}
-      on:click={() => {
-        limit += cardOptions.limit ?? 10
-      }}
-    />
-  </div>
+    {#if total > cards.length}
+      <div class="all-button">
+        <Button
+          labelIntl={uiNext.string.All}
+          labelParams={{ count: total }}
+          variant={ButtonVariant.Ghost}
+          on:click={() => {
+            limit += config.limit
+          }}
+        />
+      </div>
+    {/if}
+  </NavigatorType>
 {/if}
+
+<style lang="scss">
+  .all-button {
+    margin-left: 1.75rem;
+  }
+</style>
