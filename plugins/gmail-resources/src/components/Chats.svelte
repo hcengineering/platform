@@ -81,11 +81,7 @@
       object._class,
       'gmailSharedMessages',
       {
-        messages: convertMessages(
-          object,
-          channel,
-          selectedMessages
-        )
+        messages: convertMessages(object, channel, selectedMessages)
       }
     )
     await inboxClient.readDoc(channel._id)
@@ -132,16 +128,7 @@
 {#if messages && messages.length > 0}
   <div class="antiVSpacer x2" />
   <Scroller padding={'.5rem 1rem'}>
-    <Messages
-      messages={convertMessages(
-        object,
-        channel,
-        messages
-      )}
-      {selectable}
-      bind:selected
-      on:select
-    />
+    <Messages messages={convertMessages(object, channel, messages)} {selectable} bind:selected on:select />
     <div class="antiVSpacer x2" />
   </Scroller>
   <div class="antiVSpacer x2" />

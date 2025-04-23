@@ -2447,6 +2447,11 @@
       "packageName": "@hcengineering/model-achievement",
       "projectFolder": "models/achievement",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/key-value-client",
+      "projectFolder": "packages/key-value-client",
+      "shouldPublish": false
     }
   ]
 }
