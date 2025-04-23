@@ -355,6 +355,7 @@
     display: flex;
     gap: 0.375rem;
     overflow-x: auto;
+    margin-left: 2.75rem;
   }
 
   .message__actions {
