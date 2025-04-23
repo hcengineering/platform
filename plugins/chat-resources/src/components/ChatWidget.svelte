@@ -21,6 +21,8 @@
   import { MessagePresenter, MessageInput, Divider, UploadedFile } from '@hcengineering/ui-next'
   import { fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
   import { makeRank } from '@hcengineering/rank'
+  import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
+  import { getEmployeeBySocialId } from '@hcengineering/contact'
 
   import { ChatWidgetData } from '../types'
   import chat from '../plugin'
@@ -105,6 +107,8 @@
 
     let threadId: CardID | undefined = message.thread?.thread
     if (threadId == null) {
+      const author =
+        $employeeByPersonIdStore.get(message.creator) ?? (await getEmployeeBySocialId(client, message.creator))
       const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
       const title = createThreadTitle(message, parentCard)
       const data = fillDefaults(
@@ -120,6 +124,9 @@
       threadId = (await client.createDoc(chat.masterTag.Thread, cardPlugin.space.Default, data)) as CardID
 
       await communicationClient.createThread(card, message.id, message.created, threadId)
+      if (author?.active === true && author?.personUuid !== undefined) {
+        await communicationClient.addCollaborators(threadId, chat.masterTag.Thread, [author.personUuid])
+      }
     }
 
     if (threadId != null) {

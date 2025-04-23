@@ -401,6 +401,23 @@ export const personByPersonIdStore: Readable<Map<PersonId, Person>> = derived(
     return new Map(mapped)
   }
 )
+
+/**
+ * [PersonId (social ID) => Employee] mapping
+ */
+export const employeeByPersonIdStore: Readable<Map<PersonId, Employee>> = derived(
+  [personByPersonIdStore, employeeByIdStore],
+  ([personByPersonId, employeeById]) => {
+    const mapped = Array.from(personByPersonId.entries())
+      .map(([personId, person]) => {
+        const employee = employeeById.get(person._id as Ref<Employee>)
+        if (employee === undefined) return undefined
+        return [personId, employee] as const
+      })
+      .filter(notEmpty)
+    return new Map(mapped)
+  }
+)
 /**
  * [string (social key) => Employee] mapping
  */
