@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, Space, getCurrentAccount } from '@hcengineering/core'
+  import core, { AccountRole, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { HeaderButton, showPopup } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
@@ -87,6 +87,16 @@
       id: document.string.CreateTeamspace,
       label: document.string.CreateTeamspace,
       accountRole: AccountRole.Maintainer,
+      permissions: [
+        {
+          id: core.permission.CreateObject,
+          space: core.space.Space
+        },
+        {
+          id: document.permission.CreateTeamspace,
+          space: core.space.Space
+        }
+      ],
       callback: newTeamspace
     },
     {
