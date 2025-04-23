@@ -69,6 +69,8 @@
     "Hello": "{name} さん、こんにちは",
     "ProcessingInvite": "招待を処理中です。しばらくお待ちください...",
     "SignToProceed": "続行するにはサインインしてください",
-    "Proceed": "続行"
+    "Proceed": "続行",
+    "SetPasswordLater": "後でパスワードを設定します",
+    "SetPasswordNow": "今すぐパスワードを設定します"
   }
 }

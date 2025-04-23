@@ -273,6 +273,7 @@ export function start (
     pushPublicKey?: string
     disableSignUp?: string
     streamUrl?: string
+    mailUrl?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -346,6 +347,7 @@ export function start (
       UPLOAD_CONFIG: config.uploadConfig,
       PUSH_PUBLIC_KEY: config.pushPublicKey,
       DISABLE_SIGNUP: config.disableSignUp,
+      MAIL_URL: config.mailUrl,
       ...(extraConfig ?? {})
     }
     res.status(200)
